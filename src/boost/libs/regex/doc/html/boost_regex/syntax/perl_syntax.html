@@ -1,0 +1,1328 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Perl Regular Expression Syntax</title>
+<link rel="stylesheet" href="../../../../../../doc/html/boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot_8125">
+<link rel="home" href="../../index.html" title="Boost.Regex">
+<link rel="up" href="../syntax.html" title="Regular Expression Syntax">
+<link rel="prev" href="../syntax.html" title="Regular Expression Syntax">
+<link rel="next" href="basic_extended.html" title="POSIX Extended Regular Expression Syntax">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../../../boost.png"></td>
+<td align="center"><a href="../../../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="../syntax.html"><img src="../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../syntax.html"><img src="../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="basic_extended.html"><img src="../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="boost_regex.syntax.perl_syntax"></a><a class="link" href="perl_syntax.html" title="Perl Regular Expression Syntax"> Perl Regular Expression
+      Syntax</a>
+</h3></div></div></div>
+<a name="boost_regex.syntax.perl_syntax.synopsis"></a><h4>
+<a name="id535061"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.synopsis">Synopsis</a>
+      </h4>
+<p>
+        The Perl regular expression syntax is based on that used by the programming
+        language Perl . Perl regular expressions are the default behavior in Boost.Regex
+        or you can pass the flag <code class="computeroutput"><span class="identifier">perl</span></code>
+        to the <a class="link" href="../ref/basic_regex.html" title="basic_regex"><code class="computeroutput"><span class="identifier">basic_regex</span></code></a>
+        constructor, for example:
+      </p>
+<pre class="programlisting"><span class="comment">// e1 is a case sensitive Perl regular expression: 
+</span><span class="comment">// since Perl is the default option there's no need to explicitly specify the syntax used here:
+</span><span class="identifier">boost</span><span class="special">::</span><span class="identifier">regex</span> <span class="identifier">e1</span><span class="special">(</span><span class="identifier">my_expression</span><span class="special">);</span>
+<span class="comment">// e2 a case insensitive Perl regular expression:
+</span><span class="identifier">boost</span><span class="special">::</span><span class="identifier">regex</span> <span class="identifier">e2</span><span class="special">(</span><span class="identifier">my_expression</span><span class="special">,</span> <span class="identifier">boost</span><span class="special">::</span><span class="identifier">regex</span><span class="special">::</span><span class="identifier">perl</span><span class="special">|</span><span class="identifier">boost</span><span class="special">::</span><span class="identifier">regex</span><span class="special">::</span><span class="identifier">icase</span><span class="special">);</span>
+</pre>
+<a name="boost_regex.syntax.perl_syntax.perl_regular_expression_syntax"></a><h4>
+<a name="id535282"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.perl_regular_expression_syntax">Perl
+        Regular Expression Syntax</a>
+      </h4>
+<p>
+        In Perl regular expressions, all characters match themselves except for the
+        following special characters:
+      </p>
+<pre class="programlisting">.[{()\*+?|^$</pre>
+<a name="boost_regex.syntax.perl_syntax.wildcard"></a><h5>
+<a name="id535320"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.wildcard">Wildcard</a>
+      </h5>
+<p>
+        The single character '.' when used outside of a character set will match
+        any single character except:
+      </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+          The NULL character when the <a class="link" href="../ref/match_flag_type.html" title="match_flag_type">flag
+          <code class="computeroutput"><span class="identifier">match_not_dot_null</span></code></a>
+          is passed to the matching algorithms.
+        </li>
+<li>
+          The newline character when the <a class="link" href="../ref/match_flag_type.html" title="match_flag_type">flag
+          <code class="computeroutput"><span class="identifier">match_not_dot_newline</span></code></a>
+          is passed to the matching algorithms.
+        </li>
+</ul></div>
+<a name="boost_regex.syntax.perl_syntax.anchors"></a><h5>
+<a name="id535401"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.anchors">Anchors</a>
+      </h5>
+<p>
+        A '^' character shall match the start of a line.
+      </p>
+<p>
+        A '$' character shall match the end of a line.
+      </p>
+<a name="boost_regex.syntax.perl_syntax.marked_sub_expressions"></a><h5>
+<a name="id535435"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.marked_sub_expressions">Marked
+        sub-expressions</a>
+      </h5>
+<p>
+        A section beginning <code class="computeroutput"><span class="special">(</span></code> and ending
+        <code class="computeroutput"><span class="special">)</span></code> acts as a marked sub-expression.
+        Whatever matched the sub-expression is split out in a separate field by the
+        matching algorithms. Marked sub-expressions can also repeated, or referred
+        to by a back-reference.
+      </p>
+<a name="boost_regex.syntax.perl_syntax.non_marking_grouping"></a><h5>
+<a name="id535490"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.non_marking_grouping">Non-marking
+        grouping</a>
+      </h5>
+<p>
+        A marked sub-expression is useful to lexically group part of a regular expression,
+        but has the side-effect of spitting out an extra field in the result. As
+        an alternative you can lexically group part of a regular expression, without
+        generating a marked sub-expression by using <code class="computeroutput"><span class="special">(?:</span></code>
+        and <code class="computeroutput"><span class="special">)</span></code> , for example <code class="computeroutput"><span class="special">(?:</span><span class="identifier">ab</span><span class="special">)+</span></code>
+        will repeat <code class="computeroutput"><span class="identifier">ab</span></code> without splitting
+        out any separate sub-expressions.
+      </p>
+<a name="boost_regex.syntax.perl_syntax.repeats"></a><h5>
+<a name="id535579"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.repeats">Repeats</a>
+      </h5>
+<p>
+        Any atom (a single character, a marked sub-expression, or a character class)
+        can be repeated with the <code class="computeroutput"><span class="special">*</span></code>,
+        <code class="computeroutput"><span class="special">+</span></code>, <code class="computeroutput"><span class="special">?</span></code>,
+        and <code class="computeroutput"><span class="special">{}</span></code> operators.
+      </p>
+<p>
+        The <code class="computeroutput"><span class="special">*</span></code> operator will match the
+        preceding atom zero or more times, for example the expression <code class="computeroutput"><span class="identifier">a</span><span class="special">*</span><span class="identifier">b</span></code>
+        will match any of the following:
+      </p>
+<pre class="programlisting"><span class="identifier">b</span>
+<span class="identifier">ab</span>
+<span class="identifier">aaaaaaaab</span>
+</pre>
+<p>
+        The <code class="computeroutput"><span class="special">+</span></code> operator will match the
+        preceding atom one or more times, for example the expression <code class="computeroutput"><span class="identifier">a</span><span class="special">+</span><span class="identifier">b</span></code>
+        will match any of the following:
+      </p>
+<pre class="programlisting"><span class="identifier">ab</span>
+<span class="identifier">aaaaaaaab</span>
+</pre>
+<p>
+        But will not match:
+      </p>
+<pre class="programlisting"><span class="identifier">b</span>
+</pre>
+<p>
+        The <code class="computeroutput"><span class="special">?</span></code> operator will match the
+        preceding atom zero or one times, for example the expression ca?b will match
+        any of the following:
+      </p>
+<pre class="programlisting"><span class="identifier">cb</span>
+<span class="identifier">cab</span>
+</pre>
+<p>
+        But will not match:
+      </p>
+<pre class="programlisting"><span class="identifier">caab</span>
+</pre>
+<p>
+        An atom can also be repeated with a bounded repeat:
+      </p>
+<p>
+        <code class="computeroutput"><span class="identifier">a</span><span class="special">{</span><span class="identifier">n</span><span class="special">}</span></code> Matches
+        'a' repeated exactly n times.
+      </p>
+<p>
+        <code class="computeroutput"><span class="identifier">a</span><span class="special">{</span><span class="identifier">n</span><span class="special">,}</span></code> Matches
+        'a' repeated n or more times.
+      </p>
+<p>
+        <code class="computeroutput"><span class="identifier">a</span><span class="special">{</span><span class="identifier">n</span><span class="special">,</span> <span class="identifier">m</span><span class="special">}</span></code> Matches 'a' repeated between n and m times
+        inclusive.
+      </p>
+<p>
+        For example:
+      </p>
+<pre class="programlisting">^a{2,3}$</pre>
+<p>
+        Will match either of:
+      </p>
+<pre class="programlisting"><span class="identifier">aa</span>
+<span class="identifier">aaa</span>
+</pre>
+<p>
+        But neither of:
+      </p>
+<pre class="programlisting"><span class="identifier">a</span>
+<span class="identifier">aaaa</span>
+</pre>
+<p>
+        It is an error to use a repeat operator, if the preceding construct can not
+        be repeated, for example:
+      </p>
+<pre class="programlisting"><span class="identifier">a</span><span class="special">(*)</span>
+</pre>
+<p>
+        Will raise an error, as there is nothing for the <code class="computeroutput"><span class="special">*</span></code>
+        operator to be applied to.
+      </p>
+<a name="boost_regex.syntax.perl_syntax.non_greedy_repeats"></a><h5>
+<a name="id536052"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.non_greedy_repeats">Non greedy
+        repeats</a>
+      </h5>
+<p>
+        The normal repeat operators are "greedy", that is to say they will
+        consume as much input as possible. There are non-greedy versions available
+        that will consume as little input as possible while still producing a match.
+      </p>
+<p>
+        <code class="computeroutput"><span class="special">*?</span></code> Matches the previous atom
+        zero or more times, while consuming as little input as possible.
+      </p>
+<p>
+        <code class="computeroutput"><span class="special">+?</span></code> Matches the previous atom
+        one or more times, while consuming as little input as possible.
+      </p>
+<p>
+        <code class="computeroutput"><span class="special">??</span></code> Matches the previous atom
+        zero or one times, while consuming as little input as possible.
+      </p>
+<p>
+        <code class="computeroutput"><span class="special">{</span><span class="identifier">n</span><span class="special">,}?</span></code> Matches the previous atom n or more times,
+        while consuming as little input as possible.
+      </p>
+<p>
+        <code class="computeroutput"><span class="special">{</span><span class="identifier">n</span><span class="special">,</span><span class="identifier">m</span><span class="special">}?</span></code>
+        Matches the previous atom between n and m times, while consuming as little
+        input as possible.
+      </p>
+<a name="boost_regex.syntax.perl_syntax.back_references"></a><h5>
+<a name="id536197"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.back_references">Back references</a>
+      </h5>
+<p>
+        An escape character followed by a digit <span class="emphasis"><em>n</em></span>, where <span class="emphasis"><em>n</em></span>
+        is in the range 1-9, matches the same string that was matched by sub-expression
+        <span class="emphasis"><em>n</em></span>. For example the expression:
+      </p>
+<pre class="programlisting">^(a*).*\1$</pre>
+<p>
+        Will match the string:
+      </p>
+<pre class="programlisting"><span class="identifier">aaabbaaa</span>
+</pre>
+<p>
+        But not the string:
+      </p>
+<pre class="programlisting"><span class="identifier">aaabba</span>
+</pre>
+<a name="boost_regex.syntax.perl_syntax.alternation"></a><h5>
+<a name="id536280"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.alternation">Alternation</a>
+      </h5>
+<p>
+        The <code class="computeroutput"><span class="special">|</span></code> operator will match either
+        of its arguments, so for example: <code class="computeroutput"><span class="identifier">abc</span><span class="special">|</span><span class="identifier">def</span></code> will
+        match either "abc" or "def".
+      </p>
+<p>
+        Parenthesis can be used to group alternations, for example: <code class="computeroutput"><span class="identifier">ab</span><span class="special">(</span><span class="identifier">d</span><span class="special">|</span><span class="identifier">ef</span><span class="special">)</span></code>
+        will match either of "abd" or "abef".
+      </p>
+<p>
+        Empty alternatives are not allowed (these are almost always a mistake), but
+        if you really want an empty alternative use <code class="computeroutput"><span class="special">(?:)</span></code>
+        as a placeholder, for example:
+      </p>
+<p>
+        <code class="computeroutput"><span class="special">|</span><span class="identifier">abc</span></code>
+        is not a valid expression, but
+      </p>
+<p>
+        <code class="computeroutput"><span class="special">(?:)|</span><span class="identifier">abc</span></code>
+        is and is equivalent, also the expression:
+      </p>
+<p>
+        <code class="computeroutput"><span class="special">(?:</span><span class="identifier">abc</span><span class="special">)??</span></code> has exactly the same effect.
+      </p>
+<a name="boost_regex.syntax.perl_syntax.character_sets"></a><h5>
+<a name="id536469"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.character_sets">Character sets</a>
+      </h5>
+<p>
+        A character set is a bracket-expression starting with <code class="computeroutput"><span class="special">[</span></code>
+        and ending with <code class="computeroutput"><span class="special">]</span></code>, it defines
+        a set of characters, and matches any single character that is a member of
+        that set.
+      </p>
+<p>
+        A bracket expression may contain any combination of the following:
+      </p>
+<a name="boost_regex.syntax.perl_syntax.single_characters"></a><h6>
+<a name="id536527"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.single_characters">Single characters</a>
+      </h6>
+<p>
+        For example <code class="computeroutput"><span class="special">[</span><span class="identifier">abc</span><span class="special">]</span></code>, will match any of the characters 'a', 'b',
+        or 'c'.
+      </p>
+<a name="boost_regex.syntax.perl_syntax.character_ranges"></a><h6>
+<a name="id536578"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.character_ranges">Character
+        ranges</a>
+      </h6>
+<p>
+        For example <code class="computeroutput"><span class="special">[</span><span class="identifier">a</span><span class="special">-</span><span class="identifier">c</span><span class="special">]</span></code>
+        will match any single character in the range 'a' to 'c'. By default, for
+        Perl regular expressions, a character x is within the range y to z, if the
+        code point of the character lies within the codepoints of the endpoints of
+        the range. Alternatively, if you set the <a class="link" href="../ref/syntax_option_type/syntax_option_type_perl.html" title="Options for Perl Regular Expressions"><code class="computeroutput"><span class="identifier">collate</span></code> flag</a> when constructing the
+        regular expression, then ranges are locale sensitive.
+      </p>
+<a name="boost_regex.syntax.perl_syntax.negation"></a><h6>
+<a name="id536658"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.negation">Negation</a>
+      </h6>
+<p>
+        If the bracket-expression begins with the ^ character, then it matches the
+        complement of the characters it contains, for example <code class="computeroutput"><span class="special">[^</span><span class="identifier">a</span><span class="special">-</span><span class="identifier">c</span><span class="special">]</span></code> matches any character that is not in the
+        range <code class="computeroutput"><span class="identifier">a</span><span class="special">-</span><span class="identifier">c</span></code>.
+      </p>
+<a name="boost_regex.syntax.perl_syntax.character_classes"></a><h6>
+<a name="id536740"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.character_classes">Character
+        classes</a>
+      </h6>
+<p>
+        An expression of the form <code class="computeroutput"><span class="special">[[:</span><span class="identifier">name</span><span class="special">:]]</span></code>
+        matches the named character class "name", for example <code class="computeroutput"><span class="special">[[:</span><span class="identifier">lower</span><span class="special">:]]</span></code> matches any lower case character. See
+        <a class="link" href="character_classes.html" title="Character Class Names">character class names</a>.
+      </p>
+<a name="boost_regex.syntax.perl_syntax.collating_elements"></a><h6>
+<a name="id536823"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.collating_elements">Collating
+        Elements</a>
+      </h6>
+<p>
+        An expression of the form <code class="computeroutput"><span class="special">[[.</span><span class="identifier">col</span><span class="special">.]</span></code> matches
+        the collating element <span class="emphasis"><em>col</em></span>. A collating element is any
+        single character, or any sequence of characters that collates as a single
+        unit. Collating elements may also be used as the end point of a range, for
+        example: <code class="computeroutput"><span class="special">[[.</span><span class="identifier">ae</span><span class="special">.]-</span><span class="identifier">c</span><span class="special">]</span></code>
+        matches the character sequence "ae", plus any single character
+        in the range "ae"-c, assuming that "ae" is treated as
+        a single collating element in the current locale.
+      </p>
+<p>
+        As an extension, a collating element may also be specified via it's <a class="link" href="collating_names.html" title="Collating Names">symbolic name</a>, for example:
+      </p>
+<pre class="programlisting"><span class="special">[[.</span><span class="identifier">NUL</span><span class="special">.]]</span>
+</pre>
+<p>
+        matches a <code class="computeroutput"><span class="special">\</span><span class="number">0</span></code>
+        character.
+      </p>
+<a name="boost_regex.syntax.perl_syntax.equivalence_classes"></a><h6>
+<a name="id536972"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.equivalence_classes">Equivalence
+        classes</a>
+      </h6>
+<p>
+        An expression of the form <code class="computeroutput"><span class="special">[[=</span><span class="identifier">col</span><span class="special">=]]</span></code>,
+        matches any character or collating element whose primary sort key is the
+        same as that for collating element <span class="emphasis"><em>col</em></span>, as with collating
+        elements the name <span class="emphasis"><em>col</em></span> may be a <a class="link" href="collating_names.html" title="Collating Names">symbolic
+        name</a>. A primary sort key is one that ignores case, accentation, or
+        locale-specific tailorings; so for example <code class="computeroutput"><span class="special">[[=</span><span class="identifier">a</span><span class="special">=]]</span></code> matches
+        any of the characters: a, À, Á, Â, Ã, Ä, Å, A, à, á, â, ã, ä and å. Unfortunately implementation
+        of this is reliant on the platform's collation and localisation support;
+        this feature can not be relied upon to work portably across all platforms,
+        or even all locales on one platform.
+      </p>
+<a name="boost_regex.syntax.perl_syntax.escaped_characters"></a><h6>
+<a name="id537075"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.escaped_characters">Escaped
+        Characters</a>
+      </h6>
+<p>
+        All the escape sequences that match a single character, or a single character
+        class are permitted within a character class definition. For example <code class="computeroutput"><span class="special">[\[\]]</span></code> would match either of <code class="computeroutput"><span class="special">[</span></code> or <code class="computeroutput"><span class="special">]</span></code>
+        while <code class="computeroutput"><span class="special">[\</span><span class="identifier">W</span><span class="special">\</span><span class="identifier">d</span><span class="special">]</span></code>
+        would match any character that is either a "digit", <span class="emphasis"><em>or</em></span>
+        is <span class="emphasis"><em>not</em></span> a "word" character.
+      </p>
+<a name="boost_regex.syntax.perl_syntax.combinations"></a><h6>
+<a name="id537181"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.combinations">Combinations</a>
+      </h6>
+<p>
+        All of the above can be combined in one character set declaration, for example:
+        <code class="computeroutput"><span class="special">[[:</span><span class="identifier">digit</span><span class="special">:]</span><span class="identifier">a</span><span class="special">-</span><span class="identifier">c</span><span class="special">[.</span><span class="identifier">NUL</span><span class="special">.]]</span></code>.
+      </p>
+<a name="boost_regex.syntax.perl_syntax.escapes"></a><h5>
+<a name="id537259"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.escapes">Escapes</a>
+      </h5>
+<p>
+        Any special character preceded by an escape shall match itself.
+      </p>
+<p>
+        The following escape sequences are all synonyms for single characters:
+      </p>
+<div class="informaltable"><table class="table">
+<colgroup>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>
+              <p>
+                Escape
+              </p>
+              </th>
+<th>
+              <p>
+                Character
+              </p>
+              </th>
+</tr></thead>
+<tbody>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">a</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">a</span></code>
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">e</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                <code class="computeroutput"><span class="number">0x1B</span></code>
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">f</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">f</span></code>
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">n</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">n</span></code>
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">r</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">r</span></code>
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">t</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">t</span></code>
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">v</span>
+                </code>
+              </p>
+              </td>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">v</span></code>
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">b</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">b</span></code>
+                (but only inside a character class declaration).
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">cX</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                An ASCII escape sequence - the character whose code point is X %
+                32
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">xdd</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                A hexadecimal escape sequence - matches the single character whose
+                code point is 0xdd.
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">x</span><span class="special">{</span><span class="identifier">dddd</span><span class="special">}</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                A hexadecimal escape sequence - matches the single character whose
+                code point is 0xdddd.
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="number">0ddd</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                An octal escape sequence - matches the single character whose code
+                point is 0ddd.
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">N</span><span class="special">{</span><span class="identifier">name</span><span class="special">}</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                Matches the single character which has the <a class="link" href="collating_names.html" title="Collating Names">symbolic
+                name</a> <span class="emphasis"><em>name</em></span>. For example <code class="computeroutput"><span class="special">\</span><span class="identifier">N</span><span class="special">{</span><span class="identifier">newline</span><span class="special">}</span></code> matches the single character \n.
+              </p>
+              </td>
+</tr>
+</tbody>
+</table></div>
+<a name="boost_regex.syntax.perl_syntax._quot_single_character_quot__character_classes_"></a><h6>
+<a name="id537972"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax._quot_single_character_quot__character_classes_">"Single
+        character" character classes:</a>
+      </h6>
+<p>
+        Any escaped character <span class="emphasis"><em>x</em></span>, if <span class="emphasis"><em>x</em></span> is
+        the name of a character class shall match any character that is a member
+        of that class, and any escaped character <span class="emphasis"><em>X</em></span>, if <span class="emphasis"><em>x</em></span>
+        is the name of a character class, shall match any character not in that class.
+      </p>
+<p>
+        The following are supported by default:
+      </p>
+<div class="informaltable"><table class="table">
+<colgroup>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>
+              <p>
+                Escape sequence
+              </p>
+              </th>
+<th>
+              <p>
+                Equivalent to
+              </p>
+              </th>
+</tr></thead>
+<tbody>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">d</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">[[:</span><span class="identifier">digit</span><span class="special">:]]</span></code>
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">l</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">[[:</span><span class="identifier">lower</span><span class="special">:]]</span></code>
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">s</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">[[:</span><span class="identifier">space</span><span class="special">:]]</span></code>
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">u</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">[[:</span><span class="identifier">upper</span><span class="special">:]]</span></code>
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">w</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">[[:</span><span class="identifier">word</span><span class="special">:]]</span></code>
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">D</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">[^[:</span><span class="identifier">digit</span><span class="special">:]]</span></code>
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">L</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">[^[:</span><span class="identifier">lower</span><span class="special">:]]</span></code>
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">S</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">[^[:</span><span class="identifier">space</span><span class="special">:]]</span></code>
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">U</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">[^[:</span><span class="identifier">upper</span><span class="special">:]]</span></code>
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">W</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">[^[:</span><span class="identifier">word</span><span class="special">:]]</span></code>
+              </p>
+              </td>
+</tr>
+</tbody>
+</table></div>
+<a name="boost_regex.syntax.perl_syntax.character_properties"></a><h6>
+<a name="id538604"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.character_properties">Character
+        Properties</a>
+      </h6>
+<p>
+        The character property names in the following table are all equivalent to
+        the <a class="link" href="character_classes.html" title="Character Class Names">names used in character
+        classes</a>.
+      </p>
+<div class="informaltable"><table class="table">
+<colgroup>
+<col>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>
+              <p>
+                Form
+              </p>
+              </th>
+<th>
+              <p>
+                Description
+              </p>
+              </th>
+<th>
+              <p>
+                Equivalent character set form
+              </p>
+              </th>
+</tr></thead>
+<tbody>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">pX</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                Matches any character that has the property X.
+              </p>
+              </td>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">[[:</span><span class="identifier">X</span><span class="special">:]]</span></code>
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">p</span><span class="special">{</span><span class="identifier">Name</span><span class="special">}</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                Matches any character that has the property Name.
+              </p>
+              </td>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">[[:</span><span class="identifier">Name</span><span class="special">:]]</span></code>
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">PX</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                Matches any character that does not have the property X.
+              </p>
+              </td>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">[^[:</span><span class="identifier">X</span><span class="special">:]]</span></code>
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">\</span><span class="identifier">P</span><span class="special">{</span><span class="identifier">Name</span><span class="special">}</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                Matches any character that does not have the property Name.
+              </p>
+              </td>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">[^[:</span><span class="identifier">Name</span><span class="special">:]]</span></code>
+              </p>
+              </td>
+</tr>
+</tbody>
+</table></div>
+<p>
+        For example <code class="computeroutput"><span class="special">\</span><span class="identifier">pd</span></code>
+        matches any "digit" character, as does <code class="computeroutput"><span class="special">\</span><span class="identifier">p</span><span class="special">{</span><span class="identifier">digit</span><span class="special">}</span></code>.
+      </p>
+<a name="boost_regex.syntax.perl_syntax.word_boundaries"></a><h6>
+<a name="id539013"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.word_boundaries">Word Boundaries</a>
+      </h6>
+<p>
+        The following escape sequences match the boundaries of words:
+      </p>
+<p>
+        <code class="computeroutput"><span class="special">\&lt;</span></code> Matches the start of a
+        word.
+      </p>
+<p>
+        <code class="computeroutput"><span class="special">\&gt;</span></code> Matches the end of a word.
+      </p>
+<p>
+        <code class="computeroutput"><span class="special">\</span><span class="identifier">b</span></code>
+        Matches a word boundary (the start or end of a word).
+      </p>
+<p>
+        <code class="computeroutput"><span class="special">\</span><span class="identifier">B</span></code>
+        Matches only when not at a word boundary.
+      </p>
+<a name="boost_regex.syntax.perl_syntax.buffer_boundaries"></a><h6>
+<a name="id539115"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.buffer_boundaries">Buffer boundaries</a>
+      </h6>
+<p>
+        The following match only at buffer boundaries: a "buffer" in this
+        context is the whole of the input text that is being matched against (note
+        that ^ and $ may match embedded newlines within the text).
+      </p>
+<p>
+        \` Matches at the start of a buffer only.
+      </p>
+<p>
+        \' Matches at the end of a buffer only.
+      </p>
+<p>
+        \A Matches at the start of a buffer only (the same as \`).
+      </p>
+<p>
+        \z Matches at the end of a buffer only (the same as \').
+      </p>
+<p>
+        \Z Matches an optional sequence of newlines at the end of a buffer: equivalent
+        to the regular expression <code class="computeroutput"><span class="special">\</span><span class="identifier">n</span><span class="special">*\</span><span class="identifier">z</span></code>
+      </p>
+<a name="boost_regex.syntax.perl_syntax.continuation_escape"></a><h6>
+<a name="id539198"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.continuation_escape">Continuation
+        Escape</a>
+      </h6>
+<p>
+        The sequence <code class="computeroutput"><span class="special">\</span><span class="identifier">G</span></code>
+        matches only at the end of the last match found, or at the start of the text
+        being matched if no previous match was found. This escape useful if you're
+        iterating over the matches contained within a text, and you want each subsequence
+        match to start where the last one ended.
+      </p>
+<a name="boost_regex.syntax.perl_syntax.quoting_escape"></a><h6>
+<a name="id539248"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.quoting_escape">Quoting escape</a>
+      </h6>
+<p>
+        The escape sequence <code class="computeroutput"><span class="special">\</span><span class="identifier">Q</span></code>
+        begins a "quoted sequence": all the subsequent characters are treated
+        as literals, until either the end of the regular expression or \E is found.
+        For example the expression: <code class="computeroutput"><span class="special">\</span><span class="identifier">Q</span><span class="special">\*+\</span><span class="identifier">Ea</span><span class="special">+</span></code> would match either of:
+      </p>
+<pre class="programlisting"><span class="special">\*+</span><span class="identifier">a</span>
+<span class="special">\*+</span><span class="identifier">aaa</span>
+</pre>
+<a name="boost_regex.syntax.perl_syntax.unicode_escapes"></a><h6>
+<a name="id539354"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.unicode_escapes">Unicode escapes</a>
+      </h6>
+<p>
+        <code class="computeroutput"><span class="special">\</span><span class="identifier">C</span></code>
+        Matches a single code point: in Boost regex this has exactly the same effect
+        as a "." operator. <code class="computeroutput"><span class="special">\</span><span class="identifier">X</span></code> Matches a combining character sequence:
+        that is any non-combining character followed by a sequence of zero or more
+        combining characters.
+      </p>
+<a name="boost_regex.syntax.perl_syntax.any_other_escape"></a><h6>
+<a name="id539418"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.any_other_escape">Any other
+        escape</a>
+      </h6>
+<p>
+        Any other escape sequence matches the character that is escaped, for example
+        \@ matches a literal '@'.
+      </p>
+<a name="boost_regex.syntax.perl_syntax.perl_extended_patterns"></a><h5>
+<a name="id539447"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.perl_extended_patterns">Perl
+        Extended Patterns</a>
+      </h5>
+<p>
+        Perl-specific extensions to the regular expression syntax all start with
+        <code class="computeroutput"><span class="special">(?</span></code>.
+      </p>
+<a name="boost_regex.syntax.perl_syntax.comments"></a><h6>
+<a name="id539489"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.comments">Comments</a>
+      </h6>
+<p>
+        <code class="computeroutput"><span class="special">(?</span># <span class="special">...</span>
+        <span class="special">)</span></code> is treated as a comment, it's contents
+        are ignored.
+      </p>
+<a name="boost_regex.syntax.perl_syntax.modifiers"></a><h6>
+<a name="id539542"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.modifiers">Modifiers</a>
+      </h6>
+<p>
+        <code class="computeroutput"><span class="special">(?</span><span class="identifier">imsx</span><span class="special">-</span><span class="identifier">imsx</span> <span class="special">...</span> <span class="special">)</span></code> alters
+        which of the perl modifiers are in effect within the pattern, changes take
+        effect from the point that the block is first seen and extend to any enclosing
+        <code class="computeroutput"><span class="special">)</span></code>. Letters before a '-' turn
+        that perl modifier on, letters afterward, turn it off.
+      </p>
+<p>
+        <code class="computeroutput"><span class="special">(?</span><span class="identifier">imsx</span><span class="special">-</span><span class="identifier">imsx</span><span class="special">:</span><span class="identifier">pattern</span><span class="special">)</span></code>
+        applies the specified modifiers to pattern only.
+      </p>
+<a name="boost_regex.syntax.perl_syntax.non_marking_groups"></a><h6>
+<a name="id539669"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.non_marking_groups">Non-marking
+        groups</a>
+      </h6>
+<p>
+        <code class="computeroutput"><span class="special">(?:</span><span class="identifier">pattern</span><span class="special">)</span></code> lexically groups pattern, without generating
+        an additional sub-expression.
+      </p>
+<a name="boost_regex.syntax.perl_syntax.lookahead"></a><h6>
+<a name="id539720"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.lookahead">Lookahead</a>
+      </h6>
+<p>
+        <code class="computeroutput"><span class="special">(?=</span><span class="identifier">pattern</span><span class="special">)</span></code> consumes zero characters, only if pattern
+        matches.
+      </p>
+<p>
+        <code class="computeroutput"><span class="special">(?!</span><span class="identifier">pattern</span><span class="special">)</span></code> consumes zero characters, only if pattern
+        does not match.
+      </p>
+<p>
+        Lookahead is typically used to create the logical AND of two regular expressions,
+        for example if a password must contain a lower case letter, an upper case
+        letter, a punctuation symbol, and be at least 6 characters long, then the
+        expression:
+      </p>
+<pre class="programlisting"><span class="special">(?=.*[[:</span><span class="identifier">lower</span><span class="special">:]])(?=.*[[:</span><span class="identifier">upper</span><span class="special">:]])(?=.*[[:</span><span class="identifier">punct</span><span class="special">:]]).{</span><span class="number">6</span><span class="special">,}</span>
+</pre>
+<p>
+        could be used to validate the password.
+      </p>
+<a name="boost_regex.syntax.perl_syntax.lookbehind"></a><h6>
+<a name="id539861"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.lookbehind">Lookbehind</a>
+      </h6>
+<p>
+        <code class="computeroutput"><span class="special">(?&lt;=</span><span class="identifier">pattern</span><span class="special">)</span></code> consumes zero characters, only if pattern
+        could be matched against the characters preceding the current position (pattern
+        must be of fixed length).
+      </p>
+<p>
+        <code class="computeroutput"><span class="special">(?&lt;!</span><span class="identifier">pattern</span><span class="special">)</span></code> consumes zero characters, only if pattern
+        could not be matched against the characters preceding the current position
+        (pattern must be of fixed length).
+      </p>
+<a name="boost_regex.syntax.perl_syntax.independent_sub_expressions"></a><h6>
+<a name="id539939"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.independent_sub_expressions">Independent
+        sub-expressions</a>
+      </h6>
+<p>
+        <code class="computeroutput"><span class="special">(?&gt;</span><span class="identifier">pattern</span><span class="special">)</span></code> <span class="emphasis"><em>pattern</em></span> is matched
+        independently of the surrounding patterns, the expression will never backtrack
+        into <span class="emphasis"><em>pattern</em></span>. Independent sub-expressions are typically
+        used to improve performance; only the best possible match for pattern will
+        be considered, if this doesn't allow the expression as a whole to match then
+        no match is found at all.
+      </p>
+<a name="boost_regex.syntax.perl_syntax.conditional_expressions"></a><h6>
+<a name="id540003"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.conditional_expressions">Conditional
+        Expressions</a>
+      </h6>
+<p>
+        <code class="computeroutput"><span class="special">(?(</span><span class="identifier">condition</span><span class="special">)</span><span class="identifier">yes</span><span class="special">-</span><span class="identifier">pattern</span><span class="special">|</span><span class="identifier">no</span><span class="special">-</span><span class="identifier">pattern</span><span class="special">)</span></code> attempts to match <span class="emphasis"><em>yes-pattern</em></span>
+        if the <span class="emphasis"><em>condition</em></span> is true, otherwise attempts to match
+        <span class="emphasis"><em>no-pattern</em></span>.
+      </p>
+<p>
+        <code class="computeroutput"><span class="special">(?(</span><span class="identifier">condition</span><span class="special">)</span><span class="identifier">yes</span><span class="special">-</span><span class="identifier">pattern</span><span class="special">)</span></code>
+        attempts to match <span class="emphasis"><em>yes-pattern</em></span> if the <span class="emphasis"><em>condition</em></span>
+        is true, otherwise fails.
+      </p>
+<p>
+        <span class="emphasis"><em>condition</em></span> may be either a forward lookahead assert,
+        or the index of a marked sub-expression (the condition becomes true if the
+        sub-expression has been matched).
+      </p>
+<a name="boost_regex.syntax.perl_syntax.operator_precedence"></a><h5>
+<a name="id540172"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.operator_precedence">Operator
+        precedence</a>
+      </h5>
+<p>
+        The order of precedence for of operators is as follows:
+      </p>
+<div class="orderedlist"><ol type="1">
+<li>
+          Collation-related bracket symbols <code class="computeroutput"><span class="special">[==]</span>
+          <span class="special">[::]</span> <span class="special">[..]</span></code>
+</li>
+<li>
+          Escaped characters <code class="computeroutput"><span class="special">\</span></code>
+</li>
+<li>
+          Character set (bracket expression) <code class="computeroutput"><span class="special">[]</span></code>
+</li>
+<li>
+          Grouping <code class="computeroutput"><span class="special">()</span></code>
+</li>
+<li>
+          Single-character-ERE duplication <code class="computeroutput"><span class="special">*</span>
+          <span class="special">+</span> <span class="special">?</span> <span class="special">{</span><span class="identifier">m</span><span class="special">,</span><span class="identifier">n</span><span class="special">}</span></code>
+</li>
+<li>
+          Concatenation
+        </li>
+<li>
+          Anchoring ^$
+        </li>
+<li>
+          Alternation |
+        </li>
+</ol></div>
+<a name="boost_regex.syntax.perl_syntax.what_gets_matched"></a><h4>
+<a name="id540350"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.what_gets_matched">What gets
+        matched</a>
+      </h4>
+<p>
+        If you view the regular expression as a directed (possibly cyclic) graph,
+        then the best match found is the first match found by a depth-first-search
+        performed on that graph, while matching the input text.
+      </p>
+<p>
+        Alternatively:
+      </p>
+<p>
+        The best match found is the <a class="link" href="leftmost_longest_rule.html" title="The Leftmost Longest Rule">leftmost
+        match</a>, with individual elements matched as follows;
+      </p>
+<div class="informaltable"><table class="table">
+<colgroup>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>
+              <p>
+                Construct
+              </p>
+              </th>
+<th>
+              <p>
+                What gets matched
+              </p>
+              </th>
+</tr></thead>
+<tbody>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="identifier">AtomA</span> <span class="identifier">AtomB</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                Locates the best match for <span class="emphasis"><em>AtomA</em></span> that has a
+                following match for <span class="emphasis"><em>AtomB</em></span>.
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="identifier">Expression1</span> <span class="special">|</span>
+                <span class="identifier">Expression2</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                If <span class="emphasis"><em>Expresion1</em></span> can be matched then returns that
+                match, otherwise attempts to match <span class="emphasis"><em>Expression2</em></span>.
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="identifier">S</span><span class="special">{</span><span class="identifier">N</span><span class="special">}</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                Matches <span class="emphasis"><em>S</em></span> repeated exactly N times.
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="identifier">S</span><span class="special">{</span><span class="identifier">N</span><span class="special">,</span><span class="identifier">M</span><span class="special">}</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                Matches S repeated between N and M times, and as many times as possible.
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="identifier">S</span><span class="special">{</span><span class="identifier">N</span><span class="special">,</span><span class="identifier">M</span><span class="special">}?</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                Matches S repeated between N and M times, and as few times as possible.
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="identifier">S</span><span class="special">?,</span>
+                <span class="identifier">S</span><span class="special">*,</span>
+                <span class="identifier">S</span><span class="special">+</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                The same as <code class="computeroutput"><span class="identifier">S</span><span class="special">{</span><span class="number">0</span><span class="special">,</span><span class="number">1</span><span class="special">}</span></code>,
+                <code class="computeroutput"><span class="identifier">S</span><span class="special">{</span><span class="number">0</span><span class="special">,</span><span class="identifier">UINT_MAX</span><span class="special">}</span></code>,
+                <code class="computeroutput"><span class="identifier">S</span><span class="special">{</span><span class="number">1</span><span class="special">,</span><span class="identifier">UINT_MAX</span><span class="special">}</span></code>
+                respectively.
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="identifier">S</span><span class="special">??,</span>
+                <span class="identifier">S</span><span class="special">*?,</span>
+                <span class="identifier">S</span><span class="special">+?</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                The same as <code class="computeroutput"><span class="identifier">S</span><span class="special">{</span><span class="number">0</span><span class="special">,</span><span class="number">1</span><span class="special">}?</span></code>,
+                <code class="computeroutput"><span class="identifier">S</span><span class="special">{</span><span class="number">0</span><span class="special">,</span><span class="identifier">UINT_MAX</span><span class="special">}?</span></code>,
+                <code class="computeroutput"><span class="identifier">S</span><span class="special">{</span><span class="number">1</span><span class="special">,</span><span class="identifier">UINT_MAX</span><span class="special">}?</span></code>
+                respectively.
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">(?&gt;</span><span class="identifier">S</span><span class="special">)</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                Matches the best match for <span class="emphasis"><em>S</em></span>, and only that.
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">(?=</span><span class="identifier">S</span><span class="special">),</span> <span class="special">(?&lt;=</span><span class="identifier">S</span><span class="special">)</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                Matches only the best match for <span class="emphasis"><em>S</em></span> (this is only
+                visible if there are capturing parenthesis within <span class="emphasis"><em>S</em></span>).
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">(?!</span><span class="identifier">S</span><span class="special">),</span> <span class="special">(?&lt;!</span><span class="identifier">S</span><span class="special">)</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                Considers only whether a match for S exists or not.
+              </p>
+              </td>
+</tr>
+<tr>
+<td>
+              <p>
+                <code class="computeroutput"><span class="special">(?(</span><span class="identifier">condition</span><span class="special">)</span><span class="identifier">yes</span><span class="special">-</span><span class="identifier">pattern</span>
+                <span class="special">|</span> <span class="identifier">no</span><span class="special">-</span><span class="identifier">pattern</span><span class="special">)</span></code>
+              </p>
+              </td>
+<td>
+              <p>
+                If condition is true, then only yes-pattern is considered, otherwise
+                only no-pattern is considered.
+              </p>
+              </td>
+</tr>
+</tbody>
+</table></div>
+<a name="boost_regex.syntax.perl_syntax.variations"></a><h4>
+<a name="id541265"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.variations">Variations</a>
+      </h4>
+<p>
+        The <a class="link" href="../ref/syntax_option_type/syntax_option_type_perl.html" title="Options for Perl Regular Expressions">options
+        <code class="computeroutput"><span class="identifier">normal</span></code>, <code class="computeroutput"><span class="identifier">ECMAScript</span></code>,
+        <code class="computeroutput"><span class="identifier">JavaScript</span></code> and <code class="computeroutput"><span class="identifier">JScript</span></code></a> are all synonyms for <code class="computeroutput"><span class="identifier">perl</span></code>.
+      </p>
+<a name="boost_regex.syntax.perl_syntax.options"></a><h4>
+<a name="id541360"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.options">Options</a>
+      </h4>
+<p>
+        There are a <a class="link" href="../ref/syntax_option_type/syntax_option_type_perl.html" title="Options for Perl Regular Expressions">variety
+        of flags</a> that may be combined with the <code class="computeroutput"><span class="identifier">perl</span></code>
+        option when constructing the regular expression, in particular note that
+        the <code class="computeroutput"><span class="identifier">newline_alt</span></code> option alters
+        the syntax, while the <code class="computeroutput"><span class="identifier">collate</span></code>,
+        <code class="computeroutput"><span class="identifier">nosubs</span></code> and <code class="computeroutput"><span class="identifier">icase</span></code> options modify how the case and locale
+        sensitivity are to be applied.
+      </p>
+<a name="boost_regex.syntax.perl_syntax.pattern_modifiers"></a><h4>
+<a name="id541461"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.pattern_modifiers">Pattern
+        Modifiers</a>
+      </h4>
+<p>
+        The perl <code class="computeroutput"><span class="identifier">smix</span></code> modifiers can
+        either be applied using a <code class="computeroutput"><span class="special">(?</span><span class="identifier">smix</span><span class="special">-</span><span class="identifier">smix</span><span class="special">)</span></code> prefix to the regular expression, or with
+        one of the <a class="link" href="../ref/syntax_option_type/syntax_option_type_perl.html" title="Options for Perl Regular Expressions">regex-compile
+        time flags <code class="computeroutput"><span class="identifier">no_mod_m</span></code>, <code class="computeroutput"><span class="identifier">mod_x</span></code>, <code class="computeroutput"><span class="identifier">mod_s</span></code>,
+        and <code class="computeroutput"><span class="identifier">no_mod_s</span></code></a>.
+      </p>
+<a name="boost_regex.syntax.perl_syntax.references"></a><h4>
+<a name="id541588"></a>
+        <a class="link" href="perl_syntax.html#boost_regex.syntax.perl_syntax.references">References</a>
+      </h4>
+<p>
+        <a href="http://perldoc.perl.org/perlre.html" target="_top">Perl 5.8</a>.
+      </p>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 1998 -2007 John Maddock<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="../syntax.html"><img src="../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../syntax.html"><img src="../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="basic_extended.html"><img src="../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

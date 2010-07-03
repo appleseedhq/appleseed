@@ -1,0 +1,127 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Class timer</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../mpi/reference.html#header.boost.mpi.timer_hpp" title="Header &lt;boost/mpi/timer.hpp&gt;">
+<link rel="prev" href="status.html" title="Class status">
+<link rel="next" href="../../mpi/python.html" title="Python Bindings">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="status.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../mpi/reference.html#header.boost.mpi.timer_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="../../mpi/python.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.mpi.timer"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Class timer</span></h2>
+<p>boost::mpi::timer &#8212; A simple timer that provides access to the MPI timing facilities. </p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../mpi/reference.html#header.boost.mpi.timer_hpp" title="Header &lt;boost/mpi/timer.hpp&gt;">boost/mpi/timer.hpp</a>&gt;
+
+</em></span>
+<span class="bold"><strong>class</strong></span> <a class="link" href="timer.html" title="Class timer">timer</a> {
+<span class="bold"><strong>public</strong></span>:
+  <span class="emphasis"><em>// <a class="link" href="timer.html#boost.mpi.timerconstruct-copy-destruct">construct/copy/destruct</a></em></span>
+  <a class="link" href="timer.html#id1915101-bb">timer</a>();
+
+  <span class="emphasis"><em>// <a class="link" href="timer.html#id1915036-bb">public member functions</a></em></span>
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="timer.html#id1915039-bb">restart</a>() ;
+  <span class="type">double</span> <a class="link" href="timer.html#id1915059-bb">elapsed</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type">double</span> <a class="link" href="timer.html#id1915071-bb">elapsed_max</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type">double</span> <a class="link" href="timer.html#id1915085-bb">elapsed_min</a>() <span class="bold"><strong>const</strong></span>;
+
+  <span class="emphasis"><em>// <a class="link" href="timer.html#id1915114-bb">public static functions</a></em></span>
+  <span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>bool</strong></span></span> <a class="link" href="timer.html#id1915117-bb">time_is_global</a>() ;
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id2889030"></a><h2>Description</h2>
+<p>The <code class="computeroutput">timer</code> class is a simple wrapper around the MPI timing facilities that mimics the interface of the Boost Timer library. </p>
+<div class="refsect2" lang="en">
+<a name="id2889043"></a><h3>
+<a name="boost.mpi.timerconstruct-copy-destruct"></a><code class="computeroutput">timer</code> 
+        public
+       construct/copy/destruct</h3>
+<div class="orderedlist"><ol type="1"><li>
+<pre class="literallayout"><a name="id1915101-bb"></a>timer();</pre>
+<p>Initializes the timer</p>
+<p>
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody><tr>
+<td><p><span class="term">Postconditions:</span></p></td>
+<td><p><code class="computeroutput">elapsed()</code> == 0 </p></td>
+</tr></tbody>
+</table></div>
+</li></ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id2889098"></a><h3>
+<a name="id1915036-bb"></a><code class="computeroutput">timer</code> public member functions</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1915039-bb"></a>restart() ;</pre>
+<p>Restart the timer.</p>
+<p>
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody><tr>
+<td><p><span class="term">Postconditions:</span></p></td>
+<td><p><code class="computeroutput">elapsed()</code> == 0 </p></td>
+</tr></tbody>
+</table></div>
+</li>
+<li>
+<pre class="literallayout"><span class="type">double</span> <a name="id1915059-bb"></a>elapsed() <span class="bold"><strong>const</strong></span>;</pre>
+<p>Return the amount of time that has elapsed since the last construction or reset, in seconds. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">double</span> <a name="id1915071-bb"></a>elapsed_max() <span class="bold"><strong>const</strong></span>;</pre>
+<p>Return an estimate of the maximum possible value of elapsed(). Note that this routine may return too high a value on some systems. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">double</span> <a name="id1915085-bb"></a>elapsed_min() <span class="bold"><strong>const</strong></span>;</pre>
+<p>Returns the minimum non-zero value that <code class="computeroutput">elapsed()</code> may return. This is the resolution of the timer. </p>
+</li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id2889239"></a><h3>
+<a name="id1915114-bb"></a><code class="computeroutput">timer</code> public static functions</h3>
+<div class="orderedlist"><ol type="1"><li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>bool</strong></span></span> <a name="id1915117-bb"></a>time_is_global() ;</pre>
+<p>Determines whether the elapsed time values are global times or local processor times. </p>
+</li></ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2005-2007 Douglas Gregor,
+      Matthias Troyer, Trustees of Indiana University<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">
+        http://www.boost.org/LICENSE_1_0.txt </a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="status.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../mpi/reference.html#header.boost.mpi.timer_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="../../mpi/python.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+<head>
+  <meta http-equiv="Content-Language" content="en-us">
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+  <link href="pool.css" rel="stylesheet" type="text/css">
+
+  <title>Boost Pool Library</title>
+</head>
+
+<body>
+  <img src="../../../boost.png" width="276" height="86" alt="C++ Boost">
+
+  <h1 align="center">Boost Pool Library</h1>
+
+  <h2>Introduction</h2>
+
+  <h3>What is Pool?</h3>
+
+  <p>Pool allocation is a memory allocation scheme that is very fast, but 
+  limited in its usage. For more information on pool allocation (also called 
+  &quot;simple segregated storage&quot;), see <a href="concepts.html">the concepts 
+  document</a>.</p>
+
+  <h3>Why should I use Pool?</h3>
+
+  <p>Using Pools gives you more control over how memory is used in your 
+  program. For example, you could have a situation where you want to allocate 
+  a bunch of small objects at one point, and then reach a point in your 
+  program where none of them are needed any more. Using pool interfaces, you 
+  can choose to run their destructors or just drop them off into oblivion; the 
+  pool interface will guarantee that there are no system memory leaks.</p>
+
+  <h3>When should I use Pool?</h3>
+
+  <p>Pools are generally used when there is a lot of allocation and 
+  deallocation of small objects. Another common usage is the situation above, 
+  where many objects may be dropped out of memory.</p>
+
+  <p>In general, use Pools when you need a more efficient way to do unusual 
+  memory control.</p>
+
+  <h3>How do I use Pool?</h3>
+
+  <p>See the <a href="interfaces.html">pool interfaces document</a>, which 
+  covers the different Pool interfaces supplied by this library.</p>
+
+  <h2>Library Structure and Dependencies</h2>
+
+  <p>Forward declarations of all the exposed symbols for this library are in 
+  the header <span class="code">&lt;boost/pool/poolfwd.hpp&gt;</span>.</p>
+
+  <p>The library may use macros, which will be prefixed with <span class=
+  "code">BOOST_POOL_</span>. The exception to this rule are the include file 
+  guards, which (for file <em>xxx</em>.hpp) is <span class=
+  "code">BOOST_<em>xxx</em>_HPP</span>.</p>
+
+  <p>All exposed symbols defined by the library will be in namespace
+  <span class="code">boost</span>. All symbols used only by the implementation 
+  will be in namespace <span class=
+  "code">boost::details::pool</span>.</p>
+
+  <p>Every header used only by the implementation is in the subdirectory
+  <span class="code">detail/</span>.</p>
+
+  <p>Any header in the library may include any other header in the library or 
+  any system-supplied header at its discretion.</p>
+
+  <h2>Installation</h2>
+
+  <p>The Boost Pool library is a header file library. That means there is no 
+  .lib, .dll, or .so to build; just add the Boost directory to your compiler's 
+  include file path, and you should be good to go!</p>
+
+  <h2>Building the Test Programs</h2>
+
+  <p>The subdirectory &quot;build&quot; contains subdirectories for several different 
+  platforms. These subdirectories contain all necessary work-around code for 
+  that platform, as well as makefiles or IDE project files as appropriate.</p>
+
+  <p>Read the &quot;readme.txt&quot; in the proper subdirectory, if it exists.</p>
+
+  <p>The standard makefile targets are &quot;all&quot;, &quot;clean&quot; (which deletes any 
+  intermediate files), and &quot;veryclean&quot; (which deletes any intermediate files 
+  and executables). All intermediate and executable files are built in the 
+  same directory as the makefile/project file. If there is a project file 
+  supplied instead of a makefile, &quot;clean&quot; and &quot;veryclean&quot; shell scripts/batch 
+  files will be provided.</p>
+
+  <p>Project files and makefiles for additional platforms may be sent to 
+  Stephen Cleary at scleary AT jerviswebb DOT com.</p>
+
+  <h2>Documentation Map</h2>
+
+  <ul>
+    <li>Overview of Pooling
+
+      <ul>
+        <li><a href="concepts.html">concepts.html</a> - The basic ideas behind 
+        pooling.</li>
+
+        <li><a href=
+        "implementation/alignment.html">implementation/alignment.html</a> - 
+        How we guarantee alignment portably.</li>
+
+        <li><a href="interfaces.html">interfaces.html</a> - What interfaces 
+        are provided and when to use each one.</li>
+      </ul>
+    </li>
+
+    <li>Pool Exposed Interfaces
+
+      <ul>
+        <li><a href=
+        "interfaces/simple_segregated_storage.html">
+        interfaces/simple_segregated_storage.html</a>
+        - Not for the faint of heart; embedded programmers only.</li>
+
+        <li><a href="interfaces/pool.html">interfaces/pool.html</a> - The 
+        basic pool interface.</li>
+
+        <li><a href=
+        "interfaces/singleton_pool.html">interfaces/singleton_pool.html</a> - 
+        The basic pool interface as a thread-safe singleton.</li>
+
+        <li><a href=
+        "interfaces/object_pool.html">interfaces/object_pool.html</a> - A 
+        type-oriented (instead of size-oriented) pool interface.</li>
+
+        <li><a href=
+        "interfaces/pool_alloc.html">interfaces/pool_alloc.html</a> - A 
+        Standard Allocator pool interface based on singleton_pool.</li>
+
+        <li><a href=
+        "interfaces/user_allocator.html">interfaces/user_allocator.html</a> - 
+        OK, not a pool interface, but it describes how the user can control 
+        how Pools allocate system memory.</li>
+      </ul>
+    </li>
+
+    <li>Pool Implementation Details and Extensions
+
+      <ul>
+        <li>Interface Implementations and Extensions
+
+          <ul>
+            <li><a href=
+            "implementation/simple_segregated_storage.html">
+            implementation/simple_segregated_storage.html</a></li>
+
+            <li><a href=
+            "implementation/pool.html">implementation/pool.html</a></li>
+
+            <li><a href=
+            "implementation/singleton_pool.html">
+            implementation/singleton_pool.html</a></li>
+
+            <li><a href=
+            "implementation/object_pool.html">implementation/object_pool.html</a></li>
+
+            <li><a href=
+            "implementation/pool_alloc.html">implementation/pool_alloc.html</a></li>
+          </ul>
+        </li>
+
+        <li>Components Used Only by the Implementation
+
+          <ul>
+            <li><a href=
+            "implementation/ct_gcd_lcm.html">implementation/ct_gcd_lcm.html</a>
+            - Compile-time GCD and LCM.</li>
+
+            <li><a href="implementation/for.html">implementation/for.html</a>
+            - Description of an m4 component.</li>
+
+            <li><a href=
+            "implementation/gcd_lcm.html">implementation/gcd_lcm.html</a> - 
+            Run-time GCD and LCM.</li>
+
+            <li><a href=
+            "implementation/guard.html">implementation/guard.html</a> - Auto 
+            lock/unlock for mutex.</li>
+
+            <li><a href=
+            "implementation/mutex.html">implementation/mutex.html</a> - 
+            Platform-dependent mutex type.</li>
+
+            <li><a href=
+            "implementation/pool_construct.html">
+            implementation/pool_construct.html</a>
+            - The system for supporting more constructor arguments in 
+            object_pool.</li>
+
+            <li><a href=
+            "implementation/singleton.html">implementation/singleton.html</a>
+            - Singleton that avoids static initialization problem.</li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+
+  <h2>Future Directions</h2>
+
+  <p>Another pool interface will be written: a base class for per-class pool 
+  allocation.</p>
+
+  <h2>Acknowledgements</h2>
+
+  <p>Many, many thanks to the Boost peers, notably Jeff Garland, Beman Dawes, 
+  Ed Brey, Gary Powell, Peter Dimov, and Jens Maurer for providing helpful 
+  suggestions!</p>
+  <hr>
+
+  <p><a href="http://validator.w3.org/check?uri=referer"><img border="0" src=
+  "http://www.w3.org/Icons/valid-html401" alt="Valid HTML 4.01 Transitional"
+  height="31" width="88"></a></p>
+
+  <p>Revised 
+  <!--webbot bot="Timestamp" s-type="EDITED" s-format="%d %B, %Y" startspan -->05 December, 2006<!--webbot bot="Timestamp" endspan i-checksum="38516" --></p>
+
+  <p><i>Copyright &copy; 2000, 2001 Stephen Cleary (scleary AT jerviswebb DOT com)</i></p>
+
+  <p><i>Distributed under the Boost Software License, Version 1.0. (See 
+  accompanying file <a href="../../../LICENSE_1_0.txt">LICENSE_1_0.txt</a> or 
+  copy at <a href=
+  "http://www.boost.org/LICENSE_1_0.txt">http://www.boost.org/LICENSE_1_0.txt</a>)</i></p>
+</body>
+</html>

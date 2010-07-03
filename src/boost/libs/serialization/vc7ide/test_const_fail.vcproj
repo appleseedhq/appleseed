@@ -1,0 +1,493 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="7.10"
+	Name="test_const_warn"
+	ProjectGUID="{A7D4CC95-F2AC-11D6-9E47-525400E2CF85}"
+	Keyword="Win32Proj">
+	<Platforms>
+		<Platform
+			Name="Win32"/>
+	</Platforms>
+	<Configurations>
+		<Configuration
+			Name="Release runtime-static|Win32"
+			OutputDirectory="&quot;$(ProjectDir)../../../bin.v2/libs/serialization/test/$(ProjectName).test/msvc-7.1/release/link-static/&quot;"
+			IntermediateDirectory="&quot;$(ProjectDir)../../../bin.v2/libs/serialization/test/$(ProjectName).test/msvc-7.1/release/link-static/&quot;"
+			ConfigurationType="1">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="&quot;$(ProjectDir)..\..\..&quot;"
+				BufferSecurityCheck="FALSE"
+				EnableFunctionLevelLinking="TRUE"
+				TreatWChar_tAsBuiltInType="TRUE"
+				ForceConformanceInForLoopScope="TRUE"
+				RuntimeTypeInfo="TRUE"
+				WarningLevel="3"
+				DebugInformationFormat="1"
+				CompileAs="0"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				IgnoreImportLibrary="TRUE"
+				LinkIncremental="1"
+				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="&quot;$(ProjectDir)../../../bin.v2/libs/serialization/build/msvc-7.1/release/link-static/&quot;;&quot;$(ProjectDir)../../../bin.v2/libs/serialization/build/msvc-7.1/release/link-static/&quot;;abcd/&quot;"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="Debug runtime-dynamic|Win32"
+			OutputDirectory="&quot;$(ProjectDir)../../../bin.v2/libs/serialization/test/$(ProjectName).test/msvc-7.1/debug/threading-multi&quot;"
+			IntermediateDirectory="&quot;$(ProjectDir)../../../bin.v2/libs/serialization/test/$(ProjectName).test/msvc-7.1/debug/threading-multi&quot;"
+			ConfigurationType="1"
+			CharacterSet="0">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions="/Zm800"
+				Optimization="0"
+				ImproveFloatingPointConsistency="TRUE"
+				AdditionalIncludeDirectories="&quot;$(ProjectDir)..\..\..\&quot;"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
+				MinimalRebuild="FALSE"
+				RuntimeLibrary="3"
+				BufferSecurityCheck="FALSE"
+				EnableFunctionLevelLinking="TRUE"
+				TreatWChar_tAsBuiltInType="TRUE"
+				ForceConformanceInForLoopScope="TRUE"
+				RuntimeTypeInfo="TRUE"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="FALSE"
+				DebugInformationFormat="1"
+				CompileAs="0"/>
+			<Tool
+				Name="VCCustomBuildTool"
+				CommandLine="&quot;$(TargetDir)/$(TargetName).exe&quot;  &gt; &quot;$(TargetDir)/$(TargetName).output&quot;  2&gt;&amp;1
+set status=%ERRORLEVEL%
+echo.  &gt;&gt; &quot;$(TargetDir)/$(TargetName).output&quot;
+echo EXIT STATUS: %status%  &gt;&gt; &quot;$(TargetDir)/$(TargetName).output&quot;
+if %status% EQU 0 (
+copy  &quot;$(TargetDir)/$(TargetName).output&quot;  &quot;$(TargetDir)/$(TargetName).run&quot;
+)
+"
+				Outputs="&quot;$(TargetDir)$(TargetName).output&quot;"/>
+			<Tool
+				Name="VCLinkerTool"
+				IgnoreImportLibrary="TRUE"
+				LinkIncremental="2"
+				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="&quot;$(ProjectDir)../../../bin.v2/libs/serialization/build/msvc-7.1/debug/threading-multi&quot;;&quot;$(ProjectDir)../../../bin.v2/libs/serialization/build/msvc-7.1/debug/threading-multi&quot;;"
+				GenerateDebugInformation="TRUE"
+				SubSystem="1"
+				TargetMachine="1"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="Release runtime-static threading-multi|Win32"
+			OutputDirectory="&quot;$(ProjectDir)../../../bin.v2/libs/serialization/test/$(ProjectName).test/msvc-7.1/release/threading-multi/link-static&quot;"
+			IntermediateDirectory="&quot;$(ProjectDir)../../../bin.v2/libs/serialization/test/$(ProjectName).test/msvc-7.1/release/threading-multi/link-static&quot;"
+			ConfigurationType="1">
+			<Tool
+				Name="VCCLCompilerTool"
+				GlobalOptimizations="TRUE"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="TRUE"
+				ImproveFloatingPointConsistency="TRUE"
+				FavorSizeOrSpeed="1"
+				OmitFramePointers="TRUE"
+				AdditionalIncludeDirectories="&quot;$(ProjectDir)..\..\..&quot;"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
+				RuntimeLibrary="0"
+				BufferSecurityCheck="FALSE"
+				EnableFunctionLevelLinking="TRUE"
+				TreatWChar_tAsBuiltInType="TRUE"
+				ForceConformanceInForLoopScope="TRUE"
+				RuntimeTypeInfo="TRUE"
+				WarningLevel="3"
+				DebugInformationFormat="1"
+				CompileAs="0"/>
+			<Tool
+				Name="VCCustomBuildTool"
+				CommandLine="&quot;$(TargetDir)/$(TargetName).exe&quot;  &gt; &quot;$(TargetDir)/$(TargetName).output&quot;  2&gt;&amp;1
+set status=%ERRORLEVEL%
+echo.  &gt;&gt; &quot;$(TargetDir)/$(TargetName).output&quot;
+echo EXIT STATUS: %status%  &gt;&gt; &quot;$(TargetDir)/$(TargetName).output&quot;
+if %status% EQU 0 (
+copy  &quot;$(TargetDir)/$(TargetName).output&quot;  &quot;$(TargetDir)/$(TargetName).run&quot;
+)
+"
+				Outputs="&quot;$(TargetDir)$(TargetName).output&quot;"/>
+			<Tool
+				Name="VCLinkerTool"
+				IgnoreImportLibrary="TRUE"
+				LinkIncremental="1"
+				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="&quot;$(ProjectDir)../../../bin.v2/libs/serialization/build/msvc-7.1/release/threading-multi/link-static&quot;;&quot;$(ProjectDir)../../../bin.v2/libs/serialization/build/msvc-7.1/release/threading-multi/link-static&quot;;abcd&quot;"
+				SubSystem="1"
+				TargetMachine="1"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="Release runtime-dynamic|Win32"
+			OutputDirectory="&quot;$(ProjectDir)../../../bin.v2/libs/serialization/test/$(ProjectName).test/msvc-7.1/release/threading-multi&quot;"
+			IntermediateDirectory="&quot;$(ProjectDir)../../../bin.v2/libs/serialization/test/$(ProjectName).test/msvc-7.1/release/threading-multi&quot;"
+			ConfigurationType="1">
+			<Tool
+				Name="VCCLCompilerTool"
+				GlobalOptimizations="TRUE"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="TRUE"
+				ImproveFloatingPointConsistency="TRUE"
+				FavorSizeOrSpeed="1"
+				OmitFramePointers="TRUE"
+				AdditionalIncludeDirectories="&quot;$(ProjectDir)..\..\..&quot;"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
+				RuntimeLibrary="2"
+				BufferSecurityCheck="FALSE"
+				EnableFunctionLevelLinking="TRUE"
+				TreatWChar_tAsBuiltInType="TRUE"
+				ForceConformanceInForLoopScope="TRUE"
+				RuntimeTypeInfo="TRUE"
+				WarningLevel="3"
+				DebugInformationFormat="1"
+				CompileAs="0"/>
+			<Tool
+				Name="VCCustomBuildTool"
+				CommandLine="&quot;$(TargetDir)/$(TargetName).exe&quot;  &gt; &quot;$(TargetDir)/$(TargetName).output&quot;  2&gt;&amp;1
+set status=%ERRORLEVEL%
+echo.  &gt;&gt; &quot;$(TargetDir)/$(TargetName).output&quot;
+echo EXIT STATUS: %status%  &gt;&gt; &quot;$(TargetDir)/$(TargetName).output&quot;
+if %status% EQU 0 (
+copy  &quot;$(TargetDir)/$(TargetName).output&quot;  &quot;$(TargetDir)/$(TargetName).run&quot;
+)
+"
+				Outputs="&quot;$(TargetDir)$(TargetName).output&quot;"/>
+			<Tool
+				Name="VCLinkerTool"
+				IgnoreImportLibrary="TRUE"
+				LinkIncremental="1"
+				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="&quot;$(ProjectDir)../../../bin.v2/libs/serialization/build/msvc-7.1/release/threading-multi&quot;;&quot;$(ProjectDir)../../../bin.v2/libs/serialization/build/msvc-7.1/release/threading-multi&quot;;abcd&quot;"
+				SubSystem="1"
+				TargetMachine="1"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="Debug runtime-static|Win32"
+			OutputDirectory="&quot;$(ProjectDir)../../../bin.v2/libs/serialization/test/$(ProjectName).test/msvc-7.1/debug/link-static/&quot;"
+			IntermediateDirectory="&quot;$(ProjectDir)../../../bin.v2/libs/serialization/test/$(ProjectName).test/msvc-7.1/debug/link-static/&quot;"
+			ConfigurationType="1"
+			CharacterSet="0">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions="/Zm800"
+				Optimization="0"
+				ImproveFloatingPointConsistency="TRUE"
+				AdditionalIncludeDirectories="&quot;$(ProjectDir)..\..\..\&quot;"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
+				MinimalRebuild="FALSE"
+				RuntimeLibrary="5"
+				BufferSecurityCheck="FALSE"
+				EnableFunctionLevelLinking="TRUE"
+				TreatWChar_tAsBuiltInType="TRUE"
+				ForceConformanceInForLoopScope="TRUE"
+				RuntimeTypeInfo="TRUE"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="FALSE"
+				DebugInformationFormat="1"
+				CompileAs="0"/>
+			<Tool
+				Name="VCCustomBuildTool"
+				CommandLine="&quot;$(TargetDir)/$(TargetName).exe&quot;  &gt; &quot;$(TargetDir)/$(TargetName).output&quot;  2&gt;&amp;1
+set status=%ERRORLEVEL%
+echo.  &gt;&gt; &quot;$(TargetDir)/$(TargetName).output&quot;
+echo EXIT STATUS: %status%  &gt;&gt; &quot;$(TargetDir)/$(TargetName).output&quot;
+if %status% EQU 0 (
+copy  &quot;$(TargetDir)/$(TargetName).output&quot;  &quot;$(TargetDir)/$(TargetName).run&quot;
+)
+"
+				Outputs="&quot;$(TargetDir)$(TargetName).output&quot;"/>
+			<Tool
+				Name="VCLinkerTool"
+				IgnoreImportLibrary="TRUE"
+				LinkIncremental="2"
+				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="&quot;$(ProjectDir)../../../bin.v2/libs/serialization/build/msvc-7.1/debug/link-static/&quot;;&quot;$(ProjectDir)../../../bin.v2/libs/serialization/build/msvc-7.1/debug/link-static/&quot;;abcd/&quot;"
+				GenerateDebugInformation="TRUE"
+				SubSystem="1"
+				TargetMachine="1"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="Debug runtime-static threading-multi|Win32"
+			OutputDirectory="&quot;$(ProjectDir)../../../bin.v2/libs/serialization/test/$(ProjectName).test/msvc-7.1/debug/threading-multi/link-static&quot;"
+			IntermediateDirectory="&quot;$(ProjectDir)../../../bin.v2/libs/serialization/test/$(ProjectName).test/msvc-7.1/debug/threading-multi/link-static&quot;"
+			ConfigurationType="1"
+			CharacterSet="0">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions="/Zm800"
+				Optimization="0"
+				ImproveFloatingPointConsistency="TRUE"
+				AdditionalIncludeDirectories="&quot;$(ProjectDir)..\..\..\&quot;"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
+				MinimalRebuild="FALSE"
+				RuntimeLibrary="1"
+				BufferSecurityCheck="FALSE"
+				EnableFunctionLevelLinking="TRUE"
+				TreatWChar_tAsBuiltInType="TRUE"
+				ForceConformanceInForLoopScope="TRUE"
+				RuntimeTypeInfo="TRUE"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="FALSE"
+				DebugInformationFormat="1"
+				CompileAs="0"/>
+			<Tool
+				Name="VCCustomBuildTool"
+				CommandLine="&quot;$(TargetDir)/$(TargetName).exe&quot;  &gt; &quot;$(TargetDir)/$(TargetName).output&quot;  2&gt;&amp;1
+set status=%ERRORLEVEL%
+echo.  &gt;&gt; &quot;$(TargetDir)/$(TargetName).output&quot;
+echo EXIT STATUS: %status%  &gt;&gt; &quot;$(TargetDir)/$(TargetName).output&quot;
+if %status% EQU 0 (
+copy  &quot;$(TargetDir)/$(TargetName).output&quot;  &quot;$(TargetDir)/$(TargetName).run&quot;
+)
+"
+				Outputs="&quot;$(TargetDir)$(TargetName).output&quot;"/>
+			<Tool
+				Name="VCLinkerTool"
+				IgnoreImportLibrary="TRUE"
+				LinkIncremental="2"
+				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="&quot;$(ProjectDir)../../../bin.v2/libs/serialization/build/msvc-7.1/debug/threading-multi/link-static&quot;;&quot;$(ProjectDir)../../../bin.v2/libs/serialization/build/msvc-7.1/debug/threading-multi/link-static&quot;;"
+				GenerateDebugInformation="TRUE"
+				SubSystem="1"
+				TargetMachine="1"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="Debug runtime-dynamic threading-multi|Win32"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="1"
+			CharacterSet="0">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions="/Zm800"
+				Optimization="0"
+				ImproveFloatingPointConsistency="TRUE"
+				AdditionalIncludeDirectories="&quot;$(ProjectDir)..\..\..\&quot;"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
+				MinimalRebuild="FALSE"
+				RuntimeLibrary="1"
+				BufferSecurityCheck="FALSE"
+				EnableFunctionLevelLinking="TRUE"
+				TreatWChar_tAsBuiltInType="TRUE"
+				ForceConformanceInForLoopScope="TRUE"
+				RuntimeTypeInfo="TRUE"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="FALSE"
+				DebugInformationFormat="1"
+				CompileAs="0"/>
+			<Tool
+				Name="VCCustomBuildTool"
+				CommandLine="&quot;$(TargetDir)/$(TargetName).exe&quot;  &gt; &quot;$(TargetDir)/$(TargetName).output&quot;  2&gt;&amp;1
+set status=%ERRORLEVEL%
+echo.  &gt;&gt; &quot;$(TargetDir)/$(TargetName).output&quot;
+echo EXIT STATUS: %status%  &gt;&gt; &quot;$(TargetDir)/$(TargetName).output&quot;
+if %status% EQU 0 (
+copy  &quot;$(TargetDir)/$(TargetName).output&quot;  &quot;$(TargetDir)/$(TargetName).run&quot;
+)
+"
+				Outputs="&quot;$(TargetDir)$(TargetName).output&quot;"/>
+			<Tool
+				Name="VCLinkerTool"
+				IgnoreImportLibrary="TRUE"
+				LinkIncremental="2"
+				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="&quot;$(ProjectDir)../../../bin.v2/libs/serialization/build/msvc-7.1/debug/threading-multi/link-static&quot;;&quot;$(ProjectDir)../../../bin.v2/libs/serialization/build/msvc-7.1/debug/threading-multi/link-static&quot;;"
+				GenerateDebugInformation="TRUE"
+				SubSystem="1"
+				TargetMachine="1"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+	</Configurations>
+	<References>
+	</References>
+	<Files>
+		<File
+			RelativePath="..\test\test_const_load_fail1.cpp">
+		</File>
+		<File
+			RelativePath="..\test\test_const_load_fail1_nvp.cpp">
+		</File>
+		<File
+			RelativePath="..\test\test_const_load_fail2.cpp">
+		</File>
+		<File
+			RelativePath="..\test\test_const_load_fail2_nvp.cpp">
+		</File>
+		<File
+			RelativePath="..\test\test_const_load_fail3.cpp">
+		</File>
+		<File
+			RelativePath="..\test\test_const_load_fail3_nvp.cpp">
+		</File>
+		<File
+			RelativePath="..\test\test_const_save_warn1.cpp">
+		</File>
+		<File
+			RelativePath="..\test\test_const_save_warn1_nvp.cpp">
+		</File>
+		<File
+			RelativePath="..\test\test_const_save_warn2.cpp">
+		</File>
+		<File
+			RelativePath="..\test\test_const_save_warn2_nvp.cpp">
+		</File>
+		<File
+			RelativePath="..\test\test_const_save_warn3.cpp">
+		</File>
+		<File
+			RelativePath="..\test\test_const_save_warn3_nvp.cpp">
+		</File>
+	</Files>
+	<Globals>
+	</Globals>
+</VisualStudioProject>

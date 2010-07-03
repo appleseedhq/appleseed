@@ -1,0 +1,96 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+<head>
+  <meta http-equiv="Content-Language" content="en-us">
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+  <link href="../pool.css" rel="stylesheet" type="text/css">
+
+  <title>Simple Segregated Storage Implementation</title>
+</head>
+
+<body>
+  <img src="../../../../boost.png" width="276" height="86" alt="C++ Boost">
+
+  <h1 align="center">Simple Segregated Storage Implementation</h1>
+
+  <h2>Dependencies</h2>
+
+  <p>Includes the system headers <span class="code">&lt;cstddef&gt;</span>
+  and <span class="code">&lt;functional&gt;</span>.</p>
+
+  <h2>Protected Interface</h2>
+
+  <h3>Synopsis</h3>
+  <pre class="code">
+template &lt;typename SizeType = std::size_t&gt;
+class simple_segregated_storage
+{
+  ... // Public interface
+
+  protected:
+    void * first;
+    static void * &amp; nextof(void * const ptr);
+    void * find_prev(void * ptr);
+};
+</pre>
+
+  <h3 class="code">void * first;</h3>
+
+  <p>This data member is the free list. It points to the first chunk in the
+  free list, or is equal to 0 if the free list is empty.</p>
+
+  <h3 class="code">static void * &amp; nextof(void * const ptr);</h3>
+
+  <p>This is a convenience function. It helps clean up code dealing with the
+  free list by making it more readable. The return value is just <span class=
+  "code">*ptr</span> cast to the appropriate type. <span class=
+  "code">ptr</span> must not be 0.</p>
+
+  <p>As an example, let us assume that we want to truncate the free list
+  after the first chunk. That is, we want to set <span class=
+  "code">*first</span> to 0; this will result in a free list with only one
+  entry. The normal way to do this is to first cast <span class=
+  "code">first</span> to a pointer to a pointer to void, and then dereference
+  and assign (<span class="code">*static_cast&lt;void **&gt;(first) =
+  0;</span>). This can be done more easily through the use of this
+  convenience function (<span class="code">nextof(first) = 0;</span>).</p>
+
+  <h3 class="code">void * find_prev(void * ptr);</h3>
+
+  <p>Traverses the free list referred to by <span class="code">first</span>,
+  and returns the pointer previous to where <span class="code">ptr</span>
+  would go if it was in the free list. Returns 0 if <span class=
+  "code">ptr</span> would go at the beginning of the free list (i.e., before
+  <span class="code">first</span>).</p>
+
+  <p>Note that this function finds the location previous to where
+  <span class="code">ptr</span> <strong>would</strong> go <strong>if it
+  was</strong> in the free list. It does <strong>not</strong> find the entry
+  in the free list before <span class="code">ptr</span> (unless <span class=
+  "code">ptr</span> is already in the free list). Specifically, <span class=
+  "code">find_prev(0)</span> will return 0, <strong>not</strong> the last
+  entry in the free list.</p>
+
+  <h2><a href="../interfaces/simple_segregated_storage.html">Interface
+  Description</a></h2>
+  <hr>
+
+  <p><a href="http://validator.w3.org/check?uri=referer"><img border="0" src=
+  "http://www.w3.org/Icons/valid-html401" alt="Valid HTML 4.01 Transitional"
+  height="31" width="88"></a></p>
+
+  <p>Revised 
+  <!--webbot bot="Timestamp" s-type="EDITED" s-format="%d %B, %Y" startspan -->05
+  December, 2006<!--webbot bot="Timestamp" endspan i-checksum="38516" --></p>
+
+  <p><i>Copyright &copy; 2000, 2001 Stephen Cleary (scleary AT jerviswebb DOT
+  com)</i></p>
+
+  <p><i>Distributed under the Boost Software License, Version 1.0. (See
+  accompanying file <a href="../../../../LICENSE_1_0.txt">LICENSE_1_0.txt</a>
+  or copy at <a href=
+  "http://www.boost.org/LICENSE_1_0.txt">http://www.boost.org/LICENSE_1_0.txt</a>)</i></p>
+</body>
+</html>

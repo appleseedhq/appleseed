@@ -1,0 +1,20 @@
+# Copyright 2001 Dave Abrahams
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt)
+
+rule echo_args ( a b ? c ? : d + : e * )
+{
+    ECHO a= $(a) b= $(b) c= $(c) ":" d= $(d) ":" e= $(e) ;
+}
+
+rule echo_varargs ( a b ? c ? : d + : e * : * )
+{
+    ECHO a= $(a) b= $(b) c= $(c) ":" d= $(d) ":" e= $(e)
+      ": rest= "$(4[1]) $(4[2])
+      ": "$(5[1]) $(5[2])
+      ": "$(6[1]) $(6[2])
+      ": "$(7[1]) $(7[2])
+      ": "$(8[1]) $(8[2])
+      ": "$(9[1]) $(9[2]) ;
+}
+

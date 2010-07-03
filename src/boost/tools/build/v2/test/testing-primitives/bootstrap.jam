@@ -1,0 +1,137 @@
+# Copyright 2002 Dave Abrahams 
+# Distributed under the Boost Software License, Version 1.0. 
+# (See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt) 
+
+# Proof-of-concept for bjam-based testing mechanism. This file should
+# work on NT, Cygwin, and Linux. No promises for other platforms.
+
+# Set a variable which says how to dump a file to stdout
+if $(NT)
+{ 
+    CATENATE = type ;
+}
+else
+{
+    CATENATE = cat ;
+}
+
+# invoke the given action rule `act' to build target from sources
+rule do-make ( target : sources * : act )
+{
+    DEPENDS $(target) : $(sources) ;
+    $(act) $(target) : $(sources) ;
+}
+
+# top-level version of do-make which causes target to be built by
+# default
+rule make ( target : sources * : act )
+{
+    DEPENDS all : $(target) ;
+    do-make $(target) : $(sources) : $(act) ;
+}
+
+# cause `target' to exist and building to succeed if invoking
+#
+#    $(act) $(target) : $(sources)
+#
+# fails, and to fail if the action succeeds.
+rule make-fail ( target : sources * : act )
+{
+    # Establish another logical target which refers to the same file,
+    # by using different grist.
+    DEPENDS all : <different-grist>$(target) ;
+    
+    # Make the new logical target depend on the target
+    DEPENDS <different-grist>$(target) : $(target) ;
+    
+    # Cause the target to be built from sources using $(act).
+    do-make $(target) : $(sources) : $(act) ;
+    
+    # Note that we expect target to fail to build
+    FAIL_EXPECTED $(target) ;
+    
+    # Build a failure marker file. Because targets are only built if
+    # all their dependents "succeed", the marker will only be
+    # generated if $(target) failed to build, as expected.
+    failure-marker <different-grist>$(target) ;
+}
+
+# Simple action rules which write text into the target. Different
+# names for different purposes.
+actions failure-marker
+{
+    echo failed as expected > $(<)
+}
+
+actions create
+{
+    echo creating > $(<)
+}
+
+# An action which will always fail, for testing expected failure rules
+actions fail-to-create
+{
+    exit 1
+}
+
+# Basic rule-action pair which builds the target by executing the
+# given commands
+rule do-run ( target : commands + )
+{
+    COMMANDS on $(target) = $(commands) ;
+    NOTFILE $(commands) ;
+}
+
+# Run commands, leaving the output behind in $(<:S=.out). Echo to
+# stdout if the command fails.
+#
+#  Detailed explanation:
+#
+#  $(COMMANDS)                          Run commands
+#       > $(<:S=.out)                   into the output file
+#       2>&1                            including stderr
+#     &&                                and if that succeeds
+#       cp -f $(<:S=.out) $(<)          copy the output file into the target
+#  ||                                   otherwise
+#     ( $(CATENATE) $(<:S=.out)         dump any output to stdout
+#       && exit 1                       and exit with an error code
+#     )
+actions do-run
+{
+    $(COMMANDS) > $(<:S=.out) 2>&1 && cp -f $(<:S=.out) $(<) || ( $(CATENATE) $(<:S=.out) && exit 1 )
+}
+
+# top-level version of do-run which causes target to be built by
+# default
+rule run ( target : commands + )
+{
+    DEPENDS all : $(target) ;
+    do-run $(target) : $(commands) ;
+}
+
+# experimental expected-failure version of run. This doesn't have
+# quite the right semantics w.r.t. output dumping (it is still only
+# dumped if the run fails), but we don't need run-fail anyway so it
+# doesn't matter too much.
+rule run-fail ( target : commands + )
+{
+    make-fail $(target) : $(commands) : do-run ;
+}
+
+# A command which will always fail to run.  There is no file called
+# nonexistent, so executing $(error) always causes an error. We can't
+# just use `exit 1' below because that will cause all command
+# processing to stop, and we want the rest of the do-run action
+# command-line to execute.
+error = $(CATENATE)" nonexistent" ;
+
+make-fail t1.txt : : create ;
+make-fail t2.txt : : fail-to-create ;
+make t3.txt : : create ;
+make t4.txt : : fail-to-create ;
+
+run t5.txt : "( echo failing t5 && $(error) )" ;
+run t6.txt : echo hi ;
+
+run-fail t7.txt : "( echo failing t7 && $(error) )" ;
+run-fail t8.txt : echo hi ;

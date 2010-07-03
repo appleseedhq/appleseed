@@ -1,0 +1,218 @@
+<?xml version="1.0" standalone="no"?>
+<!--
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+
+<!DOCTYPE s1 SYSTEM "sbk:/style/dtd/document.dtd">
+
+<s1 title="Installation">
+
+    <ul>
+      <li><link anchor="Windows">Installation Instructions for Windows</link></li>
+      <li><link anchor="Unix">Installation Instructions for UNIX/Mac OS X/Linux</link></li>
+      <li><link anchor="Cygwin">Installation Instructions for Cygwin</link></li>
+    </ul>
+
+    <anchor name="Windows"/>
+    <s2 title="Windows">
+
+      <p>This section contains installation instructions for the Windows
+         platform.</p>
+
+      <s3 title="Source distribution">
+        <p>The &XercesCName; source is available in the source distribution:
+           &XercesCSrcInstallDir;.zip.</p>
+
+        <p>Install the &XercesCName; source distribution by using <code>unzip</code>
+		on the &XercesCSrcInstallDir;.zip archive in the Windows environment. You can
+		use WinZip, or any other UnZip utility:</p>
+<source>
+unzip &XercesCSrcInstallDir;.zip
+</source>
+        <p>This creates the &apos;&XercesCSrcInstallDir;&apos; sub-directory
+		containing the &XercesCName; source distribution. </p>
+
+        <p>If you need to build the &XercesCName; source after installation,
+        please follow the <jump href="build.html">Build Instructions</jump>.</p>
+
+      </s3>
+      <s3 title="Binary distribution">
+        <p>Install the &XercesCName; binary distribution by using <code>unzip</code>
+	   on the &XercesCInstallDir;-{arch}-windows-{compiler}.zip archive in
+           the Windows environment. Here {arch} denotes the CPU architecture
+           and {compiler} denotes the C++ compiler of your choice. You can use
+           WinZip, or any other UnZip utility. For example:</p>
+
+<source>
+unzip &XercesCInstallDir;-x86-windows-vc_8_0.zip
+</source>
+
+        <p>This creates a &apos;&XercesCInstallDir;-x86-windows-vc_8_0&apos;
+           sub-directory containing the &XercesCName; binary distribution.</p>
+
+        <p>You need to add the &apos;&XercesCInstallDir;-{arch}-windows-{compiler}\bin&apos;
+	   directory to your path.
+           To do this go to the start menu, click the settings menu and
+           select control panel. When the control panel opens, double
+           click on System and select the &apos;Environment&apos; tab.
+	   Locate the PATH variable under system variables and add
+           &lt;full-path-to-&XercesCInstallDir;-{arch}-windows-{compiler}>\bin
+           to the PATH variable.</p>
+
+        <p>The binary distribution contains the pre-built parser libraries
+           and sample executables. Please refer to the
+           <jump href="samples.html">Samples</jump> for how to run the
+           samples.</p>
+
+      </s3>
+    </s2>
+
+    <anchor name="Unix"/>
+    <s2 title="UNIX">
+
+      <p>This section contains installation instructions for the UNIX,
+         Linux, and Mac OS X platforms.</p>
+
+      <s3 title="Source distribution">
+        <p>The &XercesCName; source is available in the source distribution:
+           &XercesCSrcInstallDir;.tar.gz.</p>
+
+        <p>Install the &XercesCName; source distribution
+           &XercesCSrcInstallDir;.tar.gz by extracting the files
+           from the compressed archive:</p>
+<source>
+gzip -d &XercesCSrcInstallDir;.tar.gz
+tar -xf &XercesCSrcInstallDir;.tar
+</source>
+        <p>This creates the &apos;&XercesCSrcInstallDir;&apos; sub-directory
+	   containing the &XercesCName; source distribution. </p>
+
+        <p>If you need to build the &XercesCName; source after installation,
+           please follow the <jump href="build.html">Build Instructions</jump>.</p>
+
+      </s3>
+      <s3 title="Binary distribution">
+        <p>Install the binary distribution &XercesCInstallDir;-{arch}-{os}-{compiler}.tar.gz
+           by extracting the files from the compressed archive. Here {arch}
+           denotes the CPU architecture, {os} denotes the operating system,
+           and {compiler} denotes the C++ compiler of your choice.
+           For example:</p>
+<source>
+gzip -d &XercesCInstallDir;-x86-linux-gcc_3_4.tar.gz
+tar -xf &XercesCInstallDir;-x86-linux-gcc_3_4.tar
+</source>
+        <p>This will create an '&XercesCInstallDir;-x86-linux-gcc_3_4'
+           sub-directory containing the &XercesCName; binary distribution.</p>
+
+        <p>You will need to add the
+           &XercesCInstallDir;-{arch}-{os}-{compiler}/bin directory to your
+           PATH environment variable:</p>
+
+        <p>For Bourne Shell, K Shell or Bash, type: </p>
+<source>
+export PATH="$PATH:&lt;full-path-to-&XercesCInstallDir;-{arch}-{os}-{compiler}>/bin"
+</source>
+		<p>For C Shell, type:</p>
+<source>
+setenv PATH "$PATH:&lt;full-path-to-&XercesCInstallDir;-{arch}-{os}-{compiler}>/bin"
+</source>
+
+        <p>If you wish to make this setting permanent, you need to change
+	   your profile by changing your setup files which can be either
+           .profile or .kshrc.</p>
+
+        <p>In addition, you will also need to set the library search path.
+           (LIBPATH on AIX, LD_LIBRARY_PATH on Solaris and Linux,
+            SHLIB_PATH on HP-UX, and DYLD_LIBRARY_PATH on Mac OS X).</p>
+
+        <p>In the following shell commands, the &lt;xerces-path>
+           denotes the full path to the
+           &XercesCInstallDir;-{arch}-{os}-{compiler} directory. For
+           Bourne Shell, K Shell or Bash, type:</p>
+<source>
+export LIBPATH=&lt;xerces-path>/lib:$LIBPATH (AIX)
+export LD_LIBRARY_PATH=&lt;xerces-path>/lib:$LD_LIBRARY_PATH (Solaris, Linux)
+export SHLIB_PATH=&lt;xerces-path>/lib:$SHLIB_PATH (HP-UX)
+export DYLD_LIBRARY_PATH=&lt;xerces-path>/lib:$DYLD_LIBRARY_PATH (Mac OS X)
+</source>
+
+    	<p>For C Shell, type:</p>
+<source>
+setenv LIBPATH "&lt;xerces-path>/lib:$LIBPATH" (AIX)
+setenv LD_LIBRARY_PATH "&lt;xerces-path>/lib:$LD_LIBRARY_PATH" (Solaris, Linux)
+setenv SHLIB_PATH "&lt;xerces-path>/lib:$SHLIB_PATH" (HP-UX)
+setenv DYLD_LIBRARY_PATH "&lt;xerces-path>/lib:$DYLD_LIBRARY_PATH" (Mac OS X)
+</source>
+
+        <p>The binary distribution contains the pre-built parser libraries
+           and sample executables. Please refer to the
+           <jump href="samples.html">Samples</jump> for how to run the
+           samples.</p>
+      </s3>
+   </s2>
+
+    <anchor name="Cygwin"/>
+    <s2 title="Cygwin">
+
+      <p>This section contains installation instructions for the Cygwin
+         platform.</p>
+
+      <s3 title="Source distribution">
+        <p>The &XercesCName; source is available in the source distribution:
+           &XercesCSrcInstallDir;.tar.gz.</p>
+
+        <p>Install the &XercesCName; source distribution
+           &XercesCSrcInstallDir;.tar.gz by extracting the files
+           from the compressed archive:</p>
+<source>
+tar -xfz &XercesCSrcInstallDir;.tar.gz
+</source>
+        <p>This creates the &apos;&XercesCSrcInstallDir;&apos; sub-directory
+	   containing the &XercesCName; source distribution. </p>
+
+        <p>If you need to build the &XercesCName; source after installation,
+           please follow the <jump href="build.html">Build Instructions</jump>.
+        </p>
+
+      </s3>
+
+      <s3 title="Binary distribution">
+        <p>Install the binary distribution by running
+           <jump href="http://www.cygwin.com">Cygwin</jump> setup.exe.
+           When you reach the "Packages" step of the Cygwin Setup wizard,
+           expand the "Devel" category, then click in the "New" column next
+           to "xerces-c-devel" until it reads "&XercesCVersion;-X".</p>
+
+        <p>This will install the necessary libraries and include files
+           for the &XercesCName; binary distribution.</p>
+
+        <p>If you wish to run programs linked to &XercesCName; that were
+           built in the Cygwin environment, you need to add your Cygwin
+           "bin" directory to your Windows PATH environment variable.
+           In typical Cygwin installations, the bin directory is in the
+           Cygwin directory on the drive that windows is installed on.
+           For instance, if windows is installed to "C:\Windows\System32",
+           Your Cygwin bin directory may be "C:\cygwin\bin".</p>
+
+        <p>The binary distribution contains the pre-built parser libraries.
+           Sample executables may be available in a future release on the
+           Cygwin platform.  In the meantime, they may be built from the
+           source distribution by following the
+           <jump href="build.html">Build Instructions</jump> for
+          "Building samples".</p>
+      </s3>
+   </s2>
+</s1>

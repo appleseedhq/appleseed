@@ -1,0 +1,697 @@
+<HTML><HEAD><SCRIPT language="JavaScript" src="../resources/script.js" type="text/javascript"></SCRIPT><TITLE>Xerces-C++: XMLDocumentHandler Class Reference</TITLE><link href="XercesApi.css" rel="stylesheet" type="text/css"></HEAD><BODY alink="#ff0000" bgcolor="#ffffff" leftmargin="4" link="#0000ff" marginheight="4" marginwidth="4" text="#000000" topmargin="4" vlink="#0000aa"><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD align="left" height="60" rowspan="3" valign="top" width="135"><IMG border="0" height="60" hspace="0" src="../resources/logo.gif" vspace="0" width="135"></TD><TD align="left" colspan="4" height="5" valign="top" width="456"><IMG border="0" height="5" hspace="0" src="../resources/line.gif" vspace="0" width="456"></TD><TD align="left" height="60" rowspan="3" valign="top" width="29"><IMG border="0" height="60" hspace="0" src="../resources/right.gif" vspace="0" width="29"></TD></TR><TR><TD align="left" bgcolor="#0086b2" colspan="4" height="35" valign="top" width="456"><IMG alt="" border="0" height="35" hspace="0" src="../graphics/api-header.jpg" vspace="0" width="456"></TD></TR><TR><TD align="left" height="20" valign="top" width="168"><IMG border="0" height="20" hspace="0" src="../resources/bottom.gif" vspace="0" width="168"></TD><TD align="left" height="20" valign="top" width="96"><A href="http://xml.apache.org/" onMouseOut="rolloverOff('xml');" onMouseOver="rolloverOn('xml');" target="new"><IMG alt="http://xml.apache.org/" border="0" height="20" hspace="0" name="xml" onLoad="rolloverLoad('xml','../resources/button-xml-hi.gif','../resources/button-xml-lo.gif');" src="../resources/button-xml-lo.gif" vspace="0" width="96"></A></TD><TD align="left" height="20" valign="top" width="96"><A href="http://www.apache.org/" onMouseOut="rolloverOff('asf');" onMouseOver="rolloverOn('asf');" target="new"><IMG alt="http://www.apache.org/" border="0" height="20" hspace="0" name="asf" onLoad="rolloverLoad('asf','../resources/button-asf-hi.gif','../resources/button-asf-lo.gif');" src="../resources/button-asf-lo.gif" vspace="0" width="96"></A></TD><TD align="left" height="20" valign="top" width="96"><A href="http://www.w3.org/" onMouseOut="rolloverOff('w3c');" onMouseOver="rolloverOn('w3c');" target="new"><IMG alt="http://www.w3.org/" border="0" height="20" hspace="0" name="w3c" onLoad="rolloverLoad('w3c','../resources/button-w3c-hi.gif','../resources/button-w3c-lo.gif');" src="../resources/button-w3c-lo.gif" vspace="0" width="96"></A></TD></TR></TABLE><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD align="left" valign="top" width="120"><IMG border="0" height="14" hspace="0" src="../resources/join.gif" vspace="0" width="120"><BR>
+  <A href="../../index.html" onMouseOut="rolloverOff('side-ext-2');" onMouseOver="rolloverOn('side-ext-2');"><IMG alt="Home" border="0" height="12" hspace="0" name="side-ext-2" onLoad="rolloverLoad('side-ext-2','../graphics/ext-2-label-2.jpg','../graphics/ext-2-label-3.jpg');" src="../graphics/ext-2-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../index.html" onMouseOut="rolloverOff('side-index');" onMouseOver="rolloverOn('side-index');"><IMG alt="Readme" border="0" height="12" hspace="0" name="side-index" onLoad="rolloverLoad('side-index','../graphics/index-label-2.jpg','../graphics/index-label-3.jpg');" src="../graphics/index-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../charter.html" onMouseOut="rolloverOff('side-charter');" onMouseOver="rolloverOn('side-charter');"><IMG alt="Charter" border="0" height="12" hspace="0" name="side-charter" onLoad="rolloverLoad('side-charter','../graphics/charter-label-2.jpg','../graphics/charter-label-3.jpg');" src="../graphics/charter-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../releases.html" onMouseOut="rolloverOff('side-releases');" onMouseOver="rolloverOn('side-releases');"><IMG alt="Release Info" border="0" height="12" hspace="0" name="side-releases" onLoad="rolloverLoad('side-releases','../graphics/releases-label-2.jpg','../graphics/releases-label-3.jpg');" src="../graphics/releases-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../install.html" onMouseOut="rolloverOff('side-install');" onMouseOver="rolloverOn('side-install');"><IMG alt="Installation" border="0" height="12" hspace="0" name="side-install" onLoad="rolloverLoad('side-install','../graphics/install-label-2.jpg','../graphics/install-label-3.jpg');" src="../graphics/install-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="http://xerces.apache.org/xerces-c/download.cgi" onMouseOut="rolloverOff('side-ext-20');" onMouseOver="rolloverOn('side-ext-20');"><IMG alt="Download" border="0" height="12" hspace="0" name="side-ext-20" onLoad="rolloverLoad('side-ext-20','../graphics/ext-20-label-2.jpg','../graphics/ext-20-label-3.jpg');" src="../graphics/ext-20-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../build.html" onMouseOut="rolloverOff('side-build');" onMouseOver="rolloverOn('side-build');"><IMG alt="Build Instructions" border="0" height="12" hspace="0" name="side-build" onLoad="rolloverLoad('side-build','../graphics/build-label-2.jpg','../graphics/build-label-3.jpg');" src="../graphics/build-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../program.html" onMouseOut="rolloverOff('side-program');" onMouseOver="rolloverOn('side-program');"><IMG alt="Programming" border="0" height="12" hspace="0" name="side-program" onLoad="rolloverLoad('side-program','../graphics/program-label-2.jpg','../graphics/program-label-3.jpg');" src="../graphics/program-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../samples.html" onMouseOut="rolloverOff('side-samples');" onMouseOver="rolloverOn('side-samples');"><IMG alt="Samples" border="0" height="12" hspace="0" name="side-samples" onLoad="rolloverLoad('side-samples','../graphics/samples-label-2.jpg','../graphics/samples-label-3.jpg');" src="../graphics/samples-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../faqs.html" onMouseOut="rolloverOff('side-faqs');" onMouseOver="rolloverOn('side-faqs');"><IMG alt="FAQs" border="0" height="12" hspace="0" name="side-faqs" onLoad="rolloverLoad('side-faqs','../graphics/faqs-label-2.jpg','../graphics/faqs-label-3.jpg');" src="../graphics/faqs-label-3.jpg" vspace="0" width="120"></A><BR>
+
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../api.html" onMouseOut="rolloverOff('side-api');" onMouseOver="rolloverOn('side-api');"><IMG alt="API Docs" border="0" height="12" hspace="0" name="side-api" onLoad="rolloverLoad('side-api','../graphics/api-label-2.jpg','../graphics/api-label-3.jpg');" src="../graphics/api-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../ApacheDOMC++Binding.html" onMouseOut="rolloverOff('side-ext-88');" onMouseOver="rolloverOn('side-ext-88');"><IMG alt="DOM C++ Binding" border="0" height="12" hspace="0" name="side-ext-88" onLoad="rolloverLoad('side-ext-88','../graphics/ext-88-label-2.jpg','../graphics/ext-88-label-3.jpg');" src="../graphics/ext-88-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../migrate.html" onMouseOut="rolloverOff('side-migrate');" onMouseOver="rolloverOn('side-migrate');"><IMG alt="Migration Guide" border="0" height="12" hspace="0" name="side-migrate" onLoad="rolloverLoad('side-migrate','../graphics/migrate-label-2.jpg','../graphics/migrate-label-3.jpg');" src="../graphics/migrate-label-3.jpg" vspace="0" width="120"></A><BR>
+
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+    <A href="../feedback.html" onMouseOut="rolloverOff('side-feedback');" onMouseOver="rolloverOn('side-feedback');"><IMG alt="Feedback" border="0" height="12" hspace="0" name="side-feedback" onLoad="rolloverLoad('side-feedback','../graphics/feedback-label-2.jpg','../graphics/feedback-label-3.jpg');" src="../graphics/feedback-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../bug-report.html" onMouseOut="rolloverOff('side-bug-report');" onMouseOver="rolloverOn('side-bug-report');"><IMG alt="Bug-Reporting" border="0" height="12" hspace="0" name="side-bug-report" onLoad="rolloverLoad('side-bug-report','../graphics/bug-report-label-2.jpg','../graphics/bug-report-label-3.jpg');" src="../graphics/bug-report-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../mailing-lists.html" onMouseOut="rolloverOff('side-mailing-lists');" onMouseOver="rolloverOn('side-mailing-lists');"><IMG alt="Mailing Lists" border="0" height="12" hspace="0" name="side-mailing-lists" onLoad="rolloverLoad('side-mailing-lists','../graphics/mailing-lists-label-2.jpg','../graphics/mailing-lists-label-3.jpg');" src="../graphics/mailing-lists-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+    <A href="../source-repository.html" onMouseOut="rolloverOff('side-source-repository');" onMouseOver="rolloverOn('side-source-repository');"><IMG alt="Source Repository" border="0" height="12" hspace="0" name="side-source-repository" onLoad="rolloverLoad('side-source-repository','../graphics/source-repository-label-2.jpg','../graphics/source-repository-label-3.jpg');" src="../graphics/source-repository-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../applications.html" onMouseOut="rolloverOff('side-applications');" onMouseOver="rolloverOn('side-applications');"><IMG alt="Applications" border="0" height="12" hspace="0" name="side-applications" onLoad="rolloverLoad('side-applications','../graphics/applications-label-2.jpg','../graphics/applications-label-3.jpg');" src="../graphics/applications-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="14" hspace="0" src="../resources/close.gif" vspace="0" width="120"><BR></TD><TD align="left" valign="top" width="500"><TABLE border="0" cellpadding="3" cellspacing="0"><TR><TD>
+    <TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#FFFFFF" colspan="2" width="494"><TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#039acc" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#039acc" height="1" width="492"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#039acc" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" width="492"><FONT color="#ffffff" face="arial,helvetica,sanserif" size="+1"><IMG border="0" height="2" hspace="0" src="../resources/void.gif" vspace="0" width="2"><B>API Docs for SAX and DOM</B></FONT></TD><TD bgcolor="#017299" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#017299" height="1" width="492"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#017299" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></TD></TR><TR><TD width="10">&nbsp;</TD><TD width="484"><FONT color="#000000" face="arial,helvetica,sanserif">
+
+	    <P>
+<!-- Generated by Doxygen 1.5.3 -->
+<div class="tabs">
+  <ul>
+    <li><a href="index.html"><span>Main&nbsp;Page</span></a></li>
+    <li class="current"><a href="classes.html"><span>Classes</span></a></li>
+    <li><a href="files.html"><span>Files</span></a></li>
+    <li><a href="pages.html"><span>Related&nbsp;Pages</span></a></li>
+  </ul>
+</div>
+<div class="tabs">
+  <ul>
+    <li><a href="classes.html"><span>Alphabetical&nbsp;List</span></a></li>
+    <li><a href="annotated.html"><span>Class&nbsp;List</span></a></li>
+    <li><a href="hierarchy.html"><span>Class&nbsp;Hierarchy</span></a></li>
+    <li><a href="functions.html"><span>Class&nbsp;Members</span></a></li>
+  </ul>
+</div>
+<h1>XMLDocumentHandler Class Reference</h1><!-- doxytag: class="XMLDocumentHandler" -->This abstract class provides the interface for the scanner to return XML document information up to the parser as it scans through the document.  
+<a href="#_details">More...</a>
+<p>
+<div class="dynheader">
+Inheritance diagram for XMLDocumentHandler:</div>
+<div class="dynsection">
+<p><center><img src="classXMLDocumentHandler__inherit__graph.png" border="0" usemap="#XMLDocumentHandler__inherit__map" alt="Inheritance graph"></center>
+<map name="XMLDocumentHandler__inherit__map">
+<area shape="rect" href="classAbstractDOMParser.html" title="This class implements the Document Object Model (DOM) interface." alt="" coords="5,84,157,111"><area shape="rect" href="classSAXParser.html" title="This class implements the SAX &#39;Parser&#39; interface and should be used by applications..." alt="" coords="181,84,272,111"><area shape="rect" href="classXercesDOMParser.html" title="This class implements the Document Object Model (DOM) interface." alt="" coords="12,161,151,188"></map>
+<center><font size="2">[<a href="graph_legend.html">legend</a>]</font></center></div>
+
+<p>
+<a href="classXMLDocumentHandler-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
+<tr><td></td></tr>
+<tr><td colspan="2"><br><h2>Public Member Functions</h2></td></tr>
+<tr><td colspan="2"><div class="groupHeader">Destructor</div></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLDocumentHandler.html#60654a54cea7f1e3597ced0ead6ccad4">~XMLDocumentHandler</a> ()</td></tr>
+
+<tr><td colspan="2"><div class="groupHeader">The document handler interface</div></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLDocumentHandler.html#0464060874d15cbabea8d6b50cebbcfd">docCharacters</a> (const XMLCh *const chars, const unsigned int length, const bool cdataSection)=0</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Receive notification of character data.  <a href="#0464060874d15cbabea8d6b50cebbcfd"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLDocumentHandler.html#797efd9c442d68cce9ff3c33709f3205">docComment</a> (const XMLCh *const comment)=0</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Receive notification of comments in the XML content being parsed.  <a href="#797efd9c442d68cce9ff3c33709f3205"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLDocumentHandler.html#fe1ef8ce4db872d933e06bc338a0914f">docPI</a> (const XMLCh *const target, const XMLCh *const data)=0</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Receive notification of PI's parsed in the XML content.  <a href="#fe1ef8ce4db872d933e06bc338a0914f"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLDocumentHandler.html#6e18eebd0193230974b4b8d66afd9932">endDocument</a> ()=0</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Receive notification after the scanner has parsed the end of the document.  <a href="#6e18eebd0193230974b4b8d66afd9932"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLDocumentHandler.html#3f0fa424c89fdfeeefbc112ac66f2976">endElement</a> (const <a class="el" href="classXMLElementDecl.html">XMLElementDecl</a> &amp;elemDecl, const unsigned int uriId, const bool isRoot, const XMLCh *const prefixName=0)=0</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Receive notification of the end of an element.  <a href="#3f0fa424c89fdfeeefbc112ac66f2976"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLDocumentHandler.html#14b27af49a415848ea7e4f544622e8cc">endEntityReference</a> (const <a class="el" href="classXMLEntityDecl.html">XMLEntityDecl</a> &amp;entDecl)=0</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Receive notification when a referenced entity's content ends.  <a href="#14b27af49a415848ea7e4f544622e8cc"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLDocumentHandler.html#e9be0bef7de33e0e4d62400528379550">ignorableWhitespace</a> (const XMLCh *const chars, const unsigned int length, const bool cdataSection)=0</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Receive notification of ignorable whitespace in element content.  <a href="#e9be0bef7de33e0e4d62400528379550"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLDocumentHandler.html#549b9b77f35e2c7cb4c1722d034841bf">resetDocument</a> ()=0</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Reset the document handler's state, if required.  <a href="#549b9b77f35e2c7cb4c1722d034841bf"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLDocumentHandler.html#8b9e5f68340f083cd0eb69cc85692084">startDocument</a> ()=0</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Receive notification of the start of a new document.  <a href="#8b9e5f68340f083cd0eb69cc85692084"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLDocumentHandler.html#3451d565d85e4971a55e67b87847b667">startElement</a> (const <a class="el" href="classXMLElementDecl.html">XMLElementDecl</a> &amp;elemDecl, const unsigned int uriId, const XMLCh *const prefixName, const RefVectorOf&lt; <a class="el" href="classXMLAttr.html">XMLAttr</a> &gt; &amp;attrList, const unsigned int attrCount, const bool isEmpty, const bool isRoot)=0</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Receive notification of a new start tag.  <a href="#3451d565d85e4971a55e67b87847b667"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLDocumentHandler.html#2d3ab93a0191825f8452a4980d163f37">startEntityReference</a> (const <a class="el" href="classXMLEntityDecl.html">XMLEntityDecl</a> &amp;entDecl)=0</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Receive notification when the scanner hits an entity reference.  <a href="#2d3ab93a0191825f8452a4980d163f37"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLDocumentHandler.html#262b2d7e996c21b466f4e573c052a583">XMLDecl</a> (const XMLCh *const versionStr, const XMLCh *const encodingStr, const XMLCh *const standaloneStr, const XMLCh *const autoEncodingStr)=0</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Receive notification of an XML declaration.  <a href="#262b2d7e996c21b466f4e573c052a583"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLDocumentHandler.html#1b97692134ab156bc68839903c6d4598">elementTypeInfo</a> (const XMLCh *const , const XMLCh *const )</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Receive notification of the name and namespace of the type that validated the element corresponding to the most recent endElement event.  <a href="#1b97692134ab156bc68839903c6d4598"></a><br></td></tr>
+<tr><td colspan="2"><br><h2>Protected Member Functions</h2></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLDocumentHandler.html#4a9b42209dd6e8cf0ea73cc5a7c7a23f">XMLDocumentHandler</a> ()</td></tr>
+
+</table>
+<hr><a name="_details"></a><h2>Detailed Description</h2>
+This abstract class provides the interface for the scanner to return XML document information up to the parser as it scans through the document. 
+<p>
+The interface is very similar to org.sax.DocumentHandler, but has some extra methods required to get all the data out. <hr><h2>Constructor &amp; Destructor Documentation</h2>
+<a class="anchor" name="60654a54cea7f1e3597ced0ead6ccad4"></a><!-- doxytag: member="XMLDocumentHandler::~XMLDocumentHandler" ref="60654a54cea7f1e3597ced0ead6ccad4" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual XMLDocumentHandler::~XMLDocumentHandler           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="4a9b42209dd6e8cf0ea73cc5a7c7a23f"></a><!-- doxytag: member="XMLDocumentHandler::XMLDocumentHandler" ref="4a9b42209dd6e8cf0ea73cc5a7c7a23f" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">XMLDocumentHandler::XMLDocumentHandler           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [protected]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<hr><h2>Member Function Documentation</h2>
+<a class="anchor" name="0464060874d15cbabea8d6b50cebbcfd"></a><!-- doxytag: member="XMLDocumentHandler::docCharacters" ref="0464060874d15cbabea8d6b50cebbcfd" args="(const XMLCh *const chars, const unsigned int length, const bool cdataSection)=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void XMLDocumentHandler::docCharacters           </td>
+          <td>(</td>
+          <td class="paramtype">const XMLCh *const &nbsp;</td>
+          <td class="paramname"> <em>chars</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const unsigned int&nbsp;</td>
+          <td class="paramname"> <em>length</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const bool&nbsp;</td>
+          <td class="paramname"> <em>cdataSection</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Receive notification of character data. 
+<p>
+The scanner will call this method to report each chunk of character data. The scanner may return all contiguous character data in a single chunk, or they may split it into several chunks; however, all of the characters in any single event will come from the same external entity, so that the <a class="el" href="classLocator.html" title="Interface for associating a SAX event with a document location.">Locator</a> provides useful information.<p>
+The parser must not attempt to read from the array outside of the specified range.<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>chars</em>&nbsp;</td><td>The content (characters) between markup from the XML document. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>length</em>&nbsp;</td><td>The number of characters to read from the array. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>cdataSection</em>&nbsp;</td><td>Indicates that this data is inside a CDATA section. </td></tr>
+  </table>
+</dl>
+<dl class="see" compact><dt><b>See also:</b></dt><dd><a class="el" href="classXMLDocumentHandler.html#e9be0bef7de33e0e4d62400528379550" title="Receive notification of ignorable whitespace in element content.">ignorableWhitespace</a> <p>
+<a class="el" href="classLocator.html" title="Interface for associating a SAX event with a document location.">Locator</a> </dd></dl>
+
+<p>Implemented in <a class="el" href="classAbstractDOMParser.html#12af34806fb5d57b1cb962099b9c2226">AbstractDOMParser</a>, and <a class="el" href="classSAXParser.html#b0226b9cfccdcfdfd94440241523e0ba">SAXParser</a>.</p>
+
+</div>
+</div><p>
+<a class="anchor" name="797efd9c442d68cce9ff3c33709f3205"></a><!-- doxytag: member="XMLDocumentHandler::docComment" ref="797efd9c442d68cce9ff3c33709f3205" args="(const XMLCh *const comment)=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void XMLDocumentHandler::docComment           </td>
+          <td>(</td>
+          <td class="paramtype">const XMLCh *const &nbsp;</td>
+          <td class="paramname"> <em>comment</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Receive notification of comments in the XML content being parsed. 
+<p>
+This scanner will call this method for any comments found in the content of the document.<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>comment</em>&nbsp;</td><td>The text of the comment. </td></tr>
+  </table>
+</dl>
+
+<p>Implemented in <a class="el" href="classAbstractDOMParser.html#08f557b37eaeb55a2f613154a553de60">AbstractDOMParser</a>, and <a class="el" href="classSAXParser.html#e608bb669fa024fd0e77b05d16c0712f">SAXParser</a>.</p>
+
+</div>
+</div><p>
+<a class="anchor" name="fe1ef8ce4db872d933e06bc338a0914f"></a><!-- doxytag: member="XMLDocumentHandler::docPI" ref="fe1ef8ce4db872d933e06bc338a0914f" args="(const XMLCh *const target, const XMLCh *const data)=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void XMLDocumentHandler::docPI           </td>
+          <td>(</td>
+          <td class="paramtype">const XMLCh *const &nbsp;</td>
+          <td class="paramname"> <em>target</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const XMLCh *const &nbsp;</td>
+          <td class="paramname"> <em>data</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Receive notification of PI's parsed in the XML content. 
+<p>
+The scanner will call this method for any PIs it finds within the content of the document.<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>target</em>&nbsp;</td><td>The name of the PI. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>data</em>&nbsp;</td><td>The body of the PI. This may be an empty string since the body is optional. </td></tr>
+  </table>
+</dl>
+
+<p>Implemented in <a class="el" href="classAbstractDOMParser.html#30231b0fb2f18b2320c9c025a745d8bc">AbstractDOMParser</a>, and <a class="el" href="classSAXParser.html#008a9ea295ae510e4b8cc3d2aa6a7a06">SAXParser</a>.</p>
+
+</div>
+</div><p>
+<a class="anchor" name="6e18eebd0193230974b4b8d66afd9932"></a><!-- doxytag: member="XMLDocumentHandler::endDocument" ref="6e18eebd0193230974b4b8d66afd9932" args="()=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void XMLDocumentHandler::endDocument           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Receive notification after the scanner has parsed the end of the document. 
+<p>
+The scanner will call this method when the current document has been fully parsed. The handler may use this opportunity to do something with the data, clean up temporary data, etc... 
+<p>Implemented in <a class="el" href="classAbstractDOMParser.html#bb7c57d3f534c0af06033a615a359ffb">AbstractDOMParser</a>, and <a class="el" href="classSAXParser.html#ca357ea61a0c3af9f41b7c0d2b527410">SAXParser</a>.</p>
+
+</div>
+</div><p>
+<a class="anchor" name="3f0fa424c89fdfeeefbc112ac66f2976"></a><!-- doxytag: member="XMLDocumentHandler::endElement" ref="3f0fa424c89fdfeeefbc112ac66f2976" args="(const XMLElementDecl &amp;elemDecl, const unsigned int uriId, const bool isRoot, const XMLCh *const prefixName=0)=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void XMLDocumentHandler::endElement           </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classXMLElementDecl.html">XMLElementDecl</a> &amp;&nbsp;</td>
+          <td class="paramname"> <em>elemDecl</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const unsigned int&nbsp;</td>
+          <td class="paramname"> <em>uriId</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const bool&nbsp;</td>
+          <td class="paramname"> <em>isRoot</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const XMLCh *const &nbsp;</td>
+          <td class="paramname"> <em>prefixName</em> = <code>0</code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Receive notification of the end of an element. 
+<p>
+This method is called when scanner encounters the end of element tag. There will be a corresponding <a class="el" href="classXMLDocumentHandler.html#3451d565d85e4971a55e67b87847b667" title="Receive notification of a new start tag.">startElement()</a> event for every <a class="el" href="classXMLDocumentHandler.html#3f0fa424c89fdfeeefbc112ac66f2976" title="Receive notification of the end of an element.">endElement()</a> event, but not necessarily the other way around. For empty tags, there is only a <a class="el" href="classXMLDocumentHandler.html#3451d565d85e4971a55e67b87847b667" title="Receive notification of a new start tag.">startElement()</a> call.<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>elemDecl</em>&nbsp;</td><td>The name of the element whose end tag was just parsed. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>uriId</em>&nbsp;</td><td>The ID of the URI in the URI pool (only valid if name spaces is enabled) </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>isRoot</em>&nbsp;</td><td>Indicates if this is the root element. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>prefixName</em>&nbsp;</td><td>The string representing the prefix name </td></tr>
+  </table>
+</dl>
+
+<p>Implemented in <a class="el" href="classAbstractDOMParser.html#319f5a6e8a37352d0b4e8c024326a34e">AbstractDOMParser</a>, and <a class="el" href="classSAXParser.html#85ab9011a4fc5fa2dd1fe249a84fde7a">SAXParser</a>.</p>
+
+</div>
+</div><p>
+<a class="anchor" name="14b27af49a415848ea7e4f544622e8cc"></a><!-- doxytag: member="XMLDocumentHandler::endEntityReference" ref="14b27af49a415848ea7e4f544622e8cc" args="(const XMLEntityDecl &amp;entDecl)=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void XMLDocumentHandler::endEntityReference           </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classXMLEntityDecl.html">XMLEntityDecl</a> &amp;&nbsp;</td>
+          <td class="paramname"> <em>entDecl</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Receive notification when a referenced entity's content ends. 
+<p>
+This method is called when scanner encounters the end of an entity reference.<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>entDecl</em>&nbsp;</td><td>The name of the entity reference just scanned. </td></tr>
+  </table>
+</dl>
+
+<p>Implemented in <a class="el" href="classAbstractDOMParser.html#1c2f05ebc3b268c907892a835d404b76">AbstractDOMParser</a>, and <a class="el" href="classSAXParser.html#13fe47a691ef6fac187a6f56bc9194ef">SAXParser</a>.</p>
+
+</div>
+</div><p>
+<a class="anchor" name="e9be0bef7de33e0e4d62400528379550"></a><!-- doxytag: member="XMLDocumentHandler::ignorableWhitespace" ref="e9be0bef7de33e0e4d62400528379550" args="(const XMLCh *const chars, const unsigned int length, const bool cdataSection)=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void XMLDocumentHandler::ignorableWhitespace           </td>
+          <td>(</td>
+          <td class="paramtype">const XMLCh *const &nbsp;</td>
+          <td class="paramname"> <em>chars</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const unsigned int&nbsp;</td>
+          <td class="paramname"> <em>length</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const bool&nbsp;</td>
+          <td class="paramname"> <em>cdataSection</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Receive notification of ignorable whitespace in element content. 
+<p>
+Validating Parsers must use this method to report each chunk of ignorable whitespace (see the W3C XML 1.0 recommendation, section 2.10): non-validating parsers may also use this method if they are capable of parsing and using content models.<p>
+The scanner may return all contiguous whitespace in a single chunk, or it may split it into several chunks; however, all of the characters in any single event will come from the same external entity, so that the <a class="el" href="classLocator.html" title="Interface for associating a SAX event with a document location.">Locator</a> provides useful information.<p>
+The parser must not attempt to read from the array outside of the specified range.<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>chars</em>&nbsp;</td><td>The whitespace characters from the XML document. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>length</em>&nbsp;</td><td>The number of characters to read from the array. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>cdataSection</em>&nbsp;</td><td>Indicates that this data is inside a CDATA section. </td></tr>
+  </table>
+</dl>
+<dl class="see" compact><dt><b>See also:</b></dt><dd>characters </dd></dl>
+
+<p>Implemented in <a class="el" href="classAbstractDOMParser.html#67d0a4a9fda7c500202319a73aebb9ef">AbstractDOMParser</a>, and <a class="el" href="classSAXParser.html#7fed4cbf16715e2d4fc07afdd2c21be5">SAXParser</a>.</p>
+
+</div>
+</div><p>
+<a class="anchor" name="549b9b77f35e2c7cb4c1722d034841bf"></a><!-- doxytag: member="XMLDocumentHandler::resetDocument" ref="549b9b77f35e2c7cb4c1722d034841bf" args="()=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void XMLDocumentHandler::resetDocument           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Reset the document handler's state, if required. 
+<p>
+This method is used to give the registered document handler a chance to reset itself. Its called by the scanner at the start of every parse. 
+<p>Implemented in <a class="el" href="classAbstractDOMParser.html#3e44b67a73b176ae2008e9b8456a5303">AbstractDOMParser</a>, and <a class="el" href="classSAXParser.html#73e6cccf5be40a3fd5420a2ec5f87560">SAXParser</a>.</p>
+
+</div>
+</div><p>
+<a class="anchor" name="8b9e5f68340f083cd0eb69cc85692084"></a><!-- doxytag: member="XMLDocumentHandler::startDocument" ref="8b9e5f68340f083cd0eb69cc85692084" args="()=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void XMLDocumentHandler::startDocument           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Receive notification of the start of a new document. 
+<p>
+This method is the first callback called the scanner at the start of every parse. This is before any content is parsed. 
+<p>Implemented in <a class="el" href="classAbstractDOMParser.html#fc976fb345020556c01da681162bae1a">AbstractDOMParser</a>, and <a class="el" href="classSAXParser.html#7a98e15c9e3f792c383a5c0ccf40355e">SAXParser</a>.</p>
+
+</div>
+</div><p>
+<a class="anchor" name="3451d565d85e4971a55e67b87847b667"></a><!-- doxytag: member="XMLDocumentHandler::startElement" ref="3451d565d85e4971a55e67b87847b667" args="(const XMLElementDecl &amp;elemDecl, const unsigned int uriId, const XMLCh *const prefixName, const RefVectorOf&lt; XMLAttr &gt; &amp;attrList, const unsigned int attrCount, const bool isEmpty, const bool isRoot)=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void XMLDocumentHandler::startElement           </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classXMLElementDecl.html">XMLElementDecl</a> &amp;&nbsp;</td>
+          <td class="paramname"> <em>elemDecl</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const unsigned int&nbsp;</td>
+          <td class="paramname"> <em>uriId</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const XMLCh *const &nbsp;</td>
+          <td class="paramname"> <em>prefixName</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const RefVectorOf&lt; <a class="el" href="classXMLAttr.html">XMLAttr</a> &gt; &amp;&nbsp;</td>
+          <td class="paramname"> <em>attrList</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const unsigned int&nbsp;</td>
+          <td class="paramname"> <em>attrCount</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const bool&nbsp;</td>
+          <td class="paramname"> <em>isEmpty</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const bool&nbsp;</td>
+          <td class="paramname"> <em>isRoot</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Receive notification of a new start tag. 
+<p>
+This method is called when scanner encounters the start of an element tag. All elements must always have a <a class="el" href="classXMLDocumentHandler.html#3451d565d85e4971a55e67b87847b667" title="Receive notification of a new start tag.">startElement()</a> tag. Empty tags will only have the <a class="el" href="classXMLDocumentHandler.html#3451d565d85e4971a55e67b87847b667" title="Receive notification of a new start tag.">startElement()</a> tag and no <a class="el" href="classXMLDocumentHandler.html#3f0fa424c89fdfeeefbc112ac66f2976" title="Receive notification of the end of an element.">endElement()</a> tag.<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>elemDecl</em>&nbsp;</td><td>The name of the element whose start tag was just parsed. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>uriId</em>&nbsp;</td><td>The ID of the URI in the URI pool (only valid if name spaces is enabled) </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>prefixName</em>&nbsp;</td><td>The string representing the prefix name </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>attrList</em>&nbsp;</td><td>List of attributes in the element </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>attrCount</em>&nbsp;</td><td>Count of the attributes in the element </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>isEmpty</em>&nbsp;</td><td>Indicates if the element is empty, in which case you should not expect an <a class="el" href="classXMLDocumentHandler.html#3f0fa424c89fdfeeefbc112ac66f2976" title="Receive notification of the end of an element.">endElement()</a> event. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>isRoot</em>&nbsp;</td><td>Indicates if this is the root element. </td></tr>
+  </table>
+</dl>
+
+<p>Implemented in <a class="el" href="classAbstractDOMParser.html#87bb608b3fa7b22003a4f543e02ed2d4">AbstractDOMParser</a>, and <a class="el" href="classSAXParser.html#4f6bb903178049f6a0ea31396a9f6d13">SAXParser</a>.</p>
+
+</div>
+</div><p>
+<a class="anchor" name="2d3ab93a0191825f8452a4980d163f37"></a><!-- doxytag: member="XMLDocumentHandler::startEntityReference" ref="2d3ab93a0191825f8452a4980d163f37" args="(const XMLEntityDecl &amp;entDecl)=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void XMLDocumentHandler::startEntityReference           </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classXMLEntityDecl.html">XMLEntityDecl</a> &amp;&nbsp;</td>
+          <td class="paramname"> <em>entDecl</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Receive notification when the scanner hits an entity reference. 
+<p>
+This is currently useful only to DOM parser configurations as SAX does not provide any api to return this information.<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>entDecl</em>&nbsp;</td><td>The name of the entity that was referenced. </td></tr>
+  </table>
+</dl>
+
+<p>Implemented in <a class="el" href="classAbstractDOMParser.html#105406e05fe167a833b4fde25c7676f1">AbstractDOMParser</a>, and <a class="el" href="classSAXParser.html#9b7a5e8108844fdc07c9e89a9968f69b">SAXParser</a>.</p>
+
+</div>
+</div><p>
+<a class="anchor" name="262b2d7e996c21b466f4e573c052a583"></a><!-- doxytag: member="XMLDocumentHandler::XMLDecl" ref="262b2d7e996c21b466f4e573c052a583" args="(const XMLCh *const versionStr, const XMLCh *const encodingStr, const XMLCh *const standaloneStr, const XMLCh *const autoEncodingStr)=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void XMLDocumentHandler::XMLDecl           </td>
+          <td>(</td>
+          <td class="paramtype">const XMLCh *const &nbsp;</td>
+          <td class="paramname"> <em>versionStr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const XMLCh *const &nbsp;</td>
+          <td class="paramname"> <em>encodingStr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const XMLCh *const &nbsp;</td>
+          <td class="paramname"> <em>standaloneStr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const XMLCh *const &nbsp;</td>
+          <td class="paramname"> <em>autoEncodingStr</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Receive notification of an XML declaration. 
+<p>
+Currently neither DOM nor SAX provide API's to return back this information.<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>versionStr</em>&nbsp;</td><td>The value of the <code>version</code> pseudoattribute of the XML decl. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>encodingStr</em>&nbsp;</td><td>The value of the <code>encoding</code> pseudoattribute of the XML decl. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>standaloneStr</em>&nbsp;</td><td>The value of the <code>standalone</code> pseudoattribute of the XML decl. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>autoEncodingStr</em>&nbsp;</td><td>The encoding string auto-detected by the scanner. In absence of any 'encoding' attribute in the XML decl, the XML standard specifies how a parser can auto-detect. If there is no <code>encodingStr</code> this is what will be used to try to decode the file. </td></tr>
+  </table>
+</dl>
+
+<p>Implemented in <a class="el" href="classAbstractDOMParser.html#4a5fa5982299b5e3f874a241d877b99f">AbstractDOMParser</a>, and <a class="el" href="classSAXParser.html#df4450d507d40f441732ba0fef5d90a8">SAXParser</a>.</p>
+
+</div>
+</div><p>
+<a class="anchor" name="1b97692134ab156bc68839903c6d4598"></a><!-- doxytag: member="XMLDocumentHandler::elementTypeInfo" ref="1b97692134ab156bc68839903c6d4598" args="(const XMLCh *const , const XMLCh *const )" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void XMLDocumentHandler::elementTypeInfo           </td>
+          <td>(</td>
+          <td class="paramtype">const XMLCh *&nbsp;</td>
+          <td class="paramname"> <em>const</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const XMLCh *&nbsp;</td>
+          <td class="paramname"> <em>const</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"><code> [virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Receive notification of the name and namespace of the type that validated the element corresponding to the most recent endElement event. 
+<p>
+This event will be fired immediately after the <a class="el" href="classXMLDocumentHandler.html#3f0fa424c89fdfeeefbc112ac66f2976" title="Receive notification of the end of an element.">endElement()</a> event that signifies the end of the element to which it applies; no other events will intervene. This method is <em>EXPERIMENTAL</em> and may change, disappear or become pure virtual at any time.<p>
+This corresponds to a part of the information required by DOM Core level 3's TypeInfo interface.<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>typeName</em>&nbsp;</td><td>local name of the type that actually validated the content of the element corresponding to the most recent <a class="el" href="classXMLDocumentHandler.html#3f0fa424c89fdfeeefbc112ac66f2976" title="Receive notification of the end of an element.">endElement()</a> callback </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>typeURI</em>&nbsp;</td><td>namespace of the type that actually validated the content of the element corresponding to the most recent <a class="el" href="classXMLDocumentHandler.html#3f0fa424c89fdfeeefbc112ac66f2976" title="Receive notification of the end of an element.">endElement()</a> callback </td></tr>
+  </table>
+</dl>
+<dl compact><dt><b><a class="el" href="deprecated.html#_deprecated000012">Deprecated:</a></b></dt><dd></dd></dl>
+
+<p>Reimplemented in <a class="el" href="classAbstractDOMParser.html#65205dee88d236ae200543230df37d53">AbstractDOMParser</a>.</p>
+
+</div>
+</div><p>
+<hr>The documentation for this class was generated from the following file:<ul>
+<li><a class="el" href="XMLDocumentHandler_8hpp-source.html">XMLDocumentHandler.hpp</a></ul>
+    </FONT></TD></TR></TABLE><BR>
+</TD></TR></TABLE></TD></TR></TABLE><BR><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD bgcolor="#0086b2"><IMG height="1" src="images/dot.gif" width="1" alt=""></TD></TR><TR><TD align="center"><FONT color="#0086b2" size="-1"><I>
+              Copyright &copy; 1994-2004 The Apache Software Foundation.
+              All Rights Reserved.
+            </I></FONT></TD></TR></TABLE></BODY></HTML>

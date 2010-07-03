@@ -1,0 +1,79 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Struct template call</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../proto/reference.html#header.boost.proto.transform.call_hpp" title="Header &lt;boost/proto/transform/call.hpp&gt;">
+<link rel="prev" href="_byval/result_This_T__id2613007.html" title="Struct template result&lt;This(T)&gt;">
+<link rel="next" href="call/impl.html" title="Struct template impl">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="_byval/result_This_T__id2613007.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../proto/reference.html#header.boost.proto.transform.call_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="call/impl.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.proto.call"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Struct template call</span></h2>
+<p>boost::proto::call &#8212; Make the given <a class="link" href="../../CallableTransform.html" title="Concept CallableTransform">CallableTransform</a> into a <a class="link" href="../../PrimitiveTransform.html" title="Concept PrimitiveTransform">PrimitiveTransform</a>.</p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../proto/reference.html#header.boost.proto.transform.call_hpp" title="Header &lt;boost/proto/transform/call.hpp&gt;">boost/proto/transform/call.hpp</a>&gt;
+
+</em></span><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T&gt; 
+<span class="bold"><strong>struct</strong></span> <a class="link" href="call.html" title="Struct template call">call</a> : <span class="bold"><strong></strong></span> <span class="type"><a class="link" href="transform.html" title="Struct template transform">proto::transform</a>&lt; call&lt;T&gt; &gt;</span> {
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Expr, <span class="bold"><strong>typename</strong></span> State, <span class="bold"><strong>typename</strong></span> Data&gt; 
+  <span class="bold"><strong>struct</strong></span> <a class="link" href="call/impl.html" title="Struct template impl">impl</a> : <span class="bold"><strong></strong></span> <span class="type"><a class="link" href="transform_impl.html" title="Struct template transform_impl">proto::transform_impl</a>&lt;Expr, State, Data&gt;</span> {
+    <span class="emphasis"><em>// <a class="link" href="call/impl.html#boost.proto.call.impltypes">types</a></em></span>
+    <span class="bold"><strong>typedef</strong></span> <em class="replaceable"><code>see-below</code></em> <a class="link" href="call/impl.html#boost.proto.call.impl.result_type">result_type</a>;
+
+    <span class="emphasis"><em>// <a class="link" href="call/impl.html#id2613592-bb">public member functions</a></em></span>
+    <span class="type">result_type</span> <a class="link" href="call/impl.html#id2613597-bb"><span class="bold"><strong>operator</strong></span>()</a>(<span class="bold"><strong>typename</strong></span> impl::expr_param, 
+                           <span class="bold"><strong>typename</strong></span> impl::state_param, 
+                           <span class="bold"><strong>typename</strong></span> impl::data_param) <span class="bold"><strong>const</strong></span>;
+  };
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id3304266"></a><h2>Description</h2>
+<p>
+            The purpose of <code class="computeroutput">proto::call&lt;&gt;</code> is to annotate a transform as callable
+            so that <code class="computeroutput"><a class="link" href="when.html" title="Struct template when">proto::when&lt;&gt;</a></code> knows
+            how to apply it. The template parameter must be either a <a class="link" href="../../PrimitiveTransform.html" title="Concept PrimitiveTransform">PrimitiveTransform</a> or a
+            <a class="link" href="../../CallableTransform.html" title="Concept CallableTransform">CallableTransform</a>; that is, a function type for which the return type is a callable
+            <a class="link" href="../../PolymorphicFunctionObject.html" title="Concept PolymorphicFunctionObject">PolymorphicFunctionObject</a>.
+          </p>
+<p>
+            For the complete description of the behavior of the <code class="computeroutput">proto::call&lt;&gt;</code>
+            transform, see the documentation for the nested
+            <code class="computeroutput">
+              <a class="link" href="call/impl.html" title="Struct template impl">proto::call::impl&lt;&gt;</a>
+            </code>
+            class template.
+          </p>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2008 Eric Niebler<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="_byval/result_This_T__id2613007.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../proto/reference.html#header.boost.proto.transform.call_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="call/impl.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

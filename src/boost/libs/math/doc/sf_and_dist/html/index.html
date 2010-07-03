@@ -1,0 +1,460 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Math Toolkit</title>
+<link rel="stylesheet" href="../../../../../doc/html/boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot_8125">
+<link rel="home" href="index.html" title="Math Toolkit">
+<link rel="next" href="math_toolkit/main_overview.html" title="Overview">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../../boost.png"></td>
+<td align="center"><a href="../../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav"><a accesskey="n" href="math_toolkit/main_overview.html"><img src="../../../../../doc/html/images/next.png" alt="Next"></a></div>
+<div class="article" lang="en">
+<div class="titlepage">
+<div>
+<div><h2 class="title">
+<a name="math_toolkit"></a>Math Toolkit</h2></div>
+<div><div class="authorgroup">
+<div class="author"><h3 class="author">
+<span class="firstname">John</span> <span class="surname">Maddock</span>
+</h3></div>
+<div class="author"><h3 class="author">
+<span class="firstname">Paul A.</span> <span class="surname">Bristow</span>
+</h3></div>
+<div class="author"><h3 class="author">
+<span class="firstname">Hubert</span> <span class="surname">Holin</span>
+</h3></div>
+<div class="author"><h3 class="author">
+<span class="firstname">Xiaogang</span> <span class="surname">Zhang</span>
+</h3></div>
+<div class="author"><h3 class="author">
+<span class="firstname">Bruno</span> <span class="surname">Lalande</span>
+</h3></div>
+<div class="author"><h3 class="author">
+<span class="firstname">Johan</span> <span class="surname">Råde</span>
+</h3></div>
+</div></div>
+<div><p class="copyright">Copyright © 2006 , 2007, 2008 John Maddock, Paul A. Bristow, Hubert
+      Holin, Xiaogang Zhang, Bruno Lalande and Johan Råde</p></div>
+<div><div class="legalnotice">
+<a name="id527114"></a><p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></div>
+</div>
+<hr>
+</div>
+<div class="toc">
+<p><b>Table of Contents</b></p>
+<dl>
+<dt><span class="section"><a href="math_toolkit/main_overview.html"> Overview</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="math_toolkit/main_overview/intro.html"> About the Math Toolkit</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/main_overview/navigation.html"> Navigation</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/main_overview/directories.html"> Directory and
+      File Structure</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/main_overview/namespaces.html"> Namespaces</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/main_overview/result_type.html"> Calculation
+      of the Type of the Result</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/main_overview/error_handling.html"> Error Handling</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/main_overview/compilers_overview.html"> Compilers</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/main_overview/pol_overview.html"> Configuration
+      and Policies</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/main_overview/threads.html"> Thread Safety</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/main_overview/perf_over.html"> Performance</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/main_overview/history1.html"> History and What's
+      New</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/main_overview/tr1.html"> C99 and TR1 C Functions</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/main_overview/contact.html"> Contact Info and
+      Support</a></span></dt>
+</dl></dd>
+<dt><span class="section"><a href="math_toolkit/dist.html"> Statistical Distributions and Functions</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="math_toolkit/dist/stat_tut.html"> Statistical Distributions
+      Tutorial</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="math_toolkit/dist/stat_tut/overview.html"> Overview</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/stat_tut/weg.html"> Worked Examples</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="math_toolkit/dist/stat_tut/weg/dist_construct_eg.html">
+          Distribution Construction Example</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/stat_tut/weg/st_eg.html"> Student's
+          t Distribution Examples</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/stat_tut/weg/cs_eg.html"> Chi Squared
+          Distribution Examples</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/stat_tut/weg/f_eg.html"> F Distribution
+          Examples</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/stat_tut/weg/binom_eg.html"> Binomial
+          Distribution Examples</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/stat_tut/weg/neg_binom_eg.html"> Negative
+          Binomial Distribution Examples</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/stat_tut/weg/normal_example.html"> Normal
+          Distribution Examples</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/stat_tut/weg/nccs_eg.html"> Non Central
+          Chi Squared Example</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/stat_tut/weg/error_eg.html"> Error Handling
+          Example</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/stat_tut/weg/find_eg.html"> Find Location
+          and Scale Examples</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/stat_tut/weg/nag_library.html"> Comparison
+          with C, R, FORTRAN-style Free Functions</a></span></dt>
+</dl></dd>
+<dt><span class="section"><a href="math_toolkit/dist/stat_tut/variates.html"> Random Variates
+        and Distribution Parameters</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/stat_tut/dist_params.html"> Discrete Probability
+        Distributions</a></span></dt>
+</dl></dd>
+<dt><span class="section"><a href="math_toolkit/dist/dist_ref.html"> Statistical Distributions
+      Reference</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="math_toolkit/dist/dist_ref/nmp.html"> Non-Member Properties</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/dist_ref/dists.html"> Distributions</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="math_toolkit/dist/dist_ref/dists/bernoulli_dist.html">
+          Bernoulli Distribution</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/dist_ref/dists/beta_dist.html"> Beta
+          Distribution</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/dist_ref/dists/binomial_dist.html">
+          Binomial Distribution</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/dist_ref/dists/cauchy_dist.html"> Cauchy-Lorentz
+          Distribution</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/dist_ref/dists/chi_squared_dist.html">
+          Chi Squared Distribution</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/dist_ref/dists/exp_dist.html"> Exponential
+          Distribution</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/dist_ref/dists/extreme_dist.html"> Extreme
+          Value Distribution</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/dist_ref/dists/f_dist.html"> F Distribution</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/dist_ref/dists/gamma_dist.html"> Gamma
+          (and Erlang) Distribution</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/dist_ref/dists/lognormal_dist.html">
+          Log Normal Distribution</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/dist_ref/dists/negative_binomial_dist.html">
+          Negative Binomial Distribution</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/dist_ref/dists/nc_beta_dist.html"> Noncentral
+          Beta Distribution</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/dist_ref/dists/nc_chi_squared_dist.html">
+          Noncentral Chi-Squared Distribution</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/dist_ref/dists/nc_f_dist.html"> Noncentral
+          F Distribution</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/dist_ref/dists/nc_t_dist.html"> Noncentral
+          T Distribution</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/dist_ref/dists/normal_dist.html"> Normal
+          (Gaussian) Distribution</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/dist_ref/dists/pareto.html"> Pareto
+          Distribution</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/dist_ref/dists/poisson_dist.html"> Poisson
+          Distribution</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/dist_ref/dists/rayleigh.html"> Rayleigh
+          Distribution</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/dist_ref/dists/students_t_dist.html">
+          Students t Distribution</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/dist_ref/dists/triangular_dist.html">
+          Triangular Distribution</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/dist_ref/dists/weibull.html"> Weibull
+          Distribution</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/dist/dist_ref/dists/uniform_dist.html"> Uniform
+          Distribution</a></span></dt>
+</dl></dd>
+<dt><span class="section"><a href="math_toolkit/dist/dist_ref/dist_algorithms.html"> Distribution
+        Algorithms</a></span></dt>
+</dl></dd>
+<dt><span class="section"><a href="math_toolkit/dist/future.html"> Extras/Future Directions</a></span></dt>
+</dl></dd>
+<dt><span class="section"><a href="math_toolkit/special.html"> Special Functions</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="math_toolkit/special/sf_gamma.html"> Gamma Functions</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="math_toolkit/special/sf_gamma/tgamma.html"> Gamma</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/sf_gamma/lgamma.html"> Log Gamma</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/sf_gamma/digamma.html"> Digamma</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/sf_gamma/gamma_ratios.html"> Ratios
+        of Gamma Functions</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/sf_gamma/igamma.html"> Incomplete Gamma
+        Functions</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/sf_gamma/igamma_inv.html"> Incomplete
+        Gamma Function Inverses</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/sf_gamma/gamma_derivatives.html"> Derivative
+        of the Incomplete Gamma Function</a></span></dt>
+</dl></dd>
+<dt><span class="section"><a href="math_toolkit/special/factorials.html"> Factorials and Binomial
+      Coefficients</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="math_toolkit/special/factorials/sf_factorial.html"> Factorial</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/factorials/sf_double_factorial.html">
+        Double Factorial</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/factorials/sf_rising_factorial.html">
+        Rising Factorial</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/factorials/sf_falling_factorial.html">
+        Falling Factorial</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/factorials/sf_binomial.html"> Binomial
+        Coefficients</a></span></dt>
+</dl></dd>
+<dt><span class="section"><a href="math_toolkit/special/sf_beta.html"> Beta Functions</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="math_toolkit/special/sf_beta/beta_function.html"> Beta</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/sf_beta/ibeta_function.html"> Incomplete
+        Beta Functions</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/sf_beta/ibeta_inv_function.html"> The
+        Incomplete Beta Function Inverses</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/sf_beta/beta_derivative.html"> Derivative
+        of the Incomplete Beta Function</a></span></dt>
+</dl></dd>
+<dt><span class="section"><a href="math_toolkit/special/sf_erf.html"> Error Functions</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="math_toolkit/special/sf_erf/error_function.html"> Error
+        Functions</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/sf_erf/error_inv.html"> Error Function
+        Inverses</a></span></dt>
+</dl></dd>
+<dt><span class="section"><a href="math_toolkit/special/sf_poly.html"> Polynomials</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="math_toolkit/special/sf_poly/legendre.html"> Legendre (and
+        Associated) Polynomials</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/sf_poly/laguerre.html"> Laguerre (and
+        Associated) Polynomials</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/sf_poly/hermite.html"> Hermite Polynomials</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/sf_poly/sph_harm.html"> Spherical Harmonics</a></span></dt>
+</dl></dd>
+<dt><span class="section"><a href="math_toolkit/special/bessel.html"> Bessel Functions</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="math_toolkit/special/bessel/bessel_over.html"> Bessel Function
+        Overview</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/bessel/bessel.html"> Bessel Functions
+        of the First and Second Kinds</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/bessel/mbessel.html"> Modified Bessel
+        Functions of the First and Second Kinds</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/bessel/sph_bessel.html"> Spherical
+        Bessel Functions of the First and Second Kinds</a></span></dt>
+</dl></dd>
+<dt><span class="section"><a href="math_toolkit/special/ellint.html"> Elliptic Integrals</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="math_toolkit/special/ellint/ellint_intro.html"> Elliptic
+        Integral Overview</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/ellint/ellint_carlson.html"> Elliptic
+        Integrals - Carlson Form</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/ellint/ellint_1.html"> Elliptic Integrals
+        of the First Kind - Legendre Form</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/ellint/ellint_2.html"> Elliptic Integrals
+        of the Second Kind - Legendre Form</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/ellint/ellint_3.html"> Elliptic Integrals
+        of the Third Kind - Legendre Form</a></span></dt>
+</dl></dd>
+<dt><span class="section"><a href="math_toolkit/special/zetas.html"> Zeta Functions</a></span></dt>
+<dd><dl><dt><span class="section"><a href="math_toolkit/special/zetas/zeta.html"> Riemann Zeta Function</a></span></dt></dl></dd>
+<dt><span class="section"><a href="math_toolkit/special/expint.html"> Exponential Integrals</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="math_toolkit/special/expint/expint_n.html"> Exponential
+        Integral En</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/expint/expint_i.html"> Exponential
+        Integral Ei</a></span></dt>
+</dl></dd>
+<dt><span class="section"><a href="math_toolkit/special/powers.html"> Logs, Powers, Roots and
+      Exponentials</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="math_toolkit/special/powers/log1p.html"> log1p</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/powers/expm1.html"> expm1</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/powers/cbrt.html"> cbrt</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/powers/sqrt1pm1.html"> sqrt1pm1</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/powers/powm1.html"> powm1</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/powers/hypot.html"> hypot</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/powers/ct_pow.html"> Compile Time Power
+        of a Runtime Base</a></span></dt>
+</dl></dd>
+<dt><span class="section"><a href="math_toolkit/special/sinc.html"> Sinus Cardinal and Hyperbolic
+      Sinus Cardinal Functions</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="math_toolkit/special/sinc/sinc_overview.html"> Sinus Cardinal
+        and Hyperbolic Sinus Cardinal Functions Overview</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/sinc/sinc_pi.html">sinc_pi</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/sinc/sinhc_pi.html">sinhc_pi</a></span></dt>
+</dl></dd>
+<dt><span class="section"><a href="math_toolkit/special/inv_hyper.html"> Inverse Hyperbolic Functions</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="math_toolkit/special/inv_hyper/inv_hyper_over.html"> Inverse
+        Hyperbolic Functions Overview</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/inv_hyper/acosh.html"> acosh</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/inv_hyper/asinh.html"> asinh</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/inv_hyper/atanh.html"> atanh</a></span></dt>
+</dl></dd>
+<dt><span class="section"><a href="math_toolkit/special/rounding.html"> Rounding Truncation and
+      Integer Conversion</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="math_toolkit/special/rounding/round.html"> Rounding Functions</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/rounding/trunc.html"> Truncation Functions</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/rounding/modf.html"> Integer and Fractional
+        Part Splitting (modf)</a></span></dt>
+</dl></dd>
+<dt><span class="section"><a href="math_toolkit/special/fpclass.html"> Floating-Point Classification:
+      Infinities and NaN's</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/next_float.html"> Floating-Point Representation
+      Distance (ULP), and Finding Adjacent Floating-Point Values</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="math_toolkit/special/next_float/nextafter.html"> Finding
+        the Next Representable Value in a Specific Direction (nextafter)</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/next_float/float_next.html"> Finding
+        the Next Greater Representable Value (float_next)</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/next_float/float_prior.html"> Finding
+        the Next Smaller Representable Value (float_prior)</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/next_float/float_distance.html"> Calculating
+        the Representation Distance Between Two Floating Point Values (ULP) float_distance</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/next_float/float_advance.html"> Advancing
+        a Floating Point Value by a Specific Representation Distance (ULP) float_advance</a></span></dt>
+</dl></dd>
+<dt><span class="section"><a href="math_toolkit/special/extern_c.html"> TR1 and C99 external
+      "C" Functions</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="math_toolkit/special/extern_c/tr1.html"> C99 and TR1 C Functions
+        Overview</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/extern_c/c99.html"> C99 C Functions</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/special/extern_c/tr1_ref.html"> TR1 C Functions
+        Quick Reference</a></span></dt>
+</dl></dd>
+</dl></dd>
+<dt><span class="section"><a href="math_toolkit/toolkit.html"> Internal Details and Tools (Experimental)</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="math_toolkit/toolkit/internals_overview.html"> Overview</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/toolkit/internals1.html"> Reused Utilities</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="math_toolkit/toolkit/internals1/constants.html"> Numeric
+        Constants</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/toolkit/internals1/series_evaluation.html">
+        Series Evaluation</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/toolkit/internals1/cf.html"> Continued Fraction
+        Evaluation</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/toolkit/internals1/rational.html"> Polynomial
+        and Rational Function Evaluation</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/toolkit/internals1/roots.html"> Root Finding
+        With Derivatives</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/toolkit/internals1/roots2.html"> Root Finding
+        Without Derivatives</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/toolkit/internals1/minima.html"> Locating Function
+        Minima</a></span></dt>
+</dl></dd>
+<dt><span class="section"><a href="math_toolkit/toolkit/internals2.html"> Testing and Development</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="math_toolkit/toolkit/internals2/polynomials.html"> Polynomials</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/toolkit/internals2/minimax.html"> Minimax Approximations
+        and the Remez Algorithm</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/toolkit/internals2/error_test.html"> Relative
+        Error and Testing</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/toolkit/internals2/test_data.html"> Graphing,
+        Profiling, and Generating Test Data for Special Functions</a></span></dt>
+</dl></dd>
+</dl></dd>
+<dt><span class="section"><a href="math_toolkit/using_udt.html"> Use with User-Defined Floating-Point
+    Types</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="math_toolkit/using_udt/use_ntl.html"> Using With NTL - a High-Precision
+      Floating-Point Library</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/using_udt/concepts.html"> Conceptual Requirements
+      for Real Number Types</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/using_udt/dist_concept.html"> Conceptual Requirements
+      for Distribution Types</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/using_udt/archetypes.html"> Conceptual Archetypes
+      and Testing</a></span></dt>
+</dl></dd>
+<dt><span class="section"><a href="math_toolkit/policy.html"> Policies</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="math_toolkit/policy/pol_overview.html"> Policy Overview</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/policy/pol_tutorial.html"> Policy Tutorial</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="math_toolkit/policy/pol_tutorial/what_is_a_policy.html">
+        So Just What is a Policy Anyway?</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/policy/pol_tutorial/policy_tut_defaults.html">
+        Policies Have Sensible Defaults</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/policy/pol_tutorial/policy_usage.html"> So
+        How are Policies Used Anyway?</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/policy/pol_tutorial/changing_policy_defaults.html">
+        Changing the Policy Defaults</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/policy/pol_tutorial/ad_hoc_dist_policies.html">
+        Setting Policies for Distributions on an Ad Hoc Basis</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/policy/pol_tutorial/ad_hoc_sf_policies.html">
+        Changing the Policy on an Ad Hoc Basis for the Special Functions</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/policy/pol_tutorial/namespace_policies.html">
+        Setting Policies at Namespace or Translation Unit Scope</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/policy/pol_tutorial/user_def_err_pol.html">
+        Calling User Defined Error Handlers</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/policy/pol_tutorial/understand_dis_quant.html">
+        Understanding Quantiles of Discrete Distributions</a></span></dt>
+</dl></dd>
+<dt><span class="section"><a href="math_toolkit/policy/pol_ref.html"> Policy Reference</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="math_toolkit/policy/pol_ref/error_handling_policies.html">
+        Error Handling Policies</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/policy/pol_ref/internal_promotion.html"> Internal
+        Promotion Policies</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/policy/pol_ref/assert_undefined.html"> Mathematically
+        Undefined Function Policies</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/policy/pol_ref/discrete_quant_ref.html"> Discrete
+        Quantile Policies</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/policy/pol_ref/precision_pol.html"> Precision
+        Policies</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/policy/pol_ref/iteration_pol.html"> Iteration
+        Limits Policies</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/policy/pol_ref/policy_defaults.html"> Using
+        macros to Change the Policy Defaults</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/policy/pol_ref/namespace_pol.html"> Setting
+        Polices at Namespace Scope</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/policy/pol_ref/pol_ref_ref.html"> Policy Class
+        Reference</a></span></dt>
+</dl></dd>
+</dl></dd>
+<dt><span class="section"><a href="math_toolkit/perf.html"> Performance</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="math_toolkit/perf/perf_over.html"> Performance Overview</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/perf/interp.html"> Interpreting these Results</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/perf/getting_best.html"> Getting the Best Performance
+      from this Library</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/perf/comp_compilers.html"> Comparing Compilers</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/perf/tuning.html"> Performance Tuning Macros</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/perf/comparisons.html"> Comparisons to Other
+      Open Source Libraries</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/perf/perf_test_app.html"> The Performance Test
+      Application</a></span></dt>
+</dl></dd>
+<dt><span class="section"><a href="math_toolkit/backgrounders.html"> Backgrounders</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="math_toolkit/backgrounders/implementation.html"> Additional
+      Implementation Notes</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/backgrounders/relative_error.html"> Relative
+      Error</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/backgrounders/lanczos.html"> The Lanczos Approximation</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/backgrounders/remez.html"> The Remez Method</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/backgrounders/refs.html"> References</a></span></dt>
+</dl></dd>
+<dt><span class="section"><a href="math_toolkit/status.html"> Library Status</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="math_toolkit/status/history1.html"> History and What's New</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/status/compilers.html"> Compilers</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/status/issues.html"> Known Issues, and Todo List</a></span></dt>
+<dt><span class="section"><a href="math_toolkit/status/credits.html"> Credits and Acknowledgements</a></span></dt>
+</dl></dd>
+</dl>
+</div>
+<p>
+    ISBN 0-9504833-2-X 978-0-9504833-2-0, Classification 519.2-dc22
+  </p>
+<p>
+    This manual is also available in <a href="http://svn.boost.org/svn/boost/sandbox/pdf/math/release/math.pdf" target="_top">printer
+    friendly PDF format</a>.
+  </p>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"><p><small>Last revised: December 29, 2008 at 16:50:38 GMT</small></p></td>
+<td align="right"><div class="copyright-footer"></div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav"><a accesskey="n" href="math_toolkit/main_overview.html"><img src="../../../../../doc/html/images/next.png" alt="Next"></a></div>
+</body>
+</html>

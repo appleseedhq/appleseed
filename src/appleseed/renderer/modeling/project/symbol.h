@@ -1,0 +1,165 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2010 Francois Beaune
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#ifndef APPLESEED_RENDERER_MODELING_PROJECT_SYMBOL_H
+#define APPLESEED_RENDERER_MODELING_PROJECT_SYMBOL_H
+
+// appleseed.renderer headers.
+#include "renderer/global/global.h"
+
+// appleseed.foundation headers.
+#include "foundation/core/stringexception.h"
+#include "foundation/utility/kvpair.h"
+
+// Standard headers.
+#include <map>
+#include <utility>
+
+namespace renderer
+{
+
+//
+// Enumeration of the symbol identifiers.
+//
+
+enum SymbolID
+{
+    SymbolNotFound,
+    SymbolAssembly,
+    SymbolAssemblyInstance,
+    SymbolBSDF,
+    SymbolCamera,
+    SymbolColor,
+    SymbolEDF,
+    SymbolEnvironment,
+    SymbolEnvironmentEDF,
+    SymbolEnvironmentShader,
+    SymbolMaterial,
+    SymbolLight,
+    SymbolObject,
+    SymbolObjectInstance,
+    SymbolSurfaceShader,
+    SymbolTexture,
+    SymbolTextureInstance
+};
+
+// Return a human-readable representation of a symbol identifier.
+const char* symbol_name(const SymbolID symbol_id);
+
+
+//
+// Symbol table.
+//
+
+class SymbolTable
+{
+  public:
+    // Exception thrown when attempting to insert a symbol
+    // with the same name as an existing symbol.
+    struct ExceptionDuplicateSymbol
+      : public foundation::StringException
+    {
+        explicit ExceptionDuplicateSymbol(const char* name)
+          : foundation::StringException("duplicate symbol", name) {}
+    };
+
+    // Insert a symbol.
+    void insert(
+        const std::string&  name,
+        const SymbolID      symbol_id);
+
+    // Lookup a symbol.
+    SymbolID lookup(const std::string& name) const;
+
+  private:
+    typedef std::map<std::string, SymbolID> SymbolContainer;
+    SymbolContainer m_symbols;
+};
+
+
+//
+// symbol_name() function implementation.
+//
+
+// Return a human-readable representation of a symbol identifier.
+inline const char* symbol_name(const SymbolID symbol_id)
+{
+    typedef foundation::KeyValuePair<SymbolID, const char*> SymbolNameEntry;
+
+    static const SymbolNameEntry SymbolNames[] =
+    {
+        { SymbolNotFound,           "not found" },
+        { SymbolAssembly,           "assembly" },
+        { SymbolAssemblyInstance,   "assembly instance" },
+        { SymbolBSDF,               "bsdf" },
+        { SymbolCamera,             "camera" },
+        { SymbolColor,              "color" },
+        { SymbolEDF,                "edf" },
+        { SymbolEnvironment,        "environment" },
+        { SymbolEnvironmentEDF,     "environment edf" },
+        { SymbolEnvironmentShader,  "environment shader" },
+        { SymbolMaterial,           "material" },
+        { SymbolLight,              "light" },
+        { SymbolObject,             "object" },
+        { SymbolObjectInstance,     "object instance" },
+        { SymbolSurfaceShader,      "surface shader" },
+        { SymbolTexture,            "texture" },
+        { SymbolTextureInstance,    "texture instance" }
+    };
+
+    const SymbolNameEntry* symbol = FOUNDATION_LOOKUP_KVPAIR_ARRAY(SymbolNames, symbol_id);
+
+    assert(symbol);
+
+    return symbol->m_value;
+}
+
+
+//
+// SymbolTable class implementation.
+//
+
+// Insert a symbol.
+inline void SymbolTable::insert(
+    const std::string&  name,
+    const SymbolID      symbol_id)
+{
+    if (!m_symbols.insert(std::make_pair(name, symbol_id)).second)
+        throw ExceptionDuplicateSymbol(name.c_str());
+}
+
+// Lookup a symbol.
+inline SymbolID SymbolTable::lookup(const std::string& name) const
+{
+    const SymbolContainer::const_iterator i = m_symbols.find(name);
+    return i == m_symbols.end() ? SymbolNotFound : i->second;
+}
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_PROJECT_SYMBOL_H

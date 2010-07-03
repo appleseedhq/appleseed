@@ -1,0 +1,210 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2010 Francois Beaune
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#ifndef APPLESEED_FOUNDATION_MATH_BASIS_H
+#define APPLESEED_FOUNDATION_MATH_BASIS_H
+
+// appleseed.foundation headers.
+#include "foundation/math/scalar.h"
+#include "foundation/math/vector.h"
+
+// Standard headers.
+#include <cassert>
+#include <cmath>
+
+namespace foundation
+{
+
+//
+// The Basis3 class represents a 3-dimensional orthonormal basis, and allows
+// transformation of vectors from parent space to local space and from local
+// space to parent space.
+//
+
+template <typename T>
+class Basis3
+{
+  public:
+    // Vector and basis types.
+    typedef Vector<T, 3> VectorType;
+    typedef Basis3<T> BasisType;
+
+    // Constructors.
+    Basis3();                                       // leave all components uninitialized
+    explicit Basis3(const VectorType& normal);      // construct a basis around 'normal'
+
+    // Construct an orthonormal basis for a given unit-length normal vector.
+    void build(const VectorType& normal);
+
+    // Transform a 3D vector. The vector is not required to be unit-length,
+    // and is not normalized after transformation. However the length of the
+    // vector is preserved by the transformation.
+    VectorType transform_to_local(const VectorType& v) const;
+    VectorType transform_to_parent(const VectorType& v) const;
+
+    // Retrieve the individual basis vectors.
+    const VectorType& get_normal() const;
+    const VectorType& get_tangent_u() const;
+    const VectorType& get_tangent_v() const;
+
+  private:
+    VectorType m_n, m_u, m_v;
+};
+
+
+//
+// Specializations for single and double precision orthonormal basis.
+//
+
+typedef Basis3<float>  Basis3f;
+typedef Basis3<double> Basis3d;
+
+
+//
+// Basis3 class implementation.
+//
+
+// Constructors.
+template <typename T>
+inline Basis3<T>::Basis3()
+{
+}
+template <typename T>
+inline Basis3<T>::Basis3(const VectorType& normal)
+{
+    build(normal);
+}
+
+// Construct an orthonormal basis for a given unit-length normal vector.
+template <typename T>
+inline void Basis3<T>::build(const VectorType& normal)
+{
+    //
+    // Reference:
+    //
+    //   Hughes, J. F., and Moller, T. Building an Orthonormal Basis from a Unit Vector.
+    //   Journal of Graphics Tools 4, 4 (1999), 33-35.
+    //   http://www.cs.brown.edu/research/pubs/pdfs/1999/Hughes-1999-BAO.pdf
+    //
+
+    // Make sure the input vector is unit-length.
+    assert(is_normalized(normal));
+
+    // n is simply the input vector.
+    m_n = normal;
+
+    // Compute u so that it is orthogonal to n.
+    if (std::abs(m_n[0]) < std::abs(m_n[1]))
+    {
+        if (std::abs(m_n[0]) < std::abs(m_n[2]))
+        {
+            // m_n[0] is the smallest component.
+            m_u[0] =  T(0.0);
+            m_u[1] = -m_n[2];
+            m_u[2] =  m_n[1];
+        }
+        else
+        {
+            // m_n[2] is the smallest component.
+            m_u[0] = -m_n[1];
+            m_u[1] =  m_n[0];
+            m_u[2] =  T(0.0);
+        }
+    }
+    else
+    {
+        if (std::abs(m_n[1]) < std::abs(m_n[2]))
+        {
+            // m_n[1] is the smallest component.
+            m_u[0] = -m_n[2];
+            m_u[1] =  T(0.0);
+            m_u[2] =  m_n[0];
+        }
+        else
+        {
+            // m_n[2] is the smallest component.
+            m_u[0] = -m_n[1];
+            m_u[1] =  m_n[0];
+            m_u[2] =  T(0.0);
+        }
+    }
+
+    // u is orthogonal to n, but not unit-length. Normalize it.
+    m_u = normalize(m_u);
+
+    // Compute v.
+    m_v = cross(m_u, m_n);
+
+    // Make sure (m_u, m_n, m_v) forms an orthonormal basis.
+    assert(is_normalized(m_u));
+    assert(is_normalized(m_n));
+    assert(is_normalized(m_v));
+    assert(fz(dot(m_u, m_n)));
+    assert(fz(dot(m_u, m_v)));
+    assert(fz(dot(m_n, m_v)));
+
+    // Make sure (m_u, m_n, m_v) is right-handed.
+    assert(feq(cross(m_n, m_v), m_u));
+    assert(feq(cross(m_v, m_u), m_n));
+    assert(feq(cross(m_u, m_n), m_v));
+}
+
+// Transform a 3D vector from parent space to local space.
+template <typename T>
+inline Vector<T, 3> Basis3<T>::transform_to_local(const VectorType& v) const
+{
+    return Vector<T, 3>(dot(v, m_u), dot(v, m_n), dot(v, m_v));
+}
+
+// Transform a 3D vector from local space to parent space.
+template <typename T>
+inline Vector<T, 3> Basis3<T>::transform_to_parent(const VectorType& v) const
+{
+    return v[0] * m_u + v[1] * m_n + v[2] * m_v;
+}
+
+// Retrieve the individual basis vectors.
+template <typename T>
+inline const Vector<T, 3>& Basis3<T>::get_normal() const
+{
+    return m_n;
+}
+template <typename T>
+inline const Vector<T, 3>& Basis3<T>::get_tangent_u() const
+{
+    return m_u;
+}
+template <typename T>
+inline const Vector<T, 3>& Basis3<T>::get_tangent_v() const
+{
+    return m_v;
+}
+
+}       // namespace foundation
+
+#endif  // !APPLESEED_FOUNDATION_MATH_BASIS_H

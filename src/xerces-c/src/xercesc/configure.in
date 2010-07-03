@@ -1,0 +1,187 @@
+dnl Process this file with autoconf to produce a configure script
+AC_INIT(util/XercesDefs.hpp)
+dnl AC_CONFIG_HEADER(common/icucfg.h)
+
+dnl AM_INIT_AUTOMAKE(xerces-c,2.8.0)
+dnl Checks for programs
+AC_PROG_CC
+AC_PROG_CXX
+AC_PROG_INSTALL
+AC_CHECK_PROG(AUTOCONF, autoconf, autoconf, true)
+
+dnl
+dnl Do not know how to use this macro, so comment it out.
+dnl
+dnl special pthread handling (AIX uses pthreads instead of pthread)
+dnl AC_CHECK_LIB(pthread, pthread_create)
+dnl if test $ac_cv_lib_pthread_pthread_create = no; then
+dnl AC_CHECK_LIB(pthreads, pthread_create)
+dnl fi
+dnl
+
+dnl Checks for typedefs
+AC_CHECK_TYPE(XMLByte,unsigned char)
+
+dnl Determine the host system and Makefile fragment
+AC_CANONICAL_HOST
+
+dnl Platform-specific Makefile setup
+case "${host}" in
+        *-*-solaris*)   platform=SOLARIS ;;
+        *-*-sco*)       platform=OPENSERVER ;;
+        *-*-sysv5*)     platform=UNIXWARE ;;
+        *-*-UnixWare*)  platform=UNIXWARE ;;
+        *-*-unixware*)  platform=UNIXWARE ;;
+        *-*-beos*)      platform=BEOS ;;
+        *-*-nto*)       platform=QNX ;;
+        *-*-linux*)     platform=LINUX ;;
+        *-*-freebsd*)   platform=FREEBSD ;;
+        *-*-netbsd*)    platform=NETBSD ;;
+        *-*-irix*)      platform=IRIX ;;
+        *-*-aix*)       platform=AIX
+                      case "${host}" in
+                         *-*-aix4.1*)   osver=AIX41;;
+                         *-*-aix4.2*)   osver=AIX42;;
+                         *-*-aix4.3*)   osver=AIX43;;
+                         *-*-aix4.*)    osver=AIX43;;
+                      esac;;
+        *-sequent-*)    platform=PTX ;;
+        *-*-hp*)        platform=HPUX ;
+                        case "${host}" in
+                            *-*-hpux11*)  osver=HPUX11;;
+                            *-*-hpux10*)  osver=HPUX10;;
+                            *)            osver=HPUX11;;
+                        esac;;
+        *-*-mvs*)       platform=OS390 ;;
+        *-*-os400*)     platform=OS400 ;;
+        *-*-OS400*)     platform=OS400 ;;
+        *-*-osf*)		platform=TRU64 ;;
+        *-apple-*)		platform=MACOSX ;;
+        *-*-cygwin*)    platform=CYGWIN ;;
+		*-*-mingw*)		platform=MINGW ;;
+        *-*-interix*)   platform=INTERIX ;;
+        *)              platform=UNKNOWN ;;
+esac
+AC_SUBST(platform)
+
+cxx=${CXX}
+AC_SUBST(cxx)
+AC_SUBST(GXX)
+
+cxxver=${CXXVER}
+AC_SUBST(cxxver)
+
+cc=${CC}
+AC_SUBST(cc)
+AC_SUBST(GCC)
+
+AC_SUBST(prefix)
+prefix_include='${PREFIX}/include/xercesc'
+AC_SUBST(prefix_include)
+
+AC_SUBST(osver)
+
+cxxflags=${CXXFLAGS}
+AC_SUBST(cxxflags)
+
+cppflags=${CPPFLAGS}
+AC_SUBST(cppflags)
+
+cflags=${CFLAGS}
+AC_SUBST(cflags)
+
+ldflags=${LDFLAGS}
+AC_SUBST(ldflags)
+
+libs=${LIBS}
+AC_SUBST(libs)
+
+uselibwww=${USELIBWWW}
+AC_SUBST(uselibwww)
+
+messageloader=${MESSAGELOADER}
+AC_SUBST(messageloader)
+
+transcoder=${TRANSCODER}
+AC_SUBST(transcoder)
+
+netaccessor=${NETACCESSOR}
+AC_SUBST(netaccessor)
+
+threads=${THREADS}
+AC_SUBST(threads)
+
+libtype=${LIBTYPE}
+AC_SUBST(libtype)
+
+bitstobuild=${BITSTOBUILD}
+AC_SUBST(bitstobuild)
+
+dnl output the Makefiles
+AC_OUTPUT([Makefile \
+util/Makefile \
+util/Transcoders/Cygwin/Makefile \
+util/Transcoders/Win32/Makefile \
+util/Transcoders/ICU/Makefile \
+util/Transcoders/Iconv/Makefile \
+util/Transcoders/Iconv390/Makefile \
+util/Transcoders/Uniconv390/Makefile \
+util/Transcoders/Iconv400/Makefile \
+util/Transcoders/IconvFBSD/Makefile \
+util/Transcoders/IconvGNU/Makefile \
+util/Transcoders/MacOSUnicodeConverter/Makefile \
+util/Platforms/Makefile \
+util/Platforms/Solaris/Makefile \
+util/Platforms/AIX/Makefile \
+util/Platforms/BeOS/Makefile \
+util/Platforms/QNX/Makefile \
+util/Platforms/Linux/Makefile \
+util/Platforms/FreeBSD/Makefile \
+util/Platforms/NetBSD/Makefile \
+util/Platforms/HPUX/Makefile \
+util/Platforms/OS390/Makefile \
+util/Platforms/OS400/Makefile \
+util/Platforms/IRIX/Makefile \
+util/Platforms/PTX/Makefile \
+util/Platforms/OpenServer/Makefile \
+util/Platforms/UnixWare/Makefile \
+util/Platforms/Tru64/Makefile \
+util/Platforms/MacOS/Makefile \
+util/Platforms/Win32/Makefile \
+util/Platforms/Cygwin/Makefile \
+util/Compilers/Makefile \
+util/MsgLoaders/InMemory/Makefile \
+util/MsgLoaders/ICU/Makefile \
+util/MsgLoaders/ICU/resources/Makefile \
+util/MsgLoaders/MsgCatalog/Makefile \
+util/MsgLoaders/MsgFile/Makefile \
+util/NetAccessors/Socket/Makefile \
+util/NetAccessors/WinSock/Makefile \
+util/NetAccessors/libWWW/Makefile \
+util/NetAccessors/MacOSURLAccessCF/Makefile \
+util/regx/Makefile \
+validators/Makefile \
+validators/common/Makefile \
+validators/datatype/Makefile \
+validators/DTD/Makefile \
+validators/schema/Makefile \
+validators/schema/identity/Makefile \
+framework/Makefile \
+framework/psvi/Makefile \
+dom/Makefile \
+dom/impl/Makefile \
+dom/deprecated/Makefile \
+parsers/Makefile \
+internal/Makefile \
+sax/Makefile \
+sax2/Makefile \
+../../obj/Makefile],
+[chmod +x ./configure],
+[chmod +x ./runConfigure],)
+
+echo
+echo Having build problems?
+echo   Read instructions at http://xerces.apache.org/xerces-c/build.html
+echo Still cannot resolve it?
+echo   Find out if someone else had the same problem before.
+echo   Go to http://marc.theaimsgroup.com/?l=xerces-c-dev

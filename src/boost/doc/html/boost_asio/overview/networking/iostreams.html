@@ -1,0 +1,88 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Socket Iostreams</title>
+<link rel="stylesheet" href="../../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../../boost_asio.html" title="Boost.Asio">
+<link rel="up" href="../networking.html" title="Networking">
+<link rel="prev" href="protocols.html" title="TCP, UDP and ICMP">
+<link rel="next" href="bsd_sockets.html" title="The BSD Socket API and Boost.Asio">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../../boost.png"></td>
+<td align="center"><a href="../../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="protocols.html"><img src="../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../networking.html"><img src="../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../../boost_asio.html"><img src="../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="bsd_sockets.html"><img src="../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h4 class="title">
+<a name="boost_asio.overview.networking.iostreams"></a><a class="link" href="iostreams.html" title="Socket Iostreams"> Socket Iostreams</a>
+</h4></div></div></div>
+<p>
+          Boost.Asio includes classes that implement iostreams on top of sockets.
+          These hide away the complexities associated with endpoint resolution, protocol
+          independence, etc. To create a connection one might simply write:
+        </p>
+<pre class="programlisting"><span class="identifier">ip</span><span class="special">::</span><span class="identifier">tcp</span><span class="special">::</span><span class="identifier">iostream</span> <span class="identifier">stream</span><span class="special">(</span><span class="string">"www.boost.org"</span><span class="special">,</span> <span class="string">"http"</span><span class="special">);</span>
+<span class="keyword">if</span> <span class="special">(!</span><span class="identifier">stream</span><span class="special">)</span>
+<span class="special">{</span>
+  <span class="comment">// Can't connect.
+</span><span class="special">}</span>
+</pre>
+<p>
+          The iostream class can also be used in conjunction with an acceptor to
+          create simple servers. For example:
+        </p>
+<pre class="programlisting"><span class="identifier">io_service</span> <span class="identifier">ios</span><span class="special">;</span>
+
+<span class="identifier">ip</span><span class="special">::</span><span class="identifier">tcp</span><span class="special">::</span><span class="identifier">endpoint</span> <span class="identifier">endpoint</span><span class="special">(</span><span class="identifier">tcp</span><span class="special">::</span><span class="identifier">v4</span><span class="special">(),</span> <span class="number">80</span><span class="special">);</span>
+<span class="identifier">ip</span><span class="special">::</span><span class="identifier">tcp</span><span class="special">::</span><span class="identifier">acceptor</span> <span class="identifier">acceptor</span><span class="special">(</span><span class="identifier">ios</span><span class="special">,</span> <span class="identifier">endpoint</span><span class="special">);</span>
+
+<span class="keyword">for</span> <span class="special">(;;)</span>
+<span class="special">{</span>
+  <span class="identifier">ip</span><span class="special">::</span><span class="identifier">tcp</span><span class="special">::</span><span class="identifier">iostream</span> <span class="identifier">stream</span><span class="special">;</span>
+  <span class="identifier">acceptor</span><span class="special">.</span><span class="identifier">accept</span><span class="special">(*</span><span class="identifier">stream</span><span class="special">.</span><span class="identifier">rdbuf</span><span class="special">());</span>
+  <span class="special">...</span>
+<span class="special">}</span>
+</pre>
+<a name="boost_asio.overview.networking.iostreams.see_also"></a><h6>
+<a name="id1077846"></a>
+          <a class="link" href="iostreams.html#boost_asio.overview.networking.iostreams.see_also">See Also</a>
+        </h6>
+<p>
+          <a class="link" href="../../reference/ip__tcp/iostream.html" title="ip::tcp::iostream">ip::tcp::iostream</a>,
+          <a class="link" href="../../reference/basic_socket_iostream.html" title="basic_socket_iostream">basic_socket_iostream</a>,
+          <a class="link" href="../../examples.html#boost_asio.examples.iostreams">iostreams examples</a>.
+        </p>
+<a name="boost_asio.overview.networking.iostreams.notes"></a><h6>
+<a name="id1077901"></a>
+          <a class="link" href="iostreams.html#boost_asio.overview.networking.iostreams.notes">Notes</a>
+        </h6>
+<p>
+          These iostream templates only support <code class="computeroutput"><span class="keyword">char</span></code>,
+          not <code class="computeroutput"><span class="keyword">wchar_t</span></code>, and do not perform
+          any code conversion.
+        </p>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2003 - 2008 Christopher M. Kohlhoff<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="protocols.html"><img src="../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../networking.html"><img src="../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../../boost_asio.html"><img src="../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="bsd_sockets.html"><img src="../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

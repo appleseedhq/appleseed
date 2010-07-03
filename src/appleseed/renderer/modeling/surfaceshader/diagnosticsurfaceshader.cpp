@@ -1,0 +1,410 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2010 Francois Beaune
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Interface header.
+#include "diagnosticsurfaceshader.h"
+
+// appleseed.renderer headers.
+#include "renderer/kernel/shading/ambientocclusion.h"
+#include "renderer/kernel/shading/shadingcontext.h"
+#include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/kernel/shading/shadingresult.h"
+#include "renderer/modeling/camera/camera.h"
+#include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/input/source.h"
+#include "renderer/modeling/scene/scene.h"
+
+// appleseed.foundation headers.
+#include "foundation/image/colorspace.h"
+#include "foundation/math/distance.h"
+#include "foundation/math/hash.h"
+#include "foundation/math/minmax.h"
+#include "foundation/math/scalar.h"
+
+using namespace foundation;
+using namespace std;
+
+namespace renderer
+{
+
+namespace
+{
+    // Utility function to compute a color from a given normal vector.
+    inline void normal_to_color(const Vector3d& n, Spectrum& output)
+    {
+        assert(abs(n[0]) <= 1.0);
+        assert(abs(n[1]) <= 1.0);
+        assert(abs(n[2]) <= 1.0);
+
+        output[0] = static_cast<float>((n[0] + 1.0) * 0.5);
+        output[1] = static_cast<float>((n[1] + 1.0) * 0.5);
+        output[2] = static_cast<float>((n[2] + 1.0) * 0.5);
+    }
+
+    // Utility function to compute a color from a given integer value.
+    template <typename T>
+    inline void integer_to_color(const T i, Spectrum& output)
+    {
+        const uint32 u = static_cast<uint32>(i);    // keep the low 32 bits
+
+        const uint32 x = hashint32(u);
+        const uint32 y = hashint32(u + 1);
+        const uint32 z = hashint32(u + 2);
+
+        output[0] = static_cast<float>(x) * (1.0f / 4294967295.0f);
+        output[1] = static_cast<float>(y) * (1.0f / 4294967295.0f);
+        output[2] = static_cast<float>(z) * (1.0f / 4294967295.0f);
+    }
+}
+
+
+//
+// Diagnostic surface shader.
+//
+
+const KeyValuePair<const char*, DiagnosticSurfaceShader::ShadingMode>
+    DiagnosticSurfaceShader::ShadingModeValues[] =
+{
+    { "coverage",               Coverage },
+    { "barycentric",            Barycentric },
+    { "uv",                     UV },
+    { "geometric_normal",       GeometricNormal },
+    { "shading_normal",         ShadingNormal },
+    { "assembly_instances",     AssemblyInstances },
+    { "object_instances",       ObjectInstances },
+    { "regions",                Regions },
+    { "triangles",              Triangles },
+    { "materials",              Materials  },
+    { "ambient_occlusion",      AmbientOcclusion },
+    { "wireframe" ,             Wireframe }
+};
+
+const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingModeNames[] =
+{
+    { "coverage",               "Coverage" },
+    { "barycentric",            "Barycentric Coordinates" },
+    { "uv",                     "UV Coordinates" },
+    { "geometric_normal",       "Geometric Normals" },
+    { "shading_normal",         "Shading Normals" },
+    { "assembly_instances",     "Assembly Instances" },
+    { "object_instances",       "Object Instances" },
+    { "regions",                "Regions" },
+    { "triangles",              "Triangles" },
+    { "materials",              "Materials" },
+    { "ambient_occlusion",      "Ambient Occlusion" },
+    { "wireframe" ,             "Wireframe" }
+};
+
+// Constructor.
+DiagnosticSurfaceShader::DiagnosticSurfaceShader(
+    const char*             name,
+    const ParamArray&       params)
+  : SurfaceShader(params)
+  , m_name(name)
+{
+    extract_parameters();
+}
+
+// Delete this instance.
+void DiagnosticSurfaceShader::release()
+{
+    delete this;
+}
+
+// Return a string identifying the model of this surface shader.
+const char* DiagnosticSurfaceShader::get_model() const
+{
+    return DiagnosticSurfaceShaderFactory::get_model();
+}
+
+// Return the name of this surface shader.
+const char* DiagnosticSurfaceShader::get_name() const
+{
+    return m_name.c_str();
+}
+
+// Evaluate the shading at a given point.
+void DiagnosticSurfaceShader::evaluate(
+    const ShadingContext&   shading_context,
+    const ShadingPoint&     shading_point,
+    ShadingResult&          shading_result) const
+{
+    // Set color space to linear RGB.
+    shading_result.m_color_space = ColorSpaceLinearRGB;
+
+    switch (m_shading_mode)
+    {
+      // Shade according to pixel coverage
+      case Coverage:
+        shading_result.m_color[0] = 1.0f;
+        shading_result.m_color[1] = 1.0f;
+        shading_result.m_color[2] = 1.0f;
+        break;
+
+      // Shade according to barycentric coordinates.
+      case Barycentric:
+        {
+            const Vector2d& bary = shading_point.get_bary();
+            const double w = 1.0 - bary[0] - bary[1];
+            shading_result.m_color[0] = static_cast<float>(w);
+            shading_result.m_color[1] = static_cast<float>(bary[0]);
+            shading_result.m_color[2] = static_cast<float>(bary[1]);
+        }
+        break;
+
+      // Shade according to UV coordinates from UV set #0.
+      case UV:
+        {
+            const Vector2d& uv0 = shading_point.get_uv(0);
+            const double w = 1.0 - uv0[0] - uv0[1];
+            shading_result.m_color[0] = static_cast<float>(w);
+            shading_result.m_color[1] = static_cast<float>(uv0[0]);
+            shading_result.m_color[2] = static_cast<float>(uv0[1]);
+        }
+        break;
+
+      // Shade according to the geometric normal.
+      case GeometricNormal:
+        normal_to_color(
+            shading_point.get_geometric_normal(),
+            shading_result.m_color);
+        break;
+
+      // Shade according to the shading normal.
+      case ShadingNormal:
+        normal_to_color(
+            shading_point.get_shading_normal(),
+            shading_result.m_color);
+        break;
+
+      // Assign an unique color to each assembly instance.
+      case AssemblyInstances:
+        integer_to_color(
+            shading_point.get_assembly_instance_uid(),
+            shading_result.m_color);
+        break;
+
+      // Assign an unique color to each object instance.
+      case ObjectInstances:
+        {
+            const uint32 h = mix32(
+                static_cast<uint32>(shading_point.get_assembly_instance_uid()),
+                static_cast<uint32>(shading_point.get_object_instance_index()));
+            integer_to_color(h, shading_result.m_color);
+        }
+        break;
+
+      // Assign an unique color to each region.
+      case Regions:
+        {
+            const uint32 h = mix32(
+                static_cast<uint32>(shading_point.get_assembly_instance_uid()),
+                static_cast<uint32>(shading_point.get_object_instance_index()),
+                static_cast<uint32>(shading_point.get_region_index()));
+            integer_to_color(h, shading_result.m_color);
+        }
+        break;
+
+      // Assign an unique color to each triangle.
+      case Triangles:
+        {
+            const uint32 h = mix32(
+                static_cast<uint32>(shading_point.get_assembly_instance_uid()),
+                static_cast<uint32>(shading_point.get_object_instance_index()),
+                static_cast<uint32>(shading_point.get_region_index()),
+                static_cast<uint32>(shading_point.get_triangle_index()));
+            integer_to_color(h, shading_result.m_color);
+        }
+        break;
+
+      // Assign an unique color to each material.
+      case Materials:
+        {
+            const ObjectInstance& object_instance = shading_point.get_object_instance();
+            const MaterialIndexArray& material_indices = object_instance.get_material_indices();
+            const size_t pa_index = shading_point.get_primitive_attribute_index();
+            if (pa_index < material_indices.size())
+            {
+                const size_t material_index = material_indices[pa_index];
+                const uint32 h = mix32(
+                    static_cast<uint32>(shading_point.get_assembly_instance_uid()),
+                    static_cast<uint32>(material_index));
+                integer_to_color(h, shading_result.m_color);
+            }
+            else
+            {
+                shading_result.m_color[0] = 1.0f;
+                shading_result.m_color[1] = 0.0f;
+                shading_result.m_color[2] = 1.0f;
+            }
+        }
+        break;
+
+      // Ambient occlusion.
+      case AmbientOcclusion:
+        {
+            // Compute the occlusion.
+            const double occlusion =
+                compute_ambient_occlusion(
+                    shading_context.get_intersector(),
+                    shading_context.get_sampling_context(),
+                    shading_point.get_point(),
+                    shading_point.get_geometric_normal(),
+                    shading_point.get_shading_basis(),
+                    m_ao_max_distance,
+                    m_ao_samples,
+                    &shading_point);
+
+            // Return a gray scale value proportional to the accessibility.
+            const float accessibility = static_cast<float>(1.0 - occlusion);
+            shading_result.m_color[0] = accessibility;
+            shading_result.m_color[1] = accessibility;
+            shading_result.m_color[2] = accessibility;
+        }
+        break;
+
+      // Wireframe.
+      case Wireframe:
+        {
+            // Retrieve the camera.
+            const Scene& scene = shading_point.get_scene();
+            const Camera* camera = scene.get_camera();
+            assert(camera);
+            
+            // Retrieve the camera transformation.
+            const Transformd& camera_transform = camera->get_transform();
+
+            // Retrieve world space triangle vertices.
+            const Vector3d& v0 = shading_point.get_vertex(0);
+            const Vector3d& v1 = shading_point.get_vertex(1);
+            const Vector3d& v2 = shading_point.get_vertex(2);
+
+            // Transform triangle vertices to camera space.
+            const Vector3d v0_cs = camera_transform.transform_point_to_local(v0);
+            const Vector3d v1_cs = camera_transform.transform_point_to_local(v1);
+            const Vector3d v2_cs = camera_transform.transform_point_to_local(v2);
+
+            // Project triangle vertices to film space.
+            const Vector2d v0_fs = camera->project(v0_cs);
+            const Vector2d v1_fs = camera->project(v1_cs);
+            const Vector2d v2_fs = camera->project(v2_cs);
+
+            // Retrieve world space intersection point.
+            const Vector3d& point = shading_point.get_point();
+
+            // Transform intersection point to camera space.
+            const Vector3d point_cs = camera_transform.transform_point_to_local(point);
+
+            // Project intersection point to film space.
+            const Vector2d point_fs = camera->project(point_cs);
+
+            // Compute film space distance from intersection point to triangle edges.
+            const double d0 = square_distance_point_segment(point_fs, v0_fs, v1_fs);
+            const double d1 = square_distance_point_segment(point_fs, v1_fs, v2_fs);
+            const double d2 = square_distance_point_segment(point_fs, v2_fs, v0_fs);
+
+            // Film space thickness of the wires.
+            const double SquareWireThickness = square(0.002);
+
+            if (min(d0, d1, d2) < SquareWireThickness)
+            {
+                shading_result.m_color[0] = 1.0f;
+                shading_result.m_color[1] = 1.0f;
+                shading_result.m_color[2] = 1.0f;
+            }
+            else
+            {
+                shading_result.m_color[0] = 0.0f;
+                shading_result.m_color[1] = 0.0f;
+                shading_result.m_color[2] = 0.8f;
+            }
+        }
+        break;
+
+      // Invalid shader.
+      default:
+        assert(false);
+        shading_result.m_color[0] = 1.0f;
+        shading_result.m_color[1] = 0.0f;
+        shading_result.m_color[2] = 1.0f;
+        break;
+    }
+
+    // Set alpha channel to full opacity.
+    shading_result.m_alpha = Alpha(1.0);
+}
+
+void DiagnosticSurfaceShader::extract_parameters()
+{
+    // Retrieve shading mode.
+    const string mode_string = m_params.get_required<string>("mode", "coverage");
+    const KeyValuePair<const char*, ShadingMode>* mode_pair =
+        lookup_kvpair_array(ShadingModeValues, ShadingModeCount, mode_string);
+    if (mode_pair)
+    {
+        m_shading_mode = mode_pair->m_value;
+    }
+    else
+    {
+        RENDERER_LOG_ERROR(
+            "invalid shading mode \"%s\", using default value \"coverage\"",
+            mode_string.c_str());
+        m_shading_mode = Coverage;
+    }
+
+    // Retrieve ambient occlusion parameters.
+    if (m_shading_mode == AmbientOcclusion)
+    {
+        const ParamArray& ao_params = m_params.child("ambient_occlusion");
+        m_ao_max_distance = ao_params.get_required<double>("max_distance", 1.0);
+        m_ao_samples = ao_params.get_required<size_t>("samples", 16);
+    }
+}
+
+
+//
+// DiagnosticSurfaceShaderFactory class implementation.
+//
+
+// Return a string identifying this surface shader model.
+const char* DiagnosticSurfaceShaderFactory::get_model()
+{
+    return "diagnostic_surface_shader";
+}
+
+// Create a new diagnostic surface shader.
+auto_release_ptr<SurfaceShader> DiagnosticSurfaceShaderFactory::create(
+    const char*         name,
+    const ParamArray&   params)
+{
+    return
+        auto_release_ptr<SurfaceShader>(
+            new DiagnosticSurfaceShader(name, params));
+}
+
+}   // namespace renderer

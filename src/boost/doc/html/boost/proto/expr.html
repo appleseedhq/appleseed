@@ -1,0 +1,245 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Struct template expr</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../proto/reference.html#header.boost.proto.expr_hpp" title="Header &lt;boost/proto/expr.hpp&gt;">
+<link rel="prev" href="eval_id2548163.html" title="Function eval">
+<link rel="next" href="expr/result.html" title="Struct template result">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="eval_id2548163.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../proto/reference.html#header.boost.proto.expr_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="expr/result.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.proto.expr"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Struct template expr</span></h2>
+<p>boost::proto::expr &#8212; Representation of a node in an expression tree.</p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../proto/reference.html#header.boost.proto.expr_hpp" title="Header &lt;boost/proto/expr.hpp&gt;">boost/proto/expr.hpp</a>&gt;
+
+</em></span><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Tag, <span class="bold"><strong>typename</strong></span> Args, <span class="bold"><strong>long</strong></span> Arity = Args::arity&gt; 
+<span class="bold"><strong>struct</strong></span> <a class="link" href="expr.html" title="Struct template expr">expr</a> {
+  <span class="emphasis"><em>// types</em></span>
+  <span class="bold"><strong>typedef</strong></span> Tag                   <a name="boost.proto.expr.proto_tag"></a>proto_tag;         
+  <span class="bold"><strong>typedef</strong></span> Args                  <a name="boost.proto.expr.proto_args"></a>proto_args;        
+  <span class="bold"><strong>typedef</strong></span> mpl::long_&lt; Arity &gt;   <a name="boost.proto.expr.proto_arity"></a>proto_arity;       
+  <span class="bold"><strong>typedef</strong></span> <a class="link" href="default_domain.html" title="Struct default_domain">proto::default_domain</a> <a name="boost.proto.expr.proto_domain"></a>proto_domain;      
+  <span class="bold"><strong>typedef</strong></span> expr                  <a name="boost.proto.expr.proto_base_expr"></a>proto_base_expr;   
+  <span class="bold"><strong>typedef</strong></span> expr                  <a name="boost.proto.expr.proto_derived_expr"></a>proto_derived_expr;
+  <span class="bold"><strong>typedef</strong></span> <span class="bold"><strong>typename</strong></span> Args::child<em class="replaceable"><code>N</code></em> <a name="boost.proto.expr.proto_childN"></a>proto_childN;        <span class="emphasis"><em>// For each <em class="replaceable"><code>N</code></em> in <em class="replaceable"><code>[0,max(Arity,1))</code></em>.</em></span>
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Signature&gt; 
+  <span class="bold"><strong>struct</strong></span> <a class="link" href="expr/result.html" title="Struct template result">result</a> {
+    <span class="emphasis"><em>// types</em></span>
+    <span class="bold"><strong>typedef</strong></span> <em class="replaceable"><code>unspecified</code></em> <a class="link" href="expr/result.html#boost.proto.expr.result.type">type</a>;
+  };
+
+  <span class="emphasis"><em>// <a class="link" href="expr.html#id2548591-bb">public static functions</a></em></span>
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span>... A&gt; <span class="type"><span class="bold"><strong>static</strong></span> expr <span class="bold"><strong>const</strong></span></span> <a class="link" href="expr.html#id2548599-bb">make</a>(A <span class="bold"><strong>const</strong></span> &amp;...);
+
+  <span class="emphasis"><em>// <a class="link" href="expr.html#id2548657-bb">public member functions</a></em></span>
+  <span class="type">expr &amp;</span> <a class="link" href="expr.html#id2548662-bb">proto_base</a>();
+  <span class="type">expr <span class="bold"><strong>const</strong></span> &amp;</span> <a class="link" href="expr.html#id2548677-bb">proto_base</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> A&gt; <span class="type"><em class="replaceable"><code>unspecified</code></em></span> <a class="link" href="expr.html#id2548701-bb"><span class="bold"><strong>operator</strong></span>=</a>(A &amp;);
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> A&gt; <span class="type"><em class="replaceable"><code>unspecified</code></em></span> <a class="link" href="expr.html#id2548746-bb"><span class="bold"><strong>operator</strong></span>=</a>(A <span class="bold"><strong>const</strong></span> &amp;);
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> A&gt; <span class="type"><em class="replaceable"><code>unspecified</code></em></span> <a class="link" href="expr.html#id2548785-bb"><span class="bold"><strong>operator</strong></span>=</a>(A &amp;) <span class="bold"><strong>const</strong></span>;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> A&gt; <span class="type"><em class="replaceable"><code>unspecified</code></em></span> <a class="link" href="expr.html#id2548826-bb"><span class="bold"><strong>operator</strong></span>=</a>(A <span class="bold"><strong>const</strong></span> &amp;) <span class="bold"><strong>const</strong></span>;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> A&gt; <span class="type"><em class="replaceable"><code>unspecified</code></em></span> <a class="link" href="expr.html#id2548870-bb"><span class="bold"><strong>operator</strong></span>[]</a>(A &amp;);
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> A&gt; <span class="type"><em class="replaceable"><code>unspecified</code></em></span> <a class="link" href="expr.html#id2548914-bb"><span class="bold"><strong>operator</strong></span>[]</a>(A <span class="bold"><strong>const</strong></span> &amp;);
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> A&gt; <span class="type"><em class="replaceable"><code>unspecified</code></em></span> <a class="link" href="expr.html#id2548953-bb"><span class="bold"><strong>operator</strong></span>[]</a>(A &amp;) <span class="bold"><strong>const</strong></span>;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> A&gt; <span class="type"><em class="replaceable"><code>unspecified</code></em></span> <a class="link" href="expr.html#id2548994-bb"><span class="bold"><strong>operator</strong></span>[]</a>(A <span class="bold"><strong>const</strong></span> &amp;) <span class="bold"><strong>const</strong></span>;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span>... A&gt; <span class="type"><em class="replaceable"><code>unspecified</code></em></span> <a class="link" href="expr.html#id2549038-bb"><span class="bold"><strong>operator</strong></span>()</a>(A <span class="bold"><strong>const</strong></span> &amp;...);
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span>... A&gt; <span class="type"><em class="replaceable"><code>unspecified</code></em></span> <a class="link" href="expr.html#id2549087-bb"><span class="bold"><strong>operator</strong></span>()</a>(A <span class="bold"><strong>const</strong></span> &amp;...) <span class="bold"><strong>const</strong></span>;
+  <span class="type">proto_child<em class="replaceable"><code>N</code></em></span> childN;  <span class="emphasis"><em>// For each <em class="replaceable"><code>N</code></em> in <em class="replaceable"><code>[0,max(Arity,1))</code></em>.</em></span>
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id3171829"></a><h2>Description</h2>
+<p>
+            <code class="computeroutput">proto::expr&lt;&gt;</code> is a node in an expression
+            template tree. It is a container for its child sub-trees. It also serves as the
+            terminal nodes of the tree.
+          </p>
+<p>
+            <code class="computeroutput">Tag</code> is type that represents the operation
+            encoded by this expression. It is typically one of the structs in the
+            <code class="computeroutput">boost::proto::tag</code> namespace, but it doesn't
+            have to be. If <code class="computeroutput">Arity</code> is 0 then this
+            <code class="computeroutput">expr&lt;&gt;</code> type represents a leaf in the
+            expression tree.
+          </p>
+<p>
+            <code class="computeroutput">Args</code> is a list of types representing
+            the children of this expression. It is an instantiation of one of
+            <code class="computeroutput"><a class="link" href="listN.html" title="Struct template listN">proto::list1&lt;&gt;</a></code>,
+            <code class="computeroutput"><a class="link" href="listN.html" title="Struct template listN">proto::list2&lt;&gt;</a></code>,
+            etc. The child types
+            must all themselves be either <code class="computeroutput">proto::expr&lt;&gt;</code>
+            or <code class="computeroutput">proto::expr&lt;&gt;&amp;</code> (or extensions thereof via
+            <code class="computeroutput"><a class="link" href="extends.html" title="Struct template extends">proto::extends&lt;&gt;</a></code> or
+            <code class="computeroutput"><a class="link" href="../../BOOST_PROTO_EXTENDS.html" title="Macro BOOST_PROTO_EXTENDS">BOOST_PROTO_EXTENDS</a>()</code>), unless
+            <code class="computeroutput">Arity</code> is 0, in which case
+            <code class="computeroutput">Args</code> must be
+            <code class="computeroutput">proto::term&lt;T&gt;</code>, where
+            <code class="computeroutput">T</code> can be any type.
+          </p>
+<p>
+            <code class="computeroutput">proto::expr&lt;&gt;</code> is a valid Fusion
+            random-access sequence, where the elements of the sequence are the child
+            expressions.
+          </p>
+<div class="refsect2" lang="en">
+<a name="id3171984"></a><h3>
+<a name="id2548591-bb"></a><code class="computeroutput">expr</code> public static functions</h3>
+<div class="orderedlist"><ol type="1"><li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span>... A&gt; <span class="type"><span class="bold"><strong>static</strong></span> expr <span class="bold"><strong>const</strong></span></span> <a name="id2548599-bb"></a>make(A <span class="bold"><strong>const</strong></span> &amp;... a);</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term">Requires:</span></p></td>
+<td><p>
+                The number of supplied arguments must be <code class="computeroutput">max(Arity,1)</code>.
+              </p></td>
+</tr>
+<tr>
+<td><p><span class="term">Returns:</span></p></td>
+<td><p>
+                A new <code class="computeroutput">expr</code> object initialized with the specified arguments.
+              </p></td>
+</tr>
+</tbody>
+</table></div>
+</li></ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id3172080"></a><h3>
+<a name="id2548657-bb"></a><code class="computeroutput">expr</code> public member functions</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><span class="type">expr &amp;</span> <a name="id2548662-bb"></a>proto_base();</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody><tr>
+<td><p><span class="term">Returns:</span></p></td>
+<td><p><code class="computeroutput">*this</code></p></td>
+</tr></tbody>
+</table></div>
+</li>
+<li>
+<pre class="literallayout"><span class="type">expr <span class="bold"><strong>const</strong></span> &amp;</span> <a name="id2548677-bb"></a>proto_base() <span class="bold"><strong>const</strong></span>;</pre>
+<p>This is an overloaded member function, provided for convenience. It differs from
+              the above function only in what argument(s) it accepts.</p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> A&gt; <span class="type"><em class="replaceable"><code>unspecified</code></em></span> <a name="id2548701-bb"></a><span class="bold"><strong>operator</strong></span>=(A &amp; a);</pre>
+<p>Lazy assignment expression</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody><tr>
+<td><p><span class="term">Returns:</span></p></td>
+<td><p>A new expression node representing the assignment operation.</p></td>
+</tr></tbody>
+</table></div>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> A&gt; <span class="type"><em class="replaceable"><code>unspecified</code></em></span> <a name="id2548746-bb"></a><span class="bold"><strong>operator</strong></span>=(A <span class="bold"><strong>const</strong></span> &amp; a);</pre>
+<p>
+                This is an overloaded member function, provided for convenience. It differs from
+                the above function only in what argument(s) it accepts.
+              </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> A&gt; <span class="type"><em class="replaceable"><code>unspecified</code></em></span> <a name="id2548785-bb"></a><span class="bold"><strong>operator</strong></span>=(A &amp; a) <span class="bold"><strong>const</strong></span>;</pre>
+<p>
+                This is an overloaded member function, provided for convenience. It differs from
+                the above function only in what argument(s) it accepts.
+              </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> A&gt; <span class="type"><em class="replaceable"><code>unspecified</code></em></span> <a name="id2548826-bb"></a><span class="bold"><strong>operator</strong></span>=(A <span class="bold"><strong>const</strong></span> &amp; a) <span class="bold"><strong>const</strong></span>;</pre>
+<p>
+                This is an overloaded member function, provided for convenience. It differs from
+                the above function only in what argument(s) it accepts.
+              </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> A&gt; <span class="type"><em class="replaceable"><code>unspecified</code></em></span> <a name="id2548870-bb"></a><span class="bold"><strong>operator</strong></span>[](A &amp; a);</pre>
+<p>Lazy subscript expression</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody><tr>
+<td><p><span class="term">Returns:</span></p></td>
+<td><p>A new expression node representing the subscript operation.</p></td>
+</tr></tbody>
+</table></div>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> A&gt; <span class="type"><em class="replaceable"><code>unspecified</code></em></span> <a name="id2548914-bb"></a><span class="bold"><strong>operator</strong></span>[](A <span class="bold"><strong>const</strong></span> &amp; a);</pre>
+<p>
+                This is an overloaded member function, provided for convenience. It differs from
+                the above function only in what argument(s) it accepts.
+              </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> A&gt; <span class="type"><em class="replaceable"><code>unspecified</code></em></span> <a name="id2548953-bb"></a><span class="bold"><strong>operator</strong></span>[](A &amp; a) <span class="bold"><strong>const</strong></span>;</pre>
+<p>
+                This is an overloaded member function, provided for convenience. It differs from
+                the above function only in what argument(s) it accepts.
+              </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> A&gt; <span class="type"><em class="replaceable"><code>unspecified</code></em></span> <a name="id2548994-bb"></a><span class="bold"><strong>operator</strong></span>[](A <span class="bold"><strong>const</strong></span> &amp; a) <span class="bold"><strong>const</strong></span>;</pre>
+<p>
+                This is an overloaded member function, provided for convenience. It differs from
+                the above function only in what argument(s) it accepts.
+              </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span>... A&gt; <span class="type"><em class="replaceable"><code>unspecified</code></em></span> <a name="id2549038-bb"></a><span class="bold"><strong>operator</strong></span>()(A <span class="bold"><strong>const</strong></span> &amp;... a);</pre>
+<p>Lazy function call</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody><tr>
+<td><p><span class="term">Returns:</span></p></td>
+<td><p>A new expression node representing the function call operation.</p></td>
+</tr></tbody>
+</table></div>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span>... A&gt; <span class="type"><em class="replaceable"><code>unspecified</code></em></span> <a name="id2549087-bb"></a><span class="bold"><strong>operator</strong></span>()(A <span class="bold"><strong>const</strong></span> &amp;... a) <span class="bold"><strong>const</strong></span>;</pre>
+<p>
+                This is an overloaded member function, provided for convenience. It differs from
+                the above function only in what argument(s) it accepts.
+              </p>
+</li>
+</ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2008 Eric Niebler<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="eval_id2548163.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../proto/reference.html#header.boost.proto.expr_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="expr/result.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

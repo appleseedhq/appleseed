@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- Copyright Aleksey Gurtovoy 2006. Distributed under the Boost -->
+<!-- Software License, Version 1.0. (See accompanying -->
+<!-- file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt) -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.3.6: http://docutils.sourceforge.net/" />
+<title>The MPL Reference Manual: Associative Sequence</title>
+<link rel="stylesheet" href="../style.css" type="text/css" />
+</head>
+<body class="docframe refmanual">
+<table class="header"><tr class="header"><td class="header-group navigation-bar"><span class="navigation-group"><a href="./back-extensible-sequence.html" class="navigation-link">Prev</a>&nbsp;<a href="./extensible-associative.html" class="navigation-link">Next</a></span><span class="navigation-group-separator">&nbsp;|&nbsp;</span><span class="navigation-group"><a href="./back-extensible-sequence.html" class="navigation-link">Back</a>&nbsp;<a href="./extensible-associative.html" class="navigation-link">Along</a></span><span class="navigation-group-separator">&nbsp;|&nbsp;</span><span class="navigation-group"><a href="./concepts.html" class="navigation-link">Up</a>&nbsp;<a href="../refmanual.html" class="navigation-link">Home</a></span><span class="navigation-group-separator">&nbsp;|&nbsp;</span><span class="navigation-group"><a href="./refmanual_toc.html" class="navigation-link">Full TOC</a></span></td>
+<td class="header-group page-location"><a href="../refmanual.html" class="navigation-link">Front Page</a> / <a href="./sequences.html" class="navigation-link">Sequences</a> / <a href="./concepts.html" class="navigation-link">Concepts</a> / <a href="./associative-sequence.html" class="navigation-link">Associative Sequence</a></td>
+</tr></table><div class="header-separator"></div>
+<div class="section" id="associative-sequence">
+<h1><a class="toc-backref" href="./concepts.html#id330" name="associative-sequence">Associative Sequence</a></h1>
+<div class="section" id="associative-description">
+<h3><a class="subsection-title" href="#description" name="description">Description</a></h3>
+<p>An <a class="reference" href="./associative-sequence.html">Associative Sequence</a> is a <a class="reference" href="./forward-sequence.html">Forward Sequence</a> that allows efficient retrieval of 
+elements based on keys. Unlike associative containers in the C++ Standard Library, 
+MPL associative sequences have no associated ordering relation. Instead, 
+<em>type identity</em> is used to impose an equivalence relation on keys, and the 
+order in which sequence elements are traversed during iteration is left 
+unspecified.</p>
+</div>
+<div class="section" id="associative-definitions">
+<h3><a class="subsection-title" href="#definitions" name="definitions">Definitions</a></h3>
+<a class="target" id="key-part" name="key-part"></a><a class="target" id="value-part" name="value-part"></a><ul class="simple">
+<li>A <em>key</em> is a part of the element type used to identify and retrieve 
+the element within the sequence.</li>
+<li>A <em>value</em> is a part of the element type retrievied from the sequence 
+by its key.</li>
+</ul>
+</div>
+<div class="section" id="associative-expression-requirements">
+<h3><a class="subsection-title" href="#expression-requirements" name="expression-requirements">Expression requirements</a></h3>
+<p>In the following table and subsequent specifications, <tt class="literal"><span class="pre">s</span></tt> is an <a class="reference" href="./associative-sequence.html">Associative Sequence</a>, 
+<tt class="literal"><span class="pre">x</span></tt> is a sequence element, and <tt class="literal"><span class="pre">k</span></tt> and <tt class="literal"><span class="pre">def</span></tt> are arbitrary types.</p>
+<p>In addition to the requirements defined in <a class="reference" href="./forward-sequence.html">Forward Sequence</a>, 
+the following must be met:</p>
+<table border="1" class="table">
+<colgroup>
+<col width="33%" />
+<col width="38%" />
+<col width="29%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th>Expression</th>
+<th>Type</th>
+<th>Complexity</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="literal"><span class="pre"><a href="./has-key.html" class="identifier">has_key</a>&lt;s,k&gt;::type</span></tt></td>
+<td>Boolean <a class="reference" href="./integral-constant.html">Integral Constant</a></td>
+<td>Amortized constant time</td>
+</tr>
+<tr><td><tt class="literal"><span class="pre"><a href="./count.html" class="identifier">count</a>&lt;s,k&gt;::type</span></tt></td>
+<td><a class="reference" href="./integral-constant.html">Integral Constant</a></td>
+<td>Amortized constant time</td>
+</tr>
+<tr><td><tt class="literal"><span class="pre"><a href="./order.html" class="identifier">order</a>&lt;s,k&gt;::type</span></tt></td>
+<td><a class="reference" href="./integral-constant.html">Integral Constant</a> or <tt class="literal"><span class="pre"><a href="./void.html" class="identifier">void_</a></span></tt></td>
+<td>Amortized constant time</td>
+</tr>
+<tr><td><tt class="literal"><span class="pre"><a href="./at.html" class="identifier">at</a>&lt;s,k&gt;::type</span></tt></td>
+<td>Any type</td>
+<td>Amortized constant time</td>
+</tr>
+<tr><td><tt class="literal"><span class="pre"><a href="./at.html" class="identifier">at</a>&lt;s,k,def&gt;::type</span></tt></td>
+<td>Any type</td>
+<td>Amortized constant time</td>
+</tr>
+<tr><td><tt class="literal"><span class="pre"><a href="./key-type.html" class="identifier">key_type</a>&lt;s,x&gt;::type</span></tt></td>
+<td>Any type</td>
+<td>Amortized constant time</td>
+</tr>
+<tr><td><tt class="literal"><span class="pre"><a href="./value-type.html" class="identifier">value_type</a>&lt;s,x&gt;::type</span></tt></td>
+<td>Any type</td>
+<td>Amortized constant time</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="associative-expression-semantics">
+<h3><a class="subsection-title" href="#expression-semantics" name="expression-semantics">Expression semantics</a></h3>
+<p>The semantics of an expression are defined only
+where they differ from, or are not defined in <a class="reference" href="./forward-sequence.html">Forward Sequence</a>.</p>
+<table border="1" class="table">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th>Expression</th>
+<th>Semantics</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="literal"><span class="pre"><a href="./has-key.html" class="identifier">has_key</a>&lt;s,k&gt;::type</span></tt></td>
+<td>A boolean <a class="reference" href="./integral-constant.html">Integral Constant</a> <tt class="literal"><span class="pre">c</span></tt> such that
+<tt class="literal"><span class="pre">c::value</span> <span class="pre">==</span> <span class="pre">true</span></tt> if and only if there is one or more
+elements with the key <tt class="literal"><span class="pre">k</span></tt> in <tt class="literal"><span class="pre">s</span></tt>; see <a class="refentry reference" href="./has-key.html"><tt class="refentry literal"><span class="pre">has_key</span></tt></a>.</td>
+</tr>
+<tr><td><tt class="literal"><span class="pre"><a href="./count.html" class="identifier">count</a>&lt;s,k&gt;::type</span></tt></td>
+<td>The number of elements with the key <tt class="literal"><span class="pre">k</span></tt> in <tt class="literal"><span class="pre">s</span></tt>;
+see <a class="refentry reference" href="./count.html"><tt class="refentry literal"><span class="pre">count</span></tt></a>.</td>
+</tr>
+<tr><td><tt class="literal"><span class="pre"><a href="./order.html" class="identifier">order</a>&lt;s,k&gt;::type</span></tt></td>
+<td>A unique unsigned <a class="reference" href="./integral-constant.html">Integral Constant</a> associated
+with the key <tt class="literal"><span class="pre">k</span></tt> in the sequence <tt class="literal"><span class="pre">s</span></tt>; see <a class="refentry reference" href="./order.html"><tt class="refentry literal"><span class="pre">order</span></tt></a>.</td>
+</tr>
+<tr><td><pre class="first last literal-block">
+<a href="./at.html" class="identifier">at</a>&lt;s,k&gt;::type
+<a href="./at.html" class="identifier">at</a>&lt;s,k,def&gt;::type
+</pre>
+</td>
+<td>The first element associated with the key <tt class="literal"><span class="pre">k</span></tt>
+in the sequence <tt class="literal"><span class="pre">s</span></tt>; see <a class="refentry reference" href="./at.html"><tt class="refentry literal"><span class="pre">at</span></tt></a>.</td>
+</tr>
+<tr><td><tt class="literal"><span class="pre"><a href="./key-type.html" class="identifier">key_type</a>&lt;s,x&gt;::type</span></tt></td>
+<td>The key part of the element <tt class="literal"><span class="pre">x</span></tt> that would be
+used to identify <tt class="literal"><span class="pre">x</span></tt> in <tt class="literal"><span class="pre">s</span></tt>; see <a class="refentry reference" href="./key-type.html"><tt class="refentry literal"><span class="pre">key_type</span></tt></a>.</td>
+</tr>
+<tr><td><tt class="literal"><span class="pre"><a href="./value-type.html" class="identifier">value_type</a>&lt;s,x&gt;::type</span></tt></td>
+<td>The value part of the element <tt class="literal"><span class="pre">x</span></tt> that would be
+used for <tt class="literal"><span class="pre">x</span></tt> in <tt class="literal"><span class="pre">s</span></tt>; see <a class="refentry reference" href="./value-type.html"><tt class="refentry literal"><span class="pre">value_type</span></tt></a>.</td>
+</tr>
+</tbody>
+</table>
+<!-- Invariants
+- - - - - - - - - -
+
+For any associative sequence ``s`` the following invariants always hold: 
+
+ * ??? -->
+</div>
+<div class="section" id="associative-models">
+<h3><a class="subsection-title" href="#models" name="models">Models</a></h3>
+<ul class="simple">
+<li><a class="refentry reference" href="./set.html"><tt class="refentry literal"><span class="pre">set</span></tt></a></li>
+<li><a class="refentry reference" href="./map.html"><tt class="refentry literal"><span class="pre">map</span></tt></a></li>
+</ul>
+<!-- * |multiset| -->
+</div>
+<div class="section" id="associative-see-also">
+<h3><a class="subsection-title" href="#see-also" name="see-also">See also</a></h3>
+<p><a class="reference" href="./sequences.html">Sequences</a>, <a class="reference" href="./extensible-associative.html">Extensible Associative Sequence</a>, <a class="refentry reference" href="./has-key.html"><tt class="refentry literal"><span class="pre">has_key</span></tt></a>, <a class="refentry reference" href="./count.html"><tt class="refentry literal"><span class="pre">count</span></tt></a>, <a class="refentry reference" href="./order.html"><tt class="refentry literal"><span class="pre">order</span></tt></a>, <a class="refentry reference" href="./at.html"><tt class="refentry literal"><span class="pre">at</span></tt></a>, <a class="refentry reference" href="./key-type.html"><tt class="refentry literal"><span class="pre">key_type</span></tt></a>, <a class="refentry reference" href="./value-type.html"><tt class="refentry literal"><span class="pre">value_type</span></tt></a></p>
+<!-- modtime: November 13, 2004 00:51:14 +0000 -->
+<!-- Sequences/Concepts//Extensible Associative Sequence |80 -->
+</div>
+</div>
+
+<div class="footer-separator"></div>
+<table class="footer"><tr class="footer"><td class="header-group navigation-bar"><span class="navigation-group"><a href="./back-extensible-sequence.html" class="navigation-link">Prev</a>&nbsp;<a href="./extensible-associative.html" class="navigation-link">Next</a></span><span class="navigation-group-separator">&nbsp;|&nbsp;</span><span class="navigation-group"><a href="./back-extensible-sequence.html" class="navigation-link">Back</a>&nbsp;<a href="./extensible-associative.html" class="navigation-link">Along</a></span><span class="navigation-group-separator">&nbsp;|&nbsp;</span><span class="navigation-group"><a href="./concepts.html" class="navigation-link">Up</a>&nbsp;<a href="../refmanual.html" class="navigation-link">Home</a></span><span class="navigation-group-separator">&nbsp;|&nbsp;</span><span class="navigation-group"><a href="./refmanual_toc.html" class="navigation-link">Full TOC</a></span></td>
+</tr></table></body>
+</html>

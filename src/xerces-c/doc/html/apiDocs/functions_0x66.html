@@ -1,0 +1,1009 @@
+<HTML><HEAD><SCRIPT language="JavaScript" src="../resources/script.js" type="text/javascript"></SCRIPT><TITLE>Xerces-C++: Class Members</TITLE><link href="XercesApi.css" rel="stylesheet" type="text/css"></HEAD><BODY alink="#ff0000" bgcolor="#ffffff" leftmargin="4" link="#0000ff" marginheight="4" marginwidth="4" text="#000000" topmargin="4" vlink="#0000aa"><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD align="left" height="60" rowspan="3" valign="top" width="135"><IMG border="0" height="60" hspace="0" src="../resources/logo.gif" vspace="0" width="135"></TD><TD align="left" colspan="4" height="5" valign="top" width="456"><IMG border="0" height="5" hspace="0" src="../resources/line.gif" vspace="0" width="456"></TD><TD align="left" height="60" rowspan="3" valign="top" width="29"><IMG border="0" height="60" hspace="0" src="../resources/right.gif" vspace="0" width="29"></TD></TR><TR><TD align="left" bgcolor="#0086b2" colspan="4" height="35" valign="top" width="456"><IMG alt="" border="0" height="35" hspace="0" src="../graphics/api-header.jpg" vspace="0" width="456"></TD></TR><TR><TD align="left" height="20" valign="top" width="168"><IMG border="0" height="20" hspace="0" src="../resources/bottom.gif" vspace="0" width="168"></TD><TD align="left" height="20" valign="top" width="96"><A href="http://xml.apache.org/" onMouseOut="rolloverOff('xml');" onMouseOver="rolloverOn('xml');" target="new"><IMG alt="http://xml.apache.org/" border="0" height="20" hspace="0" name="xml" onLoad="rolloverLoad('xml','../resources/button-xml-hi.gif','../resources/button-xml-lo.gif');" src="../resources/button-xml-lo.gif" vspace="0" width="96"></A></TD><TD align="left" height="20" valign="top" width="96"><A href="http://www.apache.org/" onMouseOut="rolloverOff('asf');" onMouseOver="rolloverOn('asf');" target="new"><IMG alt="http://www.apache.org/" border="0" height="20" hspace="0" name="asf" onLoad="rolloverLoad('asf','../resources/button-asf-hi.gif','../resources/button-asf-lo.gif');" src="../resources/button-asf-lo.gif" vspace="0" width="96"></A></TD><TD align="left" height="20" valign="top" width="96"><A href="http://www.w3.org/" onMouseOut="rolloverOff('w3c');" onMouseOver="rolloverOn('w3c');" target="new"><IMG alt="http://www.w3.org/" border="0" height="20" hspace="0" name="w3c" onLoad="rolloverLoad('w3c','../resources/button-w3c-hi.gif','../resources/button-w3c-lo.gif');" src="../resources/button-w3c-lo.gif" vspace="0" width="96"></A></TD></TR></TABLE><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD align="left" valign="top" width="120"><IMG border="0" height="14" hspace="0" src="../resources/join.gif" vspace="0" width="120"><BR>
+  <A href="../../index.html" onMouseOut="rolloverOff('side-ext-2');" onMouseOver="rolloverOn('side-ext-2');"><IMG alt="Home" border="0" height="12" hspace="0" name="side-ext-2" onLoad="rolloverLoad('side-ext-2','../graphics/ext-2-label-2.jpg','../graphics/ext-2-label-3.jpg');" src="../graphics/ext-2-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../index.html" onMouseOut="rolloverOff('side-index');" onMouseOver="rolloverOn('side-index');"><IMG alt="Readme" border="0" height="12" hspace="0" name="side-index" onLoad="rolloverLoad('side-index','../graphics/index-label-2.jpg','../graphics/index-label-3.jpg');" src="../graphics/index-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../charter.html" onMouseOut="rolloverOff('side-charter');" onMouseOver="rolloverOn('side-charter');"><IMG alt="Charter" border="0" height="12" hspace="0" name="side-charter" onLoad="rolloverLoad('side-charter','../graphics/charter-label-2.jpg','../graphics/charter-label-3.jpg');" src="../graphics/charter-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../releases.html" onMouseOut="rolloverOff('side-releases');" onMouseOver="rolloverOn('side-releases');"><IMG alt="Release Info" border="0" height="12" hspace="0" name="side-releases" onLoad="rolloverLoad('side-releases','../graphics/releases-label-2.jpg','../graphics/releases-label-3.jpg');" src="../graphics/releases-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../install.html" onMouseOut="rolloverOff('side-install');" onMouseOver="rolloverOn('side-install');"><IMG alt="Installation" border="0" height="12" hspace="0" name="side-install" onLoad="rolloverLoad('side-install','../graphics/install-label-2.jpg','../graphics/install-label-3.jpg');" src="../graphics/install-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="http://xerces.apache.org/xerces-c/download.cgi" onMouseOut="rolloverOff('side-ext-20');" onMouseOver="rolloverOn('side-ext-20');"><IMG alt="Download" border="0" height="12" hspace="0" name="side-ext-20" onLoad="rolloverLoad('side-ext-20','../graphics/ext-20-label-2.jpg','../graphics/ext-20-label-3.jpg');" src="../graphics/ext-20-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../build.html" onMouseOut="rolloverOff('side-build');" onMouseOver="rolloverOn('side-build');"><IMG alt="Build Instructions" border="0" height="12" hspace="0" name="side-build" onLoad="rolloverLoad('side-build','../graphics/build-label-2.jpg','../graphics/build-label-3.jpg');" src="../graphics/build-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../program.html" onMouseOut="rolloverOff('side-program');" onMouseOver="rolloverOn('side-program');"><IMG alt="Programming" border="0" height="12" hspace="0" name="side-program" onLoad="rolloverLoad('side-program','../graphics/program-label-2.jpg','../graphics/program-label-3.jpg');" src="../graphics/program-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../samples.html" onMouseOut="rolloverOff('side-samples');" onMouseOver="rolloverOn('side-samples');"><IMG alt="Samples" border="0" height="12" hspace="0" name="side-samples" onLoad="rolloverLoad('side-samples','../graphics/samples-label-2.jpg','../graphics/samples-label-3.jpg');" src="../graphics/samples-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../faqs.html" onMouseOut="rolloverOff('side-faqs');" onMouseOver="rolloverOn('side-faqs');"><IMG alt="FAQs" border="0" height="12" hspace="0" name="side-faqs" onLoad="rolloverLoad('side-faqs','../graphics/faqs-label-2.jpg','../graphics/faqs-label-3.jpg');" src="../graphics/faqs-label-3.jpg" vspace="0" width="120"></A><BR>
+
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../api.html" onMouseOut="rolloverOff('side-api');" onMouseOver="rolloverOn('side-api');"><IMG alt="API Docs" border="0" height="12" hspace="0" name="side-api" onLoad="rolloverLoad('side-api','../graphics/api-label-2.jpg','../graphics/api-label-3.jpg');" src="../graphics/api-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../ApacheDOMC++Binding.html" onMouseOut="rolloverOff('side-ext-88');" onMouseOver="rolloverOn('side-ext-88');"><IMG alt="DOM C++ Binding" border="0" height="12" hspace="0" name="side-ext-88" onLoad="rolloverLoad('side-ext-88','../graphics/ext-88-label-2.jpg','../graphics/ext-88-label-3.jpg');" src="../graphics/ext-88-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../migrate.html" onMouseOut="rolloverOff('side-migrate');" onMouseOver="rolloverOn('side-migrate');"><IMG alt="Migration Guide" border="0" height="12" hspace="0" name="side-migrate" onLoad="rolloverLoad('side-migrate','../graphics/migrate-label-2.jpg','../graphics/migrate-label-3.jpg');" src="../graphics/migrate-label-3.jpg" vspace="0" width="120"></A><BR>
+
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+    <A href="../feedback.html" onMouseOut="rolloverOff('side-feedback');" onMouseOver="rolloverOn('side-feedback');"><IMG alt="Feedback" border="0" height="12" hspace="0" name="side-feedback" onLoad="rolloverLoad('side-feedback','../graphics/feedback-label-2.jpg','../graphics/feedback-label-3.jpg');" src="../graphics/feedback-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../bug-report.html" onMouseOut="rolloverOff('side-bug-report');" onMouseOver="rolloverOn('side-bug-report');"><IMG alt="Bug-Reporting" border="0" height="12" hspace="0" name="side-bug-report" onLoad="rolloverLoad('side-bug-report','../graphics/bug-report-label-2.jpg','../graphics/bug-report-label-3.jpg');" src="../graphics/bug-report-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../mailing-lists.html" onMouseOut="rolloverOff('side-mailing-lists');" onMouseOver="rolloverOn('side-mailing-lists');"><IMG alt="Mailing Lists" border="0" height="12" hspace="0" name="side-mailing-lists" onLoad="rolloverLoad('side-mailing-lists','../graphics/mailing-lists-label-2.jpg','../graphics/mailing-lists-label-3.jpg');" src="../graphics/mailing-lists-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+    <A href="../source-repository.html" onMouseOut="rolloverOff('side-source-repository');" onMouseOver="rolloverOn('side-source-repository');"><IMG alt="Source Repository" border="0" height="12" hspace="0" name="side-source-repository" onLoad="rolloverLoad('side-source-repository','../graphics/source-repository-label-2.jpg','../graphics/source-repository-label-3.jpg');" src="../graphics/source-repository-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../applications.html" onMouseOut="rolloverOff('side-applications');" onMouseOver="rolloverOn('side-applications');"><IMG alt="Applications" border="0" height="12" hspace="0" name="side-applications" onLoad="rolloverLoad('side-applications','../graphics/applications-label-2.jpg','../graphics/applications-label-3.jpg');" src="../graphics/applications-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="14" hspace="0" src="../resources/close.gif" vspace="0" width="120"><BR></TD><TD align="left" valign="top" width="500"><TABLE border="0" cellpadding="3" cellspacing="0"><TR><TD>
+    <TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#FFFFFF" colspan="2" width="494"><TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#039acc" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#039acc" height="1" width="492"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#039acc" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" width="492"><FONT color="#ffffff" face="arial,helvetica,sanserif" size="+1"><IMG border="0" height="2" hspace="0" src="../resources/void.gif" vspace="0" width="2"><B>API Docs for SAX and DOM</B></FONT></TD><TD bgcolor="#017299" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#017299" height="1" width="492"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#017299" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></TD></TR><TR><TD width="10">&nbsp;</TD><TD width="484"><FONT color="#000000" face="arial,helvetica,sanserif">
+
+	    <P>
+<!-- Generated by Doxygen 1.5.3 -->
+<div class="tabs">
+  <ul>
+    <li><a href="index.html"><span>Main&nbsp;Page</span></a></li>
+    <li class="current"><a href="classes.html"><span>Classes</span></a></li>
+    <li><a href="files.html"><span>Files</span></a></li>
+    <li><a href="pages.html"><span>Related&nbsp;Pages</span></a></li>
+  </ul>
+</div>
+<div class="tabs">
+  <ul>
+    <li><a href="classes.html"><span>Alphabetical&nbsp;List</span></a></li>
+    <li><a href="annotated.html"><span>Class&nbsp;List</span></a></li>
+    <li><a href="hierarchy.html"><span>Class&nbsp;Hierarchy</span></a></li>
+    <li class="current"><a href="functions.html"><span>Class&nbsp;Members</span></a></li>
+  </ul>
+</div>
+<div class="tabs">
+  <ul>
+    <li class="current"><a href="functions.html"><span>All</span></a></li>
+    <li><a href="functions_func.html"><span>Functions</span></a></li>
+    <li><a href="functions_vars.html"><span>Variables</span></a></li>
+    <li><a href="functions_type.html"><span>Typedefs</span></a></li>
+    <li><a href="functions_enum.html"><span>Enumerations</span></a></li>
+    <li><a href="functions_eval.html"><span>Enumerator</span></a></li>
+    <li><a href="functions_rela.html"><span>Related&nbsp;Functions</span></a></li>
+  </ul>
+</div>
+<div class="tabs">
+  <ul>
+    <li><a href="functions.html#index_a"><span>a</span></a></li>
+    <li><a href="functions_0x62.html#index_b"><span>b</span></a></li>
+    <li><a href="functions_0x63.html#index_c"><span>c</span></a></li>
+    <li><a href="functions_0x64.html#index_d"><span>d</span></a></li>
+    <li><a href="functions_0x65.html#index_e"><span>e</span></a></li>
+    <li class="current"><a href="functions_0x66.html#index_f"><span>f</span></a></li>
+    <li><a href="functions_0x67.html#index_g"><span>g</span></a></li>
+    <li><a href="functions_0x68.html#index_h"><span>h</span></a></li>
+    <li><a href="functions_0x69.html#index_i"><span>i</span></a></li>
+    <li><a href="functions_0x6a.html#index_j"><span>j</span></a></li>
+    <li><a href="functions_0x6c.html#index_l"><span>l</span></a></li>
+    <li><a href="functions_0x6d.html#index_m"><span>m</span></a></li>
+    <li><a href="functions_0x6e.html#index_n"><span>n</span></a></li>
+    <li><a href="functions_0x6f.html#index_o"><span>o</span></a></li>
+    <li><a href="functions_0x70.html#index_p"><span>p</span></a></li>
+    <li><a href="functions_0x71.html#index_q"><span>q</span></a></li>
+    <li><a href="functions_0x72.html#index_r"><span>r</span></a></li>
+    <li><a href="functions_0x73.html#index_s"><span>s</span></a></li>
+    <li><a href="functions_0x74.html#index_t"><span>t</span></a></li>
+    <li><a href="functions_0x75.html#index_u"><span>u</span></a></li>
+    <li><a href="functions_0x76.html#index_v"><span>v</span></a></li>
+    <li><a href="functions_0x77.html#index_w"><span>w</span></a></li>
+    <li><a href="functions_0x78.html#index_x"><span>x</span></a></li>
+    <li><a href="functions_0x7e.html#index_~"><span>~</span></a></li>
+  </ul>
+</div>
+
+<p>
+Here is a list of all class members with links to the classes they belong to:
+<p>
+<h3><a class="anchor" name="index_f">- f -</a></h3><ul>
+<li>f_bool
+: <a class="el" href="structXSValue_1_1XSValue__Data.html#2583d55c80ffb050f2ea305305c4557e">XSValue::XSValue_Data</a>
+<li>f_byteVal
+: <a class="el" href="structXSValue_1_1XSValue__Data.html#2bc50bc2e2892fd25885e5ef371343aa">XSValue::XSValue_Data</a>
+<li>f_char
+: <a class="el" href="structXSValue_1_1XSValue__Data.html#2b23b191fbf7c03932b81a7a31be66ef">XSValue::XSValue_Data</a>
+<li>f_datatype
+: <a class="el" href="structXSValue_1_1XSValue__Data.html#38a58dbbc32518a6097ee51a9df8f180">XSValue::XSValue_Data</a>
+<li>f_datetime
+: <a class="el" href="structXSValue_1_1XSValue__Data.html#111d1c25ead47fce672aa4dcd042e2f5">XSValue::XSValue_Data</a>
+<li>f_day
+: <a class="el" href="structXSValue_1_1XSValue__Data.html#a394742d3ac120037b0fa41e5c89c519">XSValue::XSValue_Data</a>
+<li>f_decimal
+: <a class="el" href="structXSValue_1_1XSValue__Data.html#8a5fa617cb7f83cfabf5633bbacc81ca">XSValue::XSValue_Data</a>
+<li>f_double
+: <a class="el" href="structXSValue_1_1XSValue__Data.html#7ef514545ca5df59ae731545b35dfb3e">XSValue::XSValue_Data</a>
+<li>f_doubleEnum
+: <a class="el" href="structXSValue_1_1XSValue__Data.html#5385e20dee0dd5671af44b21e7aa341a">XSValue::XSValue_Data</a>
+<li>f_doubleType
+: <a class="el" href="structXSValue_1_1XSValue__Data.html#ef5bc7623e3e537fe3222dbf0d510dd9">XSValue::XSValue_Data</a>
+<li>f_dvalue
+: <a class="el" href="structXSValue_1_1XSValue__Data.html#d962d45b9b57692e08b1bc368e0918f5">XSValue::XSValue_Data</a>
+<li>f_float
+: <a class="el" href="structXSValue_1_1XSValue__Data.html#8b122012ffca22adef4f34212b32729f">XSValue::XSValue_Data</a>
+<li>f_floatEnum
+: <a class="el" href="structXSValue_1_1XSValue__Data.html#05272c4dfffee5954923b8995f463d80">XSValue::XSValue_Data</a>
+<li>f_floatType
+: <a class="el" href="structXSValue_1_1XSValue__Data.html#587e234ae3be66b739e76368e05322db">XSValue::XSValue_Data</a>
+<li>F_HighBounds
+: <a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c861fa76f62b40380c8fdffd1a7361d033e">XMLValid</a>
+, <a class="el" href="classXMLDOMMsg.html#638402474bd1e57588abfdbfc8b5dcdebf1f5d992bbb05b0d90056d63d2c09d2">XMLDOMMsg</a>
+, <a class="el" href="classXMLErrs.html#efe9817ef5442905d86fd17cb0c35e479d6c9e02204312111c5c47f2493ee8e1">XMLErrs</a>
+<li>f_hour
+: <a class="el" href="structXSValue_1_1XSValue__Data.html#23530eb66de5986a3a36a439cbdaf721">XSValue::XSValue_Data</a>
+<li>f_int
+: <a class="el" href="structXSValue_1_1XSValue__Data.html#ef70f9f0c41681b3dc0d5d95cdcdb1a2">XSValue::XSValue_Data</a>
+<li>f_long
+: <a class="el" href="structXSValue_1_1XSValue__Data.html#06927b47fd1624099a13d28bf7c58480">XSValue::XSValue_Data</a>
+<li>F_LowBounds
+: <a class="el" href="classXMLErrs.html#efe9817ef5442905d86fd17cb0c35e4712468d943149ccad1eeb70857b9b0aef">XMLErrs</a>
+, <a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c8660af74eb55e26899970f2e2696cafd26">XMLValid</a>
+, <a class="el" href="classXMLDOMMsg.html#638402474bd1e57588abfdbfc8b5dcdec1a9d4a19476f05bc81cd0cbe9c31c55">XMLDOMMsg</a>
+<li>f_milisec
+: <a class="el" href="structXSValue_1_1XSValue__Data.html#2b7360aafa0ada336636ba43d0ffb3e7">XSValue::XSValue_Data</a>
+<li>f_min
+: <a class="el" href="structXSValue_1_1XSValue__Data.html#e2f25852f259234effc79dc1ae082706">XSValue::XSValue_Data</a>
+<li>f_month
+: <a class="el" href="structXSValue_1_1XSValue__Data.html#4f8ed323c6867f2c3281c4e66ed7d59c">XSValue::XSValue_Data</a>
+<li>f_second
+: <a class="el" href="structXSValue_1_1XSValue__Data.html#584808c68ab7769e4b5c1724ac8f9690">XSValue::XSValue_Data</a>
+<li>f_short
+: <a class="el" href="structXSValue_1_1XSValue__Data.html#ce552ec2b7a2935e7aecebb6edb60de9">XSValue::XSValue_Data</a>
+<li>f_strVal
+: <a class="el" href="structXSValue_1_1XSValue__Data.html#baaf77be9dc2a1c8464400e0c50d5281">XSValue::XSValue_Data</a>
+<li>f_uchar
+: <a class="el" href="structXSValue_1_1XSValue__Data.html#d3821b05af97196a24e3ee866c81d309">XSValue::XSValue_Data</a>
+<li>f_uint
+: <a class="el" href="structXSValue_1_1XSValue__Data.html#b49d9290acaa8bc90a1dffc2a0da8612">XSValue::XSValue_Data</a>
+<li>f_ulong
+: <a class="el" href="structXSValue_1_1XSValue__Data.html#6bac0fdca645a84a6959d26e2e08765b">XSValue::XSValue_Data</a>
+<li>f_ushort
+: <a class="el" href="structXSValue_1_1XSValue__Data.html#0706c3e3449d5a3185f825aef7f27759">XSValue::XSValue_Data</a>
+<li>f_year
+: <a class="el" href="structXSValue_1_1XSValue__Data.html#581a2ebfe92e991f91a92371436a14bb">XSValue::XSValue_Data</a>
+<li>FACET
+: <a class="el" href="classXSSimpleTypeDefinition.html#bf93afa37a40fd7b8a92d571375a0b8e">XSSimpleTypeDefinition</a>
+, <a class="el" href="classXSConstants.html#60daf162650cd8e58f53b85d8b93b99af406f2aa651573a6bb45b57e3a8c364d">XSConstants</a>
+<li>FACET_ENUMERATION
+: <a class="el" href="classXSSimpleTypeDefinition.html#bf93afa37a40fd7b8a92d571375a0b8e4995951cd939bf0ba7c95c39a93ca8bb">XSSimpleTypeDefinition</a>
+<li>FACET_FRACTIONDIGITS
+: <a class="el" href="classXSSimpleTypeDefinition.html#bf93afa37a40fd7b8a92d571375a0b8ec5789665416c36ddab4244e8ac1ff2dd">XSSimpleTypeDefinition</a>
+<li>FACET_LENGTH
+: <a class="el" href="classXSSimpleTypeDefinition.html#bf93afa37a40fd7b8a92d571375a0b8ea0853afb7abec493eb70da57e9e8cf6e">XSSimpleTypeDefinition</a>
+<li>FACET_MAXEXCLUSIVE
+: <a class="el" href="classXSSimpleTypeDefinition.html#bf93afa37a40fd7b8a92d571375a0b8ebcbfd100f87e3b75bb1ed9745e6ee0c2">XSSimpleTypeDefinition</a>
+<li>FACET_MAXINCLUSIVE
+: <a class="el" href="classXSSimpleTypeDefinition.html#bf93afa37a40fd7b8a92d571375a0b8edf861cf535eb0b4cf8026fa146bab464">XSSimpleTypeDefinition</a>
+<li>FACET_MAXLENGTH
+: <a class="el" href="classXSSimpleTypeDefinition.html#bf93afa37a40fd7b8a92d571375a0b8e2933b27cd98711c7cad2e7ee15661462">XSSimpleTypeDefinition</a>
+<li>FACET_MINEXCLUSIVE
+: <a class="el" href="classXSSimpleTypeDefinition.html#bf93afa37a40fd7b8a92d571375a0b8e8b9fb5d8e32cfcc8f23dff158b36817d">XSSimpleTypeDefinition</a>
+<li>FACET_MININCLUSIVE
+: <a class="el" href="classXSSimpleTypeDefinition.html#bf93afa37a40fd7b8a92d571375a0b8e5a48278b5d2dda26ebea062aede51d60">XSSimpleTypeDefinition</a>
+<li>FACET_MINLENGTH
+: <a class="el" href="classXSSimpleTypeDefinition.html#bf93afa37a40fd7b8a92d571375a0b8ec11d68c683a0af390da625a75cc37da6">XSSimpleTypeDefinition</a>
+<li>FACET_NONE
+: <a class="el" href="classXSSimpleTypeDefinition.html#bf93afa37a40fd7b8a92d571375a0b8e107ded7c59be2753b7fab3d8e71097f5">XSSimpleTypeDefinition</a>
+<li>FACET_PATTERN
+: <a class="el" href="classXSSimpleTypeDefinition.html#bf93afa37a40fd7b8a92d571375a0b8eca9733efc797005fdac5dc0623a43534">XSSimpleTypeDefinition</a>
+<li>FACET_TOTALDIGITS
+: <a class="el" href="classXSSimpleTypeDefinition.html#bf93afa37a40fd7b8a92d571375a0b8e8d84474db884bcb789afe7c033d56608">XSSimpleTypeDefinition</a>
+<li>FACET_WHITESPACE
+: <a class="el" href="classXSSimpleTypeDefinition.html#bf93afa37a40fd7b8a92d571375a0b8e7a2e052a8cb9b8708152978201068d58">XSSimpleTypeDefinition</a>
+<li>FacetsInconsistent
+: <a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c8627c1293ea9999395524b03a6feb8587d">XMLValid</a>
+<li>fAddedS4SGrammar
+: <a class="el" href="classXSModel.html#85b9b687c34717c3b7f1cad3500d5c55">XSModel</a>
+<li>FailIfNotFound
+: <a class="el" href="classXMLElementDecl.html#4944e397b4469a1303efb85704491e1de507b7dfe56b31ba1e691f76c6f89976">XMLElementDecl</a>
+<li>fAnnotation
+: <a class="el" href="classXSAttributeDeclaration.html#a82c9d6d24e6d8ba31290b360fb54cdc">XSAttributeDeclaration</a>
+, <a class="el" href="classXSAttributeGroupDefinition.html#bf4bbcbcfd5bc877354960700033f66b">XSAttributeGroupDefinition</a>
+, <a class="el" href="classXSElementDeclaration.html#54185b79ca3eb209f676be018c8fcd6f">XSElementDeclaration</a>
+, <a class="el" href="classXSFacet.html#d4791da90d71cafa8e9651f33e044ded">XSFacet</a>
+, <a class="el" href="classXSModelGroup.html#a542d7658c5f0bf1c9bcd1e9960428b7">XSModelGroup</a>
+, <a class="el" href="classXSModelGroupDefinition.html#a89e5589122f1fc35629781fb7ecc1ea">XSModelGroupDefinition</a>
+, <a class="el" href="classXSNotationDeclaration.html#a72fcba58d8b86985d04ac89664686a2">XSNotationDeclaration</a>
+, <a class="el" href="classXSWildcard.html#d94a99d3207ae710ec0830f3d542d5fd">XSWildcard</a>
+<li>fAssessmentType
+: <a class="el" href="classPSVIItem.html#290030409e1feb0bd3de8707abce75c9">PSVIItem</a>
+<li>fatalError()
+: <a class="el" href="classDefaultHandler.html#5792c0974b44c549de462f0b7b27ab38">DefaultHandler</a>
+, <a class="el" href="classErrorHandler.html#1e45f82d84a9e305a3fa7059da96bc13">ErrorHandler</a>
+, <a class="el" href="classHandlerBase.html#91555ff758c3817fb2a4a863ce07265c">HandlerBase</a>
+<li>fAttDef
+: <a class="el" href="classXSAttributeDeclaration.html#f4bec0d61f4bbcc8a56aae8de77cbb85">XSAttributeDeclaration</a>
+<li>faultInAttr()
+: <a class="el" href="classXMLValidator.html#7b7f8e3cfa0f22eadac39c51a8b0e47b">XMLValidator</a>
+<li>fBaseType
+: <a class="el" href="classXSTypeDefinition.html#ceaf1e135f4bcd5577063d0f36f93a3d">XSTypeDefinition</a>
+<li>fBufMgr
+: <a class="el" href="classAbstractDOMParser.html#e698f4791f2fa0342a204d5fd1e5cea2">AbstractDOMParser</a>
+<li>fCanonicalValue
+: <a class="el" href="classPSVIItem.html#f52623eecb177705181fe955a37c1aac">PSVIItem</a>
+<li>fComplexTypeInfo
+: <a class="el" href="classXSComplexTypeDefinition.html#68df62f4498fd6a896dccd81663d8542">XSComplexTypeDefinition</a>
+<li>fComponentMap
+: <a class="el" href="classXSModel.html#ace25e485abb79f9a64c0665f96e9cbf">XSModel</a>
+, <a class="el" href="classXSNamespaceItem.html#288aff21dd512d1580befd0180d2a3b7">XSNamespaceItem</a>
+<li>fComponentType
+: <a class="el" href="classXSObject.html#df7aa73bad7fce62367ca1004971c501">XSObject</a>
+<li>fCompositorType
+: <a class="el" href="classXSModelGroup.html#d1dfee0be655b46ea7228fb30d2f9179">XSModelGroup</a>
+<li>fConstraintType
+: <a class="el" href="classXSAttributeUse.html#1119b46b3a83e3c8e4c4f29282e7137e">XSAttributeUse</a>
+, <a class="el" href="classXSWildcard.html#069a80339e42d7514f9a03674e49d642">XSWildcard</a>
+<li>fConstraintValue
+: <a class="el" href="classXSAttributeUse.html#95010a59ed6d57b09357ca6938afa46c">XSAttributeUse</a>
+<li>fContents
+: <a class="el" href="classXSAnnotation.html#9e5058676c0db72fc67e9f1e6e9f863d">XSAnnotation</a>
+<li>fCreateCommentNodes
+: <a class="el" href="classAbstractDOMParser.html#3d9ada6b8e4d4c15bed016cca60890bb">AbstractDOMParser</a>
+<li>fCreateEntityReferenceNodes
+: <a class="el" href="classAbstractDOMParser.html#466e41e2e0421c277a8c85d3b256a186">AbstractDOMParser</a>
+<li>fCreateSchemaInfo
+: <a class="el" href="classAbstractDOMParser.html#f370f062bed3b195658de6eaaae821f7">AbstractDOMParser</a>
+<li>fCurrentEntity
+: <a class="el" href="classAbstractDOMParser.html#df8f5877b0a9b43556365c5090786274">AbstractDOMParser</a>
+<li>fCurrentNode
+: <a class="el" href="classAbstractDOMParser.html#5d28c386ec46be8da09150b34bb9c347">AbstractDOMParser</a>
+<li>fCurrentParent
+: <a class="el" href="classAbstractDOMParser.html#dcd780cde367ea9fa3d4c8f3c088b147">AbstractDOMParser</a>
+<li>fData
+: <a class="el" href="classXSValue.html#7e1fbc8888850abec9f1f4786350b4ed">XSValue</a>
+<li>fDataConverted
+: <a class="el" href="classXMLAbstractDoubleFloat.html#74f084a3a133ef60c11be3b5e8feb58d">XMLAbstractDoubleFloat</a>
+<li>fDataOverflowed
+: <a class="el" href="classXMLAbstractDoubleFloat.html#4f68e5e68d96cff247f7625c96ed0493">XMLAbstractDoubleFloat</a>
+<li>fDatatypeValidator
+: <a class="el" href="classXSSimpleTypeDefinition.html#ff52b6acdb1af9d7747315a7f22c105d">XSSimpleTypeDefinition</a>
+<li>fDefaultValue
+: <a class="el" href="classPSVIItem.html#831c7402161635ce9e20c818b66eb52e">PSVIItem</a>
+<li>fDefinedFacets
+: <a class="el" href="classXSSimpleTypeDefinition.html#366010f6b2c06c90a560b05312599272">XSSimpleTypeDefinition</a>
+<li>fDeleteNamespace
+: <a class="el" href="classXSModel.html#3e113ba9c5609cdcaa34b7eb240494ac">XSModel</a>
+<li>fDeleteParent
+: <a class="el" href="classXSModel.html#c0f98f1246811edb865ab5ba0ee125fb">XSModel</a>
+<li>fDisallowedSubstitutions
+: <a class="el" href="classXSElementDeclaration.html#18cc95b8aeba5934d182efb89e4e03c2">XSElementDeclaration</a>
+<li>fDocument
+: <a class="el" href="classAbstractDOMParser.html#084620e0ae4eb82bb148987bb05cc45c">AbstractDOMParser</a>
+<li>fDocumentAdoptedByUser
+: <a class="el" href="classAbstractDOMParser.html#b01b9796ce375e989afc9581ed05c347">AbstractDOMParser</a>
+<li>fDocumentType
+: <a class="el" href="classAbstractDOMParser.html#52c6e83629886e40d0e7a7d71887f393">AbstractDOMParser</a>
+<li>fDocumentVector
+: <a class="el" href="classAbstractDOMParser.html#fcdd73f0abc66ed73900578494a9bf04">AbstractDOMParser</a>
+<li>FeatureUnsupported
+: <a class="el" href="classXMLErrs.html#efe9817ef5442905d86fd17cb0c35e47abd845136f6ca618e42c17f746ee5333">XMLErrs</a>
+, <a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c868a9e03705960dbc80a90de77f15cbc85">XMLValid</a>
+<li>fEnclosingCTDefinition
+: <a class="el" href="classXSAttributeDeclaration.html#df320df57c8c4cc3581fa4d53222b013">XSAttributeDeclaration</a>
+<li>fEnclosingTypeDefinition
+: <a class="el" href="classXSElementDeclaration.html#dfc55d2c5993f536c587b76d9274dce5">XSElementDeclaration</a>
+<li>fEntityExpansionLimit
+: <a class="el" href="classSecurityManager.html#fd064489bb67dfd49fa3eb8c85f8853a">SecurityManager</a>
+<li>fFacetKind
+: <a class="el" href="classXSFacet.html#f73125bbab78605a6a29f4302726758a">XSFacet</a>
+, <a class="el" href="classXSMultiValueFacet.html#09a87c3809bbfb6fd000052a9a95c5ae">XSMultiValueFacet</a>
+<li>fFinal
+: <a class="el" href="classXSTypeDefinition.html#196fc0cd3f9f7e963a5ae17f7aa39183">XSTypeDefinition</a>
+<li>fFixedFacets
+: <a class="el" href="classXSSimpleTypeDefinition.html#4c318c8f68260b99595a2e374e588026">XSSimpleTypeDefinition</a>
+<li>fgAmp
+: <a class="el" href="classXMLUni.html#c1685514f29b16b522c98c99a37110ce">XMLUni</a>
+<li>fgAnyString
+: <a class="el" href="classXMLUni.html#17e0df72c4ad898cd5fdfd386537400a">XMLUni</a>
+<li>fgApos
+: <a class="el" href="classXMLUni.html#87c2ca746c6bfef3a38592177014ff51">XMLUni</a>
+<li>fgArrayIndexOutOfBoundsException_Name
+: <a class="el" href="classXMLUni.html#5637d7ffc623f1e6ab117b10acdf6b99">XMLUni</a>
+<li>fgArrayMemoryManager
+: <a class="el" href="classXMLPlatformUtils.html#8d48adb3e9ebe23f1760709006632283">XMLPlatformUtils</a>
+<li>fgAtomicMutex
+: <a class="el" href="classXMLPlatformUtils.html#aa3859ca77bec01d7c5c4da4632ab761">XMLPlatformUtils</a>
+<li>fgAttListString
+: <a class="el" href="classXMLUni.html#9771a92a3cb6d6d8916d7301c10ea4b5">XMLUni</a>
+<li>fgBooleanValueSpace
+: <a class="el" href="classXMLUni.html#73f4cf734233d7837a9eb2d33efd4c66">XMLUni</a>
+<li>fgBooleanValueSpaceArraySize
+: <a class="el" href="classXMLUni.html#da45d9231942e0e180325065148ebb40">XMLUni</a>
+<li>fgByteMaxInc
+: <a class="el" href="classXMLUni.html#3ea42c0b4dcd0bdc9ec1befee922559c">XMLUni</a>
+<li>fgByteMinInc
+: <a class="el" href="classXMLUni.html#7f1df987e7d4acb10cc488a31697d397">XMLUni</a>
+<li>fgCDataEnd
+: <a class="el" href="classXMLUni.html#2d7c96bb8b0ace700060d5a6d18d73cf">XMLUni</a>
+<li>fgCDataStart
+: <a class="el" href="classXMLUni.html#c57a6a9c1b7563bbe90d8d35163fb4a7">XMLUni</a>
+<li>fgCDATAString
+: <a class="el" href="classXMLUni.html#1e5309c0fa8caecb5a31466f97f39f1d">XMLUni</a>
+<li>fgCommentString
+: <a class="el" href="classXMLUni.html#da848fd84d9129c473d1ee5e0f69a03e">XMLUni</a>
+<li>fgDefaultPanicHandler
+: <a class="el" href="classXMLPlatformUtils.html#db96471b53887380718f80e54934925f">XMLPlatformUtils</a>
+<li>fgDefaultString
+: <a class="el" href="classXMLUni.html#36094aca1f5c5b055f763673dc8e787c">XMLUni</a>
+<li>fgDefErrMsg
+: <a class="el" href="classXMLUni.html#4a20b7dba11c8f10329fc7e7c27e885d">XMLUni</a>
+<li>fgDGXMLScanner
+: <a class="el" href="classXMLUni.html#9c2e2646543b44ef9bb085f957c67b14">XMLUni</a>
+<li>fgDocTypeString
+: <a class="el" href="classXMLUni.html#3b0e9ec6fe81f713dde8590e8cceef62">XMLUni</a>
+<li>fgDOMCanonicalForm
+: <a class="el" href="classXMLUni.html#f1c8579f0a6333bb981f2e460e3aa62e">XMLUni</a>
+<li>fgDOMCDATASections
+: <a class="el" href="classXMLUni.html#e2e95afc943f45107b99226f554593d6">XMLUni</a>
+<li>fgDOMCharsetOverridesXMLEncoding
+: <a class="el" href="classXMLUni.html#db848e71d8d497c748ad59882026d2f2">XMLUni</a>
+<li>fgDOMComments
+: <a class="el" href="classXMLUni.html#81de3d5dcaa57fbfb167987f62310644">XMLUni</a>
+<li>fgDOMDatatypeNormalization
+: <a class="el" href="classXMLUni.html#a715ee2a4d2e9270ad25aebe68fa57de">XMLUni</a>
+<li>fgDOMEntities
+: <a class="el" href="classXMLUni.html#0cfa1f1e2b28a8bf75f66ba0016655eb">XMLUni</a>
+<li>fgDOMInfoset
+: <a class="el" href="classXMLUni.html#8fabf80f3437b3e60d9df96c73fbbf56">XMLUni</a>
+<li>fgDOMNamespaceDeclarations
+: <a class="el" href="classXMLUni.html#30d9d3b64c08c58ae61624fab2918a78">XMLUni</a>
+<li>fgDOMNamespaces
+: <a class="el" href="classXMLUni.html#ee9bdad3ba2798a2a241f7e54c49b7fb">XMLUni</a>
+<li>fgDOMSupportedMediatypesOnly
+: <a class="el" href="classXMLUni.html#2e8628e3d033fe2f4ff214d493925e66">XMLUni</a>
+<li>fgDOMValidateIfSchema
+: <a class="el" href="classXMLUni.html#b3430b6b2cf464d05c9c60a6e69355d7">XMLUni</a>
+<li>fgDOMValidation
+: <a class="el" href="classXMLUni.html#817d36cdc1545ab0c49b652b33f001a0">XMLUni</a>
+<li>fgDOMWhitespaceInElementContent
+: <a class="el" href="classXMLUni.html#0d0e9acc57463177a2837347895e9c07">XMLUni</a>
+<li>fgDOMWRTBOM
+: <a class="el" href="classXMLUni.html#589e163dc474bdd27ab56f50d54ef011">XMLUni</a>
+<li>fgDOMWRTCanonicalForm
+: <a class="el" href="classXMLUni.html#dcf70e82fa4fdd559c3b401bf9659330">XMLUni</a>
+<li>fgDOMWRTDiscardDefaultContent
+: <a class="el" href="classXMLUni.html#1a28cfa0282a23e0220c5693937ab352">XMLUni</a>
+<li>fgDOMWRTEntities
+: <a class="el" href="classXMLUni.html#5dcb86d81db453c41f7bba71ecd7ecc4">XMLUni</a>
+<li>fgDOMWRTFormatPrettyPrint
+: <a class="el" href="classXMLUni.html#754fff9d3fc73c82225c8665d75c34a4">XMLUni</a>
+<li>fgDOMWRTNormalizeCharacters
+: <a class="el" href="classXMLUni.html#1a8f7b728bb20fb8771eb0a0c5de881a">XMLUni</a>
+<li>fgDOMWRTSplitCdataSections
+: <a class="el" href="classXMLUni.html#48f975eb21c99205d0d7c24efa1215e6">XMLUni</a>
+<li>fgDOMWRTValidation
+: <a class="el" href="classXMLUni.html#7133fc0c783b010c91bd62931503c35b">XMLUni</a>
+<li>fgDOMWRTWhitespaceInElementContent
+: <a class="el" href="classXMLUni.html#04d38d2fb9c0ee501cfd604660665e10">XMLUni</a>
+<li>fgDOMXMLDeclaration
+: <a class="el" href="classXMLUni.html#6f27a588f1673298142b8eec85793460">XMLUni</a>
+<li>fgDTDEntityString
+: <a class="el" href="classXMLUni.html#5adc056527528a976fdce148eab13537">XMLUni</a>
+<li>fgEBCDICEncodingString
+: <a class="el" href="classXMLUni.html#4b63de34d184c9c1e82583ecc42aa93b">XMLUni</a>
+<li>fgElemString
+: <a class="el" href="classXMLUni.html#f04ff1ebefca0a5b2319be571d33ec14">XMLUni</a>
+<li>fgEmptyStackException_Name
+: <a class="el" href="classXMLUni.html#9b490d2e0de55369d88a79d180d09937">XMLUni</a>
+<li>fgEmptyString
+: <a class="el" href="classXMLUni.html#8925f75f19a397c6cff0eafe1e7f870f">XMLUni</a>
+<li>fgEncodingString
+: <a class="el" href="classXMLUni.html#0ccb7c3e0a1f5aeeefcf9f7528f81f9c">XMLUni</a>
+<li>fgEntitiesString
+: <a class="el" href="classXMLUni.html#2a6bb842a156afeac5d990df91e9ad45">XMLUni</a>
+<li>fgEntitString
+: <a class="el" href="classXMLUni.html#fe4197dc45d1ee9152efcce99758c180">XMLUni</a>
+<li>fgEntityString
+: <a class="el" href="classXMLUni.html#7d1abb6358288f6f19620811065dad39">XMLUni</a>
+<li>fgEnumerationString
+: <a class="el" href="classXMLUni.html#66ce865cdcf826cb1ee7e7bec588c593">XMLUni</a>
+<li>fgEString
+: <a class="el" href="classXMLUni.html#5b0e7abe529b2e1ddb42950750329523">XMLUni</a>
+<li>fgExceptDomain
+: <a class="el" href="classXMLUni.html#8d5a9e8e27347d1caaff4f33bc5bed5c">XMLUni</a>
+<li>fgFixedString
+: <a class="el" href="classXMLUni.html#51648ee79a40eb1d92109d48dc9e8c9e">XMLUni</a>
+<li>fgGT
+: <a class="el" href="classXMLUni.html#bc5642ce94e549f5bee42442a75ebac2">XMLUni</a>
+<li>fgIBM037EncodingString
+: <a class="el" href="classXMLUni.html#dc67029ac0d141021edc20c5bac720be">XMLUni</a>
+<li>fgIBM037EncodingString2
+: <a class="el" href="classXMLUni.html#b0087ee1ed0b7743af478a2beee0d608">XMLUni</a>
+<li>fgIBM1047EncodingString
+: <a class="el" href="classXMLUni.html#81530db0c781dbb83a5e06607db5cf60">XMLUni</a>
+<li>fgIBM1047EncodingString2
+: <a class="el" href="classXMLUni.html#ff90e37da70e96a4eab08ccb73dc5856">XMLUni</a>
+<li>fgIBM1140EncodingString
+: <a class="el" href="classXMLUni.html#59bfa5deda45104daec077f5bda40503">XMLUni</a>
+<li>fgIBM1140EncodingString2
+: <a class="el" href="classXMLUni.html#207c062a5b828406b7a23f5ecc0312c9">XMLUni</a>
+<li>fgIBM1140EncodingString3
+: <a class="el" href="classXMLUni.html#5740db74a9bb74b8e14a7b3a0617c08b">XMLUni</a>
+<li>fgIBM1140EncodingString4
+: <a class="el" href="classXMLUni.html#64bb1bc5cb0d18ff45ccf962b8b1853e">XMLUni</a>
+<li>fgIDRefsString
+: <a class="el" href="classXMLUni.html#0c7b10fdd71579660efc4feba0a2b6a2">XMLUni</a>
+<li>fgIDRefString
+: <a class="el" href="classXMLUni.html#ee0765857adecb4d0bdc7ad743459f63">XMLUni</a>
+<li>fgIDString
+: <a class="el" href="classXMLUni.html#6d984cdf0576f203c4c0b626350ffb87">XMLUni</a>
+<li>fgIESString
+: <a class="el" href="classXMLUni.html#e174d1647d2d7fa31671c6f639d3fe6f">XMLUni</a>
+<li>fgIgnoreString
+: <a class="el" href="classXMLUni.html#4ceb90ab7701cdf7f86293c0076d9331">XMLUni</a>
+<li>fgIGXMLScanner
+: <a class="el" href="classXMLUni.html#ff6e5a3105c2e251b717c9390035c8ff">XMLUni</a>
+<li>fgIllegalArgumentException_Name
+: <a class="el" href="classXMLUni.html#d5588c239997300c5cb786e3fb5e94d2">XMLUni</a>
+<li>fgImpliedString
+: <a class="el" href="classXMLUni.html#017cd7437967069408d7cf713f931691">XMLUni</a>
+<li>fgIncludeString
+: <a class="el" href="classXMLUni.html#0cbeb3a27239fb13d349ddde5733690a">XMLUni</a>
+<li>fgInfosetURIName
+: <a class="el" href="classXMLUni.html#c8376cefbe4b29652a7b1ee44a8e0c6c">XMLUni</a>
+<li>fgIntMaxInc
+: <a class="el" href="classXMLUni.html#06a6c1927855c51a28b1f81b0afb24a7">XMLUni</a>
+<li>fgIntMinInc
+: <a class="el" href="classXMLUni.html#c5ac6dc5abe51fe6253dbcc579997d99">XMLUni</a>
+<li>fgInvalidAttrId
+: <a class="el" href="classXMLAttDef.html#8b6036eb22e84bef591913ba8f709f18">XMLAttDef</a>
+<li>fgInvalidCastException_Name
+: <a class="el" href="classXMLUni.html#0fed1ec551dab5395364738cf464fb31">XMLUni</a>
+<li>fgInvalidDatatypeFacetException_Name
+: <a class="el" href="classXMLUni.html#a980c9d31b086c3e54837244b78322b3">XMLUni</a>
+<li>fgInvalidDatatypeValueException_Name
+: <a class="el" href="classXMLUni.html#a5a7c7dba1f436912c92bfcad7100c24">XMLUni</a>
+<li>fgInvalidElemId
+: <a class="el" href="classXMLElementDecl.html#afc21717d7759f3fe357e92707d1870d">XMLElementDecl</a>
+<li>fgIOException_Name
+: <a class="el" href="classXMLUni.html#94b2c975bd7daa9ff4629ccc1de94042">XMLUni</a>
+<li>fgISO88591EncodingString
+: <a class="el" href="classXMLUni.html#ea45f1a7e362eadb9b42c43ee9c05f9d">XMLUni</a>
+<li>fgISO88591EncodingString10
+: <a class="el" href="classXMLUni.html#184ed54a26bb775a81bedee0efb4bf34">XMLUni</a>
+<li>fgISO88591EncodingString11
+: <a class="el" href="classXMLUni.html#dce60fde62bd165c18acebc92021a8e0">XMLUni</a>
+<li>fgISO88591EncodingString12
+: <a class="el" href="classXMLUni.html#48b5bc9999dfb7eb75851cedc9a97605">XMLUni</a>
+<li>fgISO88591EncodingString2
+: <a class="el" href="classXMLUni.html#6aecc3adff56e1fe1bc95a8470bb3386">XMLUni</a>
+<li>fgISO88591EncodingString3
+: <a class="el" href="classXMLUni.html#f0c31b53c767cd8db023d82982884ef5">XMLUni</a>
+<li>fgISO88591EncodingString4
+: <a class="el" href="classXMLUni.html#b3c9a56611fd1a63dc8a484e6f3c35ef">XMLUni</a>
+<li>fgISO88591EncodingString5
+: <a class="el" href="classXMLUni.html#a1ce6ba96f6a6dc2cdc8f27c10632512">XMLUni</a>
+<li>fgISO88591EncodingString6
+: <a class="el" href="classXMLUni.html#20df2962b0235d56ca807023e3f12dc5">XMLUni</a>
+<li>fgISO88591EncodingString7
+: <a class="el" href="classXMLUni.html#f052db047efce72b148c89e88b6a75f6">XMLUni</a>
+<li>fgISO88591EncodingString8
+: <a class="el" href="classXMLUni.html#030292b128e254b6a710c9be74b71efa">XMLUni</a>
+<li>fgISO88591EncodingString9
+: <a class="el" href="classXMLUni.html#9cc6f20b0cb3917fbbc25241be127f78">XMLUni</a>
+<li>fgLangPattern
+: <a class="el" href="classXMLUni.html#53538837ae001114150a9d5749963a08">XMLUni</a>
+<li>fgLocalHostString
+: <a class="el" href="classXMLUni.html#461528eacdcd18bf81e144a584894d4c">XMLUni</a>
+<li>fgLongMaxInc
+: <a class="el" href="classXMLUni.html#f892d7da1f3adb5d19550b3b3af9fe06">XMLUni</a>
+<li>fgLongMinInc
+: <a class="el" href="classXMLUni.html#9ce288df9ad113a2dbf15dd352ba7aca">XMLUni</a>
+<li>fgLT
+: <a class="el" href="classXMLUni.html#5fe236ef54907e622529c938473ff5c1">XMLUni</a>
+<li>fgMalformedURLException_Name
+: <a class="el" href="classXMLUni.html#67c83ea9acc2a026168b613b4fb99184">XMLUni</a>
+<li>fgMemoryManager
+: <a class="el" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252">XMLPlatformUtils</a>
+<li>fgNaNString
+: <a class="el" href="classXMLUni.html#6d4762da84137709bbc3cde6c5d0ea2d">XMLUni</a>
+<li>fgNDATAString
+: <a class="el" href="classXMLUni.html#2983d364ebe8901a5349d68157ff0c15">XMLUni</a>
+<li>fgNegINFString
+: <a class="el" href="classXMLUni.html#25a12b2c447bab5b1f9841cf8318c69f">XMLUni</a>
+<li>fgNegOne
+: <a class="el" href="classXMLUni.html#96c5a4d2fadde57c78c499bcfd6b0e31">XMLUni</a>
+<li>fgNegZeroString
+: <a class="el" href="classXMLUni.html#f0aef7925264138c7b2d50760b188089">XMLUni</a>
+<li>fgNetAccessor
+: <a class="el" href="classXMLPlatformUtils.html#6bbba118a3327b2e7c1952bf04de2787">XMLPlatformUtils</a>
+<li>fgNetAccessorException_Name
+: <a class="el" href="classXMLUni.html#cfb271398fdfd657e9568845e499129f">XMLUni</a>
+<li>fgNmTokensString
+: <a class="el" href="classXMLUni.html#b83a9422814a53361f4049c51c48e231">XMLUni</a>
+<li>fgNmTokenString
+: <a class="el" href="classXMLUni.html#525d68f5c99843097d9f2d47ca9a4b1a">XMLUni</a>
+<li>fgNoString
+: <a class="el" href="classXMLUni.html#6062a2b295d8f02def2f12fcfce7dea7">XMLUni</a>
+<li>fgNoSuchElementException_Name
+: <a class="el" href="classXMLUni.html#70bb0d859c7aa4bb01311127cb0b2528">XMLUni</a>
+<li>fgNotationString
+: <a class="el" href="classXMLUni.html#adc8a8262d397cb075cb8aff1fea41b5">XMLUni</a>
+<li>fgNullPointerException_Name
+: <a class="el" href="classXMLUni.html#e6e0f7908f13b30e529dd807b3989287">XMLUni</a>
+<li>fgNullString
+: <a class="el" href="classXMLUni.html#ca96776868049e55809fa4108acf9e4d">XMLUni</a>
+<li>fgNumberFormatException_Name
+: <a class="el" href="classXMLUni.html#db435f1f36ce9747a9e900626f21d373">XMLUni</a>
+<li>fgParseException_Name
+: <a class="el" href="classXMLUni.html#81d7cf1a18579f244534bb6d8f7b6108">XMLUni</a>
+<li>fgPCDataElemId
+: <a class="el" href="classXMLElementDecl.html#79dd4823913a168fb46ffb6b0bfc78ab">XMLElementDecl</a>
+<li>fgPCDataElemName
+: <a class="el" href="classXMLElementDecl.html#a7b8ed177aca128f956132dea880cf6b">XMLElementDecl</a>
+<li>fgPCDATAString
+: <a class="el" href="classXMLUni.html#bb35fd74f7eed08ad5e3c9f6d2f11286">XMLUni</a>
+<li>fgPIString
+: <a class="el" href="classXMLUni.html#ca0b8a476dce3b4d652d8da2a8ee0d57">XMLUni</a>
+<li>fgPosINFString
+: <a class="el" href="classXMLUni.html#56a08768ab70c7ad13caa7aa3a991982">XMLUni</a>
+<li>fgPosZeroString
+: <a class="el" href="classXMLUni.html#ca780b1477e2d97e33ac2b16678d044a">XMLUni</a>
+<li>fgPubIDString
+: <a class="el" href="classXMLUni.html#9d9660ef15abd7d0a8c78eb56e1597e9">XMLUni</a>
+<li>fgQuot
+: <a class="el" href="classXMLUni.html#a42c1e3eb734c1bd6889f06f96e8a1c5">XMLUni</a>
+<li>fGrammar
+: <a class="el" href="classXSNamespaceItem.html#58ad6d7e789ffe683b99226fb4a3de04">XSNamespaceItem</a>
+<li>fGrammarPool
+: <a class="el" href="classAbstractDOMParser.html#318bbe7a281aa336da46b846b92acddf">AbstractDOMParser</a>
+<li>fGrammarResolver
+: <a class="el" href="classAbstractDOMParser.html#fd0a611c05d8e6c170abe3c2b8cb456b">AbstractDOMParser</a>
+<li>fgRefString
+: <a class="el" href="classXMLUni.html#335751b1f3844a0e28f43bf684c65a94">XMLUni</a>
+<li>fgRequiredString
+: <a class="el" href="classXMLUni.html#473245fb670fc31ff8780ee07a9666a9">XMLUni</a>
+<li>fGroupInfo
+: <a class="el" href="classXSModelGroupDefinition.html#dd161dfc3bd3e601ec7ede5617627706">XSModelGroupDefinition</a>
+<li>fgRuntimeException_Name
+: <a class="el" href="classXMLUni.html#9b19cd4630750257615450befed429b8">XMLUni</a>
+<li>fgSAX2CoreNameSpacePrefixes
+: <a class="el" href="classXMLUni.html#63e4d66974b036fbb009a6aad812f1a7">XMLUni</a>
+<li>fgSAX2CoreNameSpaces
+: <a class="el" href="classXMLUni.html#8c6bcf1d0434a62a41c1456edf467cbc">XMLUni</a>
+<li>fgSAX2CoreValidation
+: <a class="el" href="classXMLUni.html#da274cca8d7633b159dbd0fe2e996911">XMLUni</a>
+<li>fgSchemaDateTimeException_Name
+: <a class="el" href="classXMLUni.html#6d1158f055eae2b6a022d3ee132e57c6">XMLUni</a>
+<li>fgSGXMLScanner
+: <a class="el" href="classXMLUni.html#cd69e27b3899701abeb80ffc98ac7720">XMLUni</a>
+<li>fgShortMaxInc
+: <a class="el" href="classXMLUni.html#f75997586ca9e9a3b607149694cea73f">XMLUni</a>
+<li>fgShortMinInc
+: <a class="el" href="classXMLUni.html#0cc2ed35a268839356a6726c66c799ad">XMLUni</a>
+<li>fgStandaloneString
+: <a class="el" href="classXMLUni.html#0663631a0a6f654da56bf40692840fca">XMLUni</a>
+<li>fgSysIDString
+: <a class="el" href="classXMLUni.html#03b3abb7c9c88ec115cbf0c2e9ae3daf">XMLUni</a>
+<li>fgTranscodingException_Name
+: <a class="el" href="classXMLUni.html#5971a181f7bb346fb37ea9bfb1dde487">XMLUni</a>
+<li>fgTransService
+: <a class="el" href="classXMLPlatformUtils.html#bb0ad83db922cbf891a70319b2e6702b">XMLPlatformUtils</a>
+<li>fgUByteMaxInc
+: <a class="el" href="classXMLUni.html#801e7f8e7bfe2864d94fb6996764cd19">XMLUni</a>
+<li>fgUCS4BEncodingString
+: <a class="el" href="classXMLUni.html#812e9926160f1bc52ba54e269f0092dc">XMLUni</a>
+<li>fgUCS4BEncodingString2
+: <a class="el" href="classXMLUni.html#7c80145bfc5844c40d2cf2dc105135cb">XMLUni</a>
+<li>fgUCS4EncodingString
+: <a class="el" href="classXMLUni.html#0f208729ec188a146495d1b5e1bb567c">XMLUni</a>
+<li>fgUCS4EncodingString2
+: <a class="el" href="classXMLUni.html#31a602ba728c4af96025ad9e41240848">XMLUni</a>
+<li>fgUCS4EncodingString3
+: <a class="el" href="classXMLUni.html#c2c7e98078ad9a9aebfe69de8ef99b77">XMLUni</a>
+<li>fgUCS4EncodingString4
+: <a class="el" href="classXMLUni.html#f4361c5f0a3a3878982cb467fa23b1fa">XMLUni</a>
+<li>fgUCS4LEncodingString
+: <a class="el" href="classXMLUni.html#d69f018550cd0f4a379b433b4ff39ddf">XMLUni</a>
+<li>fgUCS4LEncodingString2
+: <a class="el" href="classXMLUni.html#0f48536f0ad7803613612e0a94501476">XMLUni</a>
+<li>fgUIntMaxInc
+: <a class="el" href="classXMLUni.html#1154f2544d4f40c2887cfeceb0a5c8e7">XMLUni</a>
+<li>fgULongMaxInc
+: <a class="el" href="classXMLUni.html#b0923d6292a763d83366422958ce43d4">XMLUni</a>
+<li>fgUnexpectedEOFException_Name
+: <a class="el" href="classXMLUni.html#9041ac58257962272e728923aa5f6def">XMLUni</a>
+<li>fgUnknownURIName
+: <a class="el" href="classXMLUni.html#ff80045c43a8fb44fa1ed39423334f4c">XMLUni</a>
+<li>fgUnsupportedEncodingException_Name
+: <a class="el" href="classXMLUni.html#89cad6849392f8e8b0fddc1abc3ebc46">XMLUni</a>
+<li>fgUSASCIIEncodingString
+: <a class="el" href="classXMLUni.html#771cfc02edc18316cddc021ce1b562ea">XMLUni</a>
+<li>fgUSASCIIEncodingString2
+: <a class="el" href="classXMLUni.html#25ceeb6680d68f6b6ff9b7e145e48a48">XMLUni</a>
+<li>fgUSASCIIEncodingString3
+: <a class="el" href="classXMLUni.html#fdef2d6c441f1d465cd0c196b28a91d9">XMLUni</a>
+<li>fgUSASCIIEncodingString4
+: <a class="el" href="classXMLUni.html#89988e0c60eb73f3f6e4a286d7069b01">XMLUni</a>
+<li>fgUserPanicHandler
+: <a class="el" href="classXMLPlatformUtils.html#ac6484e7073d5fb515ea791ee873b5bd">XMLPlatformUtils</a>
+<li>fgUShortMaxInc
+: <a class="el" href="classXMLUni.html#7c1cf180abec4fa9239ac500471f4480">XMLUni</a>
+<li>fgUTF16BEncodingString
+: <a class="el" href="classXMLUni.html#146a666d2adcccfec80cf691e3aa1136">XMLUni</a>
+<li>fgUTF16BEncodingString2
+: <a class="el" href="classXMLUni.html#586f8710c9eecf75b61dbd1fba33e5ea">XMLUni</a>
+<li>fgUTF16EncodingString
+: <a class="el" href="classXMLUni.html#4d16d85c4a6f0131440bf9a45e2f81b4">XMLUni</a>
+<li>fgUTF16EncodingString2
+: <a class="el" href="classXMLUni.html#534bf94e9788df9764daab62d31d23d2">XMLUni</a>
+<li>fgUTF16EncodingString3
+: <a class="el" href="classXMLUni.html#e28475d3bc7264b4295e64a318b8613a">XMLUni</a>
+<li>fgUTF16EncodingString4
+: <a class="el" href="classXMLUni.html#116e82809aecbc6fe5d9191ce6e5bfa6">XMLUni</a>
+<li>fgUTF16EncodingString5
+: <a class="el" href="classXMLUni.html#3b113e2a5c7d06833a3b381691a3f293">XMLUni</a>
+<li>fgUTF16EncodingString6
+: <a class="el" href="classXMLUni.html#f5dd49d71c564f93b7c84b910c72af10">XMLUni</a>
+<li>fgUTF16EncodingString7
+: <a class="el" href="classXMLUni.html#831c9bdd03bfcf96d27c74a6693b3ef6">XMLUni</a>
+<li>fgUTF16LEncodingString
+: <a class="el" href="classXMLUni.html#cdbeae5401f60b26a8ccc1451dff2074">XMLUni</a>
+<li>fgUTF16LEncodingString2
+: <a class="el" href="classXMLUni.html#4c9b69184eb8bd0ef23835ff7b72f8dd">XMLUni</a>
+<li>fgUTF8EncodingString
+: <a class="el" href="classXMLUni.html#a62e7d77b80a5249d5f034bf12d80c31">XMLUni</a>
+<li>fgUTF8EncodingString2
+: <a class="el" href="classXMLUni.html#71b2c71498729e673e725ff4f74ccfa0">XMLUni</a>
+<li>fgUTFDataFormatException_Name
+: <a class="el" href="classXMLUni.html#d5aea9b73a18e338ff10f2c1b9d90fa8">XMLUni</a>
+<li>fgValidityDomain
+: <a class="el" href="classXMLUni.html#ddf5faf8287fe1bde77d563dacd70c63">XMLUni</a>
+<li>fgValueOne
+: <a class="el" href="classXMLUni.html#260120e549e5bb4855aaf9d69794a233">XMLUni</a>
+<li>fgValueZero
+: <a class="el" href="classXMLUni.html#12684bf9693c6a67922b86e9f11b0097">XMLUni</a>
+<li>fgVersion1_0
+: <a class="el" href="classXMLUni.html#2f432931a2b4c6ae0be2c431e8b001e8">XMLUni</a>
+<li>fgVersion1_1
+: <a class="el" href="classXMLUni.html#e713c8381c4368ae44095a52e15a3493">XMLUni</a>
+<li>fgVersionString
+: <a class="el" href="classXMLUni.html#3d2e4385efe9f24a042cf18ee315395f">XMLUni</a>
+<li>fgWFXMLScanner
+: <a class="el" href="classXMLUni.html#944c1666afdb7fc6054c50aa5a6104c2">XMLUni</a>
+<li>fgWin1252EncodingString
+: <a class="el" href="classXMLUni.html#53a0a6213c9c9d3e7aa7c5c6779b38e2">XMLUni</a>
+<li>fgXercesCacheGrammarFromParse
+: <a class="el" href="classXMLUni.html#63ab5a2cef90389160d8112368b16948">XMLUni</a>
+<li>fgXercesCalculateSrcOfs
+: <a class="el" href="classXMLUni.html#977e18a7c0579276152f44247d93ddb9">XMLUni</a>
+<li>fgXercescDefaultLocale
+: <a class="el" href="classXMLUni.html#65fb61efef197f1387836a339477ab5e">XMLUni</a>
+<li>fgXercescInterfaceDOMDocumentTypeImpl
+: <a class="el" href="classXMLUni.html#b2f34f2a7814684523f46947c5bd9a15">XMLUni</a>
+<li>fgXercescInterfacePSVITypeInfo
+: <a class="el" href="classXMLUni.html#e1423370d82b1ba9839a26109e4de8a5">XMLUni</a>
+<li>fgXercesContinueAfterFatalError
+: <a class="el" href="classXMLUni.html#110ccb38682b7c68919399e6b782b765">XMLUni</a>
+<li>fgXercesDisableDefaultEntityResolution
+: <a class="el" href="classXMLUni.html#2ec469d17eeed186c1bc4611a2c98d97">XMLUni</a>
+<li>fgXercesDOMHasPSVIInfo
+: <a class="el" href="classXMLUni.html#7634afaad455cd6fc45a326de01258ae">XMLUni</a>
+<li>fgXercesDynamic
+: <a class="el" href="classXMLUni.html#2d424493f5c684bfc6bbfecb3d673951">XMLUni</a>
+<li>fgXercesGenerateSyntheticAnnotations
+: <a class="el" href="classXMLUni.html#c4fdf1a01fb0bda4dfd52a2bde0ef148">XMLUni</a>
+<li>fgXercesIdentityConstraintChecking
+: <a class="el" href="classXMLUni.html#d52f332f8e7c791e43d735c70df15a62">XMLUni</a>
+<li>fgXercesIgnoreAnnotations
+: <a class="el" href="classXMLUni.html#964250971fb6efd15ce41737307ec5b8">XMLUni</a>
+<li>fgXercesIgnoreCachedDTD
+: <a class="el" href="classXMLUni.html#1301f8d5d97feb6a6376a36f726ac15c">XMLUni</a>
+<li>fgXercesLoadExternalDTD
+: <a class="el" href="classXMLUni.html#2b287fdcd0090091be74dcf4ede6cd54">XMLUni</a>
+<li>fgXercesParserUseDocumentFromImplementation
+: <a class="el" href="classXMLUni.html#022c7fb29b65f48373e4b9d9728a7ce9">XMLUni</a>
+<li>fgXercesScannerName
+: <a class="el" href="classXMLUni.html#03098577d90f370b801755e5452e3870">XMLUni</a>
+<li>fgXercesSchema
+: <a class="el" href="classXMLUni.html#18ebfbcc6ca3ff5e8b7b84ee4158d492">XMLUni</a>
+<li>fgXercesSchemaExternalNoNameSpaceSchemaLocation
+: <a class="el" href="classXMLUni.html#8f2fbdda8f847891493df70fe1e18313">XMLUni</a>
+<li>fgXercesSchemaExternalSchemaLocation
+: <a class="el" href="classXMLUni.html#18505d580fc70cb6d63a1ff985c88e86">XMLUni</a>
+<li>fgXercesSchemaFullChecking
+: <a class="el" href="classXMLUni.html#a0bc11406c33c730d1a4296c7de1c5f6">XMLUni</a>
+<li>fgXercesSecurityManager
+: <a class="el" href="classXMLUni.html#5448ed1303d3239a621763a2fc873e5d">XMLUni</a>
+<li>fgXercesSkipDTDValidation
+: <a class="el" href="classXMLUni.html#1c59068f10f7295651b29a2b697038c4">XMLUni</a>
+<li>fgXercesStandardUriConformant
+: <a class="el" href="classXMLUni.html#b2e9972e303441acd38e47f0ceac2bac">XMLUni</a>
+<li>fgXercesUseCachedGrammarInParse
+: <a class="el" href="classXMLUni.html#b700a5ee569e06a8608eb5599907d842">XMLUni</a>
+<li>fgXercesUserAdoptsDOMDocument
+: <a class="el" href="classXMLUni.html#63a25e5d8c0b94d833a0b6fd3cc413b1">XMLUni</a>
+<li>fgXercesValidateAnnotations
+: <a class="el" href="classXMLUni.html#2d8877c64aaac759ac2e352b6a00a8b9">XMLUni</a>
+<li>fgXercesValidationErrorAsFatal
+: <a class="el" href="classXMLUni.html#4de56aee1b52800ce2ad8bb4b41e7b17">XMLUni</a>
+<li>fgXMLChEncodingString
+: <a class="el" href="classXMLUni.html#5515cf131c5ce839e0620f53adbba10e">XMLUni</a>
+<li>fgXMLDeclString
+: <a class="el" href="classXMLUni.html#dd15b94e349ae47829198c6d87f8f5d6">XMLUni</a>
+<li>fgXMLDeclStringCR
+: <a class="el" href="classXMLUni.html#c96a8159b08f824a26e729341cf0e8ef">XMLUni</a>
+<li>fgXMLDeclStringCRU
+: <a class="el" href="classXMLUni.html#4e285d9e1874491e610ebb5814835bda">XMLUni</a>
+<li>fgXMLDeclStringHTab
+: <a class="el" href="classXMLUni.html#1b9ac510607660b9464d3f4d4ff4cc52">XMLUni</a>
+<li>fgXMLDeclStringHTabU
+: <a class="el" href="classXMLUni.html#ab5accd4ffd874cffa67035d785cc6a3">XMLUni</a>
+<li>fgXMLDeclStringLF
+: <a class="el" href="classXMLUni.html#a90bfe269380cd2618115fbcaf82d64a">XMLUni</a>
+<li>fgXMLDeclStringLFU
+: <a class="el" href="classXMLUni.html#aba1fe669024d77afbbf7de38ec3d244">XMLUni</a>
+<li>fgXMLDeclStringSpace
+: <a class="el" href="classXMLUni.html#1f0157ab78c247c817571788091856a8">XMLUni</a>
+<li>fgXMLDeclStringSpaceU
+: <a class="el" href="classXMLUni.html#097756d0c0dfc23e2d5ad633f9e83e1c">XMLUni</a>
+<li>fgXMLDOMMsgDomain
+: <a class="el" href="classXMLUni.html#55f261a8ca77640463f25bfcea216209">XMLUni</a>
+<li>fgXMLErrDomain
+: <a class="el" href="classXMLUni.html#2b8c8a71035f4aaf54f4ecff4da3769b">XMLUni</a>
+<li>fgXMLNSColonString
+: <a class="el" href="classXMLUni.html#86f97a49e7b12901e6c40f993a613168">XMLUni</a>
+<li>fgXMLNSString
+: <a class="el" href="classXMLUni.html#cf7d3dc213be4205a35dffbb89a75589">XMLUni</a>
+<li>fgXMLNSURIName
+: <a class="el" href="classXMLUni.html#5442a912aad6ce244eeac42aa6ea1798">XMLUni</a>
+<li>fgXMLPlatformUtilsException_Name
+: <a class="el" href="classXMLUni.html#7217e42625384e48ae630b384ecd43dc">XMLUni</a>
+<li>fgXMLString
+: <a class="el" href="classXMLUni.html#3a7e4cd63ba1270219c65ff2d6fb3f3d">XMLUni</a>
+<li>fgXMLStringCR
+: <a class="el" href="classXMLUni.html#40d8eb27bdc0dbca09b6e21993f18dcd">XMLUni</a>
+<li>fgXMLStringCRU
+: <a class="el" href="classXMLUni.html#12aa457df4b9107cc2f7a8992dc5d364">XMLUni</a>
+<li>fgXMLStringHTab
+: <a class="el" href="classXMLUni.html#c03744e21aebc9520bd2b3d8e99c57e9">XMLUni</a>
+<li>fgXMLStringHTabU
+: <a class="el" href="classXMLUni.html#86b3d214c8388e25577ae235a88fd68d">XMLUni</a>
+<li>fgXMLStringLF
+: <a class="el" href="classXMLUni.html#9eccdc0268f44fec6ef481ace7913460">XMLUni</a>
+<li>fgXMLStringLFU
+: <a class="el" href="classXMLUni.html#37b3d0be10ea11d6b86ea96c283e7ca7">XMLUni</a>
+<li>fgXMLStringSpace
+: <a class="el" href="classXMLUni.html#3818cfea7affd03c8f482ba5892ff5f7">XMLUni</a>
+<li>fgXMLStringSpaceU
+: <a class="el" href="classXMLUni.html#4906d2479cb3def8d872a01dce35a9bb">XMLUni</a>
+<li>fgXMLURIName
+: <a class="el" href="classXMLUni.html#e17fe18ddf36f2654dd550efc83dd77d">XMLUni</a>
+<li>fgXPathException_Name
+: <a class="el" href="classXMLUni.html#dacaba566b7ab76624e8fa913838e8e2">XMLUni</a>
+<li>fgXSAXMLScanner
+: <a class="el" href="classXMLUni.html#7c6976ac6df9c47caae01bc16d102a94">XMLUni</a>
+<li>fgXSerializationException_Name
+: <a class="el" href="classXMLUni.html#eee22b6ca0d3a10427b5f538527110a9">XMLUni</a>
+<li>fgYesString
+: <a class="el" href="classXMLUni.html#3530a9715c139d2cbeb613cf4b962e62">XMLUni</a>
+<li>fgZeroLenString
+: <a class="el" href="classXMLUni.html#4c993133f2c8f0a968b0db326af62fa3">XMLUni</a>
+<li>fgZeroString
+: <a class="el" href="classXMLUni.html#e9737d051f739988f79fbc64d72d622c">XMLUni</a>
+<li>fHashMap
+: <a class="el" href="classXSNamespaceItem.html#780749177dad06358eea2f08e3038ecf">XSNamespaceItem</a>
+<li>fHashNamespace
+: <a class="el" href="classXSModel.html#f8536618ab68ed8d37986bcf8494fa14">XSModel</a>
+<li>fHeaders
+: <a class="el" href="classXMLNetHTTPInfo.html#552a806a7cf3547fbbfd091942a0ada4">XMLNetHTTPInfo</a>
+<li>fHeadersLen
+: <a class="el" href="classXMLNetHTTPInfo.html#7d344b0987b5369064d4b44f73bd3940">XMLNetHTTPInfo</a>
+<li>fHTTPMethod
+: <a class="el" href="classXMLNetHTTPInfo.html#ae654f3972c4303832b11baf6a57a523">XMLNetHTTPInfo</a>
+<li>fId
+: <a class="el" href="classXSObject.html#31c75ec08b52f0fb04bc21a75e2b741a">XSObject</a>
+<li>fIdentityConstraint
+: <a class="el" href="classXSIDCDefinition.html#a66cd7f1f9a86114dcd85adbfd1e01ca">XSIDCDefinition</a>
+<li>fIdentityConstraints
+: <a class="el" href="classXSElementDeclaration.html#1eaf3a5b566e8fbc864923f7962e7368">XSElementDeclaration</a>
+<li>fIdVector
+: <a class="el" href="classXSModel.html#610c98ae331ada2b0dfb5470e2492128">XSModel</a>
+<li>File
+: <a class="el" href="classXMLURL.html#314ff3369f7369da7b682e18808abbce792191b2e0803759e60f613800f72de7">XMLURL</a>
+<li>fileSize()
+: <a class="el" href="classXMLPlatformUtils.html#6a5d50b2d88d4368e71325e65dfc5342">XMLPlatformUtils</a>
+<li>FILTER_ACCEPT
+: <a class="el" href="classDOMNodeFilter.html#c0f76a10c908b2562fb430c69a8d6811fb597950f3332b23db29505d56f3bff5">DOMNodeFilter</a>
+<li>FILTER_REJECT
+: <a class="el" href="classDOMNodeFilter.html#c0f76a10c908b2562fb430c69a8d6811a9aa4365f8a25f465efd576972f7cc0d">DOMNodeFilter</a>
+<li>FILTER_SKIP
+: <a class="el" href="classDOMNodeFilter.html#c0f76a10c908b2562fb430c69a8d681122e3445123f72af4b2b8dfdbb3871334">DOMNodeFilter</a>
+<li>FilterAction
+: <a class="el" href="classDOMNodeFilter.html#c0f76a10c908b2562fb430c69a8d6811">DOMNodeFilter</a>
+<li>fImplementationFeatures
+: <a class="el" href="classAbstractDOMParser.html#7edaf68f904c3ee95c6cf8c19e3bd5fd">AbstractDOMParser</a>
+<li>fIncludeIgnorableWhitespace
+: <a class="el" href="classAbstractDOMParser.html#8a7e0cf5bacfe221a85ee034bc6fe0af">AbstractDOMParser</a>
+<li>findAny()
+: <a class="el" href="classXMLString.html#8440a87ef3c180e2e0b95185261d114d">XMLString</a>
+<li>findAttDef()
+: <a class="el" href="classXMLAttDefList.html#c90d507d254e46821ab575751868e612">XMLAttDefList</a>
+<li>findAttr()
+: <a class="el" href="classXMLElementDecl.html#0eedebcf0a94bae82edb63202056af60">XMLElementDecl</a>
+<li>fInstance
+: <a class="el" href="classXMLHolder.html#fc0b178047ea68f3d22d3b1ccfb4d7db">XMLHolder&lt; Type &gt;</a>
+<li>fInternalSubset
+: <a class="el" href="classAbstractDOMParser.html#43db6935c5e4847cadfb5f30b4a6d988">AbstractDOMParser</a>
+<li>FIRST_ORDERED_NODE_TYPE
+: <a class="el" href="classDOMXPathResult.html#b64c224a9a4af9a43995eab35a05f30f154547853ad0e89be9ea5b32f7201d6c">DOMXPathResult</a>
+<li>firstChild()
+: <a class="el" href="classDOMTreeWalker.html#b968e34ebd5ff5e593c884ec48cc18f6">DOMTreeWalker</a>
+<li>fIsFixed
+: <a class="el" href="classXSMultiValueFacet.html#e0268037e3ca0ca0cb2db05e78b9d6d6">XSMultiValueFacet</a>
+, <a class="el" href="classXSFacet.html#38aa3f54c855b4deb6af344fa2ebc874">XSFacet</a>
+<li>fIsSpecified
+: <a class="el" href="classPSVIItem.html#391acc9e9fcee2af966bd016c360b027">PSVIItem</a>
+<li>Fixed
+: <a class="el" href="classXMLAttDef.html#dbac7febf3455722cc9736f1dc03c02f2df85eb75f76a97c19072f3fb2ed85ae">XMLAttDef</a>
+<li>FixedDifferentFromActual
+: <a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c8683eae071ece8a0a43707422320c92340">XMLValid</a>
+<li>fixURI()
+: <a class="el" href="classXMLString.html#33d9e7f5df661283a99abe303d479071">XMLString</a>
+<li>fKey
+: <a class="el" href="classXSIDCDefinition.html#51fb18d41cda0ccfb0cfaf4a5615d8e0">XSIDCDefinition</a>
+<li>fLexicalValue
+: <a class="el" href="classXSFacet.html#bcf6e42291985eb978f2a3526669e631">XSFacet</a>
+<li>fLexicalValues
+: <a class="el" href="classXSMultiValueFacet.html#0e7108c428023fb543c6311de717c47f">XSMultiValueFacet</a>
+<li>Float
+: <a class="el" href="classXMLNumber.html#5c61954fb1fcef027fed8dccc826f8ebbaaaecede77f9308704cb3d048b786d6">XMLNumber</a>
+<li>flush()
+: <a class="el" href="classStdOutFormatTarget.html#3e41c8b221d4f568ae927819090f0591">StdOutFormatTarget</a>
+, <a class="el" href="classXMLFormatTarget.html#0d364d4235de535e82364d73a55627ac">XMLFormatTarget</a>
+, <a class="el" href="classLocalFileFormatTarget.html#ecb744f76766fbfe0731eaf6d953db05">LocalFileFormatTarget</a>
+<li>flushAll()
+: <a class="el" href="classXMLSynchronizedStringPool.html#3a839d5edf2760da55b3d3cc119596f8">XMLSynchronizedStringPool</a>
+<li>fMaxOccurs
+: <a class="el" href="classXSParticle.html#1dc1adfb607f73b6fb563ec2f81b6618">XSParticle</a>
+<li>fMemberType
+: <a class="el" href="classPSVIItem.html#28f1da048ba7a7916af7f93385439de7">PSVIItem</a>
+<li>fMemberTypes
+: <a class="el" href="classXSSimpleTypeDefinition.html#3bc40e498ae7a06a2d4adc1069b06711">XSSimpleTypeDefinition</a>
+<li>fMemoryManager
+: <a class="el" href="classXSNamespaceItem.html#46061e077396339b5193fb496997da8f">XSNamespaceItem</a>
+, <a class="el" href="classPSVIItem.html#4564c4a0ee928887b3ae2851d78e04aa">PSVIItem</a>
+, <a class="el" href="classXMLException.html#d43e6ec9694e72a28bf6270ffc61b427">XMLException</a>
+, <a class="el" href="classDOMException.html#41a7e3e84ec87ae459f7ed0b5d9a8c38">DOMException</a>
+, <a class="el" href="classXSObject.html#ae909af33a4fb6148972cfc3fa7f0b88">XSObject</a>
+, <a class="el" href="classSAXException.html#47211440cfe7051d069949fe79eeed43">SAXException</a>
+, <a class="el" href="classAbstractDOMParser.html#91992884db4e8a235f30afa278d3be4c">AbstractDOMParser</a>
+, <a class="el" href="classXSModel.html#f1934d8075c22a4ce466e9e95f949f33">XSModel</a>
+, <a class="el" href="classValidationContext.html#4ee5044d7414b659a8845b72db7cf56c">ValidationContext</a>
+<li>fMinOccurs
+: <a class="el" href="classXSParticle.html#48eec2ad46d99fe3bbae4ec4c53feaba">XSParticle</a>
+<li>fModelGroupParticle
+: <a class="el" href="classXSModelGroupDefinition.html#fb8ab47758f63e366eb2c8e2eaed17ea">XSModelGroupDefinition</a>
+<li>fMsg
+: <a class="el" href="classSAXException.html#af656d83416d057589cbc72e44833da0">SAXException</a>
+<li>fNamespaceStringList
+: <a class="el" href="classXSModel.html#d06423155ed754649536329e07d719a2">XSModel</a>
+<li>fNext
+: <a class="el" href="classXSAnnotation.html#7bee4967ae4576479012d1b4c44747f0">XSAnnotation</a>
+<li>fNodeStack
+: <a class="el" href="classAbstractDOMParser.html#795c5ffdb0e23e53d1c7515cfd724ce8">AbstractDOMParser</a>
+<li>fNormalizedValue
+: <a class="el" href="classPSVIItem.html#ce00a1180e476b02d541296be53f46bf">PSVIItem</a>
+<li>fNsConstraintList
+: <a class="el" href="classXSWildcard.html#071304e5f8eacb263cb6cee57bf01363">XSWildcard</a>
+<li>fObjFactory
+: <a class="el" href="classXSModel.html#f65e39f591afc9e9c1f84a05446bdb02">XSModel</a>
+<li>ForbiddenDerivation
+: <a class="el" href="classXMLErrs.html#efe9817ef5442905d86fd17cb0c35e47eaeba02c72f9350babcaf96255812221">XMLErrs</a>
+<li>ForbiddenDerivationByExtension
+: <a class="el" href="classXMLErrs.html#efe9817ef5442905d86fd17cb0c35e475fe9b2be952cc83949c77fac80c1f2d2">XMLErrs</a>
+<li>ForbiddenDerivationByRestriction
+: <a class="el" href="classXMLErrs.html#efe9817ef5442905d86fd17cb0c35e477488cf0ca2501750a5e64c832db3ac8d">XMLErrs</a>
+<li>formatBuf()
+: <a class="el" href="classXMLFormatter.html#c9e00ffe8e3bb3f91a78db0470d5b482">XMLFormatter</a>
+<li>fParent
+: <a class="el" href="classXSModel.html#793a15eff84a32c767b43d3791b60fb9">XSModel</a>
+<li>fParseInProgress
+: <a class="el" href="classAbstractDOMParser.html#82c8666ba31bbfa1aca0393433b07fc8">AbstractDOMParser</a>
+<li>fParticle
+: <a class="el" href="classXSComplexTypeDefinition.html#3e272212d5a6ef71f1967d4b3cb68de6">XSComplexTypeDefinition</a>
+<li>fParticleList
+: <a class="el" href="classXSModelGroup.html#e4c316510ab08cc137695833b6fa86ce">XSModelGroup</a>
+<li>fPatternList
+: <a class="el" href="classXSSimpleTypeDefinition.html#696bac07f252bb1ee4a933da20f076be">XSSimpleTypeDefinition</a>
+<li>fPayload
+: <a class="el" href="classXMLNetHTTPInfo.html#ddaf66177f6186979b7aadf62d2cd748">XMLNetHTTPInfo</a>
+<li>fPayloadLen
+: <a class="el" href="classXMLNetHTTPInfo.html#ee01f868eb5153c9226af914e5d3398c">XMLNetHTTPInfo</a>
+<li>fPrimitiveOrItemType
+: <a class="el" href="classXSSimpleTypeDefinition.html#3d21890ded87b8cfe70289012e40120e">XSSimpleTypeDefinition</a>
+<li>fProcessContents
+: <a class="el" href="classXSWildcard.html#f0850a0cb6fc997e51057a169d664bbc">XSWildcard</a>
+<li>fProhibitedSubstitution
+: <a class="el" href="classXSComplexTypeDefinition.html#71f9301e21a931ba4ec7811eeae1182e">XSComplexTypeDefinition</a>
+<li>fPSVIHandler
+: <a class="el" href="classAbstractDOMParser.html#1033ab4309ef69eef9a2b80eee597ee8">AbstractDOMParser</a>
+<li>fRequired
+: <a class="el" href="classXSAttributeUse.html#b9723dafdddba658ee6dfd0071206d1c">XSAttributeUse</a>
+<li>fScanner
+: <a class="el" href="classAbstractDOMParser.html#5ab6deecc1d700bdab928302c4848c09">AbstractDOMParser</a>
+<li>fSchemaElementDecl
+: <a class="el" href="classXSElementDeclaration.html#79bbd5188cf23e549efde8f1baf3e9ab">XSElementDeclaration</a>
+<li>fSchemaNamespace
+: <a class="el" href="classXSNamespaceItem.html#44d93772cf79a578e89036d8e74288ac">XSNamespaceItem</a>
+<li>fScope
+: <a class="el" href="classXSElementDeclaration.html#52171e851a9fc2a86230b767e65e9a2d">XSElementDeclaration</a>
+, <a class="el" href="classXSAttributeDeclaration.html#44c52c653e248a3e8883d0d43f8f2093">XSAttributeDeclaration</a>
+<li>fStringList
+: <a class="el" href="classXSIDCDefinition.html#25e5d5a084d796a0ae73de95d5d986d9">XSIDCDefinition</a>
+<li>fSubstitutionGroupAffiliation
+: <a class="el" href="classXSElementDeclaration.html#6bbfbbe29463b8ce45e6710e845d876c">XSElementDeclaration</a>
+<li>fSubstitutionGroupExclusions
+: <a class="el" href="classXSElementDeclaration.html#b2da282ce52d6750ef08bb59260d01c1">XSElementDeclaration</a>
+<li>fTerm
+: <a class="el" href="classXSParticle.html#2848e7fbd03f68c53460de0977fbd36f">XSParticle</a>
+<li>fTermType
+: <a class="el" href="classXSParticle.html#6b655fe1f09aa980cc0d9a8988be23be">XSParticle</a>
+<li>FTP
+: <a class="el" href="classXMLURL.html#314ff3369f7369da7b682e18808abbcee1b2c71c9b9700c4f0321e3858104032">XMLURL</a>
+<li>fType
+: <a class="el" href="classXMLAbstractDoubleFloat.html#509d02ff513ac3442fc75b0af447bce4">XMLAbstractDoubleFloat</a>
+, <a class="el" href="classPSVIItem.html#de50761227f1e1ff8dcd3d8fdc8e3ba2">PSVIItem</a>
+<li>fTypeCategory
+: <a class="el" href="classXSTypeDefinition.html#5cd77485c1e0d0b6eda21fc693a3f901">XSTypeDefinition</a>
+<li>fTypeDefinition
+: <a class="el" href="classXSAttributeDeclaration.html#45f3e89b5e8341b66c2df4c9de94629a">XSAttributeDeclaration</a>
+, <a class="el" href="classXSElementDeclaration.html#8b4f69eb182f62e230f805159b264ab8">XSElementDeclaration</a>
+<li>fURIStringPool
+: <a class="el" href="classXSModel.html#7bcff9cfded6b9c845e34735f06a31c9">XSModel</a>
+, <a class="el" href="classAbstractDOMParser.html#df5bd40691b16e2ca2e3e5d2f9443da0">AbstractDOMParser</a>
+<li>fValidationContext
+: <a class="el" href="classPSVIItem.html#bda42f7e7a7762b420cbdbb345a9abc6">PSVIItem</a>
+<li>fValidator
+: <a class="el" href="classAbstractDOMParser.html#06faad2a2e52455451ec9f82d9a469d8">AbstractDOMParser</a>
+<li>fValidityState
+: <a class="el" href="classPSVIItem.html#c1f3f112e1874e2850f57b02e8be65d5">PSVIItem</a>
+<li>fValue
+: <a class="el" href="classXMLAbstractDoubleFloat.html#574508dfeea498c058169ceb32834c4b">XMLAbstractDoubleFloat</a>
+, <a class="el" href="structXSValue_1_1XSValue__Data.html#3d398622feba25f2bcc0f54b9c84fa65">XSValue::XSValue_Data</a>
+<li>fVariety
+: <a class="el" href="classXSSimpleTypeDefinition.html#bb80430cce844a282486714e9bb8f664">XSSimpleTypeDefinition</a>
+<li>fWithinElement
+: <a class="el" href="classAbstractDOMParser.html#cb4feb06f070e242497a1c690114dd87">AbstractDOMParser</a>
+<li>fXercesAttGroupInfo
+: <a class="el" href="classXSAttributeGroupDefinition.html#2566d7140d7b89c7dae63fe674bee6c4">XSAttributeGroupDefinition</a>
+<li>fXMLNotationDecl
+: <a class="el" href="classXSNotationDeclaration.html#74e7dce60fdf2fb68cbc78104fadf663">XSNotationDeclaration</a>
+<li>fXSAnnotationList
+: <a class="el" href="classXSNamespaceItem.html#df48ee4fc7e17786f3a9bd1d45ca4bc6">XSNamespaceItem</a>
+, <a class="el" href="classXSMultiValueFacet.html#3fdc9b551102fd18875ef31eebfdd987">XSMultiValueFacet</a>
+, <a class="el" href="classXSModel.html#4ee431946a5f1d18b768c076a0f74119">XSModel</a>
+, <a class="el" href="classXSSimpleTypeDefinition.html#c0704316fa402a0e520a3fec6d41a910">XSSimpleTypeDefinition</a>
+, <a class="el" href="classXSComplexTypeDefinition.html#eb42d68b7167a1739dbebe918feed9f6">XSComplexTypeDefinition</a>
+, <a class="el" href="classXSIDCDefinition.html#ece0405caa26ecf9073f5185799404f3">XSIDCDefinition</a>
+<li>fXSAttributeDeclaration
+: <a class="el" href="classXSAttributeUse.html#89654e32546c13499f42cf2cbc381b7a">XSAttributeUse</a>
+<li>fXSAttributeUseList
+: <a class="el" href="classXSComplexTypeDefinition.html#efaca53889eb37587e0eb898c835afb5">XSComplexTypeDefinition</a>
+, <a class="el" href="classXSAttributeGroupDefinition.html#1632f6e4fdad4f72121598736be7cb1c">XSAttributeGroupDefinition</a>
+<li>fXSFacetList
+: <a class="el" href="classXSSimpleTypeDefinition.html#6d13d76ff456eccc2323293ccf935f64">XSSimpleTypeDefinition</a>
+<li>fXSModel
+: <a class="el" href="classXSNamespaceItem.html#7fb03582e2502ecb59ab2f8b1a800d83">XSNamespaceItem</a>
+, <a class="el" href="classXSObject.html#7160fadb0e2cd273a4a1bb5cd5c8652c">XSObject</a>
+<li>fXSMultiValueFacetList
+: <a class="el" href="classXSSimpleTypeDefinition.html#6d46e16cc5ae0fb119630d1ce7455369">XSSimpleTypeDefinition</a>
+<li>fXSNamespaceItemList
+: <a class="el" href="classXSModel.html#7ff4173f52a446338ca3b9590e578010">XSModel</a>
+<li>fXSSimpleTypeDefinition
+: <a class="el" href="classXSComplexTypeDefinition.html#13d46b9d4fa38045a8e005010e9f81e4">XSComplexTypeDefinition</a>
+<li>fXSWildcard
+: <a class="el" href="classXSAttributeGroupDefinition.html#928ff504701b6856c6c1e1d9de822ba0">XSAttributeGroupDefinition</a>
+, <a class="el" href="classXSComplexTypeDefinition.html#362bd01b907d7c29d3c0d01e65eb7de1">XSComplexTypeDefinition</a>
+</ul>
+    </FONT></TD></TR></TABLE><BR>
+</TD></TR></TABLE></TD></TR></TABLE><BR><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD bgcolor="#0086b2"><IMG height="1" src="images/dot.gif" width="1" alt=""></TD></TR><TR><TD align="center"><FONT color="#0086b2" size="-1"><I>
+              Copyright &copy; 1994-2004 The Apache Software Foundation.
+              All Rights Reserved.
+            </I></FONT></TD></TR></TABLE></BODY></HTML>

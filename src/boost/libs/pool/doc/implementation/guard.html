@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+<head>
+  <meta http-equiv="Content-Language" content="en-us">
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+  <link href="../pool.css" rel="stylesheet" type="text/css">
+
+  <title>guard - Auto-lock/unlock-er</title>
+</head>
+
+<body>
+  <img src="../../../../boost.png" width="276" height="86" alt="C++ Boost">
+
+  <h1 align="center">guard - Auto-lock/unlock-er</h1>
+
+  <h2>Introduction</h2>
+
+  <p>detail/guard.hpp provides a type <span class=
+  "code">guard&lt;Mutex&gt;</span> that allows scoped access to the
+  <span class="code">Mutex</span>'s locking and unlocking operations. It is
+  used to ensure that a <span class="code">Mutex</span> is unlocked, even if
+  an exception is thrown.</p>
+
+  <h2>Synopsis</h2>
+  <pre class="code">
+namespace details {
+namespace pool {
+
+template &lt;typename Mutex&gt;
+class guard
+{
+  private:
+    guard(const guard &amp;);
+    void operator=(const guard &amp;);
+
+  public:
+    explicit guard(Mutex &amp; mtx);
+    ~guard();
+};
+
+} // namespace pool
+} // namespace details
+</pre>
+
+  <h2>Semantics</h2>
+
+  <table border align="center" summary="">
+    <caption>
+      <em>Symbol Table</em>
+    </caption>
+
+    <tr>
+      <th>Symbol</th>
+
+      <th>Meaning</th>
+    </tr>
+
+    <tr>
+      <td class="code">T</td>
+
+      <td><span class="code">guard&lt;Mutex&gt;</span></td>
+    </tr>
+
+    <tr>
+      <td class="code">m</td>
+
+      <td>value of type <span class="code">Mutex &amp;</span></td>
+    </tr>
+
+    <tr>
+      <td class="code">g</td>
+
+      <td>value of type <span class="code">guard&lt;Mutex&gt;</span></td>
+    </tr>
+  </table><br>
+
+  <table border align="center" summary="">
+    <caption>
+      <em>Requirements on <span class="code">Mutex</span></em>
+    </caption>
+
+    <tr>
+      <th>Expression</th>
+
+      <th>Return Type</th>
+
+      <th>Assertion/Note/Pre/Post-Condition</th>
+    </tr>
+
+    <tr>
+      <td class="code">m.lock()</td>
+
+      <td>not used</td>
+
+      <td>Locks the mutex referred to by <span class="code">m</span></td>
+    </tr>
+
+    <tr>
+      <td class="code">m.unlock()</td>
+
+      <td>not used</td>
+
+      <td>Unlocks the mutex referred to by <span class="code">m</span></td>
+    </tr>
+  </table><br>
+
+  <table border align="center" summary="">
+    <caption>
+      <em>Requirements satisfied by <span class="code">guard</span></em>
+    </caption>
+
+    <tr>
+      <th>Expression</th>
+
+      <th>Assertion/Note/Pre/Post-Condition</th>
+    </tr>
+
+    <tr>
+      <td class="code">T(m)</td>
+
+      <td>Locks the mutex referred to by <span class="code">m</span>; binds
+      <span class="code">T(m)</span> to <span class="code">m</span></td>
+    </tr>
+
+    <tr>
+      <td class="code">(&amp;g)-&gt;~T()</td>
+
+      <td>Unlocks the mutex that <span class="code">g</span> is bound to</td>
+    </tr>
+  </table>
+
+  <h2>Example</h2>
+
+  <p>Given a (platform-specific) <span class="code">mutex</span> class, we
+  can wrap code as follows:</p>
+  <pre class="code">
+extern mutex global_lock;
+
+static void f()
+{
+  boost::details::pool::guard&lt;mutex&gt; g(global_lock);
+  // g's constructor locks "global_lock"
+
+  ... // do anything:
+      //   throw exceptions
+      //   return
+      //   or just fall through
+} // g's destructor unlocks "global_lock"
+</pre>
+
+  <h2>Dependencies</h2>
+
+  <p>None.</p>
+
+  <h2>Future Directions</h2>
+
+  <p>This header will eventually be replaced by a Boost multithreading
+  library.</p>
+  <hr>
+
+  <p><a href="http://validator.w3.org/check?uri=referer"><img border="0" src=
+  "http://www.w3.org/Icons/valid-html401" alt="Valid HTML 4.01 Transitional"
+  height="31" width="88"></a></p>
+
+  <p>Revised 
+  <!--webbot bot="Timestamp" s-type="EDITED" s-format="%d %B, %Y" startspan -->05
+  December, 2006<!--webbot bot="Timestamp" endspan i-checksum="38516" --></p>
+
+  <p><i>Copyright &copy; 2000, 2001 Stephen Cleary (scleary AT jerviswebb DOT
+  com)</i></p>
+
+  <p><i>Distributed under the Boost Software License, Version 1.0. (See
+  accompanying file <a href="../../../../LICENSE_1_0.txt">LICENSE_1_0.txt</a>
+  or copy at <a href=
+  "http://www.boost.org/LICENSE_1_0.txt">http://www.boost.org/LICENSE_1_0.txt</a>)</i></p>
+</body>
+</html>

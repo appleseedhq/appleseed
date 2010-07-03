@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE library PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN" "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<article id="code_block_3" last-revision="DEBUG MODE Date: 2000/12/20 12:00:00 $"
+ xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>Code Block 3</title>
+  <articleinfo>
+  </articleinfo>
+  <section id="code_block_3.python_code_block">
+    <title>Python code block</title>
+    <para>
+      
+<programlisting><phrase role="keyword">print</phrase> <phrase role="string">&quot;\xfabln\xeck&quot;</phrase>
+</programlisting>
+    </para>
+  </section>
+  <section id="code_block_3.c___code_block">
+    <title>C++ code block</title>
+    <para>
+      This isn't valid C++ but I think we should accept it;
+    </para>
+    <para>
+      [cpp] 
+<programlisting><phrase role="identifier">std</phrase><phrase role="special">::</phrase><phrase role="identifier">cout</phrase><phrase role="special">&lt;&lt;</phrase><phrase role="string">&quot;\xfabln\xeck&quot;</phrase><phrase role="special">&lt;&lt;</phrase><phrase role="string">&quot;\n&quot;</phrase><phrase role="special">;</phrase>
+</programlisting>
+    </para>
+  </section>
+</article>

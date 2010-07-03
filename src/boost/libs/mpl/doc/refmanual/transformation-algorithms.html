@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- Copyright Aleksey Gurtovoy 2006. Distributed under the Boost -->
+<!-- Software License, Version 1.0. (See accompanying -->
+<!-- file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt) -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.3.6: http://docutils.sourceforge.net/" />
+<title>The MPL Reference Manual: Transformation Algorithms</title>
+<link rel="stylesheet" href="../style.css" type="text/css" />
+</head>
+<body class="docframe refmanual">
+<table class="header"><tr class="header"><td class="header-group navigation-bar"><span class="navigation-group"><a href="./equal.html" class="navigation-link">Prev</a>&nbsp;<a href="./copy.html" class="navigation-link">Next</a></span><span class="navigation-group-separator">&nbsp;|&nbsp;</span><span class="navigation-group"><a href="./querying-algorithms.html" class="navigation-link">Back</a>&nbsp;Along</span><span class="navigation-group-separator">&nbsp;|&nbsp;</span><span class="navigation-group"><a href="./algorithms.html" class="navigation-link">Up</a>&nbsp;<a href="../refmanual.html" class="navigation-link">Home</a></span><span class="navigation-group-separator">&nbsp;|&nbsp;</span><span class="navigation-group"><a href="./refmanual_toc.html" class="navigation-link">Full TOC</a></span></td>
+<td class="header-group page-location"><a href="../refmanual.html" class="navigation-link">Front Page</a> / <a href="./algorithms.html" class="navigation-link">Algorithms</a> / <a href="./transformation-algorithms.html" class="navigation-link">Transformation Algorithms</a></td>
+</tr></table><div class="header-separator"></div>
+<div class="section" id="transformation-algorithms">
+<h1><a class="toc-backref" href="./algorithms.html#id413" name="transformation-algorithms">Transformation Algorithms</a></h1>
+<a class="target" id="id107" name="id107"></a><p>According to their name, MPL's <em>transformation</em>, or <em>sequence-building
+algorithms</em> provide the tools for building new sequences from the existing
+ones by performing some kind of transformation. A typical transformation 
+alogrithm takes one or more input sequences and a transformation 
+metafunction/predicate, and returns a new sequence built according to the 
+algorithm's semantics through the means of its <a class="reference" href="./inserter.html">Inserter</a> argument, which 
+plays a role similar to the role of run-time <a class="reference" href="http://www.sgi.com/tech/stl/OutputIterator.html" target="_top">Output Iterator</a>.</p>
+<!-- Say something about optionality of Inserters/their default behavior -->
+<p>Every transformation algorithm is a <a class="reference" href="./reversible-algorithm.html">Reversible Algorithm</a>, providing 
+an accordingly named <tt class="literal"><span class="pre">reverse_</span></tt> counterpart carrying the transformation 
+in the reverse order. Thus, all sequence-building algorithms come in pairs,
+for instance <tt class="literal"><span class="pre"><a href="./replace.html" class="identifier">replace</a></span></tt> / <tt class="literal"><span class="pre"><a href="./reverse-replace.html" class="identifier">reverse_replace</a></span></tt>. In presence of variability of
+the output sequence's properties such as front or backward extensibility, 
+the existence of the bidirectional algorithms allows for the most efficient 
+way to perform the required transformation.</p>
+<!-- modtime: November 13, 2004 01:53:31 +0000 -->
+<!-- Algorithms/Transformation Algorithms//copy |10 -->
+<ul class="toc simple" id="outline">
+<li><a class="reference" href="./copy.html" id="id414" name="id414">copy</a></li>
+<li><a class="reference" href="./copy-if.html" id="id415" name="id415">copy_if</a></li>
+<li><a class="reference" href="./transform.html" id="id416" name="id416">transform</a></li>
+<li><a class="reference" href="./replace.html" id="id417" name="id417">replace</a></li>
+<li><a class="reference" href="./replace-if.html" id="id418" name="id418">replace_if</a></li>
+<li><a class="reference" href="./remove.html" id="id419" name="id419">remove</a></li>
+<li><a class="reference" href="./remove-if.html" id="id420" name="id420">remove_if</a></li>
+<li><a class="reference" href="./unique.html" id="id421" name="id421">unique</a></li>
+<li><a class="reference" href="./partition.html" id="id422" name="id422">partition</a></li>
+<li><a class="reference" href="./stable-partition.html" id="id423" name="id423">stable_partition</a></li>
+<li><a class="reference" href="./sort.html" id="id424" name="id424">sort</a></li>
+<li><a class="reference" href="./reverse.html" id="id425" name="id425">reverse</a></li>
+<li><a class="reference" href="./reverse-copy.html" id="id426" name="id426">reverse_copy</a></li>
+<li><a class="reference" href="./reverse-copy-if.html" id="id427" name="id427">reverse_copy_if</a></li>
+<li><a class="reference" href="./reverse-transform.html" id="id428" name="id428">reverse_transform</a></li>
+<li><a class="reference" href="./reverse-replace.html" id="id429" name="id429">reverse_replace</a></li>
+<li><a class="reference" href="./reverse-replace-if.html" id="id430" name="id430">reverse_replace_if</a></li>
+<li><a class="reference" href="./reverse-remove.html" id="id431" name="id431">reverse_remove</a></li>
+<li><a class="reference" href="./reverse-remove-if.html" id="id432" name="id432">reverse_remove_if</a></li>
+<li><a class="reference" href="./reverse-unique.html" id="id433" name="id433">reverse_unique</a></li>
+<li><a class="reference" href="./reverse-partition.html" id="id434" name="id434">reverse_partition</a></li>
+<li><a class="reference" href="./reverse-stable-partition.html" id="id435" name="id435">reverse_stable_partition</a></li>
+</ul>
+</div>
+
+<div class="footer-separator"></div>
+<table class="footer"><tr class="footer"><td class="header-group navigation-bar"><span class="navigation-group"><a href="./equal.html" class="navigation-link">Prev</a>&nbsp;<a href="./copy.html" class="navigation-link">Next</a></span><span class="navigation-group-separator">&nbsp;|&nbsp;</span><span class="navigation-group"><a href="./querying-algorithms.html" class="navigation-link">Back</a>&nbsp;Along</span><span class="navigation-group-separator">&nbsp;|&nbsp;</span><span class="navigation-group"><a href="./algorithms.html" class="navigation-link">Up</a>&nbsp;<a href="../refmanual.html" class="navigation-link">Home</a></span><span class="navigation-group-separator">&nbsp;|&nbsp;</span><span class="navigation-group"><a href="./refmanual_toc.html" class="navigation-link">Full TOC</a></span></td>
+</tr></table></body>
+</html>

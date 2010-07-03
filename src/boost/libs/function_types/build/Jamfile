@@ -1,0 +1,36 @@
+
+# (C) Copyright Tobias Schwinger
+#
+# Use modification and distribution are subject to the boost Software License,
+# Version 1.0. (See http://www.boost.org/LICENSE_1_0.txt).
+
+# Generates preprocessed files with wave.
+
+rule wave 
+{ 
+  Depends $1 : $2 ; 
+}
+
+actions wave
+{
+  ../../../dist/bin/wave -S../../.. $(>) -o $(<)
+}
+
+make ../../../libs/function_types/build/timestamps/arity_loops
+  : preprocess_arity_loops.cpp : wave 
+  ;
+
+explicit ../../../libs/function_types/build/timestamps/arity_loops ; 
+
+make ../../../libs/function_types/build/timestamps/encoding
+  : preprocess_encoding.cpp : wave 
+  ;
+
+explicit ../../../libs/function_types/build/timestamps/encoding ;
+
+make ../../../libs/function_types/build/timestamps/cc_names
+  : preprocess_cc_names.cpp : wave
+  ;
+
+explicit ../../../libs/function_types/build/timestamps/cc_names ;
+

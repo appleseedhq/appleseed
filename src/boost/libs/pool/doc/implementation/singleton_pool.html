@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+<head>
+  <meta http-equiv="Content-Language" content="en-us">
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+  <link href="../pool.css" rel="stylesheet" type="text/css">
+
+  <title>Singleton Pool Implementation</title>
+</head>
+
+<body>
+  <img src="../../../../boost.png" width="276" height="86" alt="C++ Boost">
+
+  <h1 align="center">Singleton Pool Implementation</h1>
+
+  <h2>Dependencies</h2>
+
+  <p>Includes the Boost headers <span class="code">"pool.hpp"</span> (see
+  <a href="pool.html">pool.html</a>), <span class=
+  "code">"detail/singleton.hpp"</span> (see <a href=
+  "singleton.html">singleton.html</a>), <span class=
+  "code">"detail/mutex.hpp"</span> (see <a href="mutex.html">mutex.html</a>),
+  and <span class="code">"detail/guard.hpp"</span> (see <a href=
+  "guard.html">guard.html</a>).</p>
+
+  <h2>Synopsis</h2>
+  <pre class="code">
+template &lt;typename Tag,
+    unsigned RequestedSize,
+    typename UserAllocator = default_user_allocator_new_delete,
+    typename Mutex = details::pool::default_mutex,
+    unsigned NextSize = 32&gt;
+class singleton_pool
+{
+  ... // public interface
+
+  public: // extensions to public interface
+    typedef Mutex mutex;
+    static const unsigned next_size = NextSize;
+};
+</pre>
+
+  <h2>Extensions to Public Interface</h2>
+
+  <h3>Additional template parameters</h3>
+
+  <h4 class="code">Mutex</h4>
+
+  <p>This class is the type of <a href="mutex.html">mutex</a> to use to
+  protect simultaneous access to the underlying Pool. It is exposed so that
+  users may declare some singleton pools normally (i.e., with
+  synchronization), but some singleton pools without synchronization (by
+  specifying <span class="code">details::pool::null_mutex</span>) for
+  efficiency reasons.</p>
+
+  <h4 class="code">NextSize</h4>
+
+  <p>The value of this parameter is passed to the underlying Pool when it is
+  created. See the extensions to the public interface of <a href=
+  "pool.html">pool</a> for more information.</p>
+
+  <h3>Additional members</h3>
+
+  <p>The typedef <span class="code">mutex</span> and the static const value
+  <span class="code">next_size</span> publish the values of the template
+  parameters <span class="code">Mutex</span> and <span class=
+  "code">NextSize</span>, respectively.</p>
+
+  <h2>Future Directions</h2>
+
+  <p>When the Boost multithreading library is completed, the <span class=
+  "code">Mutex</span> parameter will be replaced by something from that
+  library providing the same flexibility and will move from an implementation
+  detail into the interface specification.</p>
+
+  <h2><a href="../interfaces/singleton_pool.html">Interface
+  Description</a></h2>
+  <hr>
+
+  <p><a href="http://validator.w3.org/check?uri=referer"><img border="0" src=
+  "http://www.w3.org/Icons/valid-html401" alt="Valid HTML 4.01 Transitional"
+  height="31" width="88"></a></p>
+
+  <p>Revised 
+  <!--webbot bot="Timestamp" s-type="EDITED" s-format="%d %B, %Y" startspan -->05
+  December, 2006<!--webbot bot="Timestamp" endspan i-checksum="38516" --></p>
+
+  <p><i>Copyright &copy; 2000, 2001 Stephen Cleary (scleary AT jerviswebb DOT
+  com)</i></p>
+
+  <p><i>Distributed under the Boost Software License, Version 1.0. (See
+  accompanying file <a href="../../../../LICENSE_1_0.txt">LICENSE_1_0.txt</a>
+  or copy at <a href=
+  "http://www.boost.org/LICENSE_1_0.txt">http://www.boost.org/LICENSE_1_0.txt</a>)</i></p>
+</body>
+</html>

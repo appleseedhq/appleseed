@@ -1,0 +1,85 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Struct template parse_match_result</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../date_time/doxy.html#header.boost.date_time.string_parse_tree_hpp" title="Header &lt;boost/date_time/string_parse_tree.hpp&gt;">
+<link rel="prev" href="convert_string_type.html" title="Function template convert_string_type">
+<link rel="next" href="string_parse_tree.html" title="Struct template string_parse_tree">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="convert_string_type.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../date_time/doxy.html#header.boost.date_time.string_parse_tree_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="string_parse_tree.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.date_time.parse_match_result"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Struct template parse_match_result</span></h2>
+<p>boost::date_time::parse_match_result</p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../date_time/doxy.html#header.boost.date_time.string_parse_tree_hpp" title="Header &lt;boost/date_time/string_parse_tree.hpp&gt;">boost/date_time/string_parse_tree.hpp</a>&gt;
+
+</em></span><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> charT&gt; 
+<span class="bold"><strong>struct</strong></span> <a class="link" href="parse_match_result.html" title="Struct template parse_match_result">parse_match_result</a> {
+  <span class="emphasis"><em>// types</em></span>
+  <span class="bold"><strong>typedef</strong></span> std::basic_string&lt; charT &gt; <a name="boost.date_time.parse_match_result.string_type"></a>string_type;
+
+  <span class="bold"><strong>enum</strong></span> <a name="boost.date_time.parse_match_result.PARSE_STATE"></a>PARSE_STATE { PARSE_ERROR =  -1 };
+
+  <span class="emphasis"><em>// <a class="link" href="parse_match_result.html#boost.date_time.parse_match_resultconstruct-copy-destruct">construct/copy/destruct</a></em></span>
+  <a class="link" href="parse_match_result.html#id723238-bb">parse_match_result</a>();
+
+  <span class="emphasis"><em>// <a class="link" href="parse_match_result.html#id1110301-bb">public member functions</a></em></span>
+  <span class="type">string_type</span> <a class="link" href="parse_match_result.html#id1110304-bb">remaining</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type">charT</span> <a class="link" href="parse_match_result.html#id1136198-bb">last_char</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="parse_match_result.html#id1136206-bb">has_remaining</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type">string_type</span> cache;
+  <span class="type"><span class="bold"><strong>unsigned</strong></span> <span class="bold"><strong>short</strong></span></span> match_depth;
+  <span class="type"><span class="bold"><strong>short</strong></span></span> current_match;
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id1747138"></a><h2>Description</h2>
+<div class="refsect2" lang="en">
+<a name="id1747142"></a><h3>
+<a name="boost.date_time.parse_match_resultconstruct-copy-destruct"></a><code class="computeroutput">parse_match_result</code> 
+        public
+       construct/copy/destruct</h3>
+<div class="orderedlist"><ol type="1"><li><pre class="literallayout"><a name="id723238-bb"></a>parse_match_result();</pre></li></ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id1747175"></a><h3>
+<a name="id1110301-bb"></a><code class="computeroutput">parse_match_result</code> public member functions</h3>
+<div class="orderedlist"><ol type="1">
+<li><pre class="literallayout"><span class="type">string_type</span> <a name="id1110304-bb"></a>remaining() <span class="bold"><strong>const</strong></span>;</pre></li>
+<li><pre class="literallayout"><span class="type">charT</span> <a name="id1136198-bb"></a>last_char() <span class="bold"><strong>const</strong></span>;</pre></li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1136206-bb"></a>has_remaining() <span class="bold"><strong>const</strong></span>;</pre>Returns true if more characters were parsed than was necessary. <p>Should be used in conjunction with last_char() to get the remaining character. </p>
+</li>
+</ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2001-2005 CrystalClear Software, Inc<p>Subject to the Boost Software License, Version 1.0. (See accompanying file
+    <code class="filename">LICENSE_1_0.txt</code> or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)</p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="convert_string_type.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../date_time/doxy.html#header.boost.date_time.string_parse_tree_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="string_parse_tree.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

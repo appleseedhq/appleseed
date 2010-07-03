@@ -1,0 +1,112 @@
+#==============================================================================
+#   Copyright (c) 2001-2007 Joel de Guzman
+#   Copyright (c) 2001-2008 Hartmut Kaiser
+#
+#   Use, modification and distribution is subject to the Boost Software
+#   License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+#   http://www.boost.org/LICENSE_1_0.txt)
+#==============================================================================
+
+# bring in rules for testing
+import testing ;
+
+project   # spirit_v2-tests
+    : requirements 
+        <toolset>gcc:<cxxflags>-ftemplate-depth-300
+        <toolset>darwin:<cxxflags>-ftemplate-depth-300
+    ;
+
+{
+    test-suite spirit_v2 :
+
+    # run Qi tests
+    [ run qi/actions.cpp                    : : : : ]
+    [ run qi/alternative.cpp                : : : : ]
+    [ run qi/and_predicate.cpp              : : : : ]
+    [ run qi/binary.cpp                     : : : : ]
+    [ run qi/char.cpp                       : : : : ]
+    [ run qi/char_class.cpp                 : : : : ]
+    [ run qi/confix.cpp                     : : : : ]
+    [ run qi/debug.cpp                      : : : : ]
+    [ run qi/difference.cpp                 : : : : ]
+    [ run qi/end.cpp                        : : : : ]
+    [ run qi/eps.cpp                        : : : : ]
+    [ run qi/expect.cpp                     : : : : ]
+    [ run qi/functor.cpp                    : : : : ]
+    [ run qi/grammar.cpp                    : : : : ]
+    [ run qi/int.cpp                        : : : : ]
+    [ run qi/kleene.cpp                     : : : : ]
+    [ run qi/lazy.cpp                       : : : : ]
+    [ run qi/lexeme.cpp                     : : : : ]
+    [ run qi/lit.cpp                        : : : : ]
+    [ run qi/list.cpp                       : : : : ]
+    [ run qi/no_case.cpp                    : : : : ]
+    [ run qi/none.cpp                       : : : : ]
+    [ run qi/not_predicate.cpp              : : : : ]
+    [ run qi/optional.cpp                   : : : : ]
+    [ run qi/permutation.cpp                : : : : ]
+    [ run qi/plus.cpp                       : : : : ]
+    [ run qi/range_run.cpp                  : : : : ]
+    [ run qi/raw.cpp                        : : : : ]
+    [ run qi/real.cpp                       : : : : ]
+    [ run qi/rule.cpp                       : : : : ]
+    [ run qi/sequence.cpp                   : : : : ]
+    [ run qi/sequential_or.cpp              : : : : ]
+    [ run qi/symbols.cpp                    : : : : ]
+    [ run qi/tst.cpp                        : : : : ]
+    [ run qi/uint.cpp                       : : : : ]
+    [ run qi/match_manip.cpp                : : : : ]
+
+    [ compile-fail qi/grammar_fail.cpp      : : ]
+    [ compile-fail qi/rule_fail.cpp         : : ]
+
+    # run Karma tests
+    [ run karma/actions.cpp                 : : : : karma_actions ]
+    [ run karma/alternative.cpp             : : : : karma_alternative ]
+    [ run karma/binary.cpp                  : : : : karma_binary ]
+    [ run karma/case_handling.cpp           : : : : ]
+    [ run karma/center_alignment.cpp        : : : : ]
+    [ run karma/char.cpp                    : : : : karma_char ]
+    [ run karma/confix.cpp                  : : : : karma_confix ]
+    [ run karma/delimiter.cpp               : : : : ]
+    [ run karma/eol.cpp                     : : : : karma_eol ]
+    [ run karma/eps.cpp                     : : : : karma_eps ]
+    [ run karma/format_manip.cpp            : : : : ]
+    [ run karma/functor.cpp                 : : : : karma_functor ]
+    [ run karma/grammar.cpp                 : : : : karma_grammar ]
+    [ run karma/int_numerics.cpp            : : : : ]
+    [ run karma/kleene.cpp                  : : : : karma_kleene ]
+    [ run karma/lazy.cpp                    : : : : karma_lazy ]
+    [ run karma/left_alignment.cpp          : : : : ]
+    [ run karma/list.cpp                    : : : : karma_list ]
+    [ run karma/lit.cpp                     : : : : karma_lit ]
+    [ run karma/none.cpp                    : : : : karma_none ]
+    [ run karma/optional.cpp                : : : : karma_optional ]
+    [ run karma/pattern.cpp                 : : : : karma_pattern ]
+    [ run karma/pattern2.cpp                : : : : karma_pattern2 ]
+    [ run karma/real_numerics.cpp           : : : : ]
+    [ run karma/right_alignment.cpp         : : : : ]
+    [ run karma/sequence.cpp                : : : : karma_sequence ]
+
+    [ compile-fail karma/grammar_fail.cpp   : : karma_grammar_fail ]
+    [ compile-fail karma/rule_fail.cpp      : : karma_rule_fail ]
+
+    # run support tests
+    [ run support/hold_any.cpp              : : : : ]
+# the multi_pass tests are not completed yet
+#    [ run support/multi_pass_compile.cpp    : : : : ]
+#    [ run support/multi_pass.cpp            : : : : ]
+
+    # run lexer tests
+    [ run lex/lexertl1.cpp                  : : : : ]
+    [ run lex/lexertl2.cpp                  : : : : ]
+    [ run lex/lexertl3.cpp                  : : : : ]
+    [ run lex/lexertl4.cpp                  : : : : ]
+    [ run lex/lexertl5.cpp                  : : : : ]
+    [ run lex/state_switcher_test.cpp       : : : : ]
+
+    ;
+
+}
+
+

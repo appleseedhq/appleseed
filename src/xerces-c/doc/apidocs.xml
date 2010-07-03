@@ -1,0 +1,58 @@
+<?xml version="1.0" standalone="no"?>
+<!--
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+
+<!DOCTYPE s1 SYSTEM "sbk:/style/dtd/document.dtd">
+
+<s1 title="API Documentation">
+    <s2 title="API Docs for &XercesCName;">
+
+	    <p>&XercesCName; is packaged with the API documentation for SAX and DOM, the two
+		most common programming interfaces for XML. The most common
+		framework classes have also been documented.</p>
+
+	    <p>&XercesCName; SAX is an implementation of the
+		<jump href="http://sax.sourceforge.net/">SAX 1.0/2.0</jump> specification.</p>
+
+	    <p>&XercesCName; DOM is an implementation of the</p>
+              <ul>
+               <li><jump href="http://www.w3.org/TR/1998/REC-DOM-Level-1-19981001/">
+                   DOM Level 1 Specification</jump>, a W3C Recommendation of October 1, 1998</li>
+               <li><jump href="http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/">
+                   DOM Level 2 Core Specification</jump>, a W3C Recommendation of November 13, 2000</li>
+               <li><jump href="http://www.w3.org/TR/2000/REC-DOM-Level-2-Traversal-Range-20001113/">
+                   DOM Level 2 Traversal and Range Specification</jump>, a W3C Recommendation of November 13, 2000</li>
+               <li>Contains a partial implementation of the
+                   <jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020409/">
+                   DOM Level 3.0 Core Specification</jump>, and
+                   <jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-ASLS-20020409/">
+                   DOM Level 3.0 Abstract Schemas and Load and Save Specification</jump>
+                   (W3C Working Draft of 09 April 2002).  This implementation is experimental.
+                   See <jump href="dom3.html">DOM Level 3 Support</jump> for details.</li>
+               </ul>
+
+           <p>For a complete understanding of how the &XercesCName; APIs work,
+		we recommend you to read these documents.</p>
+
+	    <p>See the <em><jump href="apiDocs/index.html">&XercesCName; API documentation</jump></em> for more details.</p>
+
+	    <note>The API documentation is automatically generated using
+		<jump href="http://www.stack.nl/~dimitri/doxygen/">Doxygen</jump> and
+		<jump href="http://www.research.att.com/sw/tools/graphviz/">GraphViz</jump>.</note>
+
+    </s2>
+</s1>

@@ -1,0 +1,456 @@
+<HTML><HEAD><SCRIPT language="JavaScript" src="../resources/script.js" type="text/javascript"></SCRIPT><TITLE>Xerces-C++: ValidationContext Class Reference</TITLE><link href="XercesApi.css" rel="stylesheet" type="text/css"></HEAD><BODY alink="#ff0000" bgcolor="#ffffff" leftmargin="4" link="#0000ff" marginheight="4" marginwidth="4" text="#000000" topmargin="4" vlink="#0000aa"><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD align="left" height="60" rowspan="3" valign="top" width="135"><IMG border="0" height="60" hspace="0" src="../resources/logo.gif" vspace="0" width="135"></TD><TD align="left" colspan="4" height="5" valign="top" width="456"><IMG border="0" height="5" hspace="0" src="../resources/line.gif" vspace="0" width="456"></TD><TD align="left" height="60" rowspan="3" valign="top" width="29"><IMG border="0" height="60" hspace="0" src="../resources/right.gif" vspace="0" width="29"></TD></TR><TR><TD align="left" bgcolor="#0086b2" colspan="4" height="35" valign="top" width="456"><IMG alt="" border="0" height="35" hspace="0" src="../graphics/api-header.jpg" vspace="0" width="456"></TD></TR><TR><TD align="left" height="20" valign="top" width="168"><IMG border="0" height="20" hspace="0" src="../resources/bottom.gif" vspace="0" width="168"></TD><TD align="left" height="20" valign="top" width="96"><A href="http://xml.apache.org/" onMouseOut="rolloverOff('xml');" onMouseOver="rolloverOn('xml');" target="new"><IMG alt="http://xml.apache.org/" border="0" height="20" hspace="0" name="xml" onLoad="rolloverLoad('xml','../resources/button-xml-hi.gif','../resources/button-xml-lo.gif');" src="../resources/button-xml-lo.gif" vspace="0" width="96"></A></TD><TD align="left" height="20" valign="top" width="96"><A href="http://www.apache.org/" onMouseOut="rolloverOff('asf');" onMouseOver="rolloverOn('asf');" target="new"><IMG alt="http://www.apache.org/" border="0" height="20" hspace="0" name="asf" onLoad="rolloverLoad('asf','../resources/button-asf-hi.gif','../resources/button-asf-lo.gif');" src="../resources/button-asf-lo.gif" vspace="0" width="96"></A></TD><TD align="left" height="20" valign="top" width="96"><A href="http://www.w3.org/" onMouseOut="rolloverOff('w3c');" onMouseOver="rolloverOn('w3c');" target="new"><IMG alt="http://www.w3.org/" border="0" height="20" hspace="0" name="w3c" onLoad="rolloverLoad('w3c','../resources/button-w3c-hi.gif','../resources/button-w3c-lo.gif');" src="../resources/button-w3c-lo.gif" vspace="0" width="96"></A></TD></TR></TABLE><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD align="left" valign="top" width="120"><IMG border="0" height="14" hspace="0" src="../resources/join.gif" vspace="0" width="120"><BR>
+  <A href="../../index.html" onMouseOut="rolloverOff('side-ext-2');" onMouseOver="rolloverOn('side-ext-2');"><IMG alt="Home" border="0" height="12" hspace="0" name="side-ext-2" onLoad="rolloverLoad('side-ext-2','../graphics/ext-2-label-2.jpg','../graphics/ext-2-label-3.jpg');" src="../graphics/ext-2-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../index.html" onMouseOut="rolloverOff('side-index');" onMouseOver="rolloverOn('side-index');"><IMG alt="Readme" border="0" height="12" hspace="0" name="side-index" onLoad="rolloverLoad('side-index','../graphics/index-label-2.jpg','../graphics/index-label-3.jpg');" src="../graphics/index-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../charter.html" onMouseOut="rolloverOff('side-charter');" onMouseOver="rolloverOn('side-charter');"><IMG alt="Charter" border="0" height="12" hspace="0" name="side-charter" onLoad="rolloverLoad('side-charter','../graphics/charter-label-2.jpg','../graphics/charter-label-3.jpg');" src="../graphics/charter-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../releases.html" onMouseOut="rolloverOff('side-releases');" onMouseOver="rolloverOn('side-releases');"><IMG alt="Release Info" border="0" height="12" hspace="0" name="side-releases" onLoad="rolloverLoad('side-releases','../graphics/releases-label-2.jpg','../graphics/releases-label-3.jpg');" src="../graphics/releases-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../install.html" onMouseOut="rolloverOff('side-install');" onMouseOver="rolloverOn('side-install');"><IMG alt="Installation" border="0" height="12" hspace="0" name="side-install" onLoad="rolloverLoad('side-install','../graphics/install-label-2.jpg','../graphics/install-label-3.jpg');" src="../graphics/install-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="http://xerces.apache.org/xerces-c/download.cgi" onMouseOut="rolloverOff('side-ext-20');" onMouseOver="rolloverOn('side-ext-20');"><IMG alt="Download" border="0" height="12" hspace="0" name="side-ext-20" onLoad="rolloverLoad('side-ext-20','../graphics/ext-20-label-2.jpg','../graphics/ext-20-label-3.jpg');" src="../graphics/ext-20-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../build.html" onMouseOut="rolloverOff('side-build');" onMouseOver="rolloverOn('side-build');"><IMG alt="Build Instructions" border="0" height="12" hspace="0" name="side-build" onLoad="rolloverLoad('side-build','../graphics/build-label-2.jpg','../graphics/build-label-3.jpg');" src="../graphics/build-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../program.html" onMouseOut="rolloverOff('side-program');" onMouseOver="rolloverOn('side-program');"><IMG alt="Programming" border="0" height="12" hspace="0" name="side-program" onLoad="rolloverLoad('side-program','../graphics/program-label-2.jpg','../graphics/program-label-3.jpg');" src="../graphics/program-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../samples.html" onMouseOut="rolloverOff('side-samples');" onMouseOver="rolloverOn('side-samples');"><IMG alt="Samples" border="0" height="12" hspace="0" name="side-samples" onLoad="rolloverLoad('side-samples','../graphics/samples-label-2.jpg','../graphics/samples-label-3.jpg');" src="../graphics/samples-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../faqs.html" onMouseOut="rolloverOff('side-faqs');" onMouseOver="rolloverOn('side-faqs');"><IMG alt="FAQs" border="0" height="12" hspace="0" name="side-faqs" onLoad="rolloverLoad('side-faqs','../graphics/faqs-label-2.jpg','../graphics/faqs-label-3.jpg');" src="../graphics/faqs-label-3.jpg" vspace="0" width="120"></A><BR>
+
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../api.html" onMouseOut="rolloverOff('side-api');" onMouseOver="rolloverOn('side-api');"><IMG alt="API Docs" border="0" height="12" hspace="0" name="side-api" onLoad="rolloverLoad('side-api','../graphics/api-label-2.jpg','../graphics/api-label-3.jpg');" src="../graphics/api-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../ApacheDOMC++Binding.html" onMouseOut="rolloverOff('side-ext-88');" onMouseOver="rolloverOn('side-ext-88');"><IMG alt="DOM C++ Binding" border="0" height="12" hspace="0" name="side-ext-88" onLoad="rolloverLoad('side-ext-88','../graphics/ext-88-label-2.jpg','../graphics/ext-88-label-3.jpg');" src="../graphics/ext-88-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../migrate.html" onMouseOut="rolloverOff('side-migrate');" onMouseOver="rolloverOn('side-migrate');"><IMG alt="Migration Guide" border="0" height="12" hspace="0" name="side-migrate" onLoad="rolloverLoad('side-migrate','../graphics/migrate-label-2.jpg','../graphics/migrate-label-3.jpg');" src="../graphics/migrate-label-3.jpg" vspace="0" width="120"></A><BR>
+
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+    <A href="../feedback.html" onMouseOut="rolloverOff('side-feedback');" onMouseOver="rolloverOn('side-feedback');"><IMG alt="Feedback" border="0" height="12" hspace="0" name="side-feedback" onLoad="rolloverLoad('side-feedback','../graphics/feedback-label-2.jpg','../graphics/feedback-label-3.jpg');" src="../graphics/feedback-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../bug-report.html" onMouseOut="rolloverOff('side-bug-report');" onMouseOver="rolloverOn('side-bug-report');"><IMG alt="Bug-Reporting" border="0" height="12" hspace="0" name="side-bug-report" onLoad="rolloverLoad('side-bug-report','../graphics/bug-report-label-2.jpg','../graphics/bug-report-label-3.jpg');" src="../graphics/bug-report-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../mailing-lists.html" onMouseOut="rolloverOff('side-mailing-lists');" onMouseOver="rolloverOn('side-mailing-lists');"><IMG alt="Mailing Lists" border="0" height="12" hspace="0" name="side-mailing-lists" onLoad="rolloverLoad('side-mailing-lists','../graphics/mailing-lists-label-2.jpg','../graphics/mailing-lists-label-3.jpg');" src="../graphics/mailing-lists-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+    <A href="../source-repository.html" onMouseOut="rolloverOff('side-source-repository');" onMouseOver="rolloverOn('side-source-repository');"><IMG alt="Source Repository" border="0" height="12" hspace="0" name="side-source-repository" onLoad="rolloverLoad('side-source-repository','../graphics/source-repository-label-2.jpg','../graphics/source-repository-label-3.jpg');" src="../graphics/source-repository-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../applications.html" onMouseOut="rolloverOff('side-applications');" onMouseOver="rolloverOn('side-applications');"><IMG alt="Applications" border="0" height="12" hspace="0" name="side-applications" onLoad="rolloverLoad('side-applications','../graphics/applications-label-2.jpg','../graphics/applications-label-3.jpg');" src="../graphics/applications-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="14" hspace="0" src="../resources/close.gif" vspace="0" width="120"><BR></TD><TD align="left" valign="top" width="500"><TABLE border="0" cellpadding="3" cellspacing="0"><TR><TD>
+    <TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#FFFFFF" colspan="2" width="494"><TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#039acc" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#039acc" height="1" width="492"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#039acc" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" width="492"><FONT color="#ffffff" face="arial,helvetica,sanserif" size="+1"><IMG border="0" height="2" hspace="0" src="../resources/void.gif" vspace="0" width="2"><B>API Docs for SAX and DOM</B></FONT></TD><TD bgcolor="#017299" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#017299" height="1" width="492"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#017299" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></TD></TR><TR><TD width="10">&nbsp;</TD><TD width="484"><FONT color="#000000" face="arial,helvetica,sanserif">
+
+	    <P>
+<!-- Generated by Doxygen 1.5.3 -->
+<div class="tabs">
+  <ul>
+    <li><a href="index.html"><span>Main&nbsp;Page</span></a></li>
+    <li class="current"><a href="classes.html"><span>Classes</span></a></li>
+    <li><a href="files.html"><span>Files</span></a></li>
+    <li><a href="pages.html"><span>Related&nbsp;Pages</span></a></li>
+  </ul>
+</div>
+<div class="tabs">
+  <ul>
+    <li><a href="classes.html"><span>Alphabetical&nbsp;List</span></a></li>
+    <li><a href="annotated.html"><span>Class&nbsp;List</span></a></li>
+    <li><a href="hierarchy.html"><span>Class&nbsp;Hierarchy</span></a></li>
+    <li><a href="functions.html"><span>Class&nbsp;Members</span></a></li>
+  </ul>
+</div>
+<h1>ValidationContext Class Reference</h1><!-- doxytag: class="ValidationContext" --><!-- doxytag: inherits="XMemory" --><div class="dynheader">
+Inheritance diagram for ValidationContext:</div>
+<div class="dynsection">
+<p><center><img src="classValidationContext__inherit__graph.png" border="0" usemap="#ValidationContext__inherit__map" alt="Inheritance graph"></center>
+<map name="ValidationContext__inherit__map">
+<area shape="rect" href="classXMemory.html" title="This class makes it possible to override the C++ memory management by adding new/delete..." alt="" coords="32,7,115,33"></map>
+<center><font size="2">[<a href="graph_legend.html">legend</a>]</font></center></div>
+
+<p>
+<a href="classValidationContext-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
+<tr><td></td></tr>
+<tr><td colspan="2"><br><h2>Public Member Functions</h2></td></tr>
+<tr><td colspan="2"><div class="groupHeader">Virtual destructor for derived classes</div></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classValidationContext.html#26539f8c7c541c81acea44858211b1da">~ValidationContext</a> ()</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">virtual destructor  <a href="#26539f8c7c541c81acea44858211b1da"></a><br></td></tr>
+<tr><td colspan="2"><div class="groupHeader">The ValidationContext Interface</div></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual <br>
+RefHashTableOf<br>
+&lt; XMLRefInfo &gt; *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classValidationContext.html#37705461b20a9165507d5d63625c7eb4">getIdRefList</a> () const =0</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">IDRefList.  <a href="#37705461b20a9165507d5d63625c7eb4"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classValidationContext.html#8412010d668e7a499ebb563247c2142f">setIdRefList</a> (RefHashTableOf&lt; XMLRefInfo &gt; *const)=0</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classValidationContext.html#b8f462ca4199367799f04c11a59c3cd5">clearIdRefList</a> ()=0</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classValidationContext.html#0cbd3dc59a2c9c38ac5c84003a7e7fd3">addId</a> (const XMLCh *const )=0</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classValidationContext.html#0b0604c5aeb7861d35a9694ef90588e5">addIdRef</a> (const XMLCh *const )=0</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classValidationContext.html#6c09a2b34d5af1c7637ca508161c3a83">toCheckIdRefList</a> (bool)=0</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual const <br>
+NameIdPool<br>
+&lt; DTDEntityDecl &gt; *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classValidationContext.html#59a5d886229a96ac718f4e884debd7eb">getEntityDeclPool</a> () const =0</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">EntityDeclPool.  <a href="#59a5d886229a96ac718f4e884debd7eb"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual const <br>
+NameIdPool<br>
+&lt; DTDEntityDecl &gt; *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classValidationContext.html#536e5a2d7f9a9b1589a76f31cb643de7">setEntityDeclPool</a> (const NameIdPool&lt; DTDEntityDecl &gt; *const)=0</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classValidationContext.html#27ac9efe1bec769ce7d99e927ac06c3e">checkEntity</a> (const XMLCh *const ) const =0</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual <br>
+DatatypeValidator *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classValidationContext.html#4bd46e8c4fa0fe1266e1d6ae481069fa">getValidatingMemberType</a> () const =0</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Union datatype handling.  <a href="#4bd46e8c4fa0fe1266e1d6ae481069fa"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classValidationContext.html#b6437575df02c726a9fc7ea03c4ac35a">setValidatingMemberType</a> (DatatypeValidator *validatingMemberType)=0</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classValidationContext.html#ad5fefec43bae58f617e2fa65b50e408">isPrefixUnknown</a> (XMLCh *)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight"><a class="el" href="classQName.html">QName</a> datatype handling Create default implementations for source code compatibility.  <a href="#ad5fefec43bae58f617e2fa65b50e408"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classValidationContext.html#0b21303251b3e842472f3bcaa602ea0c">setElemStack</a> (ElemStack *)</td></tr>
+
+<tr><td colspan="2"><br><h2>Protected Member Functions</h2></td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classValidationContext.html#c5a870c3e29aeba75111b8353e169840">ValidationContext</a> (<a class="el" href="classMemoryManager.html">MemoryManager</a> *const memMgr=<a class="el" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252">XMLPlatformUtils::fgMemoryManager</a>)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Hidden Constructors.  <a href="#c5a870c3e29aeba75111b8353e169840"></a><br></td></tr>
+<tr><td colspan="2"><br><h2>Protected Attributes</h2></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="classMemoryManager.html">MemoryManager</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classValidationContext.html#4ee5044d7414b659a8845b72db7cf56c">fMemoryManager</a></td></tr>
+
+</table>
+<hr><h2>Constructor &amp; Destructor Documentation</h2>
+<a class="anchor" name="26539f8c7c541c81acea44858211b1da"></a><!-- doxytag: member="ValidationContext::~ValidationContext" ref="26539f8c7c541c81acea44858211b1da" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual ValidationContext::~ValidationContext           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+virtual destructor 
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="c5a870c3e29aeba75111b8353e169840"></a><!-- doxytag: member="ValidationContext::ValidationContext" ref="c5a870c3e29aeba75111b8353e169840" args="(MemoryManager *const memMgr=XMLPlatformUtils::fgMemoryManager)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">ValidationContext::ValidationContext           </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classMemoryManager.html">MemoryManager</a> *const &nbsp;</td>
+          <td class="paramname"> <em>memMgr</em> = <code><a class="el" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252">XMLPlatformUtils::fgMemoryManager</a></code>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [protected]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Hidden Constructors. 
+<p>
+
+</div>
+</div><p>
+<hr><h2>Member Function Documentation</h2>
+<a class="anchor" name="37705461b20a9165507d5d63625c7eb4"></a><!-- doxytag: member="ValidationContext::getIdRefList" ref="37705461b20a9165507d5d63625c7eb4" args="() const =0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual RefHashTableOf&lt;XMLRefInfo&gt;* ValidationContext::getIdRefList           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"> const<code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+IDRefList. 
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="8412010d668e7a499ebb563247c2142f"></a><!-- doxytag: member="ValidationContext::setIdRefList" ref="8412010d668e7a499ebb563247c2142f" args="(RefHashTableOf&lt; XMLRefInfo &gt; *const)=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void ValidationContext::setIdRefList           </td>
+          <td>(</td>
+          <td class="paramtype">RefHashTableOf&lt; XMLRefInfo &gt; *&nbsp;</td>
+          <td class="paramname"> <em>const</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="b8f462ca4199367799f04c11a59c3cd5"></a><!-- doxytag: member="ValidationContext::clearIdRefList" ref="b8f462ca4199367799f04c11a59c3cd5" args="()=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void ValidationContext::clearIdRefList           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="0cbd3dc59a2c9c38ac5c84003a7e7fd3"></a><!-- doxytag: member="ValidationContext::addId" ref="0cbd3dc59a2c9c38ac5c84003a7e7fd3" args="(const XMLCh *const )=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void ValidationContext::addId           </td>
+          <td>(</td>
+          <td class="paramtype">const XMLCh *&nbsp;</td>
+          <td class="paramname"> <em>const</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="0b0604c5aeb7861d35a9694ef90588e5"></a><!-- doxytag: member="ValidationContext::addIdRef" ref="0b0604c5aeb7861d35a9694ef90588e5" args="(const XMLCh *const )=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void ValidationContext::addIdRef           </td>
+          <td>(</td>
+          <td class="paramtype">const XMLCh *&nbsp;</td>
+          <td class="paramname"> <em>const</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="6c09a2b34d5af1c7637ca508161c3a83"></a><!-- doxytag: member="ValidationContext::toCheckIdRefList" ref="6c09a2b34d5af1c7637ca508161c3a83" args="(bool)=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void ValidationContext::toCheckIdRefList           </td>
+          <td>(</td>
+          <td class="paramtype">bool&nbsp;</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="59a5d886229a96ac718f4e884debd7eb"></a><!-- doxytag: member="ValidationContext::getEntityDeclPool" ref="59a5d886229a96ac718f4e884debd7eb" args="() const =0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual const NameIdPool&lt;DTDEntityDecl&gt;* ValidationContext::getEntityDeclPool           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"> const<code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+EntityDeclPool. 
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="536e5a2d7f9a9b1589a76f31cb643de7"></a><!-- doxytag: member="ValidationContext::setEntityDeclPool" ref="536e5a2d7f9a9b1589a76f31cb643de7" args="(const NameIdPool&lt; DTDEntityDecl &gt; *const)=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual const NameIdPool&lt;DTDEntityDecl&gt;* ValidationContext::setEntityDeclPool           </td>
+          <td>(</td>
+          <td class="paramtype">const NameIdPool&lt; DTDEntityDecl &gt; *&nbsp;</td>
+          <td class="paramname"> <em>const</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="27ac9efe1bec769ce7d99e927ac06c3e"></a><!-- doxytag: member="ValidationContext::checkEntity" ref="27ac9efe1bec769ce7d99e927ac06c3e" args="(const XMLCh *const ) const =0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void ValidationContext::checkEntity           </td>
+          <td>(</td>
+          <td class="paramtype">const XMLCh *&nbsp;</td>
+          <td class="paramname"> <em>const</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"> const<code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="4bd46e8c4fa0fe1266e1d6ae481069fa"></a><!-- doxytag: member="ValidationContext::getValidatingMemberType" ref="4bd46e8c4fa0fe1266e1d6ae481069fa" args="() const =0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual DatatypeValidator* ValidationContext::getValidatingMemberType           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"> const<code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Union datatype handling. 
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="b6437575df02c726a9fc7ea03c4ac35a"></a><!-- doxytag: member="ValidationContext::setValidatingMemberType" ref="b6437575df02c726a9fc7ea03c4ac35a" args="(DatatypeValidator *validatingMemberType)=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void ValidationContext::setValidatingMemberType           </td>
+          <td>(</td>
+          <td class="paramtype">DatatypeValidator *&nbsp;</td>
+          <td class="paramname"> <em>validatingMemberType</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="ad5fefec43bae58f617e2fa65b50e408"></a><!-- doxytag: member="ValidationContext::isPrefixUnknown" ref="ad5fefec43bae58f617e2fa65b50e408" args="(XMLCh *)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual bool ValidationContext::isPrefixUnknown           </td>
+          <td>(</td>
+          <td class="paramtype">XMLCh *&nbsp;</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+<a class="el" href="classQName.html">QName</a> datatype handling Create default implementations for source code compatibility. 
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="0b21303251b3e842472f3bcaa602ea0c"></a><!-- doxytag: member="ValidationContext::setElemStack" ref="0b21303251b3e842472f3bcaa602ea0c" args="(ElemStack *)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void ValidationContext::setElemStack           </td>
+          <td>(</td>
+          <td class="paramtype">ElemStack *&nbsp;</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<hr><h2>Member Data Documentation</h2>
+<a class="anchor" name="4ee5044d7414b659a8845b72db7cf56c"></a><!-- doxytag: member="ValidationContext::fMemoryManager" ref="4ee5044d7414b659a8845b72db7cf56c" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classMemoryManager.html">MemoryManager</a>* <a class="el" href="classValidationContext.html#4ee5044d7414b659a8845b72db7cf56c">ValidationContext::fMemoryManager</a><code> [protected]</code>          </td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<hr>The documentation for this class was generated from the following file:<ul>
+<li><a class="el" href="ValidationContext_8hpp-source.html">ValidationContext.hpp</a></ul>
+    </FONT></TD></TR></TABLE><BR>
+</TD></TR></TABLE></TD></TR></TABLE><BR><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD bgcolor="#0086b2"><IMG height="1" src="images/dot.gif" width="1" alt=""></TD></TR><TR><TD align="center"><FONT color="#0086b2" size="-1"><I>
+              Copyright &copy; 1994-2004 The Apache Software Foundation.
+              All Rights Reserved.
+            </I></FONT></TD></TR></TABLE></BODY></HTML>

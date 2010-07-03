@@ -1,0 +1,86 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Struct template when&lt;Grammar, R(A...)&gt;</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../proto/reference.html#header.boost.proto.transform.when_hpp" title="Header &lt;boost/proto/transform/when.hpp&gt;">
+<link rel="prev" href="when_Grammar__Fun_id2618161.html" title="Struct template when&lt;Grammar, Fun *&gt;">
+<link rel="next" href="when_Grammar__R_A___id2618244/impl.html" title="Struct template impl">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="when_Grammar__Fun_id2618161.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../proto/reference.html#header.boost.proto.transform.when_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="when_Grammar__R_A___id2618244/impl.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.proto.when_Grammar,_R(A_)_id2618244"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Struct template when&lt;Grammar, R(A...)&gt;</span></h2>
+<p>boost::proto::when&lt;Grammar, R(A...)&gt; &#8212; A grammar element and a <a class="link" href="../../PrimitiveTransform.html" title="Concept PrimitiveTransform">PrimitiveTransform</a> that associates a
+          transform with the grammar. </p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../proto/reference.html#header.boost.proto.transform.when_hpp" title="Header &lt;boost/proto/transform/when.hpp&gt;">boost/proto/transform/when.hpp</a>&gt;
+
+</em></span><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Grammar, <span class="bold"><strong>typename</strong></span> R, <span class="bold"><strong>typename</strong></span>... A&gt; 
+<span class="bold"><strong>struct</strong></span> <a class="link" href="when_Grammar__R_A___id2618244.html" title="Struct template when&lt;Grammar, R(A...)&gt;">when</a>&lt;Grammar, R(A...)&gt; : <span class="bold"><strong></strong></span> <a class="link" href="transform.html" title="Struct template transform">proto::transform</a>&lt; when&lt;Grammar, R(A...)&gt; &gt; {
+  <span class="emphasis"><em>// types</em></span>
+  <span class="bold"><strong>typedef</strong></span> <span class="bold"><strong>typename</strong></span> Grammar::proto_base_expr <a name="boost.proto.when_Grammar,_R(A_)_id2618244.proto_base_expr"></a>proto_base_expr;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Expr, <span class="bold"><strong>typename</strong></span> State, <span class="bold"><strong>typename</strong></span> Data&gt; 
+  <span class="bold"><strong>struct</strong></span> <a class="link" href="when_Grammar__R_A___id2618244/impl.html" title="Struct template impl">impl</a> : <span class="bold"><strong></strong></span> <a class="link" href="transform_impl.html" title="Struct template transform_impl">proto::transform_impl</a>&lt; Expr, State, Data &gt; {
+    <span class="emphasis"><em>// types</em></span>
+    <span class="bold"><strong>typedef</strong></span> <a class="link" href="call.html" title="Struct template call">proto::call</a>&lt;R(A...)&gt;                                       <a class="link" href="when_Grammar__R_A___id2618244/impl.html#boost.proto.when_Grammar,_R(A_)_id2618244.impl.call_">call_</a>;        <span class="emphasis"><em>// For exposition only</em></span>
+    <span class="bold"><strong>typedef</strong></span> <a class="link" href="make.html" title="Struct template make">proto::make</a>&lt;R(A...)&gt;                                       <a class="link" href="when_Grammar__R_A___id2618244/impl.html#boost.proto.when_Grammar,_R(A_)_id2618244.impl.make_">make_</a>;        <span class="emphasis"><em>// For exposition only</em></span>
+    <span class="bold"><strong>typedef</strong></span> <span class="bold"><strong>typename</strong></span> mpl::if_&lt;<a class="link" href="is_callable.html" title="Struct template is_callable">proto::is_callable</a>&lt;R&gt;,call_,make_&gt;::type <a class="link" href="when_Grammar__R_A___id2618244/impl.html#boost.proto.when_Grammar,_R(A_)_id2618244.impl.which">which</a>;        <span class="emphasis"><em>// For exposition only</em></span>
+    <span class="bold"><strong>typedef</strong></span> <span class="bold"><strong>typename</strong></span> boost::result_of&lt;which(Expr, State, Data)&gt;::type  <a class="link" href="when_Grammar__R_A___id2618244/impl.html#boost.proto.when_Grammar,_R(A_)_id2618244.impl.result_type">result_type</a>;
+
+    <span class="emphasis"><em>// <a class="link" href="when_Grammar__R_A___id2618244/impl.html#id2618445-bb">public member functions</a></em></span>
+    <span class="type">result_type</span> <a class="link" href="when_Grammar__R_A___id2618244/impl.html#id2618449-bb"><span class="bold"><strong>operator</strong></span>()</a>(<span class="bold"><strong>typename</strong></span> impl::expr_param, 
+                           <span class="bold"><strong>typename</strong></span> impl::state_param, 
+                           <span class="bold"><strong>typename</strong></span> impl::data_param) <span class="bold"><strong>const</strong></span>;
+  };
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id3315548"></a><h2>Description</h2>
+<p>
+            Use <code class="computeroutput">proto::when&lt;&gt;</code> to override a grammar's default
+            transform with a custom transform. It is for use when composing larger transforms by associating
+            smaller transforms with individual rules in your grammar.
+          </p>
+<p>
+            The <code class="computeroutput">when&lt;G, R(A...)&gt;</code> form accepts either a
+            <a class="link" href="../../CallableTransform.html" title="Concept CallableTransform">CallableTransform</a> or an <a class="link" href="../../ObjectTransform.html" title="Concept ObjectTransform">ObjectTransform</a> as its
+            second parameter. <code class="computeroutput">proto::when&lt;&gt;</code> uses
+            <code class="computeroutput"><a class="link" href="is_callable.html" title="Struct template is_callable">proto::is_callable</a>&lt;R&gt;::value</code> to
+            distinguish between the two, and uses
+            <code class="computeroutput"><a class="link" href="call.html" title="Struct template call">proto::call&lt;&gt;</a></code> to evaluate
+            <a class="link" href="../../CallableTransform.html" title="Concept CallableTransform">CallableTransform</a>s and
+            <code class="computeroutput"><a class="link" href="make.html" title="Struct template make">proto::make&lt;&gt;</a></code> to evaluate
+            <a class="link" href="../../ObjectTransform.html" title="Concept ObjectTransform">ObjectTransform</a>s.
+          </p>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2008 Eric Niebler<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="when_Grammar__Fun_id2618161.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../proto/reference.html#header.boost.proto.transform.when_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="when_Grammar__R_A___id2618244/impl.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- Copyright Aleksey Gurtovoy 2006. Distributed under the Boost -->
+<!-- Software License, Version 1.0. (See accompanying -->
+<!-- file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt) -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.3.6: http://docutils.sourceforge.net/" />
+<title>The MPL Reference Manual: insert_range</title>
+<link rel="stylesheet" href="../style.css" type="text/css" />
+</head>
+<body class="docframe refmanual">
+<table class="header"><tr class="header"><td class="header-group navigation-bar"><span class="navigation-group"><a href="./insert.html" class="navigation-link">Prev</a>&nbsp;<a href="./is-sequence.html" class="navigation-link">Next</a></span><span class="navigation-group-separator">&nbsp;|&nbsp;</span><span class="navigation-group"><a href="./insert.html" class="navigation-link">Back</a>&nbsp;<a href="./is-sequence.html" class="navigation-link">Along</a></span><span class="navigation-group-separator">&nbsp;|&nbsp;</span><span class="navigation-group"><a href="./intrinsic-metafunctions.html" class="navigation-link">Up</a>&nbsp;<a href="../refmanual.html" class="navigation-link">Home</a></span><span class="navigation-group-separator">&nbsp;|&nbsp;</span><span class="navigation-group"><a href="./refmanual_toc.html" class="navigation-link">Full TOC</a></span></td>
+<td class="header-group page-location"><a href="../refmanual.html" class="navigation-link">Front Page</a> / <a href="./sequences.html" class="navigation-link">Sequences</a> / <a href="./intrinsic-metafunctions.html" class="navigation-link">Intrinsic Metafunctions</a> / <a href="./insert-range.html" class="navigation-link">insert_range</a></td>
+</tr></table><div class="header-separator"></div>
+<div class="section" id="insert-range">
+<h1><a class="toc-backref" href="./intrinsic-metafunctions.html#id365" name="insert-range">insert_range</a></h1>
+<div class="section" id="intrinsic-insert-synopsis">
+<h3><a class="subsection-title" href="#synopsis" name="synopsis">Synopsis</a></h3>
+<pre class="literal-block">
+template&lt;
+      typename Sequence
+    , typename Pos
+    , typename Range
+    &gt;
+struct <a href="./insert-range.html" class="identifier">insert_range</a>
+{
+    typedef <em>unspecified</em> type;
+};
+</pre>
+</div>
+<div class="section" id="intrinsic-insert-description">
+<h3><a class="subsection-title" href="#description" name="description">Description</a></h3>
+<p><tt class="literal"><span class="pre"><a href="./insert-range.html" class="identifier">insert_range</a></span></tt> performs an insertion of a range of elements at an arbitrary position in 
+the sequence.</p>
+</div>
+<div class="section" id="intrinsic-insert-header">
+<h3><a class="subsection-title" href="#header" name="header">Header</a></h3>
+<pre class="literal-block">
+#include &lt;<a href="../../../../boost/mpl/insert_range.hpp" class="header">boost/mpl/insert_range.hpp</a>&gt;
+</pre>
+</div>
+<div class="section" id="intrinsic-insert-model-of">
+<h3><a class="subsection-title" href="#model-of" name="model-of">Model of</a></h3>
+<p><a class="reference" href="./tag-dispatched.html">Tag Dispatched Metafunction</a></p>
+</div>
+<div class="section" id="intrinsic-insert-parameters">
+<h3><a class="subsection-title" href="#parameters" name="parameters">Parameters</a></h3>
+<table border="1" class="table">
+<colgroup>
+<col width="15%" />
+<col width="36%" />
+<col width="48%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th>Parameter</th>
+<th>Requirement</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="literal"><span class="pre">Sequence</span></tt></td>
+<td><a class="reference" href="./extensible-sequence.html">Extensible Sequence</a> or
+<a class="reference" href="./extensible-associative.html">Extensible Associative Sequence</a></td>
+<td>A sequence to insert into.</td>
+</tr>
+<tr><td><tt class="literal"><span class="pre">Pos</span></tt></td>
+<td><a class="reference" href="./forward-iterator.html">Forward Iterator</a></td>
+<td>An iterator in <tt class="literal"><span class="pre">Sequence</span></tt> specifying the
+insertion position.</td>
+</tr>
+<tr><td><tt class="literal"><span class="pre">Range</span></tt></td>
+<td><a class="reference" href="./forward-sequence.html">Forward Sequence</a></td>
+<td>The range of elements to be inserted.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="intrinsic-insert-expression-semantics">
+<h3><a class="subsection-title" href="#expression-semantics" name="expression-semantics">Expression semantics</a></h3>
+<p>For any <a class="reference" href="./extensible-sequence.html">Extensible Sequence</a> <tt class="literal"><span class="pre">s</span></tt>, iterator <tt class="literal"><span class="pre">pos</span></tt> in <tt class="literal"><span class="pre">s</span></tt>, and <a class="reference" href="./forward-sequence.html">Forward Sequence</a> <tt class="literal"><span class="pre">range</span></tt>:</p>
+<pre class="literal-block">
+typedef <a href="./insert.html" class="identifier">insert</a>&lt;s,pos,range&gt;::type r; 
+</pre>
+<table class="field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference" href="./extensible-sequence.html">Extensible Sequence</a>.</td>
+</tr>
+<tr class="field"><th class="field-name">Precondition:</th><td class="field-body"><tt class="literal"><span class="pre">pos</span></tt> is an iterator into <tt class="literal"><span class="pre">s</span></tt>.</td>
+</tr>
+<tr class="field"><th class="field-name">Semantics:</th><td class="field-body"><tt class="literal"><span class="pre">r</span></tt> is a sequence, <a class="reference" href="./terminology.html#concept-identical">concept-identical</a> to <tt class="literal"><span class="pre">s</span></tt>, of the following elements: 
+[<tt class="literal"><span class="pre"><a href="./begin.html" class="identifier">begin</a>&lt;s&gt;::type</span></tt>, <tt class="literal"><span class="pre">pos</span></tt>), [<tt class="literal"><span class="pre"><a href="./begin.html" class="identifier">begin</a>&lt;r&gt;::type</span></tt>, <tt class="literal"><span class="pre"><a href="./end.html" class="identifier">end</a>&lt;r&gt;::type</span></tt>),
+[<tt class="literal"><span class="pre">pos</span></tt>, <tt class="literal"><span class="pre"><a href="./end.html" class="identifier">end</a>&lt;s&gt;::type</span></tt>).</td>
+</tr>
+<tr class="field"><th class="field-name">Postcondition:</th><td class="field-body"><p class="first">The relative order of the elements in <tt class="literal"><span class="pre">r</span></tt> is the same as in <tt class="literal"><span class="pre">s</span></tt>;</p>
+<pre class="last literal-block">
+<a href="./size.html" class="identifier">size</a>&lt;r&gt;::value == <a href="./size.html" class="identifier">size</a>&lt;s&gt;::value + <a href="./size.html" class="identifier">size</a>&lt;range&gt;::value 
+</pre>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="intrinsic-insert-complexity">
+<h3><a class="subsection-title" href="#complexity" name="complexity">Complexity</a></h3>
+<p>Sequence dependent. Quadratic in the worst case, linear at best; see the particular 
+sequence class' specification for details.</p>
+</div>
+<div class="section" id="intrinsic-insert-example">
+<h3><a class="subsection-title" href="#example" name="example">Example</a></h3>
+<pre class="literal-block">
+typedef <a href="./vector-c.html" class="identifier">vector_c</a>&lt;int,0,1,7,8,9&gt; numbers;
+typedef <a href="./find.html" class="identifier">find</a>&lt; numbers,<a href="./integral-c.html" class="identifier">integral_c</a>&lt;int,7&gt; &gt;::type pos;
+typedef <a href="./insert-range.html" class="identifier">insert_range</a>&lt; numbers,pos,<a href="./range-c.html" class="identifier">range_c</a>&lt;int,2,7&gt; &gt;::type range;
+
+<a href="./assert-relation.html" class="identifier">BOOST_MPL_ASSERT_RELATION</a>( <a href="./size.html" class="identifier">size</a>&lt;range&gt;::value, ==, 10 );
+<a href="./assert.html" class="identifier">BOOST_MPL_ASSERT</a>(( <a href="./equal.html" class="identifier">equal</a>&lt; range,<a href="./range-c.html" class="identifier">range_c</a>&lt;int,0,10&gt; &gt; ));
+
+typedef <a href="./insert-range.html" class="identifier">insert_range</a>&lt; 
+      <a href="./list.html" class="identifier">list</a><tt class="literal"><span class="pre">0</span></tt>&lt;&gt;
+    , <a href="./end.html" class="identifier">end</a>&lt; <a href="./list.html" class="identifier">list</a><tt class="literal"><span class="pre">0</span></tt>&lt;&gt; &gt;::type
+    , <a href="./list.html" class="identifier">list</a>&lt;int&gt;
+    &gt;::type result2;
+
+<a href="./assert-relation.html" class="identifier">BOOST_MPL_ASSERT_RELATION</a>( <a href="./size.html" class="identifier">size</a>&lt;result2&gt;::value, ==, 1 );
+</pre>
+</div>
+<div class="section" id="intrinsic-insert-see-also">
+<h3><a class="subsection-title" href="#see-also" name="see-also">See also</a></h3>
+<p><a class="reference" href="./extensible-sequence.html">Extensible Sequence</a>, <a class="refentry reference" href="./insert.html"><tt class="refentry literal"><span class="pre">insert</span></tt></a>, <a class="refentry reference" href="./push-front.html"><tt class="refentry literal"><span class="pre">push_front</span></tt></a>, <a class="refentry reference" href="./push-back.html"><tt class="refentry literal"><span class="pre">push_back</span></tt></a>, <a class="refentry reference" href="./erase.html"><tt class="refentry literal"><span class="pre">erase</span></tt></a></p>
+<!-- modtime: November 10, 2004 04:40:01 +0000 -->
+<!-- Sequences/Intrinsic Metafunctions//is_sequence -->
+</div>
+</div>
+
+<div class="footer-separator"></div>
+<table class="footer"><tr class="footer"><td class="header-group navigation-bar"><span class="navigation-group"><a href="./insert.html" class="navigation-link">Prev</a>&nbsp;<a href="./is-sequence.html" class="navigation-link">Next</a></span><span class="navigation-group-separator">&nbsp;|&nbsp;</span><span class="navigation-group"><a href="./insert.html" class="navigation-link">Back</a>&nbsp;<a href="./is-sequence.html" class="navigation-link">Along</a></span><span class="navigation-group-separator">&nbsp;|&nbsp;</span><span class="navigation-group"><a href="./intrinsic-metafunctions.html" class="navigation-link">Up</a>&nbsp;<a href="../refmanual.html" class="navigation-link">Home</a></span><span class="navigation-group-separator">&nbsp;|&nbsp;</span><span class="navigation-group"><a href="./refmanual_toc.html" class="navigation-link">Full TOC</a></span></td>
+</tr></table></body>
+</html>

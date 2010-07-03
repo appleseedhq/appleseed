@@ -1,0 +1,87 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Class interprocess_exception</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../boost_interprocess_reference.html#header.boost.interprocess.exceptions_hpp" title="Header &lt;boost/interprocess/exceptions.hpp&gt;">
+<link rel="prev" href="open_copy_on_write.html" title="Global open_copy_on_write">
+<link rel="next" href="lock_exception.html" title="Class lock_exception">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="open_copy_on_write.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_interprocess_reference.html#header.boost.interprocess.exceptions_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="lock_exception.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.interprocess.interprocess_exception"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Class interprocess_exception</span></h2>
+<p>boost::interprocess::interprocess_exception</p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../boost_interprocess_reference.html#header.boost.interprocess.exceptions_hpp" title="Header &lt;boost/interprocess/exceptions.hpp&gt;">boost/interprocess/exceptions.hpp</a>&gt;
+
+</em></span>
+<span class="bold"><strong>class</strong></span> <a class="link" href="interprocess_exception.html" title="Class interprocess_exception">interprocess_exception</a> {
+<span class="bold"><strong>public</strong></span>:
+  <span class="emphasis"><em>// <a class="link" href="interprocess_exception.html#boost.interprocess.interprocess_exceptionconstruct-copy-destruct">construct/copy/destruct</a></em></span>
+  <a class="link" href="interprocess_exception.html#id1743474-bb">interprocess_exception</a>(error_code_t = other_error);
+  <a class="link" href="interprocess_exception.html#id1743483-bb">interprocess_exception</a>(native_error_t);
+  <a class="link" href="interprocess_exception.html#id1743490-bb">interprocess_exception</a>(<span class="bold"><strong>const</strong></span> error_info &amp;);
+  <a class="link" href="interprocess_exception.html#id1743497-bb">~interprocess_exception</a>();
+
+  <span class="emphasis"><em>// <a class="link" href="interprocess_exception.html#id1743447-bb">public member functions</a></em></span>
+  <span class="type"><span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> *</span> <a class="link" href="interprocess_exception.html#id1743450-bb">what</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type">native_error_t</span> <a class="link" href="interprocess_exception.html#id1743458-bb">get_native_error</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type">error_code_t</span> <a class="link" href="interprocess_exception.html#id1743466-bb">get_error_code</a>() <span class="bold"><strong>const</strong></span>;
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id2156282"></a><h2>Description</h2>
+<p>This class is the base class of all exceptions thrown by boost::interprocess </p>
+<div class="refsect2" lang="en">
+<a name="id2156289"></a><h3>
+<a name="boost.interprocess.interprocess_exceptionconstruct-copy-destruct"></a><code class="computeroutput">interprocess_exception</code> 
+        public
+       construct/copy/destruct</h3>
+<div class="orderedlist"><ol type="1">
+<li><pre class="literallayout"><a name="id1743474-bb"></a>interprocess_exception(error_code_t ec = other_error);</pre></li>
+<li><pre class="literallayout"><a name="id1743483-bb"></a>interprocess_exception(native_error_t sys_err_code);</pre></li>
+<li><pre class="literallayout"><a name="id1743490-bb"></a>interprocess_exception(<span class="bold"><strong>const</strong></span> error_info &amp; err_info);</pre></li>
+<li><pre class="literallayout"><a name="id1743497-bb"></a>~interprocess_exception();</pre></li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id2156372"></a><h3>
+<a name="id1743447-bb"></a><code class="computeroutput">interprocess_exception</code> public member functions</h3>
+<div class="orderedlist"><ol type="1">
+<li><pre class="literallayout"><span class="type"><span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> *</span> <a name="id1743450-bb"></a>what() <span class="bold"><strong>const</strong></span>;</pre></li>
+<li><pre class="literallayout"><span class="type">native_error_t</span> <a name="id1743458-bb"></a>get_native_error() <span class="bold"><strong>const</strong></span>;</pre></li>
+<li><pre class="literallayout"><span class="type">error_code_t</span> <a name="id1743466-bb"></a>get_error_code() <span class="bold"><strong>const</strong></span>;</pre></li>
+</ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2005 - 2008 Ion Gaztañaga<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="open_copy_on_write.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_interprocess_reference.html#header.boost.interprocess.exceptions_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="lock_exception.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

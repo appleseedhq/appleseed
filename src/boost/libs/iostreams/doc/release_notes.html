@@ -1,0 +1,46 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+<HEAD>
+    <TITLE>Release Notes</TITLE>
+    <LINK REL="stylesheet" HREF="../../../boost.css">
+    <LINK REL="stylesheet" HREF="theme/iostreams.css">
+</HEAD>
+<BODY>
+
+<!-- Begin Banner -->
+
+    <H1 CLASS="title">Release Notes</H1>
+    <HR CLASS="banner">
+
+<!-- End Banner -->
+
+<h3>1.35</h3>
+
+<P>1. The semantics of <A HREF="functions/close.html"><CODE>close</CODE></A> has been modified:</P>
+
+<UL>
+<LI>Calling <CODE>close</CODE> with a <CODE>std::ios_base::openmode</CODE> other than <CODE>in</CODE> or <CODE>out</CODE> is deprecated.</LI>
+<LI>A new overload of <CODE>close</CODE> taking a single Device argument has been provided as a convenience.</LI>
+<LI><A HREF="concepts/dual_use_filter.html">DualUseFilters</A> receive only one closure notification.</LI>
+<LI><A HREF="guide/generic_streams.html">Generic streams and stream buffers</A> and <A HREF="guide/filtering_streams.html">filtering streams and stream buffers</A> are now <A HREF="concepts/closable.html">Closable</A>. For filtering streams and stream buffers, <CODE>close</CODE> calls <A HREF="classes/filtering_stream.html#pop"><CODE>pop</CODE></A>.
+</UL>
+
+<P><I>These changes will break some existing code</I>. They were necessary to resolve inconsistencies in the prior specification that resulted in a number of reported bugs.</P>
+
+<P>2. The function template <a href="functions/slice.html"><code>slice</code></a> has been introduced as an alias of <a href="functions/restrict.html"><code>restrict</code></a>, for platforms that treat <code>restrict</code> as a keyword.</P>
+
+<P>3. Numerous bugs have been fixed, many relating to <a href="functions/close.html"><code>close</code></a>, <a href="functions/copy.html"><code>copy</code></a>, and <a href="classes/file_descriptor.html">file descriptors</a>.</P>
+
+<!-- Begin Footer -->
+
+<HR>
+<P CLASS="copyright">Revised 02 Feb 2008</P>
+
+<P CLASS="copyright">&copy; Copyright 2008 <a href="http://www.coderage.com/" target="_top">CodeRage, LLC</a><br/>&copy; Copyright 2004-2007 <a href="http://www.coderage.com/turkanis/" target="_top">Jonathan Turkanis</a></P>
+<P CLASS="copyright"> 
+    Distributed under the Boost Software License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at <A HREF="http://www.boost.org/LICENSE_1_0.txt">http://www.boost.org/LICENSE_1_0.txt</A>)
+</P>
+
+<!-- End Footer -->
+
+</BODY>

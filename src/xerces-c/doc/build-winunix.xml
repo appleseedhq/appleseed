@@ -1,0 +1,573 @@
+<?xml version="1.0" standalone="no"?>
+<!--
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+
+<!DOCTYPE s1 SYSTEM "sbk:/style/dtd/document.dtd">
+
+<s1 title="Building on Windows and UNIX">
+
+    <ul>
+       <li><link anchor="WinNT">Building on Windows using Microsoft Visual C++</link></li>
+       <li><link anchor="UNIX">Building on UNIX/Linux/Mac OS X platforms</link></li>
+       <li><link anchor="CygWin">Building on Windows using Cygwin</link></li>
+       <li><link anchor="WinBorlandCC">Building on Windows using Borland C++</link></li>
+       <li><link anchor="WinBorlandBuilder">Building on Windows using Borland C++ Builder</link></li>
+       <li><link anchor="WinIntel">Building 64 bit libraries on Windows using Intel C++</link></li>
+    </ul>
+
+    <anchor name="WinNT"/>
+    <s2 title="Building on Windows using Microsoft Visual C++">
+        <p>&XercesCName; source distribution comes with Microsoft Visual C++ projects and solutions to
+        help you build &XercesCName;. The following describes the steps you need
+        to build &XercesCName;.</p>
+
+        <s3 title="Building &XercesCName; library">
+            <p>To build &XercesCName; from the source distribution (using MSVC), you will
+            need to open the solution containing the project. If you are
+            building your application, you may want to add the &XercesCName;
+            project inside your application's solution.</p>
+            <p>The solutions containing the &XercesCName; project files and
+            all other samples are in the following sub-directories in the
+            &XercesCSrcInstallDir; directory:</p>
+
+<source>
+(For VC6)   Projects\Win32\VC6\xerces-all\xerces-all.dsw
+(For VC7.1) Projects\Win32\VC7.1\xerces-all\xerces-all.sln
+(For VC8)   Projects\Win32\VC8\xerces-all\xerces-all.sln
+</source>
+
+            <p>Once you have the solution open, you need to build the
+               project marked <em>XercesLib</em>. You can select
+               Debug/Release, Static/DLL, and, for VC8, 32/64 bit
+               builds using the Configuration Manager dialog.</p>
+
+            <p>If you want to include the &XercesCName; project into
+               your own solution, you need to pick up:</p>
+<source>
+(For VC6)   Projects\Win32\VC6\xerces-all\XercesLib\XercesLib.dsp
+(For VC7.1) Projects\Win32\VC7.1\xerces-all\XercesLib\XercesLib.vcproj
+(For VC8)   Projects\Win32\VC8\xerces-all\XercesLib\XercesLib.vcproj
+</source>
+
+            <p>You must make sure that you are linking your application with
+            the &XercesCWindowsLib;.lib library (or Debug/Static version of it
+            and also make sure that the associated DLL is somewhere in your
+            path.</p>
+
+            <note>If you are linking your application to a static library,
+                  then you will need to compile your application with the
+                  XML_LIBRARY preprocessor define in order
+                  to turn off the DLL import/export mechanism. This is
+                  also the case for the Mingw-msys platform.</note>
+
+            <note>If you are working on the AlphaWorks version which uses ICU,
+                  you must have the ICU data DLL named <code>icudata.dll</code>
+                  available from your path setting. For finding out where you
+                  can get ICU from and build it, look at the
+                  <jump href="build-misc.html#faq-1">How to Build ICU</jump>.</note>
+
+            <note>If the library is built with the ICU message loader,
+                  or message catalog loader, then you need to make sure
+                  the XERCESC_NLS_HOME environment variable points to the
+                  $XERCESCROOT/msg directory where the message files reside.</note>
+
+        </s3>
+        <s3 title="Building samples">
+            <p>If you are using the source package, inside the same solution
+               (xerces-all.dsw or xerces-all.sln), you'll find several other
+               projects. These are for the samples. Select all the samples
+               and right click on the selection. Then choose "Build (selection
+               only)" to build all the samples in one shot.</p>
+        </s3>
+    </s2>
+
+    <anchor name="UNIX"/>
+    <s2 title="Building on UNIX/Linux/Mac OS X platforms">
+
+        <p>&XercesCName; uses
+        <jump href="http://www.gnu.org/software/make/make.html">GNU make</jump>
+        to build the libraries and samples. You must first make sure you
+        have GNU make installed on your system before proceeding. On some
+        platforms GNU make is called gmake instead of make.
+        If you do not have GNU make, ask your system administrator
+        to get it for you.</p>
+
+        <p><em>Do not jump into the build directly before reading this.</em></p>
+
+        <p>Spending some time reading the following instructions will save
+        you a lot of wasted time and support-related e-mail communication.
+        The &XercesCName; build instructions are a little different from
+        normal product builds. Specifically, there are some wrapper-scripts
+        that have been written to make life easier for you. You are free
+        not to use these scripts and use the configure script and
+        GNU Make directly, but we want to make sure you
+        <jump href="#runConfigure-example">know what you are by-passing</jump>
+        and what risks you are taking. So read the following instructions
+        carefully before attempting to build it yourself.</p>
+
+        <p>Besides having all necessary build tools, you also need to know what
+        compilers we have tested &XercesCName; on. The following table lists the
+        relevant platforms and compilers.</p>
+
+     	&build-winunix-supported-platforms;
+
+        <!-- note about building on untested platforms - see entities.ent -->
+        &build-winunix-note;
+
+        <p><em>Differences between the UNIX platforms:</em> The description below is
+        generic, but as every programmer is aware, there are minor differences
+        within the various UNIX flavors the world has been bestowed with.
+        The one difference that you need to watch out in the discussion below,
+        pertains to the system environment variable for finding libraries.
+        On <em>Linux</em> and <em>Solaris</em>, the environment variable name is called
+        <code>LD_LIBRARY_PATH</code>, on <em>AIX</em> it is <code>LIBPATH</code>,
+        on <em>Mac OS X</em> it is <code>DYLD_LIBRARY_PATH</code>,
+        while on <em>HP-UX</em> it is <code>SHLIB_PATH</code>. The following
+        discussion assumes you are working on Linux, but it is with subtle
+        understanding that you know how to interpret it for the other UNIX flavors.</p>
+
+        <note>If you wish to build &XercesCName; with ICU,
+        look at the <jump href="build-misc.html#faq-1">Building &XercesCName; with ICU</jump>.
+        It tells you where you can get ICU and how to build &XercesCName; with it.</note>
+
+        <s3 title="Setting build environment variables">
+            <p>Before doing the build, you must first set your environment variables
+            to pick-up the compiler and also specify where you extracted &XercesCName;
+            on your machine.
+            While the first one is probably set for you by the system administrator, just
+            make sure you can invoke the compiler. You may do so by typing the
+            compiler invocation command without any parameters (e.g. xlc_r, or g++, or cc)
+            and check if you get a proper response back.</p>
+            <p>Next set your &XercesCName; root path as follows:</p>
+<source>export XERCESCROOT=&lt;full-path-to-&XercesCSrcInstallDir;&gt;</source>
+
+            <p>This should be the full path of the directory where you extracted &XercesCName;.</p>
+            </s3>
+
+        <s3 title="Building &XercesCName; library">
+            <p>As mentioned earlier, to build &XercesCName; from the source distribution,
+            you will need GNU make.</p>
+
+            <p>If you look into the src/xercesc sub-directory in &XercesCSrcInstallDir;,
+             you will notice the familiar configure script. It is tempting to run
+            this script directly as is normally the case, but wait a minute.
+            Even if you are
+            using the default compilers like
+            <jump href="http://www.gnu.org/software/gcc/gcc.html">gcc</jump> and
+            <jump href="http://www.gnu.org/software/gcc/gcc.html">g++</jump>
+            you need to export a few more
+            environment variables before you can invoke configure.</p>
+
+            <p>Rather than make you to figure out what strange environment
+            variables you need to use, we have provided you with a wrapper
+            script that does the job for you. All you need to do is tell
+            the script what your compiler is, and what options you are going to use
+            inside your build, and the script does everything for you. Here
+            is what the script takes as input:</p>
+
+<source>
+runConfigure: Helper script to run "configure" for one of the
+              supported platforms
+Usage: runConfigure "options"
+       where options may be any of the following:
+       -p &lt;platform> (accepts 'aix', 'beos', 'linux', 'freebsd',
+            'netbsd', 'solaris', 'hp-10', 'hp-11', 'openserver', 'unixware',
+            'os400', 'os390', 'irix', 'ptx', 'tru64', 'macosx', 'cygwin',
+            'qnx', 'interix', 'mingw-msys')
+            [required; no default]
+       -c &lt;C compiler name> (e.g. gcc, cc, xlc_r, qcc, icc, icpc or ecc)
+            [default is make default; cc for gnu make]
+       -x &lt;C++ compiler name> (e.g. g++, CC, aCC, xlC_r, xlC_rv5compat, QCC,
+            icc, icpc or ecc) [default is make default; g++ for gnu make]
+       -d (specifies that you want to build debug version)
+            [default: no debug]
+       -m &lt;message loader> can be 'inmem', 'icu', 'MsgFile' or
+            'iconv' [default: inmem]
+       -n &lt;net accessor> can be 'fileonly', 'libwww', 'socket', 'winsock' or
+            'native' [default: socket]
+       -t &lt;transcoder> can be 'icu', 'Iconv400', 'Uniconv390', 'Win32',
+             'IconvFBSD', 'IconvGNU' or 'native'
+             [default: native]
+       -r &lt;thread option> can be 'pthread' or 'dce'
+             (AIX, HP-11, and Solaris) or  'sproc' (IRIX) or 'none'
+             [default: pthread]
+       -s (specifies that you want to build static libraries) [default: shared]
+       -b &lt;bitsToBuild> (accepts '64', '32') [default: 32]
+       -l &lt;extra linker options>
+       -z &lt;extra compiler options>
+       -P &lt;install-prefix>
+       -C &lt;any one extra configure options>
+       -h (get help on the above commands)
+</source>
+
+            <note>&XercesCName; can be built as either a standalone library or as a library
+            dependent on International Components for Unicode (ICU). For simplicity, the
+            following discussion only explains standalone builds.</note>
+
+            <anchor name="runConfigure-example"/>
+            <p>Some additional explanation may be helpful for some of the options:</p>
+           <ul><li><em>-m &lt;message loader&gt;, -t &lt;transcoder&gt; </em>
+               <br />If you specify <code>icu</code> as the value for either of
+                   these options, you must already have set the
+                  environment variable ICUROOT to point to the ICU distribution directory.</li>
+               <li><em>-n &lt;net accessor&gt;</em>
+               <br />The default value <code>socket</code> handles HTTP URL's.
+               The value <code>native</code> is only supported for Mac OS X. The
+               value <code>winsock</code> is only supported on Mingw-msys.
+               </li>
+            </ul>
+            <p>One of the common ways to build &XercesCName; is as follows:</p>
+
+<source>
+cd src/xercesc
+./runConfigure -plinux -cgcc -xg++ -minmem -nsocket -tnative -rpthread
+</source>
+
+            <p>The response will be something like the following (extra line
+             breaks have been added for readability).  See especially the end,
+             which tells you how <em>configure</em> was invoked.</p>
+<source>
+Generating makefiles with the following options ...
+Platform: linux
+C Compiler: gcc
+C++ Compiler: g++
+Message Loader: inmem
+Net Accessor: socket
+Transcoder: native
+Thread option: pthread
+Library type: shared
+bitsToBuild option: 32
+Extra compile options:
+Extra link options:
+Extra configure options:
+Debug is OFF
+
+checking for gcc... gcc
+checking for C compiler default output file name... a.out
+checking whether the C compiler works... yes
+checking whether we are cross compiling... no
+checking for suffix of executables...
+checking for suffix of object files... o
+checking whether we are using the GNU C compiler... yes
+checking whether gcc accepts -g... yes
+checking for gcc option to accept ISO C89... none needed
+checking whether we are using the GNU C++ compiler... yes
+checking whether g++ accepts -g... yes
+checking for a BSD-compatible install... /usr/bin/install -c
+checking for autoconf... autoconf
+checking how to run the C preprocessor... gcc -E
+checking for grep that handles long lines and -e... /bin/grep
+checking for egrep... /bin/grep -E
+checking for ANSI C header files... yes
+checking for sys/types.h... yes
+checking for sys/stat.h... yes
+checking for stdlib.h... yes
+checking for string.h... yes
+checking for memory.h... yes
+checking for strings.h... yes
+checking for inttypes.h... yes
+checking for stdint.h... yes
+checking for unistd.h... yes
+checking for XMLByte... no
+checking build system type... i686-unknown-linux-gnu
+checking host system type... i686-unknown-linux-gnu
+configure: creating ./config.status
+config.status: creating Makefile
+config.status: creating util/Makefile
+config.status: creating util/Transcoders/Cygwin/Makefile
+config.status: creating util/Transcoders/Win32/Makefile
+config.status: creating util/Transcoders/ICU/Makefile
+config.status: creating util/Transcoders/Iconv/Makefile
+config.status: creating util/Transcoders/Iconv390/Makefile
+config.status: creating util/Transcoders/Uniconv390/Makefile
+config.status: creating util/Transcoders/Iconv400/Makefile
+config.status: creating util/Transcoders/IconvFBSD/Makefile
+config.status: creating util/Transcoders/IconvGNU/Makefile
+config.status: creating util/Transcoders/MacOSUnicodeConverter/Makefile
+config.status: creating util/Platforms/Makefile
+config.status: creating util/Platforms/Solaris/Makefile
+config.status: creating util/Platforms/AIX/Makefile
+config.status: creating util/Platforms/BeOS/Makefile
+config.status: creating util/Platforms/QNX/Makefile
+config.status: creating util/Platforms/Linux/Makefile
+config.status: creating util/Platforms/FreeBSD/Makefile
+config.status: creating util/Platforms/NetBSD/Makefile
+config.status: creating util/Platforms/HPUX/Makefile
+config.status: creating util/Platforms/OS390/Makefile
+config.status: creating util/Platforms/OS400/Makefile
+config.status: creating util/Platforms/IRIX/Makefile
+config.status: creating util/Platforms/PTX/Makefile
+config.status: creating util/Platforms/OpenServer/Makefile
+config.status: creating util/Platforms/UnixWare/Makefile
+config.status: creating util/Platforms/Tru64/Makefile
+config.status: creating util/Platforms/MacOS/Makefile
+config.status: creating util/Platforms/Win32/Makefile
+config.status: creating util/Platforms/Cygwin/Makefile
+config.status: creating util/Compilers/Makefile
+config.status: creating util/MsgLoaders/InMemory/Makefile
+config.status: creating util/MsgLoaders/ICU/Makefile
+config.status: creating util/MsgLoaders/ICU/resources/Makefile
+config.status: creating util/MsgLoaders/MsgCatalog/Makefile
+config.status: creating util/MsgLoaders/MsgFile/Makefile
+config.status: creating util/NetAccessors/Socket/Makefile
+config.status: creating util/NetAccessors/WinSock/Makefile
+config.status: creating util/NetAccessors/libWWW/Makefile
+config.status: creating util/NetAccessors/MacOSURLAccessCF/Makefile
+config.status: creating util/regx/Makefile
+config.status: creating validators/Makefile
+config.status: creating validators/common/Makefile
+config.status: creating validators/datatype/Makefile
+config.status: creating validators/DTD/Makefile
+config.status: creating validators/schema/Makefile
+config.status: creating validators/schema/identity/Makefile
+config.status: creating framework/Makefile
+config.status: creating framework/psvi/Makefile
+config.status: creating dom/Makefile
+config.status: creating dom/impl/Makefile
+config.status: creating dom/deprecated/Makefile
+config.status: creating parsers/Makefile
+config.status: creating internal/Makefile
+config.status: creating sax/Makefile
+config.status: creating sax2/Makefile
+config.status: creating ../../obj/Makefile
+config.status: executing default commands
+
+Having build problems?
+Read instructions at http://xerces.apache.org/xerces-c/build.html
+Still cannot resolve it?
+Find out if someone else had the same problem before.
+Go to http://marc.theaimsgroup.com/?l=xerces-c-dev
+
+In future, you may also directly type the following commands to create
+the Makefiles.
+
+export TRANSCODER="NATIVE"
+export MESSAGELOADER="INMEM"
+export NETACCESSOR="Socket"
+export THREADS="pthread"
+export LIBTYPE="shared"
+export BITSTOBUILD="32"
+export CC="gcc"
+export CXX="g++"
+export CXXFLAGS=" -w -O2 -DNDEBUG -DPROJ_XMLPARSER -DPROJ_XMLUTIL -DPROJ_PARSERS
+ -DPROJ_SAX4C -DPROJ_SAX2 -DPROJ_DOM -DPROJ_DEPRECATED_DOM -DPROJ_VALIDATORS -DX
+ML_USE_NATIVE_TRANSCODER -DXML_USE_INMEM_MESSAGELOADER -DXML_USE_PTHREADS -DXML_
+USE_NETACCESSOR_SOCKET "
+export CFLAGS=" -w -O2 -DNDEBUG -DPROJ_XMLPARSER -DPROJ_XMLUTIL -DPROJ_PARSERS -
+DPROJ_SAX4C -DPROJ_SAX2 -DPROJ_DOM -DPROJ_DEPRECATED_DOM -DPROJ_VALIDATORS -DXML
+_USE_NATIVE_TRANSCODER -DXML_USE_INMEM_MESSAGELOADER -DXML_USE_PTHREADS -DXML_US
+E_NETACCESSOR_SOCKET "
+export LDFLAGS=" "
+export LIBS=" -lpthread "
+configure
+
+If the result of the above commands look OK to you, go to the directory
+src/xercesc and type "make" (or "gmake") to make the XERCES-C system.
+</source>
+
+            <p>So now you see what the wrapper script has actually been doing! It has
+            invoked <code>configure</code>
+            to create the Makefiles in the individual sub-directories, but in addition
+            to that, it has set a few environment variables to correctly configure
+            your compiler and compiler flags too.</p>
+
+            <note>If you are building a 64 bit &XercesCName;
+                  using g++ that by default generated 32 bit code (or vice
+                  versa), then you will need to specify additional compiler
+                  and linker options via the -z and -l runConfigure options
+                  in order to switch the compiler into 64 bit mode (or 32 bit
+                  mode). These options are architecture-specific and you
+                  may need to consult the GCC manual to determine which
+                  ones to use. For the x86-64, PowerPC, and SPARC
+                  architectures these options are -m64 (64 bit mode) and
+                  -m32 (32 bit mode). Note also that if you are using
+                  the packageBinaries.pl script to build &XercesCName;
+                  then you may need to modify this script to pass the
+                  necessary options to runConfigure.
+            </note>
+
+            <p>Now that the Makefiles are all created, you are ready to do the actual build.</p>
+
+<source>make</source>
+
+            <p>Is that it? Yes, that's all you need to build &XercesCName;. The libraries
+               can be found in the lib sub-directory </p>
+
+            <note>If the library is built with the ICU message loader,
+                  or message catalog loader, then you need to make sure
+                  the XERCESC_NLS_HOME environment variable points to the
+                  $XERCESCROOT/msg directory where the message files reside.</note>
+
+        </s3>
+
+        <s3 title="Building samples">
+        <p>The building process for the samples is similar to building
+           the Xerces-C++ libraries. The samples directory contains the
+           runConfigure script which is very similar to the one found
+           in src/xercesc except it has fewer options. To see available
+           options, run:
+        </p>
+
+<source>
+cd samples
+./runConfigure -h
+</source>
+
+        <p>To continue our build procedure from the previous section,
+           we execute runConfigure with the following options:</p>
+
+<source>
+./runConfigure -plinux -cgcc -xg++ -rpthread
+</source>
+
+        <p>After that we can run GNU make to build the samples:</p>
+
+<source>
+make
+</source>
+
+         <p>The sample executable can be found in the bin sub-directory in
+            &XercesCSrcInstallDir;. To delete all the generated object
+            files and executables, run:</p>
+<source>
+make clean
+</source>
+        </s3>
+
+
+        <s3 title="Building a single-threaded library">
+          <p>To build Xerces-C++ as a single-threaded library on UNIX platforms you
+             have to pass the -rnone option to runConfigure. The following additional
+             steps are neccessary for certain platforms:</p>
+
+          <p>For Aix - </p>
+          <ul>
+            <li>Replace <code>xlc_r</code> and <code>xlC_r</code> compilers with
+               <code>xlc</code> and <code>xlC</code> respectively</li>
+            <li>Replace <code>makeC++SharedLib_r</code> with <code>makeC++SharedLib</code> in
+                Makefile.incl</li>
+          </ul>
+        </s3>
+    </s2>
+
+    <anchor name="CygWin"/>
+    <s2 title="Building on Windows using Cygwin">
+        <p><em>Do not jump into the build directly before reading this.</em></p>
+
+		<p>&XercesCName; may be built in the
+		<jump href="http://www.cygwin.com">Cygwin</jump> environment for use
+		by Cygwin applications.  As with the <jump href="#UNIX">UNIX</jump>
+		platforms, &XercesCName; on Cygwin uses
+		<jump href="http://www.gnu.org">GNU</jump> tools.  Therefore, with a
+		couple of notable exceptions, &XercesCName; on Cygwin is built using
+		the same instructions as the UNIX platforms.  The build environment
+		variable XERCESCROOT must be set to the proper path containing the
+		&XercesCName; sources and <em>runConfigure</em> must be run with the
+		"-pcygwin -cgcc -xg++" arguments.</p>
+
+		<p>Note that Cygwin is different from the UNIX platforms in the way
+		that it finds libraries at run time.  While UNIX platforms may use the
+		environment variable LD_LIBRARY_PATH, Cygwin uses the PATH environment
+		variable.</p>
+
+		<p>There is an issue with the
+		<jump href="http://www.gnu.org/software/gcc/gcc.html">gcc/g++</jump>
+		compiler version 2.95, where C++ exceptions thrown from a dll will
+		cause the application to crash, regardless of whether there is a "catch"
+		statement.  This bug doesn't occur in tests using gcc 3.1 or 3.2, so it
+		is recommended that you use gcc 3.1 or higher.</p>
+    </s2>
+
+    <anchor name="WinBorlandBuilder"/>
+    <s2 title="Building on Windows using Borland C++ Builder">
+        <p>&XercesCName; source distribution comes with Borland C++ Builder 6 projects to help you
+		build &XercesCName;. The following describes the steps you need to build
+		&XercesCName;.</p>
+
+        <s3 title="Building &XercesCName; library">
+		   <p> The library and demo projects are all contained in the Xerces-all project group:
+		   </p>
+
+           <ul>
+		       <li> &XercesCSrcInstallDir;\Projects\Win32\BCB6\Xerces-all\Xerces-all.bpg </li>
+    	   </ul>
+
+		   <p> Each project in the group refers a directory below \Xerces-all.
+		       For example, the XercesLib project files are contained in the directory
+           </p>
+
+           <ul>
+    	       <li> &XercesCSrcInstallDir;\Projects\Win32\BCB6\Xerces-all\XercesLib </li>
+		   </ul>
+
+           <p> To build any project, open the project manager.  Double click on the project
+            name.  Then select "Project|Build" from the menu.  For example, double click
+            on XercesLib.dll in the manager.  Then select "Project|Build XercesLib" from
+            the menu.
+
+            Once the library has been built, include XercesLib.lib with in application's
+            project and place XercesLib.dll somewhere in your path.
+           </p>
+
+        </s3>
+    </s2>
+
+    <anchor name="WinBorlandCC"/>
+    <s2 title="Building on Windows using Borland C++">
+        <p>&XercesCName; source distribution comes with Borland C++ Compiler make files to help you
+		build &XercesCName;. The following describes the steps you need to build
+		&XercesCName;.</p>
+
+        <ol>
+		   <li>Change directory to <code> &XercesCSrcInstallDir;\Projects\Win32\BCC.551\Xerces-all</code></li>
+           <li>Run <code>MakeBuildDirs.bat</code>.</li>
+		   <li>Then issue</li>
+		       <ul>
+		       <li><code>make -f Xerces-all.mak</code>
+               <br/>to build the dll (without deprecated DOM API) and tests, or</li>
+               <li><code>make -f Xerces-all.mak -DWITHDEPRDOM=Y</code>
+               <br/>to build the dll with deprecated DOM API (approx. 300k larger) and tests</li>
+               </ul>
+	    </ol>
+    </s2>
+
+    <anchor name="WinIntel"/>
+    <s2 title="Building 64 bit libraries on Windows using Intel C++">
+        <p>&XercesCName; source distribution comes with Microsoft Visual C++ NMake Files which
+        work with Intel C++ Compiler. The following describes the steps you need
+        to build &XercesCName; 64 bit binary using Intel C++ Compiler.</p>
+
+        <s3 title="Building &XercesCName; library">
+            <p>&XercesCName; source distribution provides a makefile <code>all.mak</code>
+            which will build everything including samples, tests and the parser library.</p>
+<source>
+cd &XercesCSrcInstallDir;\Projects\Win32\VC6\xerces-all\all
+nmake -f all.mak "CFG=all - Win64 Release" CPP=ecl.exe
+</source>
+
+            <p>If you want to just build the &XercesCName; parser library alone, then</p>
+<source>
+cd &XercesCSrcInstallDir;\Projects\Win32\VC6\xerces-all\XercesLib
+nmake -f XercesLib.mak "CFG=XercesLib - Win64 Release" CPP=ecl.exe
+</source>
+
+            <p>You must make sure that you are linking your application with
+            the &XercesCWindowsLib;.lib library and also make sure that
+            the associated DLL is somewhere in your path.</p>
+        </s3>
+    </s2>
+</s1>

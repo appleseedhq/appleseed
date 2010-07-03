@@ -1,0 +1,303 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Alternatives</title>
+<link rel="stylesheet" href="../../../../../doc/html/boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.0">
+<link rel="home" href="../index.html" title="Chapter 1. Boost.ScopeExit">
+<link rel="up" href="../index.html" title="Chapter 1. Boost.ScopeExit">
+<link rel="prev" href="tutorial.html" title="Tutorial">
+<link rel="next" href="compilers.html" title="Supported Compilers">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../../boost.png"></td>
+<td align="center"><a href="../../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="tutorial.html"><img src="../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="compilers.html"><img src="../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="scope_exit.alternatives"></a> Alternatives</h2></div></div></div>
+<a name="alternatives.try_catch"></a><h4>
+<a name="id1037675"></a>
+      try-catch
+    </h4>
+<p>
+      This is an example of using a badly designed <code class="computeroutput"><span class="identifier">File</span></code>
+      class. An instance of <code class="computeroutput"><span class="identifier">File</span></code>
+      doesn't close a file in a destructor, a programmer is expected to call the
+      <code class="computeroutput"><span class="identifier">close</span></code> member function explicitly.
+    </p>
+<pre class="programlisting"><span class="identifier">File</span> <span class="identifier">passwd</span><span class="special">;</span>
+<span class="keyword">try</span> <span class="special">{</span>
+    <span class="identifier">passwd</span><span class="special">.</span><span class="identifier">open</span><span class="special">(</span><span class="string">"/etc/passwd"</span><span class="special">);</span>
+    <span class="comment">// ...
+</span>    <span class="identifier">passwd</span><span class="special">.</span><span class="identifier">close</span><span class="special">();</span>
+<span class="special">}</span>
+<span class="keyword">catch</span><span class="special">(...)</span> <span class="special">{</span>
+    <span class="identifier">log</span><span class="special">(</span><span class="string">"could not get user info"</span><span class="special">);</span>
+    <span class="keyword">if</span><span class="special">(</span><span class="identifier">passwd</span><span class="special">.</span><span class="identifier">is_open</span><span class="special">())</span>
+        <span class="identifier">passwd</span><span class="special">.</span><span class="identifier">close</span><span class="special">();</span>
+    <span class="keyword">throw</span><span class="special">;</span>
+<span class="special">}</span>
+</pre>
+<p>
+      Note the following:
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+        the <code class="computeroutput"><span class="identifier">passwd</span></code> object is defined
+        outside of the <code class="computeroutput"><span class="keyword">try</span></code> block because
+        this object is required inside the <code class="computeroutput"><span class="keyword">catch</span></code>
+        block to close the file,
+      </li>
+<li>
+        the <code class="computeroutput"><span class="identifier">passwd</span></code> object is not
+        fully constructed until after the <code class="computeroutput"><span class="identifier">open</span></code>
+        member function returns, and
+      </li>
+<li>
+        if opening throws, the <code class="computeroutput"><span class="identifier">passwd</span><span class="special">.</span><span class="identifier">close</span><span class="special">()</span></code> should not be called, hence the call to
+        <code class="computeroutput"><span class="identifier">passwd</span><span class="special">.</span><span class="identifier">is_open</span><span class="special">()</span></code>.
+      </li>
+</ul></div>
+<p>
+      <a class="link" href="../index.html" title="Chapter 1. Boost.ScopeExit">ScopeExit</a> doesn't have any of these problems:
+    </p>
+<pre class="programlisting"><span class="keyword">try</span> <span class="special">{</span>
+    <span class="identifier">File</span> <span class="identifier">passwd</span><span class="special">(</span><span class="string">"/etc/passwd"</span><span class="special">);</span>
+    <span class="identifier">BOOST_SCOPE_EXIT</span><span class="special">(</span> <span class="special">(&amp;</span><span class="identifier">passwd</span><span class="special">)</span> <span class="special">)</span> <span class="special">{</span>
+        <span class="identifier">passwd</span><span class="special">.</span><span class="identifier">close</span><span class="special">();</span>
+    <span class="special">}</span> <span class="identifier">BOOST_SCOPE_EXIT_END</span>
+    <span class="comment">// ...
+</span><span class="special">}</span>
+<span class="keyword">catch</span><span class="special">(...)</span> <span class="special">{</span>
+    <span class="identifier">log</span><span class="special">(</span><span class="string">"could not get user info"</span><span class="special">);</span>
+    <span class="keyword">throw</span><span class="special">;</span>
+<span class="special">}</span>
+</pre>
+<a name="alternatives.raii"></a><h4>
+<a name="id1038144"></a>
+      RAII
+    </h4>
+<p>
+      <a href="http://www.research.att.com/~bs/glossary.html#Gresource-acquisition-is-initialization" target="_top">RAII</a>
+      is absolutely perfect for the <code class="computeroutput"><span class="identifier">File</span></code>
+      class introduced above. Use of a properly designed <code class="computeroutput"><span class="identifier">File</span></code>
+      class would look like:
+    </p>
+<pre class="programlisting"><span class="keyword">try</span> <span class="special">{</span>
+    <span class="identifier">File</span> <span class="identifier">passwd</span><span class="special">(</span><span class="string">"/etc/passwd"</span><span class="special">);</span>
+    <span class="comment">// ...
+</span><span class="special">}</span>
+<span class="keyword">catch</span><span class="special">(...)</span> <span class="special">{</span>
+    <span class="identifier">log</span><span class="special">(</span><span class="string">"could not get user info"</span><span class="special">);</span>
+    <span class="keyword">throw</span><span class="special">;</span>
+<span class="special">}</span>
+</pre>
+<p>
+      However, using <a href="http://www.research.att.com/~bs/glossary.html#Gresource-acquisition-is-initialization" target="_top">RAII</a>
+      to build up a <a href="http://www.research.att.com/~bs/glossary.html#Gstrong-guarantee" target="_top">strong
+      guarantee</a> could introduce a lot of non-reusable <a href="http://www.research.att.com/~bs/glossary.html#Gresource-acquisition-is-initialization" target="_top">RAII</a>
+      types. For example:
+    </p>
+<pre class="programlisting"><span class="identifier">m_persons</span><span class="special">.</span><span class="identifier">push_back</span><span class="special">(</span><span class="identifier">person</span><span class="special">);</span>
+<span class="identifier">pop_back_if_not_commit</span> <span class="identifier">pop_back_if_not_commit_guard</span><span class="special">(</span><span class="identifier">commit</span><span class="special">,</span> <span class="identifier">m_persons</span><span class="special">);</span>
+</pre>
+<p>
+      The <code class="computeroutput"><span class="identifier">pop_back_if_not_commit</span></code>
+      class is either defined out of the scope or as a local class:
+    </p>
+<pre class="programlisting"><span class="keyword">class</span> <span class="identifier">pop_back_if_not_commit</span> <span class="special">{</span>
+    <span class="keyword">bool</span> <span class="identifier">m_commit</span><span class="special">;</span>
+    <span class="identifier">std</span><span class="special">::</span><span class="identifier">vector</span><span class="special">&lt;</span><span class="identifier">Person</span><span class="special">&gt;&amp;</span> <span class="identifier">m_vec</span><span class="special">;</span>
+    <span class="comment">// ...
+</span>    <span class="special">~</span><span class="identifier">pop_back_if_not_commit</span><span class="special">()</span> <span class="special">{</span>
+        <span class="keyword">if</span><span class="special">(!</span><span class="identifier">m_commit</span><span class="special">)</span>
+            <span class="identifier">m_vec</span><span class="special">.</span><span class="identifier">pop_back</span><span class="special">();</span>
+    <span class="special">}</span>
+<span class="special">};</span>
+</pre>
+<p>
+      In some cases <a href="http://www.research.att.com/~bs/glossary.html#Gstrong-guarantee" target="_top">strong
+      guarantee</a> can be accomplished with standard utilities:
+    </p>
+<pre class="programlisting"><span class="identifier">std</span><span class="special">::</span><span class="identifier">auto_ptr</span><span class="special">&lt;</span><span class="identifier">Person</span><span class="special">&gt;</span> <span class="identifier">spSuperMan</span><span class="special">(</span><span class="keyword">new</span> <span class="identifier">Superman</span><span class="special">);</span> 
+<span class="identifier">m_persons</span><span class="special">.</span><span class="identifier">push_back</span><span class="special">(</span><span class="identifier">spSuperMan</span><span class="special">.</span><span class="identifier">get</span><span class="special">());</span>
+<span class="identifier">spSuperMan</span><span class="special">.</span><span class="identifier">release</span><span class="special">();</span> <span class="comment">// m_persons successfully took ownership.
+</span></pre>
+<p>
+      or with specialized containers such as <a href="../../../../../libs/ptr_container/doc/ptr_container.html" target="_top">Boost
+      Pointer Container Library</a> or <a href="../../../../../libs/multi_index/doc/index.html" target="_top">Boost
+      Multi-Index Containers Library</a>.
+    </p>
+<a name="alternatives._ulink_url__http___www_ddj_com_dept_cpp_184403758__scopeguard__ulink_"></a><h4>
+<a name="id1038643"></a>
+      <a href="http://www.ddj.com/dept/cpp/184403758" target="_top">ScopeGuard</a>
+    </h4>
+<p>
+      Imagine that you add a new currency rate:
+    </p>
+<pre class="programlisting"><span class="keyword">bool</span> <span class="identifier">commit</span> <span class="special">=</span> <span class="keyword">false</span><span class="special">;</span>
+<span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="identifier">currency</span><span class="special">(</span><span class="string">"EUR"</span><span class="special">);</span>
+<span class="keyword">double</span> <span class="identifier">rate</span> <span class="special">=</span> <span class="number">1.3326</span><span class="special">;</span>
+<span class="identifier">std</span><span class="special">::</span><span class="identifier">map</span><span class="special">&lt;</span><span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span><span class="special">,</span> <span class="keyword">double</span><span class="special">&gt;</span> <span class="identifier">rates</span><span class="special">;</span>
+<span class="keyword">bool</span> <span class="identifier">currency_rate_inserted</span> <span class="special">=</span>
+    <span class="identifier">rates</span><span class="special">.</span><span class="identifier">insert</span><span class="special">(</span><span class="identifier">std</span><span class="special">::</span><span class="identifier">make_pair</span><span class="special">(</span><span class="identifier">currency</span><span class="special">,</span> <span class="identifier">rate</span><span class="special">)).</span><span class="identifier">second</span><span class="special">;</span>
+</pre>
+<p>
+      and then continue a transaction. If it cannot be completed, you erase the currency
+      from <code class="computeroutput"><span class="identifier">rates</span></code>. This is how you
+      can do this with <a href="http://www.ddj.com/dept/cpp/184403758" target="_top">ScopeGuard</a>
+      and <a href="../../../../../libs/lambda/index.html" target="_top">Boost.Lambda</a>:
+    </p>
+<pre class="programlisting"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="identifier">boost</span><span class="special">::</span><span class="identifier">lambda</span><span class="special">;</span>
+
+<span class="identifier">ON_BLOCK_EXIT</span><span class="special">(</span>
+    <span class="identifier">if_</span><span class="special">(</span><span class="identifier">currency_rate_inserted</span> <span class="special">&amp;&amp;</span> <span class="special">!</span><span class="identifier">_1</span><span class="special">)</span> <span class="special">[</span>
+        <span class="identifier">bind</span><span class="special">(</span>
+            <span class="keyword">static_cast</span><span class="special">&lt;</span>
+                <span class="identifier">std</span><span class="special">::</span><span class="identifier">map</span><span class="special">&lt;</span><span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span><span class="special">,</span><span class="keyword">double</span><span class="special">&gt;::</span><span class="identifier">size_type</span> <span class="special">(</span><span class="identifier">std</span><span class="special">::</span><span class="identifier">map</span><span class="special">&lt;</span><span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span><span class="special">,</span><span class="keyword">double</span><span class="special">&gt;::*)(</span><span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="keyword">const</span><span class="special">&amp;)</span>
+            <span class="special">&gt;(&amp;</span><span class="identifier">std</span><span class="special">::</span><span class="identifier">map</span><span class="special">&lt;</span><span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span><span class="special">,</span><span class="keyword">double</span><span class="special">&gt;::</span><span class="identifier">erase</span><span class="special">)</span>
+          <span class="special">,</span> <span class="special">&amp;</span><span class="identifier">rates</span>
+          <span class="special">,</span> <span class="identifier">currency</span>
+          <span class="special">)</span>
+    <span class="special">]</span>
+  <span class="special">,</span> <span class="identifier">boost</span><span class="special">::</span><span class="identifier">cref</span><span class="special">(</span><span class="identifier">commit</span><span class="special">)</span>
+  <span class="special">);</span>
+
+<span class="comment">// ...
+</span>
+<span class="identifier">commit</span> <span class="special">=</span> <span class="keyword">true</span><span class="special">;</span>
+</pre>
+<p>
+      Note that
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+        Boost.lambda expressions are hard to write correctly, for example, overloaded
+        function must be explicitly casted, as demonstrated in this example,
+      </li>
+<li>
+        condition in <code class="computeroutput"><span class="identifier">if_</span></code> expression
+        refers to <code class="computeroutput"><span class="identifier">commit</span></code> variable
+        indirectly through the <code class="computeroutput"><span class="identifier">_1</span></code>
+        placeholder,
+      </li>
+<li>
+        setting a breakpoint inside <code class="computeroutput"><span class="identifier">if_</span><span class="special">[</span> <span class="special">...</span> <span class="special">]</span></code>
+        requires in-depth knowledge of <a href="../../../../../libs/lambda/index.html" target="_top">Boost.Lambda</a>
+        and debugging techniques.
+      </li>
+</ul></div>
+<p>
+      This code will look much better with native lambda expressions proposed for
+      C++0x:
+    </p>
+<pre class="programlisting"><span class="identifier">ON_BLOCK_EXIT</span><span class="special">(</span>
+    <span class="special">[</span><span class="identifier">currency_rate_inserted</span><span class="special">,</span> <span class="special">&amp;</span><span class="identifier">commit</span><span class="special">,</span> <span class="special">&amp;</span><span class="identifier">rates</span><span class="special">,</span> <span class="special">&amp;</span><span class="identifier">currency</span><span class="special">]()</span> <span class="special">-&gt;</span> <span class="keyword">void</span>
+    <span class="special">{</span>
+        <span class="keyword">if</span><span class="special">(</span><span class="identifier">currency_rate_inserted</span> <span class="special">&amp;&amp;</span> <span class="special">!</span><span class="identifier">commit</span><span class="special">)</span>
+            <span class="identifier">rates</span><span class="special">.</span><span class="identifier">erase</span><span class="special">(</span><span class="identifier">currency</span><span class="special">);</span>
+    <span class="special">}</span>
+<span class="special">);</span>
+</pre>
+<p>
+      With <a class="link" href="../index.html" title="Chapter 1. Boost.ScopeExit">ScopeExit</a> you can simply do
+    </p>
+<pre class="programlisting"><span class="identifier">BOOST_SCOPE_EXIT</span><span class="special">(</span> <span class="special">(</span><span class="identifier">currency_rate_inserted</span><span class="special">)(&amp;</span><span class="identifier">commit</span><span class="special">)(&amp;</span><span class="identifier">rates</span><span class="special">)(&amp;</span><span class="identifier">currency</span><span class="special">)</span> <span class="special">)</span>
+<span class="special">{</span>
+    <span class="keyword">if</span><span class="special">(</span><span class="identifier">currency_rate_inserted</span> <span class="special">&amp;&amp;</span> <span class="special">!</span><span class="identifier">commit</span><span class="special">)</span>
+        <span class="identifier">rates</span><span class="special">.</span><span class="identifier">erase</span><span class="special">(</span><span class="identifier">currency</span><span class="special">);</span>
+<span class="special">}</span> <span class="identifier">BOOST_SCOPE_EXIT_END</span>
+
+<span class="comment">// ...
+</span>
+<span class="identifier">commit</span> <span class="special">=</span> <span class="keyword">true</span><span class="special">;</span>
+</pre>
+<a name="alternatives.c__0x"></a><h4>
+<a name="id1039632"></a>
+      C++0x
+    </h4>
+<p>
+      In future releases <a class="link" href="../index.html" title="Chapter 1. Boost.ScopeExit">ScopeExit</a> will take advantages
+      of C++0x features.
+    </p>
+<div class="itemizedlist"><ul type="disc"><li>
+        Passing capture list as <a href="../../../../../libs/preprocessor/index.html" target="_top">Boost.Preprocessor
+        sequence</a> will be replaced with a traditional macro invocation style:
+      </li></ul></div>
+<pre class="programlisting"><span class="identifier">BOOST_SCOPE_EXIT</span><span class="special">(</span><span class="identifier">currency_rate_inserted</span><span class="special">,</span> <span class="special">&amp;</span><span class="identifier">commit</span><span class="special">,</span> <span class="special">&amp;</span><span class="identifier">rates</span><span class="special">,</span> <span class="special">&amp;</span><span class="identifier">currency</span><span class="special">)</span>
+<span class="special">{</span>
+    <span class="keyword">if</span><span class="special">(</span><span class="identifier">currency_rate_inserted</span> <span class="special">&amp;&amp;</span> <span class="special">!</span><span class="identifier">commit</span><span class="special">)</span>
+        <span class="identifier">rates</span><span class="special">.</span><span class="identifier">erase</span><span class="special">(</span><span class="identifier">currency</span><span class="special">);</span>
+<span class="special">}</span> <span class="identifier">BOOST_SCOPE_EXIT_END</span>
+</pre>
+<div class="itemizedlist"><ul type="disc"><li>
+<code class="computeroutput"><span class="identifier">BOOST_SCOPE_EXIT_END</span></code> will
+        be replaced with a semicolon:
+      </li></ul></div>
+<pre class="programlisting"><span class="identifier">BOOST_SCOPE_EXIT</span><span class="special">(</span><span class="identifier">currency_rate_inserted</span><span class="special">,</span> <span class="special">&amp;</span><span class="identifier">commit</span><span class="special">,</span> <span class="special">&amp;</span><span class="identifier">rates</span><span class="special">,</span> <span class="special">&amp;</span><span class="identifier">currency</span><span class="special">)</span>
+<span class="special">{</span>
+    <span class="keyword">if</span><span class="special">(</span><span class="identifier">currency_rate_inserted</span> <span class="special">&amp;&amp;</span> <span class="special">!</span><span class="identifier">commit</span><span class="special">)</span>
+        <span class="identifier">rates</span><span class="special">.</span><span class="identifier">erase</span><span class="special">(</span><span class="identifier">currency</span><span class="special">);</span>
+<span class="special">};</span>
+</pre>
+<div class="itemizedlist"><ul type="disc"><li>
+        Users will be able to capture local variables implicitly with lambda capture
+        defaults <code class="computeroutput"><span class="special">&amp;</span></code> and <code class="computeroutput"><span class="special">=</span></code>:
+      </li></ul></div>
+<pre class="programlisting"><span class="identifier">BOOST_SCOPE_EXIT</span><span class="special">(&amp;,</span> <span class="identifier">currency_rate_inserted</span><span class="special">)</span>
+<span class="special">{</span>
+    <span class="keyword">if</span><span class="special">(</span><span class="identifier">currency_rate_inserted</span> <span class="special">&amp;&amp;</span> <span class="special">!</span><span class="identifier">commit</span><span class="special">)</span>
+        <span class="identifier">rates</span><span class="special">.</span><span class="identifier">erase</span><span class="special">(</span><span class="identifier">currency</span><span class="special">);</span>
+<span class="special">};</span>
+</pre>
+<div class="itemizedlist"><ul type="disc"><li>
+        It will be possible to capture <code class="computeroutput"><span class="keyword">this</span></code>
+        pointer.
+      </li></ul></div>
+<a name="alternatives.the_d_programming_language"></a><h4>
+<a name="id1040070"></a>
+      The D Programming Language
+    </h4>
+<p>
+      <span class="underline">ScopeExit</span> is similar to <a href="http://www.digitalmars.com/d/2.0/statement.html#ScopeGuardStatement" target="_top">scope(exit)</a>
+      feature built into the <a href="http://www.digitalmars.com/d/index.html" target="_top">D</a>
+      programming language.
+    </p>
+<p>
+      A curious reader may notice that the library doesn't implement <code class="computeroutput"><span class="identifier">scope</span><span class="special">(</span><span class="identifier">success</span><span class="special">)</span></code> and <code class="computeroutput"><span class="identifier">scope</span><span class="special">(</span><span class="identifier">failure</span><span class="special">)</span></code> of the <a href="http://www.digitalmars.com/d/index.html" target="_top">D</a>
+      language. Unfortunately, it's not possible in C++ because failure or success
+      condition cannot be determined by calling <code class="computeroutput"><span class="identifier">std</span><span class="special">::</span><span class="identifier">uncaught_exception</span></code>.
+      It's not a big problem, though. These two constructs can be expressed in terms
+      of <a href="http://www.digitalmars.com/d/2.0/statement.html#ScopeGuardStatement" target="_top">scope(exit)</a>
+      and a <code class="computeroutput"><span class="keyword">bool</span> <span class="identifier">commit</span></code>
+      variable as explained in <a class="link" href="tutorial.html" title="Tutorial">Tutorial</a>.
+      Refer to <a href="http://www.gotw.ca/gotw/047.htm" target="_top">Guru of the Week #47</a>
+      for more details about <code class="computeroutput"><span class="identifier">std</span><span class="special">::</span><span class="identifier">uncaught_exception</span></code>
+      and if it has any good use at all.
+    </p>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2006 -2009 Alexander Nasonov<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">
+        http://www.boost.org/LICENSE_1_0.txt </a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="tutorial.html"><img src="../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="compilers.html"><img src="../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

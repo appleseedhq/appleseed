@@ -1,0 +1,270 @@
+<!-- saved from url=(0022)http://internet.e-mail -->
+<!doctype html public "-//W3C//DTD HTML Transitional 4.0//EN">
+<html>
+	<head>
+		<title>lexical_cast</title>
+		<meta name="author" content="Kevlin Henney, mailto:kevlin@curbralan.com">
+		<meta name="generator" content="Microsoft FrontPage 5.0">
+	</head>
+	<body bgcolor="#FFFFFF" text="#000000">
+		<h1><img src="../../boost.png" alt="boost.png (6897 bytes)" align="center" width="277" height="86">Header
+			<a href="../../boost/lexical_cast.hpp">boost/lexical_cast.hpp</a></h1>
+		<ul type="square">
+			<li>
+				<a href="#motivation">Motivation</a></li>
+			<li>
+				<a href="#examples">Examples</a></li>
+			<li>
+				<a href="#synopsis">Synopsis</a></li>
+			<li>
+				<a href="#lexical_cast"><code>lexical_cast</code></a></li>
+			<li>
+				<a href="#bad_lexical_cast"><code>bad_lexical_cast</code></a></li>
+			<li>
+				<a href="#faq">Frequently Asked Questions</a></li>
+			<li>
+				<a href="#references">References</a></li>
+			<li>
+				<a href="#changes">Changes</a></li>
+		</ul>
+		<hr>
+		<h2><a name="motivation">Motivation</a></h2>
+		Sometimes a value must be converted to a literal text form, such as an <code>int</code>
+		represented as a <code>string</code>, or vice-versa, when a <code>string</code> 
+		is interpreted as an <code>int</code>. Such examples are common when converting 
+		between data types internal to a program and representation external to a 
+		program, such as windows and configuration files.
+		<p>
+		The standard C and C++ libraries offer a number of facilities for performing 
+		such conversions. However, they vary with their ease of use, extensibility, and 
+		safety.
+		<p>
+			For instance, there are a number of limitations with the family of standard C 
+			functions typified by <code>atoi</code>:
+			<ul type="square">
+				<li>
+					Conversion is supported in one direction only: from text to internal data type. 
+					Converting the other way using the C library requires either the inconvenience 
+					and compromised safety of the <code>sprintf</code> function, or the loss of 
+					portability associated with non-standard functions such as <code>itoa</code>.
+				</li>
+				<li>
+					The range of types supported is only a subset of the built-in numeric types, 
+					namely <code>int</code>, <code>long</code>, and <code>double</code>.
+				</li>
+				<li>
+					The range of types cannot be extended in a uniform manner. For instance, 
+					conversion from string representation to <code>complex</code> or <code>rational</code>.
+				</li>
+			</ul>
+			The standard C functions typified by <code>strtol</code> have the same basic 
+			limitations, but offer finer control over the conversion process. However, for 
+			the common case such control is often either not required or not used. The <code>scanf</code>
+		family of functions offer even greater control, but also lack safety and ease 
+		of use.
+		<p>
+			The standard C++ library offers <code>stringstream</code> for the kind of 
+			in-core formatting being discussed. It offers a great deal of control over the 
+			formatting and conversion of I/O to and from arbitrary types through text. 
+			However, for simple conversions direct use of <code>stringstream</code> can be 
+			either clumsy (with the introduction of extra local variables and the loss of 
+			infix-expression convenience) or obscure (where <code>stringstream</code>
+		objects are created as temporary objects in an expression). Facets provide a 
+		comprehensive concept and facility for controlling textual representation, but 
+		their perceived complexity and high entry level requires an extreme degree of 
+		involvement for simple conversions, and excludes all but a few programmers.
+		<p>
+			The <code>lexical_cast</code> function template offers a convenient and 
+			consistent form for supporting common conversions to and from arbitrary types 
+			when they are represented as text. The simplification it offers is in 
+			expression-level convenience for such conversions. For more involved 
+			conversions, such as where precision or formatting need tighter control than is 
+			offered by the default behavior of <code>lexical_cast</code>, the conventional <code>
+				stringstream</code> approach is recommended. Where the conversions are 
+			numeric to numeric, <code><a href="../numeric/conversion/doc/html/boost_numericconversion/improved_numeric_cast__.html">numeric_cast</a></code>
+			may offer more reasonable behavior than <code>lexical_cast</code>.
+		<p>
+			For a good discussion of the options and issues involved in string-based 
+			formatting, including comparison of <code>stringstream</code>, <code>lexical_cast</code>, 
+			and others, see Herb Sutter's article, <a href="http://www.gotw.ca/publications/mill19.htm">
+				<i>The String Formatters of Manor Farm</i></a>.
+		<p>
+			<hr>
+			<h2><a name="examples">Examples</a></h2>
+			The following example treats command line arguments as a sequence of numeric 
+			data: <blockquote>
+				<pre>int main(int argc, char * argv[])
+{
+    using boost::lexical_cast;
+    using boost::bad_lexical_cast;
+
+    std::vector&lt;short&gt; args;
+
+    while(*++argv)
+    {
+        try
+        {
+            args.push_back(lexical_cast&lt;short&gt;(*argv));
+        }
+        catch(bad_lexical_cast &amp;)
+        {
+            args.push_back(0);
+        }
+    }
+    ...
+}
+</pre>
+			</blockquote>The following example uses numeric data in a string expression: <blockquote>
+				<pre>void log_message(const std::string &amp;);
+
+void log_errno(int yoko)
+{
+    log_message(&quot;Error &quot; + boost::lexical_cast&lt;std::string&gt;(yoko) + &quot;: &quot; + strerror(yoko));
+}
+</pre>
+			</blockquote>
+			<hr>
+			<h2><a name="synopsis">Synopsis</a></h2>
+			Library features defined in <a href="../../boost/lexical_cast.hpp"><code>&quot;boost/lexical_cast.hpp&quot;</code></a>:
+			<blockquote>
+				<pre>namespace boost
+{
+    class <a href="#bad_lexical_cast">bad_lexical_cast</a>;
+    template&lt;typename Target, typename Source&gt;
+      Target <a href="#lexical_cast">lexical_cast</a>(const Source&amp; arg);
+}
+</pre>
+			</blockquote>Unit test defined in <a href="lexical_cast_test.cpp"><code>&quot;lexical_cast_test.cpp&quot;</code></a>.
+		<p>
+			<hr>
+			<h2><a name="lexical_cast"><code>lexical_cast</code></a></h2>
+			<blockquote>
+				<pre>template&lt;typename Target, typename Source&gt;
+  Target lexical_cast(const Source&amp; arg);
+</pre>
+			</blockquote>Returns the result of streaming <code>arg</code> into a
+			standard library string-based stream and then out as a <code>Target</code> object.
+			Where <code>Target</code> is either <code>std::string</code>
+			or <code>std::wstring</code>, stream extraction takes the whole content
+			of the string, including spaces, rather than relying on the default
+			<code>operator&gt;&gt;</code> behavior.
+			If the conversion is unsuccessful, a <a href="#bad_lexical_cast">
+				<code>bad_lexical_cast</code></a> exception is thrown.
+		<p>
+			The requirements on the argument and result types are:
+			<ul type="square">
+				<li>
+					<code>Source</code> is <i>OutputStreamable</i>, meaning that an <code>operator&lt;&lt;</code>
+					is defined that takes a <code>std::ostream</code> or <code>std::wostream</code> object on the
+					left hand side and an instance of the argument type on the right.
+				</li>
+				<li>
+					<code>Target</code> is <i>InputStreamable</i>, meaning that an <code>operator&gt;&gt;</code>
+					is defined that takes a <code>std::istream</code> or <code>std::wistream</code> object on the left hand side 
+					and an instance of the result type on the right.
+				</li>
+				<li>
+					<code>Target</code> is <i>CopyConstructible</i> [20.1.3].
+				</li>
+				<li>
+					<code>Target</code> is <i>DefaultConstructible</i>, meaning that it is possible 
+					to <i>default-initialize</i> an object of that type [8.5, 20.1.4].
+				</li>
+			</ul>
+			The character type of the underlying stream is assumed to be <code>char</code> unless
+			either the <code>Source</code> or the <code>Target</code> requires wide-character
+			streaming, in which case the underlying stream uses <code>wchar_t</code>.
+			<code>Source</code> types that require wide-character streaming are <code>wchar_t</code>,
+			<code>wchar_t *</code>, and <code>std::wstring</code>. <code>Target</code> types that
+			require wide-character streaming are <code>wchar_t</code> and <code>std::wstring</code>.
+			<p>
+			Where a higher degree of control is required over conversions, <code>std::stringstream</code>
+			and <code>std::wstringstream</code> offer a more appropriate path. Where non-stream-based conversions are 
+			required, <code>lexical_cast</code>
+		is the wrong tool for the job and is not special-cased for such scenarios.
+		<p>
+			<hr>
+			<h2><a name="bad_lexical_cast"><code>bad_lexical_cast</code></a></h2>
+			<blockquote>
+				<pre>class bad_lexical_cast : public std::bad_cast
+{
+public:
+    ... // <i>same member function interface as</i> std::exception
+};
+</pre>
+			</blockquote>Exception used to indicate runtime <a href="#lexical_cast"><code>lexical_cast</code></a>
+		failure.
+			<hr>
+		
+<h2><a name="faq">Frequently Asked Questions</h2>
+    <p> Q: Why does <code>lexical_cast&lt;int8_t&gt;("127")</code> throw <code>bad_lexical_cast</code>?
+    <br> A: The type <code>int8_t</code> is a typedef to <code>char</code> or <code>signed char</code>.
+    Lexical conversion to these types is simply reading a byte from source but since the source has
+    more than one byte, the exception is thrown.
+    <p>Please use other integer types such as <code>int</code> or <code>short int</code>. If bounds checking
+    is important, you can also call <a href="../../libs/numeric/conversion/doc/html/boost_numericconversion/improved_numeric_cast__.html">numeric_cast</a>:
+
+<pre><a href="../../libs/numeric/conversion/doc/html/boost_numericconversion/improved_numeric_cast__.html">numeric_cast</a>&lt;int8_t&gt;(lexical_cast&lt;int&gt;("127"));</pre>
+
+    <p> Q: What does <code>lexical_cast&lt;std::string&gt;</code> of an <code>int8_t</code> or <code>uint8_t</code> not do what I expect?
+    <br> A: As above, note that <code>int8_t</code> and <code>uint8_t</code> are actually chars and are formatted as such.  To avoid this, cast to an integer type first:
+
+<pre>lexical_cast&lt;std::string&gt;(static_cast&lt;int&gt;(n));</pre>
+
+    <p> Q: The implementation always resets the <code>ios_base::skipws</code> flag of an underlying stream object. It breaks my <code>operator&gt;&gt;</code> that works only in presence of this flag. Can you remove code that resets the flag?
+    <br> A: May be in a future version. There is no requirement in <a href="#n1973">[N1973]</a> to reset the flag but remember that <a href="#n1973">[N1973]</a> is not yet accepted by the committee. By the way, it's a great opportunity to make your <code>operator&gt;&gt;</code> conform to the standard. Read a good C++ book, study <code>std::sentry</code> and <a href="../../libs/io/doc/ios_state.html">ios_state_saver</a>.
+</ul>
+<h2><a name="references">References</h2>
+<ul type="square">
+    <a name="n1973"></a><li> [N1973] Kevlin Henney, Beman Dawes, Lexical Conversion Library Proposal for TR2,
+      <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n1973.html">N1973</a>.
+      <a name="tuning"></a><li> [Tuning] Alexander Nasonov, Fine Tuning for lexical_cast,
+      <a href="http://www.accu.org/var/uploads/journals/overload74.pdf">Overload #74</a>,
+      August 2006.</li>
+</ul>
+<h2><a name="changes">Changes</a></h2>
+<h3>August, October 2006:</h3>
+<ul type="square">
+    <li>Better performance for many combinations of <code>Source</code> and <code>Target</code>
+    types. Refer to <a href="#tuning">[Tuning]</a> for more details.
+  </li>
+</ul>
+<h3>June 2005:</h3>
+<ul type="square">
+  <li>Call-by-const reference for the parameters. This requires partial specialization 
+    of class templates, so it doesn't work for MSVC 6, and it uses the original 
+    pass by value there.<br>
+  </li>
+  <li>The MSVC 6 support is deprecated, and will be removed in a future Boost 
+    version. </li>
+</ul>
+<h3>Earlier:</h3>
+	
+<ul type="square">
+  <li>The previous version of <code>lexical_cast</code> used the default stream 
+    precision for reading and writing floating-point numbers. For numerics that 
+    have a corresponding specialization of <code>std::numeric_limits</code>, the 
+    current version now chooses a precision to match. <br>
+  <li>The previous version of <code>lexical_cast</code> did not support conversion 
+    to or from any wide-character-based types. For compilers with full language 
+    and library support for wide characters, <code>lexical_cast</code> now supports 
+    conversions from <code>wchar_t</code>, <code>wchar_t *</code>, and <code>std::wstring</code> 
+    and to <code>wchar_t</code> and <code>std::wstring</code>. <br>
+  <li>The previous version of <code>lexical_cast</code> assumed that the conventional 
+    stream extractor operators were sufficient for reading values. However, string 
+    I/O is asymmetric, with the result that spaces play the role of I/O separators 
+    rather than string content. The current version fixes this error for <code>std::string</code> 
+    and, where supported, <code>std::wstring</code>: <code>lexical_cast&lt;std::string&gt;("Hello, 
+    World")</code> succeeds instead of failing with a <code>bad_lexical_cast</code> 
+    exception. <br>
+  <li>The previous version of <code>lexical_cast</code> allowed unsafe and meaningless 
+    conversions to pointers. The current version now throws a <code>bad_lexical_cast</code> 
+    for conversions to pointers: <code>lexical_cast&lt;char *&gt;("Goodbye, World")</code> 
+    now throws an exception instead of causing undefined behavior. 
+</ul>
+	<p>
+			<hr>
+			
+<div align="right"><small><i>&copy; Copyright Kevlin Henney, 2000&#150;2005</i></small></div>
+	</body>
+</html>

@@ -1,0 +1,25 @@
+# Copyright Alexander Nasonov 2007
+#
+# Distributed under the Boost Software License, Version 1.0. 
+# (See accompanying file LICENSE_1_0.txt or copy at 
+# http://www.boost.org/LICENSE_1_0.txt)
+
+# TODO: get rid of dummy .cpp files that only #include other .cpp file.
+
+import testing ;
+
+run native.cpp    ../../../libs/test/build//boost_test_exec_monitor :  :  : <define>BOOST_TYPEOF_NATIVE          :  ;
+run emulation.cpp ../../../libs/test/build//boost_test_exec_monitor :  :  : <define>BOOST_TYPEOF_EMULATION       :  ;
+
+run native_tpl.cpp    ../../../libs/test/build//boost_test_exec_monitor :  :  : <define>BOOST_TYPEOF_NATIVE     :  ;
+run emulation_tpl.cpp ../../../libs/test/build//boost_test_exec_monitor :  :  : <define>BOOST_TYPEOF_EMULATION  :  ;
+
+compile-fail native_const_error.cpp    : <define>BOOST_TYPEOF_NATIVE    ;
+compile-fail emulation_const_error.cpp : <define>BOOST_TYPEOF_EMULATION ;
+
+compile-fail native_cv_error.cpp    : <define>BOOST_TYPEOF_NATIVE    ;
+compile-fail emulation_cv_error.cpp : <define>BOOST_TYPEOF_EMULATION ;
+
+run native_tu_test.cpp    native_tu1.cpp native_tu2.cpp ../../../libs/test/build//boost_test_exec_monitor  :  :  : <define>BOOST_TYPEOF_NATIVE    :  ;
+run emulation_tu_test.cpp native_tu1.cpp native_tu2.cpp ../../../libs/test/build//boost_test_exec_monitor  :  :  : <define>BOOST_TYPEOF_EMULATION :  ;
+

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE library PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN" "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<library id="example" name="Example" dirname="example" xmlns:xi="http://www.w3.org/2001/XInclude">
+<title>Example</title>
+<xi:include href="autodoc.xml" />
+</library>

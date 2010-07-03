@@ -1,0 +1,26 @@
+HKCR
+{
+	IBMXML.XMLHttpRequest.2.8.0 = s 'Apache Xerces XML Http Request'
+	{
+		CLSID = s '{3A725053-15FB-4065-9171-BC02BCF3876C}'
+	}
+	IBMXML.XMLHttpRequest = s 'Apache Xerces XML Http Request'
+	{
+		CLSID = s '{3A725053-15FB-4065-9171-BC02BCF3876C}'
+		CurVer = s 'Xerces.XMLHttpRequest.2.8.0'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {3A725053-15FB-4065-9171-BC02BCF3876C} = s 'Apache Xerces XML Http Request'
+		{
+			ProgID = s 'Xerces.XMLHttpRequest.2.8.0'
+			VersionIndependentProgID = s 'Xerces.XMLHttpRequest'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%XMLMODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{C4775B62-ECD6-11d4-94B4-00A0CC57CBCB}'
+		}
+	}
+}

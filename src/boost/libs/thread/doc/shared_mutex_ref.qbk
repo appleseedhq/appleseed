@@ -1,0 +1,44 @@
+[/
+  (C) Copyright 2007-8 Anthony Williams.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt).
+]
+
+[section:shared_mutex Class `shared_mutex`]
+
+    #include <boost/thread/shared_mutex.hpp>
+
+    class shared_mutex
+    {
+    public:
+        shared_mutex();
+        ~shared_mutex();
+
+        void lock_shared();
+        bool try_lock_shared();
+        bool timed_lock_shared(system_time const& timeout);
+        void unlock_shared();
+
+        void lock();
+        bool try_lock();
+        bool timed_lock(system_time const& timeout);
+        void unlock();
+
+        void lock_upgrade();
+        void unlock_upgrade();
+
+        void unlock_upgrade_and_lock();
+        void unlock_and_lock_upgrade();
+        void unlock_and_lock_shared();
+        void unlock_upgrade_and_lock_shared();
+    };
+
+The class `boost::shared_mutex` provides an implementation of a multiple-reader / single-writer mutex. It implements the
+__upgrade_lockable_concept__.
+
+Multiple concurrent calls to __lock_ref__, __try_lock_ref__, __timed_lock_ref__, __lock_shared_ref__, __try_lock_shared_ref__ and
+__timed_lock_shared_ref__ shall be permitted.
+
+
+[endsect]

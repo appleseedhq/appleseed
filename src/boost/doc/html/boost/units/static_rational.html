@@ -1,0 +1,94 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Class template static_rational</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../boost_units/Reference.html#header.boost.units.static_rational_hpp" title="Header &lt;boost/units/static_rational.hpp&gt;">
+<link rel="prev" href="static_abs.html" title="Struct template static_abs">
+<link rel="next" href="unit.html" title="Class template unit">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="static_abs.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_units/Reference.html#header.boost.units.static_rational_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="unit.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.units.static_rational"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Class template static_rational</span></h2>
+<p>boost::units::static_rational &#8212; Compile time rational number. </p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../boost_units/Reference.html#header.boost.units.static_rational_hpp" title="Header &lt;boost/units/static_rational.hpp&gt;">boost/units/static_rational.hpp</a>&gt;
+
+</em></span><span class="bold"><strong>template</strong></span>&lt;integer_type N, integer_type D = 1&gt; 
+<span class="bold"><strong>class</strong></span> <a class="link" href="static_rational.html" title="Class template static_rational">static_rational</a> {
+<span class="bold"><strong>public</strong></span>:
+  <span class="emphasis"><em>// types</em></span>
+  <span class="bold"><strong>typedef</strong></span> <span class="emphasis"><em>unspecified</em></span>                               <a name="boost.units.static_rational.tag"></a>tag; 
+  <span class="bold"><strong>typedef</strong></span> <a class="link" href="static_rational.html" title="Class template static_rational">static_rational</a>&lt; Numerator, Denominator &gt; <a name="boost.units.static_rational.type"></a>type;  <span class="emphasis"><em>// static_rational&lt;N,D&gt; reduced by GCD </em></span>
+
+  <span class="emphasis"><em>// <a class="link" href="static_rational.html#boost.units.static_rationalconstruct-copy-destruct">construct/copy/destruct</a></em></span>
+  <a class="link" href="static_rational.html#id2858479-bb">static_rational</a>();
+
+  <span class="emphasis"><em>// <a class="link" href="static_rational.html#id2858456-bb">public static functions</a></em></span>
+  <span class="type"><span class="bold"><strong>static</strong></span> integer_type</span> <a class="link" href="static_rational.html#id2858459-bb">numerator</a>() ;
+  <span class="type"><span class="bold"><strong>static</strong></span> integer_type</span> <a class="link" href="static_rational.html#id2858467-bb">denominator</a>() ;
+  <span class="bold"><strong>static</strong></span> <span class="type"><span class="bold"><strong>const</strong></span> integer_type</span> Numerator;
+  <span class="bold"><strong>static</strong></span> <span class="type"><span class="bold"><strong>const</strong></span> integer_type</span> Denominator;
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id3835575"></a><h2>Description</h2>
+<p>This is an implementation of a compile time rational number, where <code class="computeroutput">static_rational&lt;N,D&gt;</code> represents a rational number with numerator <code class="computeroutput">N</code> and denominator <code class="computeroutput">D</code>. Because of the potential for ambiguity arising from multiple equivalent values of <code class="computeroutput">static_rational</code> (e.g. <code class="computeroutput">static_rational&lt;6,2&gt;==static_rational&lt;3&gt;</code>), static rationals should always be accessed through <code class="computeroutput">static_rational&lt;N,D&gt;::type</code>. Template specialization prevents instantiation of zero denominators (i.e. <code class="computeroutput">static_rational&lt;N,0&gt;</code>). The following compile-time arithmetic operators are provided for static_rational variables only (no operators are defined between long and static_rational):</p>
+<div class="itemizedlist"><ul type="disc">
+<li><p><code class="computeroutput">mpl::negate</code> </p></li>
+<li><p><code class="computeroutput">mpl::plus</code> </p></li>
+<li><p><code class="computeroutput">mpl::minus</code> </p></li>
+<li><p><code class="computeroutput">mpl::times</code> </p></li>
+<li><p><code class="computeroutput">mpl::divides</code> </p></li>
+</ul></div>
+<p>
+</p>
+<p>Neither <code class="computeroutput">static_power</code> nor <code class="computeroutput">static_root</code> are defined for <code class="computeroutput">static_rational</code>. This is because template types may not be floating point values, while powers and roots of rational numbers can produce floating point values. </p>
+<div class="refsect2" lang="en">
+<a name="id3835697"></a><h3>
+<a name="boost.units.static_rationalconstruct-copy-destruct"></a><code class="computeroutput">static_rational</code> 
+        public
+       construct/copy/destruct</h3>
+<div class="orderedlist"><ol type="1"><li><pre class="literallayout"><a name="id2858479-bb"></a>static_rational();</pre></li></ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id3835730"></a><h3>
+<a name="id2858456-bb"></a><code class="computeroutput">static_rational</code> public static functions</h3>
+<div class="orderedlist"><ol type="1">
+<li><pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> integer_type</span> <a name="id2858459-bb"></a>numerator() ;</pre></li>
+<li><pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> integer_type</span> <a name="id2858467-bb"></a>denominator() ;</pre></li>
+</ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2003 -2008 Matthias Christian Schabel, 2007-2008 Steven
+      Watanabe<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="static_abs.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_units/Reference.html#header.boost.units.static_rational_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="unit.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

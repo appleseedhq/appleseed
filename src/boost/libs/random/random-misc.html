@@ -1,0 +1,99 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+<head>
+  <meta http-equiv="Content-Language" content="en-us">
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+
+  <title>Boost Random Number Generator Library (Miscellaneous)</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+  <h1>Random Number Generator Library --- Miscellaneous Decorators</h1>
+
+  <ul>
+    <li><a href="#random_number_generator">Class template
+    <code>random_number_generator</code></a></li>
+  </ul>
+
+  <h2>Introduction</h2>
+
+  <p>These decorator class templates allow adaptation of the random number
+  generators and distribution functions to concepts found in the C++ Standard
+  Library, in particular the RandomNumberGenerator and the InputIterator
+  concepts. The latter adaptation is useful, because the the basic random
+  number generators do not implement the InputIterator requirements per se,
+  in contrast to the distribution functions.</p>
+
+  <h2><a name="synopsis" id="synopsis">Synopsis</a> of miscellaneous
+  decorators in header <code>&lt;boost/random.hpp&gt;</code></h2>
+  <pre>
+namespace boost {
+  template&lt;class UniformRandomNumberGenerator, class IntType = long&gt;
+  class random_number_generator;
+} // namespace boost
+</pre>
+
+  <h2><a name="random_number_generator" id="random_number_generator">Class
+  template <code>random_number_generator</code></a></h2>
+
+  <h3>Synopsis</h3>
+  <pre>
+template&lt;class UniformRandomNumberGenerator, class IntType = long&gt;
+class random_number_generator
+{
+public:
+  typedef UniformRandomNumberGenerator base_type;
+  typedef IntType argument_type;
+  typedef IntType result_type;
+  random_number_generator(base_type &amp; rng);
+  result_type operator()(argument_type n);
+};
+</pre>
+
+  <h3>Description</h3>
+
+  <p>Instantiations of class template <code>random_number_generator</code>
+  model a RandomNumberGenerator (std:25.2.11 [lib.alg.random.shuffle]). On
+  each invocation, it returns a uniformly distributed integer in the range
+  [0..<code>n</code>).</p>
+
+  <p>The template parameter <code>IntType</code> shall denote some
+  integer-like value type.</p>
+
+  <p><em>Note:</em> I consider it unfortunate that the C++ Standard uses the
+  name RandomNumberGenerator for something rather specific.</p>
+
+  <h3>Members</h3>
+  <pre>
+random_number_generator(base_type &amp; rng)
+</pre>
+
+  <p><strong>Effects:</strong> Constructs a
+  <code>random_number_generator</code> functor with the given uniform random
+  number generator as the underlying source of random numbers.</p>
+  <pre>
+result_type operator()(argument_type n)
+</pre>
+
+  <p><strong>Returns:</strong> The value of
+  <code>uniform_int&lt;base_type&gt;(rng, 0, n-1)()</code>.</p>
+  <hr>
+
+  <p><a href="http://validator.w3.org/check?uri=referer"><img border="0" src=
+  "http://www.w3.org/Icons/valid-html401" alt="Valid HTML 4.01 Transitional"
+  height="31" width="88"></a></p>
+
+  <p>Revised 
+  <!--webbot bot="Timestamp" s-type="EDITED" s-format="%d %B, %Y" startspan -->05
+  December, 2006<!--webbot bot="Timestamp" endspan i-checksum="38516" --></p>
+
+  <p><i>Copyright &copy; 2000-2005 <a href=
+  "http://www.boost.org/people/jens_maurer.htm">Jens Maurer</a></i></p>
+
+  <p><i>Distributed under the Boost Software License, Version 1.0. (See
+  accompanying file <a href="../../LICENSE_1_0.txt">LICENSE_1_0.txt</a> or
+  copy at <a href=
+  "http://www.boost.org/LICENSE_1_0.txt">http://www.boost.org/LICENSE_1_0.txt</a>)</i></p>
+</body>
+</html>

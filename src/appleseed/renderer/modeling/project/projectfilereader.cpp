@@ -1,0 +1,3045 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2010 Francois Beaune
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Interface header.
+#include "projectfilereader.h"
+
+// appleseed.renderer headers.
+#include "renderer/global/utility.h"
+#include "renderer/modeling/bsdf/bsdffactorydispatcher.h"
+#include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/camera/camerafactorydispatcher.h"
+#include "renderer/modeling/camera/camera.h"
+#include "renderer/modeling/color/colorentity.h"
+#include "renderer/modeling/edf/edf.h"
+#include "renderer/modeling/edf/edffactorydispatcher.h"
+#include "renderer/modeling/environment/environment.h"
+#include "renderer/modeling/environmentedf/environmentedf.h"
+#include "renderer/modeling/environmentedf/environmentedffactorydispatcher.h"
+#include "renderer/modeling/environmentshader/environmentshader.h"
+#include "renderer/modeling/environmentshader/environmentshaderfactorydispatcher.h"
+#include "renderer/modeling/frame/frame.h"
+#include "renderer/modeling/geometry/meshobject.h"
+#include "renderer/modeling/geometry/meshobjectreader.h"
+#include "renderer/modeling/geometry/object.h"
+#include "renderer/modeling/input/colorsource.h"
+#include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/input/scalarsource.h"
+#include "renderer/modeling/input/source.h"
+#include "renderer/modeling/input/texturesource.h"
+#include "renderer/modeling/light/light.h"
+#include "renderer/modeling/material/material.h"
+#include "renderer/modeling/project/configuration.h"
+#include "renderer/modeling/project/configurationcontainer.h"
+#include "renderer/modeling/project/inputbinder.h"
+#include "renderer/modeling/project/project.h"
+#include "renderer/modeling/project-builtin/cornellboxproject.h"
+#include "renderer/modeling/project-builtin/defaultproject.h"
+#include "renderer/modeling/scene/assembly.h"
+#include "renderer/modeling/scene/assemblyinstance.h"
+#include "renderer/modeling/scene/containers.h"
+#include "renderer/modeling/scene/objectinstance.h"
+#include "renderer/modeling/scene/scene.h"
+#include "renderer/modeling/scene/textureinstance.h"
+#include "renderer/modeling/surfaceshader/surfaceshader.h"
+#include "renderer/modeling/surfaceshader/surfaceshaderfactorydispatcher.h"
+#include "renderer/modeling/texture/texture.h"
+#include "renderer/modeling/texture/texturefactorydispatcher.h"
+
+// appleseed.foundation headers.
+#include "foundation/math/matrix.h"
+#include "foundation/math/scalar.h"
+#include "foundation/math/transform.h"
+#include "foundation/utility/foreach.h"
+#include "foundation/utility/memory.h"
+#include "foundation/utility/searchpaths.h"
+#include "foundation/utility/string.h"
+#include "foundation/utility/xercesc.h"
+
+// Xerces-C++ headers.
+#include "xercesc/sax2/Attributes.hpp"
+#include "xercesc/sax2/SAX2XMLReader.hpp"
+#include "xercesc/sax2/XMLReaderFactory.hpp"
+#include "xercesc/util/PlatformUtils.hpp"
+#include "xercesc/util/XMLException.hpp"
+
+// boost headers.
+#include "boost/filesystem/path.hpp"
+
+// Standard headers.
+#include <cstring>
+#include <exception>
+#include <map>
+#include <sstream>
+#include <utility>
+#include <vector>
+
+using namespace foundation;
+using namespace std;
+using namespace xercesc;
+
+namespace renderer
+{
+
+//
+// ProjectFileReader class implementation.
+//
+
+namespace
+{
+
+    //
+    // Like foundation::ErrorHandler, but additionally keeps track
+    // of the number of warnings and errors that were emitted.
+    //
+
+    class ErrorLoggerAndCounter
+      : public ErrorLogger
+    {
+      public:
+        // Constructor.
+        ErrorLoggerAndCounter(
+            const string&   input_filename,
+            EventCounters&  event_counters)
+          : ErrorLogger(global_logger(), input_filename)
+          , m_event_counters(event_counters)
+        {
+        }
+
+        // Reset the error handler object on its reuse.
+        virtual void resetErrors()
+        {
+            m_event_counters.clear();
+        }
+
+        // Receive notification of a warning.
+        virtual void warning(const SAXParseException& e)
+        {
+            ErrorLogger::warning(e);
+            m_event_counters.signal_warning();
+        }
+
+        // Receive notification of a recoverable error.
+        virtual void error(const SAXParseException& e)
+        {
+            ErrorLogger::error(e);
+            m_event_counters.signal_error();
+            throw e;    // terminate parsing
+        }
+
+        // Receive notification of a non-recoverable error.
+        virtual void fatalError(const SAXParseException& e)
+        {
+            ErrorLogger::fatalError(e);
+            m_event_counters.signal_error();
+            throw e;    // terminate parsing
+        }
+
+      private:
+        EventCounters&  m_event_counters;
+    };
+
+
+    //
+    // A set of objects that is passed to all element handlers.
+    // todo: rename to ParseContext.
+    //
+
+    class ElementInfo
+    {
+      public:
+        // Constructor.
+        ElementInfo(
+            EventCounters&  event_counters,
+            const string&   project_filename)
+          : m_event_counters(event_counters)
+        {
+            // Extract the root path of the project.
+            const boost::filesystem::path project_root_path =
+                boost::filesystem::path(project_filename).branch_path();
+
+            // Add the root path of the project to the search path collection.
+            m_search_paths.push_back(project_root_path.directory_string());
+        }
+
+        // Return the event counters.
+        EventCounters& event_counters()
+        {
+            return m_event_counters;
+        }
+
+        // Return the search paths.
+        const SearchPaths& search_paths() const
+        {
+            return m_search_paths;
+        }
+
+      private:
+        EventCounters&      m_event_counters;
+        SearchPaths         m_search_paths;
+    };
+
+
+    //
+    // Utility functions.
+    //
+
+    double get_scalar(
+        const string&       text,
+        ElementInfo&        info)
+    {
+        try
+        {
+            return from_string<double>(text);
+        }
+        catch (const ExceptionStringConversionError&)
+        {
+            RENDERER_LOG_ERROR("expected scalar value, got \"%s\"", text.c_str());
+            info.event_counters().signal_error();
+            return 0.0;
+        }
+    }
+
+    Vector3d get_vector3(
+        const string&       text,
+        ElementInfo&        info)
+    {
+        Vector3d vec;
+        bool succeeded = false;
+
+        try
+        {
+            const size_t count = tokenize(text, Blanks, &vec[0], 3);
+            if (count == 1)
+            {
+                vec[1] = vec[0];
+                vec[2] = vec[0];
+                succeeded = true;
+            }
+            else if (count == 3)
+            {
+                succeeded = true;
+            }
+        }
+        catch (const ExceptionStringConversionError&)
+        {
+        }
+
+        if (!succeeded)
+        {
+            RENDERER_LOG_ERROR("invalid vector format");
+            info.event_counters().signal_error();
+            vec = Vector3d(0.0);
+        }
+
+        return vec;
+    }
+
+    template <typename Vec>
+    void get_vector(
+        const string&       text,
+        Vec&                values,
+        ElementInfo&        info)
+    {
+        try
+        {
+            tokenize(text, Blanks, values);
+        }
+        catch (const ExceptionStringConversionError&)
+        {
+            RENDERER_LOG_ERROR("invalid vector format");
+            info.event_counters().signal_error();
+            values.clear();
+        }
+    }
+
+    template <typename Entity, typename EntityFactoryDispatcher>
+    auto_release_ptr<Entity> create_entity(
+        const EntityFactoryDispatcher&  entity_factory_dispatcher,
+        const string&                   type,
+        const string&                   model,
+        const string&                   name,
+        const ParamArray&               params,
+        ElementInfo&                    info)
+    {
+        try
+        {
+            const typename EntityFactoryDispatcher::CreateFunctionPtr create =
+                entity_factory_dispatcher.lookup(model.c_str());
+
+            if (create)
+            {
+                return create(name.c_str(), params);
+            }
+            else
+            {
+                RENDERER_LOG_ERROR(
+                    "while defining %s \"%s\": invalid model \"%s\"",
+                    type.c_str(),
+                    name.c_str(),
+                    model.c_str());
+                info.event_counters().signal_error();
+            }
+        }
+        catch (const ExceptionDictionaryItemNotFound& e)
+        {
+            RENDERER_LOG_ERROR(
+                "while defining %s \"%s\": required parameter \"%s\" missing",
+                type.c_str(),
+                name.c_str(),
+                e.string());
+            info.event_counters().signal_error();
+        }
+        catch (const ExceptionUnknownEntity& e)
+        {
+            RENDERER_LOG_ERROR(
+                "while defining %s \"%s\": unknown entity \"%s\"",
+                type.c_str(),
+                name.c_str(),
+                e.string());
+            info.event_counters().signal_error();
+        }
+
+        return auto_release_ptr<Entity>(0);
+    }
+
+
+    //
+    // Numeric representation of the XML elements.
+    //
+
+    enum ProjectElementID
+    {
+        ElementAssembly,
+        ElementAssemblyInstance,
+        ElementAssignMaterial,
+        ElementBSDF,
+        ElementCamera,
+        ElementColor,
+        ElementConfiguration,
+        ElementConfigurations,
+        ElementEDF,
+        ElementEnvironment,
+        ElementEnvironmentEDF,
+        ElementEnvironmentShader,
+        ElementFrame,
+        ElementLight,
+        ElementLookAt,
+        ElementMaterial,
+        ElementMatrix,
+        ElementObject,
+        ElementObjectInstance,
+        ElementOutput,
+        ElementParameter,
+        ElementParameters,
+        ElementProject,
+        ElementRotation,
+        ElementScaling,
+        ElementScene,
+        ElementSurfaceShader,
+        ElementTexture,
+        ElementTextureInstance,
+        ElementTransform,
+        ElementTranslation,
+        ElementValues
+    };
+
+    typedef DefaultElementHandler<ProjectElementID> DefaultElementHandler;
+
+
+    //
+    // <parameter> element handler.
+    //
+
+    class ParameterElementHandler
+      : public DefaultElementHandler
+    {
+      public:
+        // Constructor.
+        explicit ParameterElementHandler(ElementInfo& info)
+          : m_info(info)
+        {
+        }
+
+        // Receive notification of the start of an element.
+        virtual void start_element(const Attributes& attrs)
+        {
+            m_name = DefaultElementHandler::get_value(attrs, "name");
+            m_value = DefaultElementHandler::get_value(attrs, "value");
+        }
+
+        // Retrieve the name of the parameter.
+        const string& get_name() const
+        {
+            return m_name;
+        }
+
+        // Retrieve the value of the parameter.
+        const string& get_value() const
+        {
+            return m_value;
+        }
+
+      private:
+        ElementInfo&    m_info;
+        string          m_name;
+        string          m_value;
+    };
+
+
+    //
+    // Handle an element containing a (hierarchical) set of parameters.
+    //
+
+    class ParametrizedElementHandler
+      : public DefaultElementHandler
+    {
+      public:
+        typedef IElementHandler<ProjectElementID> ElementHandlerType;
+
+        // Receive notification of the start of an element.
+        virtual void start_element(const Attributes& attrs);
+
+        // Receive notification of the end of a child element.
+        virtual void end_child_element(
+            const ProjectElementID      element,
+            ElementHandlerType*         handler);
+
+      protected:
+        ParamArray  m_params;
+    };
+
+
+    //
+    // <parameters> element handler.
+    //
+
+    class ParametersElementHandler
+      : public ParametrizedElementHandler
+    {
+      public:
+        // Constructor.
+        explicit ParametersElementHandler(ElementInfo& info)
+          : m_info(info)
+        {
+        }
+
+        // Receive notification of the start of an element.
+        virtual void start_element(const Attributes& attrs)
+        {
+            ParametrizedElementHandler::start_element(attrs);
+            m_name = get_value(attrs, "name");
+            m_params.clear();
+        }
+
+        // Retrieve the name of the parameter set.
+        const string& get_name() const
+        {
+            return m_name;
+        }
+
+        // Retrieve the parameter set.
+        const ParamArray& get_parameters() const
+        {
+            return m_params;
+        }
+
+      private:
+        ElementInfo&    m_info;
+        string          m_name;
+    };
+
+
+    //
+    // ParametrizedElementHandler class implementation.
+    //
+
+    // Receive notification of the start of an element.
+    void ParametrizedElementHandler::start_element(const Attributes& attrs)
+    {
+        m_params.clear();
+    }
+
+    // Receive notification of the end of a child element.
+    void ParametrizedElementHandler::end_child_element(
+        const ProjectElementID      element,
+        ElementHandlerType*         handler)
+    {
+        switch (element)
+        {
+          case ElementParameter:
+            {
+                ParameterElementHandler* param_handler =
+                    static_cast<ParameterElementHandler*>(handler);
+                m_params.insert_path(
+                    param_handler->get_name(),
+                    param_handler->get_value());
+            }
+            break;
+
+          case ElementParameters:
+            {
+                ParametersElementHandler* params_handler =
+                    static_cast<ParametersElementHandler*>(handler);
+                m_params.dictionaries().insert(
+                    params_handler->get_name(),
+                    params_handler->get_parameters());
+            }
+            break;
+
+          assert_otherwise;
+        }
+    }
+
+
+    //
+    // Handle an entity element.
+    //
+
+    template <typename Entity, typename EntityFactoryDispatcher>
+    class EntityElementHandler
+      : public ParametrizedElementHandler
+    {
+      public:
+        // Constructor.
+        explicit EntityElementHandler(const string& entity_type, ElementInfo& info)
+          : m_info(info)
+          , m_entity_type(entity_type)
+        {
+        }
+
+        // Receive notification of the start of an element.
+        virtual void start_element(const Attributes& attrs)
+        {
+            ParametrizedElementHandler::start_element(attrs);
+            m_entity.reset();
+            m_name = get_value(attrs, "name");
+            m_model = get_value(attrs, "model");
+        }
+
+        // Receive notification of the end of an element.
+        virtual void end_element()
+        {
+            m_entity =
+                create_entity<Entity>(
+                    m_entity_factory_dispatcher,
+                    m_entity_type,
+                    m_model,
+                    m_name,
+                    m_params,
+                    m_info);
+        }
+
+        // Retrieve the entity.
+        auto_release_ptr<Entity> get_entity()
+        {
+            return m_entity;
+        }
+
+      private:
+        ElementInfo&                    m_info;
+        const EntityFactoryDispatcher   m_entity_factory_dispatcher;
+        const string                    m_entity_type;
+        auto_release_ptr<Entity>        m_entity;
+        string                          m_name;
+        string                          m_model;
+    };
+
+
+    //
+    // <look_at> element handler.
+    //
+
+    class LookAtElementHandler
+      : public DefaultElementHandler
+    {
+      public:
+        // Constructor.
+        explicit LookAtElementHandler(ElementInfo& info)
+          : m_info(info)
+        {
+        }
+
+        // Receive notification of the start of an element.
+        virtual void start_element(const Attributes& attrs)
+        {
+            m_matrix = Matrix4d::identity();
+
+            const Vector3d origin = get_vector3(get_value(attrs, "origin"), m_info);
+            const Vector3d target = get_vector3(get_value(attrs, "target"), m_info);
+            const Vector3d up = get_vector3(get_value(attrs, "up"), m_info);
+
+            if (norm(origin - target) > 0.0 &&
+                norm(up) > 0.0 &&
+                norm(cross(up, origin - target)) > 0.0)
+            {
+                m_matrix = Matrix4d::lookat(origin, target, normalize(up));
+            }
+            else
+            {
+                RENDERER_LOG_ERROR(
+                    "while defining <look_at> element: the vectors\n"
+                    "  origin  (%f, %f, %f)\n"
+                    "  target  (%f, %f, %f)\n"
+                    "  up      (%f, %f, %f)\n"
+                    "form a singular transformation matrix",
+                    origin[0], origin[1], origin[2],
+                    target[0], target[1], target[2],
+                    up[0], up[1], up[2]);
+                m_info.event_counters().signal_error();
+            }
+        }
+
+        // Retrieve the lookat matrix.
+        const Matrix4d& get_matrix() const
+        {
+            return m_matrix;
+        }
+
+      private:
+        ElementInfo&    m_info;
+        Matrix4d        m_matrix;
+    };
+
+
+    //
+    // <matrix> element handler.
+    //
+
+    class MatrixElementHandler
+      : public DefaultElementHandler
+    {
+      public:
+        // Constructor.
+        explicit MatrixElementHandler(ElementInfo& info)
+          : m_info(info)
+        {
+        }
+
+        // Receive notification of the start of an element.
+        virtual void start_element(const Attributes& attrs)
+        {
+            m_matrix = Matrix4d::identity();
+            clear_keep_memory(m_values);
+        }
+
+        // Receive notification of the end of an element.
+        virtual void end_element()
+        {
+            if (m_values.size() == 16)
+            {
+                for (size_t i = 0; i < 16; ++i)
+                    m_matrix[i] = m_values[i];
+            }
+            else
+            {
+                RENDERER_LOG_ERROR(
+                    "while defining <matrix> element: expected 16 scalar coefficients, got " FMT_SIZE_T,
+                    m_values.size());
+                m_info.event_counters().signal_error();
+            }
+        }
+
+        // Receive notification of character data inside an element.
+        virtual void characters(
+            const XMLCh* const  chars,
+            const unsigned int  length)
+        {
+            get_vector(transcode(chars), m_values, m_info);
+        }
+
+        // Retrieve the transformation matrix.
+        const Matrix4d& get_matrix() const
+        {
+            return m_matrix;
+        }
+
+      private:
+        ElementInfo&    m_info;
+        Matrix4d        m_matrix;
+        vector<double>  m_values;
+    };
+
+
+    //
+    // <rotation> element handler.
+    //
+
+    class RotationElementHandler
+      : public DefaultElementHandler
+    {
+      public:
+        // Constructor.
+        explicit RotationElementHandler(ElementInfo& info)
+          : m_info(info)
+        {
+        }
+
+        // Receive notification of the start of an element.
+        virtual void start_element(const Attributes& attrs)
+        {
+            m_matrix = Matrix4d::identity();
+
+            const Vector3d axis = get_vector3(get_value(attrs, "axis"), m_info);
+            const double angle = get_scalar(get_value(attrs, "angle"), m_info);
+
+            if (norm(axis) > 0.0)
+            {
+                m_matrix = Matrix4d::rotation(normalize(axis), deg_to_rad(angle));
+            }
+            else
+            {
+                RENDERER_LOG_ERROR("while defining <rotation> element: the rotation axis cannot be null");
+                m_info.event_counters().signal_error();
+            }
+        }
+
+        // Retrieve the rotation matrix.
+        const Matrix4d& get_matrix() const
+        {
+            return m_matrix;
+        }
+
+      private:
+        ElementInfo&    m_info;
+        Matrix4d        m_matrix;
+    };
+
+
+    //
+    // <scaling> element handler.
+    //
+
+    class ScalingElementHandler
+      : public DefaultElementHandler
+    {
+      public:
+        // Constructor.
+        explicit ScalingElementHandler(ElementInfo& info)
+          : m_info(info)
+        {
+        }
+
+        // Receive notification of the start of an element.
+        virtual void start_element(const Attributes& attrs)
+        {
+            const Vector3d value = get_vector3(get_value(attrs, "value"), m_info);
+            m_matrix = Matrix4d::scaling(value);
+        }
+
+        // Retrieve the scaling matrix.
+        const Matrix4d& get_matrix() const
+        {
+            return m_matrix;
+        }
+
+      private:
+        ElementInfo&    m_info;
+        Matrix4d        m_matrix;
+    };
+
+
+    //
+    // <translation> element handler.
+    //
+
+    class TranslationElementHandler
+      : public DefaultElementHandler
+    {
+      public:
+        // Constructor.
+        explicit TranslationElementHandler(ElementInfo& info)
+          : m_info(info)
+        {
+        }
+
+        // Receive notification of the start of an element.
+        virtual void start_element(const Attributes& attrs)
+        {
+            const Vector3d value = get_vector3(get_value(attrs, "value"), m_info);
+            m_matrix = Matrix4d::translation(value);
+        }
+
+        // Retrieve the translation matrix.
+        const Matrix4d& get_matrix() const
+        {
+            return m_matrix;
+        }
+
+      private:
+        ElementInfo&    m_info;
+        Matrix4d        m_matrix;
+    };
+
+
+    //
+    // <transform> element handler.
+    //
+
+    class TransformElementHandler
+      : public DefaultElementHandler
+    {
+      public:
+        // Constructor.
+        explicit TransformElementHandler(ElementInfo& info)
+          : m_info(info)
+        {
+        }
+
+        // Receive notification of the start of an element.
+        virtual void start_element(const Attributes& attrs)
+        {
+            m_matrix = Matrix4d::identity();
+        }
+
+        // Receive notification of the end of an element.
+        virtual void end_element()
+        {
+            try
+            {
+                m_transform = Transformd(m_matrix);
+            }
+            catch (const ExceptionSingularMatrix&)
+            {
+                RENDERER_LOG_ERROR("while defining <transform> element: the transformation matrix is singular");
+                m_info.event_counters().signal_error();
+                m_transform = Transformd(Matrix4d::identity());
+            }
+        }
+
+        // Receive notification of the end of a child element.
+        virtual void end_child_element(
+            const ProjectElementID      element,
+            ElementHandlerType*         handler)
+        {
+            switch (element)
+            {
+              case ElementLookAt:
+                {
+                    LookAtElementHandler* lookat_handler =
+                        static_cast<LookAtElementHandler*>(handler);
+                    m_matrix = lookat_handler->get_matrix() * m_matrix;
+                }
+                break;
+
+              case ElementMatrix:
+                {
+                    MatrixElementHandler* matrix_handler =
+                        static_cast<MatrixElementHandler*>(handler);
+                    m_matrix = matrix_handler->get_matrix() * m_matrix;
+                }
+                break;
+
+              case ElementRotation:
+                {
+                    RotationElementHandler* rotation_handler =
+                        static_cast<RotationElementHandler*>(handler);
+                    m_matrix = rotation_handler->get_matrix() * m_matrix;
+                }
+                break;
+
+              case ElementScaling:
+                {
+                    ScalingElementHandler* scaling_handler =
+                        static_cast<ScalingElementHandler*>(handler);
+                    m_matrix = scaling_handler->get_matrix() * m_matrix;
+                }
+                break;
+
+              case ElementTranslation:
+                {
+                    TranslationElementHandler* translation_handler =
+                        static_cast<TranslationElementHandler*>(handler);
+                    m_matrix = translation_handler->get_matrix() * m_matrix;
+                }
+                break;
+
+              assert_otherwise;
+            }
+        }
+
+        // Retrieve the transformation.
+        const Transformd& get_transform() const
+        {
+            return m_transform;
+        }
+
+      private:
+        ElementInfo&    m_info;
+        Matrix4d        m_matrix;
+        Transformd      m_transform;
+    };
+
+
+    //
+    // <values> element handler.
+    //
+
+    class ValuesElementHandler
+      : public DefaultElementHandler
+    {
+      public:
+        // Constructor.
+        explicit ValuesElementHandler(ElementInfo& info)
+          : m_info(info)
+        {
+        }
+
+        // Receive notification of the start of an element.
+        virtual void start_element(const Attributes& attrs)
+        {
+            m_values.clear();
+        }
+
+        // Receive notification of character data inside an element.
+        virtual void characters(
+            const XMLCh* const  chars,
+            const unsigned int  length)
+        {
+            get_vector(transcode(chars), m_values, m_info);
+        }
+
+        // Retrieve the values.
+        const ColorValueArray& get_values() const
+        {
+            return m_values;
+        }
+
+      private:
+        ElementInfo&    m_info;
+        ColorValueArray m_values;
+    };
+
+
+    //
+    // <color> element handler.
+    //
+
+    class ColorElementHandler
+      : public ParametrizedElementHandler
+    {
+      public:
+        // Constructor.
+        explicit ColorElementHandler(ElementInfo& info)
+          : m_info(info)
+        {
+        }
+
+        // Receive notification of the start of an element.
+        virtual void start_element(const Attributes& attrs)
+        {
+            ParametrizedElementHandler::start_element(attrs);
+            m_color_entity.reset();
+            m_name = get_value(attrs, "name");
+        }
+
+        // Receive notification of the end of a child element.
+        virtual void end_child_element(
+            const ProjectElementID      element,
+            ElementHandlerType*         handler)
+        {
+            switch (element)
+            {
+              case ElementValues:
+                {
+                    ValuesElementHandler* values_handler =
+                        static_cast<ValuesElementHandler*>(handler);
+                    try
+                    {
+                        m_color_entity =
+                            ColorEntityFactory::create(
+                                m_name.c_str(),
+                                m_params,
+                                values_handler->get_values());
+                    }
+                    catch (const ExceptionDictionaryItemNotFound& e)
+                    {
+                        RENDERER_LOG_ERROR(
+                            "while defining color \"%s\": required parameter \"%s\" missing",
+                            m_name.c_str(),
+                            e.string());
+                        m_info.event_counters().signal_error();
+                    }
+                }
+                break;
+
+              default:
+                ParametrizedElementHandler::end_child_element(element, handler);
+                break;
+            }
+        }
+
+        // Retrieve the color entity.
+        auto_release_ptr<ColorEntity> get_color_entity()
+        {
+            return m_color_entity;
+        }
+
+      private:
+        ElementInfo&                    m_info;
+        auto_release_ptr<ColorEntity>   m_color_entity;
+        string                          m_name;
+    };
+
+
+    //
+    // <texture> element handler.
+    //
+
+    class TextureElementHandler
+      : public ParametrizedElementHandler
+    {
+      public:
+        // Constructor.
+        explicit TextureElementHandler(ElementInfo& info)
+          : m_info(info)
+        {
+        }
+
+        // Receive notification of the start of an element.
+        virtual void start_element(const Attributes& attrs)
+        {
+            ParametrizedElementHandler::start_element(attrs);
+            m_texture.reset();
+            m_name = get_value(attrs, "name");
+            m_model = get_value(attrs, "model");
+        }
+
+        // Receive notification of the end of an element.
+        virtual void end_element()
+        {
+            try
+            {
+                const TextureFactoryDispatcher::CreateFunctionPtr create =
+                    m_texture_factory_dispatcher.lookup(m_model.c_str());
+                if (create)
+                {
+                    m_texture =
+                        create(
+                            m_name.c_str(),
+                            m_params,
+                            m_info.search_paths());
+                }
+                else
+                {
+                    RENDERER_LOG_ERROR(
+                        "while defining texture \"%s\": invalid model \"%s\"",
+                        m_name.c_str(),
+                        m_model.c_str());
+                    m_info.event_counters().signal_error();
+                }
+            }
+            catch (const ExceptionDictionaryItemNotFound& e)
+            {
+                RENDERER_LOG_ERROR(
+                    "while defining texture \"%s\": required parameter \"%s\" missing",
+                    m_name.c_str(),
+                    e.string());
+                m_info.event_counters().signal_error();
+            }
+        }
+
+        // Retrieve the texture.
+        auto_release_ptr<Texture> get_texture()
+        {
+            return m_texture;
+        }
+
+      private:
+        const TextureFactoryDispatcher  m_texture_factory_dispatcher;
+        ElementInfo&                    m_info;
+        auto_release_ptr<Texture>       m_texture;
+        string                          m_name;
+        string                          m_model;
+    };
+
+
+    //
+    // <texture_instance> element handler.
+    //
+
+    class TextureInstanceElementHandler
+      : public ParametrizedElementHandler
+    {
+      public:
+        // Constructor.
+        explicit TextureInstanceElementHandler(ElementInfo& info)
+          : m_info(info)
+          , m_textures(0)
+        {
+        }
+
+        // Set the texture container.
+        void set_texture_container(const TextureContainer* textures)
+        {
+            m_textures = textures;
+        }
+
+        // Receive notification of the start of an element.
+        virtual void start_element(const Attributes& attrs)
+        {
+            ParametrizedElementHandler::start_element(attrs);
+            m_texture_instance.reset();
+            m_name = get_value(attrs, "name");
+            m_texture = get_value(attrs, "texture");
+        }
+
+        // Receive notification of the end of an element.
+        virtual void end_element()
+        {
+            assert(m_textures);
+            const size_t texture_index = m_textures->get_index(m_texture.c_str());
+
+            if (texture_index != ~size_t(0))
+            {
+                try
+                {
+                    m_texture_instance =
+                        TextureInstanceFactory::create(
+                            m_name.c_str(),
+                            m_params,
+                            texture_index);
+                }
+                catch (const ExceptionDictionaryItemNotFound& e)
+                {
+                    RENDERER_LOG_ERROR(
+                        "while defining texture instance \"%s\": required parameter \"%s\" missing",
+                        m_name.c_str(),
+                        e.string());
+                    m_info.event_counters().signal_error();
+                }
+            }
+            else
+            {
+                RENDERER_LOG_ERROR(
+                    "while defining texture instance \"%s\": the texture \"%s\" does not exist",
+                    m_name.c_str(),
+                    m_texture.c_str());
+                m_info.event_counters().signal_error();
+            }
+        }
+
+        // Retrieve the texture instance.
+        auto_release_ptr<TextureInstance> get_texture_instance()
+        {
+            return m_texture_instance;
+        }
+
+      private:
+        ElementInfo&                        m_info;
+        const TextureContainer*             m_textures;
+        auto_release_ptr<TextureInstance>   m_texture_instance;
+        string                              m_name;
+        string                              m_texture;
+    };
+
+
+    //
+    // <bsdf> element handler.
+    //
+
+    class BSDFElementHandler
+      : public EntityElementHandler<BSDF, BSDFFactoryDispatcher>
+    {
+      public:
+        // Constructor.
+        explicit BSDFElementHandler(ElementInfo& info)
+          : EntityElementHandler("bsdf", info)
+        {
+        }
+    };
+
+
+    //
+    // <edf> element handler.
+    //
+
+    class EDFElementHandler
+      : public EntityElementHandler<EDF, EDFFactoryDispatcher>
+    {
+      public:
+        // Constructor.
+        explicit EDFElementHandler(ElementInfo& info)
+          : EntityElementHandler("edf", info)
+        {
+        }
+    };
+
+
+    //
+    // <surface_shader> element handler.
+    //
+
+    class SurfaceShaderElementHandler
+      : public EntityElementHandler<SurfaceShader, SurfaceShaderFactoryDispatcher>
+    {
+      public:
+        // Constructor.
+        explicit SurfaceShaderElementHandler(ElementInfo& info)
+          : EntityElementHandler("surface shader", info)
+        {
+        }
+    };
+
+
+    //
+    // <environment> element handler.
+    //
+
+    class EnvironmentElementHandler
+      : public ParametrizedElementHandler
+    {
+      public:
+        // Constructor.
+        explicit EnvironmentElementHandler(ElementInfo& info)
+          : m_info(info)
+          , m_environment_edfs(0)
+          , m_environment_shaders(0)
+        {
+        }
+
+        // Set the entity containers.
+        void set_containers(
+            const EnvironmentEDFContainer*      environment_edfs,
+            const EnvironmentShaderContainer*   environment_shaders)
+        {
+            m_environment_edfs = environment_edfs;
+            m_environment_shaders = environment_shaders;
+        }
+
+        // Receive notification of the start of an element.
+        virtual void start_element(const Attributes& attrs)
+        {
+            ParametrizedElementHandler::start_element(attrs);
+            m_environment.reset();
+            m_name = get_value(attrs, "name");
+            m_model = get_value(attrs, "model");
+        }
+
+        // Receive notification of the end of an element.
+        virtual void end_element()
+        {
+            assert(m_environment_edfs);
+            assert(m_environment_shaders);
+
+            try
+            {
+                if (m_model == EnvironmentFactory::get_model())
+                {
+                    m_environment =
+                        EnvironmentFactory::create(
+                            m_name.c_str(),
+                            m_params,
+                            *m_environment_edfs,
+                            *m_environment_shaders);
+                }
+                else
+                {
+                    RENDERER_LOG_ERROR(
+                        "while defining environment \"%s\": invalid model \"%s\"",
+                        m_name.c_str(),
+                        m_model.c_str());
+                    m_info.event_counters().signal_error();
+                }
+            }
+            catch (const ExceptionUnknownEntity& e)
+            {
+                RENDERER_LOG_ERROR(
+                    "while defining environment \"%s\": unknown entity \"%s\"",
+                    m_name.c_str(),
+                    e.string());
+                m_info.event_counters().signal_error();
+            }
+        }
+
+        // Retrieve the environment.
+        auto_release_ptr<Environment> get_environment()
+        {
+            return m_environment;
+        }
+
+      private:
+        ElementInfo&                        m_info;
+        const EnvironmentEDFContainer*      m_environment_edfs;
+        const EnvironmentShaderContainer*   m_environment_shaders;
+        auto_release_ptr<Environment>       m_environment;
+        string                              m_name;
+        string                              m_model;
+    };
+
+
+    //
+    // <environment_edf> element handler.
+    //
+
+    class EnvironmentEDFElementHandler
+      : public EntityElementHandler<EnvironmentEDF, EnvironmentEDFFactoryDispatcher>
+    {
+      public:
+        // Constructor.
+        explicit EnvironmentEDFElementHandler(ElementInfo& info)
+          : EntityElementHandler("environment edf", info)
+        {
+        }
+    };
+
+
+    //
+    // <environment_shader> element handler.
+    //
+
+    class EnvironmentShaderElementHandler
+      : public EntityElementHandler<EnvironmentShader, EnvironmentShaderFactoryDispatcher>
+    {
+      public:
+        // Constructor.
+        explicit EnvironmentShaderElementHandler(ElementInfo& info)
+          : EntityElementHandler("environment shader", info)
+        {
+        }
+    };
+
+
+    //
+    // <light> element handler.
+    //
+
+    class LightElementHandler
+      : public ParametrizedElementHandler
+    {
+      public:
+        // Constructor.
+        explicit LightElementHandler(ElementInfo& info)
+          : m_info(info)
+          , m_edfs(0)
+        {
+        }
+
+        // Set the EDF container.
+        void set_edf_container(const EDFContainer* edfs)
+        {
+            m_edfs = edfs;
+        }
+
+        // Receive notification of the start of an element.
+        virtual void start_element(const Attributes& attrs)
+        {
+            ParametrizedElementHandler::start_element(attrs);
+            m_light.reset();
+            m_name = get_value(attrs, "name");
+            m_model = get_value(attrs, "model");
+            m_transform = Transformd(Matrix4d::identity());
+        }
+
+        // Receive notification of the end of an element.
+        virtual void end_element()
+        {    
+            assert(m_edfs);
+
+            try
+            {
+                if (m_model == LightFactory::get_model())
+                {
+                    m_light =
+                        LightFactory::create(
+                            m_name.c_str(),
+                            m_params,
+                            m_transform,
+                            *m_edfs);
+                }
+                else
+                {
+                    RENDERER_LOG_ERROR(
+                        "while defining light \"%s\": invalid model \"%s\"",
+                        m_name.c_str(),
+                        m_model.c_str());
+                    m_info.event_counters().signal_error();
+                }
+            }
+            catch (const ExceptionDictionaryItemNotFound& e)
+            {
+                RENDERER_LOG_ERROR(
+                    "while defining light \"%s\": required parameter \"%s\" missing",
+                    m_name.c_str(),
+                    e.string());
+                m_info.event_counters().signal_error();
+            }
+            catch (const ExceptionUnknownEntity& e)
+            {
+                RENDERER_LOG_ERROR(
+                    "while defining light \"%s\": unknown entity \"%s\"",
+                    m_name.c_str(),
+                    e.string());
+                m_info.event_counters().signal_error();
+            }
+        }
+
+        // Receive notification of the end of a child element.
+        virtual void end_child_element(
+            const ProjectElementID      element,
+            ElementHandlerType*         handler)
+        {
+            switch (element)
+            {
+              case ElementTransform:
+                {
+                    TransformElementHandler* transform_handler =
+                        static_cast<TransformElementHandler*>(handler);
+                    m_transform = transform_handler->get_transform();
+                }
+                break;
+
+              default:
+                ParametrizedElementHandler::end_child_element(element, handler);
+                break;
+            }
+        }
+
+        // Retrieve the light.
+        auto_release_ptr<Light> get_light()
+        {
+            return m_light;
+        }
+
+      private:
+        ElementInfo&                m_info;
+        const EDFContainer*         m_edfs;
+        auto_release_ptr<Light>     m_light;
+        string                      m_name;
+        string                      m_model;
+        Transformd                  m_transform;
+    };
+
+
+    //
+    // <material> element handler.
+    //
+
+    class MaterialElementHandler
+      : public ParametrizedElementHandler
+    {
+      public:
+        // Constructor.
+        explicit MaterialElementHandler(ElementInfo& info)
+          : m_info(info)
+          , m_bsdfs(0)
+          , m_edfs(0)
+          , m_surface_shaders(0)
+        {
+        }
+
+        // Set the entity containers.
+        void set_containers(
+            const BSDFContainer*            bsdfs,
+            const EDFContainer*             edfs,
+            const SurfaceShaderContainer*   surface_shaders)
+        {
+            m_bsdfs = bsdfs;
+            m_edfs = edfs;
+            m_surface_shaders = surface_shaders;
+        }
+
+        // Receive notification of the start of an element.
+        virtual void start_element(const Attributes& attrs)
+        {
+            ParametrizedElementHandler::start_element(attrs);
+            m_material.reset();
+            m_name = get_value(attrs, "name");
+            m_model = get_value(attrs, "model");
+        }
+
+        // Receive notification of the end of an element.
+        virtual void end_element()
+        {    
+            assert(m_bsdfs);
+            assert(m_edfs);
+            assert(m_surface_shaders);
+
+            try
+            {
+                if (m_model == MaterialFactory::get_model())
+                {
+                    m_material =
+                        MaterialFactory::create(
+                            m_name.c_str(),
+                            m_params,
+                            *m_surface_shaders,
+                            *m_bsdfs,
+                            *m_edfs);
+                }
+                else
+                {
+                    RENDERER_LOG_ERROR(
+                        "while defining material \"%s\": invalid model \"%s\"",
+                        m_name.c_str(),
+                        m_model.c_str());
+                    m_info.event_counters().signal_error();
+                }
+            }
+            catch (const ExceptionDictionaryItemNotFound& e)
+            {
+                RENDERER_LOG_ERROR(
+                    "while defining material \"%s\": required parameter \"%s\" missing",
+                    m_name.c_str(),
+                    e.string());
+                m_info.event_counters().signal_error();
+            }
+            catch (const ExceptionUnknownEntity& e)
+            {
+                RENDERER_LOG_ERROR(
+                    "while defining material \"%s\": unknown entity \"%s\"",
+                    m_name.c_str(),
+                    e.string());
+                m_info.event_counters().signal_error();
+            }
+        }
+
+        // Retrieve the material.
+        auto_release_ptr<Material> get_material()
+        {
+            return m_material;
+        }
+
+      private:
+        ElementInfo&                        m_info;
+        const BSDFContainer*                m_bsdfs;
+        const EDFContainer*                 m_edfs;
+        const SurfaceShaderContainer*       m_surface_shaders;
+        auto_release_ptr<Material>          m_material;
+        string                              m_name;
+        string                              m_model;
+    };
+
+
+    //
+    // <camera> element handler.
+    //
+
+    class CameraElementHandler
+      : public ParametrizedElementHandler
+    {
+      public:
+        // Constructor.
+        explicit CameraElementHandler(ElementInfo& info)
+          : m_info(info)
+        {
+        }
+
+        // Receive notification of the start of an element.
+        virtual void start_element(const Attributes& attrs)
+        {
+            ParametrizedElementHandler::start_element(attrs);
+            m_camera.reset();
+            m_name = get_value(attrs, "name");
+            m_model = get_value(attrs, "model");
+            m_transform = Transformd(Matrix4d::identity());
+        }
+
+        // Receive notification of the end of an element.
+        virtual void end_element()
+        {
+            try
+            {
+                const CameraFactoryDispatcher::CreateFunctionPtr create =
+                    m_camera_factory_dispatcher.lookup(m_model.c_str());
+                if (create)
+                {
+                    m_camera = create(m_name.c_str(), m_params, m_transform);
+                }
+                else
+                {
+                    RENDERER_LOG_ERROR(
+                        "while defining camera \"%s\": invalid model \"%s\"",
+                        m_name.c_str(),
+                        m_model.c_str());
+                    m_info.event_counters().signal_error();
+                }
+            }
+            catch (const ExceptionDictionaryItemNotFound& e)
+            {
+                RENDERER_LOG_ERROR(
+                    "while defining camera \"%s\": required parameter \"%s\" missing",
+                    m_name.c_str(),
+                    e.string());
+                m_info.event_counters().signal_error();
+            }
+        }
+
+        // Receive notification of the end of a child element.
+        virtual void end_child_element(
+            const ProjectElementID      element,
+            ElementHandlerType*         handler)
+        {
+            switch (element)
+            {
+              case ElementTransform:
+                {
+                    TransformElementHandler* transform_handler =
+                        static_cast<TransformElementHandler*>(handler);
+                    m_transform = transform_handler->get_transform();
+                }
+                break;
+
+              default:
+                ParametrizedElementHandler::end_child_element(element, handler);
+                break;
+            }
+        }
+
+        // Retrieve the camera.
+        auto_release_ptr<Camera> get_camera()
+        {
+            return m_camera;
+        }
+
+      private:
+        const CameraFactoryDispatcher   m_camera_factory_dispatcher;
+        ElementInfo&                    m_info;
+        auto_release_ptr<Camera>        m_camera;
+        string                          m_name;
+        string                          m_model;
+        Transformd                      m_transform;
+    };
+
+
+    //
+    // <object> element handler.
+    //
+
+    class ObjectElementHandler
+      : public ParametrizedElementHandler
+    {
+      public:
+        typedef vector<Object*> ObjectVector;
+
+        // Constructor.
+        explicit ObjectElementHandler(ElementInfo& info)
+          : m_info(info)
+        {
+        }
+
+        // Receive notification of the start of an element.
+        virtual void start_element(const Attributes& attrs)
+        {
+            ParametrizedElementHandler::start_element(attrs);
+            clear_keep_memory(m_objects);
+            m_name = get_value(attrs, "name");
+            m_model = get_value(attrs, "model");
+        }
+
+        // Receive notification of the end of an element.
+        virtual void end_element()
+        {
+            try
+            {
+                if (m_model == MeshObjectFactory::get_model())
+                {
+                    // Retrieve the name of the mesh file.
+                    const string filename = m_params.get<string>("filename");
+                    const string qualified_filename = m_info.search_paths().qualify(filename);
+
+                    // Read the mesh file.
+                    MeshObjectArray object_array =
+                        MeshObjectReader::read(
+                            qualified_filename.c_str(),
+                            m_name.c_str(),
+                            m_params);
+
+                    // Add a few parameters to the freshly loaded mesh objects.
+                    for (size_t i = 0; i < object_array.size(); ++i)
+                    {
+                        MeshObject* object = object_array[i];
+                        object->get_parameters().insert("filename", filename);
+                        object->get_parameters().insert("__common_base_name", m_name);
+                    }
+
+                    m_objects = array_vector<ObjectVector>(object_array);
+                }
+                else
+                {
+                    RENDERER_LOG_ERROR(
+                        "while defining object \"%s\": invalid model \"%s\"",
+                        m_name.c_str(),
+                        m_model.c_str());
+                    m_info.event_counters().signal_error();
+                }
+            }
+            catch (const ExceptionDictionaryItemNotFound& e)
+            {
+                RENDERER_LOG_ERROR(
+                    "while defining object \"%s\": required parameter \"%s\" missing",
+                    m_name.c_str(),
+                    e.string());
+                m_info.event_counters().signal_error();
+            }
+        }
+
+        // Retrieve the objects.
+        const ObjectVector& get_objects() const
+        {
+            return m_objects;
+        }
+
+      private:
+        ElementInfo&    m_info;
+        ObjectVector    m_objects;
+        string          m_name;
+        string          m_model;
+    };
+
+
+    //
+    // <assign_material> element handler.
+    //
+
+    class AssignMaterialElementHandler
+      : public DefaultElementHandler
+    {
+      public:
+        // Constructor.
+        explicit AssignMaterialElementHandler(ElementInfo& info)
+          : m_info(info)
+        {
+        }
+
+        // Receive notification of the start of an element.
+        virtual void start_element(const Attributes& attrs)
+        {
+            const string slot_string = get_value(attrs, "slot");
+            try
+            {
+                m_slot = from_string<size_t>(slot_string);
+            }
+            catch (const ExceptionStringConversionError&)
+            {
+                RENDERER_LOG_ERROR(
+                    "while assigning material: slot must be an integer >= 0, got \"%s\"",
+                    slot_string.c_str());
+                m_info.event_counters().signal_error();
+                m_slot = 0;
+            }
+            m_material = get_value(attrs, "material");
+        }
+
+        // Retrieve the slot to which assign the material.
+        size_t get_material_slot() const
+        {
+            return m_slot;
+        }
+
+        // Retrieve the name of the material.
+        const string& get_material_name() const
+        {
+            return m_material;
+        }
+
+      private:
+        ElementInfo&    m_info;
+        size_t          m_slot;
+        string          m_material;
+    };
+
+
+    //
+    // <object_instance> element handler.
+    //
+
+    class ObjectInstanceElementHandler
+      : public ParametrizedElementHandler
+    {
+      public:
+        // Constructor.
+        explicit ObjectInstanceElementHandler(ElementInfo& info)
+          : m_info(info)
+          , m_objects(0)
+          , m_materials(0)
+        {
+        }
+
+        // Set the entity containers.
+        void set_containers(
+            const ObjectContainer*          objects,
+            const MaterialContainer*        materials)
+        {
+            m_objects = objects;
+            m_materials = materials;
+        }
+
+        // Receive notification of the start of an element.
+        virtual void start_element(const Attributes& attrs)
+        {
+            ParametrizedElementHandler::start_element(attrs);
+            m_object_instance.reset();
+            m_transform = Transformd(Matrix4d::identity());
+            m_material_indices.clear();
+            m_name = get_value(attrs, "name");
+            m_object = get_value(attrs, "object");
+        }
+
+        // Receive notification of the end of an element.
+        virtual void end_element()
+        {
+            assert(m_objects);
+            const size_t object_index = m_objects->get_index(m_object.c_str());
+
+            if (object_index != ~size_t(0))
+            {
+                m_object_instance =
+                    ObjectInstanceFactory::create(
+                        m_name.c_str(),
+                        *m_objects->get(object_index),
+                        object_index,
+                        m_transform,
+                        m_material_indices);
+            }
+            else
+            {
+                RENDERER_LOG_ERROR(
+                    "while defining object instance \"%s\": the object \"%s\" does not exist",
+                    m_name.c_str(),
+                    m_object.c_str());
+                m_info.event_counters().signal_error();
+            }
+        }
+
+        // Receive notification of the end of a child element.
+        virtual void end_child_element(
+            const ProjectElementID          element,
+            ElementHandlerType*             handler)
+        {
+            switch (element)
+            {
+              case ElementAssignMaterial:
+                {
+                    AssignMaterialElementHandler* assign_mat_handler =
+                        static_cast<AssignMaterialElementHandler*>(handler);
+
+                    const size_t material_slot = assign_mat_handler->get_material_slot();
+                    const string& material_name = assign_mat_handler->get_material_name();
+
+                    const size_t MaxMaterialSlots = 256;
+
+                    if (material_slot < MaxMaterialSlots)
+                    {
+                        assert(m_materials);
+                        const size_t material_index = m_materials->get_index(material_name.c_str());
+
+                        if (material_index != ~size_t(0))
+                        {
+                            // Insert the index of the material into the object instance.
+                            while (m_material_indices.size() <= material_slot)
+                                m_material_indices.push_back(material_index);
+                            m_material_indices[material_slot] = material_index;
+                        }
+                        else
+                        {
+                            RENDERER_LOG_ERROR(
+                                "while defining object instance \"%s\": the material \"%s\" does not exist",
+                                m_name.c_str(),
+                                material_name.c_str());
+                            m_info.event_counters().signal_error();
+                        }
+                    }
+                    else
+                    {
+                        RENDERER_LOG_ERROR(
+                            "while defining object instance \"%s\": "
+                            "material slot should be in [0, " FMT_SIZE_T "], got " FMT_SIZE_T,
+                            m_name.c_str(),
+                            MaxMaterialSlots - 1,
+                            material_slot);
+                        m_info.event_counters().signal_error();
+                    }
+                }
+                break;
+
+              case ElementTransform:
+                {
+                    TransformElementHandler* transform_handler =
+                        static_cast<TransformElementHandler*>(handler);
+                    m_transform = transform_handler->get_transform();
+                }
+                break;
+
+              default:
+                ParametrizedElementHandler::end_child_element(element, handler);
+                break;
+            }
+        }
+
+        // Retrieve the object instance.
+        auto_release_ptr<ObjectInstance> get_object_instance()
+        {
+            return m_object_instance;
+        }
+
+      private:
+        ElementInfo&                        m_info;
+        const ObjectContainer*              m_objects;
+        const MaterialContainer*            m_materials;
+        auto_release_ptr<ObjectInstance>    m_object_instance;
+        string                              m_name;
+        string                              m_object;
+        Transformd                          m_transform;
+        MaterialIndexArray                  m_material_indices;
+    };
+
+
+    //
+    // <assembly> element handler.
+    //
+
+    class AssemblyElementHandler
+      : public ParametrizedElementHandler
+    {
+      public:
+        // Constructor.
+        explicit AssemblyElementHandler(ElementInfo& info)
+          : m_info(info)
+        {
+        }
+
+        // Receive notification of the start of an element.
+        virtual void start_element(const Attributes& attrs)
+        {
+            ParametrizedElementHandler::start_element(attrs);
+            m_assembly.reset();
+            m_name = get_value(attrs, "name");
+            m_bsdfs.clear();
+            m_colors.clear();
+            m_edfs.clear();
+            m_lights.clear();
+            m_materials.clear();
+            m_objects.clear();
+            m_object_instances.clear();
+            m_surface_shaders.clear();
+            m_textures.clear();
+            m_texture_instances.clear();
+        }
+
+        // Receive notification of the end of an element.
+        virtual void end_element()
+        {
+            m_assembly = AssemblyFactory::create(m_name.c_str(), m_params);
+            m_assembly->bsdfs().swap(m_bsdfs);
+            m_assembly->colors().swap(m_colors);
+            m_assembly->edfs().swap(m_edfs);
+            m_assembly->lights().swap(m_lights);
+            m_assembly->materials().swap(m_materials);
+            m_assembly->objects().swap(m_objects);
+            m_assembly->object_instances().swap(m_object_instances);
+            m_assembly->surface_shaders().swap(m_surface_shaders);
+            m_assembly->textures().swap(m_textures);
+            m_assembly->texture_instances().swap(m_texture_instances);
+        }
+
+        // Receive notification of the start of a child element.
+        virtual void start_child_element(
+            const ProjectElementID      element,
+            ElementHandlerType*         handler)
+        {
+            switch (element)
+            {
+              case ElementBSDF:
+                break;
+
+              case ElementColor:
+                break;
+
+              case ElementEDF:
+                break;
+
+              case ElementLight:
+                {
+                    LightElementHandler* light_handler =
+                        static_cast<LightElementHandler*>(handler);
+                    light_handler->set_edf_container(&m_edfs);
+                }
+                break;
+
+              case ElementMaterial:
+                {
+                    MaterialElementHandler* material_handler =
+                        static_cast<MaterialElementHandler*>(handler);
+                    material_handler->set_containers(&m_bsdfs, &m_edfs, &m_surface_shaders);
+                }
+                break;
+
+              case ElementObject:
+                break;
+
+              case ElementObjectInstance:
+                {
+                    ObjectInstanceElementHandler* object_inst_handler =
+                        static_cast<ObjectInstanceElementHandler*>(handler);
+                    object_inst_handler->set_containers(&m_objects, &m_materials);
+                }
+                break;
+
+              case ElementSurfaceShader:
+                break;
+
+              case ElementTexture:
+                break;
+
+              case ElementTextureInstance:
+                {
+                    TextureInstanceElementHandler* texture_inst_handler =
+                        static_cast<TextureInstanceElementHandler*>(handler);
+                    texture_inst_handler->set_texture_container(&m_textures);
+                }
+                break;
+
+              default:
+                ParametrizedElementHandler::start_child_element(element, handler);
+                break;
+            }
+        }
+
+        // Receive notification of the end of a child element.
+        virtual void end_child_element(
+            const ProjectElementID      element,
+            ElementHandlerType*         handler)
+        {
+            switch (element)
+            {
+              case ElementBSDF:
+                {
+                    BSDFElementHandler* bsdf_handler =
+                        static_cast<BSDFElementHandler*>(handler);
+                    auto_release_ptr<BSDF> bsdf = bsdf_handler->get_entity();
+                    if (bsdf.get())
+                        m_bsdfs.insert(bsdf);
+                }
+                break;
+
+              case ElementColor:
+                {
+                    ColorElementHandler* color_handler =
+                        static_cast<ColorElementHandler*>(handler);
+                    auto_release_ptr<ColorEntity> color_entity =
+                        color_handler->get_color_entity();
+                    if (color_entity.get())
+                        m_colors.insert(color_entity);
+                }
+                break;
+
+              case ElementEDF:
+                {
+                    EDFElementHandler* edf_handler =
+                        static_cast<EDFElementHandler*>(handler);
+                    auto_release_ptr<EDF> edf = edf_handler->get_entity();
+                    if (edf.get())
+                        m_edfs.insert(edf);
+                }
+                break;
+
+              case ElementLight:
+                {
+                    LightElementHandler* light_handler =
+                        static_cast<LightElementHandler*>(handler);
+                    auto_release_ptr<Light> light = light_handler->get_light();
+                    if (light.get())
+                        m_lights.insert(light);
+                }
+                break;
+
+              case ElementMaterial:
+                {
+                    MaterialElementHandler* material_handler =
+                        static_cast<MaterialElementHandler*>(handler);
+                    auto_release_ptr<Material> material = material_handler->get_material();
+                    if (material.get())
+                        m_materials.insert(material);
+                }
+                break;
+
+              case ElementObject:
+                {
+                    ObjectElementHandler* object_handler =
+                        static_cast<ObjectElementHandler*>(handler);
+                    for (const_each<ObjectElementHandler::ObjectVector> i =
+                         object_handler->get_objects(); i; ++i)
+                        m_objects.insert(auto_release_ptr<Object>(*i));
+                }
+                break;
+
+              case ElementObjectInstance:
+                {
+                    ObjectInstanceElementHandler* object_inst_handler =
+                        static_cast<ObjectInstanceElementHandler*>(handler);
+                    auto_release_ptr<ObjectInstance> instance = object_inst_handler->get_object_instance();
+                    if (instance.get())
+                        m_object_instances.insert(instance);
+                }
+                break;
+
+              case ElementSurfaceShader:
+                {
+                    SurfaceShaderElementHandler* surface_shader_handler =
+                        static_cast<SurfaceShaderElementHandler*>(handler);
+                    auto_release_ptr<SurfaceShader> surface_shader =
+                        surface_shader_handler->get_entity();
+                    if (surface_shader.get())
+                        m_surface_shaders.insert(surface_shader);
+                }
+                break;
+
+              case ElementTexture:
+                {
+                    TextureElementHandler* texture_handler =
+                        static_cast<TextureElementHandler*>(handler);
+                    auto_release_ptr<Texture> texture = texture_handler->get_texture();
+                    if (texture.get())
+                        m_textures.insert(texture);
+                }
+                break;
+
+              case ElementTextureInstance:
+                {
+                    TextureInstanceElementHandler* texture_inst_handler =
+                        static_cast<TextureInstanceElementHandler*>(handler);
+                    auto_release_ptr<TextureInstance> instance = texture_inst_handler->get_texture_instance();
+                    if (instance.get())
+                        m_texture_instances.insert(instance);
+                }
+                break;
+
+              default:
+                ParametrizedElementHandler::end_child_element(element, handler);
+                break;
+            }
+        }
+
+        // Retrieve the assembly.
+        auto_release_ptr<Assembly> get_assembly()
+        {
+            return m_assembly;
+        }
+
+      private:
+        ElementInfo&                m_info;
+        auto_release_ptr<Assembly>  m_assembly;
+        string                      m_name;
+        BSDFContainer               m_bsdfs;
+        ColorContainer              m_colors;
+        EDFContainer                m_edfs;
+        LightContainer              m_lights;
+        MaterialContainer           m_materials;
+        ObjectContainer             m_objects;
+        ObjectInstanceContainer     m_object_instances;
+        SurfaceShaderContainer      m_surface_shaders;
+        TextureContainer            m_textures;
+        TextureInstanceContainer    m_texture_instances;
+    };
+
+
+    //
+    // <assembly_instance> element handler.
+    //
+
+    class AssemblyInstanceElementHandler
+      : public ParametrizedElementHandler
+    {
+      public:
+        // Constructor.
+        explicit AssemblyInstanceElementHandler(ElementInfo& info)
+          : m_info(info)
+          , m_assemblies(0)
+        {
+        }
+
+        // Set the assembly container.
+        void set_assembly_container(const AssemblyContainer* assemblies)
+        {
+            m_assemblies = assemblies;
+        }
+
+        // Receive notification of the start of an element.
+        virtual void start_element(const Attributes& attrs)
+        {
+            ParametrizedElementHandler::start_element(attrs);
+            m_assembly_instance.reset();
+            m_name = get_value(attrs, "name");
+            m_assembly = get_value(attrs, "assembly");
+            m_transform = Transformd(Matrix4d::identity());
+        }
+
+        // Receive notification of the end of an element.
+        virtual void end_element()
+        {
+            assert(m_assemblies);
+            const Assembly* assembly = m_assemblies->get(m_assembly.c_str());
+
+            if (assembly)
+            {
+                m_assembly_instance =
+                    AssemblyInstanceFactory::create(
+                        m_name.c_str(),
+                        *assembly,
+                        m_transform);
+            }
+            else
+            {
+                RENDERER_LOG_ERROR(
+                    "while defining assembly instance \"%s\": the assembly \"%s\" does not exist",
+                    m_name.c_str(),
+                    m_assembly.c_str());
+                m_info.event_counters().signal_error();
+            }
+        }
+
+        // Receive notification of the end of a child element.
+        virtual void end_child_element(
+            const ProjectElementID      element,
+            ElementHandlerType*         handler)
+        {
+            switch (element)
+            {
+              case ElementTransform:
+                {
+                    TransformElementHandler* transform_handler =
+                        static_cast<TransformElementHandler*>(handler);
+                    m_transform = transform_handler->get_transform();
+                }
+                break;
+
+              default:
+                ParametrizedElementHandler::end_child_element(element, handler);
+                break;
+            }
+        }
+
+        // Retrieve the assembly instance.
+        auto_release_ptr<AssemblyInstance> get_assembly_instance()
+        {
+            return m_assembly_instance;
+        }
+
+      private:
+        ElementInfo&                        m_info;
+        const AssemblyContainer*            m_assemblies;
+        auto_release_ptr<AssemblyInstance>  m_assembly_instance;
+        string                              m_name;
+        string                              m_assembly;
+        Transformd                          m_transform;
+    };
+
+
+    //
+    // <scene> element handler.
+    //
+
+    class SceneElementHandler
+      : public DefaultElementHandler
+    {
+      public:
+        // Constructor.
+        explicit SceneElementHandler(ElementInfo& info)
+          : m_info(info)
+        {
+        }
+
+        // Receive notification of the start of an element.
+        virtual void start_element(const Attributes& attrs)
+        {
+            m_scene.reset(new Scene());
+        }
+
+        // Receive notification of the end of an element.
+        virtual void end_element()
+        {
+            // Compute the bounding box of the scene.
+            const GAABB3 bbox =
+                compute_parent_bbox<GAABB3>(
+                    m_scene->assembly_instances().begin(),
+                    m_scene->assembly_instances().end());
+
+            // Print the bounding box of the scene.
+            if (bbox.is_valid())
+            {
+                RENDERER_LOG_INFO("scene bounding box: (%f, %f, %f)-(%f, %f, %f)",
+                    bbox.min[0], bbox.min[1], bbox.min[2],
+                    bbox.max[0], bbox.max[1], bbox.max[2]);
+            }
+            else
+            {
+                RENDERER_LOG_INFO("scene bounding box is empty");
+            }
+        }
+
+        // Receive notification of the start of a child element.
+        virtual void start_child_element(
+            const ProjectElementID      element,
+            ElementHandlerType*         handler)
+        {
+            assert(m_scene.get());
+
+            switch (element)
+            {
+              case ElementAssembly:
+                break;
+
+              case ElementAssemblyInstance:
+                {
+                    AssemblyInstanceElementHandler* asm_inst_handler =
+                        static_cast<AssemblyInstanceElementHandler*>(handler);
+                    asm_inst_handler->set_assembly_container(&m_scene->assemblies());
+                }
+                break;
+
+              case ElementCamera:
+                break;
+
+              case ElementColor:
+                break;
+
+              case ElementEnvironment:
+                {
+                    EnvironmentElementHandler* env_handler =
+                        static_cast<EnvironmentElementHandler*>(handler);
+                    env_handler->set_containers(
+                        &m_scene->environment_edfs(),
+                        &m_scene->environment_shaders());
+                }
+                break;
+
+              case ElementEnvironmentEDF:
+                break;
+
+              case ElementEnvironmentShader:
+                break;
+
+              case ElementTexture:
+                break;
+
+              case ElementTextureInstance:
+                {
+                    TextureInstanceElementHandler* texture_inst_handler =
+                        static_cast<TextureInstanceElementHandler*>(handler);
+                    texture_inst_handler->set_texture_container(&m_scene->textures());
+                }
+                break;
+
+              assert_otherwise;
+            }
+        }
+
+        // Receive notification of the end of a child element.
+        virtual void end_child_element(
+            const ProjectElementID      element,
+            ElementHandlerType*         handler)
+        {
+            assert(m_scene.get());
+
+            switch (element)
+            {
+              case ElementAssembly:
+                {
+                    AssemblyElementHandler* assembly_handler =
+                        static_cast<AssemblyElementHandler*>(handler);
+                    auto_release_ptr<Assembly> assembly =
+                        assembly_handler->get_assembly();
+                    if (assembly.get())
+                        m_scene->assemblies().insert(assembly);
+                }
+                break;
+
+              case ElementAssemblyInstance:
+                {
+                    AssemblyInstanceElementHandler* asm_inst_handler =
+                        static_cast<AssemblyInstanceElementHandler*>(handler);
+                    auto_release_ptr<AssemblyInstance> instance =
+                        asm_inst_handler->get_assembly_instance();
+                    if (instance.get())
+                        m_scene->assembly_instances().insert(instance);
+                }
+                break;
+
+              case ElementColor:
+                {
+                    ColorElementHandler* color_handler =
+                        static_cast<ColorElementHandler*>(handler);
+                    auto_release_ptr<ColorEntity> color_entity =
+                        color_handler->get_color_entity();
+                    if (color_entity.get())
+                        m_scene->colors().insert(color_entity);
+                }
+                break;
+
+              case ElementCamera:
+                {
+                    CameraElementHandler* camera_handler =
+                        static_cast<CameraElementHandler*>(handler);
+                    auto_release_ptr<Camera> camera =
+                        camera_handler->get_camera();
+                    if (camera.get())
+                    {
+                        if (m_scene->get_camera())
+                        {
+                            RENDERER_LOG_WARNING("support for multiple cameras is not implemented yet");
+                            m_info.event_counters().signal_warning();
+                        }
+                        m_scene->set_camera(camera);
+                    }
+                }
+                break;
+
+              case ElementEnvironment:
+                {
+                    EnvironmentElementHandler* env_handler =
+                        static_cast<EnvironmentElementHandler*>(handler);
+                    auto_release_ptr<Environment> environment = env_handler->get_environment();
+                    if (environment.get())
+                    {
+                        if (m_scene->get_environment())
+                        {
+                            RENDERER_LOG_ERROR("cannot define multiple environments");
+                            m_info.event_counters().signal_error();
+                        }
+                        m_scene->set_environment(environment);
+                    }
+                }
+                break;
+
+              case ElementEnvironmentEDF:
+                {
+                    EnvironmentEDFElementHandler* env_edf_handler =
+                        static_cast<EnvironmentEDFElementHandler*>(handler);
+                    auto_release_ptr<EnvironmentEDF> env_edf = env_edf_handler->get_entity();
+                    if (env_edf.get())
+                        m_scene->environment_edfs().insert(env_edf);
+                }
+                break;
+
+              case ElementEnvironmentShader:
+                {
+                    EnvironmentShaderElementHandler* env_shader_handler =
+                        static_cast<EnvironmentShaderElementHandler*>(handler);
+                    auto_release_ptr<EnvironmentShader> env_shader =
+                        env_shader_handler->get_entity();
+                    if (env_shader.get())
+                        m_scene->environment_shaders().insert(env_shader);
+                }
+                break;
+
+              case ElementTexture:
+                {
+                    TextureElementHandler* texture_handler =
+                        static_cast<TextureElementHandler*>(handler);
+                    auto_release_ptr<Texture> texture = texture_handler->get_texture();
+                    if (texture.get())
+                        m_scene->textures().insert(texture);
+                }
+                break;
+
+              case ElementTextureInstance:
+                {
+                    TextureInstanceElementHandler* texture_inst_handler =
+                        static_cast<TextureInstanceElementHandler*>(handler);
+                    auto_release_ptr<TextureInstance> instance = texture_inst_handler->get_texture_instance();
+                    if (instance.get())
+                        m_scene->texture_instances().insert(instance);
+                }
+                break;
+
+              assert_otherwise;
+            }
+        }
+
+        // Retrieve the scene.
+        auto_ptr<Scene> get_scene()
+        {
+            return m_scene;
+        }
+
+      private:
+        ElementInfo&    m_info;
+        auto_ptr<Scene> m_scene;
+    };
+
+
+    //
+    // <frame> element handler.
+    //
+
+    class FrameElementHandler
+      : public ParametrizedElementHandler
+    {
+      public:
+        // Constructor.
+        explicit FrameElementHandler(ElementInfo& info)
+          : m_info(info)
+        {
+        }
+
+        // Receive notification of the start of an element.
+        virtual void start_element(const Attributes& attrs)
+        {
+            ParametrizedElementHandler::start_element(attrs);
+            m_frame.reset();
+            m_name = get_value(attrs, "name");
+        }
+
+        // Receive notification of the end of an element.
+        virtual void end_element()
+        {    
+            m_frame.reset(
+                new Frame(
+                    m_name.c_str(),
+                    m_params));
+        }
+
+        // Retrieve the frame.
+        auto_ptr<Frame> get_frame()
+        {
+            return m_frame;
+        }
+
+      private:
+        ElementInfo&    m_info;
+        auto_ptr<Frame> m_frame;
+        string          m_name;
+    };
+
+
+    //
+    // <output> element handler.
+    //
+
+    class OutputElementHandler
+      : public DefaultElementHandler
+    {
+      public:
+        // Constructor.
+        OutputElementHandler(ElementInfo& info)
+          : m_info(info)
+          , m_project(0)
+        {
+        }
+
+        // Set the current project.
+        void set_project(Project* project)
+        {
+            m_project = project;
+        }
+
+        // Receive notification of the end of a child element.
+        virtual void end_child_element(
+            const ProjectElementID      element,
+            ElementHandlerType*         handler)
+        {
+            assert(m_project);
+
+            switch (element)
+            {
+              case ElementFrame:
+                {
+                    FrameElementHandler* frame_handler =
+                        static_cast<FrameElementHandler*>(handler);
+                    m_project->set_frame(frame_handler->get_frame());
+                }
+                break;
+
+              assert_otherwise;
+            }
+        }
+
+      private:
+        ElementInfo&    m_info;
+        Project*        m_project;
+    };
+
+
+    //
+    // <configuration> element handler.
+    //
+
+    class ConfigurationElementHandler
+      : public ParametrizedElementHandler
+    {
+      public:
+        // Constructor.
+        explicit ConfigurationElementHandler(ElementInfo& info)
+          : m_info(info)
+          , m_project(0)
+        {
+        }
+
+        // Set the current project.
+        void set_project(Project* project)
+        {
+            m_project = project;
+        }
+
+        // Receive notification of the start of an element.
+        virtual void start_element(const Attributes& attrs)
+        {
+            ParametrizedElementHandler::start_element(attrs);
+            m_configuration.reset();
+            m_name = get_value(attrs, "name");
+            m_base_name = get_value(attrs, "base");
+        }
+
+        // Receive notification of the end of an element.
+        virtual void end_element()
+        {    
+            assert(m_project);
+
+            m_configuration =
+                ConfigurationFactory::create(
+                    m_name.c_str(),
+                    m_params);
+
+            // Handle configuration inheritance.
+            if (!m_base_name.empty())
+            {
+                const Configuration* base =
+                    m_project->configurations().get(m_base_name.c_str());
+
+                if (base)
+                {
+                    m_configuration->set_base(base);
+                }
+                else
+                {
+                    RENDERER_LOG_ERROR(
+                        "while defining configuration \"%s\": the configuration \"%s\" does not exist",
+                        m_configuration->get_name(),
+                        m_base_name.c_str());
+                    m_info.event_counters().signal_error();
+                }
+            }
+        }
+
+        // Retrieve the configuration.
+        auto_release_ptr<Configuration> get_configuration()
+        {
+            return m_configuration;
+        }
+
+      private:
+        ElementInfo&                    m_info;
+        Project*                        m_project;
+        auto_release_ptr<Configuration> m_configuration;
+        string                          m_name;
+        string                          m_base_name;
+    };
+
+
+    //
+    // <configurations> element handler.
+    //
+
+    class ConfigurationsElementHandler
+      : public DefaultElementHandler
+    {
+      public:
+        // Constructor.
+        ConfigurationsElementHandler(ElementInfo& info)
+          : m_info(info)
+          , m_project(0)
+        {
+        }
+
+        // Set the current project.
+        void set_project(Project* project)
+        {
+            m_project = project;
+        }
+
+        // Receive notification of the start of a child element.
+        virtual void start_child_element(
+            const ProjectElementID      element,
+            ElementHandlerType*         handler)
+        {
+            assert(m_project);
+
+            switch (element)
+            {
+              case ElementConfiguration:
+                {
+                    ConfigurationElementHandler* config_handler =
+                        static_cast<ConfigurationElementHandler*>(handler);
+                    config_handler->set_project(m_project);
+                }
+                break;
+
+              assert_otherwise;
+            }
+        }
+
+        // Receive notification of the end of a child element.
+        virtual void end_child_element(
+            const ProjectElementID      element,
+            ElementHandlerType*         handler)
+        {
+            assert(m_project);
+
+            switch (element)
+            {
+              case ElementConfiguration:
+                {
+                    // Insert the configuration directly into the project.
+                    ConfigurationElementHandler* config_handler =
+                        static_cast<ConfigurationElementHandler*>(handler);
+                    m_project->configurations().insert(
+                        config_handler->get_configuration());
+                }
+                break;
+
+              assert_otherwise;
+            }
+        }
+
+      private:
+        ElementInfo&    m_info;
+        Project*        m_project;
+    };
+
+
+    //
+    // <project> element handler.
+    //
+
+    class ProjectElementHandler
+      : public DefaultElementHandler
+    {
+      public:
+        // Constructor.
+        ProjectElementHandler(ElementInfo& info, Project* project)
+          : m_info(info)
+          , m_project(project)
+        {
+        }
+
+        // Receive notification of the start of a child element.
+        virtual void start_child_element(
+            const ProjectElementID      element,
+            ElementHandlerType*         handler)
+        {
+            assert(m_project);
+
+            switch (element)
+            {
+              case ElementConfigurations:
+                {
+                    ConfigurationsElementHandler* configs_handler =
+                        static_cast<ConfigurationsElementHandler*>(handler);
+                    configs_handler->set_project(m_project);
+                }
+                break;
+
+              case ElementOutput:
+                {
+                    OutputElementHandler* output_handler =
+                        static_cast<OutputElementHandler*>(handler);
+                    output_handler->set_project(m_project);
+                }
+                break;
+
+              case ElementScene:
+                break;
+
+              assert_otherwise;
+            }
+        }
+
+        // Receive notification of the end of a child element.
+        virtual void end_child_element(
+            const ProjectElementID      element,
+            ElementHandlerType*         handler)
+        {
+            assert(m_project);
+
+            switch (element)
+            {
+              case ElementConfigurations:
+                // Nothing to do, configurations were directly inserted into the project.
+                break;
+
+              case ElementOutput:
+                // Nothing to do, frames were directly inserted into the project.
+                break;
+
+              case ElementScene:
+                {
+                    SceneElementHandler* scene_handler =
+                        static_cast<SceneElementHandler*>(handler);
+                    auto_ptr<Scene> scene = scene_handler->get_scene();
+                    if (scene.get())
+                        m_project->set_scene(scene);
+                }
+                break;
+
+              assert_otherwise;
+            }
+        }
+
+      private:
+        ElementInfo&    m_info;
+        Project*        m_project;
+    };
+
+}   // anonymous namespace
+
+// Read a project from disk.
+auto_release_ptr<Project> ProjectFileReader::read(
+    const char*             project_filename,
+    const char*             schema_filename)
+{
+    assert(project_filename);
+    assert(schema_filename);
+
+    XercesCContext xerces_context(global_logger());
+    if (!xerces_context.is_initialized())
+        return auto_release_ptr<Project>(0);
+
+    EventCounters event_counters;
+    auto_release_ptr<Project> project(
+        load_project_file(
+            project_filename,
+            schema_filename,
+            event_counters));
+
+    if (project.get())
+        process_project(*project.get(), event_counters);
+
+    print_loading_results(project_filename, false, event_counters);
+
+    return event_counters.has_errors()
+        ? auto_release_ptr<Project>(0)
+        : project;
+}
+
+// Load a built-in project.
+auto_release_ptr<Project> ProjectFileReader::load_builtin(
+    const char*             project_name)
+{
+    assert(project_name);
+
+    EventCounters event_counters;
+    auto_release_ptr<Project> project(
+        construct_builtin_project(project_name, event_counters));
+
+    if (project.get())
+        process_project(*project.get(), event_counters);
+
+    print_loading_results(project_name, true, event_counters);
+
+    return event_counters.has_errors()
+        ? auto_release_ptr<Project>(0)
+        : project;
+}
+
+auto_release_ptr<Project> ProjectFileReader::load_project_file(
+    const char*             project_filename,
+    const char*             schema_filename,
+    EventCounters&          event_counters) const
+{
+    // Create an empty project.
+    auto_release_ptr<Project> project(ProjectFactory::create(project_filename));
+    project->set_path(project_filename);
+
+    // Create the SAX2 XML parser.
+    auto_ptr<SAX2XMLReader> parser(XMLReaderFactory::createXMLReader());
+    parser->setFeature(XMLUni::fgSAX2CoreNameSpaces, true);         // perform namespace processing
+    parser->setFeature(XMLUni::fgSAX2CoreValidation, true);         // report all validation errors
+    parser->setFeature(XMLUni::fgXercesSchema, true);               // enable the parser's schema support
+    parser->setProperty(
+        XMLUni::fgXercesSchemaExternalNoNameSpaceSchemaLocation,
+        XMLString::transcode(schema_filename));                     // todo: memory leak?
+
+    // Create the error handler.
+    auto_ptr<ErrorLogger> error_handler(
+        new ErrorLoggerAndCounter(
+            project_filename,
+            event_counters));
+    parser->setErrorHandler(error_handler.get());
+
+    // Create the structure that will be passed to all element handlers.
+    ElementInfo element_info(event_counters, project_filename);
+
+    // Create the SAX2 content handler.
+    // todo: prevent memory leaks.
+    auto_ptr<SAX2ContentHandler<ProjectElementID> > content_handler(new SAX2ContentHandler<ProjectElementID>());
+    content_handler->register_element("assembly", ElementAssembly, new AssemblyElementHandler(element_info));
+    content_handler->register_element("assembly_instance", ElementAssemblyInstance, new AssemblyInstanceElementHandler(element_info));
+    content_handler->register_element("assign_material", ElementAssignMaterial, new AssignMaterialElementHandler(element_info));
+    content_handler->register_element("bsdf", ElementBSDF, new BSDFElementHandler(element_info));
+    content_handler->register_element("camera", ElementCamera, new CameraElementHandler(element_info));
+    content_handler->register_element("color", ElementColor, new ColorElementHandler(element_info));
+    content_handler->register_element("configuration", ElementConfiguration, new ConfigurationElementHandler(element_info));
+    content_handler->register_element("configurations", ElementConfigurations, new ConfigurationsElementHandler(element_info));
+    content_handler->register_element("edf", ElementEDF, new EDFElementHandler(element_info));
+    content_handler->register_element("environment", ElementEnvironment, new EnvironmentElementHandler(element_info));
+    content_handler->register_element("environment_edf", ElementEnvironmentEDF, new EnvironmentEDFElementHandler(element_info));
+    content_handler->register_element("environment_shader", ElementEnvironmentShader, new EnvironmentShaderElementHandler(element_info));
+    content_handler->register_element("frame", ElementFrame, new FrameElementHandler(element_info));
+    content_handler->register_element("light", ElementLight, new LightElementHandler(element_info));
+    content_handler->register_element("look_at", ElementLookAt, new LookAtElementHandler(element_info));
+    content_handler->register_element("material", ElementMaterial, new MaterialElementHandler(element_info));
+    content_handler->register_element("matrix", ElementMatrix, new MatrixElementHandler(element_info));
+    content_handler->register_element("object", ElementObject, new ObjectElementHandler(element_info));
+    content_handler->register_element("object_instance", ElementObjectInstance, new ObjectInstanceElementHandler(element_info));
+    content_handler->register_element("output", ElementOutput, new OutputElementHandler(element_info));
+    content_handler->register_element("parameter", ElementParameter, new ParameterElementHandler(element_info));
+    content_handler->register_element("parameters", ElementParameters, new ParametersElementHandler(element_info));
+    content_handler->register_element("project", ElementProject, new ProjectElementHandler(element_info, project.get()));
+    content_handler->register_element("rotation", ElementRotation, new RotationElementHandler(element_info));
+    content_handler->register_element("scaling", ElementScaling, new ScalingElementHandler(element_info));
+    content_handler->register_element("scene", ElementScene, new SceneElementHandler(element_info));
+    content_handler->register_element("surface_shader", ElementSurfaceShader, new SurfaceShaderElementHandler(element_info));
+    content_handler->register_element("texture", ElementTexture, new TextureElementHandler(element_info));
+    content_handler->register_element("texture_instance", ElementTextureInstance, new TextureInstanceElementHandler(element_info));
+    content_handler->register_element("transform", ElementTransform, new TransformElementHandler(element_info));
+    content_handler->register_element("translation", ElementTranslation, new TranslationElementHandler(element_info));
+    content_handler->register_element("values", ElementValues, new ValuesElementHandler(element_info));
+    parser->setContentHandler(content_handler.get());
+
+    // Load the project file.
+    RENDERER_LOG_INFO("loading project file %s...", project_filename);
+    try
+    {
+        parser->parse(project_filename);
+        return project;
+    }
+    catch (const XMLException&) {}
+    catch (const SAXParseException&) {}
+
+    return auto_release_ptr<Project>(0);
+}
+
+auto_release_ptr<Project> ProjectFileReader::construct_builtin_project(
+    const char*             project_name,
+    EventCounters&          event_counters) const
+{
+    if (!strcmp(project_name, "cornell_box"))
+    {
+        return CornellBoxProjectFactory::create();
+    }
+    else if (!strcmp(project_name, "default"))
+    {
+        return DefaultProjectFactory::create();
+    }
+    else
+    {
+        RENDERER_LOG_ERROR("unknown built-in project %s", project_name);
+        event_counters.signal_error();
+        return auto_release_ptr<Project>(0);
+    }
+}
+
+// Process a newly constructed or loaded project.
+void ProjectFileReader::process_project(
+    Project&                project,
+    EventCounters&          event_counters) const
+{
+    if (!event_counters.has_errors())
+        validate_project(project, event_counters);
+
+    if (!event_counters.has_errors())
+        bind_inputs(project, event_counters);
+}
+
+// Perform validation tests on a project.
+void ProjectFileReader::validate_project(
+    const Project&          project,
+    EventCounters&          event_counters) const
+{
+    // Make sure the project contains a scene.
+    if (project.get_scene())
+    {
+        // Make sure the scene contains a camera.
+        if (project.get_scene()->get_camera() == 0)
+        {
+            RENDERER_LOG_ERROR("the scene does not contain any camera");
+            event_counters.signal_error();
+        }
+    }
+    else
+    {
+        RENDERER_LOG_ERROR("the project does not contain a scene");
+        event_counters.signal_error();
+    }
+
+    // Make sure the project contains at least one output frame.
+    if (project.get_frame() == 0)
+    {
+        RENDERER_LOG_ERROR("the project does not contain any frame");
+        event_counters.signal_error();
+    }
+
+    // Make sure the project contains the required configurations.
+    if (project.configurations().get("final") == 0)
+    {
+        RENDERER_LOG_ERROR("the project must define a \"final\" configuration");
+        event_counters.signal_error();
+    }
+    if (project.configurations().get("interactive") == 0)
+    {
+        RENDERER_LOG_ERROR("the project must define an \"interactive\" configuration");
+        event_counters.signal_error();
+    }
+}
+
+// Bind all inputs of all entities of a project.
+void ProjectFileReader::bind_inputs(
+    Project&                project,
+    EventCounters&          event_counters) const
+{
+    InputBinder input_binder(event_counters);
+    input_binder.bind(*project.get_scene());
+}
+
+void ProjectFileReader::print_loading_results(
+    const char*             project_name,
+    const bool              builtin_project,
+    const EventCounters&    event_counters) const
+{
+    const size_t warning_count = event_counters.get_warning_count();
+    const size_t error_count = event_counters.get_error_count();
+
+    const LogMessage::Category log_category =
+        error_count > 0 ? LogMessage::Error :
+        warning_count > 0 ? LogMessage::Warning :
+        LogMessage::Info;
+
+    RENDERER_LOG(
+        log_category,
+        "%s %s %s (" FMT_SIZE_T " %s, " FMT_SIZE_T " %s)",
+        error_count > 0 ? "failed to load" : "successfully loaded",
+        builtin_project ? "built-in project" : "project file",
+        project_name,
+        error_count,
+        plural(error_count, "error").c_str(),
+        warning_count,
+        plural(warning_count, "warning").c_str());
+}
+
+}   // namespace renderer

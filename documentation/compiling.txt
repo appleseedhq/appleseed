@@ -1,0 +1,100 @@
+
+* compiling on windows
+  --------------------
+
+  1. boost
+
+     in src/boost/:
+
+         booststrap.bat         (the first time, to build bjam.exe)
+
+         build-win32.vs90.bat
+
+
+  2. zlib
+
+     use the appropriate Visual Studio solution in src\zlib\projects\.
+
+
+  3. libpng
+
+     use the appropriate Visual Studio solution in src\libpng\projects\.
+
+
+  4. openexr
+
+     use the appropriate Visual Studio solution in src\openexr\vc\.
+
+     do not compile using the *DLL configurations, unless you set the environment
+     variable MSVCLINK to point to the link.exe of your Visual C++ installation.
+     
+     note that appleseed only requires the static configurations to be compiled
+     (it links against the static libraries, and doesn't depend on the DLL).
+
+
+  5. xerces-c
+
+     use the appropriate Visual Studio solution in src\xerces-c\Projects\Win32\.
+
+     only build the XercesLib project with the Static Debug and Static Release
+     configurations.
+
+
+
+* compiling on mac os x
+  ---------------------
+
+  1. boost
+
+     in src/boost/:
+
+         bjam "-sTOOLS=darwin" "-sBUILD=debug release <runtime-link>static" --builddir=../../build/mac32.xcode24/boost --stagedir=../../build/mac32.xcode24/boost stage
+
+
+  2. zlib
+
+
+  3. libpng
+
+     a.  in src/libpng/:
+
+             cp scripts/makefile.darwin makefile
+             make
+
+     b.  in appleseed/:
+
+             copy src/libpng/libpng.a to build/mac32.xcode24/libpng/
+
+     c.  in src/libpng/:
+
+             make clean
+
+
+  4. openexr
+
+     after appleseed sources have been checked out, openexr needs
+     be compiled to create the src/openexr/include subdirectory.
+
+     a.  in src/openexr/:
+
+             ./configure --prefix=<absolute path to src/openexr>
+             make
+             make install
+             make clean
+
+     b.  in appleseed/:
+
+             copy src/openexr/lib/* to build/mac32.xcode24/openexr/
+
+
+  5. xerces-c
+
+     a.  in src/xerces-c/:
+
+             export XERCESCROOT=<absolute path to src/xerces-c>
+             ./runConfigure -p macosx -s
+             make
+
+     b.  in appleseed/:
+
+             copy src/xerces-c/lib/*.a to build/mac32.xcode24/xerces-c/

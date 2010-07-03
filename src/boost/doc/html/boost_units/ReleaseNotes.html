@@ -1,0 +1,366 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Release Notes</title>
+<link rel="stylesheet" href="../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../boost_units.html" title="Chapter 24. Boost.Units 1.0.0">
+<link rel="prev" href="HelpWanted.html" title="Help Wanted">
+<link rel="next" href="TODO.html" title="TODO">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../boost.png"></td>
+<td align="center"><a href="../../../index.html">Home</a></td>
+<td align="center"><a href="../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="HelpWanted.html"><img src="../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../boost_units.html"><img src="../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="TODO.html"><img src="../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="boost_units.ReleaseNotes"></a><a class="link" href="ReleaseNotes.html" title="Release Notes"> Release Notes</a>
+</h2></div></div></div>
+<p>
+      1.0.0 (August 1, 2008) :
+    </p>
+<div class="itemizedlist"><ul type="disc"><li>
+        Initial release with Boost 1.36
+      </li></ul></div>
+<p>
+      0.7.1 (March 14, 2007) :
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+        Boost.Typeof emulation support
+      </li>
+<li>
+        attempting to rebind a heterogeneous_system to a different set of dimensions
+        now fails.
+      </li>
+<li>
+        cmath.hpp now works with como-win32
+      </li>
+<li>
+        minor changes to the tests and examples to make msvc 7.1 happy
+      </li>
+</ul></div>
+<p>
+      0.7.0 (March 13, 2007) :
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+        heterogeneous and mixed system functionality added
+      </li>
+<li>
+        added fine-grained implicit unit conversion on a per fundamental dimension
+        basis
+      </li>
+<li>
+        added a number of utility metafunction classes and predicates
+      </li>
+<li>
+<code class="computeroutput"><a class="link" href="Reference.html#header.boost.units.operators_hpp" title="Header &lt;boost/units/operators.hpp&gt;">boost/units/operators.hpp</a></code>
+        now uses <code class="computeroutput"><span class="identifier">BOOST_TYPEOF</span></code> when
+        possible
+      </li>
+<li>
+        angular units added in <code class="computeroutput">boost/units/systems/trig.hpp</code>
+        - implicit conversion of radians between trigonometric, SI, and CGS systems
+        allowed
+      </li>
+<li>
+        a variety of <span class="underline"><code class="computeroutput"><a class="link" href="../boost/units/unit.html" title="Class template unit">unit</a></code></span>
+        and <span class="underline"><code class="computeroutput"><a class="link" href="../boost/units/quantity.html" title="Class template quantity">quantity</a></code></span>
+        tests added
+      </li>
+<li>
+        examples now provide self-tests
+      </li>
+</ul></div>
+<p>
+      0.6.2 (February 22, 2007) :
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+        changed template order in <code class="computeroutput"><span class="identifier">unit</span></code>
+        so dimension precedes unit system
+      </li>
+<li>
+        added <code class="computeroutput"><span class="identifier">homogeneous_system</span><span class="special">&lt;</span><span class="identifier">S</span><span class="special">&gt;</span></code>
+        for unit systems
+      </li>
+<li>
+        incorporated changes to <code class="computeroutput"><a class="link" href="Reference.html#header.boost.units.dimension_hpp" title="Header &lt;boost/units/dimension.hpp&gt;">boost/units/dimension.hpp</a></code>
+        (compile-time sorting by predicate), <code class="computeroutput"><a class="link" href="Reference.html#header.boost.units.conversion_hpp" title="Header &lt;boost/units/conversion.hpp&gt;">boost/units/conversion.hpp</a></code>
+        (thread-safe implementation of quantity conversions), and <code class="computeroutput"><a class="link" href="Reference.html#header.boost.units.io_hpp" title="Header &lt;boost/units/io.hpp&gt;">boost/units/io.hpp</a></code>
+        (now works with any <code class="computeroutput"><span class="identifier">std</span><span class="special">::</span><span class="identifier">basic_ostream</span></code>) by SW
+      </li>
+<li>
+        added abstract units in <code class="computeroutput"><a class="link" href="Reference.html#header.boost.units.systems.abstract_hpp" title="Header &lt;boost/units/systems/abstract.hpp&gt;">boost/units/systems/abstract.hpp</a></code>
+        to allow abstract dimensional analysis
+      </li>
+<li>
+        new example demonstrating implementation of code based on requirements from
+        Michael Fawcett (<a href="../../../libs/units/example/radar_beam_height.cpp" target="_top">radar_beam_height.cpp</a>)
+      </li>
+</ul></div>
+<p>
+      0.6.1 (February 13, 2007) :
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+        added metafunctions to test if a type is
+        <div class="itemizedlist"><ul type="circle">
+<li>
+            a valid dimension list (<code class="computeroutput"><span class="identifier">is_dimension_list</span><span class="special">&lt;</span><span class="identifier">D</span><span class="special">&gt;</span></code>)
+          </li>
+<li>
+            a unit (<code class="computeroutput"><span class="identifier">is_unit</span><span class="special">&lt;</span><span class="identifier">T</span><span class="special">&gt;</span></code>
+            and <code class="computeroutput"><span class="identifier">is_unit_of_system</span><span class="special">&lt;</span><span class="identifier">U</span><span class="special">,</span><span class="identifier">System</span><span class="special">&gt;</span></code>)
+          </li>
+<li>
+            a quantity (<code class="computeroutput"><span class="identifier">is_quantity</span><span class="special">&lt;</span><span class="identifier">T</span><span class="special">&gt;</span></code> and <code class="computeroutput"><span class="identifier">is_quantity_of_system</span><span class="special">&lt;</span><span class="identifier">Q</span><span class="special">,</span><span class="identifier">System</span><span class="special">&gt;</span></code>)
+          </li>
+</ul></div>
+</li>
+<li>
+        quantity conversion factor is now computed at compile time
+      </li>
+<li>
+        static constants now avoid ODR problems
+      </li>
+<li>
+        unit_example_14.cpp now uses Boost.Timer
+      </li>
+<li>
+        numerous minor fixes suggested by SW
+      </li>
+</ul></div>
+<p>
+      0.6.0 (February 8, 2007) :
+    </p>
+<div class="itemizedlist"><ul type="disc"><li>
+        incorporated Steven Watanabe's optimized code for dimension.hpp, leading
+        to <span class="bold"><strong>dramatic</strong></span> decreases in compilation time
+        (nearly a factor of 10 for unit_example_4.cpp in my tests).
+      </li></ul></div>
+<p>
+      0.5.8 (February 7, 2007) :
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+        fixed <code class="computeroutput"><span class="preprocessor">#include</span></code> in <code class="computeroutput"><a class="link" href="Reference.html#header.boost.units.systems.si.base_hpp" title="Header &lt;boost/units/systems/si/base.hpp&gt;">boost/units/systems/si/base.hpp</a></code>
+        (thanks to Michael Fawcett and Steven Watanabe)
+      </li>
+<li>
+        removed references to obsolete <code class="computeroutput"><span class="identifier">base_type</span></code>
+        in <span class="underline">__unit_info</span> (thanks to Michael Fawcett)
+      </li>
+<li>
+        moved functions in <code class="computeroutput"><a class="link" href="Reference.html#header.boost.units.cmath_hpp" title="Header &lt;boost/units/cmath.hpp&gt;">boost/units/cmath.hpp</a></code>
+        into <code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">units</span></code> namespace (thanks to Steven Watanabe)
+      </li>
+<li>
+        fixed <code class="computeroutput"><span class="preprocessor">#include</span></code> guards to
+        be consistently named <code class="computeroutput"><span class="identifier">BOOST_UNITS_XXX</span></code>
+        (thanks to Steven Watanabe)
+      </li>
+</ul></div>
+<p>
+      0.5.7 (February 5, 2007) :
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+        changed quantity conversion helper to increase flexibility
+      </li>
+<li>
+        minor documentation changes
+      </li>
+<li>
+        submitted for formal review as a Boost library
+      </li>
+</ul></div>
+<p>
+      0.5.6 (January 22, 2007) :
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+        added IEEE 1541 standard binary prefixes along with SI prefixes to and extended
+        algebra of <code class="computeroutput"><span class="identifier">scale</span></code> and <code class="computeroutput"><span class="identifier">scaled_value</span></code> classes (thanks to Kevin Lynch)
+      </li>
+<li>
+        split SI units into separate header files to minimize the "kitchen sink"
+        include problem (thanks to Janek Kozicki)
+      </li>
+<li>
+        added convenience classes for declaring fundamental dimensions and composite
+        dimensions with integral powers (<code class="computeroutput"><span class="identifier">fundamental_dimension</span></code>
+        and <code class="computeroutput"><span class="identifier">composite_dimension</span></code> respectively)
+      </li>
+</ul></div>
+<p>
+      0.5.5 (January 18, 2007) :
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+        template parameter order in <code class="computeroutput"><span class="identifier">quantity</span></code>
+        switched and default <code class="computeroutput"><span class="identifier">value_type</span></code>
+        of <code class="computeroutput"><span class="keyword">double</span></code> added (thanks to Andrey
+        Semashev and Paul Bristow)
+      </li>
+<li>
+        added implicit <code class="computeroutput"><span class="identifier">value_type</span></code>
+        conversion where allowed (thanks to Andrey Semashev)
+      </li>
+<li>
+        added <code class="computeroutput"><span class="identifier">quantity_cast</span></code> for three
+        cases (thanks to Andrey Semashev):
+        <div class="itemizedlist"><ul type="circle">
+<li>
+            constructing <code class="computeroutput"><span class="identifier">quantity</span></code>
+            from raw <code class="computeroutput"><span class="identifier">value_type</span></code>
+</li>
+<li>
+            casting from one <code class="computeroutput"><span class="identifier">value_type</span></code>
+            to another
+          </li>
+<li>
+            casting from one <code class="computeroutput"><span class="identifier">unit</span></code>
+            to another (where conversion is allowed)
+          </li>
+</ul></div>
+</li>
+<li>
+        added<code class="computeroutput"> <span class="identifier">metre</span></code> and <code class="computeroutput"><span class="identifier">metres</span></code> and related constants to the SI
+        system for the convenience of our Commonwealth friends...
+      </li>
+</ul></div>
+<p>
+      0.5.4 (January 12, 2007) :
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+        completely reimplemented unit conversion to allow for arbitrary unit conversions
+        between systems
+      </li>
+<li>
+        strict quantity construction is default; quantities can be constructed from
+        bare values by using static member <code class="computeroutput"><span class="identifier">from_value</span></code>
+</li>
+</ul></div>
+<p>
+      0.5.3 (December 12, 2006) :
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+        added Boost.Serialization support to <code class="computeroutput"><span class="identifier">unit</span></code>
+        and <code class="computeroutput"><span class="identifier">quantity</span></code> classes
+      </li>
+<li>
+        added option to enforce strict construction of quantities (only constructible
+        by multiplication of scalar by unit or quantity by unit) by preprocessor
+        <code class="computeroutput"><span class="identifier">MCS_STRICT_QUANTITY_CONSTRUCTION</span></code>
+        switch
+      </li>
+</ul></div>
+<p>
+      0.5.2 (December 4, 2006) :
+    </p>
+<div class="itemizedlist"><ul type="disc"><li>
+        added <code class="computeroutput"><span class="special">&lt;</span><span class="identifier">cmath</span><span class="special">&gt;</span></code> wrappers in the <code class="computeroutput"><span class="identifier">std</span></code>
+        namespace for functions that can support quantities
+      </li></ul></div>
+<p>
+      0.5.1 (November 3, 2006) :
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+        converted to Boost Software License
+      </li>
+<li>
+        boostified directory structure and file paths
+      </li>
+</ul></div>
+<p>
+      0.5 (November 2, 2006) :
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+        completely reimplemented SI and CGS unit systems and changed syntax for quantities
+      </li>
+<li>
+        significantly streamlined <code class="computeroutput"><span class="identifier">pow</span></code>
+        and <code class="computeroutput"><span class="identifier">root</span></code> so for most applications
+        it is only necessary to define <code class="computeroutput"><span class="identifier">power_typeof_helper</span></code>
+        and <code class="computeroutput"><span class="identifier">root_typeof_helper</span></code> to
+        gain this functionality
+      </li>
+<li>
+        added a selection of physical constants from the CODATA tables
+      </li>
+<li>
+        added a skeleton <code class="computeroutput"><span class="identifier">complex</span></code>
+        class that correctly supports both <code class="computeroutput"><span class="identifier">complex</span><span class="special">&lt;</span><span class="identifier">quantity</span><span class="special">&lt;</span><span class="identifier">Y</span><span class="special">,</span><span class="identifier">Unit</span><span class="special">&gt;</span> <span class="special">&gt;</span></code> and <code class="computeroutput"><span class="identifier">quantity</span><span class="special">&lt;</span><span class="identifier">complex</span><span class="special">&lt;</span><span class="identifier">Y</span><span class="special">&gt;,</span><span class="identifier">Unit</span><span class="special">&gt;</span></code>
+        as an example
+      </li>
+<li>
+        investigate using Boost.Typeof for compilers that do not support <code class="computeroutput"><span class="identifier">typeof</span></code>
+</li>
+</ul></div>
+<p>
+      0.4 (October 13, 2006) :
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+<code class="computeroutput"><span class="identifier">pow</span><span class="special">&lt;</span><span class="identifier">R</span><span class="special">&gt;</span></code> and
+        <code class="computeroutput"><span class="identifier">root</span><span class="special">&lt;</span><span class="identifier">R</span><span class="special">&gt;</span></code> improved
+        for user-defined types
+      </li>
+<li>
+        added unary + and unary - operators
+      </li>
+<li>
+        added new example of interfacing with <code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">math</span><span class="special">::</span><span class="identifier">quaternion</span></code>
+</li>
+<li>
+        added optional preprocessor switch to enable implicit unit conversions (<code class="computeroutput"><span class="identifier">BOOST_UNITS_ENABLE_IMPLICIT_UNIT_CONVERSIONS</span></code>)
+      </li>
+</ul></div>
+<p>
+      0.3 (September 6, 2006) :
+    </p>
+<div class="itemizedlist"><ul type="disc"><li>
+        Support for <code class="computeroutput"><span class="identifier">op</span><span class="special">(</span><span class="identifier">X</span> <span class="identifier">x</span><span class="special">,</span><span class="identifier">Y</span> <span class="identifier">y</span><span class="special">)</span></code> for g++ added. This is automatically active
+        when compiling with gcc and can be optionally enabled by defining the preprocessor
+        constant <code class="computeroutput"><span class="identifier">BOOST_UNITS_HAS_TYPEOF</span></code>
+</li></ul></div>
+<p>
+      0.2 (September 4, 2006) : Second alpha release based on slightly modified code
+      from 0.1 release
+    </p>
+<p>
+      0.1 (December 13, 2003) : written as a Boost demonstration of MPL-based dimensional
+      analysis in 2003.
+    </p>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2003 -2008 Matthias Christian Schabel, 2007-2008 Steven
+      Watanabe<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="HelpWanted.html"><img src="../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../boost_units.html"><img src="../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="TODO.html"><img src="../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

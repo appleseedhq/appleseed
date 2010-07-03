@@ -1,0 +1,50 @@
+#~ Copyright 2007 Rene Rivera.
+#~ Distributed under the Boost Software License, Version 1.0.
+#~ (See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt)
+
+if ! $(BJAM_SUBTEST)
+{
+    ECHO --- Testing -d2 option... ;
+
+    assert "...found 4 targets...
+...updating 2 targets...
+.a. subtest_a
+
+echo [subtest_a] 0
+echo [subtest_a] 1
+echo [subtest_a] 2
+    
+[subtest_a] 0
+[subtest_a] 1
+[subtest_a] 2
+.a. subtest_b
+
+echo [subtest_b] 0
+echo [subtest_b] 1
+echo [subtest_b] 2
+    
+[subtest_b] 0
+[subtest_b] 1
+[subtest_b] 2
+...updated 2 targets...
+" : (==) : [ SHELL "\"$(ARGV[1])\" -f option_d2.jam -sBJAM_SUBTEST=1 -d2" ] ;
+}
+else
+{
+    actions .a.
+    {
+echo [$(<:B)] 0
+echo [$(<:B)] 1
+echo [$(<:B)] 2
+    }
+    
+    rule .a.
+    {
+        DEPENDS $(<) : $(>) ;
+    }
+    
+    NOTFILE subtest ;
+    .a. subtest_a : subtest ;
+    .a. subtest_b : subtest ;
+    DEPENDS all : subtest_a subtest_b ;
+}

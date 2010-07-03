@@ -1,0 +1,102 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Class variable_value</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../program_options/reference.html#header.boost.program_options.variables_map_hpp" title="Header &lt;boost/program_options/variables_map.hpp&gt;">
+<link rel="prev" href="bool_switch.html" title="Function bool_switch">
+<link rel="next" href="abstract_variables_map.html" title="Class abstract_variables_map">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="bool_switch.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../program_options/reference.html#header.boost.program_options.variables_map_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="abstract_variables_map.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.program_options.variable_value"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Class variable_value</span></h2>
+<p>boost::program_options::variable_value</p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../program_options/reference.html#header.boost.program_options.variables_map_hpp" title="Header &lt;boost/program_options/variables_map.hpp&gt;">boost/program_options/variables_map.hpp</a>&gt;
+
+</em></span>
+<span class="bold"><strong>class</strong></span> <a class="link" href="variable_value.html" title="Class variable_value">variable_value</a> {
+<span class="bold"><strong>public</strong></span>:
+  <span class="emphasis"><em>// <a class="link" href="variable_value.html#boost.program_options.variable_valueconstruct-copy-destruct">construct/copy/destruct</a></em></span>
+  <a class="link" href="variable_value.html#id1882425-bb">variable_value</a>();
+  <a class="link" href="variable_value.html#id1882426-bb">variable_value</a>(<span class="bold"><strong>const</strong></span> boost::any &amp;, <span class="bold"><strong>bool</strong></span>);
+
+  <span class="emphasis"><em>// <a class="link" href="variable_value.html#id2047025-bb">public member functions</a></em></span>
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T&gt; <span class="type"><span class="bold"><strong>const</strong></span> T &amp;</span> <a class="link" href="variable_value.html#id2047028-bb">as</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T&gt; <span class="type">T &amp;</span> <a class="link" href="variable_value.html#id2047046-bb">as</a>() ;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="variable_value.html#id2047060-bb">empty</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="variable_value.html#id1882393-bb">defaulted</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>const</strong></span> boost::any &amp;</span> <a class="link" href="variable_value.html#id1882404-bb">value</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type">boost::any &amp;</span> <a class="link" href="variable_value.html#id1882414-bb">value</a>() ;
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id2925274"></a><h2>Description</h2>
+<p>Class holding value of option. Contains details about how the value is set and allows to conveniently obtain the value. </p>
+<div class="refsect2" lang="en">
+<a name="id2925281"></a><h3>
+<a name="boost.program_options.variable_valueconstruct-copy-destruct"></a><code class="computeroutput">variable_value</code> 
+        public
+       construct/copy/destruct</h3>
+<div class="orderedlist"><ol type="1">
+<li><pre class="literallayout"><a name="id1882425-bb"></a>variable_value();</pre></li>
+<li><pre class="literallayout"><a name="id1882426-bb"></a>variable_value(<span class="bold"><strong>const</strong></span> boost::any &amp; v, <span class="bold"><strong>bool</strong></span> defaulted);</pre></li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id2925339"></a><h3>
+<a name="id2047025-bb"></a><code class="computeroutput">variable_value</code> public member functions</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T&gt; <span class="type"><span class="bold"><strong>const</strong></span> T &amp;</span> <a name="id2047028-bb"></a>as() <span class="bold"><strong>const</strong></span>;</pre>
+<p>If stored value if of type T, returns that value. Otherwise, throws boost::bad_any_cast exception. </p>
+</li>
+<li><pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T&gt; <span class="type">T &amp;</span> <a name="id2047046-bb"></a>as() ;</pre></li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id2047060-bb"></a>empty() <span class="bold"><strong>const</strong></span>;</pre>Returns true if no value is stored. </li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1882393-bb"></a>defaulted() <span class="bold"><strong>const</strong></span>;</pre>
+<p>Returns true if the value was not explicitly given, but has default value. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>const</strong></span> boost::any &amp;</span> <a name="id1882404-bb"></a>value() <span class="bold"><strong>const</strong></span>;</pre>
+<p>Returns the contained value. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">boost::any &amp;</span> <a name="id1882414-bb"></a>value() ;</pre>
+<p>Returns the contained value. </p>
+</li>
+</ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2002-2004 Vladimir Prus<p>Distributed under the Boost Software License, Version 1.0.
+      (See accompanying file <code class="filename">LICENSE_1_0.txt</code> or copy at 
+      <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="bool_switch.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../program_options/reference.html#header.boost.program_options.variables_map_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="abstract_variables_map.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

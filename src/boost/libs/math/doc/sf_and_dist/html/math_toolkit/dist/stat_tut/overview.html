@@ -1,0 +1,541 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Overview</title>
+<link rel="stylesheet" href="../../../../../../../../doc/html/boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot_8125">
+<link rel="home" href="../../../index.html" title="Math Toolkit">
+<link rel="up" href="../stat_tut.html" title="Statistical Distributions Tutorial">
+<link rel="prev" href="../stat_tut.html" title="Statistical Distributions Tutorial">
+<link rel="next" href="weg.html" title="Worked Examples">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../../../../../boost.png"></td>
+<td align="center"><a href="../../../../../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="../stat_tut.html"><img src="../../../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../stat_tut.html"><img src="../../../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../../index.html"><img src="../../../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="weg.html"><img src="../../../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h4 class="title">
+<a name="math_toolkit.dist.stat_tut.overview"></a><a class="link" href="overview.html" title="Overview"> Overview</a>
+</h4></div></div></div>
+<a name="math_toolkit.dist.stat_tut.overview.headers_and_namespaces"></a><h5>
+<a name="id545948"></a>
+          <a class="link" href="overview.html#math_toolkit.dist.stat_tut.overview.headers_and_namespaces">Headers
+          and Namespaces</a>
+        </h5>
+<p>
+          All the code in this library is inside namespace boost::math.
+        </p>
+<p>
+          In order to use a distribution <span class="emphasis"><em>my_distribution</em></span> you
+          will need to include either the header &lt;boost/math/distributions/my_distribution.hpp&gt;
+          or the "include everything" header: &lt;boost/math/distributions.hpp&gt;.
+        </p>
+<p>
+          For example, to use the Students-t distribution include either &lt;boost/math/distributions/students_t.hpp&gt;
+          or &lt;boost/math/distributions.hpp&gt;
+        </p>
+<a name="math_toolkit.dist.stat_tut.overview.distributions_are_objects"></a><h5>
+<a name="id546000"></a>
+          <a class="link" href="overview.html#math_toolkit.dist.stat_tut.overview.distributions_are_objects">Distributions
+          are Objects</a>
+        </h5>
+<p>
+          Each kind of distribution in this library is a class type.
+        </p>
+<p>
+          <a class="link" href="../../policy.html" title="Policies">Policies</a> provide fine-grained
+          control of the behaviour of these classes, allowing the user to customise
+          behaviour such as how errors are handled, or how the quantiles of discrete
+          distribtions behave.
+        </p>
+<div class="tip"><table border="0" summary="Tip">
+<tr>
+<td rowspan="2" align="center" valign="top" width="25"><img alt="[Tip]" src="../../../../../../../../doc/html/images/tip.png"></td>
+<th align="left">Tip</th>
+</tr>
+<tr><td align="left" valign="top"><p>
+            If you are familiar with statistics libraries using functions, and 'Distributions
+            as Objects' seem alien, see <a class="link" href="weg/nag_library.html" title="Comparison with C, R, FORTRAN-style Free Functions">the
+            comparison to other statistics libraries.</a>
+          </p></td></tr>
+</table></div>
+<p>
+          Making distributions class types does two things:
+        </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+            It encapsulates the kind of distribution in the C++ type system; so,
+            for example, Students-t distributions are always a different C++ type
+            from Chi-Squared distributions.
+          </li>
+<li>
+            The distribution objects store any parameters associated with the distribution:
+            for example, the Students-t distribution has a <span class="emphasis"><em>degrees of freedom</em></span>
+            parameter that controls the shape of the distribution. This <span class="emphasis"><em>degrees
+            of freedom</em></span> parameter has to be provided to the Students-t
+            object when it is constructed.
+          </li>
+</ul></div>
+<p>
+          Although the distribution classes in this library are templates, there
+          are typedefs on type <span class="emphasis"><em>double</em></span> that mostly take the usual
+          name of the distribution (except where there is a clash with a function
+          of the same name: beta and gamma, in which case using the default template
+          arguments - <code class="computeroutput"><span class="identifier">RealType</span> <span class="special">=</span>
+          <span class="keyword">double</span></code> - is nearly as convenient).
+          Probably 95% of uses are covered by these typedefs:
+        </p>
+<pre class="programlisting"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="identifier">boost</span><span class="special">::</span><span class="identifier">math</span><span class="special">;</span>
+
+<span class="comment">// Construct a students_t distribution with 4 degrees of freedom:
+</span><span class="identifier">students_t</span> <span class="identifier">d1</span><span class="special">(</span><span class="number">4</span><span class="special">);</span>
+
+<span class="comment">// Construct a double-precision beta distribution 
+</span><span class="comment">// with parameters a = 10, b = 20
+</span><span class="identifier">beta_distribution</span><span class="special">&lt;&gt;</span> <span class="identifier">d2</span><span class="special">(</span><span class="number">10</span><span class="special">,</span> <span class="number">20</span><span class="special">);</span> <span class="comment">// Note: _distribution&lt;&gt; suffix !
+</span></pre>
+<p>
+          If you need to use the distributions with a type other than <code class="computeroutput"><span class="keyword">double</span></code>, then you can instantiate the template
+          directly: the names of the templates are the same as the <code class="computeroutput"><span class="keyword">double</span></code> typedef but with <code class="computeroutput"><span class="identifier">_distribution</span></code>
+          appended, for example: <a class="link" href="../dist_ref/dists/students_t_dist.html" title="Students t Distribution">Students
+          t Distribution</a> or <a class="link" href="../dist_ref/dists/binomial_dist.html" title="Binomial Distribution">Binomial
+          Distribution</a>:
+        </p>
+<pre class="programlisting"><span class="comment">// Construct a students_t distribution, of float type,
+</span><span class="comment">// with 4 degrees of freedom:
+</span><span class="identifier">students_t_distribution</span><span class="special">&lt;</span><span class="keyword">float</span><span class="special">&gt;</span> <span class="identifier">d3</span><span class="special">(</span><span class="number">4</span><span class="special">);</span>
+
+<span class="comment">// Construct a binomial distribution, of long double type,
+</span><span class="comment">// with probability of success 0.3
+</span><span class="comment">// and 20 trials in total:
+</span><span class="identifier">binomial_distribution</span><span class="special">&lt;</span><span class="keyword">long</span> <span class="keyword">double</span><span class="special">&gt;</span> <span class="identifier">d4</span><span class="special">(</span><span class="number">20</span><span class="special">,</span> <span class="number">0.3</span><span class="special">);</span>
+</pre>
+<p>
+          The parameters passed to the distributions can be accessed via getter member
+          functions:
+        </p>
+<pre class="programlisting"><span class="identifier">d1</span><span class="special">.</span><span class="identifier">degrees_of_freedom</span><span class="special">();</span>  <span class="comment">// returns 4.0 
+</span></pre>
+<p>
+          This is all well and good, but not very useful so far. What we often want
+          is to be able to calculate the <span class="emphasis"><em>cumulative distribution functions</em></span>
+          and <span class="emphasis"><em>quantiles</em></span> etc for these distributions.
+        </p>
+<a name="math_toolkit.dist.stat_tut.overview.generic_operations_common_to_all_distributions_are_non_member_functions"></a><h5>
+<a name="id546532"></a>
+          <a class="link" href="overview.html#math_toolkit.dist.stat_tut.overview.generic_operations_common_to_all_distributions_are_non_member_functions">Generic
+          operations common to all distributions are non-member functions</a>
+        </h5>
+<p>
+          Want to calculate the PDF (Probability Density Function) of a distribution?
+          No problem, just use:
+        </p>
+<pre class="programlisting"><span class="identifier">pdf</span><span class="special">(</span><span class="identifier">my_dist</span><span class="special">,</span> <span class="identifier">x</span><span class="special">);</span>  <span class="comment">// Returns PDF (density) at point x of distribution my_dist.
+</span></pre>
+<p>
+          Or how about the CDF (Cumulative Distribution Function):
+        </p>
+<pre class="programlisting"><span class="identifier">cdf</span><span class="special">(</span><span class="identifier">my_dist</span><span class="special">,</span> <span class="identifier">x</span><span class="special">);</span>  <span class="comment">// Returns CDF (integral from -infinity to point x)
+</span>                  <span class="comment">// of distribution my_dist.
+</span></pre>
+<p>
+          And quantiles are just the same:
+        </p>
+<pre class="programlisting"><span class="identifier">quantile</span><span class="special">(</span><span class="identifier">my_dist</span><span class="special">,</span> <span class="identifier">p</span><span class="special">);</span>  <span class="comment">// Returns the value of the random variable x
+</span>                       <span class="comment">// such that cdf(my_dist, x) == p.
+</span></pre>
+<p>
+          If you're wondering why these aren't member functions, it's to make the
+          library more easily extensible: if you want to add additional generic operations
+          - let's say the <span class="emphasis"><em>n'th moment</em></span> - then all you have to
+          do is add the appropriate non-member functions, overloaded for each implemented
+          distribution type.
+        </p>
+<div class="tip"><table border="0" summary="Tip">
+<tr>
+<td rowspan="2" align="center" valign="top" width="25"><img alt="[Tip]" src="../../../../../../../../doc/html/images/tip.png"></td>
+<th align="left">Tip</th>
+</tr>
+<tr><td align="left" valign="top">
+<p>
+          </p>
+<p>
+            <span class="bold"><strong>Random numbers that approximate Quantiles of Distributions</strong></span>
+          </p>
+<p>
+            If you want random numbers that are distributed in a specific way, for
+            example in a uniform, normal or triangular, see <a href="http://www.boost.org/libs/random/" target="_top">Boost.Random</a>.
+          </p>
+<p>
+            Whilst in principal there's nothing to prevent you from using the quantile
+            function to convert a uniformly distributed random number to another
+            distribution, in practice there are much more efficient algorithms available
+            that are specific to random number generation.
+          </p>
+</td></tr>
+</table></div>
+<p>
+          For example, the binomial distribution has two parameters: n (the number
+          of trials) and p (the probability of success on one trial).
+        </p>
+<p>
+          The <code class="computeroutput"><span class="identifier">binomial_distribution</span></code>
+          constructor therefore has two parameters:
+        </p>
+<p>
+          <code class="computeroutput"><span class="identifier">binomial_distribution</span><span class="special">(</span><span class="identifier">RealType</span> <span class="identifier">n</span><span class="special">,</span> <span class="identifier">RealType</span>
+          <span class="identifier">p</span><span class="special">);</span></code>
+        </p>
+<p>
+          For this distribution the random variate is k: the number of successes
+          observed. The probability density/mass function (pdf) is therefore written
+          as <span class="emphasis"><em>f(k; n, p)</em></span>.
+        </p>
+<div class="note"><table border="0" summary="Note">
+<tr>
+<td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="../../../../../../../../doc/html/images/note.png"></td>
+<th align="left">Note</th>
+</tr>
+<tr><td align="left" valign="top">
+<p>
+          </p>
+<p>
+            <span class="bold"><strong>Random Variates and Distribution Parameters</strong></span>
+          </p>
+<p>
+            <a href="http://en.wikipedia.org/wiki/Random_variate" target="_top">Random variates</a>
+            and <a href="http://en.wikipedia.org/wiki/Parameter" target="_top">distribution
+            parameters</a> are conventionally distinguished (for example in Wikipedia
+            and Wolfram MathWorld by placing a semi-colon (or sometimes vertical
+            bar) after the random variate (whose value you 'choose'), to separate
+            the variate from the parameter(s) that defines the shape of the distribution.
+          </p>
+</td></tr>
+</table></div>
+<p>
+          As noted above the non-member function <code class="computeroutput"><span class="identifier">pdf</span></code>
+          has one parameter for the distribution object, and a second for the random
+          variate. So taking our binomial distribution example, we would write:
+        </p>
+<p>
+          <code class="computeroutput"><span class="identifier">pdf</span><span class="special">(</span><span class="identifier">binomial_distribution</span><span class="special">&lt;</span><span class="identifier">RealType</span><span class="special">&gt;(</span><span class="identifier">n</span><span class="special">,</span> <span class="identifier">p</span><span class="special">),</span> <span class="identifier">k</span><span class="special">);</span></code>
+        </p>
+<p>
+          The ranges of random variate values that are permitted and are supported
+          can be tested by using two functions <code class="computeroutput"><span class="identifier">range</span></code>
+          and <code class="computeroutput"><span class="identifier">support</span></code>.
+        </p>
+<p>
+          The distribution (effectively the random variate) is said to be 'supported'
+          over a range that is <a href="http://en.wikipedia.org/wiki/Probability_distribution" target="_top">"the
+          smallest closed set whose complement has probability zero"</a>.
+          MathWorld uses the word 'defined' for this range. Non-mathematicians might
+          say it means the 'interesting' smallest range of random variate x that
+          has the cdf going from zero to unity. Outside are uninteresting zones where
+          the pdf is zero, and the cdf zero or unity.
+        </p>
+<p>
+          For most distributions, with probability distribution functions one might
+          describe as 'well-behaved', we have decided that it is most useful for
+          the supported range to exclude random variate values like exact zero <span class="bold"><strong>if the end point is discontinuous</strong></span>. For example,
+          the Weibull (scale 1, shape 1) distribution smoothly heads for unity as
+          the random variate x declines towards zero. But at x = zero, the value
+          of the pdf is suddenly exactly zero, by definition. If you are plotting
+          the PDF, or otherwise calculating, zero is not the most useful value for
+          the lower limit of supported, as we discovered. So for this, and similar
+          distributions, we have decided it is most numerically useful to use the
+          closest value to zero, min_value, for the limit of the supported range.
+          (The <code class="computeroutput"><span class="identifier">range</span></code> remains from
+          zero, so you will still get <code class="computeroutput"><span class="identifier">pdf</span><span class="special">(</span><span class="identifier">weibull</span><span class="special">,</span> <span class="number">0</span><span class="special">)</span>
+          <span class="special">==</span> <span class="number">0</span></code>).
+          (Exponential and gamma distributions have similarly discontinuous functions).
+        </p>
+<p>
+          Mathematically, the functions may make sense with an (+ or -) infinite
+          value, but except for a few special cases (in the Normal and Cauchy distributions)
+          this implementation limits random variates to finite values from the <code class="computeroutput"><span class="identifier">max</span></code> to <code class="computeroutput"><span class="identifier">min</span></code>
+          for the <code class="computeroutput"><span class="identifier">RealType</span></code>. (See
+          <a class="link" href="../../backgrounders/implementation.html#math_toolkit.backgrounders.implementation.handling_of_floating_point_infinity">Handling
+          of Floating-Point Infinity</a> for rationale).
+        </p>
+<div class="note"><table border="0" summary="Note">
+<tr>
+<td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="../../../../../../../../doc/html/images/note.png"></td>
+<th align="left">Note</th>
+</tr>
+<tr><td align="left" valign="top">
+<p>
+          </p>
+<p>
+            <span class="bold"><strong>Discrete Probability Distributions</strong></span>
+          </p>
+<p>
+            Note that the <a href="http://en.wikipedia.org/wiki/Discrete_probability_distribution" target="_top">discrete
+            distributions</a>, including the binomial, negative binomial, Poisson
+            &amp; Bernoulli, are all mathematically defined as discrete functions:
+            that is to say the functions <code class="computeroutput"><span class="identifier">cdf</span></code>
+            and <code class="computeroutput"><span class="identifier">pdf</span></code> are only defined
+            for integral values of the random variate.
+          </p>
+<p>
+            However, because the method of calculation often uses continuous functions
+            it is convenient to treat them as if they were continuous functions,
+            and permit non-integral values of their parameters.
+          </p>
+<p>
+            Users wanting to enforce a strict mathematical model may use <code class="computeroutput"><span class="identifier">floor</span></code> or <code class="computeroutput"><span class="identifier">ceil</span></code>
+            functions on the random variate prior to calling the distribution function.
+          </p>
+<p>
+            The quantile functions for these distributions are hard to specify in
+            a manner that will satisfy everyone all of the time. The default behaviour
+            is to return an integer result, that has been rounded <span class="emphasis"><em>outwards</em></span>:
+            that is to say, lower quantiles - where the probablity is less than 0.5
+            are rounded down, while upper quantiles - where the probability is greater
+            than 0.5 - are rounded up. This behaviour ensures that if an X% quantile
+            is requested, then <span class="emphasis"><em>at least</em></span> the requested coverage
+            will be present in the central region, and <span class="emphasis"><em>no more than</em></span>
+            the requested coverage will be present in the tails.
+          </p>
+<p>
+            This behaviour can be changed so that the quantile functions are rounded
+            differently, or return a real-valued result using <a class="link" href="../../policy/pol_overview.html" title="Policy Overview">Policies</a>.
+            It is strongly recommended that you read the tutorial <a class="link" href="../../policy/pol_tutorial/understand_dis_quant.html" title="Understanding Quantiles of Discrete Distributions">Understanding
+            Quantiles of Discrete Distributions</a> before using the quantile
+            function on a discrete distribtion. The <a class="link" href="../../policy/pol_ref/discrete_quant_ref.html" title="Discrete Quantile Policies">reference
+            docs</a> describe how to change the rounding policy for these distributions.
+          </p>
+<p>
+            For similar reasons continuous distributions with parameters like "degrees
+            of freedom" that might appear to be integral, are treated as real
+            values (and are promoted from integer to floating-point if necessary).
+            In this case however, there are a small number of situations where non-integral
+            degrees of freedom do have a genuine meaning.
+          </p>
+</td></tr>
+</table></div>
+<a name="complements"></a><p>
+        </p>
+<a name="math_toolkit.dist.stat_tut.overview.complements_are_supported_too"></a><h5>
+<a name="id547368"></a>
+          <a class="link" href="overview.html#math_toolkit.dist.stat_tut.overview.complements_are_supported_too">Complements
+          are supported too</a>
+        </h5>
+<p>
+          Often you don't want the value of the CDF, but its complement, which is
+          to say <code class="computeroutput"><span class="number">1</span><span class="special">-</span><span class="identifier">p</span></code> rather than <code class="computeroutput"><span class="identifier">p</span></code>.
+          You could calculate the CDF and subtract it from <code class="computeroutput"><span class="number">1</span></code>,
+          but if <code class="computeroutput"><span class="identifier">p</span></code> is very close
+          to <code class="computeroutput"><span class="number">1</span></code> then cancellation error
+          will cause you to lose significant digits. In extreme cases, <code class="computeroutput"><span class="identifier">p</span></code> may actually be equal to <code class="computeroutput"><span class="number">1</span></code>, even though the true value of the complement
+          is non-zero.
+        </p>
+<p>
+          <a class="link" href="overview.html#why_complements">See also <span class="emphasis"><em>"Why complements?"</em></span></a>
+        </p>
+<p>
+          In this library, whenever you want to receive a complement, just wrap all
+          the function arguments in a call to <code class="computeroutput"><span class="identifier">complement</span><span class="special">(...)</span></code>, for example:
+        </p>
+<pre class="programlisting"><span class="identifier">students_t</span> <span class="identifier">dist</span><span class="special">(</span><span class="number">5</span><span class="special">);</span>
+<span class="identifier">cout</span> <span class="special">&lt;&lt;</span> <span class="string">"CDF at t = 1 is "</span> <span class="special">&lt;&lt;</span> <span class="identifier">cdf</span><span class="special">(</span><span class="identifier">dist</span><span class="special">,</span> <span class="number">1.0</span><span class="special">)</span> <span class="special">&lt;&lt;</span> <span class="identifier">endl</span><span class="special">;</span>
+<span class="identifier">cout</span> <span class="special">&lt;&lt;</span> <span class="string">"Complement of CDF at t = 1 is "</span> <span class="special">&lt;&lt;</span> <span class="identifier">cdf</span><span class="special">(</span><span class="identifier">complement</span><span class="special">(</span><span class="identifier">dist</span><span class="special">,</span> <span class="number">1.0</span><span class="special">))</span> <span class="special">&lt;&lt;</span> <span class="identifier">endl</span><span class="special">;</span>
+</pre>
+<p>
+          But wait, now that we have a complement, we have to be able to use it as
+          well. Any function that accepts a probability as an argument can also accept
+          a complement by wrapping all of its arguments in a call to <code class="computeroutput"><span class="identifier">complement</span><span class="special">(...)</span></code>,
+          for example:
+        </p>
+<pre class="programlisting"><span class="identifier">students_t</span> <span class="identifier">dist</span><span class="special">(</span><span class="number">5</span><span class="special">);</span>
+
+<span class="keyword">for</span><span class="special">(</span><span class="keyword">double</span> <span class="identifier">i</span> <span class="special">=</span> <span class="number">10</span><span class="special">;</span> <span class="identifier">i</span> <span class="special">&lt;</span> <span class="number">1e10</span><span class="special">;</span> <span class="identifier">i</span> <span class="special">*=</span> <span class="number">10</span><span class="special">)</span>
+<span class="special">{</span>
+   <span class="comment">// Calculate the quantile for a 1 in i chance:
+</span>   <span class="keyword">double</span> <span class="identifier">t</span> <span class="special">=</span> <span class="identifier">quantile</span><span class="special">(</span><span class="identifier">complement</span><span class="special">(</span><span class="identifier">dist</span><span class="special">,</span> <span class="number">1</span><span class="special">/</span><span class="identifier">i</span><span class="special">));</span>
+   <span class="comment">// Print it out:
+</span>   <span class="identifier">cout</span> <span class="special">&lt;&lt;</span> <span class="string">"Quantile of students-t with 5 degrees of freedom\n"</span>
+           <span class="string">"for a 1 in "</span> <span class="special">&lt;&lt;</span> <span class="identifier">i</span> <span class="special">&lt;&lt;</span> <span class="string">" chance is "</span> <span class="special">&lt;&lt;</span> <span class="identifier">t</span> <span class="special">&lt;&lt;</span> <span class="identifier">endl</span><span class="special">;</span>
+<span class="special">}</span>
+</pre>
+<div class="tip"><table border="0" summary="Tip">
+<tr>
+<td rowspan="2" align="center" valign="top" width="25"><img alt="[Tip]" src="../../../../../../../../doc/html/images/tip.png"></td>
+<th align="left">Tip</th>
+</tr>
+<tr><td align="left" valign="top">
+<p>
+          </p>
+<p>
+            <span class="bold"><strong>Critical values are just quantiles</strong></span>
+          </p>
+<p>
+            Some texts talk about quantiles, others about critical values, the basic
+            rule is:
+          </p>
+<p>
+            <span class="emphasis"><em>Lower critical values</em></span> are the same as the quantile.
+          </p>
+<p>
+            <span class="emphasis"><em>Upper critical values</em></span> are the same as the quantile
+            from the complement of the probability.
+          </p>
+<p>
+            For example, suppose we have a Bernoulli process, giving rise to a binomial
+            distribution with success ratio 0.1 and 100 trials in total. The <span class="emphasis"><em>lower
+            critical value</em></span> for a probability of 0.05 is given by:
+          </p>
+<p>
+            <code class="computeroutput"><span class="identifier">quantile</span><span class="special">(</span><span class="identifier">binomial</span><span class="special">(</span><span class="number">100</span><span class="special">,</span> <span class="number">0.1</span><span class="special">),</span> <span class="number">0.05</span><span class="special">)</span></code>
+          </p>
+<p>
+            and the <span class="emphasis"><em>upper critical value</em></span> is given by:
+          </p>
+<p>
+            <code class="computeroutput"><span class="identifier">quantile</span><span class="special">(</span><span class="identifier">complement</span><span class="special">(</span><span class="identifier">binomial</span><span class="special">(</span><span class="number">100</span><span class="special">,</span> <span class="number">0.1</span><span class="special">),</span> <span class="number">0.05</span><span class="special">))</span></code>
+          </p>
+<p>
+            which return 4.82 and 14.63 respectively.
+          </p>
+</td></tr>
+</table></div>
+<a name="why_complements"></a><p>
+        </p>
+<div class="tip"><table border="0" summary="Tip">
+<tr>
+<td rowspan="2" align="center" valign="top" width="25"><img alt="[Tip]" src="../../../../../../../../doc/html/images/tip.png"></td>
+<th align="left">Tip</th>
+</tr>
+<tr><td align="left" valign="top">
+<p>
+          </p>
+<p>
+            <span class="bold"><strong>Why bother with complements anyway?</strong></span>
+          </p>
+<p>
+            It's very tempting to dispense with complements, and simply subtract
+            the probability from 1 when required. However, consider what happens
+            when the probability is very close to 1: let's say the probability expressed
+            at float precision is <code class="computeroutput"><span class="number">0.999999940f</span></code>,
+            then <code class="computeroutput"><span class="number">1</span> <span class="special">-</span>
+            <span class="number">0.999999940f</span> <span class="special">=</span>
+            <span class="number">5.96046448e-008</span></code>, but the result
+            is actually accurate to just <span class="emphasis"><em>one single bit</em></span>: the
+            only bit that didn't cancel out!
+          </p>
+<p>
+            Or to look at this another way: consider that we want the risk of falsely
+            rejecting the null-hypothesis in the Student's t test to be 1 in 1 billion,
+            for a sample size of 10,000. This gives a probability of 1 - 10<sup>-9</sup>, which
+            is exactly 1 when calculated at float precision. In this case calculating
+            the quantile from the complement neatly solves the problem, so for example:
+          </p>
+<p>
+            <code class="computeroutput"><span class="identifier">quantile</span><span class="special">(</span><span class="identifier">complement</span><span class="special">(</span><span class="identifier">students_t</span><span class="special">(</span><span class="number">10000</span><span class="special">),</span> <span class="number">1e-9</span><span class="special">))</span></code>
+          </p>
+<p>
+            returns the expected t-statistic <code class="computeroutput"><span class="number">6.00336</span></code>,
+            where as:
+          </p>
+<p>
+            <code class="computeroutput"><span class="identifier">quantile</span><span class="special">(</span><span class="identifier">students_t</span><span class="special">(</span><span class="number">10000</span><span class="special">),</span> <span class="number">1</span><span class="special">-</span><span class="number">1e-9f</span><span class="special">)</span></code>
+          </p>
+<p>
+            raises an overflow error, since it is the same as:
+          </p>
+<p>
+            <code class="computeroutput"><span class="identifier">quantile</span><span class="special">(</span><span class="identifier">students_t</span><span class="special">(</span><span class="number">10000</span><span class="special">),</span> <span class="number">1</span><span class="special">)</span></code>
+          </p>
+<p>
+            Which has no finite result.
+          </p>
+</td></tr>
+</table></div>
+<a name="math_toolkit.dist.stat_tut.overview.parameters_can_be_calculated"></a><h5>
+<a name="id548551"></a>
+          <a class="link" href="overview.html#math_toolkit.dist.stat_tut.overview.parameters_can_be_calculated">Parameters
+          can be calculated</a>
+        </h5>
+<p>
+          Sometimes it's the parameters that define the distribution that you need
+          to find. Suppose, for example, you have conducted a Students-t test for
+          equal means and the result is borderline. Maybe your two samples differ
+          from each other, or maybe they don't; based on the result of the test you
+          can't be sure. A legitimate question to ask then is "How many more
+          measurements would I have to take before I would get an X% probability
+          that the difference is real?" Parameter finders can answer questions
+          like this, and are necessarily different for each distribution. They are
+          implemented as static member functions of the distributions, for example:
+        </p>
+<pre class="programlisting"><span class="identifier">students_t</span><span class="special">::</span><span class="identifier">find_degrees_of_freedom</span><span class="special">(</span>
+   <span class="number">1.3</span><span class="special">,</span>        <span class="comment">// difference from true mean to detect
+</span>   <span class="number">0.05</span><span class="special">,</span>       <span class="comment">// maximum risk of falsely rejecting the null-hypothesis.
+</span>   <span class="number">0.1</span><span class="special">,</span>        <span class="comment">// maximum risk of falsely failing to reject the null-hypothesis.
+</span>   <span class="number">0.13</span><span class="special">);</span>      <span class="comment">// sample standard deviation
+</span></pre>
+<p>
+          Returns the number of degrees of freedom required to obtain a 95% probability
+          that the observed differences in means is not down to chance alone. In
+          the case that a borderline Students-t test result was previously obtained,
+          this can be used to estimate how large the sample size would have to become
+          before the observed difference was considered significant. It assumes,
+          of course, that the sample mean and standard deviation are invariant with
+          sample size.
+        </p>
+<a name="math_toolkit.dist.stat_tut.overview.summary"></a><h5>
+<a name="id548703"></a>
+          <a class="link" href="overview.html#math_toolkit.dist.stat_tut.overview.summary">Summary</a>
+        </h5>
+<div class="itemizedlist"><ul type="disc">
+<li>
+            Distributions are objects, which are constructed from whatever parameters
+            the distribution may have.
+          </li>
+<li>
+            Member functions allow you to retrieve the parameters of a distribution.
+          </li>
+<li>
+            Generic non-member functions provide access to the properties that are
+            common to all the distributions (PDF, CDF, quantile etc).
+          </li>
+<li>
+            Complements of probabilities are calculated by wrapping the function's
+            arguments in a call to <code class="computeroutput"><span class="identifier">complement</span><span class="special">(...)</span></code>.
+          </li>
+<li>
+            Functions that accept a probability can accept a complement of the probability
+            as well, by wrapping the function's arguments in a call to <code class="computeroutput"><span class="identifier">complement</span><span class="special">(...)</span></code>.
+          </li>
+<li>
+            Static member functions allow the parameters of a distribution to be
+            found from other information.
+          </li>
+</ul></div>
+<p>
+          Now that you have the basics, the next section looks at some worked examples.
+        </p>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2006 , 2007, 2008 John Maddock, Paul A. Bristow, Hubert
+      Holin, Xiaogang Zhang, Bruno Lalande and Johan Råde<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="../stat_tut.html"><img src="../../../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../stat_tut.html"><img src="../../../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../../index.html"><img src="../../../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="weg.html"><img src="../../../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

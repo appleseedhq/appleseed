@@ -1,0 +1,21 @@
+[article Code Block 3]
+
+[section Python code block]
+
+[python]
+``
+    print "\xfabln\xeck"
+``
+
+[endsect]
+
+[section C++ code block]
+
+This isn't valid C++ but I think we should accept it;
+
+[cpp]
+``
+    std::cout<<"\xfabln\xeck"<<"\n";
+``
+
+[endsect]

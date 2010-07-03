@@ -1,0 +1,38 @@
+project tools/inspect/doc ;
+
+import path ;
+
+using quickbook ;
+
+xml inspect
+    :
+    inspect.qbk
+    ;
+
+stage html
+    :
+    ../../../LICENSE_1_0.txt
+    ../../../boost.png
+    ../../../doc/html/boostbook.css
+    ;
+
+stage html/images
+    :
+    [ path.glob ../../../doc/html/images : *.png ]
+    ;
+
+boostbook standalone
+    :
+        inspect
+    :
+        <format>html
+        <name>html
+        <dependency>html
+        <dependency>html/images
+        <xsl:param>boost.root=.
+        <xsl:param>nav.layout=none
+    ;
+
+#~ Copyright Rene Rivera 2006.
+#~ Distributed under the Boost Software License, Version 1.0. (See accompanying
+#~ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)

@@ -1,0 +1,1074 @@
+<HTML><HEAD><SCRIPT language="JavaScript" src="../resources/script.js" type="text/javascript"></SCRIPT><TITLE>Xerces-C++: XMLAttDef Class Reference</TITLE><link href="XercesApi.css" rel="stylesheet" type="text/css"></HEAD><BODY alink="#ff0000" bgcolor="#ffffff" leftmargin="4" link="#0000ff" marginheight="4" marginwidth="4" text="#000000" topmargin="4" vlink="#0000aa"><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD align="left" height="60" rowspan="3" valign="top" width="135"><IMG border="0" height="60" hspace="0" src="../resources/logo.gif" vspace="0" width="135"></TD><TD align="left" colspan="4" height="5" valign="top" width="456"><IMG border="0" height="5" hspace="0" src="../resources/line.gif" vspace="0" width="456"></TD><TD align="left" height="60" rowspan="3" valign="top" width="29"><IMG border="0" height="60" hspace="0" src="../resources/right.gif" vspace="0" width="29"></TD></TR><TR><TD align="left" bgcolor="#0086b2" colspan="4" height="35" valign="top" width="456"><IMG alt="" border="0" height="35" hspace="0" src="../graphics/api-header.jpg" vspace="0" width="456"></TD></TR><TR><TD align="left" height="20" valign="top" width="168"><IMG border="0" height="20" hspace="0" src="../resources/bottom.gif" vspace="0" width="168"></TD><TD align="left" height="20" valign="top" width="96"><A href="http://xml.apache.org/" onMouseOut="rolloverOff('xml');" onMouseOver="rolloverOn('xml');" target="new"><IMG alt="http://xml.apache.org/" border="0" height="20" hspace="0" name="xml" onLoad="rolloverLoad('xml','../resources/button-xml-hi.gif','../resources/button-xml-lo.gif');" src="../resources/button-xml-lo.gif" vspace="0" width="96"></A></TD><TD align="left" height="20" valign="top" width="96"><A href="http://www.apache.org/" onMouseOut="rolloverOff('asf');" onMouseOver="rolloverOn('asf');" target="new"><IMG alt="http://www.apache.org/" border="0" height="20" hspace="0" name="asf" onLoad="rolloverLoad('asf','../resources/button-asf-hi.gif','../resources/button-asf-lo.gif');" src="../resources/button-asf-lo.gif" vspace="0" width="96"></A></TD><TD align="left" height="20" valign="top" width="96"><A href="http://www.w3.org/" onMouseOut="rolloverOff('w3c');" onMouseOver="rolloverOn('w3c');" target="new"><IMG alt="http://www.w3.org/" border="0" height="20" hspace="0" name="w3c" onLoad="rolloverLoad('w3c','../resources/button-w3c-hi.gif','../resources/button-w3c-lo.gif');" src="../resources/button-w3c-lo.gif" vspace="0" width="96"></A></TD></TR></TABLE><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD align="left" valign="top" width="120"><IMG border="0" height="14" hspace="0" src="../resources/join.gif" vspace="0" width="120"><BR>
+  <A href="../../index.html" onMouseOut="rolloverOff('side-ext-2');" onMouseOver="rolloverOn('side-ext-2');"><IMG alt="Home" border="0" height="12" hspace="0" name="side-ext-2" onLoad="rolloverLoad('side-ext-2','../graphics/ext-2-label-2.jpg','../graphics/ext-2-label-3.jpg');" src="../graphics/ext-2-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../index.html" onMouseOut="rolloverOff('side-index');" onMouseOver="rolloverOn('side-index');"><IMG alt="Readme" border="0" height="12" hspace="0" name="side-index" onLoad="rolloverLoad('side-index','../graphics/index-label-2.jpg','../graphics/index-label-3.jpg');" src="../graphics/index-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../charter.html" onMouseOut="rolloverOff('side-charter');" onMouseOver="rolloverOn('side-charter');"><IMG alt="Charter" border="0" height="12" hspace="0" name="side-charter" onLoad="rolloverLoad('side-charter','../graphics/charter-label-2.jpg','../graphics/charter-label-3.jpg');" src="../graphics/charter-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../releases.html" onMouseOut="rolloverOff('side-releases');" onMouseOver="rolloverOn('side-releases');"><IMG alt="Release Info" border="0" height="12" hspace="0" name="side-releases" onLoad="rolloverLoad('side-releases','../graphics/releases-label-2.jpg','../graphics/releases-label-3.jpg');" src="../graphics/releases-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../install.html" onMouseOut="rolloverOff('side-install');" onMouseOver="rolloverOn('side-install');"><IMG alt="Installation" border="0" height="12" hspace="0" name="side-install" onLoad="rolloverLoad('side-install','../graphics/install-label-2.jpg','../graphics/install-label-3.jpg');" src="../graphics/install-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="http://xerces.apache.org/xerces-c/download.cgi" onMouseOut="rolloverOff('side-ext-20');" onMouseOver="rolloverOn('side-ext-20');"><IMG alt="Download" border="0" height="12" hspace="0" name="side-ext-20" onLoad="rolloverLoad('side-ext-20','../graphics/ext-20-label-2.jpg','../graphics/ext-20-label-3.jpg');" src="../graphics/ext-20-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../build.html" onMouseOut="rolloverOff('side-build');" onMouseOver="rolloverOn('side-build');"><IMG alt="Build Instructions" border="0" height="12" hspace="0" name="side-build" onLoad="rolloverLoad('side-build','../graphics/build-label-2.jpg','../graphics/build-label-3.jpg');" src="../graphics/build-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../program.html" onMouseOut="rolloverOff('side-program');" onMouseOver="rolloverOn('side-program');"><IMG alt="Programming" border="0" height="12" hspace="0" name="side-program" onLoad="rolloverLoad('side-program','../graphics/program-label-2.jpg','../graphics/program-label-3.jpg');" src="../graphics/program-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../samples.html" onMouseOut="rolloverOff('side-samples');" onMouseOver="rolloverOn('side-samples');"><IMG alt="Samples" border="0" height="12" hspace="0" name="side-samples" onLoad="rolloverLoad('side-samples','../graphics/samples-label-2.jpg','../graphics/samples-label-3.jpg');" src="../graphics/samples-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../faqs.html" onMouseOut="rolloverOff('side-faqs');" onMouseOver="rolloverOn('side-faqs');"><IMG alt="FAQs" border="0" height="12" hspace="0" name="side-faqs" onLoad="rolloverLoad('side-faqs','../graphics/faqs-label-2.jpg','../graphics/faqs-label-3.jpg');" src="../graphics/faqs-label-3.jpg" vspace="0" width="120"></A><BR>
+
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../api.html" onMouseOut="rolloverOff('side-api');" onMouseOver="rolloverOn('side-api');"><IMG alt="API Docs" border="0" height="12" hspace="0" name="side-api" onLoad="rolloverLoad('side-api','../graphics/api-label-2.jpg','../graphics/api-label-3.jpg');" src="../graphics/api-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../ApacheDOMC++Binding.html" onMouseOut="rolloverOff('side-ext-88');" onMouseOver="rolloverOn('side-ext-88');"><IMG alt="DOM C++ Binding" border="0" height="12" hspace="0" name="side-ext-88" onLoad="rolloverLoad('side-ext-88','../graphics/ext-88-label-2.jpg','../graphics/ext-88-label-3.jpg');" src="../graphics/ext-88-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../migrate.html" onMouseOut="rolloverOff('side-migrate');" onMouseOver="rolloverOn('side-migrate');"><IMG alt="Migration Guide" border="0" height="12" hspace="0" name="side-migrate" onLoad="rolloverLoad('side-migrate','../graphics/migrate-label-2.jpg','../graphics/migrate-label-3.jpg');" src="../graphics/migrate-label-3.jpg" vspace="0" width="120"></A><BR>
+
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+    <A href="../feedback.html" onMouseOut="rolloverOff('side-feedback');" onMouseOver="rolloverOn('side-feedback');"><IMG alt="Feedback" border="0" height="12" hspace="0" name="side-feedback" onLoad="rolloverLoad('side-feedback','../graphics/feedback-label-2.jpg','../graphics/feedback-label-3.jpg');" src="../graphics/feedback-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../bug-report.html" onMouseOut="rolloverOff('side-bug-report');" onMouseOver="rolloverOn('side-bug-report');"><IMG alt="Bug-Reporting" border="0" height="12" hspace="0" name="side-bug-report" onLoad="rolloverLoad('side-bug-report','../graphics/bug-report-label-2.jpg','../graphics/bug-report-label-3.jpg');" src="../graphics/bug-report-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../mailing-lists.html" onMouseOut="rolloverOff('side-mailing-lists');" onMouseOver="rolloverOn('side-mailing-lists');"><IMG alt="Mailing Lists" border="0" height="12" hspace="0" name="side-mailing-lists" onLoad="rolloverLoad('side-mailing-lists','../graphics/mailing-lists-label-2.jpg','../graphics/mailing-lists-label-3.jpg');" src="../graphics/mailing-lists-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+    <A href="../source-repository.html" onMouseOut="rolloverOff('side-source-repository');" onMouseOver="rolloverOn('side-source-repository');"><IMG alt="Source Repository" border="0" height="12" hspace="0" name="side-source-repository" onLoad="rolloverLoad('side-source-repository','../graphics/source-repository-label-2.jpg','../graphics/source-repository-label-3.jpg');" src="../graphics/source-repository-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../applications.html" onMouseOut="rolloverOff('side-applications');" onMouseOver="rolloverOn('side-applications');"><IMG alt="Applications" border="0" height="12" hspace="0" name="side-applications" onLoad="rolloverLoad('side-applications','../graphics/applications-label-2.jpg','../graphics/applications-label-3.jpg');" src="../graphics/applications-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="14" hspace="0" src="../resources/close.gif" vspace="0" width="120"><BR></TD><TD align="left" valign="top" width="500"><TABLE border="0" cellpadding="3" cellspacing="0"><TR><TD>
+    <TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#FFFFFF" colspan="2" width="494"><TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#039acc" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#039acc" height="1" width="492"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#039acc" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" width="492"><FONT color="#ffffff" face="arial,helvetica,sanserif" size="+1"><IMG border="0" height="2" hspace="0" src="../resources/void.gif" vspace="0" width="2"><B>API Docs for SAX and DOM</B></FONT></TD><TD bgcolor="#017299" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#017299" height="1" width="492"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#017299" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></TD></TR><TR><TD width="10">&nbsp;</TD><TD width="484"><FONT color="#000000" face="arial,helvetica,sanserif">
+
+	    <P>
+<!-- Generated by Doxygen 1.5.3 -->
+<div class="tabs">
+  <ul>
+    <li><a href="index.html"><span>Main&nbsp;Page</span></a></li>
+    <li class="current"><a href="classes.html"><span>Classes</span></a></li>
+    <li><a href="files.html"><span>Files</span></a></li>
+    <li><a href="pages.html"><span>Related&nbsp;Pages</span></a></li>
+  </ul>
+</div>
+<div class="tabs">
+  <ul>
+    <li><a href="classes.html"><span>Alphabetical&nbsp;List</span></a></li>
+    <li><a href="annotated.html"><span>Class&nbsp;List</span></a></li>
+    <li><a href="hierarchy.html"><span>Class&nbsp;Hierarchy</span></a></li>
+    <li><a href="functions.html"><span>Class&nbsp;Members</span></a></li>
+  </ul>
+</div>
+<h1>XMLAttDef Class Reference</h1><!-- doxytag: class="XMLAttDef" --><!-- doxytag: inherits="XMemory" -->Represents the core information of an atribute definition.  
+<a href="#_details">More...</a>
+<p>
+<div class="dynheader">
+Inheritance diagram for XMLAttDef:</div>
+<div class="dynsection">
+<p><center><img src="classXMLAttDef__inherit__graph.png" border="0" usemap="#XMLAttDef__inherit__map" alt="Inheritance graph"></center>
+<map name="XMLAttDef__inherit__map">
+<area shape="rect" href="classXMemory.html" title="This class makes it possible to override the C++ memory management by adding new/delete..." alt="" coords="11,7,93,33"></map>
+<center><font size="2">[<a href="graph_legend.html">legend</a>]</font></center></div>
+
+<p>
+<a href="classXMLAttDef-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
+<tr><td></td></tr>
+<tr><td colspan="2"><br><h2>Public Types</h2></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">enum &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLAttDef.html#d029f037065bfaeb991ab7855de79255">AttTypes</a> { <br>
+&nbsp;&nbsp;<a class="el" href="classXMLAttDef.html#d029f037065bfaeb991ab7855de79255e77a76f18e1eea5d67911599b13ce76d">CData</a> =  0, 
+<a class="el" href="classXMLAttDef.html#d029f037065bfaeb991ab7855de79255ca6b80c948a3410cf59ca1b0ffce0be0">ID</a> =  1, 
+<a class="el" href="classXMLAttDef.html#d029f037065bfaeb991ab7855de792553021331fcb55d88bd7e061590b2cb751">IDRef</a> =  2, 
+<a class="el" href="classXMLAttDef.html#d029f037065bfaeb991ab7855de79255c999677152f4913000f179952b477848">IDRefs</a> =  3, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLAttDef.html#d029f037065bfaeb991ab7855de79255b72cc2bfb80dfd2ccbf38be02736bd43">Entity</a> =  4, 
+<a class="el" href="classXMLAttDef.html#d029f037065bfaeb991ab7855de792557b094bdadc825139ab5f37983e8c12c4">Entities</a> =  5, 
+<a class="el" href="classXMLAttDef.html#d029f037065bfaeb991ab7855de792550b3cc623c4436a76770f90455d636c67">NmToken</a> =  6, 
+<a class="el" href="classXMLAttDef.html#d029f037065bfaeb991ab7855de79255285e203f331c42ce85d790324241912f">NmTokens</a> =  7, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLAttDef.html#d029f037065bfaeb991ab7855de79255d3eb297500851c2ffcfd77fb4ff4ea62">Notation</a> =  8, 
+<a class="el" href="classXMLAttDef.html#d029f037065bfaeb991ab7855de79255dabd249437a691f7d8865124a38369f5">Enumeration</a> =  9, 
+<a class="el" href="classXMLAttDef.html#d029f037065bfaeb991ab7855de7925575a7f79bb287fb54fd16999801912950">Simple</a> =  10, 
+<a class="el" href="classXMLAttDef.html#d029f037065bfaeb991ab7855de79255ef7f6f4174016b21d150dcb871e5840e">Any_Any</a> =  11, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLAttDef.html#d029f037065bfaeb991ab7855de792558483dae1f80e4e75924975f6629f01db">Any_Other</a> =  12, 
+<a class="el" href="classXMLAttDef.html#d029f037065bfaeb991ab7855de79255b69234c28d1d2e3b7d46a657661a5992">Any_List</a> =  13, 
+<a class="el" href="classXMLAttDef.html#d029f037065bfaeb991ab7855de7925585775d4db3615ab4d5da0103fa8bbec7">AttTypes_Count</a>, 
+<a class="el" href="classXMLAttDef.html#d029f037065bfaeb991ab7855de792557ee8523e6f04c979ed32c8033e474bce">AttTypes_Min</a> =  0, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLAttDef.html#d029f037065bfaeb991ab7855de792558d84e7f903f756c599ae59a30186da05">AttTypes_Max</a> =  13, 
+<a class="el" href="classXMLAttDef.html#d029f037065bfaeb991ab7855de79255ece7ca143d3cc4f34f31c54ab4a3a5eb">AttTypes_Unknown</a> =  -1
+<br>
+ }</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">enum &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLAttDef.html#dbac7febf3455722cc9736f1dc03c02f">DefAttTypes</a> { <br>
+&nbsp;&nbsp;<a class="el" href="classXMLAttDef.html#dbac7febf3455722cc9736f1dc03c02f69a7213ea4d75a232f8def80984d588b">Default</a> =  0, 
+<a class="el" href="classXMLAttDef.html#dbac7febf3455722cc9736f1dc03c02f2df85eb75f76a97c19072f3fb2ed85ae">Fixed</a> =  1, 
+<a class="el" href="classXMLAttDef.html#dbac7febf3455722cc9736f1dc03c02f6cce4ac910f5cea46863719f5ad9d9ce">Required</a> =  2, 
+<a class="el" href="classXMLAttDef.html#dbac7febf3455722cc9736f1dc03c02f34db30f3e69e92bde6f2a3c7ad31a88a">Required_And_Fixed</a> =  3, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLAttDef.html#dbac7febf3455722cc9736f1dc03c02f3e862c811188bf22e2ea40ce33cf9969">Implied</a> =  4, 
+<a class="el" href="classXMLAttDef.html#dbac7febf3455722cc9736f1dc03c02f409158e26eefd2e0d6ecaae6c9b84d5c">ProcessContents_Skip</a> =  5, 
+<a class="el" href="classXMLAttDef.html#dbac7febf3455722cc9736f1dc03c02f6cb43561595a82d55805fc65a7c087bd">ProcessContents_Lax</a> =  6, 
+<a class="el" href="classXMLAttDef.html#dbac7febf3455722cc9736f1dc03c02f652d7d06580929730ce0a722d32210c6">ProcessContents_Strict</a> =  7, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLAttDef.html#dbac7febf3455722cc9736f1dc03c02f630b63d172b630b2a7fe5df0a83123fb">Prohibited</a> =  8, 
+<a class="el" href="classXMLAttDef.html#dbac7febf3455722cc9736f1dc03c02f98f10a178066735a452e9c1e4f60e2d5">DefAttTypes_Count</a>, 
+<a class="el" href="classXMLAttDef.html#dbac7febf3455722cc9736f1dc03c02fbe10eeab4aa4594fa3e66c6e28a4d6c7">DefAttTypes_Min</a> =  0, 
+<a class="el" href="classXMLAttDef.html#dbac7febf3455722cc9736f1dc03c02f620229a388b3776665ca17c8500751d4">DefAttTypes_Max</a> =  8, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLAttDef.html#dbac7febf3455722cc9736f1dc03c02f808bdb5044eb8c92a6f595116a2a2502">DefAttTypes_Unknown</a> =  -1
+<br>
+ }</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">enum &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLAttDef.html#7555277eb326f0985448cb32b0f102a6">CreateReasons</a> { <a class="el" href="classXMLAttDef.html#7555277eb326f0985448cb32b0f102a63384968a9f649c5b5cccaf4c6d87cd14">NoReason</a>, 
+<a class="el" href="classXMLAttDef.html#7555277eb326f0985448cb32b0f102a6e88ece29aa2305e79c345f19e58bc227">JustFaultIn</a>
+ }</td></tr>
+
+<tr><td colspan="2"><br><h2>Public Member Functions</h2></td></tr>
+<tr><td colspan="2"><div class="groupHeader">Destructor</div></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLAttDef.html#73a4cb902c1fe907f1e71ee2fd95cdd0">~XMLAttDef</a> ()</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Destructor.  <a href="#73a4cb902c1fe907f1e71ee2fd95cdd0"></a><br></td></tr>
+<tr><td colspan="2"><div class="groupHeader">Virtual interface</div></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual const XMLCh *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLAttDef.html#66e9915b5fd1a6232320a0c8bdb4adb5">getFullName</a> () const =0</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the full name of this attribute type.  <a href="#66e9915b5fd1a6232320a0c8bdb4adb5"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLAttDef.html#bf8803ebd4fe1c087b067380183d341b">reset</a> ()=0</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">The derived class should implement any cleaning up required between each use of an instance of this class for validation.  <a href="#bf8803ebd4fe1c087b067380183d341b"></a><br></td></tr>
+<tr><td colspan="2"><div class="groupHeader">Getter methods</div></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="classXMLAttDef.html#dbac7febf3455722cc9736f1dc03c02f">DefAttTypes</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLAttDef.html#0e7ac147ebdd7952acb412972e717022">getDefaultType</a> () const </td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the default type of this attribute type.  <a href="#0e7ac147ebdd7952acb412972e717022"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">const XMLCh *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLAttDef.html#cdb1d7a844ec3b9f03494cc619d00ed2">getEnumeration</a> () const </td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the enumeration value (if any) of this attribute type.  <a href="#cdb1d7a844ec3b9f03494cc619d00ed2"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">unsigned int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLAttDef.html#f74b551ec7a711155f3f9ff8d039e7ad">getId</a> () const </td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the pool id of this attribute type.  <a href="#f74b551ec7a711155f3f9ff8d039e7ad"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLAttDef.html#01539484f09f217f6ffe535faf14ec67">getProvided</a> () const </td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Query whether the attribute was explicitly provided.  <a href="#01539484f09f217f6ffe535faf14ec67"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="classXMLAttDef.html#d029f037065bfaeb991ab7855de79255">AttTypes</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLAttDef.html#44e92262a33da395468cfcfb5b6b6abd">getType</a> () const </td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the type of this attribute.  <a href="#44e92262a33da395468cfcfb5b6b6abd"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">const XMLCh *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLAttDef.html#c6a04434627143abf6b4cf83c975001c">getValue</a> () const </td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the default/fixed value of this attribute (if any.  <a href="#c6a04434627143abf6b4cf83c975001c"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="classXMLAttDef.html#7555277eb326f0985448cb32b0f102a6">CreateReasons</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLAttDef.html#0b760da965b5ceed724a493b831fb081">getCreateReason</a> () const </td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the create reason for this attribute.  <a href="#0b760da965b5ceed724a493b831fb081"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLAttDef.html#46707a69c2c754a0d205d12789d95306">isExternal</a> () const </td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Indicate whether this attribute has been declared externally.  <a href="#46707a69c2c754a0d205d12789d95306"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="classMemoryManager.html">MemoryManager</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLAttDef.html#d8c83665c3cbc0d9792c1dcc0703e56d">getMemoryManager</a> () const </td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the plugged-in memory manager.  <a href="#d8c83665c3cbc0d9792c1dcc0703e56d"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual const XMLCh *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLAttDef.html#6ad13466381c570c088aa4c6c1cf50d9">getDOMTypeInfoUri</a> () const =0</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight"><dl class="return" compact><dt><b>Returns:</b></dt><dd>the uri part of DOM Level 3 TypeInfo </dd></dl>
+ <a href="#6ad13466381c570c088aa4c6c1cf50d9"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual const XMLCh *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLAttDef.html#8fcc0760eb330e53b7dbcaa485ce4af5">getDOMTypeInfoName</a> () const =0</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight"><dl class="return" compact><dt><b>Returns:</b></dt><dd>the name part of DOM Level 3 TypeInfo </dd></dl>
+ <a href="#8fcc0760eb330e53b7dbcaa485ce4af5"></a><br></td></tr>
+<tr><td colspan="2"><div class="groupHeader">Setter methods</div></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLAttDef.html#0d7f1a5da77dc100778b1dfe2eb092c6">setDefaultType</a> (const <a class="el" href="classXMLAttDef.html#dbac7febf3455722cc9736f1dc03c02f">XMLAttDef::DefAttTypes</a> newValue)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the default attribute type.  <a href="#0d7f1a5da77dc100778b1dfe2eb092c6"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLAttDef.html#2dff640e72e4d89c05f0f0858744b537">setId</a> (const unsigned int newId)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the pool id for this attribute type.  <a href="#2dff640e72e4d89c05f0f0858744b537"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLAttDef.html#a77d53ea80287a31e5f07514138a8332">setProvided</a> (const bool newValue)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set or clear the 'provided' flag.  <a href="#a77d53ea80287a31e5f07514138a8332"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLAttDef.html#244028a04f84de0b9b43d89b317f2d7e">setType</a> (const <a class="el" href="classXMLAttDef.html#d029f037065bfaeb991ab7855de79255">XMLAttDef::AttTypes</a> newValue)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the type of this attribute type.  <a href="#244028a04f84de0b9b43d89b317f2d7e"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLAttDef.html#b6c18545e394a61b07d3560191dab972">setValue</a> (const XMLCh *const newValue)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the default/fixed value of this attribute type.  <a href="#b6c18545e394a61b07d3560191dab972"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLAttDef.html#79c8d9eb7c4ad1cbfd8b2d5e3daa129f">setEnumeration</a> (const XMLCh *const newValue)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the enumerated value of this attribute type.  <a href="#79c8d9eb7c4ad1cbfd8b2d5e3daa129f"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLAttDef.html#70fa7490dabaa8f48ce9cbc4390d86fc">setCreateReason</a> (const <a class="el" href="classXMLAttDef.html#7555277eb326f0985448cb32b0f102a6">CreateReasons</a> newReason)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Update the create reason for this attribute type.  <a href="#70fa7490dabaa8f48ce9cbc4390d86fc"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLAttDef.html#4dcda30a9beeb6f3ff56e3658374e201">setExternalAttDeclaration</a> (const bool aValue)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the attribute decl to indicate external declaration.  <a href="#4dcda30a9beeb6f3ff56e3658374e201"></a><br></td></tr>
+<tr><td colspan="2"><br><h2>Static Public Member Functions</h2></td></tr>
+<tr><td colspan="2"><div class="groupHeader">Public, static methods</div></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static const XMLCh *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLAttDef.html#729fd9de63ec5987d1389971254f7c51">getAttTypeString</a> (const <a class="el" href="classXMLAttDef.html#d029f037065bfaeb991ab7855de79255">AttTypes</a> attrType, <a class="el" href="classMemoryManager.html">MemoryManager</a> *const manager=<a class="el" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252">XMLPlatformUtils::fgMemoryManager</a>)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get a string representation of the passed attribute type enum.  <a href="#729fd9de63ec5987d1389971254f7c51"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static const XMLCh *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLAttDef.html#ee3ba882b706999b8dd6731e9efd9c72">getDefAttTypeString</a> (const <a class="el" href="classXMLAttDef.html#dbac7febf3455722cc9736f1dc03c02f">DefAttTypes</a> attrType, <a class="el" href="classMemoryManager.html">MemoryManager</a> *const manager=<a class="el" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252">XMLPlatformUtils::fgMemoryManager</a>)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get a string representation of the passed def attribute type enum.  <a href="#ee3ba882b706999b8dd6731e9efd9c72"></a><br></td></tr>
+<tr><td colspan="2"><br><h2>Static Public Attributes</h2></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static const unsigned int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLAttDef.html#8b6036eb22e84bef591913ba8f709f18">fgInvalidAttrId</a></td></tr>
+
+<tr><td colspan="2"><br><h2>Protected Member Functions</h2></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLAttDef.html#3de8d992a89c3338131f7cb3c84b99a6">XMLAttDef</a> (const <a class="el" href="classXMLAttDef.html#d029f037065bfaeb991ab7855de79255">AttTypes</a> type=CData, const <a class="el" href="classXMLAttDef.html#dbac7febf3455722cc9736f1dc03c02f">DefAttTypes</a> defType=Implied, <a class="el" href="classMemoryManager.html">MemoryManager</a> *const manager=<a class="el" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252">XMLPlatformUtils::fgMemoryManager</a>)</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLAttDef.html#f30950c72ec644d27aa7b13fd82a88a8">XMLAttDef</a> (const XMLCh *const attValue, const <a class="el" href="classXMLAttDef.html#d029f037065bfaeb991ab7855de79255">AttTypes</a> type, const <a class="el" href="classXMLAttDef.html#dbac7febf3455722cc9736f1dc03c02f">DefAttTypes</a> defType, const XMLCh *const enumValues=0, <a class="el" href="classMemoryManager.html">MemoryManager</a> *const manager=<a class="el" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252">XMLPlatformUtils::fgMemoryManager</a>)</td></tr>
+
+</table>
+<hr><a name="_details"></a><h2>Detailed Description</h2>
+Represents the core information of an atribute definition. 
+<p>
+This class defines the basic characteristics of an attribute, no matter what type of validator is used. If a particular schema associates more information with an attribute it will create a derivative of this class. So this class provides an abstract way to get basic information on attributes from any type of validator.<p>
+This class supports keyed collection semantics on the fully qualified attribute name, by providing a getKey() method to extract the key string. getKey(), in this case, just calls the virtual method <a class="el" href="classXMLAttDef.html#66e9915b5fd1a6232320a0c8bdb4adb5" title="Get the full name of this attribute type.">getFullName()</a> to get the fully qualified name, as defined by the derived class.<p>
+Note that the 'value' of an attribute type definition is the default or of fixed value given to it in its definition. If the attribute is of the enumerated or notation type, it will have an 'enumeration value' as well which is a space separated list of its possible vlaues. <hr><h2>Member Enumeration Documentation</h2>
+<a class="anchor" name="d029f037065bfaeb991ab7855de79255"></a><!-- doxytag: member="XMLAttDef::AttTypes" ref="d029f037065bfaeb991ab7855de79255" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="classXMLAttDef.html#d029f037065bfaeb991ab7855de79255">XMLAttDef::AttTypes</a>          </td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+<dl compact><dt><b>Enumerator: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" name="d029f037065bfaeb991ab7855de79255e77a76f18e1eea5d67911599b13ce76d"></a><!-- doxytag: member="CData" ref="d029f037065bfaeb991ab7855de79255e77a76f18e1eea5d67911599b13ce76d" args="" -->CData</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="d029f037065bfaeb991ab7855de79255ca6b80c948a3410cf59ca1b0ffce0be0"></a><!-- doxytag: member="ID" ref="d029f037065bfaeb991ab7855de79255ca6b80c948a3410cf59ca1b0ffce0be0" args="" -->ID</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="d029f037065bfaeb991ab7855de792553021331fcb55d88bd7e061590b2cb751"></a><!-- doxytag: member="IDRef" ref="d029f037065bfaeb991ab7855de792553021331fcb55d88bd7e061590b2cb751" args="" -->IDRef</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="d029f037065bfaeb991ab7855de79255c999677152f4913000f179952b477848"></a><!-- doxytag: member="IDRefs" ref="d029f037065bfaeb991ab7855de79255c999677152f4913000f179952b477848" args="" -->IDRefs</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="d029f037065bfaeb991ab7855de79255b72cc2bfb80dfd2ccbf38be02736bd43"></a><!-- doxytag: member="Entity" ref="d029f037065bfaeb991ab7855de79255b72cc2bfb80dfd2ccbf38be02736bd43" args="" -->Entity</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="d029f037065bfaeb991ab7855de792557b094bdadc825139ab5f37983e8c12c4"></a><!-- doxytag: member="Entities" ref="d029f037065bfaeb991ab7855de792557b094bdadc825139ab5f37983e8c12c4" args="" -->Entities</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="d029f037065bfaeb991ab7855de792550b3cc623c4436a76770f90455d636c67"></a><!-- doxytag: member="NmToken" ref="d029f037065bfaeb991ab7855de792550b3cc623c4436a76770f90455d636c67" args="" -->NmToken</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="d029f037065bfaeb991ab7855de79255285e203f331c42ce85d790324241912f"></a><!-- doxytag: member="NmTokens" ref="d029f037065bfaeb991ab7855de79255285e203f331c42ce85d790324241912f" args="" -->NmTokens</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="d029f037065bfaeb991ab7855de79255d3eb297500851c2ffcfd77fb4ff4ea62"></a><!-- doxytag: member="Notation" ref="d029f037065bfaeb991ab7855de79255d3eb297500851c2ffcfd77fb4ff4ea62" args="" -->Notation</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="d029f037065bfaeb991ab7855de79255dabd249437a691f7d8865124a38369f5"></a><!-- doxytag: member="Enumeration" ref="d029f037065bfaeb991ab7855de79255dabd249437a691f7d8865124a38369f5" args="" -->Enumeration</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="d029f037065bfaeb991ab7855de7925575a7f79bb287fb54fd16999801912950"></a><!-- doxytag: member="Simple" ref="d029f037065bfaeb991ab7855de7925575a7f79bb287fb54fd16999801912950" args="" -->Simple</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="d029f037065bfaeb991ab7855de79255ef7f6f4174016b21d150dcb871e5840e"></a><!-- doxytag: member="Any_Any" ref="d029f037065bfaeb991ab7855de79255ef7f6f4174016b21d150dcb871e5840e" args="" -->Any_Any</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="d029f037065bfaeb991ab7855de792558483dae1f80e4e75924975f6629f01db"></a><!-- doxytag: member="Any_Other" ref="d029f037065bfaeb991ab7855de792558483dae1f80e4e75924975f6629f01db" args="" -->Any_Other</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="d029f037065bfaeb991ab7855de79255b69234c28d1d2e3b7d46a657661a5992"></a><!-- doxytag: member="Any_List" ref="d029f037065bfaeb991ab7855de79255b69234c28d1d2e3b7d46a657661a5992" args="" -->Any_List</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="d029f037065bfaeb991ab7855de7925585775d4db3615ab4d5da0103fa8bbec7"></a><!-- doxytag: member="AttTypes_Count" ref="d029f037065bfaeb991ab7855de7925585775d4db3615ab4d5da0103fa8bbec7" args="" -->AttTypes_Count</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="d029f037065bfaeb991ab7855de792557ee8523e6f04c979ed32c8033e474bce"></a><!-- doxytag: member="AttTypes_Min" ref="d029f037065bfaeb991ab7855de792557ee8523e6f04c979ed32c8033e474bce" args="" -->AttTypes_Min</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="d029f037065bfaeb991ab7855de792558d84e7f903f756c599ae59a30186da05"></a><!-- doxytag: member="AttTypes_Max" ref="d029f037065bfaeb991ab7855de792558d84e7f903f756c599ae59a30186da05" args="" -->AttTypes_Max</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="d029f037065bfaeb991ab7855de79255ece7ca143d3cc4f34f31c54ab4a3a5eb"></a><!-- doxytag: member="AttTypes_Unknown" ref="d029f037065bfaeb991ab7855de79255ece7ca143d3cc4f34f31c54ab4a3a5eb" args="" -->AttTypes_Unknown</em>&nbsp;</td><td>
+</td></tr>
+</table>
+</dl>
+
+</div>
+</div><p>
+<a class="anchor" name="dbac7febf3455722cc9736f1dc03c02f"></a><!-- doxytag: member="XMLAttDef::DefAttTypes" ref="dbac7febf3455722cc9736f1dc03c02f" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="classXMLAttDef.html#dbac7febf3455722cc9736f1dc03c02f">XMLAttDef::DefAttTypes</a>          </td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+<dl compact><dt><b>Enumerator: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" name="dbac7febf3455722cc9736f1dc03c02f69a7213ea4d75a232f8def80984d588b"></a><!-- doxytag: member="Default" ref="dbac7febf3455722cc9736f1dc03c02f69a7213ea4d75a232f8def80984d588b" args="" -->Default</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="dbac7febf3455722cc9736f1dc03c02f2df85eb75f76a97c19072f3fb2ed85ae"></a><!-- doxytag: member="Fixed" ref="dbac7febf3455722cc9736f1dc03c02f2df85eb75f76a97c19072f3fb2ed85ae" args="" -->Fixed</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="dbac7febf3455722cc9736f1dc03c02f6cce4ac910f5cea46863719f5ad9d9ce"></a><!-- doxytag: member="Required" ref="dbac7febf3455722cc9736f1dc03c02f6cce4ac910f5cea46863719f5ad9d9ce" args="" -->Required</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="dbac7febf3455722cc9736f1dc03c02f34db30f3e69e92bde6f2a3c7ad31a88a"></a><!-- doxytag: member="Required_And_Fixed" ref="dbac7febf3455722cc9736f1dc03c02f34db30f3e69e92bde6f2a3c7ad31a88a" args="" -->Required_And_Fixed</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="dbac7febf3455722cc9736f1dc03c02f3e862c811188bf22e2ea40ce33cf9969"></a><!-- doxytag: member="Implied" ref="dbac7febf3455722cc9736f1dc03c02f3e862c811188bf22e2ea40ce33cf9969" args="" -->Implied</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="dbac7febf3455722cc9736f1dc03c02f409158e26eefd2e0d6ecaae6c9b84d5c"></a><!-- doxytag: member="ProcessContents_Skip" ref="dbac7febf3455722cc9736f1dc03c02f409158e26eefd2e0d6ecaae6c9b84d5c" args="" -->ProcessContents_Skip</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="dbac7febf3455722cc9736f1dc03c02f6cb43561595a82d55805fc65a7c087bd"></a><!-- doxytag: member="ProcessContents_Lax" ref="dbac7febf3455722cc9736f1dc03c02f6cb43561595a82d55805fc65a7c087bd" args="" -->ProcessContents_Lax</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="dbac7febf3455722cc9736f1dc03c02f652d7d06580929730ce0a722d32210c6"></a><!-- doxytag: member="ProcessContents_Strict" ref="dbac7febf3455722cc9736f1dc03c02f652d7d06580929730ce0a722d32210c6" args="" -->ProcessContents_Strict</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="dbac7febf3455722cc9736f1dc03c02f630b63d172b630b2a7fe5df0a83123fb"></a><!-- doxytag: member="Prohibited" ref="dbac7febf3455722cc9736f1dc03c02f630b63d172b630b2a7fe5df0a83123fb" args="" -->Prohibited</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="dbac7febf3455722cc9736f1dc03c02f98f10a178066735a452e9c1e4f60e2d5"></a><!-- doxytag: member="DefAttTypes_Count" ref="dbac7febf3455722cc9736f1dc03c02f98f10a178066735a452e9c1e4f60e2d5" args="" -->DefAttTypes_Count</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="dbac7febf3455722cc9736f1dc03c02fbe10eeab4aa4594fa3e66c6e28a4d6c7"></a><!-- doxytag: member="DefAttTypes_Min" ref="dbac7febf3455722cc9736f1dc03c02fbe10eeab4aa4594fa3e66c6e28a4d6c7" args="" -->DefAttTypes_Min</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="dbac7febf3455722cc9736f1dc03c02f620229a388b3776665ca17c8500751d4"></a><!-- doxytag: member="DefAttTypes_Max" ref="dbac7febf3455722cc9736f1dc03c02f620229a388b3776665ca17c8500751d4" args="" -->DefAttTypes_Max</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="dbac7febf3455722cc9736f1dc03c02f808bdb5044eb8c92a6f595116a2a2502"></a><!-- doxytag: member="DefAttTypes_Unknown" ref="dbac7febf3455722cc9736f1dc03c02f808bdb5044eb8c92a6f595116a2a2502" args="" -->DefAttTypes_Unknown</em>&nbsp;</td><td>
+</td></tr>
+</table>
+</dl>
+
+</div>
+</div><p>
+<a class="anchor" name="7555277eb326f0985448cb32b0f102a6"></a><!-- doxytag: member="XMLAttDef::CreateReasons" ref="7555277eb326f0985448cb32b0f102a6" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="classXMLAttDef.html#7555277eb326f0985448cb32b0f102a6">XMLAttDef::CreateReasons</a>          </td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+<dl compact><dt><b>Enumerator: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" name="7555277eb326f0985448cb32b0f102a63384968a9f649c5b5cccaf4c6d87cd14"></a><!-- doxytag: member="NoReason" ref="7555277eb326f0985448cb32b0f102a63384968a9f649c5b5cccaf4c6d87cd14" args="" -->NoReason</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="7555277eb326f0985448cb32b0f102a6e88ece29aa2305e79c345f19e58bc227"></a><!-- doxytag: member="JustFaultIn" ref="7555277eb326f0985448cb32b0f102a6e88ece29aa2305e79c345f19e58bc227" args="" -->JustFaultIn</em>&nbsp;</td><td>
+</td></tr>
+</table>
+</dl>
+
+</div>
+</div><p>
+<hr><h2>Constructor &amp; Destructor Documentation</h2>
+<a class="anchor" name="73a4cb902c1fe907f1e71ee2fd95cdd0"></a><!-- doxytag: member="XMLAttDef::~XMLAttDef" ref="73a4cb902c1fe907f1e71ee2fd95cdd0" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual XMLAttDef::~XMLAttDef           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Destructor. 
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="3de8d992a89c3338131f7cb3c84b99a6"></a><!-- doxytag: member="XMLAttDef::XMLAttDef" ref="3de8d992a89c3338131f7cb3c84b99a6" args="(const AttTypes type=CData, const DefAttTypes defType=Implied, MemoryManager *const manager=XMLPlatformUtils::fgMemoryManager)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">XMLAttDef::XMLAttDef           </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classXMLAttDef.html#d029f037065bfaeb991ab7855de79255">AttTypes</a>&nbsp;</td>
+          <td class="paramname"> <em>type</em> = <code>CData</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classXMLAttDef.html#dbac7febf3455722cc9736f1dc03c02f">DefAttTypes</a>&nbsp;</td>
+          <td class="paramname"> <em>defType</em> = <code>Implied</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMemoryManager.html">MemoryManager</a> *const &nbsp;</td>
+          <td class="paramname"> <em>manager</em> = <code><a class="el" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252">XMLPlatformUtils::fgMemoryManager</a></code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"><code> [protected]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="f30950c72ec644d27aa7b13fd82a88a8"></a><!-- doxytag: member="XMLAttDef::XMLAttDef" ref="f30950c72ec644d27aa7b13fd82a88a8" args="(const XMLCh *const attValue, const AttTypes type, const DefAttTypes defType, const XMLCh *const enumValues=0, MemoryManager *const manager=XMLPlatformUtils::fgMemoryManager)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">XMLAttDef::XMLAttDef           </td>
+          <td>(</td>
+          <td class="paramtype">const XMLCh *const &nbsp;</td>
+          <td class="paramname"> <em>attValue</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classXMLAttDef.html#d029f037065bfaeb991ab7855de79255">AttTypes</a>&nbsp;</td>
+          <td class="paramname"> <em>type</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classXMLAttDef.html#dbac7febf3455722cc9736f1dc03c02f">DefAttTypes</a>&nbsp;</td>
+          <td class="paramname"> <em>defType</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const XMLCh *const &nbsp;</td>
+          <td class="paramname"> <em>enumValues</em> = <code>0</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMemoryManager.html">MemoryManager</a> *const &nbsp;</td>
+          <td class="paramname"> <em>manager</em> = <code><a class="el" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252">XMLPlatformUtils::fgMemoryManager</a></code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"><code> [protected]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<hr><h2>Member Function Documentation</h2>
+<a class="anchor" name="729fd9de63ec5987d1389971254f7c51"></a><!-- doxytag: member="XMLAttDef::getAttTypeString" ref="729fd9de63ec5987d1389971254f7c51" args="(const AttTypes attrType, MemoryManager *const manager=XMLPlatformUtils::fgMemoryManager)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static const XMLCh* XMLAttDef::getAttTypeString           </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classXMLAttDef.html#d029f037065bfaeb991ab7855de79255">AttTypes</a>&nbsp;</td>
+          <td class="paramname"> <em>attrType</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMemoryManager.html">MemoryManager</a> *const &nbsp;</td>
+          <td class="paramname"> <em>manager</em> = <code><a class="el" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252">XMLPlatformUtils::fgMemoryManager</a></code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"><code> [static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get a string representation of the passed attribute type enum. 
+<p>
+This method allows you to get a textual representation of an attriubte type, mostly for debug or display.<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>attrType</em>&nbsp;</td><td>The attribute type value to get the string for. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>manager</em>&nbsp;</td><td>The <a class="el" href="classMemoryManager.html" title="Configurable memory manager.">MemoryManager</a> to use to allocate objects </td></tr>
+  </table>
+</dl>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>A const pointer to the static string that holds the text description of the passed type. </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="ee3ba882b706999b8dd6731e9efd9c72"></a><!-- doxytag: member="XMLAttDef::getDefAttTypeString" ref="ee3ba882b706999b8dd6731e9efd9c72" args="(const DefAttTypes attrType, MemoryManager *const manager=XMLPlatformUtils::fgMemoryManager)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static const XMLCh* XMLAttDef::getDefAttTypeString           </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classXMLAttDef.html#dbac7febf3455722cc9736f1dc03c02f">DefAttTypes</a>&nbsp;</td>
+          <td class="paramname"> <em>attrType</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMemoryManager.html">MemoryManager</a> *const &nbsp;</td>
+          <td class="paramname"> <em>manager</em> = <code><a class="el" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252">XMLPlatformUtils::fgMemoryManager</a></code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"><code> [static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get a string representation of the passed def attribute type enum. 
+<p>
+This method allows you to get a textual representation of an default attributetype, mostly for debug or display.<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>attrType</em>&nbsp;</td><td>The default attribute type value to get the string for. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>manager</em>&nbsp;</td><td>The <a class="el" href="classMemoryManager.html" title="Configurable memory manager.">MemoryManager</a> to use to allocate objects </td></tr>
+  </table>
+</dl>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>A const pointer to the static string that holds the text description of the passed default type. </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="66e9915b5fd1a6232320a0c8bdb4adb5"></a><!-- doxytag: member="XMLAttDef::getFullName" ref="66e9915b5fd1a6232320a0c8bdb4adb5" args="() const =0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual const XMLCh* XMLAttDef::getFullName           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"> const<code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the full name of this attribute type. 
+<p>
+The derived class should return a const pointer to the full name of this attribute. This will vary depending on the type of validator in use.<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>A const pointer to the full name of this attribute type. </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="bf8803ebd4fe1c087b067380183d341b"></a><!-- doxytag: member="XMLAttDef::reset" ref="bf8803ebd4fe1c087b067380183d341b" args="()=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void XMLAttDef::reset           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+The derived class should implement any cleaning up required between each use of an instance of this class for validation. 
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="0e7ac147ebdd7952acb412972e717022"></a><!-- doxytag: member="XMLAttDef::getDefaultType" ref="0e7ac147ebdd7952acb412972e717022" args="() const " -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classXMLAttDef.html#dbac7febf3455722cc9736f1dc03c02f">XMLAttDef::DefAttTypes</a> XMLAttDef::getDefaultType           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"> const</td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the default type of this attribute type. 
+<p>
+This method returns the 'default type' of the attribute. Default type in this case refers to the XML concept of a default type for an attribute, i.e. FIXED, IMPLIED, etc...<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>The default type enum for this attribute type. </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="cdb1d7a844ec3b9f03494cc619d00ed2"></a><!-- doxytag: member="XMLAttDef::getEnumeration" ref="cdb1d7a844ec3b9f03494cc619d00ed2" args="() const " -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const XMLCh * XMLAttDef::getEnumeration           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"> const</td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the enumeration value (if any) of this attribute type. 
+<p>
+If the attribute is of an enumeration or notatin type, then this method will return a const reference to a string that contains the space separated values that can the attribute can have.<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>A const pointer to a string that contains the space separated legal values for this attribute. </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="f74b551ec7a711155f3f9ff8d039e7ad"></a><!-- doxytag: member="XMLAttDef::getId" ref="f74b551ec7a711155f3f9ff8d039e7ad" args="() const " -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">unsigned int XMLAttDef::getId           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"> const</td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the pool id of this attribute type. 
+<p>
+This method will return the id of this attribute in the validator's attribute pool. It was set by the validator when this attribute was created.<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>The pool id of this attribute type. </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="01539484f09f217f6ffe535faf14ec67"></a><!-- doxytag: member="XMLAttDef::getProvided" ref="01539484f09f217f6ffe535faf14ec67" args="() const " -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool XMLAttDef::getProvided           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"> const</td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Query whether the attribute was explicitly provided. 
+<p>
+When the scanner scans a start tag, it will ask the element decl object of the element type of that start tag to clear the 'provided' flag on all its attributes. As the scanner sees explicitly provided attributes, its turns on this flag to indicate that this attribute has been provided. In this way, the scanner can catch duplicated attributes and required attributes that aren't provided, and default in fixed/default valued attributes that are not explicitly provided.<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>Returns a boolean value that indicates whether this attribute was explicitly provided. </dd></dl>
+<dl compact><dt><b><a class="el" href="deprecated.html#_deprecated000001">Deprecated:</a></b></dt><dd></dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="44e92262a33da395468cfcfb5b6b6abd"></a><!-- doxytag: member="XMLAttDef::getType" ref="44e92262a33da395468cfcfb5b6b6abd" args="() const " -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classXMLAttDef.html#d029f037065bfaeb991ab7855de79255">XMLAttDef::AttTypes</a> XMLAttDef::getType           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"> const</td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the type of this attribute. 
+<p>
+Gets the type of this attribute. This type is represented by an enum that convers the types of attributes allowed by XML, e.g. CDATA, NMTOKEN, NOTATION, etc...<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>The attribute type enumeration value for this type of attribute. </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="c6a04434627143abf6b4cf83c975001c"></a><!-- doxytag: member="XMLAttDef::getValue" ref="c6a04434627143abf6b4cf83c975001c" args="() const " -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const XMLCh * XMLAttDef::getValue           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"> const</td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the default/fixed value of this attribute (if any. 
+<p>
+)<p>
+If the attribute defined a default/fixed value, then it is stored and this method will retrieve it. If it has non, then a null pointer is returned.<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>A const pointer to the default/fixed value for this attribute type. </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="0b760da965b5ceed724a493b831fb081"></a><!-- doxytag: member="XMLAttDef::getCreateReason" ref="0b760da965b5ceed724a493b831fb081" args="() const " -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classXMLAttDef.html#7555277eb326f0985448cb32b0f102a6">XMLAttDef::CreateReasons</a> XMLAttDef::getCreateReason           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"> const</td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the create reason for this attribute. 
+<p>
+This method returns an enumeration which indicates why this attribute declaration exists.<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>An enumerated value that indicates the reason why this attribute was added to the attribute table. </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="46707a69c2c754a0d205d12789d95306"></a><!-- doxytag: member="XMLAttDef::isExternal" ref="46707a69c2c754a0d205d12789d95306" args="() const " -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool XMLAttDef::isExternal           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"> const</td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Indicate whether this attribute has been declared externally. 
+<p>
+This method returns a boolean that indicates whether this attribute has been declared externally.<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>true if this attribute has been declared externally, else false. </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="d8c83665c3cbc0d9792c1dcc0703e56d"></a><!-- doxytag: member="XMLAttDef::getMemoryManager" ref="d8c83665c3cbc0d9792c1dcc0703e56d" args="() const " -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classMemoryManager.html">MemoryManager</a> * XMLAttDef::getMemoryManager           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"> const</td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the plugged-in memory manager. 
+<p>
+This method returns the plugged-in memory manager user for dynamic memory allocation/deallocation.<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>the plugged-in memory manager </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="6ad13466381c570c088aa4c6c1cf50d9"></a><!-- doxytag: member="XMLAttDef::getDOMTypeInfoUri" ref="6ad13466381c570c088aa4c6c1cf50d9" args="() const =0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual const XMLCh* XMLAttDef::getDOMTypeInfoUri           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"> const<code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>the uri part of DOM Level 3 TypeInfo </dd></dl>
+
+<p>
+<dl compact><dt><b><a class="el" href="deprecated.html#_deprecated000002">Deprecated:</a></b></dt><dd></dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="8fcc0760eb330e53b7dbcaa485ce4af5"></a><!-- doxytag: member="XMLAttDef::getDOMTypeInfoName" ref="8fcc0760eb330e53b7dbcaa485ce4af5" args="() const =0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual const XMLCh* XMLAttDef::getDOMTypeInfoName           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"> const<code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>the name part of DOM Level 3 TypeInfo </dd></dl>
+
+<p>
+<dl compact><dt><b><a class="el" href="deprecated.html#_deprecated000003">Deprecated:</a></b></dt><dd></dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="0d7f1a5da77dc100778b1dfe2eb092c6"></a><!-- doxytag: member="XMLAttDef::setDefaultType" ref="0d7f1a5da77dc100778b1dfe2eb092c6" args="(const XMLAttDef::DefAttTypes newValue)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void XMLAttDef::setDefaultType           </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classXMLAttDef.html#dbac7febf3455722cc9736f1dc03c02f">XMLAttDef::DefAttTypes</a>&nbsp;</td>
+          <td class="paramname"> <em>newValue</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the default attribute type. 
+<p>
+This method sets the default attribute type for this attribute. This setting controls whether the attribute is required, fixed, implied, etc...<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>newValue</em>&nbsp;</td><td>The new default attribute to set </td></tr>
+  </table>
+</dl>
+
+</div>
+</div><p>
+<a class="anchor" name="2dff640e72e4d89c05f0f0858744b537"></a><!-- doxytag: member="XMLAttDef::setId" ref="2dff640e72e4d89c05f0f0858744b537" args="(const unsigned int newId)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void XMLAttDef::setId           </td>
+          <td>(</td>
+          <td class="paramtype">const unsigned int&nbsp;</td>
+          <td class="paramname"> <em>newId</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the pool id for this attribute type. 
+<p>
+This method sets the pool id of this attribute type. This is usually called by the validator that creates the actual instance (which is of a derived type known only by the validator.)<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>newId</em>&nbsp;</td><td>The new pool id to set. </td></tr>
+  </table>
+</dl>
+
+</div>
+</div><p>
+<a class="anchor" name="a77d53ea80287a31e5f07514138a8332"></a><!-- doxytag: member="XMLAttDef::setProvided" ref="a77d53ea80287a31e5f07514138a8332" args="(const bool newValue)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void XMLAttDef::setProvided           </td>
+          <td>(</td>
+          <td class="paramtype">const bool&nbsp;</td>
+          <td class="paramname"> <em>newValue</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set or clear the 'provided' flag. 
+<p>
+This method will set or clear the 'provided' flag. This is called by the scanner as it is scanning a start tag and marking off the attributes that have been explicitly provided.<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>newValue</em>&nbsp;</td><td>The new provided state to set </td></tr>
+  </table>
+</dl>
+<dl compact><dt><b><a class="el" href="deprecated.html#_deprecated000004">Deprecated:</a></b></dt><dd></dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="244028a04f84de0b9b43d89b317f2d7e"></a><!-- doxytag: member="XMLAttDef::setType" ref="244028a04f84de0b9b43d89b317f2d7e" args="(const XMLAttDef::AttTypes newValue)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void XMLAttDef::setType           </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classXMLAttDef.html#d029f037065bfaeb991ab7855de79255">XMLAttDef::AttTypes</a>&nbsp;</td>
+          <td class="paramname"> <em>newValue</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the type of this attribute type. 
+<p>
+This method will set the type of the attribute. The type of an attribute controls how it is normalized and what kinds of characters it can hold.<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>newValue</em>&nbsp;</td><td>The new attribute type to set </td></tr>
+  </table>
+</dl>
+
+</div>
+</div><p>
+<a class="anchor" name="b6c18545e394a61b07d3560191dab972"></a><!-- doxytag: member="XMLAttDef::setValue" ref="b6c18545e394a61b07d3560191dab972" args="(const XMLCh *const newValue)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void XMLAttDef::setValue           </td>
+          <td>(</td>
+          <td class="paramtype">const XMLCh *const &nbsp;</td>
+          <td class="paramname"> <em>newValue</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the default/fixed value of this attribute type. 
+<p>
+This method set the fixed/default value for the attribute. This value will be used when instances of this attribute type are faulted in. It <b>must</b> be a valid value for the type set by <a class="el" href="classXMLAttDef.html#244028a04f84de0b9b43d89b317f2d7e" title="Set the type of this attribute type.">setType()</a>. If the type is enumeration or notation, this must be one of the valid values set in the <a class="el" href="classXMLAttDef.html#79c8d9eb7c4ad1cbfd8b2d5e3daa129f" title="Set the enumerated value of this attribute type.">setEnumeration()</a> call.<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>newValue</em>&nbsp;</td><td>The new fixed/default value to set. </td></tr>
+  </table>
+</dl>
+
+</div>
+</div><p>
+<a class="anchor" name="79c8d9eb7c4ad1cbfd8b2d5e3daa129f"></a><!-- doxytag: member="XMLAttDef::setEnumeration" ref="79c8d9eb7c4ad1cbfd8b2d5e3daa129f" args="(const XMLCh *const newValue)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void XMLAttDef::setEnumeration           </td>
+          <td>(</td>
+          <td class="paramtype">const XMLCh *const &nbsp;</td>
+          <td class="paramname"> <em>newValue</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the enumerated value of this attribute type. 
+<p>
+This method sets the enumerated/notation value list for this attribute type. It is a space separated set of possible values. These values must meet the constrains of the XML spec for such values of this type of attribute. This should only be set if the <a class="el" href="classXMLAttDef.html#244028a04f84de0b9b43d89b317f2d7e" title="Set the type of this attribute type.">setType()</a> method is used to set the type to the enumeration or notation types.<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>newValue</em>&nbsp;</td><td>The new enumerated/notation value list to set. </td></tr>
+  </table>
+</dl>
+
+</div>
+</div><p>
+<a class="anchor" name="70fa7490dabaa8f48ce9cbc4390d86fc"></a><!-- doxytag: member="XMLAttDef::setCreateReason" ref="70fa7490dabaa8f48ce9cbc4390d86fc" args="(const CreateReasons newReason)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void XMLAttDef::setCreateReason           </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classXMLAttDef.html#7555277eb326f0985448cb32b0f102a6">CreateReasons</a>&nbsp;</td>
+          <td class="paramname"> <em>newReason</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Update the create reason for this attribute type. 
+<p>
+This method will update the 'create reason' field for this attribute decl object.<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>newReason</em>&nbsp;</td><td>The new create reason. </td></tr>
+  </table>
+</dl>
+
+</div>
+</div><p>
+<a class="anchor" name="4dcda30a9beeb6f3ff56e3658374e201"></a><!-- doxytag: member="XMLAttDef::setExternalAttDeclaration" ref="4dcda30a9beeb6f3ff56e3658374e201" args="(const bool aValue)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void XMLAttDef::setExternalAttDeclaration           </td>
+          <td>(</td>
+          <td class="paramtype">const bool&nbsp;</td>
+          <td class="paramname"> <em>aValue</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the attribute decl to indicate external declaration. 
+<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>aValue</em>&nbsp;</td><td>The new value to indicate external declaration. </td></tr>
+  </table>
+</dl>
+
+</div>
+</div><p>
+<hr><h2>Member Data Documentation</h2>
+<a class="anchor" name="8b6036eb22e84bef591913ba8f709f18"></a><!-- doxytag: member="XMLAttDef::fgInvalidAttrId" ref="8b6036eb22e84bef591913ba8f709f18" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const unsigned int <a class="el" href="classXMLAttDef.html#8b6036eb22e84bef591913ba8f709f18">XMLAttDef::fgInvalidAttrId</a><code> [static]</code>          </td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<hr>The documentation for this class was generated from the following file:<ul>
+<li><a class="el" href="XMLAttDef_8hpp-source.html">XMLAttDef.hpp</a></ul>
+    </FONT></TD></TR></TABLE><BR>
+</TD></TR></TABLE></TD></TR></TABLE><BR><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD bgcolor="#0086b2"><IMG height="1" src="images/dot.gif" width="1" alt=""></TD></TR><TR><TD align="center"><FONT color="#0086b2" size="-1"><I>
+              Copyright &copy; 1994-2004 The Apache Software Foundation.
+              All Rights Reserved.
+            </I></FONT></TD></TR></TABLE></BODY></HTML>

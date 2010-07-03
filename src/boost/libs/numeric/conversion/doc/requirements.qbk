@@ -1,0 +1,110 @@
+[/
+    Boost.Optional
+
+    Copyright (c) 2003-2007 Fernando Luis Cacciola Carballal
+
+    Distributed under the Boost Software License, Version 1.0.
+    (See accompanying file LICENSE_1_0.txt or copy at
+    http://www.boost.org/LICENSE_1_0.txt)
+]
+
+[section Type Requirements and User-defined-types support]
+
+[section Type Requirements]
+
+Both arithmetic (built-in) and user-defined numeric types require proper
+specialization of `std::numeric_limits<>` (that is, with (in-class) integral
+constants).
+
+The library uses `std::numeric_limits<T>::is_specialized` to detect whether
+the type is builtin or user defined, and `std::numeric_limits<T>::is_integer`,
+`std::numeric_limits<T>::is_signed` to detect whether the type is integer
+or floating point; and whether it is signed/unsigned.
+
+The default `Float2IntRounder` policies uses unqualified calls to functions
+`floor()` and `ceil()`; but the standard functions are introduced in scope
+by a using directive:
+
+    using std::floor ; return floor(s);
+
+Therefore, for builtin arithmetic types, the std functions will be used.
+User defined types should provide overloaded versions of these functions in
+order to use the default rounder policies. If these overloads are defined
+within a user namespace argument dependent lookup (ADL) should find them,
+but if your compiler has a weak ADL you might need to put these functions
+some place else or write your own rounder policy.
+
+The default `Trunc<>` rounder policy needs to determine if the source value
+is positive or not, and for this it evaluates the expression
+`s < static_cast<S>(0)`. Therefore, user defined types require a visible
+`operator<` in order to use the `Trunc<>` policy (the default).
+
+
+[endsect]
+
+[section UDT's special semantics]
+
+[heading Conversion Traits]
+
+If a User Defined Type is involved in a conversion, it is ['assumed] that
+the UDT has [link boost_numericconversion.definitions.range_and_precision wider range] 
+than any built-in type, and consequently the values
+of some `converter_traits<>` members are hardwired regardless of the reality.
+The following table summarizes this:
+
+* `Target=`['UDT] and `Source=`['built-in]
+    * `subranged=false`
+    * `supertype=Target`
+    * `subtype=Source`
+* `Target=`['built-in] and `Source=`['UDT]
+    * `subranged=true`
+    * `supertype=Source`
+    * `subtype=Target`
+
+* `Target=`['UDT] and `Source=`['UDT]
+    * `subranged=false`
+    * `supertype=Target`
+    * `subtype=Source`
+
+
+The `Traits` member `udt_mixture` can be used to detect whether a UDT is involved
+and to infer the validity of the other members as shown above.
+
+[heading Range Checking]
+
+Because User Defined Numeric Types might have peculiar ranges (such as an
+unbounded range), this library does not attempt to supply a meaningful range
+checking logic when UDTs are involved in a conversion. Therefore, if either
+Target or Source are not built-in types, the bundled range checking of the
+`converter<>` function object is automatically disabled. However, it is possible
+to supply a user-defined range-checker. See 
+[link boost_numericconversion.type_requirements_and_user_defined_types_support.special_policies Special Policies]
+
+[endsect]
+
+[section Special Policies]
+
+There are two components of the `converter<>` class that might require special
+behavior if User Defined Numeric Types are involved: the Range Checking and the
+Raw Conversion.
+
+When both Target and Source are built-in types, the converter class uses an internal
+range checking logic which is optimized and customized for the combined properties
+of the types.
+
+However, this internal logic is disabled when either type is User Defined.
+In this case, the user can specify an ['external] range checking policy which will be
+used in place of the internal code. See 
+[link boost_numericconversion.numeric_converter_policy_classes.policy_userrangechecker UserRangeChecker] policy for details.
+
+The converter class performs the actual conversion using a Raw Converter policy.
+The default raw converter simply performs a `static_cast<Target>(source)`.
+
+However, if the a UDT is involved, the `static_cast` might not work. In this case,
+the user can implement and pass a different raw converter policy.
+See [link boost_numericconversion.numeric_converter_policy_classes.policy_rawconverter RawConverter] policy for details
+
+[endsect]
+
+[endsect]
+

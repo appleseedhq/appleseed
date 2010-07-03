@@ -1,0 +1,102 @@
+#  Copyright (C) 2003-2004 Doug Gregor and Dave Abrahams. Distributed
+# under the Boost Software License, Version 1.0. (See accompanying
+# file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+#
+#  This module defines rules to handle generation of PDF and
+#  PostScript files from XSL Formatting Objects via Apache FOP
+
+import os ;
+import generators ;
+import common ;
+import errors ; 
+
+generators.register-standard fop.render.pdf : FO : PDF ;
+generators.register-standard fop.render.ps : FO : PS ;
+
+rule init ( fop-command ? : java-home ? : java ? )
+{
+    fop-command = [ common.get-invocation-command fop : fop : $(fop-command) 
+      : [ modules.peek : FOP_DIR ] ] ;
+        
+    if $(.initialized)
+    {
+        if $(.FOP_COMMAND) != $(fop-command) || $(JAVA_HOME) != $(java-home)
+           || $(JAVACMD) != $(java)
+        {
+            errors.user-error "fop: reinitialization with different options" ;
+        }        
+    }
+    else
+    {
+        .initialized = true ;
+        .FOP_COMMAND = $(fop-command) ;
+        # What is the meaning of this logic?  Needs more comments!!  --DWA
+        java-home ?= $(java) ;
+        .FOP_SETUP = [ common.variable-setting-command JAVA_HOME : $(java-home) ] ;
+    }
+    
+    # Make sure the fop command is executed from within the directory where it's located.
+
+    # DPG: I can't see how this could ever be correct, because it
+    # messes up path names that are used in the command.
+
+    # if $(.FOP_COMMAND:D)
+    # {
+    #     .FOP_SETUP = $(.FOP_SETUP)"
+# cd "$(.FOP_COMMAND:D) ;
+    # }
+      
+}
+
+local rule find-by-absolute-path ( target )
+{
+    # Mask off any vars by these names that may be hanging around in
+    # outer dynamic scopes.
+    local LOCATE SEARCH ; 
+    
+    # simulate the target binding process to find the target
+    
+    local found =  [ on $(target) GLOB $(LOCATE) (SEARCH) : $(target:G=) ] ;
+    
+    if $(found)
+    {
+        # Re-LOCATE the target with an absolute path if it isn't
+        # already absolute.
+        local found-dir = $(found[1]:D) ;
+        local cwd = [ PWD ] ;
+        local absolute-dir = $(found-dir:R=$(cwd)) ;
+        
+        # Translate cygwin paths to Windows iff the user is running on
+        # cygwin but using a Windows FOP.  We detect a Windows FOP by
+        # looking to see if FOP_COMMAND ends with ".bat"
+        if [ os.name ] = CYGWIN && [ MATCH .*\\.([Bb][Aa][Tt])$ : $(.FOP_COMMAND) ]
+        {
+            absolute-dir = "`cygpath --windows '$(absolute-dir)'`" ;
+        }
+        LOCATE on $(target) = $(absolute-dir) ;
+    }
+}
+
+rule render.pdf ( source : target : properties * )
+{
+    find-by-absolute-path $(source) ;
+    find-by-absolute-path $(target) ;
+}
+
+rule render.ps ( source : target : properties * )
+{
+    find-by-absolute-path $(source) ;
+    find-by-absolute-path $(target) ;
+}
+
+
+actions render.pdf
+{
+  $(.FOP_SETUP) $(.FOP_COMMAND) $(>) $(<)
+}
+
+actions render.ps
+{
+  $(.FOP_SETUP) $(.FOP_COMMAND) $(>) -ps $(<)
+}

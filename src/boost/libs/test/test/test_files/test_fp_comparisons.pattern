@@ -1,0 +1,30 @@
+152: error in "test_BOOST_CHECK_CLOSE": difference between fp1{0} and fp2{1e-20} exceeds 1e-05%
+153: error in "test_BOOST_CHECK_CLOSE": difference between fp1{0} and fp2{1e-30} exceeds 1e-05%
+154: error in "test_BOOST_CHECK_CLOSE": difference between fp1{0} and fp2{-1e-10} exceeds 0.1%
+155: error in "test_BOOST_CHECK_CLOSE": difference between fp1{0.123456} and fp2{0.123457} exceeds 0.0001%
+159: error in "test_BOOST_CHECK_CLOSE": difference between fp1{0.123456} and fp2{-0.123457} exceeds 0.001%
+163: error in "test_BOOST_CHECK_CLOSE": difference between fp1{1.23456e-10} and fp2{1.23457e-11} exceeds 0.001%
+164: error in "test_BOOST_CHECK_CLOSE": difference between fp1{1.111e-10} and fp2{1.112e-10} exceeds 0.08999%
+165: error in "test_BOOST_CHECK_CLOSE": difference between fp1{1.112e-10} and fp2{1.111e-10} exceeds 0.08999%
+170: error in "test_BOOST_CHECK_CLOSE": difference between fp1{1} and fp2{1.0002} exceeds 0.011%
+152: error in "test_BOOST_CHECK_CLOSE": difference between fp1{0} and fp2{1e-20} exceeds 1e-05%
+153: error in "test_BOOST_CHECK_CLOSE": difference between fp1{0} and fp2{1e-30} exceeds 1e-05%
+154: error in "test_BOOST_CHECK_CLOSE": difference between fp1{0} and fp2{-1e-10} exceeds 0.1%
+155: error in "test_BOOST_CHECK_CLOSE": difference between fp1{0.123456} and fp2{0.123457} exceeds 0.0001%
+159: error in "test_BOOST_CHECK_CLOSE": difference between fp1{0.123456} and fp2{-0.123457} exceeds 0.001%
+163: error in "test_BOOST_CHECK_CLOSE": difference between fp1{1.23456e-10} and fp2{1.23457e-11} exceeds 0.001%
+164: error in "test_BOOST_CHECK_CLOSE": difference between fp1{1.111e-10} and fp2{1.112e-10} exceeds 0.08999%
+165: error in "test_BOOST_CHECK_CLOSE": difference between fp1{1.112e-10} and fp2{1.111e-10} exceeds 0.08999%
+170: error in "test_BOOST_CHECK_CLOSE": difference between fp1{1} and fp2{1.0002} exceeds 0.011%
+152: error in "test_BOOST_CHECK_CLOSE": difference between fp1{0} and fp2{1e-20} exceeds 1e-05%
+153: error in "test_BOOST_CHECK_CLOSE": difference between fp1{0} and fp2{1e-30} exceeds 1e-05%
+154: error in "test_BOOST_CHECK_CLOSE": difference between fp1{0} and fp2{-1e-10} exceeds 0.1%
+155: error in "test_BOOST_CHECK_CLOSE": difference between fp1{0.123456} and fp2{0.123457} exceeds 0.0001%
+159: error in "test_BOOST_CHECK_CLOSE": difference between fp1{0.123456} and fp2{-0.123457} exceeds 0.001%
+163: error in "test_BOOST_CHECK_CLOSE": difference between fp1{1.23456e-10} and fp2{1.23457e-11} exceeds 0.001%
+164: error in "test_BOOST_CHECK_CLOSE": difference between fp1{1.111e-10} and fp2{1.112e-10} exceeds 0.08999%
+165: error in "test_BOOST_CHECK_CLOSE": difference between fp1{1.112e-10} and fp2{1.111e-10} exceeds 0.08999%
+170: error in "test_BOOST_CHECK_CLOSE": difference between fp1{1} and fp2{1.0002} exceeds 0.011%
+204: error in "test_CHECK_SMALL": absolute value of 1e-6{1e-06} exceeds 1e-07
+219: error in "test_close_at_tolerance": difference between fp1{1.00000001} and fp2{1.00000002} exceeds 1e-06%
+226: error in "test_close_at_tolerance": check close_at_tolerance<double>( epsilon )( fp1, fp2 ) failed for ( 1.23456e-10, 1.23457e-10 )

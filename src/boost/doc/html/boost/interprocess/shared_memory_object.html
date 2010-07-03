@@ -1,0 +1,139 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Class shared_memory_object</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../boost_interprocess_reference.html#header.boost.interprocess.shared_memory_object_hpp" title="Header &lt;boost/interprocess/shared_memory_object.hpp&gt;">
+<link rel="prev" href="segment_manager/deleter.html" title="Struct template deleter">
+<link rel="next" href="remove_shared_memory_on_id1767129.html" title="Class remove_shared_memory_on_destroy">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="segment_manager/deleter.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_interprocess_reference.html#header.boost.interprocess.shared_memory_object_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="remove_shared_memory_on_id1767129.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.interprocess.shared_memory_object"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Class shared_memory_object</span></h2>
+<p>boost::interprocess::shared_memory_object</p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../boost_interprocess_reference.html#header.boost.interprocess.shared_memory_object_hpp" title="Header &lt;boost/interprocess/shared_memory_object.hpp&gt;">boost/interprocess/shared_memory_object.hpp</a>&gt;
+
+</em></span>
+<span class="bold"><strong>class</strong></span> <a class="link" href="shared_memory_object.html" title="Class shared_memory_object">shared_memory_object</a> {
+<span class="bold"><strong>public</strong></span>:
+  <span class="emphasis"><em>// <a class="link" href="shared_memory_object.html#boost.interprocess.shared_memory_objectconstruct-copy-destruct">construct/copy/destruct</a></em></span>
+  <a class="link" href="shared_memory_object.html#id1766986-bb">shared_memory_object</a>();
+  <a class="link" href="shared_memory_object.html#id1766991-bb">shared_memory_object</a>(<a class="link" href="create_only_t.html" title="Struct create_only_t">create_only_t</a>, <span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> *, mode_t);
+  <a class="link" href="shared_memory_object.html#id1767016-bb">shared_memory_object</a>(<a class="link" href="open_or_create_t.html" title="Struct open_or_create_t">open_or_create_t</a>, <span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> *, mode_t);
+  <a class="link" href="shared_memory_object.html#id1767042-bb">shared_memory_object</a>(<a class="link" href="open_only_t.html" title="Struct open_only_t">open_only_t</a>, <span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> *, mode_t);
+  <a class="link" href="shared_memory_object.html#id1767066-bb">shared_memory_object</a>(<a class="link" href="shared_memory_object.html" title="Class shared_memory_object">shared_memory_object</a> &amp;&amp;);
+  shared_memory_object&amp; <a class="link" href="shared_memory_object.html#id1767081-bb"><span class="bold"><strong>operator</strong></span>=</a>(<a class="link" href="shared_memory_object.html" title="Class shared_memory_object">shared_memory_object</a> &amp;&amp;);
+  <a class="link" href="shared_memory_object.html#id1767096-bb">~shared_memory_object</a>();
+
+  <span class="emphasis"><em>// <a class="link" href="shared_memory_object.html#id1766897-bb">public member functions</a></em></span>
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="shared_memory_object.html#id1766901-bb">swap</a>(<a class="link" href="shared_memory_object.html" title="Class shared_memory_object">shared_memory_object</a> &amp;) ;
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="shared_memory_object.html#id1766920-bb">truncate</a>(offset_t) ;
+  <span class="type"><span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> *</span> <a class="link" href="shared_memory_object.html#id1766936-bb">get_name</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="shared_memory_object.html#id1766947-bb">get_size</a>(offset_t &amp;) <span class="bold"><strong>const</strong></span>;
+  <span class="type">mode_t</span> <a class="link" href="shared_memory_object.html#id1766964-bb">get_mode</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type">mapping_handle_t</span> <a class="link" href="shared_memory_object.html#id1766975-bb">get_mapping_handle</a>() <span class="bold"><strong>const</strong></span>;
+
+  <span class="emphasis"><em>// <a class="link" href="shared_memory_object.html#id1767107-bb">public static functions</a></em></span>
+  <span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>bool</strong></span></span> <a class="link" href="shared_memory_object.html#id1767111-bb">remove</a>(<span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> *) ;
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id2193741"></a><h2>Description</h2>
+<p>A class that wraps a shared memory mapping that can be used to create mapped regions from the mapped files </p>
+<div class="refsect2" lang="en">
+<a name="id2193748"></a><h3>
+<a name="boost.interprocess.shared_memory_objectconstruct-copy-destruct"></a><code class="computeroutput">shared_memory_object</code> 
+        public
+       construct/copy/destruct</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><a name="id1766986-bb"></a>shared_memory_object();</pre>
+<p>Default constructor. Represents an empty shared_memory_object. </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1766991-bb"></a>shared_memory_object(<a class="link" href="create_only_t.html" title="Struct create_only_t">create_only_t</a>, <span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> * name, mode_t mode);</pre>
+<p>Creates a shared memory object with name "name" and mode "mode", with the access mode "mode" If the file previously exists, throws an error. </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1767016-bb"></a>shared_memory_object(<a class="link" href="open_or_create_t.html" title="Struct open_or_create_t">open_or_create_t</a>, <span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> * name, mode_t mode);</pre>
+<p>Tries to create a shared memory object with name "name" and mode "mode", with the access mode "mode". If the file previously exists, it tries to open it with mode "mode". Otherwise throws an error. </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1767042-bb"></a>shared_memory_object(<a class="link" href="open_only_t.html" title="Struct open_only_t">open_only_t</a>, <span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> * name, mode_t mode);</pre>
+<p>Tries to open a shared memory object with name "name", with the access mode "mode". If the file does not previously exist, it throws an error. </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1767066-bb"></a>shared_memory_object(<a class="link" href="shared_memory_object.html" title="Class shared_memory_object">shared_memory_object</a> &amp;&amp; moved);</pre>
+<p>Moves the ownership of "moved"'s shared memory object to *this. After the call, "moved" does not represent any shared memory object. Does not throw </p>
+</li>
+<li>
+<pre class="literallayout">shared_memory_object&amp; <a name="id1767081-bb"></a><span class="bold"><strong>operator</strong></span>=(<a class="link" href="shared_memory_object.html" title="Class shared_memory_object">shared_memory_object</a> &amp;&amp; moved);</pre>
+<p>Moves the ownership of "moved"'s shared memory to *this. After the call, "moved" does not represent any shared memory. Does not throw </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1767096-bb"></a>~shared_memory_object();</pre>
+<p>Destroys *this and indicates that the calling process is finished using the resource. All mapped regions are still valid after destruction. The destructor function will deallocate any system resources allocated by the system for use by this process for this resource. The resource can still be opened again calling the open constructor overload. To erase the resource from the system use remove(). </p>
+</li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id2193980"></a><h3>
+<a name="id1766897-bb"></a><code class="computeroutput">shared_memory_object</code> public member functions</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1766901-bb"></a>swap(<a class="link" href="shared_memory_object.html" title="Class shared_memory_object">shared_memory_object</a> &amp; moved) ;</pre>Swaps the shared_memory_objects. Does not throw. </li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1766920-bb"></a>truncate(offset_t length) ;</pre>Sets the size of the shared memory mapping. </li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> *</span> <a name="id1766936-bb"></a>get_name() <span class="bold"><strong>const</strong></span>;</pre>Returns the name of the file. </li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1766947-bb"></a>get_size(offset_t &amp; size) <span class="bold"><strong>const</strong></span>;</pre>
+<p>Returns the name of the file used in the constructor </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">mode_t</span> <a name="id1766964-bb"></a>get_mode() <span class="bold"><strong>const</strong></span>;</pre>Returns access mode. </li>
+<li>
+<pre class="literallayout"><span class="type">mapping_handle_t</span> <a name="id1766975-bb"></a>get_mapping_handle() <span class="bold"><strong>const</strong></span>;</pre>Returns mapping handle. Never throws. </li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id2194163"></a><h3>
+<a name="id1767107-bb"></a><code class="computeroutput">shared_memory_object</code> public static functions</h3>
+<div class="orderedlist"><ol type="1"><li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>bool</strong></span></span> <a name="id1767111-bb"></a>remove(<span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> * name) ;</pre>
+<p>Erases a shared memory object from the system. Returns false on error. Never throws </p>
+</li></ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2005 - 2008 Ion Gaztañaga<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="segment_manager/deleter.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_interprocess_reference.html#header.boost.interprocess.shared_memory_object_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="remove_shared_memory_on_id1767129.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

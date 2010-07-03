@@ -1,0 +1,423 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Platform-Specific Implementation Notes</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../boost_asio.html" title="Boost.Asio">
+<link rel="up" href="../overview.html" title="Overview">
+<link rel="prev" href="ssl.html" title="SSL">
+<link rel="next" href="../using.html" title="Using Boost.Asio">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="ssl.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../overview.html"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../boost_asio.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="../using.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="boost_asio.overview.implementation"></a><a class="link" href="implementation.html" title="Platform-Specific Implementation Notes"> Platform-Specific
+      Implementation Notes</a>
+</h3></div></div></div>
+<p>
+        This section lists platform-specific implementation details, such as the
+        default demultiplexing mechanism, the number of threads created internally,
+        and when threads are created.
+      </p>
+<a name="boost_asio.overview.implementation.linux_kernel_2_4"></a><h5>
+<a name="id1101184"></a>
+        <a class="link" href="implementation.html#boost_asio.overview.implementation.linux_kernel_2_4">Linux
+        Kernel 2.4</a>
+      </h5>
+<p>
+        Demultiplexing mechanism:
+      </p>
+<div class="itemizedlist"><ul type="disc"><li>
+          Uses <code class="computeroutput"><span class="identifier">select</span></code> for demultiplexing.
+          This means that the number of file descriptors in the process cannot be
+          permitted to exceed <code class="computeroutput"><span class="identifier">FD_SETSIZE</span></code>.
+        </li></ul></div>
+<p>
+        Threads:
+      </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+          Demultiplexing using <code class="computeroutput"><span class="identifier">select</span></code>
+          is performed in one of the threads that calls <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">run</span><span class="special">()</span></code>, <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">run_one</span><span class="special">()</span></code>, <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">poll</span><span class="special">()</span></code> or <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">poll_one</span><span class="special">()</span></code>.
+        </li>
+<li>
+          An additional thread per <code class="computeroutput"><span class="identifier">io_service</span></code>
+          is used to emulate asynchronous host resolution. This thread is created
+          on the first call to either <code class="computeroutput"><span class="identifier">ip</span><span class="special">::</span><span class="identifier">tcp</span><span class="special">::</span><span class="identifier">resolver</span><span class="special">::</span><span class="identifier">async_resolve</span><span class="special">()</span></code> or <code class="computeroutput"><span class="identifier">ip</span><span class="special">::</span><span class="identifier">udp</span><span class="special">::</span><span class="identifier">resolver</span><span class="special">::</span><span class="identifier">async_resolve</span><span class="special">()</span></code>.
+        </li>
+</ul></div>
+<p>
+        Scatter-Gather:
+      </p>
+<div class="itemizedlist"><ul type="disc"><li>
+          At most <code class="computeroutput"><span class="identifier">min</span><span class="special">(</span><span class="number">64</span><span class="special">,</span><span class="identifier">IOV_MAX</span><span class="special">)</span></code> buffers may be transferred in a single
+          operation.
+        </li></ul></div>
+<a name="boost_asio.overview.implementation.linux_kernel_2_6"></a><h5>
+<a name="id1101498"></a>
+        <a class="link" href="implementation.html#boost_asio.overview.implementation.linux_kernel_2_6">Linux
+        Kernel 2.6</a>
+      </h5>
+<p>
+        Demultiplexing mechanism:
+      </p>
+<div class="itemizedlist"><ul type="disc"><li>
+          Uses <code class="computeroutput"><span class="identifier">epoll</span></code> for demultiplexing.
+        </li></ul></div>
+<p>
+        Threads:
+      </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+          Demultiplexing using <code class="computeroutput"><span class="identifier">epoll</span></code>
+          is performed in one of the threads that calls <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">run</span><span class="special">()</span></code>, <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">run_one</span><span class="special">()</span></code>, <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">poll</span><span class="special">()</span></code> or <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">poll_one</span><span class="special">()</span></code>.
+        </li>
+<li>
+          An additional thread per <code class="computeroutput"><span class="identifier">io_service</span></code>
+          is used to emulate asynchronous host resolution. This thread is created
+          on the first call to either <code class="computeroutput"><span class="identifier">ip</span><span class="special">::</span><span class="identifier">tcp</span><span class="special">::</span><span class="identifier">resolver</span><span class="special">::</span><span class="identifier">async_resolve</span><span class="special">()</span></code> or <code class="computeroutput"><span class="identifier">ip</span><span class="special">::</span><span class="identifier">udp</span><span class="special">::</span><span class="identifier">resolver</span><span class="special">::</span><span class="identifier">async_resolve</span><span class="special">()</span></code>.
+        </li>
+</ul></div>
+<p>
+        Scatter-Gather:
+      </p>
+<div class="itemizedlist"><ul type="disc"><li>
+          At most <code class="computeroutput"><span class="identifier">min</span><span class="special">(</span><span class="number">64</span><span class="special">,</span><span class="identifier">IOV_MAX</span><span class="special">)</span></code> buffers may be transferred in a single
+          operation.
+        </li></ul></div>
+<a name="boost_asio.overview.implementation.solaris"></a><h5>
+<a name="id1101798"></a>
+        <a class="link" href="implementation.html#boost_asio.overview.implementation.solaris">Solaris</a>
+      </h5>
+<p>
+        Demultiplexing mechanism:
+      </p>
+<div class="itemizedlist"><ul type="disc"><li>
+          Uses <code class="literal">/dev/poll</code> for demultiplexing.
+        </li></ul></div>
+<p>
+        Threads:
+      </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+          Demultiplexing using <code class="literal">/dev/poll</code> is performed in one of
+          the threads that calls <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">run</span><span class="special">()</span></code>, <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">run_one</span><span class="special">()</span></code>, <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">poll</span><span class="special">()</span></code> or <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">poll_one</span><span class="special">()</span></code>.
+        </li>
+<li>
+          An additional thread per <code class="computeroutput"><span class="identifier">io_service</span></code>
+          is used to emulate asynchronous host resolution. This thread is created
+          on the first call to either <code class="computeroutput"><span class="identifier">ip</span><span class="special">::</span><span class="identifier">tcp</span><span class="special">::</span><span class="identifier">resolver</span><span class="special">::</span><span class="identifier">async_resolve</span><span class="special">()</span></code> or <code class="computeroutput"><span class="identifier">ip</span><span class="special">::</span><span class="identifier">udp</span><span class="special">::</span><span class="identifier">resolver</span><span class="special">::</span><span class="identifier">async_resolve</span><span class="special">()</span></code>.
+        </li>
+</ul></div>
+<p>
+        Scatter-Gather:
+      </p>
+<div class="itemizedlist"><ul type="disc"><li>
+          At most <code class="computeroutput"><span class="identifier">min</span><span class="special">(</span><span class="number">64</span><span class="special">,</span><span class="identifier">IOV_MAX</span><span class="special">)</span></code> buffers may be transferred in a single
+          operation.
+        </li></ul></div>
+<a name="boost_asio.overview.implementation.qnx_neutrino"></a><h5>
+<a name="id1102086"></a>
+        <a class="link" href="implementation.html#boost_asio.overview.implementation.qnx_neutrino">QNX Neutrino</a>
+      </h5>
+<p>
+        Demultiplexing mechanism:
+      </p>
+<div class="itemizedlist"><ul type="disc"><li>
+          Uses <code class="computeroutput"><span class="identifier">select</span></code> for demultiplexing.
+          This means that the number of file descriptors in the process cannot be
+          permitted to exceed <code class="computeroutput"><span class="identifier">FD_SETSIZE</span></code>.
+        </li></ul></div>
+<p>
+        Threads:
+      </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+          Demultiplexing using <code class="computeroutput"><span class="identifier">select</span></code>
+          is performed in one of the threads that calls <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">run</span><span class="special">()</span></code>, <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">run_one</span><span class="special">()</span></code>, <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">poll</span><span class="special">()</span></code> or <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">poll_one</span><span class="special">()</span></code>.
+        </li>
+<li>
+          An additional thread per <code class="computeroutput"><span class="identifier">io_service</span></code>
+          is used to emulate asynchronous host resolution. This thread is created
+          on the first call to either <code class="computeroutput"><span class="identifier">ip</span><span class="special">::</span><span class="identifier">tcp</span><span class="special">::</span><span class="identifier">resolver</span><span class="special">::</span><span class="identifier">async_resolve</span><span class="special">()</span></code> or <code class="computeroutput"><span class="identifier">ip</span><span class="special">::</span><span class="identifier">udp</span><span class="special">::</span><span class="identifier">resolver</span><span class="special">::</span><span class="identifier">async_resolve</span><span class="special">()</span></code>.
+        </li>
+</ul></div>
+<p>
+        Scatter-Gather:
+      </p>
+<div class="itemizedlist"><ul type="disc"><li>
+          At most <code class="computeroutput"><span class="identifier">min</span><span class="special">(</span><span class="number">64</span><span class="special">,</span><span class="identifier">IOV_MAX</span><span class="special">)</span></code> buffers may be transferred in a single
+          operation.
+        </li></ul></div>
+<a name="boost_asio.overview.implementation.mac_os_x"></a><h5>
+<a name="id1102397"></a>
+        <a class="link" href="implementation.html#boost_asio.overview.implementation.mac_os_x">Mac OS X</a>
+      </h5>
+<p>
+        Demultiplexing mechanism:
+      </p>
+<div class="itemizedlist"><ul type="disc"><li>
+          Uses <code class="computeroutput"><span class="identifier">kqueue</span></code> for demultiplexing.
+        </li></ul></div>
+<p>
+        Threads:
+      </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+          Demultiplexing using <code class="computeroutput"><span class="identifier">kqueue</span></code>
+          is performed in one of the threads that calls <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">run</span><span class="special">()</span></code>, <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">run_one</span><span class="special">()</span></code>, <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">poll</span><span class="special">()</span></code> or <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">poll_one</span><span class="special">()</span></code>.
+        </li>
+<li>
+          An additional thread per <code class="computeroutput"><span class="identifier">io_service</span></code>
+          is used to emulate asynchronous host resolution. This thread is created
+          on the first call to either <code class="computeroutput"><span class="identifier">ip</span><span class="special">::</span><span class="identifier">tcp</span><span class="special">::</span><span class="identifier">resolver</span><span class="special">::</span><span class="identifier">async_resolve</span><span class="special">()</span></code> or <code class="computeroutput"><span class="identifier">ip</span><span class="special">::</span><span class="identifier">udp</span><span class="special">::</span><span class="identifier">resolver</span><span class="special">::</span><span class="identifier">async_resolve</span><span class="special">()</span></code>.
+        </li>
+</ul></div>
+<p>
+        Scatter-Gather:
+      </p>
+<div class="itemizedlist"><ul type="disc"><li>
+          At most <code class="computeroutput"><span class="identifier">min</span><span class="special">(</span><span class="number">64</span><span class="special">,</span><span class="identifier">IOV_MAX</span><span class="special">)</span></code> buffers may be transferred in a single
+          operation.
+        </li></ul></div>
+<a name="boost_asio.overview.implementation.freebsd"></a><h5>
+<a name="id1102695"></a>
+        <a class="link" href="implementation.html#boost_asio.overview.implementation.freebsd">FreeBSD</a>
+      </h5>
+<p>
+        Demultiplexing mechanism:
+      </p>
+<div class="itemizedlist"><ul type="disc"><li>
+          Uses <code class="computeroutput"><span class="identifier">kqueue</span></code> for demultiplexing.
+        </li></ul></div>
+<p>
+        Threads:
+      </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+          Demultiplexing using <code class="computeroutput"><span class="identifier">kqueue</span></code>
+          is performed in one of the threads that calls <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">run</span><span class="special">()</span></code>, <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">run_one</span><span class="special">()</span></code>, <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">poll</span><span class="special">()</span></code> or <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">poll_one</span><span class="special">()</span></code>.
+        </li>
+<li>
+          An additional thread per <code class="computeroutput"><span class="identifier">io_service</span></code>
+          is used to emulate asynchronous host resolution. This thread is created
+          on the first call to either <code class="computeroutput"><span class="identifier">ip</span><span class="special">::</span><span class="identifier">tcp</span><span class="special">::</span><span class="identifier">resolver</span><span class="special">::</span><span class="identifier">async_resolve</span><span class="special">()</span></code> or <code class="computeroutput"><span class="identifier">ip</span><span class="special">::</span><span class="identifier">udp</span><span class="special">::</span><span class="identifier">resolver</span><span class="special">::</span><span class="identifier">async_resolve</span><span class="special">()</span></code>.
+        </li>
+</ul></div>
+<p>
+        Scatter-Gather:
+      </p>
+<div class="itemizedlist"><ul type="disc"><li>
+          At most <code class="computeroutput"><span class="identifier">min</span><span class="special">(</span><span class="number">64</span><span class="special">,</span><span class="identifier">IOV_MAX</span><span class="special">)</span></code> buffers may be transferred in a single
+          operation.
+        </li></ul></div>
+<a name="boost_asio.overview.implementation.aix"></a><h5>
+<a name="id1102994"></a>
+        <a class="link" href="implementation.html#boost_asio.overview.implementation.aix">AIX</a>
+      </h5>
+<p>
+        Demultiplexing mechanism:
+      </p>
+<div class="itemizedlist"><ul type="disc"><li>
+          Uses <code class="computeroutput"><span class="identifier">select</span></code> for demultiplexing.
+          This means that the number of file descriptors in the process cannot be
+          permitted to exceed <code class="computeroutput"><span class="identifier">FD_SETSIZE</span></code>.
+        </li></ul></div>
+<p>
+        Threads:
+      </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+          Demultiplexing using <code class="computeroutput"><span class="identifier">select</span></code>
+          is performed in one of the threads that calls <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">run</span><span class="special">()</span></code>, <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">run_one</span><span class="special">()</span></code>, <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">poll</span><span class="special">()</span></code> or <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">poll_one</span><span class="special">()</span></code>.
+        </li>
+<li>
+          An additional thread per <code class="computeroutput"><span class="identifier">io_service</span></code>
+          is used to emulate asynchronous host resolution. This thread is created
+          on the first call to either <code class="computeroutput"><span class="identifier">ip</span><span class="special">::</span><span class="identifier">tcp</span><span class="special">::</span><span class="identifier">resolver</span><span class="special">::</span><span class="identifier">async_resolve</span><span class="special">()</span></code> or <code class="computeroutput"><span class="identifier">ip</span><span class="special">::</span><span class="identifier">udp</span><span class="special">::</span><span class="identifier">resolver</span><span class="special">::</span><span class="identifier">async_resolve</span><span class="special">()</span></code>.
+        </li>
+</ul></div>
+<p>
+        Scatter-Gather:
+      </p>
+<div class="itemizedlist"><ul type="disc"><li>
+          At most <code class="computeroutput"><span class="identifier">min</span><span class="special">(</span><span class="number">64</span><span class="special">,</span><span class="identifier">IOV_MAX</span><span class="special">)</span></code> buffers may be transferred in a single
+          operation.
+        </li></ul></div>
+<a name="boost_asio.overview.implementation.hp_ux"></a><h5>
+<a name="id1103304"></a>
+        <a class="link" href="implementation.html#boost_asio.overview.implementation.hp_ux">HP-UX</a>
+      </h5>
+<p>
+        Demultiplexing mechanism:
+      </p>
+<div class="itemizedlist"><ul type="disc"><li>
+          Uses <code class="computeroutput"><span class="identifier">select</span></code> for demultiplexing.
+          This means that the number of file descriptors in the process cannot be
+          permitted to exceed <code class="computeroutput"><span class="identifier">FD_SETSIZE</span></code>.
+        </li></ul></div>
+<p>
+        Threads:
+      </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+          Demultiplexing using <code class="computeroutput"><span class="identifier">select</span></code>
+          is performed in one of the threads that calls <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">run</span><span class="special">()</span></code>, <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">run_one</span><span class="special">()</span></code>, <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">poll</span><span class="special">()</span></code> or <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">poll_one</span><span class="special">()</span></code>.
+        </li>
+<li>
+          An additional thread per <code class="computeroutput"><span class="identifier">io_service</span></code>
+          is used to emulate asynchronous host resolution. This thread is created
+          on the first call to either <code class="computeroutput"><span class="identifier">ip</span><span class="special">::</span><span class="identifier">tcp</span><span class="special">::</span><span class="identifier">resolver</span><span class="special">::</span><span class="identifier">async_resolve</span><span class="special">()</span></code> or <code class="computeroutput"><span class="identifier">ip</span><span class="special">::</span><span class="identifier">udp</span><span class="special">::</span><span class="identifier">resolver</span><span class="special">::</span><span class="identifier">async_resolve</span><span class="special">()</span></code>.
+        </li>
+</ul></div>
+<p>
+        Scatter-Gather:
+      </p>
+<div class="itemizedlist"><ul type="disc"><li>
+          At most <code class="computeroutput"><span class="identifier">min</span><span class="special">(</span><span class="number">64</span><span class="special">,</span><span class="identifier">IOV_MAX</span><span class="special">)</span></code> buffers may be transferred in a single
+          operation.
+        </li></ul></div>
+<a name="boost_asio.overview.implementation.tru64"></a><h5>
+<a name="id1103615"></a>
+        <a class="link" href="implementation.html#boost_asio.overview.implementation.tru64">Tru64</a>
+      </h5>
+<p>
+        Demultiplexing mechanism:
+      </p>
+<div class="itemizedlist"><ul type="disc"><li>
+          Uses <code class="computeroutput"><span class="identifier">select</span></code> for demultiplexing.
+          This means that the number of file descriptors in the process cannot be
+          permitted to exceed <code class="computeroutput"><span class="identifier">FD_SETSIZE</span></code>.
+        </li></ul></div>
+<p>
+        Threads:
+      </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+          Demultiplexing using <code class="computeroutput"><span class="identifier">select</span></code>
+          is performed in one of the threads that calls <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">run</span><span class="special">()</span></code>, <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">run_one</span><span class="special">()</span></code>, <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">poll</span><span class="special">()</span></code> or <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">poll_one</span><span class="special">()</span></code>.
+        </li>
+<li>
+          An additional thread per <code class="computeroutput"><span class="identifier">io_service</span></code>
+          is used to emulate asynchronous host resolution. This thread is created
+          on the first call to either <code class="computeroutput"><span class="identifier">ip</span><span class="special">::</span><span class="identifier">tcp</span><span class="special">::</span><span class="identifier">resolver</span><span class="special">::</span><span class="identifier">async_resolve</span><span class="special">()</span></code> or <code class="computeroutput"><span class="identifier">ip</span><span class="special">::</span><span class="identifier">udp</span><span class="special">::</span><span class="identifier">resolver</span><span class="special">::</span><span class="identifier">async_resolve</span><span class="special">()</span></code>.
+        </li>
+</ul></div>
+<p>
+        Scatter-Gather:
+      </p>
+<div class="itemizedlist"><ul type="disc"><li>
+          At most <code class="computeroutput"><span class="identifier">min</span><span class="special">(</span><span class="number">64</span><span class="special">,</span><span class="identifier">IOV_MAX</span><span class="special">)</span></code> buffers may be transferred in a single
+          operation.
+        </li></ul></div>
+<a name="boost_asio.overview.implementation.windows_95__98_and_me"></a><h5>
+<a name="id1103925"></a>
+        <a class="link" href="implementation.html#boost_asio.overview.implementation.windows_95__98_and_me">Windows
+        95, 98 and Me</a>
+      </h5>
+<p>
+        Demultiplexing mechanism:
+      </p>
+<div class="itemizedlist"><ul type="disc"><li>
+          Uses <code class="computeroutput"><span class="identifier">select</span></code> for demultiplexing.
+        </li></ul></div>
+<p>
+        Threads:
+      </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+          Demultiplexing using <code class="computeroutput"><span class="identifier">select</span></code>
+          is performed in one of the threads that calls <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">run</span><span class="special">()</span></code>, <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">run_one</span><span class="special">()</span></code>, <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">poll</span><span class="special">()</span></code> or <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">poll_one</span><span class="special">()</span></code>.
+        </li>
+<li>
+          An additional thread per <code class="computeroutput"><span class="identifier">io_service</span></code>
+          is used to emulate asynchronous host resolution. This thread is created
+          on the first call to either <code class="computeroutput"><span class="identifier">ip</span><span class="special">::</span><span class="identifier">tcp</span><span class="special">::</span><span class="identifier">resolver</span><span class="special">::</span><span class="identifier">async_resolve</span><span class="special">()</span></code> or <code class="computeroutput"><span class="identifier">ip</span><span class="special">::</span><span class="identifier">udp</span><span class="special">::</span><span class="identifier">resolver</span><span class="special">::</span><span class="identifier">async_resolve</span><span class="special">()</span></code>.
+        </li>
+</ul></div>
+<p>
+        Scatter-Gather:
+      </p>
+<div class="itemizedlist"><ul type="disc"><li>
+          For sockets, at most 16 buffers may be transferred in a single operation.
+        </li></ul></div>
+<a name="boost_asio.overview.implementation.windows_nt__2000__xp__2003_and_vista"></a><h5>
+<a name="id1104194"></a>
+        <a class="link" href="implementation.html#boost_asio.overview.implementation.windows_nt__2000__xp__2003_and_vista">Windows
+        NT, 2000, XP, 2003 and Vista</a>
+      </h5>
+<p>
+        Demultiplexing mechanism:
+      </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+          Uses overlapped I/O and I/O completion ports for all asynchronous socket
+          operations except for asynchronous connect.
+        </li>
+<li>
+          Uses <code class="computeroutput"><span class="identifier">select</span></code> for emulating
+          asynchronous connect.
+        </li>
+</ul></div>
+<p>
+        Threads:
+      </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+          Demultiplexing using I/O completion ports is performed in all threads that
+          call <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">run</span><span class="special">()</span></code>,
+          <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">run_one</span><span class="special">()</span></code>,
+          <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">poll</span><span class="special">()</span></code>
+          or <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">poll_one</span><span class="special">()</span></code>.
+        </li>
+<li>
+          An additional thread per <code class="computeroutput"><span class="identifier">io_service</span></code>
+          is used for the <code class="computeroutput"><span class="identifier">select</span></code>
+          demultiplexing. This thread is created on the first call to <code class="computeroutput"><span class="identifier">async_connect</span><span class="special">()</span></code>.
+        </li>
+<li>
+          An additional thread per <code class="computeroutput"><span class="identifier">io_service</span></code>
+          is used to emulate asynchronous host resolution. This thread is created
+          on the first call to either <code class="computeroutput"><span class="identifier">ip</span><span class="special">::</span><span class="identifier">tcp</span><span class="special">::</span><span class="identifier">resolver</span><span class="special">::</span><span class="identifier">async_resolve</span><span class="special">()</span></code> or <code class="computeroutput"><span class="identifier">ip</span><span class="special">::</span><span class="identifier">udp</span><span class="special">::</span><span class="identifier">resolver</span><span class="special">::</span><span class="identifier">async_resolve</span><span class="special">()</span></code>.
+        </li>
+</ul></div>
+<p>
+        Scatter-Gather:
+      </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+          For sockets, at most 64 buffers may be transferred in a single operation.
+        </li>
+<li>
+          For stream-oriented handles, only one buffer may be transferred in a single
+          operation.
+        </li>
+</ul></div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2003 - 2008 Christopher M. Kohlhoff<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="ssl.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../overview.html"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../boost_asio.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="../using.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

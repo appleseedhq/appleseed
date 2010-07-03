@@ -1,0 +1,339 @@
+<HTML><HEAD><SCRIPT language="JavaScript" src="../resources/script.js" type="text/javascript"></SCRIPT><TITLE>Xerces-C++: XMLValidator.hpp Source File</TITLE><link href="XercesApi.css" rel="stylesheet" type="text/css"></HEAD><BODY alink="#ff0000" bgcolor="#ffffff" leftmargin="4" link="#0000ff" marginheight="4" marginwidth="4" text="#000000" topmargin="4" vlink="#0000aa"><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD align="left" height="60" rowspan="3" valign="top" width="135"><IMG border="0" height="60" hspace="0" src="../resources/logo.gif" vspace="0" width="135"></TD><TD align="left" colspan="4" height="5" valign="top" width="456"><IMG border="0" height="5" hspace="0" src="../resources/line.gif" vspace="0" width="456"></TD><TD align="left" height="60" rowspan="3" valign="top" width="29"><IMG border="0" height="60" hspace="0" src="../resources/right.gif" vspace="0" width="29"></TD></TR><TR><TD align="left" bgcolor="#0086b2" colspan="4" height="35" valign="top" width="456"><IMG alt="" border="0" height="35" hspace="0" src="../graphics/api-header.jpg" vspace="0" width="456"></TD></TR><TR><TD align="left" height="20" valign="top" width="168"><IMG border="0" height="20" hspace="0" src="../resources/bottom.gif" vspace="0" width="168"></TD><TD align="left" height="20" valign="top" width="96"><A href="http://xml.apache.org/" onMouseOut="rolloverOff('xml');" onMouseOver="rolloverOn('xml');" target="new"><IMG alt="http://xml.apache.org/" border="0" height="20" hspace="0" name="xml" onLoad="rolloverLoad('xml','../resources/button-xml-hi.gif','../resources/button-xml-lo.gif');" src="../resources/button-xml-lo.gif" vspace="0" width="96"></A></TD><TD align="left" height="20" valign="top" width="96"><A href="http://www.apache.org/" onMouseOut="rolloverOff('asf');" onMouseOver="rolloverOn('asf');" target="new"><IMG alt="http://www.apache.org/" border="0" height="20" hspace="0" name="asf" onLoad="rolloverLoad('asf','../resources/button-asf-hi.gif','../resources/button-asf-lo.gif');" src="../resources/button-asf-lo.gif" vspace="0" width="96"></A></TD><TD align="left" height="20" valign="top" width="96"><A href="http://www.w3.org/" onMouseOut="rolloverOff('w3c');" onMouseOver="rolloverOn('w3c');" target="new"><IMG alt="http://www.w3.org/" border="0" height="20" hspace="0" name="w3c" onLoad="rolloverLoad('w3c','../resources/button-w3c-hi.gif','../resources/button-w3c-lo.gif');" src="../resources/button-w3c-lo.gif" vspace="0" width="96"></A></TD></TR></TABLE><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD align="left" valign="top" width="120"><IMG border="0" height="14" hspace="0" src="../resources/join.gif" vspace="0" width="120"><BR>
+  <A href="../../index.html" onMouseOut="rolloverOff('side-ext-2');" onMouseOver="rolloverOn('side-ext-2');"><IMG alt="Home" border="0" height="12" hspace="0" name="side-ext-2" onLoad="rolloverLoad('side-ext-2','../graphics/ext-2-label-2.jpg','../graphics/ext-2-label-3.jpg');" src="../graphics/ext-2-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../index.html" onMouseOut="rolloverOff('side-index');" onMouseOver="rolloverOn('side-index');"><IMG alt="Readme" border="0" height="12" hspace="0" name="side-index" onLoad="rolloverLoad('side-index','../graphics/index-label-2.jpg','../graphics/index-label-3.jpg');" src="../graphics/index-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../charter.html" onMouseOut="rolloverOff('side-charter');" onMouseOver="rolloverOn('side-charter');"><IMG alt="Charter" border="0" height="12" hspace="0" name="side-charter" onLoad="rolloverLoad('side-charter','../graphics/charter-label-2.jpg','../graphics/charter-label-3.jpg');" src="../graphics/charter-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../releases.html" onMouseOut="rolloverOff('side-releases');" onMouseOver="rolloverOn('side-releases');"><IMG alt="Release Info" border="0" height="12" hspace="0" name="side-releases" onLoad="rolloverLoad('side-releases','../graphics/releases-label-2.jpg','../graphics/releases-label-3.jpg');" src="../graphics/releases-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../install.html" onMouseOut="rolloverOff('side-install');" onMouseOver="rolloverOn('side-install');"><IMG alt="Installation" border="0" height="12" hspace="0" name="side-install" onLoad="rolloverLoad('side-install','../graphics/install-label-2.jpg','../graphics/install-label-3.jpg');" src="../graphics/install-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="http://xerces.apache.org/xerces-c/download.cgi" onMouseOut="rolloverOff('side-ext-20');" onMouseOver="rolloverOn('side-ext-20');"><IMG alt="Download" border="0" height="12" hspace="0" name="side-ext-20" onLoad="rolloverLoad('side-ext-20','../graphics/ext-20-label-2.jpg','../graphics/ext-20-label-3.jpg');" src="../graphics/ext-20-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../build.html" onMouseOut="rolloverOff('side-build');" onMouseOver="rolloverOn('side-build');"><IMG alt="Build Instructions" border="0" height="12" hspace="0" name="side-build" onLoad="rolloverLoad('side-build','../graphics/build-label-2.jpg','../graphics/build-label-3.jpg');" src="../graphics/build-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../program.html" onMouseOut="rolloverOff('side-program');" onMouseOver="rolloverOn('side-program');"><IMG alt="Programming" border="0" height="12" hspace="0" name="side-program" onLoad="rolloverLoad('side-program','../graphics/program-label-2.jpg','../graphics/program-label-3.jpg');" src="../graphics/program-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../samples.html" onMouseOut="rolloverOff('side-samples');" onMouseOver="rolloverOn('side-samples');"><IMG alt="Samples" border="0" height="12" hspace="0" name="side-samples" onLoad="rolloverLoad('side-samples','../graphics/samples-label-2.jpg','../graphics/samples-label-3.jpg');" src="../graphics/samples-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../faqs.html" onMouseOut="rolloverOff('side-faqs');" onMouseOver="rolloverOn('side-faqs');"><IMG alt="FAQs" border="0" height="12" hspace="0" name="side-faqs" onLoad="rolloverLoad('side-faqs','../graphics/faqs-label-2.jpg','../graphics/faqs-label-3.jpg');" src="../graphics/faqs-label-3.jpg" vspace="0" width="120"></A><BR>
+
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../api.html" onMouseOut="rolloverOff('side-api');" onMouseOver="rolloverOn('side-api');"><IMG alt="API Docs" border="0" height="12" hspace="0" name="side-api" onLoad="rolloverLoad('side-api','../graphics/api-label-2.jpg','../graphics/api-label-3.jpg');" src="../graphics/api-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../ApacheDOMC++Binding.html" onMouseOut="rolloverOff('side-ext-88');" onMouseOver="rolloverOn('side-ext-88');"><IMG alt="DOM C++ Binding" border="0" height="12" hspace="0" name="side-ext-88" onLoad="rolloverLoad('side-ext-88','../graphics/ext-88-label-2.jpg','../graphics/ext-88-label-3.jpg');" src="../graphics/ext-88-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../migrate.html" onMouseOut="rolloverOff('side-migrate');" onMouseOver="rolloverOn('side-migrate');"><IMG alt="Migration Guide" border="0" height="12" hspace="0" name="side-migrate" onLoad="rolloverLoad('side-migrate','../graphics/migrate-label-2.jpg','../graphics/migrate-label-3.jpg');" src="../graphics/migrate-label-3.jpg" vspace="0" width="120"></A><BR>
+
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+    <A href="../feedback.html" onMouseOut="rolloverOff('side-feedback');" onMouseOver="rolloverOn('side-feedback');"><IMG alt="Feedback" border="0" height="12" hspace="0" name="side-feedback" onLoad="rolloverLoad('side-feedback','../graphics/feedback-label-2.jpg','../graphics/feedback-label-3.jpg');" src="../graphics/feedback-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../bug-report.html" onMouseOut="rolloverOff('side-bug-report');" onMouseOver="rolloverOn('side-bug-report');"><IMG alt="Bug-Reporting" border="0" height="12" hspace="0" name="side-bug-report" onLoad="rolloverLoad('side-bug-report','../graphics/bug-report-label-2.jpg','../graphics/bug-report-label-3.jpg');" src="../graphics/bug-report-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../mailing-lists.html" onMouseOut="rolloverOff('side-mailing-lists');" onMouseOver="rolloverOn('side-mailing-lists');"><IMG alt="Mailing Lists" border="0" height="12" hspace="0" name="side-mailing-lists" onLoad="rolloverLoad('side-mailing-lists','../graphics/mailing-lists-label-2.jpg','../graphics/mailing-lists-label-3.jpg');" src="../graphics/mailing-lists-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+    <A href="../source-repository.html" onMouseOut="rolloverOff('side-source-repository');" onMouseOver="rolloverOn('side-source-repository');"><IMG alt="Source Repository" border="0" height="12" hspace="0" name="side-source-repository" onLoad="rolloverLoad('side-source-repository','../graphics/source-repository-label-2.jpg','../graphics/source-repository-label-3.jpg');" src="../graphics/source-repository-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../applications.html" onMouseOut="rolloverOff('side-applications');" onMouseOver="rolloverOn('side-applications');"><IMG alt="Applications" border="0" height="12" hspace="0" name="side-applications" onLoad="rolloverLoad('side-applications','../graphics/applications-label-2.jpg','../graphics/applications-label-3.jpg');" src="../graphics/applications-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="14" hspace="0" src="../resources/close.gif" vspace="0" width="120"><BR></TD><TD align="left" valign="top" width="500"><TABLE border="0" cellpadding="3" cellspacing="0"><TR><TD>
+    <TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#FFFFFF" colspan="2" width="494"><TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#039acc" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#039acc" height="1" width="492"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#039acc" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" width="492"><FONT color="#ffffff" face="arial,helvetica,sanserif" size="+1"><IMG border="0" height="2" hspace="0" src="../resources/void.gif" vspace="0" width="2"><B>API Docs for SAX and DOM</B></FONT></TD><TD bgcolor="#017299" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#017299" height="1" width="492"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#017299" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></TD></TR><TR><TD width="10">&nbsp;</TD><TD width="484"><FONT color="#000000" face="arial,helvetica,sanserif">
+
+	    <P>
+<!-- Generated by Doxygen 1.5.3 -->
+<div class="tabs">
+  <ul>
+    <li><a href="index.html"><span>Main&nbsp;Page</span></a></li>
+    <li><a href="classes.html"><span>Classes</span></a></li>
+    <li class="current"><a href="files.html"><span>Files</span></a></li>
+    <li><a href="pages.html"><span>Related&nbsp;Pages</span></a></li>
+  </ul>
+</div>
+<h1>XMLValidator.hpp</h1><a href="XMLValidator_8hpp.html">Go to the documentation of this file.</a><div class="fragment"><pre class="fragment"><a name="l00001"></a>00001 <span class="comment">/*</span>
+<a name="l00002"></a>00002 <span class="comment"> * Licensed to the Apache Software Foundation (ASF) under one or more</span>
+<a name="l00003"></a>00003 <span class="comment"> * contributor license agreements.  See the NOTICE file distributed with</span>
+<a name="l00004"></a>00004 <span class="comment"> * this work for additional information regarding copyright ownership.</span>
+<a name="l00005"></a>00005 <span class="comment"> * The ASF licenses this file to You under the Apache License, Version 2.0</span>
+<a name="l00006"></a>00006 <span class="comment"> * (the "License"); you may not use this file except in compliance with</span>
+<a name="l00007"></a>00007 <span class="comment"> * the License.  You may obtain a copy of the License at</span>
+<a name="l00008"></a>00008 <span class="comment"> * </span>
+<a name="l00009"></a>00009 <span class="comment"> *      http://www.apache.org/licenses/LICENSE-2.0</span>
+<a name="l00010"></a>00010 <span class="comment"> * </span>
+<a name="l00011"></a>00011 <span class="comment"> * Unless required by applicable law or agreed to in writing, software</span>
+<a name="l00012"></a>00012 <span class="comment"> * distributed under the License is distributed on an "AS IS" BASIS,</span>
+<a name="l00013"></a>00013 <span class="comment"> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<a name="l00014"></a>00014 <span class="comment"> * See the License for the specific language governing permissions and</span>
+<a name="l00015"></a>00015 <span class="comment"> * limitations under the License.</span>
+<a name="l00016"></a>00016 <span class="comment"> */</span>
+<a name="l00017"></a>00017 
+<a name="l00018"></a>00018  <span class="comment">/*</span>
+<a name="l00019"></a>00019 <span class="comment"> * $Id: XMLValidator.hpp 568078 2007-08-21 11:43:25Z amassari $</span>
+<a name="l00020"></a>00020 <span class="comment"> */</span>
+<a name="l00021"></a>00021 
+<a name="l00022"></a>00022 
+<a name="l00023"></a>00023 <span class="preprocessor">#if !defined(XMLVALIDATOR_HPP)</span>
+<a name="l00024"></a><a class="code" href="XMLValidator_8hpp.html#964719cea8558d589cf2ea94ea14dfed">00024</a> <span class="preprocessor"></span><span class="preprocessor">#define XMLVALIDATOR_HPP</span>
+<a name="l00025"></a>00025 <span class="preprocessor"></span>
+<a name="l00026"></a>00026 <span class="preprocessor">#include &lt;<a class="code" href="XMLAttr_8hpp.html">xercesc/framework/XMLAttr.hpp</a>&gt;</span>
+<a name="l00027"></a>00027 <span class="preprocessor">#include &lt;<a class="code" href="XMLValidityCodes_8hpp.html">xercesc/framework/XMLValidityCodes.hpp</a>&gt;</span>
+<a name="l00028"></a>00028 
+<a name="l00029"></a>00029 <a class="code" href="XercesDefs_8hpp.html#43d74fa53d868d978f3e97cbb78b194d">XERCES_CPP_NAMESPACE_BEGIN</a>
+<a name="l00030"></a>00030 
+<a name="l00031"></a>00031 <span class="keyword">class </span>ReaderMgr;
+<a name="l00032"></a>00032 <span class="keyword">class </span>XMLBufferMgr;
+<a name="l00033"></a>00033 <span class="keyword">class </span><a class="code" href="classXMLElementDecl.html" title="This class defines the core information of an element declaration.">XMLElementDecl</a>;
+<a name="l00034"></a>00034 <span class="keyword">class </span>XMLScanner;
+<a name="l00035"></a>00035 <span class="keyword">class </span>Grammar;
+<a name="l00036"></a>00036 
+<a name="l00037"></a>00037 
+<a name="l00053"></a><a class="code" href="classXMLValidator.html">00053</a> <span class="keyword">class </span><a class="code" href="XercesDefs_8hpp.html#13df5a01e63e51f62a1467b588b59054"></a> <a class="code" href="classXMLValidator.html" title="This abstract class provides the interface for all validators.">XMLValidator</a> : <span class="keyword">public</span> <a class="code" href="classXMemory.html" title="This class makes it possible to override the C++ memory management by adding new/delete...">XMemory</a>
+<a name="l00054"></a>00054 {
+<a name="l00055"></a>00055 <span class="keyword">public</span>:
+<a name="l00056"></a>00056     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00057"></a>00057     <span class="comment">//  Constructors are hidden, just the virtual destructor is exposed</span>
+<a name="l00058"></a>00058     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00059"></a>00059 
+<a name="l00062"></a>00062 
+<a name="l00067"></a><a class="code" href="classXMLValidator.html#a1167043c9d36e5349cab571f4730574">00067</a>     <span class="keyword">virtual</span> ~<a class="code" href="classXMLValidator.html" title="This abstract class provides the interface for all validators.">XMLValidator</a>()
+<a name="l00068"></a>00068     {
+<a name="l00069"></a>00069     }
+<a name="l00071"></a>00071 
+<a name="l00072"></a>00072 
+<a name="l00073"></a>00073     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00074"></a>00074     <span class="comment">//  The virtual validator interface</span>
+<a name="l00075"></a>00075     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00076"></a>00076 
+<a name="l00079"></a>00079 
+<a name="l00099"></a>00099     <span class="keyword">virtual</span> <span class="keywordtype">int</span> checkContent
+<a name="l00100"></a>00100     (
+<a name="l00101"></a>00101         <a class="code" href="classXMLElementDecl.html" title="This class defines the core information of an element declaration.">XMLElementDecl</a>* <span class="keyword">const</span>   elemDecl
+<a name="l00102"></a>00102         , <a class="code" href="classQName.html">QName</a>** <span class="keyword">const</span>         children
+<a name="l00103"></a>00103         , <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>    childCount
+<a name="l00104"></a>00104     ) = 0;
+<a name="l00105"></a>00105 
+<a name="l00114"></a>00114     <span class="keyword">virtual</span> <span class="keywordtype">void</span> faultInAttr
+<a name="l00115"></a>00115     (
+<a name="l00116"></a>00116                 <a class="code" href="classXMLAttr.html" title="This class defines the information about an attribute that will come out of the scanner...">XMLAttr</a>&amp;    toFill
+<a name="l00117"></a>00117         , <span class="keyword">const</span> <a class="code" href="classXMLAttDef.html" title="Represents the core information of an atribute definition.">XMLAttDef</a>&amp;  attDef
+<a name="l00118"></a>00118     )   <span class="keyword">const</span> = 0;
+<a name="l00119"></a>00119 
+<a name="l00123"></a>00123     <span class="keyword">virtual</span> <span class="keywordtype">void</span> preContentValidation(<span class="keywordtype">bool</span> reuseGrammar,
+<a name="l00124"></a>00124                                       <span class="keywordtype">bool</span> validateDefAttr = <span class="keyword">false</span>) = 0;
+<a name="l00125"></a>00125 
+<a name="l00133"></a>00133     <span class="keyword">virtual</span> <span class="keywordtype">void</span> postParseValidation() = 0;
+<a name="l00134"></a>00134 
+<a name="l00140"></a>00140     <span class="keyword">virtual</span> <span class="keywordtype">void</span> reset() = 0;
+<a name="l00141"></a>00141 
+<a name="l00148"></a>00148     <span class="keyword">virtual</span> <span class="keywordtype">bool</span> requiresNamespaces() <span class="keyword">const</span> = 0;
+<a name="l00149"></a>00149 
+<a name="l00160"></a>00160     <span class="keyword">virtual</span> <span class="keywordtype">void</span> validateAttrValue
+<a name="l00161"></a>00161     (
+<a name="l00162"></a>00162         <span class="keyword">const</span>   <a class="code" href="classXMLAttDef.html" title="Represents the core information of an atribute definition.">XMLAttDef</a>*                  attDef
+<a name="l00163"></a>00163         , <span class="keyword">const</span> XMLCh* <span class="keyword">const</span>                attrValue
+<a name="l00164"></a>00164         , <span class="keywordtype">bool</span>                              preValidation = <span class="keyword">false</span>
+<a name="l00165"></a>00165         , <span class="keyword">const</span> <a class="code" href="classXMLElementDecl.html" title="This class defines the core information of an element declaration.">XMLElementDecl</a>*             elemDecl = 0
+<a name="l00166"></a>00166     ) = 0;
+<a name="l00167"></a>00167 
+<a name="l00175"></a>00175     <span class="keyword">virtual</span> <span class="keywordtype">void</span> validateElement
+<a name="l00176"></a>00176     (
+<a name="l00177"></a>00177         <span class="keyword">const</span>   <a class="code" href="classXMLElementDecl.html" title="This class defines the core information of an element declaration.">XMLElementDecl</a>*             elemDef
+<a name="l00178"></a>00178     ) = 0;
+<a name="l00179"></a>00179 
+<a name="l00183"></a>00183     <span class="keyword">virtual</span> Grammar* getGrammar() <span class="keyword">const</span> =0;
+<a name="l00184"></a>00184 
+<a name="l00188"></a>00188     <span class="keyword">virtual</span> <span class="keywordtype">void</span> setGrammar(Grammar* aGrammar) =0;
+<a name="l00189"></a>00189 
+<a name="l00190"></a>00190 
+<a name="l00192"></a>00192 
+<a name="l00193"></a>00193     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00194"></a>00194     <span class="comment">//  Virtual DTD handler interface.</span>
+<a name="l00195"></a>00195     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00196"></a>00196 
+<a name="l00199"></a>00199 
+<a name="l00204"></a>00204     <span class="keyword">virtual</span> <span class="keywordtype">bool</span> handlesDTD() <span class="keyword">const</span> = 0;
+<a name="l00205"></a>00205 
+<a name="l00206"></a>00206     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00207"></a>00207     <span class="comment">//  Virtual Schema handler interface.</span>
+<a name="l00208"></a>00208     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00209"></a>00209 
+<a name="l00216"></a>00216     <span class="keyword">virtual</span> <span class="keywordtype">bool</span> handlesSchema() <span class="keyword">const</span> = 0;
+<a name="l00217"></a>00217 
+<a name="l00219"></a>00219 
+<a name="l00220"></a>00220     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00221"></a>00221     <span class="comment">//  Setter methods</span>
+<a name="l00222"></a>00222     <span class="comment">//</span>
+<a name="l00223"></a>00223     <span class="comment">//  setScannerInfo() is called by the scanner to tell the validator</span>
+<a name="l00224"></a>00224     <span class="comment">//  about the stuff it needs to have access to.</span>
+<a name="l00225"></a>00225     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00226"></a>00226 
+<a name="l00229"></a>00229 
+<a name="l00243"></a>00243     <span class="keywordtype">void</span> setScannerInfo
+<a name="l00244"></a>00244     (
+<a name="l00245"></a>00245         XMLScanner* <span class="keyword">const</span>           owningScanner
+<a name="l00246"></a>00246         , ReaderMgr* <span class="keyword">const</span>          readerMgr
+<a name="l00247"></a>00247         , XMLBufferMgr* <span class="keyword">const</span>       bufMgr
+<a name="l00248"></a>00248     );
+<a name="l00249"></a>00249 
+<a name="l00259"></a>00259     <span class="keywordtype">void</span> setErrorReporter
+<a name="l00260"></a>00260     (
+<a name="l00261"></a>00261         <a class="code" href="classXMLErrorReporter.html" title="This abstract class defines a callback mechanism for the scanner.">XMLErrorReporter</a>* <span class="keyword">const</span> errorReporter
+<a name="l00262"></a>00262     );
+<a name="l00263"></a>00263 
+<a name="l00265"></a>00265 
+<a name="l00266"></a>00266 
+<a name="l00267"></a>00267     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00268"></a>00268     <span class="comment">//  Error emitter methods</span>
+<a name="l00269"></a>00269     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00270"></a>00270 
+<a name="l00273"></a>00273 
+<a name="l00292"></a>00292     <span class="keywordtype">void</span> emitError(<span class="keyword">const</span> <a class="code" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86">XMLValid::Codes</a> toEmit);
+<a name="l00293"></a>00293     <span class="keywordtype">void</span> emitError
+<a name="l00294"></a>00294     (
+<a name="l00295"></a>00295         <span class="keyword">const</span>   <a class="code" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86">XMLValid::Codes</a> toEmit
+<a name="l00296"></a>00296         , <span class="keyword">const</span> XMLCh* <span class="keyword">const</span>    text1
+<a name="l00297"></a>00297         , <span class="keyword">const</span> XMLCh* <span class="keyword">const</span>    text2 = 0
+<a name="l00298"></a>00298         , <span class="keyword">const</span> XMLCh* <span class="keyword">const</span>    text3 = 0
+<a name="l00299"></a>00299         , <span class="keyword">const</span> XMLCh* <span class="keyword">const</span>    text4 = 0
+<a name="l00300"></a>00300     );
+<a name="l00301"></a>00301     <span class="keywordtype">void</span> emitError
+<a name="l00302"></a>00302     (
+<a name="l00303"></a>00303         <span class="keyword">const</span>   <a class="code" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86">XMLValid::Codes</a> toEmit
+<a name="l00304"></a>00304         , <span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span>     text1
+<a name="l00305"></a>00305         , <span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span>     text2 = 0
+<a name="l00306"></a>00306         , <span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span>     text3 = 0
+<a name="l00307"></a>00307         , <span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span>     text4 = 0
+<a name="l00308"></a>00308     );    
+<a name="l00309"></a>00309     <span class="keywordtype">void</span> emitError
+<a name="l00310"></a>00310     (
+<a name="l00311"></a>00311         <span class="keyword">const</span>   <a class="code" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86">XMLValid::Codes</a> toEmit
+<a name="l00312"></a>00312         , <span class="keyword">const</span> XMLExcepts::Codes   originalErrorCode
+<a name="l00313"></a>00313         , <span class="keyword">const</span> XMLCh* <span class="keyword">const</span>        text1 = 0
+<a name="l00314"></a>00314         , <span class="keyword">const</span> XMLCh* <span class="keyword">const</span>        text2 = 0
+<a name="l00315"></a>00315         , <span class="keyword">const</span> XMLCh* <span class="keyword">const</span>        text3 = 0
+<a name="l00316"></a>00316         , <span class="keyword">const</span> XMLCh* <span class="keyword">const</span>        text4 = 0
+<a name="l00317"></a>00317         
+<a name="l00318"></a>00318     );
+<a name="l00319"></a>00319 
+<a name="l00321"></a>00321 
+<a name="l00322"></a>00322     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00323"></a>00323     <span class="comment">//  Deprecated XMLValidator interface</span>
+<a name="l00324"></a>00324     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00332"></a>00332 <span class="comment"></span>    <span class="keywordtype">bool</span> checkRootElement
+<a name="l00333"></a><a class="code" href="classXMLValidator.html#6c771e465d8ac96974988d202d79723b">00333</a>     (
+<a name="l00334"></a>00334         <span class="keyword">const</span>   <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>
+<a name="l00335"></a>00335     ) { <span class="keywordflow">return</span> <span class="keyword">true</span>;};
+<a name="l00336"></a>00336 
+<a name="l00337"></a>00337     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00338"></a>00338     <span class="comment">//  Notification that lazy data has been deleted</span>
+<a name="l00339"></a>00339     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00340"></a>00340     <span class="keyword">static</span> <span class="keywordtype">void</span> reinitMsgMutex();
+<a name="l00341"></a>00341 
+<a name="l00342"></a>00342     <span class="keyword">static</span> <span class="keywordtype">void</span> reinitMsgLoader();
+<a name="l00343"></a>00343 
+<a name="l00344"></a>00344 <span class="keyword">protected</span> :
+<a name="l00345"></a>00345     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00346"></a>00346     <span class="comment">//  Hidden constructors</span>
+<a name="l00347"></a>00347     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00348"></a>00348     <a class="code" href="classXMLValidator.html" title="This abstract class provides the interface for all validators.">XMLValidator</a>
+<a name="l00349"></a>00349     (
+<a name="l00350"></a>00350         <a class="code" href="classXMLErrorReporter.html" title="This abstract class defines a callback mechanism for the scanner.">XMLErrorReporter</a>* <span class="keyword">const</span> errReporter = 0
+<a name="l00351"></a>00351     );
+<a name="l00352"></a>00352 
+<a name="l00353"></a>00353 
+<a name="l00354"></a>00354     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00355"></a>00355     <span class="comment">//  Protected getters</span>
+<a name="l00356"></a>00356     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00357"></a>00357     <span class="keyword">const</span> XMLBufferMgr* getBufMgr() <span class="keyword">const</span>;
+<a name="l00358"></a>00358     XMLBufferMgr* getBufMgr();
+<a name="l00359"></a>00359     <span class="keyword">const</span> ReaderMgr* getReaderMgr() <span class="keyword">const</span>;
+<a name="l00360"></a>00360     ReaderMgr* getReaderMgr();
+<a name="l00361"></a>00361     <span class="keyword">const</span> XMLScanner* getScanner() <span class="keyword">const</span>;
+<a name="l00362"></a>00362     XMLScanner* getScanner();
+<a name="l00363"></a>00363 
+<a name="l00364"></a>00364 
+<a name="l00365"></a>00365 <span class="keyword">private</span> :
+<a name="l00366"></a>00366     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00367"></a>00367     <span class="comment">//  Unimplemented Constructors and Operators</span>
+<a name="l00368"></a>00368     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00369"></a>00369     <a class="code" href="classXMLValidator.html" title="This abstract class provides the interface for all validators.">XMLValidator</a>(<span class="keyword">const</span> <a class="code" href="classXMLValidator.html" title="This abstract class provides the interface for all validators.">XMLValidator</a>&amp;);
+<a name="l00370"></a>00370     <a class="code" href="classXMLValidator.html" title="This abstract class provides the interface for all validators.">XMLValidator</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="classXMLValidator.html" title="This abstract class provides the interface for all validators.">XMLValidator</a>&amp;);
+<a name="l00371"></a>00371 
+<a name="l00372"></a>00372 
+<a name="l00373"></a>00373     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00374"></a>00374     <span class="comment">//  Private data members</span>
+<a name="l00375"></a>00375     <span class="comment">//</span>
+<a name="l00376"></a>00376     <span class="comment">//  fErrorReporter</span>
+<a name="l00377"></a>00377     <span class="comment">//      The error reporter we are to use, if any.</span>
+<a name="l00378"></a>00378     <span class="comment">//</span>
+<a name="l00379"></a>00379     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00380"></a>00380     XMLBufferMgr*       fBufMgr;
+<a name="l00381"></a>00381     <a class="code" href="classXMLErrorReporter.html" title="This abstract class defines a callback mechanism for the scanner.">XMLErrorReporter</a>*   fErrorReporter;
+<a name="l00382"></a>00382     ReaderMgr*          fReaderMgr;
+<a name="l00383"></a>00383     XMLScanner*         fScanner;
+<a name="l00384"></a>00384 };
+<a name="l00385"></a>00385 
+<a name="l00386"></a>00386 
+<a name="l00387"></a>00387 <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00388"></a>00388 <span class="comment">//  Setter methods</span>
+<a name="l00389"></a>00389 <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00390"></a>00390 <span class="keyword">inline</span> <span class="keywordtype">void</span>
+<a name="l00391"></a><a class="code" href="classXMLValidator.html#3c919a8cd60cd8db3ab21a047b0c2382">00391</a> <a class="code" href="classXMLValidator.html#3c919a8cd60cd8db3ab21a047b0c2382" title="This is a pointer to the scanner to which the validator belongs.">XMLValidator::setScannerInfo</a>(XMLScanner* <span class="keyword">const</span>      owningScanner
+<a name="l00392"></a>00392                             , ReaderMgr* <span class="keyword">const</span>      readerMgr
+<a name="l00393"></a>00393                             , XMLBufferMgr* <span class="keyword">const</span>   bufMgr)
+<a name="l00394"></a>00394 {
+<a name="l00395"></a>00395     <span class="comment">// We don't own any of these, we just reference them</span>
+<a name="l00396"></a>00396     fScanner = owningScanner;
+<a name="l00397"></a>00397     fReaderMgr = readerMgr;
+<a name="l00398"></a>00398     fBufMgr = bufMgr;
+<a name="l00399"></a>00399 }
+<a name="l00400"></a>00400 
+<a name="l00401"></a>00401 <span class="keyword">inline</span> <span class="keywordtype">void</span>
+<a name="l00402"></a><a class="code" href="classXMLValidator.html#1e8dc0e5cb4da13b3934d0af455d40d3">00402</a> <a class="code" href="classXMLValidator.html#1e8dc0e5cb4da13b3934d0af455d40d3" title="This method is called to set an error reporter on the validator via which it will...">XMLValidator::setErrorReporter</a>(<a class="code" href="classXMLErrorReporter.html" title="This abstract class defines a callback mechanism for the scanner.">XMLErrorReporter</a>* <span class="keyword">const</span> errorReporter)
+<a name="l00403"></a>00403 {
+<a name="l00404"></a>00404     fErrorReporter = errorReporter;
+<a name="l00405"></a>00405 }
+<a name="l00406"></a>00406 
+<a name="l00407"></a>00407 
+<a name="l00408"></a>00408 <span class="comment">// ---------------------------------------------------------------------------</span>
+<a name="l00409"></a>00409 <span class="comment">//  XMLValidator: Protected getter</span>
+<a name="l00410"></a>00410 <span class="comment">// ---------------------------------------------------------------------------</span>
+<a name="l00411"></a><a class="code" href="classXMLValidator.html#c4bd73e48ce289a6a402258a0d9346b8">00411</a> <span class="keyword">inline</span> <span class="keyword">const</span> XMLBufferMgr* <a class="code" href="classXMLValidator.html#c4bd73e48ce289a6a402258a0d9346b8">XMLValidator::getBufMgr</a>()<span class="keyword"> const</span>
+<a name="l00412"></a>00412 <span class="keyword"></span>{
+<a name="l00413"></a>00413     <span class="keywordflow">return</span> fBufMgr;
+<a name="l00414"></a>00414 }
+<a name="l00415"></a>00415 
+<a name="l00416"></a><a class="code" href="classXMLValidator.html#d9ce4915c17a6eba60754ab6a5f5d7f2">00416</a> <span class="keyword">inline</span> XMLBufferMgr* <a class="code" href="classXMLValidator.html#c4bd73e48ce289a6a402258a0d9346b8">XMLValidator::getBufMgr</a>()
+<a name="l00417"></a>00417 {
+<a name="l00418"></a>00418     <span class="keywordflow">return</span> fBufMgr;
+<a name="l00419"></a>00419 }
+<a name="l00420"></a>00420 
+<a name="l00421"></a><a class="code" href="classXMLValidator.html#e8b95228d9a32830f460554057c61454">00421</a> <span class="keyword">inline</span> <span class="keyword">const</span> ReaderMgr* <a class="code" href="classXMLValidator.html#e8b95228d9a32830f460554057c61454">XMLValidator::getReaderMgr</a>()<span class="keyword"> const</span>
+<a name="l00422"></a>00422 <span class="keyword"></span>{
+<a name="l00423"></a>00423     <span class="keywordflow">return</span> fReaderMgr;
+<a name="l00424"></a>00424 }
+<a name="l00425"></a>00425 
+<a name="l00426"></a><a class="code" href="classXMLValidator.html#75bbad9d31e2f7188afb14f941632c12">00426</a> <span class="keyword">inline</span> ReaderMgr* <a class="code" href="classXMLValidator.html#e8b95228d9a32830f460554057c61454">XMLValidator::getReaderMgr</a>()
+<a name="l00427"></a>00427 {
+<a name="l00428"></a>00428     <span class="keywordflow">return</span> fReaderMgr;
+<a name="l00429"></a>00429 }
+<a name="l00430"></a>00430 
+<a name="l00431"></a><a class="code" href="classXMLValidator.html#a534361df30152927e8db95838c20d63">00431</a> <span class="keyword">inline</span> <span class="keyword">const</span> XMLScanner* <a class="code" href="classXMLValidator.html#a534361df30152927e8db95838c20d63">XMLValidator::getScanner</a>()<span class="keyword"> const</span>
+<a name="l00432"></a>00432 <span class="keyword"></span>{
+<a name="l00433"></a>00433     <span class="keywordflow">return</span> fScanner;
+<a name="l00434"></a>00434 }
+<a name="l00435"></a>00435 
+<a name="l00436"></a><a class="code" href="classXMLValidator.html#31556fb32bd07f74e8d70cd0674071eb">00436</a> <span class="keyword">inline</span> XMLScanner* <a class="code" href="classXMLValidator.html#a534361df30152927e8db95838c20d63">XMLValidator::getScanner</a>()
+<a name="l00437"></a>00437 {
+<a name="l00438"></a>00438     <span class="keywordflow">return</span> fScanner;
+<a name="l00439"></a>00439 }
+<a name="l00440"></a>00440 
+<a name="l00441"></a>00441 <a class="code" href="XercesDefs_8hpp.html#f03d5cb905763ef7a7bd22ab82718285">XERCES_CPP_NAMESPACE_END</a>
+<a name="l00442"></a>00442 
+<a name="l00443"></a>00443 <span class="preprocessor">#endif</span>
+</pre></div>    </FONT></TD></TR></TABLE><BR>
+</TD></TR></TABLE></TD></TR></TABLE><BR><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD bgcolor="#0086b2"><IMG height="1" src="images/dot.gif" width="1" alt=""></TD></TR><TR><TD align="center"><FONT color="#0086b2" size="-1"><I>
+              Copyright &copy; 1994-2004 The Apache Software Foundation.
+              All Rights Reserved.
+            </I></FONT></TD></TR></TABLE></BODY></HTML>

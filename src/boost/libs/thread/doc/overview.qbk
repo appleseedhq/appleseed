@@ -1,0 +1,30 @@
+[/
+  (C) Copyright 2007-8 Anthony Williams.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt).
+]
+
+[section:overview Overview]
+
+__boost_thread__ enables the use of multiple threads of execution with shared data in portable C++ code. It provides classes and
+functions for managing the threads themselves, along with others for synchronizing data between the threads or providing separate
+copies of data specific to individual threads.
+
+The __boost_thread__ library was originally written and designed by William E. Kempf. This version is a major rewrite designed to
+closely follow the proposals presented to the C++ Standards Committee, in particular
+[@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2008/n2497.html N2497],
+[@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2320.html N2320],
+[@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2184.html N2184], 
+[@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2139.html N2139], and 
+[@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2094.html N2094]
+
+In order to use the classes and functions described here, you can
+either include the specific headers specified by the descriptions of
+each class or function, or include the master thread library header:
+
+    #include <boost/thread.hpp>
+
+which includes all the other headers in turn.
+
+[endsect]

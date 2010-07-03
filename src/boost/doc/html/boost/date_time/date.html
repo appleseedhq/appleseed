@@ -1,0 +1,142 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Class template date</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../date_time/doxy.html#header.boost.date_time.date_hpp" title="Header &lt;boost/date_time/date.hpp&gt;">
+<link rel="prev" href="../CV/simple_exception_policy/exception_wrapper.html" title="Struct exception_wrapper">
+<link rel="next" href="day_clock.html" title="Class template day_clock">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="../CV/simple_exception_policy/exception_wrapper.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../date_time/doxy.html#header.boost.date_time.date_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="day_clock.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.date_time.date"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Class template date</span></h2>
+<p>boost::date_time::date &#8212; Representation of timepoint at the one day level resolution. </p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../date_time/doxy.html#header.boost.date_time.date_hpp" title="Header &lt;boost/date_time/date.hpp&gt;">boost/date_time/date.hpp</a>&gt;
+
+</em></span><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>typename</strong></span> calendar, <span class="bold"><strong>typename</strong></span> duration_type_&gt; 
+<span class="bold"><strong>class</strong></span> <a class="link" href="date.html" title="Class template date">date</a> {
+<span class="bold"><strong>public</strong></span>:
+  <span class="emphasis"><em>// types</em></span>
+  <span class="bold"><strong>typedef</strong></span> T                          <a name="boost.date_time.date.date_type"></a>date_type;       
+  <span class="bold"><strong>typedef</strong></span> calendar                   <a name="boost.date_time.date.calendar_type"></a>calendar_type;   
+  <span class="bold"><strong>typedef</strong></span> calendar::date_traits_type <a name="boost.date_time.date.traits_type"></a>traits_type;     
+  <span class="bold"><strong>typedef</strong></span> duration_type_             <a name="boost.date_time.date.duration_type"></a>duration_type;   
+  <span class="bold"><strong>typedef</strong></span> calendar::year_type        <a name="boost.date_time.date.year_type"></a>year_type;       
+  <span class="bold"><strong>typedef</strong></span> calendar::month_type       <a name="boost.date_time.date.month_type"></a>month_type;      
+  <span class="bold"><strong>typedef</strong></span> calendar::day_type         <a name="boost.date_time.date.day_type"></a>day_type;        
+  <span class="bold"><strong>typedef</strong></span> calendar::ymd_type         <a name="boost.date_time.date.ymd_type"></a>ymd_type;        
+  <span class="bold"><strong>typedef</strong></span> calendar::date_rep_type    <a name="boost.date_time.date.date_rep_type"></a>date_rep_type;   
+  <span class="bold"><strong>typedef</strong></span> calendar::date_int_type    <a name="boost.date_time.date.date_int_type"></a>date_int_type;   
+  <span class="bold"><strong>typedef</strong></span> calendar::day_of_week_type <a name="boost.date_time.date.day_of_week_type"></a>day_of_week_type;
+
+  <span class="emphasis"><em>// <a class="link" href="date.html#boost.date_time.dateconstruct-copy-destruct">construct/copy/destruct</a></em></span>
+  <a class="link" href="date.html#id1143399-bb">date</a>(year_type, month_type, day_type);
+  <a class="link" href="date.html#id1143417-bb">date</a>(<span class="bold"><strong>const</strong></span> ymd_type &amp;);
+  <a class="link" href="date.html#id1143428-bb">date</a>(date_int_type);
+  <a class="link" href="date.html#id1143441-bb">date</a>(date_rep_type);
+
+  <span class="emphasis"><em>// <a class="link" href="date.html#id1143189-bb">public member functions</a></em></span>
+  <span class="type">year_type</span> <a class="link" href="date.html#id1143192-bb">year</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type">month_type</span> <a class="link" href="date.html#id1143200-bb">month</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type">day_type</span> <a class="link" href="date.html#id1143208-bb">day</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type">day_of_week_type</span> <a class="link" href="date.html#id1143216-bb">day_of_week</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type">ymd_type</span> <a class="link" href="date.html#id1143224-bb">year_month_day</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="date.html#id1143231-bb"><span class="bold"><strong>operator</strong></span>&lt;</a>(<span class="bold"><strong>const</strong></span> date_type &amp;) <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="date.html#id1143245-bb"><span class="bold"><strong>operator</strong></span>==</a>(<span class="bold"><strong>const</strong></span> date_type &amp;) <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="date.html#id1143258-bb">is_special</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="date.html#id1143269-bb">is_not_a_date</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="date.html#id1143280-bb">is_infinity</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="date.html#id1143291-bb">is_pos_infinity</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="date.html#id1143302-bb">is_neg_infinity</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type">special_values</span> <a class="link" href="date.html#id1143313-bb">as_special</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type">duration_type</span> <a class="link" href="date.html#id1143324-bb"><span class="bold"><strong>operator</strong></span>-</a>(<span class="bold"><strong>const</strong></span> date_type &amp;) <span class="bold"><strong>const</strong></span>;
+  <span class="type">date_type</span> <a class="link" href="date.html#id1143337-bb"><span class="bold"><strong>operator</strong></span>-</a>(<span class="bold"><strong>const</strong></span> duration_type &amp;) <span class="bold"><strong>const</strong></span>;
+  <span class="type">date_type</span> <a class="link" href="date.html#id1143351-bb"><span class="bold"><strong>operator</strong></span>-=</a>(<span class="bold"><strong>const</strong></span> duration_type &amp;) ;
+  <span class="type">date_rep_type</span> <a class="link" href="date.html#id1143364-bb">day_count</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type">date_type</span> <a class="link" href="date.html#id1143372-bb"><span class="bold"><strong>operator</strong></span>+</a>(<span class="bold"><strong>const</strong></span> duration_type &amp;) <span class="bold"><strong>const</strong></span>;
+  <span class="type">date_type</span> <a class="link" href="date.html#id1143386-bb"><span class="bold"><strong>operator</strong></span>+=</a>(<span class="bold"><strong>const</strong></span> duration_type &amp;) ;
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id1665527"></a><h2>Description</h2>
+<p>The date template represents an interface shell for a date class that is based on a year-month-day system such as the gregorian or iso systems. It provides basic operations to enable calculation and comparisons.</p>
+<p><span class="bold"><strong>Theory</strong></span></p>
+<p>This date representation fundamentally departs from the C tm struct approach. The goal for this type is to provide efficient date operations (add, subtract) and storage (minimize space to represent) in a concrete class. Thus, the date uses a count internally to represent a particular date. The calendar parameter defines the policies for converting the the year-month-day and internal counted form here. Applications that need to perform heavy formatting of the same date repeatedly will perform better by using the year-month-day representation.</p>
+<p>Internally the date uses a day number to represent the date. This is a monotonic time representation. This representation allows for fast comparison as well as simplifying the creation of writing numeric operations. Essentially, the internal day number is like adjusted julian day. The adjustment is determined by the Epoch date which is represented as day 1 of the calendar. Day 0 is reserved for negative infinity so that any actual date is automatically greater than negative infinity. When a date is constructed from a date or formatted for output, the appropriate conversions are applied to create the year, month, day representations. </p>
+<div class="refsect2" lang="en">
+<a name="id1665546"></a><h3>
+<a name="boost.date_time.dateconstruct-copy-destruct"></a><code class="computeroutput">date</code> 
+        public
+       construct/copy/destruct</h3>
+<div class="orderedlist"><ol type="1">
+<li><pre class="literallayout"><a name="id1143399-bb"></a>date(year_type y, month_type m, day_type d);</pre></li>
+<li><pre class="literallayout"><a name="id1143417-bb"></a>date(<span class="bold"><strong>const</strong></span> ymd_type &amp; ymd);</pre></li>
+<li>
+<pre class="literallayout"><a name="id1143428-bb"></a>date(date_int_type days);</pre>
+<p>This is a private constructor which allows for the creation of new dates. It is not exposed to users since that would require class users to understand the inner workings of the date class. </p>
+</li>
+<li><pre class="literallayout"><a name="id1143441-bb"></a>date(date_rep_type days);</pre></li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id1665629"></a><h3>
+<a name="id1143189-bb"></a><code class="computeroutput">date</code> public member functions</h3>
+<div class="orderedlist"><ol type="1">
+<li><pre class="literallayout"><span class="type">year_type</span> <a name="id1143192-bb"></a>year() <span class="bold"><strong>const</strong></span>;</pre></li>
+<li><pre class="literallayout"><span class="type">month_type</span> <a name="id1143200-bb"></a>month() <span class="bold"><strong>const</strong></span>;</pre></li>
+<li><pre class="literallayout"><span class="type">day_type</span> <a name="id1143208-bb"></a>day() <span class="bold"><strong>const</strong></span>;</pre></li>
+<li><pre class="literallayout"><span class="type">day_of_week_type</span> <a name="id1143216-bb"></a>day_of_week() <span class="bold"><strong>const</strong></span>;</pre></li>
+<li><pre class="literallayout"><span class="type">ymd_type</span> <a name="id1143224-bb"></a>year_month_day() <span class="bold"><strong>const</strong></span>;</pre></li>
+<li><pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1143231-bb"></a><span class="bold"><strong>operator</strong></span>&lt;(<span class="bold"><strong>const</strong></span> date_type &amp; rhs) <span class="bold"><strong>const</strong></span>;</pre></li>
+<li><pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1143245-bb"></a><span class="bold"><strong>operator</strong></span>==(<span class="bold"><strong>const</strong></span> date_type &amp; rhs) <span class="bold"><strong>const</strong></span>;</pre></li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1143258-bb"></a>is_special() <span class="bold"><strong>const</strong></span>;</pre>check to see if date is a special value </li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1143269-bb"></a>is_not_a_date() <span class="bold"><strong>const</strong></span>;</pre>check to see if date is not a value </li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1143280-bb"></a>is_infinity() <span class="bold"><strong>const</strong></span>;</pre>check to see if date is one of the infinity values </li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1143291-bb"></a>is_pos_infinity() <span class="bold"><strong>const</strong></span>;</pre>check to see if date is greater than all possible dates </li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1143302-bb"></a>is_neg_infinity() <span class="bold"><strong>const</strong></span>;</pre>check to see if date is greater than all possible dates </li>
+<li>
+<pre class="literallayout"><span class="type">special_values</span> <a name="id1143313-bb"></a>as_special() <span class="bold"><strong>const</strong></span>;</pre>return as a special value or a not_special if a normal date </li>
+<li><pre class="literallayout"><span class="type">duration_type</span> <a name="id1143324-bb"></a><span class="bold"><strong>operator</strong></span>-(<span class="bold"><strong>const</strong></span> date_type &amp; d) <span class="bold"><strong>const</strong></span>;</pre></li>
+<li><pre class="literallayout"><span class="type">date_type</span> <a name="id1143337-bb"></a><span class="bold"><strong>operator</strong></span>-(<span class="bold"><strong>const</strong></span> duration_type &amp; dd) <span class="bold"><strong>const</strong></span>;</pre></li>
+<li><pre class="literallayout"><span class="type">date_type</span> <a name="id1143351-bb"></a><span class="bold"><strong>operator</strong></span>-=(<span class="bold"><strong>const</strong></span> duration_type &amp; dd) ;</pre></li>
+<li><pre class="literallayout"><span class="type">date_rep_type</span> <a name="id1143364-bb"></a>day_count() <span class="bold"><strong>const</strong></span>;</pre></li>
+<li><pre class="literallayout"><span class="type">date_type</span> <a name="id1143372-bb"></a><span class="bold"><strong>operator</strong></span>+(<span class="bold"><strong>const</strong></span> duration_type &amp; dd) <span class="bold"><strong>const</strong></span>;</pre></li>
+<li><pre class="literallayout"><span class="type">date_type</span> <a name="id1143386-bb"></a><span class="bold"><strong>operator</strong></span>+=(<span class="bold"><strong>const</strong></span> duration_type &amp; dd) ;</pre></li>
+</ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2001-2005 CrystalClear Software, Inc<p>Subject to the Boost Software License, Version 1.0. (See accompanying file
+    <code class="filename">LICENSE_1_0.txt</code> or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)</p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="../CV/simple_exception_policy/exception_wrapper.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../date_time/doxy.html#header.boost.date_time.date_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="day_clock.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

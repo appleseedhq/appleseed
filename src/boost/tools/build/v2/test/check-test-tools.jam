@@ -1,0 +1,26 @@
+# Copyright 2001 Dave Abrahams 
+# Distributed under the Boost Software License, Version 1.0. 
+# (See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt) 
+
+include recursive.jam ;
+include assert-equal.jam ;
+
+#####################################
+# Test the testing tools right here #
+#####################################
+
+# This command always exits with a failure.
+Jam-fail "EXIT error ;" ;
+
+# This should fail to fail
+Jam-fail
+     "include recursive.jam ; Jam-fail \"# this innocuous Jamfile should fail to fail\" ;"
+      ;
+
+# the ECHO rule always has an empty result.
+Jam-fail "include assert-equal.jam ; assert-equal fubar : ECHO checking that assertions fail ;"
+    : "ASSERTION FAILURE"
+    ;
+
+local NOTHING = ;
+assert-equal $(NOTHING) : ECHO checking that assertions succeed ;

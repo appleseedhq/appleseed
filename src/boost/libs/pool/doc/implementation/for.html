@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+<head>
+  <meta http-equiv="Content-Language" content="en-us">
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+  <link href="../pool.css" rel="stylesheet" type="text/css">
+
+  <title>for - m4 FOR Macro</title>
+</head>
+
+<body>
+  <img src="../../../../boost.png" width="276" height="86" alt="C++ Boost">
+
+  <h1 align="center">for - m4 FOR Macro</h1>
+
+  <h2>Introduction</h2>
+
+  <p>detail/for.m4 provides <span class="code">BOOST_M4_FOR</span>, an
+  <strong>m4</strong> macro that provides the equivalent of a <span class=
+  "code">#for</span> preprocessor instruction.</p>
+
+  <h2>Usage</h2>
+
+  <p>This macro must be used by an <strong>m4</strong> file. This file
+  assumes that the option <span class="code">-P</span> is used, to force an
+  <span class="code">m4_</span> prefix on all builtin symbols.</p>
+
+  <h2>Arguments</h2>
+
+  <ol>
+    <li>The name of a variable to hold the current value.</li>
+
+    <li>The starting value of the variable.</li>
+
+    <li>The ending value of the variable.</li>
+
+    <li>The text to repeat. This text may contain references to the variable,
+    which will be replaced with the variable's current value.</li>
+
+    <li>The delimeter text (optional).</li>
+  </ol>
+
+  <p>If called with the wrong number of arguments (less than 4 or more than
+  5), <span class="code">BOOST_M4_FOR</span> will exit with an error. If the
+  starting value (<span class="code">$2</span>) is greater than or equal to
+  the ending value (<span class="code">$3</span>), <span class=
+  "code">BOOST_M4_FOR</span> will do nothing. Otherwise, it will repeat the
+  text (<span class="code">$4</span>), binding the variable (<span class=
+  "code">$1</span>) to the values in the range [starting value (<span class=
+  "code">$2</span>), ending value (<span class="code">$3</span>)), and repeat
+  the delimeter text (<span class="code">$5</span>) in-between each
+  occurrence of the repeat text (<span class="code">$4</span>).</p>
+
+  <h2>Examples</h2>
+
+  <p>Note of the quotation marks (<span class="m4">"</span>) used in the
+  table below are in the input or output; they are shown to delimit
+  whitespace. All code within a pair of quotation marks is intended to be on
+  one line.</p>
+
+  <table border align="center" summary="">
+    <tr>
+      <th>Input</th>
+
+      <th>Output</th>
+    </tr>
+
+    <tr>
+      <td class="m4">"BOOST_M4_FOR(i, 1, 3)"</td>
+
+      <td>Boost m4 script: BOOST_M4_FOR: Wrong number of arguments (3)</td>
+    </tr>
+
+    <tr>
+      <td class="m4">"BOOST_M4_FOR(i, 1, 3, i, ` ', 13)"</td>
+
+      <td>Boost m4 script: BOOST_M4_FOR: Wrong number of arguments (6)</td>
+    </tr>
+
+    <tr>
+      <td class="m4">"BOOST_M4_FOR(i, 7, 0, i )"</td>
+
+      <td>(nothing)</td>
+    </tr>
+
+    <tr>
+      <td class="m4">"BOOST_M4_FOR(i, 0, 0, i )"</td>
+
+      <td>(nothing)</td>
+    </tr>
+
+    <tr>
+      <td class="m4">"BOOST_M4_FOR(i, 0, 7, i )"</td>
+
+      <td class="m4">"0 1 2 3 4 5 6 "</td>
+    </tr>
+
+    <tr>
+      <td class="m4">"BOOST_M4_FOR(i, -13, -10, i )"</td>
+
+      <td class="m4">"-13 -12 -11 "</td>
+    </tr>
+
+    <tr>
+      <td class="m4">"BOOST_M4_FOR(i, 0, 8, BOOST_M4_FOR(j, 0, 4, (i, j)
+      )"<br>
+      ")"</td>
+
+      <td class="m4">"(0, 0) (0, 1) (0, 2) (0, 3) "<br>
+      "(1, 0) (1, 1) (1, 2) (1, 3) "<br>
+      "(2, 0) (2, 1) (2, 2) (2, 3) "<br>
+      "(3, 0) (3, 1) (3, 2) (3, 3) "<br>
+      "(4, 0) (4, 1) (4, 2) (4, 3) "<br>
+      "(5, 0) (5, 1) (5, 2) (5, 3) "<br>
+      "(6, 0) (6, 1) (6, 2) (6, 3) "<br>
+      "(7, 0) (7, 1) (7, 2) (7, 3) "<br>
+      ""</td>
+    </tr>
+
+    <tr>
+      <td class="m4">"BOOST_M4_FOR(i, 7, 0, i, |)"</td>
+
+      <td>(nothing)</td>
+    </tr>
+
+    <tr>
+      <td class="m4">"BOOST_M4_FOR(i, 0, 0, i, |)"</td>
+
+      <td>(nothing)</td>
+    </tr>
+
+    <tr>
+      <td class="m4">"BOOST_M4_FOR(i, 0, 7, i, |)"</td>
+
+      <td class="m4">"0|1|2|3|4|5|6"</td>
+    </tr>
+
+    <tr>
+      <td class="m4">"BOOST_M4_FOR(i, -13, -10, i, `, ')"</td>
+
+      <td class="m4">"-13, -12, -11"</td>
+    </tr>
+
+    <tr>
+      <td class="m4">"BOOST_M4_FOR(i, 0, 8, `[BOOST_M4_FOR(j, 0, 4, (i, j),
+      `, ')]', `,"<br>
+      "')"</td>
+
+      <td class="m4">"[(0, 0), (0, 1), (0, 2), (0, 3)],"<br>
+      "[(1, 0), (1, 1), (1, 2), (1, 3)],"<br>
+      "[(2, 0), (2, 1), (2, 2), (2, 3)],"<br>
+      "[(3, 0), (3, 1), (3, 2), (3, 3)],"<br>
+      "[(4, 0), (4, 1), (4, 2), (4, 3)],"<br>
+      "[(5, 0), (5, 1), (5, 2), (5, 3)],"<br>
+      "[(6, 0), (6, 1), (6, 2), (6, 3)],"<br>
+      "[(7, 0), (7, 1), (7, 2), (7, 3)]"</td>
+    </tr>
+  </table>
+  <hr>
+
+  <p><a href="http://validator.w3.org/check?uri=referer"><img border="0" src=
+  "http://www.w3.org/Icons/valid-html401" alt="Valid HTML 4.01 Transitional"
+  height="31" width="88"></a></p>
+
+  <p>Revised 
+  <!--webbot bot="Timestamp" s-type="EDITED" s-format="%d %B, %Y" startspan -->05
+  December, 2006<!--webbot bot="Timestamp" endspan i-checksum="38516" --></p>
+
+  <p><i>Copyright &copy; 2000, 2001 Stephen Cleary (scleary AT jerviswebb DOT
+  com)</i></p>
+
+  <p><i>Distributed under the Boost Software License, Version 1.0. (See
+  accompanying file <a href="../../../../LICENSE_1_0.txt">LICENSE_1_0.txt</a>
+  or copy at <a href=
+  "http://www.boost.org/LICENSE_1_0.txt">http://www.boost.org/LICENSE_1_0.txt</a>)</i></p>
+</body>
+</html>

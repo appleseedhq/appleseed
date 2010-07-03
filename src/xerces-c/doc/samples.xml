@@ -1,0 +1,136 @@
+<?xml version="1.0" standalone="no"?>
+<!--
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+
+<!DOCTYPE s1 SYSTEM "sbk:/style/dtd/document.dtd">
+
+<s1 title="&XercesCName; Samples">
+
+    <s2 title="Introduction">
+    <p>&XercesCName; comes packaged with sample applications that
+    demonstrate salient features of the parser using simple
+    applications written on top of the SAX and DOM APIs provided by
+    the parser.  Sample XML data files are provided in the samples/data directory.</p>
+    </s2>
+
+    <s2 title="Building the Samples">
+        <p>For general information related to building--including
+        platform-specific information--please refer to the 
+        <jump href="build.html">Build Page</jump>.  This
+        information covers a standard installation where one
+        has downloaded the entire Xerces-C binary distribution
+        to a place on the filesystem to which one has write
+        access.  Below, we cover what to do if Xerces-C has been
+        preinstalled on a system into a directory to which one
+        does not have write access, but compiling the samples is
+        desired.</p>
+        <p>
+            In this situation, just do the following:
+        </p>
+        <ol>
+            <li>Copy the entire contents of the
+            <code>samples</code> directory into a directory named
+            samples that you have write-access to;</li>
+            <li>Set the <code>XERCESCOUT</code> environment
+            variable to point to the directory that is the parent
+            of the newly-created <code>samples</code>
+            directory;</li>
+            <li>Proceed as normal to compile the samples (not
+            forgetting to set <code>XERCESCROOT</code> to point
+            to the place on the file system where Xerces-C&apos;s
+            include files etc. are to be found);</li> 
+        </ol>
+        <p>Once this is done, the compiled samples will be placed
+        in a directory named <code>bin</code>; this directory
+        will be located in the same directory as the
+        <code>samples</code> directory created in step 1
+        above.</p>
+    </s2>
+
+    <s2 title="Running the Samples">
+
+    <p>The sample applications are dependent on the &XercesCName; shared library
+		(and could also depend on the ICU library if you built &XercesCName; with ICU).
+		Therefore, on Windows platforms you must make sure that your <code>PATH</code>
+		environment variable is set properly to pick up these shared libraries at
+		runtime.</p>
+
+		<p>On UNIX platforms you must ensure that <ref>LIBPATH</ref>
+		environment variable is set properly to pick up the shared libraries at
+		runtime. (UNIX gurus will understand here that <ref>LIBPATH</ref> actually
+		translates to <em>LD_LIBRARY_PATH</em> on Solaris and Linux, <em>SHLIB_PATH</em> on HP-UX,
+		<em>DYLD_LIBRARY_PATH</em> on Mac OS X,
+		and stays as <em>LIBPATH</em> on AIX).</p>
+
+		<p>To set you LIBPATH (on AIX for example), you would type:</p>
+<source>export LIBPATH=&XercesCInstallDir;/lib:$LIBPATH</source>
+
+               <p>On both Windows and UNIX platforms, if the parser is built with icu message loader
+               (like IBM XML4C binaries), or message catalog loader, then you need to set another environment
+               variable, XERCESC_NLS_HOME to point to the directory, $XERCESCROOT/msg, where the message
+               files reside.              
+               </p>
+<source>
+set XERCESC_NLS_HOME=$XERCESCROOT\msg
+or
+export XERCESC_NLS_HOME=$XERCESCROOT/msg
+or
+setenv XERCESC_NLS_HOME=$XERCESCROOT/msg
+</source>
+               
+               <p>Once you have set up the environment variables, you can run the
+               samples by opening a command window (or your shell prompt for
+               UNIX environments).</p>
+
+		<s3 title="&XercesCName; Samples">
+			<ul>
+				<li><link idref="saxcount">SAXCount</link>
+					<br/>SAXCount counts the elements, attributes, spaces and
+					characters in an XML file.</li>
+				<li><link idref="saxprint">SAXPrint</link>
+					<br/>SAXPrint parses an XML file and prints it out.</li>
+				<li><link idref="domcount">DOMCount</link>
+					<br/>DOMCount counts the elements in a XML file.</li>
+				<li><link idref="domprint">DOMPrint</link>
+					<br/>DOMPrint parses an XML file and prints it out.</li>
+				<li><link idref="memparse">MemParse</link>
+					<br/>MemParse parses XML in a memory buffer, outputing the number of elements and attributes.</li>
+				<li><link idref="redirect">Redirect</link>
+					<br/>Redirect redirects the input stream for external entities.</li>
+				<li><link idref="pparse">PParse</link>
+					<br/>PParse demonstrates progressive parsing.</li>
+				<li><link idref="stdinparse">StdInParse</link>
+					<br/>StdInParse demonstrates streaming XML data from standard input.</li>
+				<li><link idref="enumval">EnumVal</link>
+					<br/>EnumVal shows how to enumerate the markup decls in a DTD Grammar.</li>
+				<li><link idref="senumval">SEnumVal</link>
+					<br/>SEnumVal shows how to enumerate the markup decls in a Schema Grammar.</li>
+				<li><link idref="createdoc">CreateDOMDocument</link>
+					<br/>CreateDOMDocument creates a DOM tree in memory from scratch.</li>
+				<li><link idref="sax2count">SAX2Count</link>
+					<br/>SAX2Count counts the elements, attributes, spaces and
+					characters in an XML file.</li>
+				<li><link idref="sax2print">SAX2Print</link>
+					<br/>SAX2Print parses an XML file and prints it out.</li>
+				<li><link idref="psviwriter">PSVIWriter</link>
+					<br/>PSVIWriter exposes the underlying PSVI of the parsed XML file.</li>
+				<li><link idref="scmprint">SCMPrint</link>
+					<br/>SCMPrint parses an XSD file and prints information about the Schema Component Model.</li>										
+			</ul>
+		</s3>
+    </s2>
+</s1>

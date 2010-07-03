@@ -1,0 +1,194 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Changes since boost 1.35</title>
+<link rel="stylesheet" href="../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../thread.html" title="Chapter 20. Thread">
+<link rel="prev" href="../thread.html" title="Chapter 20. Thread">
+<link rel="next" href="thread_management.html" title="Thread Management">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../boost.png"></td>
+<td align="center"><a href="../../../index.html">Home</a></td>
+<td align="center"><a href="../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="../thread.html"><img src="../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../thread.html"><img src="../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="thread_management.html"><img src="../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="thread.changes"></a><a class="link" href="changes.html" title="Changes since boost 1.35"> Changes since boost 1.35</a>
+</h2></div></div></div>
+<p>
+      The 1.36.0 release of Boost includes a few new features in the thread library:
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+        New generic <a class="link" href="synchronization.html#thread.synchronization.lock_functions.lock_multiple" title="Non-member function lock(Lockable1,Lockable2,...)"><code class="computeroutput"><span class="identifier">lock</span><span class="special">()</span></code></a>
+        and <a class="link" href="synchronization.html#thread.synchronization.lock_functions.try_lock_multiple" title="Non-member function try_lock(Lockable1,Lockable2,...)"><code class="computeroutput"><span class="identifier">try_lock</span><span class="special">()</span></code></a>
+        functions for locking multiple mutexes at once.
+      </li>
+<li>
+        Rvalue reference support for move semantics where the compilers supports
+        it.
+      </li>
+<li>
+        A few bugs fixed and missing functions added (including the serious win32
+        condition variable bug).
+      </li>
+<li>
+<code class="computeroutput"><span class="identifier">scoped_try_lock</span></code> types are
+        now backwards-compatible with Boost 1.34.0 and previous releases.
+      </li>
+<li>
+        Support for passing function arguments to the thread function by supplying
+        additional arguments to the <a class="link" href="thread_management.html#thread.thread_management.thread" title="Class thread"><code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">thread</span></code></a> constructor.
+      </li>
+<li>
+        Backwards-compatibility overloads added for <code class="computeroutput"><span class="identifier">timed_lock</span></code>
+        and <code class="computeroutput"><span class="identifier">timed_wait</span></code> functions
+        to allow use of <code class="computeroutput"><span class="identifier">xtime</span></code> for
+        timeouts.
+      </li>
+</ul></div>
+<a name="thread.changes.changes_since_boost_1_34"></a><h4>
+<a name="id3481976"></a>
+      <a class="link" href="changes.html#thread.changes.changes_since_boost_1_34">Changes since boost
+      1.34</a>
+    </h4>
+<p>
+      Almost every line of code in <span class="bold"><strong>Boost.Thread</strong></span>
+      has been changed since the 1.34 release of boost. However, most of the interface
+      changes have been extensions, so the new code is largely backwards-compatible
+      with the old code. The new features and breaking changes are described below.
+    </p>
+<a name="thread.changes.new_features"></a><h4>
+<a name="id3482011"></a>
+      <a class="link" href="changes.html#thread.changes.new_features">New Features</a>
+    </h4>
+<div class="itemizedlist"><ul type="disc">
+<li>
+        Instances of <a class="link" href="thread_management.html#thread.thread_management.thread" title="Class thread"><code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">thread</span></code></a> and of the various lock types
+        are now movable.
+      </li>
+<li>
+        Threads can be interrupted at <a class="link" href="thread_management.html#interruption_points"><span class="emphasis"><em>interruption
+        points</em></span></a>.
+      </li>
+<li>
+        Condition variables can now be used with any type that implements the <a class="link" href="synchronization.html#thread.synchronization.mutex_concepts.lockable" title="Lockable Concept"><code class="computeroutput"><span class="identifier">Lockable</span></code>
+        concept</a>, through the use of <code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">condition_variable_any</span></code>
+        (<code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">condition</span></code> is a <code class="computeroutput"><span class="keyword">typedef</span></code>
+        to <code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">condition_variable_any</span></code>, provided for backwards
+        compatibility). <code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">condition_variable</span></code> is provided as an optimization,
+        and will only work with <code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">unique_lock</span><span class="special">&lt;</span><span class="identifier">boost</span><span class="special">::</span><span class="identifier">mutex</span><span class="special">&gt;</span></code> (<code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">mutex</span><span class="special">::</span><span class="identifier">scoped_lock</span></code>).
+      </li>
+<li>
+        Thread IDs are separated from <a class="link" href="thread_management.html#thread.thread_management.thread" title="Class thread"><code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">thread</span></code></a>, so a thread can obtain it's
+        own ID (using <code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">this_thread</span><span class="special">::</span><span class="identifier">get_id</span><span class="special">()</span></code>),
+        and IDs can be used as keys in associative containers, as they have the full
+        set of comparison operators.
+      </li>
+<li>
+        Timeouts are now implemented using the Boost DateTime library, through a
+        typedef <code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">system_time</span></code> for absolute timeouts, and
+        with support for relative timeouts in many cases. <code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">xtime</span></code>
+        is supported for backwards compatibility only.
+      </li>
+<li>
+        Locks are implemented as publicly accessible templates <code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">lock_guard</span></code>,
+        <code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">unique_lock</span></code>, <code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">shared_lock</span></code>,
+        and <code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">upgrade_lock</span></code>, which are templated on the
+        type of the mutex. The <a class="link" href="synchronization.html#thread.synchronization.mutex_concepts.lockable" title="Lockable Concept"><code class="computeroutput"><span class="identifier">Lockable</span></code> concept</a> has been extended
+        to include publicly available <a class="link" href="synchronization.html#thread.synchronization.mutex_concepts.lockable.lock" title="void lock()"><code class="computeroutput"><span class="identifier">lock</span><span class="special">()</span></code></a>
+        and <a class="link" href="synchronization.html#thread.synchronization.mutex_concepts.lockable.unlock" title="void unlock()"><code class="computeroutput"><span class="identifier">unlock</span><span class="special">()</span></code></a>
+        member functions, which are used by the lock types.
+      </li>
+</ul></div>
+<a name="thread.changes.breaking_changes"></a><h4>
+<a name="id3482485"></a>
+      <a class="link" href="changes.html#thread.changes.breaking_changes">Breaking Changes</a>
+    </h4>
+<p>
+      The list below should cover all changes to the public interface which break
+      backwards compatibility.
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+<a class="link" href="synchronization.html#thread.synchronization.mutex_types.try_mutex" title="Typedef try_mutex"><code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">try_mutex</span></code></a> has been removed, and
+        the functionality subsumed into <a class="link" href="synchronization.html#thread.synchronization.mutex_types.mutex" title="Class mutex"><code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">mutex</span></code></a>. <a class="link" href="synchronization.html#thread.synchronization.mutex_types.try_mutex" title="Typedef try_mutex"><code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">try_mutex</span></code></a> is left as a <code class="computeroutput"><span class="keyword">typedef</span></code>, but is no longer a separate class.
+      </li>
+<li>
+<a class="link" href="synchronization.html#thread.synchronization.mutex_types.recursive_try_mutex" title="Typedef recursive_try_mutex"><code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">recursive_try_mutex</span></code></a> has been removed,
+        and the functionality subsumed into <a class="link" href="synchronization.html#thread.synchronization.mutex_types.recursive_mutex" title="Class recursive_mutex"><code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">recursive_mutex</span></code></a>. <a class="link" href="synchronization.html#thread.synchronization.mutex_types.recursive_try_mutex" title="Typedef recursive_try_mutex"><code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">recursive_try_mutex</span></code></a> is left as a
+        <code class="computeroutput"><span class="keyword">typedef</span></code>, but is no longer a
+        separate class.
+      </li>
+<li>
+<code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">detail</span><span class="special">::</span><span class="identifier">thread</span><span class="special">::</span><span class="identifier">lock_ops</span></code> has been removed. Code that relies
+        on the <code class="computeroutput"><span class="identifier">lock_ops</span></code> implementation
+        detail will no longer work, as this has been removed, as it is no longer
+        necessary now that mutex types now have public <a class="link" href="synchronization.html#thread.synchronization.mutex_concepts.lockable.lock" title="void lock()"><code class="computeroutput"><span class="identifier">lock</span><span class="special">()</span></code></a>
+        and <a class="link" href="synchronization.html#thread.synchronization.mutex_concepts.lockable.unlock" title="void unlock()"><code class="computeroutput"><span class="identifier">unlock</span><span class="special">()</span></code></a>
+        member functions.
+      </li>
+<li>
+<code class="computeroutput"><span class="identifier">scoped_lock</span></code> constructors
+        with a second parameter of type <code class="computeroutput"><span class="keyword">bool</span></code>
+        are no longer provided. With previous boost releases, 
+<pre class="programlisting"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">mutex</span><span class="special">::</span><span class="identifier">scoped_lock</span> <span class="identifier">some_lock</span><span class="special">(</span><span class="identifier">some_mutex</span><span class="special">,</span><span class="keyword">false</span><span class="special">);</span></pre>
+        could be used to create a lock object that was associated with a mutex, but
+        did not lock it on construction. This facility has now been replaced with
+        the constructor that takes a <code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">defer_lock_type</span></code>
+        as the second parameter: 
+<pre class="programlisting"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">mutex</span><span class="special">::</span><span class="identifier">scoped_lock</span> <span class="identifier">some_lock</span><span class="special">(</span><span class="identifier">some_mutex</span><span class="special">,</span><span class="identifier">boost</span><span class="special">::</span><span class="identifier">defer_lock</span><span class="special">);</span></pre>
+</li>
+<li>
+        The <code class="computeroutput"><span class="identifier">locked</span><span class="special">()</span></code>
+        member function of the <code class="computeroutput"><span class="identifier">scoped_lock</span></code>
+        types has been renamed to <a class="link" href="synchronization.html#thread.synchronization.locks.unique_lock.owns_lock" title="bool owns_lock() const"><code class="computeroutput"><span class="identifier">owns_lock</span><span class="special">()</span></code></a>.
+      </li>
+<li>
+        You can no longer obtain a <a class="link" href="thread_management.html#thread.thread_management.thread" title="Class thread"><code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">thread</span></code></a> instance representing the
+        current thread: a default-constructed <a class="link" href="thread_management.html#thread.thread_management.thread" title="Class thread"><code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">thread</span></code></a> object is not associated
+        with any thread. The only use for such a thread object was to support the
+        comparison operators: this functionality has been moved to <a class="link" href="thread_management.html#thread.thread_management.thread.id" title="Class boost::thread::id"><code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">thread</span><span class="special">::</span><span class="identifier">id</span></code></a>.
+      </li>
+<li>
+        The broken <code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">read_write_mutex</span></code> has been replaced with
+        <a class="link" href="synchronization.html#thread.synchronization.mutex_types.shared_mutex" title="Class shared_mutex"><code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">shared_mutex</span></code></a>.
+      </li>
+<li>
+<a class="link" href="synchronization.html#thread.synchronization.mutex_types.mutex" title="Class mutex"><code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">mutex</span></code></a>
+        is now never recursive. For Boost releases prior to 1.35 <a class="link" href="synchronization.html#thread.synchronization.mutex_types.mutex" title="Class mutex"><code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">mutex</span></code></a> was recursive on Windows and
+        not on POSIX platforms.
+      </li>
+<li>
+        When using a <a class="link" href="synchronization.html#thread.synchronization.mutex_types.recursive_mutex" title="Class recursive_mutex"><code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">recursive_mutex</span></code></a> with a call to
+        <a class="link" href="synchronization.html#thread.synchronization.condvar_ref.condition_variable_any.wait" title="template&lt;typename lock_type&gt; void wait(lock_type&amp; lock)"><code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">condition_variable_any</span><span class="special">::</span><span class="identifier">wait</span><span class="special">()</span></code></a>,
+        the mutex is only unlocked one level, and not completely. This prior behaviour
+        was not guaranteed and did not feature in the tests.
+      </li>
+</ul></div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2007 -8 Anthony Williams<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="../thread.html"><img src="../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../thread.html"><img src="../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="thread_management.html"><img src="../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

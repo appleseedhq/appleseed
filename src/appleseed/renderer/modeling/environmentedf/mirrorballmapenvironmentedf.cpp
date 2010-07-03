@@ -1,0 +1,185 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2010 Francois Beaune
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Interface header.
+#include "mirrorballmapenvironmentedf.h"
+
+// appleseed.renderer headers.
+#include "renderer/kernel/texturing/texturecache.h"
+#include "renderer/modeling/environmentedf/environmentedf.h"
+#include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/input/inputparams.h"
+
+// appleseed.foundation headers.
+#include "foundation/math/sampling.h"
+
+using namespace foundation;
+using namespace std;
+
+namespace renderer
+{
+
+namespace
+{
+
+    //
+    // Mirror ball environment map EDF.
+    //
+    // References:
+    //
+    //   http://www.debevec.org/probes/
+    //   http://gl.ict.usc.edu/Data/HighResProbes/
+    //
+
+    class MirrorBallMapEnvironmentEDF
+      : public EnvironmentEDF
+    {
+      public:
+        // Constructor.
+        MirrorBallMapEnvironmentEDF(
+            const char*         name,
+            const ParamArray&   params)
+          : EnvironmentEDF(params)
+          , m_name(name)
+        {
+            m_inputs.declare("exitance", InputFormatSpectrum);
+        }
+
+        // Delete this instance.
+        virtual void release()
+        {
+            delete this;
+        }
+
+        // Return the name of this EDF.
+        virtual const char* get_name() const
+        {
+            return m_name.c_str();
+        }
+
+        // Return a string identifying the model of this EDF.
+        virtual const char* get_model() const
+        {
+            return MirrorBallMapEnvironmentEDFFactory::get_model();
+        }
+
+        // Sample the EDF and compute the emission direction, the probability
+        // density with which it was chosen and the value of the EDF for this
+        // direction.
+        virtual void sample(
+            InputEvaluator&         input_evaluator,
+            const Vector2d&         s,                      // sample in [0,1)^2
+            Vector3d&               outgoing,               // world space emission direction, unit-length
+            Spectrum&               value,                  // EDF value for this direction
+            double&                 probability) const      // PDF value
+        {
+            // Compute emission direction.
+            outgoing = sample_sphere_uniform(s);
+
+            // Compute value.
+            lookup_envmap(input_evaluator, outgoing, value);
+
+            // Compute probability.
+            probability = 1.0 / (4.0 * Pi);
+        }
+
+        // Evaluate the EDF for a given emission direction.
+        virtual void evaluate(
+            InputEvaluator&         input_evaluator,
+            const Vector3d&         outgoing,               // world space emission direction, unit-length
+            Spectrum&               value) const            // EDF value for this direction
+        {
+            assert(is_normalized(outgoing));
+
+            // Lookup the environment map.
+            lookup_envmap(input_evaluator, outgoing, value);
+        }
+
+        // Evaluate the PDF for a given emission direction.
+        virtual double evaluate_pdf(
+            InputEvaluator&         input_evaluator,
+            const Vector3d&         outgoing) const         // world space emission direction, unit-length
+        {
+            assert(is_normalized(outgoing));
+
+            return 1.0 / (4.0 * Pi);
+        }
+
+      private:
+        struct InputValues
+        {
+            Spectrum    m_exitance;
+            Alpha       m_exitance_alpha;       // unused
+        };
+
+        const string    m_name;
+
+        void lookup_envmap(
+            InputEvaluator&         input_evaluator,
+            const Vector3d&         direction,
+            Spectrum&               value) const
+        {
+            // Compute the texture coordinates corresponding to this direction.
+            InputParams input_params;
+            const double d = sqrt(square(direction[0]) + square(direction[1]));
+            const double r = (0.5 / Pi) * acos(direction[2]) / d;
+            input_params.m_uv[0] = 0.5 + direction[0] * r;
+            input_params.m_uv[1] = 0.5 + direction[1] * r;
+
+            // Evaluate the input.
+            const InputValues* values =
+                input_evaluator.evaluate<InputValues>(m_inputs, input_params);
+            value = values->m_exitance;
+        }
+    };
+
+}   // anonymous namespace
+
+
+//
+// MirrorBallMapEnvironmentEDFFactory class implementation.
+//
+
+// Return a string identifying this EDF model.
+const char* MirrorBallMapEnvironmentEDFFactory::get_model()
+{
+    return "mirrorball_map_environment_edf";
+}
+
+// Create a new mirror ball environment map EDF.
+auto_release_ptr<EnvironmentEDF> MirrorBallMapEnvironmentEDFFactory::create(
+    const char*         name,
+    const ParamArray&   params)
+{
+    return
+        auto_release_ptr<EnvironmentEDF>(
+            new MirrorBallMapEnvironmentEDF(name, params));
+}
+
+}   // namespace renderer

@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<header name="boost/proto/transform/impl.hpp">
+  <para>Contains definition of transform&lt;&gt; and transform_impl&lt;&gt; helpers. </para>
+  <namespace name="boost">
+    <namespace name="proto">
+      
+      <!-- proto::transform -->
+      <struct name="transform">
+        <template>
+          <template-type-parameter name="PrimitiveTransform"/>
+        </template>
+        <purpose>Inherit from this to make your type a <conceptname>PrimitiveTransform</conceptname>.</purpose>
+        <struct-specialization name="result">
+          <template>
+            <template-type-parameter name="This"/>
+            <template-type-parameter name="Expr"/>
+          </template>
+          <specialization>
+            <template-arg>This(Expr)</template-arg>
+          </specialization>
+          <typedef name="type">
+            <type>typename PrimitiveTransform::template impl&lt; Expr, <replaceable>unspecified</replaceable>, <replaceable>unspecified</replaceable> &gt;::result_type</type>
+          </typedef>
+        </struct-specialization>
+        <struct-specialization name="result">
+          <template>
+            <template-type-parameter name="This"/>
+            <template-type-parameter name="Expr"/>
+            <template-type-parameter name="State"/>
+          </template>
+          <specialization>
+            <template-arg>This(Expr, State)</template-arg>
+          </specialization>
+          <typedef name="type">
+            <type>typename PrimitiveTransform::template impl&lt; Expr, State, <replaceable>unspecified</replaceable> &gt;::result_type</type>
+          </typedef>
+        </struct-specialization>
+        <struct-specialization name="result">
+          <template>
+            <template-type-parameter name="This"/>
+            <template-type-parameter name="Expr"/>
+            <template-type-parameter name="State"/>
+            <template-type-parameter name="Data"/>
+          </template>
+          <specialization>
+            <template-arg>This(Expr, State, Data)</template-arg>
+          </specialization>
+          <typedef name="type">
+            <type>typename PrimitiveTransform::template impl&lt; Expr, State, Data &gt;::result_type</type>
+          </typedef>
+        </struct-specialization>
+        <typedef name="transform_type">
+          <type>PrimitiveTransform</type>
+        </typedef>
+        <method-group name="public member functions">
+          <method name="operator()" cv="const">
+            <type>typename PrimitiveTransform::template impl&lt;Expr &amp;, <replaceable>unspecified</replaceable>, <replaceable>unspecified</replaceable>&gt;::result_type</type>
+            <template>
+              <template-type-parameter name="Expr"/>
+            </template>
+            <parameter name="expr">
+              <paramtype>Expr &amp;</paramtype>
+            </parameter>
+            <returns>
+              <computeroutput>
+                typename PrimitiveTransform::template impl&lt;Expr &amp;, <replaceable>unspecified</replaceable>, <replaceable>unspecified</replaceable>&gt;()(expr, <replaceable>unspecified</replaceable>, <replaceable>unspecified</replaceable>)
+              </computeroutput>
+            </returns>
+          </method>
+          <method name="operator()" cv="const">
+            <type>typename PrimitiveTransform::template impl&lt;Expr &amp;, State &amp;, <replaceable>unspecified</replaceable>&gt;::result_type</type>
+            <template>
+              <template-type-parameter name="Expr"/>
+              <template-type-parameter name="State"/>
+            </template>
+            <parameter name="expr">
+              <paramtype>Expr &amp;</paramtype>
+            </parameter>
+            <parameter name="state">
+              <paramtype>State &amp;</paramtype>
+            </parameter>
+            <returns>
+              <computeroutput>
+                typename PrimitiveTransform::template impl&lt;Expr &amp;, State &amp;, <replaceable>unspecified</replaceable>&gt;()(expr, state, <replaceable>unspecified</replaceable>)
+              </computeroutput>
+            </returns>
+          </method>
+          <method name="operator()" cv="const">
+            <type>typename PrimitiveTransform::template impl&lt;Expr &amp;, State const &amp;, <replaceable>unspecified</replaceable>&gt;::result_type</type>
+            <template>
+              <template-type-parameter name="Expr"/>
+              <template-type-parameter name="State"/>
+            </template>
+            <parameter name="expr">
+              <paramtype>Expr &amp;</paramtype>
+            </parameter>
+            <parameter name="state">
+              <paramtype>State const &amp;</paramtype>
+            </parameter>
+            <returns>
+              <computeroutput>
+                typename PrimitiveTransform::template impl&lt;Expr &amp;, State const &amp;, <replaceable>unspecified</replaceable>&gt;()(expr, state, <replaceable>unspecified</replaceable>)
+              </computeroutput>
+            </returns>
+          </method>
+          <method name="operator()" cv="const">
+            <type>typename PrimitiveTransform::template impl&lt;Expr &amp;, State &amp;, Data &amp;&gt;::result_type</type>
+            <template>
+              <template-type-parameter name="Expr"/>
+              <template-type-parameter name="State"/>
+              <template-type-parameter name="Data"/>
+            </template>
+            <parameter name="expr">
+              <paramtype>Expr &amp;</paramtype>
+            </parameter>
+            <parameter name="state">
+              <paramtype>State &amp;</paramtype>
+            </parameter>
+            <parameter name="data">
+              <paramtype>Data &amp;</paramtype>
+            </parameter>
+            <returns>
+              <computeroutput>
+                typename PrimitiveTransform::template impl&lt;Expr &amp;, State &amp;, Data &amp;&gt;()(expr, state, data)
+              </computeroutput>
+            </returns>
+          </method>
+          <method name="operator()" cv="const">
+            <type>typename PrimitiveTransform::template impl&lt;Expr &amp;, State const &amp;, Data &amp;&gt;::result_type</type>
+            <template>
+              <template-type-parameter name="Expr"/>
+              <template-type-parameter name="State"/>
+              <template-type-parameter name="Data"/>
+            </template>
+            <parameter name="expr">
+              <paramtype>Expr &amp;</paramtype>
+            </parameter>
+            <parameter name="state">
+              <paramtype>State const &amp;</paramtype>
+            </parameter>
+            <parameter name="data">
+              <paramtype>Data &amp;</paramtype>
+            </parameter>
+            <returns>
+              <computeroutput>
+                typename PrimitiveTransform::template impl&lt;Expr &amp;, State const &amp;, Data &amp;&gt;()(expr, state, data)
+              </computeroutput>
+            </returns>
+          </method>
+        </method-group>
+      </struct>
+
+      <!-- proto::transform_impl -->
+      <struct name="transform_impl">
+        <template>
+          <template-type-parameter name="Expr"/>
+          <template-type-parameter name="State"/>
+          <template-type-parameter name="Data"/>
+        </template>
+        <typedef name="expr">
+          <type>typename boost::remove_reference&lt;Expr const&gt;::type</type>
+        </typedef>
+        <typedef name="expr_param">
+          <type>typename boost::add_reference&lt;Expr const&gt;::type</type>
+        </typedef>
+        <typedef name="state">
+          <type>typename boost::remove_reference&lt;State const&gt;::type</type>
+        </typedef>
+        <typedef name="state_param">
+          <type>typename boost::add_reference&lt;State const&gt;::type</type>
+        </typedef>
+        <typedef name="data">
+          <type>typename boost::remove_reference&lt;Data const&gt;::type</type>
+        </typedef>
+        <typedef name="data_param">
+          <type>typename boost::add_reference&lt;Data const&gt;::type</type>
+        </typedef>
+      </struct>
+    </namespace>
+  </namespace>
+</header>

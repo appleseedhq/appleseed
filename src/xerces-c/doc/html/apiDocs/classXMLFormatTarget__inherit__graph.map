@@ -1,0 +1,4 @@
+<area shape="rect" href="$classLocalFileFormatTarget.html" title="LocalFileFormatTarget" alt="" coords="5,161,168,188">
+<area shape="rect" href="$classMemBufFormatTarget.html" title="MemBufFormatTarget" alt="" coords="192,161,357,188">
+<area shape="rect" href="$classStdOutFormatTarget.html" title="StdOutFormatTarget" alt="" coords="381,161,536,188">
+<area shape="rect" href="$classXMemory.html" title="This class makes it possible to override the C++ memory management by adding new/delete..." alt="" coords="233,7,316,33">

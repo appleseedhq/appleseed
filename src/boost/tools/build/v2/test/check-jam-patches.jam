@@ -1,0 +1,293 @@
+# Copyright 2001, 2002 Dave Abrahams 
+# Distributed under the Boost Software License, Version 1.0. 
+# (See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt) 
+
+# Get the recursive Jam invocation code
+include recursive.jam ;
+include assert-equal.jam ;
+
+Jam "include check-bindrule.jam ;"
+    : "found: file-to-bind at subdir1$(SLASH)file-to-bind"
+    ;
+
+include check-arguments.jam ;
+
+if $(NT)
+{
+    # if this one fails, you don't have the line length patch
+    Jam "include test_nt_line_length.jam ;" ;
+}
+
+# a little utility for assertions
+rule identity ( list * )
+{
+    return $(list) ;
+}
+
+#
+# test rule indirection
+#
+rule select ( n list * )
+{
+    return $(list[$(n)]) ;
+}
+
+rule indirect1 ( rule + : args * )
+{
+    return [ $(rule) $(args) ] ;
+}
+
+assert-equal a : indirect1 select 1 : a b c d e ;
+assert-equal b : indirect1 select 2 : a b c d e ;
+
+x = reset ;
+rule reset-x ( new-value )
+{
+    x = $(new-value) ; 
+}
+$(x)-x bar ;                       # invokes reset-x...
+assert-equal bar : identity $(x) ; # which changes x
+
+# Check that unmatched subst returns an empty list
+assert-equal # nothing
+    : SUBST "abc" "d+" x ;
+
+# Check that a matched subst works
+assert-equal x
+    : SUBST "ddd" "d+" x ;
+    
+# Check that we can get multiple substitutions from a single invocation
+assert-equal x y x-y
+    : SUBST "x/y/z" "([^/]*)/([^/]*).*" "\\1" $2 "\\1-\\2" ;
+
+#
+# test local foreach modification
+#
+{
+    local x = 0 ;
+    local entered = ;
+    for local x in a b c # x declared local to for loop.
+    {
+        entered = 1 ;
+        if ! ( $(x) in a b c )
+        {
+            EXIT "local foreach: expected one of a, b, c; got" $(x) ;
+        }
+    }
+    
+    if $(x) != 0 # if x was modified, it failed to be a local variable
+    {
+        EXIT "local foreach failed" ;
+    }
+}
+
+#
+# test while loops
+#
+{
+    local x = a b c ;
+    local y = $(x) ;
+    local z = ;
+    
+    while $(y)
+    {
+        z += $(y[1]) ;
+        y = $(y[2-]) ;
+    }
+    
+    if $(z) != $(x)
+    {
+        EXIT "while loops failed" ;
+    }
+}
+
+#
+# test negative list indices and slices
+#
+{
+    local x = a b c d e ;
+    
+    rule assert-index ( index : list * )
+    {
+        if $(x[$(index)]) != $(list)
+        {
+            ECHO with x= $(x) ;
+            ECHO x[$(index)] == $(x[$(index)]) ;
+            EXIT expected $(list) ;
+        }
+    }
+    
+    assert-index 1 : a ;
+    assert-index 3 : c ;
+    assert-index 1-2 : a b ;
+    assert-index -1 : e ;
+    assert-index -2 : d ;
+    assert-index 2--2 : b c d ;
+    assert-index -3--2 : c d ;
+    assert-index 1--2 : a b c d ;
+    assert-index 1--2 : a b c d ;
+    assert-index 1--10 : ;
+    x = a ;
+    assert-index 1--2 : ;
+    assert-index 1--2 : ;
+}
+
+#
+# test module primitives
+#
+{
+    local x = a b c d e f g h i j ;
+    local y = $(x[3-]) ;
+
+    rule shift1 ( dummy ) { }
+
+    rule my_module.not_really ( ) { return something ; }
+
+    # import the identity rule into my_module as "id"
+    IMPORT  : identity : my_module : id ;
+    module my_module
+    {
+        # assert-equal operates in its own module, so call id in here and use
+        # identity later.
+        local f = [ id x y z ] ;
+        assert-equal x y z : identity $(f) ;
+        
+        w = ;
+        y = ;
+        x2 = 1 2 3 ;
+        x3 = $(x2) ;
+        z = $(x2) ;
+        
+        x3 = ; # should reset x3
+        
+        # drops one element from the head of x
+        # moves the first element of z from the head of z to the head of y
+        rule shift1 ( )
+        {
+            x = $(x[2-]) ;
+            y = $(z[1]) $(y) ;
+            z = $(z[2-]) ;
+        }
+
+        rule shift2 ( )
+        {
+            shift1 ;
+        }
+        
+        shift1 ;
+        shift2 ;
+
+        rule get ( symbol )
+        {
+            return $($(symbol)) ;
+        }
+        local rule not_really ( ) { return nothing ; }
+    }
+    
+    local expected = shift1 shift2 get ;
+    if ! ( $(expected) in [ RULENAMES my_module ] )
+      || ! ( [ RULENAMES my_module ] in $(expected) )
+    {
+        EXIT "[ RULENAMES my_module ] =" [ RULENAMES my_module ] "!=" shift1 shift2 get ;
+    }        
+    
+          
+    # show that not_really was actually a local definition
+    assert-equal something : my_module.not_really ;
+
+    if not_really in [ RULENAMES my_module ]
+    {
+        EXIT unexpectedly found local rule "not_really" in "my_module" ;
+    }
+    EXPORT my_module : not_really ;
+    
+    if ! ( not_really in [ RULENAMES my_module ] )
+    {
+        EXIT unexpectedly failed to find exported rule "not_really" in "my_module" ;
+    }
+    
+    # show that my_module doesn't have access to our variables
+    my_module.shift1 ;
+    assert-equal $(x[3-]) : identity $(y) ;
+
+    # check module locals
+    assert-equal : my_module.get w ;
+    assert-equal 3 2 1 : my_module.get y ;
+    assert-equal 1 2 3 : my_module.get x2 ;
+    assert-equal : my_module.get x3 ;
+    assert-equal : my_module.get z ;
+    
+    my_module.shift2 ;
+    x = $(x[3-]) ;
+    assert-equal $(x) : identity $(y) ;
+
+    # Prove that the module's rule is not exposed to the world at large without
+    # qualification
+    shift1 nothing ;
+    assert-equal $(x) : identity $(y) ;
+
+    # import my_module.shift1 into the global module as "shifty", and
+    # my_module.shift2 into the global module as "shift2".
+    IMPORT my_module : shift1 shift2 : : shifty shift2 ;
+
+    shifty ;
+    assert-equal $(x) : identity $(y) ;
+
+    shift2 ;
+    assert-equal $(x) : identity $(y) ;
+
+    # Now do the same with localization
+    IMPORT my_module : shift1 : : shifty : LOCALIZE ;
+
+    shifty ;
+    y = $(y[3-]) ;
+    assert-equal $(x) : identity $(y) ;
+
+    # import everything from my_module into the global module using
+    # the same names.
+    IMPORT my_module : [ RULENAMES my_module ] : : [ RULENAMES my_module ] : LOCALIZE ;
+
+    shift1 ;
+    y = $(y[2-]) ;
+    assert-equal $(x) : identity $(y) ;
+
+    shift2 ;
+    y = $(y[2-]) ;
+    assert-equal $(x) : identity $(y) ;
+}
+
+#
+# test CALLER_MODULE and backtrace
+#
+{
+    rule backtrace ( )
+    {
+        local bt = [ BACKTRACE ] ;
+        bt = $(bt[5-]) ;
+        while $(bt)
+        {
+            ECHO $(bt[1]):$(bt[2]): "in" $(bt[4]) ;
+            bt = $(bt[5-]) ;
+        }
+    }
+    module module1
+    {
+        rule f ( )
+        {
+            local m = [ CALLER_MODULE ] ;
+            assert-equal : identity $(m) ;
+            module2.f ;
+        }
+
+    }
+    module module2
+    {
+        rule f ( )
+        {
+            local m = [ CALLER_MODULE ] ;
+            assert-equal module1 : identity $(m) ;
+            backtrace ;
+        }
+    }
+    module1.f ;
+}

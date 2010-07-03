@@ -1,0 +1,115 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Function unpack_expr</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../proto/reference.html#header.boost.proto.make_expr_hpp" title="Header &lt;boost/proto/make_expr.hpp&gt;">
+<link rel="prev" href="make_expr_id2570798.html" title="Function make_expr">
+<link rel="next" href="_.html" title="Struct _">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="make_expr_id2570798.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../proto/reference.html#header.boost.proto.make_expr_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="_.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.proto.unpack_expr_id2571042"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Function unpack_expr</span></h2>
+<p>boost::proto::unpack_expr &#8212; Construct an expression of the requested tag type with a domain and with children
+          from the specified Fusion Forward Sequence.</p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../proto/reference.html#header.boost.proto.make_expr_hpp" title="Header &lt;boost/proto/make_expr.hpp&gt;">boost/proto/make_expr.hpp</a>&gt;
+
+</em></span>
+<span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Tag, <span class="bold"><strong>typename</strong></span> Sequence&gt; 
+  <span class="type"><span class="bold"><strong>typename</strong></span> <a class="link" href="result_of/unpack_expr.html" title="Struct template unpack_expr">proto::result_of::unpack_expr</a>&lt;Tag, Sequence <span class="bold"><strong>const</strong></span>&gt;::type <span class="bold"><strong>const</strong></span></span> 
+  unpack_expr(Sequence <span class="bold"><strong>const</strong></span> &amp; sequence);
+<span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Tag, <span class="bold"><strong>typename</strong></span> Domain, <span class="bold"><strong>typename</strong></span> Sequence&gt; 
+  <span class="type"><span class="bold"><strong>typename</strong></span> <a class="link" href="result_of/unpack_expr.html" title="Struct template unpack_expr">proto::result_of::unpack_expr</a>&lt;Tag, Domain, Sequence <span class="bold"><strong>const</strong></span>&gt;::type <span class="bold"><strong>const</strong></span></span> 
+  unpack_expr(Sequence <span class="bold"><strong>const</strong></span> &amp; sequence);</pre></div>
+<div class="refsect1" lang="en">
+<a name="id3200608"></a><h2>Description</h2>
+<p>
+            This function template may be invoked either with or without specifying a
+            <code class="computeroutput">Domain</code> argument. If no domain is specified, the domain is
+            deduced by examining in order the domains of the elements of <code class="computeroutput">sequence</code>
+            and taking the first that is not
+            <code class="computeroutput"><code class="computeroutput"><a class="link" href="default_domain.html" title="Struct default_domain">proto::default_domain</a></code></code>, if any such domain
+            exists, or <code class="computeroutput"><code class="computeroutput"><a class="link" href="default_domain.html" title="Struct default_domain">proto::default_domain</a></code></code> otherwise.
+          </p>
+<p>
+            Let <code class="computeroutput">s</code> be a Fusion Random Access Sequence equivalent to
+            <code class="computeroutput">sequence</code>.
+            Let <code class="computeroutput"><em class="replaceable"><code>WRAP</code></em>&lt;N&gt;(s)</code>, where
+            <code class="computeroutput">s</code> has type <code class="computeroutput">S</code>, be defined such that:
+            </p>
+<div class="itemizedlist"><ul type="disc">
+<li><p>
+                  If <code class="computeroutput">fusion::result_of::value_at_c&lt;S,N&gt;::type</code> is a reference,
+                  <code class="computeroutput"><em class="replaceable"><code>WRAP</code></em>&lt;N&gt;(s)</code> is equivalent to
+                  <code class="computeroutput"><code class="computeroutput"><a class="link" href="as_child_id2610784.html" title="Function as_child">proto::as_child</a></code>&lt;Domain&gt;(fusion::at_c&lt;N&gt;(s))</code>.
+                </p></li>
+<li><p>
+                  Otherwise, <code class="computeroutput"><em class="replaceable"><code>WRAP</code></em>&lt;N&gt;(s)</code> is equivalent to
+                  <code class="computeroutput"><code class="computeroutput"><a class="link" href="as_expr_id2610558.html" title="Function as_expr">proto::as_expr</a></code>&lt;Domain&gt;(fusion::at_c&lt;N&gt;(s))</code>.
+                </p></li>
+</ul></div>
+<p>
+            Let <code class="computeroutput"><em class="replaceable"><code>MAKE</code></em>&lt;Tag&gt;(a...)</code> be defined as
+            <code class="computeroutput"><code class="computeroutput"><a class="link" href="expr.html" title="Struct template expr">proto::expr</a></code>&lt;Tag,
+            <code class="computeroutput"><a class="link" href="listN.html" title="Struct template listN">proto::listN</a></code>&lt;A...&gt; &gt;::make(a...)</code>
+            where
+            <code class="computeroutput">A<sub>x</sub></code> is the type of 
+            <code class="computeroutput">a<sub>x</sub></code>.
+          </p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term">Parameters:</span></p></td>
+<td><div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody><tr>
+<td><p><span class="term"><code class="computeroutput">sequence</code></span></p></td>
+<td><p>A Fusion Forward Sequence.</p></td>
+</tr></tbody>
+</table></div></td>
+</tr>
+<tr>
+<td><p><span class="term">Returns:</span></p></td>
+<td><p>
+            <code class="computeroutput">Domain()(<em class="replaceable"><code>MAKE</code></em>&lt;Tag&gt;(<em class="replaceable"><code>WRAP</code></em>&lt;0&gt;(s),...
+            <em class="replaceable"><code>WRAP</code></em>&lt;<em class="replaceable"><code>N</code></em>-1&gt;(s)))</code>, where
+            <em class="replaceable"><code>N</code></em> is the size of <code class="computeroutput">Sequence</code>.
+          </p></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2008 Eric Niebler<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="make_expr_id2570798.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../proto/reference.html#header.boost.proto.make_expr_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="_.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

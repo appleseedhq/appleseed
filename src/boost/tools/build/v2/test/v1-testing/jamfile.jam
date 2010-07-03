@@ -1,0 +1,26 @@
+# Copyright 2002, 2003 Dave Abrahams 
+# Distributed under the Boost Software License, Version 1.0. 
+# (See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt) 
+
+import testing ;
+
+# A number of tests which should succeed
+compile a.cpp ;
+compile-fail b.cpp ;
+link-fail a.cpp : : link-no ;
+link c.cpp : : link-yes ;
+run c.cpp : : : : run-yes ;
+run-fail c.cpp : : : <define>RESULTCODE=1 : run-no ;
+
+# some tests which should fail
+
+compile-fail a.cpp : : fail-compile-no ;
+compile b.cpp : : fail-compile-yes ;
+link a.cpp : : fail-link-yes ;
+link-fail c.cpp : : fail-link-no ;
+run-fail c.cpp : : : : fail-run-no ;
+run c.cpp : : : <define>RESULTCODE=1 : fail-run-yes ;
+
+# Make sure we still fail if a dependency of an expected-failure test
+# fails. 
+link-fail b.cpp : : fail-link-no-dependency ;

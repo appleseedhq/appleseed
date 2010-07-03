@@ -1,0 +1,558 @@
+
+/*
+ * This source file is part of appleseed.
+ * Visit http://appleseedhq.net/ for additional information and resources.
+ *
+ * This software is released under the MIT license.
+ *
+ * Copyright (c) 2010 Francois Beaune
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
+
+/*
+ * Color scheme:
+ *
+ *      borders                     40, 40, 40
+ *
+ *      dark background             50, 50, 50
+ *      light background            60, 60, 60
+ *      selected background         80, 80, 80
+ *      highlighted background      190, 140, 50
+ *
+ *      dark text                   210, 210, 210
+ *      light text                  255, 255, 255
+ *      disabled text               100, 100, 100
+ *
+ */
+
+
+/*
+ * Global
+ */
+
+QWidget
+{
+    background-color: rgb(50, 50, 50);
+    border: 1px solid rgb(40, 40, 40);
+    color: rgb(210, 210, 210);
+}
+
+
+/*
+ * Main window
+ */
+
+QMainWindow::separator
+{
+    background-color: rgb(40, 40, 40);
+    width: 1px;
+    height: 1px;
+}
+
+/* Not necessarily desirable...
+QMainWindow::separator:hover
+{
+    background-color: rgb(190, 140, 50);
+}
+*/
+
+
+/*
+ * Status bar
+ */
+
+QStatusBar::item
+{
+     border: 0px;
+}
+
+
+/*
+ * Labels
+ */
+
+QLabel
+{
+    border: 0px;
+}
+
+
+/*
+ * Scrollbars
+ */
+
+QScrollBar
+{
+    background-color: transparent;
+    border: 1px solid rgb(40, 40, 40);
+}
+
+QScrollBar::handle
+{
+    background-color: rgb(80, 80, 80);
+}
+
+QScrollBar::handle:hover
+{
+    background-color: rgb(190, 140, 50);
+}
+
+QScrollBar::add-page,
+QScrollBar::sub-page
+{
+    background-color: transparent;
+}
+
+QScrollBar::add-line,
+QScrollBar::sub-line
+{
+    border: 1px solid rgb(40, 40, 40);
+    background-color: transparent;
+    subcontrol-origin: margin;
+}
+
+QScrollBar::add-line:hover,
+QScrollBar::sub-line:hover
+{
+    background-color: rgb(190, 140, 50);
+}
+
+QAbstractScrollArea::corner
+{
+    background-color: transparent;
+}
+
+
+/*
+ * Scroll areas
+ */
+
+QScrollArea
+{
+    border: 0px;
+}
+
+
+/*
+ * Horizontal scrollbars
+ */
+
+QScrollBar:horizontal
+{
+    height: 15px;
+    margin: 0px 15px 0 15px;
+}
+
+QScrollBar::handle:horizontal
+{
+    min-width: 15px;
+}
+
+QScrollBar::add-line:horizontal
+{
+    width: 15px;
+    subcontrol-position: right;
+}
+
+QScrollBar::sub-line:horizontal
+{
+    width: 15px;
+    subcontrol-position: left;
+}
+
+QScrollBar:left-arrow:horizontal,
+QScrollBar::right-arrow:horizontal
+{
+    border: 0px;
+    width: 6px;
+    height: 9px;
+}
+
+QScrollBar:left-arrow:horizontal:enabled
+{
+    background-image: url(":/widgets/scrollbar_arrow_left_enabled.png");
+}
+
+QScrollBar:right-arrow:horizontal:enabled
+{
+    background-image: url(":/widgets/scrollbar_arrow_right_enabled.png");
+}
+
+QScrollBar:left-arrow:horizontal:disabled
+{
+    background-image: url(":/widgets/scrollbar_arrow_left_disabled.png");
+}
+
+QScrollBar:right-arrow:horizontal:disabled
+{
+    background-image: url(":/widgets/scrollbar_arrow_right_disabled.png");
+}
+
+
+/*
+ * Vertical scrollbars
+ */
+
+QScrollBar:vertical
+{
+    width: 15px;
+    margin: 15px 0 15px 0;
+}
+
+QScrollBar::handle:vertical
+{
+    min-height: 15px;
+}
+
+QScrollBar::add-line:vertical
+{
+    height: 15px;
+    subcontrol-position: bottom;
+}
+
+QScrollBar::sub-line:vertical
+{
+    height: 15px;
+    subcontrol-position: top;
+}
+
+QScrollBar::up-arrow:vertical,
+QScrollBar::down-arrow:vertical
+{
+    border: 0px;
+    width: 9px;
+    height: 7px;
+}
+
+QScrollBar:up-arrow:vertical:enabled
+{
+    background-image: url(":/widgets/scrollbar_arrow_up_enabled.png");
+}
+
+QScrollBar:down-arrow:vertical:enabled
+{
+    background-image: url(":/widgets/scrollbar_arrow_down_enabled.png");
+}
+
+QScrollBar:up-arrow:vertical:disabled
+{
+    background-image: url(":/widgets/scrollbar_arrow_up_disabled.png");
+}
+
+QScrollBar:down-arrow:vertical:disabled
+{
+    background-image: url(":/widgets/scrollbar_arrow_down_disabled.png");
+}
+
+
+/*
+ * Menu bars
+ */
+
+QMenuBar
+{
+    background-color: rgb(60, 60, 60);
+}
+
+QMenuBar::item
+{
+    background-color: transparent;
+}
+
+QMenuBar::item:selected
+{
+    background-color: rgb(190, 140, 50);
+    color: rgb(255, 255, 255);
+}
+
+QMenuBar::item:disabled
+{
+    color: rgb(100, 100, 100);
+}
+
+
+/*
+ * Menu items
+ */
+
+QMenu
+{
+    background-color: rgb(60, 60, 60);
+}
+
+QMenu::item
+{
+    background-color: transparent;
+    padding: 3px 20px 3px 20px;
+}
+
+QMenu::item:selected
+{
+    background-color: rgb(190, 140, 50);
+    color: rgb(255, 255, 255);
+}
+
+QMenu::item:disabled
+{
+    color: rgb(100, 100, 100);
+}
+
+QMenu::separator
+{
+    height: 1px;
+    background-color: rgb(40, 40, 40);
+    margin: 4px 4px 4px 4px;
+}
+
+
+/*
+ * Toolbars
+ */
+
+/* Does not work
+QToolBar::separator
+{
+    margin-left: 10px;
+    margin-right: 10px;
+}
+*/
+
+QToolButton
+{
+    border: 0px;
+    margin-left: 2px;
+    margin-right: 2px;
+}
+
+QToolButton:hover
+{
+    background-color: rgb(190, 140, 50);
+    color: rgb(255, 255, 255);
+}
+
+QToolButton:pressed
+{
+    background-color: rgb(80, 80, 80);
+    color: rgb(255, 255, 255);
+}
+
+
+/*
+ * Dock widgets
+ */
+
+QDockWidget::title
+{
+    background-color: rgb(60, 60, 60);
+    padding-left: 10px;
+    padding-top: 4px;
+}
+
+QDockWidget::close-button,
+QDockWidget::float-button
+{
+    border: 0px;
+    margin: 2px;
+    padding: 0px;
+}
+
+QDockWidget::float-button:hover,
+QDockWidget::close-button:hover
+{
+    background-color: rgb(190, 140, 50);
+}
+
+
+/*
+ * Tabs
+ */
+
+QTabWidget::pane
+{
+    border: 1px solid rgb(40, 40, 40);
+}
+
+QTabBar::tab
+{
+    background-color: rgb(60, 60, 60);
+    border: 1px solid rgb(40, 40, 40);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    padding: 3px 11px 4px 11px;
+}
+
+QTabBar::tab:hover
+{
+    background-color: rgb(190, 140, 50);
+    color: rgb(255, 255, 255);
+}
+
+QTabBar::tab:selected
+{
+    background-color: rgb(80, 80, 80);
+    color: rgb(255, 255, 255);
+}
+
+
+/*
+ * Push buttons
+ */
+
+QPushButton
+{
+    background-color: rgb(60, 60, 60);
+    border: 1px solid rgb(40, 40, 40);
+    border-radius: 5px;
+    padding: 3px 11px 3px 11px;
+    min-width: 50px;
+}
+
+QPushButton:hover
+{
+    background-color: rgb(190, 140, 50);
+    color: rgb(255, 255, 255);
+}
+
+QPushButton:pressed
+{
+    background-color: rgb(80, 80, 80);
+    color: rgb(255, 255, 255);
+}
+
+QPushButton:disabled
+{
+    color: rgb(100, 100, 100);
+}
+
+
+/*
+ * Tree views
+ */
+
+QHeaderView::section
+{
+    background-color: rgb(60, 60, 60);
+    border: 1px;
+    padding: 3px 11px 4px 11px;
+}
+
+QHeaderView::section:disabled
+{
+    color: rgb(100, 100, 100);
+}
+
+QTreeView::item:hover
+{
+    background-color: rgb(190, 140, 50);
+    color: rgb(255, 255, 255);
+}
+
+QTreeView::item:selected
+{
+    background-color: rgb(80, 80, 80);
+    color: rgb(255, 255, 255);
+}
+
+QTreeView::item:disabled
+{
+    color: rgb(100, 100, 100);
+}
+
+QTreeView::branch:has-children:closed:enabled
+{
+    image: url(":/widgets/scrollbar_arrow_right_enabled.png");
+}
+
+QTreeView::branch:has-children:open:enabled
+{
+    image: url(":/widgets/scrollbar_arrow_down_enabled.png");
+}
+
+QTreeView::branch:has-children:closed:disabled
+{
+    image: url(":/widgets/scrollbar_arrow_right_disabled.png");
+}
+
+QTreeView::branch:has-children:open:disabled
+{
+    image: url(":/widgets/scrollbar_arrow_down_disabled.png");
+}
+
+
+/*
+ * Checkboxes
+ */
+
+QCheckBox
+{
+    border: 0px;
+}
+
+/* This results in an unpleasant light gray border around items checkboxes.
+QCheckBox::indicator,
+QAbstractItemView::indicator
+{
+    background-color: rgb(60, 60, 60);
+}
+*/
+
+QCheckBox::indicator:hover,
+QAbstractItemView::indicator:hover
+{
+    background-color: rgb(190, 140, 50);
+    color: rgb(255, 255, 255);
+}
+
+QCheckBox::indicator:checked:enabled,
+QAbstractItemView::indicator:checked:enabled
+{
+    image: url(":/widgets/checkbox_checked_enabled.png");
+}
+
+QCheckBox::indicator:unchecked:enabled,
+QAbstractItemView::indicator:unchecked:enabled
+{
+    image: url(":/widgets/checkbox_unchecked_enabled.png");
+}
+
+QCheckBox::indicator:indeterminate:enabled,
+QAbstractItemView::indicator:indeterminate:enabled
+{
+    image: url(":/widgets/checkbox_indeterminate_enabled.png");
+}
+
+QCheckBox::indicator:checked:disabled,
+QAbstractItemView::indicator:checked:disabled
+{
+    image: url(":/widgets/checkbox_checked_disabled.png");
+}
+
+QCheckBox::indicator:unchecked:disabled,
+QAbstractItemView::indicator:unchecked:disabled
+{
+    image: url(":/widgets/checkbox_unchecked_disabled.png");
+}
+
+QCheckBox::indicator:indeterminate:disabled,
+QAbstractItemView::indicator:indeterminate:disabled
+{
+    image: url(":/widgets/checkbox_indeterminate_disabled.png");
+}

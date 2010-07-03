@@ -1,0 +1,12 @@
+# Copyright 2003 Vladimir Prus 
+# Distributed under the Boost Software License, Version 1.0. 
+# (See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt) 
+
+
+import project ;
+
+# Convert ourself into a real project.
+project.initialize $(__name__) ;
+
+# Now we can identify ourselfs.
+project /teeest ;

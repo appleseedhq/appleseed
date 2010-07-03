@@ -1,0 +1,69 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Class remove_shared_memory_on_destroy</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../boost_interprocess_reference.html#header.boost.interprocess.shared_memory_object_hpp" title="Header &lt;boost/interprocess/shared_memory_object.hpp&gt;">
+<link rel="prev" href="shared_memory_object.html" title="Class shared_memory_object">
+<link rel="next" href="deleter.html" title="Class template deleter">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="shared_memory_object.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_interprocess_reference.html#header.boost.interprocess.shared_memory_object_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="deleter.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.interprocess.remove_shared_memory_on_id1767129"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Class remove_shared_memory_on_destroy</span></h2>
+<p>boost::interprocess::remove_shared_memory_on_destroy</p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../boost_interprocess_reference.html#header.boost.interprocess.shared_memory_object_hpp" title="Header &lt;boost/interprocess/shared_memory_object.hpp&gt;">boost/interprocess/shared_memory_object.hpp</a>&gt;
+
+</em></span>
+<span class="bold"><strong>class</strong></span> <a class="link" href="remove_shared_memory_on_id1767129.html" title="Class remove_shared_memory_on_destroy">remove_shared_memory_on_destroy</a> {
+<span class="bold"><strong>public</strong></span>:
+  <span class="emphasis"><em>// <a class="link" href="remove_shared_memory_on_id1767129.html#boost.interprocess.remove_shared_memory_on_id1767129construct-copy-destruct">construct/copy/destruct</a></em></span>
+  <a class="link" href="remove_shared_memory_on_id1767129.html#id1767142-bb">remove_shared_memory_on_destroy</a>(<span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> *);
+  <a class="link" href="remove_shared_memory_on_id1767129.html#id1767149-bb">~remove_shared_memory_on_destroy</a>();
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id2194317"></a><h2>Description</h2>
+<p>A class that stores the name of a shared memory and calls shared_memory_object::remove(name) in its destructor Useful to remove temporary shared memory objects in the presence of exceptions </p>
+<div class="refsect2" lang="en">
+<a name="id2194326"></a><h3>
+<a name="boost.interprocess.remove_shared_memory_on_id1767129construct-copy-destruct"></a><code class="computeroutput">remove_shared_memory_on_destroy</code> 
+        public
+       construct/copy/destruct</h3>
+<div class="orderedlist"><ol type="1">
+<li><pre class="literallayout"><a name="id1767142-bb"></a>remove_shared_memory_on_destroy(<span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> * name);</pre></li>
+<li><pre class="literallayout"><a name="id1767149-bb"></a>~remove_shared_memory_on_destroy();</pre></li>
+</ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2005 - 2008 Ion Gaztañaga<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="shared_memory_object.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_interprocess_reference.html#header.boost.interprocess.shared_memory_object_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="deleter.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

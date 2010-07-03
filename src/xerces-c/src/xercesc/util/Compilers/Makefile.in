@@ -1,0 +1,133 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+# 
+#      http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+#
+#
+# $Id: Makefile.in 570129 2007-08-27 14:10:51Z amassari $
+#
+
+PLATFORM = @platform@
+CC  = @cc@
+CXX = @cxx@
+CXXVER = @cxxver@
+GCC = @GCC@
+GXX = @GXX@
+CXXFLAGS = @cxxflags@
+CFLAGS = @cflags@
+PREFIX = @prefix@
+PREFIX_INCLUDE = @prefix_include@
+LDFLAGS = @ldflags@
+LIBS = @libs@
+OSVER = @osver@
+USELIBWWW = @uselibwww@
+MESSAGELOADER = @messageloader@
+TRANSCODER = @transcoder@
+THREADS = @threads@
+LIBTYPE = @libtype@
+ARCH = @host_cpu@
+
+MODULE = util
+SUBMODULE = Compilers
+
+include ../../Makefile.incl
+
+CPP_PUBHEADERS = \
+	BorlandCDefs.hpp \
+	CSetDefs.hpp \
+	CodeWarriorDefs.hpp \
+	DECCXXDefs.hpp \
+	GCCDefs.hpp \
+	QCCDefs.hpp \
+	HPCCDefs.hpp \
+	IBMVAOS2Defs.hpp \
+	IBMVAW32Defs.hpp \
+	MVSCPPDefs.hpp \
+	PTXCCDefs.hpp \
+	SCOCCDefs.hpp \
+	SunCCDefs.hpp \
+	SunKaiDefs.hpp \
+	OS400SetDefs.hpp \
+	MIPSproDefs.hpp \
+	TandemCCDefs.hpp \
+	VCPPDefs.hpp
+
+ifeq (${CXX},CC)
+    ifeq (${PLATFORM},SOLARIS)
+        CPP_OBJECTS = SunCCDefs.$(TO)
+    endif
+    ifeq (${PLATFORM},HPUX)
+        CPP_OBJECTS = HPCCDefs.$(TO)
+    endif
+    ifeq (${PLATFORM},IRIX)
+        CPP_OBJECTS = MIPSproDefs.$(TO)
+    endif
+    ifeq (${PLATFORM},UNIXWARE)
+        CPP_OBJECTS = SCOCCDefs.$(TO)
+    endif
+endif
+ifeq (xlC,$(findstring xlC,${CXX}))
+    CPP_OBJECTS = CSetDefs.$(TO)
+endif
+ifeq (${GXX},yes)
+    CPP_OBJECTS = GCCDefs.$(TO)
+endif
+ifeq (${CXX},ecc)
+    CPP_OBJECTS = GCCDefs.$(TO)
+endif
+ifeq (${CXX},icc)
+    CPP_OBJECTS = GCCDefs.$(TO)
+endif
+ifeq (${CXX},QCC)
+    CPP_OBJECTS = QCCDefs.$(TO)
+endif
+ifeq (${CXX},aCC)
+    CPP_OBJECTS = HPCCDefs.$(TO)
+endif
+ifeq (${CXX},c++)
+    ifeq (${PLATFORM},OS390)
+        CPP_OBJECTS = MVSCPPDefs.$(TO)
+    endif
+    ifeq (${PLATFORM},PTX)
+        CPP_OBJECTS = PTXCCDefs.$(TO)
+    endif
+    ifeq (${PLATFORM},BEOS)
+        CPP_OBJECTS = GCCDefs.$(TO)
+    endif
+    ifeq (${PLATFORM},LINUX)
+        CPP_OBJECTS = GCCDefs.$(TO)
+    endif
+    ifeq (${PLATFORM},FREEBSD)
+        CPP_OBJECTS = GCCDefs.$(TO)
+    endif
+    ifeq (${PLATFORM},NETBSD)
+        CPP_OBJECTS = GCCDefs.$(TO)
+    endif
+    ifeq (${PLATFORM},MACOSX)
+        CPP_OBJECTS = GCCDefs.$(TO)
+    endif
+endif
+ifeq (${CXX},cc)
+    ifeq (${PLATFORM},MACOSX)
+        CPP_OBJECTS = GCCDefs.$(TO)
+    endif
+endif
+ifeq (${CXX}, cxx)
+    ifeq (${PLATFORM},TRU64)
+        CPP_OBJECTS = DECCXXDefs.$(TO)
+    endif
+endif
+
+include ../Makefile.util.submodule

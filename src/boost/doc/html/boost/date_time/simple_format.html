@@ -1,0 +1,100 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Class template simple_format</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../date_time/doxy.html#header.boost.date_time.date_format_simple_hpp" title="Header &lt;boost/date_time/date_format_simple.hpp&gt;">
+<link rel="prev" href="date_input_facet.html" title="Class template date_input_facet">
+<link rel="next" href="simple_format_wchar_t_id1110230.html" title="Class simple_format&lt;wchar_t&gt;">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="date_input_facet.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../date_time/doxy.html#header.boost.date_time.date_format_simple_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="simple_format_wchar_t_id1110230.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.date_time.simple_format"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Class template simple_format</span></h2>
+<p>boost::date_time::simple_format &#8212; Class to provide simple basic formatting rules. </p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../date_time/doxy.html#header.boost.date_time.date_format_simple_hpp" title="Header &lt;boost/date_time/date_format_simple.hpp&gt;">boost/date_time/date_format_simple.hpp</a>&gt;
+
+</em></span><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> charT&gt; 
+<span class="bold"><strong>class</strong></span> <a class="link" href="simple_format.html" title="Class template simple_format">simple_format</a> {
+<span class="bold"><strong>public</strong></span>:
+
+  <span class="emphasis"><em>// <a class="link" href="simple_format.html#id617812-bb">public static functions</a></em></span>
+  <span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>const</strong></span> charT *</span> <a class="link" href="simple_format.html#id755832-bb">not_a_date</a>() ;
+  <span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>const</strong></span> charT *</span> <a class="link" href="simple_format.html#id755843-bb">pos_infinity</a>() ;
+  <span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>const</strong></span> charT *</span> <a class="link" href="simple_format.html#id727173-bb">neg_infinity</a>() ;
+  <span class="type"><span class="bold"><strong>static</strong></span> month_format_spec</span> <a class="link" href="simple_format.html#id727594-bb">month_format</a>() ;
+  <span class="type"><span class="bold"><strong>static</strong></span> ymd_order_spec</span> <a class="link" href="simple_format.html#id696334-bb">date_order</a>() ;
+  <span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>bool</strong></span></span> <a class="link" href="simple_format.html#id696342-bb">has_date_sep_chars</a>() ;
+  <span class="type"><span class="bold"><strong>static</strong></span> charT</span> <a class="link" href="simple_format.html#id684061-bb">year_sep_char</a>() ;
+  <span class="type"><span class="bold"><strong>static</strong></span> charT</span> <a class="link" href="simple_format.html#id684071-bb">month_sep_char</a>() ;
+  <span class="type"><span class="bold"><strong>static</strong></span> charT</span> <a class="link" href="simple_format.html#id693385-bb">day_sep_char</a>() ;
+  <span class="type"><span class="bold"><strong>static</strong></span> charT</span> <a class="link" href="simple_format.html#id693396-bb">hour_sep_char</a>() ;
+  <span class="type"><span class="bold"><strong>static</strong></span> charT</span> <a class="link" href="simple_format.html#id693406-bb">minute_sep_char</a>() ;
+  <span class="type"><span class="bold"><strong>static</strong></span> charT</span> <a class="link" href="simple_format.html#id693416-bb">second_sep_char</a>() ;
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id1675833"></a><h2>Description</h2>
+<div class="refsect2" lang="en">
+<a name="id1675837"></a><h3>
+<a name="id617812-bb"></a><code class="computeroutput">simple_format</code> public static functions</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>const</strong></span> charT *</span> <a name="id755832-bb"></a>not_a_date() ;</pre>String used printed is date is invalid. </li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>const</strong></span> charT *</span> <a name="id755843-bb"></a>pos_infinity() ;</pre>String used to for positive infinity value. </li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>const</strong></span> charT *</span> <a name="id727173-bb"></a>neg_infinity() ;</pre>String used to for positive infinity value. </li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> month_format_spec</span> <a name="id727594-bb"></a>month_format() ;</pre>Describe month format. </li>
+<li><pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> ymd_order_spec</span> <a name="id696334-bb"></a>date_order() ;</pre></li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>bool</strong></span></span> <a name="id696342-bb"></a>has_date_sep_chars() ;</pre>This format uses '-' to separate date elements. </li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> charT</span> <a name="id684061-bb"></a>year_sep_char() ;</pre>Char to sep? </li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> charT</span> <a name="id684071-bb"></a>month_sep_char() ;</pre>char between year-month </li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> charT</span> <a name="id693385-bb"></a>day_sep_char() ;</pre>Char to separate month-day. </li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> charT</span> <a name="id693396-bb"></a>hour_sep_char() ;</pre>char between date-hours </li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> charT</span> <a name="id693406-bb"></a>minute_sep_char() ;</pre>char between hour and minute </li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> charT</span> <a name="id693416-bb"></a>second_sep_char() ;</pre>char for second </li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id1676151"></a><h3>Specializations</h3>
+<div class="itemizedlist"><ul type="disc"><li><p><a class="link" href="simple_format_wchar_t_id1110230.html" title="Class simple_format&lt;wchar_t&gt;">Class simple_format&lt;wchar_t&gt;</a></p></li></ul></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2001-2005 CrystalClear Software, Inc<p>Subject to the Boost Software License, Version 1.0. (See accompanying file
+    <code class="filename">LICENSE_1_0.txt</code> or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)</p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="date_input_facet.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../date_time/doxy.html#header.boost.date_time.date_format_simple_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="simple_format_wchar_t_id1110230.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!doctype HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!--
+(C) Copyright 2002-4 Robert Ramey - http://www.rrsd.com .
+Use, modification and distribution is subject to the Boost Software
+License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt)
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" type="text/css" href="../../../boost.css">
+<link rel="stylesheet" type="text/css" href="style.css">
+<title>Serialization - Derivation from an Existing Archive</title>
+</head>
+<body link="#0000ff" vlink="#800080">
+<table border="0" cellpadding="7" cellspacing="0" width="100%" summary="header">
+  <tr> 
+    <td valign="top" width="300"> 
+      <h3><a href="../../../index.htm"><img height="86" width="277" alt="C++ Boost" src="../../../boost.png" border="0"></a></h3>
+    </td>
+    <td valign="top"> 
+      <h1 align="center">Serialization</h1>
+      <h2 align="center">Derivation from an Existing Archive</h2>
+    </td>
+  </tr>
+</table>
+<hr>
+<dl class="page-index">
+  <dt><a target="detail" href="#portable_archives">Portable Binary Archives</a>
+  <dt><a target="detail" href="#fast_archives">Fast Binary Archives</a>
+</dl>
+
+<a name=portable_archives>
+<h3>Portable Binary Archives</h3>
+It may happen that one wants to create a new archive class by derivation from one
+of the included ones. Included is a sample program that shows how to derive a 
+new archive from one of the ones included with the library.  The first example is
+<a href="../example/demo_portable_archive.cpp" target="demo_portable_archive_cpp">demo_portable_archive.cpp</a>.
+This binary archive save/loads integers in a portable format.  To this end
+it is derived from the native binary archive and the save/load functions for
+integers are overridden with special versions which convert to big endian
+format if necessary.  It also implements an exception for the case where an
+integer saved on one platform is too large for the platform which is loading
+the archive.  This example doesn't address floating point types.
+This examples illustrates several issues that have to be addressed when doing
+something like this.  The discussion below refers to the output archive only but it
+applies equally to input archives as well.
+<ol>
+    <li><i>It is derived from</i> <code style="white-space: normal">binary_oarchive_impl<portable_binary_oarchive></code> 
+        <b>NOT</b> <code style="white-space: normal">binary_oarchive</code> <br>
+As described in the comments in
+<a href="../../../boost/archive/binary_oarchive.hpp" target="binary_oarchive_hpp">binary_oarchive.hpp</a>.
+<code style="white-space: normal">binary_oarchive</code> really a shorthand name for 
+<code style="white-space: normal">binary_oarchive_impl&lt;binary_oarchive&gt;</code>.  So we should derive
+from <code style="white-space: normal">binary_oarchive_impl&lt;portable_binary_oarchive&gt;</code> rather
+than <code style="white-space: normal">binary_oarchive</code>.
+<pre><code>
+class portable_binary_oarchive :
+    // don't derive from binary_oarchive !!!
+    public binary_oarchive_impl&lt;portable_binary_oarchive&gt;
+{
+...
+</code></pre>
+    <li><i>Note the</i> <code style="white-space: normal">portable_binary_oarchive</code> <i>between the</i> &lt;&gt;
+This is required so that base classes can downcast their <code style="white-space: normal">this</code> pointer
+to the most derived class.  This is referred to as <b>C</b>uriously <b>R</b>ecurring
+<b>T</b>emplate <b>P</b>attern (<b>CRTP</b>) <a href="bibliography.html#11">[11]</a>.  
+It is used to implement static polymorphism.
+    <li><i>Base classes need to be explicitly given access to the derived class.</i>
+This can be done by making members public or by including friend declarations for
+the base classes.
+<pre><code>
+    typedef portable_binary_oarchive derived_t;
+    friend class detail::common_oarchive&lt;derived_t&gt;;
+    friend class basic_binary_oarchive&lt;derived_t&gt;;
+    friend class basic_binary_oprimitive&lt;
+        derived_t, 
+        std::ostream::char_type, 
+        std::ostream::traits_type
+    &gt;;
+    friend class boost::serialization::save_access;
+</code></pre>
+    <li><i>Base class functions will usually need to be explicitly invoked</i>
+We commonly overload the function name <code style="white-space: normal">save</code> for saving primitives.
+This is very convenient.  Usage of a function name in a derived class
+"hides" similarly named functions of the base class.  That is, 
+function name overloading doesn't automatically
+include base classes.  To address this, we can use:
+<pre><code>
+    using binary_oarchive_impl&lt;derived_t&gt;::save;
+    void save(const unsigned int t);
+    ...
+</code></pre>
+which should work on conforming compilers. However, I have found
+that the following equivalent works on more compilers.
+<pre><code>
+    // default fall through for any types not specified here
+    template&lt;class T&gt;
+    void save(const T & t){
+        binary_oarchive_impl&lt;derived_t&gt;::save(t);
+    }
+    void save(const unsigned int t);
+    ...
+</code></pre>
+so it's what I use.
+    <li><i>Template definitions of base classes may have to be included.</i>
+    The demo includes
+<pre><code>
+// explicitly instantiate for this type of binary stream
+#include &lt;boost/archive/basic_binary_oprimitive.ipp&gt;
+</code></pre>
+for just this purpose.  Failure to include required template definitions
+will result in undefined symbol errors when the program is linked.
+    <li><i>Without alteration, this class cannot be further derived from</i><br>
+Base classes using <b>CRTP</b> must be templates with a parameter corresponding to
+the most derived class.  As presented here, this class doesn't qualify, so
+it cannot be used as a base class.  In order to derive further from this class,
+it would have to be reorganized along the lines of the original <code style="white-space: normal">binary_oarchive</code>.
+Specifically, it would look something like:
+<pre><code>
+template&lt;class Archive&gt;
+class portable_binary_oarchive_impl :
+    // don't derive from binary_oarchive !!!
+    public binary_oarchive_impl&lt;Archive&gt;
+{
+    ...
+);
+
+// do not derived from this class !!!
+class portable_binary_oarchive : 
+    public portable_binary_oarchive_impl&lt;portable_binary_oarchive&gt;
+{
+public:
+    portable_binary_oarchive(std::ostream & os, unsigned int flags = 0) :
+        portable_binary_oarchive_impl&lt;binary_oarchive&gt;(os, flags)
+    {}
+};
+</code></pre>
+
+</ol>  
+
+<a name=fast_archives>
+<h3>Fast Binary Archives</h3>
+The second example 
+<a href="../example/demo_fast_archive.cpp" target="demo_fast_archive_cpp">demo_fast_archive.cpp</a>.
+is similar to the first one.  The difference is that it intercepts the serialization before
+the default serialization is invoked.  In this case we want to replace the default
+serialization of C arrays of integers with a faster one.  The default version
+will invoke serialization of each element of the array.  If its an array of
+integers, and we're not concerned with the archive being portable to another platform
+we can just save/load the whole array as a binary string of bytes.  This should
+be faster than the default element by element method.
+<p>
+The same considerations that applied when overriding the the save/load of primitives
+above apply here, and the code is very similar.
+<hr>
+<p><i>&copy; Copyright <a href="http://www.rrsd.com">Robert Ramey</a> 2002-2004. 
+Distributed under the Boost Software License, Version 1.0. (See
+accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+</i></p>
+</body>
+</html>

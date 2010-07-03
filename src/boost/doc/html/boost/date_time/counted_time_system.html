@@ -1,0 +1,109 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Class template counted_time_system</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../date_time/doxy.html#header.boost.date_time.time_system_counted_hpp" title="Header &lt;boost/date_time/time_system_counted.hpp&gt;">
+<link rel="prev" href="counted_time_rep.html" title="Struct template counted_time_rep">
+<link rel="next" href="split_timedate_system.html" title="Class template split_timedate_system">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="counted_time_rep.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../date_time/doxy.html#header.boost.date_time.time_system_counted_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="split_timedate_system.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.date_time.counted_time_system"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Class template counted_time_system</span></h2>
+<p>boost::date_time::counted_time_system &#8212; An unadjusted time system implementation. </p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../date_time/doxy.html#header.boost.date_time.time_system_counted_hpp" title="Header &lt;boost/date_time/time_system_counted.hpp&gt;">boost/date_time/time_system_counted.hpp</a>&gt;
+
+</em></span><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> time_rep&gt; 
+<span class="bold"><strong>class</strong></span> <a class="link" href="counted_time_system.html" title="Class template counted_time_system">counted_time_system</a> {
+<span class="bold"><strong>public</strong></span>:
+  <span class="emphasis"><em>// types</em></span>
+  <span class="bold"><strong>typedef</strong></span> time_rep                                    <a name="boost.date_time.counted_time_system.time_rep_type"></a>time_rep_type;          
+  <span class="bold"><strong>typedef</strong></span> time_rep_type::impl_type                    <a name="boost.date_time.counted_time_system.impl_type"></a>impl_type;              
+  <span class="bold"><strong>typedef</strong></span> time_rep_type::time_duration_type           <a name="boost.date_time.counted_time_system.time_duration_type"></a>time_duration_type;     
+  <span class="bold"><strong>typedef</strong></span> time_duration_type::fractional_seconds_type <a name="boost.date_time.counted_time_system.fractional_seconds_type"></a>fractional_seconds_type;
+  <span class="bold"><strong>typedef</strong></span> time_rep_type::date_type                    <a name="boost.date_time.counted_time_system.date_type"></a>date_type;              
+  <span class="bold"><strong>typedef</strong></span> time_rep_type::date_duration_type           <a name="boost.date_time.counted_time_system.date_duration_type"></a>date_duration_type;     
+
+  <span class="emphasis"><em>// <a class="link" href="counted_time_system.html#id689648-bb">public static functions</a></em></span>
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T&gt; <span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>void</strong></span></span> <a class="link" href="counted_time_system.html#id689652-bb">unused_var</a>(<span class="bold"><strong>const</strong></span> T &amp;) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> time_rep_type</span> 
+  <a class="link" href="counted_time_system.html#id732534-bb">get_time_rep</a>(<span class="bold"><strong>const</strong></span> date_type &amp;, <span class="bold"><strong>const</strong></span> time_duration_type &amp;, 
+               date_time::dst_flags = not_dst) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> time_rep_type</span> <a class="link" href="counted_time_system.html#id686318-bb">get_time_rep</a>(special_values) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> date_type</span> <a class="link" href="counted_time_system.html#id621660-bb">get_date</a>(<span class="bold"><strong>const</strong></span> time_rep_type &amp;) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> time_duration_type</span> <a class="link" href="counted_time_system.html#id684601-bb">get_time_of_day</a>(<span class="bold"><strong>const</strong></span> time_rep_type &amp;) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> std::string</span> <a class="link" href="counted_time_system.html#id684614-bb">zone_name</a>(<span class="bold"><strong>const</strong></span> time_rep_type &amp;) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>bool</strong></span></span> <a class="link" href="counted_time_system.html#id684628-bb">is_equal</a>(<span class="bold"><strong>const</strong></span> time_rep_type &amp;, <span class="bold"><strong>const</strong></span> time_rep_type &amp;) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>bool</strong></span></span> <a class="link" href="counted_time_system.html#id1112598-bb">is_less</a>(<span class="bold"><strong>const</strong></span> time_rep_type &amp;, <span class="bold"><strong>const</strong></span> time_rep_type &amp;) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> time_rep_type</span> 
+  <a class="link" href="counted_time_system.html#id1112618-bb">add_days</a>(<span class="bold"><strong>const</strong></span> time_rep_type &amp;, <span class="bold"><strong>const</strong></span> date_duration_type &amp;) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> time_rep_type</span> 
+  <a class="link" href="counted_time_system.html#id1108207-bb">subtract_days</a>(<span class="bold"><strong>const</strong></span> time_rep_type &amp;, <span class="bold"><strong>const</strong></span> date_duration_type &amp;) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> time_rep_type</span> 
+  <a class="link" href="counted_time_system.html#id789808-bb">subtract_time_duration</a>(<span class="bold"><strong>const</strong></span> time_rep_type &amp;, <span class="bold"><strong>const</strong></span> time_duration_type &amp;) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> time_rep_type</span> 
+  <a class="link" href="counted_time_system.html#id654590-bb">add_time_duration</a>(<span class="bold"><strong>const</strong></span> time_rep_type &amp;, time_duration_type) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> time_duration_type</span> 
+  <a class="link" href="counted_time_system.html#id654610-bb">subtract_times</a>(<span class="bold"><strong>const</strong></span> time_rep_type &amp;, <span class="bold"><strong>const</strong></span> time_rep_type &amp;) ;
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id1778558"></a><h2>Description</h2>
+<div class="refsect2" lang="en">
+<a name="id1778561"></a><h3>
+<a name="id689648-bb"></a><code class="computeroutput">counted_time_system</code> public static functions</h3>
+<div class="orderedlist"><ol type="1">
+<li><pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T&gt; <span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>void</strong></span></span> <a name="id689652-bb"></a>unused_var(<span class="bold"><strong>const</strong></span> T &amp;) ;</pre></li>
+<li><pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> time_rep_type</span> 
+<a name="id732534-bb"></a>get_time_rep(<span class="bold"><strong>const</strong></span> date_type &amp; day, <span class="bold"><strong>const</strong></span> time_duration_type &amp; tod, 
+             date_time::dst_flags dst = not_dst) ;</pre></li>
+<li><pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> time_rep_type</span> <a name="id686318-bb"></a>get_time_rep(special_values sv) ;</pre></li>
+<li><pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> date_type</span> <a name="id621660-bb"></a>get_date(<span class="bold"><strong>const</strong></span> time_rep_type &amp; val) ;</pre></li>
+<li><pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> time_duration_type</span> <a name="id684601-bb"></a>get_time_of_day(<span class="bold"><strong>const</strong></span> time_rep_type &amp; val) ;</pre></li>
+<li><pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> std::string</span> <a name="id684614-bb"></a>zone_name(<span class="bold"><strong>const</strong></span> time_rep_type &amp;) ;</pre></li>
+<li><pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>bool</strong></span></span> <a name="id684628-bb"></a>is_equal(<span class="bold"><strong>const</strong></span> time_rep_type &amp; lhs, <span class="bold"><strong>const</strong></span> time_rep_type &amp; rhs) ;</pre></li>
+<li><pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>bool</strong></span></span> <a name="id1112598-bb"></a>is_less(<span class="bold"><strong>const</strong></span> time_rep_type &amp; lhs, <span class="bold"><strong>const</strong></span> time_rep_type &amp; rhs) ;</pre></li>
+<li><pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> time_rep_type</span> 
+<a name="id1112618-bb"></a>add_days(<span class="bold"><strong>const</strong></span> time_rep_type &amp; base, <span class="bold"><strong>const</strong></span> date_duration_type &amp; dd) ;</pre></li>
+<li><pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> time_rep_type</span> 
+<a name="id1108207-bb"></a>subtract_days(<span class="bold"><strong>const</strong></span> time_rep_type &amp; base, <span class="bold"><strong>const</strong></span> date_duration_type &amp; dd) ;</pre></li>
+<li><pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> time_rep_type</span> 
+<a name="id789808-bb"></a>subtract_time_duration(<span class="bold"><strong>const</strong></span> time_rep_type &amp; base, 
+                       <span class="bold"><strong>const</strong></span> time_duration_type &amp; td) ;</pre></li>
+<li><pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> time_rep_type</span> 
+<a name="id654590-bb"></a>add_time_duration(<span class="bold"><strong>const</strong></span> time_rep_type &amp; base, time_duration_type td) ;</pre></li>
+<li><pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> time_duration_type</span> 
+<a name="id654610-bb"></a>subtract_times(<span class="bold"><strong>const</strong></span> time_rep_type &amp; lhs, <span class="bold"><strong>const</strong></span> time_rep_type &amp; rhs) ;</pre></li>
+</ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2001-2005 CrystalClear Software, Inc<p>Subject to the Boost Software License, Version 1.0. (See accompanying file
+    <code class="filename">LICENSE_1_0.txt</code> or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)</p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="counted_time_rep.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../date_time/doxy.html#header.boost.date_time.time_system_counted_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="split_timedate_system.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

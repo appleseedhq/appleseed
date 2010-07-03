@@ -1,0 +1,861 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+<head>
+  <meta http-equiv="Content-Language" content="en-us">
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+
+  <title>Boost Random Number Library Distributions</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+  <h1>Random Number Library Distributions</h1>
+
+  <ul>
+    <li><a href="#intro">Introduction</a></li>
+
+    <li><a href="#synopsis">Synopsis</a></li>
+
+    <li><a href="#uniform_smallint">Class template
+    <code>uniform_smallint</code></a></li>
+
+    <li><a href="#uniform_int">Class template
+    <code>uniform_int</code></a></li>
+
+    <li><a href="#uniform_01">Class template <code>uniform_01</code></a></li>
+
+    <li><a href="#uniform_real">Class template
+    <code>uniform_real</code></a></li>
+
+    <li><a href="#bernoulli_distribution">Class template
+    <code>bernoulli_distribution</code></a></li>
+
+    <li><a href="#geometric_distribution">Class template
+    <code>geometric_distribution</code></a></li>
+
+    <li><a href="#triangle_distribution">Class template
+    <code>triangle_distribution</code></a></li>
+
+    <li><a href="#exponential_distribution">Class template
+    <code>exponential_distribution</code></a></li>
+
+    <li><a href="#normal_distribution">Class template
+    <code>normal_distribution</code></a></li>
+
+    <li><a href="#lognormal_distribution">Class template
+    <code>lognormal_distribution</code></a></li>
+
+    <li><a href="#uniform_on_sphere">Class template
+    <code>uniform_on_sphere</code></a></li>
+  </ul>
+
+  <h2><a name="intro" id="intro">Introduction</a></h2>
+
+  <p>In addition to the <a href="random-generators.html">random number
+  generators</a>, this library provides distribution functions which map one
+  distribution (often a uniform distribution provided by some generator) to
+  another.</p>
+
+  <p>Usually, there are several possible implementations of any given
+  mapping. Often, there is a choice between using more space, more
+  invocations of the underlying source of random numbers, or more
+  time-consuming arithmetic such as trigonometric functions. This interface
+  description does not mandate any specific implementation. However,
+  implementations which cannot reach certain values of the specified
+  distribution or otherwise do not converge statistically to it are not
+  acceptable.</p>
+
+  <table border="1" summary="">
+    <tr>
+      <th>distribution</th>
+
+      <th>explanation</th>
+
+      <th>example</th>
+    </tr>
+
+    <tr>
+      <td><code><a href="#uniform_smallint">uniform_smallint</a></code></td>
+
+      <td>discrete uniform distribution on a small set of integers (much
+      smaller than the range of the underlying generator)</td>
+
+      <td>drawing from an urn</td>
+    </tr>
+
+    <tr>
+      <td><code><a href="#uniform_int">uniform_int</a></code></td>
+
+      <td>discrete uniform distribution on a set of integers; the underlying
+      generator may be called several times to gather enough randomness for
+      the output</td>
+
+      <td>drawing from an urn</td>
+    </tr>
+
+    <tr>
+      <td><code><a href="#uniform_01">uniform_01</a></code></td>
+
+      <td>continuous uniform distribution on the range [0,1); important basis
+      for other distributions</td>
+
+      <td>-</td>
+    </tr>
+
+    <tr>
+      <td><code><a href="#uniform_real">uniform_real</a></code></td>
+
+      <td>continuous uniform distribution on some range [min, max) of real
+      numbers</td>
+
+      <td>for the range [0, 2pi): randomly dropping a stick and measuring its
+      angle in radiants (assuming the angle is uniformly distributed)</td>
+    </tr>
+
+    <tr>
+      <td><code><a href=
+      "#bernoulli_distribution">bernoulli_distribution</a></code></td>
+
+      <td>Bernoulli experiment: discrete boolean valued distribution with
+      configurable probability</td>
+
+      <td>tossing a coin (p=0.5)</td>
+    </tr>
+
+    <tr>
+      <td><code><a href=
+      "#geometric_distribution">geometric_distribution</a></code></td>
+
+      <td>measures distance between outcomes of repeated Bernoulli
+      experiments</td>
+
+      <td>throwing a die several times and counting the number of tries until
+      a "6" appears for the first time</td>
+    </tr>
+
+    <tr>
+      <td><code><a href=
+      "#triangle_distribution">triangle_distribution</a></code></td>
+
+      <td>?</td>
+
+      <td>?</td>
+    </tr>
+
+    <tr>
+      <td><code><a href=
+      "#exponential_distribution">exponential_distribution</a></code></td>
+
+      <td>exponential distribution</td>
+
+      <td>measuring the inter-arrival time of alpha particles emitted by
+      radioactive matter</td>
+    </tr>
+
+    <tr>
+      <td><code><a href=
+      "#normal_distribution">normal_distribution</a></code></td>
+
+      <td>counts outcomes of (infinitely) repeated Bernoulli experiments</td>
+
+      <td>tossing a coin 10000 times and counting how many front sides are
+      shown</td>
+    </tr>
+
+    <tr>
+      <td><code><a href=
+      "#lognormal_distribution">lognormal_distribution</a></code></td>
+
+      <td>lognormal distribution (sometimes used in simulations)</td>
+
+      <td>measuring the job completion time of an assembly line worker</td>
+    </tr>
+
+    <tr>
+      <td><code><a href=
+      "#uniform_on_sphere">uniform_on_sphere</a></code></td>
+
+      <td>uniform distribution on a unit sphere of arbitrary dimension</td>
+
+      <td>choosing a random point on Earth (assumed to be a sphere) where to
+      spend the next vacations</td>
+    </tr>
+  </table>
+
+  <p>The template parameters of the distribution functions are always in the
+  order</p>
+
+  <ul>
+    <li>Underlying source of random numbers</li>
+
+    <li>If applicable, return type, with a default to a reasonable type.</li>
+  </ul>
+
+  <p><em>The distribution functions no longer satisfy the input iterator
+  requirements (std:24.1.1 [lib.input.iterators]), because this is redundant
+  given the Generator interface and imposes a run-time overhead on all users.
+  Moreover, a Generator interface appeals to random number generation as
+  being more "natural". Use an <a href=
+  "../utility/iterator_adaptors.htm">iterator adaptor</a> if you need to wrap
+  any of the generators in an input iterator interface.</em></p>
+
+  <p>All of the distribution functions described below store a non-const
+  reference to the underlying source of random numbers. Therefore, the
+  distribution functions are not Assignable. However, they are
+  CopyConstructible. Copying a distribution function will copy the parameter
+  values. Furthermore, both the copy and the original will refer to the same
+  underlying source of random numbers. Therefore, both the copy and the
+  original will obtain their underlying random numbers from a single
+  sequence.</p>
+
+  <p>In this description, I have refrained from documenting those members in
+  detail which are already defined in the <a href=
+  "random-concepts.html">concept documentation</a>.</p>
+
+  <h2><a name="synopsis" id="synopsis">Synopsis of the distributions</a>
+  available from header <code>&lt;boost/random.hpp&gt;</code></h2>
+  <pre>
+namespace boost {
+  template&lt;class IntType = int&gt;
+  class uniform_smallint;
+  template&lt;class IntType = int&gt;
+  class uniform_int;
+  template&lt;class RealType = double&gt;
+  class uniform_01;
+  template&lt;class RealType = double&gt;
+  class uniform_real;
+
+  // discrete distributions
+  template&lt;class RealType = double&gt;
+  class bernoulli_distribution;
+  template&lt;class IntType = int&gt;
+  class geometric_distribution;
+
+  // continuous distributions
+  template&lt;class RealType = double&gt;
+  class triangle_distribution;
+  template&lt;class RealType = double&gt;
+  class exponential_distribution;
+  template&lt;class RealType = double&gt;
+  class normal_distribution;
+  template&lt;class RealType = double&gt;
+  class lognormal_distribution;
+  template&lt;class RealType = double,
+    class Cont = std::vector&lt;RealType&gt; &gt;
+  class uniform_on_sphere;
+}
+</pre>
+
+  <h2><a name="uniform_smallint" id="uniform_smallint">Class template
+  <code>uniform_smallint</code></a></h2>
+
+  <h3>Synopsis</h3>
+  <pre>
+#include &lt;<a href=
+"../../boost/random/uniform_smallint.hpp">boost/random/uniform_smallint.hpp</a>&gt;
+
+template&lt;class IntType = int&gt;
+class uniform_smallint
+{
+public:
+  typedef IntType input_type;
+  typedef IntType result_type;
+  static const bool has_fixed_range = false;
+  uniform_smallint(IntType min, IntType max);
+  result_type min() const;
+  result_type max() const;
+  void reset();
+  template&lt;class UniformRandomNumberGenerator&gt;
+  result_type operator()(UniformRandomNumberGenerator&amp; urng);
+};
+</pre>
+
+  <h3>Description</h3>
+
+  <p>The distribution function <code>uniform_smallint</code> models a
+  <a href="random-concepts.html#random-dist">random distribution</a>. On each
+  invocation, it returns a random integer value uniformly distributed in the
+  set of integer numbers {min, min+1, min+2, ..., max}. It assumes that the
+  desired range (max-min+1) is small compared to the range of the underlying
+  source of random numbers and thus makes no attempt to limit quantization
+  errors.</p>
+
+  <p>Let r<sub>out</sub>=(max-min+1) the desired range of integer numbers,
+  and let r<sub>base</sub> be the range of the underlying source of random
+  numbers. Then, for the uniform distribution, the theoretical probability
+  for any number i in the range r<sub>out</sub> will be p<sub>out</sub>(i) =
+  1/r<sub>out</sub>. Likewise, assume a uniform distribution on
+  r<sub>base</sub> for the underlying source of random numbers, i.e.
+  p<sub>base</sub>(i) = 1/r<sub>base</sub>. Let p<sub>out_s</sub>(i) denote
+  the random distribution generated by <code>uniform_smallint</code>. Then
+  the sum over all i in r<sub>out</sub> of
+  (p<sub>out_s</sub>(i)/p<sub>out</sub>(i) -1)<sup>2</sup> shall not exceed
+  r<sub>out</sub>/r<sub>base</sub><sup>2</sup> (r<sub>base</sub> mod
+  r<sub>out</sub>)(r<sub>out</sub> - r<sub>base</sub> mod
+  r<sub>out</sub>).</p>
+
+  <p>The template parameter <code>IntType</code> shall denote an integer-like
+  value type.</p>
+
+  <p><em>Note:</em> The property above is the square sum of the relative
+  differences in probabilities between the desired uniform distribution
+  p<sub>out</sub>(i) and the generated distribution p<sub>out_s</sub>(i). The
+  property can be fulfilled with the calculation (base_rng mod
+  r<sub>out</sub>), as follows: Let r = r<sub>base</sub> mod r<sub>out</sub>.
+  The base distribution on r<sub>base</sub> is folded onto the range
+  r<sub>out</sub>. The numbers i &lt; r have assigned (r<sub>base</sub> div
+  r<sub>out</sub>)+1 numbers of the base distribution, the rest has only
+  (r<sub>base</sub> div r<sub>out</sub>). Therefore, p<sub>out_s</sub>(i) =
+  ((r<sub>base</sub> div r<sub>out</sub>)+1) / r<sub>base</sub> for i &lt; r
+  and p<sub>out_s</sub>(i) = (r<sub>base</sub> div
+  r<sub>out</sub>)/r<sub>base</sub> otherwise. Substituting this in the above
+  sum formula leads to the desired result.</p>
+
+  <p><em>Note:</em> The upper bound for (r<sub>base</sub> mod
+  r<sub>out</sub>)(r<sub>out</sub> - r<sub>base</sub> mod r<sub>out</sub>) is
+  r<sub>out</sub><sup>2</sup>/4. Regarding the upper bound for the square sum
+  of the relative quantization error of
+  r<sub>out</sub><sup>3</sup>/(4*r<sub>base</sub><sup>2</sup>), it seems wise
+  to either choose r<sub>base</sub> so that r<sub>base</sub> &gt;
+  10*r<sub>out</sub><sup>2</sup> or ensure that r<sub>base</sub> is divisible
+  by r<sub>out</sub>.</p>
+
+  <h3>Members</h3>
+  <pre>
+uniform_smallint(IntType min, IntType max)
+</pre>
+
+  <p><strong>Effects:</strong> Constructs a <code>uniform_smallint</code>
+  functor. <code>min</code> and <code>max</code> are the lower and upper
+  bounds of the output range, respectively.</p>
+
+  <h2><a name="uniform_int" id="uniform_int">Class template
+  <code>uniform_int</code></a></h2>
+
+  <h3>Synopsis</h3>
+  <pre>
+#include &lt;<a href=
+"../../boost/random/uniform_int.hpp">boost/random/uniform_int.hpp</a>&gt;
+
+template&lt;class IntType = int&gt;
+class uniform_int
+{
+public:
+  typedef IntType input_type;
+  typedef IntType result_type;
+  static const bool has_fixed_range = false;
+  explicit uniform_int(IntType min = 0, IntType max = 9);
+  result_type min() const;
+  result_type max() const;
+  void reset();
+  template&lt;class UniformRandomNumberGenerator&gt;
+  result_type operator()(UniformRandomNumberGenerator&amp; urng);
+  template&lt;class UniformRandomNumberGenerator&gt;
+  result_type operator()(UniformRandomNumberGenerator&amp; urng, result_type n);
+};
+</pre>
+
+  <h3>Description</h3>
+
+  <p>The distribution function <code>uniform_int</code> models a <a href=
+  "random-concepts.html#random-dist">random distribution</a>. On each
+  invocation, it returns a random integer value uniformly distributed in the
+  set of integer numbers {min, min+1, min+2, ..., max}.</p>
+
+  <p>The template parameter <code>IntType</code> shall denote an integer-like
+  value type.</p>
+
+  <h3>Members</h3>
+  <pre>
+    uniform_int(IntType min = 0, IntType max = 9)
+</pre>
+
+  <p><strong>Requires:</strong> min &lt;= max<br>
+  <strong>Effects:</strong> Constructs a <code>uniform_int</code> object.
+  <code>min</code> and <code>max</code> are the parameters of the
+  distribution.</p>
+  <pre>
+    result_type min() const
+</pre>
+
+  <p><strong>Returns:</strong> The "min" parameter of the distribution.</p>
+  <pre>
+    result_type max() const
+</pre>
+
+  <p><strong>Returns:</strong> The "max" parameter of the distribution.</p>
+  <pre>
+    result_type operator()(UniformRandomNumberGenerator&amp; urng, result_type 
+n)
+</pre>
+
+  <p><strong>Returns:</strong> A uniform random number x in the range 0 &lt;=
+  x &lt; n. <em>[Note: This allows a <code>variate_generator</code> object
+  with a <code>uniform_int</code> distribution to be used with
+  std::random_shuffe, see [lib.alg.random.shuffle]. ]</em></p>
+
+  <h2><a name="uniform_01" id="uniform_01">Class template
+  <code>uniform_01</code></a></h2>
+
+  <h3>Synopsis</h3>
+  <pre>
+#include &lt;<a href=
+"../../boost/random/uniform_01.hpp">boost/random/uniform_01.hpp</a>&gt;
+
+template&lt;class UniformRandomNumberGenerator, class RealType = double&gt;
+class uniform_01
+{
+public:
+  typedef UniformRandomNumberGenerator base_type;
+  typedef RealType result_type;
+  static const bool has_fixed_range = false;
+  explicit uniform_01(base_type rng);
+  result_type operator()();
+  result_type min() const;
+  result_type max() const;
+};
+</pre>
+
+  <h3>Description</h3>
+
+  <p>The distribution function <code>uniform_01</code> models a <a href=
+  "random-concepts.html#random-dist">random distribution</a>. On each
+  invocation, it returns a random floating-point value uniformly distributed
+  in the range [0..1). The value is computed using
+  <code>std::numeric_limits&lt;RealType&gt;::digits</code> random binary
+  digits, i.e. the mantissa of the floating-point value is completely filled
+  with random bits. [<em>Note:</em> Should this be configurable?]</p>
+
+  <p><em>WARNING:</em> As an exception / historic accident, this class
+  takes a UniformRandomNumberGenerator as its constructor parameter,
+  and BY VALUE.  Usually, you want reference semantics so that the
+  state of the passed-in generator is changed in-place and not copied.
+  In that case, explicitly supply a reference type for the template
+  parameter UniformRandomNumberGenerator.</p>
+
+  <p>The template parameter <code>RealType</code> shall denote a float-like
+  value type with support for binary operators +, -, and /. It must be large
+  enough to hold floating-point numbers of value
+  <code>rng.max()-rng.min()+1</code>.</p>
+
+  <p><code>base_type::result_type</code> must be a number-like value type, it
+  must support <code>static_cast&lt;&gt;</code> to <code>RealType</code> and
+  binary operator -.</p>
+
+  <p><em>Note:</em> The current implementation is buggy, because it may not
+  fill all of the mantissa with random bits. I'm unsure how to fill a
+  (to-be-invented) <code>boost::bigfloat</code> class with random bits
+  efficiently. It's probably time for a traits class.</p>
+
+  <h3>Members</h3>
+  <pre>
+explicit uniform_01(base_type rng)
+</pre>
+
+  <p><strong>Effects:</strong> Constructs a <code>uniform_01</code> functor
+  with the given uniform random number generator as the underlying source of
+  random numbers.</p>
+
+  <h2><a name="uniform_real" id="uniform_real">Class template
+  <code>uniform_real</code></a></h2>
+
+  <h3>Synopsis</h3>
+  <pre>
+#include &lt;<a href=
+"../../boost/random/uniform_real.hpp">boost/random/uniform_real.hpp</a>&gt;
+
+template&lt;class RealType = double&gt;
+class uniform_real
+{
+public:
+  typedef RealType input_type;
+  typedef RealType result_type;
+  static const bool has_fixed_range = false;
+  uniform_real(RealType min = RealType(0), RealType max = RealType(1));
+  result_type min() const;
+  result_type max() const;
+  void reset();
+  template&lt;class UniformRandomNumberGenerator&gt;
+  result_type operator()(UniformRandomNumberGenerator&amp; urng);
+};
+</pre>
+
+  <h3>Description</h3>
+
+  <p>The distribution function <code>uniform_real</code> models a <a href=
+  "random-concepts.html#random-dist">random distribution</a>. On each
+  invocation, it returns a random floating-point value uniformly distributed
+  in the range [min..max). The value is computed using
+  <code>std::numeric_limits&lt;RealType&gt;::digits</code> random binary
+  digits, i.e. the mantissa of the floating-point value is completely filled
+  with random bits.</p>
+
+  <p><em>Note:</em> The current implementation is buggy, because it may not
+  fill all of the mantissa with random bits.</p>
+
+  <h3>Members</h3>
+  <pre>
+    uniform_real(RealType min = RealType(0), RealType max = RealType(1))
+</pre>
+
+  <p><strong>Requires:</strong> min &lt;= max<br>
+  <strong>Effects:</strong> Constructs a <code>uniform_real</code> object;
+  <code>min</code> and <code>max</code> are the parameters of the
+  distribution.</p>
+  <pre>
+    result_type min() const
+</pre>
+
+  <p><strong>Returns:</strong> The "min" parameter of the distribution.</p>
+  <pre>
+    result_type max() const
+</pre>
+
+  <p><strong>Returns:</strong> The "max" parameter of the distribution.</p>
+
+  <h2><a name="bernoulli_distribution" id="bernoulli_distribution">Class
+  template <code>bernoulli_distribution</code></a></h2>
+
+  <h3>Synopsis</h3>
+  <pre>
+#include &lt;<a href=
+"../../boost/random/bernoulli_distribution.hpp">boost/random/bernoulli_distribution.hpp</a>&gt;
+
+template&lt;class RealType = double&gt;
+class bernoulli_distribution
+{
+public:
+  typedef int input_type;
+  typedef bool result_type;
+
+  explicit bernoulli_distribution(const RealType&amp; p = RealType(0.5));
+  RealType p() const;
+  void reset();
+  template&lt;class UniformRandomNumberGenerator&gt;
+  result_type operator()(UniformRandomNumberGenerator&amp; urng);
+};
+</pre>
+
+  <h3>Description</h3>
+
+  <p>Instantiations of class template <code>bernoulli_distribution</code>
+  model a <a href="random-concepts.html#random-dist">random distribution</a>.
+  Such a random distribution produces <code>bool</code> values distributed
+  with probabilities P(true) = p and P(false) = 1-p. p is the parameter of
+  the distribution.</p>
+
+  <h3>Members</h3>
+  <pre>
+    bernoulli_distribution(const RealType&amp; p = RealType(0.5))
+</pre>
+
+  <p><strong>Requires:</strong> 0 &lt;= p &lt;= 1<br>
+  <strong>Effects:</strong> Constructs a <code>bernoulli_distribution</code>
+  object. <code>p</code> is the parameter of the distribution.</p>
+  <pre>
+    RealType p() const
+</pre>
+
+  <p><strong>Returns:</strong> The "p" parameter of the distribution.</p>
+
+  <h2><a name="geometric_distribution" id="geometric_distribution">Class
+  template <code>geometric_distribution</code></a></h2>
+
+  <h3>Synopsis</h3>
+  <pre>
+#include &lt;<a href=
+"../../boost/random/geometric_distribution.hpp">boost/random/geometric_distribution.hpp</a>&gt;
+
+template&lt;class UniformRandomNumberGenerator, class IntType = int&gt;
+class geometric_distribution
+{
+public:
+  typedef RealType input_type;
+  typedef IntType result_type;
+
+  explicit geometric_distribution(const RealType&amp; p = RealType(0.5));
+  RealType p() const;
+  void reset();
+  template&lt;class UniformRandomNumberGenerator&gt;
+  result_type operator()(UniformRandomNumberGenerator&amp; urng);
+};
+</pre>
+
+  <h3>Description</h3>
+
+  <p>Instantiations of class template <code>geometric_distribution</code>
+  model a <a href="random-concepts.html#random-dist">random distribution</a>.
+  A <code>geometric_distribution</code> random distribution produces integer
+  values <em>i</em> &gt;= 1 with p(i) = (1-p) * p<sup>i-1</sup>. p is the
+  parameter of the distribution.
+  Each invocation of the UniformRandomNumberGenerator shall result in a 
+  floating-point value in the range [0,1).</p>
+
+  <h3>Members</h3>
+  <pre>
+    geometric_distribution(const RealType&amp; p = RealType(0.5))
+</pre>
+
+  <p><strong>Requires:</strong> 0 &lt; p &lt; 1<br>
+  <strong>Effects:</strong> Constructs a <code>geometric_distribution</code>
+  object; <code>p</code> is the parameter of the distribution.</p>
+  <pre>
+   RealType p() const
+</pre>
+
+  <p><strong>Returns:</strong> The "p" parameter of the distribution.</p>
+
+  <h2><a name="triangle_distribution" id="triangle_distribution">Class
+  template <code>triangle_distribution</code></a></h2>
+
+  <h3>Synopsis</h3>
+  <pre>
+#include &lt;<a href=
+"../../boost/random/triangle_distribution.hpp">boost/random/triangle_distribution.hpp</a>&gt;
+
+template&lt;class RealType = double&gt;
+class triangle_distribution
+{
+public:
+  typedef RealType input_type;
+  typedef RealType result_type;
+  triangle_distribution(result_type a, result_type b, result_type c);
+  result_type a() const;
+  result_type b() const;
+  result_type c() const;
+  void reset();
+  template&lt;class UniformRandomNumberGenerator&gt;
+  result_type operator()(UniformRandomNumberGenerator&amp; urng);
+};
+</pre>
+
+  <h3>Description</h3>
+
+  <p>Instantiations of class template <code>triangle_distribution</code>
+  model a <a href="random-concepts.html#random-dist">random distribution</a>.
+  The returned floating-point values <code>x</code> satisfy <code>a &lt;= x
+  &lt;= c</code>; <code>x</code> has a triangle distribution, where
+  <code>b</code> is the most probable value for <code>x</code>.
+  Each invocation of the UniformRandomNumberGenerator shall result in a 
+  floating-point value in the range [0,1). </p>
+
+  <h3>Members</h3>
+  <pre>
+triangle_distribution(result_type a, result_type b, result_type c)
+</pre>
+
+  <p><strong>Effects:</strong> Constructs a
+  <code>triangle_distribution</code> functor. <code>a, b, c</code> are the
+  parameters for the distribution.</p>
+
+  <h2><a name="exponential_distribution" id="exponential_distribution">Class
+  template <code>exponential_distribution</code></a></h2>
+
+  <h3>Synopsis</h3>
+  <pre>
+#include &lt;<a href=
+"../../boost/random/exponential_distribution.hpp">boost/random/exponential_distribution.hpp</a>&gt;
+
+template&lt;class RealType = double&gt;
+class exponential_distribution
+{
+public:
+  typedef RealType input_type;
+  typedef RealType result_type;
+  explicit exponential_distribution(const result_type&amp; lambda);
+  RealType lambda() const;
+  void reset();
+  template&lt;class UniformRandomNumberGenerator&gt;
+  result_type operator()(UniformRandomNumberGenerator&amp; urng);
+};
+</pre>
+
+  <h3>Description</h3>
+
+  <p>Instantiations of class template <code>exponential_distribution</code>
+  model a <a href="random-concepts.html#random-dist">random distribution</a>.
+  Such a distribution produces random numbers x &gt; 0 distributed with
+  probability density function p(x) = lambda * exp(-lambda * x), where lambda
+  is the parameter of the distribution.
+  Each invocation of the UniformRandomNumberGenerator shall result in a 
+  floating-point value in the range [0,1).  </p>
+
+  <h3>Members</h3>
+  <pre>
+    exponential_distribution(const result_type&amp; lambda = result_type(1))
+</pre>
+
+  <p><strong>Requires:</strong> lambda &gt; 0<br>
+  <strong>Effects:</strong> Constructs an
+  <code>exponential_distribution</code> object with <code>rng</code> as the
+  reference to the underlying source of random numbers. <code>lambda</code>
+  is the parameter for the distribution.</p>
+  <pre>
+    RealType lambda() const
+</pre>
+
+  <p><strong>Returns:</strong> The "lambda" parameter of the
+  distribution.</p>
+
+  <h2><a name="normal_distribution" id="normal_distribution">Class template
+  <code>normal_distribution</code></a></h2>
+
+  <h3>Synopsis</h3>
+  <pre>
+#include &lt;<a href=
+"../../boost/random/normal_distribution.hpp">boost/random/normal_distribution.hpp</a>&gt;
+
+template&lt;class RealType = double&gt;
+class normal_distribution
+{
+public:
+  typedef RealType input_type;
+  typedef RealType result_type;
+  explicit normal_distribution(const result_type&amp; mean = 0,
+                               const result_type&amp; sigma = 1);
+  RealType mean() const;
+  RealType sigma() const;
+  void reset();
+  template&lt;class UniformRandomNumberGenerator&gt;
+  result_type operator()(UniformRandomNumberGenerator&amp; urng);
+};
+</pre>
+
+  <h3>Description</h3>
+
+  <p>Instantiations of class template <code>normal_distribution</code> model
+  a <a href="random-concepts.html#random-dist">random distribution</a>. Such
+  a distribution produces random numbers x distributed with probability
+  density function p(x) = 1/sqrt(2*pi*sigma) * exp(- (x-mean)<sup>2</sup> /
+  (2*sigma<sup>2</sup>) ), where mean and sigma are the parameters of the
+  distribution.  Each invocation of the UniformRandomNumberGenerator shall
+  result in a floating-point value in the range [0,1).</p>
+
+  <h3>Members</h3>
+  <pre>
+    explicit normal_distribution(const result_type&amp; mean = 0,
+                                 const result_type&amp; sigma = 1);
+</pre>
+
+  <p><strong>Requires:</strong> sigma &gt; 0<br>
+  <strong>Effects:</strong> Constructs a <code>normal_distribution</code>
+  object; <code>mean</code> and <code>sigma</code> are the parameters for the
+  distribution.</p>
+  <pre>
+    RealType mean() const
+</pre>
+
+  <p><strong>Returns:</strong> The "mean" parameter of the distribution.</p>
+  <pre>
+    RealType sigma() const
+</pre>
+
+  <p><strong>Returns:</strong> The "sigma" parameter of the distribution.</p>
+
+  <h2><a name="lognormal_distribution" id="lognormal_distribution">Class
+  template <code>lognormal_distribution</code></a></h2>
+
+  <h3>Synopsis</h3>
+  <pre>
+#include &lt;<a href=
+"../../boost/random/lognormal_distribution.hpp">boost/random/lognormal_distribution.hpp</a>&gt;
+
+template&lt;class RealType = double&gt;
+class lognormal_distribution
+{
+public:
+  typedef typename normal_distribution&lt;RealType&gt;::input_type
+  typedef RealType result_type;
+  explicit lognormal_distribution(const result_type&amp; mean = 1.0,
+                                  const result_type&amp; sigma = 1.0);
+  RealType&amp; mean() const;
+  RealType&amp; sigma() const;                                 
+  void reset();
+  template&lt;class UniformRandomNumberGenerator&gt;
+  result_type operator()(UniformRandomNumberGenerator&amp; urng);
+};
+</pre>
+
+  <h3>Description</h3>
+
+  <p>Instantiations of class template <code>lognormal_distribution</code>
+  model a <a href="random-concepts.html#random-dist">random distribution</a>.
+  Such a distribution produces random numbers with p(x) = 1/(x * normal_sigma
+  * sqrt(2*pi)) * exp( -(log(x)-normal_mean)<sup>2</sup> /
+  (2*normal_sigma<sup>2</sup>) ) for x &gt; 0, where normal_mean =
+  log(mean<sup>2</sup>/sqrt(sigma<sup>2</sup> + mean<sup>2</sup>)) and
+  normal_sigma = sqrt(log(1 + sigma<sup>2</sup>/mean<sup>2</sup>)).
+  Each invocation of the UniformRandomNumberGenerator shall result in a
+  floating-point value in the range [0,1).  </p>
+
+  <h3>Members</h3>
+  <pre>
+lognormal_distribution(const result_type&amp; mean,
+                       const result_type&amp; sigma)
+</pre>
+
+  <p><strong>Effects:</strong> Constructs a
+  <code>lognormal_distribution</code> functor. <code>mean</code> and
+  <code>sigma</code> are the mean and standard deviation of the lognormal
+  distribution.</p>
+
+  <h2><a name="uniform_on_sphere" id="uniform_on_sphere">Class template
+  <code>uniform_on_sphere</code></a></h2>
+
+  <h3>Synopsis</h3>
+  <pre>
+#include &lt;<a href=
+"../../boost/random/uniform_on_sphere.hpp">boost/random/uniform_on_sphere.hpp</a>&gt;
+
+template&lt;class RealType = double,
+  class Cont = std::vector&lt;RealType&gt; &gt;
+class uniform_on_sphere
+{
+public:
+  typedef RealType input_type;
+  typedef Cont result_type;
+  explicit uniform_on_sphere(int dim = 2);
+  void reset();
+  template&lt;class UniformRandomNumberGenerator&gt;
+  const result_type &amp; operator()(UniformRandomNumberGenerator&amp; urng);
+};
+</pre>
+
+  <h3>Description</h3>
+
+  <p>Instantiations of class template <code>uniform_on_sphere</code> model a
+  <a href="random-concepts.html#random-dist">random distribution</a>. Such a
+  distribution produces random numbers uniformly distributed on the unit
+  sphere of arbitrary dimension <code>dim</code>. The <code>Cont</code>
+  template parameter must be a STL-like container type with
+  <code>begin</code> and <code>end</code> operations returning non-const
+  ForwardIterators of type <code>Cont::iterator</code>.
+  Each invocation of the UniformRandomNumberGenerator shall result in a 
+  floating-point value in the range [0,1).  </p>
+
+  <h3>Members</h3>
+  <pre>
+explicit uniform_on_sphere(int dim = 2)
+</pre>
+
+  <p><strong>Effects:</strong> Constructs a <code>uniform_on_sphere</code>
+  functor. <code>dim</code> is the dimension of the sphere.</p>
+  <hr>
+
+  <p><a href="http://validator.w3.org/check?uri=referer"><img border="0" src=
+  "http://www.w3.org/Icons/valid-html401" alt="Valid HTML 4.01 Transitional"
+  height="31" width="88"></a></p>
+
+  <p>Revised 
+  <!--webbot bot="Timestamp" s-type="EDITED" s-format="%d %B, %Y" startspan -->05
+  December, 2006<!--webbot bot="Timestamp" endspan i-checksum="38516" --></p>
+
+  <p><i>Copyright &copy; 2000-2007 <a href=
+  "http://www.boost.org/people/jens_maurer.htm">Jens Maurer</a></i></p>
+
+  <p><i>Distributed under the Boost Software License, Version 1.0. (See
+  accompanying file <a href="../../LICENSE_1_0.txt">LICENSE_1_0.txt</a> or
+  copy at <a href=
+  "http://www.boost.org/LICENSE_1_0.txt">http://www.boost.org/LICENSE_1_0.txt</a>)</i></p>
+</body>
+</html>

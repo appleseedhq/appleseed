@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <scene>
+    </scene>
+    <output>
+        <frame name="beauty">
+            <parameter name="camera" value="camera" />
+            <parameter name="resolution" value="512 512" />
+        </frame>
+    </output>
+    <configurations>
+        <configuration name="final" base="base_final" />
+        <configuration name="interactive" base="base_interactive" />
+    </configurations>
+</project>

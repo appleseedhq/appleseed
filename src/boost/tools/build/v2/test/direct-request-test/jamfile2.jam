@@ -1,0 +1,9 @@
+
+# This will link correctly only if symbol MACROS is not defined when 
+# compiling b.cpp. This tests if direct build request
+# 'release <define>MACROS' to 'b' does not add 'MACROS' when 'b'
+# is compiled with 'debug' -- the version needed by 'a'.
+
+exe a : a.cpp b : <variant>debug ;
+
+lib b : b.cpp ;

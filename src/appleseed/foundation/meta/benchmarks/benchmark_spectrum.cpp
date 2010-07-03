@@ -1,0 +1,68 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2010 Francois Beaune
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// appleseed.foundation headers.
+#include "foundation/image/spectrum.h"
+#include "foundation/utility/benchmark.h"
+
+FOUNDATION_BENCHMARK_SUITE(Foundation_Image_Spectrum31f)
+{
+    using namespace foundation;
+
+    struct Fixture
+    {
+        Spectrum31f m_spectrum1;
+        Spectrum31f m_spectrum2;
+
+        Fixture()
+          : m_spectrum1(42.0f)
+          , m_spectrum2(1.1f)
+        {
+        }
+    };
+
+    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(Set, Fixture)
+    {
+        m_spectrum1.set(0.0f);
+    }
+
+    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(InPlaceAddition, Fixture)
+    {
+        m_spectrum1 += m_spectrum2;
+    }
+
+    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(InPlaceMultiplicationByScalar, Fixture)
+    {
+        m_spectrum1 *= 1.1f;
+    }
+
+    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(InPlaceMultiplicationBySpectrum, Fixture)
+    {
+        m_spectrum1 *= m_spectrum2;
+    }
+}

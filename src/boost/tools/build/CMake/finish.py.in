@@ -1,0 +1,23 @@
+#!/usr/bin/python
+#
+#  copyright (C) 2008  troy d. straszheim  <troy@resophonic.com>
+#  
+#  Distributed under the Boost Software License, Version 1.0.
+#  See accompanying file LICENSE_1_0.txt or copy at
+#  http://www.boost.org/LICENSE_1_0.txt
+#
+
+#
+#  Start a new build, notify server via xmlrpc
+#
+
+import sys
+sys.path.append("@BOOST_BUILD_SLAVE_PYTHONPATH@")
+from boost_build_slave import *
+
+print '\nFinishing build %d with %s via XML-RPC' % (build_id, xmlrpc_url)
+s = xmlrpclib.Server(xmlrpc_url)
+
+s.traash.finish_build(build_id)
+
+

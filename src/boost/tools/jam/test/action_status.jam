@@ -1,0 +1,28 @@
+#~ Copyright 2007 Rene Rivera.
+#~ Distributed under the Boost Software License, Version 1.0.
+#~ (See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt)
+
+if ! $(BJAM_SUBTEST)
+{
+    ECHO --- Testing \"actions status results\"... ;
+
+    assert "" 0 : (==) : [ SHELL "\"$(ARGV[1])\" -f action_status.jam -sBJAM_SUBTEST=1" : exit-status : no-output ] ;
+    if $(NT)
+    {
+        assert "" 0 : (==) : [ SHELL "\"$(ARGV[1])\" -f action_status.jam -sBJAM_SUBTEST=1 \"-sACTION=;\"" : exit-status : no-output ] ;
+    }
+    assert "" 0 : (!=) : [ SHELL "\"$(ARGV[1])\" -f action_status.jam -sBJAM_SUBTEST=1 -sACTION=invalid" : exit-status : no-output ] ;
+}
+else
+{
+    actions quietly .a. { $(ACTION) }
+
+    rule .a.
+    {
+        DEPENDS $(<) : $(>) ;
+    }
+
+    NOTFILE subtest ;
+    .a. subtest_a : subtest ;
+    DEPENDS all : subtest_a ;
+}

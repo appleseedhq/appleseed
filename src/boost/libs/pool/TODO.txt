@@ -1,0 +1,10 @@
+Copyright (C) 2000 Stephen Cleary
+
+Distributed under the Boost Software License, Version 1.0. (See accompany-
+ing file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+Here's a list of things TODO on the Pool library; these things will be done on an "as-I-get-around-to-it" basis:
+  . Evaluate changes necessary for MSVC 6sp4 (Could use some help from people who own MSVC...)
+  . Create more exhaustive test/example files, possibly other timing tests; convert to the new Boost testing harness
+  . Add overloaded new/delete (pool_base) as Yet Another Interface.
+  . Add a "grow" function (similar to std::realloc) to pool for attempting reallocation of contiguous memory; if it fails to find contiguous chunks, it should return 0.

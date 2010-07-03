@@ -1,0 +1,20 @@
+#~ Copyright Rene Rivera 2008
+#~ Distributed under the Boost Software License, Version 1.0.
+#~ (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+import testing ;
+
+test-suite integer
+    :   [ run cstdint_test.cpp ]
+        [ run integer_test.cpp
+            /boost/test//boost_unit_test_framework ]
+        [ run integer_traits_test.cpp
+            /boost/test//boost_test_exec_monitor/<link>static ]
+        [ run integer_mask_test.cpp
+            /boost/test//boost_unit_test_framework ]
+        [ run static_log2_test.cpp
+            /boost/test//boost_test_exec_monitor/<link>static ]
+        [ run static_min_max_test.cpp
+            /boost/test//boost_test_exec_monitor/<link>static ]
+#        [ compile issue_2134.cpp ]
+    ;

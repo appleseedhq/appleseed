@@ -1,0 +1,80 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Struct template moment_impl</title>
+<link rel="stylesheet" href="../../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../../accumulators/reference.html#header.boost.accumulators.statistics.moment_hpp" title="Header &lt;boost/accumulators/statistics/moment.hpp&gt;">
+<link rel="prev" href="../tag/min.html" title="Struct min">
+<link rel="next" href="../tag/moment.html" title="Struct template moment">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../../boost.png"></td>
+<td align="center"><a href="../../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="../tag/min.html"><img src="../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../../accumulators/reference.html#header.boost.accumulators.statistics.moment_hpp"><img src="../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../../index.html"><img src="../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="../tag/moment.html"><img src="../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.accumulators.impl.moment_impl"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Struct template moment_impl</span></h2>
+<p>boost::accumulators::impl::moment_impl</p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../../accumulators/reference.html#header.boost.accumulators.statistics.moment_hpp" title="Header &lt;boost/accumulators/statistics/moment.hpp&gt;">boost/accumulators/statistics/moment.hpp</a>&gt;
+
+</em></span><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> N, <span class="bold"><strong>typename</strong></span> Sample&gt; 
+<span class="bold"><strong>struct</strong></span> <a class="link" href="moment_impl.html" title="Struct template moment_impl">moment_impl</a> {
+  <span class="emphasis"><em>// types</em></span>
+  <span class="bold"><strong>typedef</strong></span> numeric::functional::average&lt; Sample, std::size_t &gt;::result_type <a name="boost.accumulators.impl.moment_impl.result_type"></a>result_type;
+
+  <span class="emphasis"><em>// <a class="link" href="moment_impl.html#boost.accumulators.impl.moment_implconstruct-copy-destruct">construct/copy/destruct</a></em></span>
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Args&gt; <a class="link" href="moment_impl.html#id1073872-bb">moment_impl</a>(Args <span class="bold"><strong>const</strong></span> &amp;);
+
+  <span class="emphasis"><em>// <a class="link" href="moment_impl.html#id1073810-bb">public member functions</a></em></span>
+  <span class="type"></span> <a class="link" href="moment_impl.html#id1073814-bb">BOOST_MPL_ASSERT_RELATION</a>(N::value, 0) ;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Args&gt; <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="moment_impl.html#id1073832-bb"><span class="bold"><strong>operator</strong></span>()</a>(Args <span class="bold"><strong>const</strong></span> &amp;) ;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Args&gt; <span class="type">result_type</span> <a class="link" href="moment_impl.html#id1073852-bb">result</a>(Args <span class="bold"><strong>const</strong></span> &amp;) <span class="bold"><strong>const</strong></span>;
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id1278963"></a><h2>Description</h2>
+<div class="refsect2" lang="en">
+<a name="id1278967"></a><h3>
+<a name="boost.accumulators.impl.moment_implconstruct-copy-destruct"></a><code class="computeroutput">moment_impl</code> 
+        public
+       construct/copy/destruct</h3>
+<div class="orderedlist"><ol type="1"><li><pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Args&gt; <a name="id1073872-bb"></a>moment_impl(Args <span class="bold"><strong>const</strong></span> &amp; args);</pre></li></ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id1279018"></a><h3>
+<a name="id1073810-bb"></a><code class="computeroutput">moment_impl</code> public member functions</h3>
+<div class="orderedlist"><ol type="1">
+<li><pre class="literallayout"><span class="type"></span> <a name="id1073814-bb"></a>BOOST_MPL_ASSERT_RELATION(N::value, 0) ;</pre></li>
+<li><pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Args&gt; <span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1073832-bb"></a><span class="bold"><strong>operator</strong></span>()(Args <span class="bold"><strong>const</strong></span> &amp; args) ;</pre></li>
+<li><pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Args&gt; <span class="type">result_type</span> <a name="id1073852-bb"></a>result(Args <span class="bold"><strong>const</strong></span> &amp; args) <span class="bold"><strong>const</strong></span>;</pre></li>
+</ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2005, 2006 Eric Niebler<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="../tag/min.html"><img src="../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../../accumulators/reference.html#header.boost.accumulators.statistics.moment_hpp"><img src="../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../../index.html"><img src="../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="../tag/moment.html"><img src="../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

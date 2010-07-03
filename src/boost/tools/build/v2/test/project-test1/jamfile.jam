@@ -1,0 +1,10 @@
+# Copyright 2002 Dave Abrahams 
+# Copyright 2002 Vladimir Prus 
+# Distributed under the Boost Software License, Version 1.0. 
+# (See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt) 
+
+project /boost-build-test-project-1
+    : requirements <threading>multi <include>/home/ghost/local/include ;
+
+build-project dir2 ;
+build-project dir ;

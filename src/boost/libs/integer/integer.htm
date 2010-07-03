@@ -1,0 +1,212 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>Integer Type Selection Templates</title>
+</head>
+
+<body bgcolor="white" text="black">
+<h1>
+<img src="../../boost.png" alt="boost.png (6897 bytes)"
+align="middle" width="277" height="86">Integer Type Selection
+Templates</h1>
+
+<p>The <cite><a
+href="../../boost/integer.hpp">&lt;boost/integer.hpp&gt;</a></cite> type
+selection templates allow integer types to be selected based on desired
+characteristics such as number of bits or maximum value.  This facility
+is particularly useful for solving generic programming problems.</p>
+
+<h2><a name="contents">Contents</a></h2>
+
+<ul>
+	<li><a href="#contents">Contents</a></li>
+	<li><a href="#synopsis">Synopsis</a></li>
+	<li><a href="#easy">Easiest-to-Manipulate Types</a></li>
+	<li><a href="#sized">Sized Types</a></li>
+	<li><a href="#example">Example</a></li>
+	<li><a href="#demo">Demonstration Program</a></li>
+	<li><a href="#rationale">Rationale</a></li>
+	<li><a href="#alternative">Alternative</a></li>
+	<li><a href="#credits">Credits</a></li>
+</ul>
+
+<h2><a name="synopsis">Synopsis</a></h2>
+
+<blockquote><pre>namespace boost
+{
+  //  fast integers from least integers
+  template&lt; typename LeastInt &gt;
+  struct int_fast_t
+  {
+      typedef <em>implementation_supplied</em>  fast;
+  };
+
+  //  signed
+  template&lt; int Bits &gt;
+  struct int_t 
+  {
+      typedef <em>implementation_supplied</em>  least;
+      typedef int_fast_t&lt;least&gt;::fast  fast;
+  };
+
+  //  unsigned
+  template&lt; int Bits &gt;
+  struct uint_t 
+  {
+      typedef <em>implementation_supplied</em>  least;
+      typedef int_fast_t&lt;least&gt;::fast  fast;
+  };
+
+  //  signed
+  template&lt; long MaxValue &gt;
+  struct int_max_value_t 
+  {
+      typedef <em>implementation_supplied</em>  least;
+      typedef int_fast_t&lt;least&gt;::fast  fast;
+  };
+
+  template&lt; long MinValue &gt;
+  struct int_min_value_t 
+  {
+      typedef <em>implementation_supplied</em>  least;
+      typedef int_fast_t&lt;least&gt;::fast  fast;
+  };
+
+  //  unsigned
+  template&lt; unsigned long Value &gt;
+  struct uint_value_t 
+  {
+      typedef <em>implementation_supplied</em>  least;
+      typedef int_fast_t&lt;least&gt;::fast  fast;
+  };
+} // namespace boost
+</pre></blockquote>
+
+<h2><a name="easy">Easiest-to-Manipulate Types</a></h2>
+
+<p>The <code>int_fast_t</code> class template maps its input type to the
+next-largest type that the processor can manipulate the easiest, or to
+itself if the input type is already an easy-to-manipulate type.  For
+instance, processing a bunch of <code>char</code> objects may go faster
+if they were converted to <code>int</code> objects before processing. 
+The input type, passed as the only template parameter, must be a
+built-in integral type, except <code>bool</code>.  Unsigned integral
+types can be used, as well as signed integral types, despite the name. 
+The output type is given as the class member <code>fast</code>.</p>
+
+<p><strong>Implementation Notes</strong><br>
+By default, the output type is identical to the input type.  Eventually,
+this code's implementation should be conditionalized for each platform
+to give accurate mappings between the built-in types and the
+easiest-to-manipulate built-in types.  Also, there is no guarantee that
+the output type actually is easier to manipulate than the input
+type.</p>
+
+<h2><a name="sized">Sized Types</a></h2>
+
+<p>The <code>int_t</code>, <code>uint_t</code>,
+<code>int_max_value_t</code>, <code>int_min_value_t</code>, and
+<code>uint_value_t</code> class templates find the most appropiate
+built-in integral type for the given template parameter.  This type is
+given by the class member <code>least</code>.  The easiest-to-manipulate
+version of that type is given by the class member <code>fast</code>. 
+The following table describes each template's criteria.</p>
+
+<table border="1" cellpadding="5">
+	<caption>Criteria for the Sized Type Class Templates</caption>
+	<tr>
+		<th>Class Template</th>
+		<th>Template Parameter Mapping</th>
+	</tr>
+	<tr>
+		<td><code>boost::int_t</code></td>
+		<td>The smallest built-in signed integral type with at least the
+			given number of bits, including the sign bit.  The parameter
+			should be a positive number.  A compile-time error results if
+			the parameter is larger than the number of bits in a
+			<code>long</code>.</td>
+	</tr>
+	<tr>
+		<td><code>boost::uint_t</code></td>
+		<td>The smallest built-in unsigned integral type with at least
+			the given number of bits.  The parameter should be a positive
+			number.  A compile-time error results if the parameter is
+			larger than the number of bits in an <code>unsigned
+			long</code>.</td>
+	</tr>
+	<tr>
+		<td><code>boost::int_max_value_t</code></td>
+		<td>The smallest built-in signed integral type that supports the
+			given value as a maximum.  The parameter should be a
+			positive number.</td>
+	</tr>
+	<tr>
+		<td><code>boost::int_min_value_t</code></td>
+		<td>The smallest built-in signed integral type that supports the
+			given value as a minimum.  The parameter should be a
+			negative number.</td>
+	</tr>
+	<tr>
+		<td><code>boost::uint_value_t</code></td>
+		<td>The smallest built-in unsigned integral type that supports
+			the given value as a maximum.  The parameter should be a
+			positive number.</td>
+	</tr>
+</table>
+
+<h2><a name="example">Example</a></h2>
+
+<blockquote><pre>#include &lt;boost/integer.hpp&gt;
+
+//...
+
+int main()
+{
+    boost::int_t&lt;24&gt;::least my_var;
+    //...
+}
+</pre></blockquote>
+
+<h2><a name="demo">Demonstration Program</a></h2>
+
+<p>The program <a href="integer_test.cpp">integer_test.cpp</a> is a
+simplistic demonstration of the results from instantiating various
+examples of the sized type class templates.</p>
+
+<h2><a name="rationale">Rationale</a></h2>
+
+<p>The rationale for the design of the templates in this header includes:</p>
+
+<ul>
+	<li>Avoid recursion because of concern about C++'s limited
+		guaranteed recursion depth (17).</li>
+	<li>Avoid macros on general principles.</li>
+	<li>Try to keep the design as simple as possible.</li>
+</ul>
+
+<h2><a name="alternative">Alternative</a></h2>
+
+<p>If the number of bits required is known beforehand, it may be more
+appropriate to use the types supplied in <cite><a
+href="../../boost/cstdint.hpp">&lt;boost/cstdint.hpp&gt;</a></cite>.</p>
+
+<h2><a name="credits">Credits</a></h2>
+
+<p>The author of most of the Boost integer type choosing templates is <a
+href="http://www.boost.org/people/beman_dawes.html">Beman Dawes</a>.  He gives thanks
+to Valentin Bonnard and
+<a href="http://www.boost.org/people/kevlin_henney.htm"> Kevlin Henney</a> for sharing
+their designs for similar templates.  <a
+href="http://www.boost.org/people/daryle_walker.html">Daryle Walker</a> designed the
+value-based sized templates.</p>
+
+<hr>
+
+<p>Revised May 20, 2001</p>
+
+<p>&copy; Copyright Beman Dawes 1999.  Use, modification, and distribution are
+subject to the Boost Software License, Version 1.0.  (See accompanying file <a
+href="../../LICENSE_1_0.txt">LICENSE_1_0.txt</a> or a copy at &lt;<a
+href="http://www.boost.org/LICENSE_1_0.txt">http://www.boost.org/LICENSE_1_0.txt</a>&gt;.)</p>
+</body>
+</html>

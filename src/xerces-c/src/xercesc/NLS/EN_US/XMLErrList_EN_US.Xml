@@ -1,0 +1,876 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!DOCTYPE MsgFile SYSTEM "../XMLErrList.dtd">
+
+<!--  =====================================================
+ A Message file is designed for a particular locale, which is
+ indicated in the locale attribute.
+ =======================================================  -->
+<MsgFile Locale="EN_US">
+    <MsgDomain Domain="http://apache.org/xml/messages/XMLErrors">
+        <Warning>
+            <Message Id="NotationAlreadyExists" Text="Notation '{0}' has already been declared"/>
+            <Message Id="AttListAlreadyExists" Text="Attribute '{0}' has already been declared for element '{1}'"/>
+            <Message Id="ContradictoryEncoding" Text="Encoding ({0}, from XMLDecl or manually set) contradicts the auto-sensed encoding, ignoring it"/>
+            <Message Id="UndeclaredElemInCM" Text="Element '{0}' was referenced in a content model but never declared"/>
+            <Message Id="UndeclaredElemInAttList" Text="Element '{0}' was referenced in an attlist but never declared"/>
+            <Message Id="XMLException_Warning" Text="An exception occurred! Type:{0}, Message:{1}"/>
+        </Warning>
+        <Error>
+            <Message Id="FeatureUnsupported" Text="'{0}' is not allowed for the content of a simpleType.  Only list, union and restriction are allowed."/>
+            <Message Id="TopLevelNoNameComplexType" Text="Error: Top level complexType has no name - declaration ignored"/>
+            <Message Id="TopLevelNoNameAttribute" Text="Globally-declared attribute must have a name - attribute declaration ignored"/>
+            <Message Id="NoNameRefAttribute" Text="Attribute must have a name or a ref - attribute declaration ignored"/>
+            <Message Id="GlobalNoNameElement" Text="Globally-declared element must have a name - element declaration ignored"/>
+            <Message Id="NoNameRefElement" Text="Element must have a name or a ref attribute - element ignored"/>
+            <Message Id="NoNameRefGroup" Text="&lt;group&gt; must have a name or a ref attribute - declaration ignored"/>
+            <Message Id="NoNameRefAttGroup" Text="&lt;attributeGroup&gt; must have a name or a ref attribute - declaration ignored"/>
+            <Message Id="AnonComplexTypeWithName" Text="Anonymous complexType in element {0} has a name attribute"/>
+            <Message Id="AnonSimpleTypeWithName" Text="Anonymous simpleType in element {0} has a name attribute"/>
+            <Message Id="InvalidElementContent" Text="The content of an element information item does not match (annotation?, (simpleType | complexType)?, (unique | key | keyref)*)"/>
+            <Message Id="UntypedElement" Text="Untyped element: {0}"/>
+            <Message Id="SimpleTypeContentError" Text="Error in content of simpleType, '{0}' is invalid.  Only allowed one of (restriction | list | union)."/>
+            <Message Id="ExpectedSimpleTypeInList" Text="Expected simpleType in 'list' declaration for {0}"/>
+            <Message Id="ListUnionRestrictionError" Text="List | Union | Restriction content is invalid for type {0}"/>
+            <Message Id="SimpleTypeDerivationByListError" Text="Error in content of derivation by list for {0}"/>
+            <Message Id="ExpectedSimpleTypeInRestriction" Text="Expected simpleType in 'restriction' declaration for {0}"/>
+            <Message Id="DuplicateFacet" Text="Facet {0} already defined - ignoring"/>
+            <Message Id="ExpectedSimpleTypeInUnion" Text="Expected simpleType in 'union' declaration for {0}"/>
+            <Message Id="EmptySimpleTypeContent" Text="SimpleType content is empty"/>
+            <Message Id="InvalidSimpleContent" Text="The content of the simpleContent element is invalid. The content must be RESTRICTION or EXTENSION"/>
+            <Message Id="UnspecifiedBase" Text="The BASE attribute must be specified for the RESTRICTION or EXTENSION element"/>
+            <Message Id="InvalidComplexContent" Text="The content of the complexContent element is invalid. The content must be RESTRICTION or EXTENSION"/>
+            <Message Id="SchemaElementContentError" Text="Error in content of &lt;schema&gt; element information item"/>
+            <Message Id="ContentError" Text="Content (annotation?,..) is incorrect for type {0}"/>
+            <Message Id="UnknownSimpleType" Text="Unknown simpleType: {0}"/>
+            <Message Id="UnknownComplexType" Text="Unknown complexType: {0}"/>
+            <Message Id="UnresolvedPrefix" Text="Prefix: '{0}' can not be resolved to a URI"/>
+            <Message Id="RefElementNotFound" Text="Ref element {0} not found in the Schema"/>
+            <Message Id="TypeNotFound" Text="Type not found in {0}:{1}"/>
+            <Message Id="TopLevelAttributeNotFound" Text="Could not find top level attribute: {0}"/>
+            <Message Id="InvalidChildInComplexType" Text="Invalid child '{0}' in the complex type"/>
+            <Message Id="BaseTypeNotFound" Text="Base type could not be found: {0}"/>
+            <Message Id="NoAttributeInSchema" Text="No attribute '{0}' was defined in schema: {1}"/>
+            <Message Id="DatatypeValidatorCreationError" Text="Error creating datatype validator: {0}"/>
+            <Message Id="InvalidChildFollowingSimpleContent" Text="Invalid child following the simpleContent child in the complexType"/>
+            <Message Id="InvalidChildFollowingConplexContent" Text="Invalid child following the complexContent child in the complexType"/>
+            <Message Id="InvalidComplexTypeBlockValue" Text="The 'block' attribute values of a complexType must be #all | list(restriction,extension); {0} was found"/>
+            <Message Id="InvalidComplexTypeFinalValue" Text="The 'final' attribute values of a complexType must be #all | list(restriction,extension); {0} was found"/>
+            <Message Id="AttributeDefaultFixedValue" Text="Attribute '{0}={1}' cannot have both 'fixed' and 'default' present at the same time."/>
+            <Message Id="NotOptionalDefaultAttValue" Text="For attribute '{0}={1}' default and use are both present so use must have the value 'optional'."/>
+            <Message Id="LocalAttributeWithNameRef" Text="Local attribute:{0} has also a ref defined - name ignored"/>
+            <Message Id="GlobalAttributeWithNameRef" Text="Global attribute:'{0}' cannot have a ref defined"/>
+            <Message Id="DuplicateAttribute" Text="Error: Attribute '{0}' declared more than once in the same scope- ignoring"/>
+            <Message Id="AttributeWithTypeAndSimpleType" Text="Attribute '{0}' may not contain both a type and a simpleType declaration."/>
+            <Message Id="AttributeSimpleTypeNotFound" Text="SimpleType ({0}:{1}) for attribute: {2} not found"/>
+            <Message Id="ElementWithFixedAndDefault" Text="Element '{0}' cannot have both 'fixed' and 'default' present at the same time."/>
+            <Message Id="DeclarationWithNameRef" Text="{0}:'{1}' has also a ref defined - name ignored"/>
+            <Message Id="BadAttWithRef" Text="ref cannot appear with any of type, abstract, block, final, nillable, default or fixed"/>
+            <Message Id="InvalidDeclarationName" Text="Invalid {0} name:'{1}' - declaration ignored"/>
+            <Message Id="GlobalElementWithRef" Text="Globally-declared element {0} cannot have a ref attribute - ref ignored"/>
+            <Message Id="ElementWithTypeAndAnonType" Text="Element '{0}' cannot have both a type attribute and a simpleType/complexType type child"/>
+            <Message Id="NotSimpleOrMixedElement" Text="Element {0} has a fixed or default value and must have a mixed simple or simple content model"/>
+            <Message Id="DisallowedSimpleTypeExtension" Text="The simpleType {0} that {1} uses has a value of 'final' which does not permit extension"/>
+            <Message Id="InvalidSimpleContentBase" Text="The type '{0}' specified as the base in the simpleContent element must not have complexContent"/>
+            <Message Id="InvalidComplexTypeBase" Text="The type '{0}' is a simple type. It cannot be used in a derivation by RESTRICTION for a complexType"/>
+            <Message Id="InvalidChildInSimpleContent" Text="Invalid child following the RESTRICTION or EXTENSION element in the simpleContent definition"/>
+            <Message Id="InvalidChildInComplexContent" Text="Invalid child following the RESTRICTION or EXTENSION element in the complexContent definition"/>
+            <Message Id="AnnotationError" Text="Annotation can only appear once: type {0}"/>
+            <Message Id="DisallowedBaseDerivation" Text="The base type {0} does not allow itself to be used as the base for a restriction and/or as a type in a list and/or union"/>
+            <Message Id="SubstitutionRepeated" Text="The value 'substitution' already in the list"/>
+            <Message Id="UnionRepeated" Text="The value 'union' is already in the list"/>
+            <Message Id="ExtensionRepeated" Text="The value 'extension' is already in the list"/>
+            <Message Id="ListRepeated" Text="The value 'list' is already in the list"/>
+            <Message Id="RestrictionRepeated" Text="The value 'restriction' is already in the list"/>
+            <Message Id="InvalidBlockValue" Text="Invalid block value: {0}"/>
+            <Message Id="InvalidFinalValue" Text="Invalid final value: {0}"/>
+            <Message Id="InvalidSubstitutionGroupElement" Text="Element {0} cannot be part of the substitution group headed by {1}"/>
+            <Message Id="SubstitutionGroupTypeMismatch" Text="Element {0} has a type which does not derive from the type of the element at the head of the substitution group"/>
+            <Message Id="DuplicateElementDeclaration" Text="Duplicate element decl in the same scope: {0}"/>
+            <Message Id="InvalidElementBlockValue" Text="The 'block' attribute values of an element must be #all | list(substitution,restriction,extension); {0} was found"/>
+            <Message Id="InvalidElementFinalValue" Text="The 'final' attribute values of an element must be #all | list(restriction,extension); {0} was found"/>
+            <Message Id="InvalidAttValue" Text="Invalid value '{0}' for attribute: '{1}'."/>
+            <Message Id="AttributeRefContentError" Text="Ref is present, and simpleType/form/type found for attribute '{0}={1}'"/>
+            <Message Id="DuplicateRefAttribute" Text="Duplicate reference attribute {0}:{1} in complexType"/>
+            <Message Id="ForbiddenDerivationByRestriction" Text="Derivation by restriction is forbidden by either the base type '{0}' or the schema"/>
+            <Message Id="ForbiddenDerivationByExtension" Text="Derivation by extension is forbidden by either the base type '{0}' or the schema"/>
+            <Message Id="BaseNotComplexType" Text="The base type specified in the complexContent element must be a complexType"/>
+            <Message Id="ImportNamespaceDifference" Text="Imported schema '{0}' has a different targetNameSpace '{1}' from what's declared '{2}'"/>
+            <Message Id="ImportRootError" Text="Could not get the doc root for imported Schema: {0}"/>
+            <Message Id="DeclarationNoSchemaLocation" Text="A schemaLocation attribute must be specified on '{0}' element."/>
+            <Message Id="IncludeNamespaceDifference" Text="Included schema '{0}' has a different targetNameSpace '{1}'"/>
+            <Message Id="OnlyAnnotationExpected" Text="At most one &lt;annotation&gt; element is expected in the content."/>
+            <Message Id="InvalidAttributeContent" Text="The content must be (annotation?, simpleType?) for attribute '{0}={1}'"/>
+            <Message Id="AttributeRequired" Text="Attribute '{0}' must appear in {1} {2} declarations"/>
+            <Message Id="AttributeDisallowed" Text="Attribute '{0}' cannot appear in {1} {2} declarations"/>
+            <Message Id="InvalidMin2MaxOccurs" Text="Value of minOccurs '{0}' must not be greater than value of maxOccurs '{1}'"/>
+            <Message Id="AnyAttributeContentError" Text="'anyAttribute' elements can contain at most one 'annotation' element in their children"/>
+            <Message Id="NoNameGlobalElement" Text="Global &lt;{0}&gt; must have a name - declaration ignored"/>
+            <Message Id="NoCircularDefinition" Text="No circular definitions are allowed: '{0}'"/>
+            <Message Id="DuplicateGlobalType" Text="Global {0}:'{1}' declared more than once or also declared as {2}"/>
+            <Message Id="DuplicateGlobalDeclaration" Text="Global {0}:'{1}' declared more than once"/>
+            <Message Id="WS_CollapseExpected" Text="Invalid value '{0}' for facet 'whiteSpace'. Value should be 'collapse'."/>
+            <Message Id="Import_1_1" Text="The namespace of an &lt;import&gt; element must be different from the targetNamespace of the &lt;import&gt;ing schema"/>
+            <Message Id="Import_1_2" Text="If the namespace on an &lt;import&gt; element is not present, the &lt;import&gt;ing schema must have a targetNamespace"/>
+            <Message Id="ElemIDValueConstraint" Text="Element '{0}' must not have a value constraint:'{1}' as its type is derived from ID"/>
+            <Message Id="NoNotationType" Text="It is an error for NOTATION to be used directly in a schema in element/attribute '{0}'"/>
+            <Message Id="EmptiableMixedContent" Text="For element '{0}', the {content type} is mixed, then the {content type}'s particle must be emptiable"/>
+            <Message Id="EmptyComplexRestrictionDerivation" Text="The content of complexType is EMPTY, but base is not empty or does not have emptiable particle."/>
+            <Message Id="MixedOrElementOnly" Text="The content type of the base type:'{0}' and derived type:'{1}' must both be mixed or element-only."/>
+            <Message Id="InvalidContentRestriction" Text="The content type is not a valid restriction of the content type of the base."/>
+            <Message Id="ForbiddenDerivation" Text="Derivation by extension or restriction is forbidden by either the base type '{0}' or the schema"/>
+            <Message Id="AtomicItemType" Text="The {item type definition} must have {variety} of atomic or union (where all member types must be atomic)"/>
+            <Message Id="MemberTypeNoUnion" Text="The {member type definitions} must all have {variety} of atomic or list"/>
+            <Message Id="GroupContentError" Text="The group:'{0}' must contain (all | choice | sequence)"/>
+            <Message Id="AttGroupContentError" Text="The attributeGroup:'{0}' must match (annotation?. ((attribute | attributeGroup)*, anyAttribute?))"/>
+            <Message Id="MinMaxOnGroupChild" Text="The child of a model group definition must not specify either the minOccurs or maxOccurs attribute."/>
+            <Message Id="DeclarationNotFound" Text="The {0} -'{1}:{2}'- not found in the schema"/>
+            <Message Id="AllContentLimited" Text="A group whose content is 'all' must only appear as the content type of a complex type definition."/>
+            <Message Id="BadMinMaxAllCT" Text="When a model group has {compositor} 'all' which constitutes the {content type} of a complex type, minOccurs=maxOccurs=1"/>
+            <Message Id="BadMinMaxAllElem" Text="In an 'all' schema component, the value of minOccurs/maxOccurs of an element must be '0' or '1'."/>
+            <Message Id="NoCircularAttGroup" Text="Circular attributeGroup reference -{0}- is disallowed outside &lt;redefine&gt;"/>
+            <Message Id="DuplicateAttInDerivation" Text="Attribute '{0}' already defined in base and should not appear in derivation by extension."/>
+            <Message Id="NotExpressibleWildCardIntersection" Text="The intensional intersection of {attributes wildcard}s must be expressible"/>
+            <Message Id="BadAttDerivation_1" Text="Base type definition does not have any attributes"/>
+            <Message Id="BadAttDerivation_2" Text="Attribute '{0}' has an inconsistent REQUIRED setting with that of the base"/>
+            <Message Id="BadAttDerivation_3" Text="Type of attribute '{0}' must be validly derived from type of attribute in base"/>
+            <Message Id="BadAttDerivation_4" Text="Attribute '{0}' is either not fixed, or has a different value from that of the base"/>
+            <Message Id="BadAttDerivation_5" Text="Attribute '{0}' has invalid target namespace with respect to a base wildcard constraint or, base has no wildcard"/>
+            <Message Id="BadAttDerivation_6" Text="An attribute wildcard is present in the derived type, but not in the base"/>
+            <Message Id="BadAttDerivation_7" Text="The attribute wildcard in the derived type is not a valid subset of that in the base"/>
+            <Message Id="BadAttDerivation_8" Text="Attribute '{0}' cannot modify the 'use' attribute in a derived type, if base attribute use is prohibited"/>
+            <Message Id="BadAttDerivation_9" Text="The wildcard attribute in the derived type must be identical to or stronger than the one in the base."/>
+            <Message Id="AllContentError" Text="Content of &lt;all&gt; is restricted to elements only. '{0}' encountered and ignored."/>
+            <Message Id="RedefineNamespaceDifference" Text="Redefined schema '{0}' has a different targetNameSpace '{1}'."/>
+            <Message Id="Redefine_InvalidSimpleType" Text="A simpleType child of a &lt;redefine&gt; must have a restriction element as a child"/>
+            <Message Id="Redefine_InvalidSimpleTypeBase" Text="The base attribute of the restriction child of a simpleType, must be the same as the redefine simpleType's name attribute"/>
+            <Message Id="Redefine_InvalidComplexType" Text="A complexType child of a &lt;redefine&gt; must have a restriction or extension element as a grandchild"/>
+            <Message Id="Redefine_InvalidComplexTypeBase" Text="The base attribute of a restriction/extension must be the same as the complexType's name attribute in &lt;redefine&gt;"/>
+            <Message Id="Redefine_InvalidGroupMinMax" Text="The group '{0}' which contains a reference to a group being redefined must have minOccurs = maxOccurs = 1"/>
+            <Message Id="Redefine_DeclarationNotFound" Text="Could not find a declaration in the schema to be redefined corresponding to '{0}'"/>
+            <Message Id="Redefine_GroupRefCount" Text="If a group child of a &lt;redefine&gt; element contains a group ref'ing itself, it must have exactly 1 reference."/>
+            <Message Id="Redefine_AttGroupRefCount" Text="If an attributeGroup of a &lt;redefine&gt; element contains a reference to itself, such reference must be exactly 1"/>
+            <Message Id="Redefine_InvalidChild" Text="A &lt;redefine&gt; element cannot contain a child of type '{0}'"/>
+            <Message Id="Notation_InvalidDecl" Text="The declaration for notation '{0}' is invalid"/>
+            <Message Id="Notation_DeclNotFound" Text="The notation declaration '{0}:{1}' is not found"/>
+            <Message Id="IC_DuplicateDecl" Text="More than one identity constraint named '{0}'."/>
+            <Message Id="IC_BadContent" Text="The content of an identity constraint must match (annotation?, selector, field+)"/>
+            <Message Id="IC_KeyRefReferNotFound" Text="Key reference declaration '{0}' refers to unknown key with name '{1}'."/>
+            <Message Id="IC_KeyRefCardinality" Text="Cardinality of fields for keyref '{0}' and key '{1}' must match."/>
+            <Message Id="IC_XPathExprMissing" Text="Xpath expression is either missing or empty"/>
+            <Message Id="AttUseCorrect" Text="The {value constraint} of an attribute ref is not fixed or different from the fixed {value constraint} of '{0}'"/>
+            <Message Id="AttDeclPropCorrect3" Text="The {type definition} for attribute '{0}={1}' is or is derived from ID, and must not have {value constraint}"/>
+            <Message Id="AttDeclPropCorrect5" Text="More than one attribute derived from type ID cannot appear in the same complex type - '{0}' ignored"/>
+            <Message Id="AttGrpPropCorrect3" Text="More than one attribute derived from type ID cannot appear in the same attribute group - '{0}' ignored"/>
+            <Message Id="InvalidTargetNSValue" Text="'' is not a legal value for the targetNamespace attribute; the attribute must be absent or contain a nonempty value"/>
+            <Message Id="DisplayErrorMessage" Text="{0}"/>
+            <Message Id="XMLException_Error" Text="An exception occurred! Type:{0}, Message:{1}"/>
+            <Message Id="InvalidRedefine" Text="Invalid Redefine: '{0}' has already been included or redefined"/>
+            <Message Id="InvalidNSReference" Text="Schema Representation Constraint: Namespace '{0}' is referenced without &lt;import&gt; declaration"/>
+            <Message Id="NotAllContent" Text="An 'all' model group that's part of a complex type definition must constitute the entire content type of the definition"/>
+            <Message Id="InvalidAnnotationContent" Text="An &lt;annotation&gt; can only contain &lt;appinfo&gt; and &lt;documentation&gt; elements"/>
+            <Message Id="InvalidFacetName" Text="Invalid facet name: {0}"/>
+            <Message Id="InvalidXMLSchemaRoot" Text="The root element name of an XML Schema should be 'schema'."/>
+            <Message Id="CircularSubsGroup" Text="Circular substitution groups are disallowed for element '{0}'."/>
+            <Message Id="SubsGroupMemberAbstract" Text="For '{0}' to be a member of the substitution group set of '{1}', its {abstract} must be false."/>
+            <Message Id="ELTSchemaNS" Text="The namespace of element '{0}' must be from the schema namespace."/>
+            <Message Id="InvalidAttTNS" Text="The {target namespace} of '{0}' must not match 'http://www.w3.org/2001/XMLSchema-instance'."/>
+            <Message Id="NSDeclInvalid" Text="The namespace declaration is invalid." />
+            <Message Id="DOMLevel1Node" Text="Namespace fixup cannot be performed on a DOM Level 1 Node." />
+        </Error>
+        <FatalError>
+            <Message Id="EntityExpansionLimitExceeded" Text= "The parser has encountered more than '{0}' entity expansions in this document; this is the limit imposed by the application."/>
+            <Message Id="ExpectedCommentOrCDATA" Text="Expected comment or CDATA"/>
+            <Message Id="ExpectedAttrName" Text="Expected an attribute name"/>
+            <Message Id="ExpectedNotationName" Text="Expected a notation name"/>
+            <Message Id="NoRepInMixed" Text="Repetition of individual elements is not legal for mixed content models"/>
+            <Message Id="BadDefAttrDecl" Text="Bad default attribute declaration"/>
+            <Message Id="ExpectedDefAttrDecl" Text="Expected default attribute declaration, assuming #IMPLIED "/>
+            <Message Id="AttListSyntaxError" Text="Attribute list syntax error"/>
+            <Message Id="ExpectedEqSign" Text="Expected equal sign"/>
+            <Message Id="DupAttrName" Text="Duplication attribute name"/>
+            <Message Id="BadIdForXMLLangAttr" Text="Bad ID, '{0}', for xml:lang attribute"/>
+            <Message Id="ExpectedElementName" Text="Expected an element name"/>
+            <Message Id="MustStartWithXMLDecl" Text="Must start with an XMLDecl"/>
+            <Message Id="CommentsMustStartWith" Text="Comments must start with &lt;!--"/>
+            <Message Id="InvalidDocumentStructure" Text="Invalid document structure"/>
+            <Message Id="ExpectedDeclString" Text="Expected a 'version=', 'encoding=', or 'standalone='"/>
+            <Message Id="BadXMLVersion" Text="Bad XML version string"/>
+            <Message Id="UnsupportedXMLVersion" Text="Unsupported XML version, '{0}'"/>
+            <Message Id="UnterminatedXMLDecl" Text="Unterminated XML decl"/>
+            <Message Id="BadXMLEncoding" Text="Bad XML encoding declaration, '{0}'"/>
+            <Message Id="BadStandalone" Text="Bad standalone declaration"/>
+            <Message Id="UnterminatedComment" Text="Unterminated comment"/>
+            <Message Id="PINameExpected" Text="Processing instruction name expected"/>
+            <Message Id="UnterminatedPI" Text="Unterminated processing instruction"/>
+            <Message Id="InvalidCharacter" Text="Invalid character (Unicode: 0x{0})"/>
+            <Message Id="UnexpectedTextBeforeRoot" Text="Unexpected text before root element"/>
+            <Message Id="UnterminatedStartTag" Text="Unterminated start tag, '{0}'"/>
+            <Message Id="ExpectedAttrValue" Text="Expected an attribute value"/>
+            <Message Id="UnterminatedEndTag" Text="Unterminated end tag, '{0}'"/>
+            <Message Id="ExpectedAttributeType" Text="Expected type (CDATA, ID, NMTOKEN, ..), for attribute '{0}' of element '{1}'"/>
+            <Message Id="ExpectedEndOfTagX" Text="Expected end of tag '{0}'"/>
+            <Message Id="ExpectedMarkup" Text="Expected tag name, comment, PI, or other markup"/>
+            <Message Id="NotValidAfterContent" Text="Not valid after content"/>
+            <Message Id="ExpectedComment" Text="Expected comment"/>
+            <Message Id="ExpectedCommentOrPI" Text="Expected comment or processing instruction"/>
+            <Message Id="ExpectedWhitespace" Text="Expected whitespace"/>
+            <Message Id="NoRootElemInDOCTYPE" Text="No root element in DOCTYPE"/>
+            <Message Id="ExpectedQuotedString" Text="Expected quoted string"/>
+            <Message Id="ExpectedPublicId" Text="Expected public id"/>
+            <Message Id="InvalidPublicIdChar" Text="Invalid character in public id (Unicode: 0x{0})"/>
+            <Message Id="UnterminatedDOCTYPE" Text="Unterminated DOCTYPE declaration"/>
+            <Message Id="InvalidCharacterInIntSubset" Text="Invalid character in internal subset (Unicode: 0x{0})"/>
+            <Message Id="ExpectedCDATA" Text="Expected CDATA section"/>
+            <Message Id="InvalidInitialNameChar" Text="Invalid initial name character"/>
+            <Message Id="InvalidNameChar" Text="Invalid name character"/>
+            <Message Id="UnexpectedWhitespace" Text="Unexpected whitespace"/>
+            <Message Id="InvalidCharacterInAttrValue" Text="Invalid character in attribute value {0} (Unicode: 0x{1})"/>
+            <Message Id="ExpectedMarkupDecl" Text="Expected a markup declaration"/>
+            <Message Id="TextDeclNotLegalHere" Text="Text declaration not legal here"/>
+            <Message Id="ConditionalSectInIntSubset" Text="Conditional section in internal subset"/>
+            <Message Id="ExpectedPEName" Text="Expected parameter entity name"/>
+            <Message Id="UnterminatedEntityDecl" Text="Unterminated entity declaration, '{0}'"/>
+            <Message Id="InvalidCharacterRef" Text="Invalid character reference"/>
+            <Message Id="UnterminatedCharRef" Text="Unterminated character reference"/>
+            <Message Id="ExpectedEntityRefName" Text="Expected entity name for reference"/>
+            <Message Id="EntityNotFound" Text="Entity '{0}' was not found"/>
+            <Message Id="NoUnparsedEntityRefs" Text="Unparsed entity references, '{0}', not valid here"/>
+            <Message Id="UnterminatedEntityRef" Text="Unterminated entity reference, '{0}'"/>
+            <Message Id="RecursiveEntity" Text="Recursive entity expansion, '{0}'"/>
+            <Message Id="PartialMarkupInEntity" Text="Partial markup in entity value"/>
+            <Message Id="UnterminatedElementDecl" Text="Unterminated element declaration, '{0}'"/>
+            <Message Id="ExpectedContentSpecExpr" Text="Expected content specification expression for element '{0}'"/>
+            <Message Id="ExpectedAsterisk" Text="Expected asterisk"/>
+            <Message Id="UnterminatedContentModel" Text="'{0}' is a mixed content model that is not terminated properly."/>
+            <Message Id="ExpectedSystemId" Text="Expected system id"/>
+            <Message Id="ExpectedSystemOrPublicId" Text="Expected system or public id"/>
+            <Message Id="UnterminatedNotationDecl" Text="Unterminated notation declaration"/>
+            <Message Id="ExpectedSeqChoiceLeaf" Text="Expected ',', '|', or ')' characters"/>
+            <Message Id="ExpectedChoiceOrCloseParen" Text="Expected '|' or ')' characters"/>
+            <Message Id="ExpectedSeqOrCloseParen" Text="Expected ',' or ')' characters or close parenthesis in content model of element '{0}'"/>
+            <Message Id="ExpectedEnumValue" Text="Expected enumeration value for attribute '{0}'"/>
+            <Message Id="ExpectedEnumSepOrParen" Text="Expected | enumeration separator, or closing paren"/>
+            <Message Id="UnterminatedEntityLiteral" Text="Unterminated entity literal"/>
+            <Message Id="MoreEndThanStartTags" Text="There are more end tags than start tags"/>
+            <Message Id="ExpectedOpenParen" Text="Expected an open parenthesis"/>
+            <Message Id="AttrAlreadyUsedInSTag" Text="The attribute '{0}' is already used in element '{1}'"/>
+            <Message Id="BracketInAttrValue" Text="A '&lt;' character cannot be used in attribute '{0}', except through &amp;lt;"/>
+            <Message Id="Expected2ndSurrogateChar" Text="A leading surrogate character was not followed by a legal second character"/>
+            <Message Id="ExpectedEndOfConditional" Text="Expected ']]>' to end a conditional section"/>
+            <Message Id="ExpectedIncOrIgn" Text="Expected INCLUDE or IGNORE here"/>
+            <Message Id="ExpectedINCLUDEBracket" Text="Expected [ to follow INCLUDE or IGNORE"/>
+            <Message Id="ExpectedTextDecl" Text="Expected a TextDecl here: &lt;?xml ...."/>
+            <Message Id="ExpectedXMLDecl" Text="Expected a XMLDecl here: &lt;?xml ...."/>
+            <Message Id="UnexpectedEOE" Text="Unexpected end of entity {0}"/>
+            <Message Id="PEPropogated" Text="A PE propagated out of the int/ext subset, discarding extra text"/>
+            <Message Id="ExtraCloseSquare" Text="An extra ] character was found an ignored"/>
+            <Message Id="PERefInMarkupInIntSubset" Text="PE refs are not allowed inside markup in the internal subset"/>
+            <Message Id="EntityPropogated" Text="An entity propagated out of the content section into Miscellaneous"/>
+            <Message Id="ExpectedNumericalCharRef" Text="Expected &amp;# to be followed by a numeric character value"/>
+            <Message Id="ExpectedOpenSquareBracket" Text="Expected an open bracket ('[') here"/>
+            <Message Id="BadSequenceInCharData" Text="The sequence ']]>' is not allowed in character data"/>
+            <Message Id="IllegalSequenceInComment" Text="Illegal sequence '--' in comment"/>
+            <Message Id="UnterminatedCDATASection" Text="Unterminated CDATA section"/>
+            <Message Id="ExpectedNDATA" Text="Expected NDATA"/>
+            <Message Id="NDATANotValidForPE" Text="NDATA is not legal for parameter entities"/>
+            <Message Id="HexRadixMustBeLowerCase" Text="Hex radix character refs must use 'x', not 'X'"/>
+            <Message Id="DeclStringRep" Text="'{0}' has already been set. Ignoring redundant setting"/>
+            <Message Id="DeclStringsInWrongOrder" Text="The XMLDecl strings must be in the order: version, encoding, standalone"/>
+            <Message Id="NoExtRefsInAttValue" Text="External entities cannot be referred to from attribute values"/>
+            <Message Id="XMLDeclMustBeLowerCase" Text="The XML or Text decl must start with '&lt;?xml ', not '&lt;?XML '"/>
+            <Message Id="ExpectedEntityValue" Text="Expected a literal entity value or PUBLIC/SYSTEM id"/>
+            <Message Id="BadDigitForRadix" Text="'{0}' is not a valid digit for the indicated radix"/>
+            <Message Id="EndedWithTagsOnStack" Text="The input ended before all started tags were ended. Last tag started was '{0}'"/>
+            <Message Id="AmbiguousContentModel" Text="The content model for element '{0}' is ambiguous"/>
+            <Message Id="NestedCDATA" Text="Nested CDATA sections are not allowed"/>
+            <Message Id="UnknownPrefix" Text="The prefix '{0}' has not been mapped to any URI"/>
+            <Message Id="PartialTagMarkupError" Text="The start and the end tag were in the different entities"/>
+            <Message Id="EmptyMainEntity" Text="The main XML document cannot be empty"/>
+            <Message Id="CDATAOutsideOfContent" Text="CDATA is not allowed outside the root element"/>
+            <Message Id="OnlyCharRefsAllowedHere" Text="Only numeric character entities or special character entities are legal here"/>
+            <Message Id="Unexpected2ndSurrogateChar" Text="Got an unexpected trailing surrogate character"/>
+            <Message Id="NoPIStartsWithXML" Text="No processing instruction starts with 'xml'"/>
+            <Message Id="XMLDeclMustBeFirst" Text="The XML or Text declaration must start at line/column 1/1"/>
+            <Message Id="XMLVersionRequired" Text="The 'version=' string is required in an XMLDecl"/>
+            <Message Id="StandaloneNotLegal" Text="The 'standalone=' string is only allowed in the main XML entity"/>
+            <Message Id="EncodingRequired" Text="The 'encoding=' string is required in an Text Decl"/>
+            <Message Id="TooManyColonsInName" Text="When namespaces are enabled, a name can have only one colon character"/>
+            <Message Id="InvalidColonPos" Text="When namespaces are enabled, the colon cannot be the first or last character"/>
+            <Message Id="ColonNotLegalWithNS" Text="Colons are not allowed in this name when namespaces are enabled"/>
+            <Message Id="SysException" Text="A system exception occurred during processing"/>
+            <Message Id="XMLException_Fatal" Text="An exception occurred! Type:{0}, Message:{1}"/>
+            <Message Id="UnexpectedEOF" Text="Unexpected end of file exception. Message: {0}"/>
+            <Message Id="UnexpectedError" Text="UnexpectedError"/>
+            <Message Id="BadSchemaLocation" Text="The schemaLocation attribute does not contain pairs of values."/>
+            <Message Id="NoGrammarResolver" Text="Internal error: don't have a GrammarResolver for TraverseSchema"/>
+            <Message Id="SchemaScanFatalError" Text="Fatal error encountered during schema scan"/>
+            <Message Id="IllegalRefInStandalone" Text="Reference to external entity declaration '{0}' is not allowed in a standalone document."/>
+            <Message Id="PEBetweenDecl" Text="Partial markup in parameter entity replacement text in a complete declaration."/>
+            <Message Id="NoEmptyStrNamespace" Text="The value of the attribute '{0}' is invalid. Prefixed namespace bindings may not be empty."/>
+            <Message Id="NoUseOfxmlnsAsPrefix" Text="The prefix 'xmlns' cannot be bound to any namespace explicitly."/>
+            <Message Id="NoUseOfxmlnsURI" Text="The namespace for 'xmlns' cannot be bound to any prefix explicitly."/>
+            <Message Id="PrefixXMLNotMatchXMLURI" Text="The prefix 'xml' cannot be bound to any namespace other than its usual namespace."/>
+            <Message Id="XMLURINotMatchXMLPrefix" Text="The namespace for 'xml' cannot be bound to any prefix other than 'xml'."/>
+            <Message Id="NoXMLNSAsElementPrefix" Text="Element '{0}' cannot have 'xmlns' as its prefix."/>
+            <Message Id="CT_SimpleTypeChildRequired" Text="Complex Type Definition Representation OK - 2.2: &lt;restriction&gt; must have a &lt;simpleType&gt; child."/>
+			<Message Id="InvalidRootElemInDOCTYPE" Text="DOCTYPE root element qname beginning with '{0}' invalid"/>
+			<Message Id="InvalidElementName" Text="Element qname beginning with '{0}' invalid"/>
+			<Message Id="InvalidAttrName" Text="Attribute qname beginning with '{0}' invalid"/>
+			<Message Id="InvalidEntityRefName" Text="Entity qname for reference beginning '{0}' invalid"/>
+			<Message Id="DuplicateDocTypeDecl" Text="Already seen doctype"/>
+        </FatalError>
+    </MsgDomain>
+    <MsgDomain Domain="http://apache.org/xml/messages/XMLValidity">
+        <Error>
+            <Message Id="ElementNotDefined" Text="Unknown element '{0}'"/>
+            <Message Id="AttNotDefined" Text="Attribute '{0}' not defined"/>
+            <Message Id="NotationNotDeclared" Text="Notation '{0}' was referenced but never declared"/>
+            <Message Id="RootElemNotLikeDocType" Text="Root element different from DOCTYPE"/>
+            <Message Id="RequiredAttrNotProvided" Text="Required attribute '{0}' was not provided"/>
+            <Message Id="ElementNotValidForContent" Text="Element '{0}' is not valid for content model: '{1}'"/>
+            <Message Id="BadIDAttrDefType" Text="ID attributes must be #IMPLIED or #REQUIRED"/>
+            <Message Id="InvalidEmptyAttValue" Text="This type of attribute cannot have an empty value"/>
+            <Message Id="ElementAlreadyExists" Text="Element '{0}' has already been declared"/>
+            <Message Id="MultipleIdAttrs" Text="Element '{0}' has more than one ID attribute"/>
+            <Message Id="ReusedIDValue" Text="ID '{0}' has already been used"/>
+            <Message Id="IDNotDeclared" Text="ID attribute '{0}' was referenced but never declared"/>
+            <Message Id="UnknownNotRefAttr" Text="Attribute '{0}' refers to an unknown notation '{1}'"/>
+            <Message Id="UndeclaredElemInDocType" Text="Element '{0}' was used in the DOCTYPE but never declared"/>
+            <Message Id="EmptyNotValidForContent" Text="Empty content not valid for content model: '{0}'"/>
+            <Message Id="AttNotDefinedForElement" Text="Attribute '{0}' is not declared for element '{1}'"/>
+            <Message Id="BadEntityRefAttr" Text="The value '{0}' for attribute '{1}' of type ENTITY/ENTITIES must refer to an external, unparsed entity"/>
+            <Message Id="UnknownEntityRefAttr" Text="Attribute '{0}' refers to an unknown entity '{1}'"/>
+            <Message Id="ColonNotValidWithNS" Text="If namespaces are enabled, it's invalid for an attribute of type ID/IDREF/IDREFS/ENTITY/ENTITIES/NOTATION to contain a colon."/>
+            <Message Id="NotEnoughElemsForCM" Text="Not enough elements to match content model : '{0}'"/>
+            <Message Id="NoCharDataInCM" Text="No character data is allowed by content model"/>
+            <Message Id="DoesNotMatchEnumList" Text="The value '{0}' for attribute '{1}' does not match its defined enumeration or notation list"/>
+            <Message Id="AttrValNotName" Text="The value '{0}' for attribute '{1}' must be Name or Nmtoken"/>
+            <Message Id="NoMultipleValues" Text="Attribute '{0}' does not support multiple values"/>
+            <Message Id="NotSameAsFixedValue" Text="Attribute '{0}' has a value, '{1}', that does not match its #FIXED value, '{2}'"/>
+            <Message Id="RepElemInMixed" Text="Element types cannot be duplicated in Mixed content models"/>
+            <Message Id="NoValidatorFor" Text="No validator for datatype {0}"/>
+            <Message Id="IncorrectDatatype" Text="Incorrect datatype: {0}"/>
+            <Message Id="NotADatatype" Text="{0} is not a datatype."/>
+            <Message Id="TextOnlyContentWithType" Text="The content attribute must be 'textOnly' if you specify a type attribute."/>
+            <Message Id="FeatureUnsupported" Text="{0} is unsupported"/>
+            <Message Id="NestedOnlyInElemOnly" Text="Nested Element decls only allowed in elementOnly content"/>
+            <Message Id="EltRefOnlyInMixedElemOnly" Text="Element references only allowed in mixed or elementOnly content"/>
+            <Message Id="OnlyInEltContent" Text="{0} only allowed in elementOnly content."/>
+            <Message Id="OrderIsAll" Text="{0} not allowed if the order is all."/>
+            <Message Id="DatatypeWithType" Text="Datatype qualifiers can only be used if you specify a type attribute."/>
+            <Message Id="DatatypeQualUnsupported" Text="The datatype qualifier {0} is not supported."/>
+            <Message Id="GroupContentRestricted" Text="'{0}' is not allowed for the content of a '{1}' model group.  Only element, group, choice, sequence and any are allowed."/>
+            <Message Id="UnknownBaseDatatype" Text="Unknown base type {0} for type {1}."/>
+            <Message Id="OneOfTypeRefArchRef" Text="Can only have one of type and ref attributes."/>
+            <Message Id="NoContentForRef" Text="A &lt;{0}&gt; declaration that has a ref attribute, cannot have child content."/>
+            <Message Id="IncorrectDefaultType" Text="Incorrect type for {0}'s default value: {1}"/>
+            <Message Id="IllegalAttContent" Text="Illegal content {0} in attribute group"/>
+            <Message Id="ValueNotInteger" Text="Value of {0} is not an integer."/>
+            <Message Id="DatatypeError" Text="Datatype error: Type:{0}, Message:{1}."/>
+            <Message Id="SchemaError" Text="Schema error: Type:{0}, Message:{1}"/>
+            <Message Id="TypeAlreadySet" Text="The type of the element has already been declared."/>
+            <Message Id="ProhibitedAttributePresent" Text="Prohibited Attribute {0} is found."/>
+            <Message Id="IllegalXMLSpace" Text="Illegal xml:space declaration."/>
+            <Message Id="NotBoolean" Text="{0} is not a boolean."/>
+            <Message Id="NotDecimal" Text="{0} is not a decimal."/>
+            <Message Id="FacetsInconsistent" Text="Facets are inconsistent with base type."/>
+            <Message Id="IllegalFacetValue" Text="Illegal value {0} for facet {1}."/>
+            <Message Id="IllegalDecimalFacet" Text="Illegal Facet for decimal type."/>
+            <Message Id="UnknownFacet" Text="Unknown Facet: {0}."/>
+            <Message Id="InvalidEnumValue" Text="Invalid value for Enum constant: {0}."/>
+            <Message Id="OutOfBounds" Text="{0} is out of bounds:[ {1} {3} X  {4} {2} ]."/>
+            <Message Id="NotAnEnumValue" Text="{0} is not one of the specified enum values."/>
+            <Message Id="NotInteger" Text="{0} is not an integer."/>
+            <Message Id="IllegalIntegerFacet" Text="Illegal Facet for Integer type."/>
+            <Message Id="NotReal" Text="{0} is not a double."/>
+            <Message Id="IllegalRealFacet" Text="Illegal Facet for Real type."/>
+            <Message Id="ScaleLargerThanPrecision" Text="Scale Facet must be less than or equal to Precision Facet"/>
+            <Message Id="PrecisionExceeded" Text="{0} has exceeded the precision Facet {1}"/>
+            <Message Id="ScaleExceeded" Text="{0} has exceeded the scale Facet {1}"/>
+            <Message Id="NotFloat" Text="{0} is not a float."/>
+            <Message Id="SchemaRootError" Text="Can't get back Schema document's root element {0}."/>
+            <Message Id="WrongTargetNamespace" Text="Schema in {0} has a different target namespace from the one specified in the instance document {1}."/>
+            <Message Id="SimpleTypeHasChild" Text="In element {0}: Can not have element children within a simple type content."/>
+            <Message Id="NoDatatypeValidatorForSimpleType" Text="This element {0} has a simpletype but no datatype validator was found."/>
+            <Message Id="GrammarNotFound" Text="There is no Grammar for uri: {0}."/>
+            <Message Id="DisplayErrorMessage" Text="{0}"/>
+            <Message Id="NillNotAllowed" Text="xsi:nil must not be specified for the element {0} with nillable equals false"/>
+            <Message Id="NilAttrNotEmpty" Text="Element {0} with attribute xsi:nil=true must be empty"/>
+            <Message Id="FixedDifferentFromActual" Text="Content of element '{0}' is different from the fixed attribute value in the element's schema declaration."/>
+            <Message Id="NoDatatypeValidatorForAttribute" Text="No datatype validator was found for this attribute {0}."/>
+            <Message Id="GenericError" Text="Schema error during parsing"/>
+            <Message Id="ElementNotQualified" Text="Element '{0}' should be qualified"/>
+            <Message Id="ElementNotUnQualified" Text="Element '{0}' should be un-qualified"/>
+            <Message Id="VC_IllegalRefInStandalone" Text="Reference to external entity declaration '{0}' is not allowed in a standalone document."/>
+            <Message Id="NoDefAttForStandalone" Text="Attribute '{0}' for element '{1}' has a default value and must be specified in a standalone document."/>
+            <Message Id="NoAttNormForStandalone" Text="Attribute '{0}' must not be changed by normalization in a standalone document."/>
+            <Message Id="NoWSForStandalone" Text="White space must not occur between externally declared elements with element content in a standalone document."/>
+            <Message Id="VC_EntityNotFound" Text="Entity '{0}' was not found"/>
+            <Message Id="PartialMarkupInPE" Text="Partial markup in parameter entity replacement text."/>
+            <Message Id="DatatypeValidationFailure" Text="Failed to validate '{0}'"/>
+            <Message Id="UniqueParticleAttributionFail" Text="Complex type '{0}' violates the Unique Particle Attribution rule in its components '{1}' and '{2}'"/>
+            <Message Id="NoAbstractInXsiType" Text="Abstract type '{0}' should not be used in xsi:type"/>
+            <Message Id="NoDirectUseAbstractElement" Text="A member of abstract element {0} substitution group must be specified"/>
+            <Message Id="NoUseAbstractType" Text="Element {0} is declared with a type that is abstract.  Use xsi:type to specify a non-abstract type"/>
+            <Message Id="BadXsiType" Text="Unresolved type '{0}' found in xsi:type handling"/>
+            <Message Id="NonDerivedXsiType" Text="Type '{0}' that is used in xsi:type is not derived from the type of element '{1}'"/>
+            <Message Id="NoSubforBlock" Text="Element '{0}' has blocking constraint and does not permit substitution"/>
+            <Message Id="AttributeNotQualified" Text="Attribute '{0}' should be qualified"/>
+            <Message Id="AttributeNotUnQualified" Text="Attribute '{0}' should be un-qualified"/>
+            <Message Id="IC_FieldMultipleMatch" Text="Field matches more than one value within the scope of its selector; fields must match unique values"/>
+            <Message Id="IC_UnknownField" Text="Internal identity constraint error; unknown field."/>
+            <Message Id="IC_AbsentKeyValue" Text="Identity-constraint 4.2.1: element '{0}' has a key with no value."/>
+            <Message Id="IC_UniqueNotEnoughValues" Text="Not enough values specified for &lt;unique&gt; identity constraint for element '{0}'."/>
+            <Message Id="IC_KeyNotEnoughValues" Text="Not enough values specified for &lt;key name={1}&gt; identity constraint for element '{0}'."/>
+            <Message Id="IC_KeyRefNotEnoughValues" Text="Not enough values specified for &lt;keyref name={1}&gt; identity constraint for element '{0}'."/>
+            <Message Id="IC_KeyMatchesNillable" Text="Identity-constraint 4.2.3: element '{0}' has a key that matches an element that has nillable set to true."/>
+            <Message Id="IC_DuplicateUnique" Text="Duplicate unique value declared for identity constraint of element '{0}'."/>
+            <Message Id="IC_DuplicateKey" Text="Duplicate key value declared for identity constraint of element '{0}'."/>
+            <Message Id="IC_KeyRefOutOfScope" Text="The keyref '{0}' refers to a key/unique that is out of scope."/>
+            <Message Id="IC_KeyNotFound" Text="The key for identity constraint of element '{0}' is not found."/>
+            <Message Id="NonWSContent" Text="Non-whitespace characters are not allowed in schema elements other than 'appinfo' and 'documentation'."/>
+            <Message Id="EmptyElemNotationAttr" Text="EMPTY Element '{0}' has Attribute '{1}' of type NOTATION "/>
+            <Message Id="EmptyElemHasContent"   Text="EMPTY Element '{0}' can't have content(not even entity references, comments, PIs or white space). "/>
+            <Message Id="ElemOneNotationAttr"   Text="Element '{0}' has more than one Attribute of type NOTATION "/>
+            <Message Id="AttrDupToken"          Text="Attribute '{0}' has non distinct token '{1}' "/>
+            <Message Id="ElemChildrenHasInvalidWS"   Text="Element '{0}' 's content model(children) does not allow escaped white space. "/>
+        </Error>
+    </MsgDomain>
+    <MsgDomain Domain="http://apache.org/xml/messages/XML4CErrors">
+        <Warning>
+            <Message Id="Scan_CouldNotOpenSource_Warning" Text="Warning: The primary document entity could not be opened. Id={0}"/>
+            <Message Id="GC_ExistingGrammar" Text="Warning: No caching of grammar set, a grammar with same key found in the cache pool."/>
+        </Warning>
+        <FatalError>
+            <Message Id="Array_BadIndex" Text="The index is beyond the array bounds "/>
+            <Message Id="Array_BadNewSize" Text="The new size is less than the old one"/>
+            <Message Id="AttrList_BadIndex" Text="The index given was beyond the max attribute index"/>
+            <Message Id="AttDef_BadAttType" Text="The passed AttTypes value is not known"/>
+            <Message Id="AttDef_BadDefAttType" Text="The passed DefAttTypes value is not known"/>
+            <Message Id="Bitset_BadIndex" Text="The bit index was beyond the set size"/>
+            <Message Id="Bitset_NotEqualSize" Text="The bit sets are not of the same size"/>
+            <Message Id="BufMgr_NoMoreBuffers" Text="The buffer manager cannot provide any more buffers"/>
+            <Message Id="BufMgr_BufferNotInPool" Text="The passed buffer was not found in this manager's pool"/>
+            <Message Id="CPtr_PointerIsZero" Text="The pointer has not been set"/>
+            <Message Id="CM_BinOpHadUnaryType" Text="The binary operation node had a unary node type"/>
+            <Message Id="CM_MustBeMixedOrChildren" Text="The content type must be mixed or children"/>
+            <Message Id="CM_NoPCDATAHere" Text="PCDATA nodes are not valid here"/>
+            <Message Id="CM_NotValidForSpecType" Text="The {0} operation is invalid for the spec type"/>
+            <Message Id="CM_UnaryOpHadBinType" Text="The unary operation node had a binary node type"/>
+            <Message Id="CM_UnknownCMType" Text="Unknown content model type"/>
+            <Message Id="CM_UnknownCMSpecType" Text="Unknown content spec type"/>
+            <Message Id="CM_NoParentCSN" Text="The parent element has no content spec node"/>
+            <Message Id="CM_NotValidSpecTypeForNode" Text="The spec type is not valid for {0}"/>
+            <Message Id="DTD_UnknownCreateReason" Text="The creation reason enum has an unknown value"/>
+            <Message Id="ElemStack_EmptyStack" Text="The element stack is empty"/>
+            <Message Id="ElemStack_BadIndex" Text="The element stack index given was beyond the stack top"/>
+            <Message Id="ElemStack_StackUnderflow" Text="The element stack was already empty when a pop request occurred"/>
+            <Message Id="ElemStack_NoParentPushed" Text="A parent operation was requested, but only one element is on the stack"/>
+            <Message Id="Enum_NoMoreElements" Text="The enumerator contains no more elements"/>
+            <Message Id="File_CouldNotOpenFile" Text="Could not open file: {0}"/>
+            <Message Id="File_CouldNotGetCurPos" Text="Could not query the current file position"/>
+            <Message Id="File_CouldNotCloseFile" Text="Could not close the file"/>
+            <Message Id="File_CouldNotSeekToEnd" Text="Could not seek to end of file"/>
+            <Message Id="File_CouldNotSeekToPos" Text="Could not seek to required position in file"/>
+            <Message Id="File_CouldNotDupHandle" Text="Could not duplicate the handle"/>
+            <Message Id="File_CouldNotReadFromFile" Text="Could not read data from file"/>
+            <Message Id="File_CouldNotWriteToFile"  Text="Could not write data to file"/>
+            <Message Id="File_CouldNotResetFile" Text="Could not reset file to beginning"/>
+            <Message Id="File_CouldNotGetSize" Text="Could not ascertain the file size"/>
+            <Message Id="File_CouldNotGetBasePathName" Text="Could not determine base pathname of the file"/>
+            <Message Id="File_BasePathUnderflow" Text="The base path had too few levels to weave in relative part"/>
+            <Message Id="Gen_ParseInProgress" Text="Parse may not be called while parsing"/>
+            <Message Id="Gen_NoDTDValidator" Text="A DOCTYPE was seen but the installed validator does not understand DTDs"/>
+            <Message Id="Gen_CouldNotOpenDTD" Text="Could not open DTD file '{0}'"/>
+            <Message Id="Gen_CouldNotOpenExtEntity" Text="Could not open external entity '{0}'"/>
+            <Message Id="Gen_UnexpectedEOF" Text="The end of input was not expected"/>
+            <Message Id="HshTbl_ZeroModulus" Text="The hash modulus cannot be zero"/>
+            <Message Id="HshTbl_BadHashFromKey" Text="Hashing the key returned an invalid bad hash value"/>
+            <Message Id="HshTbl_NoSuchKeyExists" Text="The key could not be found in the hash table"/>
+            <Message Id="Mutex_CouldNotCreate" Text="Could not create mutex"/>
+            <Message Id="Mutex_CouldNotClose" Text="Could not close mutex"/>
+            <Message Id="Mutex_CouldNotLock" Text="Could not lock mutex"/>
+            <Message Id="Mutex_CouldNotUnlock" Text="Could not unlock mutex"/>
+            <Message Id="Mutex_CouldNotDestroy" Text="Could not destroy mutex"/>
+            <Message Id="NetAcc_InternalError" Text="Internal Error on NetAccessor"/>
+            <Message Id="NetAcc_LengthError" Text="Error on NetAccessor. Cannot determine length of remote file"/>
+            <Message Id="NetAcc_InitFailed" Text="The NetAccessor could not be initialized."/>
+            <Message Id="NetAcc_TargetResolution" Text="The host/address '{0}' could not be resolved"/>
+            <Message Id="NetAcc_CreateSocket" Text="Could not create the socket for URL '{0}'"/>
+            <Message Id="NetAcc_ConnSocket" Text="Could not connect to the socket for URL '{0}'"/>
+            <Message Id="NetAcc_WriteSocket" Text="Could not write to the socket for URL '{0}'"/>
+            <Message Id="NetAcc_ReadSocket" Text="Could not read from the socket for URL '{0}'"/>
+            <Message Id="NetAcc_UnsupportedMethod" Text="The specified HTTP method is not supported by this NetAccessor."/>
+            <Message Id="Pool_ElemAlreadyExists" Text="The element {0} already exists"/>
+            <Message Id="Pool_BadHashFromKey" Text="Hashing the key returned an invalid bad hash value"/>
+            <Message Id="Pool_InvalidId" Text="The passed id is not valid for this pool"/>
+            <Message Id="Pool_ZeroModulus" Text="The modulus value cannot be zero"/>
+            <Message Id="RdrMgr_ReaderIdNotFound" Text="The indicated reader id was never found"/>
+            <Message Id="Reader_BadAutoEncoding" Text="The auto encoding enum has an unknown value"/>
+            <Message Id="Reader_CouldNotDecodeFirstLine" Text="Could not decode first line of entity: {0}"/>
+            <Message Id="Reader_NelLsepinDecl" Text="XMLDecl or TextDecl can not have NEL or lsep: {0}"/>            
+            <Message Id="Reader_EOIInMultiSeq" Text="End of input was hit in the middle of a multibyte sequence"/>
+            <Message Id="Reader_SrcOfsNotSupported" Text="The current transcoding service does not support source offset information"/>
+            <Message Id="Reader_EncodingStrRequired" Text="EBCDIC files must provide an encoding= string"/>
+            <Message Id="Scan_CouldNotOpenSource" Text="The primary document entity could not be opened. Id={0}"/>
+            <Message Id="Scan_UnbalancedStartEnd" Text="Unbalanced start/end tags found, cannot continue"/>
+            <Message Id="Scan_BadPScanToken" Text="The call to scanNext() is illegal at this time"/>
+            <Message Id="Stack_BadIndex" Text="The index is past the top of stack"/>
+            <Message Id="Stack_EmptyStack" Text="The stack is empty, cannot access members"/>
+            <Message Id="Str_ZeroSizedTargetBuf" Text="The target buffer cannot have a max size of zero"/>
+            <Message Id="Str_UnknownRadix" Text="The given radix is not supported. Use 2, 8, 10, or 16"/>
+            <Message Id="Str_TargetBufTooSmall" Text="The target buffer is too small to accept the results"/>
+            <Message Id="Str_StartIndexPastEnd" Text="The start index is past the end of the string"/>
+            <Message Id="Str_ConvertOverflow" Text="The represented value overflowed the output binary result"/>
+            <Message Id="Strm_StdErrWriteFailure" Text="Could not write to standard err"/>
+            <Message Id="Strm_StdOutWriteFailure" Text="Could not write to standard out"/>
+            <Message Id="Strm_ConWriteFailure" Text="Could not write to console"/>
+            <Message Id="StrPool_IllegalId" Text="String pool id was not legal"/>
+            <Message Id="Trans_CouldNotCreateDefCvtr" Text="Could not create a default transcoder"/>
+            <Message Id="Trans_InvalidSizeReq" Text="The maximum size to xlat is larger than the declared block size"/>
+            <Message Id="Trans_Unrepresentable" Text="Unicode char 0x{0} is not representable in encoding {1}"/>
+            <Message Id="Trans_NotValidForEncoding" Text="Character {0} is not valid for encoding {1}"/>
+            <Message Id="Trans_BadBlockSize" Text="The requested block size is not equal to the size set during construction"/>
+            <Message Id="Trans_BadSrcSeq" Text="An invalid multi-byte source text sequence was encountered"/>
+            <Message Id="Trans_BadSrcCP" Text="{0} is not a valid value for encoding {1}"/>
+            <Message Id="Trans_BadTrailingSurrogate" Text="Leading surrogate was not followed by trailing"/>
+            <Message Id="Trans_CantCreateCvtrFor" Text="Could not create a converter for encoding: {0}"/>
+            <Message Id="URL_MalformedURL" Text="The URL was not correctly formed"/>
+            <Message Id="URL_UnsupportedProto" Text="The URL used an unsupported protocol"/>
+            <Message Id="URL_UnsupportedProto1" Text="Unsupported URL protocol: '{0}'"/>
+            <Message Id="URL_OnlyLocalHost" Text="Only localhost is supported at this time"/>
+            <Message Id="URL_NoProtocolPresent" Text="No protocol prefix present"/>
+            <Message Id="URL_ExpectingTwoSlashes" Text="Expected // after protocol"/>
+            <Message Id="URL_IncorrectEscapedCharRef" Text="% must be followed by two hex digits"/>
+            <Message Id="URL_UnterminatedHostComponent" Text="Unterminated host component"/>
+            <Message Id="URL_RelativeBaseURL" Text="The base part of the URL cannot be relative"/>
+            <Message Id="URL_BaseUnderflow" Text="The base part has too few levels to weave in relative part"/>
+            <Message Id="URL_BadPortField" Text="The port field must be a 16 bit decimal number"/>
+            <Message Id="UTF8_FormatError"         Text="invalid byte {0} ({1}) of a {2}-byte sequence."/>
+            <Message Id="UTF8_Invalid_2BytesSeq"   Text="invalid byte {0} of 2-byte sequence."/>
+            <Message Id="UTF8_Invalid_3BytesSeq"   Text="invalid bytes {0}, {1} of 3-byte sequence."/>
+            <Message Id="UTF8_Irregular_3BytesSeq" Text="irregular bytes {0}, {1} of 3-byte sequence."/>
+            <Message Id="UTF8_Invalid_4BytesSeq"   Text="invalid bytes {0}, {1} of 4-byte sequence."/>
+            <Message Id="UTF8_Exceede_BytesLimit"  Text="Exceede bytes limits {0}, {1}-byte sequence."/>
+            <Message Id="Vector_BadIndex" Text="The passed index is past the end of the vector"/>
+            <Message Id="Val_InvalidElemId" Text="The element id was invalid"/>
+            <Message Id="Val_CantHaveIntSS" Text="When reusing the Grammar, no internal subset is allowed"/>
+            <Message Id="XMLRec_UnknownEncoding" Text="The passed recognizer encoding was not known"/>
+            <Message Id="Parser_Parse1" Text="The parser found an illegal character at offset {0} in the regular expression '{1}'."/>
+            <Message Id="Parser_Parse2" Text="Invalid reference number"/>
+            <Message Id="Parser_Next1" Text="A character is required after \"/>
+            <Message Id="Parser_Next2" Text="'?' is not expected.  '(?:' or '(?=' or '(?!' or '(?&lt;' or '(?#' or '(?&gt;'?"/>
+            <Message Id="Parser_Next3" Text="'(?&lt;=' or '(?&lt;!' is expected"/>
+            <Message Id="Parser_Next4" Text="A comment is not terminated"/>
+            <Message Id="Parser_Factor1" Text="')' is expected"/>
+            <Message Id="Parser_Factor2" Text="Unexpected end of the pattern in a modifier group"/>
+            <Message Id="Parser_Factor3" Text="':' is expected"/>
+            <Message Id="Parser_Factor4" Text="Unexpected end of the pattern in a conditional group"/>
+            <Message Id="Parser_Factor5" Text="A back reference or an anchor or a lookahead or a lookbehind is expected in a conditional pattern"/>
+            <Message Id="Parser_Factor6" Text="There are more than three choices in a conditional group"/>
+            <Message Id="Parser_Atom1" Text="A character in U+0040-U+005f must follow \c"/>
+            <Message Id="Parser_Atom2" Text="A '{' is required before a category character."/>
+            <Message Id="Parser_Atom3" Text="A property name is not closed by '}'"/>
+            <Message Id="Parser_Atom4" Text="Unexpected meta character"/>
+            <Message Id="Parser_Atom5" Text="Unknown property"/>
+            <Message Id="Parser_CC1" Text="A POSIX character class must be closed by ':]'"/>
+            <Message Id="Parser_CC2" Text="Unexpected end of the pattern in a character class"/>
+            <Message Id="Parser_CC3" Text="Unknown name for a POSIX character class"/>
+            <Message Id="Parser_CC4" Text="'-' is invalid here"/>
+            <Message Id="Parser_CC5" Text="']' is expected"/>
+            <Message Id="Parser_CC6" Text="'{0}' is not a valid character range; use '\{1}' instead"/>
+            <Message Id="Parser_Ope1" Text="='[' is expected"/>
+            <Message Id="Parser_Ope2" Text="')' or '-[' or '+[' or '&amp;[' is expected"/>
+            <Message Id="Parser_Ope3" Text="The range end code point '{0}' is less than the start code point '{1}'"/>
+            <Message Id="Parser_Descape1" Text="Invalid Unicode hex notation"/>
+            <Message Id="Parser_Descape2" Text="Overflow in a hex notation"/>
+            <Message Id="Parser_Descape3" Text="'\ x{' must be closed by '}'"/>
+            <Message Id="Parser_Descape4" Text="Invalid Unicode code point"/>
+            <Message Id="Parser_Descape5" Text="An anchor must not be here"/>
+            <Message Id="Parser_Process1" Text="This expression is not supported in the current option setting"/>
+            <Message Id="Parser_Process2" Text="'{0}' is not a valid character escape"/>
+            <Message Id="Parser_Quantifier1" Text="Invalid quantifier in '{0}'. A digit is expected"/>
+            <Message Id="Parser_Quantifier2" Text="Invalid quantifier in '{0}'. Invalid quantity or a '}' is missing"/>
+            <Message Id="Parser_Quantifier3" Text="Invalid quantifier in '{0}'. A digit or '}' is expexted"/>
+            <Message Id="Parser_Quantifier4" Text="Invalid quantifier in '{0}'. A min quantity must be &lt;= a max quantity"/>
+            <Message Id="Parser_Quantifier5" Text="Invalid quantifier in '{0}'. A quantity value overflow"/>
+            <Message Id="Gen_NoSchemaValidator" Text="A schema was seen but the installed validator does not understand schema"/>
+            <Message Id="XUTIL_UnCopyableNodeType" Text="The {0} node type is not valid for copy"/>
+            <Message Id="SubGrpComparator_NGR" Text="SubstitutionGroupComparator has no grammar resolver"/>
+            <Message Id="FACET_Invalid_Len" Text="Length Value '{0}' is invalid"/>
+            <Message Id="FACET_Invalid_maxLen" Text="maxLength Value '{0}' is invalid"/>
+            <Message Id="FACET_Invalid_minLen" Text="minLength Value '{0}' is invalid"/>
+            <Message Id="FACET_NonNeg_Len" Text="Length Value '{0}' must be a nonNegativeInteger"/>
+            <Message Id="FACET_NonNeg_maxLen" Text="maxLength Value '{0}' must be a nonNegativeInteger"/>
+            <Message Id="FACET_NonNeg_minLen" Text="minLength Value '{0}' must be a nonNegativeInteger"/>
+            <Message Id="FACET_Len_maxLen" Text="It is an error for both length and maxLength to be members of facets"/>
+            <Message Id="FACET_Len_minLen" Text="It is an error for both length and minLength to be members of facets"/>
+            <Message Id="FACET_maxLen_minLen" Text="Value of maxLength '{0}' must be greater than the value of minLength '{1}'"/>
+            <Message Id="FACET_bool_Pattern" Text="Only constraining facet in boolean datatype is PATTERN"/>
+            <Message Id="FACET_Invalid_Tag" Text="Invalid Facet Tag '{0}'"/>
+            <Message Id="FACET_Len_baseLen" Text="Value of Length '{0}' must be equal to the base Length '{1}'"/>
+            <Message Id="FACET_minLen_baseminLen" Text="Value of minLength '{0}' must be greater than or equal to the base minLength '{1}'"/>
+            <Message Id="FACET_minLen_basemaxLen" Text="Value of minLength '{0}' must be less than or equal to the base maxLength '{1}'"/>
+            <Message Id="FACET_maxLen_basemaxLen" Text="Value of maxLength '{0}' must be less than or equal to the base maxLength '{1}'"/>
+            <Message Id="FACET_maxLen_baseminLen" Text="Value of maxLength '{0}' must be greater than or equal to the base minLength '{1}'"/>
+            <Message Id="FACET_Len_baseMinLen" Text="Value of Length '{0}' must be greater than or equal to the base minLength '{1}'"/>
+            <Message Id="FACET_Len_baseMaxLen" Text="Value of Length '{0}' must be less than or equal to the base maxLength '{1}'"/>
+            <Message Id="FACET_minLen_baseLen" Text="Value of minLength '{0}' must be less than or equal to the base Length '{1}'"/>
+            <Message Id="FACET_maxLen_baseLen" Text="Value of maxLength '{0}' must be greater than or equal to the base Length '{1}'"/>
+            <Message Id="FACET_enum_base" Text="Value of enumeration = '{0}' must be from the value space of base"/>
+            <Message Id="FACET_Invalid_WS" Text="Value of whitespace '{0}' must be one of 'preserve', 'replace', 'collapse'"/>
+            <Message Id="FACET_WS_collapse" Text="It is an error if whiteSpace = 'preserve' or 'replace' and base.whiteSpace = 'collapse'."/>
+            <Message Id="FACET_WS_replace" Text="It is an error if whiteSpace = 'preserve' and base.whiteSpace = 'replace'."/>
+            <Message Id="FACET_Invalid_MaxIncl" Text="MaxInclusive '{0}' is invalid"/>
+            <Message Id="FACET_Invalid_MaxExcl" Text="MaxExclusive '{0}' is invalid"/>
+            <Message Id="FACET_Invalid_MinIncl" Text="MinInclusive '{0}' is invalid"/>
+            <Message Id="FACET_Invalid_MinExcl" Text="MinExclusive '{0}' is invalid"/>
+            <Message Id="FACET_Invalid_TotalDigit" Text="TotalDigit Value '{0}' is invalid"/>
+            <Message Id="FACET_Invalid_FractDigit" Text="FractionDigit Value '{0}' is invalid"/>
+            <Message Id="FACET_PosInt_TotalDigit" Text="TotalDigit Value '{0}' must be a PositiveInteger"/>
+            <Message Id="FACET_NonNeg_FractDigit" Text="FractionDigit Value '{0}' must be a nonNegativeInteger"/>
+            <Message Id="FACET_max_Incl_Excl" Text="It is an error for both maxInclusive and maxExclusive to be specified for the same datatype"/>
+            <Message Id="FACET_min_Incl_Excl" Text="It is an error for both minInclusive and minExclusive to be specified for the same datatype"/>
+            <Message Id="FACET_maxExcl_minExcl" Text="maxExclusive value '{0}' must be greater than minExclusive value '{1}'"/>
+            <Message Id="FACET_maxExcl_minIncl" Text="maxExclusive value '{0}' must be greater than minInclusive value '{1}'"/>
+            <Message Id="FACET_maxIncl_minExcl" Text="maxInclusive value '{0}' must be greater than minExclusive value '{1}'"/>
+            <Message Id="FACET_maxIncl_minIncl" Text="maxInclusive value '{0}' must be greater than minInclusive value '{1}'"/>
+            <Message Id="FACET_TotDigit_FractDigit" Text="TotalDigit value '{0}' must be greater than FractionDigit value '{1}'"/>
+            <Message Id="FACET_maxIncl_base_maxExcl" Text="maxInclusive value '{0}' must be less than base's maxExclusive value '{1}'"/>
+            <Message Id="FACET_maxIncl_base_maxIncl" Text="maxInclusive value '{0}' must be less than or equal to base's maxInclusive value '{1}'"/>
+            <Message Id="FACET_maxIncl_base_minIncl" Text="maxInclusive value '{0}' must be greater than or equal to base's minInclusive value '{1}'"/>
+            <Message Id="FACET_maxIncl_base_minExcl" Text="maxInclusive value '{0}' must be greater than base's minExclusive value '{1}'"/>
+            <Message Id="FACET_maxExcl_base_maxExcl" Text="maxExclusive value '{0}' must be less than or equal to base's maxExclusive value '{1}'"/>
+            <Message Id="FACET_maxExcl_base_maxIncl" Text="maxExclusive value '{0}' must be less than or equal to base's maxInclusive value '{1}'"/>
+            <Message Id="FACET_maxExcl_base_minIncl" Text="maxExclusive value '{0}' must be greater than base's minInclusive value '{1}'"/>
+            <Message Id="FACET_maxExcl_base_minExcl" Text="maxExclusive value '{0}' must be greater than base's minExclusive value '{1}'"/>			
+            <Message Id="FACET_minExcl_base_maxExcl" Text="minExclusive value '{0}' must be less than base's maxExclusive value '{1}'"/>
+            <Message Id="FACET_minExcl_base_maxIncl" Text="minExclusive value '{0}' must be less than or equal to base's maxInclusive value '{1}'"/>
+            <Message Id="FACET_minExcl_base_minIncl" Text="minExclusive value '{0}' must be greater than base's minInclusive value '{1}'"/>
+            <Message Id="FACET_minExcl_base_minExcl" Text="minExclusive value '{0}' must be greater than base's minExclusive value '{1}'"/>
+            <Message Id="FACET_minIncl_base_maxExcl" Text="minInclusive value '{0}' must be less than base's maxExclusive value '{1}'"/>
+            <Message Id="FACET_minIncl_base_maxIncl" Text="minInclusive value '{0}' must be less than or equal to base's maxInclusive value '{1}'"/>
+            <Message Id="FACET_minIncl_base_minIncl" Text="minInclusive value '{0}' must be greater than or equal to base's minInclusive value '{1}'"/>
+            <Message Id="FACET_minIncl_base_minExcl" Text="minInclusive value '{0}' must be greater than base's minExclusive value '{1}'"/>
+            <Message Id="FACET_maxIncl_notFromBase" Text="maxInclusive value '{0}' must be from the base's value space"/>
+            <Message Id="FACET_maxExcl_notFromBase" Text="maxExclusive value '{0}' must be from the base's value space"/>
+            <Message Id="FACET_minIncl_notFromBase" Text="minInclusive value '{0}' must be from the base's value space"/>
+            <Message Id="FACET_minExcl_notFromBase" Text="minExclusive value '{0}' must be from the base's value space"/>
+            <Message Id="FACET_totalDigit_base_totalDigit" Text="totalDigit value '{0}' must be less than or equal to base's totalDigit value '{1}'"/>
+            <Message Id="FACET_fractDigit_base_totalDigit" Text="fractDigit value '{0}' must be less than or equal to base's totalDigit value '{1}'"/>
+            <Message Id="FACET_fractDigit_base_fractDigit" Text="fractDigit value '{0}' must be less than or equal to base's fractDigit value '{1}'"/>
+            <Message Id="FACET_maxIncl_base_fixed" Text="maxInclusive '{0}' must be equal to base's maxInclusive '{1}' , fixed"/>
+            <Message Id="FACET_maxExcl_base_fixed" Text="maxExclusive '{0}' must be equal to base's maxExclusive '{1}' , fixed"/>
+            <Message Id="FACET_minIncl_base_fixed" Text="minInclusive '{0}' must be equal to base's minInclusive '{1}' , fixed"/>
+            <Message Id="FACET_minExcl_base_fixed" Text="minExclusive '{0}' must be equal to base's minExclusive '{1}' , fixed"/>
+            <Message Id="FACET_totalDigit_base_fixed" Text="totalDigit '{0}' must be equal to base's totalDigit '{1}'  , fixed"/>
+            <Message Id="FACET_fractDigit_base_fixed" Text="fractDigit '{0}' must be equal to base's fractDigit '{1}' , fixed"/>
+            <Message Id="FACET_maxLen_base_fixed" Text="maxLen '{0}' must be equal to base's maxLen '{1}' , fixed"/>
+            <Message Id="FACET_minLen_base_fixed" Text="minLen '{0}' must be equal to base's minLen '{1}' , fixed"/>
+            <Message Id="FACET_len_base_fixed" Text="len '{0}' must be equal to base's len '{1}' , fixed"/>
+            <Message Id="FACET_whitespace_base_fixed" Text="whitespace '{0}' must be equal to base's whitespace '{1}' , fixed"/>
+            <Message Id="FACET_internalError_fixed" Text="internal Error: fixed"/>		
+            <Message Id="FACET_List_Null_baseValidator" Text="simpleType list's 'itemType' is empty."/>
+            <Message Id="FACET_Union_Null_memberTypeValidators" Text="simpleType union's 'memberTypes' is empty."/>
+            <Message Id="FACET_Union_Null_baseValidator" Text="simpleType restriction's union 'base' is empty."/>
+            <Message Id="FACET_Union_invalid_baseValidatorType" Text="simpleType restriction's union 'base' type is '{0}' instead of union."/>
+            <Message Id="VALUE_NotMatch_Pattern" Text="Value '{0}' does not match regular expression facet '{1}'"/>
+            <Message Id="VALUE_Not_Base64" Text="Value '{0}' is not encoded in Base64 "/>
+            <Message Id="VALUE_Not_HexBin" Text="Value '{0}' is not encoded in HexBin "/>
+            <Message Id="VALUE_GT_maxLen" Text="Value '{0}' with length '{1}' exceeds maximum length facet of '{2}' "/>
+            <Message Id="VALUE_LT_minLen" Text="Value '{0}' with length '{1}' is less than minimum length facet of '{2}' "/>
+            <Message Id="VALUE_NE_Len" Text="Value '{0}' with length '{1}' is not equal to length facet of '{2}' "/>
+            <Message Id="VALUE_NotIn_Enumeration" Text="Value '{0}' is not in enumeration "/>
+            <Message Id="VALUE_exceed_totalDigit" Text="Value '{0}' with total digits '{1}' exceeds total digit facet of '{2}' "/>
+            <Message Id="VALUE_exceed_fractDigit" Text="Value '{0}' with fraction digits '{1}' exceeds fraction digit facet of '{2}' "/>
+            <Message Id="VALUE_exceed_maxIncl" Text="Value '{0}' must be less than or equal to MaxInclusive '{1}' "/>
+            <Message Id="VALUE_exceed_maxExcl" Text="Value '{0}' must be less than MaxExclusive '{1}' "/>
+            <Message Id="VALUE_exceed_minIncl" Text="Value '{0}' must be greater than or equal to MinInclusive '{1}' "/>
+            <Message Id="VALUE_exceed_minExcl" Text="Value '{0}' must be greater than MinExclusive '{1}' "/>
+            <Message Id="VALUE_WS_replaced" Text="Value '{0}' is not whitespace replaced "/>
+            <Message Id="VALUE_WS_collapsed" Text="Value '{0}' is not a whitespace collapsed "/>
+            <Message Id="VALUE_Invalid_NCName" Text="Value '{0}' is not valid NCName "/>
+            <Message Id="VALUE_Invalid_Name" Text="Value '{0}' is not valid '{1}' "/>
+            <Message Id="VALUE_ID_Not_Unique" Text="ID '{0}' is not unique "/>
+            <Message Id="VALUE_ENTITY_Invalid" Text="Value '{0}' is not valid ENTITY "/>
+            <Message Id="VALUE_QName_Invalid" Text="Value '{0}' is not valid QName "/>
+            <Message Id="VALUE_NOTATION_Invalid" Text="NOTATION '{0}' must be a valid QName "/>
+            <Message Id="VALUE_no_match_memberType" Text="Value '{0}' does not match any member types (of the union) "/>
+            <Message Id="VALUE_URI_Malformed" Text="Value '{0}' is NOT a valid URI "/>
+            <Message Id="XMLNUM_emptyString" Text=" Empty string encountered."/>
+            <Message Id="XMLNUM_WSString" Text=" String contains whitespaces only."/>
+            <Message Id="XMLNUM_2ManyDecPoint" Text=" More than one decimal points encountered."/>
+            <Message Id="XMLNUM_Inv_chars" Text=" Invalid chars encountered."/>
+            <Message Id="XMLNUM_null_ptr" Text=" Null pointer encountered."/>
+            <Message Id="XMLNUM_URI_Component_Empty" Text=" Cannot construct URI with null/empty '{0}' "/>
+            <Message Id="XMLNUM_URI_Component_for_GenURI_Only" Text=" '{0}', '{1}' can only be set for a generic URI! "/>
+            <Message Id="XMLNUM_URI_Component_Invalid_EscapeSequence" Text=" '{0}' contains invalid escape sequence '{1}'"/>
+            <Message Id="XMLNUM_URI_Component_Invalid_Char" Text=" '{0}' contains invalid char '{1}'"/>
+            <Message Id="XMLNUM_URI_Component_Set_Null" Text=" '{0}' can not be set to null "/>
+            <Message Id="XMLNUM_URI_Component_Not_Conformant" Text=" '{0}' is NOT conformance '{1}' "/>
+            <Message Id="XMLNUM_URI_No_Scheme" Text=" No scheme found in URI"/>
+            <Message Id="XMLNUM_URI_NullHost" Text=" '{0}', '{1}' may not be specified if host is not specified "/>
+            <Message Id="XMLNUM_URI_NullPath" Text=" '{0}', '{1}' may not be specified if path is not specified "/>
+            <Message Id="XMLNUM_URI_Component_inPath" Text=" '{0}', '{1}' cannot be specified in path"/>
+            <Message Id="XMLNUM_URI_PortNo_Invalid" Text=" Port no '{0}' shall be in (0, 65535) "/>
+            <Message Id="XMLNUM_DBL_FLT_maxNeg" Text=" Value '{0}' shall be greater than the max Negative value '{1}' "/>
+            <Message Id="XMLNUM_DBL_FLT_maxPos" Text=" Value '{0}' shall be less than the max Negative value '{1}' "/>
+            <Message Id="XMLNUM_DBL_FLT_minNegPos" Text=" Value '{0}' shall be in the range of '{1}', '{2}' "/>
+            <Message Id="XMLNUM_DBL_FLT_InvalidType" Text=" Type '{0}' is invalid: internal error "/>
+            <Message Id="XMLNUM_DBL_FLT_No_Exponent" Text=" Value '{0}' shall have exponent. "/>
+            <Message Id="Regex_Result_Not_Set" Text="A result is not set."/>
+            <Message Id="Regex_CompactRangesError" Text="CompactRanges - Internal Error"/>
+            <Message Id="Regex_MergeRangesTypeMismatch" Text="Merge Ranges - Mismatched type"/>
+            <Message Id="Regex_SubtractRangesError" Text="SubtractRanges - Internal Error"/>
+            <Message Id="Regex_IntersectRangesError" Text="IntersectRanges - Internal Error"/>
+            <Message Id="Regex_ComplementRangesInvalidArg" Text="ComplementRanges - Argument must be a RangeToken"/>
+            <Message Id="Regex_InvalidCategoryName" Text="Invalid category name: {0}"/>
+            <Message Id="Regex_KeywordNotFound" Text="Keyword '{0}' not found"/>
+            <Message Id="Regex_BadRefNo" Text="Reference no must be more than zero"/>
+            <Message Id="Regex_UnknownOption" Text="Unknown option: {0}"/>
+            <Message Id="Regex_UnknownTokenType" Text="Unknown token type"/>
+            <Message Id="Regex_RangeTokenGetError" Text="Failed to get RangeToken for: {0}"/>
+            <Message Id="Regex_NotSupported" Text="Not supported"/>
+            <Message Id="Regex_InvalidChildIndex" Text="Invalid child index"/>
+            <Message Id="Regex_RepPatMatchesZeroString" Text="Replace pattern cannot match zero length string"/>
+            <Message Id="Regex_InvalidRepPattern" Text="Invalid replace pattern"/>
+            <Message Id="NEL_RepeatedCalls" Text="Enabling the NEL option can only be called once per process."/>
+            <Message Id="RethrowError" Text="{0}"/>
+            <Message Id="Out_Of_Memory" Text="operator new fails.  Possibly running Of memory"/>
+            <Message Id="DV_InvalidOperation" Text="Operation is not allowed"/>
+            <Message Id="XPath_NoAttrSelector" Text="Selectors cannot select attributes"/>
+            <Message Id="XPath_NoUnionAtStart" Text="Not allowed to have '|' at the beginning of an xpath value"/>
+            <Message Id="XPath_NoMultipleUnion" Text="Not allowed to have '||' in an xpath value"/>
+            <Message Id="XPath_MissingAttr" Text="Missing attribute name in xpath"/>
+            <Message Id="XPath_ExpectedToken1" Text="Expected xpath token 'NAMETEST_QNAME' or 'NAMETEST_ANY' or 'NAMETEST_NAMESPACE'"/>
+            <Message Id="XPath_PrefixNoURI" Text="Prefix '{0}' not bound to namespace URI in an xpath value"/>
+            <Message Id="XPath_NoDoubleColon" Text="Not allowed to have double colon in the xpath expression"/>
+            <Message Id="XPath_ExpectedStep1" Text="Expected step following token 'AXISNAME_CHILD::'"/>
+            <Message Id="XPath_ExpectedStep2" Text="Expected step following '//' in xpath"/>
+            <Message Id="XPath_ExpectedStep3" Text="Expected step following '/' in xpath"/>
+            <Message Id="XPath_NoForwardSlash" Text="'/' not allowed after '//' in xpath"/>
+            <Message Id="XPath_NoDoubleForwardSlash" Text="'//' only allowed after '.' at the beginning of an xpath"/>
+            <Message Id="XPath_NoForwardSlashAtStart" Text="Not allowed to have '/' at the beginning of an xpath value"/>
+            <Message Id="XPath_NoSelectionOfRoot" Text="Not allowed to select the root of an xpath"/>
+            <Message Id="XPath_EmptyExpr" Text="Empty xpath expression"/>
+            <Message Id="XPath_NoUnionAtEnd" Text="The xpath expression cannot end with '|'"/>
+            <Message Id="XPath_InvalidChar" Text="Invalid character '{0}' in xpath"/>
+            <Message Id="XPath_TokenNotSupported" Text="XPath token not supported"/>
+            <Message Id="XPath_FindSolution" Text="Find a solution!"/>
+            <Message Id="DateTime_Assert_Buffer_Fail" Text="buffer not initialized yet!"/>
+            <Message Id="DateTime_dt_missingT"        Text="'T' is missing! '{0}' "/>
+            <Message Id="DateTime_gDay_invalid"       Text="invalid gDay! '{0}' "/>
+            <Message Id="DateTime_gMth_invalid"      Text="invalid gMonth! '{0}' "/>
+            <Message Id="DateTime_gMthDay_invalid"   Text="invalid gMonthDay! '{0}' "/>
+            <Message Id="DateTime_dur_Start_dashP"    Text="Duration shall start with '-' or 'P'! '{0}' "/>
+            <Message Id="DateTime_dur_noP"            Text="Duration shall always have 'P'! '{0}' "/>
+            <Message Id="DateTime_dur_DashNotFirst"   Text="'-' can only appear at first! '{0}' "/>
+            <Message Id="DateTime_dur_inv_b4T"        Text="Duration has invalid stuff before 'T'! '{0}' "/>
+            <Message Id="DateTime_dur_NoTimeAfterT"   Text="Duration has no time elements after 'T'! '{0}' "/>
+            <Message Id="DateTime_dur_NoElementAtAll" Text="Duration shall have at least element ! '{0}' "/>
+            <Message Id="DateTime_dur_inv_seconds"    Text="Duration shall have at least one digit after the . ! '{0}' "/>
+            <Message Id="DateTime_date_incomplete"    Text="Incomplete Date ! '{0}' "/>
+            <Message Id="DateTime_date_invalid"       Text="Invalid Date ! '{0}' "/>
+            <Message Id="DateTime_time_incomplete"    Text="Incomplete Time ! '{0}' "/>
+            <Message Id="DateTime_time_invalid"       Text="Invalid Time ! '{0}' "/>
+            <Message Id="DateTime_ms_noDigit"         Text="ms shall be present once '.' is present ! '{0}' "/>
+            <Message Id="DateTime_ym_incomplete"      Text="Incomplete YearMonth! '{0}' "/>
+            <Message Id="DateTime_ym_invalid"         Text="Year separator is missing or misplaced ! '{0}' "/>
+            <Message Id="DateTime_year_tooShort"      Text="Year must have 'CCYY' format ! '{0}' "/>
+            <Message Id="DateTime_year_leadingZero"   Text="Invalid leading zero in year! '{0}' "/>
+            <Message Id="DateTime_ym_noMonth"         Text="no month in YearMonth ! '{0}' "/>
+            <Message Id="DateTime_tz_noUTCsign"       Text="TimeZone is expected ! '{0}' "/>
+            <Message Id="DateTime_tz_stuffAfterZ"     Text="Expecting nothing after 'Z'! '{0}' "/>
+            <Message Id="DateTime_tz_invalid"         Text="Invalid TimeZone! '{0}' "/>
+            <Message Id="DateTime_year_zero"          Text="The year (0000) is an illegal year value! '{0}' "/>
+            <Message Id="DateTime_mth_invalid"        Text="The month must have values 1 to 12! '{0}' "/>
+            <Message Id="DateTime_day_invalid"        Text="The day must have values 1 to 31! '{0}' "/>
+            <Message Id="DateTime_hour_invalid"       Text="Hour must have values 0-23! '{0}' "/>
+            <Message Id="DateTime_min_invalid"        Text="Minute must have values 0-59! '{0}' "/>
+            <Message Id="DateTime_second_invalid"     Text="Second must have values 0-60! '{0}' "/>
+            <Message Id="DateTime_tz_hh_invalid"      Text="Minute must have values 0-59! '{0}' "/>
+            <Message Id="PD_EmptyBase" Text="Particle Derivation Restriction: The derived complexType has content, while base is empty."/>
+            <Message Id="PD_NSCompat1" Text="NSCompat: The namespace of '{0}' is not allowed by wildcard in base"/>
+            <Message Id="PD_OccurRangeE" Text="The occurrence range of '{0}' is not a valid restriction of base element's range"/>
+            <Message Id="PD_NameTypeOK1" Text="NameAndTypeOK: The Element name/uri in restriction does not match that of corresponding base element"/>
+            <Message Id="PD_NameTypeOK2" Text="NameAndTypeOK: Element '{0}' is nillable in the restriction, while it's not in the base"/>
+            <Message Id="PD_NameTypeOK3" Text="NameAndTypeOK: Element '{0}' is either not fixed, or is not fixed with the same value as in the base"/>
+            <Message Id="PD_NameTypeOK4" Text="NameAndTypeOK: The disallowed substitutions, for element '{0}', are not a superset of those of the base element"/>
+            <Message Id="PD_NameTypeOK5" Text="NameAndTypeOK: Element '{0}' has a type that does not derive from that of the base"/>
+            <Message Id="PD_NameTypeOK6" Text="NameAndTypeOK: Derived element '{0}' has fewer Identity Constraints than base element '{1}'"/>
+            <Message Id="PD_NameTypeOK7" Text="NameAndTypeOK: Derived element '{0}' has an Identity Constraint that does not appear on base element '{1}'"/>
+            <Message Id="PD_RecurseAsIfGroup" Text="RecurseAsIfGroup: Element '{0}' belongs to a group of a variety different from that of the base"/>
+            <Message Id="PD_Recurse1" Text="Occurrence range of group is not a valid restriction of occurrence range of base group"/>
+            <Message Id="PD_Recurse2" Text="Recurse: There is not a complete functional mapping between the particles"/>
+            <Message Id="PD_ForbiddenRes1" Text="Forbidden restriction of 'any': Choice,Seq,All,Elt"/>
+            <Message Id="PD_ForbiddenRes2" Text="Forbidden restriction of 'all': Choice,Seq,Elt"/>
+            <Message Id="PD_ForbiddenRes3" Text="Forbidden restriction of 'choice': All,Seq,Leaf"/>
+            <Message Id="PD_ForbiddenRes4" Text="Forbidden restriction of 'sequence': Elt"/>
+            <Message Id="PD_NSSubset1" Text="Wildcard's occurrence range not a restriction of base wildcard's range"/>
+            <Message Id="PD_NSSubset2" Text="Wildcard is not a subset of corresponding wildcard in base"/>
+            <Message Id="PD_NSRecurseCheckCardinality1" Text="Group's occurrence range not a restriction of base wildcard's range"/>
+            <Message Id="PD_RecurseUnordered" Text="RecurseUnordered: There is not a complete functional mapping between the particles"/>
+            <Message Id="PD_MapAndSum" Text="MapAndSum: There is not a complete functional mapping between the particles"/>
+            <Message Id="PD_InvalidContentType" Text="Particle derivation: Invalid content spec node type"/>
+            <Message Id="NodeIDMap_GrowErr" Text="NodeIDMap overflows and exceeds the largest available size"/>
+            <Message Id="XSer_ProtoType_Null_ClassName"  Text="ProtoType has null class name"/>
+            <Message Id="XSer_ProtoType_NameLen_Dif"     Text="ProtoType name length diff '{0}' vs '{1}'"/>
+            <Message Id="XSer_ProtoType_Name_Dif"        Text="ProtoType name diff '{0}' vs '{1}'"/>            
+            <Message Id="XSer_InStream_Read_LT_Req"      Text="InputStream read '{0}' less than required '{1}'"/>
+            <Message Id="XSer_InStream_Read_OverFlow"    Text="InputStream read '{0}' beyond buffer available '{1}'"/>
+            <Message Id="XSer_Storing_Violation"         Text="Storing violation"/>
+            <Message Id="XSer_StoreBuffer_Violation"     Text="Store buffer violation '{0}', '{1}'"/>
+            <Message Id="XSer_LoadPool_UppBnd_Exceed"    Text="Object Tag '{0}' exceed load pool uppper Boundary '{1}'"/>
+            <Message Id="XSer_LoadPool_NoTally_ObjCnt"   Text="Load pool size '{0}' not tally with object count '{1}'"/>
+            <Message Id="XSer_Loading_Violation"         Text="Loading violation"/>
+            <Message Id="XSer_LoadBuffer_Violation"      Text="Load buffer violation '{0}', '{1}'"/>
+            <Message Id="XSer_Inv_ClassIndex"            Text="Invalid class index '{0}', '{1}'"/>
+            <Message Id="XSer_Inv_FillBuffer_Size"       Text="Invalid fillBuffer size '{0}', '{1}'"/>
+            <Message Id="XSer_Inv_checkFillBuffer_Size"  Text="Invalid checkFillBuffer size '{0}'"/>
+            <Message Id="XSer_Inv_checkFlushBuffer_Size" Text="Invalid checkFlushBuffer size '{0}'"/>
+            <Message Id="XSer_Inv_Null_Pointer"          Text="Invalid null pointer encountered '{0}'"/>
+            <Message Id="XSer_Inv_Buffer_Len"            Text="Invalid buffer length '{0}'"/>
+            <Message Id="XSer_CreateObject_Fail"         Text="CreateObject fails "/>
+            <Message Id="XSer_ObjCount_UppBnd_Exceed"    Text="Object count '{0}' exceed upper boundary '{1}'"/>
+            <Message Id="XSer_GrammarPool_Locked"        Text="Grammar Pool is locked by other party"/>
+            <Message Id="XSer_GrammarPool_Empty"         Text="Grammar Pool is empty"/>
+            <Message Id="XSer_GrammarPool_NotEmpty"      Text="Grammar Pool is NOT empty"/>            
+            <Message Id="XSer_StringPool_NotEmpty"       Text="String Pool is NOT empty"/>
+            <Message Id="XSer_Storer_NewerThan_Loader"   Text="Storer Level '{0}' is newer than Loader Level'{1}' "/>
+			<Message Id="VALUE_QName_Invalid2"           Text="Value '{0}' is not valid QName because the prefix is not defined"/>
+        </FatalError>
+    </MsgDomain>
+    <MsgDomain Domain="http://apache.org/xml/messages/XMLDOMMsg">
+        <FatalError>
+<!--The following are DOMException error text, same order as DOMException::ExceptionCode enum -->
+<!--DOMEXCEPTION_ERRX is not an error, it's just used to indicate the start of DOMExceptionCode enum -->
+            <Message Id="DOMEXCEPTION_ERRX" Text="Just an index"/>
+            <Message Id="INDEX_SIZE_ERR" Text="The index or size is negative, or greater than the allowed value"/>
+            <Message Id="DOMSTRING_SIZE_ERR" Text="The specified range of text does not fit into the String"/>
+            <Message Id="HIERARCHY_REQUEST_ERR" Text="An attempt was made to insert a node where it is not permitted"/>
+            <Message Id="WRONG_DOCUMENT_ERR" Text="A node is used in a different document than the one that created it"/>
+            <Message Id="INVALID_CHARACTER_ERR" Text="An invalid or illegal XML character is specified"/>
+            <Message Id="NO_DATA_ALLOWED_ERR" Text="Data is specified for a node which does not support data"/>
+            <Message Id="NO_MODIFICATION_ALLOWED_ERR" Text="An attempt is made to modify an object where modifications are not allowed"/>
+            <Message Id="NOT_FOUND_ERR" Text="An attempt is made to reference a node in a context where it does not exist"/>
+            <Message Id="NOT_SUPPORTED_ERR" Text="The implementation does not support the requested type of object or operation"/>
+            <Message Id="INUSE_ATTRIBUTE_ERR" Text="An attempt is made to add an attribute that is already in use elsewhere"/>
+            <Message Id="INVALID_STATE_ERR " Text="A parameter or an operation is not supported by the underlying object"/>
+            <Message Id="SYNTAX_ERR" Text="An invalid or illegal string is specified"/>
+            <Message Id="INVALID_MODIFICATION_ERR" Text="An attempt is made to modify the type of the underlying object"/>
+            <Message Id="NAMESPACE_ERR" Text="An attempt is made to create or change an object in a way which is incorrect with regard to namespaces"/>
+            <Message Id="INVALID_ACCESS_ERR" Text="An attempt is made to use an object that is not, or is no longer, usable"/>
+            <Message Id="VALIDATION_ERR" Text="A call to a method such as insertBefore or removeChild would make the Node invalid with respect to document grammar"/>
+<!--The following are DOMRangeException error text, same order as DOMRangeException::RangeExceptionCode enum -->
+<!--DOMRANGEEXCEPTION_ERRX is not an error, it's just used to indicate the start of DOMRangeExceptionCode enum -->
+            <Message Id="DOMRANGEEXCEPTION_ERRX" Text="Just an index"/>
+            <Message Id="BAD_BOUNDARYPOINTS_ERR" Text="The boundary-points of a Range do not meet specific requirements"/>
+            <Message Id="INVALID_NODE_TYPE_ERR" Text="The container of a Range's boundary-point is set to a node of an invalid type or to a node with an ancestor of an invalid type"/>
+<!--The following are other messages related to DOM -->
+<!--Messages used by DOMWriter -->
+            <Message Id="Writer_NestedCDATA" Text="Nested CDATA sections"/>
+            <Message Id="Writer_NotRepresentChar" Text="Unrepresentable character data"/>
+            <Message Id="Writer_NotRecognizedType" Text="Unrecognized Node Type"/>
+        </FatalError>
+    </MsgDomain>
+</MsgFile>

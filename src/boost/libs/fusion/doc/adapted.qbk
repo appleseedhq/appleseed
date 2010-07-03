@@ -1,0 +1,257 @@
+[/==============================================================================
+    Copyright (C) 2001-2007 Joel de Guzman, Dan Marsden, Tobias Schwinger
+
+    Use, modification and distribution is subject to the Boost Software
+    License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+    http://www.boost.org/LICENSE_1_0.txt)
+===============================================================================/]
+[section Adapted]
+
+Fusion provides a couple of adapters for other sequences such as
+`std::pair`, __mpl__ sequences, and `boost::array`. These adapters are
+written using Fusion's non-intrusive __extension__ mechanism. If you wish
+to use these sequences with fusion, simply include the necessary files and
+they will be regarded as first-class, fully conforming fusion sequences.
+
+Fusion also provides various schemes to make it easy for the user to adapt
+various data structures, non-intrusively, as full fledged Fusion sequences.
+
+[heading Header]
+
+    #include <boost/fusion/adapted.hpp>
+    #include <boost/fusion/include/adapted.hpp>
+
+Fusion sequences may also be adapted as fully conforming __mpl__ sequences (see
+__intrinsics__). That way, we can have 2-way adaptation to and from __mpl__ and
+Fusion. To make Fusion sequences fully conforming __mpl__ sequences, include:
+
+    #include <boost/fusion/mpl.hpp>
+
+If you want bi-directional adaptation to and from __mpl__ and Fusion, simply
+include:
+
+    #include <boost/fusion/include/mpl.hpp>
+
+The header includes all the necessary headers.
+
+[section std::pair]
+
+This module provides adapters for `std::pair`. Including the module header
+makes `std::pair` a fully conforming __random_access_sequence__.
+
+[heading Header]
+
+    #include <boost/fusion/adapted/std_pair.hpp>
+    #include <boost/fusion/include/std_pair.hpp>
+
+[heading Model of]
+
+* __random_access_sequence__
+
+[heading Example]
+
+    std::pair<int, std::string> p(123, "Hola!!!");
+    std::cout << __at_c__<0>(p) << std::endl;
+    std::cout << __at_c__<1>(p) << std::endl;
+    std::cout << p << std::endl;
+
+[heading See also]
+
+__std_pair_doc__, __tr1_tuple_pair__
+
+[endsect]
+
+[section mpl sequence]
+
+This module provides adapters for __mpl__ sequences. Including the module
+header makes all __mpl__ sequences fully conforming fusion sequences.
+
+[heading Header]
+
+    #include <boost/fusion/adapted/mpl.hpp>
+    #include <boost/fusion/include/mpl.hpp>
+
+[heading Model of]
+
+* __forward_sequence__ (If the __mpl__ sequence is a forward sequence.)
+* __bidirectional_sequence__ (If the __mpl__ sequence is a bidirectional sequence.)
+* __random_access_sequence__ (If the __mpl__ sequence is a random access sequence.)
+
+[heading Example]
+
+    mpl::vector_c<int, 123, 456> vec_c;
+    fusion::vector2<int, long> v(vec_c);
+    std::cout << __at_c__<0>(v) << std::endl;
+    std::cout << __at_c__<1>(v) << std::endl;
+
+    v = mpl::vector_c<int, 456, 789>();
+    std::cout << __at_c__<0>(v) << std::endl;
+    std::cout << __at_c__<1>(v) << std::endl;
+
+[heading See also]
+
+__mpl__
+
+[endsect]
+
+[section boost::array]
+
+This module provides adapters for `boost::array`. Including the module
+header makes `boost::array` a fully conforming __random_access_sequence__.
+
+[heading Header]
+
+    #include <boost/fusion/adapted/array.hpp>
+    #include <boost/fusion/include/array.hpp>
+
+[heading Model of]
+
+* __random_access_sequence__
+
+[heading Example]
+
+    boost::array<int,3> arr = {{1,2,3}};
+
+    std::cout << *__begin__(arr) << std::endl;
+    std::cout << *__next__(__begin__(arr)) << std::endl;
+    std::cout << *__advance_c__<2>(__begin__(arr)) << std::endl;
+    std::cout << *__prior__(__end__(arr)) << std::endl;
+    std::cout << __at_c__<2>(arr) << std::endl;
+
+[heading See also]
+
+__boost_array_library__
+
+[endsect]
+
+[section boost::tuple]
+This module provides adapters for `boost::tuple`. Including the module
+header makes `boost::tuple` a fully conforming __forward_sequence__.
+
+[heading Header]
+
+    #include <boost/fusion/adapted/boost_tuple.hpp>
+    #include <boost/fusion/include/boost_tuple.hpp>
+
+[heading Model of]
+
+* __forward_sequence__
+
+[heading Example]
+
+    boost::tuple<int,std::string> example_tuple(101, "hello");
+    std::cout << *boost::fusion::begin(example_tuple) << '\n';
+    std::cout << *boost::fusion::next(boost::fusion::begin(example_tuple)) << '\n';
+
+[heading See also]
+
+__boost_tuple_library__
+
+[endsect]
+
+[section:adapt_struct BOOST_FUSION_ADAPT_STRUCT]
+
+[heading Description]
+BOOST_FUSION_ADAPT_STRUCT is a macro that can be used to generate all the
+necessary boilerplate to make an arbitrary struct into a __random_access_sequence__.
+
+[heading Synopsis]
+    BOOST_FUSION_ADAPT_STRUCT(
+        struct_name
+        (member_type0, member_name0)
+        (member_type1, member_name1)
+        ...
+        )
+
+[heading Semantics]
+
+The above macro generates the necessary code to adapt `struct_name`
+as a model of __random_access_sequence__. The sequence of `(member_typeN, member_nameN)`
+pairs declare the type and names of each of the struct members that will be
+part of the sequence.
+
+The macro should be used at global scope, and `struct_name` should be the fully
+namespace qualified name of the struct to be converted.
+
+[heading Header]
+
+    #include <boost/fusion/adapted/struct/adapt_struct.hpp>
+    #include <boost/fusion/include/adapt_struct.hpp>
+
+[heading Example]
+    namespace demo
+    {
+        struct employee
+        {
+            std::string name;
+            int age;
+        };
+    }
+
+    // demo::employee is now a Fusion sequence
+    BOOST_FUSION_ADAPT_STRUCT(
+        demo::employee
+        (std::string, name)
+        (int, age))
+
+[endsect]
+
+[section:adapt_assoc BOOST_FUSION_ADAPT_ASSOC_STRUCT]
+
+[heading Description]
+BOOST_FUSION_ADAPT_ASSOC_STRUCT is a macro that can be used to generate all the
+necessary boilerplate to make an arbitrary struct into a model of  __random_access_sequence__
+and __associative_sequence__.
+
+[heading Synopsis]
+    BOOST_FUSION_ADAPT_ASSOC_STRUCT(
+        struct_name
+        (member_type0, member_name0, key_type0)
+        (member_type1, member_name1, key_type1)
+        ...
+        )
+
+[heading Semantics]
+
+The above macro generates the necessary code to adapt `struct_name`
+as a model of __random_access_sequence__ and __associative_sequence__.
+The sequence of `(member_typeN, member_nameN, key_typeN)`
+triples declare the type, name and key type of each of the struct members
+that will be part of the sequence.
+
+The macro should be used at global scope, and `struct_name` should be the fully
+namespace qualified name of the struct to be converted.
+
+[heading Header]
+
+    #include <boost/fusion/adapted/struct/adapt_assoc_struct.hpp>
+    #include <boost/fusion/include/adapt_assoc_struct.hpp>
+
+[heading Example]
+    namespace demo
+    {
+        struct employee
+        {
+            std::string name;
+            int age;
+        };
+    }
+
+    namespace keys
+    {
+        struct name;
+        struct age;
+    }
+
+    // demo::employee is now a Fusion sequence
+    // It is also an associative sequence with
+    // keys keys::name and keys::age present.
+    BOOST_FUSION_ADAPT_ASSOC_STRUCT(
+        demo::employee
+        (std::string, name, keys::name)
+        (int, age, keys::age))
+
+
+[endsect]
+
+[endsect]

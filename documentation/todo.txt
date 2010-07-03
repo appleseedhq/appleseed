@@ -1,0 +1,136 @@
+
+* all projects
+
+    - make sure objects tagged with __declspec(dllexport) present only POD types
+      in their interface.
+
+    - implement a mechanism to check that objects are always allocated and deallocated
+      using the same memory subsystem.
+
+    - fix non-virtual base class problems in diamond-shaped inheritance patterns.
+
+    - most classes should really inherit (publicly) from foundation::NonCopyable.
+
+    - fix passing of parameters: ParamArray should only be used for the public
+      interface of appleseed.renderer. in all other cases, plain function arguments
+      should be used.
+
+    - enclose all the code into namespace appleseed?
+      update 2009/11/19: done for appleseed.cli and appleseed.studio. 
+
+    - create a new build configuration called 'Safe' with assertions and floating-
+      point exceptions enabled.
+
+    - rename APPLESEED_FOUNDATION_USE_SSE to APPLESEED_USE_SSE.
+
+    - unify APPLESEED_FOUNDATION_EXPORTS and APPLESEED_RENDERER_EXPORTS?
+
+    - print better error messages when loading a texture fails
+      (PNG images not yet supported by progressive image loader).
+
+    - allow to use PNG textures (only EXR supported in progressive loading mode).
+
+
+
+* appleseed.foundation
+
+    - write unit tests for foundation/math/fastmath.h, and measure accuracy and
+      performances (also measure performances of arithmetic involving infinite
+      and NaN values).
+
+    - make foundation::Dictionary ordered.
+
+    - add functionalities to the unit benchmark component to clear the CPU caches
+      before running a benchmark.
+
+    - add attributes (date, time, SVN revision number) to benchmark logs.
+
+    - speed up foundation::radical_inverse() and permuted_radical_inverse() by
+      using lookup tables for modulo operations.
+
+    - implement 64-bit radical inverse functions?
+
+    - split foundation::System into multiple classes (CPU, PhysicalMemory).
+
+    - use the _BitScanReverse intrinsic in foundation/math/scalar.h to implement
+      log2() and next_pow2().
+
+    - add support for thread exclude lists in foundation::Logger.
+
+    - unit-benchmark the foundation::CDF class.
+
+    - rename renderer::ParamArray to renderer::Parameters.
+
+    - bug: non-copyability is not enforced by foundation::NonCopyable for
+      DLL-exported classes.
+
+    - bug: when saving a project to a directory that already contains mesh
+      files, if the project references a mesh file that is already present
+      on disk, the mesh file doesn't get overwritten, and the old and possibly
+      mismatching mesh file is used.
+
+
+
+* appleseed.renderer
+
+    - define the renderer::IFilm interface.
+
+    - replace renderer::Frame by an implementation of the renderer::IFilm interface.
+
+    - fix the domain of normalized device coordinates: currently, they are in
+      [-0.5,0.5) x (-0.5,0.5], but they really should be in [-0.5,0.5)^2.
+
+    - move foundation/math/samplingcontext.h to renderer/kernel/sampling/.
+
+    - don't initialize Xerces-C each time a project is loaded.
+
+    - make access cache two-staged (direct mapping + LRU).
+
+    - perform SAH binning over all three axis at once.
+
+    - implement parallel building of acceleration structures.
+
+    - find a more elegant way to handle evaluation of uniform inputs.
+
+    - implement writing of texture files in project file writer.
+
+    - during project file parsing: remove blanks around identifiers, and check
+      identifier validity.
+
+    - initialize RNG per-tile, based on tile coordinates.
+
+    - in project files, what about changing
+        <parameter name="x" value="42" />
+      to the cleaner and more generic
+        <parameter name="x">42</parameter>
+      that would allow to store XML fragments in parameters...
+
+    - add unit tests for edf, bsdf.
+
+    - move Frame::write() and Frame::archive() to separate classes, for instance
+      renderer::FrameWriter and renderer::FrameArchiver.
+
+    - add texture transforms (vertical flipping is important).
+
+
+
+* appleseed.cli
+
+
+
+* appleseed.studio
+
+    - add a button "Check All Failed" to the Tests window.
+
+    - initialize override shading menu according to scene settings when loading a scene
+
+
+
+* external libraries
+
+    - openexr: remove openexr/vc/vc8/include/, use openexr/include/ instead (and fix
+      appleseed.vcproj accordingly).
+
+    - consider moving all external libraries into a new src/externals subdirectory.
+
+    - upgrade Xerces-C library to latest version.

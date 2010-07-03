@@ -1,0 +1,347 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>unfused_typed</title>
+<link rel="stylesheet" href="../../../../../../../doc/html/boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.66.1">
+<link rel="start" href="../../../index.html" title="Chapter 1. Fusion 2.0">
+<link rel="up" href="../adapters.html" title=" Adapters">
+<link rel="prev" href="unfused_rvalue_args.html" title="unfused_rvalue_args">
+<link rel="next" href="../generation.html" title="Generation">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../../../../boost.png"></td>
+<td align="center"><a href="../../../../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../../../libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="unfused_rvalue_args.html"><img src="../../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../adapters.html"><img src="../../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../../index.html"><img src="../../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="../generation.html"><img src="../../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h4 class="title">
+<a name="fusion.functional.adapters.unfused_typed"></a><a href="unfused_typed.html" title="unfused_typed">unfused_typed</a></h4></div></div></div>
+<a name="fusion.functional.adapters.unfused_typed.description"></a><h5>
+<a name="id671729"></a>
+          <a href="unfused_typed.html#fusion.functional.adapters.unfused_typed.description">Description</a>
+        </h5>
+<p>
+          An n-ary <a href="../concepts/poly.html" title=" Polymorphic Function
+        Object">Polymorphic Function
+          Object</a> adapter template for an unary <a href="../concepts/poly.html" title=" Polymorphic Function
+        Object">Polymorphic
+          Function Object</a> target function. When called, its arguments are
+          bundled to a <a href="../../sequence/concepts/random_access_sequence.html" title="Random
+        Access Sequence">Random
+          Access Sequence</a> that is passed to the target function object.
+        </p>
+<p>
+          The call operators of esulting function objects are strictly typed (in
+          other words, non-templatized) with the types from a <a href="../../sequence.html" title="Sequence">Sequence</a>.
+        </p>
+<p>
+          The type of the target function is allowed to be const qualified or a reference.
+          Const qualification is preserved and propagated appropriately (in other
+          words, only const versions of <tt class="literal">operator()</tt> can be used
+          if the target function object is const - or, in case the target function
+          object is held by value, the adapter is const).
+        </p>
+<div class="sidebar"><p>
+          <span class="inlinemediaobject"><img src="../../../images/note.png" alt="note"></span> For Microsoft Visual C++ 7.1 (Visual Studio 2003)
+          the detection of the Function Object's const qualification easily causes
+          an internal error. Therefore the adapter is always treated as if it was
+          const.
+        </p></div>
+<div class="sidebar"><p>
+          <span class="inlinemediaobject"><img src="../../../images/tip.png" alt="tip"></span> If the type sequence passed to this template contains
+          non-reference elements, the element is copied only once - the call operator's
+          signature is optimized automatically to avoid by-value parameters.
+        </p></div>
+<p>
+          /functional/adapter/unfused_typed.hpp&gt;
+        </p>
+<a name="fusion.functional.adapters.unfused_typed.synopsis"></a><h5>
+<a name="id671885"></a>
+          <a href="unfused_typed.html#fusion.functional.adapters.unfused_typed.synopsis">Synopsis</a>
+        </h5>
+<pre class="programlisting">
+<span class="keyword">template</span> <span class="special">&lt;</span><span class="keyword">class</span> <span class="identifier">Function</span><span class="special">,</span> <span class="keyword">class</span> <span class="identifier">Sequence</span><span class="special">&gt;</span>
+<span class="keyword">class</span> <span class="identifier">unfused_typed</span><span class="special">;</span>
+</pre>
+<a name="fusion.functional.adapters.unfused_typed.template_parameters"></a><h5>
+<a name="id671984"></a>
+          <a href="unfused_typed.html#fusion.functional.adapters.unfused_typed.template_parameters">Template
+          parameters</a>
+        </h5>
+<div class="informaltable"><table class="table">
+<colgroup>
+<col>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>
+                <p>
+                  Parameter
+                </p>
+                </th>
+<th>
+                <p>
+                  Description
+                </p>
+                </th>
+<th>
+                <p>
+                  Default
+                </p>
+                </th>
+</tr></thead>
+<tbody>
+<tr>
+<td>
+                <p>
+                  <tt class="computeroutput"><span class="identifier">Function</span></tt>
+                </p>
+                </td>
+<td>
+                <p>
+                  A unary <a href="../concepts/poly.html" title=" Polymorphic Function
+        Object">Polymorphic
+                  Function Object</a>
+                </p>
+                </td>
+<td>
+                <p>
+                </p>
+                </td>
+</tr>
+<tr>
+<td>
+                <p>
+                  <tt class="computeroutput"><span class="identifier">Sequence</span></tt>
+                </p>
+                </td>
+<td>
+                <p>
+                  A <a href="../../sequence.html" title="Sequence">Sequence</a>
+                </p>
+                </td>
+<td>
+                <p>
+                </p>
+                </td>
+</tr>
+</tbody>
+</table></div>
+<a name="fusion.functional.adapters.unfused_typed.model_of"></a><h5>
+<a name="id672142"></a>
+          <a href="unfused_typed.html#fusion.functional.adapters.unfused_typed.model_of">Model
+          of</a>
+        </h5>
+<div class="itemizedlist"><ul type="disc">
+<li><a href="../concepts/poly.html" title=" Polymorphic Function
+        Object">Polymorphic Function
+            Object</a></li>
+<li><a href="../concepts/def_callable.html" title=" Deferred
+        Callable Object">Deferred Callable
+            Object</a></li>
+</ul></div>
+<div class="variablelist">
+<p class="title"><b>Notation</b></p>
+<dl>
+<dt><span class="term"><tt class="computeroutput"><span class="identifier">F</span></tt></span></dt>
+<dd><p>
+              A possibly const qualified, unary <a href="../concepts/poly.html" title=" Polymorphic Function
+        Object">Polymorphic
+              Function Object</a> type or reference type thereof
+            </p></dd>
+<dt><span class="term"><tt class="computeroutput"><span class="identifier">f</span></tt></span></dt>
+<dd><p>
+              An object convertible to <tt class="computeroutput"><span class="identifier">F</span></tt>
+            </p></dd>
+<dt><span class="term"><tt class="computeroutput"><span class="identifier">S</span></tt></span></dt>
+<dd><p>
+              A <a href="../../sequence.html" title="Sequence">Sequence</a> of parameter types
+            </p></dd>
+<dt><span class="term"><tt class="computeroutput"><span class="identifier">UT</span></tt></span></dt>
+<dd><p>
+              The type <tt class="computeroutput"><span class="identifier">unfused_typed</span><span class="special">&lt;</span><span class="identifier">F</span><span class="special">,</span><span class="identifier">S</span><span class="special">&gt;</span></tt>
+            </p></dd>
+<dt><span class="term"><tt class="computeroutput"><span class="identifier">ut</span></tt></span></dt>
+<dd><p>
+              An instance of <tt class="computeroutput"><span class="identifier">UT</span></tt>,
+              initialized with <tt class="computeroutput"><span class="identifier">f</span></tt>
+            </p></dd>
+<dt><span class="term"><tt class="computeroutput"><span class="identifier">a0</span></tt>...<tt class="computeroutput"><span class="identifier">aN</span></tt></span></dt>
+<dd><p>
+              Arguments to <tt class="computeroutput"><span class="identifier">ut</span></tt>, convertible
+              to the types in <tt class="computeroutput"><span class="identifier">S</span></tt>
+            </p></dd>
+</dl>
+</div>
+<a name="fusion.functional.adapters.unfused_typed.expression_semantics"></a><h5>
+<a name="id672466"></a>
+          <a href="unfused_typed.html#fusion.functional.adapters.unfused_typed.expression_semantics">Expression
+          Semantics</a>
+        </h5>
+<div class="informaltable"><table class="table">
+<colgroup>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>
+                <p>
+                  Expression
+                </p>
+                </th>
+<th>
+                <p>
+                  Semantics
+                </p>
+                </th>
+</tr></thead>
+<tbody>
+<tr>
+<td>
+                <p>
+                  <tt class="computeroutput"><span class="identifier">UT</span><span class="special">(</span><span class="identifier">f</span><span class="special">)</span></tt>
+                </p>
+                </td>
+<td>
+                <p>
+                  Creates a fused function as described above, initializes the target
+                  function with <tt class="computeroutput"><span class="identifier">f</span></tt>.
+                </p>
+                </td>
+</tr>
+<tr>
+<td>
+                <p>
+                  <tt class="computeroutput"><span class="identifier">UT</span><span class="special">()</span></tt>
+                </p>
+                </td>
+<td>
+                <p>
+                  Creates a fused function as described above, attempts to use <tt class="computeroutput"><span class="identifier">F</span></tt>'s default constructor.
+                </p>
+                </td>
+</tr>
+<tr>
+<td>
+                <p>
+                  <tt class="computeroutput"><span class="identifier">ut</span><span class="special">(</span><span class="identifier">a0</span></tt>...<tt class="computeroutput"><span class="identifier">aN</span><span class="special">)</span></tt>
+                </p>
+                </td>
+<td>
+                <p>
+                  Calls <tt class="computeroutput"><span class="identifier">f</span></tt> with an
+                  instance of <tt class="computeroutput"><span class="identifier">S</span></tt> (or
+                  a subsequence of <tt class="computeroutput"><span class="identifier">S</span></tt>
+                  starting at the first element, if fewer arguments are given and
+                  the overload hasn't been disabled) initialized with <tt class="computeroutput"><span class="identifier">a0</span></tt>...<tt class="computeroutput"><span class="identifier">aN</span></tt>.
+                </p>
+                </td>
+</tr>
+</tbody>
+</table></div>
+<a name="fusion.functional.adapters.unfused_typed.example"></a><h5>
+<a name="id672749"></a>
+          <a href="unfused_typed.html#fusion.functional.adapters.unfused_typed.example">Example</a>
+        </h5>
+<pre class="programlisting">
+<span class="keyword">struct</span> <span class="identifier">add_assign</span> <span class="comment">// applies operator+=
+</span><span class="special">{</span>
+    <span class="keyword">typedef</span> <span class="keyword">void</span> <span class="identifier">result_type</span><span class="special">;</span> <span class="comment">// for simplicity
+</span>
+    <span class="keyword">template</span> <span class="special">&lt;</span><span class="keyword">typename</span> <span class="identifier">T</span><span class="special">&gt;</span>
+    <span class="keyword">void</span> <span class="keyword">operator</span><span class="special">()(</span><span class="identifier">T</span> <span class="special">&amp;</span> <span class="identifier">lhs</span><span class="special">,</span> <span class="identifier">T</span> <span class="keyword">const</span> <span class="special">&amp;</span> <span class="identifier">rhs</span><span class="special">)</span> <span class="keyword">const</span>
+    <span class="special">{</span>
+        <span class="identifier">lhs</span> <span class="special">+=</span> <span class="identifier">rhs</span><span class="special">;</span>
+    <span class="special">}</span>
+<span class="special">};</span>
+
+<span class="keyword">template</span> <span class="special">&lt;</span><span class="keyword">class</span> <span class="identifier">Tie</span><span class="special">&gt;</span>
+<span class="keyword">class</span> <span class="identifier">fused_parallel_adder</span>
+<span class="special">{</span>
+    <span class="identifier">Tie</span> <span class="identifier">tie_dest</span><span class="special">;</span>
+<span class="keyword">public</span><span class="special">:</span>
+    <span class="keyword">explicit</span> <span class="identifier">fused_parallel_adder</span><span class="special">(</span><span class="identifier">Tie</span> <span class="keyword">const</span> <span class="special">&amp;</span> <span class="identifier">dest</span><span class="special">)</span>
+        <span class="special">:</span> <span class="identifier">tie_dest</span><span class="special">(</span><span class="identifier">dest</span><span class="special">)</span>
+    <span class="special">{</span> <span class="special">}</span>
+
+    <span class="keyword">typedef</span> <span class="keyword">void</span> <span class="identifier">result_type</span><span class="special">;</span>
+
+    <span class="keyword">template</span> <span class="special">&lt;</span><span class="keyword">class</span> <span class="identifier">Seq</span><span class="special">&gt;</span>
+    <span class="keyword">void</span> <span class="keyword">operator</span><span class="special">()(</span><span class="identifier">Seq</span> <span class="keyword">const</span> <span class="special">&amp;</span> <span class="identifier">s</span><span class="special">)</span> <span class="keyword">const</span>
+    <span class="special">{</span>
+        <span class="identifier">for_each</span><span class="special">(</span> <span class="identifier">zip</span><span class="special">(</span><span class="identifier">tie_dest</span><span class="special">,</span><span class="identifier">s</span><span class="special">),</span> <span class="identifier">fused</span><span class="special">&lt;</span><span class="identifier">add_assign</span><span class="special">&gt;()</span> <span class="special">);</span>
+    <span class="special">}</span>
+<span class="special">};</span>
+
+<span class="comment">// accepts a tie and creates a typed function object from it
+</span><span class="keyword">struct</span> <span class="identifier">fused_parallel_adder_maker</span>
+<span class="special">{</span>
+    <span class="keyword">template</span> <span class="special">&lt;</span><span class="keyword">typename</span> <span class="identifier">Sig</span><span class="special">&gt;</span>
+    <span class="keyword">struct</span> <span class="identifier">result</span><span class="special">;</span>
+
+    <span class="keyword">template</span> <span class="special">&lt;</span><span class="keyword">class</span> <span class="identifier">Self</span><span class="special">,</span> <span class="keyword">class</span> <span class="identifier">Seq</span><span class="special">&gt;</span>
+    <span class="keyword">struct</span> <span class="identifier">result</span><span class="special">&lt;</span> <span class="identifier">Self</span><span class="special">(</span><span class="identifier">Seq</span><span class="special">)</span> <span class="special">&gt;</span>
+    <span class="special">{</span>
+        <span class="keyword">typedef</span> <span class="keyword">typename</span> <span class="identifier">remove_reference</span><span class="special">&lt;</span><span class="identifier">Seq</span><span class="special">&gt;::</span><span class="identifier">type</span> <span class="identifier">seq</span><span class="special">;</span>
+
+        <span class="keyword">typedef</span> <span class="identifier">unfused_typed</span><span class="special">&lt;</span> <span class="identifier">fused_parallel_adder</span><span class="special">&lt;</span><span class="identifier">seq</span><span class="special">&gt;,</span>
+            <span class="keyword">typename</span> <span class="identifier">mpl</span><span class="special">::</span><span class="identifier">transform</span><span class="special">&lt;</span><span class="identifier">seq</span><span class="special">,</span> <span class="identifier">remove_reference</span><span class="special">&lt;</span><span class="identifier">_</span><span class="special">&gt;</span> <span class="special">&gt;::</span><span class="identifier">type</span> <span class="special">&gt;</span> <span class="identifier">type</span><span class="special">;</span>
+    <span class="special">};</span>
+
+    <span class="keyword">template</span> <span class="special">&lt;</span><span class="keyword">class</span> <span class="identifier">Seq</span><span class="special">&gt;</span>
+    <span class="keyword">typename</span> <span class="identifier">result</span><span class="special">&lt;</span> <span class="keyword">void</span><span class="special">(</span><span class="identifier">Seq</span><span class="special">)</span> <span class="special">&gt;::</span><span class="identifier">type</span> <span class="keyword">operator</span><span class="special">()(</span><span class="identifier">Seq</span> <span class="keyword">const</span> <span class="special">&amp;</span> <span class="identifier">tie</span><span class="special">)</span>
+    <span class="special">{</span>
+        <span class="keyword">return</span> <span class="keyword">typename</span> <span class="identifier">result</span><span class="special">&lt;</span> <span class="keyword">void</span><span class="special">(</span><span class="identifier">Seq</span><span class="special">)</span> <span class="special">&gt;::</span><span class="identifier">type</span><span class="special">(</span>
+            <span class="identifier">fused_parallel_adder</span><span class="special">&lt;</span><span class="identifier">Seq</span><span class="special">&gt;(</span><span class="identifier">tie</span><span class="special">)</span> <span class="special">);</span>
+    <span class="special">}</span>
+<span class="special">};</span>
+<span class="identifier">unfused_lvalue_args</span><span class="special">&lt;</span><span class="identifier">fused_parallel_adder_maker</span><span class="special">&gt;</span> <span class="identifier">parallel_add</span><span class="special">;</span>
+
+<span class="keyword">void</span> <span class="identifier">try_it</span><span class="special">()</span>
+<span class="special">{</span>
+    <span class="keyword">int</span> <span class="identifier">a</span> <span class="special">=</span> <span class="number">2</span><span class="special">;</span> <span class="keyword">char</span> <span class="identifier">b</span> <span class="special">=</span> <span class="char">'X'</span><span class="special">;</span>
+    <span class="comment">// the second call is strictly typed with the types deduced from the
+</span>    <span class="comment">// first call
+</span>    <span class="identifier">parallel_add</span><span class="special">(</span><span class="identifier">a</span><span class="special">,</span><span class="identifier">b</span><span class="special">)(</span><span class="number">3</span><span class="special">,</span><span class="number">2</span><span class="special">);</span>
+    <span class="identifier">parallel_add</span><span class="special">(</span><span class="identifier">a</span><span class="special">,</span><span class="identifier">b</span><span class="special">)(</span><span class="number">3</span><span class="special">);</span>
+    <span class="identifier">parallel_add</span><span class="special">(</span><span class="identifier">a</span><span class="special">,</span><span class="identifier">b</span><span class="special">)();</span>
+    <span class="identifier">assert</span><span class="special">(</span><span class="identifier">a</span> <span class="special">==</span> <span class="number">8</span> <span class="special">&amp;&amp;</span> <span class="identifier">b</span> <span class="special">==</span> <span class="char">'Z'</span><span class="special">);</span>
+<span class="special">}</span>
+</pre>
+<a name="fusion.functional.adapters.unfused_typed.see_also"></a><h5>
+<a name="id674239"></a>
+          <a href="unfused_typed.html#fusion.functional.adapters.unfused_typed.see_also">See also</a>
+        </h5>
+<div class="itemizedlist"><ul type="disc">
+<li><a href="unfused_generic.html" title="unfused_generic"><tt class="computeroutput"><span class="identifier">unfused_generic</span></tt></a></li>
+<li><a href="unfused_lvalue_args.html" title="unfused_lvalue_args"><tt class="computeroutput"><span class="identifier">unfused_lvalue_args</span></tt></a></li>
+<li><a href="unfused_rvalue_args.html" title="unfused_rvalue_args"><tt class="computeroutput"><span class="identifier">unfused_rvalue_args</span></tt></a></li>
+<li><a href="../../support/deduce.html" title="deduce"><tt class="computeroutput"><span class="identifier">deduce</span></tt></a></li>
+<li><a href="../../support/deduce_sequence.html" title="deduce_sequence"><tt class="computeroutput"><span class="identifier">deduce_sequence</span></tt></a></li>
+</ul></div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2001-2007 Joel de Guzman, Dan Marsden, Tobias
+      Schwinger<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="unfused_rvalue_args.html"><img src="../../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../adapters.html"><img src="../../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../../index.html"><img src="../../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="../generation.html"><img src="../../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

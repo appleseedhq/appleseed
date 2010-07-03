@@ -1,0 +1,301 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Implementation Rationale</title>
+<link rel="stylesheet" href="../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../unordered.html" title="Chapter 25. Boost.Unordered">
+<link rel="prev" href="comparison.html" title="Comparison with Associative Containers">
+<link rel="next" href="changes.html" title="Change Log">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../boost.png"></td>
+<td align="center"><a href="../../../index.html">Home</a></td>
+<td align="center"><a href="../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="comparison.html"><img src="../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../unordered.html"><img src="../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="changes.html"><img src="../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="unordered.rationale"></a><a class="link" href="rationale.html" title="Implementation Rationale"> Implementation Rationale</a>
+</h2></div></div></div>
+<p>
+      The intent of this library is to implement the unordered containers in the
+      draft standard, so the interface was fixed. But there are still some implementation
+      decisions to make. The priorities are conformance to the standard and portability.
+    </p>
+<p>
+      The <a href="http://en.wikipedia.org/wiki/Hash_table" target="_top">wikipedia article
+      on hash tables</a> has a good summary of the implementation issues for
+      hash tables in general.
+    </p>
+<a name="unordered.rationale.data_structure"></a><h3>
+<a name="id3946912"></a>
+      <a class="link" href="rationale.html#unordered.rationale.data_structure">Data Structure</a>
+    </h3>
+<p>
+      By specifying an interface for accessing the buckets of the container the standard
+      pretty much requires that the hash table uses chained addressing.
+    </p>
+<p>
+      It would be conceivable to write a hash table that uses another method. For
+      example, it could use open addressing, and use the lookup chain to act as a
+      bucket but there are a some serious problems with this:
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+        The draft standard requires that pointers to elements aren't invalidated,
+        so the elements can't be stored in one array, but will need a layer of indirection
+        instead - losing the efficiency and most of the memory gain, the main advantages
+        of open addressing.
+      </li>
+<li>
+        Local iterators would be very inefficient and may not be able to meet the
+        complexity requirements.
+      </li>
+<li>
+        There are also the restrictions on when iterators can be invalidated. Since
+        open addressing degrades badly when there are a high number of collisions
+        the restrictions could prevent a rehash when it's really needed. The maximum
+        load factor could be set to a fairly low value to work around this - but
+        the standard requires that it is initially set to 1.0.
+      </li>
+<li>
+        And since the standard is written with a eye towards chained addressing,
+        users will be surprised if the performance doesn't reflect that.
+      </li>
+</ul></div>
+<p>
+      So chained addressing is used.
+    </p>
+<p>
+      For containers with unique keys I store the buckets in a single-linked list.
+      There are other possible data structures (such as a double-linked list) that
+      allow for some operations to be faster (such as erasing and iteration) but
+      the possible gain seems small compared to the extra memory needed. The most
+      commonly used operations (insertion and lookup) would not be improved at all.
+    </p>
+<p>
+      But for containers with equivalent keys a single-linked list can degrade badly
+      when a large number of elements with equivalent keys are inserted. I think
+      it's reasonable to assume that users who choose to use <code class="computeroutput"><span class="identifier">unordered_multiset</span></code>
+      or <code class="computeroutput"><span class="identifier">unordered_multimap</span></code> do so
+      because they are likely to insert elements with equivalent keys. So I have
+      used an alternative data structure that doesn't degrade, at the expense of
+      an extra pointer per node.
+    </p>
+<p>
+      This works by adding storing a circular linked list for each group of equivalent
+      nodes in reverse order. This allows quick navigation to the end of a group
+      (since the first element points to the last) and can be quickly updated when
+      elements are inserted or erased. The main disadvantage of this approach is
+      some hairy code for erasing elements.
+    </p>
+<a name="unordered.rationale.number_of_buckets"></a><h3>
+<a name="id3947032"></a>
+      <a class="link" href="rationale.html#unordered.rationale.number_of_buckets">Number of Buckets</a>
+    </h3>
+<p>
+      There are two popular methods for choosing the number of buckets in a hash
+      table. One is to have a prime number of buckets, another is to use a power
+      of 2.
+    </p>
+<p>
+      Using a prime number of buckets, and choosing a bucket by using the modulus
+      of the hash function's result will usually give a good result. The downside
+      is that the required modulus operation is fairly expensive.
+    </p>
+<p>
+      Using a power of 2 allows for much quicker selection of the bucket to use,
+      but at the expense of loosing the upper bits of the hash value. For some specially
+      designed hash functions it is possible to do this and still get a good result
+      but as the containers can take arbitrary hash functions this can't be relied
+      on.
+    </p>
+<p>
+      To avoid this a transformation could be applied to the hash function, for an
+      example see <a href="http://www.concentric.net/~Ttwang/tech/inthash.htm" target="_top">Thomas
+      Wang's article on integer hash functions</a>. Unfortunately, a transformation
+      like Wang's requires knowledge of the number of bits in the hash value, so
+      it isn't portable enough. This leaves more expensive methods, such as Knuth's
+      Multiplicative Method (mentioned in Wang's article). These don't tend to work
+      as well as taking the modulus of a prime, and the extra computation required
+      might negate efficiency advantage of power of 2 hash tables.
+    </p>
+<p>
+      So, this implementation uses a prime number for the hash table size.
+    </p>
+<a name="unordered.rationale.equality_operators"></a><h3>
+<a name="id3947099"></a>
+      <a class="link" href="rationale.html#unordered.rationale.equality_operators">Equality operators</a>
+    </h3>
+<p>
+      <code class="computeroutput"><span class="keyword">operator</span><span class="special">==</span></code>
+      and <code class="computeroutput"><span class="keyword">operator</span><span class="special">!=</span></code>
+      are not included in the standard, but I've added them as I think they could
+      be useful and can be efficiently implemented. They are specified differently
+      to the standard associative containers, comparing keys using the equality predicate
+      rather than <code class="computeroutput"><span class="keyword">operator</span><span class="special">==</span></code>.
+      This is inconsistent with the other containers but it is probably closer to
+      user's expectations.
+    </p>
+<a name="unordered.rationale.active_issues_and_proposals"></a><h3>
+<a name="id3947169"></a>
+      <a class="link" href="rationale.html#unordered.rationale.active_issues_and_proposals">Active Issues
+      and Proposals</a>
+    </h3>
+<a name="unordered.rationale.removing_unused_allocator_functions"></a><h4>
+<a name="id3947191"></a>
+      <a class="link" href="rationale.html#unordered.rationale.removing_unused_allocator_functions">Removing
+      unused allocator functions</a>
+    </h4>
+<p>
+      In <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2257.html" target="_top">N2257,
+      removing unused allocator functions</a>, Matt Austern suggests removing
+      the <code class="computeroutput"><span class="identifier">construct</span></code>, <code class="computeroutput"><span class="identifier">destroy</span></code> and <code class="computeroutput"><span class="identifier">address</span></code>
+      member functions - all of which Boost.Unordered calls. Changing this will simplify
+      the implementation, as well as make supporting <code class="computeroutput"><span class="identifier">emplace</span></code>
+      easier, but means that the containers won't support allocators which require
+      these methods to be called. Detlef Vollmann opposed this change in <a href="http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2007/n2339.htm" target="_top">N2339</a>.
+    </p>
+<a name="unordered.rationale.swapping_containers_with_unequal_allocators"></a><h4>
+<a name="id3947273"></a>
+      <a class="link" href="rationale.html#unordered.rationale.swapping_containers_with_unequal_allocators">Swapping
+      containers with unequal allocators</a>
+    </h4>
+<p>
+      It isn't clear how to swap containers when their allocators aren't equal. This
+      is <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#431" target="_top">Issue
+      431: Swapping containers with unequal allocators</a>.
+    </p>
+<p>
+      Howard Hinnant wrote about this in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2004/n1599.html" target="_top">N1599</a>
+      and suggested swapping both the allocators and the containers' contents. But
+      the committee have now decided that <code class="computeroutput"><span class="identifier">swap</span></code>
+      should do a fast swap if the allocator is Swappable and a slow swap using copy
+      construction otherwise. To make this distinction requires concepts.
+    </p>
+<p>
+      In <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2387.pdf" target="_top">N2387,
+      Omnibus Allocator Fix-up Proposals</a>, Pablo Halpern suggests that there
+      are actually two distinct allocator models, "Moves with Value" and
+      "Scoped" which behave differently:
+    </p>
+<div class="blockquote"><blockquote class="blockquote">
+<p>
+        </p>
+<p>
+          When allocators are allowed to have state, it is necessary to have a model
+          for determining from where an object obtains its allocator. We&#8217;ve identified
+          two such models: the &#8220;Moves with Value&#8221; allocator model and the &#8220;Scoped&#8221;
+          allocator model.
+        </p>
+<p>
+        </p>
+<p>
+          In the &#8220;Moves with Value&#8221; allocator model, the copy constructor of
+          an allocator-aware class will copy both the value and the allocator from
+          its argument. This is the model specified in the C++03 standard. With this
+          model, inserting an object into a container usually causes the new container
+          item to copy the allocator from the object that was inserted. This model
+          can be useful in special circumstances, e.g., if the items within a container
+          use an allocator that is specially tuned to the item&#8217;s type.
+        </p>
+<p>
+        </p>
+<p>
+          In the &#8220;Scoped&#8221; allocator model, the allocator used to construct an
+          object is determined by the context of that object, much like a storage
+          class. With this model, inserting an object into a container causes the
+          new container item to use the same allocator as the container. To avoid
+          allocators being used in the wrong context, the allocator is never copied
+          during copy or move construction. Thus, it is possible using this model
+          to use allocators based on short-lived resources without fear that an object
+          will transfer its allocator to a copy that might outlive the (shared) allocator
+          resource. This model is reasonably safe and generally useful on a large
+          scale. There was strong support in the 2005 Tremblant meeting for pursuing
+          an allocator model that propagates allocators from container to contained
+          objects.
+        </p>
+<p>
+      </p>
+</blockquote></div>
+<p>
+      With these models the choice becomes clearer:
+    </p>
+<div class="blockquote"><blockquote class="blockquote">
+<p>
+        </p>
+<p>
+          I introduced the &#8220;Moves with Value&#8221; allocator model and the &#8220;Scoped&#8221;
+          allocator model. In the former case, the allocator is copied when the container
+          is copy-constructed. In the latter case it is not. Swapping the allocators
+          is the right thing to do if the containers conform to the &#8220;Moves with
+          Value&#8221; allocator model and absolutely the wrong thing to do if the containers
+          conform to the &#8220;Scoped&#8221; allocator model. With the two allocator models
+          well-defined, the desired behavior becomes clear.
+        </p>
+<p>
+      </p>
+</blockquote></div>
+<p>
+      The proposal is that allocators are swapped if the allocator follows the "Moves
+      with Value" model and the allocator is swappable. Otherwise a slow swap
+      is used. Since containers currently only support the "Moves with Value"
+      model this is consistent with the committee's current recommendation (although
+      it suggests using a trait to detect if the allocator is swappable rather than
+      a concept).
+    </p>
+<p>
+      Since there is currently neither have a swappable trait or concept for allocators
+      this implementation always performs a slow swap.
+    </p>
+<a name="unordered.rationale.are_insert_and_erase_stable_for_unordered_multiset_and_unordered_multimap_"></a><h4>
+<a name="id3947394"></a>
+      <a class="link" href="rationale.html#unordered.rationale.are_insert_and_erase_stable_for_unordered_multiset_and_unordered_multimap_">Are
+      insert and erase stable for unordered_multiset and unordered_multimap?</a>
+    </h4>
+<p>
+      It is not specified if <code class="computeroutput"><span class="identifier">unordered_multiset</span></code>
+      and <code class="computeroutput"><span class="identifier">unordered_multimap</span></code> preserve
+      the order of elements with equivalent keys (i.e. if they're stable under <code class="computeroutput"><span class="identifier">insert</span></code> and <code class="computeroutput"><span class="identifier">erase</span></code>).
+      This is <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#518" target="_top">issue
+      581</a>. The current proposal is that insert, erase and rehash are stable
+      - so they are here. (Update: during the release of this version, this requirement
+      was added to <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2008/n2691.pdf" target="_top">the
+      lastest working draft</a>).
+    </p>
+<a name="unordered.rationale.const_local_iterator_cbegin__cend_missing_from_tr1"></a><h4>
+<a name="id3947477"></a>
+      <a class="link" href="rationale.html#unordered.rationale.const_local_iterator_cbegin__cend_missing_from_tr1">const_local_iterator
+      cbegin, cend missing from TR1</a>
+    </h4>
+<p>
+      <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2008/n2684.html#691" target="_top">Issue
+      691</a> is that <code class="computeroutput"><span class="identifier">cbegin</span></code>
+      and <code class="computeroutput"><span class="identifier">cend</span></code> are missing for local
+      iterators. The current resolution is that they'll be added, so I've added them.
+    </p>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2003, 2004 Jeremy B. Maitin-Shepard<br>Copyright © 2005-2008 Daniel
+      James<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="comparison.html"><img src="../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../unordered.html"><img src="../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="changes.html"><img src="../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

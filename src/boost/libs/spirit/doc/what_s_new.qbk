@@ -1,0 +1,45 @@
+[/==============================================================================
+    Copyright (C) 2001-2008 Joel de Guzman
+    Copyright (C) 2001-2009 Hartmut Kaiser
+
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
+    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+===============================================================================/]
+
+[section What's New]
+
+[heading Spirit Classic]
+
+The Spirit V1.8.x code base has been integrated with Spirit V2. It is now called
+__classic__. Even if the directory structure has changed (the Spirit Classic
+headers are now moved to the '''$BOOST_ROOT/boost/spirit/home/classic''' directory),
+we created forwarding headers allowing to compile existing applications without
+any change. These forwarding headers are deprecated, though, which will result
+in corresponding warnings generated for each of the headers starting with Boost
+V1.38. The forwarding headers are expected to be removed in the future.
+
+The recommended way of using Spirit Classic now is to include header files from
+the directory '''$BOOST_ROOT/boost/spirit/include'''. All files of Spirit Classic
+in this directory have a 'classic_' prefixed to their name. For example the
+include
+
+    #include <boost/spirit/core/core.hpp>
+
+now should be written as:
+
+    #include <boost/spirit/include/classic_core.hpp>
+
+To avoid namespace conflicts with the new Spirit V2 library we moved Spirit Classic
+into the namespace `boost::spirit::classic`. All references to the former
+namespace `boost::spirit` need to be adjusted as soon as the header names are
+corrected as described above. As an alternative you can define the preprocessor
+constant `BOOST_SPIRIT_USE_OLD_NAMESPACE`, which will force the Spirit Classic
+code to be in the namespace `boost::spirit` as before. This is not recommended,
+though, as it may result in naming clashes.
+
+The change of the namespace will be automatically deactivated whenever the
+deprecated include files are being used. This ensures full backwards
+compatibility for existing applications.
+
+
+[endsect]

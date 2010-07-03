@@ -1,0 +1,101 @@
+<?xml version="1.0"?>
+<!--
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+
+<!DOCTYPE book SYSTEM "sbk:/style/dtd/book.dtd">
+
+<book title="&XercesCName; Documentation" copyright="1999-2007 The Apache Software Foundation">
+
+  &home;
+
+
+  <separator/>
+
+     <document id="index"       label="Readme"             source="readme.xml"/>
+     <document id="charter"     label="Charter"             source="charter.xml"/>
+     <document id="releases"    label="Release Info"     source="releases.xml"/>
+     <hidden id="releases_archive"                   source="releases_archive.xml"/>
+     &releases_plan;
+
+
+  <separator/>
+
+     <document id="install"     label="Installation"       source="install.xml"/>
+     <external href="http://&XercesDistDir;"              label="Download"/>
+     <hidden   id="download" source="download.xml"/>
+     <document id="build"       label="Build Instructions" source="build.xml"/>
+     <hidden   id="build-winunix" source="build-winunix.xml"/>
+     <hidden   id="build-other" source="build-other.xml"/>
+     <hidden   id="build-misc"  source="build-misc.xml"/>
+
+  <separator/>
+
+     <document id="program"     label="Programming"  source="program.xml"/>
+     <hidden   id="program-sax"           source="program-sax.xml"/>
+     <hidden   id="program-sax2"          source="program-sax2.xml"/>
+     <hidden   id="program-dom"           source="program-dom.xml"/>
+     <hidden   id="dom3"                  source="dom3.xml"/>
+     <hidden   id="program-deprecateddom" source="program-deprecateddom.xml"/>
+     <hidden   id="schema"                source="schema.xml"/>
+     <hidden   id="program-others"        source="program-others.xml"/>
+
+     <document id="samples"     label="Samples"      source="samples.xml"/>
+     <hidden   id="saxcount"    source="saxcount.xml"/>
+     <hidden   id="saxprint"    source="saxprint.xml"/>
+     <hidden   id="domcount"    source="domcount.xml"/>
+     <hidden   id="domprint"    source="domprint.xml"/>
+     <hidden   id="memparse"    source="memparse.xml"/>
+     <hidden   id="redirect"    source="redirect.xml"/>
+     <hidden   id="pparse"      source="pparse.xml"/>
+     <hidden   id="stdinparse"  source="stdinparse.xml"/>
+     <hidden   id="enumval"     source="enumval.xml"/>
+     <hidden   id="createdoc"   source="createdoc.xml"/>
+     <hidden   id="sax2count"   source="sax2count.xml"/>
+     <hidden   id="sax2print"   source="sax2print.xml"/>
+     <hidden   id="senumval"    source="senumval.xml"/>
+     <hidden   id="psviwriter"  source="psviwriter.xml"/>
+     <hidden   id="scmprint"    source="scmprint.xml"/>
+
+     <group    id="faqs"        label="FAQs">
+        &faq-distrib;
+        <entry id="faq-build"   source="faq-build.xml"/>
+        <entry id="faq-parse"   source="faq-parse.xml"/>
+        <entry id="faq-other"   source="faq-other.xml"/>
+        &faq-contributing;
+     </group>
+
+  <separator/>
+
+     <document id="api"         label="API Reference"     source="apidocs.xml"/>
+
+     <external href="ApacheDOMC++Binding.html"     label="DOM C++ Binding"/>
+
+     <document id="migrate"     label="Migration Guide"    source="migration.xml"/>
+     <hidden   id="migrate_archive" source="migration_archive.xml"/>
+
+  <separator/>
+
+  <document id="feedback"    label="Feedback"     source="feedback.xml"/>
+  <document id="bug-report"  label="Bug-Reporting" source="bug-report.xml"/>
+  <document id="mailing-lists"  label="Mailing Lists" source="mailing-lists.xml"/>
+
+  <separator/>
+
+   <document id="source-repository"  label="Source Repository" source="source-repository.xml"/>
+   <document id="applications"  label="Applications" source="applications.xml"/>
+
+</book>

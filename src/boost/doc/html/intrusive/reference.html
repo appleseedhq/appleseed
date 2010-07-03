@@ -1,0 +1,841 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Reference</title>
+<link rel="stylesheet" href="../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../intrusive.html" title="Chapter 10. Boost.Intrusive">
+<link rel="prev" href="acknowledgements.html" title="Acknowledgements">
+<link rel="next" href="../boost/intrusive/make_any_base_hook.html" title="Struct template make_any_base_hook">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../boost.png"></td>
+<td align="center"><a href="../../../index.html">Home</a></td>
+<td align="center"><a href="../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="acknowledgements.html"><img src="../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../intrusive.html"><img src="../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="../boost/intrusive/make_any_base_hook.html"><img src="../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="intrusive.reference"></a>Reference</h2></div></div></div>
+<div class="toc"><dl>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.any_hook_hpp">Header &lt;boost/intrusive/any_hook.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.avl_set_hpp">Header &lt;boost/intrusive/avl_set.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.avl_set_hook_hpp">Header &lt;boost/intrusive/avl_set_hook.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.avltree_hpp">Header &lt;boost/intrusive/avltree.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.avltree_algorithms_hpp">Header &lt;boost/intrusive/avltree_algorithms.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.bs_set_hook_hpp">Header &lt;boost/intrusive/bs_set_hook.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.circular_list_algorithms_hpp">Header &lt;boost/intrusive/circular_list_algorithms.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.circular_slist_algorithms_hpp">Header &lt;boost/intrusive/circular_slist_algorithms.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.derivation_value_traits_hpp">Header &lt;boost/intrusive/derivation_value_traits.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.hashtable_hpp">Header &lt;boost/intrusive/hashtable.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.linear_slist_algorithms_hpp">Header &lt;boost/intrusive/linear_slist_algorithms.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.link_mode_hpp">Header &lt;boost/intrusive/link_mode.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.list_hpp">Header &lt;boost/intrusive/list.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.list_hook_hpp">Header &lt;boost/intrusive/list_hook.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.member_value_traits_hpp">Header &lt;boost/intrusive/member_value_traits.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.options_hpp">Header &lt;boost/intrusive/options.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.pointer_plus_bits_hpp">Header &lt;boost/intrusive/pointer_plus_bits.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.priority_compare_hpp">Header &lt;boost/intrusive/priority_compare.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.rbtree_hpp">Header &lt;boost/intrusive/rbtree.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.rbtree_algorithms_hpp">Header &lt;boost/intrusive/rbtree_algorithms.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.set_hpp">Header &lt;boost/intrusive/set.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.set_hook_hpp">Header &lt;boost/intrusive/set_hook.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.sg_set_hpp">Header &lt;boost/intrusive/sg_set.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.sgtree_hpp">Header &lt;boost/intrusive/sgtree.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.sgtree_algorithms_hpp">Header &lt;boost/intrusive/sgtree_algorithms.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.slist_hpp">Header &lt;boost/intrusive/slist.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.slist_hook_hpp">Header &lt;boost/intrusive/slist_hook.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.splay_set_hpp">Header &lt;boost/intrusive/splay_set.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.splay_set_hook_hpp">Header &lt;boost/intrusive/splay_set_hook.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.splaytree_hpp">Header &lt;boost/intrusive/splaytree.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.splaytree_algorithms_hpp">Header &lt;boost/intrusive/splaytree_algorithms.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.treap_hpp">Header &lt;boost/intrusive/treap.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.treap_algorithms_hpp">Header &lt;boost/intrusive/treap_algorithms.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.treap_set_hpp">Header &lt;boost/intrusive/treap_set.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.trivial_value_traits_hpp">Header &lt;boost/intrusive/trivial_value_traits.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.unordered_set_hpp">Header &lt;boost/intrusive/unordered_set.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.intrusive.unordered_set_hook_hpp">Header &lt;boost/intrusive/unordered_set_hook.hpp&gt;</a></span></dt>
+</dl></div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.any_hook_hpp"></a>Header &lt;<a href="../../../boost/intrusive/any_hook.hpp" target="_top">boost/intrusive/any_hook.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_any_base_hook.html" title="Struct template make_any_base_hook">make_any_base_hook</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/any_base_hook.html" title="Class template any_base_hook">any_base_hook</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_any_member_hook.html" title="Struct template make_any_member_hook">make_any_member_hook</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/any_member_hook.html" title="Class template any_member_hook">any_member_hook</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> BaseHook&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/any_to_slist_hook.html" title="Struct template any_to_slist_hook">any_to_slist_hook</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> BaseHook&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/any_to_list_hook.html" title="Struct template any_to_list_hook">any_to_list_hook</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> BaseHook&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/any_to_set_hook.html" title="Struct template any_to_set_hook">any_to_set_hook</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> BaseHook&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/any_to_avl_set_hook.html" title="Struct template any_to_avl_set_hook">any_to_avl_set_hook</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> BaseHook&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/any_to_bs_set_hook.html" title="Struct template any_to_bs_set_hook">any_to_bs_set_hook</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> BaseHook&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/any_to_unordered_set_hook.html" title="Struct template any_to_unordered_set_hook">any_to_unordered_set_hook</a>;
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.avl_set_hpp"></a>Header &lt;<a href="../../../boost/intrusive/avl_set.hpp" target="_top">boost/intrusive/avl_set.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/avl_set.html" title="Class template avl_set">avl_set</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_avl_set.html" title="Struct template make_avl_set">make_avl_set</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/avl_multiset.html" title="Class template avl_multiset">avl_multiset</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_avl_multiset.html" title="Struct template make_avl_multiset">make_avl_multiset</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator!=_id693731"></a><span class="bold"><strong>operator</strong></span>!=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/avl_set.html" title="Class template avl_set">avl_set</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/avl_set.html" title="Class template avl_set">avl_set</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_id901184"></a><span class="bold"><strong>operator</strong></span>&gt;(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/avl_set.html" title="Class template avl_set">avl_set</a>&lt; T, Options...&gt; &amp; x, 
+                     <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/avl_set.html" title="Class template avl_set">avl_set</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id732001"></a><span class="bold"><strong>operator</strong></span>&lt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/avl_set.html" title="Class template avl_set">avl_set</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/avl_set.html" title="Class template avl_set">avl_set</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id649229"></a><span class="bold"><strong>operator</strong></span>&gt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/avl_set.html" title="Class template avl_set">avl_set</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/avl_set.html" title="Class template avl_set">avl_set</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>void</strong></span></span> <a name="boost.intrusive.swap_id866994"></a>swap(<a class="link" href="../boost/intrusive/avl_set.html" title="Class template avl_set">avl_set</a>&lt; T, Options...&gt; &amp; x, <a class="link" href="../boost/intrusive/avl_set.html" title="Class template avl_set">avl_set</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator!=_id622891"></a><span class="bold"><strong>operator</strong></span>!=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/avl_multiset.html" title="Class template avl_multiset">avl_multiset</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/avl_multiset.html" title="Class template avl_multiset">avl_multiset</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_id1137000"></a><span class="bold"><strong>operator</strong></span>&gt;(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/avl_multiset.html" title="Class template avl_multiset">avl_multiset</a>&lt; T, Options...&gt; &amp; x, 
+                     <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/avl_multiset.html" title="Class template avl_multiset">avl_multiset</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id1137558"></a><span class="bold"><strong>operator</strong></span>&lt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/avl_multiset.html" title="Class template avl_multiset">avl_multiset</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/avl_multiset.html" title="Class template avl_multiset">avl_multiset</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id1113084"></a><span class="bold"><strong>operator</strong></span>&gt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/avl_multiset.html" title="Class template avl_multiset">avl_multiset</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/avl_multiset.html" title="Class template avl_multiset">avl_multiset</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>void</strong></span></span> <a name="boost.intrusive.swap_id871356"></a>swap(<a class="link" href="../boost/intrusive/avl_multiset.html" title="Class template avl_multiset">avl_multiset</a>&lt; T, Options...&gt; &amp; x, 
+                <a class="link" href="../boost/intrusive/avl_multiset.html" title="Class template avl_multiset">avl_multiset</a>&lt; T, Options...&gt; &amp; y);
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.avl_set_hook_hpp"></a>Header &lt;<a href="../../../boost/intrusive/avl_set_hook.hpp" target="_top">boost/intrusive/avl_set_hook.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_avl_set_base_hook.html" title="Struct template make_avl_set_base_hook">make_avl_set_base_hook</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/avl_set_base_hook.html" title="Class template avl_set_base_hook">avl_set_base_hook</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_avl_set_member_hook.html" title="Struct template make_avl_set_member_hook">make_avl_set_member_hook</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/avl_set_member_hook.html" title="Class template avl_set_member_hook">avl_set_member_hook</a>;
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.avltree_hpp"></a>Header &lt;<a href="../../../boost/intrusive/avltree.hpp" target="_top">boost/intrusive/avltree.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/avltree.html" title="Class template avltree">avltree</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_avltree.html" title="Struct template make_avltree">make_avltree</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_id763350"></a><span class="bold"><strong>operator</strong></span>&lt;(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/avltree.html" title="Class template avltree">avltree</a>&lt; T, Options...&gt; &amp; x, 
+                     <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/avltree.html" title="Class template avltree">avltree</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator==_id1109776"></a><span class="bold"><strong>operator</strong></span>==(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/avltree.html" title="Class template avltree">avltree</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/avltree.html" title="Class template avltree">avltree</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator!=_id721347"></a><span class="bold"><strong>operator</strong></span>!=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/avltree.html" title="Class template avltree">avltree</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/avltree.html" title="Class template avltree">avltree</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_id695452"></a><span class="bold"><strong>operator</strong></span>&gt;(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/avltree.html" title="Class template avltree">avltree</a>&lt; T, Options...&gt; &amp; x, 
+                     <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/avltree.html" title="Class template avltree">avltree</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id695490"></a><span class="bold"><strong>operator</strong></span>&lt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/avltree.html" title="Class template avltree">avltree</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/avltree.html" title="Class template avltree">avltree</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id695529"></a><span class="bold"><strong>operator</strong></span>&gt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/avltree.html" title="Class template avltree">avltree</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/avltree.html" title="Class template avltree">avltree</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>void</strong></span></span> <a name="boost.intrusive.swap_id836522"></a>swap(<a class="link" href="../boost/intrusive/avltree.html" title="Class template avltree">avltree</a>&lt; T, Options...&gt; &amp; x, <a class="link" href="../boost/intrusive/avltree.html" title="Class template avltree">avltree</a>&lt; T, Options...&gt; &amp; y);
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.avltree_algorithms_hpp"></a>Header &lt;<a href="../../../boost/intrusive/avltree_algorithms.hpp" target="_top">boost/intrusive/avltree_algorithms.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> NodeTraits&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/avltree_algorithms.html" title="Class template avltree_algorithms">avltree_algorithms</a>;
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.bs_set_hook_hpp"></a>Header &lt;<a href="../../../boost/intrusive/bs_set_hook.hpp" target="_top">boost/intrusive/bs_set_hook.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_bs_set_base_hook.html" title="Struct template make_bs_set_base_hook">make_bs_set_base_hook</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/bs_set_base_hook.html" title="Class template bs_set_base_hook">bs_set_base_hook</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_bs_set_member_hook.html" title="Struct template make_bs_set_member_hook">make_bs_set_member_hook</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/bs_set_member_hook.html" title="Class template bs_set_member_hook">bs_set_member_hook</a>;
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.circular_list_algorithms_hpp"></a>Header &lt;<a href="../../../boost/intrusive/circular_list_algorithms.hpp" target="_top">boost/intrusive/circular_list_algorithms.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> NodeTraits&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/circular_list_algorithms.html" title="Class template circular_list_algorithms">circular_list_algorithms</a>;
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.circular_slist_algorithms_hpp"></a>Header &lt;<a href="../../../boost/intrusive/circular_slist_algorithms.hpp" target="_top">boost/intrusive/circular_slist_algorithms.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> NodeTraits&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/circular_slist_algorithms.html" title="Class template circular_slist_algorithms">circular_slist_algorithms</a>;
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.derivation_value_traits_hpp"></a>Header &lt;<a href="../../../boost/intrusive/derivation_value_traits.hpp" target="_top">boost/intrusive/derivation_value_traits.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>typename</strong></span> NodeTraits, 
+             link_mode_type LinkMode = safe_link&gt; 
+      <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/derivation_value_traits.html" title="Struct template derivation_value_traits">derivation_value_traits</a>;
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.hashtable_hpp"></a>Header &lt;<a href="../../../boost/intrusive/hashtable.hpp" target="_top">boost/intrusive/hashtable.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/hashtable.html" title="Class template hashtable">hashtable</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_hashtable.html" title="Struct template make_hashtable">make_hashtable</a>;
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.linear_slist_algorithms_hpp"></a>Header &lt;<a href="../../../boost/intrusive/linear_slist_algorithms.hpp" target="_top">boost/intrusive/linear_slist_algorithms.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> NodeTraits&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/linear_slist_algorithms.html" title="Class template linear_slist_algorithms">linear_slist_algorithms</a>;
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.link_mode_hpp"></a>Header &lt;<a href="../../../boost/intrusive/link_mode.hpp" target="_top">boost/intrusive/link_mode.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>enum</strong></span> <a class="link" href="../boost/intrusive/link_mode_type.html" title="Type link_mode_type">link_mode_type</a>;
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.list_hpp"></a>Header &lt;<a href="../../../boost/intrusive/list.hpp" target="_top">boost/intrusive/list.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/list.html" title="Class template list">list</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_list.html" title="Struct template make_list">make_list</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_id2096032"></a><span class="bold"><strong>operator</strong></span>&lt;(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/list.html" title="Class template list">list</a>&lt; T, Options...&gt; &amp; x, 
+                     <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/list.html" title="Class template list">list</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator==_id2096070"></a><span class="bold"><strong>operator</strong></span>==(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/list.html" title="Class template list">list</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/list.html" title="Class template list">list</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator!=_id2096109"></a><span class="bold"><strong>operator</strong></span>!=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/list.html" title="Class template list">list</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/list.html" title="Class template list">list</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_id2096148"></a><span class="bold"><strong>operator</strong></span>&gt;(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/list.html" title="Class template list">list</a>&lt; T, Options...&gt; &amp; x, 
+                     <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/list.html" title="Class template list">list</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id2096186"></a><span class="bold"><strong>operator</strong></span>&lt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/list.html" title="Class template list">list</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/list.html" title="Class template list">list</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id2096225"></a><span class="bold"><strong>operator</strong></span>&gt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/list.html" title="Class template list">list</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/list.html" title="Class template list">list</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>void</strong></span></span> <a name="boost.intrusive.swap_id2096264"></a>swap(<a class="link" href="../boost/intrusive/list.html" title="Class template list">list</a>&lt; T, Options...&gt; &amp; x, <a class="link" href="../boost/intrusive/list.html" title="Class template list">list</a>&lt; T, Options...&gt; &amp; y);
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.list_hook_hpp"></a>Header &lt;<a href="../../../boost/intrusive/list_hook.hpp" target="_top">boost/intrusive/list_hook.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_list_base_hook.html" title="Struct template make_list_base_hook">make_list_base_hook</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/list_base_hook.html" title="Class template list_base_hook">list_base_hook</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_list_member_hook.html" title="Struct template make_list_member_hook">make_list_member_hook</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/list_member_hook.html" title="Class template list_member_hook">list_member_hook</a>;
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.member_value_traits_hpp"></a>Header &lt;<a href="../../../boost/intrusive/member_value_traits.hpp" target="_top">boost/intrusive/member_value_traits.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>typename</strong></span> NodeTraits, 
+             <span class="bold"><strong>typename</strong></span> NodeTraits::node T::* PtrToMember, 
+             link_mode_type LinkMode = safe_link&gt; 
+      <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/member_value_traits.html" title="Struct template member_value_traits">member_value_traits</a>;
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.options_hpp"></a>Header &lt;<a href="../../../boost/intrusive/options.hpp" target="_top">boost/intrusive/options.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>bool</strong></span> Enabled&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/constant_time_size.html" title="Struct template constant_time_size">constant_time_size</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> SizeType&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/size_type.html" title="Struct template size_type">size_type</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Compare&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/compare.html" title="Struct template compare">compare</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>bool</strong></span> Enabled&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/floating_point.html" title="Struct template floating_point">floating_point</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Equal&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/equal.html" title="Struct template equal">equal</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Priority&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/priority.html" title="Struct template priority">priority</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Hash&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/hash.html" title="Struct template hash">hash</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> ValueTraits&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/value_traits.html" title="Struct template value_traits">value_traits</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Parent, <span class="bold"><strong>typename</strong></span> MemberHook, 
+             MemberHook Parent::* PtrToMember&gt; 
+      <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/member_hook.html" title="Struct template member_hook">member_hook</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> BaseHook&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/base_hook.html" title="Struct template base_hook">base_hook</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> VoidPointer&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/void_pointer.html" title="Struct template void_pointer">void_pointer</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Tag&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/tag.html" title="Struct template tag">tag</a>;
+    <span class="bold"><strong>template</strong></span>&lt;link_mode_type LinkType&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/link_mode.html" title="Struct template link_mode">link_mode</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>bool</strong></span> Enabled&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/optimize_size.html" title="Struct template optimize_size">optimize_size</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>bool</strong></span> Enabled&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/linear.html" title="Struct template linear">linear</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>bool</strong></span> Enabled&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/cache_last.html" title="Struct template cache_last">cache_last</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> BucketTraits&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/bucket_traits.html" title="Struct template bucket_traits">bucket_traits</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>bool</strong></span> Enabled&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/store_hash.html" title="Struct template store_hash">store_hash</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>bool</strong></span> Enabled&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/optimize_multikey.html" title="Struct template optimize_multikey">optimize_multikey</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>bool</strong></span> Enabled&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/power_2_buckets.html" title="Struct template power_2_buckets">power_2_buckets</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>bool</strong></span> Enabled&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/cache_begin.html" title="Struct template cache_begin">cache_begin</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>bool</strong></span> Enabled&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/compare_hash.html" title="Struct template compare_hash">compare_hash</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>bool</strong></span> Enabled&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/incremental.html" title="Struct template incremental">incremental</a>;
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.pointer_plus_bits_hpp"></a>Header &lt;<a href="../../../boost/intrusive/pointer_plus_bits.hpp" target="_top">boost/intrusive/pointer_plus_bits.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> VoidPointer, std::size_t Alignment&gt; 
+      <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/max_pointer_plus_bits.html" title="Struct template max_pointer_plus_bits">max_pointer_plus_bits</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;std::size_t Alignment&gt; 
+      <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/max_pointer_plus_bits_v_id2115125.html" title="Struct template max_pointer_plus_bits&lt;void *, Alignment&gt;">max_pointer_plus_bits</a>&lt;<span class="bold"><strong>void</strong></span> *, Alignment&gt;;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, std::size_t NumBits&gt; 
+      <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/pointer_plus_bits_T___N_id2115158.html" title="Struct template pointer_plus_bits&lt;T *, NumBits&gt;">pointer_plus_bits</a>&lt;T *, NumBits&gt;;
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.priority_compare_hpp"></a>Header &lt;<a href="../../../boost/intrusive/priority_compare.hpp" target="_top">boost/intrusive/priority_compare.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/priority_compare.html" title="Struct template priority_compare">priority_compare</a>;
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.rbtree_hpp"></a>Header &lt;<a href="../../../boost/intrusive/rbtree.hpp" target="_top">boost/intrusive/rbtree.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/rbtree.html" title="Class template rbtree">rbtree</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_rbtree.html" title="Struct template make_rbtree">make_rbtree</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_id2119050"></a><span class="bold"><strong>operator</strong></span>&lt;(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/rbtree.html" title="Class template rbtree">rbtree</a>&lt; T, Options...&gt; &amp; x, 
+                     <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/rbtree.html" title="Class template rbtree">rbtree</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator==_id2119089"></a><span class="bold"><strong>operator</strong></span>==(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/rbtree.html" title="Class template rbtree">rbtree</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/rbtree.html" title="Class template rbtree">rbtree</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator!=_id2119128"></a><span class="bold"><strong>operator</strong></span>!=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/rbtree.html" title="Class template rbtree">rbtree</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/rbtree.html" title="Class template rbtree">rbtree</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_id2119166"></a><span class="bold"><strong>operator</strong></span>&gt;(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/rbtree.html" title="Class template rbtree">rbtree</a>&lt; T, Options...&gt; &amp; x, 
+                     <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/rbtree.html" title="Class template rbtree">rbtree</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id2119205"></a><span class="bold"><strong>operator</strong></span>&lt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/rbtree.html" title="Class template rbtree">rbtree</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/rbtree.html" title="Class template rbtree">rbtree</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id2119244"></a><span class="bold"><strong>operator</strong></span>&gt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/rbtree.html" title="Class template rbtree">rbtree</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/rbtree.html" title="Class template rbtree">rbtree</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>void</strong></span></span> <a name="boost.intrusive.swap_id2119282"></a>swap(<a class="link" href="../boost/intrusive/rbtree.html" title="Class template rbtree">rbtree</a>&lt; T, Options...&gt; &amp; x, <a class="link" href="../boost/intrusive/rbtree.html" title="Class template rbtree">rbtree</a>&lt; T, Options...&gt; &amp; y);
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.rbtree_algorithms_hpp"></a>Header &lt;<a href="../../../boost/intrusive/rbtree_algorithms.hpp" target="_top">boost/intrusive/rbtree_algorithms.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> NodeTraits&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/rbtree_algorithms.html" title="Class template rbtree_algorithms">rbtree_algorithms</a>;
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.set_hpp"></a>Header &lt;<a href="../../../boost/intrusive/set.hpp" target="_top">boost/intrusive/set.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/set.html" title="Class template set">set</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_set.html" title="Struct template make_set">make_set</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/multiset.html" title="Class template multiset">multiset</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_multiset.html" title="Struct template make_multiset">make_multiset</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator!=_id2128418"></a><span class="bold"><strong>operator</strong></span>!=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/set.html" title="Class template set">set</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/set.html" title="Class template set">set</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_id2128457"></a><span class="bold"><strong>operator</strong></span>&gt;(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/set.html" title="Class template set">set</a>&lt; T, Options...&gt; &amp; x, 
+                     <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/set.html" title="Class template set">set</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id2128495"></a><span class="bold"><strong>operator</strong></span>&lt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/set.html" title="Class template set">set</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/set.html" title="Class template set">set</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id2128534"></a><span class="bold"><strong>operator</strong></span>&gt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/set.html" title="Class template set">set</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/set.html" title="Class template set">set</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>void</strong></span></span> <a name="boost.intrusive.swap_id2128573"></a>swap(<a class="link" href="../boost/intrusive/set.html" title="Class template set">set</a>&lt; T, Options...&gt; &amp; x, <a class="link" href="../boost/intrusive/set.html" title="Class template set">set</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator!=_id2128609"></a><span class="bold"><strong>operator</strong></span>!=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/multiset.html" title="Class template multiset">multiset</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/multiset.html" title="Class template multiset">multiset</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_id2128647"></a><span class="bold"><strong>operator</strong></span>&gt;(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/multiset.html" title="Class template multiset">multiset</a>&lt; T, Options...&gt; &amp; x, 
+                     <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/multiset.html" title="Class template multiset">multiset</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id2128686"></a><span class="bold"><strong>operator</strong></span>&lt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/multiset.html" title="Class template multiset">multiset</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/multiset.html" title="Class template multiset">multiset</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id2128725"></a><span class="bold"><strong>operator</strong></span>&gt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/multiset.html" title="Class template multiset">multiset</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/multiset.html" title="Class template multiset">multiset</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>void</strong></span></span> <a name="boost.intrusive.swap_id2128763"></a>swap(<a class="link" href="../boost/intrusive/multiset.html" title="Class template multiset">multiset</a>&lt; T, Options...&gt; &amp; x, <a class="link" href="../boost/intrusive/multiset.html" title="Class template multiset">multiset</a>&lt; T, Options...&gt; &amp; y);
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.set_hook_hpp"></a>Header &lt;<a href="../../../boost/intrusive/set_hook.hpp" target="_top">boost/intrusive/set_hook.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_set_base_hook.html" title="Struct template make_set_base_hook">make_set_base_hook</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/set_base_hook.html" title="Class template set_base_hook">set_base_hook</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_set_member_hook.html" title="Struct template make_set_member_hook">make_set_member_hook</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/set_member_hook.html" title="Class template set_member_hook">set_member_hook</a>;
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.sg_set_hpp"></a>Header &lt;<a href="../../../boost/intrusive/sg_set.hpp" target="_top">boost/intrusive/sg_set.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/sg_set.html" title="Class template sg_set">sg_set</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_sg_set.html" title="Struct template make_sg_set">make_sg_set</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/sg_multiset.html" title="Class template sg_multiset">sg_multiset</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_sg_multiset.html" title="Struct template make_sg_multiset">make_sg_multiset</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator!=_id2154365"></a><span class="bold"><strong>operator</strong></span>!=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/sg_set.html" title="Class template sg_set">sg_set</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/sg_set.html" title="Class template sg_set">sg_set</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_id2154404"></a><span class="bold"><strong>operator</strong></span>&gt;(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/sg_set.html" title="Class template sg_set">sg_set</a>&lt; T, Options...&gt; &amp; x, 
+                     <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/sg_set.html" title="Class template sg_set">sg_set</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id2154442"></a><span class="bold"><strong>operator</strong></span>&lt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/sg_set.html" title="Class template sg_set">sg_set</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/sg_set.html" title="Class template sg_set">sg_set</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id2154481"></a><span class="bold"><strong>operator</strong></span>&gt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/sg_set.html" title="Class template sg_set">sg_set</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/sg_set.html" title="Class template sg_set">sg_set</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>void</strong></span></span> <a name="boost.intrusive.swap_id2154520"></a>swap(<a class="link" href="../boost/intrusive/sg_set.html" title="Class template sg_set">sg_set</a>&lt; T, Options...&gt; &amp; x, <a class="link" href="../boost/intrusive/sg_set.html" title="Class template sg_set">sg_set</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator!=_id2154556"></a><span class="bold"><strong>operator</strong></span>!=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/sg_multiset.html" title="Class template sg_multiset">sg_multiset</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/sg_multiset.html" title="Class template sg_multiset">sg_multiset</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_id2154594"></a><span class="bold"><strong>operator</strong></span>&gt;(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/sg_multiset.html" title="Class template sg_multiset">sg_multiset</a>&lt; T, Options...&gt; &amp; x, 
+                     <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/sg_multiset.html" title="Class template sg_multiset">sg_multiset</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id2154633"></a><span class="bold"><strong>operator</strong></span>&lt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/sg_multiset.html" title="Class template sg_multiset">sg_multiset</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/sg_multiset.html" title="Class template sg_multiset">sg_multiset</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id2154672"></a><span class="bold"><strong>operator</strong></span>&gt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/sg_multiset.html" title="Class template sg_multiset">sg_multiset</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/sg_multiset.html" title="Class template sg_multiset">sg_multiset</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>void</strong></span></span> <a name="boost.intrusive.swap_id2154710"></a>swap(<a class="link" href="../boost/intrusive/sg_multiset.html" title="Class template sg_multiset">sg_multiset</a>&lt; T, Options...&gt; &amp; x, 
+                <a class="link" href="../boost/intrusive/sg_multiset.html" title="Class template sg_multiset">sg_multiset</a>&lt; T, Options...&gt; &amp; y);
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.sgtree_hpp"></a>Header &lt;<a href="../../../boost/intrusive/sgtree.hpp" target="_top">boost/intrusive/sgtree.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/sgtree.html" title="Class template sgtree">sgtree</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_sgtree.html" title="Struct template make_sgtree">make_sgtree</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_id2158609"></a><span class="bold"><strong>operator</strong></span>&lt;(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/sgtree.html" title="Class template sgtree">sgtree</a>&lt; T, Options...&gt; &amp; x, 
+                     <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/sgtree.html" title="Class template sgtree">sgtree</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator==_id2158647"></a><span class="bold"><strong>operator</strong></span>==(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/sgtree.html" title="Class template sgtree">sgtree</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/sgtree.html" title="Class template sgtree">sgtree</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator!=_id2158686"></a><span class="bold"><strong>operator</strong></span>!=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/sgtree.html" title="Class template sgtree">sgtree</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/sgtree.html" title="Class template sgtree">sgtree</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_id2158725"></a><span class="bold"><strong>operator</strong></span>&gt;(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/sgtree.html" title="Class template sgtree">sgtree</a>&lt; T, Options...&gt; &amp; x, 
+                     <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/sgtree.html" title="Class template sgtree">sgtree</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id2158763"></a><span class="bold"><strong>operator</strong></span>&lt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/sgtree.html" title="Class template sgtree">sgtree</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/sgtree.html" title="Class template sgtree">sgtree</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id2158802"></a><span class="bold"><strong>operator</strong></span>&gt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/sgtree.html" title="Class template sgtree">sgtree</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/sgtree.html" title="Class template sgtree">sgtree</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>void</strong></span></span> <a name="boost.intrusive.swap_id2158841"></a>swap(<a class="link" href="../boost/intrusive/sgtree.html" title="Class template sgtree">sgtree</a>&lt; T, Options...&gt; &amp; x, <a class="link" href="../boost/intrusive/sgtree.html" title="Class template sgtree">sgtree</a>&lt; T, Options...&gt; &amp; y);
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.sgtree_algorithms_hpp"></a>Header &lt;<a href="../../../boost/intrusive/sgtree_algorithms.hpp" target="_top">boost/intrusive/sgtree_algorithms.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> NodeTraits&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/sgtree_algorithms.html" title="Class template sgtree_algorithms">sgtree_algorithms</a>;
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.slist_hpp"></a>Header &lt;<a href="../../../boost/intrusive/slist.hpp" target="_top">boost/intrusive/slist.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/slist.html" title="Class template slist">slist</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_slist.html" title="Struct template make_slist">make_slist</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_id2165564"></a><span class="bold"><strong>operator</strong></span>&lt;(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/slist.html" title="Class template slist">slist</a>&lt; T, Options...&gt; &amp; x, 
+                     <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/slist.html" title="Class template slist">slist</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator==_id2165603"></a><span class="bold"><strong>operator</strong></span>==(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/slist.html" title="Class template slist">slist</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/slist.html" title="Class template slist">slist</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator!=_id2165641"></a><span class="bold"><strong>operator</strong></span>!=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/slist.html" title="Class template slist">slist</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/slist.html" title="Class template slist">slist</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_id2165680"></a><span class="bold"><strong>operator</strong></span>&gt;(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/slist.html" title="Class template slist">slist</a>&lt; T, Options...&gt; &amp; x, 
+                     <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/slist.html" title="Class template slist">slist</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id2165719"></a><span class="bold"><strong>operator</strong></span>&lt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/slist.html" title="Class template slist">slist</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/slist.html" title="Class template slist">slist</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id2165757"></a><span class="bold"><strong>operator</strong></span>&gt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/slist.html" title="Class template slist">slist</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/slist.html" title="Class template slist">slist</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>void</strong></span></span> <a name="boost.intrusive.swap_id2165796"></a>swap(<a class="link" href="../boost/intrusive/slist.html" title="Class template slist">slist</a>&lt; T, Options...&gt; &amp; x, <a class="link" href="../boost/intrusive/slist.html" title="Class template slist">slist</a>&lt; T, Options...&gt; &amp; y);
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.slist_hook_hpp"></a>Header &lt;<a href="../../../boost/intrusive/slist_hook.hpp" target="_top">boost/intrusive/slist_hook.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_slist_base_hook.html" title="Struct template make_slist_base_hook">make_slist_base_hook</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/slist_base_hook.html" title="Class template slist_base_hook">slist_base_hook</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_slist_member_hook.html" title="Struct template make_slist_member_hook">make_slist_member_hook</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/slist_member_hook.html" title="Class template slist_member_hook">slist_member_hook</a>;
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.splay_set_hpp"></a>Header &lt;<a href="../../../boost/intrusive/splay_set.hpp" target="_top">boost/intrusive/splay_set.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/splay_set.html" title="Class template splay_set">splay_set</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_splay_set.html" title="Struct template make_splay_set">make_splay_set</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/splay_multiset.html" title="Class template splay_multiset">splay_multiset</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_splay_multiset.html" title="Struct template make_splay_multiset">make_splay_multiset</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator!=_id2191749"></a><span class="bold"><strong>operator</strong></span>!=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/splay_set.html" title="Class template splay_set">splay_set</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/splay_set.html" title="Class template splay_set">splay_set</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_id2191788"></a><span class="bold"><strong>operator</strong></span>&gt;(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/splay_set.html" title="Class template splay_set">splay_set</a>&lt; T, Options...&gt; &amp; x, 
+                     <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/splay_set.html" title="Class template splay_set">splay_set</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id2191826"></a><span class="bold"><strong>operator</strong></span>&lt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/splay_set.html" title="Class template splay_set">splay_set</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/splay_set.html" title="Class template splay_set">splay_set</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id2191865"></a><span class="bold"><strong>operator</strong></span>&gt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/splay_set.html" title="Class template splay_set">splay_set</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/splay_set.html" title="Class template splay_set">splay_set</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>void</strong></span></span> <a name="boost.intrusive.swap_id2191904"></a>swap(<a class="link" href="../boost/intrusive/splay_set.html" title="Class template splay_set">splay_set</a>&lt; T, Options...&gt; &amp; x, <a class="link" href="../boost/intrusive/splay_set.html" title="Class template splay_set">splay_set</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator!=_id2191940"></a><span class="bold"><strong>operator</strong></span>!=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/splay_multiset.html" title="Class template splay_multiset">splay_multiset</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/splay_multiset.html" title="Class template splay_multiset">splay_multiset</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_id2191978"></a><span class="bold"><strong>operator</strong></span>&gt;(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/splay_multiset.html" title="Class template splay_multiset">splay_multiset</a>&lt; T, Options...&gt; &amp; x, 
+                     <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/splay_multiset.html" title="Class template splay_multiset">splay_multiset</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id2192017"></a><span class="bold"><strong>operator</strong></span>&lt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/splay_multiset.html" title="Class template splay_multiset">splay_multiset</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/splay_multiset.html" title="Class template splay_multiset">splay_multiset</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id2192056"></a><span class="bold"><strong>operator</strong></span>&gt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/splay_multiset.html" title="Class template splay_multiset">splay_multiset</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/splay_multiset.html" title="Class template splay_multiset">splay_multiset</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>void</strong></span></span> <a name="boost.intrusive.swap_id2192094"></a>swap(<a class="link" href="../boost/intrusive/splay_multiset.html" title="Class template splay_multiset">splay_multiset</a>&lt; T, Options...&gt; &amp; x, 
+                <a class="link" href="../boost/intrusive/splay_multiset.html" title="Class template splay_multiset">splay_multiset</a>&lt; T, Options...&gt; &amp; y);
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.splay_set_hook_hpp"></a>Header &lt;<a href="../../../boost/intrusive/splay_set_hook.hpp" target="_top">boost/intrusive/splay_set_hook.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_splay_set_base_hook.html" title="Struct template make_splay_set_base_hook">make_splay_set_base_hook</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/splay_set_base_hook.html" title="Class template splay_set_base_hook">splay_set_base_hook</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_splay_set_member_hook.html" title="Struct template make_splay_set_member_hook">make_splay_set_member_hook</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/splay_set_member_hook.html" title="Class template splay_set_member_hook">splay_set_member_hook</a>;
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.splaytree_hpp"></a>Header &lt;<a href="../../../boost/intrusive/splaytree.hpp" target="_top">boost/intrusive/splaytree.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/splaytree.html" title="Class template splaytree">splaytree</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_splaytree.html" title="Struct template make_splaytree">make_splaytree</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_id2196874"></a><span class="bold"><strong>operator</strong></span>&lt;(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/splaytree.html" title="Class template splaytree">splaytree</a>&lt; T, Options...&gt; &amp; x, 
+                     <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/splaytree.html" title="Class template splaytree">splaytree</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator==_id2196912"></a><span class="bold"><strong>operator</strong></span>==(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/splaytree.html" title="Class template splaytree">splaytree</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/splaytree.html" title="Class template splaytree">splaytree</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator!=_id2196951"></a><span class="bold"><strong>operator</strong></span>!=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/splaytree.html" title="Class template splaytree">splaytree</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/splaytree.html" title="Class template splaytree">splaytree</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_id2196990"></a><span class="bold"><strong>operator</strong></span>&gt;(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/splaytree.html" title="Class template splaytree">splaytree</a>&lt; T, Options...&gt; &amp; x, 
+                     <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/splaytree.html" title="Class template splaytree">splaytree</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id2197028"></a><span class="bold"><strong>operator</strong></span>&lt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/splaytree.html" title="Class template splaytree">splaytree</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/splaytree.html" title="Class template splaytree">splaytree</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id2197067"></a><span class="bold"><strong>operator</strong></span>&gt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/splaytree.html" title="Class template splaytree">splaytree</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/splaytree.html" title="Class template splaytree">splaytree</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>void</strong></span></span> <a name="boost.intrusive.swap_id2197106"></a>swap(<a class="link" href="../boost/intrusive/splaytree.html" title="Class template splaytree">splaytree</a>&lt; T, Options...&gt; &amp; x, <a class="link" href="../boost/intrusive/splaytree.html" title="Class template splaytree">splaytree</a>&lt; T, Options...&gt; &amp; y);
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.splaytree_algorithms_hpp"></a>Header &lt;<a href="../../../boost/intrusive/splaytree_algorithms.hpp" target="_top">boost/intrusive/splaytree_algorithms.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> NodeTraits&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/splaytree_algorithms.html" title="Class template splaytree_algorithms">splaytree_algorithms</a>;
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.treap_hpp"></a>Header &lt;<a href="../../../boost/intrusive/treap.hpp" target="_top">boost/intrusive/treap.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/treap.html" title="Class template treap">treap</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_trie.html" title="Struct template make_trie">make_trie</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_id2220503"></a><span class="bold"><strong>operator</strong></span>&lt;(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/treap.html" title="Class template treap">treap</a>&lt; T, Options...&gt; &amp; x, 
+                     <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/treap.html" title="Class template treap">treap</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator==_id2220542"></a><span class="bold"><strong>operator</strong></span>==(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/treap.html" title="Class template treap">treap</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/treap.html" title="Class template treap">treap</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator!=_id2220581"></a><span class="bold"><strong>operator</strong></span>!=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/treap.html" title="Class template treap">treap</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/treap.html" title="Class template treap">treap</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_id2220619"></a><span class="bold"><strong>operator</strong></span>&gt;(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/treap.html" title="Class template treap">treap</a>&lt; T, Options...&gt; &amp; x, 
+                     <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/treap.html" title="Class template treap">treap</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id2220658"></a><span class="bold"><strong>operator</strong></span>&lt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/treap.html" title="Class template treap">treap</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/treap.html" title="Class template treap">treap</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id2220697"></a><span class="bold"><strong>operator</strong></span>&gt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/treap.html" title="Class template treap">treap</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/treap.html" title="Class template treap">treap</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>void</strong></span></span> <a name="boost.intrusive.swap_id2220735"></a>swap(<a class="link" href="../boost/intrusive/treap.html" title="Class template treap">treap</a>&lt; T, Options...&gt; &amp; x, <a class="link" href="../boost/intrusive/treap.html" title="Class template treap">treap</a>&lt; T, Options...&gt; &amp; y);
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.treap_algorithms_hpp"></a>Header &lt;<a href="../../../boost/intrusive/treap_algorithms.hpp" target="_top">boost/intrusive/treap_algorithms.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> NodeTraits&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/treap_algorithms.html" title="Class template treap_algorithms">treap_algorithms</a>;
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.treap_set_hpp"></a>Header &lt;<a href="../../../boost/intrusive/treap_set.hpp" target="_top">boost/intrusive/treap_set.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/treap_set.html" title="Class template treap_set">treap_set</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_treap_set.html" title="Struct template make_treap_set">make_treap_set</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/treap_multiset.html" title="Class template treap_multiset">treap_multiset</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_treap_multiset.html" title="Struct template make_treap_multiset">make_treap_multiset</a>;
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator!=_id2230628"></a><span class="bold"><strong>operator</strong></span>!=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/treap_set.html" title="Class template treap_set">treap_set</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/treap_set.html" title="Class template treap_set">treap_set</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_id2230667"></a><span class="bold"><strong>operator</strong></span>&gt;(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/treap_set.html" title="Class template treap_set">treap_set</a>&lt; T, Options...&gt; &amp; x, 
+                     <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/treap_set.html" title="Class template treap_set">treap_set</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id2230705"></a><span class="bold"><strong>operator</strong></span>&lt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/treap_set.html" title="Class template treap_set">treap_set</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/treap_set.html" title="Class template treap_set">treap_set</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id2230744"></a><span class="bold"><strong>operator</strong></span>&gt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/treap_set.html" title="Class template treap_set">treap_set</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/treap_set.html" title="Class template treap_set">treap_set</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>void</strong></span></span> <a name="boost.intrusive.swap_id2230783"></a>swap(<a class="link" href="../boost/intrusive/treap_set.html" title="Class template treap_set">treap_set</a>&lt; T, Options...&gt; &amp; x, <a class="link" href="../boost/intrusive/treap_set.html" title="Class template treap_set">treap_set</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator!=_id2230819"></a><span class="bold"><strong>operator</strong></span>!=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/treap_multiset.html" title="Class template treap_multiset">treap_multiset</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/treap_multiset.html" title="Class template treap_multiset">treap_multiset</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_id2230857"></a><span class="bold"><strong>operator</strong></span>&gt;(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/treap_multiset.html" title="Class template treap_multiset">treap_multiset</a>&lt; T, Options...&gt; &amp; x, 
+                     <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/treap_multiset.html" title="Class template treap_multiset">treap_multiset</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id2230896"></a><span class="bold"><strong>operator</strong></span>&lt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/treap_multiset.html" title="Class template treap_multiset">treap_multiset</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/treap_multiset.html" title="Class template treap_multiset">treap_multiset</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="boost.intrusive.operator_=_id2230935"></a><span class="bold"><strong>operator</strong></span>&gt;=(<span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/treap_multiset.html" title="Class template treap_multiset">treap_multiset</a>&lt; T, Options...&gt; &amp; x, 
+                      <span class="bold"><strong>const</strong></span> <a class="link" href="../boost/intrusive/treap_multiset.html" title="Class template treap_multiset">treap_multiset</a>&lt; T, Options...&gt; &amp; y);
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+      <span class="type"><span class="bold"><strong>void</strong></span></span> <a name="boost.intrusive.swap_id2230973"></a>swap(<a class="link" href="../boost/intrusive/treap_multiset.html" title="Class template treap_multiset">treap_multiset</a>&lt; T, Options...&gt; &amp; x, 
+                <a class="link" href="../boost/intrusive/treap_multiset.html" title="Class template treap_multiset">treap_multiset</a>&lt; T, Options...&gt; &amp; y);
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.trivial_value_traits_hpp"></a>Header &lt;<a href="../../../boost/intrusive/trivial_value_traits.hpp" target="_top">boost/intrusive/trivial_value_traits.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> NodeTraits, link_mode_type LinkMode = normal_link&gt; 
+      <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/trivial_value_traits.html" title="Struct template trivial_value_traits">trivial_value_traits</a>;
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.unordered_set_hpp"></a>Header &lt;<a href="../../../boost/intrusive/unordered_set.hpp" target="_top">boost/intrusive/unordered_set.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/unordered_set.html" title="Class template unordered_set">unordered_set</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_unordered_set.html" title="Struct template make_unordered_set">make_unordered_set</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/unordered_multiset.html" title="Class template unordered_multiset">unordered_multiset</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_unordered_multiset.html" title="Struct template make_unordered_multiset">make_unordered_multiset</a>;
+  }
+}</pre>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="header.boost.intrusive.unordered_set_hook_hpp"></a>Header &lt;<a href="../../../boost/intrusive/unordered_set_hook.hpp" target="_top">boost/intrusive/unordered_set_hook.hpp</a>&gt;</h3></div></div></div>
+<pre class="synopsis"><span class="bold"><strong>namespace</strong></span> boost {
+  <span class="bold"><strong>namespace</strong></span> intrusive {
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_unordered_set_base_id2255815.html" title="Struct template make_unordered_set_base_hook">make_unordered_set_base_hook</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/unordered_set_base_hook.html" title="Class template unordered_set_base_hook">unordered_set_base_hook</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>struct</strong></span> <a class="link" href="../boost/intrusive/make_unordered_set_memb_id2256196.html" title="Struct template make_unordered_set_member_hook">make_unordered_set_member_hook</a>;
+
+    <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>class</strong></span>... Options&gt; <span class="bold"><strong>class</strong></span> <a class="link" href="../boost/intrusive/unordered_set_member_hook.html" title="Class template unordered_set_member_hook">unordered_set_member_hook</a>;
+  }
+}</pre>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2005 Olaf Krzikalla, 2006-2008 Ion Gaztañaga<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="acknowledgements.html"><img src="../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../intrusive.html"><img src="../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="../boost/intrusive/make_any_base_hook.html"><img src="../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

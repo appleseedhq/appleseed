@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+<head>
+  <meta http-equiv="Content-Language" content="en-us">
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+  <link href="../pool.css" rel="stylesheet" type="text/css">
+
+  <title>gcd_lcm - GCD and LCM</title>
+</head>
+
+<body>
+  <img src="../../../../boost.png" width="276" height="86" alt="C++ Boost">
+
+  <h1 align="center">gcd_lcm - GCD and LCM</h1>
+
+  <h2>Introduction</h2>
+
+  <p>detail/gcd_lcm.hpp provides two generic integer algorithms: greatest
+  common divisor and least common multiple.</p>
+
+  <h2>Synopsis</h2>
+  <pre class="code">
+namespace details {
+namespace pool {
+
+template &lt;typename Integer&gt;
+Integer gcd(Integer A, Integer B);
+
+template &lt;typename Integer&gt;
+Integer lcm(Integer A, Integer B);
+
+} // namespace pool
+} // namespace details
+</pre>
+
+  <h2>Semantics</h2>
+
+  <table align="center" border summary="">
+    <caption>
+      <em>Symbol Table</em>
+    </caption>
+
+    <tr>
+      <th>Symbol</th>
+
+      <th>Meaning</th>
+    </tr>
+
+    <tr>
+      <td class="code">Integer</td>
+
+      <td>An integral type</td>
+    </tr>
+
+    <tr>
+      <td class="code">A, B</td>
+
+      <td>Values of type <span class="code">Integer</span></td>
+    </tr>
+  </table><br>
+
+  <table align="center" border summary="">
+    <caption>
+      <em>Semantics</em>
+    </caption>
+
+    <tr>
+      <th>Expression</th>
+
+      <th>Result Type</th>
+
+      <th>Precondition</th>
+
+      <th>Notes</th>
+    </tr>
+
+    <tr>
+      <td class="code">gcd(A, B)</td>
+
+      <td>Integer</td>
+
+      <td class="code">A &gt; 0 &amp;&amp; B &gt; 0</td>
+
+      <td>Returns the greatest common divisor of <span class="code">A</span>
+      and <span class="code">B</span></td>
+    </tr>
+
+    <tr>
+      <td class="code">lcm(A, B)</td>
+
+      <td>Integer</td>
+
+      <td class="code">A &gt; 0 &amp;&amp; B &gt; 0</td>
+
+      <td>Returns the least common multiple of <span class="code">A</span>
+      and <span class="code">B</span></td>
+    </tr>
+  </table>
+
+  <h2>Implementation Notes</h2>
+
+  <p>For faster results, ensure <span class="code">A &gt; B</span></p>
+
+  <h2>Dependencies</h2>
+
+  <p>None.</p>
+
+  <h2>Future Directions</h2>
+
+  <p>This header may be replaced by a Boost algorithms library.</p>
+  <hr>
+
+  <p><a href="http://validator.w3.org/check?uri=referer"><img border="0" src=
+  "http://www.w3.org/Icons/valid-html401" alt="Valid HTML 4.01 Transitional"
+  height="31" width="88"></a></p>
+
+  <p>Revised 
+  <!--webbot bot="Timestamp" s-type="EDITED" s-format="%d %B, %Y" startspan -->05
+  December, 2006<!--webbot bot="Timestamp" endspan i-checksum="38516" --></p>
+
+  <p><i>Copyright &copy; 2000, 2001 Stephen Cleary (scleary AT jerviswebb DOT
+  com)</i></p>
+
+  <p><i>Distributed under the Boost Software License, Version 1.0. (See
+  accompanying file <a href="../../../../LICENSE_1_0.txt">LICENSE_1_0.txt</a>
+  or copy at <a href=
+  "http://www.boost.org/LICENSE_1_0.txt">http://www.boost.org/LICENSE_1_0.txt</a>)</i></p>
+</body>
+</html>

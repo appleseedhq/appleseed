@@ -1,0 +1,150 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Class packed_iarchive</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../mpi/reference.html#header.boost.mpi.packed_iarchive_hpp" title="Header &lt;boost/mpi/packed_iarchive.hpp&gt;">
+<link rel="prev" href="is_mpi_op.html" title="Struct template is_mpi_op">
+<link rel="next" href="packed_oarchive.html" title="Class packed_oarchive">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="is_mpi_op.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../mpi/reference.html#header.boost.mpi.packed_iarchive_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="packed_oarchive.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.mpi.packed_iarchive"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Class packed_iarchive</span></h2>
+<p>boost::mpi::packed_iarchive &#8212; An archive that packs binary data into an MPI buffer. </p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../mpi/reference.html#header.boost.mpi.packed_iarchive_hpp" title="Header &lt;boost/mpi/packed_iarchive.hpp&gt;">boost/mpi/packed_iarchive.hpp</a>&gt;
+
+</em></span>
+<span class="bold"><strong>class</strong></span> <a class="link" href="packed_iarchive.html" title="Class packed_iarchive">packed_iarchive</a> {
+<span class="bold"><strong>public</strong></span>:
+  <span class="emphasis"><em>// <a class="link" href="packed_iarchive.html#boost.mpi.packed_iarchiveconstruct-copy-destruct">construct/copy/destruct</a></em></span>
+  <a class="link" href="packed_iarchive.html#id1913510-bb">packed_iarchive</a>(MPI_Comm <span class="bold"><strong>const</strong></span> &amp;, buffer_type &amp;, 
+                  <span class="bold"><strong>unsigned</strong></span> <span class="bold"><strong>int</strong></span> = boost::archive::no_header, <span class="bold"><strong>int</strong></span> = 0);
+  <a class="link" href="packed_iarchive.html#id1913572-bb">packed_iarchive</a>(MPI_Comm <span class="bold"><strong>const</strong></span> &amp;, std::size_t = 0, 
+                  <span class="bold"><strong>unsigned</strong></span> <span class="bold"><strong>int</strong></span> = boost::archive::no_header);
+
+  <span class="emphasis"><em>// <a class="link" href="packed_iarchive.html#id1913418-bb">public member functions</a></em></span>
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T&gt; <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="packed_iarchive.html#id1913422-bb">load_override</a>(T &amp;, <span class="bold"><strong>int</strong></span>, mpl::false_) ;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T&gt; <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="packed_iarchive.html#id1913453-bb">load_override</a>(T &amp;, <span class="bold"><strong>int</strong></span>, mpl::true_) ;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T&gt; <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="packed_iarchive.html#id1913485-bb">load_override</a>(T &amp;, <span class="bold"><strong>int</strong></span>) ;
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id2884248"></a><h2>Description</h2>
+<p>The <code class="computeroutput">packed_iarchive</code> class is an Archiver (as in the Boost.Serialization library) that packs binary data into a buffer for transmission via MPI. It can operate on any Serializable data type and will use the <code class="computeroutput">MPI_Pack</code> function of the underlying MPI implementation to perform serialization. </p>
+<div class="refsect2" lang="en">
+<a name="id2884269"></a><h3>
+<a name="boost.mpi.packed_iarchiveconstruct-copy-destruct"></a><code class="computeroutput">packed_iarchive</code> 
+        public
+       construct/copy/destruct</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><a name="id1913510-bb"></a>packed_iarchive(MPI_Comm <span class="bold"><strong>const</strong></span> &amp; comm, buffer_type &amp; b, 
+                <span class="bold"><strong>unsigned</strong></span> <span class="bold"><strong>int</strong></span> flags = boost::archive::no_header, 
+                <span class="bold"><strong>int</strong></span> position = 0);</pre>
+<p>Construct a <code class="computeroutput">packed_iarchive</code> for transmission over the given MPI communicator and with an initial buffer.</p>
+<p>
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody><tr>
+<td><p><span class="term">Parameters:</span></p></td>
+<td><div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><code class="computeroutput">b</code></span></p></td>
+<td><p>A user-defined buffer that will be filled with the binary representation of serialized objects.</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="computeroutput">comm</code></span></p></td>
+<td><p>The communicator over which this archive will be sent.</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="computeroutput">flags</code></span></p></td>
+<td><p>Control the serialization of the data types. Refer to the Boost.Serialization documentation before changing the default flags.</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="computeroutput">position</code></span></p></td>
+<td><p>Set the offset into buffer <code class="computeroutput">b</code> at which deserialization will begin. </p></td>
+</tr>
+</tbody>
+</table></div></td>
+</tr></tbody>
+</table></div>
+</li>
+<li>
+<pre class="literallayout"><a name="id1913572-bb"></a>packed_iarchive(MPI_Comm <span class="bold"><strong>const</strong></span> &amp; comm, std::size_t s = 0, 
+                <span class="bold"><strong>unsigned</strong></span> <span class="bold"><strong>int</strong></span> flags = boost::archive::no_header);</pre>
+<p>Construct a <code class="computeroutput">packed_iarchive</code> for transmission over the given MPI communicator.</p>
+<p>
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody><tr>
+<td><p><span class="term">Parameters:</span></p></td>
+<td><div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><code class="computeroutput">comm</code></span></p></td>
+<td><p>The communicator over which this archive will be sent.</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="computeroutput">flags</code></span></p></td>
+<td><p>Control the serialization of the data types. Refer to the Boost.Serialization documentation before changing the default flags. </p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="computeroutput">s</code></span></p></td>
+<td><p>The size of the buffer to be received.</p></td>
+</tr>
+</tbody>
+</table></div></td>
+</tr></tbody>
+</table></div>
+</li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id2884497"></a><h3>
+<a name="id1913418-bb"></a><code class="computeroutput">packed_iarchive</code> public member functions</h3>
+<div class="orderedlist"><ol type="1">
+<li><pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T&gt; <span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1913422-bb"></a>load_override(T &amp; x, <span class="bold"><strong>int</strong></span> version, mpl::false_) ;</pre></li>
+<li><pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T&gt; <span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1913453-bb"></a>load_override(T &amp; x, <span class="bold"><strong>int</strong></span>, mpl::true_) ;</pre></li>
+<li><pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T&gt; <span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1913485-bb"></a>load_override(T &amp; x, <span class="bold"><strong>int</strong></span> version) ;</pre></li>
+</ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2005-2007 Douglas Gregor,
+      Matthias Troyer, Trustees of Indiana University<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">
+        http://www.boost.org/LICENSE_1_0.txt </a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="is_mpi_op.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../mpi/reference.html#header.boost.mpi.packed_iarchive_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="packed_oarchive.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

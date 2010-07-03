@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<AUCTIONBLOCK>
+   <ITEM>
+      <TITLE>Vase and Stones</TITLE>
+      <ARTIST>Linda Mann</ARTIST>
+      <DIMENSIONS>20x30 inches</DIMENSIONS>
+      <MATERIALS>Oil</MATERIALS>
+      <YEAR>1996</YEAR>
+      <DESCRIPTION/>
+      <PREVIEW-SMALL SRC="images/burl-s.jpg" WIDTH="300" HEIGHT="194" ALT="Vase and Stones"><!--The small image--></PREVIEW-SMALL>
+      <PREVIEW-LARGE SRC="images/burl.jpg" WIDTH="640" HEIGHT="413" ALT="Vase and Stones"/>
+      <BIDS>
+         <BID>
+            <PRICE>3300</PRICE>
+            <TIME>9:19:32 AM</TIME>
+            <BIDDER>John</BIDDER>
+            <TIMESTAMP>1315</TIMESTAMP>
+         </BID>
+         <BID>
+            <PRICE>3200</PRICE>
+            <TIME>8:18:31 AM</TIME>
+            <BIDDER>Andrew</BIDDER>
+            <TIMESTAMP>1308</TIMESTAMP>
+         </BID>
+         <BID>
+            <PRICE>3100</PRICE>
+            <TIME>2:48:08 PM</TIME>
+            <BIDDER>Chris</BIDDER>
+            <TIMESTAMP>1307</TIMESTAMP>
+         </BID>
+         <BID>
+            <PRICE>3000</PRICE>
+            <TIME>2:47:58 PM</TIME>
+            <BIDDER>opening price</BIDDER>
+            <TIMESTAMP>1298</TIMESTAMP>
+         </BID>
+      </BIDS>
+      <MTIME>
+         <TIMESTAMP>1315</TIMESTAMP>
+         This is an example of mixed content
+      </MTIME>
+   </ITEM>
+</AUCTIONBLOCK>

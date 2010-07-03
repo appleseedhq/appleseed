@@ -1,0 +1,91 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Struct template result&lt;This(Cont, Value), void&gt;</title>
+<link rel="stylesheet" href="../../../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../insert.html#id4121144" title="Description">
+<link rel="prev" href="result_This_Cont__Size__id3001554.html" title="Struct template result&lt;This(Cont, Size, T), typename enable_if&lt; is_integral&lt; UNCVREF(Size)&gt; &gt;::type&gt;">
+<link rel="next" href="../make_pair.html" title="Struct make_pair">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../../../boost.png"></td>
+<td align="center"><a href="../../../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="result_This_Cont__Size__id3001554.html"><img src="../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../insert.html#id4121144"><img src="../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../../../index.html"><img src="../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="../make_pair.html"><img src="../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.xpressive.op.insert.result_This(Cont,_Value_id3001606"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Struct template result&lt;This(Cont, Value), void&gt;</span></h2>
+<p>boost::xpressive::op::insert::result&lt;This(Cont, Value), void&gt;</p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../../../xpressive/reference.html#header.boost.xpressive.regex_actions_hpp" title="Header &lt;boost/xpressive/regex_actions.hpp&gt;">boost/xpressive/regex_actions.hpp</a>&gt;
+
+</em></span>
+<span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> This, <span class="bold"><strong>typename</strong></span> Cont, <span class="bold"><strong>typename</strong></span> Value&gt; 
+<span class="bold"><strong>struct</strong></span> <a class="link" href="result_This_Cont__Value_id3001606.html" title="Struct template result&lt;This(Cont, Value), void&gt;">result</a>&lt;This(Cont, Value), <span class="bold"><strong>void</strong></span>&gt; {
+  <span class="emphasis"><em>// types</em></span>
+  <span class="bold"><strong>typedef</strong></span> <span class="bold"><strong>char</strong></span>                                                                                                          <a name="boost.xpressive.op.insert.result_This(Cont,_Value_id3001606.yes_type"></a>yes_type;
+  <span class="bold"><strong>typedef</strong></span> <span class="bold"><strong>char</strong></span>(&amp;                                                                                                        <a name="boost.xpressive.op.insert.result_This(Cont,_Value_id3001606.no_type"></a>no_type; 
+  <span class="bold"><strong>typedef</strong></span> mpl::if_c&lt; is_iterator, <span class="bold"><strong>typename</strong></span> cont_type::iterator, std::pair&lt; <span class="bold"><strong>typename</strong></span> cont_type::iterator, <span class="bold"><strong>bool</strong></span> &gt; &gt;::type <a name="boost.xpressive.op.insert.result_This(Cont,_Value_id3001606.type"></a>type;    
+
+  <span class="emphasis"><em>// <a class="link" href="result_This_Cont__Value_id3001606.html#id3001671-bb">public member functions</a></em></span>
+  <span class="type"><span class="bold"><strong>typedef</strong></span></span> <a class="link" href="result_This_Cont__Value_id3001606.html#id3001674-bb">UNREF</a>(Cont) ;
+  <span class="type"><span class="bold"><strong>typedef</strong></span></span> <a class="link" href="result_This_Cont__Value_id3001606.html#id3001688-bb">UNREF</a>(Value) ;
+  <span class="type"></span> <a class="link" href="result_This_Cont__Value_id3001606.html#id3001701-bb">BOOST_STATIC_CONSTANT</a>(<span class="bold"><strong>bool</strong></span>, 
+                         is_iterator = (sizeof(yes_type)==sizeof(check_insert_return(scont_.insert(svalue_))))) ;
+
+  <span class="emphasis"><em>// <a class="link" href="result_This_Cont__Value_id3001606.html#id3001722-bb">public static functions</a></em></span>
+  <span class="type"><span class="bold"><strong>static</strong></span> yes_type</span> <a class="link" href="result_This_Cont__Value_id3001606.html#id3001726-bb">check_insert_return</a>(<span class="bold"><strong>typename</strong></span> cont_type::iterator) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> no_type</span> 
+  <a class="link" href="result_This_Cont__Value_id3001606.html#id3001740-bb">check_insert_return</a>(std::pair&lt; <span class="bold"><strong>typename</strong></span> cont_type::iterator, <span class="bold"><strong>bool</strong></span> &gt;) ;
+  <span class="bold"><strong>static</strong></span> <span class="type">cont_type &amp;</span> scont_;
+  <span class="bold"><strong>static</strong></span> <span class="type">value_type &amp;</span> svalue_;
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id4122136"></a><h2>Description</h2>
+<div class="refsect2" lang="en">
+<a name="id4122139"></a><h3>
+<a name="id3001671-bb"></a><code class="computeroutput">result</code> public member functions</h3>
+<div class="orderedlist"><ol type="1">
+<li><pre class="literallayout"><span class="type"><span class="bold"><strong>typedef</strong></span></span> <a name="id3001674-bb"></a>UNREF(Cont) ;</pre></li>
+<li><pre class="literallayout"><span class="type"><span class="bold"><strong>typedef</strong></span></span> <a name="id3001688-bb"></a>UNREF(Value) ;</pre></li>
+<li><pre class="literallayout"><span class="type"></span> <a name="id3001701-bb"></a>BOOST_STATIC_CONSTANT(<span class="bold"><strong>bool</strong></span>, 
+                       is_iterator = (sizeof(yes_type)==sizeof(check_insert_return(scont_.insert(svalue_))))) ;</pre></li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id4122220"></a><h3>
+<a name="id3001722-bb"></a><code class="computeroutput">result</code> public static functions</h3>
+<div class="orderedlist"><ol type="1">
+<li><pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> yes_type</span> <a name="id3001726-bb"></a>check_insert_return(<span class="bold"><strong>typename</strong></span> cont_type::iterator) ;</pre></li>
+<li><pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> no_type</span> 
+<a name="id3001740-bb"></a>check_insert_return(std::pair&lt; <span class="bold"><strong>typename</strong></span> cont_type::iterator, <span class="bold"><strong>bool</strong></span> &gt;) ;</pre></li>
+</ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2007 Eric Niebler<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="result_This_Cont__Size__id3001554.html"><img src="../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../insert.html#id4121144"><img src="../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../../../index.html"><img src="../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="../make_pair.html"><img src="../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

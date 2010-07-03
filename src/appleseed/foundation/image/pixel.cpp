@@ -1,0 +1,113 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2010 Francois Beaune
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Interface header.
+#include "pixel.h"
+
+namespace foundation
+{
+
+// The convert_and_shuffle() method allow conversion of a given range of pixels,
+// with a given number of channels in a given pixel format, to a new set of
+// pixels with potentially a different number of channels, in different order,
+// in a different pixel format.
+void Pixel::convert_and_shuffle(
+    const PixelFormat   src_format,         // source format
+    const size_t        src_channels,       // number of source channels
+    const uint8*        src_begin,          // points to the first value to convert
+    const uint8*        src_end,            // one beyond the last value to convert
+    const PixelFormat   dest_format,        // destination format
+    const size_t        dest_channels,      // number of destination channels
+    uint8*              dest,               // destination
+    const size_t*       shuffle_table)      // channel shuffling table
+{
+    // Compute size in bytes of source and destination pixel formats.
+    const size_t src_channel_size = size(src_format);
+    const size_t dest_channel_size = size(dest_format);
+
+    // Loop over all entries in the channel shuffling table.
+    size_t dest_channel_offset = 0;
+    for (size_t i = 0; i < src_channels; ++i)
+    {
+        // Fetch source channel index.
+        const size_t src_channel_index = shuffle_table[i];
+
+        // Check validity of source channel index.
+        assert(
+            src_channel_index == SkipChannel ||
+            src_channel_index < src_channels);
+
+        // Skip channels marked as such.
+        if (src_channel_index == SkipChannel)
+            continue;
+
+        // Compute offset in bytes of source channel.
+        const size_t src_channel_offset =
+            src_channel_index * src_channel_size;
+
+        // Convert source channel to destination channel.
+        convert(
+            src_format,
+            src_begin + src_channel_offset,
+            src_end + src_channel_offset,
+            src_channels,
+            dest_format,
+            dest + dest_channel_offset,
+            dest_channels);
+
+        // Compute offset in bytes of next destination channel.
+        dest_channel_offset += dest_channel_size;
+    }
+}
+
+// Return the number of destination channels specified by a channel shuffling table.
+size_t Pixel::get_dest_channel_count(
+    const size_t        src_channels,       // number of source channels
+    const size_t*       shuffle_table)      // channel shuffling table
+{
+    size_t dest_channel_count = 0;
+
+    for (size_t i = 0; i < src_channels; ++i)
+    {
+        // Fetch source channel index.
+        const size_t src_channel_index = shuffle_table[i];
+
+        // Check validity of source channel index.
+        assert(
+            src_channel_index == SkipChannel ||
+            src_channel_index < src_channels);
+
+        // Count destination channels.
+        if (src_channel_index != SkipChannel)
+            ++dest_channel_count;
+    }
+
+    return dest_channel_count;
+}
+
+}   // namespace foundation

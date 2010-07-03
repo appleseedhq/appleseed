@@ -1,0 +1,57 @@
+#!/usr/bin/python
+#
+#  copyright (C) 2008  troy d. straszheim  <troy@resophonic.com>
+#  
+#  Distributed under the Boost Software License, Version 1.0.
+#  See accompanying file LICENSE_1_0.txt or copy at
+#  http://www.boost.org/LICENSE_1_0.txt
+#
+
+#
+#  Utilities, variables, imports for build slave python
+#
+
+import os, os.path, marshal, xmlrpclib, pysvn, socket, platform
+from pprint import pprint
+
+repo_path = "@CMAKE_SOURCE_DIR@"
+client = pysvn.Client()
+svn_entry = client.info(repo_path)
+_configured_hostname = "@BOOST_BUILD_SLAVE_HOSTNAME@"
+fqdn = _configured_hostname if len(_configured_hostname) > 0 else socket.getfqdn()
+uname = platform.uname()
+toolset = "@BOOST_TOOLSET@"
+
+timeout_seconds = @BOOST_BUILD_SLAVE_TIMEOUT@
+slave_details_file = "@BOOST_BUILD_SLAVE_DETAILS_FILE@"
+contact_info = "@BOOST_BUILD_SLAVE_CONTACT_INFO@"
+
+xmlrpc_url = "@BOOST_BUILD_SLAVE_SUBMIT_URL@"
+
+build_id_file = os.path.join(r'@BOOST_BUILD_SLAVE_PYTHONPATH@', "build_id.txt")
+
+try:
+    f = open(build_id_file)
+    build_id = int(f.read())
+except:
+    build_id = None
+
+def set_build_id(build_id):
+    print "Setting new build id %d locally" % build_id
+    f = open(build_id_file, "w")
+    f.write(str(build_id))
+    f.close()
+
+def details():
+    if os.path.isabs(slave_details_file):
+        thefile = slave_details_file
+    else:
+        thefile = os.path.join("@CMAKE_BINARY_DIR@", slave_details_file)
+
+    if os.path.exists(thefile):
+        f = open(thefile)
+        txt = f.read()
+    else:
+        txt = "Build slave details file @BOOST_BUILD_SLAVE_DETAILS_FILE@ not found."
+
+    return txt

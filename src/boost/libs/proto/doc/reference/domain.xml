@@ -1,0 +1,121 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<header name="boost/proto/domain.hpp">
+  <para>
+    Contains definition of <computeroutput><classname alt="boost::proto::domain">proto::domain&lt;&gt;</classname>
+    </computeroutput> class template and helpers for defining domains with a generator and a grammar for controlling
+    operator overloading.
+  </para>
+  <namespace name="boost">
+    <namespace name="proto">
+
+      <!-- proto::domain<> -->
+      <struct name="domain">
+        <template>
+          <template-type-parameter name="Generator">
+            <default><classname>proto::default_generator</classname></default>
+          </template-type-parameter>
+          <template-type-parameter name="Grammar">
+            <default><classname>proto::_</classname></default>
+          </template-type-parameter>
+        </template>
+        <inherit><type>Generator</type></inherit>
+        <purpose>For use in defining domain tags to be used with <computeroutput>
+          <classname alt="proto::extends">proto::extends&lt;&gt;</classname></computeroutput>. A
+          <emphasis>domain</emphasis> associates an expression type with a <emphasis>generator</emphasis>,
+          and optionally a <emphasis>grammar</emphasis>.
+        </purpose>
+        <description>
+          <para>
+            The Generator determines how new expressions in the domain are constructed. Typically, a generator
+            wraps all new expressions in a wrapper that imparts domain-specific behaviors to expressions within
+            its domain. (See <computeroutput><classname alt="proto::extends">proto::extends&lt;&gt;</classname></computeroutput>.)
+          </para>
+          <para>
+            The Grammar determines whether a given expression is valid within the domain, and automatically
+            disables any operator overloads which would cause an invalid expression to be created. By default,
+            the Grammar parameter defaults to the wildcard, <computeroutput><classname>proto::_</classname>
+            </computeroutput>, which makes all expressions valid within the domain.
+          </para>
+          <para>
+            Example: <programlisting> template&lt;typename Expr&gt;
+ struct MyExpr;
+
+ struct MyGrammar
+   : <classname>proto::or_</classname>&lt; <classname>proto::terminal</classname>&lt;_&gt;, <classname>proto::plus</classname>&lt;MyGrammar, MyGrammar&gt; &gt;
+ {};
+
+ // Define MyDomain, in which all expressions are
+ // wrapped in MyExpr&lt;&gt; and only expressions that
+ // conform to MyGrammar are allowed.
+ struct MyDomain
+   : <classname>proto::domain</classname>&lt;<classname>proto::generator</classname>&lt;MyExpr&gt;, MyGrammar&gt;
+ {};
+
+ // Use MyDomain to define MyExpr
+ template&lt;typename Expr&gt;
+ struct MyExpr
+   : <classname>proto::extends</classname>&lt;Expr, MyExpr&lt;Expr&gt;, MyDomain&gt;
+ {
+     // ...
+ };
+            </programlisting>
+          </para>
+        </description>
+        <typedef name="proto_grammar">
+          <type>Grammar</type>
+        </typedef>
+      </struct>
+
+      <!-- proto::default_domain -->
+      <struct name="default_domain">
+        <inherit><classname>proto::domain</classname>&lt;&gt;</inherit>
+        <purpose>The domain expressions have by default, if <computeroutput>
+          <classname alt="proto::extends">proto::extends&lt;&gt;</classname></computeroutput> has not been used
+          to associate a domain with an expression.</purpose>
+      </struct>
+
+      <!-- proto::deduce_domain -->
+      <struct name="deduce_domain">
+        <purpose>A pseudo-domain for use in functions and metafunctions that require a domain parameter.
+          It indicates that the domain of the parent node should be inferred from the domains of the child nodes.</purpose>
+      </struct>
+
+      <!-- proto::is_domain -->
+      <struct name="is_domain">
+        <template>
+          <template-type-parameter name="T"/>
+        </template>
+        <inherit>
+          <type>mpl::bool_&lt; <replaceable>true-or-false</replaceable> &gt;</type>
+        </inherit>
+        <description>
+          <para>
+            A metafunction that returns <computeroutput>mpl::true_</computeroutput> if the type
+            <computeroutput>T</computeroutput> is the type of a Proto domain;
+            <computeroutput>mpl::false_</computeroutput> otherwise. If <computeroutput>T</computeroutput>
+            inherits from <computeroutput><classname alt="proto::domain">proto::domain&lt;&gt;</classname></computeroutput>,
+            <computeroutput>is_domain&lt;T&gt;</computeroutput> is <computeroutput>mpl::true_</computeroutput>.
+          </para>
+        </description>
+      </struct>
+
+      <!-- proto::domain_of -->
+      <struct name="domain_of">
+        <template>
+          <template-type-parameter name="T"/>
+        </template>
+        <description>
+          <para>
+            A metafunction that returns the domain of a given type. If <computeroutput>T</computeroutput> is a Proto
+            expression type, it returns that expression's associated domain. If not, it returns
+            <computeroutput><classname>proto::default_domain</classname></computeroutput>.
+          </para>
+        </description>
+        <typedef name="type">
+          <type><replaceable>domain-of-T</replaceable></type>
+        </typedef>
+      </struct>
+
+    </namespace>
+  </namespace>
+</header>

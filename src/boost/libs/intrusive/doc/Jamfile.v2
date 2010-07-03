@@ -1,0 +1,59 @@
+#  Boost.Intrusive library documentation Jamfile
+#
+#  Copyright Ion Gaztanaga 2006. 
+#  Distributed under the Boost Software License, Version 1.0.
+#     (See accompanying file LICENSE_1_0.txt or copy at
+#           http://www.boost.org/LICENSE_1_0.txt)
+#
+# See http://www.boost.org/libs/intrusive for documentation.
+
+
+import doxygen ;
+import quickbook ;
+
+doxygen autodoc
+   :
+      [ glob ../../../boost/intrusive/*.hpp ]
+   :
+   <doxygen:param>HIDE_UNDOC_MEMBERS=YES
+   <doxygen:param>HIDE_UNDOC_MEMBERS=YES
+   <doxygen:param>HIDE_UNDOC_CLASSES=YES
+   <doxygen:param>EXTRACT_PRIVATE=NO
+   <doxygen:param>ENABLE_PREPROCESSING=YES
+   <doxygen:param>MACRO_EXPANSION=YES
+   <doxygen:param>"PREDEFINED=BOOST_INTRUSIVE_DOXYGEN_INVOKED \\
+                  "list_impl=list" \\
+                  "slist_impl=slist" \\
+                  "set_impl=set" \\
+                  "multiset_impl=multiset" \\
+                  "rbtree_impl=rbtree" \\
+                  "unordered_set_impl=unordered_set" \\
+                  "unordered_multiset_impl=unordered_multiset" \\
+                  "hashtable_impl=hashtable" \\
+                  "splay_set_impl=splay_set" \\
+                  "splay_multiset_impl=splay_multiset" \\
+                  "splaytree_impl=splaytree" \\
+                  "sg_set_impl=sg_set" \\
+                  "sg_multiset_impl=sg_multiset" \\
+                  "sgtree_impl=sgtree" \\
+                  "avl_set_impl=avl_set" \\
+                  "avl_multiset_impl=avl_multiset" \\
+                  "avltree_impl=avltree" \\
+                  "treap_set_impl=treap_set" \\
+                  "treap_multiset_impl=treap_multiset" \\
+                  "treap_impl=treap""
+   ;
+
+xml intrusive : intrusive.qbk ;
+
+boostbook standalone
+   :
+      intrusive
+   :
+        <xsl:param>boost.root=../../../..
+        <xsl:param>boost.libraries=../../../../libs/libraries.htm
+        <xsl:param>generate.section.toc.level=3
+        <xsl:param>chunk.first.sections=1
+        <dependency>autodoc
+        <format>pdf:<xsl:param>boost.url.prefix=http://www.boost.org/doc/libs/release/doc/html
+   ;

@@ -1,0 +1,54 @@
+#==============================================================================
+#   Copyright (c) 2001-2007 Joel de Guzman
+#
+#   Distributed under the Boost Software License, Version 1.0. (See accompanying
+#   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+#==============================================================================
+project spirit-qi-example
+    : requirements <toolset>gcc:<cxxflags>-ftemplate-depth-300
+    :
+    :
+    ;
+
+exe actions_ : actions.cpp ;
+exe sum : sum.cpp ;
+exe complex_number : complex_number.cpp ;
+exe employee : employee.cpp  ;
+exe roman : roman.cpp ;
+exe mini_xml1 : mini_xml1.cpp ;
+exe mini_xml2 : mini_xml2.cpp ;
+exe num_list1 : num_list1.cpp ;
+exe num_list2 : num_list2.cpp ;
+exe num_list3 : num_list3.cpp ;
+exe num_list4 : num_list4.cpp ;
+
+exe calc1 : calc1.cpp ;
+exe calc2 : calc2.cpp ;
+exe calc2_ast : calc2_ast.cpp ;
+exe calc3 : calc3.cpp ;
+exe calc3_lexer : calc3_lexer.cpp ;
+exe calc4 : calc4.cpp ;
+exe calc5 : calc5.cpp ;
+
+exe calc6 :
+    calc6/calc6.cpp
+    calc6/calc6a.cpp
+    calc6/calc6b.cpp
+    calc6/calc6c.cpp
+    ;
+
+exe calc7 :
+    calc7/calc7.cpp
+    calc7/calc7a.cpp
+    calc7/calc7b.cpp
+    calc7/calc7c.cpp
+    ;
+
+exe mini_c :
+    mini_c/mini_c.cpp
+    mini_c/mini_ca.cpp
+    mini_c/mini_cb.cpp
+    mini_c/mini_cc.cpp
+    mini_c/mini_cd.cpp
+    ;
+

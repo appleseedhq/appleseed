@@ -1,0 +1,18 @@
+[article Code Block 2
+]
+
+[section A code block]
+
+A code block with proper indentation ;-)
+
+``
+    #include <iostream>
+
+    int main()
+    {
+        std::cout << "Hello, World!" << std::endl;
+        return 0;
+    }
+``
+
+[endsect]

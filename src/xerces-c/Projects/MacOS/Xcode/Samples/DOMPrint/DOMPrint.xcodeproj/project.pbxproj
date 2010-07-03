@@ -1,0 +1,294 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 42;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		9048038308B14D66004A3442 /* Xerces.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9048038208B14D66004A3442 /* Xerces.framework */; };
+		90E140BA0541872600C60A69 /* DOMTreeErrorReporter.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 02DDAA63FF8BF5E17F000001 /* DOMTreeErrorReporter.hpp */; };
+		90E140BB0541872600C60A69 /* DOMPrintErrorHandler.hpp in Headers */ = {isa = PBXBuildFile; fileRef = F58FFD0702C4FB8D01A80065 /* DOMPrintErrorHandler.hpp */; };
+		90E140BC0541872600C60A69 /* DOMPrintFilter.hpp in Headers */ = {isa = PBXBuildFile; fileRef = F58FFD0902C4FB8D01A80065 /* DOMPrintFilter.hpp */; };
+		90E140BD0541872600C60A69 /* xerces_sample_prefix.h in Headers */ = {isa = PBXBuildFile; fileRef = F52345F503AE603601A80065 /* xerces_sample_prefix.h */; };
+		90E140BF0541872600C60A69 /* DOMPrint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02DDAA62FF8BF5E17F000001 /* DOMPrint.cpp */; settings = {ATTRIBUTES = (); }; };
+		90E140C00541872600C60A69 /* DOMTreeErrorReporter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02DDAA64FF8BF5E17F000001 /* DOMTreeErrorReporter.cpp */; settings = {ATTRIBUTES = (); }; };
+		90E140C10541872600C60A69 /* DOMPrintErrorHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F58FFD0602C4FB8D01A80065 /* DOMPrintErrorHandler.cpp */; };
+		90E140C20541872600C60A69 /* DOMPrintFilter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F58FFD0802C4FB8D01A80065 /* DOMPrintFilter.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXBuildStyle section */
+		F58B304702DE343B0195DDC8 /* Development GCC3 */ = {
+			isa = PBXBuildStyle;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				OPTIMIZATION_CFLAGS = "-O0";
+			};
+			name = "Development GCC3";
+		};
+		F58B304802DE34410195DDC8 /* Deployment GCC3 */ = {
+			isa = PBXBuildStyle;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+			};
+			name = "Deployment GCC3";
+		};
+/* End PBXBuildStyle section */
+
+/* Begin PBXFileReference section */
+		02DDAA62FF8BF5E17F000001 /* DOMPrint.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = DOMPrint.cpp; sourceTree = "<group>"; };
+		02DDAA63FF8BF5E17F000001 /* DOMTreeErrorReporter.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; path = DOMTreeErrorReporter.hpp; sourceTree = "<group>"; };
+		02DDAA64FF8BF5E17F000001 /* DOMTreeErrorReporter.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = DOMTreeErrorReporter.cpp; sourceTree = "<group>"; };
+		9048038208B14D66004A3442 /* Xerces.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Xerces.framework; path = ../../XercesLib/build/Development/Xerces.framework; sourceTree = SOURCE_ROOT; };
+		90E140C70541872700C60A69 /* DOMPrint */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = DOMPrint; sourceTree = BUILT_PRODUCTS_DIR; };
+		F52345F503AE603601A80065 /* xerces_sample_prefix.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = xerces_sample_prefix.h; path = ../xerces_sample_prefix.h; sourceTree = SOURCE_ROOT; };
+		F58FFD0602C4FB8D01A80065 /* DOMPrintErrorHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = DOMPrintErrorHandler.cpp; sourceTree = "<group>"; };
+		F58FFD0702C4FB8D01A80065 /* DOMPrintErrorHandler.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; path = DOMPrintErrorHandler.hpp; sourceTree = "<group>"; };
+		F58FFD0802C4FB8D01A80065 /* DOMPrintFilter.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = DOMPrintFilter.cpp; sourceTree = "<group>"; };
+		F58FFD0902C4FB8D01A80065 /* DOMPrintFilter.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; path = DOMPrintFilter.hpp; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		90E140C30541872600C60A69 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9048038308B14D66004A3442 /* Xerces.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0249A662FF388D9811CA2CEA /* External Frameworks and Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				9048038208B14D66004A3442 /* Xerces.framework */,
+			);
+			name = "External Frameworks and Libraries";
+			sourceTree = SOURCE_ROOT;
+		};
+		08FB7794FE84155DC02AAC07 /* DOMPrint */ = {
+			isa = PBXGroup;
+			children = (
+				F52345F503AE603601A80065 /* xerces_sample_prefix.h */,
+				08FB7795FE84155DC02AAC07 /* Sources */,
+				0249A662FF388D9811CA2CEA /* External Frameworks and Libraries */,
+				1AB674ADFE9D54B511CA2CBB /* Products */,
+			);
+			name = DOMPrint;
+			path = ../../../../../samples/DOMPrint;
+			sourceTree = SOURCE_ROOT;
+		};
+		08FB7795FE84155DC02AAC07 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				02DDAA62FF8BF5E17F000001 /* DOMPrint.cpp */,
+				02DDAA63FF8BF5E17F000001 /* DOMTreeErrorReporter.hpp */,
+				02DDAA64FF8BF5E17F000001 /* DOMTreeErrorReporter.cpp */,
+				F58FFD0602C4FB8D01A80065 /* DOMPrintErrorHandler.cpp */,
+				F58FFD0702C4FB8D01A80065 /* DOMPrintErrorHandler.hpp */,
+				F58FFD0802C4FB8D01A80065 /* DOMPrintFilter.cpp */,
+				F58FFD0902C4FB8D01A80065 /* DOMPrintFilter.hpp */,
+			);
+			name = Sources;
+			sourceTree = "<group>";
+		};
+		1AB674ADFE9D54B511CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				90E140C70541872700C60A69 /* DOMPrint */,
+			);
+			name = Products;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		90E140B90541872600C60A69 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				90E140BA0541872600C60A69 /* DOMTreeErrorReporter.hpp in Headers */,
+				90E140BB0541872600C60A69 /* DOMPrintErrorHandler.hpp in Headers */,
+				90E140BC0541872600C60A69 /* DOMPrintFilter.hpp in Headers */,
+				90E140BD0541872600C60A69 /* xerces_sample_prefix.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		90E140B80541872600C60A69 /* DOMPrint */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9048034E08B14932004A3442 /* Build configuration list for PBXNativeTarget "DOMPrint" */;
+			buildPhases = (
+				90E140B90541872600C60A69 /* Headers */,
+				90E140BE0541872600C60A69 /* Sources */,
+				90E140C30541872600C60A69 /* Frameworks */,
+				90E140C50541872600C60A69 /* Rez */,
+			);
+			buildRules = (
+			);
+			buildSettings = {
+				BUILD_SETTING = "";
+				FRAMEWORK_SEARCH_PATHS = ../../XercesLib/build;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = ../xerces_sample_prefix.h;
+				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
+				GCC_WARN_UNKNOWN_PRAGMAS = NO;
+				HEADER_SEARCH_PATHS = ../../../../../src/;
+				LIBRARY_SEARCH_PATHS = "";
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				OTHER_REZFLAGS = "";
+				PREBINDING = NO;
+				PRODUCT_NAME = DOMPrint;
+				REZ_EXECUTABLE = YES;
+				SECTORDER_FLAGS = "";
+				WARNING_CFLAGS = "-Wmost";
+			};
+			dependencies = (
+			);
+			name = DOMPrint;
+			productName = DOMPrint;
+			productReference = 90E140C70541872700C60A69 /* DOMPrint */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		08FB7793FE84155DC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 9048035208B14932004A3442 /* Build configuration list for PBXProject "DOMPrint" */;
+			buildSettings = {
+			};
+			buildStyles = (
+				F58B304702DE343B0195DDC8 /* Development GCC3 */,
+				F58B304802DE34410195DDC8 /* Deployment GCC3 */,
+			);
+			hasScannedForEncodings = 1;
+			mainGroup = 08FB7794FE84155DC02AAC07 /* DOMPrint */;
+			projectDirPath = "";
+			targets = (
+				90E140B80541872600C60A69 /* DOMPrint */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXRezBuildPhase section */
+		90E140C50541872600C60A69 /* Rez */ = {
+			isa = PBXRezBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXRezBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		90E140BE0541872600C60A69 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				90E140BF0541872600C60A69 /* DOMPrint.cpp in Sources */,
+				90E140C00541872600C60A69 /* DOMTreeErrorReporter.cpp in Sources */,
+				90E140C10541872600C60A69 /* DOMPrintErrorHandler.cpp in Sources */,
+				90E140C20541872600C60A69 /* DOMPrintFilter.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		9048034F08B14932004A3442 /* Development */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUILD_SETTING = "";
+				COPY_PHASE_STRIP = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					../../XercesLib/build,
+					"$(SRCROOT)/../../XercesLib/build/Development",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = ../xerces_sample_prefix.h;
+				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
+				GCC_WARN_UNKNOWN_PRAGMAS = NO;
+				HEADER_SEARCH_PATHS = ../../../../../src/;
+				LIBRARY_SEARCH_PATHS = "";
+				OPTIMIZATION_CFLAGS = "-O0";
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				OTHER_REZFLAGS = "";
+				PREBINDING = NO;
+				PRODUCT_NAME = DOMPrint;
+				REZ_EXECUTABLE = YES;
+				SECTORDER_FLAGS = "";
+				WARNING_CFLAGS = "-Wmost";
+			};
+			name = Development;
+		};
+		9048035008B14932004A3442 /* Deployment */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUILD_SETTING = "";
+				COPY_PHASE_STRIP = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					../../XercesLib/build,
+					"$(SRCROOT)/../../XercesLib/build/Development",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = ../xerces_sample_prefix.h;
+				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
+				GCC_WARN_UNKNOWN_PRAGMAS = NO;
+				HEADER_SEARCH_PATHS = ../../../../../src/;
+				LIBRARY_SEARCH_PATHS = "";
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				OTHER_REZFLAGS = "";
+				PREBINDING = NO;
+				PRODUCT_NAME = DOMPrint;
+				REZ_EXECUTABLE = YES;
+				SECTORDER_FLAGS = "";
+				WARNING_CFLAGS = "-Wmost";
+			};
+			name = Deployment;
+		};
+		9048035308B14932004A3442 /* Development */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Development;
+		};
+		9048035408B14932004A3442 /* Deployment */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Deployment;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		9048034E08B14932004A3442 /* Build configuration list for PBXNativeTarget "DOMPrint" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9048034F08B14932004A3442 /* Development */,
+				9048035008B14932004A3442 /* Deployment */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Development;
+		};
+		9048035208B14932004A3442 /* Build configuration list for PBXProject "DOMPrint" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9048035308B14932004A3442 /* Development */,
+				9048035408B14932004A3442 /* Deployment */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Development;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
+}

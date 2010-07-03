@@ -1,0 +1,141 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Class template typed_value</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../program_options/reference.html#header.boost.program_options.value_semantic_hpp" title="Header &lt;boost/program_options/value_semantic.hpp&gt;">
+<link rel="prev" href="typed_value_base.html" title="Class typed_value_base">
+<link rel="next" href="value_id1882065.html" title="Function value">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="typed_value_base.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../program_options/reference.html#header.boost.program_options.value_semantic_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="value_id1882065.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.program_options.typed_value"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Class template typed_value</span></h2>
+<p>boost::program_options::typed_value</p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../program_options/reference.html#header.boost.program_options.value_semantic_hpp" title="Header &lt;boost/program_options/value_semantic.hpp&gt;">boost/program_options/value_semantic.hpp</a>&gt;
+
+</em></span><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>typename</strong></span> charT = <span class="bold"><strong>char</strong></span>&gt; 
+<span class="bold"><strong>class</strong></span> <a class="link" href="typed_value.html" title="Class template typed_value">typed_value</a> : <span class="bold"><strong>public</strong></span> boost::program_options::value_semantic_codecvt_helper&lt; charT &gt;,
+                    <span class="bold"><strong>public</strong></span> boost::program_options::typed_value_base
+{
+<span class="bold"><strong>public</strong></span>:
+  <span class="emphasis"><em>// <a class="link" href="typed_value.html#boost.program_options.typed_valueconstruct-copy-destruct">construct/copy/destruct</a></em></span>
+  <a class="link" href="typed_value.html#id1882054-bb">typed_value</a>(T *);
+
+  <span class="emphasis"><em>// <a class="link" href="typed_value.html#id2019745-bb">public member functions</a></em></span>
+  <span class="type"><a class="link" href="typed_value.html" title="Class template typed_value">typed_value</a> *</span> <a class="link" href="typed_value.html#id2019748-bb">default_value</a>(<span class="bold"><strong>const</strong></span> T &amp;) ;
+  <span class="type"><a class="link" href="typed_value.html" title="Class template typed_value">typed_value</a> *</span> <a class="link" href="typed_value.html#id2019768-bb">default_value</a>(<span class="bold"><strong>const</strong></span> T &amp;, <span class="bold"><strong>const</strong></span> std::string &amp;) ;
+  <span class="type"><a class="link" href="typed_value.html" title="Class template typed_value">typed_value</a> *</span> <a class="link" href="typed_value.html#id2019794-bb">implicit_value</a>(<span class="bold"><strong>const</strong></span> T &amp;) ;
+  <span class="type"><a class="link" href="typed_value.html" title="Class template typed_value">typed_value</a> *</span> <a class="link" href="typed_value.html#id2019817-bb">implicit_value</a>(<span class="bold"><strong>const</strong></span> T &amp;, <span class="bold"><strong>const</strong></span> std::string &amp;) ;
+  <span class="type"><a class="link" href="typed_value.html" title="Class template typed_value">typed_value</a> *</span> <a class="link" href="typed_value.html#id1992284-bb">notifier</a>(function1&lt; <span class="bold"><strong>void</strong></span>, <span class="bold"><strong>const</strong></span> T &amp; &gt;) ;
+  <span class="type"><a class="link" href="typed_value.html" title="Class template typed_value">typed_value</a> *</span> <a class="link" href="typed_value.html#id2054645-bb">composing</a>() ;
+  <span class="type"><a class="link" href="typed_value.html" title="Class template typed_value">typed_value</a> *</span> <a class="link" href="typed_value.html#id1922292-bb">multitoken</a>() ;
+  <span class="type"><a class="link" href="typed_value.html" title="Class template typed_value">typed_value</a> *</span> <a class="link" href="typed_value.html#id1922305-bb">zero_tokens</a>() ;
+  <span class="type">std::string</span> <a class="link" href="typed_value.html#id1922314-bb">name</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="typed_value.html#id1922321-bb">is_composing</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>unsigned</strong></span></span> <a class="link" href="typed_value.html#id1922328-bb">min_tokens</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>unsigned</strong></span></span> <a class="link" href="typed_value.html#id1922335-bb">max_tokens</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="typed_value.html#id1922342-bb">xparse</a>(boost::any &amp;, <span class="bold"><strong>const</strong></span> std::vector&lt; std::basic_string&lt; charT &gt; &gt; &amp;) <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="typed_value.html#id1922365-bb">apply_default</a>(boost::any &amp;) <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="typed_value.html#id1922383-bb">notify</a>(<span class="bold"><strong>const</strong></span> boost::any &amp;) <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>const</strong></span> std::type_info &amp;</span> <a class="link" href="typed_value.html#id2057564-bb">value_type</a>() <span class="bold"><strong>const</strong></span>;
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id2924022"></a><h2>Description</h2>
+<p>Class which handles value of a specific type. </p>
+<div class="refsect2" lang="en">
+<a name="id2924029"></a><h3>
+<a name="boost.program_options.typed_valueconstruct-copy-destruct"></a><code class="computeroutput">typed_value</code> 
+        public
+       construct/copy/destruct</h3>
+<div class="orderedlist"><ol type="1"><li>
+<pre class="literallayout"><a name="id1882054-bb"></a>typed_value(T * store_to);</pre>
+<p>Ctor. The 'store_to' parameter tells where to store the value when it's known. The parameter can be NULL. </p>
+</li></ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id2924066"></a><h3>
+<a name="id2019745-bb"></a><code class="computeroutput">typed_value</code> public member functions</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><span class="type"><a class="link" href="typed_value.html" title="Class template typed_value">typed_value</a> *</span> <a name="id2019748-bb"></a>default_value(<span class="bold"><strong>const</strong></span> T &amp; v) ;</pre>
+<p>Specifies default value, which will be used if none is explicitly specified. The type 'T' should provide operator&lt;&lt; for ostream. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><a class="link" href="typed_value.html" title="Class template typed_value">typed_value</a> *</span> <a name="id2019768-bb"></a>default_value(<span class="bold"><strong>const</strong></span> T &amp; v, <span class="bold"><strong>const</strong></span> std::string &amp; textual) ;</pre>
+<p>Specifies default value, which will be used if none is explicitly specified. Unlike the above overload, the type 'T' need not provide operator&lt;&lt; for ostream, but textual representation of default value must be provided by the user. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><a class="link" href="typed_value.html" title="Class template typed_value">typed_value</a> *</span> <a name="id2019794-bb"></a>implicit_value(<span class="bold"><strong>const</strong></span> T &amp; v) ;</pre>
+<p>Specifies an implicit value, which will be used if the option is given, but without an adjacent value. Using this implies that an explicit value is optional, but if given, must be strictly adjacent to the option, i.e.: '-ovalue' or '--option=value'. Giving '-o' or '--option' will cause the implicit value to be applied. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><a class="link" href="typed_value.html" title="Class template typed_value">typed_value</a> *</span> <a name="id2019817-bb"></a>implicit_value(<span class="bold"><strong>const</strong></span> T &amp; v, <span class="bold"><strong>const</strong></span> std::string &amp; textual) ;</pre>
+<p>Specifies an implicit value, which will be used if the option is given, but without an adjacent value. Using this implies that an explicit value is optional, but if given, must be strictly adjacent to the option, i.e.: '-ovalue' or '--option=value'. Giving '-o' or '--option' will cause the implicit value to be applied. Unlike the above overload, the type 'T' need not provide operator&lt;&lt; for ostream, but textual representation of default value must be provided by the user. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><a class="link" href="typed_value.html" title="Class template typed_value">typed_value</a> *</span> <a name="id1992284-bb"></a>notifier(function1&lt; <span class="bold"><strong>void</strong></span>, <span class="bold"><strong>const</strong></span> T &amp; &gt; f) ;</pre>
+<p>Specifies a function to be called when the final value is determined. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><a class="link" href="typed_value.html" title="Class template typed_value">typed_value</a> *</span> <a name="id2054645-bb"></a>composing() ;</pre>
+<p>Specifies that the value is composing. See the 'is_composing' method for explanation. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><a class="link" href="typed_value.html" title="Class template typed_value">typed_value</a> *</span> <a name="id1922292-bb"></a>multitoken() ;</pre>
+<p>Specifies that the value can span multiple tokens. </p>
+</li>
+<li><pre class="literallayout"><span class="type"><a class="link" href="typed_value.html" title="Class template typed_value">typed_value</a> *</span> <a name="id1922305-bb"></a>zero_tokens() ;</pre></li>
+<li><pre class="literallayout"><span class="type">std::string</span> <a name="id1922314-bb"></a>name() <span class="bold"><strong>const</strong></span>;</pre></li>
+<li><pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1922321-bb"></a>is_composing() <span class="bold"><strong>const</strong></span>;</pre></li>
+<li><pre class="literallayout"><span class="type"><span class="bold"><strong>unsigned</strong></span></span> <a name="id1922328-bb"></a>min_tokens() <span class="bold"><strong>const</strong></span>;</pre></li>
+<li><pre class="literallayout"><span class="type"><span class="bold"><strong>unsigned</strong></span></span> <a name="id1922335-bb"></a>max_tokens() <span class="bold"><strong>const</strong></span>;</pre></li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1922342-bb"></a>xparse(boost::any &amp; value_store, 
+            <span class="bold"><strong>const</strong></span> std::vector&lt; std::basic_string&lt; charT &gt; &gt; &amp; new_tokens) <span class="bold"><strong>const</strong></span>;</pre>
+<p>Creates an instance of the 'validator' class and calls its operator() to perform the actual conversion. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1922365-bb"></a>apply_default(boost::any &amp; value_store) <span class="bold"><strong>const</strong></span>;</pre>
+<p>If default value was specified via previous call to 'default_value', stores that value into 'value_store'. Returns true if default value was stored. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1922383-bb"></a>notify(<span class="bold"><strong>const</strong></span> boost::any &amp; value_store) <span class="bold"><strong>const</strong></span>;</pre>
+<p>If an address of variable to store value was specified when creating *this, stores the value there. Otherwise, does nothing. </p>
+</li>
+<li><pre class="literallayout"><span class="type"><span class="bold"><strong>const</strong></span> std::type_info &amp;</span> <a name="id2057564-bb"></a>value_type() <span class="bold"><strong>const</strong></span>;</pre></li>
+</ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2002-2004 Vladimir Prus<p>Distributed under the Boost Software License, Version 1.0.
+      (See accompanying file <code class="filename">LICENSE_1_0.txt</code> or copy at 
+      <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="typed_value_base.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../program_options/reference.html#header.boost.program_options.value_semantic_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="value_id1882065.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

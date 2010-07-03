@@ -1,0 +1,106 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
+ * $Id: xml4com.idl 569031 2007-08-23 15:05:28Z amassari $
+ */
+
+// This file will be processed by the MIDL tool to
+// produce the type library (xml4com.tlb) and marshalling code.
+
+import "oaidl.idl";
+
+[
+	uuid(C4775B62-ECD6-11d4-94B4-00A0CC57CBCB),
+	//
+	//  Format for version is major.minor
+	//  no support for additional parts (like 1.5.2)
+	//  Use 1.60 for subsequent release
+	version(2.80),
+	helpstring("Xerces XML Parser 2.8.0")
+]
+library Xerces
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	//
+	//   it appears to be necessary to forward declare
+	//      this interface to lure it into the type library
+	interface IXMLDOMNotation;
+
+	//
+	//   might as well insure the rest we use are here
+	//
+	interface IXMLDOMAttribute;
+	interface IXMLDOMCDATASection;
+	interface IXMLDOMComment;
+	interface IXMLDOMDocument;
+	interface IXMLDOMDocumentType;
+	interface IXMLDOMElement;
+	interface IXMLDOMEntity;
+	interface IXMLDOMEntityReference;
+	interface IXMLDOMImplementation;
+	interface IXMLDOMNamedNodeMap;
+	interface IXMLDOMNodeList;
+	interface IXMLDOMParseError;
+	interface IXMLDOMProcessingInstruction;
+	interface IXMLDOMText;
+	interface IXMLHttpRequest;
+
+
+	//
+	//
+	//    if you get an "Cannot open input file" error here
+	//       then you most probably do not have a recent
+	//        Microsoft Platform SDK in your include path
+	//
+	//    See http://xerces.apache.org/xerces-c/build.html#BuildCOM
+	import "xmldom.idl";
+	
+	[
+		object,
+		uuid(35ADBB42-47B2-4b22-9D2E-1DA260EE5007),
+		hidden,
+		oleautomation,
+		helpstring("IIBMXMLDOMNodeIdentity Interface"),
+		pointer_default(unique)
+	]
+	interface IIBMXMLDOMNodeIdentity : IUnknown
+	{
+		[propget, helpstring("property NodeId")] HRESULT NodeId([out, retval] long *pVal);
+	};
+
+	[
+		uuid(C4775B61-ECD6-11d4-94B4-00A0CC57CBCB),
+		helpstring("DOMDocument Class")
+	]
+	coclass DOMDocument
+	{
+		[default] interface IXMLDOMDocument;
+		[default, source] dispinterface XMLDOMDocumentEvents;
+	};
+
+	[
+	  uuid(3A725053-15FB-4065-9171-BC02BCF3876C),
+	  helpstring("XMLHTTPRequest class.")
+	]
+	coclass XMLHTTPRequest
+	{
+		[default] interface IXMLHttpRequest;
+	};
+};

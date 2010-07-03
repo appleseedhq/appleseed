@@ -1,0 +1,55 @@
+<?xml encoding='ISO-8859-1'?>
+
+<!-- STYLEBOOK BOOK DTD -->
+
+<!-- import the external source-specific dtd -->
+<!ENTITY % externalEntity SYSTEM "entities.ent">
+%externalEntity;
+
+<!ELEMENT book (resources?|document|hidden|faqs|changes|group|container|external|separator)+>
+<!ATTLIST book title     CDATA #REQUIRED
+               copyright CDATA #IMPLIED>
+
+<!ELEMENT resources EMPTY>
+<!ATTLIST resources source CDATA #REQUIRED>
+
+<!ELEMENT document EMPTY>
+<!ATTLIST document id     ID    #REQUIRED
+                   source CDATA #REQUIRED
+                   label  CDATA #REQUIRED>
+
+<!ELEMENT hidden EMPTY>
+<!ATTLIST hidden id     ID    #REQUIRED
+                 source CDATA #REQUIRED>
+
+<!ELEMENT faqs EMPTY>
+<!ATTLIST faqs id     ID    #REQUIRED
+               source CDATA #REQUIRED
+               label  CDATA #REQUIRED>
+
+<!ELEMENT changes EMPTY>
+<!ATTLIST changes id     ID    #REQUIRED
+                  source CDATA #REQUIRED
+		  label  CDATA #REQUIRED>
+
+<!ELEMENT group (entry)+>
+<!ATTLIST group id    ID    #IMPLIED
+                label CDATA #REQUIRED
+		title CDATA #IMPLIED>
+
+<!ELEMENT container (entry)+>
+<!ATTLIST container id    ID    #IMPLIED
+		source CDATA #REQUIRED
+                label CDATA #REQUIRED>
+
+<!ELEMENT entry EMPTY>
+<!ATTLIST entry id     ID    #REQUIRED
+                source CDATA #REQUIRED>
+
+<!ELEMENT external EMPTY>
+<!ATTLIST external label CDATA #REQUIRED
+                   href  CDATA #REQUIRED>
+
+<!ELEMENT separator EMPTY>
+
+<!-- CVS $Revision: 173499 $ $Date: 2002-02-14 17:51:55 +0200 (Thu, 14 Feb 2002) $ -->

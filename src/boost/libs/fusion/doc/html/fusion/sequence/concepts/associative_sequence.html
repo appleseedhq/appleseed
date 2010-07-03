@@ -1,0 +1,332 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Associative
+        Sequence</title>
+<link rel="stylesheet" href="../../../../../../../doc/html/boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.66.1">
+<link rel="start" href="../../../index.html" title="Chapter 1. Fusion 2.0">
+<link rel="up" href="../concepts.html" title="Concepts">
+<link rel="prev" href="random_access_sequence.html" title="Random
+        Access Sequence">
+<link rel="next" href="../intrinsic.html" title="Intrinsic">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../../../../boost.png"></td>
+<td align="center"><a href="../../../../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../../../libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="random_access_sequence.html"><img src="../../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../concepts.html"><img src="../../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../../index.html"><img src="../../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="../intrinsic.html"><img src="../../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h4 class="title">
+<a name="fusion.sequence.concepts.associative_sequence"></a><a href="associative_sequence.html" title="Associative
+        Sequence">Associative
+        Sequence</a></h4></div></div></div>
+<a name="fusion.sequence.concepts.associative_sequence.description"></a><h5>
+<a name="id495917"></a>
+          <a href="associative_sequence.html#fusion.sequence.concepts.associative_sequence.description">Description</a>
+        </h5>
+<p>
+          An Associative Sequence allows efficient retrieval of elements based on
+          keys. Like associative sequences in <a href="http://www.boost.org/libs/mpl/index.html" target="_top">MPL</a>,
+          and unlike associative containers in <a href="http://en.wikipedia.org/wiki/Standard_Template_Library" target="_top">STL</a>,
+          Fusion associative sequences have no implied ordering relation. Instead,
+          type identity is used to impose an equivalence relation on keys, and the
+          order in which sequence elements are traversed during iteration is left
+          unspecified. In addition, unlike <a href="http://en.wikipedia.org/wiki/Standard_Template_Library" target="_top">STL</a>,
+          Associative Sequences have mutable iterators. This is due to the fact that
+          there is no associated ordering relation and the runtime value of the keys
+          themselves do not have any effect on the associativity of the sequence.
+        </p>
+<div class="variablelist">
+<p class="title"><b>Notation</b></p>
+<dl>
+<dt><span class="term"><tt class="computeroutput"><span class="identifier">s</span></tt></span></dt>
+<dd><p>
+              An Associative Sequence
+            </p></dd>
+<dt><span class="term"><tt class="computeroutput"><span class="identifier">S</span></tt></span></dt>
+<dd><p>
+              An Associative Sequence type
+            </p></dd>
+<dt><span class="term"><tt class="computeroutput"><span class="identifier">K</span></tt></span></dt>
+<dd><p>
+              An arbitrary <span class="emphasis"><em>key</em></span> type
+            </p></dd>
+<dt><span class="term"><tt class="computeroutput"><span class="identifier">o</span></tt></span></dt>
+<dd><p>
+              An arbitrary object
+            </p></dd>
+<dt><span class="term"><tt class="computeroutput"><span class="identifier">e</span></tt></span></dt>
+<dd><p>
+              A Sequence element
+            </p></dd>
+</dl>
+</div>
+<a name="fusion.sequence.concepts.associative_sequence.valid_expressions"></a><h5>
+<a name="id496106"></a>
+          <a href="associative_sequence.html#fusion.sequence.concepts.associative_sequence.valid_expressions">Valid
+          Expressions</a>
+        </h5>
+<p>
+          For any Associative Sequence the following expressions must be valid:
+        </p>
+<div class="informaltable"><table class="table">
+<colgroup>
+<col>
+<col>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>
+                <p>
+                  Expression
+                </p>
+                </th>
+<th>
+                <p>
+                  Return type
+                </p>
+                </th>
+<th>
+                <p>
+                  Type Requirements
+                </p>
+                </th>
+<th>
+                <p>
+                  Runtime Complexity
+                </p>
+                </th>
+</tr></thead>
+<tbody>
+<tr>
+<td>
+                <p>
+                  <tt class="computeroutput"><a href="../intrinsic/functions/has_key.html" title="has_key"><tt class="computeroutput"><span class="identifier">has_key</span></tt></a><span class="special">&lt;</span><span class="identifier">K</span><span class="special">&gt;(</span><span class="identifier">s</span><span class="special">)</span></tt>
+                </p>
+                </td>
+<td>
+                <p>
+                  <a href="http://www.boost.org/libs/mpl/doc/refmanual/integral-constant.html" target="_top">MPL
+                  Boolean Constant</a>. Convertible to bool.
+                </p>
+                </td>
+<td>
+                <p>
+                </p>
+                </td>
+<td>
+                <p>
+                  Constant
+                </p>
+                </td>
+</tr>
+<tr>
+<td>
+                <p>
+                  <tt class="computeroutput"><a href="../intrinsic/functions/at_key.html" title="at_key"><tt class="computeroutput"><span class="identifier">at_key</span></tt></a><span class="special">&lt;</span><span class="identifier">K</span><span class="special">&gt;(</span><span class="identifier">s</span><span class="special">)</span></tt>
+                </p>
+                </td>
+<td>
+                <p>
+                  Any type
+                </p>
+                </td>
+<td>
+                <p>
+                </p>
+                </td>
+<td>
+                <p>
+                  Constant
+                </p>
+                </td>
+</tr>
+<tr>
+<td>
+                <p>
+                  <tt class="computeroutput"><a href="../intrinsic/functions/at_key.html" title="at_key"><tt class="computeroutput"><span class="identifier">at_key</span></tt></a><span class="special">&lt;</span><span class="identifier">K</span><span class="special">&gt;(</span><span class="identifier">s</span><span class="special">)</span>
+                  <span class="special">=</span> <span class="identifier">o</span></tt>
+                </p>
+                </td>
+<td>
+                <p>
+                  Any type
+                </p>
+                </td>
+<td>
+                <p>
+                  <tt class="computeroutput"><span class="identifier">s</span></tt> is mutable and
+                  <tt class="computeroutput"><span class="identifier">e</span> <span class="special">=</span>
+                  <span class="identifier">o</span></tt>, where <tt class="computeroutput"><span class="identifier">e</span></tt> is the first element in the
+                  sequence, is a valid expression.
+                </p>
+                </td>
+<td>
+                <p>
+                  Constant
+                </p>
+                </td>
+</tr>
+</tbody>
+</table></div>
+<a name="fusion.sequence.concepts.associative_sequence.result_type_expressions"></a><h5>
+<a name="id496491"></a>
+          <a href="associative_sequence.html#fusion.sequence.concepts.associative_sequence.result_type_expressions">Result
+          Type Expressions</a>
+        </h5>
+<div class="informaltable"><table class="table">
+<colgroup>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>
+                <p>
+                  Expression
+                </p>
+                </th>
+<th>
+                <p>
+                  Compile Time Complexity
+                </p>
+                </th>
+</tr></thead>
+<tbody>
+<tr>
+<td>
+                <p>
+                  <tt class="computeroutput"><a href="../intrinsic/metafunctions/has_key.html" title="has_key"><tt class="computeroutput"><span class="identifier">result_of</span><span class="special">::</span><span class="identifier">has_key</span></tt></a><span class="special">&lt;</span><span class="identifier">S</span><span class="special">,</span>
+                  <span class="identifier">K</span><span class="special">&gt;::</span><span class="identifier">type</span></tt>
+                </p>
+                </td>
+<td>
+                <p>
+                  Amortized constant time
+                </p>
+                </td>
+</tr>
+<tr>
+<td>
+                <p>
+                  <tt class="computeroutput"><a href="../intrinsic/metafunctions/at_key.html" title="at_key"><tt class="computeroutput"><span class="identifier">result_of</span><span class="special">::</span><span class="identifier">at_key</span></tt></a><span class="special">&lt;</span><span class="identifier">S</span><span class="special">,</span>
+                  <span class="identifier">K</span><span class="special">&gt;::</span><span class="identifier">type</span></tt>
+                </p>
+                </td>
+<td>
+                <p>
+                  Amortized constant time
+                </p>
+                </td>
+</tr>
+<tr>
+<td>
+                <p>
+                  <tt class="computeroutput"><a href="../intrinsic/metafunctions/value_at_key.html" title="value_at_key"><tt class="computeroutput"><span class="identifier">result_of</span><span class="special">::</span><span class="identifier">value_at_key</span></tt></a><span class="special">&lt;</span><span class="identifier">S</span><span class="special">,</span>
+                  <span class="identifier">K</span><span class="special">&gt;::</span><span class="identifier">type</span></tt>
+                </p>
+                </td>
+<td>
+                <p>
+                  Amortized constant time
+                </p>
+                </td>
+</tr>
+</tbody>
+</table></div>
+<div class="sidebar"><p>
+          <span class="inlinemediaobject"><img src="../../../images/note.png" alt="note"></span> <tt class="computeroutput"><a href="../intrinsic/metafunctions/at_key.html" title="at_key"><tt class="computeroutput"><span class="identifier">result_of</span><span class="special">::</span><span class="identifier">at_key</span></tt></a><span class="special">&lt;</span><span class="identifier">S</span><span class="special">,</span> <span class="identifier">K</span><span class="special">&gt;</span></tt> returns the actual type returned by
+          <tt class="computeroutput"><a href="../intrinsic/functions/at_key.html" title="at_key"><tt class="computeroutput"><span class="identifier">at_key</span></tt></a><span class="special">&lt;</span><span class="identifier">K</span><span class="special">&gt;(</span><span class="identifier">s</span><span class="special">)</span></tt>. In
+          most cases, this is a reference. Hence, there is no way to know the exact
+          element type using <tt class="computeroutput"><a href="../intrinsic/metafunctions/at_key.html" title="at_key"><tt class="computeroutput"><span class="identifier">result_of</span><span class="special">::</span><span class="identifier">at_key</span></tt></a><span class="special">&lt;</span><span class="identifier">S</span><span class="special">,</span> <span class="identifier">K</span><span class="special">&gt;</span></tt>.The element at <tt class="computeroutput"><span class="identifier">K</span></tt>
+          may actually be a reference to begin with. For this purpose, you can use
+          <tt class="computeroutput"><a href="../intrinsic/metafunctions/value_at_key.html" title="value_at_key"><tt class="computeroutput"><span class="identifier">result_of</span><span class="special">::</span><span class="identifier">value_at_key</span></tt></a><span class="special">&lt;</span><span class="identifier">S</span><span class="special">,</span> <span class="identifier">N</span><span class="special">&gt;</span></tt>.
+        </p></div>
+<a name="fusion.sequence.concepts.associative_sequence.expression_semantics"></a><h5>
+<a name="id497066"></a>
+          <a href="associative_sequence.html#fusion.sequence.concepts.associative_sequence.expression_semantics">Expression
+          Semantics</a>
+        </h5>
+<div class="informaltable"><table class="table">
+<colgroup>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>
+                <p>
+                  Expression
+                </p>
+                </th>
+<th>
+                <p>
+                  Semantics
+                </p>
+                </th>
+</tr></thead>
+<tbody>
+<tr>
+<td>
+                <p>
+                  <tt class="computeroutput"><a href="../intrinsic/functions/has_key.html" title="has_key"><tt class="computeroutput"><span class="identifier">has_key</span></tt></a><span class="special">&lt;</span><span class="identifier">K</span><span class="special">&gt;(</span><span class="identifier">s</span><span class="special">)</span></tt>
+                </p>
+                </td>
+<td>
+                <p>
+                  A boolean Integral Constant <tt class="computeroutput"><span class="identifier">c</span></tt>
+                  such that <tt class="computeroutput"><span class="identifier">c</span><span class="special">::</span><span class="identifier">value</span> <span class="special">==</span>
+                  <span class="keyword">true</span></tt> if and only if there
+                  is one or more elements with the key <tt class="computeroutput"><span class="identifier">k</span></tt>
+                  in <tt class="computeroutput"><span class="identifier">s</span></tt>; see <a href="../intrinsic/functions/has_key.html" title="has_key"><tt class="computeroutput"><span class="identifier">has_key</span></tt></a>.
+                </p>
+                </td>
+</tr>
+<tr>
+<td>
+                <p>
+                  <tt class="computeroutput"><a href="../intrinsic/functions/at_key.html" title="at_key"><tt class="computeroutput"><span class="identifier">at_key</span></tt></a><span class="special">&lt;</span><span class="identifier">K</span><span class="special">&gt;(</span><span class="identifier">s</span><span class="special">)</span></tt>
+                </p>
+                </td>
+<td>
+                <p>
+                  The element associated with the key <tt class="computeroutput"><span class="identifier">K</span></tt>
+                  in the sequence <tt class="computeroutput"><span class="identifier">s</span></tt>;
+                  see <a href="../intrinsic/functions/at.html" title="at"><tt class="computeroutput"><span class="identifier">at</span></tt></a>.
+                </p>
+                </td>
+</tr>
+</tbody>
+</table></div>
+<a name="fusion.sequence.concepts.associative_sequence.models"></a><h5>
+<a name="id497387"></a>
+          <a href="associative_sequence.html#fusion.sequence.concepts.associative_sequence.models">Models</a>
+        </h5>
+<div class="itemizedlist"><ul type="disc">
+<li><a href="../../container/set.html" title="set"><tt class="computeroutput"><span class="identifier">set</span></tt></a></li>
+<li><a href="../../container/map.html" title="map"><tt class="computeroutput"><span class="identifier">map</span></tt></a></li>
+</ul></div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2001-2007 Joel de Guzman, Dan Marsden, Tobias
+      Schwinger<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="random_access_sequence.html"><img src="../../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../concepts.html"><img src="../../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../../index.html"><img src="../../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="../intrinsic.html"><img src="../../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

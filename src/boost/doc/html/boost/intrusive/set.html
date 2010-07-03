@@ -1,0 +1,702 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Class template set</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../intrusive/reference.html#header.boost.intrusive.set_hpp" title="Header &lt;boost/intrusive/set.hpp&gt;">
+<link rel="prev" href="rbtree_algorithms.html" title="Class template rbtree_algorithms">
+<link rel="next" href="make_set.html" title="Struct template make_set">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="rbtree_algorithms.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../intrusive/reference.html#header.boost.intrusive.set_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="make_set.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.intrusive.set"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Class template set</span></h2>
+<p>boost::intrusive::set</p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../intrusive/reference.html#header.boost.intrusive.set_hpp" title="Header &lt;boost/intrusive/set.hpp&gt;">boost/intrusive/set.hpp</a>&gt;
+
+</em></span><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>class</strong></span>... Options&gt; 
+<span class="bold"><strong>class</strong></span> <a class="link" href="set.html" title="Class template set">set</a> {
+<span class="bold"><strong>public</strong></span>:
+  <span class="emphasis"><em>// types</em></span>
+  <span class="bold"><strong>typedef</strong></span> implementation_defined::value_type             <a name="boost.intrusive.set.value_type"></a>value_type;            
+  <span class="bold"><strong>typedef</strong></span> implementation_defined::value_traits           <a name="boost.intrusive.set.value_traits"></a>value_traits;          
+  <span class="bold"><strong>typedef</strong></span> implementation_defined::pointer                <a name="boost.intrusive.set.pointer"></a>pointer;               
+  <span class="bold"><strong>typedef</strong></span> implementation_defined::const_pointer          <a name="boost.intrusive.set.const_pointer"></a>const_pointer;         
+  <span class="bold"><strong>typedef</strong></span> implementation_defined::reference              <a name="boost.intrusive.set.reference"></a>reference;             
+  <span class="bold"><strong>typedef</strong></span> implementation_defined::const_reference        <a name="boost.intrusive.set.const_reference"></a>const_reference;       
+  <span class="bold"><strong>typedef</strong></span> implementation_defined::difference_type        <a name="boost.intrusive.set.difference_type"></a>difference_type;       
+  <span class="bold"><strong>typedef</strong></span> implementation_defined::size_type              <a name="boost.intrusive.set.size_type"></a>size_type;             
+  <span class="bold"><strong>typedef</strong></span> implementation_defined::value_compare          <a name="boost.intrusive.set.value_compare"></a>value_compare;         
+  <span class="bold"><strong>typedef</strong></span> implementation_defined::key_compare            <a name="boost.intrusive.set.key_compare"></a>key_compare;           
+  <span class="bold"><strong>typedef</strong></span> implementation_defined::iterator               <a name="boost.intrusive.set.iterator"></a>iterator;              
+  <span class="bold"><strong>typedef</strong></span> implementation_defined::const_iterator         <a name="boost.intrusive.set.const_iterator"></a>const_iterator;        
+  <span class="bold"><strong>typedef</strong></span> implementation_defined::reverse_iterator       <a name="boost.intrusive.set.reverse_iterator"></a>reverse_iterator;      
+  <span class="bold"><strong>typedef</strong></span> implementation_defined::const_reverse_iterator <a name="boost.intrusive.set.const_reverse_iterator"></a>const_reverse_iterator;
+  <span class="bold"><strong>typedef</strong></span> implementation_defined::insert_commit_data     <a name="boost.intrusive.set.insert_commit_data"></a>insert_commit_data;    
+  <span class="bold"><strong>typedef</strong></span> implementation_defined::node_traits            <a name="boost.intrusive.set.node_traits"></a>node_traits;           
+  <span class="bold"><strong>typedef</strong></span> implementation_defined::node                   <a name="boost.intrusive.set.node"></a>node;                  
+  <span class="bold"><strong>typedef</strong></span> implementation_defined::node_ptr               <a name="boost.intrusive.set.node_ptr"></a>node_ptr;              
+  <span class="bold"><strong>typedef</strong></span> implementation_defined::const_node_ptr         <a name="boost.intrusive.set.const_node_ptr"></a>const_node_ptr;        
+  <span class="bold"><strong>typedef</strong></span> implementation_defined::node_algorithms        <a name="boost.intrusive.set.node_algorithms"></a>node_algorithms;       
+
+  <span class="emphasis"><em>// <a class="link" href="set.html#boost.intrusive.setconstruct-copy-destruct">construct/copy/destruct</a></em></span>
+  <a class="link" href="set.html#id2124457-bb">set</a>(<span class="bold"><strong>const</strong></span> value_compare &amp; = value_compare(), 
+      <span class="bold"><strong>const</strong></span> <a class="link" href="value_traits.html" title="Struct template value_traits">value_traits</a> &amp; = value_traits());
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Iterator&gt; 
+    <a class="link" href="set.html#id2124503-bb">set</a>(Iterator, Iterator, <span class="bold"><strong>const</strong></span> value_compare &amp; = value_compare(), 
+        <span class="bold"><strong>const</strong></span> <a class="link" href="value_traits.html" title="Struct template value_traits">value_traits</a> &amp; = value_traits());
+  <a class="link" href="set.html#id2124579-bb">~set</a>();
+
+  <span class="emphasis"><em>// <a class="link" href="set.html#id2121501-bb">public member functions</a></em></span>
+  <span class="type">iterator</span> <a class="link" href="set.html#id2121505-bb">begin</a>() ;
+  <span class="type">const_iterator</span> <a class="link" href="set.html#id2121535-bb">begin</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type">const_iterator</span> <a class="link" href="set.html#id2121566-bb">cbegin</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type">iterator</span> <a class="link" href="set.html#id2121596-bb">end</a>() ;
+  <span class="type">const_iterator</span> <a class="link" href="set.html#id2121627-bb">end</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type">const_iterator</span> <a class="link" href="set.html#id2121657-bb">cend</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type">reverse_iterator</span> <a class="link" href="set.html#id2121688-bb">rbegin</a>() ;
+  <span class="type">const_reverse_iterator</span> <a class="link" href="set.html#id2121718-bb">rbegin</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type">const_reverse_iterator</span> <a class="link" href="set.html#id2121750-bb">crbegin</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type">reverse_iterator</span> <a class="link" href="set.html#id2121781-bb">rend</a>() ;
+  <span class="type">const_reverse_iterator</span> <a class="link" href="set.html#id2121812-bb">rend</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type">const_reverse_iterator</span> <a class="link" href="set.html#id2121843-bb">crend</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type">key_compare</span> <a class="link" href="set.html#id2121874-bb">key_comp</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type">value_compare</span> <a class="link" href="set.html#id2121905-bb">value_comp</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="set.html#id2121936-bb">empty</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type"><a class="link" href="size_type.html" title="Struct template size_type">size_type</a></span> <a class="link" href="set.html#id2121966-bb">size</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="set.html#id2121999-bb">swap</a>(<a class="link" href="set.html" title="Class template set">set</a> &amp;) ;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Cloner, <span class="bold"><strong>typename</strong></span> Disposer&gt; 
+    <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="set.html#id2122038-bb">clone_from</a>(<span class="bold"><strong>const</strong></span> <a class="link" href="set.html" title="Class template set">set</a> &amp;, Cloner, Disposer) ;
+  <span class="type">std::pair&lt; iterator, <span class="bold"><strong>bool</strong></span> &gt;</span> <a class="link" href="set.html#id2122118-bb">insert</a>(reference) ;
+  <span class="type">iterator</span> <a class="link" href="set.html#id2122182-bb">insert</a>(const_iterator, reference) ;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> KeyType, <span class="bold"><strong>typename</strong></span> KeyValueCompare&gt; 
+    <span class="type">std::pair&lt; iterator, <span class="bold"><strong>bool</strong></span> &gt;</span> 
+    <a class="link" href="set.html#id2122250-bb">insert_check</a>(<span class="bold"><strong>const</strong></span> KeyType &amp;, KeyValueCompare, insert_commit_data &amp;) ;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> KeyType, <span class="bold"><strong>typename</strong></span> KeyValueCompare&gt; 
+    <span class="type">std::pair&lt; iterator, <span class="bold"><strong>bool</strong></span> &gt;</span> 
+    <a class="link" href="set.html#id2122357-bb">insert_check</a>(const_iterator, <span class="bold"><strong>const</strong></span> KeyType &amp;, KeyValueCompare, 
+                 insert_commit_data &amp;) ;
+  <span class="type">iterator</span> <a class="link" href="set.html#id2122470-bb">insert_commit</a>(reference, <span class="bold"><strong>const</strong></span> insert_commit_data &amp;) ;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Iterator&gt; <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="set.html#id2122542-bb">insert</a>(Iterator, Iterator) ;
+  <span class="type">iterator</span> <a class="link" href="set.html#id2122610-bb">erase</a>(const_iterator) ;
+  <span class="type">iterator</span> <a class="link" href="set.html#id2122663-bb">erase</a>(const_iterator, const_iterator) ;
+  <span class="type"><a class="link" href="size_type.html" title="Struct template size_type">size_type</a></span> <a class="link" href="set.html#id2122722-bb">erase</a>(const_reference) ;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> KeyType, <span class="bold"><strong>typename</strong></span> KeyValueCompare&gt; 
+    <span class="type"><a class="link" href="size_type.html" title="Struct template size_type">size_type</a></span> <a class="link" href="set.html#id2122777-bb">erase</a>(<span class="bold"><strong>const</strong></span> KeyType &amp;, KeyValueCompare) ;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Disposer&gt; 
+    <span class="type">iterator</span> <a class="link" href="set.html#id2122849-bb">erase_and_dispose</a>(const_iterator, Disposer) ;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Disposer&gt; 
+    <span class="type">iterator</span> <a class="link" href="set.html#id2122922-bb">erase_and_dispose</a>(const_iterator, const_iterator, Disposer) ;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Disposer&gt; 
+    <span class="type"><a class="link" href="size_type.html" title="Struct template size_type">size_type</a></span> <a class="link" href="set.html#id2123003-bb">erase_and_dispose</a>(const_reference, Disposer) ;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> KeyType, <span class="bold"><strong>typename</strong></span> KeyValueCompare, <span class="bold"><strong>typename</strong></span> Disposer&gt; 
+    <span class="type"><a class="link" href="size_type.html" title="Struct template size_type">size_type</a></span> <a class="link" href="set.html#id2123078-bb">erase_and_dispose</a>(<span class="bold"><strong>const</strong></span> KeyType &amp;, KeyValueCompare, Disposer) ;
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="set.html#id2123169-bb">clear</a>() ;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Disposer&gt; <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="set.html#id2123209-bb">clear_and_dispose</a>(Disposer) ;
+  <span class="type"><a class="link" href="size_type.html" title="Struct template size_type">size_type</a></span> <a class="link" href="set.html#id2123270-bb">count</a>(const_reference) <span class="bold"><strong>const</strong></span>;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> KeyType, <span class="bold"><strong>typename</strong></span> KeyValueCompare&gt; 
+    <span class="type"><a class="link" href="size_type.html" title="Struct template size_type">size_type</a></span> <a class="link" href="set.html#id2123310-bb">count</a>(<span class="bold"><strong>const</strong></span> KeyType &amp;, KeyValueCompare) <span class="bold"><strong>const</strong></span>;
+  <span class="type">iterator</span> <a class="link" href="set.html#id2123367-bb">lower_bound</a>(const_reference) ;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> KeyType, <span class="bold"><strong>typename</strong></span> KeyValueCompare&gt; 
+    <span class="type">iterator</span> <a class="link" href="set.html#id2123405-bb">lower_bound</a>(<span class="bold"><strong>const</strong></span> KeyType &amp;, KeyValueCompare) ;
+  <span class="type">const_iterator</span> <a class="link" href="set.html#id2123479-bb">lower_bound</a>(const_reference) <span class="bold"><strong>const</strong></span>;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> KeyType, <span class="bold"><strong>typename</strong></span> KeyValueCompare&gt; 
+    <span class="type">const_iterator</span> <a class="link" href="set.html#id2123517-bb">lower_bound</a>(<span class="bold"><strong>const</strong></span> KeyType &amp;, KeyValueCompare) <span class="bold"><strong>const</strong></span>;
+  <span class="type">iterator</span> <a class="link" href="set.html#id2123590-bb">upper_bound</a>(const_reference) ;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> KeyType, <span class="bold"><strong>typename</strong></span> KeyValueCompare&gt; 
+    <span class="type">iterator</span> <a class="link" href="set.html#id2123628-bb">upper_bound</a>(<span class="bold"><strong>const</strong></span> KeyType &amp;, KeyValueCompare) ;
+  <span class="type">const_iterator</span> <a class="link" href="set.html#id2123702-bb">upper_bound</a>(const_reference) <span class="bold"><strong>const</strong></span>;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> KeyType, <span class="bold"><strong>typename</strong></span> KeyValueCompare&gt; 
+    <span class="type">const_iterator</span> <a class="link" href="set.html#id2123740-bb">upper_bound</a>(<span class="bold"><strong>const</strong></span> KeyType &amp;, KeyValueCompare) <span class="bold"><strong>const</strong></span>;
+  <span class="type">iterator</span> <a class="link" href="set.html#id2123813-bb">find</a>(const_reference) ;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> KeyType, <span class="bold"><strong>typename</strong></span> KeyValueCompare&gt; 
+    <span class="type">iterator</span> <a class="link" href="set.html#id2123851-bb">find</a>(<span class="bold"><strong>const</strong></span> KeyType &amp;, KeyValueCompare) ;
+  <span class="type">const_iterator</span> <a class="link" href="set.html#id2123925-bb">find</a>(const_reference) <span class="bold"><strong>const</strong></span>;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> KeyType, <span class="bold"><strong>typename</strong></span> KeyValueCompare&gt; 
+    <span class="type">const_iterator</span> <a class="link" href="set.html#id2123962-bb">find</a>(<span class="bold"><strong>const</strong></span> KeyType &amp;, KeyValueCompare) <span class="bold"><strong>const</strong></span>;
+  <span class="type">std::pair&lt; iterator, iterator &gt;</span> <a class="link" href="set.html#id2124036-bb">equal_range</a>(const_reference) ;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> KeyType, <span class="bold"><strong>typename</strong></span> KeyValueCompare&gt; 
+    <span class="type">std::pair&lt; iterator, iterator &gt;</span> 
+    <a class="link" href="set.html#id2124075-bb">equal_range</a>(<span class="bold"><strong>const</strong></span> KeyType &amp;, KeyValueCompare) ;
+  <span class="type">std::pair&lt; const_iterator, const_iterator &gt;</span> 
+  <a class="link" href="set.html#id2124150-bb">equal_range</a>(const_reference) <span class="bold"><strong>const</strong></span>;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> KeyType, <span class="bold"><strong>typename</strong></span> KeyValueCompare&gt; 
+    <span class="type">std::pair&lt; const_iterator, const_iterator &gt;</span> 
+    <a class="link" href="set.html#id2124189-bb">equal_range</a>(<span class="bold"><strong>const</strong></span> KeyType &amp;, KeyValueCompare) <span class="bold"><strong>const</strong></span>;
+  <span class="type">iterator</span> <a class="link" href="set.html#id2124264-bb">iterator_to</a>(reference) ;
+  <span class="type">const_iterator</span> <a class="link" href="set.html#id2124309-bb">iterator_to</a>(const_reference) <span class="bold"><strong>const</strong></span>;
+  <span class="type">pointer</span> <a class="link" href="set.html#id2124354-bb">unlink_leftmost_without_rebalance</a>() ;
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="set.html#id2124395-bb">replace_node</a>(iterator, reference) ;
+
+  <span class="emphasis"><em>// <a class="link" href="set.html#id2124605-bb">public static functions</a></em></span>
+  <span class="type"><span class="bold"><strong>static</strong></span> <a class="link" href="set.html" title="Class template set">set</a> &amp;</span> <a class="link" href="set.html#id2124609-bb">container_from_end_iterator</a>(iterator) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>const</strong></span> <a class="link" href="set.html" title="Class template set">set</a> &amp;</span> <a class="link" href="set.html#id2124657-bb">container_from_end_iterator</a>(const_iterator) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> <a class="link" href="set.html" title="Class template set">set</a> &amp;</span> <a class="link" href="set.html#id2124705-bb">container_from_iterator</a>(iterator) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>const</strong></span> <a class="link" href="set.html" title="Class template set">set</a> &amp;</span> <a class="link" href="set.html#id2124752-bb">container_from_iterator</a>(const_iterator) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> iterator</span> <a class="link" href="set.html#id2124800-bb">s_iterator_to</a>(reference) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> const_iterator</span> <a class="link" href="set.html#id2124853-bb">s_iterator_to</a>(const_reference) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>void</strong></span></span> <a class="link" href="set.html#id2124906-bb">init_node</a>(reference) ;
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id2546824"></a><h2>Description</h2>
+<p>The class template set is an intrusive container, that mimics most of the interface of std::set as described in the C++ standard.</p>
+<p>The template parameter <code class="computeroutput">T</code> is the type to be managed by the container. The user can specify additional options and if no options are provided default options are used.</p>
+<p>The container supports the following options: <code class="computeroutput">base_hook&lt;&gt;/member_hook&lt;&gt;/value_traits&lt;&gt;</code>, <code class="computeroutput">constant_time_size&lt;&gt;</code>, <code class="computeroutput">size_type&lt;&gt;</code> and <code class="computeroutput">compare&lt;&gt;</code>. </p>
+<div class="refsect2" lang="en">
+<a name="id2546866"></a><h3>
+<a name="boost.intrusive.setconstruct-copy-destruct"></a><code class="computeroutput">set</code> 
+        public
+       construct/copy/destruct</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><a name="id2124457-bb"></a>set(<span class="bold"><strong>const</strong></span> value_compare &amp; cmp = value_compare(), 
+    <span class="bold"><strong>const</strong></span> <a class="link" href="value_traits.html" title="Struct template value_traits">value_traits</a> &amp; v_traits = value_traits());</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Constructs an empty set.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant.</p>
+<p><span class="bold"><strong>Throws</strong></span>: If value_traits::node_traits::node constructor throws (this does not happen with predefined Boost.Intrusive hooks) or the copy constructor of the value_compare object throws. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Iterator&gt; 
+  <a name="id2124503-bb"></a>set(Iterator b, Iterator e, <span class="bold"><strong>const</strong></span> value_compare &amp; cmp = value_compare(), 
+      <span class="bold"><strong>const</strong></span> <a class="link" href="value_traits.html" title="Struct template value_traits">value_traits</a> &amp; v_traits = value_traits());</pre>
+<p><span class="bold"><strong>Requires</strong></span>: Dereferencing iterator must yield an lvalue of type value_type. cmp must be a comparison function that induces a strict weak ordering.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Constructs an empty set and inserts elements from [b, e).</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Linear in N if [b, e) is already sorted using comp and otherwise N * log N, where N is std::distance(last, first).</p>
+<p><span class="bold"><strong>Throws</strong></span>: If value_traits::node_traits::node constructor throws (this does not happen with predefined Boost.Intrusive hooks) or the copy constructor/operator() of the value_compare object throws. </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id2124579-bb"></a>~set();</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Detaches all elements from this. The objects in the set are not deleted (i.e. no destructors are called).</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Linear to the number of elements on the container. if it's a safe-mode or auto-unlink value_type. Constant time otherwise.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing. </p>
+</li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id2547042"></a><h3>
+<a name="id2121501-bb"></a><code class="computeroutput">set</code> public member functions</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><span class="type">iterator</span> <a name="id2121505-bb"></a>begin() ;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Returns an iterator pointing to the beginning of the set.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">const_iterator</span> <a name="id2121535-bb"></a>begin() <span class="bold"><strong>const</strong></span>;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Returns a const_iterator pointing to the beginning of the set.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">const_iterator</span> <a name="id2121566-bb"></a>cbegin() <span class="bold"><strong>const</strong></span>;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Returns a const_iterator pointing to the beginning of the set.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">iterator</span> <a name="id2121596-bb"></a>end() ;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Returns an iterator pointing to the end of the set.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">const_iterator</span> <a name="id2121627-bb"></a>end() <span class="bold"><strong>const</strong></span>;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Returns a const_iterator pointing to the end of the set.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">const_iterator</span> <a name="id2121657-bb"></a>cend() <span class="bold"><strong>const</strong></span>;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Returns a const_iterator pointing to the end of the set.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">reverse_iterator</span> <a name="id2121688-bb"></a>rbegin() ;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Returns a reverse_iterator pointing to the beginning of the reversed set.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">const_reverse_iterator</span> <a name="id2121718-bb"></a>rbegin() <span class="bold"><strong>const</strong></span>;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Returns a const_reverse_iterator pointing to the beginning of the reversed set.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">const_reverse_iterator</span> <a name="id2121750-bb"></a>crbegin() <span class="bold"><strong>const</strong></span>;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Returns a const_reverse_iterator pointing to the beginning of the reversed set.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">reverse_iterator</span> <a name="id2121781-bb"></a>rend() ;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Returns a reverse_iterator pointing to the end of the reversed set.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">const_reverse_iterator</span> <a name="id2121812-bb"></a>rend() <span class="bold"><strong>const</strong></span>;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Returns a const_reverse_iterator pointing to the end of the reversed set.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">const_reverse_iterator</span> <a name="id2121843-bb"></a>crend() <span class="bold"><strong>const</strong></span>;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Returns a const_reverse_iterator pointing to the end of the reversed set.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">key_compare</span> <a name="id2121874-bb"></a>key_comp() <span class="bold"><strong>const</strong></span>;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Returns the key_compare object used by the set.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant.</p>
+<p><span class="bold"><strong>Throws</strong></span>: If key_compare copy-constructor throws. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">value_compare</span> <a name="id2121905-bb"></a>value_comp() <span class="bold"><strong>const</strong></span>;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Returns the value_compare object used by the set.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant.</p>
+<p><span class="bold"><strong>Throws</strong></span>: If value_compare copy-constructor throws. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id2121936-bb"></a>empty() <span class="bold"><strong>const</strong></span>;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Returns true if the container is empty.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><a class="link" href="size_type.html" title="Struct template size_type">size_type</a></span> <a name="id2121966-bb"></a>size() <span class="bold"><strong>const</strong></span>;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Returns the number of elements stored in the set.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Linear to elements contained in *this if, constant-time size option is enabled. Constant-time otherwise.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id2121999-bb"></a>swap(<a class="link" href="set.html" title="Class template set">set</a> &amp; other) ;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Swaps the contents of two sets.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant.</p>
+<p><span class="bold"><strong>Throws</strong></span>: If the swap() call for the comparison functor found using ADL throws. Strong guarantee. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Cloner, <span class="bold"><strong>typename</strong></span> Disposer&gt; 
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id2122038-bb"></a>clone_from(<span class="bold"><strong>const</strong></span> <a class="link" href="set.html" title="Class template set">set</a> &amp; src, Cloner cloner, Disposer disposer) ;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: Disposer::operator()(pointer) shouldn't throw. Cloner should yield to nodes equivalent to the original nodes.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Erases all the elements from *this calling Disposer::operator()(pointer), clones all the elements from src calling Cloner::operator()(const_reference ) and inserts them on *this. Copies the predicate from the source container.</p>
+<p>If cloner throws, all cloned elements are unlinked and disposed calling Disposer::operator()(pointer).</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Linear to erased plus inserted elements.</p>
+<p><span class="bold"><strong>Throws</strong></span>: If cloner throws or predicate copy assignment throws. Basic guarantee. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">std::pair&lt; iterator, <span class="bold"><strong>bool</strong></span> &gt;</span> <a name="id2122118-bb"></a>insert(reference value) ;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: value must be an lvalue</p>
+<p><span class="bold"><strong>Effects</strong></span>: Tries to inserts value into the set.</p>
+<p><span class="bold"><strong>Returns</strong></span>: If the value is not already present inserts it and returns a pair containing the iterator to the new value and true. If there is an equivalent value returns a pair containing an iterator to the already present value and false.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Average complexity for insert element is at most logarithmic.</p>
+<p><span class="bold"><strong>Throws</strong></span>: If the internal value_compare ordering function throws. Strong guarantee.</p>
+<p><span class="bold"><strong>Note</strong></span>: Does not affect the validity of iterators and references. No copy-constructors are called. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">iterator</span> <a name="id2122182-bb"></a>insert(const_iterator hint, reference value) ;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: value must be an lvalue</p>
+<p><span class="bold"><strong>Effects</strong></span>: Tries to to insert x into the set, using "hint" as a hint to where it will be inserted.</p>
+<p><span class="bold"><strong>Returns</strong></span>: An iterator that points to the position where the new element was inserted into the set.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Logarithmic in general, but it's amortized constant time if t is inserted immediately before hint.</p>
+<p><span class="bold"><strong>Throws</strong></span>: If the internal value_compare ordering function throws. Strong guarantee.</p>
+<p><span class="bold"><strong>Note</strong></span>: Does not affect the validity of iterators and references. No copy-constructors are called. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> KeyType, <span class="bold"><strong>typename</strong></span> KeyValueCompare&gt; 
+  <span class="type">std::pair&lt; iterator, <span class="bold"><strong>bool</strong></span> &gt;</span> 
+  <a name="id2122250-bb"></a>insert_check(<span class="bold"><strong>const</strong></span> KeyType &amp; key, KeyValueCompare key_value_comp, 
+               insert_commit_data &amp; commit_data) ;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: key_value_comp must be a comparison function that induces the same strict weak ordering as value_compare. The difference is that key_value_comp compares an arbitrary key with the contained values.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Checks if a value can be inserted in the set, using a user provided key instead of the value itself.</p>
+<p><span class="bold"><strong>Returns</strong></span>: If there is an equivalent value returns a pair containing an iterator to the already present value and false. If the value can be inserted returns true in the returned pair boolean and fills "commit_data" that is meant to be used with the "insert_commit" function.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Average complexity is at most logarithmic.</p>
+<p><span class="bold"><strong>Throws</strong></span>: If the key_value_comp ordering function throws. Strong guarantee.</p>
+<p><span class="bold"><strong>Notes</strong></span>: This function is used to improve performance when constructing a value_type is expensive: if there is an equivalent value the constructed object must be discarded. Many times, the part of the node that is used to impose the order is much cheaper to construct than the value_type and this function offers the possibility to use that part to check if the insertion will be successful.</p>
+<p>If the check is successful, the user can construct the value_type and use "insert_commit" to insert the object in constant-time. This gives a total logarithmic complexity to the insertion: check(O(log(N)) + commit(O(1)).</p>
+<p>"commit_data" remains valid for a subsequent "insert_commit" only if no more objects are inserted or erased from the set. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> KeyType, <span class="bold"><strong>typename</strong></span> KeyValueCompare&gt; 
+  <span class="type">std::pair&lt; iterator, <span class="bold"><strong>bool</strong></span> &gt;</span> 
+  <a name="id2122357-bb"></a>insert_check(const_iterator hint, <span class="bold"><strong>const</strong></span> KeyType &amp; key, 
+               KeyValueCompare key_value_comp, 
+               insert_commit_data &amp; commit_data) ;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: key_value_comp must be a comparison function that induces the same strict weak ordering as value_compare. The difference is that key_value_comp compares an arbitrary key with the contained values.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Checks if a value can be inserted in the set, using a user provided key instead of the value itself, using "hint" as a hint to where it will be inserted.</p>
+<p><span class="bold"><strong>Returns</strong></span>: If there is an equivalent value returns a pair containing an iterator to the already present value and false. If the value can be inserted returns true in the returned pair boolean and fills "commit_data" that is meant to be used with the "insert_commit" function.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Logarithmic in general, but it's amortized constant time if t is inserted immediately before hint.</p>
+<p><span class="bold"><strong>Throws</strong></span>: If the key_value_comp ordering function throws. Strong guarantee.</p>
+<p><span class="bold"><strong>Notes</strong></span>: This function is used to improve performance when constructing a value_type is expensive: if there is an equivalent value the constructed object must be discarded. Many times, the part of the constructing that is used to impose the order is much cheaper to construct than the value_type and this function offers the possibility to use that key to check if the insertion will be successful.</p>
+<p>If the check is successful, the user can construct the value_type and use "insert_commit" to insert the object in constant-time. This can give a total constant-time complexity to the insertion: check(O(1)) + commit(O(1)).</p>
+<p>"commit_data" remains valid for a subsequent "insert_commit" only if no more objects are inserted or erased from the set. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">iterator</span> <a name="id2122470-bb"></a>insert_commit(reference value, 
+                       <span class="bold"><strong>const</strong></span> insert_commit_data &amp; commit_data) ;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: value must be an lvalue of type value_type. commit_data must have been obtained from a previous call to "insert_check". No objects should have been inserted or erased from the set between the "insert_check" that filled "commit_data" and the call to "insert_commit".</p>
+<p><span class="bold"><strong>Effects</strong></span>: Inserts the value in the set using the information obtained from the "commit_data" that a previous "insert_check" filled.</p>
+<p><span class="bold"><strong>Returns</strong></span>: An iterator to the newly inserted object.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant time.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing.</p>
+<p><span class="bold"><strong>Notes</strong></span>: This function has only sense if a "insert_check" has been previously executed to fill "commit_data". No value should be inserted or erased between the "insert_check" and "insert_commit" calls. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Iterator&gt; <span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id2122542-bb"></a>insert(Iterator b, Iterator e) ;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: Dereferencing iterator must yield an lvalue of type value_type.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Inserts a range into the set.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Insert range is in general O(N * log(N)), where N is the size of the range. However, it is linear in N if the range is already sorted by value_comp().</p>
+<p><span class="bold"><strong>Throws</strong></span>: If the internal value_compare ordering function throws. Basic guarantee.</p>
+<p><span class="bold"><strong>Note</strong></span>: Does not affect the validity of iterators and references. No copy-constructors are called. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">iterator</span> <a name="id2122610-bb"></a>erase(const_iterator i) ;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Erases the element pointed to by pos.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Average complexity is constant time.</p>
+<p><span class="bold"><strong>Returns</strong></span>: An iterator to the element after the erased element.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing.</p>
+<p><span class="bold"><strong>Note</strong></span>: Invalidates the iterators (but not the references) to the erased elements. No destructors are called. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">iterator</span> <a name="id2122663-bb"></a>erase(const_iterator b, const_iterator e) ;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Erases the range pointed to by b end e.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Average complexity for erase range is at most O(log(size() + N)), where N is the number of elements in the range.</p>
+<p><span class="bold"><strong>Returns</strong></span>: An iterator to the element after the erased elements.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing.</p>
+<p><span class="bold"><strong>Note</strong></span>: Invalidates the iterators (but not the references) to the erased elements. No destructors are called. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><a class="link" href="size_type.html" title="Struct template size_type">size_type</a></span> <a name="id2122722-bb"></a>erase(const_reference value) ;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Erases all the elements with the given value.</p>
+<p><span class="bold"><strong>Returns</strong></span>: The number of erased elements.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: O(log(size()) + this-&gt;count(value)).</p>
+<p><span class="bold"><strong>Throws</strong></span>: If the internal value_compare ordering function throws. Basic guarantee.</p>
+<p><span class="bold"><strong>Note</strong></span>: Invalidates the iterators (but not the references) to the erased elements. No destructors are called. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> KeyType, <span class="bold"><strong>typename</strong></span> KeyValueCompare&gt; 
+  <span class="type"><a class="link" href="size_type.html" title="Struct template size_type">size_type</a></span> <a name="id2122777-bb"></a>erase(<span class="bold"><strong>const</strong></span> KeyType &amp; key, KeyValueCompare comp) ;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Erases all the elements that compare equal with the given key and the given comparison functor.</p>
+<p><span class="bold"><strong>Returns</strong></span>: The number of erased elements.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: O(log(size() + this-&gt;count(key, comp)).</p>
+<p><span class="bold"><strong>Throws</strong></span>: If the comp ordering function throws. Basic guarantee.</p>
+<p><span class="bold"><strong>Note</strong></span>: Invalidates the iterators (but not the references) to the erased elements. No destructors are called. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Disposer&gt; 
+  <span class="type">iterator</span> <a name="id2122849-bb"></a>erase_and_dispose(const_iterator i, Disposer disposer) ;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: Disposer::operator()(pointer) shouldn't throw.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Erases the element pointed to by pos. Disposer::operator()(pointer) is called for the removed element.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Average complexity for erase element is constant time.</p>
+<p><span class="bold"><strong>Returns</strong></span>: An iterator to the element after the erased element.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing.</p>
+<p><span class="bold"><strong>Note</strong></span>: Invalidates the iterators to the erased elements. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Disposer&gt; 
+  <span class="type">iterator</span> <a name="id2122922-bb"></a>erase_and_dispose(const_iterator b, const_iterator e, 
+                             Disposer disposer) ;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: Disposer::operator()(pointer) shouldn't throw.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Erases the range pointed to by b end e. Disposer::operator()(pointer) is called for the removed elements.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Average complexity for erase range is at most O(log(size() + N)), where N is the number of elements in the range.</p>
+<p><span class="bold"><strong>Returns</strong></span>: An iterator to the element after the erased elements.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing.</p>
+<p><span class="bold"><strong>Note</strong></span>: Invalidates the iterators to the erased elements. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Disposer&gt; 
+  <span class="type"><a class="link" href="size_type.html" title="Struct template size_type">size_type</a></span> <a name="id2123003-bb"></a>erase_and_dispose(const_reference value, Disposer disposer) ;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: Disposer::operator()(pointer) shouldn't throw.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Erases all the elements with the given value. Disposer::operator()(pointer) is called for the removed elements.</p>
+<p><span class="bold"><strong>Throws</strong></span>: If the internal value_compare ordering function throws.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: O(log(size() + this-&gt;count(value)). Basic guarantee.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing.</p>
+<p><span class="bold"><strong>Note</strong></span>: Invalidates the iterators (but not the references) to the erased elements. No destructors are called. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> KeyType, <span class="bold"><strong>typename</strong></span> KeyValueCompare, <span class="bold"><strong>typename</strong></span> Disposer&gt; 
+  <span class="type"><a class="link" href="size_type.html" title="Struct template size_type">size_type</a></span> <a name="id2123078-bb"></a>erase_and_dispose(<span class="bold"><strong>const</strong></span> KeyType &amp; key, KeyValueCompare comp, 
+                              Disposer disposer) ;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: Disposer::operator()(pointer) shouldn't throw.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Erases all the elements with the given key. according to the comparison functor "comp". Disposer::operator()(pointer) is called for the removed elements.</p>
+<p><span class="bold"><strong>Returns</strong></span>: The number of erased elements.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: O(log(size() + this-&gt;count(key, comp)).</p>
+<p><span class="bold"><strong>Throws</strong></span>: If comp ordering function throws. Basic guarantee.</p>
+<p><span class="bold"><strong>Note</strong></span>: Invalidates the iterators to the erased elements. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id2123169-bb"></a>clear() ;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Erases all the elements of the container.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Linear to the number of elements on the container. if it's a safe-mode or auto-unlink value_type. Constant time otherwise.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing.</p>
+<p><span class="bold"><strong>Note</strong></span>: Invalidates the iterators (but not the references) to the erased elements. No destructors are called. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Disposer&gt; <span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id2123209-bb"></a>clear_and_dispose(Disposer disposer) ;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: Disposer::operator()(pointer) shouldn't throw.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Erases all the elements of the container.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Linear to the number of elements on the container. Disposer::operator()(pointer) is called for the removed elements.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing.</p>
+<p><span class="bold"><strong>Note</strong></span>: Invalidates the iterators (but not the references) to the erased elements. No destructors are called. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><a class="link" href="size_type.html" title="Struct template size_type">size_type</a></span> <a name="id2123270-bb"></a>count(const_reference value) <span class="bold"><strong>const</strong></span>;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Returns the number of contained elements with the given key</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Logarithmic to the number of elements contained plus lineal to number of objects with the given key.</p>
+<p><span class="bold"><strong>Throws</strong></span>: If the internal value_compare ordering function throws. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> KeyType, <span class="bold"><strong>typename</strong></span> KeyValueCompare&gt; 
+  <span class="type"><a class="link" href="size_type.html" title="Struct template size_type">size_type</a></span> <a name="id2123310-bb"></a>count(<span class="bold"><strong>const</strong></span> KeyType &amp; key, KeyValueCompare comp) <span class="bold"><strong>const</strong></span>;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Returns the number of contained elements with the same key compared with the given comparison functor.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Logarithmic to the number of elements contained plus lineal to number of objects with the given key.</p>
+<p><span class="bold"><strong>Throws</strong></span>: If comp ordering function throws. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">iterator</span> <a name="id2123367-bb"></a>lower_bound(const_reference value) ;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Returns an iterator to the first element whose key is not less than k or end() if that element does not exist.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Logarithmic.</p>
+<p><span class="bold"><strong>Throws</strong></span>: If the internal value_compare ordering function throws. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> KeyType, <span class="bold"><strong>typename</strong></span> KeyValueCompare&gt; 
+  <span class="type">iterator</span> <a name="id2123405-bb"></a>lower_bound(<span class="bold"><strong>const</strong></span> KeyType &amp; key, KeyValueCompare comp) ;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: comp must imply the same element order as value_compare. Usually key is the part of the value_type that is used in the ordering functor.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Returns an iterator to the first element whose key according to the comparison functor is not less than k or end() if that element does not exist.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Logarithmic.</p>
+<p><span class="bold"><strong>Throws</strong></span>: If comp ordering function throws.</p>
+<p><span class="bold"><strong>Note</strong></span>: This function is used when constructing a value_type is expensive and the value_type can be compared with a cheaper key type. Usually this key is part of the value_type. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">const_iterator</span> <a name="id2123479-bb"></a>lower_bound(const_reference value) <span class="bold"><strong>const</strong></span>;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Returns a const iterator to the first element whose key is not less than k or end() if that element does not exist.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Logarithmic.</p>
+<p><span class="bold"><strong>Throws</strong></span>: If the internal value_compare ordering function throws. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> KeyType, <span class="bold"><strong>typename</strong></span> KeyValueCompare&gt; 
+  <span class="type">const_iterator</span> <a name="id2123517-bb"></a>lower_bound(<span class="bold"><strong>const</strong></span> KeyType &amp; key, KeyValueCompare comp) <span class="bold"><strong>const</strong></span>;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: comp must imply the same element order as value_compare. Usually key is the part of the value_type that is used in the ordering functor.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Returns a const_iterator to the first element whose key according to the comparison functor is not less than k or end() if that element does not exist.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Logarithmic.</p>
+<p><span class="bold"><strong>Throws</strong></span>: If comp ordering function throws.</p>
+<p><span class="bold"><strong>Note</strong></span>: This function is used when constructing a value_type is expensive and the value_type can be compared with a cheaper key type. Usually this key is part of the value_type. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">iterator</span> <a name="id2123590-bb"></a>upper_bound(const_reference value) ;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Returns an iterator to the first element whose key is greater than k or end() if that element does not exist.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Logarithmic.</p>
+<p><span class="bold"><strong>Throws</strong></span>: If the internal value_compare ordering function throws. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> KeyType, <span class="bold"><strong>typename</strong></span> KeyValueCompare&gt; 
+  <span class="type">iterator</span> <a name="id2123628-bb"></a>upper_bound(<span class="bold"><strong>const</strong></span> KeyType &amp; key, KeyValueCompare comp) ;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: comp must imply the same element order as value_compare. Usually key is the part of the value_type that is used in the ordering functor.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Returns an iterator to the first element whose key according to the comparison functor is greater than key or end() if that element does not exist.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Logarithmic.</p>
+<p><span class="bold"><strong>Throws</strong></span>: If comp ordering function throws.</p>
+<p><span class="bold"><strong>Note</strong></span>: This function is used when constructing a value_type is expensive and the value_type can be compared with a cheaper key type. Usually this key is part of the value_type. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">const_iterator</span> <a name="id2123702-bb"></a>upper_bound(const_reference value) <span class="bold"><strong>const</strong></span>;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Returns an iterator to the first element whose key is greater than k or end() if that element does not exist.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Logarithmic.</p>
+<p><span class="bold"><strong>Throws</strong></span>: If the internal value_compare ordering function throws. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> KeyType, <span class="bold"><strong>typename</strong></span> KeyValueCompare&gt; 
+  <span class="type">const_iterator</span> <a name="id2123740-bb"></a>upper_bound(<span class="bold"><strong>const</strong></span> KeyType &amp; key, KeyValueCompare comp) <span class="bold"><strong>const</strong></span>;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: comp must imply the same element order as value_compare. Usually key is the part of the value_type that is used in the ordering functor.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Returns a const_iterator to the first element whose key according to the comparison functor is greater than key or end() if that element does not exist.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Logarithmic.</p>
+<p><span class="bold"><strong>Throws</strong></span>: If comp ordering function throws.</p>
+<p><span class="bold"><strong>Note</strong></span>: This function is used when constructing a value_type is expensive and the value_type can be compared with a cheaper key type. Usually this key is part of the value_type. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">iterator</span> <a name="id2123813-bb"></a>find(const_reference value) ;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Finds an iterator to the first element whose value is "value" or end() if that element does not exist.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Logarithmic.</p>
+<p><span class="bold"><strong>Throws</strong></span>: If the internal value_compare ordering function throws. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> KeyType, <span class="bold"><strong>typename</strong></span> KeyValueCompare&gt; 
+  <span class="type">iterator</span> <a name="id2123851-bb"></a>find(<span class="bold"><strong>const</strong></span> KeyType &amp; key, KeyValueCompare comp) ;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: comp must imply the same element order as value_compare. Usually key is the part of the value_type that is used in the ordering functor.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Finds an iterator to the first element whose key is "key" according to the comparison functor or end() if that element does not exist.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Logarithmic.</p>
+<p><span class="bold"><strong>Throws</strong></span>: If comp ordering function throws.</p>
+<p><span class="bold"><strong>Note</strong></span>: This function is used when constructing a value_type is expensive and the value_type can be compared with a cheaper key type. Usually this key is part of the value_type. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">const_iterator</span> <a name="id2123925-bb"></a>find(const_reference value) <span class="bold"><strong>const</strong></span>;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Finds a const_iterator to the first element whose value is "value" or end() if that element does not exist.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Logarithmic.</p>
+<p><span class="bold"><strong>Throws</strong></span>: If the internal value_compare ordering function throws. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> KeyType, <span class="bold"><strong>typename</strong></span> KeyValueCompare&gt; 
+  <span class="type">const_iterator</span> <a name="id2123962-bb"></a>find(<span class="bold"><strong>const</strong></span> KeyType &amp; key, KeyValueCompare comp) <span class="bold"><strong>const</strong></span>;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: comp must imply the same element order as value_compare. Usually key is the part of the value_type that is used in the ordering functor.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Finds a const_iterator to the first element whose key is "key" according to the comparison functor or end() if that element does not exist.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Logarithmic.</p>
+<p><span class="bold"><strong>Throws</strong></span>: If comp ordering function throws.</p>
+<p><span class="bold"><strong>Note</strong></span>: This function is used when constructing a value_type is expensive and the value_type can be compared with a cheaper key type. Usually this key is part of the value_type. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">std::pair&lt; iterator, iterator &gt;</span> <a name="id2124036-bb"></a>equal_range(const_reference value) ;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Finds a range containing all elements whose key is k or an empty range that indicates the position where those elements would be if they there is no elements with key k.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Logarithmic.</p>
+<p><span class="bold"><strong>Throws</strong></span>: If the internal value_compare ordering function throws. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> KeyType, <span class="bold"><strong>typename</strong></span> KeyValueCompare&gt; 
+  <span class="type">std::pair&lt; iterator, iterator &gt;</span> 
+  <a name="id2124075-bb"></a>equal_range(<span class="bold"><strong>const</strong></span> KeyType &amp; key, KeyValueCompare comp) ;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: comp must imply the same element order as value_compare. Usually key is the part of the value_type that is used in the ordering functor.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Finds a range containing all elements whose key is k according to the comparison functor or an empty range that indicates the position where those elements would be if they there is no elements with key k.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Logarithmic.</p>
+<p><span class="bold"><strong>Throws</strong></span>: If comp ordering function throws.</p>
+<p><span class="bold"><strong>Note</strong></span>: This function is used when constructing a value_type is expensive and the value_type can be compared with a cheaper key type. Usually this key is part of the value_type. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">std::pair&lt; const_iterator, const_iterator &gt;</span> 
+<a name="id2124150-bb"></a>equal_range(const_reference value) <span class="bold"><strong>const</strong></span>;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Finds a range containing all elements whose key is k or an empty range that indicates the position where those elements would be if they there is no elements with key k.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Logarithmic.</p>
+<p><span class="bold"><strong>Throws</strong></span>: If the internal value_compare ordering function throws. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> KeyType, <span class="bold"><strong>typename</strong></span> KeyValueCompare&gt; 
+  <span class="type">std::pair&lt; const_iterator, const_iterator &gt;</span> 
+  <a name="id2124189-bb"></a>equal_range(<span class="bold"><strong>const</strong></span> KeyType &amp; key, KeyValueCompare comp) <span class="bold"><strong>const</strong></span>;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: comp must imply the same element order as value_compare. Usually key is the part of the value_type that is used in the ordering functor.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Finds a range containing all elements whose key is k according to the comparison functor or an empty range that indicates the position where those elements would be if they there is no elements with key k.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Logarithmic.</p>
+<p><span class="bold"><strong>Throws</strong></span>: If comp ordering function throws.</p>
+<p><span class="bold"><strong>Note</strong></span>: This function is used when constructing a value_type is expensive and the value_type can be compared with a cheaper key type. Usually this key is part of the value_type. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">iterator</span> <a name="id2124264-bb"></a>iterator_to(reference value) ;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: value must be an lvalue and shall be in a set of appropriate type. Otherwise the behavior is undefined.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Returns: a valid iterator i belonging to the set that points to the value</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">const_iterator</span> <a name="id2124309-bb"></a>iterator_to(const_reference value) <span class="bold"><strong>const</strong></span>;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: value must be an lvalue and shall be in a set of appropriate type. Otherwise the behavior is undefined.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Returns: a valid const_iterator i belonging to the set that points to the value</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">pointer</span> <a name="id2124354-bb"></a>unlink_leftmost_without_rebalance() ;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Unlinks the leftmost node from the tree.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Average complexity is constant time.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing.</p>
+<p><span class="bold"><strong>Notes</strong></span>: This function breaks the tree and the tree can only be used for more unlink_leftmost_without_rebalance calls. This function is normally used to achieve a step by step controlled destruction of the tree. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id2124395-bb"></a>replace_node(iterator replace_this, reference with_this) ;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: replace_this must be a valid iterator of *this and with_this must not be inserted in any tree.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Replaces replace_this in its position in the tree with with_this. The tree does not need to be rebalanced.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing.</p>
+<p><span class="bold"><strong>Note</strong></span>: This function will break container ordering invariants if with_this is not equivalent to *replace_this according to the ordering rules. This function is faster than erasing and inserting the node, since no rebalancing or comparison is needed. </p>
+</li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id2550171"></a><h3>
+<a name="id2124605-bb"></a><code class="computeroutput">set</code> public static functions</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> <a class="link" href="set.html" title="Class template set">set</a> &amp;</span> <a name="id2124609-bb"></a>container_from_end_iterator(iterator end_iterator) ;</pre>
+<p><span class="bold"><strong>Precondition</strong></span>: end_iterator must be a valid end iterator of set.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Returns a reference to the set associated to the end iterator</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>const</strong></span> <a class="link" href="set.html" title="Class template set">set</a> &amp;</span> <a name="id2124657-bb"></a>container_from_end_iterator(const_iterator end_iterator) ;</pre>
+<p><span class="bold"><strong>Precondition</strong></span>: end_iterator must be a valid end const_iterator of set.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Returns a const reference to the set associated to the end iterator</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> <a class="link" href="set.html" title="Class template set">set</a> &amp;</span> <a name="id2124705-bb"></a>container_from_iterator(iterator it) ;</pre>
+<p><span class="bold"><strong>Precondition</strong></span>: it must be a valid iterator of set.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Returns a reference to the set associated to the iterator</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Logarithmic. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>const</strong></span> <a class="link" href="set.html" title="Class template set">set</a> &amp;</span> <a name="id2124752-bb"></a>container_from_iterator(const_iterator it) ;</pre>
+<p><span class="bold"><strong>Precondition</strong></span>: it must be a valid const_iterator of set.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Returns a const reference to the set associated to the iterator</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Logarithmic. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> iterator</span> <a name="id2124800-bb"></a>s_iterator_to(reference value) ;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: value must be an lvalue and shall be in a set of appropriate type. Otherwise the behavior is undefined.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Returns: a valid iterator i belonging to the set that points to the value</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing.</p>
+<p><span class="bold"><strong>Note</strong></span>: This static function is available only if the value traits is stateless. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> const_iterator</span> <a name="id2124853-bb"></a>s_iterator_to(const_reference value) ;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: value must be an lvalue and shall be in a set of appropriate type. Otherwise the behavior is undefined.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Returns: a valid const_iterator i belonging to the set that points to the value</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing.</p>
+<p><span class="bold"><strong>Note</strong></span>: This static function is available only if the value traits is stateless. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>void</strong></span></span> <a name="id2124906-bb"></a>init_node(reference value) ;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: value shall not be in a set/multiset.</p>
+<p><span class="bold"><strong>Effects</strong></span>: init_node puts the hook of a value in a well-known default state.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant time.</p>
+<p><span class="bold"><strong>Note</strong></span>: This function puts the hook in the well-known default state used by auto_unlink and safe hooks. </p>
+</li>
+</ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2005 Olaf Krzikalla, 2006-2008 Ion Gaztañaga<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="rbtree_algorithms.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../intrusive/reference.html#header.boost.intrusive.set_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="make_set.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Class template basic_managed_windows_shared_memory</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../boost_interprocess_reference.html#header.boost.interprocess.managed_windows_shared_memory_hpp" title="Header &lt;boost/interprocess/managed_windows_shared_memory.hpp&gt;">
+<link rel="prev" href="basic_managed_shared_me_id1745757.html" title="Class template basic_managed_shared_memory">
+<link rel="next" href="mapped_region.html" title="Class mapped_region">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="basic_managed_shared_me_id1745757.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_interprocess_reference.html#header.boost.interprocess.managed_windows_shared_memory_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="mapped_region.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.interprocess.basic_managed_windows_s_id1746062"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Class template basic_managed_windows_shared_memory</span></h2>
+<p>boost::interprocess::basic_managed_windows_shared_memory</p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../boost_interprocess_reference.html#header.boost.interprocess.managed_windows_shared_memory_hpp" title="Header &lt;boost/interprocess/managed_windows_shared_memory.hpp&gt;">boost/interprocess/managed_windows_shared_memory.hpp</a>&gt;
+
+</em></span><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> CharType, <span class="bold"><strong>typename</strong></span> AllocationAlgorithm, 
+         <span class="bold"><strong>template</strong></span>&lt; <span class="bold"><strong>class</strong></span> IndexConfig &gt; <span class="bold"><strong>class</strong></span> IndexType&gt; 
+<span class="bold"><strong>class</strong></span> <a class="link" href="basic_managed_windows_s_id1746062.html" title="Class template basic_managed_windows_shared_memory">basic_managed_windows_shared_memory</a> {
+<span class="bold"><strong>public</strong></span>:
+  <span class="emphasis"><em>// <a class="link" href="basic_managed_windows_s_id1746062.html#boost.interprocess.basic_managed_windows_s_id1746062construct-copy-destruct">construct/copy/destruct</a></em></span>
+  <a class="link" href="basic_managed_windows_s_id1746062.html#id1746124-bb">basic_managed_windows_shared_memory</a>();
+  <a class="link" href="basic_managed_windows_s_id1746062.html#id1746130-bb">basic_managed_windows_shared_memory</a>(<a class="link" href="create_only_t.html" title="Struct create_only_t">create_only_t</a>, <span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> *, 
+                                      std::size_t, <span class="bold"><strong>const</strong></span> <span class="bold"><strong>void</strong></span> * = 0);
+  <a class="link" href="basic_managed_windows_s_id1746062.html#id1746161-bb">basic_managed_windows_shared_memory</a>(<a class="link" href="open_or_create_t.html" title="Struct open_or_create_t">open_or_create_t</a>, <span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> *, 
+                                      std::size_t, <span class="bold"><strong>const</strong></span> <span class="bold"><strong>void</strong></span> * = 0);
+  <a class="link" href="basic_managed_windows_s_id1746062.html#id1746195-bb">basic_managed_windows_shared_memory</a>(<a class="link" href="open_only_t.html" title="Struct open_only_t">open_only_t</a>, <span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> *, 
+                                      <span class="bold"><strong>const</strong></span> <span class="bold"><strong>void</strong></span> * = 0);
+  <a class="link" href="basic_managed_windows_s_id1746062.html#id1746221-bb">basic_managed_windows_shared_memory</a>(<a class="link" href="open_copy_on_write_t.html" title="Struct open_copy_on_write_t">open_copy_on_write_t</a>, <span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> *, 
+                                      <span class="bold"><strong>const</strong></span> <span class="bold"><strong>void</strong></span> * = 0);
+  <a class="link" href="basic_managed_windows_s_id1746062.html#id1746247-bb">basic_managed_windows_shared_memory</a>(<a class="link" href="open_read_only_t.html" title="Struct open_read_only_t">open_read_only_t</a>, <span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> *, 
+                                      <span class="bold"><strong>const</strong></span> <span class="bold"><strong>void</strong></span> * = 0);
+  <a class="link" href="basic_managed_windows_s_id1746062.html#id1746274-bb">basic_managed_windows_shared_memory</a>(<a class="link" href="basic_managed_windows_s_id1746062.html" title="Class template basic_managed_windows_shared_memory">basic_managed_windows_shared_memory</a> &amp;&amp;);
+  basic_managed_windows_shared_memory&amp; 
+  <a class="link" href="basic_managed_windows_s_id1746062.html#id1746288-bb"><span class="bold"><strong>operator</strong></span>=</a>(<a class="link" href="basic_managed_windows_s_id1746062.html" title="Class template basic_managed_windows_shared_memory">basic_managed_windows_shared_memory</a> &amp;&amp;);
+  <a class="link" href="basic_managed_windows_s_id1746062.html#id1746302-bb">~basic_managed_windows_shared_memory</a>();
+
+  <span class="emphasis"><em>// <a class="link" href="basic_managed_windows_s_id1746062.html#id1746100-bb">public member functions</a></em></span>
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="basic_managed_windows_s_id1746062.html#id1746103-bb">swap</a>(<a class="link" href="basic_managed_windows_s_id1746062.html" title="Class template basic_managed_windows_shared_memory">basic_managed_windows_shared_memory</a> &amp;) ;
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id2166007"></a><h2>Description</h2>
+<p>A basic managed windows shared memory creation class. Initializes the shared memory segment. Inherits all basic functionality from basic_managed_memory_impl&lt;CharType, AllocationAlgorithm, IndexType&gt; Unlike basic_managed_shared_memory, it has no kernel persistence and the shared memory is destroyed when all processes destroy all their windows_shared_memory objects and mapped regions for the same shared memory or the processes end/crash.</p>
+<p>Warning: basic_managed_windows_shared_memory and basic_managed_shared_memory can't communicate between them. </p>
+<div class="refsect2" lang="en">
+<a name="id2166019"></a><h3>
+<a name="boost.interprocess.basic_managed_windows_s_id1746062construct-copy-destruct"></a><code class="computeroutput">basic_managed_windows_shared_memory</code> 
+        public
+       construct/copy/destruct</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><a name="id1746124-bb"></a>basic_managed_windows_shared_memory();</pre>
+<p>Default constructor. Does nothing. Useful in combination with move semantics </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1746130-bb"></a>basic_managed_windows_shared_memory(<a class="link" href="create_only_t.html" title="Struct create_only_t">create_only_t</a> create_only, 
+                                    <span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> * name, std::size_t size, 
+                                    <span class="bold"><strong>const</strong></span> <span class="bold"><strong>void</strong></span> * addr = 0);</pre>
+<p>Creates shared memory and creates and places the segment manager. This can throw. </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1746161-bb"></a>basic_managed_windows_shared_memory(<a class="link" href="open_or_create_t.html" title="Struct open_or_create_t">open_or_create_t</a> open_or_create, 
+                                    <span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> * name, std::size_t size, 
+                                    <span class="bold"><strong>const</strong></span> <span class="bold"><strong>void</strong></span> * addr = 0);</pre>
+<p>Creates shared memory and creates and places the segment manager if segment was not created. If segment was created it connects to the segment. This can throw. </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1746195-bb"></a>basic_managed_windows_shared_memory(<a class="link" href="open_only_t.html" title="Struct open_only_t">open_only_t</a> open_only, <span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> * name, 
+                                    <span class="bold"><strong>const</strong></span> <span class="bold"><strong>void</strong></span> * addr = 0);</pre>
+<p>Connects to a created shared memory and its segment manager. This can throw. </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1746221-bb"></a>basic_managed_windows_shared_memory(<a class="link" href="open_copy_on_write_t.html" title="Struct open_copy_on_write_t">open_copy_on_write_t</a>, <span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> * name, 
+                                    <span class="bold"><strong>const</strong></span> <span class="bold"><strong>void</strong></span> * addr = 0);</pre>
+<p>Connects to a created shared memory and its segment manager in copy_on_write mode. This can throw. </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1746247-bb"></a>basic_managed_windows_shared_memory(<a class="link" href="open_read_only_t.html" title="Struct open_read_only_t">open_read_only_t</a>, <span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> * name, 
+                                    <span class="bold"><strong>const</strong></span> <span class="bold"><strong>void</strong></span> * addr = 0);</pre>
+<p>Connects to a created shared memory and its segment manager in read-only mode. This can throw. </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1746274-bb"></a>basic_managed_windows_shared_memory(<a class="link" href="basic_managed_windows_s_id1746062.html" title="Class template basic_managed_windows_shared_memory">basic_managed_windows_shared_memory</a> &amp;&amp; moved);</pre>
+<p>Moves the ownership of "moved"'s managed memory to *this. Does not throw </p>
+</li>
+<li>
+<pre class="literallayout">basic_managed_windows_shared_memory&amp; 
+<a name="id1746288-bb"></a><span class="bold"><strong>operator</strong></span>=(<a class="link" href="basic_managed_windows_s_id1746062.html" title="Class template basic_managed_windows_shared_memory">basic_managed_windows_shared_memory</a> &amp;&amp; moved);</pre>
+<p>Moves the ownership of "moved"'s managed memory to *this. Does not throw </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1746302-bb"></a>~basic_managed_windows_shared_memory();</pre>
+<p>Destroys *this and indicates that the calling process is finished using the resource. All mapped regions are still valid after destruction. When all mapped regions and basic_managed_windows_shared_memory objects referring the shared memory are destroyed, the operating system will destroy the shared memory. </p>
+</li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id2166384"></a><h3>
+<a name="id1746100-bb"></a><code class="computeroutput">basic_managed_windows_shared_memory</code> public member functions</h3>
+<div class="orderedlist"><ol type="1"><li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1746103-bb"></a>swap(<a class="link" href="basic_managed_windows_s_id1746062.html" title="Class template basic_managed_windows_shared_memory">basic_managed_windows_shared_memory</a> &amp; other) ;</pre>
+<p>Swaps the ownership of the managed mapped memories managed by *this and other. Never throws. </p>
+</li></ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2005 - 2008 Ion Gaztañaga<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="basic_managed_shared_me_id1745757.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_interprocess_reference.html#header.boost.interprocess.managed_windows_shared_memory_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="mapped_region.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

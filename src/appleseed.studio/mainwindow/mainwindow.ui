@@ -1,0 +1,426 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1280</width>
+    <height>1024</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>appleseed studio</string>
+  </property>
+  <property name="locale">
+   <locale language="English" country="UnitedStates"/>
+  </property>
+  <property name="toolButtonStyle">
+   <enum>Qt::ToolButtonIconOnly</enum>
+  </property>
+  <property name="animated">
+   <bool>false</bool>
+  </property>
+  <widget class="QWidget" name="main_window_contents">
+   <layout class="QGridLayout" name="gridLayout_3">
+    <item row="0" column="0">
+     <widget class="QTabWidget" name="tab_render_channels">
+      <property name="styleSheet">
+       <string>QWidget
+{
+	background-color: transparent;
+}</string>
+      </property>
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="tab_render_channels_dummy">
+       <attribute name="title">
+        <string>This Text Should Not Be Visible</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_8"/>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="main_menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1280</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_file">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <widget class="QMenu" name="menu_file_open_builtin_project">
+     <property name="title">
+      <string>Open &amp;Built-in Project</string>
+     </property>
+     <addaction name="action_file_open_builtin_project_cornellbox"/>
+    </widget>
+    <addaction name="action_file_new_project"/>
+    <addaction name="action_file_open_project"/>
+    <addaction name="menu_file_open_builtin_project"/>
+    <addaction name="action_file_reload_project"/>
+    <addaction name="separator"/>
+    <addaction name="action_file_save_project"/>
+    <addaction name="action_file_save_project_as"/>
+    <addaction name="separator"/>
+    <addaction name="action_file_exit"/>
+   </widget>
+   <widget class="QMenu" name="menu_navigation">
+    <property name="title">
+     <string>&amp;Navigation</string>
+    </property>
+    <addaction name="action_navigation_inspect"/>
+    <addaction name="action_navigation_fly"/>
+    <addaction name="action_navigation_freeze"/>
+   </widget>
+   <widget class="QMenu" name="menu_rendering">
+    <property name="title">
+     <string>&amp;Rendering</string>
+    </property>
+    <addaction name="action_rendering_start_interactive_rendering"/>
+    <addaction name="action_rendering_start_final_rendering"/>
+    <addaction name="action_rendering_stop_rendering"/>
+    <addaction name="separator"/>
+    <addaction name="action_rendering_configuration_manager"/>
+   </widget>
+   <widget class="QMenu" name="menu_diagnostics">
+    <property name="title">
+     <string>&amp;Diagnostics</string>
+    </property>
+    <widget class="QMenu" name="menu_diagnostics_override_shading">
+     <property name="tearOffEnabled">
+      <bool>true</bool>
+     </property>
+     <property name="title">
+      <string>&amp;Override Shading</string>
+     </property>
+     <addaction name="action_diagnostics_override_shading_no_override"/>
+     <addaction name="separator"/>
+    </widget>
+    <addaction name="menu_diagnostics_override_shading"/>
+   </widget>
+   <widget class="QMenu" name="menu_debug">
+    <property name="title">
+     <string>Debu&amp;g</string>
+    </property>
+    <addaction name="action_debug_tests"/>
+    <addaction name="action_debug_benchmarks"/>
+    <addaction name="separator"/>
+    <addaction name="action_debug_profiler"/>
+    <addaction name="action_debug_memory_map"/>
+   </widget>
+   <widget class="QMenu" name="menu_tools">
+    <property name="title">
+     <string>&amp;Tools</string>
+    </property>
+    <addaction name="action_tools_options"/>
+   </widget>
+   <widget class="QMenu" name="menu_help">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="action_help_about"/>
+   </widget>
+   <widget class="QMenu" name="menu_edit">
+    <property name="title">
+     <string>&amp;Edit</string>
+    </property>
+   </widget>
+   <addaction name="menu_file"/>
+   <addaction name="menu_edit"/>
+   <addaction name="menu_navigation"/>
+   <addaction name="menu_rendering"/>
+   <addaction name="menu_diagnostics"/>
+   <addaction name="menu_debug"/>
+   <addaction name="menu_tools"/>
+   <addaction name="menu_help"/>
+  </widget>
+  <widget class="QToolBar" name="main_toolbar">
+   <property name="windowTitle">
+    <string>Toolbar</string>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>18</width>
+     <height>18</height>
+    </size>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QStatusBar" name="main_statusbar"/>
+  <widget class="QDockWidget" name="project_explorer">
+   <property name="accessibleName">
+    <string/>
+   </property>
+   <property name="autoFillBackground">
+    <bool>false</bool>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
+   </property>
+   <property name="windowTitle">
+    <string>Project Explorer</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="project_explorer_contents">
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="0">
+      <widget class="QTabWidget" name="project_explorer_tabs">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+       <widget class="QWidget" name="tab_project_explorer_scene">
+        <attribute name="title">
+         <string>Scene</string>
+        </attribute>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="0" column="0">
+          <widget class="QTreeWidget" name="treewidget_project_explorer_scene">
+           <property name="selectionMode">
+            <enum>QAbstractItemView::ExtendedSelection</enum>
+           </property>
+           <property name="uniformRowHeights">
+            <bool>true</bool>
+           </property>
+           <property name="allColumnsShowFocus">
+            <bool>true</bool>
+           </property>
+           <attribute name="headerVisible">
+            <bool>false</bool>
+           </attribute>
+           <column>
+            <property name="text">
+             <string notr="true">1</string>
+            </property>
+           </column>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tab_project_explorer_renders">
+        <attribute name="title">
+         <string>Renders</string>
+        </attribute>
+        <layout class="QGridLayout" name="gridLayout_4">
+         <item row="0" column="0">
+          <widget class="QTreeWidget" name="treeview_project_explorer_renders">
+           <property name="selectionMode">
+            <enum>QAbstractItemView::ExtendedSelection</enum>
+           </property>
+           <property name="uniformRowHeights">
+            <bool>true</bool>
+           </property>
+           <property name="allColumnsShowFocus">
+            <bool>true</bool>
+           </property>
+           <attribute name="headerVisible">
+            <bool>false</bool>
+           </attribute>
+           <column>
+            <property name="text">
+             <string notr="true">1</string>
+            </property>
+           </column>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="log">
+   <property name="windowTitle">
+    <string>Log</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="log_contents">
+    <layout class="QGridLayout" name="gridLayout_9"/>
+   </widget>
+  </widget>
+  <action name="action_file_new_project">
+   <property name="text">
+    <string>&amp;New Project</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="action_file_open_project">
+   <property name="text">
+    <string>&amp;Open Project...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="action_file_open_builtin_project_cornellbox">
+   <property name="text">
+    <string>&amp;Cornell Box</string>
+   </property>
+  </action>
+  <action name="action_file_save_project">
+   <property name="text">
+    <string>&amp;Save Project</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="action_file_save_project_as">
+   <property name="text">
+    <string>Save Project &amp;As...</string>
+   </property>
+  </action>
+  <action name="action_file_exit">
+   <property name="text">
+    <string>&amp;Exit</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+F4</string>
+   </property>
+  </action>
+  <action name="action_debug_tests">
+   <property name="text">
+    <string>&amp;Tests...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+T</string>
+   </property>
+  </action>
+  <action name="action_debug_benchmarks">
+   <property name="text">
+    <string>&amp;Benchmarks...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+B</string>
+   </property>
+  </action>
+  <action name="action_debug_memory_map">
+   <property name="text">
+    <string>&amp;Memory Map...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+M</string>
+   </property>
+  </action>
+  <action name="action_debug_profiler">
+   <property name="text">
+    <string>Profiler...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+P</string>
+   </property>
+  </action>
+  <action name="action_help_about">
+   <property name="text">
+    <string>&amp;About...</string>
+   </property>
+  </action>
+  <action name="action_tools_options">
+   <property name="text">
+    <string>&amp;Options...</string>
+   </property>
+  </action>
+  <action name="action_diagnostics_override_shading_no_override">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;No Override</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+0</string>
+   </property>
+  </action>
+  <action name="action_navigation_inspect">
+   <property name="text">
+    <string>&amp;Inspect</string>
+   </property>
+  </action>
+  <action name="action_navigation_fly">
+   <property name="text">
+    <string>&amp;Fly</string>
+   </property>
+  </action>
+  <action name="action_navigation_freeze">
+   <property name="text">
+    <string>Free&amp;ze</string>
+   </property>
+  </action>
+  <action name="action_rendering_start_final_rendering">
+   <property name="text">
+    <string>Start &amp;Final Rendering</string>
+   </property>
+   <property name="shortcut">
+    <string>F6</string>
+   </property>
+  </action>
+  <action name="action_rendering_start_interactive_rendering">
+   <property name="text">
+    <string>Start &amp;Interactive Rendering</string>
+   </property>
+   <property name="shortcut">
+    <string>F5</string>
+   </property>
+  </action>
+  <action name="action_rendering_stop_rendering">
+   <property name="text">
+    <string>S&amp;top Rendering</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+F5</string>
+   </property>
+  </action>
+  <action name="action_rendering_configuration_manager">
+   <property name="text">
+    <string>&amp;Configuration Manager...</string>
+   </property>
+  </action>
+  <action name="action_file_reload_project">
+   <property name="text">
+    <string>&amp;Reload Project</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,0 +1,136 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Macro BOOST_PROTO_REPEAT_FROM_TO</title>
+<link rel="stylesheet" href="boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="proto/reference.html#header.boost.proto.repeat_hpp" title="Header &lt;boost/proto/repeat.hpp&gt;">
+<link rel="prev" href="BOOST_PROTO_REPEAT.html" title="Macro BOOST_PROTO_REPEAT">
+<link rel="next" href="BOOST_PROTO_REPEAT_EX.html" title="Macro BOOST_PROTO_REPEAT_EX">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../boost.png"></td>
+<td align="center"><a href="../../index.html">Home</a></td>
+<td align="center"><a href="../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="BOOST_PROTO_REPEAT.html"><img src="../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="proto/reference.html#header.boost.proto.repeat_hpp"><img src="../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="index.html"><img src="../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="BOOST_PROTO_REPEAT_EX.html"><img src="../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="BOOST_PROTO_REPEAT_FROM_TO"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Macro BOOST_PROTO_REPEAT_FROM_TO</span></h2>
+<p>BOOST_PROTO_REPEAT_FROM_TO &#8212; Repeatedly invoke the specified macro.</p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="proto/reference.html#header.boost.proto.repeat_hpp" title="Header &lt;boost/proto/repeat.hpp&gt;">boost/proto/repeat.hpp</a>&gt;
+
+</em></span>BOOST_PROTO_REPEAT_FROM_TO(FROM, TO, MACRO)</pre></div>
+<div class="refsect1" lang="en">
+<a name="id3234049"></a><h2>Description</h2>
+<p>
+        <code class="computeroutput">BOOST_PROTO_REPEAT_FROM_TO()</code> is used to generate the kind of repetitive
+        code that is typical of DSELs built with Proto.
+        <code class="computeroutput">BOOST_PROTO_REPEAT_FROM_TO(<em class="replaceable"><code>FROM</code></em>, <em class="replaceable"><code>TO</code></em>, <em class="replaceable"><code>MACRO</code></em>)</code>
+        is equivalent to:
+      </p>
+<p>
+        </p>
+<pre class="programlisting"><em class="replaceable"><code>MACRO</code></em>(<em class="replaceable"><code>FROM</code></em>, <a class="link" href="BOOST_PROTO_typename_A.html" title="Macro BOOST_PROTO_typename_A">BOOST_PROTO_typename_A</a>, <a class="link" href="BOOST_PROTO_A_const_ref.html" title="Macro BOOST_PROTO_A_const_ref">BOOST_PROTO_A_const_ref</a>, <a class="link" href="BOOST_PROTO_A_const_ref_a.html" title="Macro BOOST_PROTO_A_const_ref_a">BOOST_PROTO_A_const_ref_a</a>, <a class="link" href="BOOST_PROTO_ref_a.html" title="Macro BOOST_PROTO_ref_a">BOOST_PROTO_ref_a</a>)
+<em class="replaceable"><code>MACRO</code></em>(<em class="replaceable"><code>FROM+1</code></em>, <a class="link" href="BOOST_PROTO_typename_A.html" title="Macro BOOST_PROTO_typename_A">BOOST_PROTO_typename_A</a>, <a class="link" href="BOOST_PROTO_A_const_ref.html" title="Macro BOOST_PROTO_A_const_ref">BOOST_PROTO_A_const_ref</a>, <a class="link" href="BOOST_PROTO_A_const_ref_a.html" title="Macro BOOST_PROTO_A_const_ref_a">BOOST_PROTO_A_const_ref_a</a>, <a class="link" href="BOOST_PROTO_ref_a.html" title="Macro BOOST_PROTO_ref_a">BOOST_PROTO_ref_a</a>)
+...
+<em class="replaceable"><code>MACRO</code></em>(<em class="replaceable"><code>TO-1</code></em>, <a class="link" href="BOOST_PROTO_typename_A.html" title="Macro BOOST_PROTO_typename_A">BOOST_PROTO_typename_A</a>, <a class="link" href="BOOST_PROTO_A_const_ref.html" title="Macro BOOST_PROTO_A_const_ref">BOOST_PROTO_A_const_ref</a>, <a class="link" href="BOOST_PROTO_A_const_ref_a.html" title="Macro BOOST_PROTO_A_const_ref_a">BOOST_PROTO_A_const_ref_a</a>, <a class="link" href="BOOST_PROTO_ref_a.html" title="Macro BOOST_PROTO_ref_a">BOOST_PROTO_ref_a</a>)</pre>
+<p>
+      </p>
+<p>
+        <span class="bold"><strong>Example:</strong></span>
+      </p>
+<p>
+        </p>
+<pre class="programlisting">// Generate BOOST_PROTO_MAX_ARITY-1 overloads of the
+// following construct() function template.
+#define M0(N, typename_A, A_const_ref, A_const_ref_a, ref_a)      \
+template&lt;typename T, typename_A(N)&gt;                               \
+typename <a class="link" href="boost/proto/result_of/make_expr.html" title="Struct template make_expr">proto::result_of::make_expr</a>&lt;                             \
+    <a class="link" href="boost/proto/tag/function.html" title="Struct function">proto::tag::function</a>                                          \
+  , construct_helper&lt;T&gt;                                           \
+  , A_const_ref(N)                                                \
+&gt;::type const                                                     \
+construct(A_const_ref_a(N))                                       \
+{                                                                 \
+    return <a class="link" href="boost/proto/make_expr_id2570798.html" title="Function make_expr">proto::make_expr</a>&lt;                                      \
+        <a class="link" href="boost/proto/tag/function.html" title="Struct function">proto::tag::function</a>                                      \
+    &gt;(                                                            \
+        construct_helper&lt;T&gt;()                                     \
+      , ref_a(N)                                                  \
+    );                                                            \
+}
+BOOST_PROTO_REPEAT_FROM_TO(1, BOOST_PROTO_MAX_ARITY, M0)
+#undef M0</pre>
+<p>
+      </p>
+<p>
+        The above invocation of <code class="computeroutput">BOOST_PROTO_REPEAT_FROM_TO()</code>
+        will generate the following code:
+      </p>
+<p>
+        </p>
+<pre class="programlisting">template&lt;typename T, typename A0&gt;
+typename <a class="link" href="boost/proto/result_of/make_expr.html" title="Struct template make_expr">proto::result_of::make_expr</a>&lt;
+    <a class="link" href="boost/proto/tag/function.html" title="Struct function">proto::tag::function</a>
+  , construct_helper&lt;T&gt;
+  , A0 const &amp;
+&gt;::type const
+construct(A0 const &amp; a0)
+{
+    return <a class="link" href="boost/proto/make_expr_id2570798.html" title="Function make_expr">proto::make_expr</a>&lt;
+        <a class="link" href="boost/proto/tag/function.html" title="Struct function">proto::tag::function</a>
+    &gt;(
+        construct_helper&lt;T&gt;()
+      , boost::ref(a0)
+    );
+}
+
+template&lt;typename T, typename A0, typename A1&gt;
+typename <a class="link" href="boost/proto/result_of/make_expr.html" title="Struct template make_expr">proto::result_of::make_expr</a>&lt;
+    <a class="link" href="boost/proto/tag/function.html" title="Struct function">proto::tag::function</a>
+  , construct_helper&lt;T&gt;
+  , A0 const &amp;
+  , A1 const &amp;
+&gt;::type const
+construct(A0 const &amp; a0, A1 const &amp; a1)
+{
+    return <a class="link" href="boost/proto/make_expr_id2570798.html" title="Function make_expr">proto::make_expr</a>&lt;
+        <a class="link" href="boost/proto/tag/function.html" title="Struct function">proto::tag::function</a>
+    &gt;(
+        construct_helper&lt;T&gt;()
+      , boost::ref(a0)
+      , boost::ref(a1)
+    );
+}
+
+// ... and so on, up to BOOST_PROTO_MAX_ARITY-1 arguments ...</pre>
+<p>
+      </p>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2008 Eric Niebler<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="BOOST_PROTO_REPEAT.html"><img src="../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="proto/reference.html#header.boost.proto.repeat_hpp"><img src="../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="index.html"><img src="../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="BOOST_PROTO_REPEAT_EX.html"><img src="../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

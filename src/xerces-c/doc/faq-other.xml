@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="iso-8859-1" standalone="no"?>
+<!--
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+
+<!DOCTYPE faqs SYSTEM "sbk:/style/dtd/faqs.dtd">
+<faqs title="Other &XercesCName; Questions">
+
+  <faq title="Are the Xerces parsers Year-2000-compliant?">
+        <q>Are the Xerces parsers Year-2000-compliant?</q>
+        <a>
+           	<p>Yes, Xerces-J and Xerces-C are Year 2000 compliant.
+		They do not currently use any dates at all (at least until the XML
+		Schema date datatypes are fully supported).  However, you may still
+		have Y2K problems if the underlying OS or Java implementation has
+		problems with dates past year 2000 (e.g. OS calls which accept or
+		return year numbers).</p>
+		<p>Most (UNIX) systems store dates internally as signed 32-bit
+		integers which contain the number of seconds since 1st January 1970,
+		so the magic boundary to worry about is the year 2038 and not 2000.
+		But modern operating systems shouldn't cause any trouble at all.</p>
+		
+		<p>The Apache Xerces project is an open-source software product
+		of the Apache Software Foundation. The project and the Foundation
+		cannot and does not offer legal assurances regarding any suitability
+		of the software for your application. There are several commercial
+		support organizations and derivative products available that may be
+		able to certify the software and provide you with any assurances you
+		may require (IBM's Websphere product is one of them).</p>
+		<p>The Apache HTTP server software is distributed with the following
+		disclaimer, found in the software license: 	</p>
+<source>THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.</source>
+        </a>
+  </faq>
+
+  <faq title="How do I determine the version of &XercesCName; I am using?">
+        <q>How do I determine the version of &XercesCName; I am using?</q>
+        <a>
+
+           <p>The version string for &XercesCName; is in one of the header files. Look
+           inside the file <code>src/xercesc/util/XercesVersion.hpp</code> or, in the binary distribution,
+           look in <code>include/xercesc/utils/XercesVersion.hpp</code>. </p>
+
+           <p>If you don't have the header files, you have to find the version
+           information from the shared library name. On Windows right click on
+           the DLL name &XercesCWindowsDLL;.dll in the bin directory and look up
+           properties. The version information may be found on the Version tab.</p>
+
+           <p>On AIX, just look for the library name &XercesCUnixLib;&XercesCUnixSoName;.a (or
+           &XercesCUnixLib;.so.&XercesCUnixSoName; on Solaris/Linux/IA64 HP-UX
+           and &XercesCUnixLib;.sl.&XercesCUnixSoName; on PA-RISC HP-UX). The
+           version number is indicated in the name of the library.</p>
+        </a>
+  </faq>
+
+  <faq title="I can't use C++. Do you have a Java version?">
+
+    <q>I can't use C++. Do you have a Java version?</q>
+
+    <a>
+
+      <p>Yes. The Xerces family of products also has a Java version. More
+        information is available at:
+        <jump href="http://xerces.apache.org/xerces2-j/index.html">
+        http://xerces.apache.org/xerces2-j/index.html</jump></p>
+
+    </a>
+  </faq>
+
+
+  <faq title="Where can I find additional information on XML?">
+
+    <q>Where can I find additional information on XML?</q>
+
+    <a>
+
+    <p>The Web. <jump href="http://www.oasis-open.org/cover/xml.html">
+      http://www.oasis-open.org/cover/xml.html</jump> is an excellent place to start,
+      with links to overviews, FAQs, specifications, industry news, applications and
+      other software, related standards, etc.</p>
+
+    </a>
+  </faq>
+
+  <!-- see entities.ent for the content for faq-other-support -->
+  &faq-other-support;
+
+  <faq title="I found a defect -- how do I report it?">
+
+    <q>I found a defect -- how do I report it?</q>
+
+    <a>
+
+      <p>See <jump href="bug-report.html">Bug Reporting</jump>.
+      </p>
+
+    </a>
+  </faq>
+
+  <!-- see entities.ent for the content for faq-other-patch -->
+  &faq-other-patch;
+
+  <faq title="Where can I get predefined character entity definitions?">
+
+    <q>Where can I get predefined character entity definitions??</q>
+
+    <a>
+
+    <p> Download <jump href="http://www.w3.org/TR/xhtml1/xhtml1.zip">
+      http://www.w3.org/TR/xhtml1/xhtml1.zip. </jump></p>
+
+    </a>
+  </faq>
+
+  <faq title="Does &XercesCName; support XPath?">
+
+    <q> Does &XercesCName; support XPath?</q>
+
+    <a>
+
+      <p>No.  The &XercesCName; &XercesCVersion; only has partial XPath implementation
+         for the purposes of handling Schema identity constraints.  For full XPath
+         support, you can refer
+         <jump href="http://xml.apache.org/xalan-c/overview.html">Apache Xalan C++</jump> or
+         other Open Source Projects like
+         <jump href="http://software.decisionsoft.com">Pathan</jump>.
+       </p>
+
+    </a>
+  </faq>
+
+</faqs>

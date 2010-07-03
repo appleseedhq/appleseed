@@ -1,0 +1,143 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+# 
+#      http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+#
+#
+# $Id: Makefile.in 568078 2007-08-21 11:43:25Z amassari $
+#
+
+DOMMemTest_DIR=DOM/DOMMemTest
+DeprecatedDOMCount_DIR=DOM/DeprecatedDOMCount
+DOMTest_DIR=DOM/DOMTest
+DOMTypeInfo_DIR=DOM/TypeInfo
+Traversal_DIR=DOM/Traversal
+ThreadTest_DIR=ThreadTest
+MemHandlerTest_DIR=MemHandlerTest
+EncodingTest_DIR=EncodingTest
+DOMRange_DIR=DOM/RangeTest
+InitTermTest_DIR=InitTermTest
+XSerializerTest_DIR=XSerializerTest
+XSValueTest_DIR=XSValueTest
+
+LIB_DIR=${XERCESCROOT}/lib
+
+PLATFORM = @platform@
+COMPILER = @compiler@
+CXXVER = @cxxver@
+GCC = @GCC@
+GXX = @GXX@
+CXXFLAGS = @cxxflags@
+CFLAGS = @cflags@
+PREFIX = @prefix@
+THREADS = @threads@
+EXTRA_LIBS = @extra_libs@
+BITSTOBUILD = @bitstobuild@
+
+ifeq (${PLATFORM},HPUX)
+  ifeq (${OSVER}, HPUX10)
+      all::	bindir threadtest memhandlertest encodingtest traversal xserializertest xsvaluetest
+  else
+      all::	bindir dommemtest deprecateddomcount domtest domtypeinfo threadtest encodingtest traversal rangetest inittermtest memhandlertest xserializertest xsvaluetest
+  endif
+else
+    all::	bindir dommemtest deprecateddomcount domtest domtypeinfo encodingtest traversal rangetest inittermtest memhandlertest xserializertest xsvaluetest
+  ifneq (${THREADS},none)
+    all::	threadtest
+  endif
+endif
+
+bindir::
+	test -d ${XERCESCROOT}/bin || mkdir ${XERCESCROOT}/bin
+
+dommemtest::
+	@echo Building "DOMMemTest"
+	${MAKE} -C $(DOMMemTest_DIR) $(MAKE_FLAGS)
+
+deprecateddomcount::
+	@echo Building "DeprecatedDOMConut"
+	${MAKE} -C $(DeprecatedDOMCount_DIR) $(MAKE_FLAGS)
+
+domtest::
+	@echo Building "DOMTest"
+	${MAKE} -C $(DOMTest_DIR) $(MAKE_FLAGS)
+
+domtypeinfo::
+	@echo Building "DOMTypeInfo"
+	${MAKE} -C $(DOMTypeInfo_DIR) $(MAKE_FLAGS)
+
+threadtest::
+	@echo Building "ThreadTest"
+	${MAKE} -C $(ThreadTest_DIR) $(MAKE_FLAGS)
+
+memhandlertest::
+	@echo Building "MemHandlerTest"
+	${MAKE} -C $(MemHandlerTest_DIR) $(MAKE_FLAGS)
+
+
+encodingtest::
+	@echo Building "EncodingTest"
+	${MAKE} -C $(EncodingTest_DIR) $(MAKE_FLAGS)
+
+traversal::
+	@echo Building "Traversal"
+	${MAKE} -C $(Traversal_DIR) $(MAKE_FLAGS)
+
+rangetest::
+	@echo Building "Range"
+	${MAKE} -C $(DOMRange_DIR) $(MAKE_FLAGS)
+
+inittermtest::
+	@echo Building "InitTermTest"
+	${MAKE} -C $(InitTermTest_DIR) $(MAKE_FLAGS)
+
+xserializertest::
+	@echo Building "XSerializerTest"
+	${MAKE} -C $(XSerializerTest_DIR) $(MAKE_FLAGS)
+	
+xsvaluetest::
+	@echo Building "XSValueTest"
+	${MAKE} -C $(XSValueTest_DIR) $(MAKE_FLAGS)
+		
+clean::
+	${MAKE} -C $(DOMMemTest_DIR) $@
+	${MAKE} -C $(DeprecatedDOMCount_DIR) $@
+	${MAKE} -C $(DOMTest_DIR) $@
+	${MAKE} -C $(DOMTypeInfo_DIR) $@
+	${MAKE} -C $(ThreadTest_DIR) $@
+	${MAKE} -C $(MemHandlerTest_DIR) $@
+	${MAKE} -C $(EncodingTest_DIR) $@
+	${MAKE} -C $(Traversal_DIR) $@
+	${MAKE} -C $(DOMRange_DIR) $@
+	${MAKE} -C $(InitTermTest_DIR) $@
+	${MAKE} -C $(XSerializerTest_DIR) $@
+	${MAKE} -C $(XSValueTest_DIR) $@	
+
+distclean::
+	${MAKE} -C $(DOMMemTest_DIR) $@
+	${MAKE} -C $(DeprecatedDOMCount_DIR) $@
+	${MAKE} -C $(DOMTest_DIR) $@
+	${MAKE} -C $(DOMTypeInfo_DIR) $@
+	${MAKE} -C $(ThreadTest_DIR) $@
+	${MAKE} -C $(MemHandlerTest_DIR) $@
+	${MAKE} -C $(EncodingTest_DIR) $@
+	${MAKE} -C $(Traversal_DIR) $@
+	${MAKE} -C $(DOMRange_DIR) $@
+	${MAKE} -C $(InitTermTest_DIR) $@
+	${MAKE} -C $(XSerializerTest_DIR) $@
+	${MAKE} -C $(XSValueTest_DIR) $@	
+	rm -f Makefile config.cache config.log config.status
+	rm -f *~ core
+

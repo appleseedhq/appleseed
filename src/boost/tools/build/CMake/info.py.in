@@ -1,0 +1,26 @@
+#!/usr/bin/python
+#
+#  copyright (C) 2008  troy d. straszheim  <troy@resophonic.com>
+#  
+#  Distributed under the Boost Software License, Version 1.0.
+#  See accompanying file LICENSE_1_0.txt or copy at
+#  http://www.boost.org/LICENSE_1_0.txt
+#
+
+#
+#  Start a new build, notify server via xmlrpc
+#
+
+import sys
+sys.path.append("@BOOST_BUILD_SLAVE_PYTHONPATH@")
+from boost_build_slave import *
+
+print '      Url:', svn_entry.url, "at rev", svn_entry.revision.number
+print '     FQDN:', fqdn
+print '    Uname:', uname
+print '  Toolset:', toolset
+print ' Build ID:', build_id
+print '  Contact:', contact_info
+pref = '\n           '
+print '  Details: ' + pref.join(details().splitlines()), '\n\n'
+

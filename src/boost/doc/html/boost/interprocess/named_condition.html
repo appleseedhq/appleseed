@@ -1,0 +1,138 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Class named_condition</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../boost_interprocess_reference.html#header.boost.interprocess.sync.named_condition_hpp" title="Header &lt;boost/interprocess/sync/named_condition.hpp&gt;">
+<link rel="prev" href="null_mutex_family.html" title="Struct null_mutex_family">
+<link rel="next" href="named_mutex.html" title="Class named_mutex">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="null_mutex_family.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_interprocess_reference.html#header.boost.interprocess.sync.named_condition_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="named_mutex.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.interprocess.named_condition"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Class named_condition</span></h2>
+<p>boost::interprocess::named_condition</p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../boost_interprocess_reference.html#header.boost.interprocess.sync.named_condition_hpp" title="Header &lt;boost/interprocess/sync/named_condition.hpp&gt;">boost/interprocess/sync/named_condition.hpp</a>&gt;
+
+</em></span>
+<span class="bold"><strong>class</strong></span> <a class="link" href="named_condition.html" title="Class named_condition">named_condition</a> {
+<span class="bold"><strong>public</strong></span>:
+  <span class="emphasis"><em>// <a class="link" href="named_condition.html#boost.interprocess.named_conditionconstruct-copy-destruct">construct/copy/destruct</a></em></span>
+  <a class="link" href="named_condition.html#id1773453-bb">named_condition</a>(<a class="link" href="create_only_t.html" title="Struct create_only_t">create_only_t</a>, <span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> *);
+  <a class="link" href="named_condition.html#id1773471-bb">named_condition</a>(<a class="link" href="open_or_create_t.html" title="Struct open_or_create_t">open_or_create_t</a>, <span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> *);
+  <a class="link" href="named_condition.html#id1773492-bb">named_condition</a>(<a class="link" href="open_only_t.html" title="Struct open_only_t">open_only_t</a>, <span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> *);
+  <a class="link" href="named_condition.html#id1773511-bb">~named_condition</a>();
+
+  <span class="emphasis"><em>// <a class="link" href="named_condition.html#id1773286-bb">public member functions</a></em></span>
+  <span class="type">*<span class="bold"><strong>void</strong></span></span> <a class="link" href="named_condition.html#id1773289-bb">notify_one</a>() ;
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="named_condition.html#id1773302-bb">notify_all</a>() ;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> L&gt; <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="named_condition.html#id1773315-bb">wait</a>(L &amp;) ;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> L, <span class="bold"><strong>typename</strong></span> Pr&gt; <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="named_condition.html#id1773342-bb">wait</a>(L &amp;, Pr) ;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> L&gt; <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="named_condition.html#id1773377-bb">timed_wait</a>(L &amp;, <span class="bold"><strong>const</strong></span> boost::posix_time::ptime &amp;) ;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> L, <span class="bold"><strong>typename</strong></span> Pr&gt; 
+    <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="named_condition.html#id1773411-bb">timed_wait</a>(L &amp;, <span class="bold"><strong>const</strong></span> boost::posix_time::ptime &amp;, Pr) ;
+
+  <span class="emphasis"><em>// <a class="link" href="named_condition.html#id1773521-bb">public static functions</a></em></span>
+  <span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>bool</strong></span></span> <a class="link" href="named_condition.html#id1773525-bb">remove</a>(<span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> *) ;
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id2231957"></a><h2>Description</h2>
+<p>A global condition variable that can be created by name. This condition variable is designed to work with named_mutex and can't be placed in shared memory or memory mapped files. </p>
+<div class="refsect2" lang="en">
+<a name="id2231966"></a><h3>
+<a name="boost.interprocess.named_conditionconstruct-copy-destruct"></a><code class="computeroutput">named_condition</code> 
+        public
+       construct/copy/destruct</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><a name="id1773453-bb"></a>named_condition(<a class="link" href="create_only_t.html" title="Struct create_only_t">create_only_t</a> create_only, <span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> * name);</pre>
+<p>Creates a global condition with a name. If the condition can't be created throws interprocess_exception </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1773471-bb"></a>named_condition(<a class="link" href="open_or_create_t.html" title="Struct open_or_create_t">open_or_create_t</a> open_or_create, <span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> * name);</pre>
+<p>Opens or creates a global condition with a name. If the condition is created, this call is equivalent to named_condition(create_only_t, ... ) If the condition is already created, this call is equivalent named_condition(open_only_t, ... ) Does not throw </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1773492-bb"></a>named_condition(<a class="link" href="open_only_t.html" title="Struct open_only_t">open_only_t</a> open_only, <span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> * name);</pre>
+<p>Opens a global condition with a name if that condition is previously created. If it is not previously created this function throws interprocess_exception. </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1773511-bb"></a>~named_condition();</pre>
+<p>Destroys *this and indicates that the calling process is finished using the resource. The destructor function will deallocate any system resources allocated by the system for use by this process for this resource. The resource can still be opened again calling the open constructor overload. To erase the resource from the system use remove(). </p>
+</li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id2232122"></a><h3>
+<a name="id1773286-bb"></a><code class="computeroutput">named_condition</code> public member functions</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><span class="type">*<span class="bold"><strong>void</strong></span></span> <a name="id1773289-bb"></a>notify_one() ;</pre>
+<p>If there is a thread waiting on *this, change that thread's state to ready. Otherwise there is no effect. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1773302-bb"></a>notify_all() ;</pre>
+<p>Change the state of all threads waiting on *this to ready. If there are no waiting threads, notify_all() has no effect. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> L&gt; <span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1773315-bb"></a>wait(L &amp; lock) ;</pre>
+<p>Releases the lock on the named_mutex object associated with lock, blocks the current thread of execution until readied by a call to this-&gt;notify_one() or this-&gt;notify_all(), and then reacquires the lock. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> L, <span class="bold"><strong>typename</strong></span> Pr&gt; <span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1773342-bb"></a>wait(L &amp; lock, Pr pred) ;</pre>
+<p>The same as: while (!pred()) wait(lock) </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> L&gt; 
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1773377-bb"></a>timed_wait(L &amp; lock, <span class="bold"><strong>const</strong></span> boost::posix_time::ptime &amp; abs_time) ;</pre>
+<p>Releases the lock on the named_mutex object associated with lock, blocks the current thread of execution until readied by a call to this-&gt;notify_one() or this-&gt;notify_all(), or until time abs_time is reached, and then reacquires the lock. Returns: false if time abs_time is reached, otherwise true. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> L, <span class="bold"><strong>typename</strong></span> Pr&gt; 
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1773411-bb"></a>timed_wait(L &amp; lock, <span class="bold"><strong>const</strong></span> boost::posix_time::ptime &amp; abs_time, 
+                  Pr pred) ;</pre>
+<p>The same as: while (!pred()) { if (!timed_wait(lock, abs_time)) return pred(); } return true; </p>
+</li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id2232361"></a><h3>
+<a name="id1773521-bb"></a><code class="computeroutput">named_condition</code> public static functions</h3>
+<div class="orderedlist"><ol type="1"><li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>bool</strong></span></span> <a name="id1773525-bb"></a>remove(<span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> * name) ;</pre>
+<p>Erases a named condition from the system. Returns false on error. Never throws. </p>
+</li></ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2005 - 2008 Ion Gaztañaga<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="null_mutex_family.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_interprocess_reference.html#header.boost.interprocess.sync.named_condition_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="named_mutex.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

@@ -1,0 +1,119 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2010 Francois Beaune
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#ifndef APPLESEED_RENDERER_MODELING_PROJECT_PROJECT_H
+#define APPLESEED_RENDERER_MODELING_PROJECT_PROJECT_H
+
+// appleseed.renderer headers.
+#include "renderer/global/global.h"
+#include "renderer/modeling/entity/entity.h"
+#include "renderer/modeling/project/configurationcontainer.h"
+
+// Forward declarations.
+namespace renderer  { class Frame; }
+namespace renderer  { class Scene; }
+namespace renderer  { class TraceContext; }
+
+namespace renderer
+{
+
+//
+// A rendering project.
+//
+
+class RENDERERDLL Project
+  : public Entity
+{
+  public:
+    // Delete this instance.
+    virtual void release();
+
+    // Return the name of this project.
+    virtual const char* get_name() const;
+
+    // Set or get the project path.
+    bool has_path() const;
+    void set_path(const char* path);
+    const char* get_path() const;
+
+    // Set the scene, replacing the existing scene.
+    void set_scene(std::auto_ptr<Scene> scene);
+
+    // Access the scene.
+    // Return 0 if the project does not contain a scene.
+    Scene* get_scene() const;
+
+    // Set the frame, replacing the existing frame.
+    void set_frame(std::auto_ptr<Frame> frame);
+
+    // Access the frame.
+    // Return 0 if the project does not contain a frame.
+    Frame* get_frame() const;
+
+    // Access the configurations.
+    ConfigurationContainer& configurations();
+    const ConfigurationContainer& configurations() const;
+
+    // Add the default configurations to the project.
+    void add_default_configurations();
+
+    // Get the trace context.
+    const TraceContext& get_trace_context();
+
+  private:
+    friend class ProjectFactory;
+
+    // Private implementation.
+    struct Impl;
+    Impl* impl;
+
+    // Constructor.
+    explicit Project(const char* name);
+
+    // Destructor.
+    ~Project();
+
+    void add_base_configurations();
+    void add_default_configuration(const char* name, const char* base_name);
+};
+
+
+//
+// Project factory.
+//
+
+class RENDERERDLL ProjectFactory
+{
+  public:
+    // Create a new project.
+    static foundation::auto_release_ptr<Project> create(const char* name);
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_PROJECT_PROJECT_H

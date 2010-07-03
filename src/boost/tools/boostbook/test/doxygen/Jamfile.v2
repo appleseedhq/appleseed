@@ -1,0 +1,19 @@
+import doxygen ;
+
+doxygen autodoc
+    :
+        [ glob boost/*.hpp ]
+    :
+        <xsl:param>"boost.doxygen.reftitle=Example Reference"
+    ;
+
+boostbook standalone
+    :
+        example.xml
+    :
+        <xsl:param>boost.root=../../../../..
+        <xsl:param>boost.libraries=../../../../../libs/libraries.htm
+        <xsl:param>html.stylesheet=../../../../../doc/html/boostbook.css
+        
+        <dependency>autodoc
+    ;

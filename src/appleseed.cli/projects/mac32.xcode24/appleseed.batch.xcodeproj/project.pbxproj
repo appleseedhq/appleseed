@@ -1,0 +1,338 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 42;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0F9A63CD0BCE305F00DDE01E /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0F9A63B50BCE2E7500DDE01E /* main.cpp */; };
+		0FBA504D0D22C8D400C6392B /* libboost_thread-s-1_33_1.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FBA504C0D22C8D400C6392B /* libboost_thread-s-1_33_1.a */; };
+		0FBA504F0D22C8E700C6392B /* libboost_filesystem-s-1_33_1.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FBA504E0D22C8E700C6392B /* libboost_filesystem-s-1_33_1.a */; };
+		0FE1E28A0C2ED78A00A122AF /* commandline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0FE1E2880C2ED78A00A122AF /* commandline.cpp */; };
+		0FE8DACF0C1EC7DB00A79249 /* appleseed.batch in Copy Products to Sandbox */ = {isa = PBXBuildFile; fileRef = 8DD76F6C0486A84900D96B5E /* appleseed.batch */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		0F1C04070CAD60F7007C5AAE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0F1C04030CAD60F7007C5AAE /* appleseed.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = D2AAC09D05546B4700DB518D;
+			remoteInfo = appleseed;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		8DD76F690486A84900D96B5E /* Copy Products to Sandbox */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 12;
+			dstPath = /Users/francois/Projects/appleseed/sandbox/bin/mac32.xcode24;
+			dstSubfolderSpec = 0;
+			files = (
+				0FE8DACF0C1EC7DB00A79249 /* appleseed.batch in Copy Products to Sandbox */,
+			);
+			name = "Copy Products to Sandbox";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		0F1C04030CAD60F7007C5AAE /* appleseed.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = appleseed.xcodeproj; path = ../../../appleseed/projects/mac32.xcode24/appleseed.xcodeproj; sourceTree = SOURCE_ROOT; };
+		0F9A63B50BCE2E7500DDE01E /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 2; name = main.cpp; path = ../../main.cpp; sourceTree = SOURCE_ROOT; };
+		0FBA504C0D22C8D400C6392B /* libboost_thread-s-1_33_1.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libboost_thread-s-1_33_1.a"; path = "../../../../build/mac32.xcode24/boost/lib/libboost_thread-s-1_33_1.a"; sourceTree = SOURCE_ROOT; };
+		0FBA504E0D22C8E700C6392B /* libboost_filesystem-s-1_33_1.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libboost_filesystem-s-1_33_1.a"; path = "../../../../build/mac32.xcode24/boost/lib/libboost_filesystem-s-1_33_1.a"; sourceTree = SOURCE_ROOT; };
+		0FE1E2790C2ED65E00A122AF /* BATCH_TEMPLATE.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = BATCH_TEMPLATE.cpp; path = ../../BATCH_TEMPLATE.cpp; sourceTree = SOURCE_ROOT; };
+		0FE1E27A0C2ED65E00A122AF /* BATCH_TEMPLATE.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = BATCH_TEMPLATE.h; path = ../../BATCH_TEMPLATE.h; sourceTree = SOURCE_ROOT; };
+		0FE1E2880C2ED78A00A122AF /* commandline.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 2; name = commandline.cpp; path = ../../commandline.cpp; sourceTree = SOURCE_ROOT; };
+		0FE1E2890C2ED78A00A122AF /* commandline.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = commandline.h; path = ../../commandline.h; sourceTree = SOURCE_ROOT; };
+		8DD76F6C0486A84900D96B5E /* appleseed.batch */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = appleseed.batch; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8DD76F660486A84900D96B5E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0FBA504D0D22C8D400C6392B /* libboost_thread-s-1_33_1.a in Frameworks */,
+				0FBA504F0D22C8E700C6392B /* libboost_filesystem-s-1_33_1.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		08FB7794FE84155DC02AAC07 /* appleseed.batch */ = {
+			isa = PBXGroup;
+			children = (
+				C6859E8C029090F304C91782 /* Documentation */,
+				08FB7795FE84155DC02AAC07 /* Sources */,
+				0F9A63C70BCE2FE200DDE01E /* External Frameworks and Libraries */,
+				1AB674ADFE9D54B511CA2CBB /* Products */,
+			);
+			name = appleseed.batch;
+			sourceTree = "<group>";
+		};
+		08FB7795FE84155DC02AAC07 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				0FE1E2880C2ED78A00A122AF /* commandline.cpp */,
+				0FE1E2890C2ED78A00A122AF /* commandline.h */,
+				0F9A63B50BCE2E7500DDE01E /* main.cpp */,
+				0FE1E2790C2ED65E00A122AF /* BATCH_TEMPLATE.cpp */,
+				0FE1E27A0C2ED65E00A122AF /* BATCH_TEMPLATE.h */,
+			);
+			name = Sources;
+			sourceTree = "<group>";
+		};
+		0F1C04040CAD60F7007C5AAE /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0F1C04080CAD60F7007C5AAE /* libappleseed.dylib */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0F9A63C70BCE2FE200DDE01E /* External Frameworks and Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				0FBA4FDA0D227B8000C6392B /* appleseed */,
+				0FBA4FD90D227B7900C6392B /* boost */,
+			);
+			name = "External Frameworks and Libraries";
+			sourceTree = "<group>";
+		};
+		0FBA4FD90D227B7900C6392B /* boost */ = {
+			isa = PBXGroup;
+			children = (
+				0FBA504E0D22C8E700C6392B /* libboost_filesystem-s-1_33_1.a */,
+				0FBA504C0D22C8D400C6392B /* libboost_thread-s-1_33_1.a */,
+			);
+			name = boost;
+			sourceTree = "<group>";
+		};
+		0FBA4FDA0D227B8000C6392B /* appleseed */ = {
+			isa = PBXGroup;
+			children = (
+				0F1C04030CAD60F7007C5AAE /* appleseed.xcodeproj */,
+			);
+			name = appleseed;
+			sourceTree = "<group>";
+		};
+		1AB674ADFE9D54B511CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8DD76F6C0486A84900D96B5E /* appleseed.batch */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		C6859E8C029090F304C91782 /* Documentation */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Documentation;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8DD76F620486A84900D96B5E /* appleseed.batch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1DEB923108733DC60010E9CD /* Build configuration list for PBXNativeTarget "appleseed.batch" */;
+			buildPhases = (
+				8DD76F640486A84900D96B5E /* Sources */,
+				8DD76F660486A84900D96B5E /* Frameworks */,
+				0FE8DAC20C1EC28E00A79249 /* Run install_name_tool */,
+				8DD76F690486A84900D96B5E /* Copy Products to Sandbox */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = appleseed.batch;
+			productInstallPath = "$(HOME)/bin";
+			productName = appleseed.batch;
+			productReference = 8DD76F6C0486A84900D96B5E /* appleseed.batch */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		08FB7793FE84155DC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 1DEB923508733DC60010E9CD /* Build configuration list for PBXProject "appleseed.batch" */;
+			hasScannedForEncodings = 1;
+			mainGroup = 08FB7794FE84155DC02AAC07 /* appleseed.batch */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 0F1C04040CAD60F7007C5AAE /* Products */;
+					ProjectRef = 0F1C04030CAD60F7007C5AAE /* appleseed.xcodeproj */;
+				},
+			);
+			targets = (
+				8DD76F620486A84900D96B5E /* appleseed.batch */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		0F1C04080CAD60F7007C5AAE /* libappleseed.dylib */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.dylib";
+			path = libappleseed.dylib;
+			remoteRef = 0F1C04070CAD60F7007C5AAE /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		0FE8DAC20C1EC28E00A79249 /* Run install_name_tool */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				$TARGET_BUILD_DIR/$TARGET_NAME,
+			);
+			name = "Run install_name_tool";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "install_name_tool -change /usr/local/lib/libappleseed.dylib @executable_path/libappleseed.dylib $TARGET_BUILD_DIR/$TARGET_NAME";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8DD76F640486A84900D96B5E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0F9A63CD0BCE305F00DDE01E /* main.cpp in Sources */,
+				0FE1E28A0C2ED78A00A122AF /* commandline.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1DEB923208733DC60010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		1DEB923308733DC60010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Release;
+		};
+		1DEB923608733DC60010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = DEBUG;
+				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
+				GCC_WARN_FOUR_CHARACTER_CONSTANTS = YES;
+				GCC_WARN_HIDDEN_VIRTUAL_FUNCTIONS = YES;
+				GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED = YES;
+				GCC_WARN_MISSING_PARENTHESES = YES;
+				GCC_WARN_NON_VIRTUAL_DESTRUCTOR = NO;
+				GCC_WARN_SHADOW = YES;
+				GCC_WARN_SIGN_COMPARE = YES;
+				GCC_WARN_TYPECHECK_CALLS_TO_PRINTF = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_LABEL = YES;
+				GCC_WARN_UNUSED_VALUE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					../../../appleseed,
+					../../../boost,
+					"../../../openexr/include/**",
+				);
+				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../../../../build/mac32.xcode24/boost/lib\"";
+				OTHER_LDFLAGS = ../../../../build/mac32.xcode24/appleseed/Debug/libappleseed.dylib;
+				PREBINDING = NO;
+				PRODUCT_NAME = appleseed.batch;
+				STRIP_INSTALLED_PRODUCT = NO;
+				STRIP_STYLE = "non-global";
+			};
+			name = Debug;
+		};
+		1DEB923708733DC60010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_AUTO_VECTORIZATION = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = NDEBUG;
+				GCC_STRICT_ALIASING = YES;
+				GCC_UNROLL_LOOPS = YES;
+				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
+				GCC_WARN_FOUR_CHARACTER_CONSTANTS = YES;
+				GCC_WARN_HIDDEN_VIRTUAL_FUNCTIONS = YES;
+				GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED = YES;
+				GCC_WARN_MISSING_PARENTHESES = YES;
+				GCC_WARN_NON_VIRTUAL_DESTRUCTOR = NO;
+				GCC_WARN_SHADOW = YES;
+				GCC_WARN_SIGN_COMPARE = YES;
+				GCC_WARN_TYPECHECK_CALLS_TO_PRINTF = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_LABEL = YES;
+				GCC_WARN_UNUSED_VALUE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					../../../appleseed,
+					../../../boost,
+					"../../../openexr/include/**",
+				);
+				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../../../../build/mac32.xcode24/boost/lib\"";
+				OTHER_LDFLAGS = ../../../../build/mac32.xcode24/appleseed/Release/libappleseed.dylib;
+				PREBINDING = NO;
+				PRODUCT_NAME = appleseed.batch;
+				STRIP_STYLE = "non-global";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1DEB923108733DC60010E9CD /* Build configuration list for PBXNativeTarget "appleseed.batch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB923208733DC60010E9CD /* Debug */,
+				1DEB923308733DC60010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1DEB923508733DC60010E9CD /* Build configuration list for PBXProject "appleseed.batch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB923608733DC60010E9CD /* Debug */,
+				1DEB923708733DC60010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
+}

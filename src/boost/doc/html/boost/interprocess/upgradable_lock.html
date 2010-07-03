@@ -1,0 +1,177 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Class template upgradable_lock</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../boost_interprocess_reference.html#header.boost.interprocess.sync.upgradable_lock_hpp" title="Header &lt;boost/interprocess/sync/upgradable_lock.hpp&gt;">
+<link rel="prev" href="sharable_lock.html" title="Class template sharable_lock">
+<link rel="next" href="windows_shared_memory.html" title="Class windows_shared_memory">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="sharable_lock.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_interprocess_reference.html#header.boost.interprocess.sync.upgradable_lock_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="windows_shared_memory.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.interprocess.upgradable_lock"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Class template upgradable_lock</span></h2>
+<p>boost::interprocess::upgradable_lock</p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../boost_interprocess_reference.html#header.boost.interprocess.sync.upgradable_lock_hpp" title="Header &lt;boost/interprocess/sync/upgradable_lock.hpp&gt;">boost/interprocess/sync/upgradable_lock.hpp</a>&gt;
+
+</em></span><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> UpgradableMutex&gt; 
+<span class="bold"><strong>class</strong></span> <a class="link" href="upgradable_lock.html" title="Class template upgradable_lock">upgradable_lock</a> {
+<span class="bold"><strong>public</strong></span>:
+  <span class="emphasis"><em>// types</em></span>
+  <span class="bold"><strong>typedef</strong></span> UpgradableMutex <a name="boost.interprocess.upgradable_lock.mutex_type"></a>mutex_type;
+
+  <span class="emphasis"><em>// <a class="link" href="upgradable_lock.html#boost.interprocess.upgradable_lockconstruct-copy-destruct">construct/copy/destruct</a></em></span>
+  <a class="link" href="upgradable_lock.html#id1775854-bb">upgradable_lock</a>();
+  <a class="link" href="upgradable_lock.html#id1775861-bb">upgradable_lock</a>(mutex_type &amp;);
+  <a class="link" href="upgradable_lock.html#id1775867-bb">upgradable_lock</a>(mutex_type &amp;, <a class="link" href="defer_lock_type.html" title="Struct defer_lock_type">defer_lock_type</a>);
+  <a class="link" href="upgradable_lock.html#id1775887-bb">upgradable_lock</a>(mutex_type &amp;, <a class="link" href="accept_ownership_type.html" title="Struct accept_ownership_type">accept_ownership_type</a>);
+  <a class="link" href="upgradable_lock.html#id1775907-bb">upgradable_lock</a>(mutex_type &amp;, <a class="link" href="try_to_lock_type.html" title="Struct try_to_lock_type">try_to_lock_type</a>);
+  <a class="link" href="upgradable_lock.html#id1775932-bb">upgradable_lock</a>(mutex_type &amp;, <span class="bold"><strong>const</strong></span> boost::posix_time::ptime &amp;);
+  <a class="link" href="upgradable_lock.html#id1775948-bb">upgradable_lock</a>(<a class="link" href="upgradable_lock.html" title="Class template upgradable_lock">upgradable_lock</a>&lt; mutex_type &gt; &amp;&amp;);
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T&gt; <a class="link" href="upgradable_lock.html#id1775960-bb">upgradable_lock</a>(<a class="link" href="scoped_lock.html" title="Class template scoped_lock">scoped_lock</a>&lt; T &gt; &amp;&amp;, <span class="emphasis"><em>unspecified</em></span> = 0);
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T&gt; 
+    <a class="link" href="upgradable_lock.html#id1775989-bb">upgradable_lock</a>(<a class="link" href="sharable_lock.html" title="Class template sharable_lock">sharable_lock</a>&lt; T &gt; &amp;&amp;, <a class="link" href="try_to_lock_type.html" title="Struct try_to_lock_type">try_to_lock_type</a>, <span class="emphasis"><em>unspecified</em></span> = 0);
+  upgradable_lock&amp; <a class="link" href="upgradable_lock.html#id1776030-bb"><span class="bold"><strong>operator</strong></span>=</a>(<a class="link" href="upgradable_lock.html" title="Class template upgradable_lock">upgradable_lock</a> &amp;&amp;);
+  <a class="link" href="upgradable_lock.html#id1776024-bb">~upgradable_lock</a>();
+
+  <span class="emphasis"><em>// <a class="link" href="upgradable_lock.html#id1775721-bb">public member functions</a></em></span>
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="upgradable_lock.html#id1775725-bb">lock</a>() ;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="upgradable_lock.html#id1775740-bb">try_lock</a>() ;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="upgradable_lock.html#id1775751-bb">timed_lock</a>(<span class="bold"><strong>const</strong></span> boost::posix_time::ptime &amp;) ;
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="upgradable_lock.html#id1775768-bb">unlock</a>() ;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="upgradable_lock.html#id1775784-bb">owns</a>() <span class="bold"><strong>const</strong></span>;
+  <a class="link" href="upgradable_lock.html#id1775796-bb"><span class="bold"><strong>operator</strong></span> unspecified_bool_type</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type">mutex_type *</span> <a class="link" href="upgradable_lock.html#id1775808-bb">mutex</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type">mutex_type *</span> <a class="link" href="upgradable_lock.html#id1775821-bb">release</a>() ;
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="upgradable_lock.html#id1775834-bb">swap</a>(<a class="link" href="upgradable_lock.html" title="Class template upgradable_lock">upgradable_lock</a>&lt; mutex_type &gt; &amp;) ;
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id2257304"></a><h2>Description</h2>
+<p>upgradable_lock is meant to carry out the tasks for read-locking, unlocking, try-read-locking and timed-read-locking (recursive or not) for the Mutex. Additionally the upgradable_lock can transfer ownership to a scoped_lock using transfer_lock syntax. The Mutex need not supply all of the functionality. If the client of upgradable_lock&lt;Mutex&gt; does not use functionality which the Mutex does not supply, no harm is done. Mutex ownership can be shared among read_locks, and a single upgradable_lock. upgradable_lock does not support copy semantics. However upgradable_lock supports ownership transfer from a upgradable_locks or scoped_locks via transfer_lock syntax. </p>
+<div class="refsect2" lang="en">
+<a name="id2257309"></a><h3>
+<a name="boost.interprocess.upgradable_lockconstruct-copy-destruct"></a><code class="computeroutput">upgradable_lock</code> 
+        public
+       construct/copy/destruct</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><a name="id1775854-bb"></a>upgradable_lock();</pre>
+<p>Effects: Default constructs a upgradable_lock. Postconditions: owns() == false and mutex() == 0. </p>
+</li>
+<li><pre class="literallayout"><a name="id1775861-bb"></a>upgradable_lock(mutex_type &amp; m);</pre></li>
+<li>
+<pre class="literallayout"><a name="id1775867-bb"></a>upgradable_lock(mutex_type &amp; m, <a class="link" href="defer_lock_type.html" title="Struct defer_lock_type">defer_lock_type</a>);</pre>
+<p>Postconditions: owns() == false, and mutex() == &amp;m. Notes: The constructor will not take ownership of the mutex. There is no effect required on the referenced mutex. </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1775887-bb"></a>upgradable_lock(mutex_type &amp; m, <a class="link" href="accept_ownership_type.html" title="Struct accept_ownership_type">accept_ownership_type</a>);</pre>
+<p>Postconditions: owns() == true, and mutex() == &amp;m. Notes: The constructor will suppose that the mutex is already upgradable locked. There is no effect required on the referenced mutex. </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1775907-bb"></a>upgradable_lock(mutex_type &amp; m, <a class="link" href="try_to_lock_type.html" title="Struct try_to_lock_type">try_to_lock_type</a>);</pre>
+<p>Effects: m.try_lock_upgradable(). Postconditions: mutex() == &amp;m. owns() == the return value of the m.try_lock_upgradable() executed within the constructor. Notes: The constructor will take upgradable-ownership of the mutex if it can do so without waiting. Whether or not this constructor handles recursive locking depends upon the mutex. If the mutex_type does not support try_lock_upgradable, this constructor will fail at compile time if instantiated, but otherwise have no effect. </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1775932-bb"></a>upgradable_lock(mutex_type &amp; m, <span class="bold"><strong>const</strong></span> boost::posix_time::ptime &amp; abs_time);</pre>
+<p>Effects: m.timed_lock_upgradable(abs_time) Postconditions: mutex() == &amp;m. owns() == the return value of the m.timed_lock_upgradable() executed within the constructor. Notes: The constructor will take upgradable-ownership of the mutex if it can do so within the time specified. Whether or not this constructor handles recursive locking depends upon the mutex. If the mutex_type does not support timed_lock_upgradable, this constructor will fail at compile time if instantiated, but otherwise have no effect. </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1775948-bb"></a>upgradable_lock(<a class="link" href="upgradable_lock.html" title="Class template upgradable_lock">upgradable_lock</a>&lt; mutex_type &gt; &amp;&amp; upgr);</pre>
+<p>Effects: No effects on the underlying mutex. Postconditions: mutex() == the value upgr.mutex() had before the construction. upgr.mutex() == 0. owns() == upgr.owns() before the construction. upgr.owns() == false. Notes: If upgr is locked, this constructor will lock this upgradable_lock while unlocking upgr. If upgr is unlocked, then this upgradable_lock will be unlocked as well. Only a moved upgradable_lock's will match this signature. An non-moved upgradable_lock can be moved with the expression: "boost::interprocess::move(lock);". This constructor does not alter the state of the mutex, only potentially who owns it. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T&gt; 
+  <a name="id1775960-bb"></a>upgradable_lock(<a class="link" href="scoped_lock.html" title="Class template scoped_lock">scoped_lock</a>&lt; T &gt; &amp;&amp; scop, <span class="emphasis"><em>unspecified</em></span> = 0);</pre>
+<p>Effects: If scop.owns(), m_.unlock_and_lock_upgradable(). Postconditions: mutex() == the value scop.mutex() had before the construction. scop.mutex() == 0. owns() == scop.owns() before the constructor. After the construction, scop.owns() == false. Notes: If scop is locked, this constructor will transfer the exclusive-ownership to an upgradable-ownership of this upgradable_lock. Only a moved sharable_lock's will match this signature. An non-moved sharable_lock can be moved with the expression: "boost::interprocess::move(lock);". </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T&gt; 
+  <a name="id1775989-bb"></a>upgradable_lock(<a class="link" href="sharable_lock.html" title="Class template sharable_lock">sharable_lock</a>&lt; T &gt; &amp;&amp; shar, <a class="link" href="try_to_lock_type.html" title="Struct try_to_lock_type">try_to_lock_type</a>, 
+                  <span class="emphasis"><em>unspecified</em></span> = 0);</pre>
+<p>Effects: If shar.owns() then calls try_unlock_sharable_and_lock_upgradable() on the referenced mutex. a)if try_unlock_sharable_and_lock_upgradable() returns true then mutex() obtains the value from shar.release() and owns() is set to true. b)if try_unlock_sharable_and_lock_upgradable() returns false then shar is unaffected and this upgradable_lock construction has the same effects as a default construction. c)Else shar.owns() is false. mutex() obtains the value from shar.release() and owns() is set to false. Notes: This construction will not block. It will try to obtain mutex ownership from shar immediately, while changing the lock type from a "read lock" to an "upgradable lock". If the "read lock" isn't held in the first place, the mutex merely changes type to an unlocked "upgradable lock". If the "read lock" is held, then mutex transfer occurs only if it can do so in a non-blocking manner. </p>
+</li>
+<li>
+<pre class="literallayout">upgradable_lock&amp; <a name="id1776030-bb"></a><span class="bold"><strong>operator</strong></span>=(<a class="link" href="upgradable_lock.html" title="Class template upgradable_lock">upgradable_lock</a> &amp;&amp; upgr);</pre>
+<p>Effects: If owns(), then unlock_upgradable() is called on mutex(). this gets the state of upgr and upgr gets set to a default constructed state. Notes: With a recursive mutex it is possible that both this and upgr own the mutex before the assignment. In this case, this will own the mutex after the assignment (and upgr will not), but the mutex's upgradable lock count will be decremented by one. </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1776024-bb"></a>~upgradable_lock();</pre>
+<p>Effects: if (owns()) m_-&gt;unlock_upgradable(). Notes: The destructor behavior ensures that the mutex lock is not leaked. </p>
+</li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id2257636"></a><h3>
+<a name="id1775721-bb"></a><code class="computeroutput">upgradable_lock</code> public member functions</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1775725-bb"></a>lock() ;</pre>
+<p>Effects: If mutex() == 0 or if already locked, throws a lock_exception() exception. Calls lock_upgradable() on the referenced mutex. Postconditions: owns() == true. Notes: The sharable_lock changes from a state of not owning the mutex, to owning the mutex, blocking if necessary. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1775740-bb"></a>try_lock() ;</pre>
+<p>Effects: If mutex() == 0 or if already locked, throws a lock_exception() exception. Calls try_lock_upgradable() on the referenced mutex. Postconditions: owns() == the value returned from mutex()-&gt;try_lock_upgradable(). Notes: The upgradable_lock changes from a state of not owning the mutex, to owning the mutex, but only if blocking was not required. If the mutex_type does not support try_lock_upgradable(), this function will fail at compile time if instantiated, but otherwise have no effect. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1775751-bb"></a>timed_lock(<span class="bold"><strong>const</strong></span> boost::posix_time::ptime &amp; abs_time) ;</pre>
+<p>Effects: If mutex() == 0 or if already locked, throws a lock_exception() exception. Calls timed_lock_upgradable(abs_time) on the referenced mutex. Postconditions: owns() == the value returned from mutex()-&gt;timed_lock_upgradable(abs_time). Notes: The upgradable_lock changes from a state of not owning the mutex, to owning the mutex, but only if it can obtain ownership within the specified time. If the mutex_type does not support timed_lock_upgradable(abs_time), this function will fail at compile time if instantiated, but otherwise have no effect. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1775768-bb"></a>unlock() ;</pre>
+<p>Effects: If mutex() == 0 or if not locked, throws a lock_exception() exception. Calls unlock_upgradable() on the referenced mutex. Postconditions: owns() == false. Notes: The upgradable_lock changes from a state of owning the mutex, to not owning the mutex. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1775784-bb"></a>owns() <span class="bold"><strong>const</strong></span>;</pre>
+<p>Effects: Returns true if this scoped_lock has acquired the referenced mutex. </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1775796-bb"></a><span class="bold"><strong>operator</strong></span> unspecified_bool_type() <span class="bold"><strong>const</strong></span>;</pre>
+<p>Conversion to bool. Returns owns(). </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">mutex_type *</span> <a name="id1775808-bb"></a>mutex() <span class="bold"><strong>const</strong></span>;</pre>
+<p>Effects: Returns a pointer to the referenced mutex, or 0 if there is no mutex to reference. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">mutex_type *</span> <a name="id1775821-bb"></a>release() ;</pre>
+<p>Effects: Returns a pointer to the referenced mutex, or 0 if there is no mutex to reference. Postconditions: mutex() == 0 and owns() == false. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1775834-bb"></a>swap(<a class="link" href="upgradable_lock.html" title="Class template upgradable_lock">upgradable_lock</a>&lt; mutex_type &gt; &amp; other) ;</pre>
+<p>Effects: Swaps state with moved lock. Throws: Nothing. </p>
+</li>
+</ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2005 - 2008 Ion Gaztañaga<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="sharable_lock.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_interprocess_reference.html#header.boost.interprocess.sync.upgradable_lock_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="windows_shared_memory.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

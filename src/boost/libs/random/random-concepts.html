@@ -1,0 +1,503 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+<head>
+  <meta http-equiv="Content-Language" content="en-us">
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+
+  <title>Boost Random Number Library Concepts</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+  <h1>Random Number Generator Library Concepts</h1>
+
+  <h2>Introduction</h2>
+
+  <p>Random numbers are required in a number of different problem domains,
+  such as</p>
+
+  <ul>
+    <li>numerics (simulation, Monte-Carlo integration)</li>
+
+    <li>games (non-deterministic enemy behavior)</li>
+
+    <li>security (key generation)</li>
+
+    <li>testing (random coverage in white-box tests)</li>
+  </ul>The Boost Random Number Generator Library provides a framework for
+  random number generators with well-defined properties so that the
+  generators can be used in the demanding numerics and security domains. For
+  a general introduction to random numbers in numerics, see
+
+  <blockquote>
+    "Numerical Recipes in C: The art of scientific computing", William H.
+    Press, Saul A. Teukolsky, William A. Vetterling, Brian P. Flannery, 2nd
+    ed., 1992, pp. 274-328
+  </blockquote>Depending on the requirements of the problem domain, different
+  variations of random number generators are appropriate:
+
+  <ul>
+    <li>non-deterministic random number generator</li>
+
+    <li>pseudo-random number generator</li>
+
+    <li>quasi-random number generator</li>
+  </ul>All variations have some properties in common, these concepts (in the
+  STL sense) are called NumberGenerator and UniformRandomNumberGenerator.
+  Each concept will be defined in a subsequent section.
+
+  <p>The goals for this library are the following:</p>
+
+  <ul>
+    <li>allow easy integration of third-party random-number generators</li>
+
+    <li>define a validation interface for the generators</li>
+
+    <li>provide easy-to-use front-end classes which model popular
+    distributions</li>
+
+    <li>provide maximum efficiency</li>
+
+    <li>allow control on quantization effects in front-end processing (not
+    yet done)</li>
+  </ul>
+
+  <h2><a name="number_generator" id="number_generator">Number
+  Generator</a></h2>
+
+  <p>A number generator is a <em>function object</em> (std:20.3
+  [lib.function.objects]) that takes zero arguments. Each call to
+  <code>operator()</code> returns a number. In the following table,
+  <code>X</code> denotes a number generator class returning objects of type
+  <code>T</code>, and <code>u</code> is a value of <code>X</code>.</p>
+
+  <table border="1">
+    <tr>
+      <th colspan="3" align="center"><code>NumberGenerator</code>
+      requirements</th>
+    </tr>
+
+    <tr>
+      <td>expression</td>
+
+      <td>return&nbsp;type</td>
+
+      <td>pre/post-condition</td>
+    </tr>
+
+    <tr>
+      <td><code>X::result_type</code></td>
+
+      <td>T</td>
+
+      <td><code>std::numeric_limits&lt;T&gt;::is_specialized</code> is true,
+      <code>T</code> is <code>LessThanComparable</code></td>
+    </tr>
+
+    <tr>
+      <td><code>u.operator()()</code></td>
+
+      <td>T</td>
+
+      <td>-</td>
+    </tr>
+  </table>
+
+  <p><em>Note:</em> The NumberGenerator requirements do not impose any
+  restrictions on the characteristics of the returned numbers.</p>
+
+  <h2><a name="uniform-rng" id="uniform-rng">Uniform Random Number
+  Generator</a></h2>
+
+  <p>A uniform random number generator is a NumberGenerator that provides a
+  sequence of random numbers uniformly distributed on a given range. The
+  range can be compile-time fixed or available (only) after run-time
+  construction of the object.</p>
+
+  <p>The <em>tight lower bound</em> of some (finite) set S is the (unique)
+  member l in S, so that for all v in S, l &lt;= v holds. Likewise, the
+  <em>tight upper bound</em> of some (finite) set S is the (unique) member u
+  in S, so that for all v in S, v &lt;= u holds.</p>
+
+  <p>In the following table, <code>X</code> denotes a number generator class
+  returning objects of type <code>T</code>, and <code>v</code> is a const
+  value of <code>X</code>.</p>
+
+  <table border="1">
+    <tr>
+      <th colspan="3" align="center">
+      <code>UniformRandomNumberGenerator</code> requirements</th>
+    </tr>
+
+    <tr>
+      <td>expression</td>
+
+      <td>return&nbsp;type</td>
+
+      <td>pre/post-condition</td>
+    </tr>
+
+    <tr>
+      <td><code>X::has_fixed_range</code></td>
+
+      <td><code>bool</code></td>
+
+      <td>compile-time constant; if <code>true</code>, the range on which the
+      random numbers are uniformly distributed is known at compile-time and
+      members <code>min_value</code> and <code>max_value</code> exist.
+      <em>Note:</em> This flag may also be <code>false</code> due to compiler
+      limitations.</td>
+    </tr>
+
+    <tr>
+      <td><code>X::min_value</code></td>
+
+      <td><code>T</code></td>
+
+      <td>compile-time constant; <code>min_value</code> is equal to
+      <code>v.min()</code></td>
+    </tr>
+
+    <tr>
+      <td><code>X::max_value</code></td>
+
+      <td><code>T</code></td>
+
+      <td>compile-time constant; <code>max_value</code> is equal to
+      <code>v.max()</code></td>
+    </tr>
+
+    <tr>
+      <td><code>v.min()</code></td>
+
+      <td><code>T</code></td>
+
+      <td>tight lower bound on the set of all values returned by
+      <code>operator()</code>. The return value of this function shall not
+      change during the lifetime of the object.</td>
+    </tr>
+
+    <tr>
+      <td><code>v.max()</code></td>
+
+      <td><code>T</code></td>
+
+      <td>if <code>std::numeric_limits&lt;T&gt;::is_integer</code>, tight
+      upper bound on the set of all values returned by
+      <code>operator()</code>, otherwise, the smallest representable number
+      larger than the tight upper bound on the set of all values returned by
+      <code>operator()</code>. In any case, the return value of this function
+      shall not change during the lifetime of the object.</td>
+    </tr>
+  </table>
+
+  <p>The member functions <code>min</code>, <code>max</code>, and
+  <code>operator()</code> shall have amortized constant time complexity.</p>
+
+  <p><em>Note:</em> For integer generators (i.e. integer <code>T</code>), the
+  generated values <code>x</code> fulfill <code>min() &lt;= x &lt;=
+  max()</code>, for non-integer generators (i.e. non-integer <code>T</code>),
+  the generated values <code>x</code> fulfill <code>min() &lt;= x &lt;
+  max()</code>.<br>
+  <em>Rationale:</em> The range description with <code>min</code> and
+  <code>max</code> serves two purposes. First, it allows scaling of the
+  values to some canonical range, such as [0..1). Second, it describes the
+  significant bits of the values, which may be relevant for further
+  processing.<br>
+  The range is a closed interval [min,max] for integers, because the
+  underlying type may not be able to represent the half-open interval
+  [min,max+1). It is a half-open interval [min, max) for non-integers,
+  because this is much more practical for borderline cases of continuous
+  distributions.</p>
+
+  <p><em>Note:</em> The UniformRandomNumberGenerator concept does not require
+  <code>operator()(long)</code> and thus it does not fulfill the
+  RandomNumberGenerator (std:25.2.11 [lib.alg.random.shuffle]) requirements.
+  Use the <a href=
+  "random-misc.html#random_number_generator"><code>random_number_generator</code></a>
+  adapter for that.<br>
+  <em>Rationale:</em> <code>operator()(long)</code> is not provided, because
+  mapping the output of some generator with integer range to a different
+  integer range is not trivial.</p>
+
+  <h2><a name="nondet-rng" id="nondet-rng">Non-deterministic Uniform Random
+  Number Generator</a></h2>
+
+  <p>A non-deterministic uniform random number generator is a
+  UniformRandomNumberGenerator that is based on some stochastic process.
+  Thus, it provides a sequence of truly-random numbers. Examples for such
+  processes are nuclear decay, noise of a Zehner diode, tunneling of quantum
+  particles, rolling a die, drawing from an urn, and tossing a coin.
+  Depending on the environment, inter-arrival times of network packets or
+  keyboard events may be close approximations of stochastic processes.</p>
+
+  <p>The class <code><a href=
+  "nondet_random.html#random_device">random_device</a></code> is a model for
+  a non-deterministic random number generator.</p>
+
+  <p><em>Note:</em> This type of random-number generator is useful for
+  security applications, where it is important to prevent that an outside
+  attacker guesses the numbers and thus obtains your encryption or
+  authentication key. Thus, models of this concept should be cautious not to
+  leak any information, to the extent possible by the environment. For
+  example, it might be advisable to explicitly clear any temporary storage as
+  soon as it is no longer needed.</p>
+
+  <h2><a name="pseudo-rng" id="pseudo-rng">Pseudo-Random Number
+  Generator</a></h2>
+
+  <p>A pseudo-random number generator is a UniformRandomNumberGenerator which
+  provides a deterministic sequence of pseudo-random numbers, based on some
+  algorithm and internal state. Linear congruential and inversive
+  congruential generators are examples of such pseudo-random number
+  generators. Often, these generators are very sensitive to their parameters.
+  In order to prevent wrong implementations from being used, an external
+  testsuite should check that the generated sequence and the validation value
+  provided do indeed match.</p>
+
+  <p>Donald E. Knuth gives an extensive overview on pseudo-random number
+  generation in his book "The Art of Computer Programming, Vol. 2, 3rd
+  edition, Addison-Wesley, 1997". The descriptions for the specific
+  generators contain additional references.</p>
+
+  <p><em>Note:</em> Because the state of a pseudo-random number generator is
+  necessarily finite, the sequence of numbers returned by the generator will
+  loop eventually.</p>
+
+  <p>In addition to the UniformRandomNumberGenerator requirements, a
+  pseudo-random number generator has some additional requirements. In the
+  following table, <code>X</code> denotes a pseudo-random number generator
+  class returning objects of type <code>T</code>, <code>x</code> is a value
+  of <code>T</code>, <code>u</code> is a value of <code>X</code>, and
+  <code>v</code> is a <code>const</code> value of <code>X</code>.</p>
+
+  <table border="1">
+    <tr>
+      <th colspan="3" align="center"><code>PseudoRandomNumberGenerator</code>
+      requirements</th>
+    </tr>
+
+    <tr>
+      <td>expression</td>
+
+      <td>return&nbsp;type</td>
+
+      <td>pre/post-condition</td>
+    </tr>
+
+    <tr>
+      <td><code>X()</code></td>
+
+      <td>-</td>
+
+      <td>creates a generator in some implementation-defined state.
+      <em>Note:</em> Several generators thusly created may possibly produce
+      dependent or identical sequences of random numbers.</td>
+    </tr>
+
+    <tr>
+      <td><code>explicit X(...)</code></td>
+
+      <td>-</td>
+
+      <td>creates a generator with user-provided state; the implementation
+      shall specify the constructor argument(s)</td>
+    </tr>
+
+    <tr>
+      <td><code>u.seed(...)</code></td>
+
+      <td>void</td>
+
+      <td>sets the current state according to the argument(s); at least
+      functions with the same signature as the non-default constructor(s)
+      shall be provided.</td>
+    </tr>
+
+    <tr>
+      <td><code>X::validation(x)</code></td>
+
+      <td><code>bool</code></td>
+
+      <td>compares the pre-computed and hardcoded 10001th element in the
+      generator's random number sequence with <code>x</code>. The generator
+      must have been constructed by its default constructor and
+      <code>seed</code> must not have been called for the validation to be
+      meaningful.</td>
+    </tr>
+  </table>
+
+  <p><em>Note:</em> The <code>seed</code> member function is similar to the
+  <code>assign</code> member function in STL containers. However, the naming
+  did not seem appropriate.</p>
+
+  <p>Classes which model a pseudo-random number generator shall also model
+  EqualityComparable, i.e. implement <code>operator==</code>. Two
+  pseudo-random number generators are defined to be <em>equivalent</em> if
+  they both return an identical sequence of numbers starting from a given
+  state.</p>
+
+  <p>Classes which model a pseudo-random number generator should also model
+  the Streamable concept, i.e. implement <code>operator&lt;&lt;</code> and
+  <code>operator&gt;&gt;</code>. If so, <code>operator&lt;&lt;</code> writes
+  all current state of the pseudo-random number generator to the given
+  <code>ostream</code> so that <code>operator&gt;&gt;</code> can restore the
+  state at a later time. The state shall be written in a platform-independent
+  manner, but it is assumed that the <code>locale</code>s used for writing
+  and reading be the same. The pseudo-random number generator with the
+  restored state and the original at the just-written state shall be
+  equivalent.</p>
+
+  <p>Classes which model a pseudo-random number generator may also model the
+  CopyConstructible and Assignable concepts. However, note that the sequences
+  of the original and the copy are strongly correlated (in fact, they are
+  identical), which may make them unsuitable for some problem domains. Thus,
+  copying pseudo-random number generators is discouraged; they should always
+  be passed by (non-<code>const</code>) reference.</p>
+
+  <p>The classes <code><a href=
+  "random-generators.html#rand48">rand48</a></code>, <code><a href=
+  "random-generators.html#linear_congruential">minstd_rand</a></code>, and
+  <code><a href="random-generators.html#mersenne_twister">mt19937</a></code>
+  are models for a pseudo-random number generator.</p>
+
+  <p><em>Note:</em> This type of random-number generator is useful for
+  numerics, games and testing. The non-zero arguments constructor(s) and the
+  <code>seed()</code> member function(s) allow for a user-provided state to
+  be installed in the generator. This is useful for debugging Monte-Carlo
+  algorithms and analyzing particular test scenarios. The Streamable concept
+  allows to save/restore the state of the generator, for example to re-run a
+  test suite at a later time.</p>
+
+  <h2><a name="random-dist" id="random-dist">Random Distribution</a></h2>
+
+  <p>A random distribution produces random numbers distributed according to
+  some distribution, given uniformly distributed random values as input. In
+  the following table, <code>X</code> denotes a random distribution class
+  returning objects of type <code>T</code>, <code>u</code> is a value of
+  <code>X</code>, <code>x</code> is a (possibly const) value of
+  <code>X</code>, and <code>e</code> is an lvalue of an arbitrary type that
+  meets the requirements of a uniform random number generator, returning
+  values of type <code>U</code>.</p>
+
+  <table border="1">
+    <tr>
+      <th colspan="4" align="center">Random distribution requirements (in
+      addition to number generator, <code>CopyConstructible</code>, and
+      <code>Assignable</code>)</th>
+    </tr>
+
+    <tr>
+      <td>expression</td>
+
+      <td>return&nbsp;type</td>
+
+      <td>pre/post-condition</td>
+
+      <td>complexity</td>
+    </tr>
+
+    <tr>
+      <td><code>X::input_type</code></td>
+
+      <td>U</td>
+
+      <td>-</td>
+
+      <td>compile-time</td>
+    </tr>
+
+    <tr>
+      <td><code>u.reset()</code></td>
+
+      <td><code>void</code></td>
+
+      <td>subsequent uses of <code>u</code> do not depend on values produced
+      by <code>e</code> prior to invoking <code>reset</code>.</td>
+
+      <td>constant</td>
+    </tr>
+
+    <tr>
+      <td><code>u(e)</code></td>
+
+      <td><code>T</code></td>
+
+      <td>the sequence of numbers returned by successive invocations with the
+      same object <code>e</code> is randomly distributed with some
+      probability density function p(x)</td>
+
+      <td>amortized constant number of invocations of <code>e</code></td>
+    </tr>
+
+    <tr>
+      <td><code>os &lt;&lt; x</code></td>
+
+      <td><code>std::ostream&amp;</code></td>
+
+      <td>writes a textual representation for the parameters and additional
+      internal data of the distribution <code>x</code> to
+      <code>os</code>.<br>
+      post: The <code>os.<em>fmtflags</em></code> and fill character are
+      unchanged.</td>
+
+      <td>O(size of state)</td>
+    </tr>
+
+    <tr>
+      <td><code>is &gt;&gt; u</code></td>
+
+      <td><code>std::istream&amp;</code></td>
+
+      <td>restores the parameters and additional internal data of the
+      distribution <code>u</code>.<br>
+      pre: <code>is</code> provides a textual representation that was
+      previously written by <code>operator&lt;&lt;</code><br>
+      post: The <code>is.<em>fmtflags</em></code> are unchanged.</td>
+
+      <td>O(size of state)</td>
+    </tr>
+  </table>
+
+  <p>Additional requirements: The sequence of numbers produced by repeated
+  invocations of <code>x(e)</code> does not change whether or not <code>os
+  &lt;&lt; x</code> is invoked between any of the invocations
+  <code>x(e)</code>. If a textual representation is written using <code>os
+  &lt;&lt; x</code> and that representation is restored into the same or a
+  different object <code>y</code> of the same type using <code>is &gt;&gt;
+  y</code>, repeated invocations of <code>y(e)</code> produce the same
+  sequence of random numbers as would repeated invocations of
+  <code>x(e)</code>.</p>
+
+  <h2><a name="quasi-rng" id="quasi-rng">Quasi-Random Number
+  Generators</a></h2>
+
+  <p>A quasi-random number generator is a Number Generator which provides a
+  deterministic sequence of numbers, based on some algorithm and internal
+  state. The numbers do not have any statistical properties (such as uniform
+  distribution or independence of successive values).</p>
+
+  <p><em>Note:</em> Quasi-random number generators are useful for Monte-Carlo
+  integrations where specially crafted sequences of random numbers will make
+  the approximation converge faster.</p>
+
+  <p><em>[Does anyone have a model?]</em></p>
+  <hr>
+
+  <p><a href="http://validator.w3.org/check?uri=referer"><img border="0" src=
+  "http://www.w3.org/Icons/valid-html401" alt="Valid HTML 4.01 Transitional"
+  height="31" width="88"></a></p>
+
+  <p>Revised 
+  <!--webbot bot="Timestamp" s-type="EDITED" s-format="%d %B, %Y" startspan -->05
+  December, 2006<!--webbot bot="Timestamp" endspan i-checksum="38516" --></p>
+
+  <p><i>Copyright &copy; 2000-2003 <a href=
+  "http://www.boost.org/people/jens_maurer.htm">Jens Maurer</a></i></p>
+
+  <p><i>Distributed under the Boost Software License, Version 1.0. (See
+  accompanying file <a href="../../LICENSE_1_0.txt">LICENSE_1_0.txt</a> or
+  copy at <a href=
+  "http://www.boost.org/LICENSE_1_0.txt">http://www.boost.org/LICENSE_1_0.txt</a>)</i></p>
+</body>
+</html>

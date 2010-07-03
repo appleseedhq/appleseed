@@ -1,0 +1,66 @@
+[section:credits Credits and Acknowledgements]
+
+Hubert Holin started the Boost.Math library.  The inverse
+hyperbolic functions, and the sinus cardinal functions are his.
+
+John Maddock started this library, the beta, gamma, erf, polynomial,
+and factorial functions are his, as is the "Toolkit" section, and many
+of the statistical distributions.
+
+Paul A. Bristow threw down the challenge in 
+[@http://www2.open-std.org/JTC1/SC22/WG21/docs/papers/2004/n1668.pdf 
+A Proposal to add Mathematical Functions for Statistics to the C++ 
+Standard Library] to add the key math functions, especially those essential for
+statistics. After JM accepted and solved the difficult problems, 
+not only numerically, but in full C++ template style, PAB
+implemented a few of the statistical distributions. PAB also tirelessly 
+proof-read everything that JM threw at him (so that all
+remaining editorial mistakes are his fault).
+
+Xiaogang Zhang worked on the Bessel functions and elliptic integrals for his
+Google Summer of Code project 2006.
+
+Bruno Lalande submitted the "compile time power of a runtime base" code.
+
+Johan R'''&#xE5;'''de wrote the optimised floating point classification
+code.
+
+Professor Nico Temme for advice on the inverse incomplete beta function.
+
+[@http://www.shoup.net Victor Shoup for NTL], 
+without which it would have much difficult to 
+produce high accuracy constants, and especially
+the tables of accurate values for testing.
+
+We are grateful to Joel Guzman for helping us stress-test
+his 
+[@http://www.boost.org/tools/quickbook/index.htm Boost.Quickbook] 
+program used to generate the html and pdf versions
+of this document, adding several new features en route.
+
+Plots of the functions and distributions were prepared in
+[@http://www.w3.org/ W3C] standard
+[@http://www.svg.org/ Scalable Vector Graphic (SVG)] format
+using a program created by Jacob Voytko during a
+[@http://code.google.com/soc/2007/ Google Summer of Code (2007)].
+Since browser support for rendering SVG is still not universal
+(Microsoft Internet Explorer, even IE 8 beta, still lacks native SVG support
+but can be made to work with
+[@http://www.adobe.com/svg/viewer/install/ Adobe's free SVG viewer] plugin),
+so the SVG files were batch converted to JPEG using
+[@http://www.inkscape.org/ Inkscape]. 
+
+We are also indebted to Matthias Schabel for managing the formal Boost-review
+of this library, and to all the reviewers - including Guillaume Melquiond,
+Arnaldur Gylfason, John Phillips, Stephan Tolksdorf and Jeff Garland 
+- for their many helpful comments.
+
+[endsect] [/section:credits Credits and Acknowledgements]
+
+[/ 
+  Copyright 2006, 2007, 2008 John Maddock and Paul A. Bristow.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt).
+]
+

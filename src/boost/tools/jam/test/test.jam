@@ -1,0 +1,90 @@
+#~ Copyright 2006-2008 Rene Rivera.
+#~ Distributed under the Boost Software License, Version 1.0.
+#~ (See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt)
+
+TESTS =
+    action_status
+    actions_quietly
+    builtin_normalize_path
+    builtin_shell
+    builtin_w32_getregnames
+    option_d2
+    option_l
+    option_n
+    parallel_actions
+    parallel_multifile_actions_1
+    parallel_multifile_actions_2
+    stress_var_expand
+    target_var
+    var_expand
+    ;
+
+BJAM ?= bjam ;
+
+#############################################################################
+
+if $(BJAM_RUN_TEST)
+{
+    fail-count = 0 ;
+    pass-count = 0 ;
+
+    rule message ( message * )
+    {
+        local b = [ BACKTRACE ] ;
+        ECHO "$(b[-4]):$(b[-3]):" $(message) ;
+    }
+
+
+    rule fail ( message * )
+    {
+        fail-count = [ CALC $(fail-count) + 1 ] ;
+        message "error:" [FAILED] $(message) ;
+    }
+
+
+    rule pass ( message * )
+    {
+        pass-count = [ CALC $(pass-count) + 1 ] ;
+        if --verbose in $(ARGV)
+        {
+            message "info:" [PASSED] $(message) ;
+        }
+    }
+
+
+    rule assert ( expected * : test ? : obtained * )
+    {
+        test ?= "(==)" ;
+        local r = 0 ;
+        if $(test) = "(==)" && "*$(expected)*" != "*$(obtained)*"
+        {
+            fail '$(expected)' $(test) '$(obtained)' ;
+        }
+        else if $(test) = "(!=)" && "*$(expected)*" = "*$(obtained)*"
+        {
+            fail '$(expected)' $(test) '$(obtained)' ;
+        }
+        else
+        {
+            pass '$(expected)' $(test) '$(obtained)' ;
+        }
+    }
+    
+    include $(BJAM_RUN_TEST).jam ;
+    
+    EXIT --- $(BJAM_RUN_TEST): PASSED($(pass-count)) *FAILED($(fail-count))* : $(fail-count) ;
+}
+else
+{
+    ECHO "Testing: $(BJAM)" ;
+    fail-count = 0 ;
+
+    for local test in $(TESTS)
+    {
+        local result = [ SHELL "\"$(BJAM)\" -f test.jam -sBJAM_RUN_TEST=$(test)" : exit-status ] ;
+        fail-count = [ CALC $(fail-count) + $(result[1]) ] ;
+        ECHO $(result[0]) ;
+    }
+
+    EXIT --- Complete: *FAILED($(fail-count))* : $(fail-count) ;
+}

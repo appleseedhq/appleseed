@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE library PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN" "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<article id="escape" last-revision="DEBUG MODE Date: 2000/12/20 12:00:00 $" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>Escape</title>
+  <articleinfo>
+  </articleinfo>
+  <section id="escape.escape">
+    <title>Escape</title>
+    <para>
+      <emphasis>Da do do do. Da da da da. That's all I have to say to you.</emphasis>
+    </para>
+    <para>
+      This letter &#x3B1; should have a space either side of it.
+    </para>
+  </section>
+</article>

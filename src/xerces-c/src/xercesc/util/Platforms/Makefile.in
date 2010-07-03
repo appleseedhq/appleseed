@@ -1,0 +1,208 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+# 
+#      http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+#
+#
+# $Log$
+# Revision 1.13  2004/09/08 13:56:37  peiyongz
+# Apache License Version 2.0
+#
+# Revision 1.12  2004/07/09 16:18:53  peiyongz
+# Build on HP-Itanium, aCC A.05.52
+#
+# Revision 1.11  2004/03/15 17:06:06  amassari
+# - Added support for MinGW (bug#23176)
+#
+# Revision 1.10  2004/02/17 15:56:50  neilg
+# fix for bug 25035; much thanks to Abe Backus
+#
+# Revision 1.9  2004/02/04 13:26:44  amassari
+# Added support for the Interix platform (Windows Services for Unix 3.5)
+#
+# Revision 1.8  2003/05/12 09:44:19  gareth
+# Port to NetBSD. Patch by Hiramatsu Yoshifumi.
+#
+# Revision 1.7  2003/03/13 22:11:28  tng
+# [Bug 17858] Support for QNX/Neutrino.  Patch from Chris McKillop.
+#
+# Revision 1.6  2002/12/02 20:41:09  tng
+# [Bug 12490] Patches required to build Xerces-C++ on BeOS R5.  Patch from Andrew Bachmann.
+#
+# Revision 1.5  2002/08/19 18:35:56  tng
+# [Bug 6467] Installing Xerces C++ on cygwin environment.
+#
+# Revision 1.4  2002/07/26 16:49:28  tng
+# [Bug 2681] Can't build with gcc/g++ not named 'gcc'/'g++'.  Patch from Jonathan Lennox.
+#
+# Revision 1.3  2002/02/27 22:38:42  peiyongz
+# Bug# 6445 Caldera (SCO) OpenServer Port : patch from Martin Kalen
+#
+# Revision 1.2  2002/02/11 18:19:19  tng
+# [Bug 2715] Build recursion suppresses make failures.
+#
+# Revision 1.1.1.1  2002/02/01 22:22:23  peiyongz
+# sane_include
+#
+# Revision 1.16  2001/11/29 18:25:18  tng
+# FreeBSD support by Michael Huedepohl.
+#
+# Revision 1.15  2001/07/06 17:12:02  tng
+# Automatic build of single-threaded library.  By Martin Kalen.
+#
+# Revision 1.14  2001/06/05 19:35:53  jberry
+# Add support for Mac OS X command line configuration and build.
+#
+# Revision 1.13  2000/08/01 18:26:07  aruna1
+# Tru64 support added
+#
+# Revision 1.12  2000/07/19 19:36:00  andyh
+# Add 'make install' target
+#
+# Revision 1.11  2000/04/04 20:11:46  abagchi
+# Added PTX support
+#
+# Revision 1.10  2000/03/01 22:30:04  abagchi
+# Object files are now created directly under obj directory
+#
+# Revision 1.9  2000/02/06 07:48:25  rahulj
+# Year 2K copyright swat.
+#
+# Revision 1.8  2000/02/01 23:43:49  abagchi
+# AS/400 related change
+#
+# Revision 1.7  2000/01/13 23:24:04  abagchi
+# Changed __USE_UNIX98 to _GNU_SOURCE
+#
+# Revision 1.6  1999/12/17 01:28:55  rahulj
+# Merged in changes submitted for UnixWare 7 port. Platform
+# specific files are still missing.
+#
+# Revision 1.5  1999/12/14 23:53:30  rahulj
+# Removed the offending Ctrl-M's from the commit message
+# logs which was giving packaging problems.
+#
+# Revision 1.4  1999/12/01 17:16:17  rahulj
+# Added support for IRIX 6.5.5 using SGI MIPSpro C++ 7.3 and 7.21 generating 32 bit objects. Changes submitted by Marc Stuessel
+#
+# Revision 1.3  1999/11/23 02:00:28  rahulj
+# Code now works under HPUX 11. Tested inmemory message loader.
+# Revamped makefiles. Builds with both DCE threads as well as pthread libraries.
+#
+# Revision 1.2  1999/11/17 22:36:37  rahulj
+# Code works with ICU transcoding service
+#
+# Revision 1.1.1.1  1999/11/09 01:06:14  twl
+# Initial checkin
+#
+# Revision 1.3  1999/11/08 20:45:28  rahul
+# Swat for adding in Product name and CVS comment log variable.
+#
+
+PLATFORM = @platform@
+CC  = @cc@
+CXX = @cxx@
+CXXVER = @cxxver@
+GCC = @GCC@
+GXX = @GXX@
+CXXFLAGS = @cxxflags@
+CFLAGS = @cflags@
+PREFIX = @prefix@
+LDFLAGS = @ldflags@
+LIBS = @libs@
+OSVER = @osver@
+USELIBWWW = @uselibwww@
+MESSAGELOADER = @messageloader@
+TRANSCODER = @transcoder@
+THREADS = @threads@
+LIBTYPE = @libtype@
+ARCH = @host_cpu@
+
+CD=cd
+
+include ../../Makefile.incl
+
+ifeq (${PLATFORM}, SOLARIS)
+    SUBMODULE = Solaris
+endif
+ifeq (${PLATFORM}, AIX)
+    SUBMODULE = AIX
+endif
+ifeq (${PLATFORM}, BEOS)
+    SUBMODULE = BeOS
+endif
+ifeq (${PLATFORM}, QNX)
+    SUBMODULE = QNX
+endif
+ifeq (${PLATFORM}, LINUX)
+    SUBMODULE = Linux
+endif
+ifeq (${PLATFORM}, FREEBSD)
+    SUBMODULE = FreeBSD
+endif
+ifeq (${PLATFORM}, NETBSD)
+    SUBMODULE = NetBSD
+endif
+ifeq (${PLATFORM}, HPUX)
+    SUBMODULE = HPUX
+endif
+ifeq (${PLATFORM}, OS390)
+    SUBMODULE = OS390
+endif
+ifeq (${PLATFORM}, IRIX)
+    SUBMODULE = IRIX
+endif
+ifeq (${PLATFORM}, OPENSERVER)
+    SUBMODULE = OpenServer
+endif
+ifeq (${PLATFORM}, UNIXWARE)
+    SUBMODULE = UnixWare
+endif
+ifeq (${PLATFORM}, OS400)
+    SUBMODULE = OS400
+endif
+ifeq (${PLATFORM}, PTX)
+    SUBMODULE = PTX
+endif
+ifeq (${PLATFORM}, TRU64)
+    SUBMODULE = Tru64
+endif
+ifeq (${PLATFORM}, MACOSX)
+    SUBMODULE = MacOS
+endif
+ifeq (${PLATFORM}, CYGWIN)
+    SUBMODULE = Cygwin
+endif
+ifeq (${PLATFORM}, INTERIX)
+    SUBMODULE = Interix
+endif
+ifeq (${PLATFORM}, MINGW)
+    SUBMODULE = Win32
+endif
+
+includes::
+	${MAKE} -C $(SUBMODULE) $@
+
+all::
+	${MAKE} -C $(SUBMODULE) $@
+
+clean::
+	${MAKE} -C $(SUBMODULE) $@
+
+distclean::
+	${MAKE} -C $(SUBMODULE) $@
+
+install::
+	${MAKE} -C $(SUBMODULE) $@

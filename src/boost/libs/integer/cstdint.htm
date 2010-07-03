@@ -1,0 +1,81 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Header boost/cstdint.hpp</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<h1><img src="../../boost.png" alt="boost.png (6897 bytes)" align="center" width="277" height="86">Header
+boost/cstdint.hpp&nbsp;</h1>
+<p>The header <code><a href="../../boost/cstdint.hpp">&lt;boost/cstdint.hpp&gt;</a></code>
+provides the typedef's useful for
+writing portable code that requires certain integer widths.  All typedef's are in namespace boost.</p>
+<p>The specifications are based on the ISO/IEC 9899:1999 C Language standard
+header &lt;stdint.h&gt;.&nbsp; The 64-bit types required by the C standard are not
+required in the boost header, and may not be supplied in all implementations,
+because <code>long long</code> is not [yet] included in the C++ standard.</p>
+<p>See <a href="cstdint_test.cpp">cstdint_test.cpp</a> for a test program.</p>
+<h2>Exact-width integer types</h2>
+<p>The typedef <code>int#_t</code>, with # replaced by the width, designates a
+signed integer type of exactly # bits; <code>int8_t</code> denotes an 8-bit
+signed integer type.&nbsp; Similarly, the typedef <code>uint#_t</code>
+designates and unsigned integer type of exactly # bits.</p>
+<p>These types are optional. However, if an implementation provides integer
+types with widths of 8, 16, 32, or 64 bits, it shall define the corresponding
+typedef names.</p>
+<h2>Minimum-width integer types</h2>
+<p>The typedef <code>int_least#_t</code>, with # replaced by the width,&nbsp;
+designates a signed integer type with a width of at least # bits, such that no
+signed integer type with lesser size has at least the specified width. Thus, <code>int_least32_t</code>
+denotes a signed integer type with a width of at least 32 bits. Similarly, the
+typedef name <code>uint_least#_t</code> designates an unsigned integer type with
+a width of at least # bits, such that no unsigned integer type with lesser size
+has at least the specified width.</p>
+<p>Required minimum-width integer types:</p>
+<ul>
+  <li><code>int_least8_t</code></li>
+  <li><code>int_least16_t</code></li>
+  <li><code>int_least32_t</code></li>
+  <li><code>uint_least8_t</code></li>
+  <li><code>uint_least16_t</code></li>
+  <li><code>uint_least32_t</code></li>
+</ul>
+<p>All other minimum-width integer types are optional.</p>
+<h2>Fastest minimum-width integer types</h2>
+<p>The typedef <code>int_fast#_t</code>, with # replaced by the width,
+designates the fastest signed integer type with a width of at least # bits.
+Similarly, the typedef name <code>uint_fast#_t</code> designates the fastest
+unsigned integer type with a width of at least # bits.</p>
+<p>There is no guarantee that these types are fastest for all purposes.&nbsp; In
+any case, however, they satisfy&nbsp; the signedness and width requirements.</p>
+<p>Required fastest minimum-width integer types:</p>
+<ul>
+  <li><code>int_fast8_t</code></li>
+  <li><code>int_fast16_t</code></li>
+  <li><code>int_fast32_t</code></li>
+  <li><code>uint_fast8_t</code></li>
+  <li><code>uint_fast16_t</code></li>
+  <li><code>uint_fast32_t</code></li>
+</ul>
+<p>All other fastest minimum-width integer types are optional.</p>
+<h2>Greatest-width integer types</h2>
+<p>The typedef <code>intmax_t </code>designates a signed integer type capable of
+representing any value of any signed integer type.</p>
+<p>The typedef <code>uintmax_t</code> designates an unsigned integer type
+capable of representing any value of any unsigned integer type.</p>
+<p>These types are required.</p>
+<hr>
+<p>Revised <!--webbot bot="Timestamp" s-type="EDITED" s-format="%d %b %Y" startspan -->06 Nov 2007<!--webbot bot="Timestamp" endspan i-checksum="15272" -->
+</p>
+<p>© Copyright Beman Dawes 2000</p>
+
+<p>Distributed under the Boost Software License, Version 1.0. See
+<a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
+
+</body>
+
+</html>

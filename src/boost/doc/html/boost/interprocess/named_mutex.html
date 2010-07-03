@@ -1,0 +1,124 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Class named_mutex</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../boost_interprocess_reference.html#header.boost.interprocess.sync.named_mutex_hpp" title="Header &lt;boost/interprocess/sync/named_mutex.hpp&gt;">
+<link rel="prev" href="named_condition.html" title="Class named_condition">
+<link rel="next" href="named_recursive_mutex.html" title="Class named_recursive_mutex">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="named_condition.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_interprocess_reference.html#header.boost.interprocess.sync.named_mutex_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="named_recursive_mutex.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.interprocess.named_mutex"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Class named_mutex</span></h2>
+<p>boost::interprocess::named_mutex</p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../boost_interprocess_reference.html#header.boost.interprocess.sync.named_mutex_hpp" title="Header &lt;boost/interprocess/sync/named_mutex.hpp&gt;">boost/interprocess/sync/named_mutex.hpp</a>&gt;
+
+</em></span>
+<span class="bold"><strong>class</strong></span> <a class="link" href="named_mutex.html" title="Class named_mutex">named_mutex</a> {
+<span class="bold"><strong>public</strong></span>:
+  <span class="emphasis"><em>// <a class="link" href="named_mutex.html#boost.interprocess.named_mutexconstruct-copy-destruct">construct/copy/destruct</a></em></span>
+  <a class="link" href="named_mutex.html#id1773629-bb">named_mutex</a>(<a class="link" href="create_only_t.html" title="Struct create_only_t">create_only_t</a>, <span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> *);
+  <a class="link" href="named_mutex.html#id1773647-bb">named_mutex</a>(<a class="link" href="open_or_create_t.html" title="Struct open_or_create_t">open_or_create_t</a>, <span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> *);
+  <a class="link" href="named_mutex.html#id1773668-bb">named_mutex</a>(<a class="link" href="open_only_t.html" title="Struct open_only_t">open_only_t</a>, <span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> *);
+  <a class="link" href="named_mutex.html#id1773687-bb">~named_mutex</a>();
+
+  <span class="emphasis"><em>// <a class="link" href="named_mutex.html#id1773566-bb">public member functions</a></em></span>
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="named_mutex.html#id1773569-bb">unlock</a>() ;
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="named_mutex.html#id1773581-bb">lock</a>() ;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="named_mutex.html#id1773595-bb">try_lock</a>() ;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="named_mutex.html#id1773609-bb">timed_lock</a>(<span class="bold"><strong>const</strong></span> boost::posix_time::ptime &amp;) ;
+
+  <span class="emphasis"><em>// <a class="link" href="named_mutex.html#id1773697-bb">public static functions</a></em></span>
+  <span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>bool</strong></span></span> <a class="link" href="named_mutex.html#id1773701-bb">remove</a>(<span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> *) ;
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id2232742"></a><h2>Description</h2>
+<p>A mutex with a global name, so it can be found from different processes. This mutex can't be placed in shared memory, and each process should have it's own named_mutex. </p>
+<div class="refsect2" lang="en">
+<a name="id2232750"></a><h3>
+<a name="boost.interprocess.named_mutexconstruct-copy-destruct"></a><code class="computeroutput">named_mutex</code> 
+        public
+       construct/copy/destruct</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><a name="id1773629-bb"></a>named_mutex(<a class="link" href="create_only_t.html" title="Struct create_only_t">create_only_t</a> create_only, <span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> * name);</pre>
+<p>Creates a global interprocess_mutex with a name. Throws interprocess_exception on error. </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1773647-bb"></a>named_mutex(<a class="link" href="open_or_create_t.html" title="Struct open_or_create_t">open_or_create_t</a> open_or_create, <span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> * name);</pre>
+<p>Opens or creates a global mutex with a name. If the mutex is created, this call is equivalent to named_mutex(create_only_t, ... ) If the mutex is already created, this call is equivalent named_mutex(open_only_t, ... ) Does not throw </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1773668-bb"></a>named_mutex(<a class="link" href="open_only_t.html" title="Struct open_only_t">open_only_t</a> open_only, <span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> * name);</pre>
+<p>Opens a global mutex with a name if that mutex is previously created. If it is not previously created this function throws interprocess_exception. </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1773687-bb"></a>~named_mutex();</pre>
+<p>Destroys *this and indicates that the calling process is finished using the resource. The destructor function will deallocate any system resources allocated by the system for use by this process for this resource. The resource can still be opened again calling the open constructor overload. To erase the resource from the system use remove(). </p>
+</li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id2232905"></a><h3>
+<a name="id1773566-bb"></a><code class="computeroutput">named_mutex</code> public member functions</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1773569-bb"></a>unlock() ;</pre>
+<p>Unlocks a previously locked interprocess_mutex. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1773581-bb"></a>lock() ;</pre>
+<p>Locks interprocess_mutex, sleeps when interprocess_mutex is already locked. Throws interprocess_exception if a severe error is found </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1773595-bb"></a>try_lock() ;</pre>
+<p>Tries to lock the interprocess_mutex, returns false when interprocess_mutex is already locked, returns true when success. Throws interprocess_exception if a severe error is found </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1773609-bb"></a>timed_lock(<span class="bold"><strong>const</strong></span> boost::posix_time::ptime &amp; abs_time) ;</pre>
+<p>Tries to lock the interprocess_mutex until time abs_time, Returns false when timeout expires, returns true when locks. Throws interprocess_exception if a severe error is found </p>
+</li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id2233028"></a><h3>
+<a name="id1773697-bb"></a><code class="computeroutput">named_mutex</code> public static functions</h3>
+<div class="orderedlist"><ol type="1"><li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>bool</strong></span></span> <a name="id1773701-bb"></a>remove(<span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span> * name) ;</pre>
+<p>Erases a named mutex from the system. Returns false on error. Never throws. </p>
+</li></ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2005 - 2008 Ion Gaztañaga<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="named_condition.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_interprocess_reference.html#header.boost.interprocess.sync.named_mutex_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="named_recursive_mutex.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

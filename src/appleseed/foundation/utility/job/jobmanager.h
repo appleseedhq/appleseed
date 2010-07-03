@@ -1,0 +1,102 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2010 Francois Beaune
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#ifndef APPLESEED_FOUNDATION_UTILITY_JOB_JOBMANAGER_H
+#define APPLESEED_FOUNDATION_UTILITY_JOB_JOBMANAGER_H
+
+// appleseed.foundation headers.
+#include "foundation/core/concepts.h"
+
+// Standard headers.
+#include <cstddef>
+
+// Forward declarations.
+namespace foundation    { class JobQueue; }
+namespace foundation    { class Logger; }
+
+//
+// On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
+// and to __declspec(dllimport) when building an application using the DLL.
+// Other platforms don't use this export mechanism and the symbol FOUNDATIONDLL is
+// defined to evaluate to nothing.
+//
+
+#ifndef FOUNDATIONDLL
+#ifdef _WIN32
+#ifdef APPLESEED_FOUNDATION_EXPORTS
+#define FOUNDATIONDLL __declspec(dllexport)
+#else
+#define FOUNDATIONDLL __declspec(dllimport)
+#endif
+#else
+#define FOUNDATIONDLL
+#endif
+#endif
+
+namespace foundation
+{
+
+//
+// A multithreaded job manager.
+//
+// The job manager itself is thread-local: none of its methods are thread-safe.
+//
+
+class FOUNDATIONDLL JobManager
+  : public NonCopyable
+{
+  public:
+    // Constructor.
+    // thread_count is the number of worker threads executing jobs.
+    JobManager(
+        Logger&         logger,
+        JobQueue&       job_queue,
+        const size_t    thread_count = 1,           // number of worker threads simultaneously running
+        const bool      keep_running = true);       // keep worker threads running even if the job queue is empty
+
+    // Destructor. Returns once currently running jobs are completed.
+    ~JobManager();
+
+    // Return the number of worker threads.
+    size_t get_thread_count() const;
+
+    // Start job execution. Returns immediately.
+    void start();
+
+    // Stop job execution. Returns once currently running jobs are completed.
+    void stop();
+
+  private:
+    // Private implementation.
+    struct Impl;
+    Impl* impl;
+};
+
+}       // namespace foundation
+
+#endif  // !APPLESEED_FOUNDATION_UTILITY_JOB_JOBMANAGER_H

@@ -1,0 +1,317 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Class connection</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../signals2/reference.html#header.boost.signals2.connection_hpp" title="Header &lt;boost/signals2/connection.hpp&gt;">
+<link rel="prev" href="../../signals2/reference.html" title="Reference">
+<link rel="next" href="scoped_connection.html" title="Class scoped_connection">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="../../signals2/reference.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../signals2/reference.html#header.boost.signals2.connection_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="scoped_connection.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.signals2.connection"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Class connection</span></h2>
+<p>boost::signals2::connection &#8212; Query/disconnect a signal-slot connection.</p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../signals2/reference.html#header.boost.signals2.connection_hpp" title="Header &lt;boost/signals2/connection.hpp&gt;">boost/signals2/connection.hpp</a>&gt;
+
+</em></span>
+<span class="bold"><strong>class</strong></span> <a class="link" href="connection.html" title="Class connection">connection</a> {
+<span class="bold"><strong>public</strong></span>:
+  <span class="emphasis"><em>// <a class="link" href="connection.html#boost.signals2.connectionconstruct-copy-destruct">construct/copy/destruct</a></em></span>
+  <a class="link" href="connection.html#id2305477-bb">connection</a>();
+  <a class="link" href="connection.html#id2375832-bb">connection</a>(<span class="bold"><strong>const</strong></span> <a class="link" href="connection.html" title="Class connection">connection</a>&amp;);
+  connection&amp; <a class="link" href="connection.html#id2372752-bb"><span class="bold"><strong>operator</strong></span>=</a>(<span class="bold"><strong>const</strong></span> <a class="link" href="connection.html" title="Class connection">connection</a>&amp;);
+
+  <span class="emphasis"><em>// <a class="link" href="connection.html#id1278407-bb">connection management</a></em></span>
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="connection.html#id1278410-bb">disconnect</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="connection.html#id1186298-bb">connected</a>() <span class="bold"><strong>const</strong></span>;
+
+  <span class="emphasis"><em>// <a class="link" href="connection.html#id2332957-bb">blocking</a></em></span>
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="connection.html#id2332960-bb">blocked</a>() <span class="bold"><strong>const</strong></span>;
+
+  <span class="emphasis"><em>// <a class="link" href="connection.html#id2340776-bb">modifiers</a></em></span>
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="connection.html#id2303681-bb">swap</a>(<span class="bold"><strong>const</strong></span> <a class="link" href="connection.html" title="Class connection">connection</a>&amp;);
+
+  <span class="emphasis"><em>// <a class="link" href="connection.html#id2396219-bb">comparisons</a></em></span>
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="connection.html#id1283606-bb"><span class="bold"><strong>operator</strong></span>==</a>(<span class="bold"><strong>const</strong></span> <a class="link" href="connection.html" title="Class connection">connection</a>&amp;) <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="connection.html#id832008-bb"><span class="bold"><strong>operator</strong></span>&lt;</a>(<span class="bold"><strong>const</strong></span> <a class="link" href="connection.html" title="Class connection">connection</a>&amp;) <span class="bold"><strong>const</strong></span>;
+};
+
+<span class="emphasis"><em>// <a class="link" href="connection.html#id1223147-bb">specialized algorithms</a></em></span>
+<span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="connection.html#boost.signals2.swap_id1223150">swap</a>(<a class="link" href="connection.html" title="Class connection">connection</a>&amp;, <a class="link" href="connection.html" title="Class connection">connection</a>&amp;);</pre></div>
+<div class="refsect1" lang="en">
+<a name="id3355008"></a><h2>Description</h2>
+<p>The <a class="link" href="connection.html" title="Class connection">connection</a> class represents
+          a connection between a Signal and a Slot. It is a
+          lightweight object that has the ability to query whether the
+          signal and slot are currently connected, and to disconnect
+          the signal and slot. It is always safe to query or
+          disconnect a connection.</p>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h6 class="title">
+<a name="id3355028"></a>Thread Safety</h6></div></div></div>
+<p>The methods of the <code class="computeroutput">connection</code> class are thread-safe with the exception
+              of <a class="link" href="connection.html#id2303681-bb">swap</a> and the assignment operator.  A <code class="computeroutput">connection</code> object
+              should not be accessed concurrently when either of these operations is in progress.
+              However, it is always safe to access a different <code class="computeroutput">connection</code> object
+              in another thread, even if the two <code class="computeroutput">connection</code> objects are copies
+              of each other which refer to the same underlying connection.
+            </p>
+</div>
+<div class="refsect2" lang="en">
+<a name="id3355075"></a><h3>
+<a name="boost.signals2.connectionconstruct-copy-destruct"></a><code class="computeroutput">connection</code> 
+        public
+       construct/copy/destruct</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><a name="id2305477-bb"></a>connection();</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term">Effects:</span></p></td>
+<td><p>Sets the currently represented connection to the
+          NULL connection.</p></td>
+</tr>
+<tr>
+<td><p><span class="term">Postconditions:</span></p></td>
+<td><p><code class="computeroutput">!this-&gt;<a class="link" href="connection.html#id1186298-bb">connected</a>()</code>.</p></td>
+</tr>
+<tr>
+<td><p><span class="term">Throws:</span></p></td>
+<td><p>Will not throw.</p></td>
+</tr>
+</tbody>
+</table></div>
+</li>
+<li>
+<pre class="literallayout"><a name="id2375832-bb"></a>connection(<span class="bold"><strong>const</strong></span> <a class="link" href="connection.html" title="Class connection">connection</a>&amp; other);</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term">Effects:</span></p></td>
+<td><p><code class="computeroutput">this</code> references
+          the connection referenced by
+          <code class="computeroutput">other</code>.</p></td>
+</tr>
+<tr>
+<td><p><span class="term">Throws:</span></p></td>
+<td><p>Will not throw.</p></td>
+</tr>
+</tbody>
+</table></div>
+</li>
+<li>
+<pre class="literallayout">connection&amp; <a name="id2372752-bb"></a><span class="bold"><strong>operator</strong></span>=(<span class="bold"><strong>const</strong></span> <a class="link" href="connection.html" title="Class connection">connection</a>&amp; other);</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term">Effects:</span></p></td>
+<td><p><code class="computeroutput">this</code> references
+          the connection referenced by
+          <code class="computeroutput">other</code>.</p></td>
+</tr>
+<tr>
+<td><p><span class="term">Throws:</span></p></td>
+<td><p>Will not throw.</p></td>
+</tr>
+</tbody>
+</table></div>
+</li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id3355266"></a><h3>
+<a name="id1278407-bb"></a><code class="computeroutput">connection</code> connection management</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1278410-bb"></a>disconnect() <span class="bold"><strong>const</strong></span>;</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term">Effects:</span></p></td>
+<td><p>If
+             <code class="computeroutput">this-&gt;<a class="link" href="connection.html#id1186298-bb">connected</a>()</code>,
+             disconnects the signal and slot referenced by this;
+             otherwise, this operation is a no-op.</p></td>
+</tr>
+<tr>
+<td><p><span class="term">Postconditions:</span></p></td>
+<td><p><code class="computeroutput">!this-&gt;<a class="link" href="connection.html#id1186298-bb">connected</a>()</code>.</p></td>
+</tr>
+</tbody>
+</table></div>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1186298-bb"></a>connected() <span class="bold"><strong>const</strong></span>;</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term">Returns:</span></p></td>
+<td><p><code class="computeroutput">true</code> if this
+            references a non-NULL connection that is still active
+            (connected), and <code class="computeroutput">false</code>
+            otherwise.</p></td>
+</tr>
+<tr>
+<td><p><span class="term">Throws:</span></p></td>
+<td><p>Will not throw.</p></td>
+</tr>
+</tbody>
+</table></div>
+</li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id3355408"></a><h3>
+<a name="id2332957-bb"></a><code class="computeroutput">connection</code> blocking</h3>
+<div class="orderedlist"><ol type="1"><li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id2332960-bb"></a>blocked() <span class="bold"><strong>const</strong></span>;</pre>
+<p>
+                Queries if the connection is blocked.  A connection may be blocked by creating a
+                <code class="computeroutput"><a class="link" href="shared_connection_block.html" title="Class shared_connection_block">boost::signals2::shared_connection_block</a></code> object.
+              </p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term">Returns:</span></p></td>
+<td><p><code class="computeroutput">true</code> if the associated slot is either disconnected or blocked, <code class="computeroutput">false</code> otherwise.</p></td>
+</tr>
+<tr>
+<td><p><span class="term">Throws:</span></p></td>
+<td><p>Will not throw.</p></td>
+</tr>
+</tbody>
+</table></div>
+</li></ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id3372975"></a><h3>
+<a name="id2340776-bb"></a><code class="computeroutput">connection</code> modifiers</h3>
+<div class="orderedlist"><ol type="1"><li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id2303681-bb"></a>swap(<span class="bold"><strong>const</strong></span> <a class="link" href="connection.html" title="Class connection">connection</a>&amp; other);</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term">Effects:</span></p></td>
+<td><p>Swaps the connections referenced in
+            <code class="computeroutput">this</code> and
+            <code class="computeroutput">other</code>.</p></td>
+</tr>
+<tr>
+<td><p><span class="term">Throws:</span></p></td>
+<td><p>Will not throw.</p></td>
+</tr>
+</tbody>
+</table></div>
+</li></ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id3373057"></a><h3>
+<a name="id2396219-bb"></a><code class="computeroutput">connection</code> comparisons</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1283606-bb"></a><span class="bold"><strong>operator</strong></span>==(<span class="bold"><strong>const</strong></span> <a class="link" href="connection.html" title="Class connection">connection</a>&amp; other) <span class="bold"><strong>const</strong></span>;</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term">Returns:</span></p></td>
+<td><p><code class="computeroutput">true</code> if
+            <code class="computeroutput">this</code> and
+            <code class="computeroutput">other</code> reference the same
+            connection or both reference the NULL connection, and
+            <code class="computeroutput">false</code>
+            otherwise.</p></td>
+</tr>
+<tr>
+<td><p><span class="term">Throws:</span></p></td>
+<td><p>Will not throw.</p></td>
+</tr>
+</tbody>
+</table></div>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id832008-bb"></a><span class="bold"><strong>operator</strong></span>&lt;(<span class="bold"><strong>const</strong></span> <a class="link" href="connection.html" title="Class connection">connection</a>&amp; other) <span class="bold"><strong>const</strong></span>;</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term">Returns:</span></p></td>
+<td><p><code class="computeroutput">true</code> if the
+            connection referenced by
+            <code class="computeroutput">this</code> precedes the
+            connection referenced by
+            <code class="computeroutput">other</code> based on some
+            unspecified ordering, and
+            <code class="computeroutput">false</code>
+            otherwise.</p></td>
+</tr>
+<tr>
+<td><p><span class="term">Throws:</span></p></td>
+<td><p>Will not throw.</p></td>
+</tr>
+</tbody>
+</table></div>
+</li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id3373248"></a><h3>
+<a name="id1223147-bb"></a><code class="computeroutput">connection</code> specialized algorithms</h3>
+<div class="orderedlist"><ol type="1"><li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="boost.signals2.swap_id1223150"></a>swap(<a class="link" href="connection.html" title="Class connection">connection</a>&amp; x, <a class="link" href="connection.html" title="Class connection">connection</a>&amp; y);</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term">Effects:</span></p></td>
+<td><p><code class="computeroutput">x.swap(y)</code></p></td>
+</tr>
+<tr>
+<td><p><span class="term">Throws:</span></p></td>
+<td><p>Will not throw.</p></td>
+</tr>
+</tbody>
+</table></div>
+</li></ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2001-2004 Douglas Gregor<br>Copyright © 2007-2009 Frank Mori Hess<p>Distributed under the Boost
+    Software License, Version 1.0. (See accompanying file
+    <code class="filename">LICENSE_1_0.txt</code> or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)</p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="../../signals2/reference.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../signals2/reference.html#header.boost.signals2.connection_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="scoped_connection.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

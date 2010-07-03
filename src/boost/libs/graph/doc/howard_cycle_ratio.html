@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=iso-8859-1">
+	<TITLE>Boost Graph Library: Maximum (Minimum) cycle ratio</TITLE>
+	<META NAME="CREATED" CONTENT="20061218;17562954">
+	<META NAME="CHANGEDBY" CONTENT="Dmitry Bufistov">
+	<META NAME="CHANGED" CONTENT="20070128;20552300">
+
+
+	<!-- -- Copyright 2007  Technical University of Catalonia
+ --
+ -- Use, modification and distribution is subject to the Boost Software
+ -- License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+ -- http://www.boost.org/LICENSE_1_0.txt)
+ --
+ --  Authors: Dmitry Bufistov
+ --           Andrey Parfenov
+ -->
+	<STYLE>
+	<!--
+		@page { size: 3.5cm 2.5cm }
+		TD P { color: #000000 }
+		H1 { color: #000000 }
+		P { color: #000000 }
+		PRE { color: #000000 }
+		H3 { color: #000000 }
+		BLOCKQUOTE { color: #000000 }
+		A:link { color: #0000ee }
+		A:visited { color: #551a8b }
+	-->
+	</STYLE>
+</HEAD>
+<BODY  TEXT="#000000" LINK="#0000ee" VLINK="#551a8b" BGCOLOR="#ffffff" DIR="LTR">
+<P><IMG SRC="../../..//boost.png" NAME="graphics1" ALT="C++ Boost" ALIGN=BOTTOM WIDTH=277 HEIGHT=86 BORDER=0>
+</P>
+<H1><TT>maximum(minimum)_cycle_ratio</TT> 
+</H1>
+<I>// non-named parameter version</I>
+<!--template &lt;typename <A HREF="Graph.html">TGraph</A>, 
+          typename TVertexIndexMap, 
+          typename TWeight1EdgeMap, 
+          typename TWeight2EdgeMap &gt;
+double	maximum_cycle_ratio_good_graph(const TGraph&amp; g, TVertexIndexMap vim, TWeight1EdgeMap ew1m, TWeight2EdgeMap  ew2m,
+                                       typename std::vector&lt;typename boost::graph_traits&lt;TGraph&gt;::edge_descriptor&gt;* pcc = 0);
+<br/>
+<PRE>template &lt;typename <A HREF="Graph.html">TGraph</A>, 
+          typename TWeight1EdgeMap, 
+          typename TWeight2EdgeMap &gt;
+double  maximum_cycle_ratio1(const TGraph&amp; g, TWeight1EdgeMap ewm, TWeight2EdgeMap ew2m, 
+                              typename std::vector&lt;typename boost::graph_traits&lt;TGraph&gt;::edge_descriptor&gt;* pcc = 0,
+                                 typename boost::property_traits&lt;TWeight1EdgeMap&gt::value_type minus_infinity = 
+                                      -(std::numeric_limits&lt;int&gt;::max)());
+ </PRE>-->
+<P>
+<PRE>template &lt;typename <A HREF="Graph.html">TGraph</A>, 
+          typename TVertexIndexMap, 
+          typename TWeight1EdgeMap, 
+          typename TWeight2EdgeMap &gt;
+double  maximum_cycle_ratio(const TGraph&amp; g, TVertexIndexMap vim, TWeight1EdgeMap ewm, TWeight2EdgeMap ew2m, 
+                              typename std::vector&lt;typename boost::graph_traits&lt;TGraph&gt;::edge_descriptor&gt;* pcc = 0,
+                                 typename boost::property_traits&lt;TWeight1EdgeMap&gt::value_type minus_infinity = 
+                                   -(std::numeric_limits&lt;int&gt;::max)());
+ </PRE>
+</P>
+<P>
+<PRE>template &lt;typename <A HREF="Graph.html">TGraph</A>, 
+          typename TVertexIndexMap, 
+          typename TWeight1EdgeMap, 
+          typename TWeight2EdgeMap,
+          typename TEdgeIndexMap &gt;
+double  minimum_cycle_ratio(const TGraph&amp; g, TVertexIndexMap vim, TWeight1EdgeMap ewm, TWeight2EdgeMap ew2m, TEdgeIndexMap eim,
+                              typename std::vector&lt;typename boost::graph_traits&lt;TGraph&gt;::edge_descriptor&gt;* pcc = 0,
+                                 typename boost::property_traits&lt;TWeight1EdgeMap&gt::value_type plus_infinity = 
+                                   (std::numeric_limits&lt;int&gt;::max)());
+ </PRE>
+</P>
+The <I>maximum_cycle_ratio()</I> function calculates the maximum cycle ratio of a weighted directed multigraph <I>g=(V,E,W1,W2)</I>, where <i>V</i> is a vertex set, <i>E</i> is an edge set, W1 and W2 are edge weight functions, W2 is nonnegative. <i>Multigraph</i> is a graph that can have multiple edges between its vertices. The calculated maximum cycle ratio will be the return value of the function. The <I>maximal_cycle_ratio()</I> returns <I>minus_infinity</I> if graph has no cycles. The value of the <i>minus_infinity</i> parameter should be small enough to garanty that <i>g</i> has at leat one cycle with greater ratio.
+</P>
+
+<P>Let every edge <I>e</I> have two weights <I>W1(e)</I>  and <I>W2(e)</I>. </SPAN> Let <I>c</I> <SPAN STYLE="font-style: normal">be a cycle of a graph</SPAN> <I>g</I>. <SPAN STYLE="font-style: normal">The <i>cycle ratio</i> (<I>cr(c)</I>) is defined  as:</SPAN></P>
+<P><IMG SRC="figs/cr.jpg" NAME="graphics2" ALT="Cycle ratio definition" ALIGN=LEFT WIDTH=295 HEIGHT=82 BORDER=0><BR CLEAR=LEFT><BR><BR>
+The <I>maximum (minimum) cycle ratio</I> (mcr) is the maximum (minimum) cycle ratio of all cycles of the graph.
+Cycle calls <I>critical</I>  if its ratio is equal to <I>mcr</I>. </P>If the <i>pcc</i> parameter is not zero then one critical cycle will be written to the corresponding std::vector of edge descriptors.  The edges in the vector stored in the way that *pcc[0], *ppc[1],...,*ppc[n] is a correct path.</P>
+<!--<P STYLE="margin-bottom: 0cm">
+   For every directed multigraph <I>G=(V,E)</I> there is a &laquo;good&raquo; multigraph G'=(V',E'),
+such that <I>mcr(G)== mcr(G').</I> G' can be constructed from G  by
+adding one "sink" <SPAN STYLE="font-style: normal">vertex </SPAN><I> u </I><SPAN STYLE="font-style: normal">and</SPAN><I>
+num_vertex(G)+ 1 </I><SPAN STYLE="font-style: normal">edges</SPAN><I>
+(v, u) </I><SPAN STYLE="font-style: normal">for all vertices</SPAN><I>
+ v </I><SPAN STYLE="font-style: normal">in</SPAN><I> V</I> <SPAN STYLE="font-style: normal">(including
+ self loop <I>sl=(u,u)</I>). The weights of the self loop </SPAN><I>W1(sl),
+W2(sl) </I><SPAN STYLE="font-style: normal">should be set to &laquo;<I>minus
+infinity&raquo;</I> and 1 correspondingly. The <I>make_graph_good()</I>
+function  from <A HREF="../example/cycle_ratio_example.cpp">cycle_ratio_example.cpp</A>
+implement this transformation. Based on <I>make_graph_good()</I>
+function one can write <I>maximum_cycle_ratio()</I> function that would work
+for all directed multigraphs, returning minus infinity if graph has
+no cycles, the usage example file <A HREF="../example/cycle_ratio_example.cpp">cycle_ratio_example.cpp</A>
+contains implementation of this function (also more or less general version of <I>minimal_cycle_ratio()</I> function) and some usage examples. </SPAN>
+</P>-->
+For a graph <i>G=(V,E,W1,W2)</i> let <i>G'=(V,E,-W1,W2)</i> be a graph with opposite <i>W1</i> function, then the minimum cycle ratio of <i>G</i> is the opposite maximum cycle ratio of <i>G'</i>.
+The <i>minimum_cycle_ratio()</i> function just calls the <i>maximum_cycle_ratio()</i> with the opposite <i>W1</i> function, so if the type value of the <i>W1</i> weight is integral then it must be signed.
+<P>
+The algorithm is due to Howard's iteration policy algorithm, descibed in
+<A HREF="./cochet-terrasson98numerical.pdf">[1]</A>.
+Ali Dasdan, Sandy S. Irani and Rajesh K.Gupta in their paper
+<A HREF="./dasdan-dac99.pdf">Efficient Algorithms for Optimum Cycle Mean and Optimum Cost to Time Ratio
+Problems</A>state that this is the most efficient algorithm to the time being (1999).</P>
+<H3>
+Where Defined</H3>
+<P STYLE="background: transparent"><TT><A HREF="../../../boost/graph/howard_cycle_ratio.hpp">boost/graph/howard_cycle_ratio.hpp</A></TT>
+</P>
+<H3>Parameters</H3>
+<P>IN: <FONT FACE="Courier New, monospace">const TGraph&amp; g </FONT>
+</P>
+<BLOCKQUOTE>A directed weighted multigraph. 
+The graph's type must be a model of <A HREF="VertexListGraph.html">VertexListGraph</A>
+and <A HREF="IncidenceGraph.html">IncidenceGraph</A>
+</BLOCKQUOTE>
+<P>IN: <FONT FACE="Courier New, monospace" COLOR="#000000">TVertexIndexMap vim</FONT>
+</P>
+<BLOCKQUOTE>Maps each vertex of the graph to a unique integer in the
+range [0, num_vertices(g)).
+</BLOCKQUOTE>
+<P>IN: <FONT FACE="Courier New, monospace">TWeight1EdgeMap  ew1m</FONT>
+</P>
+<BLOCKQUOTE>
+The W1 edge weight function. For <i>minimum_cycle_ratio()</i> if the type value of the ew1m is integral then it must be signed.
+</BLOCKQUOTE>
+<P>IN: <FONT FACE="Courier New, monospace">TWeight2EdgeMap ew2m</FONT>
+</P>
+<BLOCKQUOTE>The W2 edge weight function. Must be nonnegative.</BLOCKQUOTE>
+<P>IN: <FONT FACE="Courier New, monospace"><FONT COLOR="#000000">TEdgeIndexMap eim</FONT></FONT>
+</P>
+<BLOCKQUOTE>Maps each edge of the graph <I>g</I> to a unique integer
+in the range <TT>[0, num_edges(g)). <FONT FACE="Times New Roman, serif"></FONT></TT></BLOCKQUOTE>
+
+<P>IN: <FONT FACE="Courier New, monospace"><FONT COLOR="#000000">boost::property_traits&lt;TWeight1EdgeMap&gt;::value_type  minus_infinity</FONT></FONT>
+</P>
+<BLOCKQUOTE>Small enough value to garanty that <i>g</i> has at least one cycle with greater ratio</BLOCKQUOTE>
+<P>IN: <FONT FACE="Courier New, monospace"><FONT COLOR="#000000">boost::property_traits&lt;TWeight1EdgeMap&gt;::value_type  plus_infinity</FONT></FONT>
+</P>
+<BLOCKQUOTE>Big enough value to garanty that <i>g</i> has at least one cycle with less ratio. Expression -plus_infinity must be well defined.</BLOCKQUOTE>
+
+<P>OUT: <FONT FACE="Courier New, monospace">std::vector&lt;typename
+boost::graph_traits&lt;TGraph&gt;::edge_descriptor&gt;* pcc</FONT></P>
+<BLOCKQUOTE>An edge descriptors of one critical cycle will be stored in the corresponding std::vector. Default value is 0.</BLOCKQUOTE>
+<BLOCKQUOTE STYLE="margin-left: 0cm">
+The all maps must be a models of <A HREF="../..//property_map/ReadablePropertyMap.html">Readable
+Property Map</A></BLOCKQUOTE>
+<H3>Complexity</H3>
+<P>There is no known precise upper bound for the time complexity of the
+algorithm. Imperical time complexity is <I>O(E)</I>, where the
+constant tends to be pretty small. Space complexity is also <I>O(E)</I>.
+</P>
+<H3>Example</H3>
+<P>The program in <A HREF="../example/cycle_ratio_example.cpp">cycle_ratio_example.cpp</A>
+generates random graph and computes its maximum cycle ratio. 
+</P>
+<HR>
+<TABLE CELLPADDING=2 CELLSPACING=2>
+	<TR VALIGN=TOP>
+		<TD>
+			<P>Copyright &copy; 2000-2006</P>
+		</TD>
+		<TD>
+			<P><A HREF="http://www.lsi.upc.edu/~dmitry">Dmitry
+			Bufistov</A>, Universitat Politecnica de Catalu&ntilde;a</P>
+		</TD>
+	</TR>
+</TABLE>
+<P><BR><BR>
+</P>
+</BODY>
+</HTML>

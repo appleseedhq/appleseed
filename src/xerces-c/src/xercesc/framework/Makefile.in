@@ -1,0 +1,244 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+# 
+#      http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+#
+#
+# $Log$
+# Revision 1.18  2005/04/05 09:21:56  gareth
+# Fix for jira 1397. *Much* nicer make output. Thanks to Axel Weib.
+#
+# Revision 1.17  2004/09/08 13:55:57  peiyongz
+# Apache License Version 2.0
+#
+# Revision 1.16  2004/07/09 16:11:11  peiyongz
+# Build on HP-Itanium, aCC A.05.52
+#
+# Revision 1.15  2003/11/12 20:28:16  peiyongz
+# Stateless Grammar: ValidationContext
+#
+# Revision 1.14  2003/10/14 15:17:47  peiyongz
+# Implementation of Serialization/Deserialization
+#
+# Revision 1.13  2003/10/10 16:23:29  peiyongz
+# Implementation of Serialization/Deserialization
+#
+# Revision 1.12  2003/09/30 18:14:34  peiyongz
+# Implementation of Serialization/Deserialization
+#
+# Revision 1.11  2003/09/18 20:32:02  peiyongz
+# BinOutputStream
+#
+# Revision 1.10  2003/09/16 14:33:35  neilg
+# PSVI/schema component model classes, with Makefile/configuration changes necessary to build them
+#
+# Revision 1.9  2003/06/20 18:51:31  peiyongz
+# Stateless Grammar Pool :: Part I
+#
+# Revision 1.8  2003/04/21 15:48:39  knoaman
+# Include MemoryManger header file.
+#
+# Revision 1.7  2002/09/17 21:23:13  peiyongz
+# RPM for Xerces2.1.0, patch from Thomas Woerner (thomas@linux.de)
+#
+# Revision 1.6  2002/07/26 16:49:27  tng
+# [Bug 2681] Can't build with gcc/g++ not named 'gcc'/'g++'.  Patch from Jonathan Lennox.
+#
+# Revision 1.5  2002/06/19 21:59:26  peiyongz
+# DOM3:DOMSave Interface support: LocalFileFormatTarget
+#
+# Revision 1.4  2002/06/18 20:02:27  knoaman
+# Add Wrapper4DOMInputSource.
+#
+# Revision 1.3  2002/06/18 19:16:48  knoaman
+# Added Wrapper4InputSource.
+#
+# Revision 1.2  2002/05/28 22:40:46  peiyongz
+# DOM3 Save Interface: DOMWriter/DOMWriterFilter
+#
+# Revision 1.1.1.1  2002/02/01 22:21:50  peiyongz
+# sane_include
+#
+# Revision 1.11  2001/07/06 17:11:56  tng
+# Automatic build of single-threaded library.  By Martin Kalen.
+#
+# Revision 1.10  2001/06/27 17:08:12  tng
+# [Bug 1147] Headers install in wrong directory.  By Murray Cumming.
+#
+# Revision 1.9  2000/04/04 21:10:09  abagchi
+# Added XMLFormatter
+#
+# Revision 1.8  2000/03/01 22:30:02  abagchi
+# Object files are now created directly under obj directory
+#
+# Revision 1.7  2000/02/06 07:47:46  rahulj
+# Year 2K copyright swat.
+#
+# Revision 1.6  2000/02/04 23:48:26  abagchi
+# Made sure all targets are appended with :: not single :
+#
+# Revision 1.5  2000/02/01 23:43:11  abagchi
+# AS/400 related change
+#
+# Revision 1.4  2000/01/12 20:10:28  aruna1
+# Modified for new file and moved files
+#
+# Revision 1.3  1999/12/14 23:53:21  rahulj
+# Removed the offending Ctrl-M's from the commit message
+# logs which was giving packaging problems.
+#
+# PR:
+# Obtained from:
+# Submitted by:
+# Reviewed by:
+#
+# Revision 1.2  1999/11/23 01:59:47  rahulj
+# Code now works under HPUX 11. Tested inmemory message loader.
+# Revamped makefiles. Builds with both DCE threads as well as pthread libraries.
+#
+# Revision 1.1.1.1  1999/11/09 01:08:26  twl
+# Initial checkin
+#
+# Revision 1.5  1999/11/08 20:44:34  rahul
+# Swat for adding in Product name and CVS comment log variable.
+#
+#
+
+PLATFORM = @platform@
+CC  = @cc@
+CXX = @cxx@
+CXXVER = @cxxver@
+GCC = @GCC@
+GXX = @GXX@
+CXXFLAGS = @cxxflags@
+CFLAGS = @cflags@
+PREFIX = @prefix@
+PREFIX_INCLUDE = @prefix_include@
+LDFLAGS = @ldflags@
+LIBS = @libs@
+OSVER = @osver@
+USELIBWWW = @uselibwww@
+MESSAGELOADER = @messageloader@
+TRANSCODER = @transcoder@
+THREADS = @threads@
+LIBTYPE = @libtype@
+ARCH = @host_cpu@
+
+include ../Makefile.incl
+
+MODULE = framework
+
+FRAMEWORK_CPP_PUBHEADERS = \
+	BinOutputStream.hpp \
+	LocalFileInputSource.hpp \
+	LocalFileFormatTarget.hpp \
+	MemBufInputSource.hpp \
+	MemBufFormatTarget.hpp \
+	MemoryManager.hpp \
+	StdInInputSource.hpp \
+	StdOutFormatTarget.hpp \
+	URLInputSource.hpp \
+	ValidationContext.hpp \
+	Wrapper4DOMInputSource.hpp \
+	Wrapper4InputSource.hpp \
+	XMLAttDef.hpp \
+	XMLAttDefList.hpp \
+	XMLAttr.hpp \
+	XMLBuffer.hpp \
+	XMLBufferMgr.hpp \
+	XMLContentModel.hpp \
+	XMLDocumentHandler.hpp \
+	XMLDTDDescription.hpp \
+	XMLElementDecl.hpp \
+	XMLEntityDecl.hpp \
+	XMLEntityHandler.hpp \
+	XMLErrorCodes.hpp \
+	XMLErrorReporter.hpp \
+	XMLFormatter.hpp \
+	XMLGrammarDescription.hpp \
+	XMLGrammarPool.hpp \
+	XMLNotationDecl.hpp \
+	XMLPScanToken.hpp \
+	XMLRecognizer.hpp \
+	XMLRefInfo.hpp \
+	XMLSchemaDescription.hpp \
+	XMLValidator.hpp \
+	XMLValidityCodes.hpp
+
+FRAMEWORK_CPP_PRIVHEADERS =
+
+FRAMEWORK_C_FILES =
+
+FRAMEWORK_CPP_OBJECTS = \
+	BinOutputStream.$(TO) \
+	LocalFileInputSource.$(TO) \
+	LocalFileFormatTarget.$(TO) \
+	MemBufInputSource.$(TO) \
+	MemBufFormatTarget.$(TO) \
+	StdInInputSource.$(TO) \
+	StdOutFormatTarget.$(TO) \
+	URLInputSource.$(TO) \
+	Wrapper4DOMInputSource.$(TO) \
+	Wrapper4InputSource.$(TO) \
+	XMLAttDef.$(TO) \
+	XMLAttDefList.$(TO) \
+	XMLAttr.$(TO) \
+	XMLBuffer.$(TO) \
+	XMLBufferMgr.$(TO) \
+	XMLContentModel.$(TO) \
+	XMLDTDDescription.$(TO) \
+	XMLElementDecl.$(TO) \
+	XMLEntityDecl.$(TO) \
+	XMLFormatter.$(TO) \
+	XMLGrammarDescription.$(TO) \
+	XMLNotationDecl.$(TO) \
+	XMLRecognizer.$(TO) \
+	XMLRefInfo.$(TO) \
+	XMLSchemaDescription.$(TO) \
+	XMLValidator.$(TO)
+
+all::	includes $(FRAMEWORK_CPP_OBJECTS) psvi
+
+includes::	pubheaders $(FRAMEWORK_C_FILES)
+	${MAKE} -C psvi $@
+
+psvi::
+	${MAKE} -C psvi 
+
+pubheaders::
+	$Qmkdir -p $(XML_INC_DIR)/$(MODULE)
+	@echo "  (CP)  $(XML_INC_DIR)/$(MODULE)"
+	$Q$(CP) $(FRAMEWORK_CPP_PUBHEADERS) $(FRAMEWORK_C_FILES) $(XML_INC_DIR)/$(MODULE)
+
+# this may generate unnecessary dependencies, but it makes life easier
+depend:: includes
+	@echo "  (DEP)"
+	$Q$(MAKE_DEPEND) $(XML_INCL)  *.cpp > $(DEPFILE)
+
+clean::
+	@echo "Making clean in $(MODULE) ..."
+	$(RM2) $(addprefix $(XML_OBJ_DIR)/,$(FRAMEWORK_CPP_OBJECTS))
+	${MAKE} -C psvi $@
+
+distclean::	clean
+	$(RM) Makefile $(DEPFILE)
+	@echo "Removing all $(MODULE) header files ..."
+	$(RM2) $(addprefix $(XML_INC_DIR)/$(MODULE)/,$(FRAMEWORK_CPP_PUBHEADERS))
+	${MAKE} -C psvi $@
+
+install::
+	-mkdir -p $(DESTDIR)$(PREFIX_INCLUDE)/$(MODULE)
+	$(CP) $(FRAMEWORK_CPP_PUBHEADERS) $(FRAMEWORK_C_FILES) $(DESTDIR)$(PREFIX_INCLUDE)/$(MODULE)
+	${MAKE} -C psvi $@

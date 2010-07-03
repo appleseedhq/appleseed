@@ -1,0 +1,86 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Class barrier</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../boost_interprocess_reference.html#header.boost.interprocess.sync.interprocess_barrier_hpp" title="Header &lt;boost/interprocess/sync/interprocess_barrier.hpp&gt;">
+<link rel="prev" href="file_lock.html" title="Class file_lock">
+<link rel="next" href="interprocess_condition.html" title="Class interprocess_condition">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="file_lock.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_interprocess_reference.html#header.boost.interprocess.sync.interprocess_barrier_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="interprocess_condition.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.interprocess.barrier"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Class barrier</span></h2>
+<p>boost::interprocess::barrier</p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../boost_interprocess_reference.html#header.boost.interprocess.sync.interprocess_barrier_hpp" title="Header &lt;boost/interprocess/sync/interprocess_barrier.hpp&gt;">boost/interprocess/sync/interprocess_barrier.hpp</a>&gt;
+
+</em></span>
+<span class="bold"><strong>class</strong></span> <a class="link" href="barrier.html" title="Class barrier">barrier</a> {
+<span class="bold"><strong>public</strong></span>:
+  <span class="emphasis"><em>// <a class="link" href="barrier.html#boost.interprocess.barrierconstruct-copy-destruct">construct/copy/destruct</a></em></span>
+  <a class="link" href="barrier.html#id1772140-bb">barrier</a>(<span class="bold"><strong>unsigned</strong></span> <span class="bold"><strong>int</strong></span>);
+  <a class="link" href="barrier.html#id1772152-bb">~barrier</a>();
+
+  <span class="emphasis"><em>// <a class="link" href="barrier.html#id1772126-bb">public member functions</a></em></span>
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="barrier.html#id1772129-bb">wait</a>() ;
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id2227568"></a><h2>Description</h2>
+<p>An object of class barrier is a synchronization primitive that can be placed in shared memory used to cause a set of threads from different processes to wait until they each perform a certain function or each reach a particular point in their execution. </p>
+<div class="refsect2" lang="en">
+<a name="id2227577"></a><h3>
+<a name="boost.interprocess.barrierconstruct-copy-destruct"></a><code class="computeroutput">barrier</code> 
+        public
+       construct/copy/destruct</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><a name="id1772140-bb"></a>barrier(<span class="bold"><strong>unsigned</strong></span> <span class="bold"><strong>int</strong></span> count);</pre>
+<p>Constructs a barrier object that will cause count threads to block on a call to wait(). </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1772152-bb"></a>~barrier();</pre>
+<p>Destroys *this. If threads are still executing their wait() operations, the behavior for these threads is undefined. </p>
+</li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id2227643"></a><h3>
+<a name="id1772126-bb"></a><code class="computeroutput">barrier</code> public member functions</h3>
+<div class="orderedlist"><ol type="1"><li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1772129-bb"></a>wait() ;</pre>
+<p>Effects: Wait until N threads call wait(), where N equals the count provided to the constructor for the barrier object. Note that if the barrier is destroyed before wait() can return, the behavior is undefined. Returns: Exactly one of the N threads will receive a return value of true, the others will receive a value of false. Precisely which thread receives the return value of true will be implementation-defined. Applications can use this value to designate one thread as a leader that will take a certain action, and the other threads emerging from the barrier can wait for that action to take place. </p>
+</li></ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2005 - 2008 Ion Gaztañaga<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="file_lock.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_interprocess_reference.html#header.boost.interprocess.sync.interprocess_barrier_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="interprocess_condition.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

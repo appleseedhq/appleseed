@@ -1,0 +1,202 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Class scoped_connection</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../signals2/reference.html#header.boost.signals2.connection_hpp" title="Header &lt;boost/signals2/connection.hpp&gt;">
+<link rel="prev" href="connection.html" title="Class connection">
+<link rel="next" href="deconstruct.html" title="Function deconstruct">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="connection.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../signals2/reference.html#header.boost.signals2.connection_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="deconstruct.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.signals2.scoped_connection"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Class scoped_connection</span></h2>
+<p>boost::signals2::scoped_connection &#8212; Limits a signal-slot connection lifetime to a particular scope.</p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../signals2/reference.html#header.boost.signals2.connection_hpp" title="Header &lt;boost/signals2/connection.hpp&gt;">boost/signals2/connection.hpp</a>&gt;
+
+</em></span>
+<span class="bold"><strong>class</strong></span> <a class="link" href="scoped_connection.html" title="Class scoped_connection">scoped_connection</a> : <span class="bold"><strong>public</strong></span> <span class="type"><a class="link" href="connection.html" title="Class connection">connection</a></span> {
+<span class="bold"><strong>public</strong></span>:
+  <span class="emphasis"><em>// <a class="link" href="scoped_connection.html#id1212797-bbconstruct-copy-destruct">construct/copy/destruct</a></em></span>
+  <a class="link" href="scoped_connection.html#id1212801-bb">scoped_connection</a>();
+  <a class="link" href="scoped_connection.html#id1350966-bb">scoped_connection</a>(<span class="bold"><strong>const</strong></span> <a class="link" href="connection.html" title="Class connection">connection</a>&amp;);
+  <a class="link" href="scoped_connection.html#id2325209-bb">~scoped_connection</a>();
+
+  <span class="emphasis"><em>// <a class="link" href="scoped_connection.html#id1285121-bb">public methods</a></em></span>
+  <span class="type">scoped_connection &amp;</span> <a class="link" href="scoped_connection.html#id1285125-bb"><span class="bold"><strong>operator</strong></span>=</a>(<span class="bold"><strong>const</strong></span> connection &amp;);
+  <span class="type"><a class="link" href="connection.html" title="Class connection">connection</a></span> <a class="link" href="scoped_connection.html#id2360768-bb">release</a>();
+<span class="bold"><strong>private</strong></span>:
+  <span class="emphasis"><em>// <a class="link" href="scoped_connection.html#id2324648-bbconstruct-copy-destruct">construct/copy/destruct</a></em></span>
+  <a class="link" href="scoped_connection.html#id2324651-bb">scoped_connection</a>(<span class="bold"><strong>const</strong></span> <a class="link" href="scoped_connection.html" title="Class scoped_connection">scoped_connection</a>&amp;);
+  scoped_connection&amp; <a class="link" href="scoped_connection.html#id2337321-bb"><span class="bold"><strong>operator</strong></span>=</a>(<span class="bold"><strong>const</strong></span> <a class="link" href="scoped_connection.html" title="Class scoped_connection">scoped_connection</a>&amp;);
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id3373554"></a><h2>Description</h2>
+<p>A <a class="link" href="connection.html" title="Class connection">connection</a> which automatically disconnects on destruction.</p>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h6 class="title">
+<a name="id3373570"></a>Thread Safety</h6></div></div></div>
+<p>The methods of the <code class="computeroutput">scoped_connection</code> class (including those
+              inherited from its base <code class="computeroutput">connection</code> class) are thread-safe with the exception
+              of <a class="link" href="connection.html#id2303681-bb">connection::swap</a>, <a class="link" href="scoped_connection.html#id2360768-bb">release</a>, and
+              the assignment operator  A <code class="computeroutput">scoped_connection</code> object
+              should not be accessed concurrently when any of these operations is in progress.
+              However, it is always safe to access a different <code class="computeroutput">connection</code> object
+              in another thread, even if it references the same underlying signal-slot connection.
+            </p>
+</div>
+<div class="refsect2" lang="en">
+<a name="id3373624"></a><h3>
+<a name="id1212797-bbconstruct-copy-destruct"></a><code class="computeroutput">scoped_connection</code> public construct/copy/destruct</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><a name="id1212801-bb"></a>scoped_connection();</pre>
+<p>Default constructs an empty scoped_connection.</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term">Postconditions:</span></p></td>
+<td><p><code class="computeroutput"><a class="link" href="connection.html#id1186298-bb">connected</a>() == false </code></p></td>
+</tr>
+<tr>
+<td><p><span class="term">Throws:</span></p></td>
+<td><p>Will not throw.</p></td>
+</tr>
+</tbody>
+</table></div>
+</li>
+<li>
+<pre class="literallayout"><a name="id1350966-bb"></a>scoped_connection(<span class="bold"><strong>const</strong></span> <a class="link" href="connection.html" title="Class connection">connection</a>&amp; other);</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term">Effects:</span></p></td>
+<td><p><code class="computeroutput">this</code> references
+              the connection referenced by
+              <code class="computeroutput">other</code>.</p></td>
+</tr>
+<tr>
+<td><p><span class="term">Postconditions:</span></p></td>
+<td><p><code class="computeroutput"><a class="link" href="connection.html#id1186298-bb">connected</a>() == other.connected()</code></p></td>
+</tr>
+<tr>
+<td><p><span class="term">Throws:</span></p></td>
+<td><p>Will not throw.</p></td>
+</tr>
+</tbody>
+</table></div>
+</li>
+<li>
+<pre class="literallayout"><a name="id2325209-bb"></a>~scoped_connection();</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody><tr>
+<td><p><span class="term">Effects:</span></p></td>
+<td><p>If
+            <code class="computeroutput">this-&gt;<a class="link" href="connection.html#id1186298-bb">connected</a>()</code>,
+            disconnects the signal-slot connection.</p></td>
+</tr></tbody>
+</table></div>
+</li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id3373800"></a><h3>
+<a name="id1285121-bb"></a><code class="computeroutput">scoped_connection</code> public methods</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><span class="type">scoped_connection &amp;</span> <a name="id1285125-bb"></a><span class="bold"><strong>operator</strong></span>=(<span class="bold"><strong>const</strong></span> connection &amp; rhs);</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term">Effects:</span></p></td>
+<td><p><code class="computeroutput">this</code> references
+                  the connection referenced by
+                  <code class="computeroutput">rhs</code>.  If <code class="computeroutput">this</code> already references another
+                  connection, the old connection will be disconnected first.
+                </p></td>
+</tr>
+<tr>
+<td><p><span class="term">Postconditions:</span></p></td>
+<td><p><code class="computeroutput"><a class="link" href="connection.html#id1186298-bb">connected</a>() == rhs.connected()</code></p></td>
+</tr>
+</tbody>
+</table></div>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><a class="link" href="connection.html" title="Class connection">connection</a></span> <a name="id2360768-bb"></a>release();</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term">Effects:</span></p></td>
+<td><p>
+                  Releases the connection so it will not be disconnected by the <code class="computeroutput">scoped_connection</code>
+                  when it is destroyed or reassigned.  The <code class="computeroutput">scoped_connection</code> is reset to
+                  the NULL connection after this call completes.
+                </p></td>
+</tr>
+<tr>
+<td><p><span class="term">Postconditions:</span></p></td>
+<td><p><code class="computeroutput"><a class="link" href="connection.html#id1186298-bb">connected</a>() == false</code></p></td>
+</tr>
+<tr>
+<td><p><span class="term">Returns:</span></p></td>
+<td><p>A <a class="link" href="connection.html" title="Class connection">connection</a> object referencing the connection which was
+                  released by the <code class="computeroutput">scoped_connection</code>.
+                </p></td>
+</tr>
+</tbody>
+</table></div>
+</li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id3373978"></a><h3>
+<a name="id2324648-bbconstruct-copy-destruct"></a><code class="computeroutput">scoped_connection</code> private construct/copy/destruct</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><a name="id2324651-bb"></a>scoped_connection(<span class="bold"><strong>const</strong></span> <a class="link" href="scoped_connection.html" title="Class scoped_connection">scoped_connection</a>&amp; other);</pre>
+<p>The scoped_connection class is not copyable.  It may only be constructed from a <code class="computeroutput"><a class="link" href="connection.html" title="Class connection">connection</a></code> object.</p>
+</li>
+<li>
+<pre class="literallayout">scoped_connection&amp; <a name="id2337321-bb"></a><span class="bold"><strong>operator</strong></span>=(<span class="bold"><strong>const</strong></span> <a class="link" href="scoped_connection.html" title="Class scoped_connection">scoped_connection</a>&amp; rhs);</pre>
+<p>The scoped_connection class is not copyable.  It may only be assigned from a <code class="computeroutput"><a class="link" href="connection.html" title="Class connection">connection</a></code> object.</p>
+</li>
+</ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2001-2004 Douglas Gregor<br>Copyright © 2007-2009 Frank Mori Hess<p>Distributed under the Boost
+    Software License, Version 1.0. (See accompanying file
+    <code class="filename">LICENSE_1_0.txt</code> or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)</p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="connection.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../signals2/reference.html#header.boost.signals2.connection_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="deconstruct.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

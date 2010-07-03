@@ -1,0 +1,407 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+<head>
+  <meta http-equiv="Content-Language" content="en-us">
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+  <link href="pool.css" rel="stylesheet" type="text/css">
+
+  <title>Pool Concepts</title>
+</head>
+
+<body>
+  <img src="../../../boost.png" width="276" height="86" alt="C++ Boost">
+
+  <h1 align="center">Pool Concepts</h1>
+
+  <blockquote>
+    "Dynamic memory allocation has been a fundamental part of most computer
+    systems since roughly 1960..."<sup><a href="#ref1">1</a></sup>
+  </blockquote>
+
+  <p>Everyone uses dynamic memory allocation. If you have ever called
+  <span class="code">malloc</span> or <span class="code">new</span>, then you
+  have used dynamic memory allocation. Most programmers have a tendency to
+  treat the heap as a "magic bag": we ask it for memory, and it magically
+  creates some for us. Sometimes we run into problems because the heap is
+  <em>not</em> magic.</p>
+
+  <p>The heap is limited. Even on large systems (i.e., not embedded) with
+  huge amounts of virtual memory available, there is a limit. Everyone is
+  aware of the physical limit, but there is a more subtle, "virtual" limit,
+  that limit at which your program (or the entire system) slows down due to
+  the use of virtual memory. This virtual limit is much closer to your
+  program than the physical limit, especially if you are running on a
+  multitasking system. Therefore, when running on a large system, it is
+  considered "nice" to make your program use as few resources as necessary,
+  and release them as soon as possible. When using an embedded system,
+  programmers usually have no memory to waste.</p>
+
+  <p>The heap is complicated. It has to satisfy any type of memory request,
+  for any size, and do it <em>fast</em>. The common approaches to memory
+  management have to do with splitting the memory up into portions, and
+  keeping them ordered by size in some sort of a tree or list structure. Add
+  in other factors, such as locality and estimating lifetime, and heaps
+  quickly become very complicated. So complicated, in fact, that there is no
+  known "perfect" answer to the problem of how to do dynamic memory
+  allocation. The diagrams below illustrate how most common memory managers
+  work: for each chunk of memory, it uses part of that memory to maintain its
+  internal tree or list structure. Even when a chunk is <span class=
+  "code">malloc</span>'ed out to a program, the memory manager must "save"
+  some information in it &mdash; usually just its size. Then, when the block
+  is <span class="code">free</span>'d, the memory manager can easily tell how
+  large it is.</p>
+
+  <table cellspacing="0" border="3" rules="none" style=
+  "float: left; clear: both;" summary="">
+    <caption>
+      <em>Memory block, not allocated</em>
+    </caption>
+
+    <tr>
+      <td style="background-color: red; text-align: center;">Memory not
+      belonging to process</td>
+    </tr>
+
+    <tr>
+      <td style=
+      "padding: 1em 0em; background-color: silver; text-align: center;">
+      Memory used internally by memory allocator algorithm (usually 8-12
+      bytes)</td>
+    </tr>
+
+    <tr>
+      <td style=
+      "padding: 2em 0em; background-color: gray; text-align: center">Unused
+      memory</td>
+    </tr>
+
+    <tr>
+      <td style="background-color: red; text-align: center;">Memory not
+      belonging to process</td>
+    </tr>
+  </table>
+
+  <table cellspacing="0" border="3" rules="none" style=
+  "float: right; clear: both;" summary="">
+    <caption>
+      <em>Memory block, allocated (used by program)</em>
+    </caption>
+
+    <tr>
+      <td style="background-color: red; text-align: center;">Memory not
+      belonging to process</td>
+    </tr>
+
+    <tr>
+      <td style="background-color: silver; text-align: center;">Memory used
+      internally by memory allocator algorithm (usually 4 bytes)</td>
+    </tr>
+
+    <tr>
+      <td style=
+      "padding: 3em 0em; background-color: yellow; text-align: center">Memory
+      usable by program</td>
+    </tr>
+
+    <tr>
+      <td style="background-color: red; text-align: center;">Memory not
+      belonging to process</td>
+    </tr>
+  </table>
+
+  <p>Because of the complication of dynamic memory allocation, it is often
+  inefficient in terms of time and/or space. Most memory allocation
+  algorithms store some form of information with each memory block, either
+  the block size or some relational information, such as its position in the
+  internal tree or list structure. It is common for such "header fields" to
+  take up one machine word in a block that is being used by the program. The
+  obvious problem, then, is when small objects are dynamically allocated. For
+  example, if <span class="code">int</span>s were dynamically allocated, then
+  automatically the algorithm will reserve space for the header fields as
+  well, and we end up with a 50% waste of memory. Of course, this is a
+  worst-case scenario. However, more modern programs are making use of small
+  objects on the heap; and that is making this problem more and more
+  apparent. Wilson <em>et. al.</em> state that an average-case memory
+  overhead is about ten to twenty percent<sup><a href="#ref2">2</a></sup>.
+  This memory overhead will grow higher as more programs use more smaller
+  objects. It is this memory overhead that brings programs closer to the
+  virtual limit.</p>
+
+  <p>In larger systems, the memory overhead is not as big of a problem
+  (compared to the amount of time it would take to work around it), and thus
+  is often ignored. However, there are situations where many allocations
+  and/or deallocations of smaller objects are taking place as part of a
+  time-critical algorithm, and in these situations, the system-supplied
+  memory allocator is often too slow.</p>
+
+  <p>Simple segregated storage addresses both of these issues. Almost all
+  memory overhead is done away with, and all allocations can take place in a
+  small amount of (amortized) constant time. However, this is done at the
+  loss of generality; simple segregated storage only can allocate memory
+  chunks of a single size.</p>
+  <hr>
+
+  <h1 align="center">Simple Segregated Storage</h1>
+
+  <p>Simple Segregated Storage is the basic idea behind the Boost Pool
+  library. Simple Segregated Storage is the simplest, and probably the
+  fastest, memory allocation/deallocation algorithm. It begins by
+  <em>partitioning</em> a memory <em>block</em> into fixed-size
+  <em>chunks</em>. Where the block comes from is not important until
+  implementation time. A <em>Pool</em> is some object that uses Simple
+  Segregated Storage in this fashion. To illustrate:</p>
+
+  <table cellspacing="0" border="3" rules="none" align="center" style=
+  "clear: both;" summary="">
+    <caption>
+      <em>Memory block, split into chunks</em>
+    </caption>
+
+    <tr>
+      <td style="background-color: red; text-align: center;">Memory not
+      belonging to process</td>
+    </tr>
+
+    <tr>
+      <td style=
+      "padding: 1em 0em; background-color: gray; text-align: center;">Chunk
+      0</td>
+    </tr>
+
+    <tr>
+      <td style=
+      "padding: 1em 0em; background-color: gray; text-align: center;">Chunk
+      1</td>
+    </tr>
+
+    <tr>
+      <td style=
+      "padding: 1em 0em; background-color: gray; text-align: center;">Chunk
+      2</td>
+    </tr>
+
+    <tr>
+      <td style=
+      "padding: 1em 0em; background-color: gray; text-align: center;">Chunk
+      3</td>
+    </tr>
+
+    <tr>
+      <td style="background-color: red; text-align: center;">Memory not
+      belonging to process</td>
+    </tr>
+  </table>
+
+  <p>Each of the chunks in any given block are <strong>always</strong> the
+  same size. This is the fundamental restriction of Simple Segregated
+  Storage: you cannot ask for chunks of different sizes. For example, you
+  cannot ask a Pool of integers for a character, or a Pool of characters for
+  an integer (assuming that characters and integers are different sizes).</p>
+
+  <p>Simple Segregated Storage works by interleaving a <em>free list</em>
+  within the unused chunks. For example:</p>
+
+  <table cellspacing="0" border="3" rules="none" style=
+  "float: left; clear: both;" summary="">
+    <caption>
+      <em>Memory block, with no chunks allocated</em>
+    </caption>
+
+    <tr>
+      <td style="background-color: red; text-align: center;">Memory not
+      belonging to process</td>
+    </tr>
+
+    <tr>
+      <td style=
+      "padding: 1em 0em; background-color: gray; text-align: center;">Chunk
+      0; points to Chunk 1</td>
+    </tr>
+
+    <tr>
+      <td style=
+      "padding: 1em 0em; background-color: gray; text-align: center;">Chunk
+      1; points to Chunk 2</td>
+    </tr>
+
+    <tr>
+      <td style=
+      "padding: 1em 0em; background-color: gray; text-align: center;">Chunk
+      2; points to Chunk 3</td>
+    </tr>
+
+    <tr>
+      <td style=
+      "padding: 1em 0em; background-color: gray; text-align: center;">Chunk
+      3; end-of-list</td>
+    </tr>
+
+    <tr>
+      <td style="background-color: red; text-align: center;">Memory not
+      belonging to process</td>
+    </tr>
+  </table>
+
+  <table cellspacing="0" border="3" rules="none" style=
+  "float: right; clear: both;" summary="">
+    <caption>
+      <em>Memory block, with two chunks allocated</em>
+    </caption>
+
+    <tr>
+      <td style="background-color: red; text-align: center;">Memory not
+      belonging to process</td>
+    </tr>
+
+    <tr>
+      <td style=
+      "padding: 1em 0em; background-color: gray; text-align: center;">Chunk
+      0; points to Chunk 2</td>
+    </tr>
+
+    <tr>
+      <td style=
+      "padding: 1em 0em; background-color: silver; text-align: center;">Chunk
+      1 (in use by process)</td>
+    </tr>
+
+    <tr>
+      <td style=
+      "padding: 1em 0em; background-color: gray; text-align: center;">Chunk
+      2; end-of-list</td>
+    </tr>
+
+    <tr>
+      <td style=
+      "padding: 1em 0em; background-color: silver; text-align: center;">Chunk
+      3 (in use by process)</td>
+    </tr>
+
+    <tr>
+      <td style="background-color: red; text-align: center;">Memory not
+      belonging to process</td>
+    </tr>
+  </table>
+
+  <p>By interleaving the free list inside the chunks, each Simple Segregated
+  Storage only has the overhead of a single pointer (the pointer to the first
+  element in the list). It has <em>no</em> memory overhead for chunks that
+  are in use by the process.</p>
+
+  <p>Simple Segregated Storage is also extremely fast. In the simplest case,
+  memory allocation is merely removing the first chunk from the free list, a
+  O(1) operation. In the case where the free list is empty, another block may
+  have to be acquired and partitioned, which would result in an amortized
+  O(1) time. Memory deallocation may be as simple as adding that chunk to the
+  front of the free list, a O(1) operation. However, more complicated uses of
+  Simple Segregated Storage may require a sorted free list, which makes
+  deallocation O(N).</p>
+
+  <p>Simple Segregated Storage gives faster execution and less memory
+  overhead than a system-supplied allocator, but at the loss of generality. A
+  good place to use a Pool is in situations where many (noncontiguous) small
+  objects may be allocated on the heap, or if allocation and deallocation of
+  the same-sized objects happens repeatedly.<br clear="all"></p>
+  <hr>
+
+  <h2>References</h2>
+
+  <ol>
+    <li><a name="ref1" id="ref1">Doug Lea, <em>A Memory Allocator</em>.</a>
+    Available on the web at <a href=
+    "http://gee.cs.oswego.edu/dl/html/malloc.html">http://gee.cs.oswego.edu/dl/html/malloc.html</a></li>
+
+    <li><a name="ref2" id="ref2">Paul R. Wilson, Mark S. Johnstone, Michael
+    Neely, and David Boles, "Dynamic Storage Allocation: A Survey and
+    Critical Review" in <em>International Workshop on Memory Management</em>,
+    September 1995, pg. 28, 36.</a> Available on the web at <a href=
+    "ftp://ftp.cs.utexas.edu/pub/garbage/allocsrv.ps">ftp://ftp.cs.utexas.edu/pub/garbage/allocsrv.ps</a></li>
+  </ol>
+
+  <h2>Other Implementations</h2>
+
+  <p>Pool allocators are found in many programming languages, and in many
+  variations. The beginnings of many implementations may be found in common
+  programming literature; some of these are given below. Note that none of
+  these are complete implementations of a Pool; most of these leave some
+  aspects of a Pool as a user exercise. However, in each case, even though
+  some aspects are missing, these examples use the same underlying concept of
+  a Simple Segregated Storage described in this document.</p>
+
+  <ul>
+    <li>"The C++ Programming Language", 3rd ed., by Bjarne Stroustrup,
+    Section 19.4.2. Missing aspects:
+
+      <ol>
+        <li>Not portable</li>
+
+        <li>Cannot handle allocations of arbitrary numbers of objects (this
+        was left as an exercise)</li>
+
+        <li>Not thread-safe</li>
+
+        <li>Suffers from the static initialization problem</li>
+      </ol>
+    </li>
+
+    <li>"MicroC/OS-II: The Real-Time Kernel", by Jean J. Labrosse, Chapter 7
+    and Appendix B.04. This is an example of the Simple Segregated Storage
+    scheme at work in the internals of an actual OS. Missing aspects:
+
+      <ol>
+        <li>Not portable (though this is OK, since it's part of its own
+        OS)</li>
+
+        <li>Cannot handle allocations of arbitrary numbers of blocks (which
+        is also OK, since this feature is not needed)</li>
+
+        <li>Requires non-intuitive user code to create and destroy the
+        Pool</li>
+      </ol>
+    </li>
+
+    <li>"Efficient C++: Performance Programming Techniques", by Dov Bulka and
+    David Mayhew, Chapters 6 and 7. This is a good example of iteratively
+    developing a Pool solution; however, their premise (that the
+    system-supplied allocation mechanism is hopelessly inefficient) is flawed
+    on every system I've tested on. Run their timings on your system before
+    you accept their conclusions. Missing aspects:
+
+      <ol>
+        <li>Requires non-intuitive user code to create and destroy the
+        Pool</li>
+      </ol>
+    </li>
+
+    <li>"Advanced C++: Programming Styles and Idioms", by James O. Coplien,
+    Section 3.6. This has examples of both static and dynamic pooling.
+    Missing aspects:
+
+      <ol>
+        <li>Not thread-safe</li>
+
+        <li>The static pooling example is not portable</li>
+      </ol>
+    </li>
+  </ul>
+  <hr>
+
+  <p><a href="http://validator.w3.org/check?uri=referer"><img border="0" src=
+  "http://www.w3.org/Icons/valid-html401" alt="Valid HTML 4.01 Transitional"
+  height="31" width="88"></a></p>
+
+  <p>Revised 
+  <!--webbot bot="Timestamp" s-type="EDITED" s-format="%d %B, %Y" startspan -->05
+  December, 2006<!--webbot bot="Timestamp" endspan i-checksum="38516" --></p>
+
+  <p><i>Copyright &copy; 2000, 2001 Stephen Cleary (scleary AT jerviswebb DOT
+  com)</i></p>
+
+  <p><i>Distributed under the Boost Software License, Version 1.0. (See
+  accompanying file <a href="../../../LICENSE_1_0.txt">LICENSE_1_0.txt</a> or
+  copy at <a href=
+  "http://www.boost.org/LICENSE_1_0.txt">http://www.boost.org/LICENSE_1_0.txt</a>)</i></p>
+</body>
+</html>

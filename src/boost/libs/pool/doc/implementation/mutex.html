@@ -1,0 +1,182 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+<head>
+  <meta http-equiv="Content-Language" content="en-us">
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+  <link href="../pool.css" rel="stylesheet" type="text/css">
+
+  <title>mutex - Mutex</title>
+</head>
+
+<body>
+  <img src="../../../../boost.png" width="276" height="86" alt="C++ Boost">
+
+  <h1 align="center">mutex - Mutex</h1>
+
+  <h2>Introduction</h2>
+
+  <p>detail/mutex.hpp provides several mutex types that provide a consistent
+  interface for OS-supplied mutex types. These are all thread-level mutexes;
+  interprocess mutexes are not supported.</p>
+
+  <h2>Configuration</h2>
+
+  <p>This header file will try to guess what kind of system it is on. It will
+  auto-configure itself for Win32 or POSIX+pthread systems. To stub out all
+  mutex code, bypassing the auto-configuration, <span class="code">#define
+  BOOST_NO_MT</span> before any inclusion of this header. To prevent ODR
+  violations, this should be defined in <strong>every</strong> translation
+  unit in your project, including any library files.</p>
+
+  <h2>Synopsis</h2>
+  <pre class="code">
+namespace details {
+namespace pool {
+
+// Only present if on a Win32 system
+class Win32_mutex
+{
+  private:
+    Win32_mutex(const Win32_mutex &amp;);
+    void operator=(const Win32_mutex &amp;);
+
+  public:
+    Win32_mutex();
+    ~Win32_mutex();
+
+    void lock();
+    void unlock();
+};
+
+// Only present if on a POSIX+pthread system
+class pthread_mutex
+{
+  private:
+    pthread_mutex(const pthread_mutex &amp;);
+    void operator=(const pthread_mutex &amp;);
+
+  public:
+    pthread_mutex();
+    ~pthread_mutex();
+
+    void lock();
+    void unlock();
+};
+
+// Present on all systems
+class null_mutex
+{
+  private:
+    null_mutex(const null_mutex &amp;);
+    void operator=(const null_mutex &amp;);
+
+  public:
+    null_mutex();
+    ~null_mutex();
+
+    static void lock();
+    static void unlock();
+};
+
+// This will be one of the types above
+typedef ... default_mutex;
+
+} // namespace pool
+} // namespace details
+</pre>
+
+  <h2>Semantics</h2>
+
+  <table border align="center" summary="">
+    <caption>
+      <em>Symbol Table</em>
+    </caption>
+
+    <tr>
+      <th>Symbol</th>
+
+      <th>Meaning</th>
+    </tr>
+
+    <tr>
+      <td class="code">Mutex</td>
+
+      <td>Any type defined in this header</td>
+    </tr>
+
+    <tr>
+      <td class="code">t</td>
+
+      <td>value of type <span class="code">Mutex</span></td>
+    </tr>
+  </table><br>
+
+  <table border align="center" summary="">
+    <caption>
+      <em>Requirements satisfied by <span class="code">mutex</span></em>
+    </caption>
+
+    <tr>
+      <th>Expression</th>
+
+      <th>Return Type</th>
+
+      <th>Assertion/Note/Pre/Post-Condition</th>
+    </tr>
+
+    <tr>
+      <td class="code">m.lock()</td>
+
+      <td>not used</td>
+
+      <td>Locks the mutex</td>
+    </tr>
+
+    <tr>
+      <td class="code">m.unlock()</td>
+
+      <td>not used</td>
+
+      <td>Unlocks the mutex</td>
+    </tr>
+  </table>
+
+  <p>Each mutex is always either owned or unowned. If owned, then it is owned
+  by a particular thread. To "lock" a mutex means to wait until the mutex is
+  unowned, and then make it owned by the current thread. To "unlock" a mutex
+  means to release ownership from the current thread (note that the current
+  thread <strong>must</strong> own the mutex to release that ownership!). As
+  a special case, the <span class="code">null_mutex</span> never waits.</p>
+
+  <h2>Dependencies</h2>
+
+  <p>May include the system headers <span class=
+  "code">&lt;windows.h&gt;</span>, <span class=
+  "code">&lt;unistd.h&gt;</span>, and/or <span class=
+  "code">&lt;pthread.h&gt;</span>.</p>
+
+  <h2>Future Directions</h2>
+
+  <p>This header will eventually be replaced by a Boost multithreading
+  library.</p>
+  <hr>
+
+  <p><a href="http://validator.w3.org/check?uri=referer"><img border="0" src=
+  "http://www.w3.org/Icons/valid-html401" alt="Valid HTML 4.01 Transitional"
+  height="31" width="88"></a></p>
+
+  <p>Revised 
+  <!--webbot bot="Timestamp" s-type="EDITED" s-format="%d %B, %Y" startspan -->05
+  December, 2006<!--webbot bot="Timestamp" endspan i-checksum="38516" --></p>
+
+  <p><i>Copyright &copy; 2000, 2001 Stephen Cleary (scleary AT jerviswebb DOT
+  com)</i></p>
+
+  <p><i>Distributed under the Boost Software License, Version 1.0. (See
+  accompanying file <a href="../../../../LICENSE_1_0.txt">LICENSE_1_0.txt</a>
+  or copy at <a href=
+  "http://www.boost.org/LICENSE_1_0.txt">http://www.boost.org/LICENSE_1_0.txt</a>)</i></p>
+</body>
+</html>

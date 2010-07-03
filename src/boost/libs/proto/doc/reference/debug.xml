@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<header name="boost/proto/debug.hpp">
+  <para>Utilities for debugging Proto expression trees </para>
+  <namespace name="boost">
+    <namespace name="proto">
+      <namespace name="functional">
+
+        <!-- proto::functional::display_expr -->
+        <struct name="display_expr">
+          <purpose>Pretty-print a Proto expression tree. </purpose>
+          <description>
+            <para>
+              A <conceptname>PolymorphicFunctionObject</conceptname> which accepts a Proto expression tree and pretty-prints it to an <computeroutput>ostream</computeroutput> for debugging purposes.
+            </para>
+          </description>
+
+          <typedef name="result_type">
+            <type>void</type>
+          </typedef>
+
+          <method-group name="public member functions">
+            <method name="operator()" cv="const">
+              <type>void</type>
+              <template>
+                <template-type-parameter name="Expr"/>
+              </template>
+              <parameter name="expr">
+                <paramtype>Expr const &amp;</paramtype>
+              </parameter>
+            </method>
+          </method-group>
+
+          <constructor>
+            <parameter name="sout"><paramtype>std::ostream &amp;</paramtype><default>std::cout</default>
+              <description>
+                <para>
+                  The <computeroutput>ostream</computeroutput> to which the expression tree will be written.
+                </para>
+              </description>
+            </parameter>
+            <parameter name="depth">
+              <paramtype>int</paramtype>
+              <default>0</default>
+              <description>
+                <para>
+                  The starting indentation depth for this node. Children nodes will be displayed at a starting depth of <computeroutput>depth+4</computeroutput>.
+                </para>
+              </description>
+            </parameter>
+          </constructor>
+        </struct>
+
+      </namespace>
+
+      <!-- proto::display_expr -->
+      <overloaded-function name="display_expr">
+
+        <signature>
+          <type>void</type>
+          <template>
+            <template-type-parameter name="Expr"/>
+          </template>
+          <parameter name="expr">
+            <paramtype>Expr const &amp;</paramtype>
+            <description>
+              <para>The Proto expression tree to pretty-print </para>
+            </description>
+          </parameter>
+          <parameter name="sout">
+            <paramtype>std::ostream &amp;</paramtype>
+            <description>
+              <para>
+                The <computeroutput>ostream</computeroutput> to which the output should be written. If not specified, defaults to <computeroutput>std::cout</computeroutput>.
+              </para>
+            </description>
+          </parameter>
+        </signature>
+
+        <signature>
+          <type>void</type>
+          <template>
+            <template-type-parameter name="Expr"/>
+          </template>
+          <parameter name="expr">
+            <paramtype>Expr const &amp;</paramtype>
+          </parameter>
+        </signature>
+        <purpose>Pretty-print a Proto expression tree. </purpose>
+        <notes>
+          <para>
+            Equivalent to <computeroutput><classname alt="boost::proto::functional::display_expr">proto::functional::display_expr</classname>(0, sout)(expr)</computeroutput>.
+          </para>
+        </notes>
+      </overloaded-function>
+
+    </namespace>
+  </namespace>
+</header>

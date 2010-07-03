@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- Copyright Aleksey Gurtovoy 2006. Distributed under the Boost -->
+<!-- Software License, Version 1.0. (See accompanying -->
+<!-- file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt) -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.3.6: http://docutils.sourceforge.net/" />
+<title>The MPL Reference Manual: Integral Constant</title>
+<link rel="stylesheet" href="../style.css" type="text/css" />
+</head>
+<body class="docframe refmanual">
+<table class="header"><tr class="header"><td class="header-group navigation-bar"><span class="navigation-group"><a href="./data-concepts.html" class="navigation-link">Prev</a>&nbsp;<a href="./numeric.html" class="navigation-link">Next</a></span><span class="navigation-group-separator">&nbsp;|&nbsp;</span><span class="navigation-group">Back&nbsp;Along</span><span class="navigation-group-separator">&nbsp;|&nbsp;</span><span class="navigation-group"><a href="./data-concepts.html" class="navigation-link">Up</a>&nbsp;<a href="../refmanual.html" class="navigation-link">Home</a></span><span class="navigation-group-separator">&nbsp;|&nbsp;</span><span class="navigation-group"><a href="./refmanual_toc.html" class="navigation-link">Full TOC</a></span></td>
+<td class="header-group page-location"><a href="../refmanual.html" class="navigation-link">Front Page</a> / <a href="./data-types.html" class="navigation-link">Data Types</a> / <a href="./data-concepts.html" class="navigation-link">Concepts</a> / <a href="./integral-constant.html" class="navigation-link">Integral Constant</a></td>
+</tr></table><div class="header-separator"></div>
+<div class="section" id="integral-constant">
+<h1><a class="toc-backref" href="./data-concepts.html#id498" name="integral-constant">Integral Constant</a></h1>
+<div class="section" id="data-integral-description">
+<h3><a class="subsection-title" href="#description" name="description">Description</a></h3>
+<p>An <a class="reference" href="./integral-constant.html">Integral Constant</a> is a holder class for a compile-time value of an
+integral type. Every <a class="reference" href="./integral-constant.html">Integral Constant</a> is also a nullary <a class="reference" href="./metafunction.html">Metafunction</a>, 
+returning itself. An integral constant <em>object</em> is implicitly convertible to the 
+corresponding run-time value of the wrapped integral type.</p>
+</div>
+<div class="section" id="data-integral-expression-requirements">
+<h3><a class="subsection-title" href="#expression-requirements" name="expression-requirements">Expression requirements</a></h3>
+<p>In the following table and subsequent specifications, <tt class="literal"><span class="pre">n</span></tt> is a model of <a class="reference" href="./integral-constant.html">Integral Constant</a>.</p>
+<table border="1" class="table">
+<colgroup>
+<col width="35%" />
+<col width="39%" />
+<col width="27%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th>Expression</th>
+<th>Type</th>
+<th>Complexity</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="literal"><span class="pre">n::<a href="./value-type.html" class="identifier">value_type</a></span></tt></td>
+<td>An integral type</td>
+<td>Constant time.</td>
+</tr>
+<tr><td><tt class="literal"><span class="pre">n::value</span></tt></td>
+<td>An integral constant expression</td>
+<td>Constant time.</td>
+</tr>
+<tr><td><tt class="literal"><span class="pre">n::type</span></tt></td>
+<td><a class="reference" href="./integral-constant.html">Integral Constant</a></td>
+<td>Constant time.</td>
+</tr>
+<tr><td><tt class="literal"><span class="pre"><a href="./next.html" class="identifier">next</a>&lt;n&gt;::type</span></tt></td>
+<td><a class="reference" href="./integral-constant.html">Integral Constant</a></td>
+<td>Constant time.</td>
+</tr>
+<tr><td><tt class="literal"><span class="pre"><a href="./prior.html" class="identifier">prior</a>&lt;n&gt;::type</span></tt></td>
+<td><a class="reference" href="./integral-constant.html">Integral Constant</a></td>
+<td>Constant time.</td>
+</tr>
+<tr><td><tt class="literal"><span class="pre">n::<a href="./value-type.html" class="identifier">value_type</a></span> <span class="pre">const</span> <span class="pre">c</span> <span class="pre">=</span> <span class="pre">n()</span></tt></td>
+<td>&nbsp;</td>
+<td>Constant time.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="data-integral-expression-semantics">
+<h3><a class="subsection-title" href="#expression-semantics" name="expression-semantics">Expression semantics</a></h3>
+<table border="1" class="table">
+<colgroup>
+<col width="40%" />
+<col width="60%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th>Expression</th>
+<th>Semantics</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="literal"><span class="pre">n::<a href="./value-type.html" class="identifier">value_type</a></span></tt></td>
+<td>A cv-unqualified type of <tt class="literal"><span class="pre">n::value</span></tt>.</td>
+</tr>
+<tr><td><tt class="literal"><span class="pre">n::value</span></tt></td>
+<td>The value of the wrapped integral constant.</td>
+</tr>
+<tr><td><tt class="literal"><span class="pre">n::type</span></tt></td>
+<td><tt class="literal"><span class="pre">is_same&lt;n::type,n&gt;::value</span> <span class="pre">==</span> <span class="pre">true</span></tt>.</td>
+</tr>
+<tr><td><tt class="literal"><span class="pre"><a href="./next.html" class="identifier">next</a>&lt;n&gt;::type</span></tt></td>
+<td>An <a class="reference" href="./integral-constant.html">Integral Constant</a> <tt class="literal"><span class="pre">c</span></tt> of type <tt class="literal"><span class="pre">n::<a href="./value-type.html" class="identifier">value_type</a></span></tt>
+such that <tt class="literal"><span class="pre">c::value</span> <span class="pre">==</span> <span class="pre">n::value</span> <span class="pre">+</span> <span class="pre">1</span></tt>.</td>
+</tr>
+<tr><td><tt class="literal"><span class="pre"><a href="./prior.html" class="identifier">prior</a>&lt;n&gt;::type</span></tt></td>
+<td>An <a class="reference" href="./integral-constant.html">Integral Constant</a> <tt class="literal"><span class="pre">c</span></tt> of type <tt class="literal"><span class="pre">n::<a href="./value-type.html" class="identifier">value_type</a></span></tt>
+such that <tt class="literal"><span class="pre">c::value</span> <span class="pre">==</span> <span class="pre">n::value</span> <span class="pre">-</span> <span class="pre">1</span></tt>.</td>
+</tr>
+<tr><td><tt class="literal"><span class="pre">n::<a href="./value-type.html" class="identifier">value_type</a></span> <span class="pre">const</span> <span class="pre">c</span> <span class="pre">=</span> <span class="pre">n()</span></tt></td>
+<td><tt class="literal"><span class="pre">c</span> <span class="pre">==</span> <span class="pre">n::value</span></tt>.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="data-integral-models">
+<h3><a class="subsection-title" href="#models" name="models">Models</a></h3>
+<ul class="simple">
+<li><a class="refentry reference" href="./bool.html"><tt class="refentry literal"><span class="pre">bool_</span></tt></a></li>
+<li><a class="refentry reference" href="./int.html"><tt class="refentry literal"><span class="pre">int_</span></tt></a></li>
+<li><a class="refentry reference" href="./long.html"><tt class="refentry literal"><span class="pre">long_</span></tt></a></li>
+<li><a class="refentry reference" href="./integral-c.html"><tt class="refentry literal"><span class="pre">integral_c</span></tt></a></li>
+</ul>
+</div>
+<div class="section" id="data-integral-see-also">
+<h3><a class="subsection-title" href="#see-also" name="see-also">See also</a></h3>
+<p><a class="reference" href="./data-types.html">Data Types</a>, <a class="reference" href="./integral-sequence-wrapper.html">Integral Sequence Wrapper</a>, <a class="refentry reference" href="./integral-c.html"><tt class="refentry literal"><span class="pre">integral_c</span></tt></a></p>
+<!-- modtime: November 13, 2004 01:43:06 +0000 -->
+</div>
+</div>
+
+<div class="footer-separator"></div>
+<table class="footer"><tr class="footer"><td class="header-group navigation-bar"><span class="navigation-group"><a href="./data-concepts.html" class="navigation-link">Prev</a>&nbsp;<a href="./numeric.html" class="navigation-link">Next</a></span><span class="navigation-group-separator">&nbsp;|&nbsp;</span><span class="navigation-group">Back&nbsp;Along</span><span class="navigation-group-separator">&nbsp;|&nbsp;</span><span class="navigation-group"><a href="./data-concepts.html" class="navigation-link">Up</a>&nbsp;<a href="../refmanual.html" class="navigation-link">Home</a></span><span class="navigation-group-separator">&nbsp;|&nbsp;</span><span class="navigation-group"><a href="./refmanual_toc.html" class="navigation-link">Full TOC</a></span></td>
+</tr></table></body>
+</html>

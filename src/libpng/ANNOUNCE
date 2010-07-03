@@ -1,0 +1,62 @@
+
+Libpng 1.2.26 - April 2, 2008
+
+This is a public release of libpng, intended for use in production codes.
+
+Files available for download:
+
+Source files with LF line endings (for Unix/Linux) and with a
+"configure" script
+
+   libpng-1.2.26.tar.gz
+   libpng-1.2.26.tar.lzma
+     (Get the lzma codec from <http://tukaani.org/lzma>).
+   libpng-1.2.26.tar.bz2
+
+Source files with LF line endings (for Unix/Linux) without the
+"configure" script
+
+   libpng-1.2.26-no-config.tar.gz
+   libpng-1.2.26-no-config.tar.lzma
+   libpng-1.2.26-no-config.tar.bz2
+
+Source files with CRLF line endings (for Windows), without the
+"configure" script
+
+   lpng1226.zip
+   lpng1226.7z
+   lpng1226.tar.bz2
+
+Project files
+
+   libpng-1.2.26-project-netware.zip
+   libpng-1.2.26-project-wince.zip
+
+Other information:
+
+   libpng-1.2.26-README.txt
+   libpng-1.2.26-KNOWNBUGS.txt
+   libpng-1.2.26-LICENSE.txt
+   libpng-1.2.26-Y2K-compliance.txt
+   libpng-1.2.26-[previous version]-diff.txt
+
+Changes since the last public release (1.2.25):
+
+version 1.2.26 [April 2, 2008]
+
+  Added missing "(" in pngmem.c.  Bug introduced in libpng-1.2.2/1.0.13
+  Refined error message returned from deflateInit2 in pngwutil.c
+  Check IHDR length in png_push_read_chunk() before saving it.
+  Revised contrib/gregbook to handle premature end-of-file and file
+    read errors correctly.
+  Free png_ptr->big_row_buf and png_ptr->prev_row before allocating
+    new copies in png_read_start_row().
+  Avoid reallocating big_row_buf and prev_row when the size does not increase.
+  Ifdef out some code that is unused when interlacing is not supported.
+
+Send comments/corrections/commendations to png-mng-implement at lists.sf.net
+(subscription required; visit 
+https://lists.sourceforge.net/lists/listinfo/png-mng-implement
+to subscribe) or to glennrp at users.sourceforge.net
+
+Glenn R-P

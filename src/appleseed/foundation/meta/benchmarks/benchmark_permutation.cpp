@@ -1,0 +1,145 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2010 Francois Beaune
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// appleseed.foundation headers.
+#include "foundation/math/permutation.h"
+#include "foundation/math/rng.h"
+#include "foundation/platform/types.h"
+#include "foundation/utility/benchmark.h"
+
+// Standard headers.
+#include <cstddef>
+#include <cstring>
+
+FOUNDATION_BENCHMARK_SUITE(Foundation_Math_Permutation)
+{
+    using namespace foundation;
+    using namespace std;
+
+    template <size_t ItemSize>      // in 4-byte words
+    struct FixtureBase
+    {
+        static const size_t ItemCount = 256;
+
+        struct Item
+        {
+            uint32 data[ItemSize];
+        };
+
+        size_t  m_ordering1[ItemCount];
+        size_t  m_ordering2[ItemCount];
+        Item    m_items[ItemCount];
+
+        FixtureBase()
+        {
+            // Generate orderings.
+            MersenneTwister rng;
+            random_permutation(ItemCount, m_ordering1, rng);
+            random_permutation(ItemCount, m_ordering2, rng);
+
+            // Initialize items.
+            memset(m_items, 0, sizeof(m_items));
+        }
+    };
+
+    template <size_t ItemSize>
+    struct SmallItemFixture
+      : public FixtureBase<ItemSize>
+    {
+        Item m_temp[ItemCount];
+
+        void payload()
+        {
+            small_item_reorder(m_items, m_temp, m_ordering1, ItemCount);
+            small_item_reorder(m_items, m_temp, m_ordering2, ItemCount);
+        }
+    };
+
+    template <size_t ItemSize>
+    struct LargeItemFixture
+      : public FixtureBase<ItemSize>
+    {
+        size_t m_tags[ItemCount];
+
+        void payload()
+        {
+            large_item_reorder(m_items, m_tags, m_ordering1, ItemCount);
+            large_item_reorder(m_items, m_tags, m_ordering2, ItemCount);
+        }
+    };
+
+    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(BenchmarkSmallItemReorder4Bytes, SmallItemFixture<1>)
+    {
+        payload();
+    }
+
+    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(BenchmarkLargeItemReorder4Bytes, LargeItemFixture<1>)
+    {
+        payload();
+    }
+
+    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(BenchmarkSmallItemReorder8Bytes, SmallItemFixture<2>)
+    {
+        payload();
+    }
+
+    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(BenchmarkLargeItemReorder8Bytes, LargeItemFixture<2>)
+    {
+        payload();
+    }
+
+    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(BenchmarkSmallItemReorder16Bytes, SmallItemFixture<4>)
+    {
+        payload();
+    }
+
+    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(BenchmarkLargeItemReorder16Bytes, LargeItemFixture<4>)
+    {
+        payload();
+    }
+
+    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(BenchmarkSmallItemReorder32Bytes, SmallItemFixture<8>)
+    {
+        payload();
+    }
+
+    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(BenchmarkLargeItemReorder32Bytes, LargeItemFixture<8>)
+    {
+        payload();
+    }
+
+    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(BenchmarkSmallItemReorder64Bytes, SmallItemFixture<16>)
+    {
+        payload();
+    }
+
+    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(BenchmarkLargeItemReorder64Bytes, LargeItemFixture<16>)
+    {
+        payload();
+    }
+}

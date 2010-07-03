@@ -1,0 +1,261 @@
+<?xml version="1.0" ?>
+<!--
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+
+<!DOCTYPE faqs SYSTEM "sbk:/style/dtd/faqs.dtd">
+
+<faqs title="Distributing &XercesCName;">
+
+  <faq title="What platforms / compilers are being used to build the binary distribution kits?">
+
+    <q>What platforms / compilers are being used to build the binary distribution kits?</q>
+
+    <a>
+
+      <p>&XercesCProjectName; binaries has been built on the following platforms with
+        these compilers</p>
+
+	   &build-winunix-supported-platforms;
+
+    </a>
+  </faq>
+
+    <faq title="What are the differences between Xerces-C and XML4C?">
+        <q>What are the differences between Xerces-C and XML4C?</q>
+        <a>
+
+            <p>By default &XercesCName; has intrinsic support for ASCII, UTF-8, UTF-16
+            (Big/Small Endian), UCS4 (Big/Small Endian), EBCDIC code pages IBM037, IBM1047 and
+            IBM1140 encodings, ISO-8859-1 (aka Latin1) and Windows-1252. This means that it can parse
+            input XML files in these above mentioned encodings.</p>
+
+            <p>However, if you wish to parse XML files in any other
+            encodings, say in Shift-JIS, Big5 etc., then you will
+            need to build &XercesCName; with the <jump
+            href="http://icu-project.org/">
+            International Components for Unicode (ICU)</jump> library.</p>
+
+
+            <p><jump href="http://alphaworks.ibm.com/tech/xml4c">XML4C</jump>
+               is simply &XercesCName; built with ICU.</p>
+        </a>
+    </faq>
+
+    <faq title="Which DLL's do I need to distribute with my application?">
+        <q>Which DLL's do I need to distribute with my application?</q>
+        <a>
+
+            <p>You only need to distribute <em>one</em> file:<br></br>
+
+            &XercesCWindowsDLL;.dll for Windows, or<br/>
+            &XercesCUnixLib;&XercesCUnixSoName;.a for AIX, or<br/>
+            &XercesCUnixLib;.so.&XercesCUnixSoName; for Solaris/Linux, or<br/>
+            &XercesCUnixLib;.sl.&XercesCUnixSoName; for HP-UX on PA-RISC, or<br/>
+            &XercesCUnixLib;.so.&XercesCUnixSoName; for HP-UX on IA64, or<br/>
+            &XercesCUnixLib;.&XercesCUnixSoName;.dylib for Mac OS X.
+            </p>
+
+            <p>However, if you are using the ICU transcoder then in
+            <em>addition</em> to the library file
+            mentioned above, you also need to ship:</p>
+
+            <ol>
+                <li><em>ICU shared library file</em>:<br></br>
+                    icuuc*.dll for Windows, or<br></br>
+                    libicuuc*.a for AIX, or<br></br>
+                    libicuuc*.so for Solaris/Linux, or<br></br>
+                    libicuuc*.sl for HP-UX on PA-RISC, or<br></br>
+                    libicuuc*.so for HP-UX on IA64, or<br></br>
+                    libicuuc*.dylib for Mac OS X.</li>
+
+                <li><em>ICU converter data shared library file:</em><br></br>
+                    icudt*.dll for Windows, or<br></br>
+                    libicudt*.a for AIX, or<br></br>
+                    libicudt*.so for Solaris/Linux, or<br></br>
+                    libicudt*.sl for HP-UX on PA-RISC, or<br></br>
+                    libicudt*.so for HP-UX on IA-64, or<br></br>
+                    libicudt*.dylib for Mac OS X.</li>
+
+                <li><em>The &XercesCName; Message file:</em><br></br>
+                    XercesMessages*.dll for Windows, or<br></br>
+                    libXercesMessages*.a for AIX, or<br></br>
+                    libXercesMessages*.so for Solaris/Linux, or<br></br>
+                    libXercesMessages*.sl for HP-UX on PA-RISC, or<br></br>
+                    libXercesMessages*.so for HP-UX on IA64, or<br></br>
+                    libXercesMessages*.dylib for Mac OS X.</li>
+            </ol>
+        </a>
+    </faq>
+
+    <faq title="How do I package the sources to create a binary drop?">
+
+        <q>How do I package the sources to create a binary drop?</q>
+
+        <a>
+            <p>You have to first compile the sources inside your IDE to
+            create the required DLLs and EXEs. Then you need to copy
+            over the binaries to another directory for the binary
+            drop. A perl script has been provided to give you a jump
+            start. You need to install perl on your machine for the script to work.
+            If you have changed your source tree, you have to modify the script to suit
+            your current directory structure. To invoke the
+            script, go to the \&lt;&XercesCProjectName;&gt;\scripts directory, and type:</p>
+<source>perl packageBinaries.pl</source>
+
+            <p>You will get a message that somewhat looks like this (changes always happen,
+            we are evolving you see!): </p>
+
+<source>Usage is: packageBinaries &lt;options&gt;
+options are:  -s &lt;source_directory&gt;
+              -o &lt;target_directory&gt;
+              -c &lt;C compiler name&gt; (e.g. gcc or xlc_r)
+              -x &lt;C++ compiler name&gt; (e.g. g++ or xlC_r)
+              -m &lt;message loader&gt; can be 'inmem', 'icu' or 'iconv'
+              -n &lt;net accessor&gt; can be 'fileonly' or 'libwww'
+              -t &lt;transcoder&gt; can be 'icu' or 'native'
+              -r &lt;thread option&gt; can be 'pthread' or 'dce' (only used on HP-11)
+              -h to get help on these commands
+Example: perl packageBinaries.pl -s$HOME/&XercesCSrcInstallDir;
+                                 -o$HOME/&XercesCInstallDir;
+                                 -cgcc -xg++ -minmem
+                                 -nfileonly -tnative</source>
+
+            <p>Make sure that your compiler can be invoked from the command line and
+            follow the instructions to produce a binary drop.</p>
+        </a>
+    </faq>
+
+    <faq title="I do not see binaries for my platform. When will they be available?">
+
+        <q>I do not see binaries for my platform. When will they be available?</q>
+
+        <a>
+            <p>The reason why you see binaries only for some specific
+            platforms is that we have had the maximum requests for
+            them. Moreover, we have limited resources and hence cannot
+            publish binaries for every platform. If you wish to
+            contribute your time and effort in building binaries for a
+            specific platform/environment then please send a mail to the
+            <jump href="mailing-lists.html">&XercesCName; development mailing list</jump>.
+            We can definitely use any extra help in this open source
+            project</p>
+        </a>
+    </faq>
+
+
+    <faq title="When will a port to my platform be available?">
+
+        <q>When will a port to my platform be available?</q>
+
+        <a>
+          <p>We would like to see &XercesCProjectName; ported to as
+          many platforms as there are. Again, due to limited resources
+          we cannot do all the ports. We will help you make this port
+          happen. Here are some <jump
+          href="program-others.html#PortingGuidelines">Porting
+          Guidelines</jump>.</p>
+
+            <p>We strongly encourage you to submit the changes that
+            are required to make it work on another platform. We will
+            incorporate these changes in the source code base and make
+            them available in the future releases.</p>
+
+            <p>All porting changes may be sent to the
+            <jump href="mailing-lists.html">&XercesCName; development mailing list</jump>
+            .</p>
+        </a>
+    </faq>
+
+
+    <faq title="How can I port &XercesCProjectName; to my favourite platform?">
+        <q>How can I port &XercesCProjectName; to my favourite platform?</q>
+        <a>
+          <p>Here are some <jump
+          href="program-others.html#PortingGuidelines">Porting
+          Guidelines</jump>.</p>
+        </a>
+    </faq>
+
+
+
+    <faq title="What application do you use to create the documentation?">
+        <q>What application do you use to create the documentation?</q>
+        <a>
+            <p>We have used an internal XML based application to create the
+            documentation. The documentation files are all written in XML and the
+            application, internally codenamed StyleBook, makes use of XSL to transform
+            it into an HTML document that you are seeing right now.
+            It is currently available on the
+            <jump href="http://xml.apache.org/">Apache</jump> open source website as
+            <jump href="http://xml.apache.org/cocoon/index.html">Cocoon</jump>.</p>
+
+	    <p>The API documentation is generated using
+            <jump href="http://www.stack.nl/~dimitri/doxygen/">Doxygen</jump> and
+	    <jump href="http://www.research.att.com/sw/tools/graphviz/">GraphViz</jump>.</p>
+
+            <p>See <jump href="faq-build.html#faq-18">
+            FAQ: Regenerating (API) documentation?</jump></p>
+
+        </a>
+    </faq>
+
+
+    <faq title="Can I use &XercesCProjectName; in my product?">
+        <q>Can I use &XercesCProjectName; in my product?</q>
+        <a>
+            <p>Yes! Read the license agreement first and if you still
+            have further questions, then please address them to the
+            <jump href="mailing-lists.html">&XercesCName; user mailing list</jump>
+            .</p>
+
+        </a>
+</faq>
+
+
+   <faq title="How do I uninstall &XercesCName;?">
+       <q>How do I uninstall &XercesCName;?</q>
+       <a>
+          <p>&XercesCName; only installs itself in a single directory and does not
+          set any registry entries. Thus, to uninstall, you only need to remove the
+          directory where you installed it, and all &XercesCName; related files will be
+          removed.</p>
+       </a>
+   </faq>
+   <faq title="I am getting a tar checksum error on Solaris. What's the problem?">
+      <q>I am getting a tar checksum error on Solaris. What's the problem?</q>
+      <a>
+         <p>The problem is caused by a limitation in the original tar spec, which
+            prevented it from archiving files with long pathnames.  Unfortunately,
+            various current versions of tar use different extensions for eliminating
+            this restriction which are incompatible with each other (or they do not
+            remove the restriction at all).  Rather than altering the pathnames for
+            the &XercesCName; package, which would make them compatible with the original
+            tar spec but make it more difficult to know what was where, it was
+            decided to use GNU tar (gtar), which handles arbitrarily long pathnames
+            and is freely available on every platform on which &XercesCName; is
+            supported.  If you don't already have GNU tar installed on your system,
+            you can obtain it from the Free Software Foundation
+            <jump href="http://www.gnu.org/software/tar/tar.html">
+            http://www.gnu.org/software/tar/tar.html</jump>.  For additional
+            background information on this problem, see the online manual
+            <jump href="http://www.gnu.org/manual/tar/html_node/tar_117.html#SEC112">
+            GNU tar and POSIX tar </jump> for the utility.
+         </p>
+      </a>
+   </faq>
+</faqs>
+

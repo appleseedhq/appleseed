@@ -1,0 +1,338 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+<head>
+  <meta http-equiv="Content-Language" content="en-us">
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+
+  <title>Boost Random Number Library Performance</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+  <h1>Random Number Library Performance</h1>
+
+  <p>For some people, performance of random number generation is an important
+  consideration when choosing a random number generator or a particular
+  distribution function. This page provides numerous performance tests with
+  the wide variety of generators and distributions available in the boost
+  library.</p>
+
+  <p>The performance has been evaluated on a Pentium Pro 200 MHz with gcc
+  2.95.2, Linux 2.2.13, glibc 2.1.2. The speed is reported in million random
+  numbers per second (M rn/sec), generated in a tight loop.</p>
+
+  <h2>Basic Generators</h2>
+
+  <table border="1" summary="">
+    <tr>
+      <th>generator</th>
+
+      <th>M rn/sec</th>
+
+      <th>time per random number [usec]</th>
+
+      <th>relative speed compared to fastest [percent]</th>
+    </tr>
+
+    <tr>
+      <td>rand48</td>
+
+      <td>5.38</td>
+
+      <td>0.183</td>
+
+      <td>61%</td>
+    </tr>
+
+    <tr>
+      <td>rand48 run-time configurable</td>
+
+      <td>1.48</td>
+
+      <td>0.677</td>
+
+      <td>17%</td>
+    </tr>
+
+    <tr>
+      <td>lrand48 glibc 2.1.2</td>
+
+      <td>1.19</td>
+
+      <td>0.843</td>
+
+      <td>13%</td>
+    </tr>
+
+    <tr>
+      <td>minstd_rand</td>
+
+      <td>2.39</td>
+
+      <td>0.318</td>
+
+      <td>35%</td>
+    </tr>
+
+    <tr>
+      <td>ecuyer1988</td>
+
+      <td>1.12</td>
+
+      <td>0.892</td>
+
+      <td>13%</td>
+    </tr>
+
+    <tr>
+      <td>kreutzer1986</td>
+
+      <td>3.87</td>
+
+      <td>0.258</td>
+
+      <td>43%</td>
+    </tr>
+
+    <tr>
+      <td>hellekalek1995 (inversive)</td>
+
+      <td>0.20</td>
+
+      <td>5.12</td>
+
+      <td>2%</td>
+    </tr>
+
+    <tr>
+      <td>mt11213b</td>
+
+      <td>6.07</td>
+
+      <td>0.165</td>
+
+      <td>68%</td>
+    </tr>
+
+    <tr>
+      <td>mt19937</td>
+
+      <td>6.06</td>
+
+      <td>0.165</td>
+
+      <td>68%</td>
+    </tr>
+
+    <tr>
+      <td>mt19937 original</td>
+
+      <td>5.33</td>
+
+      <td>0.188</td>
+
+      <td>60%</td>
+    </tr>
+
+    <tr>
+      <td>lagged_fibonacci607</td>
+
+      <td>8.90</td>
+
+      <td>0.112</td>
+
+      <td>100%</td>
+    </tr>
+
+    <tr>
+      <td>lagged_fibonacci4423</td>
+
+      <td>8.54</td>
+
+      <td>0.117</td>
+
+      <td>96%</td>
+    </tr>
+
+    <tr>
+      <td>lagged_fibonacci19937</td>
+
+      <td>7.49</td>
+
+      <td>0.133</td>
+
+      <td>84%</td>
+    </tr>
+
+    <tr>
+      <td>lagged_fibonacci23209</td>
+
+      <td>6.63</td>
+
+      <td>0.151</td>
+
+      <td>74%</td>
+    </tr>
+
+    <tr>
+      <td>lagged_fibonacci44497</td>
+
+      <td>4.01</td>
+
+      <td>0.250</td>
+
+      <td>45%</td>
+    </tr>
+  </table>
+
+  <p>Note that the lagged Fibonacci generators produce floating-point
+  numbers, whereas all others produce integers.</p>
+
+  <h2>Distributions</h2>
+
+  <table border="1" summary="">
+    <tr>
+      <th>[M rn/sec]</th>
+
+      <th>minstd_rand</th>
+
+      <th>kreutzer1986</th>
+
+      <th>mt19937</th>
+
+      <th>lagged_fibonacci607</th>
+    </tr>
+
+    <tr>
+      <th>uniform_smallint</th>
+
+      <td>1.26</td>
+
+      <td>1.55</td>
+
+      <td>1.93</td>
+
+      <td>-</td>
+    </tr>
+
+    <tr>
+      <th>uniform_01</th>
+
+      <td>1.79</td>
+
+      <td>1.88</td>
+
+      <td>3.03</td>
+
+      <td>7.74</td>
+    </tr>
+
+    <tr>
+      <th>uniform_real</th>
+
+      <td>1.74</td>
+
+      <td>1.56</td>
+
+      <td>2.34</td>
+
+      <td>6.62</td>
+    </tr>
+
+    <tr>
+      <th>geometric</th>
+
+      <td>0.593</td>
+
+      <td>0.629</td>
+
+      <td>0.753</td>
+
+      <td>0.916</td>
+    </tr>
+
+    <tr>
+      <th>triangle</th>
+
+      <td>0.97</td>
+
+      <td>1.02</td>
+
+      <td>1.35</td>
+
+      <td>1.31</td>
+    </tr>
+
+    <tr>
+      <th>exponential</th>
+
+      <td>0.849</td>
+
+      <td>0.828</td>
+
+      <td>0.887</td>
+
+      <td>1.53</td>
+    </tr>
+
+    <tr>
+      <th>normal (polar method)</th>
+
+      <td>0.608</td>
+
+      <td>0.626</td>
+
+      <td>0.738</td>
+
+      <td>0.755</td>
+    </tr>
+
+    <tr>
+      <th>lognormal</th>
+
+      <td>0.417</td>
+
+      <td>0.442</td>
+
+      <td>0.470</td>
+
+      <td>0.481</td>
+    </tr>
+
+    <tr>
+      <th>uniform_on_sphere</th>
+
+      <td>0.154</td>
+
+      <td>0.155</td>
+
+      <td>0.174</td>
+
+      <td>0.218</td>
+    </tr>
+  </table>
+
+  <p>Note that the lagged Fibonacci generator is at least 2.5 times faster
+  than the Mersenne twister when generating uniformly distributed
+  floating-point numbers. For more sophisticated distributions, the speed
+  improvement is less. Note however that these distributions have not been
+  optimized for speed, yet.</p>
+  <hr>
+
+  <p><a href="http://validator.w3.org/check?uri=referer"><img border="0" src=
+  "http://www.w3.org/Icons/valid-html401" alt="Valid HTML 4.01 Transitional"
+  height="31" width="88"></a></p>
+
+  <p>Revised 
+  <!--webbot bot="Timestamp" s-type="EDITED" s-format="%d %B, %Y" startspan -->05
+  December, 2006<!--webbot bot="Timestamp" endspan i-checksum="38516" --></p>
+
+  <p><i>Copyright &copy; 2001 <a href="http://www.boost.org/people/jens_maurer.htm">Jens
+  Maurer</a></i></p>
+
+  <p><i>Distributed under the Boost Software License, Version 1.0. (See
+  accompanying file <a href="../../LICENSE_1_0.txt">LICENSE_1_0.txt</a> or
+  copy at <a href=
+  "http://www.boost.org/LICENSE_1_0.txt">http://www.boost.org/LICENSE_1_0.txt</a>)</i></p>
+</body>
+</html>

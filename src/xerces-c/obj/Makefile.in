@@ -1,0 +1,283 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+# 
+#      http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+#
+#
+# $Id: Makefile.in 570129 2007-08-27 14:10:51Z amassari $
+#
+
+###################################################################
+#                    IMPORTANT NOTE                               #
+###################################################################
+# If you are going to do the OS390BATCH build, make sure you have #
+# the OS390BATCH environment variable set.                        #
+#                                                                 #
+#   export OS390BATCH=1                                           #
+#                                                                 #
+###################################################################
+
+PLATFORM = @platform@
+CC  = @cc@
+CXX = @cxx@
+CXXVER = @cxxver@
+GCC = @GCC@
+GXX = @GXX@
+PREFIX = @prefix@
+LDFLAGS = @ldflags@
+LIBS = @libs@
+OSVER = @osver@
+TRANSCODER = @transcoder@
+MESSAGELOADER = @messageloader@
+LIBTYPE = @libtype@
+ARCH = @host_cpu@
+BITSTOBUILD = @bitstobuild@
+
+include ../version.incl
+include ../src/xercesc/Makefile.incl
+
+LIB=${XERCESCROOT}/lib
+## OS390BATCH
+ifeq (${OS390BATCH},1)
+BATCH_TARGET = "//'${LOADMOD}(IXM4C56)'"
+BATCH_EXP = "//'${LOADEXP}(IXM4C56)'"
+DEPDOM_TARGET = "//'${LOADMOD}(IXMDD56)'"
+endif
+
+ALL_OBJECTS=$(wildcard $(PLATFORM)/*.o)
+# obj/<platform>/depdom/*.o
+DEPDOM_OBJECTS=$(wildcard $(PLATFORM)/depdom/*.o)
+DEPDOM_OBJS_REF=${DEPDOM_OBJECTS} 
+# obj/<platform>/*.o
+DEPDOM_OBJS=$(subst depdom/,,${DEPDOM_OBJS_REF}) 
+
+#######################################################
+#  HP-UX with CC compiler is awkward since it does    #
+#  not instantiate templates automatically. To do so  #
+#  you need to invoke the linker. So, just for this   #
+#  compiler, we try to create a dummy executable      #
+#  before we create the shared library.  This will    #
+#  force all templates to be instantiated and the     #
+#  shared library is created with all template        #
+#  instantiations in place.                           #
+#######################################################
+
+ifeq (${LIBTYPE},shared)
+  ifeq (${PLATFORM},HPUX)
+  ifeq (${CXX},CC)
+    ######  Start HP-UX  CC compiler specific stuff #######
+
+    DUMMYEXE=$(XML_LIB_DIR)/dummyExe
+    TEMPLATESOBJS=$(wildcard $(TEMPLATESREPOSITORY)/*.o)
+
+all: $(DUMMYEXE) ${FQ_REAL_NAME} ${FQ_REAL_DEPDOM}
+	\rm -f $(DUMMYEXE)
+
+$(DUMMYEXE): $(ALL_OBJECTS)
+	${MAKE_SHARED} -o ${@} $^ $(PLATFORM_LIBRARIES) $(ALLLIBS)
+
+    ######  End HP-UX  CC compiler specific stuff #######
+  else
+    all: ${FQ_REAL_NAME} ${FQ_REAL_DEPDOM}
+  endif
+  else
+   ## Start OS390BATCH ##
+  ifeq (${OS390BATCH},1)
+all: ${BATCH_TARGET} ${DEPDOM_TARGET}
+   ## End OS390BATCH ##
+  else
+    ifeq (${PLATFORM},CYGWIN)
+all: ${FQ_SO_NAME} ${FQ_SO_DEPDOM}
+    else
+all: ${FQ_REAL_NAME} ${FQ_REAL_DEPDOM}
+    endif
+  endif
+  endif
+else # static
+all: ${FQ_A_NAME} ${FQ_A_DEPDOM}
+endif
+
+########################################################
+#                                                      #
+# OS/390 works pretty much the same way as Windows NT  #
+# as far as linking goes. The runtime library is       #
+# called .dll, and the link-time libraries have a .x   #
+# extension. You need the .x files to link             #
+# your application at build time and need the .dll     #
+# file to run it. So, we need to copy over the .x      #
+# file to the lib directory as well, so that you can   #
+# link your application.                               #
+########################################################
+
+ifeq (${LIBTYPE},shared)
+
+  ifeq (${PLATFORM},CYGWIN)
+${FQ_SO_NAME}:	$(ALL_OBJECTS)
+	@echo Building ${FQ_SO_NAME}
+	${MAKE_SHARED} ${LD_SONAME} -o ${@} ${^} $(TEMPLATESOBJS) $(PLATFORM_LIBRARIES) $(EXTRA_LINK_OPTIONS) $(ALLLIBS)
+	@echo symlink ${FQ_REAL_NAME}.a
+	rm -rf ${FQ_REAL_NAME}.a   && ln -s ${XML_LIB_DIR}/${LIBNAME}${SO_TARGET_VERSION}${SHLIBSUFFIX}.a ${FQ_REAL_NAME}.a
+	@echo symlink ${FQ_LINK_NAME}.a
+	rm -rf ${FQ_LINK_NAME}.a && ln -s ${FQ_REAL_NAME}.a ${FQ_LINK_NAME}.a
+
+  ## DepDOM ##
+${FQ_SO_DEPDOM}: $(DEPDOM_OBJECTS)
+	@echo Building ${FQ_SO_DEPDOM}
+	${MAKE_SHARED} ${LD_SODEPDOM} -o ${@} ${^} $(TEMPLATESOBJS) $(PLATFORM_LIBRARIES) $(DEPDOM_LINK_OPTIONS) $(ALLLIBS) -L${LIB} -l${LINK_LIBNAME}
+	@echo symlink ${FQ_REAL_DEPDOM}.a
+	rm -rf ${FQ_REAL_DEPDOM}.a   && ln -s ${XML_LIB_DIR}/${LIBDEPDOM}${SO_TARGET_VERSION}${SHLIBSUFFIX}.a ${FQ_REAL_DEPDOM}.a
+	@echo symlink ${FQ_LINK_DEPDOM}.a
+	rm -rf ${FQ_LINK_DEPDOM}.a && ln -s ${FQ_REAL_DEPDOM}.a ${FQ_LINK_DEPDOM}.a
+  endif
+
+${FQ_REAL_NAME}: $(ALL_OBJECTS)
+	@echo Building ${FQ_REAL_NAME}
+	${MAKE_SHARED} ${LD_SONAME} -o ${@} ${^} $(TEMPLATESOBJS) $(PLATFORM_LIBRARIES) $(EXTRA_LINK_OPTIONS) $(ALLLIBS)
+    ifeq (${PLATFORM},OS390)
+	$(CP) ${LIBNAME}${VER}${OS390SIDEDECK} ${LIB}
+    endif
+    ifneq (${FQ_SO_NAME},${FQ_REAL_NAME})
+	@echo symlink ${FQ_SO_NAME} 
+	rm -rf ${FQ_SO_NAME}   && ln -s ${FQ_REAL_NAME} ${FQ_SO_NAME}
+    endif
+	@echo symlink ${FQ_LINK_NAME}
+	rm -rf ${FQ_LINK_NAME} && ln -s ${FQ_SO_NAME} ${FQ_LINK_NAME}
+
+  ## DepDOM ##
+${FQ_REAL_DEPDOM}: $(DEPDOM_OBJECTS)
+	@echo Building ${FQ_REAL_DEPDOM}
+  ifeq (${PLATFORM},SOLARIS)
+	cp $(DEPDOM_OBJECTS) $(PLATFORM)
+	${MAKE_SHARED} ${LD_SODEPDOM} -o ${@} ${DEPDOM_OBJS} $(TEMPLATESOBJS) $(PLATFORM_LIBRARIES) $(DEPDOM_LINK_OPTIONS) $(ALLLIBS) -L${LIB} -l${LINK_LIBNAME}
+	rm ${DEPDOM_OBJS}
+  else
+    ifeq (${PLATFORM},OS390)
+	${MAKE_SHARED} ${LD_SODEPDOM} -o ${@} ${^} $(TEMPLATESOBJS) $(PLATFORM_LIBRARIES) $(DEPDOM_LINK_OPTIONS) $(ALLLIBS) ${LIB}/${LIBNAME}${VER}${OS390SIDEDECK}
+	$(CP) ${LIBDEPDOM}${VER}${OS390SIDEDECK} ${LIB}
+    else
+	${MAKE_SHARED} ${LD_SODEPDOM} -o ${@} ${^} $(TEMPLATESOBJS) $(PLATFORM_LIBRARIES) $(DEPDOM_LINK_OPTIONS) $(ALLLIBS) -L${LIB} -l${LINK_LIBNAME}
+    endif
+  endif
+    ifneq (${FQ_SO_DEPDOM},${FQ_REAL_DEPDOM})   
+	@echo symlink ${FQ_SO_DEPDOM} 
+	rm -rf ${FQ_SO_DEPDOM}   && ln -s ${FQ_REAL_DEPDOM} ${FQ_SO_DEPDOM}
+    endif
+	@echo symlink ${FQ_LINK_DEPDOM}
+	rm -rf ${FQ_LINK_DEPDOM} && ln -s ${FQ_SO_DEPDOM} ${FQ_LINK_DEPDOM}
+	
+  ## Start OS390 ##
+  ifeq (${PLATFORM},OS390)
+  ## Start OS390BATCH ##
+    ifeq (${OS390BATCH},1)
+${BATCH_TARGET}:        $(ALL_OBJECTS)
+	@echo Building ${BATCH_TARGET}
+	${MAKE_SHARED} -o ${@} ${^} $(TEMPLATESOBJS) $(PLATFORM_LIBRARIES) $(EXTRA_LINK_OPTIONS) $(ALLLIBS)
+${DEPDOM_TARGET}:        $(DEPDOM_OBJECTS)
+	@echo Building ${DEPDOM_TARGET}
+	${MAKE_SHARED} -o ${@} ${^} $(TEMPLATESOBJS) $(PLATFORM_LIBRARIES) $(DEPDOM_LINK_OPTIONS) $(ALLLIBS) $(BATCH_EXP)
+    endif
+  endif
+  ## End OS390 and OS390BATCH
+
+else # static
+${FQ_A_NAME}: $(ALL_OBJECTS)
+	@echo Building ${FQ_A_NAME}
+	${AR} $(ARFLAGS) ${@} ${^}
+  ifneq ($(RANLIB),)
+	$(RANLIB) ${@}
+  endif
+
+${FQ_A_DEPDOM}: $(DEPDOM_OBJECTS)
+	@echo Building ${FQ_A_DEPDOM}
+	${AR} $(ARFLAGS) ${@} ${^}
+  ifneq ($(RANLIB),)
+	$(RANLIB) ${@}
+  endif
+endif
+
+
+
+clean:
+	@echo "Making clean in obj ..."
+	-rm -f $(ALL_OBJECTS) $(DEPDOM_OBJECTS)
+ifneq ($(strip $(TEMPLATESREPOSITORY)),)
+	-rm -f $(TEMPLATESREPOSITORY)/*.o
+	-rm -f $(TEMPLATESREPOSITORY)/*.c
+	-rm -f $(TEMPLATESREPOSITORY)/*.cs
+	-rm -f $(TEMPLATESREPOSITORY)/*.he
+endif
+ifeq (${LIBTYPE},shared)
+	-rm -f ${FQ_REAL_NAME} ${FQ_REAL_DEPDOM}
+  ifeq (${PLATFORM}, CYGWIN)
+	-rm -f ${XML_LIB_DIR}/${LIBNAME}${SO_TARGET_VERSION}${SHLIBSUFFIX}.a
+	-rm -f ${FQ_LINK_NAME}.a
+	-rm -f ${FQ_REAL_NAME}.a
+
+	-rm -f ${XML_LIB_DIR}/${LIBDEPDOM}${SO_TARGET_VERSION}${SHLIBSUFFIX}.a
+	-rm -f ${FQ_LINK_DEPDOM}.a
+	-rm -f ${FQ_REAL_DEPDOM}.a	
+  else
+	-rm -f ${FQ_SO_NAME}
+	-rm -f ${FQ_LINK_NAME}
+	
+	-rm -f ${FQ_SO_DEPDOM}
+	-rm -f ${FQ_LINK_DEPDOM}	
+  endif
+else # static
+	-rm -f ${FQ_A_NAME} ${FQ_A_DEPDOM}
+endif
+	-rm -f *.map
+
+
+distclean:	clean
+	-rm -f Makefile
+	-rm -Rf $(XML_OBJ_DIR)
+ifneq ($(strip $(TEMPLATESREPOSITORY)),)
+	-rm -Rf $(TEMPLATESREPOSITORY)
+endif
+
+
+install:
+ifeq (${OS390BATCH},1)
+	@echo "Nothing to do for OS390BATCH ..."
+else
+	-mkdir -p ${DESTDIR}${PREFIX}/lib
+ifeq (${LIBTYPE},shared)
+  ifeq (${PLATFORM}, CYGWIN)
+	-mkdir -p ${DESTDIR}${PREFIX}/bin
+	$(CP) ${FQ_SO_NAME} ${DESTDIR}${PREFIX}/bin
+	$(CP) $(XML_LIB_DIR)/${LIBNAME}${SO_TARGET_VERSION}${SHLIBSUFFIX}.a ${DESTDIR}${PREFIX}/lib
+	(cd ${DESTDIR}$(PREFIX)/lib; rm -f ${LINK_NAME}.a libxerces.dll.a; ln -s ${LIBNAME}${SO_TARGET_VERSION}${SHLIBSUFFIX}.a ${LINK_NAME}.a; rm -f libxerces.dll.a; ln -s ${LIBNAME}${SO_TARGET_VERSION}${SHLIBSUFFIX}.a libxerces.dll.a)
+
+	$(CP) ${FQ_SO_DEPDOM} ${DESTDIR}${PREFIX}/bin
+	$(CP) $(XML_LIB_DIR)/${LIBDEPDOM}${SO_TARGET_VERSION}${SHLIBSUFFIX}.a ${DESTDIR}${PREFIX}/lib
+	(cd ${DESTDIR}$(PREFIX)/lib; rm -f ${LINK_DEPDOM}.a libxercesdepdom.dll.a; ln -s ${LIBDEPDOM}${SO_TARGET_VERSION}${SHLIBSUFFIX}.a ${LINK_DEPDOM}.a; rm -f libxercesdepdom.dll.a; ln -s ${LIBDEPDOM}${SO_TARGET_VERSION}${SHLIBSUFFIX}.a libxercesdepdom.dll.a)
+  else
+	$(CP) ${FQ_REAL_NAME} ${DESTDIR}$(PREFIX)/lib
+	(cd ${DESTDIR}$(PREFIX)/lib; rm -f ${SO_NAME}; ln -s ${REAL_NAME} ${SO_NAME}; rm -f ${LINK_NAME}; ln -s ${REAL_NAME} ${LINK_NAME})
+	
+	$(CP) ${FQ_REAL_DEPDOM} ${DESTDIR}$(PREFIX)/lib
+	(cd ${DESTDIR}$(PREFIX)/lib; rm -f ${SO_DEPDOM}; ln -s ${REAL_DEPDOM} ${SO_DEPDOM}; rm -f ${LINK_DEPDOM}; ln -s ${REAL_DEPDOM} ${LINK_DEPDOM})	
+  endif
+  ifeq (${PLATFORM},OS390)
+	$(CP) ${LIBNAME}${VER}${OS390SIDEDECK} ${DESTDIR}$(PREFIX)/lib
+	$(CP) ${LIBDEPDOM}${VER}${OS390SIDEDECK} ${DESTDIR}$(PREFIX)/lib	
+  endif
+else # shared
+	$(CP) ${FQ_A_NAME} ${DESTDIR}$(PREFIX)/lib
+	$(CP) ${FQ_A_DEPDOM} ${DESTDIR}$(PREFIX)/lib
+endif
+endif
+

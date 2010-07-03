@@ -1,0 +1,592 @@
+#! /bin/sh
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+# 
+#      http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+#
+
+#
+# $Id: runConfigure 570389 2007-08-28 11:52:07Z cargilld $
+#
+
+#
+# runConfigure:
+#    This script will run the "configure" script for the appropriate
+#    platform. Only supported platforms are recognized.
+#
+# The following variables are defined and exported at the end of this
+# script.
+#
+# THREADS
+# BITSTOBUILD
+# CC
+# CXX
+# CXXFLAGS
+# CFLAGS
+# LDFLAGS
+# EXTRA_LIBS
+#
+
+usage()
+{
+    echo "runConfigure: Helper script to run \"configure\" for one of the supported
+platforms"
+    echo "Usage: runConfigure \"options\""
+    echo "       where options may be any of the following:"
+    echo "       -p <platform> (accepts 'aix', 'beos', 'linux', 'freebsd', 'netbsd',
+            'solaris', 'hp-10', 'hp-11', 'openserver', 'unixware',
+            'os400', 'os390', 'irix', 'ptx', 'tru64', 'macosx', 'cygwin', 'qnx',
+            'interix', 'mingw-msys')
+            [required: no default]"
+    echo "       -c <C compiler name> (e.g. gcc, cc, xlc_r, icc, icpc or ecc)"
+    echo "            [default is make default; cc for gnu make]"
+    echo "       -x <C++ compiler name> (e.g. g++, CC, aCC, xlC_r, xlC_rv5compat, icc, icpc or ecc)"
+    echo "            [default is make default; g++ for gnu make]"
+    echo "       -d (specifies that you want to build debug version) [default: not debug]"
+    echo "       -r <thread option> can be 'pthread' or 'dce'
+            (AIX, HP-11, and Solaris) or 'sproc' (IRIX) or 'none'
+            [default: pthread]"
+    echo "       -b <bitsToBuild> (accepts '64', '32') [default: 32]"
+    echo "       -l <extra linker options>"
+    echo "       -z <extra compiler options>"
+    echo "       -h (get help on the above commands)"
+}
+
+ERROR_EXIT_CODE=1
+
+if test ${1}o = "o"; then
+   usage
+   exit ${ERROR_EXIT_CODE}
+fi
+
+if test ${XERCESCROOT}o = "o"; then
+   echo ERROR : You have not set your XERCESCROOT environment variable
+   echo Though this environment variable has nothing to do with creating makefiles,
+   echo this is just a general warning to prevent you from pitfalls in future. Please
+   echo set an environment variable called XERCESCROOT to indicate where you installed
+   echo the XERCES-C files, and run this command again to proceed. See the documentation
+   echo for an example if you are still confused.
+   if test $1 != "-h"; then
+     exit ${ERROR_EXIT_CODE}
+   fi
+   echo
+fi
+
+if test $1 = "-h"; then
+   usage
+   exit ${ERROR_EXIT_CODE}
+fi
+
+# Set up the default values for each parameter
+debug=off                # by default debug is off
+transcoder=native        # by default use native transcoder
+thread=pthread           # by default use pthread
+bitsToBuild=32           # by default 32 bit build assumed
+
+# Check the command line parameters
+if test -x /usr/bin/getopt; then
+   getoptErr=`getopt p:c:x:dr:b:l:z:h $*`
+   if [ $? != 0 ]
+      then
+      usage
+      exit ${ERROR_EXIT_CODE}
+   fi
+   # Now get the command line parameters
+   set -- `getopt p:c:x:dr:b:l:z:h $*`
+   while [ $# -gt 0 ]
+      do
+      case $1 in
+      -p)
+         platform=$2; shift 2;;
+
+      -c)
+         ccompiler=$2; shift 2;;
+
+      -x)
+         cppcompiler=$2; shift 2;;
+
+      -d)
+         debug=on; shift;;
+
+      -r)
+         thread=$2; shift 2;;
+
+      -b)
+         bitsToBuild=$2; shift 2;;
+
+      -z)
+         compileroptions="$compileroptions $2"; shift 2;;
+
+      -l)
+         linkeroptions="$linkeroptions $2"; shift 2;;
+
+      -h)
+         usage
+         exit ${ERROR_EXIT_CODE};;
+
+      --)
+         shift; break;;
+
+      *)
+         echo "unknown option $1"
+         usage
+         exit ${ERROR_EXIT_CODE};;
+      esac
+   done
+else
+   while getopts "p:c:x:dr:b:l:z:h" switch; do
+      case $switch in
+      p)
+         platform=$OPTARG;;
+
+      c)
+         ccompiler=$OPTARG;;
+
+      x)
+         cppcompiler=$OPTARG;;
+
+      d)
+         debug=on;;
+
+      r)
+         thread=$OPTARG;;
+
+      b)
+         bitsToBuild=$OPTARG;;
+
+      z)
+         compileroptions="$compileroptions $OPTARG";;
+
+      l)
+         linkeroptions="$linkeroptions $OPTARG";;
+
+      h)
+         usage
+         exit ${ERROR_EXIT_CODE};;
+
+      *)
+         echo "unknown option -$switch $OPTARG"
+         usage
+         exit ${ERROR_EXIT_CODE};;
+      esac
+   done
+fi
+
+echo "Generating makefiles with the following options ..."
+echo "Platform: $platform"
+echo "C Compiler: $ccompiler"
+echo "C++ Compiler: $cppcompiler"
+echo "Thread option: $thread"
+echo "bitsToBuild option: $bitsToBuild"
+echo "Extra compile options: $compileroptions"
+echo "Extra link options: $linkeroptions"
+
+#
+# Now check if the options are correct or not, bail out if incorrect
+#
+case $platform in
+   aix | openserver | unixware | beos | linux | freebsd | netbsd | solaris | hp-10 | hp-11 | os400 | os390 | irix | ptx | tru64 | macosx | cygwin | qnx | interix | mingw-msys)
+       # platform has been recognized
+       ;;
+   *)
+      echo "I do not recognize the platform '$platform'. Please type '${0} -h' for help."
+      exit ${ERROR_EXIT_CODE};;
+esac
+
+#
+# Enable debugging or not...
+#
+if test $debug = "off"; then
+    echo "Debug is OFF"
+    if test $platform = "os400"; then
+       debugflag="-O -DNDEBUG";
+    elif test $platform = "irix"; then
+       debugflag="-w -O2 -DNDEBUG";
+    elif test $platform = "aix"; then
+       debugflag="-w -O2 -DNDEBUG";
+	elif test $platform = "os390"; then
+       debugflag="-DNDEBUG";       
+    elif test $platform = "linux"; then
+       debugflag="-w -O2 -DNDEBUG";
+    else
+       debugflag="-w -O -DNDEBUG";
+    fi
+else
+    echo "Debug is ON"
+    debugflag="-g";
+fi
+
+#
+# Check for the threading option
+#
+if test $thread = "none"; then
+    THREADS=none
+    threadingDefines="-DAPP_NO_THREADS -DXML_USE_NO_THREADS"
+    threadingLibs=""
+else
+    THREADS=pthread
+    threadingDefines="-DXML_USE_PTHREADS"
+    threadingLibs="-lpthread"
+    if test $platform = "hp-11"; then
+        if test $thread; then
+        case $thread in
+           pthread)
+               ;;
+           dce)
+               THREADS=dce ;
+               threadingLibs="-lcma" ;
+               threadingDefines="-D_PTHREADS_DRAFT4 -D_THREAD_SAFE -DXML_USE_DCE" ;;
+           *)
+               echo "I do not recognize the thread option '$thread'. Please type '${0} -h' for help." ;
+               exit ${ERROR_EXIT_CODE};;
+        esac
+        fi
+    elif test $platform = "openserver"; then
+        case $thread in
+           pthread)
+               if test $cppcompiler = "g++"; then
+                  threadingLibs="-Wl,-B,static,-l,pthread,-B,dynamic"
+               fi
+               ;;
+           *)
+               echo "I do not recognize the thread option '$thread'."
+               echo "Please type '${0} -h' for help."
+               exit ${ERROR_EXIT_CODE}
+               ;;
+        esac
+    elif test $platform = "freebsd"; then
+        threadingLibs="-pthread -lc_r"
+        threadingDefines="-D_THREAD_SAFE -DXML_USE_PTHREADS"
+    elif test $platform = "netbsd"; then
+        threadingLibs="-pthread"
+        threadingDefines="-D_THREAD_SAFE -DXML_USE_PTHREADS"
+    elif test $platform = "aix"; then
+        aix_version=`./config.guess`;
+        echo Found host system to be $aix_version
+        case $aix_version in
+           *4.3*)
+              ## Linkflags control the use of libpthreads on AIX
+              threadingLibs="-lpthreads_compat";;
+           *)
+              threadingLibs="-lpthreads";;
+        esac
+        if test $thread; then
+        case $thread in
+           pthread)
+               ;;
+           dce)
+               THREADS=dce ;
+               threadingDefines="-DXML_USE_DCE"
+               case $aix_version in
+                  *4.3*)
+                     ## Linkflags control the use of libpthreads on AIX
+                     threadingLibs="-ldcelibc_r -ldcepthreads -lpthreads_compat";;
+                  *)
+                     threadingLibs="-lC_r -lC -ldcelibc_r -ldcepthreads";;
+               esac
+               ;;
+           *)
+               echo "I do not recognize the thread option '$thread'. Please type '${0} -h' for help." ;
+               exit ${ERROR_EXIT_CODE};;
+        esac
+        fi
+    elif test $platform = "ptx"; then
+        threadingLibs=" "
+        if test -z $XMLINSTALL; then
+            XMLINSTALL=$ICUROOT         ## use either the -C or the -P option now.
+        fi
+    elif test $platform = "hp-10"; then
+        THREADS=dce
+        threadingLibs="-lcma"
+        threadingDefines="-DXML_USE_DCE"
+	elif test $platform = "os390"; then
+        threadingDefines="-D_OPEN_THREADS"
+        threadingLibs=""        
+    elif test $platform = "unixware"; then
+        threadingLibs=""         ## Linkflags control the use of threads on UnixWare
+    elif test $platform = "solaris"; then
+        if test $thread; then
+        case $thread in
+           pthread)
+               ;;
+           dce)
+               THREADS=dce ;
+               threadingLibs="-ldce";
+               threadingDefines="-DXML_USE_DCE";;
+           *)
+               echo "I do not recognize the thread option '$thread'. Please type '${0} -h' for help." ;
+               exit ${ERROR_EXIT_CODE};;
+        esac
+        fi
+    elif test $platform = "irix"; then
+        if test $thread; then
+        case $thread in
+        pthread)
+            ;;
+        sproc)
+            threadingLibs=" ";
+            threadingDefines="-DXML_USE_SPROC" ;;
+        *)
+            echo "I do not recognize the thread option '$thread'. Please type '${0} -h' for help." ;
+            exit ${ERROR_EXIT_CODE};;
+        esac
+        fi
+    elif test $platform = "mingw-msys"; then
+        threadingLibs=""
+        threadingDefines=""
+    fi
+fi
+
+export THREADS
+
+#
+# Check for the bitsToBuild option
+#
+
+#
+#  aix | beos | linux | hp-11 | solaris |
+#  hp-10 | freebsd | netbsd | irix | openserver | unixware | os400 | ptx | tru64 | macosx
+#
+if test $bitsToBuild = 64; then
+    bitstobuildDefines=" -DXML_BITSTOBUILD_64 "
+    bitstobuildLink=" "
+    if test $platform; then
+        case $platform in
+           solaris)
+	      if test $cppcompiler; then
+                  case $cppcompiler in
+                     CC)
+                         solaris_version=`./config.guess`
+                         case $solaris_version in
+			   sparc*)
+              bitstobuildDefines=" $bitstobuildDefines -xarch=v9 "
+              bitstobuildLink=" -xarch=v9 " ;;
+			        *)
+			     bitstobuildDefines=" $bitstobuildDefines -xarch=amd64 "
+			     bitstobuildLink=" -xarch=amd64 " ;;
+			 esac
+                         ;;
+                      *)
+                       ;;
+                  esac
+              fi ;;
+           aix)
+              if test $cppcompiler; then
+                  case $cppcompiler in
+                     xlC*)
+              bitstobuildDefines=" $bitstobuildDefines -q64 -qwarn64 "
+			 bitstobuildLink=" -q64 ";;
+                       *)
+                       ;;
+                  esac
+              fi ;;
+           irix)
+              bitstobuildDefines=" $bitstobuildDefines -64 "
+              bitstobuildLink=" -64 " ;;              
+           hp-11)
+               if test $cppcompiler; then
+                   case $cppcompiler in
+                       aCC)
+                          bitstobuildDefines=" $bitstobuildDefines +DD64 "
+                          bitstobuildLink=" +DD64 " ;;     
+                       *)
+                       ;;
+                   esac
+               fi ;;           
+           linux)
+               if test $cppcompiler; then
+                   case $cppcompiler in
+                       xlC*)
+                          bitstobuildDefines=" $bitstobuildDefines -q64 -qwarn64 "
+                          bitstobuildLink=" -q64 " ;;                       
+                       *)
+                          # following doesn't work for all versions of gcc                                              
+                          #linux_version=`./config.guess`
+                          #case $linux_version in
+			              #  powerpc*)
+              			  #		bitstobuildDefines=" $bitstobuildDefines -m64 "
+              			  #		bitstobuildLink=" -m64 " ;;
+			        	  #	*)
+			        	  #	    ;;
+			 			  #esac
+                          ;;                                                                                              
+                   esac
+               fi ;;           
+           *)
+            ;;
+        esac
+    fi
+elif test $bitsToBuild = 32; then
+    bitstobuildDefines=" "
+    bitstobuildLink=" "
+# following doesn't work for all versions of gcc    
+#    if test $platform; then
+#        case $platform in
+#            linux)                                         
+#                linux_version=`./config.guess`
+#                 case $linux_version in
+#			          powerpc*)
+#              			bitstobuildDefines=" $bitstobuildDefines -m32 "
+#              			bitstobuildLink=" -m32 " ;;
+#			     *)
+#			        ;;
+#			 	esac ;;	                                   
+#        *)
+#            ;;
+#        esac    
+#    fi        
+else
+    echo "I do not recognize the bitsToBuild '$bitsToBuild'. Please type '${0} -h' for help."
+    exit ${ERROR_EXIT_CODE};
+fi
+
+#
+# to export in case it is needed in Makefile.in/Makefine.incl
+#
+BITSTOBUILD=$bitsToBuild
+export BITSTOBUILD
+
+#
+# Special test for libiconv necessity under FreeBSD
+#
+transcodingLibs=""       # by default don't suppose the libiconv is necessary
+transcodingDefines=""
+if test $platform = "freebsd"; then
+    if test -n "${XERCESCROOT}"; then
+       # try lookup the configuration results
+       . "${XERCESCROOT}/version.incl"
+       SOLIBNAME=libxerces-c.so.${SO_TARGET_VERSION}.${SO_TARGET_VERSION_MAJOR}
+       if test -f "${XERCESCROOT}/src/xercesc/config.log" ; then
+           if grep XML_USE_LIBICONV "${XERCESCROOT}/src/xercesc/config.log" \
+              > /dev/null 2>&1 ; then
+               transcodingLibs=" -L/usr/local/lib -liconv "
+               transcodingDefines=" -DXML_USE_LIBICONV -I/usr/local/include "
+           fi
+       elif test -f "${XERCESCROOT}/obj/FREEBSD/IconvFBSDTransService.o" ; then
+           if nm "${XERCESCROOT}/obj/FREEBSD/IconvFBSDTransService.o" | \
+              grep iconv_open > /dev/null 2>&1 ; then
+               transcodingLibs=" -L/usr/local/lib -liconv "
+               transcodingDefines=" -DXML_USE_LIBICONV -I/usr/local/include "
+           fi
+       elif test -f "${XERCESCROOT}/lib/${SOLIBNAME}" ; then
+           if nm "${XERCESCROOT}/lib/${SOLIBNAME}" | \
+              grep iconv_open > /dev/null 2>&1 ; then
+               transcodingLibs=" -L/usr/local/lib -liconv "
+               transcodingDefines=" -DXML_USE_LIBICONV -I/usr/local/include "
+           fi
+       fi
+    fi
+fi
+
+#
+# Set the C compiler and C++ compiler environment variables
+#
+case $cppcompiler in
+   xlC_rv5compat)
+      CXX="xlC_r"
+      CXXVER="v5compat"
+      ;;
+      
+   xlC* | xlc* | g++* | c++ | cc | CC | icc | icpc | ICC | cxx | ecc)
+      CXX="$cppcompiler"      
+      ;;
+
+   aCC)
+      CXX="aCC"
+      if test "`$CXX -V 2>&1 | sed -e 's/^aCC: .* A\.03\..*$/3/'`" != "3"; then
+      CXXVER="aCC05"
+      fi
+      ;;
+   '')
+   	  echo "C++ compiler not specified...we'll assume that configure will find it..."
+   	  ;;
+
+   *)
+      echo "I do not recognize the C++ compiler '$cppcompiler'. Continuing anyway ..."
+      CXX="$cppcompiler"
+      ;;
+esac
+
+CC="$ccompiler"
+export CC
+
+export CXX
+
+export CXXVER
+
+#
+# Set the extra C and C++ compiler flags
+#
+# include the user defined CXXFLAGS/CFLAGS first in case they have
+# set an platform spefic flags
+#
+CXXFLAGS="$CXXFLAGS $compileroptions $debugflag $transcodingDefines $threadingDefines $bitstobuildDefines"
+export CXXFLAGS
+
+CFLAGS="$CFLAGS $compileroptions $debugflag $transcodingDefines $threadingDefines $bitstobuildDefines"
+export CFLAGS
+
+# gcc crashes if optimisation is turned on in a Tru64 environment
+if test "$platform" = "tru64" -a "$CXX" = "g++"; then
+    CXXFLAGS=`echo $CXXFLAGS | sed -e 's/-O[0-9]*//g'`
+    CFLAGS=`echo $CFLAGS | sed -e 's/-O[0-9]*//g'`
+    export CXXFLAGS CFLAGS
+fi
+
+LDFLAGS="$LDFLAGS $linkeroptions $bitstobuildLink"
+export LDFLAGS
+
+EXTRA_LIBS="$transcodingLibs $threadingLibs"
+export EXTRA_LIBS
+
+echo
+rm -f config.cache
+rm -f config.log
+rm -f config.status
+if test $platform = "os400"; then
+./configure --host AS400-OS400
+elif test $platform = "ptx"; then
+./configure --prefix=$XMLINSTALL
+else
+./configure
+fi
+# exit if configure failed
+if test $? != 0; then
+  exit 1
+fi
+
+echo
+echo In future, you may also directly type the following commands to create
+echo the Makefiles.
+echo
+echo export THREADS=\"$THREADS\"
+echo export BITSTOBUILD=\"$BITSTOBUILD\"
+echo export CC=\"$CC\"
+echo export CXX=\"$CXX\"
+if test "$CXXVER"; then
+  echo export CXXVER=\"$CXXVER\"
+fi
+echo export CXXFLAGS=\"$CXXFLAGS\"
+echo export CFLAGS=\"$CFLAGS\"
+echo export LDFLAGS=\"$LDFLAGS\"
+echo export EXTRA_LIBS=\"$EXTRA_LIBS\"
+echo configure
+
+echo
+echo "If the result of the above commands look OK to you, go to the directory"
+echo "${XERCESCROOT}/samples and type \"make\" (or \"gmake\")"
+echo "to make the examples."
+
+exit 0;

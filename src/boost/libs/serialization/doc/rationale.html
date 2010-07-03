@@ -1,0 +1,346 @@
+<!doctype HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!--
+(C) Copyright 2002-4 Robert Ramey - http://www.rrsd.com . 
+Use, modification and distribution is subject to the Boost Software
+License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt)
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" type="text/css" href="../../../boost.css">
+<link rel="stylesheet" type="text/css" href="style.css">
+<title>Seriealization - Rationale</title>
+</head>
+<body link="#0000ff" vlink="#800080">
+<table border="0" cellpadding="7" cellspacing="0" width="100%" summary=
+    "header">
+  <tr> 
+    <td valign="top" width="300"> 
+      <h3><a href="http://www.boost.org"><img height="86" width="277" alt="C++ Boost" src="../../../boost.png" border="0"></a></h3>
+    </td>
+    <td valign="top"> 
+      <h1 align="center">Serialization</h1>
+      <h2 align="center">Rationale</h2>
+    </td>
+  </tr>
+</table>
+<hr>
+<dl class="index">
+  <dt><a href="#serialization">The term "serialization" is preferred to "persistence"</a></dt>
+  <dt><a href="#archives">Archives are not streams</a></dt>
+  <dt><a href="#strings">Strings are treated specially in text archives</a></dt>
+  <dt><a href="#typeid"><code style="white-space: normal">typeid</code> information is not included in archives</a></dt>
+  <dt><a href="#trap">Compile time trap when saving a non-const value</a></dt>
+  <!--
+  <dt><a href="#footnotes">Footnotes</a></dt>
+  -->
+</dl>
+<h2><a name="serialization"></a>The term "serialization" is preferred to "persistence"</h2>
+<p>
+I found that persistence is often used to refer
+to something quite different. Examples are storage of class
+instances (objects) in database schema <a href="bibliography.html#4">[4]</a>
+This library will be useful in other contexts besides implementing persistence. The
+most obvious case is that of marshalling data for transmission to another system.
+<h2><a name="archives"></a>Archives are not streams</h2>
+<p>
+Archive classes are <strong>NOT</strong> derived from
+streams even though they have similar syntax rules.
+<ul>
+    <li>Archive classes are not kinds of streams though they
+    are implemented in terms of streams. This
+    distinction is addressed in <a href="bibliography.html#5">[5]</a> item number item 41 .
+    <li>We don't want users to insert/extract&nbsp;data
+    directly into/from &nbsp;the stream .&nbsp; This could
+    create a corrupted archive. Were archives
+    derived from streams, it would possible to
+    accidentally do this. So archive classes
+    only define operations which are safe and necessary.
+    <li>The usage of streams to implement the archive classes that
+    are included in the library is merely convenient - not necessary.
+    Library users may well want to define their own archive format
+    which doesn't use streams at all.
+</ul>
+<h2><a name="primitives"></a>Archive Members are Templates 
+Rather than Virtual Functions</h2>
+The previous version of this library defined virtual functions for all
+primitive types.  These were overridden by each archive class.  There were
+two issues related to this:
+</ul>
+    <li>Some disliked virtual functions because of the added execution time
+    overhead.
+    <li>This caused implementation difficulties since the set of primitive
+    data types varies between platforms.  Attempting to define the correct
+    set of virtual functions, (think <code style="white-space: normal">long long</code>, 
+    <code style="white-space: normal">__int64</code>, 
+    etc.) resulted in messy and fragile code.  Replacing this with templates
+    and letting the compiler generate the code for the primitive types actually
+    used, resolved this problem.  Of course, the ripple effects of this design
+    change were significant, but in the end led to smaller, faster, more
+    maintainable code.
+</ul>
+<h2><a name="strings"></a><code style="white-space: normal">std::strings</code> are treated specially in text files</h2>
+<p>
+Treating strings as STL vectors would result in minimal code size. This was
+not done because:
+<ul>
+     <li>In text archives it is convenient to be able to view strings.  Our text
+     implementation stores single characters as integers.  Storing strings
+     as a vector of characters would waste space and render the archives
+     inconvenient for debugging.
+     <li>Stream implementations have special functions for <code style="white-space: normal">std::string</code>
+     and <code style="white-space: normal">std::wstring</code>.
+     Presumably they optimize appropriately.
+     <li>Other specializations of <code style="white-space: normal">std::basic_string</code> are in fact handled
+     as vectors of the element type.
+</ul>
+</p>
+<h2><a name="typeid"></a><code style="white-space: normal">typeid</code> information is not included in archives</h2>
+<p>
+I originally thought that I had to save the name of the class specified by <code style="white-space: normal">std::type_of::name()</code>
+in the archive. This created difficulties as <code style="white-space: normal">std::type_of::name()</code> is not portable and
+not guaranteed to return the class name. This makes it almost useless for implementing
+archive portability.  This topic is explained in much more detail in
+<a href="bibliography.html#6">[7] page 206</a>. It turned out that it was not necessary.
+As long as objects are loaded in the exact sequence as they were saved, the type
+is available when loading.  The only exception to this is the case of polymorphic
+pointers never before loaded/saved.  This is addressed with the <code style="white-space: normal">register_type()</code>
+and/or <code style="white-space: normal">export</code> facilities described in the reference.  
+In effect, <code style="white-space: normal">export</code> generates a portable equivalent to
+<code style="white-space: normal">typeid</code> information.
+
+<h2><a name="trap"></a>Compile time trap when saving a non-const value</h2>
+</p>
+The following code will fail to compile.  The failure will occur on a line with a
+<code style="white-space: normal">BOOST_STATIC_ASSERT</code>.  
+Here, we refer to this as a compile time trap.
+<code style="white-space: normal"><pre>
+T t;
+ar &lt;&lt; t;
+</pre></code>
+
+unless the tracking_level serialization trait is set to "track_never". The following
+will compile without problem:
+
+<code style="white-space: normal"><pre>
+const T t
+ar &lt;&lt; t;
+</pre></code>
+
+Likewise, the following code will trap at compile time:
+
+<code style="white-space: normal"><pre>
+T * t;
+ar >> t;
+</pre></code>
+
+if the tracking_level serialization trait is set to "track_never".
+<p>
+
+This behavior has been contraversial and may be revised in the future. The criticism 
+is that it will flag code that is in fact correct and force users to insert
+<code style="white-space: normal">const_cast</code>. My view is that:
+<ul>
+  <li>The trap is useful in detecting a certain class of programming errors.
+  <li>Such errors would otherwise be difficult to detect.
+  <li>The incovenience caused by including this trap is very small in relation
+  to its benefits.
+</ul>
+
+The following case illustrates my position.  It was originally used as an example in the
+mailing list by Peter Dimov.
+
+<code style="white-space: normal"><pre>
+class construct_from 
+{ 
+    ... 
+}; 
+
+void main(){ 
+    ... 
+    Y y; 
+    construct_from x(y); 
+    ar &lt;&lt; x; 
+} 
+</pre></code>
+
+Suppose that there is no trap as described above.
+<ol>
+  <li>this example compiles and executes fine. No tracking is done because 
+  construct_from has never been serialized through a pointer. Now some time 
+  later, the next programmer(2) comes along and makes an enhancement. He 
+  wants the archive to be sort of a log. 
+
+<code style="white-space: normal"><pre>
+void main(){ 
+    ... 
+    Y y; 
+    construct_from x(y); 
+    ar &lt;&lt; x; 
+    ... 
+    x.f(); // change x in some way 
+   ... 
+    ar &lt;&lt; x 
+} 
+</pre></code>
+  <p>
+  Again no problem. He gets two different of copies in the archive, each one is different. 
+  That is he gets exactly what he expects and is naturally delighted. 
+  <p>
+  <li>Now sometime later, a third programmer(3) sees construct_from and says - 
+  oh cool, just what I need. He writes a function in a totally disjoint 
+  module. (The project is so big, he doesn't even realize the existence of 
+  the original usage) and writes something like: 
+
+<code style="white-space: normal"><pre>
+class K { 
+    shared_ptr &lt;construct_from&gt; z; 
+    template &lt;class Archive&gt; 
+    void serialize(Archive & ar, const unsigned version){ 
+        ar &lt;&lt; z; 
+    } 
+}; 
+</pre></code>
+
+  <p>
+  He builds and runs the program and tests his new functionality. It works 
+  great and he's delighted. 
+  <p>
+  <li>Things continue smoothly as before.  A month goes by and it's 
+  discovered that when loading the archives made in the last month (reading the 
+  log). Things don't work. The second log entry is always the same as the 
+  first. After a series of very long and increasingly acrimonius email exchanges, 
+its discovered 
+  that programmer (3) accidently broke programmer(2)'s code .This is because by 
+  serializing via a pointer, the "log" object now being tracked.  This is because
+  the default tracking behavior is "track_selectively".  This means that class
+  instances are tracked only if they are serialized through pointers anywhere in
+  the program. Now multiple saves from the same address result in only the first one 
+  being written to the archive. Subsequent saves only add the address - even though the 
+  data might have been changed.  When it comes time to load the data, all instances of the log record show the same data.
+  In this way, the behavior of a functioning piece of code is changed due the side
+  effect of a change in an otherwise disjoint module.
+  Worse yet, the data has been lost and cannot not be now recovered from the archives.
+  People are really upset and disappointed with boost (at least the serialization system).
+  <p>
+  <li>
+  After a lot of investigation, it's discovered what the source of the problem
+  and class construct_from is marked "track_never" by including:
+<code style="white-space: normal"><pre>
+BOOST_CLASS_TRACKING(construct_from, track_never) 
+</pre></code>
+  <li>Now everything works again. Or - so it seems.
+  <p>
+  <li><code style="white-space: normal">shared_ptr&lt;construct_from&gt;</code>
+is not going to have a single raw pointer shared amongst the instances. Each loaded 
+<code style="white-space: normal">shared_ptr&lt;construct_from&gt;</code> is going to 
+have its own distinct raw pointer. This will break 
+<code style="white-space: normal">shared_ptr</code> and cause a memory leak.  Again,
+The cause of this problem is very far removed from the point of discovery.  It could 
+well be that the problem is not even discovered until after the archives are loaded.
+Now we not only have difficult to find and fix program bug, but we have a bunch of
+invalid archives and lost data.
+</ol>
+
+Now consider what happens when the trap is enabled:. 
+
+<ol>
+  <p>
+  <li>Right away, the program traps at 
+<code style="white-space: normal"><pre>
+ar &lt;&lt; x; 
+</pre></code>
+  <p>
+  <li>The programmer curses (another %^&*&* hoop to jump through). If he's in a 
+  hurry (and who isn't) and would prefer not to <code style="white-space: normal">const_cast</code>
+  - because it looks bad.  So he'll just make the following change an move on. 
+<code style="white-space: normal"><pre>
+Y y; 
+const construct_from x(y); 
+ar &lt;&lt; x; 
+</pre></code>
+  <p>
+  Things work fine and he moves on. 
+  <p>
+  <li>Now programer (2) wants to make his change - and again another 
+  annoying const issue; 
+<code style="white-space: normal"><pre>
+Y y; 
+const construct_from x(y); 
+... 
+x.f(); // change x in some way ; compile error f() is not const 
+... 
+ar &lt;&lt; x 
+</pre></code>
+  <p>
+  He's mildly annoyed now he tries the following: 
+  <ul>
+    <li>He considers making f() a const - but presumable that shifts the const 
+    error to somewhere else. And his doesn't want to fiddle with "his" code to 
+    work around a quirk in the serializaition system 
+    <p>
+    <li>He removes the <code style="white-space: normal">const</code>
+    from <code style="white-space: normal">const construct_from</code> above - damn now he 
+    gets the trap. If he looks at the comment code where the 
+    <code style="white-space: normal">BOOST_STATIC_ASSERT</code>
+    occurs, he'll do one of two things 
+    <ol>
+      <p>
+      <li>This is just crazy. Its making my life needlessly difficult and flagging 
+      code that is just fine. So I'll fix this with a <code style="white-space: normal">const_cast</code>
+      and fire off a complaint to the list and mabe they will fix it. 
+      In this case, the story branches off to the previous scenario.
+      <p>
+      <li>Oh, this trap is suggesting that the default serialization isn't really 
+      what I want. Of course in this particular program it doesn't matter. But 
+      then the code in the trap can't really evaluate code in other modules (which 
+      might not even be written yet). OK, I'll add the following to my 
+      construct_from.hpp to solve the problem. 
+<code style="white-space: normal"><pre>
+BOOST_CLASS_TRACKING(construct_from, track_never) 
+</pre></code>
+    </ol>
+  </ul>
+  <p>
+  <li>Now programmer (3) comes along and make his change. The behavior of the 
+  original (and distant module) remains unchanged because the 
+  <code style="white-space: normal">construct_from</code> trait has been set to 
+  "track_never" so he should always get copies and the log should be what we expect.
+  <p>
+  <li>But now he gets another trap - trying to save an object of a 
+  class marked "track_never" through a pointer. So he goes back to 
+  construct_from.hpp and comments out the 
+  <code style="white-space: normal">BOOST_CLASS_TRACKING</code> that 
+  was inserted. Now the second trap is avoided, But damn - the first trap is 
+  popping up again. Eventually, after some code restructuring, the differing
+  requirements of serializating <code style="white-space: normal">construct_from</code>
+  are reconciled.
+</ol>
+Note that in this second scenario
+<ul>
+  <li>all errors are trapped at compile time.
+  <li>no invalid archives are created.
+  <li>no data is lost.
+  <li>no runtime errors occur.
+</ul>
+
+It's true that these traps may sometimes flag code that is currently correct and
+that this may be annoying to some programmers.  However, this example illustrates
+my view that these traps are useful and that any such annoyance is small price to
+pay to avoid particularly vexing programming errors.
+
+<!--
+<h2><a name="footnotes"></a>Footnotes</h2>
+<dl>
+  <dt><a name="footnote1" class="footnote">(1)</a> {{text}}</dt>
+  <dt><a name="footnote2" class="footnote">(2)</a> {{text}}</dt>
+</dl>
+-->
+<hr>
+<p><i>&copy; Copyright <a href="http://www.rrsd.com">Robert Ramey</a> 2002-2004. 
+Distributed under the Boost Software License, Version 1.0. (See
+accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+</i></p>
+</body>
+</html>

@@ -1,0 +1,970 @@
+<HTML><HEAD><META content="text/html; charset=utf8" http-equiv="Content-Type"><SCRIPT language="JavaScript" src="resources/script.js" type="text/javascript"></SCRIPT><TITLE>Programming Guide</TITLE></HEAD><BODY alink="#ff0000" bgcolor="#ffffff" leftmargin="4" link="#0000ff" marginheight="4" marginwidth="4" text="#000000" topmargin="4" vlink="#0000aa"><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD align="left" height="60" rowspan="3" valign="top" width="135"><IMG border="0" height="60" hspace="0" src="resources/logo.gif" vspace="0" width="135"></TD><TD align="left" colspan="4" height="5" valign="top" width="456"><IMG border="0" height="5" hspace="0" src="resources/line.gif" vspace="0" width="456"></TD><TD align="left" height="60" rowspan="3" valign="top" width="29"><IMG border="0" height="60" hspace="0" src="resources/right.gif" vspace="0" width="29"></TD></TR><TR><TD align="left" bgcolor="#0086b2" colspan="4" height="35" valign="top" width="456"><IMG alt="" border="0" height="35" hspace="0" src="graphics/program-others-header.jpg" vspace="0" width="456"></TD></TR><TR><TD align="left" height="20" valign="top" width="168"><IMG border="0" height="20" hspace="0" src="resources/bottom.gif" vspace="0" width="168"></TD><TD align="left" height="20" valign="top" width="96"><A href="http://xml.apache.org/" onMouseOut="rolloverOff('xml');" onMouseOver="rolloverOn('xml');" target="new"><IMG alt="http://xml.apache.org/" border="0" height="20" hspace="0" name="xml" onLoad="rolloverLoad('xml','resources/button-xml-hi.gif','resources/button-xml-lo.gif');" src="resources/button-xml-lo.gif" vspace="0" width="96"></A></TD><TD align="left" height="20" valign="top" width="96"><A href="http://www.apache.org/" onMouseOut="rolloverOff('asf');" onMouseOver="rolloverOn('asf');" target="new"><IMG alt="http://www.apache.org/" border="0" height="20" hspace="0" name="asf" onLoad="rolloverLoad('asf','resources/button-asf-hi.gif','resources/button-asf-lo.gif');" src="resources/button-asf-lo.gif" vspace="0" width="96"></A></TD><TD align="left" height="20" valign="top" width="96"><A href="http://www.w3.org/" onMouseOut="rolloverOff('w3c');" onMouseOver="rolloverOn('w3c');" target="new"><IMG alt="http://www.w3.org/" border="0" height="20" hspace="0" name="w3c" onLoad="rolloverLoad('w3c','resources/button-w3c-hi.gif','resources/button-w3c-lo.gif');" src="resources/button-w3c-lo.gif" vspace="0" width="96"></A></TD></TR></TABLE><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD align="left" valign="top" width="120"><IMG border="0" height="14" hspace="0" src="resources/join.gif" vspace="0" width="120"><BR>
+
+  
+<A href="../index.html" onMouseOut="rolloverOff('side-ext-2');" onMouseOver="rolloverOn('side-ext-2');"><IMG alt="Home" border="0" height="12" hspace="0" name="side-ext-2" onLoad="rolloverLoad('side-ext-2','graphics/ext-2-label-2.jpg','graphics/ext-2-label-3.jpg');" src="graphics/ext-2-label-3.jpg" vspace="0" width="120"></A><BR>
+
+
+
+  <IMG border="0" height="6" hspace="0" src="resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="index.html" onMouseOut="rolloverOff('side-index');" onMouseOver="rolloverOn('side-index');"><IMG alt="Readme" border="0" height="12" hspace="0" name="side-index" onLoad="rolloverLoad('side-index','graphics/index-label-2.jpg','graphics/index-label-3.jpg');" src="graphics/index-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="charter.html" onMouseOut="rolloverOff('side-charter');" onMouseOver="rolloverOn('side-charter');"><IMG alt="Charter" border="0" height="12" hspace="0" name="side-charter" onLoad="rolloverLoad('side-charter','graphics/charter-label-2.jpg','graphics/charter-label-3.jpg');" src="graphics/charter-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="releases.html" onMouseOut="rolloverOff('side-releases');" onMouseOver="rolloverOn('side-releases');"><IMG alt="Release Info" border="0" height="12" hspace="0" name="side-releases" onLoad="rolloverLoad('side-releases','graphics/releases-label-2.jpg','graphics/releases-label-3.jpg');" src="graphics/releases-label-3.jpg" vspace="0" width="120"></A><BR>
+     
+     
+
+
+
+
+  <IMG border="0" height="6" hspace="0" src="resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="install.html" onMouseOut="rolloverOff('side-install');" onMouseOver="rolloverOn('side-install');"><IMG alt="Installation" border="0" height="12" hspace="0" name="side-install" onLoad="rolloverLoad('side-install','graphics/install-label-2.jpg','graphics/install-label-3.jpg');" src="graphics/install-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="http://xerces.apache.org/xerces-c/download.cgi" onMouseOut="rolloverOff('side-ext-20');" onMouseOver="rolloverOn('side-ext-20');"><IMG alt="Download" border="0" height="12" hspace="0" name="side-ext-20" onLoad="rolloverLoad('side-ext-20','graphics/ext-20-label-2.jpg','graphics/ext-20-label-3.jpg');" src="graphics/ext-20-label-3.jpg" vspace="0" width="120"></A><BR>
+     
+     <A href="build.html" onMouseOut="rolloverOff('side-build');" onMouseOver="rolloverOn('side-build');"><IMG alt="Build Instructions" border="0" height="12" hspace="0" name="side-build" onLoad="rolloverLoad('side-build','graphics/build-label-2.jpg','graphics/build-label-3.jpg');" src="graphics/build-label-3.jpg" vspace="0" width="120"></A><BR>
+     
+     
+     
+
+  <IMG border="0" height="6" hspace="0" src="resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="program.html" onMouseOut="rolloverOff('side-program');" onMouseOver="rolloverOn('side-program');"><IMG alt="Programming" border="0" height="12" hspace="0" name="side-program" onLoad="rolloverLoad('side-program','graphics/program-label-2.jpg','graphics/program-label-3.jpg');" src="graphics/program-label-3.jpg" vspace="0" width="120"></A><BR>
+     
+     
+     
+     
+     
+     
+     
+
+     <A href="samples.html" onMouseOut="rolloverOff('side-samples');" onMouseOver="rolloverOn('side-samples');"><IMG alt="Samples" border="0" height="12" hspace="0" name="side-samples" onLoad="rolloverLoad('side-samples','graphics/samples-label-2.jpg','graphics/samples-label-3.jpg');" src="graphics/samples-label-3.jpg" vspace="0" width="120"></A><BR>
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+
+     <A href="faqs.html" onMouseOut="rolloverOff('side-faqs');" onMouseOver="rolloverOn('side-faqs');"><IMG alt="FAQs" border="0" height="12" hspace="0" name="side-faqs" onLoad="rolloverLoad('side-faqs','graphics/faqs-label-2.jpg','graphics/faqs-label-3.jpg');" src="graphics/faqs-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="api.html" onMouseOut="rolloverOff('side-api');" onMouseOver="rolloverOn('side-api');"><IMG alt="API Reference" border="0" height="12" hspace="0" name="side-api" onLoad="rolloverLoad('side-api','graphics/api-label-2.jpg','graphics/api-label-3.jpg');" src="graphics/api-label-3.jpg" vspace="0" width="120"></A><BR>
+
+     <A href="ApacheDOMC++Binding.html" onMouseOut="rolloverOff('side-ext-88');" onMouseOver="rolloverOn('side-ext-88');"><IMG alt="DOM C++ Binding" border="0" height="12" hspace="0" name="side-ext-88" onLoad="rolloverLoad('side-ext-88','graphics/ext-88-label-2.jpg','graphics/ext-88-label-3.jpg');" src="graphics/ext-88-label-3.jpg" vspace="0" width="120"></A><BR>
+
+     <A href="migrate.html" onMouseOut="rolloverOff('side-migrate');" onMouseOver="rolloverOn('side-migrate');"><IMG alt="Migration Guide" border="0" height="12" hspace="0" name="side-migrate" onLoad="rolloverLoad('side-migrate','graphics/migrate-label-2.jpg','graphics/migrate-label-3.jpg');" src="graphics/migrate-label-3.jpg" vspace="0" width="120"></A><BR>
+     
+
+  <IMG border="0" height="6" hspace="0" src="resources/separator.gif" vspace="0" width="120"><BR>
+
+  <A href="feedback.html" onMouseOut="rolloverOff('side-feedback');" onMouseOver="rolloverOn('side-feedback');"><IMG alt="Feedback" border="0" height="12" hspace="0" name="side-feedback" onLoad="rolloverLoad('side-feedback','graphics/feedback-label-2.jpg','graphics/feedback-label-3.jpg');" src="graphics/feedback-label-3.jpg" vspace="0" width="120"></A><BR>
+  <A href="bug-report.html" onMouseOut="rolloverOff('side-bug-report');" onMouseOver="rolloverOn('side-bug-report');"><IMG alt="Bug-Reporting" border="0" height="12" hspace="0" name="side-bug-report" onLoad="rolloverLoad('side-bug-report','graphics/bug-report-label-2.jpg','graphics/bug-report-label-3.jpg');" src="graphics/bug-report-label-3.jpg" vspace="0" width="120"></A><BR>
+  <A href="mailing-lists.html" onMouseOut="rolloverOff('side-mailing-lists');" onMouseOver="rolloverOn('side-mailing-lists');"><IMG alt="Mailing Lists" border="0" height="12" hspace="0" name="side-mailing-lists" onLoad="rolloverLoad('side-mailing-lists','graphics/mailing-lists-label-2.jpg','graphics/mailing-lists-label-3.jpg');" src="graphics/mailing-lists-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="resources/separator.gif" vspace="0" width="120"><BR>
+
+   <A href="source-repository.html" onMouseOut="rolloverOff('side-source-repository');" onMouseOver="rolloverOn('side-source-repository');"><IMG alt="Source Repository" border="0" height="12" hspace="0" name="side-source-repository" onLoad="rolloverLoad('side-source-repository','graphics/source-repository-label-2.jpg','graphics/source-repository-label-3.jpg');" src="graphics/source-repository-label-3.jpg" vspace="0" width="120"></A><BR>
+   <A href="applications.html" onMouseOut="rolloverOff('side-applications');" onMouseOver="rolloverOn('side-applications');"><IMG alt="Applications" border="0" height="12" hspace="0" name="side-applications" onLoad="rolloverLoad('side-applications','graphics/applications-label-2.jpg','graphics/applications-label-3.jpg');" src="graphics/applications-label-3.jpg" vspace="0" width="120"></A><BR>
+
+<IMG border="0" height="14" hspace="0" src="resources/close.gif" vspace="0" width="120"><BR></TD><TD align="left" valign="top" width="500"><TABLE border="0" cellpadding="3" cellspacing="0"><TR><TD>
+    <A name="Macro"><!--anchor--></A>
+    <TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="ffffff" colspan="2" width="494"><TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#039acc" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#039acc" height="1" width="492"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#039acc" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" width="492"><FONT color="#ffffff" face="arial,helvetica,sanserif" size="+1"><IMG border="0" height="2" hspace="0" src="resources/void.gif" vspace="0" width="2"><B>Version Macro</B></FONT></TD><TD bgcolor="#017299" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#017299" height="1" width="492"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#017299" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></TD></TR><TR><TD width="10">&nbsp;</TD><TD width="484"><FONT color="#000000" face="arial,helvetica,sanserif">
+        <P>Xerces-C++ has defined a numeric preprocessor macro, _XERCES_VERSION, for users to
+           introduce into their code to perform conditional compilation where the
+           version of Xerces is detected in order to enable or disable version
+          specific capabilities. For example,
+         </P>
+<DIV align="left"><TABLE border="0" cellpadding="0" cellspacing="4" width="464"><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#ffffff" width="462"><FONT size="-1"><PRE>
+#if _XERCES_VERSION &gt;= 20304
+  // code specific to Xerces-C++ version 2.3.4
+#else
+  // old code here...
+#endif
+</PRE></FONT></TD><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></DIV>
+        <P>The minor and revision (patch level) numbers have two digits of resolution
+           which means that '3' becomes '03' and '4' becomes '04' in this example.
+        </P>
+        <P>There are also other string macros or constants to represent the Xerces-C++ version.
+           Please refer to the header xercesc/util/XercesVersion.hpp for further details.
+        </P>
+    </FONT></TD></TR></TABLE><BR>
+
+
+    <A name="Schema"><!--anchor--></A>
+    <TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="ffffff" colspan="2" width="494"><TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#039acc" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#039acc" height="1" width="492"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#039acc" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" width="492"><FONT color="#ffffff" face="arial,helvetica,sanserif" size="+1"><IMG border="0" height="2" hspace="0" src="resources/void.gif" vspace="0" width="2"><B>Schema Support</B></FONT></TD><TD bgcolor="#017299" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#017299" height="1" width="492"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#017299" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></TD></TR><TR><TD width="10">&nbsp;</TD><TD width="484"><FONT color="#000000" face="arial,helvetica,sanserif">
+        <P>Xerces-C++ contains an implementation of the W3C XML Schema
+           Language.  See <A href="schema.html">the Schema page</A> for details.
+         </P>
+    </FONT></TD></TR></TABLE><BR>
+
+    <A name="Progressive"><!--anchor--></A>
+    <TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="ffffff" colspan="2" width="494"><TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#039acc" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#039acc" height="1" width="492"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#039acc" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" width="492"><FONT color="#ffffff" face="arial,helvetica,sanserif" size="+1"><IMG border="0" height="2" hspace="0" src="resources/void.gif" vspace="0" width="2"><B>Progressive Parsing</B></FONT></TD><TD bgcolor="#017299" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#017299" height="1" width="492"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#017299" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></TD></TR><TR><TD width="10">&nbsp;</TD><TD width="484"><FONT color="#000000" face="arial,helvetica,sanserif">
+
+        <P>In addition to using the <I>parse()</I> method to parse an XML File.
+        You can use the other two parsing methods, <I>parseFirst()</I> and <I>parseNext()</I>
+        to do 'progressive parsing', so that you don't
+        have to depend upon throwing an exception to terminate the
+        parsing operation.
+         </P>
+         <P>
+        Calling parseFirst() will cause the DTD (both internal and
+        external subsets), and any pre-content, i.e. everything up to
+        but not including the root element, to be parsed. Subsequent calls to
+        parseNext() will cause one more pieces of markup to be parsed,
+        and spit out from the core scanning code to the parser (and
+        hence either on to you if using SAX or into the DOM tree if
+        using DOM).
+         </P>
+         <P>
+        You can quit the parse any time by just not
+        calling parseNext() anymore and breaking out of the loop. When
+        you call parseNext() and the end of the root element is the
+        next piece of markup, the parser will continue on to the end
+        of the file and return false, to let you know that the parse
+        is done. So a typical progressive parse loop will look like
+        this:</P>
+
+<DIV align="left"><TABLE border="0" cellpadding="0" cellspacing="4" width="464"><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#ffffff" width="462"><FONT size="-1"><PRE>// Create a progressive scan token
+XMLPScanToken token;
+
+if (!parser.parseFirst(xmlFile, token))
+{
+  cerr &lt;&lt; &quot;scanFirst() failed\n&quot; &lt;&lt; endl;
+  return 1;
+}
+
+//
+// We started ok, so lets call scanNext()
+// until we find what we want or hit the end.
+//
+bool gotMore = true;
+while (gotMore &amp;&amp; !handler.getDone())
+  gotMore = parser.parseNext(token);</PRE></FONT></TD><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></DIV>
+
+        <P>In this case, our event handler object (named 'handler'
+        surprisingly enough) is watching for some criteria and will
+        return a status from its getDone() method. Since the handler
+        sees the SAX events coming out of the SAXParser, it can tell
+        when it finds what it wants. So we loop until we get no more
+        data or our handler indicates that it saw what it wanted to
+        see.</P>
+
+        <P>When doing non-progressive parses, the parser can easily
+        know when the parse is complete and insure that any used
+        resources are cleaned up. Even in the case of a fatal parsing
+        error, it can clean up all per-parse resources. However, when
+        progressive parsing is done, the client code doing the parse
+        loop might choose to stop the parse before the end of the
+        primary file is reached. In such cases, the parser will not
+        know that the parse has ended, so any resources will not be
+        reclaimed until the parser is destroyed or another parse is started.</P>
+
+        <P>This might not seem like such a bad thing; however, in this case,
+        the files and sockets which were opened in order to parse the
+        referenced XML entities will remain open. This could cause
+        serious problems. Therefore, you should destroy the parser instance
+        in such cases, or restart another parse immediately. In a future
+        release, a reset method will be provided to do this more cleanly.</P>
+
+        <P>Also note that you must create a scan token and pass it
+        back in on each call. This insures that things don't get done
+        out of sequence. When you call parseFirst() or parse(), any
+        previous scan tokens are invalidated and will cause an error
+        if used again. This prevents incorrect mixed use of the two
+        different parsing schemes or incorrect calls to
+        parseNext().</P>
+
+    </FONT></TD></TR></TABLE><BR>
+
+    <A name="GrammarCache"><!--anchor--></A>
+    <TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="ffffff" colspan="2" width="494"><TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#039acc" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#039acc" height="1" width="492"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#039acc" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" width="492"><FONT color="#ffffff" face="arial,helvetica,sanserif" size="+1"><IMG border="0" height="2" hspace="0" src="resources/void.gif" vspace="0" width="2"><B>Preparsing Grammar and Grammar Caching</B></FONT></TD><TD bgcolor="#017299" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#017299" height="1" width="492"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#017299" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></TD></TR><TR><TD width="10">&nbsp;</TD><TD width="484"><FONT color="#000000" face="arial,helvetica,sanserif">
+        <P>Xerces-C++ 2.8.0 provides a new function to pre-parse the grammar so that users
+           can check for any syntax or error before using the grammar.  Users can also optionally
+           cache these pre-parsed grammars for later use during actual parsing.
+        </P>
+        <P>Here is an example:</P>
+<DIV align="left"><TABLE border="0" cellpadding="0" cellspacing="4" width="464"><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#ffffff" width="462"><FONT size="-1"><PRE>
+XercesDOMParser parser;
+
+// enbale schema processing
+parser.setDoSchema(true);
+parser.setDONamespaces(true);
+
+// Let's preparse the schema grammar (.xsd) and cache it.
+Grammar* grammar = parser.loadGrammar(xmlFile, Grammar::SchemaGrammarType, true);
+</PRE></FONT></TD><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></DIV>
+        <P>Besides caching pre-parsed schema grammars, users can also cache any
+           grammars encountered during an xml document parse.
+        </P>
+        <P>Here is an example:</P>
+<DIV align="left"><TABLE border="0" cellpadding="0" cellspacing="4" width="464"><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#ffffff" width="462"><FONT size="-1"><PRE>
+SAXParser parser;
+
+// Enable grammar caching by setting cacheGrammarFromParse to true.
+// The parser will cache any encountered grammars if it does not
+// exist in the pool.
+// If the grammar is DTD, no internal subset is allowed.
+parser.cacheGrammarFromParse(true);
+
+// Let's parse our xml file (DTD grammar)
+parser.parse(xmlFile);
+
+// We can get the grammar where the root element was declared
+// by calling the parser's method getRootGrammar;
+// Note: The parser owns the grammar, and the user should not delete it.
+Grammar* grammar = parser.getRootGrammar();
+</PRE></FONT></TD><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></DIV>
+        <P>We can use any previously cached grammars when parsing new xml
+        documents. Here are some examples on how to use those cached grammars:
+        </P>
+<DIV align="left"><TABLE border="0" cellpadding="0" cellspacing="4" width="464"><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#ffffff" width="462"><FONT size="-1"><PRE>
+/**
+  * Caching and reusing XML Schema (.xsd) grammar
+  * Parse an XML document and cache its grammar set. Then,  use the cached
+  * grammar set in subsequent parses.
+  */
+
+XercesDOMParser parser;
+
+// Enable schema processing
+parser.setDoSchema(true);
+parser.setDoNamespaces(true);
+
+// Enable grammar caching
+parser.cacheGrammarFromParse(true);
+
+// Let's parse the XML document. The parser will cache any grammars encountered.
+parser.parse(xmlFile);
+
+// No need to enable re-use by setting useCachedGrammarInParse to true. It is
+// automatically enabled with grammar caching.
+for (int i=0; i&lt; 3; i++)
+    parser.parse(xmlFile);
+
+// This will flush the grammar pool
+parser.resetCachedGrammarPool();
+</PRE></FONT></TD><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></DIV>
+
+<DIV align="left"><TABLE border="0" cellpadding="0" cellspacing="4" width="464"><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#ffffff" width="462"><FONT size="-1"><PRE>
+/**
+  * Caching and reusing DTD grammar
+  * Preparse a grammar and cache it in the pool. Then, we use the cached grammar
+  * when parsing XML documents.
+  */
+
+SAX2XMLReader* parser = XMLReaderFactory::createXMLReader();
+
+// Load grammar and cache it
+parser-&gt;loadGrammar(dtdFile, Grammar::DTDGrammarType, true);
+
+// enable grammar reuse
+parser-&gt;setFeature(XMLUni::fgXercesUseCachedGrammarInParse, true);
+
+// Parse xml files
+parser-&gt;parse(xmlFile1);
+parser-&gt;parse(xmlFile2);
+</PRE></FONT></TD><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></DIV>
+        <P>There are some limitations about caching and using cached grammars:</P>
+           <UL>
+              <LI>When caching/reusing DTD grammars, no internal subset is allowed.</LI>
+              <LI>When preparsing grammars with caching option enabled, if a grammar, in the
+              result set, already exists in the pool (same NS for schema or same system
+              id for DTD), the entire set will not be cached.</LI>
+              <LI>When parsing an XML document with the grammar caching option enabled, the
+              reuse option is also automatically enabled. We will only parse a grammar if it
+              does not exist in the pool.</LI>
+           </UL>
+    </FONT></TD></TR></TABLE><BR>
+
+    <A name="LoadableMessageText"><!--anchor--></A>
+    <TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="ffffff" colspan="2" width="494"><TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#039acc" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#039acc" height="1" width="492"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#039acc" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" width="492"><FONT color="#ffffff" face="arial,helvetica,sanserif" size="+1"><IMG border="0" height="2" hspace="0" src="resources/void.gif" vspace="0" width="2"><B>Loadable Message Text</B></FONT></TD><TD bgcolor="#017299" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#017299" height="1" width="492"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#017299" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></TD></TR><TR><TD width="10">&nbsp;</TD><TD width="484"><FONT color="#000000" face="arial,helvetica,sanserif">
+
+        <P>The Xerces-C++ supports loadable message text.   Although
+        the current drop just supports English, it is capable to support other
+        languages. Anyone interested in contributing any translations
+        should contact us. This would be an extremely useful
+        service.</P>
+
+        <P>In order to support the local message loading services, all the error messages
+        are captured in an XML file in the src/xercesc/NLS/ directory.
+        There is a simple program, in the tools/NLS/Xlat/ directory,
+        which can spit out that text in various formats. It currently
+        supports a simple 'in memory' format (i.e. an array of
+        strings), the Win32 resource format, and the message catalog
+        format.  The 'in memory' format is intended for very simple
+        installations or for use when porting to a new platform (since
+        you can use it until you can get your own local message
+        loading support done.)</P>
+
+        <P>In the src/xercesc/util/ directory, there is an XMLMsgLoader
+        class.  This is an abstraction from which any number of
+        message loading services can be derived. Your platform driver
+        file can create whichever type of message loader it wants to
+        use on that platform.  Xerces-C++ currently has versions for the in
+        memory format, the Win32 resource format, the message
+        catalog format, and ICU message loader.
+        Some of the platforms can support multiple message
+        loaders, in which case a #define token is used to control
+        which one is used. You can set this in your build projects to
+        control the message loader type used.</P>
+
+    </FONT></TD></TR></TABLE><BR>
+
+    <A name="PluggableTranscoders"><!--anchor--></A>
+    <TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="ffffff" colspan="2" width="494"><TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#039acc" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#039acc" height="1" width="492"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#039acc" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" width="492"><FONT color="#ffffff" face="arial,helvetica,sanserif" size="+1"><IMG border="0" height="2" hspace="0" src="resources/void.gif" vspace="0" width="2"><B>Pluggable Transcoders</B></FONT></TD><TD bgcolor="#017299" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#017299" height="1" width="492"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#017299" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></TD></TR><TR><TD width="10">&nbsp;</TD><TD width="484"><FONT color="#000000" face="arial,helvetica,sanserif">
+
+        <P>Xerces-C++ also supports pluggable transcoding services. The
+        XMLTransService class is an abstract API that can be derived
+        from, to support any desired transcoding
+        service. XMLTranscoder is the abstract API for a particular
+        instance of a transcoder for a particular encoding. The
+        platform driver file decides what specific type of transcoder
+        to use, which allows each platform to use its native
+        transcoding services, or the ICU service if desired.</P>
+
+        <P>Implementations are provided for Win32 native services, ICU
+        services, and the <I>iconv</I> services available on many
+        Unix platforms. The Win32 version only provides native code
+        page services, so it can only handle XML code in the intrinsic
+        encodings ASCII, UTF-8, UTF-16 (Big/Small Endian), UCS4
+        (Big/Small Endian), EBCDIC code pages IBM037, IBM1047 and
+        IBM1140 encodings, ISO-8859-1 (aka Latin1) and Windows-1252. The ICU version
+        provides all of the encodings that ICU supports. The
+        <I>iconv</I> version will support the encodings supported
+        by the local system. You can use transcoders we provide or
+        create your own if you feel ours are insufficient in some way,
+        or if your platform requires an implementation that Xerces-C++ does not
+        provide.</P>
+
+    </FONT></TD></TR></TABLE><BR>
+
+    <A name="PortingGuidelines"><!--anchor--></A>
+    <TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="ffffff" colspan="2" width="494"><TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#039acc" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#039acc" height="1" width="492"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#039acc" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" width="492"><FONT color="#ffffff" face="arial,helvetica,sanserif" size="+1"><IMG border="0" height="2" hspace="0" src="resources/void.gif" vspace="0" width="2"><B>Porting Guidelines</B></FONT></TD><TD bgcolor="#017299" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#017299" height="1" width="492"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#017299" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></TD></TR><TR><TD width="10">&nbsp;</TD><TD width="484"><FONT color="#000000" face="arial,helvetica,sanserif">
+
+      <P>All platform dependent code in Xerces has been
+      isolated to a couple of files, which should ease the porting
+      effort.  Here are the basic steps that should be followed to
+      port Xerces.</P>
+
+      <OL>
+
+        <LI>The directory <CODE><FONT face="courier, monospaced">src/xercesc/util/Platforms</FONT></CODE> contains the
+        platform sensitive files while <CODE><FONT face="courier, monospaced">src/xercesc/util/Compilers</FONT></CODE> contains
+        all development environment sensitive files. Each operating
+        system has a file of its own and each development environment
+        has another one of its own too.
+
+        <BR>
+
+        As an example, the Win32 platform as a <CODE><FONT face="courier, monospaced">Win32Defs.hpp</FONT></CODE> file
+        and the Visual C++ environment has a <CODE><FONT face="courier, monospaced">VCPPDefs.hpp</FONT></CODE> file.
+        These files set up certain define tokens, typedefs,
+        constants, etc... that will drive the rest of the code to
+        do the right thing for that platform and development
+        environment. AIX/CSet have their own <CODE><FONT face="courier, monospaced">AIXDefs.hpp</FONT></CODE> and
+        <CODE><FONT face="courier, monospaced">CSetDefs.hpp</FONT></CODE> files, and so on. You should create new
+        versions of these files for your platform and environment
+        and follow the comments in them to set up your own.
+        Probably the comments in the Win32 and Visual C++ will be
+        the best to follow, since that is where the main
+        development is done.</LI>
+
+        <LI>Next, edit the file <CODE><FONT face="courier, monospaced">XercesDefs.hpp</FONT></CODE>, which is where all
+            of the fundamental stuff comes into the system. You will
+            see conditional sections in there where the above
+            per-platform and per-environment headers are brought in.
+            Add the new ones for your platform under the appropriate
+            conditionals.</LI>
+
+        <LI>Now edit <CODE><FONT face="courier, monospaced">AutoSense.hpp</FONT></CODE>. Here we set canonical Xerces
+            internal <CODE><FONT face="courier, monospaced">#define</FONT></CODE> tokens which indicate the platform and
+            compiler. These definitions are based on known platform
+            and compiler defines.
+            <BR>
+            <CODE><FONT face="courier, monospaced">AutoSense.hpp</FONT></CODE> is included in <CODE><FONT face="courier, monospaced">XercesDefs.hpp</FONT></CODE> and the
+            canonical platform and compiler settings thus defined will
+            make the particular platform and compiler headers to be
+            the included at compilation.
+            <BR>
+            It might be a little tricky to decipher this file so be
+            careful. If you are using say another compiler on Win32,
+            probably it will use similar tokens so that the platform
+            will get picked up already using what is already there.</LI>
+
+        <LI>Once this is done, you will then need to implement a
+            version of the <I>platform utilities</I> for your platform.
+            Each operating system has a file which implements some
+            methods of the XMLPlatformUtils class, specific to that
+            operating system. These are not terribly complex, so it
+            should not be a lot of work. The Win32 version is called
+            <CODE><FONT face="courier, monospaced">Win32PlatformUtils.cpp</FONT></CODE>, the AIX version is
+            <CODE><FONT face="courier, monospaced">AIXPlatformUtils.cpp</FONT></CODE> and so on. Create one for your
+            platform, with the correct name, and empty out all of the
+            implementation so that just the empty shells of the
+            methods are there (with dummy returns where needed to make
+            the compiler happy.) Once you've done that, you can start
+            to get it to build without any real implementation.</LI>
+
+        <LI>Once you have the system building, then start
+            implementing your own platform utilities methods. Follow
+            the comments in the Win32 version as to what they do, the
+            comments will be improved in subsequent versions, but they
+            should be fairly obvious now. Once you have these
+            implementations done, you should be able to start
+            debugging the system using the demo programs.</LI>
+      </OL>
+
+      <P>Other concerns are:</P>
+
+      <UL>
+        <LI>Does ICU compile on your platform? If not, then you'll need to
+            create a transcoder implementation that uses your local transcoding
+            services. The iconv transcoder should work for you, though perhaps
+            with some modifications.</LI>
+        <LI>What message loader will you use? To get started, you can use the
+            &quot;in memory&quot; one, which is very simple and easy. Then, once you get
+            going, you may want to adapt the message catalog message loader, or
+            write one of your own that uses local services.</LI>
+        <LI>What should I define XMLCh to be? Please refer to <A href="build-misc.html#XMLChInfo">What should I define XMLCh to be?</A> for
+            further details.</LI>
+      </UL>
+
+      <P>That is the work required in a nutshell!</P>
+    </FONT></TD></TR></TABLE><BR>
+
+    <A name="CPPNamespace"><!--anchor--></A>
+    <TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="ffffff" colspan="2" width="494"><TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#039acc" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#039acc" height="1" width="492"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#039acc" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" width="492"><FONT color="#ffffff" face="arial,helvetica,sanserif" size="+1"><IMG border="0" height="2" hspace="0" src="resources/void.gif" vspace="0" width="2"><B>Using C++ Namespace</B></FONT></TD><TD bgcolor="#017299" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#017299" height="1" width="492"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#017299" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></TD></TR><TR><TD width="10">&nbsp;</TD><TD width="484"><FONT color="#000000" face="arial,helvetica,sanserif">
+
+        <P>Xerces-C++ 2.8.0 supports C++ Namespace as of Version 2.2.0.</P>
+
+        <P>The macro <CODE><FONT face="courier, monospaced">XERCES_HAS_CPP_NAMESPACE</FONT></CODE> is defined in each Compiler
+           Definition file if C++ Namespace is supported.</P>
+        <P>For example in header <CODE><FONT face="courier, monospaced">xercesc/util/Compilers/GCCDefs.hpp</FONT></CODE>,
+           the C++ Namespace is enabled:</P>
+
+<DIV align="left"><TABLE border="0" cellpadding="0" cellspacing="4" width="464"><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#ffffff" width="462"><FONT size="-1"><PRE>
+// -------------------------------------------------------------------------
+// Indicate that we support C++ namespace
+// Do not define it if the compile cannot handle C++ namespace
+// -------------------------------------------------------------------------
+#define XERCES_HAS_CPP_NAMESPACE
+</PRE></FONT></TD><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></DIV>
+
+        <P>If C++ Namespace support is ENABLED (all the binary
+           distributions of Xerces-C++ 2.8.0 are built
+           with C++ Namespace enabled), users' applications must
+           namespace qualify all the Xerces-C++ classes, data and
+           variables with <CODE><FONT face="courier, monospaced">XERCES_CPP_NAMESPACE_QUALIFIER </FONT></CODE>
+           or add the <CODE><FONT face="courier, monospaced">XERCES_CPP_NAMESPACE_USE</FONT></CODE>
+           statement. Users also need to ensure all forward
+           declarations are properly qualified or scoped.</P>
+
+        <P>Note: If If C++ Namespace support is ENABLED,
+           <CODE><FONT face="courier, monospaced">XERCES_CPP_NAMESPACE_QUALIFIER</FONT></CODE> expands to the
+           Xerces-C++ namespace name followed by two colons, and
+           <CODE><FONT face="courier, monospaced">XERCES_CPP_NAMESPACE_USE</FONT></CODE> expands to the full
+           <CODE><FONT face="courier, monospaced">using namespace</FONT></CODE> statement, including the
+           semicolon. Do NOT add colons or semicolons following these
+           macros in your source.</P>
+
+        <P>If C++ Namespace support is not enabled, both macros expand
+           to an empty string. The same holds for macros
+           <CODE><FONT face="courier, monospaced">XERCES_CPP_NAMESPACE_BEGIN</FONT></CODE> and
+           <CODE><FONT face="courier, monospaced">XERCES_CPP_NAMESPACE_END</FONT></CODE>, introduced in the
+           example below. You will also see all of these macros used
+           throughout the Xerces-C++ source code.</P>
+
+		<P>For example:</P>
+
+<DIV align="left"><TABLE border="0" cellpadding="0" cellspacing="4" width="464"><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#ffffff" width="462"><FONT size="-1"><PRE>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;xercesc/sax/HandlerBase.hpp&gt;
+
+// indicate using Xerces-C++ namespace in general
+XERCES_CPP_NAMESPACE_USE
+
+// need to properly scope any forward declarations
+XERCES_CPP_NAMESPACE_BEGIN
+  class AttributeList;
+XERCES_CPP_NAMESPACE_END
+
+
+// or namespace qualifier the forward declarations
+class XERCES_CPP_NAMESPACE_QUALIFIER ErrorHandler;
+
+class MySAXHandlers : public HandlerBase
+{
+public:
+    // -----------------------------------------------------------------------
+    //  Handlers for the SAX DocumentHandler interface
+    // -----------------------------------------------------------------------
+    void startElement(const XMLCh* const name, AttributeList&amp; attributes);
+    void characters(const XMLCh* const chars, const unsigned int length);
+:
+:
+};
+</PRE></FONT></TD><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></DIV>
+
+        <P>All macros used above are defined in header file <CODE><FONT face="courier, monospaced">xercesc/util/XercesDefs.hpp</FONT></CODE>:</P>
+
+<DIV align="left"><TABLE border="0" cellpadding="0" cellspacing="4" width="464"><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#ffffff" width="462"><FONT size="-1"><PRE>
+#if defined(XERCES_HAS_CPP_NAMESPACE)
+    #define XERCES_CPP_NAMESPACE_BEGIN    namespace xercesc_2_8 {
+    #define XERCES_CPP_NAMESPACE_END    }
+    #define XERCES_CPP_NAMESPACE_USE    using namespace xercesc_2_8;
+    #define XERCES_CPP_NAMESPACE_QUALIFIER    xercesc_2_8::
+
+    namespace xercesc_2_8 { }
+    namespace xercesc = xercesc_2_8;
+#else
+    #define XERCES_CPP_NAMESPACE_BEGIN
+    #define XERCES_CPP_NAMESPACE_END
+    #define XERCES_CPP_NAMESPACE_USE
+    #define XERCES_CPP_NAMESPACE_QUALIFIER
+#endif
+</PRE></FONT></TD><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></DIV>
+
+        <P>Users should make use of these pre-defined macro in their applications.  For example:</P>
+<DIV align="left"><TABLE border="0" cellpadding="0" cellspacing="4" width="464"><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#ffffff" width="462"><FONT size="-1"><PRE>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;xercesc/sax/HandlerBase.hpp&gt;
+
+// indicate using Xerces-C++ namespace in general
+XERCES_CPP_NAMESPACE_USE
+
+// need to properly scope any forward declarations
+XERCES_CPP_NAMESPACE_BEGIN
+class AttributeList;
+XERCES_CPP_NAMESPACE_END
+
+// or namespace qualify the forward declarations
+class XERCES_CPP_NAMESPACE_QUALIFIER ErrorHandler;
+
+class MySAXHandlers : public HandlerBase
+{
+public:
+    // -----------------------------------------------------------------------
+    //  Handlers for the SAX DocumentHandler interface
+    // -----------------------------------------------------------------------
+    void startElement(const XMLCh* const name, AttributeList&amp; attributes);
+    void characters(const XMLCh* const chars, const unsigned int length);
+:
+:
+};
+</PRE></FONT></TD><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></DIV>
+
+         <P>For those users who want to selectively pick which version of API to use, they can do
+            something like the code below (Note that this is not the best of examples, as the
+            API is the same in all versions):</P>
+
+<DIV align="left"><TABLE border="0" cellpadding="0" cellspacing="4" width="464"><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#ffffff" width="462"><FONT size="-1"><PRE>
+#if _XERCES_VERSION == 20300
+  // code specific to Xerces-C++ version 2.3.0
+  new xercesc_2_3::SAXParser();
+#elif _XERCES_VERSION == 20200
+  // code specific to Xerces-C++ version 2.2.0
+  new xercesc_2_2::SAXParser();
+#else
+  // old code here...
+  new SAXParser();
+#endif
+</PRE></FONT></TD><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></DIV>
+
+        <P>But for those who just want to call the latest API, then they should use
+           the macro <CODE><FONT face="courier, monospaced">XERCES_CPP_NAMESPACE_QUALIFIER</FONT></CODE>
+           for source compatibility:</P>
+
+<DIV align="left"><TABLE border="0" cellpadding="0" cellspacing="4" width="464"><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#ffffff" width="462"><FONT size="-1"><PRE>
+new XERCES_CPP_NAMESPACE_QUALIFIER SAXParser();
+</PRE></FONT></TD><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></DIV>
+           
+        <P>Header file <CODE><FONT face="courier, monospaced">xercesc/util/XercesDefs.hpp</FONT></CODE> also
+           declares <CODE><FONT face="courier, monospaced">namespace xercesc</FONT></CODE> as a
+           generic namespace name which will be assigned to
+           <CODE><FONT face="courier, monospaced">xercesc_YY_ZZ</FONT></CODE> in each specific release, where
+           &quot;YY&quot; is the Major Release Number and &quot;ZZ&quot; is the Minor
+           Version Number. However, when you use
+           <CODE><FONT face="courier, monospaced">xercesc::</FONT></CODE> instead of
+           <CODE><FONT face="courier, monospaced">XERCES_CPP_NAMESPACE_QUALIFIER </FONT></CODE> when your
+           compiler does not support namespaces, your code will not
+           work.</P>
+ 
+           
+
+    </FONT></TD></TR></TABLE><BR>
+
+
+    <A name="SpecifyLocaleForMessageLoader"><!--anchor--></A>
+    <TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="ffffff" colspan="2" width="494"><TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#039acc" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#039acc" height="1" width="492"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#039acc" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" width="492"><FONT color="#ffffff" face="arial,helvetica,sanserif" size="+1"><IMG border="0" height="2" hspace="0" src="resources/void.gif" vspace="0" width="2"><B>Specify Locale for Message Loader</B></FONT></TD><TD bgcolor="#017299" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#017299" height="1" width="492"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#017299" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></TD></TR><TR><TD width="10">&nbsp;</TD><TD width="484"><FONT color="#000000" face="arial,helvetica,sanserif">
+
+        <P>The Xerces-C++ has implemented mechanism to support NLS, though
+        the current drop has only English version message file, it is capable
+        to support other languages once the translated version of the target
+        language is available.</P>
+
+        <P>Application can specify the locale for the message loader in their
+        very first invocation to XMLPlatformUtils::Initialize() by supplying
+        a parameter for the target locale intended. The default locale is &quot;en_US&quot;.
+        </P>
+
+<DIV align="left"><TABLE border="0" cellpadding="0" cellspacing="4" width="464"><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#ffffff" width="462"><FONT size="-1"><PRE>
+
+...
+    // Initialize the parser system
+    try
+    {
+         XMLPlatformUtils::Initialize(&quot;fr_FR&quot;);
+    }
+
+    catch ()
+    {
+    }
+..
+</PRE></FONT></TD><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></DIV>
+    </FONT></TD></TR></TABLE><BR>
+
+
+    <A name="SpecifyLocationForMessageLoader"><!--anchor--></A>
+    <TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="ffffff" colspan="2" width="494"><TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#039acc" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#039acc" height="1" width="492"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#039acc" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" width="492"><FONT color="#ffffff" face="arial,helvetica,sanserif" size="+1"><IMG border="0" height="2" hspace="0" src="resources/void.gif" vspace="0" width="2"><B>Specify Location for Message Loader</B></FONT></TD><TD bgcolor="#017299" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#017299" height="1" width="492"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#017299" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></TD></TR><TR><TD width="10">&nbsp;</TD><TD width="484"><FONT color="#000000" face="arial,helvetica,sanserif">
+
+        <P>The Xerces-C++ searches for message files at the default message directory, $XERCESCROOT/msg.
+        </P>
+
+        <P>Application can specify an alternative location for the message files in their
+        very first invocation to XMLPlatformUtils::Initialize() by supplying
+        a parameter for the alternative location intended.
+        </P>
+
+<DIV align="left"><TABLE border="0" cellpadding="0" cellspacing="4" width="464"><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#ffffff" width="462"><FONT size="-1"><PRE>
+
+...
+    // Initialize the parser system
+    try
+    {
+         XMLPlatformUtils::Initialize(&quot;en_US&quot;, &quot;/usr/application_root/msg_home&quot;);
+    }
+
+    catch ()
+    {
+    }
+..
+</PRE></FONT></TD><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></DIV> 
+    </FONT></TD></TR></TABLE><BR>
+
+    <A name="PluggablePanicHandler"><!--anchor--></A>
+    <TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="ffffff" colspan="2" width="494"><TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#039acc" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#039acc" height="1" width="492"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#039acc" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" width="492"><FONT color="#ffffff" face="arial,helvetica,sanserif" size="+1"><IMG border="0" height="2" hspace="0" src="resources/void.gif" vspace="0" width="2"><B>Pluggable Panic Handler</B></FONT></TD><TD bgcolor="#017299" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#017299" height="1" width="492"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#017299" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></TD></TR><TR><TD width="10">&nbsp;</TD><TD width="484"><FONT color="#000000" face="arial,helvetica,sanserif">
+
+        <P>The Xerces-C++ reports, through the method panic(), any panic encountered,
+           to the panic handler installed, which in turn takes whatever action appropriate,
+           to handle the panic.                    
+        </P>
+        <P>The Xerces-C++ allows application plugging a customized panic handler 
+           (class implementing the interface PanicHandler), in its very first invocation to 
+           XMLPlatformUtils::Initialize() by supplying a parameter for the panic handler 
+           intended.
+        </P>
+        <P>In the absence of such a plugged panic handler, Xerces-C++ default
+           panic handler is installed and used, which aborts program whenever a panic
+           is seen.
+        </P>
+
+<DIV align="left"><TABLE border="0" cellpadding="0" cellspacing="4" width="464"><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#ffffff" width="462"><FONT size="-1"><PRE>
+
+...
+    // Initialize the parser system
+    try
+    {
+         PanicHandler* ph = new MyPanicHandler();
+
+         XMLPlatformUtils::Initialize(&quot;en_US&quot;
+                                    , &quot;/usr/application_root/msg_home&quot;
+                                    , ph);
+    }
+
+    catch ()
+    {
+    }
+..
+</PRE></FONT></TD><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></DIV>
+    </FONT></TD></TR></TABLE><BR>
+
+    <A name="PluggableMemoryManager"><!--anchor--></A>
+    <TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="ffffff" colspan="2" width="494"><TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#039acc" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#039acc" height="1" width="492"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#039acc" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" width="492"><FONT color="#ffffff" face="arial,helvetica,sanserif" size="+1"><IMG border="0" height="2" hspace="0" src="resources/void.gif" vspace="0" width="2"><B>Pluggable Memory Manager</B></FONT></TD><TD bgcolor="#017299" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#017299" height="1" width="492"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#017299" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></TD></TR><TR><TD width="10">&nbsp;</TD><TD width="484"><FONT color="#000000" face="arial,helvetica,sanserif">
+        <P>Certain applications wish to maintain precise control over
+        memory allocation.  This enables them to recover more easily
+        from crashes of individual components, as well as to allocate
+        memory more efficiently than a general-purpose OS-level
+        procedure with no knowledge of the characteristics of the
+        program making the requests for memory.  As of Xerces-C 2.3.0 this
+        is supported via the Pluggable Memory Handler.
+        </P>
+        <P>Users that have no particular memory management
+        requirements (beyond that components don't leak memory or
+        attempt to read from or write to areas of memory they haven't
+        been assigned), should notice no behavioural changes in the
+        parser, so long as their code conforms to Xerces-C best
+        practices (e.g., avoids implicit destruction of objects
+        related to the parser after XMLPlatformUtils::Terminate() has
+        been called; see <A href="faq-parse.html#faq-7">the FAQ
+        entry describing a reason why applications may suddenly start
+        segfaulting with Xerces-C 2.3.0</A> for details.).  Such users can ignore this subsection and
+        continue using the parser as they always had.
+        </P>
+        <P>Users who wish to implement their own MemoryManager,
+        an interface found in xercesc/framework/MemoryManager.hpp, need
+        implement only two methods:</P>
+<DIV align="left"><TABLE border="0" cellpadding="0" cellspacing="4" width="464"><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#ffffff" width="462"><FONT size="-1"><PRE>
+// This method allocates requested memory.
+// the parameter is the requested memory size
+// A pointer to the allocated memory is returned.
+virtual void* allocate(size_t size) = 0;
+
+// This method deallocates memory
+// The parameter is a pointer to the allocated memory to be deleted
+virtual void deallocate(void* p) = 0;
+</PRE></FONT></TD><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></DIV>
+        <P>To maximize the amount of flexibility that applications
+        have in terms of controlling memory allocation, a
+        MemoryManager instance may be set as part of the call to
+        XMLPlatformUtils::Initialize() to allow for static
+        initialization to be done with the given MemoryHandler; a
+        (possibly different) MemoryManager may be passed in to the
+        constructors of all Xerces parser objects as well, and all
+        dynamic allocations within the parsers will make use of this
+        object.  Assuming that MyMemoryHandler is a class that
+        implements the MemoryManager interface, here is a bit of
+        pseudocode which illustrates these ideas:
+        </P>
+<DIV align="left"><TABLE border="0" cellpadding="0" cellspacing="4" width="464"><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#ffffff" width="462"><FONT size="-1"><PRE>
+MyMemoryHandler *mm_for_statics = new MyMemoryHandler();
+MyMemoryHandler *mm_for_particular_parser = new MyMemoryManager();
+
+// initialize the parser information; try/catch
+// removed for brevity
+XMLPlatformUtils::Initialize(XMLUni::fgXercescDefaultLocale, 0,0,
+        mm_for_statics);
+
+// create a parser object
+XercesDOMParser *parser = new
+        XercesDomParser(mm_for_particular_parser);
+
+// ...
+delete parser;
+XMLPlatformUtils::Terminate(); 
+</PRE></FONT></TD><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></DIV>
+      <P>
+        Notice that, to maintain backward compatibility, the
+        MemoryManager parameter is positioned last in the list of
+        parameters to XMLPlatformUtils::Initialize(); this means that
+        all other parameters must be specified with their defaults as
+        found in Xerces code if all other aspects of standard
+        behaviour are to be preserved.  
+      </P>
+      <P>
+        If a user provides a MemoryManager object to the parser, then
+        the user owns that object.  It is also important to note that
+        Xerces default implementation simply uses the global new and
+        delete.
+      </P>
+      <P>
+        Finally, there are two platform/compiler-related
+        limitations of our memory handling facilities that
+        certain users will need to be aware of:
+      </P>
+      <UL>
+        <LI>The compiler shipped with HPUX 11 does not understand
+        &quot;placement&quot; delete operators.  These versions of delete
+        have the same signature as our &quot;placement&quot; new operators
+        but will only be invoked when an exception is thrown
+        during the construction of an object.  Since the HP
+        compiler does not permit delete to be overridden twice
+        within a class, we cannot provide a placement delete;
+        hence, in the few cases in which an exception may be
+        thrown during object construction by Xerces, destructors of objects
+        created during that construction will not be called.</LI>
+        <LI>There is a bug in versions of GCC older than 2.96
+        which makes it impossible to have the pluggable memory
+        manager create elements in the
+        <CODE><FONT face="courier, monospaced">RefHash3KeysIdPool</FONT></CODE> template hashtable.
+        Therefore, on this compiler, we must use global new for
+        this purpose.  These elements will be properly destroyed
+        under this compiler; the limitation is that, since the
+        pluggable memory manager cannot be used, these particular
+        elements will not be destroyed if the user destroys their
+        memory manager directly.  Note that this hashtable is not
+        used that often in Xerces.</LI>
+      </UL>
+    </FONT></TD></TR></TABLE><BR>
+
+    <A name="SecurityManager"><!--anchor--></A>
+    <TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="ffffff" colspan="2" width="494"><TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#039acc" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#039acc" height="1" width="492"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#039acc" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" width="492"><FONT color="#ffffff" face="arial,helvetica,sanserif" size="+1"><IMG border="0" height="2" hspace="0" src="resources/void.gif" vspace="0" width="2"><B>Managing Security Vulnerabilities</B></FONT></TD><TD bgcolor="#017299" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#017299" height="1" width="492"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#017299" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></TD></TR><TR><TD width="10">&nbsp;</TD><TD width="484"><FONT color="#000000" face="arial,helvetica,sanserif">
+      <P> 
+        The purpose of the SecurityManager class is to permit applications a
+        means to have the parser reject documents whose processing would
+        otherwise consume large amounts of system resources.  Malicious
+        use of such documents could be used to launch a denial-of-service
+        attack against a system running the parser.  Initially, the
+        SecurityManager only knows about attacks that can result from
+        exponential entity expansion; this is the only known attack that
+        involves processing a single XML document.  Other, similar attacks
+        can be launched if arbitrary schemas may be parsed; there already
+        exist means (via use of the EntityResolver interface) by which
+        applications can deny processing of untrusted schemas.  In future,
+        the SecurityManager will be expanded to take these other exploits
+        into account.
+      </P>
+      <P>
+        The SecurityManager class is very simple:  It will contain
+        getters and setters corresponding to each known variety of
+        exploit.  These will reflect limits that the application may
+        impose on the parser with respect to the processing of various
+        XML constructs.  When an instance of SecurityManager is
+        instantiated, default values for these limits will be provided
+        that should suit most applications.
+      </P>
+      <P>
+        By default, Xerces-C is a wholly conformant XML parser; that
+        is, no security-related considerations will be observed by
+        default.  An application must set an instance of the
+        SecurityManager class on a Xerces parser in order to make that
+        parser behave in a security-conscious manner.  i.e.:
+      </P>
+<DIV align="left"><TABLE border="0" cellpadding="0" cellspacing="4" width="464"><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#ffffff" width="462"><FONT size="-1"><PRE>
+SAXParser *myParser = new SAXParser();
+SecurityManager *myManager = new SecurityManager();
+myManager-&gt;setEntityExpansionLimit(100000); // larger than default
+myParser-&gt;setSecurityManager(myManager); 
+// ... use the parser
+</PRE></FONT></TD><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></DIV>
+      <P>
+        Note that SecurityManager instances may be set on all kinds of
+        Xerces parsers; please see the documentation for the
+        individual parsers for details.
+      </P>
+      <P>
+        Note also that the application always owns the SecurityManager
+        instance.  The default SecurityManager that Xerces provides is
+        not thread-safe; although it only uses primitive operations at
+        the moment, users may need to extend the class with a
+        thread-safe implementation on some platforms.
+      </P>
+    </FONT></TD></TR></TABLE><BR>
+<A name="UseSpecificScanner"><!--anchor--></A>
+    <TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="ffffff" colspan="2" width="494"><TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#039acc" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#039acc" height="1" width="492"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#039acc" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" width="492"><FONT color="#ffffff" face="arial,helvetica,sanserif" size="+1"><IMG border="0" height="2" hspace="0" src="resources/void.gif" vspace="0" width="2"><B>Use Specific Scanner</B></FONT></TD><TD bgcolor="#017299" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#017299" height="1" width="492"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#017299" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></TD></TR><TR><TD width="10">&nbsp;</TD><TD width="484"><FONT color="#000000" face="arial,helvetica,sanserif">
+
+        <P>For performance and modularity, the Xerces-C++ has implemented a mechanism
+        to allow users to specify the scanner to use when scanning an XML document.
+        Such mechanism will enable the creation of special purpose scanners that can be easily
+        plugged in.</P>
+
+        <P>Xerces-C++ supports the following scanners:</P>
+
+        <TABLE border="0" cellpadding="0" cellspacing="0" width="484"><TR><TD bgcolor="ffffff" colspan="2" width="484"><TABLE border="0" cellpadding="0" cellspacing="0" width="484"><TR><TD bgcolor="#039acc" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#039acc" height="1" width="482"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="482"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#039acc" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" width="482"><FONT color="#ffffff" face="arial,helvetica,sanserif"><IMG border="0" height="2" hspace="0" src="resources/void.gif" vspace="0" width="2"><B>WFXMLScanner</B></FONT></TD><TD bgcolor="#017299" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#017299" height="1" width="482"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="482"></TD><TD bgcolor="#017299" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></TD></TR><TR><TD width="10">&nbsp;</TD><TD width="474"><FONT color="#000000" face="arial,helvetica,sanserif" size="-1">
+
+            <P>
+            The WFXMLScanner is a non-validating scanner which performs well-formedness check only.
+            It does not do any DTD/XMLSchema processing. If the XML document contains a DOCTYPE, it
+            will be silently ignored (i.e. no warning message is issued). Similarly, any schema
+            specific attributes (e.g. schemaLocation), will be treated as normal element attributes.
+            Setting grammar specific features/properties will have no effect on its behavior
+            (e.g. setLoadExternalDTD(true) is ignored).
+            </P>
+
+<DIV align="left"><TABLE border="0" cellpadding="0" cellspacing="4" width="464"><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#ffffff" width="462"><FONT size="-1"><PRE>
+// Create a DOM parser
+XercesDOMParser parser;
+
+// Specify scanner name
+parser.useScanner(XMLUni::fgWFXMLScanner);
+
+// Specify other parser features, e.g.
+parser.setDoNamespaces(true);
+</PRE></FONT></TD><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></DIV>
+
+
+        </FONT></TD></TR></TABLE><BR>
+
+        <TABLE border="0" cellpadding="0" cellspacing="0" width="484"><TR><TD bgcolor="ffffff" colspan="2" width="484"><TABLE border="0" cellpadding="0" cellspacing="0" width="484"><TR><TD bgcolor="#039acc" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#039acc" height="1" width="482"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="482"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#039acc" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" width="482"><FONT color="#ffffff" face="arial,helvetica,sanserif"><IMG border="0" height="2" hspace="0" src="resources/void.gif" vspace="0" width="2"><B>DGXMLScanner</B></FONT></TD><TD bgcolor="#017299" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#017299" height="1" width="482"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="482"></TD><TD bgcolor="#017299" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></TD></TR><TR><TD width="10">&nbsp;</TD><TD width="474"><FONT color="#000000" face="arial,helvetica,sanserif" size="-1">
+
+            <P>
+            The DGXMLScanner handles XML documents with DOCTYPE information. It does not do any
+            XMLSchema processing, which means that any schema specific attributes (e.g. schemaLocation),
+            will be treated as normal element attributes. Setting schema grammar specific features/properties
+            will have no effect on its behavior (e.g. setDoSchema(true) is ignored).
+            </P>
+
+<DIV align="left"><TABLE border="0" cellpadding="0" cellspacing="4" width="464"><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#ffffff" width="462"><FONT size="-1"><PRE>
+// Create a SAX parser
+SAXParser parser;
+
+// Specify scanner name
+parser.useScanner(XMLUni::fgDGXMLScanner);
+
+// Specify other parser features, e.g.
+parser.setLoadExternalDTD(true);
+</PRE></FONT></TD><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></DIV>
+
+        </FONT></TD></TR></TABLE><BR>
+
+        <TABLE border="0" cellpadding="0" cellspacing="0" width="484"><TR><TD bgcolor="ffffff" colspan="2" width="484"><TABLE border="0" cellpadding="0" cellspacing="0" width="484"><TR><TD bgcolor="#039acc" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#039acc" height="1" width="482"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="482"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#039acc" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" width="482"><FONT color="#ffffff" face="arial,helvetica,sanserif"><IMG border="0" height="2" hspace="0" src="resources/void.gif" vspace="0" width="2"><B>SGXMLScanner</B></FONT></TD><TD bgcolor="#017299" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#017299" height="1" width="482"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="482"></TD><TD bgcolor="#017299" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></TD></TR><TR><TD width="10">&nbsp;</TD><TD width="474"><FONT color="#000000" face="arial,helvetica,sanserif" size="-1">
+
+            <P>
+            The SGXMLScanner handles XML documents with XML schema grammar information.
+            If the XML document contains a DOCTYPE, it will be ignored. Namespace and
+            schema processing features are on by default, and setting them to off has
+            not effect.
+            </P>
+
+<DIV align="left"><TABLE border="0" cellpadding="0" cellspacing="4" width="464"><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#ffffff" width="462"><FONT size="-1"><PRE>
+// Create a SAX2 parser
+SAX2XMLReader* parser = XMLReaderFactory::createXMLReader();
+
+// Specify scanner name
+parser-&gt;setProperty(XMLUni::fgXercesScannerName, (void *)XMLUni::fgSGXMLScanner);
+
+// Specify other parser features, e.g.
+parser-&gt;setFeature(XMLUni::fgXercesSchemaFullChecking, false);
+</PRE></FONT></TD><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></DIV>
+
+        </FONT></TD></TR></TABLE><BR>
+
+        <TABLE border="0" cellpadding="0" cellspacing="0" width="484"><TR><TD bgcolor="ffffff" colspan="2" width="484"><TABLE border="0" cellpadding="0" cellspacing="0" width="484"><TR><TD bgcolor="#039acc" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#039acc" height="1" width="482"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="482"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#039acc" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" width="482"><FONT color="#ffffff" face="arial,helvetica,sanserif"><IMG border="0" height="2" hspace="0" src="resources/void.gif" vspace="0" width="2"><B>IGXMLScanner</B></FONT></TD><TD bgcolor="#017299" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#017299" height="1" width="482"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="482"></TD><TD bgcolor="#017299" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></TD></TR><TR><TD width="10">&nbsp;</TD><TD width="474"><FONT color="#000000" face="arial,helvetica,sanserif" size="-1">
+
+            <P>
+            The IGXMLScanner is an integrated scanner and handles XML documents with DTD and/or
+            XML schema grammar. This is the default scanner used by the various parsers if no
+            scanner is specified.
+            </P>
+
+<DIV align="left"><TABLE border="0" cellpadding="0" cellspacing="4" width="464"><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#ffffff" width="462"><FONT size="-1"><PRE>
+// Create a DOMBuilder parser
+DOMBuilder *parser = ((DOMImplementationLS*)impl)-&gt;createDOMBuilder(DOMImplementationLS::MODE_SYNCHRONOUS, 0);
+
+// Specify scanner name - This is optional as IGXMLScanner is the default
+parser-&gt;setProperty(XMLUni::fgXercesScannerName, (void *)XMLUni::fgIGXMLScanner);
+
+// Specify other parser features, e.g.
+parser-&gt;setFeature(XMLUni::fgDOMNamespaces, doNamespaces);
+parser-&gt;setFeature(XMLUni::fgXercesSchema, doSchema);
+</PRE></FONT></TD><TD bgcolor="#0086b2" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" height="1" width="462"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="462"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></DIV>
+
+        </FONT></TD></TR></TABLE><BR>
+
+    </FONT></TD></TR></TABLE><BR>
+
+</TD></TR></TABLE></TD></TR></TABLE><BR><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD bgcolor="#0086b2"><IMG height="1" src="images/dot.gif" width="1"></TD></TR><TR><TD align="center"><FONT color="#0086b2" size="-1"><I>
+              Copyright &copy; 1999-2007 The Apache Software Foundation.
+              All Rights Reserved.
+            </I></FONT></TD></TR></TABLE></BODY></HTML>

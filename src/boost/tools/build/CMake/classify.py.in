@@ -1,0 +1,51 @@
+#
+#  Classifies pass/fail/warn for the sake of traash
+#
+
+toolset = '@BOOST_TOOLSET@'
+import os
+
+#  'cxx_compile_object'
+#  'run'
+#  'link_executable'
+#  'create_shared_library'
+#  'create_static_library'
+#  'compile-fail'
+
+def classify(step):
+    print "step=", step
+    if 'errno' in step:
+        if step['errno'] == 666:
+            step['status'] = 'timeout'
+        else:
+            step['status'] = 'not_executed'
+        return
+    
+    if step['returncode'] != 0 and not step['expect_fail']:
+        step['status'] = 'fail'
+        return
+
+    if step['returncode'] == 0 and step['expect_fail']:
+        step['status'] = 'unexpected_pass'
+        return
+
+    #
+    #  if it is an expected failure, don't warn just cause of warnings.
+    #
+    if step['returncode'] != 0 and step['expect_fail']:
+        step['status'] = 'pass'
+        return
+
+
+    if step['op'] != 'run' and len(step['stderr']) != 0 and not step['stderr'].isspace():
+        step['status'] = 'warn'
+        return
+
+    # on windoze, warnings are to be found in stdout... but the compiler always
+    # prints the name of the file first.  So warn if there is more than one line 
+    # in stdout.  For now.
+    if os.name == 'nt' and step['op'] == 'cxx_compile_object' and step['stdout'].count('\n') > 1:
+        step['status'] = 'warn'
+        return
+
+    step['status'] = 'pass'

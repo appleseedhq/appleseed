@@ -1,0 +1,17 @@
+[/
+ / Copyright (c) 2008 Eric Niebler
+ /
+ / Distributed under the Boost Software License, Version 1.0. (See accompanying
+ / file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[section:acknowledgements Appendix D: Acknowledgements]
+
+I'd like to thank Joel de Guzman and Hartmut Kaiser for being willing to take a
+chance on using Proto for their work on Spirit-2 and Karma when Proto was
+little more than a vision. Their requirements and feedback have been
+indespensable.
+
+Thanks also to the developers of _PETE_. I found many good ideas there.
+
+[endsect]

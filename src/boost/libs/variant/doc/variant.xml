@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE library PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<library name="Variant" dirname="variant" 
+         xmlns:xi="http://www.w3.org/2001/XInclude" id="variant">
+<libraryinfo>
+  <author>
+    <firstname>Eric</firstname>
+    <surname>Friedman</surname>
+  </author>
+  <author>
+    <firstname>Itay</firstname>
+    <surname>Maman</surname>
+  </author>
+
+  <copyright>
+    <year>2002</year>
+    <year>2003</year>
+    <holder>Eric Friedman</holder>
+    <holder>Itay Maman</holder>
+  </copyright>
+
+  <legalnotice>
+    <para>Permission to copy, use, sell and distribute this software
+    is granted provided this copyright notice appears in all copies.
+    Permission to modify the code and to distribute modified code is
+    granted provided this copyright notice appears in all copies, and
+    a notice that the code was modified is included with the copyright
+    notice.</para>
+
+    <para> This software is provided "as is" without express or
+    implied warranty, and with no claim as to its suitability for any
+    purpose.</para>
+  </legalnotice>
+
+  <librarypurpose>Safe, generic, stack-based discriminated union container</librarypurpose>
+  <librarycategory name="category:containers"/>
+  <librarycategory name="category:data-structures"/>
+</libraryinfo>
+
+<title>Boost.Variant</title>
+  <xi:include href="introduction.xml"/>
+  <xi:include href="tutorial/tutorial.xml"/>
+  <xi:include href="reference/reference.xml"/>
+  <xi:include href="design.xml"/>
+<!--
+  <xi:include href="rationale.xml"/>
+-->
+  <xi:include href="misc.xml"/>
+<!--
+  <xi:include href="tests.xml"/>
+-->
+  <xi:include href="biblio.xml"/>
+</library>

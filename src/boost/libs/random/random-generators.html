@@ -1,0 +1,1205 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+
+  <title>Boost Random Number Library Generators</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+  <h1>Random Number Library Generators</h1>
+
+  <ul>
+    <li><a href="#intro">Introduction</a></li>
+
+    <li><a href="#synopsis">Synopsis</a></li>
+
+    <li><a href="#const_mod">Class template
+    <code>random::const_mod</code></a></li>
+
+    <li><a href="#linear_congruential">Class template
+    <code>random::linear_congruential</code></a></li>
+
+    <li><a href="#rand48">Class <code>rand48</code></a></li>
+
+    <li><a href="#additive_combine">Class template
+    <code>random::additive_combined</code></a></li>
+
+    <li><a href="#shuffle_output">Class template
+    <code>random::shuffle_output</code></a></li>
+
+    <li><a href="#inversive_congruential">Class template
+    <code>random::inversive_congruential</code></a></li>
+
+    <li><a href="#mersenne_twister">Class template
+    <code>random::mersenne_twister</code></a></li>
+
+    <li><a href="#lagged_fibonacci">Class template
+    <code>random::lagged_fibonacci</code></a></li>
+
+    <li><a href="#performance">Performance</a></li>
+  </ul>
+
+  <h2><a name="intro" id="intro">Introduction</a></h2>
+
+  <p>This library provides several pseudo-random number generators. The
+  quality of a pseudo-random number generator crucially depends on both the
+  algorithm and its parameters. This library implements the algorithms as
+  class templates with template value parameters, hidden in namespace
+  <code>boost::random</code>. Any particular choice of parameters is
+  represented as the appropriately specializing <code>typedef</code> in
+  namespace <code>boost</code>.</p>
+
+  <p>Pseudo-random number generators should not be constructed (initialized)
+  frequently during program execution, for two reasons. First, initialization
+  requires full initialization of the internal state of the generator. Thus,
+  generators with a lot of internal state (see below) are costly to
+  initialize. Second, initialization always requires some value used as a
+  "seed" for the generated sequence. It is usually difficult to obtain
+  several good seed values. For example, one method to obtain a seed is to
+  determine the current time at the highest resolution available, e.g.
+  microseconds or nanoseconds. When the pseudo-random number generator is
+  initialized again with the then-current time as the seed, it is likely that
+  this is at a near-constant (non-random) distance from the time given as the
+  seed for first initialization. The distance could even be zero if the
+  resolution of the clock is low, thus the generator re-iterates the same
+  sequence of random numbers. For some applications, this is
+  inappropriate.</p>
+
+  <p>Note that all pseudo-random number generators described below are
+  CopyConstructible and Assignable. Copying or assigning a generator will
+  copy all its internal state, so the original and the copy will generate the
+  identical sequence of random numbers. Often, such behavior is not wanted.
+  In particular, beware of the algorithms from the standard library such as
+  std::generate. They take a functor argument by value, thereby invoking the
+  copy constructor when called.</p>
+
+  <p>The following table gives an overview of some characteristics of the
+  generators. The cycle length is a rough estimate of the quality of the
+  generator; the approximate relative speed is a performance measure, higher
+  numbers mean faster random number generation.</p>
+
+  <table border="1" summary="">
+    <tr>
+      <th>generator</th>
+
+      <th>length of cycle</th>
+
+      <th>approx. memory requirements</th>
+
+      <th>approx. relative speed</th>
+
+      <th>comment</th>
+    </tr>
+
+    <tr>
+      <td><a href="#minstd_rand"><code>minstd_rand</code></a></td>
+
+      <td>2<sup>31</sup>-2</td>
+
+      <td><code>sizeof(int32_t)</code></td>
+
+      <td>40</td>
+
+      <td>-</td>
+    </tr>
+
+    <tr>
+      <td><a href="#rand48"><code>rand48</code></a></td>
+
+      <td>2<sup>48</sup>-1</td>
+
+      <td><code>sizeof(uint64_t)</code></td>
+
+      <td>80</td>
+
+      <td>-</td>
+    </tr>
+
+    <tr>
+      <td><code>lrand48</code> (C library)</td>
+
+      <td>2<sup>48</sup>-1</td>
+
+      <td>-</td>
+
+      <td>20</td>
+
+      <td>global state</td>
+    </tr>
+
+    <tr>
+      <td><a href="#ecuyer1988"><code>ecuyer1988</code></a></td>
+
+      <td>approx. 2<sup>61</sup></td>
+
+      <td><code>2*sizeof(int32_t)</code></td>
+
+      <td>20</td>
+
+      <td>-</td>
+    </tr>
+
+    <tr>
+      <td><code><a href="#kreutzer1986">kreutzer1986</a></code></td>
+
+      <td>?</td>
+
+      <td><code>1368*sizeof(uint32_t)</code></td>
+
+      <td>60</td>
+
+      <td>-</td>
+    </tr>
+
+    <tr>
+      <td><code><a href="#hellekalek1995">hellekalek1995</a></code></td>
+
+      <td>2<sup>31</sup>-1</td>
+
+      <td><code>sizeof(int32_t)</code></td>
+
+      <td>3</td>
+
+      <td>good uniform distribution in several dimensions</td>
+    </tr>
+
+    <tr>
+      <td><code><a href="#mt11213b">mt11213b</a></code></td>
+
+      <td>2<sup>11213</sup>-1</td>
+
+      <td><code>352*sizeof(uint32_t)</code></td>
+
+      <td>100</td>
+
+      <td>good uniform distribution in up to 350 dimensions</td>
+    </tr>
+
+    <tr>
+      <td><code><a href="#mt19937">mt19937</a></code></td>
+
+      <td>2<sup>19937</sup>-1</td>
+
+      <td><code>625*sizeof(uint32_t)</code></td>
+
+      <td>100</td>
+
+      <td>good uniform distribution in up to 623 dimensions</td>
+    </tr>
+
+    <tr>
+      <td><code><a href=
+      "#lagged_fibonacci_spec">lagged_fibonacci607</a></code></td>
+
+      <td>approx. 2<sup>32000</sup></td>
+
+      <td><code>607*sizeof(double)</code></td>
+
+      <td>150</td>
+
+      <td>-</td>
+    </tr>
+
+    <tr>
+      <td><code><a href=
+      "#lagged_fibonacci_spec">lagged_fibonacci1279</a></code></td>
+
+      <td>approx. 2<sup>67000</sup></td>
+
+      <td><code>1279*sizeof(double)</code></td>
+
+      <td>150</td>
+
+      <td>-</td>
+    </tr>
+
+    <tr>
+      <td><code><a href=
+      "#lagged_fibonacci_spec">lagged_fibonacci2281</a></code></td>
+
+      <td>approx. 2<sup>120000</sup></td>
+
+      <td><code>2281*sizeof(double)</code></td>
+
+      <td>150</td>
+
+      <td>-</td>
+    </tr>
+
+    <tr>
+      <td><code><a href=
+      "#lagged_fibonacci_spec">lagged_fibonacci3217</a></code></td>
+
+      <td>approx. 2<sup>170000</sup></td>
+
+      <td><code>3217*sizeof(double)</code></td>
+
+      <td>150</td>
+
+      <td>-</td>
+    </tr>
+
+    <tr>
+      <td><code><a href=
+      "#lagged_fibonacci_spec">lagged_fibonacci4423</a></code></td>
+
+      <td>approx. 2<sup>230000</sup></td>
+
+      <td><code>4423*sizeof(double)</code></td>
+
+      <td>150</td>
+
+      <td>-</td>
+    </tr>
+
+    <tr>
+      <td><code><a href=
+      "#lagged_fibonacci_spec">lagged_fibonacci9689</a></code></td>
+
+      <td>approx. 2<sup>510000</sup></td>
+
+      <td><code>9689*sizeof(double)</code></td>
+
+      <td>150</td>
+
+      <td>-</td>
+    </tr>
+
+    <tr>
+      <td><code><a href=
+      "#lagged_fibonacci_spec">lagged_fibonacci19937</a></code></td>
+
+      <td>approx. 2<sup>1050000</sup></td>
+
+      <td><code>19937*sizeof(double)</code></td>
+
+      <td>150</td>
+
+      <td>-</td>
+    </tr>
+
+    <tr>
+      <td><code><a href=
+      "#lagged_fibonacci_spec">lagged_fibonacci23209</a></code></td>
+
+      <td>approx. 2<sup>1200000</sup></td>
+
+      <td><code>23209*sizeof(double)</code></td>
+
+      <td>140</td>
+
+      <td>-</td>
+    </tr>
+
+    <tr>
+      <td><code><a href=
+      "#lagged_fibonacci_spec">lagged_fibonacci44497</a></code></td>
+
+      <td>approx. 2<sup>2300000</sup></td>
+
+      <td><code>44497*sizeof(double)</code></td>
+
+      <td>60</td>
+
+      <td>-</td>
+    </tr>
+  </table>
+
+  <p>As observable from the table, there is generally a
+  quality/performance/memory trade-off to be decided upon when choosing a
+  random-number generator. The multitude of generators provided in this
+  library allows the application programmer to optimize the trade-off with
+  regard to his application domain. Additionally, employing several
+  fundamentally different random number generators for a given application of
+  Monte Carlo simulation will improve the confidence in the results.</p>
+
+  <p>If the names of the generators don't ring any bell and you have no idea
+  which generator to use, it is reasonable to employ <code>mt19937</code> for
+  a start: It is fast and has acceptable quality.</p>
+
+  <p><em>Note:</em> These random number generators are not intended for use
+  in applications where non-deterministic random numbers are required. See
+  <a href="nondet_random.html">nondet_random.html</a> for a choice of
+  (hopefully) non-deterministic random number generators.</p>
+
+  <p>In this description, I have refrained from documenting those members in
+  detail which are already defined in the <a href=
+  "random-concepts.html">concept documentation</a>.</p>
+
+  <h2><a name="synopsis" id="synopsis">Synopsis of the generators</a>
+  available from header <code>&lt;boost/random.hpp&gt;</code></h2>
+  <pre>
+namespace boost {
+  namespace random {
+    template&lt;class IntType, IntType m&gt;
+    class const_mod;
+    template&lt;class IntType, IntType a, IntType c, IntType m, IntType val&gt;
+    class linear_congruential;
+  }
+  class rand48;
+  typedef random::linear_congruential&lt; /* ... */ &gt; minstd_rand0;
+  typedef random::linear_congruential&lt; /* ... */ &gt; minstd_rand;
+
+  namespace random {
+    template&lt;class DataType, int w, int n, int m, int r, DataType a, int u,
+        int s, DataType b, int t, DataType c, int l, IntType val&gt;
+    class mersenne_twister;
+  }
+  typedef random::mersenne_twister&lt; /* ... */ &gt; mt11213b;
+  typedef random::mersenne_twister&lt; /* ... */ &gt; mt19937;
+
+  namespace random {
+    template&lt;class FloatType, unsigned int  p, unsigned int q&gt;
+    class lagged_fibonacci;
+  }
+  typedef random::lagged_fibonacci&lt; /* ... */ &gt; lagged_fibonacci607;
+  typedef random::lagged_fibonacci&lt; /* ... */ &gt; lagged_fibonacci1279;
+  typedef random::lagged_fibonacci&lt; /* ... */ &gt; lagged_fibonacci2281;
+  typedef random::lagged_fibonacci&lt; /* ... */ &gt; lagged_fibonacci3217;
+  typedef random::lagged_fibonacci&lt; /* ... */ &gt; lagged_fibonacci4423;
+  typedef random::lagged_fibonacci&lt; /* ... */ &gt; lagged_fibonacci9689;
+  typedef random::lagged_fibonacci&lt; /* ... */ &gt; lagged_fibonacci19937;
+  typedef random::lagged_fibonacci&lt; /* ... */ &gt; lagged_fibonacci23209;
+  typedef random::lagged_fibonacci&lt; /* ... */ &gt; lagged_fibonacci44497;  
+} // namespace boost
+</pre>
+
+  <h2><a name="const_mod" id="const_mod">Class template
+  <code>random::const_mod</code></a></h2>
+
+  <h3>Synopsis</h3>
+  <pre>
+template&lt;class IntType, IntType m&gt;
+class random::const_mod
+{
+public:
+  template&lt;IntType c&gt;
+  static IntType add(IntType x);
+
+  template&lt;IntType a&gt;
+  static IntType mult(IntType x);
+
+  template&lt;IntType a, IntType c&gt;
+  static IntType mult_add(IntType x);
+
+  static IntType invert(IntType x);
+private:
+  const_mod();         // don't instantiate
+};
+</pre>
+
+  <h3>Description</h3>
+
+  <p>Class template <code>const_mod</code> provides functions performing
+  modular arithmetic, carefully avoiding overflows. All member functions are
+  static; there shall be no objects of type
+  <code>const_mod&lt;&gt;</code>.</p>
+
+  <p>The template parameter <code>IntType</code> shall denote an integral
+  type, <code>m</code> is the modulus.</p>
+
+  <p><em>Note:</em> For modulo multiplications with large m, a trick allows
+  fast computation under certain conditions, see</p>
+
+  <blockquote>
+    "A more portable FORTRAN random number generator", Linus Schrage, ACM
+    Transactions on Mathematical Software, Vol. 5, No. 2, June 1979, pp.
+    132-138
+  </blockquote>
+
+  <h3>Member functions</h3>
+  <pre>
+template&lt;IntType c&gt; static IntType add(IntType x)
+</pre>
+
+  <p><strong>Returns:</strong> (x+c) mod m</p>
+  <pre>
+template&lt;IntType a&gt; static IntType mult(IntType x)
+</pre>
+
+  <p><strong>Returns:</strong> (a*x) mod m</p>
+  <pre>
+template&lt;IntType a, IntType c&gt; static IntType
+mult_add(IntType x)
+</pre>
+
+  <p><strong>Returns:</strong> (a*x+c) mod m</p>
+  <pre>
+static IntType invert(IntType x)
+</pre>
+
+  <p><strong>Returns:</strong> i so that (a*i) mod m == 1<br>
+  <strong>Precondition:</strong> m is prime</p>
+
+  <h2><a name="linear_congruential" id="linear_congruential">Class template
+  <code>random::linear_congruential</code></a></h2>
+
+  <h3>Synopsis</h3>
+  <pre>
+#include &lt;<a href=
+"../../boost/random/linear_congruential.hpp">boost/random/linear_congruential.hpp</a>&gt;
+
+template&lt;class IntType, IntType a, IntType c, IntType m, IntType val&gt;
+class linear_congruential
+{
+public:
+  typedef IntType result_type;
+  static const IntType multiplier = a;
+  static const IntType increment = c;
+  static const IntType modulus = m;
+  static const bool has_fixed_range = true;
+  static const result_type min_value;
+  static const result_type max_value;
+  explicit linear_congruential_fixed(IntType x0 = 1);
+  // compiler-generated copy constructor and assignment operator are fine
+  void seed(IntType x0);
+  IntType operator()();
+};
+
+typedef random::linear_congruential&lt;long, 16807L, 0, 2147483647L,
+     1043618065L&gt; minstd_rand0;
+typedef random::linear_congruential&lt;long, 48271L, 0, 2147483647L,
+     399268537L&gt; minstd_rand;
+</pre>
+
+  <h3>Description</h3>
+
+  <p>Instantiations of class template <code>linear_congruential</code> model
+  a <a href="random-concepts.html#pseudo-rng">pseudo-random number
+  generator</a>. Linear congruential pseudo-random number generators are
+  described in:</p>
+
+  <blockquote>
+    "Mathematical methods in large-scale computing units", D. H. Lehmer,
+    Proc. 2nd Symposium on Large-Scale Digital Calculating Machines, Harvard
+    University Press, 1951, pp. 141-146
+  </blockquote>Let x(n) denote the sequence of numbers returned by some
+  pseudo-random number generator. Then for the linear congruential generator,
+  x(n+1) := (a * x(n) + c) mod m. Parameters for the generator are x(0), a,
+  c, m. The template parameter <code>IntType</code> shall denote an integral
+  type. It must be large enough to hold values a, c, and m. The template
+  parameters a and c must be smaller than m.
+
+  <p><em>Note:</em> The quality of the generator crucially depends on the
+  choice of the parameters. User code should use one of the sensibly
+  parameterized generators such as <code>minstd_rand</code> instead.<br>
+  For each choice of the parameters a, c, m, some distinct type is defined,
+  so that the <code>static</code> members do not interfere with regard to the
+  one definition rule.</p>
+
+  <h3>Members</h3>
+  <pre>
+explicit linear_congruential(IntType x0 = 1)
+</pre>
+
+  <p><strong>Effects:</strong> Constructs a <code>linear_congruential</code>
+  generator with x(0) := <code>x0</code>.</p>
+  <pre>
+void seed(IntType x0)
+</pre>
+
+  <p><strong>Effects:</strong> Changes the current value x(n) of the
+  generator to <code>x0</code>.</p>
+
+  <h3><a name="minstd_rand" id="minstd_rand">Specializations</a></h3>
+
+  <p>The specialization <code>minstd_rand0</code> was originally suggested
+  in</p>
+
+  <blockquote>
+    A pseudo-random number generator for the System/360, P.A. Lewis, A.S.
+    Goodman, J.M. Miller, IBM Systems Journal, Vol. 8, No. 2, 1969, pp.
+    136-146
+  </blockquote>It is examined more closely together with
+  <code>minstd_rand</code> in
+
+  <blockquote>
+    "Random Number Generators: Good ones are hard to find", Stephen K. Park
+    and Keith W. Miller, Communications of the ACM, Vol. 31, No. 10, October
+    1988, pp. 1192-1201
+  </blockquote>
+
+  <h2><a name="rand48" id="rand48">Class <code>rand48</code></a></h2>
+
+  <h3>Synopsis</h3>
+  <pre>
+#include &lt;<a href=
+"../../boost/random/linear_congruential.hpp">boost/random/linear_congruential.hpp</a>&gt;
+
+class rand48 
+{
+public:
+  typedef int32_t result_type;
+  static const bool has_fixed_range = true;
+  static const int32_t min_value = 0;
+  static const int32_t max_value = 0x7fffffff;
+  
+  explicit rand48(int32_t x0 = 1);
+  explicit rand48(uint64_t x0);
+  // compiler-generated copy ctor and assignment operator are fine
+  void seed(int32_t x0);
+  void seed(uint64_t x0);
+  int32_t operator()();
+};
+</pre>
+
+  <h3>Description</h3>
+
+  <p>Class <code>rand48</code> models a <a href=
+  "random-concepts.html#pseudo-rng">pseudo-random number generator</a>. It
+  uses the linear congruential algorithm with the parameters a = 0x5DEECE66D,
+  c = 0xB, m = 2**48. It delivers identical results to the
+  <code>lrand48()</code> function available on some systems (assuming
+  <code>lcong48</code> has not been called).</p>
+
+  <p>It is only available on systems where <code>uint64_t</code> is provided
+  as an integral type, so that for example static in-class constants and/or
+  enum definitions with large <code>uint64_t</code> numbers work.</p>
+
+  <h3>Constructors</h3>
+  <pre>
+rand48(int32_t x0)
+</pre>
+
+  <p><strong>Effects:</strong> Constructs a <code>rand48</code> generator
+  with x(0) := (<code>x0</code> &lt;&lt; 16) | 0x330e.</p>
+  <pre>
+rand48(uint64_t x0)
+</pre>
+
+  <p><strong>Effects:</strong> Constructs a <code>rand48</code> generator
+  with x(0) := <code>x0</code>.</p>
+
+  <h3>Seeding</h3>
+  <pre>
+void seed(int32_t x0)
+</pre>
+
+  <p><strong>Effects:</strong> Changes the current value x(n) of the
+  generator to (<code>x0</code> &lt;&lt; 16) | 0x330e.</p>
+  <pre>
+void seed(uint64_t x0)
+</pre>
+
+  <p><strong>Effects:</strong> Changes the current value x(n) of the
+  generator to <code>x0</code>.</p>
+
+  <h2><a name="additive_combine" id="additive_combine">Class template
+  <code>random::additive_combine</code></a></h2>
+
+  <h3>Synopsis</h3>
+  <pre>
+#include &lt;<a href=
+"../../boost/random/additive_combine.hpp">boost/random/additive_combine.hpp</a>&gt;
+
+template&lt;class MLCG1, class MLCG2, typename MLCG1::result_type val&gt;
+class random::additive_combine
+{
+public:
+  typedef MLCG1 first_base;
+  typedef MLCG2 second_base;
+  typedef typename MLCG1::result_type result_type;
+  static const bool has_fixed_range = true;
+  static const result_type min_value = 1;
+  static const result_type max_value = MLCG1::max_value-1;
+  additive_combine();
+  additive_combine(typename MLCG1::result_type seed1, 
+                   typename MLCG2::result_type seed2);
+  result_type operator()();
+  bool validation(result_type x) const;
+};
+
+typedef random::additive_combine&lt;
+    random::linear_congruential&lt;int32_t, 40014, 0, 2147483563, 0&gt;,
+    random::linear_congruential&lt;int32_t, 40692, 0, 2147483399, 0&gt;,
+  /* unknown */ 0&gt; ecuyer1988;
+
+</pre>
+
+  <h3>Description</h3>
+
+  <p>Instatiations of class template <code>additive_combine</code> model a
+  <a href="random-concepts.html#pseudo-rng">pseudo-random number
+  generator</a>. It combines two multiplicative linear congruential number
+  generators, i.e. those with c = 0. It is described in</p>
+
+  <blockquote>
+    "Efficient and Portable Combined Random Number Generators", Pierre
+    L'Ecuyer, Communications of the ACM, Vol. 31, No. 6, June 1988, pp.
+    742-749, 774
+  </blockquote>The template parameters <code>MLCG1</code> and
+  <code>MLCG2</code> shall denote two different linear congruential number
+  generators, each with c = 0. Each invocation returns a random number X(n)
+  := (MLCG1(n) - MLCG2(n)) mod (m1 - 1), where m1 denotes the modulus of
+  <code>MLCG1</code>.
+
+  <p>The template parameter <code>val</code> is the validation value checked
+  by <code>validation</code>.</p>
+
+  <h3>Members</h3>
+  <pre>
+additive_combine()
+</pre>
+
+  <p><strong>Effects:</strong> Constructs an <code>additive_combine</code>
+  generator using the default constructors of the two base generators.</p>
+  <pre>
+additive_combine(typename MLCG1::result_type seed1, 
+                 typename MLCG2::result_type seed2)
+</pre>
+
+  <p><strong>Effects:</strong> Constructs an <code>additive_combine</code>
+  generator, using <code>seed1</code> and <code>seed2</code> as the
+  constructor argument to the first and second base generator,
+  respectively.</p>
+
+  <h3><a name="ecuyer1988" id="ecuyer1988">Specialization</a></h3>
+
+  <p>The specialization <code>ecuyer1988</code> was suggested in the above
+  paper.</p>
+
+  <h2><a name="shuffle_output" id="shuffle_output">Class template
+  <code>random::shuffle_output</code></a></h2>
+
+  <h3>Synopsis</h3>
+  <pre>
+#include &lt;<a href=
+"../../boost/random/shuffle_output.hpp">boost/random/shuffle_output.hpp</a>&gt;
+
+template&lt;class UniformRandomNumberGenerator, int k, 
+  typename UniformRandomNumberGenerator::result_type val = 0&gt;
+class random::shuffle_output
+{
+public:
+  typedef UniformRandomNumberGenerator base_type;
+  typedef typename base_type::result_type result_type;
+  static const bool has_fixed_range = false;
+
+  shuffle_output();
+  template&lt;class T&gt; explicit shuffle_output(T seed);
+  explicit shuffle_output(const base_type &amp; rng);
+  template&lt;class T&gt; void seed(T s);
+
+  result_type operator()();
+  result_type min() const;
+  result_type max() const;
+  bool validation(result_type) const;
+};
+</pre>
+
+  <h3>Description</h3>
+
+  <p>Instatiations of class template <code>shuffle_output</code> model a
+  <a href="random-concepts.html#pseudo-rng">pseudo-random number
+  generator</a>. It mixes the output of some (usually linear congruential)
+  uniform random number generator to get better statistical properties.
+  According to Donald E. Knuth, "The Art of Computer Programming, Vol. 2",
+  the algorithm is described in</p>
+
+  <blockquote>
+    "Improving a poor random number generator", Carter Bays and S.D. Durham,
+    ACM Transactions on Mathematical Software, Vol. 2, 1979, pp. 59-64.
+  </blockquote>The output of the base generator is buffered in an array of
+  length k. Every output X(n) has a second role: It gives an index into the
+  array where X(n+1) will be retrieved. Used array elements are replaced with
+  fresh output from the base generator.
+
+  <p>Template parameters are the base generator and the array length k, which
+  should be around 100. The template parameter <code>val</code> is the
+  validation value checked by <code>validation</code>.</p>
+
+  <h3>Members</h3>
+  <pre>
+shuffle_output()
+</pre>
+
+  <p><strong>Effects:</strong> Constructs a <code>shuffle_output</code>
+  generator by invoking the default constructor of the base generator.</p>
+
+  <p><strong>Complexity:</strong> Exactly k+1 invocations of the base
+  generator.</p>
+  <pre>
+template&lt;class T&gt; explicit shuffle_output(T seed)
+</pre>
+
+  <p><strong>Effects:</strong> Constructs a <code>shuffle_output</code>
+  generator by invoking the one-argument constructor of the base generator
+  with the parameter <code>seed</code>.</p>
+
+  <p><strong>Complexity:</strong> Exactly k+1 invocations of the base
+  generator.</p>
+  <pre>
+explicit shuffle_output(const base_type &amp; rng)
+</pre>
+
+  <p><strong>Precondition:</strong> The template argument
+  <code>UniformRandomNumberGenerator</code> shall denote a CopyConstructible
+  type.</p>
+
+  <p><strong>Effects:</strong> Constructs a <code>shuffle_output</code>
+  generator by using a copy of the provided generator.</p>
+
+  <p><strong>Complexity:</strong> Exactly k+1 invocations of the base
+  generator.</p>
+  <pre>
+template&lt;class T&gt; void seed(T s)
+</pre>
+
+  <p><strong>Effects:</strong> Invokes the one-argument <code>seed</code>
+  method of the base generator with the parameter <code>seed</code> and
+  re-initializes the internal buffer array.</p>
+
+  <p><strong>Complexity:</strong> Exactly k+1 invocations of the base
+  generator.</p>
+
+  <h3><a name="kreutzer1986" id="kreutzer1986">Specializations</a></h3>
+
+  <p>According to Harry Erwin (private e-mail), the specialization
+  <code>kreutzer1986</code> was suggested in:</p>
+
+  <blockquote>
+    "System Simulation: programming Styles and Languages (International
+    Computer Science Series)", Wolfgang Kreutzer, Addison-Wesley, December
+    1986.
+  </blockquote>
+
+  <h2><a name="inversive_congruential" id="inversive_congruential">Class
+  template <code>random::inversive_congruential</code></a></h2>
+
+  <h3>Synopsis</h3>
+  <pre>
+#include &lt;<a href=
+"../../boost/random/inversive_congruential.hpp">boost/random/inversive_congruential.hpp</a>&gt;
+
+template&lt;class IntType, IntType a, IntType b, IntType p&gt;
+class random::inversive_congruential
+{
+public:
+  typedef IntType result_type;
+  static const bool has_fixed_range = true;
+  static const result_type min_value = (b == 0 ? 1 : 0);
+  static const result_type max_value = p-1;
+  static const result_type multiplier = a;
+  static const result_type increment = b;
+  static const result_type modulus = p;
+  explicit inversive_congruential(IntType y0 = 1);
+  void seed(IntType y0);
+  IntType operator()();
+};
+
+typedef random::inversive_congruential&lt;int32_t, 9102, 2147483647-36884165, 2147483647&gt; hellekalek1995;
+</pre>
+
+  <h3>Description</h3>
+
+  <p>Instantiations of class template <code>inversive_congruential</code>
+  model a <a href="random-concepts.html#pseudo-rng">pseudo-random number
+  generator</a>. It uses the inversive congruential algorithm (ICG) described
+  in</p>
+
+  <blockquote>
+    "Inversive pseudorandom number generators: concepts, results and links",
+    Peter Hellekalek, In: "Proceedings of the 1995 Winter Simulation
+    Conference", C. Alexopoulos, K. Kang, W.R. Lilegdon, and D. Goldsman
+    (editors), 1995, pp. 255-262. <a href=
+    "ftp://random.mat.sbg.ac.at/pub/data/wsc95.ps">ftp://random.mat.sbg.ac.at/pub/data/wsc95.ps</a>
+  </blockquote>The output sequence is defined by x(n+1) = (a*inv(x(n)) - b)
+  (mod p), where x(0), a, b, and the prime number p are parameters of the
+  generator. The expression inv(k) denotes the multiplicative inverse of k in
+  the field of integer numbers modulo p, with inv(0) := 0.
+
+  <p>The template parameter <code>IntType</code> shall denote a signed
+  integral type large enough to hold p; a, b, and p are the parameters of the
+  generators.</p>
+
+  <p><em>Note:</em> The implementation currently uses the Euclidian Algorithm
+  to compute the multiplicative inverse. Therefore, the inversive generators
+  are about 10-20 times slower than the others (see section"<a href=
+  "#performance">performance</a>"). However, the paper talks of only 3x
+  slowdown, so the Euclidian Algorithm is probably not optimal for
+  calculating the multiplicative inverse.</p>
+
+  <h3>Members</h3>
+  <pre>
+inversive_congruential(IntType y0 = 1)
+</pre>
+
+  <p><strong>Effects:</strong> Constructs an
+  <code>inversive_congruential</code> generator with <code>y0</code> as the
+  initial state.</p>
+  <pre>
+void seed(IntType y0)
+</pre>
+
+  <p><strong>Effects:</strong> Changes the current state to
+  <code>y0</code>.</p>
+
+  <h3><a name="hellekalek1995" id="hellekalek1995">Specialization</a></h3>
+
+  <p>The specialization <code>hellekalek1995</code> was suggested in the
+  above paper.</p>
+
+  <h2><a name="mersenne_twister" id="mersenne_twister">Class template
+  <code>random::mersenne_twister</code></a></h2>
+
+  <h3>Synopsis</h3>
+  <pre>
+#include &lt;<a href=
+"../../boost/random/mersenne_twister.hpp">boost/random/mersenne_twister.hpp</a>&gt;
+
+template&lt;class DataType, int w, int n, int m, int r, DataType a, int u,
+int s, DataType b, int t, DataType c, int l, IntType val&gt;
+class random::mersenne_twister
+{
+public:
+  typedef DataType result_type;
+  static const bool has_fixed_range = true;
+  static const result_type min_value;
+  static const result_type max_value;
+  mersenne_twister();
+  explicit mersenne_twister(DataType value);
+  template&lt;class Generator&gt; explicit mersenne_twister(Generator &amp; gen);
+  // compiler-generated copy ctor and assignment operator are fine
+  void seed();
+  void seed(DataType value);
+  template&lt;class Generator&gt; void seed(Generator &amp; gen);
+  result_type operator()();
+  bool validation(result_type) const;
+};
+
+typedef mersenne_twister&lt;uint32_t,351,175,19,0xccab8ee7,11,7,0x31b6ab00,15,0xffe50000,17, /* unknown */ 0&gt; mt11213b;
+typedef mersenne_twister&lt;uint32_t,624,397,31,0x9908b0df,11,7,0x9d2c5680,15,0xefc60000,18, 3346425566U&gt; mt19937;
+</pre>
+
+  <h3>Description</h3>
+
+  <p>Instantiations of class template <code>mersenne_twister</code> model a
+  <a href="random-concepts.html#pseudo-rng">pseudo-random number
+  generator</a>. It uses the algorithm described in</p>
+
+  <blockquote>
+    "Mersenne Twister: A 623-dimensionally equidistributed uniform
+    pseudo-random number generator", Makoto Matsumoto and Takuji Nishimura,
+    ACM Transactions on Modeling and Computer Simulation: Special Issue on
+    Uniform Random Number Generation, Vol. 8, No. 1, January 1998, pp. 3-30. 
+    <!-- <a href="http://www.math.keio.ac.jp/matumoto/emt.html">http://www.math.keio.ac.jp/matumoto/emt.html</a> -->
+  </blockquote><em>Note:</em> The boost variant has been implemented from
+  scratch and does not derive from or use mt19937.c provided on the above WWW
+  site. However, it was verified that both produce identical output.<br>
+  The seeding from an integer was changed in April 2005 to address a <a href=
+  "http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html">weakness</a>.<br>
+
+  The quality of the generator crucially depends on the choice of the
+  parameters. User code should employ one of the sensibly parameterized
+  generators such as <code>mt19937</code> instead.<br>
+  The generator requires considerable amounts of memory for the storage of
+  its state array. For example, <code>mt11213b</code> requires about 1408
+  bytes and <code>mt19937</code> requires about 2496 bytes.
+
+  <h3>Constructors</h3>
+  <pre>
+mersenne_twister()
+</pre>
+
+  <p><strong>Effects:</strong> Constructs a <code>mersenne_twister</code> and
+  calls <code>seed()</code>.</p>
+  <pre>
+explicit mersenne_twister(result_type value)
+</pre>
+
+  <p><strong>Effects:</strong> Constructs a <code>mersenne_twister</code> and
+  calls <code>seed(value)</code>.</p>
+  <pre>
+template&lt;class Generator&gt; explicit mersenne_twister(Generator &amp; gen)
+</pre>
+
+  <p><strong>Effects:</strong> Constructs a <code>mersenne_twister</code> and
+  calls <code>seed(gen)</code>.</p>
+
+  <p><em>Note:</em> When using direct-initialization syntax with an lvalue
+  (e.g. in the variable definition <code>Gen gen2(gen);</code>), this
+  templated constructor will be preferred over the compiler-generated copy
+  constructor. For variable definitions which should copy the state of
+  another <code>mersenne_twister</code>, use e.g. <code>Gen gen2 =
+  gen;</code>, which is copy-initialization syntax and guaranteed to invoke
+  the copy constructor.</p>
+
+  <h3>Seeding</h3>
+  <pre>
+void seed()
+</pre>
+
+  <p><strong>Effects:</strong> Calls
+  <code>seed(result_type(5489))</code>.</p>
+  <pre>
+void seed(result_type value)
+</pre>
+
+  <p><strong>Effects:</strong> Sets the state x(0) to v mod 2<sup>w</sup>.
+  Then, iteratively,<br>
+  sets x(i) to (i + 1812433253 * (x(i-1) <em>xor</em> (x(i-1) <em>rshift</em>
+  w-2))) mod 2<sup>w</sup> for i = 1 .. n-1. x(n) is the first value to be
+  returned by operator().</p>
+  <pre>
+template&lt;class Generator&gt; void seed(Generator &amp; gen)
+</pre>
+
+  <p><strong>Effects:</strong> Sets the state of this
+  <code>mersenne_twister</code> to the values returned by <code>n</code>
+  invocations of <code>gen</code>.</p>
+
+  <p><strong>Complexity:</strong> Exactly <code>n</code> invocations of
+  <code>gen</code>.</p>
+
+  <p><em>Note:</em> When invoking <code>seed</code> with an lvalue, overload
+  resolution chooses the function template unless the type of the argument
+  exactly matches <code>result_type</code>. For other integer types, you
+  should convert the argument to <code>result_type</code> explicitly.</p>
+
+  <h3><a name="mt11213b" id="mt11213b"></a><a name="mt19937" id=
+  "mt19937">Specializations</a></h3>
+
+  <p>The specializations <code>mt11213b</code> and <code>mt19937</code> are
+  from the paper cited above.</p>
+
+  <h2><a name="lagged_fibonacci" id="lagged_fibonacci">Class template
+  <code>random::lagged_fibonacci</code></a></h2>
+
+  <h3>Synopsis</h3>
+  <pre>
+#include &lt;<a href=
+"../../boost/random/lagged_fibonacci.hpp">boost/random/lagged_fibonacci.hpp</a>&gt;
+
+template&lt;class FloatType, unsigned int p, unsigned int q&gt;
+class lagged_fibonacci
+{
+public:
+  typedef FloatType result_type;
+  static const bool has_fixed_range = false;
+  static const unsigned int long_lag = p;
+  static const unsigned int short_lag = q;
+  result_type min() const { return 0.0; }
+  result_type max() const { return 1.0; }
+  lagged_fibonacci();
+  explicit lagged_fibonacci(uint32_t value);
+  template&lt;class Generator&gt;
+  explicit lagged_fibonacci(Generator &amp; gen);
+  // compiler-generated copy ctor and assignment operator are fine
+  void seed(uint32_t value = 331u);
+  template&lt;class Generator&gt; void seed(Generator &amp; gen);
+  result_type operator()();
+  bool validation(result_type x) const;
+};
+
+typedef random::lagged_fibonacci&lt;double, 607, 273&gt; lagged_fibonacci607;
+typedef random::lagged_fibonacci&lt;double, 1279, 418&gt; lagged_fibonacci1279;
+typedef random::lagged_fibonacci&lt;double, 2281, 1252&gt; lagged_fibonacci2281;
+typedef random::lagged_fibonacci&lt;double, 3217, 576&gt; lagged_fibonacci3217;
+typedef random::lagged_fibonacci&lt;double, 4423, 2098&gt; lagged_fibonacci4423;
+typedef random::lagged_fibonacci&lt;double, 9689, 5502&gt; lagged_fibonacci9689;
+typedef random::lagged_fibonacci&lt;double, 19937, 9842&gt; lagged_fibonacci19937;
+typedef random::lagged_fibonacci&lt;double, 23209, 13470&gt; lagged_fibonacci23209;
+typedef random::lagged_fibonacci&lt;double, 44497, 21034&gt; lagged_fibonacci44497;
+</pre>
+
+  <h3>Description</h3>
+
+  <p>Instantiations of class template <code>lagged_fibonacci</code> model a
+  <a href="random-concepts.html#pseudo-rng">pseudo-random number
+  generator</a>. It uses a lagged Fibonacci algorithm with two lags p and q,
+  evaluated in floating-point arithmetic: x(i) = x(i-p) + x(i-q) (mod 1) with
+  p &gt; q. See</p>
+
+  <blockquote>
+    "Uniform random number generators for supercomputers", Richard Brent,
+    Proc. of Fifth Australian Supercomputer Conference, Melbourne, Dec. 1992,
+    pp. 704-706.
+  </blockquote>
+
+  <p><em>Note:</em> The quality of the generator crucially depends on the
+  choice of the parameters. User code should employ one of the sensibly
+  parameterized generators such as <code>lagged_fibonacci607</code>
+  instead.<br>
+  The generator requires considerable amounts of memory for the storage of
+  its state array. For example, <code>lagged_fibonacci607</code> requires
+  about 4856 bytes and <code>lagged_fibonacci44497</code> requires about 350
+  KBytes.</p>
+
+  <h3>Constructors</h3>
+  <pre>
+lagged_fibonacci()
+</pre>
+
+  <p><strong>Effects:</strong> Constructs a <code>lagged_fibonacci</code>
+  generator and calls <code>seed()</code>.</p>
+  <pre>
+explicit lagged_fibonacci(uint32_t value)
+</pre>
+
+  <p><strong>Effects:</strong> Constructs a <code>lagged_fibonacci</code>
+  generator and calls <code>seed(value)</code>.</p>
+  <pre>
+template&lt;class Generator&gt; explicit lagged_fibonacci(Generator &amp; gen)
+</pre>
+
+  <p><strong>Effects:</strong> Constructs a <code>lagged_fibonacci</code>
+  generator and calls <code>seed(gen)</code>.</p>
+
+  <h3>Seeding</h3>
+  <pre>
+void seed()
+</pre>
+
+  <p><strong>Effects:</strong> Calls <code>seed(331u)</code>.</p>
+  <pre>
+void seed(uint32_t value)
+</pre>
+
+  <p><strong>Effects:</strong> Constructs a <code>minstd_rand0</code>
+  generator with the constructor parameter <code>value</code> and calls
+  <code>seed</code> with it.</p>
+  <pre>
+template&lt;class Generator&gt; void seed(Generator &amp; gen)
+</pre>
+
+  <p><strong>Effects:</strong> Sets the state of this
+  <code>lagged_fibonacci</code> to the values returned by <code>p</code>
+  invocations of <code>uniform_01&lt;gen, FloatType&gt;</code>.<br>
+  <strong>Complexity:</strong> Exactly <code>p</code> invocations of
+  <code>gen</code>.</p>
+
+  <h3><a name="lagged_fibonacci_spec" id=
+  "lagged_fibonacci_spec"></a>Specializations</h3>
+
+  <p>The specializations <code>lagged_fibonacci607</code> ...
+  <code>lagged_fibonacci44497</code> (see above) use well tested lags.
+  (References will be added later.)</p>
+
+  <h2><a name="performance" id="performance">Performance</a></h2>
+
+  <p>The test program <a href="random_speed.cpp">random_speed.cpp</a>
+  measures the execution times of the <a href=
+  "../../boost/random.hpp">random.hpp</a> implementation of the above
+  algorithms in a tight loop. The performance has been evaluated on a Pentium
+  Pro 200 MHz with gcc 2.95.2, Linux 2.2.13, glibc 2.1.2.</p>
+
+  <table border="1" summary="">
+    <tr>
+      <th>class</th>
+
+      <th>time per invocation [usec]</th>
+    </tr>
+
+    <tr>
+      <td>rand48</td>
+
+      <td>0.096</td>
+    </tr>
+
+    <tr>
+      <td>rand48 run-time configurable</td>
+
+      <td>0.697</td>
+    </tr>
+
+    <tr>
+      <td>lrand48 glibc 2.1.2</td>
+
+      <td>0.844</td>
+    </tr>
+
+    <tr>
+      <td>minstd_rand</td>
+
+      <td>0.174</td>
+    </tr>
+
+    <tr>
+      <td>ecuyer1988</td>
+
+      <td>0.445</td>
+    </tr>
+
+    <tr>
+      <td>kreutzer1986</td>
+
+      <td>0.249</td>
+    </tr>
+
+    <tr>
+      <td>hellekalek1995 (inversive)</td>
+
+      <td>4.895</td>
+    </tr>
+
+    <tr>
+      <td>mt11213b</td>
+
+      <td>0.165</td>
+    </tr>
+
+    <tr>
+      <td>mt19937</td>
+
+      <td>0.165</td>
+    </tr>
+
+    <tr>
+      <td>mt19937 original</td>
+
+      <td>0.185</td>
+    </tr>
+
+    <tr>
+      <td>lagged_fibonacci607</td>
+
+      <td>0.111</td>
+    </tr>
+
+    <tr>
+      <td>lagged_fibonacci4423</td>
+
+      <td>0.112</td>
+    </tr>
+
+    <tr>
+      <td>lagged_fibonacci19937</td>
+
+      <td>0.113</td>
+    </tr>
+
+    <tr>
+      <td>lagged_fibonacci23209</td>
+
+      <td>0.122</td>
+    </tr>
+
+    <tr>
+      <td>lagged_fibonacci44497</td>
+
+      <td>0.263</td>
+    </tr>
+  </table>
+
+  <p>The measurement error is estimated at +/- 10 nsec.</p>
+  <hr>
+
+  <p><a href="http://validator.w3.org/check?uri=referer"><img border="0" src=
+  "http://www.w3.org/Icons/valid-html401" alt="Valid HTML 4.01 Transitional"
+  height="31" width="88"></a></p>
+
+  <p>Revised 
+  <!--webbot bot="Timestamp" s-type="EDITED" s-format="%d %B, %Y" startspan -->05
+  December, 2006<!--webbot bot="Timestamp" endspan i-checksum="38516" --></p>
+
+  <p><i>Copyright &copy; 2000-2005 <a href=
+  "http://www.boost.org/people/jens_maurer.htm">Jens Maurer</a></i></p>
+
+  <p><i>Distributed under the Boost Software License, Version 1.0. (See
+  accompanying file <a href="../../LICENSE_1_0.txt">LICENSE_1_0.txt</a> or
+  copy at <a href=
+  "http://www.boost.org/LICENSE_1_0.txt">http://www.boost.org/LICENSE_1_0.txt</a>)</i></p>
+</body>
+</html>

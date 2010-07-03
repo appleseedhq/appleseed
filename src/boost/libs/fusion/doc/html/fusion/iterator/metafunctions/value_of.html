@@ -1,0 +1,146 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>value_of</title>
+<link rel="stylesheet" href="../../../../../../../doc/html/boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.66.1">
+<link rel="start" href="../../../index.html" title="Chapter 1. Fusion 2.0">
+<link rel="up" href="../metafunctions.html" title="Metafunctions">
+<link rel="prev" href="../metafunctions.html" title="Metafunctions">
+<link rel="next" href="deref.html" title="deref">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../../../../boost.png"></td>
+<td align="center"><a href="../../../../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../../../libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="../metafunctions.html"><img src="../../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../metafunctions.html"><img src="../../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../../index.html"><img src="../../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="deref.html"><img src="../../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h4 class="title">
+<a name="fusion.iterator.metafunctions.value_of"></a><a href="value_of.html" title="value_of">value_of</a></h4></div></div></div>
+<a name="fusion.iterator.metafunctions.value_of.description"></a><h5>
+<a name="id482045"></a>
+          <a href="value_of.html#fusion.iterator.metafunctions.value_of.description">Description</a>
+        </h5>
+<p>
+          Returns the type stored at the position of an iterator.
+        </p>
+<a name="fusion.iterator.metafunctions.value_of.synopsis"></a><h5>
+<a name="id482077"></a>
+          <a href="value_of.html#fusion.iterator.metafunctions.value_of.synopsis">Synopsis</a>
+        </h5>
+<pre class="programlisting">
+<span class="keyword">template</span><span class="special">&lt;</span>
+    <span class="keyword">typename</span> <span class="identifier">I</span>
+    <span class="special">&gt;</span>
+<span class="keyword">struct</span> <span class="identifier">value_of</span>
+<span class="special">{</span>
+    <span class="keyword">typedef</span> <span class="emphasis"><em>unspecified</em></span> <span class="identifier">type</span><span class="special">;</span>
+<span class="special">};</span>
+</pre>
+<div class="table">
+<a name="id482176"></a><p class="title"><b>Table 1.11. Parameters</b></p>
+<table class="table" summary="Parameters">
+<colgroup>
+<col>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>
+              <p>
+                Parameter
+              </p>
+              </th>
+<th>
+              <p>
+                Requirement
+              </p>
+              </th>
+<th>
+              <p>
+                Description
+              </p>
+              </th>
+</tr></thead>
+<tbody><tr>
+<td>
+              <p>
+                <tt class="computeroutput"><span class="identifier">I</span></tt>
+              </p>
+              </td>
+<td>
+              <p>
+                Model of <a href="../concepts/forward_iterator.html" title="Forward
+        Iterator">Forward
+                Iterator</a>
+              </p>
+              </td>
+<td>
+              <p>
+                Operation's argument
+              </p>
+              </td>
+</tr></tbody>
+</table>
+</div>
+<a name="fusion.iterator.metafunctions.value_of.expression_semantics"></a><h5>
+<a name="id482276"></a>
+          <a href="value_of.html#fusion.iterator.metafunctions.value_of.expression_semantics">Expression
+          Semantics</a>
+        </h5>
+<pre class="programlisting">
+<a href="value_of.html" title="value_of"><tt class="computeroutput"><span class="identifier">result_of</span><span class="special">::</span><span class="identifier">value_of</span></tt></a><span class="special">&lt;</span><span class="identifier">I</span><span class="special">&gt;::</span><span class="identifier">type</span>
+</pre>
+<p>
+          <span class="bold"><b>Return type</b></span>: Any type
+        </p>
+<p>
+          <span class="bold"><b>Semantics</b></span>: Returns the type stored in
+          a sequence at iterator position <tt class="computeroutput"><span class="identifier">I</span></tt>.
+        </p>
+<a name="fusion.iterator.metafunctions.value_of.header"></a><h5>
+<a name="id482390"></a>
+          <a href="value_of.html#fusion.iterator.metafunctions.value_of.header">Header</a>
+        </h5>
+<pre class="programlisting">
+<span class="preprocessor">#include</span> <span class="special">&lt;</span><span class="identifier">boost</span><span class="special">/</span><span class="identifier">fusion</span><span class="special">/</span><span class="identifier">iterator</span><span class="special">/</span><span class="identifier">value_of</span><span class="special">.</span><span class="identifier">hpp</span><span class="special">&gt;</span>
+<span class="preprocessor">#include</span> <span class="special">&lt;</span><span class="identifier">boost</span><span class="special">/</span><span class="identifier">fusion</span><span class="special">/</span><span class="identifier">include</span><span class="special">/</span><span class="identifier">value_of</span><span class="special">.</span><span class="identifier">hpp</span><span class="special">&gt;</span>
+</pre>
+<a name="fusion.iterator.metafunctions.value_of.example"></a><h5>
+<a name="id482549"></a>
+          <a href="value_of.html#fusion.iterator.metafunctions.value_of.example">Example</a>
+        </h5>
+<pre class="programlisting">
+<span class="keyword">typedef</span> <a href="../../container/vector.html" title="vector"><tt class="computeroutput"><span class="identifier">vector</span></tt></a><span class="special">&lt;</span><span class="keyword">int</span><span class="special">,</span><span class="keyword">int</span><span class="special">&amp;,</span><span class="keyword">const</span> <span class="keyword">int</span><span class="special">&amp;&gt;</span> <span class="identifier">vec</span><span class="special">;</span>
+<span class="keyword">typedef</span> <a href="../../sequence/intrinsic/metafunctions/begin.html" title="begin"><tt class="computeroutput"><span class="identifier">result_of</span><span class="special">::</span><span class="identifier">begin</span></tt></a><span class="special">&lt;</span><span class="identifier">vec</span><span class="special">&gt;::</span><span class="identifier">type</span> <span class="identifier">first</span><span class="special">;</span>
+<span class="keyword">typedef</span> <a href="next.html" title="next"><tt class="computeroutput"><span class="identifier">result_of</span><span class="special">::</span><span class="identifier">next</span></tt></a><span class="special">&lt;</span><span class="identifier">first</span><span class="special">&gt;::</span><span class="identifier">type</span> <span class="identifier">second</span><span class="special">;</span>
+<span class="keyword">typedef</span> <a href="next.html" title="next"><tt class="computeroutput"><span class="identifier">result_of</span><span class="special">::</span><span class="identifier">next</span></tt></a><span class="special">&lt;</span><span class="identifier">second</span><span class="special">&gt;::</span><span class="identifier">type</span> <span class="identifier">third</span><span class="special">;</span>
+
+<span class="identifier">BOOST_MPL_ASSERT</span><span class="special">((</span><span class="identifier">boost</span><span class="special">::</span><span class="identifier">is_same</span><span class="special">&lt;</span><a href="value_of.html" title="value_of"><tt class="computeroutput"><span class="identifier">result_of</span><span class="special">::</span><span class="identifier">value_of</span></tt></a><span class="special">&lt;</span><span class="identifier">first</span><span class="special">&gt;::</span><span class="identifier">type</span><span class="special">,</span> <span class="keyword">int</span><span class="special">&gt;));</span>
+<span class="identifier">BOOST_MPL_ASSERT</span><span class="special">((</span><span class="identifier">boost</span><span class="special">::</span><span class="identifier">is_same</span><span class="special">&lt;</span><a href="value_of.html" title="value_of"><tt class="computeroutput"><span class="identifier">result_of</span><span class="special">::</span><span class="identifier">value_of</span></tt></a><span class="special">&lt;</span><span class="identifier">second</span><span class="special">&gt;::</span><span class="identifier">type</span><span class="special">,</span> <span class="keyword">int</span><span class="special">&amp;&gt;));</span>
+<span class="identifier">BOOST_MPL_ASSERT</span><span class="special">((</span><span class="identifier">boost</span><span class="special">::</span><span class="identifier">is_same</span><span class="special">&lt;</span><a href="value_of.html" title="value_of"><tt class="computeroutput"><span class="identifier">result_of</span><span class="special">::</span><span class="identifier">value_of</span></tt></a><span class="special">&lt;</span><span class="identifier">third</span><span class="special">&gt;::</span><span class="identifier">type</span><span class="special">,</span> <span class="keyword">const</span> <span class="keyword">int</span><span class="special">&amp;&gt;));</span>
+</pre>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2001-2007 Joel de Guzman, Dan Marsden, Tobias
+      Schwinger<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="../metafunctions.html"><img src="../../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../metafunctions.html"><img src="../../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../../index.html"><img src="../../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="deref.html"><img src="../../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

@@ -1,0 +1,451 @@
+<?xml version="1.0" encoding = "iso-8859-1" standalone="no"?>
+<!--
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+
+<!DOCTYPE faqs SYSTEM "sbk:/style/dtd/faqs.dtd">
+
+<faqs title="Building / Running FAQs">
+
+  <faq title="Why do I get compilation error saying undeclared identifier or class undefined?">
+
+    <q>Why do I get compilation error saying undeclared identifier or class undefined?</q>
+
+    <a>
+
+      <p>&XercesCName; &XercesCVersion; now supports C++ Namespace.</p>
+
+      <p>If C++ Namespace is ENABLED, users' applications must
+         namespace qualify all the &XercesCName; classes, data, and
+         variables with <code>XERCES_CPP_NAMESPACE_QUALIFIER </code>
+         or add the <code>XERCES_CPP_NAMESPACE_USE</code> clause.
+         Users also need to ensure all forward declarations are
+         properly qualified or scoped.
+      </p>
+
+      <p>See the Programming Guide <jump href="program-others.html#CPPNamespace">
+         Using C++ Namespace</jump> for details.
+      </p>
+
+    </a>
+  </faq>
+
+  <faq title="Why do I get compilation error saying DOMDocument was declared twice using
+              Microsoft Visual C++.Net?">
+
+    <q>Why do I get compilation error saying DOMDocument was declared twice using
+              Microsoft Visual C++.Net?</q>
+
+    <a>
+
+      <p>Your application somehow has picked up the Microsoft SDK header <code>Msxml.h</code>
+         which has its own typedef of <code>DOMDocument</code>.   This confuses
+         with the &XercesCName; &XercesCVersion; <code>&XercesCNamespace;::DOMDocument</code>
+         and thus lead to the compilation errors.</p>
+
+      <p> Qualifier the use of DOMDocument in your application explicitly e.g.
+         <br/><br/><code>XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument * fDoc;</code><br/><br/>
+         will eliminate these compilation problems.
+      </p>
+
+    </a>
+  </faq>
+
+  <faq title="Why can't the compiler find the include files?">
+
+    <q>Why can't the compiler find the include files?</q>
+
+    <a><p>A common cause for this problem is setting build environment
+       variable XERCESROOT instead of setting variable XERCESCROOT.
+       Note the C before ROOT.</p>
+    </a>
+  </faq>
+
+  <faq title="Why do I get Internal Compiler Error when compiling &XercesCName; for a 64bit target with gcc?">
+    <q>Why do I get Internal Compiler Error when compiling &XercesCName; for a 64bit target with gcc?</q>
+    <a>
+      <p>This is a compiler problem.  Try turning off optimization to bypass the problem.</p>
+    </a>
+  </faq>
+
+
+  <faq title="Why do I get compilation error when compiling &XercesCName; on FreeBSD with native transcoder?">
+
+    <q>Why do I get compilation error when compiling &XercesCName; on FreeBSD with native transcoder?</q>
+
+    <a>
+       <p>Please make sure you configure with "-t IconvFBSD" to use FreeBSD specific native transcoder.
+       </p>
+
+       <p>Or you can use ICU transcoder (configure with -t icu) instead of the native transcoder.
+       </p>
+
+    </a>
+  </faq>
+
+  <faq title="Building &XercesCName; with compiler GCC 2.7.x or 2.8.x gives problem, what's wrong?">
+
+    <q>Building &XercesCName; with compiler GCC 2.7.x or 2.8.x gives problem, what's wrong?</q>
+
+    <a>
+       <p>Users using GCC 2.7.x or 2.8.x may have unsuccessful compile/link/run experience with
+          &XercesCName;.  There were issues related to templates and multi threaded exception
+          handling with this old version GCC compiler.
+       </p>
+
+       <p>Please upgrade to at least GCC 2.95.2.
+       </p>
+
+    </a>
+  </faq>
+
+  <faq title="Why does my application give unresolved linking errors?">
+
+    <q>Why does my application give unresolved linking errors?</q>
+
+    <a>
+
+      <p>Please check the following:</p>
+      <ol>
+        <li>If you're using the binary build of &XercesCName;, make sure that the OS and compiler are
+            the same version as the ones used to build the binary &faq-build-faq-distrib1;.  Different OS and
+            compiler versions might cause unresolved linking problems or compilation
+            errors. If the versions are different, rebuild the &XercesCName; library on
+            your system before building your application. If you're using ICU (which is
+            packaged with XML4C) you need to rebuild the compatible version of ICU
+            first.</li>
+        <li>Check that the library path is set properly and that the correct
+            versions of <code>gmake</code> and <code>autoconf</code> are on your system.</li>
+        <li>If C++ Namespace support is ENABLED (all the binary distributions of &XercesCName;
+            &XercesCVersion; are built with C++ Namespace enabled), users' applications
+            must namespace qualify all the &XercesCName; classes, data and variables.
+            See the Programming Guide <jump href="program-others.html#CPPNamespace">
+            Using C++ Namespace</jump> for details.</li>
+      </ol>
+    </a>
+  </faq>
+
+  <faq title="Why do I get link error saying icudata library not found when building with ICU?">
+
+    <q>Why do I get link error saying icudata library not found when building with ICU?</q>
+
+    <a>
+       <p>There is a bug in the Makefile of ICU 1.7, 1.8 and 1.8.1.  The link created during
+          ICU installation in $ICUROOT is, for example,
+       </p>
+
+       <p>icudata.so@ -> icudt17l.so
+       </p>
+
+       <p>instead of
+       </p>
+
+       <p>libicudata.so@ -> libicudt17l.so <br/>
+       </p>
+
+       <p>Therefore the -licudata doesn't work.  To bypass the problem, please manually create the
+          following link:
+       </p>
+
+       <p>libicudata.so@ -> libicudt17l.so
+       </p>
+
+       <p>This problem has been fixed in ICU 2.0.
+       </p>
+
+
+    </a>
+  </faq>
+
+  <faq title="I cannot run the sample applications. What is wrong?">
+
+    <q>I cannot run the sample applications. What is wrong?</q>
+
+    <a>
+
+      <p>In order to run an application built using &XercesCProjectName; you must
+        set up your path and library search path properly. In the stand-alone version
+        from Apache, you must have the &XercesCName; runtime library available from
+        your path settings.
+      </p>
+      <p>On Windows this library is called <code>&XercesCWindowsDLL;.dll</code>
+        which must be available from your <code>PATH</code> settings. (Note that there are
+        separate debug and release dlls for Windows.  The release dll is named
+        <code>&XercesCWindowsDLL;.dll</code>, and the debug dll
+        is named <code>&XercesCWindowsDLL;d.dll)</code>.
+      </p>
+      <p>On UNIX platforms the library is called &XercesCUnixLib;.so.&XercesCUnixSoName; (or
+         &XercesCUnixLib;&XercesCUnixSoName;.so or &XercesCUnixLib;.sl.&XercesCUnixSoName;)
+         which must be available from your <code>LD_LIBRARY_PATH</code>
+         (or <code>LIBPATH</code> or <code>SHLIB_PATH</code>) environment variable.</p>
+
+      <p>Thus, if you installed your binaries under <code>$HOME/fastxmlparser</code>, you need to point your library path to that directory.</p>
+
+<source>export LIBPATH=$LIBPATH:$HOME/fastxmlparser/lib # (AIX)
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/fastxmlparser/lib # (Solaris, Linux)
+export SHLIB_PATH=$SHLIB_PATH:$HOME/fastxmlparser/lib # (HP-UX)</source>
+
+      <p>If you are using the XML4C parser from IBM, you will
+        need to put in two additional DLLs. In the Windows build these are <code>icuuc*.dll</code> and <code>icudt*.dll</code> which must be available from your PATH settings. On UNIX, these
+        libraries are called <code>libicuuc*.so</code> and <code>libicudt*.so</code> (or <code>.sl</code> for HP-UX or <code>.a</code> for AIX) which must be available from your library search path.</p>
+
+      <p>If the parser is built with icu message loader (as mentioned above), or message
+        catalog loader, you need an environment variable, XERCESC_NLS_HOME to point to
+        the directory, $XERCESCROOT/msg, where the message files reside.
+      </p>
+
+    </a>
+  </faq>
+
+  <faq title="Why does my application crash on AIX when I run it under a
+         multi-threaded environment?">
+
+    <q>Why does my application crash on AIX when I run it under a
+      multi-threaded environment?</q>
+
+    <a>
+
+      <p>AIX maintains two kinds of libraries on the system, thread-safe and
+        non-thread safe. Multi-threaded libraries on AIX follow a different naming
+        convention, Usually the multi-threaded library names are followed with "_r".
+        For example, libc.a is single threaded whereas libc_r.a is multi-threaded.</p>
+
+      <p>To make your multi-threaded application run on AIX, you <em>must</em>
+        ensure that you do not have a "system library path" in your <code>LIBPATH</code>
+        environment variable when you run the application. The appropriate
+        libraries (threaded or non-threaded) are automatically picked up at runtime. An
+        application usually crashes when you build your application for multi-threaded
+        operation but don't point to the thread-safe version of the system libraries.
+        For example, LIBPATH can be simply set as:</p>
+
+<source>LIBPATH=$HOME/&lt;&XercesCProjectName;&gt;/lib</source>
+
+      <p>Where &lt;&XercesCProjectName;&gt; points to the directory where the
+        &XercesCProjectName; application resides.</p>
+
+      <p>If, for any reason unrelated to &XercesCProjectName;, you need to keep a
+        "system library path" in your LIBPATH environment variable, you must make sure
+        that you have placed the thread-safe path before you specify the normal system
+        path. For example, you must place <ref>/lib/threads</ref> before
+        <ref>/lib</ref> in your LIBPATH variable. That is to say your LIBPATH may look
+        like this:</p>
+
+<source>export LIBPATH=$HOME/&lt;&XercesCProjectName;&gt;/lib:/usr/lib/threads:/usr/lib</source>
+
+      <p>Where /usr/lib is where your system libraries are.</p>
+
+    </a>
+  </faq>
+
+  <faq title="Why does my multi-threaded application crash on Solaris 2.6?">
+
+    <q>Why does my multi-threaded application crash on Solaris 2.6?</q>
+
+    <a>
+
+      <p>The problem appears because the throw call on Solaris 2.6 is not
+        multi-thread safe. Sun Microsystems provides a patch to solve this problem. To
+        get the latest patch for solving this problem, go to
+        <jump href="http://sunsolve.sun.com">SunSolve.sun.com</jump> and get the
+        appropriate patch for your operating system. For Intel machines running
+        Solaris, you need to get Patch ID 104678. For SPARC machines you need to get
+        Patch ID #105591.</p>
+
+    </a>
+  </faq>
+
+  <faq title="I just built my own application using the &XercesCName; parser. Why does it crash?">
+
+    <q>I just built my own application using the &XercesCName; parser. Why does
+      it crash?</q>
+
+    <a>
+
+      <p>In order to work with the &XercesCName; parser, you have to first
+        initialize the XML subsystem. The most common mistake is to forget this
+        initialization. Before you make any calls to &XercesCName; APIs, you must
+        call XMLPlatformUtils::Initialize(): </p>
+
+<source>
+try {
+   XMLPlatformUtils::Initialize();
+}
+catch (const XMLException&amp; toCatch) {
+   // Do your failure processing here
+}</source>
+
+      <p>This initializes the &XercesCProjectName; system and sets its internal
+        variables. Note that you must the include <code>xercesc/util/PlatformUtils.hpp</code> file for this to work.</p>
+
+    </a>
+  </faq>
+
+  <faq title="Why does deleting a transcoded string result in assertion on windows?">
+    <q>Why does deleting a transcoded string result in assertion on windows?</q>
+    <a>
+      <p>Both your application program and the &XercesCName; DLL must use the same *DLL* version of the
+         runtime library.  If either statically links to the runtime library, the
+		 problem will still occur.</p>
+
+      <p>For example, for a Win32/VC6 build, the runtime library build setting MUST
+		 be "Multithreaded DLL" for release builds and "Debug Multithreaded DLL" for
+		 debug builds.</p>
+
+      <p>Or for example for a Win32/BCB6 build, application need to switch to Multithreaded
+         runtime to avoid such memory access violation.</p>
+
+      <p>To bypass such problem, instead of calling operator delete[] directly, you can use the
+         provided function XMLString::release to delete any string that was allocated by the parser.
+         This will ensure the string is allocated and deleted by the same DLL and such assertion
+         problem should be resolved.</p>
+    </a>
+  </faq>
+
+  <faq title="Can't debug into the &XercesCName; DLL with the MSVC debugger">
+
+    <q> The libs/dll's I downloaded keep me from using the debugger in VC6.0. I
+      am using the 'D', debug versions of them. "no symbolic information found" is
+      what it says. Do I have to compile everything from source to make it work?</q>
+
+    <a>
+
+      <p>Unless you have the .pdb files, all you are getting with the debug
+        library is that it uses the debug heap manager, so that you can compile your
+        stuff in debug mode and not be dangerous. If you want full symbolic info for
+        the &XercesCName; library, you'll need the .pdb files, and to get those, you'll
+        need to rebuild the &XercesCName; library.</p>
+
+    </a>
+  </faq>
+
+  <faq title="First-chance exception in Microsoft debugger">
+
+    <q>First-chance exception in DOMPrint.exe (KERNEL32.DLL): 0xE06D7363:
+      Microsoft C++ Exception. I am always getting this message when I am using the
+      parser. My programs are terminating abnormally. Even the samples are giving
+      this exception. I am using Visual C++ 6.0 with latest service pack
+      installed.</q>
+
+    <a>
+
+      <p>&XercesCName; uses C++ exceptions internally, as part of its normal
+        operation. By default, the MSVC debugger will stop on each of these with the
+        "First-chance exception ..." message.</p>
+
+      <p>To stop this from happening do this:</p>
+
+      <ul>
+        <li>start debugging (so the debug menu appears)</li>
+        <li>from the debug menu select "Exceptions"</li>
+        <li>from the box that opens select "Microsoft C++ Exception" and set it
+          to "Stop if not handled" instead of "stop always".</li>
+      </ul>
+
+      <p>You'll still land in the debugger if your program is terminating
+        abnormally, but it will be at your problem, not from the internal &XercesCName;
+        exceptions.</p>
+
+    </a>
+  </faq>
+
+  <faq title="Fatal Error: Cannot open include file: XXX: No such file or directory">
+    <q>Fatal Error: Cannot open include file: XXX: No such file or directory</q>
+    <a>
+      <p>
+	      Due to the recent directory change, you may need to either update your
+		  project file, makefile, or your source/header file, for details,
+          please refer to <jump href="migrate.html#DirChange">Directory Change. </jump></p>
+    </a>
+  </faq>
+
+  <faq title="Cannot load message domain, Xerces Panic Error">
+    <q>Cannot load message domain, Xerces Panic Error?</q>
+    <a>
+      <p>If the parser is built with icu message loader (like IBM XML4C binaries),
+         you need to make sure that the message library &faq-build-faq-distrib3;
+         is located in a directory which is on the library search path.
+         Or the message resource file, XercesMessages_en_US.res, is in the directory given at the call to
+         XMLPlatformUtils::Initialize(), or is located in the directory pointed to by the environment variable
+         XERCESC_NLS_HOME, or at $XERCESCROOT/msg.
+      </p>
+      <p>If the parser is built with message catalog loader, you need to make sure that the message
+         catalog file, XercesMessages_en_US.cat, is in the directory given at the call to XMLPlatformUtils::Initialize(),
+         or is located in the directory pointed to by the environment variable XERCESC_NLS_HOME, or
+         at $XERCESCROOT/msg.
+      </p>
+
+    </a>
+  </faq>
+
+  <faq title="Why my document is valid on some platforms while invalid on others">
+    <q>Why my document is valid on some platform while invalid on others?</q>
+    <a>
+      <p>The parser relies on the system call, strtod(), to parse a string representation
+         of a double/float data. In the case of no invalid characters found, the strtod()
+         returns a double/float value if it is representable on that platform, or raises
+         ERANGE to indicate either underflow or underflow occurs. And the parser assigns
+         zero to the said data if underflow is found.
+      </p>
+      <p>The threshold, where the strtod() decides if an underflow occurs, varies on
+         platforms. On windows, it is roughly the order of e-308, on Linux, e-325, and
+         on AIX, HP and Solaris, e-324.
+      </p>
+      <p>So in an instance document, a data of value 1.0e-310 from a type with minExclusive 0,
+         is considered invalid on windows (since it is converted to 0 and therefore violates
+         the minExclusive constraint), but valid on other unix platforms (since it remains
+         the original value).
+      </p>
+      <p>The discussion above applies to data in xsd file as well.
+      </p>
+    </a>
+  </faq>
+
+  <faq title="How do I regenerate the documentation?">
+    <q>How do I regenerate the documentation?</q>
+    <a>
+     <p>To use the internal XML based application that creates the
+        documentation, you must have a Java Virtual machine installed
+        on your system. The application itself, written in Java, is
+        provided in the &XercesCToolsInstallDir; distribution. You
+        should copy its contents into your <code>$XERCESCROOT</code>
+        directory.</p>
+
+     <p>To regenerate the documentation, go to directory <code>$XERCESCROOT</code>
+        and start <code>createDocs.sh</code> (for Unix) or
+        <code>createdocs.bat</code> (for Windows). The result can be
+        found in directory <code>$XERCESCROOT/doc/html</code>.</p>
+
+     <p>
+      To regenerate the API documentation, you need to have at least
+      <jump href="http://www.stack.nl/~dimitri/doxygen/">Doxygen</jump>
+      installed on your system.</p>
+
+      <p>If you want the API documentation to
+      contain dependency graphs, you also need to have <jump
+      href="http://www.research.att.com/sw/tools/graphviz/">GraphViz</jump> installed on
+      your system.</p>
+
+      <p>If you do not have GraphViz, or do not want to use it, you
+      have to edit file <code>$XERCESCROOT/doc/Doxyfile</code> and change <code>HAVE_DOT =
+      YES</code> into <code>HAVE_DOT = NO</code>.</p>
+
+      <p>To actually regenerate the API documentation, go to directory
+      <code>$XERCESCROOT/doc/</code> and start Doxygen. The result can be
+        found in directory <code>$XERCESCROOT/doc/html/apiDocs</code>.</p>
+    </a>
+   </faq>
+
+</faqs>

@@ -1,0 +1,262 @@
+# Copyright 2001 Dave Abrahams 
+# Distributed under the Boost Software License, Version 1.0. 
+# (See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt) 
+
+# assert_equal a : b
+#
+# exits with an assertion failure if a != b
+rule assert_equal
+{
+    if $(<) != $(>)
+    {
+        EXIT "assertion failure: [" $(<) "] != [" $(>) "]" ;
+    }
+}
+
+rule assert_equal_sets
+{
+    if ! [ equal-sets $(<) : $(>) ]
+    {
+        EXIT "assertion failure: [" $(<) "] !=(set) [" $(>) "]" ;
+    }
+}
+
+# FAppendSuffix
+assert_equal [ FAppendSuffix yacc lex foo.bat : ] : yacc lex foo.bat ;
+assert_equal [ FAppendSuffix yacc lex foo.bat : .exe ] : yacc.exe lex.exe foo.bat ;
+assert_equal [ FAppendSuffix yacc lex foo.bat : .dll .lib ] : yacc.dll yacc.lib lex.dll lex.lib foo.bat foo.lib ;
+
+# sort
+assert_equal [ sort 7 3 5 6 2 4 ] : 2 3 4 5 6 7 ;
+
+# min
+assert_equal [ min 7 3 5 6 2 4 ] : 2 ;
+
+# difference
+assert_equal [ difference 0 1 2 3 4 5 6 7 8 9 : 2 3 5 7 ] : 0 1 4 6 8 9 ;
+
+# replace
+assert_equal [ replace 1 3 5 7 7 9 2 5 4 3 1 : 7 x ] : 1 3 5 x x 9 2 5 4 3 1 ;
+
+# select-ungristed
+assert_equal [ select-ungristed <a>b c <d>e f ] : c f ;
+
+# split-qualified-property
+assert_equal [ split-qualified-property <feature>value ]
+    : <*> <*> <feature>value ;
+    
+assert_equal [ split-qualified-property <variant><feature>value ]
+    : <*> <variant> <feature>value ;
+    
+assert_equal [ split-qualified-property <toolset><variant><feature>value ]
+    : <toolset> <variant> <feature>value ;
+
+# unique
+assert_equal [ unique 0 1 2 3 1 7 6 6 4 5 ] : 0 1 2 3 7 6 4 5 ;
+
+# get-properties
+assert_equal [ get-properties <foo> <bar> : <foo>bar <foo>baz <bar>fight <baz>niss ]
+    : <foo>bar <foo>baz <bar>fight ;
+
+# get-values
+assert_equal [ get-values <foo> : <foo>bar <foo>baz <bar>fight <baz>niss ] : bar baz ;
+
+# normalize-properties
+assert_equal [ normalize-properties <a>b <c><d>e <f><g><h>i ] :
+     <*><*><a>b <*><c><d>e <f><g><h>i ;
+
+# intersection
+assert_equal [ intersection 1 2 2 3 3 4 5 6 7 : 5 1 3 7 3 9 11 ] : 1 3 3 5 7 ;
+
+# is-subset
+assert_equal [ is-subset a b c : c a b d ] : true ;
+assert_equal [ is-subset a b z : c a b d ] : ;
+
+# split-path
+assert_equal [ split-path <a>b/c/<d>e ] : <a>b c <d>e ;
+assert_equal [ split-path <a>/<d>/<e> ] : <a> <d> <e> ;
+assert_equal [ split-path <a> ] : <a> ;
+assert_equal [ split-path x ] : x ;
+assert_equal [ split-path $(DOT) ] : $(DOT) ;
+assert_equal [ split-path a/b.c/d.e/f ] : a b.c d.e f ;
+if $(NT)
+{
+    assert_equal [ split-path x:\\y\\z\\w ] : x: y z w ;
+    assert_equal [ split-path x:\\y\\z ] : x: y z ;
+    assert_equal [ split-path x:\\y ] : x: y ;
+    assert_equal [ split-path x:\\ ] : x: ;
+    assert_equal [ split-path x: ] : x: ;
+}
+
+# distribute-feature
+assert_equal [ distribute-feature <feature>value1 ] : <feature>value1 ;
+assert_equal [ distribute-feature <feature>value1/value2 ] : <feature>value1 <feature>value2 ;
+assert_equal [ distribute-feature <feature>value1/value2/value3 ] : <feature>value1 <feature>value2 <feature>value3 ;
+
+# segregate-free-properties
+{
+    local gFREE_FEATURES = <a> <c> <e> ;
+    local x = <a>b <b>c <d>e ;
+    local y = <a>b <a>c <b>c <e>f ;
+    local free = [ segregate-free-properties x y ] ;
+    assert_equal $(free) : <a>b <a>c <e>f ;
+    assert_equal $(x) : <b>c <d>e ;
+    assert_equal $(y) : <b>c ;
+}
+
+# set-insert
+{
+    local gTEST_SET = 1 2 3 ;
+    set-insert gTEST_SET : 2 ;
+    assert_equal $(gTEST_SET) : 1 2 3 ;
+    set-insert gTEST_SET : 0 ;
+    assert_equal $(gTEST_SET) : 1 2 3 0 ;
+}
+
+# equal-sets
+assert_equal [ equal-sets 1 2 3 : 3 2 2 1 ] : true ;
+assert_equal [ equal-sets 1 2 3 3 : 3 2 2 1 ] : true ;
+assert_equal [ equal-sets 1 2 3 3 4 : 3 2 2 1 ] : ;
+
+# segregate-overrides
+{
+    local base = <a>b <c>d <e>f ;
+    local overrides = <a>b <c>c <d>e <f>g ;
+    segregate-overrides overrides : base ;
+    assert_equal $(overrides) : <c>c <d>e <f>g ;
+    assert_equal $(base) : <a>b <e>f ;
+}
+
+# select-properties
+{
+    local TOOLS = gcc msvc ;
+    
+    local gRELEVANT_FEATURES(msvc)  = <debug-symbols> <optimization> <inlining> <inline> <runtime-build> <runtime-link> <threading> <define> <undef> <include> <target-type> ;
+    local gRELEVANT_FEATURES(gcc)  = <runtime-link> <debug-symbols> <optimization> <inlining> <profiling> <define> <undef> <include> <shared-linkable> <target-type> ;
+    local gFREE_FEATURES =  <define> <undef> <include> ;
+    
+    local gBASE_PROPERTIES(msvc,debug)  = <debug-symbols>on <inlining>off <optimization>off <runtime-build>debug <threading>single ;
+    local gBASE_PROPERTIES(gcc,debug)  = <debug-symbols>on <inlining>off <optimization>off <profiling>off <shared-linkable>false ;
+    local gBASE_PROPERTIES(msvc,release)  = <debug-symbols>off <define>NDEBUG <inlining>full <optimization>speed <runtime-build>release <threading>single ;
+    local gBASE_PROPERTIES(gcc,release)  = <debug-symbols>off <define>NDEBUG <inlining>full <optimization>speed <profiling>off <shared-linkable>false ;
+    
+    local TEST_PROPERTIES = <inlining>off <define>FOO <*><release><inlining>on
+                  <debug><define>DEBUG <msvc><release><foo>bar
+                  <gcc><*><inlining>on
+                  <msvc><*><foo>baz
+                  <msvc><release><optimization>speed
+                  <msvc><*><optimization>off
+                  <*><debug><optimization>off
+                  ;
+                  
+    assert_equal_sets [ select-properties gcc debug my-target : $(TEST_PROPERTIES) ]
+        : <define>FOO <define>DEBUG <inlining>on <optimization>off ;
+
+    assert_equal_sets [ select-properties gcc release my-target : $(TEST_PROPERTIES) ]
+        : <define>FOO <inlining>on ;
+
+    assert_equal_sets [ select-properties msvc debug my-target : $(TEST_PROPERTIES) ]
+        : <define>FOO <define>DEBUG <inlining>off <optimization>off ;
+
+    assert_equal_sets [ select-properties msvc release my-target : $(TEST_PROPERTIES) ]
+        : <define>FOO <inlining>on <optimization>speed ;
+}
+
+
+# ungrist-properties
+feature TEST_FEATURE1 : a b ;
+feature TEST_FEATURE2 : c d ;
+assert_equal [ ungrist-properties <TEST_FEATURE1>a <TEST_FEATURE2>c ]
+    : TEST_FEATURE1-a TEST_FEATURE2-c ;
+
+
+# fixup-path-properties
+{
+    local RELATIVE_SUBDIR = foobar ;
+    local gPATH_FEATURES = <include> ;
+    assert_equal [ fixup-path-properties <a>b <include>.. <c>d ]
+                : <include>foobar$(SLASH).. <a>b <c>d ;
+}
+# multiply-property-sets
+assert_equal [ multiply-property-sets <b>1 <a>2/3 <c>4/5 ]
+    : <a>2/<b>1/<c>4 <a>2/<b>1/<c>5 <a>3/<b>1/<c>4 <a>3/<b>1/<c>5 ;
+
+# make-path-property-sets
+{
+    local gUNGRISTED(<a>) = a ;
+    local gUNGRISTED(<c>) = c ;
+    local gUNGRISTED(<e>) = e ;
+    local gUNGRISTED(<g>) = g ;
+    local gUNGRISTED(<i>) = i ;
+    assert_equal [ make-path-property-sets foo$(SLASH)bar : <a>b <c>d : <e>f$(SLASH)<g>h <i>j ]
+    : foo$(SLASH)bar$(SLASH)e-f$(SLASH)g-h$(SLASH)<a>b$(SLASH)<c>d$(SLASH)<e>f$(SLASH)<g>h foo$(SLASH)bar$(SLASH)i-j$(SLASH)<a>b$(SLASH)<c>d$(SLASH)<i>j ;
+    assert_equal [ make-path-property-sets foo$(SLASH)bar : <a>b <c>d : ]
+    : foo$(SLASH)bar$(SLASH)<a>b$(SLASH)<c>d ;
+}
+
+
+# split-path-at-grist
+assert_equal
+ [ split-path-at-grist <a>b$(SLASH)c$(SLASH)<d>e$(SLASH)<f>g$(SLASH)h$(SLASH)i ]
+ : <a>b$(SLASH)c <d>e <f>g$(SLASH)h$(SLASH)i ;
+assert_equal
+ [ split-path-at-grist b$(SLASH)c$(SLASH)<d>e$(SLASH)<f>g$(SLASH)h$(SLASH)i ]
+ : b$(SLASH)c <d>e <f>g$(SLASH)h$(SLASH)i ;
+if $(NT)
+{
+    assert_equal
+        [ split-path-at-grist b\\c\\<include>e:\\f\\g\\<h>i ]
+        : b\\c <include>e:\\f\\g <h>i ;
+}
+# directory-of
+assert_equal [ directory-of a$(SLASH)b c d$(SLASH)e$(SLASH)f ] : a . d$(SLASH)e ;
+
+# top-relative-tokens
+{
+    local SUBDIR_TOKENS = a b c ;
+    assert_equal [ top-relative-tokens ..$(SLASH)d$(SLASH)e ] : a b d e ;
+}
+
+# flags
+{
+    local gBUILD_PROPERTIES = <a>b <c>d <e>f ;
+    local FLAGS1 FLAGS2 FLAGS3 ;
+    flags toolset FLAGS1 <a>b/<c>d <a>b/<e>f <x>y <a>/<c> <e> : foobar ;
+    assert_equal $(FLAGS1) : foobar b d f ;
+    flags toolset FLAGS2 <a> : foobar ;
+    assert_equal $(FLAGS2) : b ;
+    flags toolset FLAGS1 <a>b/<c>d <a>b/<e>f : foobar ;
+    assert_equal $(FLAGS1) : foobar b d f foobar ;
+}
+
+# get-BUILD
+{
+    local DEFAULT_BUILD = a ;
+    local BUILD = b ;
+    assert_equal [ get-BUILD c <d>e ] : b ;
+    BUILD = ;
+    assert_equal [ get-BUILD c <d>e ] : c <d>e ;
+    assert_equal [ get-BUILD ] : a ;
+    assert_equal [ get-BUILD <d>e ] : <d>e a ;
+    BUILD = <f>g ;
+    assert_equal [ get-BUILD c <d>e ] : <f>g a ;
+}
+
+# strip-initial
+assert_equal [ strip-initial a b c : a b c d e f g ] : d e f g ;
+assert_equal [ strip-initial a b c : a b d e f g ] : a b d e f g ;
+assert_equal [ strip-initial a b c : b d e f g ] : b d e f g ;
+assert_equal [ strip-initial a b c : ] :  ;
+
+# simplify-path-tokens
+{
+    local $(gTOP)_TOKENS = .. .. .. ;
+    local gINVOCATION_SUBDIR_TOKENS = d e ;
+    assert_equal [ simplify-path-tokens a b . c .. .. d e ] : a d e ;
+    assert_equal [ simplify-path-tokens a b .. .. .. d e ] : .. d e ;
+    assert_equal [ simplify-path-tokens .. .. d e : xxx ] : .. .. d e ;
+    assert_equal [ simplify-path-tokens a b .. .. : xxx ] : xxx ;
+    $(gTOP)_TOKENS = .. .. ;
+    assert_equal [ simplify-path-tokens .. .. d e : xxx ] : xxx ; 
+    assert_equal [ simplify-path-tokens .. .. d e f g : xxx ] : f g ; 
+}

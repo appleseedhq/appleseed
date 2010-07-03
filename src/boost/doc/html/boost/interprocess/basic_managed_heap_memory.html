@@ -1,0 +1,105 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Class template basic_managed_heap_memory</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../boost_interprocess_reference.html#header.boost.interprocess.managed_heap_memory_hpp" title="Header &lt;boost/interprocess/managed_heap_memory.hpp&gt;">
+<link rel="prev" href="basic_managed_external__id1745151.html" title="Class template basic_managed_external_buffer">
+<link rel="next" href="basic_managed_mapped_file.html" title="Class template basic_managed_mapped_file">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="basic_managed_external__id1745151.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_interprocess_reference.html#header.boost.interprocess.managed_heap_memory_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="basic_managed_mapped_file.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.interprocess.basic_managed_heap_memory"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Class template basic_managed_heap_memory</span></h2>
+<p>boost::interprocess::basic_managed_heap_memory</p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../boost_interprocess_reference.html#header.boost.interprocess.managed_heap_memory_hpp" title="Header &lt;boost/interprocess/managed_heap_memory.hpp&gt;">boost/interprocess/managed_heap_memory.hpp</a>&gt;
+
+</em></span><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> CharType, <span class="bold"><strong>typename</strong></span> AllocationAlgorithm, 
+         <span class="bold"><strong>template</strong></span>&lt; <span class="bold"><strong>class</strong></span> IndexConfig &gt; <span class="bold"><strong>class</strong></span> IndexType&gt; 
+<span class="bold"><strong>class</strong></span> <a class="link" href="basic_managed_heap_memory.html" title="Class template basic_managed_heap_memory">basic_managed_heap_memory</a> {
+<span class="bold"><strong>public</strong></span>:
+  <span class="emphasis"><em>// <a class="link" href="basic_managed_heap_memory.html#boost.interprocess.basic_managed_heap_memoryconstruct-copy-destruct">construct/copy/destruct</a></em></span>
+  <a class="link" href="basic_managed_heap_memory.html#id1745384-bb">basic_managed_heap_memory</a>();
+  <a class="link" href="basic_managed_heap_memory.html#id1745395-bb">basic_managed_heap_memory</a>(std::size_t);
+  <a class="link" href="basic_managed_heap_memory.html#id1745406-bb">basic_managed_heap_memory</a>(<a class="link" href="basic_managed_heap_memory.html" title="Class template basic_managed_heap_memory">basic_managed_heap_memory</a> &amp;&amp;);
+  basic_managed_heap_memory&amp; <a class="link" href="basic_managed_heap_memory.html#id1745419-bb"><span class="bold"><strong>operator</strong></span>=</a>(<a class="link" href="basic_managed_heap_memory.html" title="Class template basic_managed_heap_memory">basic_managed_heap_memory</a> &amp;&amp;);
+  <a class="link" href="basic_managed_heap_memory.html#id1745389-bb">~basic_managed_heap_memory</a>();
+
+  <span class="emphasis"><em>// <a class="link" href="basic_managed_heap_memory.html#id1745335-bb">public member functions</a></em></span>
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="basic_managed_heap_memory.html#id1745339-bb">grow</a>(std::size_t) ;
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="basic_managed_heap_memory.html#id1745363-bb">swap</a>(<a class="link" href="basic_managed_heap_memory.html" title="Class template basic_managed_heap_memory">basic_managed_heap_memory</a> &amp;) ;
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id2163111"></a><h2>Description</h2>
+<p>A basic heap memory named object creation class. Initializes the heap memory segment. Inherits all basic functionality from basic_managed_memory_impl&lt;CharType, AllocationAlgorithm, IndexType&gt; </p>
+<div class="refsect2" lang="en">
+<a name="id2163124"></a><h3>
+<a name="boost.interprocess.basic_managed_heap_memoryconstruct-copy-destruct"></a><code class="computeroutput">basic_managed_heap_memory</code> 
+        public
+       construct/copy/destruct</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><a name="id1745384-bb"></a>basic_managed_heap_memory();</pre>
+<p>Default constructor. Does nothing. Useful in combination with move semantics </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1745395-bb"></a>basic_managed_heap_memory(std::size_t size);</pre>
+<p>Creates heap memory and initializes the segment manager. This can throw. </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1745406-bb"></a>basic_managed_heap_memory(<a class="link" href="basic_managed_heap_memory.html" title="Class template basic_managed_heap_memory">basic_managed_heap_memory</a> &amp;&amp; moved);</pre>Moves the ownership of "moved"'s managed memory to *this. Does not throw. </li>
+<li>
+<pre class="literallayout">basic_managed_heap_memory&amp; <a name="id1745419-bb"></a><span class="bold"><strong>operator</strong></span>=(<a class="link" href="basic_managed_heap_memory.html" title="Class template basic_managed_heap_memory">basic_managed_heap_memory</a> &amp;&amp; moved);</pre>Moves the ownership of "moved"'s managed memory to *this. Does not throw. </li>
+<li>
+<pre class="literallayout"><a name="id1745389-bb"></a>~basic_managed_heap_memory();</pre>
+<p>Destructor. Liberates the heap memory holding the managed data. Never throws. </p>
+</li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id2163248"></a><h3>
+<a name="id1745335-bb"></a><code class="computeroutput">basic_managed_heap_memory</code> public member functions</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1745339-bb"></a>grow(std::size_t extra_bytes) ;</pre>
+<p>Tries to resize internal heap memory so that we have room for more objects. WARNING: If memory is reallocated, all the objects will be binary-copied to the new buffer. To be able to use this function, all pointers constructed in this buffer must be offset pointers. Otherwise, the result is undefined. Returns true if the growth has been successful, so you will have some extra bytes to allocate new objects. If returns false, the heap allocation has failed. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1745363-bb"></a>swap(<a class="link" href="basic_managed_heap_memory.html" title="Class template basic_managed_heap_memory">basic_managed_heap_memory</a> &amp; other) ;</pre>
+<p>Swaps the ownership of the managed heap memories managed by *this and other. Never throws. </p>
+</li>
+</ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2005 - 2008 Ion Gaztañaga<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="basic_managed_external__id1745151.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_interprocess_reference.html#header.boost.interprocess.managed_heap_memory_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="basic_managed_mapped_file.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

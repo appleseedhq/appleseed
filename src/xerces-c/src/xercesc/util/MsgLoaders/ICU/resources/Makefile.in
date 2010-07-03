@@ -1,0 +1,160 @@
+# Copyright (c) 2001-2002 IBM, Inc. and others
+#
+# File
+#    icu/source/samples/ufortune/resources/Makefile
+#
+# Usage:
+#    See the instructions in the parent Makefile,
+#          icu/source/samples/ufortune/Makefile.
+#          This subproject builds the ICU resource files for ufortune.
+#          It is normally invoked from the parent directory,
+#            although the resources can be built from here.
+#
+#    Two ICU tools are run from this makefile:
+#      genrb    compiles a resource source file (.txt) into
+#               a binary .res file.
+#      pkgdata  combines all of the .res files into a single
+#               shared library that can then be linked with the
+#               main application.
+#
+#               pkgdata will recursively generate and run yet
+#               another makefile, which in turn runs two more
+#               icu tools.  gencmn combines the individual .res
+#               files, and genccode emits the data as C source
+#               code that can then be built into a .so
+#
+
+#
+PLATFORM = @platform@
+CC  = @cc@
+CXX = @cxx@
+CXXVER = @cxxver@
+GCC = @GCC@
+GXX = @GXX@
+CXXFLAGS = @cxxflags@
+CFLAGS = @cflags@
+PREFIX = @prefix@
+PREFIX_INCLUDE = @prefix_include@
+LDFLAGS = @ldflags@
+LIBS = @libs@
+OSVER = @osver@
+USELIBWWW = @uselibwww@
+MESSAGELOADER = @messageloader@
+TRANSCODER = @transcoder@
+THREADS = @threads@
+LIBTYPE = @libtype@
+ARCH = @host_cpu@
+
+include ../../../../../../version.incl
+include ../../../../Makefile.incl
+
+####################################################################
+# Load ICU information. You can copy this to other makefiles #######
+####################################################################
+CC=$(shell icu-config --cc)
+CXX=$(shell icu-config --cxx)
+CPPFLAGS=$(shell icu-config --cppflags)
+CFLAGS=$(shell icu-config --cflags)
+CXXFLAGS=$(shell icu-config --cxxflags)
+LDFLAGS =$(shell icu-config --ldflags)
+LDFLAGS_USTDIO =$(shell icu-config --ldflags-ustdio)
+INVOKE=$(shell icu-config --invoke)
+#GENRB=$(shell icu-config --invoke=genrb)
+GENRB=genrb
+GENRBOPT=--package-name $(PKGNAME)
+#PKGDATA=$(shell icu-config --invoke=pkgdata)
+PKGDATA=pkgdata
+SO=$(shell icu-config --so)
+PKGDATAOPTS=-v -d .
+# default - resources in same mode as ICU
+# RESMODE=$(shell icu-config --icudata-mode)
+
+####################################################################
+### Project independent things (common) 
+### We depend on gmake for the bulk of the work 
+
+RMV=rm -rf
+
+# No conventional target - this dir is resources only.
+TARGET=
+CLEANFILES += *.mak *.[co] *.lst *.a *.$(SO) $(RESFILES) *.ao README*resources.txt
+
+ifeq ($(LIBTYPE),shared)
+  RESMODE=dll
+else
+  RESMODE=static
+endif
+
+# Resource shortname
+RESNAME=XercesMessages
+PKGNAME=XercesMessages$(VER)
+
+RESLDFLAGS=
+CHECK_VARS= ICU_DATA=$(RESDIR)
+
+# DLL and static modes are identical here
+RESLDFLAGS= -L$(RESDIR) -l$(RESNAME)
+RESCPPFLAGS=
+CHECK_VARS=
+
+# target file for resource bundle - this must be set, or 'make all' won't
+# build any resources.
+RESLIBNAME=lib$(RESNAME)
+
+ifeq ($(LIBTYPE),shared)
+  RESTARGET=lib$(RESNAME)$(ICUSHLIBSUFFIX)
+  PKGTARGET=lib$(PKGNAME)$(ICUSHLIBSUFFIX)
+else
+  RESTARGET=lib$(RESNAME)$(STLIBSUFFIX)
+  PKGTARGET=lib$(PKGNAME)$(STLIBSUFFIX)
+endif
+
+# Resource files.  Add new ones for additional locales here.
+# keep in sync with the file RESLIST
+RESFILES=$(RESNAME)_en_US.res
+
+# list of resource bundles  - keep in sync with RESFILES
+RESLIST=res-file-list-unix.txt
+
+# list of targets that aren't actually created
+.PHONY: all clean distclean check report 
+
+all: $(ALL_SUBDIR) $(RESTARGET) $(TARGET)  
+
+$(TARGET): $(OBJECTS)
+	$(LINK.cc) $^ $(LOADLIBES) $(LDLIBS) -o $@ $(XTRALIBS)
+
+$(RESTARGET): $(RESFILES)
+	@echo building ${FQ_RESLIB_REAL_NAME}
+	$(PKGDATA) --name $(PKGNAME) --mode $(RESMODE) $(PKGDATAOPTS) $(RESLIST)
+	mv $(PKGTARGET) $(RESTARGET)
+	mv $(RESTARGET) ${FQ_RESLIB_REAL_NAME}
+ifeq (${LIBTYPE},shared)
+	@echo symlink ${FQ_RESLIB_SO_NAME}
+	ln -fs ${FQ_RESLIB_REAL_NAME} ${FQ_RESLIB_SO_NAME}
+	@echo symlink ${FQ_RESLIB_LINK_NAME}
+	ln -fs ${FQ_RESLIB_SO_NAME} ${FQ_RESLIB_LINK_NAME}
+endif
+	
+res-install: $(RESTARGET)
+	$(PKGDATA) --name $(PKGNAME) --mode $(RESMODE) $(PKGDATAOPTS) $(RESLIST) --install $(shell icu-config --libdir)
+
+# clean out files
+distclean clean: $(CLEAN_SUBDIR)
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
+	-rm -f $(OBJECTS) $(TARGET) $(RESTARGET) $(RESFILES)
+
+# Make check: simply runs the sample, logged to a file
+check: $(TARGET)
+	$(INVOKE) $(CHECK_VARS) ./$(TARGET) $(CHECK_ARGS) | tee $(TARGET).out
+
+## resources
+$(RESNAME)_%.res: %.txt
+	@echo "generating $@"
+	$(GENRB) $(GENRBOPT) $^
+
+#end of rules.mk
+
+# for installing the library
+install: res-install
+

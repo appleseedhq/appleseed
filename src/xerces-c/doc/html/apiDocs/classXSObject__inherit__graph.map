@@ -1,0 +1,17 @@
+<area shape="rect" href="$classXSAnnotation.html" title="XSAnnotation" alt="" coords="311,5,420,32">
+<area shape="rect" href="$classXSAttributeDeclaration.html" title="XSAttributeDeclaration" alt="" coords="281,56,449,83">
+<area shape="rect" href="$classXSAttributeGroupDefinition.html" title="XSAttributeGroupDefinition" alt="" coords="267,107,464,133">
+<area shape="rect" href="$classXSAttributeUse.html" title="XSAttributeUse" alt="" coords="305,157,425,184">
+<area shape="rect" href="$classXSElementDeclaration.html" title="XSElementDeclaration" alt="" coords="283,208,448,235">
+<area shape="rect" href="$classXSFacet.html" title="XSFacet" alt="" coords="328,259,403,285">
+<area shape="rect" href="$classXSIDCDefinition.html" title="XSIDCDefinition" alt="" coords="303,309,428,336">
+<area shape="rect" href="$classXSModelGroup.html" title="XSModelGroup" alt="" coords="307,360,424,387">
+<area shape="rect" href="$classXSModelGroupDefinition.html" title="XSModelGroupDefinition" alt="" coords="276,411,455,437">
+<area shape="rect" href="$classXSMultiValueFacet.html" title="XSMultiValueFacet" alt="" coords="295,461,436,488">
+<area shape="rect" href="$classXSNotationDeclaration.html" title="XSNotationDeclaration" alt="" coords="281,512,449,539">
+<area shape="rect" href="$classXSParticle.html" title="XSParticle" alt="" coords="323,563,408,589">
+<area shape="rect" href="$classXSTypeDefinition.html" title="This class represents a complexType or simpleType definition." alt="" coords="301,613,429,640">
+<area shape="rect" href="$classXSWildcard.html" title="XSWildcard" alt="" coords="320,664,411,691">
+<area shape="rect" href="$classXMemory.html" title="This class makes it possible to override the C++ memory management by adding new/delete..." alt="" coords="7,335,89,361">
+<area shape="rect" href="$classXSComplexTypeDefinition.html" title="XSComplexTypeDefinition" alt="" coords="513,588,700,615">
+<area shape="rect" href="$classXSSimpleTypeDefinition.html" title="XSSimpleTypeDefinition" alt="" coords="520,639,693,665">

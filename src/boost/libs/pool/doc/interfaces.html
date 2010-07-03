@@ -1,0 +1,153 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+<head>
+  <meta http-equiv="Content-Language" content="en-us">
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+  <link href="pool.css" rel="stylesheet" type="text/css">
+
+  <title>Boost Pool Interfaces</title>
+</head>
+
+<body>
+  <img src="../../../boost.png" width="276" height="86" alt="C++ Boost">
+
+  <h1 align="center">Boost Pool Interfaces</h1>
+
+  <h2>Introduction</h2>
+
+  <p>There are several interfaces provided which allow users great flexibility 
+  in how they want to use Pools. Review the <a href=
+  "concepts.html">concepts document</a> to get the basic understanding of how 
+  Pools work.</p>
+
+  <h2>Terminology and Tradeoffs</h2>
+
+  <h3>Object Usage vs. Singleton Usage</h3>
+
+  <p><em>Object Usage</em> is the method where each Pool is an object that may 
+  be created and destroyed. Destroying a Pool implicitly frees all chunks that 
+  have been allocated from it.</p>
+
+  <p><em>Singleton Usage</em> is the method where each Pool is an object with 
+  static duration; that is, it will not be destroyed until program exit. Pool 
+  objects with Singleton Usage may be shared; thus, Singleton Usage implies 
+  thread-safety as well. System memory allocated by Pool objects with 
+  Singleton Usage may be freed through <span class=
+  "code">release_memory</span> or <span class="code">purge_memory</span>.</p>
+
+  <h3>Out-of-Memory Conditions: Exceptions vs. Null Return</h3>
+
+  <p>Some Pool interfaces throw exceptions when out-of-memory; others will 
+  return 0. In general, unless mandated by the Standard, Pool interfaces will 
+  always prefer to return 0 instead of throw an exception.</p>
+
+  <h2>The Interfaces</h2>
+
+  <h3>pool</h3>
+
+  <p>The <a href="interfaces/pool.html">pool interface</a> is a simple Object 
+  Usage interface with Null Return.</p>
+
+  <p>Example:</p>
+  <pre class="code">
+void func()
+{
+  boost::pool&lt;&gt; p(sizeof(int));
+  for (int i = 0; i &lt; 10000; ++i)
+  {
+    int * const t = p.malloc();
+    ... // Do something with t; don't take the time to free() it
+  }
+} // on function exit, p is destroyed, and all malloc()'ed ints are implicitly freed
+</pre>
+
+  <h3>object_pool</h3>
+
+  <p>The <a href="interfaces/object_pool.html">object_pool interface</a> is an 
+  Object Usage interface with Null Return, but is aware of the type of the 
+  object for which it is allocating chunks. On destruction, any chunks that 
+  have been allocated from that object_pool will have their destructors 
+  called.</p>
+
+  <p>Example:</p>
+  <pre class="code">
+struct X { ... }; // has destructor with side-effects
+
+void func()
+{
+  boost::object_pool&lt;X&gt; p;
+  for (int i = 0; i &lt; 10000; ++i)
+  {
+    X * const t = p.malloc();
+    ... // Do something with t; don't take the time to free() it
+  }
+} // on function exit, p is destroyed, and all destructors for the X objects are called
+</pre>
+
+  <h3>singleton_pool</h3>
+
+  <p>The <a href="interfaces/singleton_pool.html">singleton_pool interface</a> 
+  is a Singleton Usage interface with Null Return. It's just the same as the 
+  pool interface but with Singleton Usage instead.</p>
+
+  <p>Example:</p>
+  <pre class="code">
+struct MyPoolTag { };
+
+typedef boost::singleton_pool&lt;MyPoolTag, sizeof(int)&gt; my_pool;
+void func()
+{
+  for (int i = 0; i &lt; 10000; ++i)
+  {
+    int * const t = my_pool::malloc();
+    ... // Do something with t; don't take the time to free() it
+  }
+  // Explicitly free all malloc()'ed int's
+  my_pool::purge_memory();
+}
+</pre>
+
+  <h3>pool_alloc</h3>
+
+  <p>The <a href="interfaces/pool_alloc.html">pool_alloc interface</a> is a 
+  Singleton Usage interface with Exceptions. It is built on the singleton_pool 
+  interface, and provides a Standard Allocator-compliant class (for use in 
+  containers, etc.).</p>
+
+  <p>Example:</p>
+  <pre class="code">
+void func()
+{
+  std::vector&lt;int, boost::pool_allocator&lt;int&gt; &gt; v;
+  for (int i = 0; i &lt; 10000; ++i)
+    v.push_back(13);
+} // Exiting the function does NOT free the system memory allocated by the pool allocator
+  // You must call
+  //  boost::singleton_pool&lt;boost::pool_allocator_tag, sizeof(int)&gt;::release_memory()
+  // in order to force that
+</pre>
+
+  <h2>Future Directions</h2>
+
+  <p>Another pool interface will be written: a base class for per-class pool 
+  allocation. This &quot;pool_base&quot; interface will be Singleton Usage with 
+  Exceptions, and built on the singleton_pool interface.</p>
+  <hr>
+
+  <p><a href="http://validator.w3.org/check?uri=referer"><img border="0" src=
+  "http://www.w3.org/Icons/valid-html401" alt="Valid HTML 4.01 Transitional"
+  height="31" width="88"></a></p>
+
+  <p>Revised 
+  <!--webbot bot="Timestamp" s-type="EDITED" s-format="%d %B, %Y" startspan -->05 December, 2006<!--webbot bot="Timestamp" endspan i-checksum="38516" --></p>
+
+  <p><i>Copyright &copy; 2000, 2001 Stephen Cleary (scleary AT jerviswebb DOT com)</i></p>
+
+  <p><i>Distributed under the Boost Software License, Version 1.0. (See 
+  accompanying file <a href="../../../LICENSE_1_0.txt">LICENSE_1_0.txt</a> or 
+  copy at <a href=
+  "http://www.boost.org/LICENSE_1_0.txt">http://www.boost.org/LICENSE_1_0.txt</a>)</i></p>
+</body>
+</html>

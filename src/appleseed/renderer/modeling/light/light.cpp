@@ -1,0 +1,154 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2010 Francois Beaune
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Interface header.
+#include "light.h"
+
+using namespace foundation;
+using namespace std;
+
+namespace renderer
+{
+
+//
+// Light class implementation.
+//
+
+struct Light::Impl
+{
+    // Order of data members impacts performance, preserve it.
+    Transformd              m_transform;
+    string                  m_name;
+    const EDF*              m_edf;
+};
+
+// Constructors.
+Light::Light(
+    const char*             name,
+    const Transformd&       transform,
+    const EDF*              edf)
+  : impl(new Impl())
+{
+    assert(name);
+    assert(edf);
+    
+    impl->m_transform = transform;
+    impl->m_name = name;
+    impl->m_edf = edf;
+}
+Light::Light(
+    const char*             name,
+    const ParamArray&       params,
+    const Transformd&       transform,
+    const EDFContainer&     edfs)
+  : Entity(params)
+  , impl(new Impl())
+{
+    assert(name);
+    
+    impl->m_name = name;
+    impl->m_transform = transform;
+    impl->m_edf = get_required_entity<EDF>(edfs, params, "edf");
+}
+
+// Destructor.
+Light::~Light()
+{
+    delete impl;
+}
+
+// Delete this instance.
+void Light::release()
+{
+    delete this;
+}
+
+// Return a string identifying the model of this light.
+const char* Light::get_model() const
+{
+    return LightFactory::get_model();
+}
+
+// Return the name of this light.
+const char* Light::get_name() const
+{
+    return impl->m_name.c_str();
+}
+
+// Return the transform of this light.
+const Transformd& Light::get_transform() const
+{
+    return impl->m_transform;
+}
+
+// Return the EDF of this light.
+const EDF* Light::get_edf() const
+{
+    return impl->m_edf;
+}
+
+
+//
+// LightFactory class implementation.
+//
+
+// Return a string identifying this light model.
+const char* LightFactory::get_model()
+{
+    return "generic_light";
+}
+
+// Create a new light.
+auto_release_ptr<Light> LightFactory::create(
+    const char*             name,
+    const Transformd&       transform,
+    const EDF*              edf)
+{
+    return
+        auto_release_ptr<Light>(
+            new Light(
+                name,
+                transform,
+                edf));
+}
+auto_release_ptr<Light> LightFactory::create(
+    const char*             name,
+    const ParamArray&       params,
+    const Transformd&       transform,
+    const EDFContainer&     edfs)
+{
+    return
+        auto_release_ptr<Light>(
+            new Light(
+                name,
+                params,
+                transform,
+                edfs));
+}
+
+}   // namespace renderer

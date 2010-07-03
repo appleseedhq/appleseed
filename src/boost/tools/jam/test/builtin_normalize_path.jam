@@ -1,0 +1,60 @@
+#~ Copyright 2008 Jurko Gospodnetic.
+#~ Distributed under the Boost Software License, Version 1.0.
+#~ (See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt)
+
+ECHO --- Testing NORMALIZE_PATH builtin... ;
+
+assert "."     : (==) : [ NORMALIZE_PATH ] ;
+assert "."     : (==) : [ NORMALIZE_PATH "" ] ;
+assert "."     : (==) : [ NORMALIZE_PATH "." ] ;
+assert ".."    : (==) : [ NORMALIZE_PATH ".." ] ;
+assert "/"     : (==) : [ NORMALIZE_PATH "/" ] ;
+assert "/"     : (==) : [ NORMALIZE_PATH "\\" ] ;
+assert "/"     : (==) : [ NORMALIZE_PATH "//" ] ;
+assert "/"     : (==) : [ NORMALIZE_PATH "\\\\" ] ;
+assert "/"     : (==) : [ NORMALIZE_PATH "//\\\\//\\\\" ] ;
+assert "/"     : (==) : [ NORMALIZE_PATH "/." ] ;
+assert "/"     : (==) : [ NORMALIZE_PATH "/./" ] ;
+assert "/"     : (==) : [ NORMALIZE_PATH "\\\\///.///\\\\\\" ] ;
+assert "."     : (==) : [ NORMALIZE_PATH "./././././." ] ;
+assert "/"     : (==) : [ NORMALIZE_PATH "/./././././." ] ;
+assert "foo"   : (==) : [ NORMALIZE_PATH "foo" ] ;
+assert "foo"   : (==) : [ NORMALIZE_PATH "foo/" ] ;
+assert "foo"   : (==) : [ NORMALIZE_PATH "foo\\" ] ;
+assert "foo"   : (==) : [ NORMALIZE_PATH "foo\\\\/////" ] ;
+assert "foo"   : (==) : [ NORMALIZE_PATH "foo\\\\/////././." ] ;
+assert "foo"   : (==) : [ NORMALIZE_PATH "foo\\\\/////./././" ] ;
+assert "."     : (==) : [ NORMALIZE_PATH "foo/.." ] ;
+assert "."     : (==) : [ NORMALIZE_PATH "foo////.." ] ;
+assert "/"     : (==) : [ NORMALIZE_PATH "///foo/\\\\/.." ] ;
+assert "/"     : (==) : [ NORMALIZE_PATH "\\\\\\foo\\//\\.." ] ;
+assert "."     : (==) : [ NORMALIZE_PATH "foo/./.." ] ;
+assert "."     : (==) : [ NORMALIZE_PATH "foo/././././.." ] ;
+assert "foo"   : (==) : [ NORMALIZE_PATH "foo/./././bar/./././.././././baz/./././.." ] ;
+assert "/foo"  : (==) : [ NORMALIZE_PATH "/foo/./././bar/./././.././././baz/./././.." ] ;
+assert "foo"   : (==) : [ NORMALIZE_PATH "foo/./././bar/./././////.././././baz/./././.." ] ;
+assert "/foo"  : (==) : [ NORMALIZE_PATH "/foo/./././bar/./././////.././././baz/./././.." ] ;
+assert ".."    : (==) : [ NORMALIZE_PATH "./.." ] ;
+assert ".."    : (==) : [ NORMALIZE_PATH "././././.." ] ;
+assert "../.." : (==) : [ NORMALIZE_PATH "../.." ] ;
+assert "../.." : (==) : [ NORMALIZE_PATH "./../.." ] ;
+assert "../.." : (==) : [ NORMALIZE_PATH "././././../.." ] ;
+assert "../.." : (==) : [ NORMALIZE_PATH "./.././././.." ] ;
+assert "../.." : (==) : [ NORMALIZE_PATH "././././.././././.." ] ;
+assert "../.." : (==) : [ NORMALIZE_PATH "..//\\\\\\//.." ] ;
+assert "../.." : (==) : [ NORMALIZE_PATH "../..\\\\/\\\\" ] ;
+assert "."     : (==) : [ NORMALIZE_PATH "foo/../bar/../baz/.." ] ;
+assert "."     : (==) : [ NORMALIZE_PATH "foo////..////bar////.//////.////../baz/.." ] ;
+assert "/"     : (==) : [ NORMALIZE_PATH "/foo/../bar/../baz/.." ] ;
+assert "/"     : (==) : [ NORMALIZE_PATH "/foo////..////bar////.//////.////../baz/.." ] ;
+
+# Invalid rooted paths with leading dotdots.
+assert         : (==) : [ NORMALIZE_PATH "/.." ] ;
+assert         : (==) : [ NORMALIZE_PATH "/../" ] ;
+assert         : (==) : [ NORMALIZE_PATH "//\\\\//\\\\/.." ] ;
+assert         : (==) : [ NORMALIZE_PATH "\\\\//\\\\//\\.." ] ;
+assert         : (==) : [ NORMALIZE_PATH "/../.." ] ;
+assert         : (==) : [ NORMALIZE_PATH "/../../.." ] ;
+assert         : (==) : [ NORMALIZE_PATH "/foo/bar/../baz/../../.." ] ;
+assert         : (==) : [ NORMALIZE_PATH "/../for/././../././bar/././../././.." ] ;
+assert         : (==) : [ NORMALIZE_PATH "/../foo/bar" ] ;

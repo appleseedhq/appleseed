@@ -1,0 +1,56 @@
+#!/usr/bin/python
+#
+#  copyright (C) 2008  troy d. straszheim  <troy@resophonic.com>
+#  
+#  Distributed under the Boost Software License, Version 1.0.
+#  See accompanying file LICENSE_1_0.txt or copy at
+#  http://www.boost.org/LICENSE_1_0.txt
+#
+
+#
+#  Send the build log via XML-RPC
+#
+
+import sys
+sys.path.append("@BOOST_BUILD_SLAVE_PYTHONPATH@")
+from boost_build_slave import *
+
+s = xmlrpclib.Server(xmlrpc_url, allow_none=True)
+
+project_name = sys.argv[1]
+parent_target = sys.argv[2]
+build_or_test = sys.argv[3]
+logdir = sys.argv[4]
+
+# print "\n>>>\n>>> Project " + project_name \
+#       + "\n>>> POST build log for " + parent_target \
+#       + "\n>>> from log dir" + logdir \
+#       + "\n>>> to " + xmlrpc_url \
+#       + "\n>>> Server build ID: %d" % build_id \
+#       + "\n>>>"
+
+p = os.path.join(logdir, "Log.marshal")
+
+if not os.path.exists(p):
+    print "No results to submit"
+    sys.exit(0)
+
+f = open(p, "rb")
+
+i = 0
+while True:
+    try:
+        r = marshal.load(f)
+        r.update({ 'build_id' : build_id,
+                   'project' : project_name,
+                   'parent_target' : parent_target,
+                   'build_or_test' : build_or_test })
+        s.traash.step(r)
+        i += 1
+    except EOFError, e:
+        break
+
+print "Submitted ", i, " steps."
+f.close()
+os.remove(p)
+

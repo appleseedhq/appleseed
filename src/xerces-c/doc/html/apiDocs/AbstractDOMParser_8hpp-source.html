@@ -1,0 +1,778 @@
+<HTML><HEAD><SCRIPT language="JavaScript" src="../resources/script.js" type="text/javascript"></SCRIPT><TITLE>Xerces-C++: AbstractDOMParser.hpp Source File</TITLE><link href="XercesApi.css" rel="stylesheet" type="text/css"></HEAD><BODY alink="#ff0000" bgcolor="#ffffff" leftmargin="4" link="#0000ff" marginheight="4" marginwidth="4" text="#000000" topmargin="4" vlink="#0000aa"><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD align="left" height="60" rowspan="3" valign="top" width="135"><IMG border="0" height="60" hspace="0" src="../resources/logo.gif" vspace="0" width="135"></TD><TD align="left" colspan="4" height="5" valign="top" width="456"><IMG border="0" height="5" hspace="0" src="../resources/line.gif" vspace="0" width="456"></TD><TD align="left" height="60" rowspan="3" valign="top" width="29"><IMG border="0" height="60" hspace="0" src="../resources/right.gif" vspace="0" width="29"></TD></TR><TR><TD align="left" bgcolor="#0086b2" colspan="4" height="35" valign="top" width="456"><IMG alt="" border="0" height="35" hspace="0" src="../graphics/api-header.jpg" vspace="0" width="456"></TD></TR><TR><TD align="left" height="20" valign="top" width="168"><IMG border="0" height="20" hspace="0" src="../resources/bottom.gif" vspace="0" width="168"></TD><TD align="left" height="20" valign="top" width="96"><A href="http://xml.apache.org/" onMouseOut="rolloverOff('xml');" onMouseOver="rolloverOn('xml');" target="new"><IMG alt="http://xml.apache.org/" border="0" height="20" hspace="0" name="xml" onLoad="rolloverLoad('xml','../resources/button-xml-hi.gif','../resources/button-xml-lo.gif');" src="../resources/button-xml-lo.gif" vspace="0" width="96"></A></TD><TD align="left" height="20" valign="top" width="96"><A href="http://www.apache.org/" onMouseOut="rolloverOff('asf');" onMouseOver="rolloverOn('asf');" target="new"><IMG alt="http://www.apache.org/" border="0" height="20" hspace="0" name="asf" onLoad="rolloverLoad('asf','../resources/button-asf-hi.gif','../resources/button-asf-lo.gif');" src="../resources/button-asf-lo.gif" vspace="0" width="96"></A></TD><TD align="left" height="20" valign="top" width="96"><A href="http://www.w3.org/" onMouseOut="rolloverOff('w3c');" onMouseOver="rolloverOn('w3c');" target="new"><IMG alt="http://www.w3.org/" border="0" height="20" hspace="0" name="w3c" onLoad="rolloverLoad('w3c','../resources/button-w3c-hi.gif','../resources/button-w3c-lo.gif');" src="../resources/button-w3c-lo.gif" vspace="0" width="96"></A></TD></TR></TABLE><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD align="left" valign="top" width="120"><IMG border="0" height="14" hspace="0" src="../resources/join.gif" vspace="0" width="120"><BR>
+  <A href="../../index.html" onMouseOut="rolloverOff('side-ext-2');" onMouseOver="rolloverOn('side-ext-2');"><IMG alt="Home" border="0" height="12" hspace="0" name="side-ext-2" onLoad="rolloverLoad('side-ext-2','../graphics/ext-2-label-2.jpg','../graphics/ext-2-label-3.jpg');" src="../graphics/ext-2-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../index.html" onMouseOut="rolloverOff('side-index');" onMouseOver="rolloverOn('side-index');"><IMG alt="Readme" border="0" height="12" hspace="0" name="side-index" onLoad="rolloverLoad('side-index','../graphics/index-label-2.jpg','../graphics/index-label-3.jpg');" src="../graphics/index-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../charter.html" onMouseOut="rolloverOff('side-charter');" onMouseOver="rolloverOn('side-charter');"><IMG alt="Charter" border="0" height="12" hspace="0" name="side-charter" onLoad="rolloverLoad('side-charter','../graphics/charter-label-2.jpg','../graphics/charter-label-3.jpg');" src="../graphics/charter-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../releases.html" onMouseOut="rolloverOff('side-releases');" onMouseOver="rolloverOn('side-releases');"><IMG alt="Release Info" border="0" height="12" hspace="0" name="side-releases" onLoad="rolloverLoad('side-releases','../graphics/releases-label-2.jpg','../graphics/releases-label-3.jpg');" src="../graphics/releases-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../install.html" onMouseOut="rolloverOff('side-install');" onMouseOver="rolloverOn('side-install');"><IMG alt="Installation" border="0" height="12" hspace="0" name="side-install" onLoad="rolloverLoad('side-install','../graphics/install-label-2.jpg','../graphics/install-label-3.jpg');" src="../graphics/install-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="http://xerces.apache.org/xerces-c/download.cgi" onMouseOut="rolloverOff('side-ext-20');" onMouseOver="rolloverOn('side-ext-20');"><IMG alt="Download" border="0" height="12" hspace="0" name="side-ext-20" onLoad="rolloverLoad('side-ext-20','../graphics/ext-20-label-2.jpg','../graphics/ext-20-label-3.jpg');" src="../graphics/ext-20-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../build.html" onMouseOut="rolloverOff('side-build');" onMouseOver="rolloverOn('side-build');"><IMG alt="Build Instructions" border="0" height="12" hspace="0" name="side-build" onLoad="rolloverLoad('side-build','../graphics/build-label-2.jpg','../graphics/build-label-3.jpg');" src="../graphics/build-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../program.html" onMouseOut="rolloverOff('side-program');" onMouseOver="rolloverOn('side-program');"><IMG alt="Programming" border="0" height="12" hspace="0" name="side-program" onLoad="rolloverLoad('side-program','../graphics/program-label-2.jpg','../graphics/program-label-3.jpg');" src="../graphics/program-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../samples.html" onMouseOut="rolloverOff('side-samples');" onMouseOver="rolloverOn('side-samples');"><IMG alt="Samples" border="0" height="12" hspace="0" name="side-samples" onLoad="rolloverLoad('side-samples','../graphics/samples-label-2.jpg','../graphics/samples-label-3.jpg');" src="../graphics/samples-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../faqs.html" onMouseOut="rolloverOff('side-faqs');" onMouseOver="rolloverOn('side-faqs');"><IMG alt="FAQs" border="0" height="12" hspace="0" name="side-faqs" onLoad="rolloverLoad('side-faqs','../graphics/faqs-label-2.jpg','../graphics/faqs-label-3.jpg');" src="../graphics/faqs-label-3.jpg" vspace="0" width="120"></A><BR>
+
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../api.html" onMouseOut="rolloverOff('side-api');" onMouseOver="rolloverOn('side-api');"><IMG alt="API Docs" border="0" height="12" hspace="0" name="side-api" onLoad="rolloverLoad('side-api','../graphics/api-label-2.jpg','../graphics/api-label-3.jpg');" src="../graphics/api-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../ApacheDOMC++Binding.html" onMouseOut="rolloverOff('side-ext-88');" onMouseOver="rolloverOn('side-ext-88');"><IMG alt="DOM C++ Binding" border="0" height="12" hspace="0" name="side-ext-88" onLoad="rolloverLoad('side-ext-88','../graphics/ext-88-label-2.jpg','../graphics/ext-88-label-3.jpg');" src="../graphics/ext-88-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../migrate.html" onMouseOut="rolloverOff('side-migrate');" onMouseOver="rolloverOn('side-migrate');"><IMG alt="Migration Guide" border="0" height="12" hspace="0" name="side-migrate" onLoad="rolloverLoad('side-migrate','../graphics/migrate-label-2.jpg','../graphics/migrate-label-3.jpg');" src="../graphics/migrate-label-3.jpg" vspace="0" width="120"></A><BR>
+
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+    <A href="../feedback.html" onMouseOut="rolloverOff('side-feedback');" onMouseOver="rolloverOn('side-feedback');"><IMG alt="Feedback" border="0" height="12" hspace="0" name="side-feedback" onLoad="rolloverLoad('side-feedback','../graphics/feedback-label-2.jpg','../graphics/feedback-label-3.jpg');" src="../graphics/feedback-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../bug-report.html" onMouseOut="rolloverOff('side-bug-report');" onMouseOver="rolloverOn('side-bug-report');"><IMG alt="Bug-Reporting" border="0" height="12" hspace="0" name="side-bug-report" onLoad="rolloverLoad('side-bug-report','../graphics/bug-report-label-2.jpg','../graphics/bug-report-label-3.jpg');" src="../graphics/bug-report-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../mailing-lists.html" onMouseOut="rolloverOff('side-mailing-lists');" onMouseOver="rolloverOn('side-mailing-lists');"><IMG alt="Mailing Lists" border="0" height="12" hspace="0" name="side-mailing-lists" onLoad="rolloverLoad('side-mailing-lists','../graphics/mailing-lists-label-2.jpg','../graphics/mailing-lists-label-3.jpg');" src="../graphics/mailing-lists-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+    <A href="../source-repository.html" onMouseOut="rolloverOff('side-source-repository');" onMouseOver="rolloverOn('side-source-repository');"><IMG alt="Source Repository" border="0" height="12" hspace="0" name="side-source-repository" onLoad="rolloverLoad('side-source-repository','../graphics/source-repository-label-2.jpg','../graphics/source-repository-label-3.jpg');" src="../graphics/source-repository-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../applications.html" onMouseOut="rolloverOff('side-applications');" onMouseOver="rolloverOn('side-applications');"><IMG alt="Applications" border="0" height="12" hspace="0" name="side-applications" onLoad="rolloverLoad('side-applications','../graphics/applications-label-2.jpg','../graphics/applications-label-3.jpg');" src="../graphics/applications-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="14" hspace="0" src="../resources/close.gif" vspace="0" width="120"><BR></TD><TD align="left" valign="top" width="500"><TABLE border="0" cellpadding="3" cellspacing="0"><TR><TD>
+    <TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#FFFFFF" colspan="2" width="494"><TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#039acc" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#039acc" height="1" width="492"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#039acc" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" width="492"><FONT color="#ffffff" face="arial,helvetica,sanserif" size="+1"><IMG border="0" height="2" hspace="0" src="../resources/void.gif" vspace="0" width="2"><B>API Docs for SAX and DOM</B></FONT></TD><TD bgcolor="#017299" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#017299" height="1" width="492"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#017299" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></TD></TR><TR><TD width="10">&nbsp;</TD><TD width="484"><FONT color="#000000" face="arial,helvetica,sanserif">
+
+	    <P>
+<!-- Generated by Doxygen 1.5.3 -->
+<div class="tabs">
+  <ul>
+    <li><a href="index.html"><span>Main&nbsp;Page</span></a></li>
+    <li><a href="classes.html"><span>Classes</span></a></li>
+    <li class="current"><a href="files.html"><span>Files</span></a></li>
+    <li><a href="pages.html"><span>Related&nbsp;Pages</span></a></li>
+  </ul>
+</div>
+<h1>AbstractDOMParser.hpp</h1><a href="AbstractDOMParser_8hpp.html">Go to the documentation of this file.</a><div class="fragment"><pre class="fragment"><a name="l00001"></a>00001 <span class="comment">/*</span>
+<a name="l00002"></a>00002 <span class="comment"> * Licensed to the Apache Software Foundation (ASF) under one or more</span>
+<a name="l00003"></a>00003 <span class="comment"> * contributor license agreements.  See the NOTICE file distributed with</span>
+<a name="l00004"></a>00004 <span class="comment"> * this work for additional information regarding copyright ownership.</span>
+<a name="l00005"></a>00005 <span class="comment"> * The ASF licenses this file to You under the Apache License, Version 2.0</span>
+<a name="l00006"></a>00006 <span class="comment"> * (the "License"); you may not use this file except in compliance with</span>
+<a name="l00007"></a>00007 <span class="comment"> * the License.  You may obtain a copy of the License at</span>
+<a name="l00008"></a>00008 <span class="comment"> * </span>
+<a name="l00009"></a>00009 <span class="comment"> *      http://www.apache.org/licenses/LICENSE-2.0</span>
+<a name="l00010"></a>00010 <span class="comment"> * </span>
+<a name="l00011"></a>00011 <span class="comment"> * Unless required by applicable law or agreed to in writing, software</span>
+<a name="l00012"></a>00012 <span class="comment"> * distributed under the License is distributed on an "AS IS" BASIS,</span>
+<a name="l00013"></a>00013 <span class="comment"> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<a name="l00014"></a>00014 <span class="comment"> * See the License for the specific language governing permissions and</span>
+<a name="l00015"></a>00015 <span class="comment"> * limitations under the License.</span>
+<a name="l00016"></a>00016 <span class="comment"> */</span>
+<a name="l00017"></a>00017 
+<a name="l00018"></a>00018 <span class="comment">/*</span>
+<a name="l00019"></a>00019 <span class="comment"> * $Id: AbstractDOMParser.hpp 568078 2007-08-21 11:43:25Z amassari $</span>
+<a name="l00020"></a>00020 <span class="comment"> *</span>
+<a name="l00021"></a>00021 <span class="comment"> */</span>
+<a name="l00022"></a>00022 <span class="preprocessor">#if !defined(ABSTRACTDOMPARSER_HPP)</span>
+<a name="l00023"></a><a class="code" href="AbstractDOMParser_8hpp.html#5baa838a6895c7153ef3f13d40f0a470">00023</a> <span class="preprocessor"></span><span class="preprocessor">#define ABSTRACTDOMPARSER_HPP</span>
+<a name="l00024"></a>00024 <span class="preprocessor"></span>
+<a name="l00025"></a>00025 <span class="preprocessor">#include &lt;<a class="code" href="DOMDocument_8hpp.html">xercesc/dom/DOMDocument.hpp</a>&gt;</span>
+<a name="l00026"></a>00026 <span class="preprocessor">#include &lt;<a class="code" href="XMLDocumentHandler_8hpp.html">xercesc/framework/XMLDocumentHandler.hpp</a>&gt;</span>
+<a name="l00027"></a>00027 <span class="preprocessor">#include &lt;<a class="code" href="XMLErrorReporter_8hpp.html">xercesc/framework/XMLErrorReporter.hpp</a>&gt;</span>
+<a name="l00028"></a>00028 <span class="preprocessor">#include &lt;<a class="code" href="XMLEntityHandler_8hpp.html">xercesc/framework/XMLEntityHandler.hpp</a>&gt;</span>
+<a name="l00029"></a>00029 <span class="preprocessor">#include &lt;<a class="code" href="SecurityManager_8hpp.html">xercesc/util/SecurityManager.hpp</a>&gt;</span>
+<a name="l00030"></a>00030 <span class="preprocessor">#include &lt;xercesc/util/ValueStackOf.hpp&gt;</span>
+<a name="l00031"></a>00031 <span class="preprocessor">#include &lt;xercesc/validators/DTD/DocTypeHandler.hpp&gt;</span>
+<a name="l00032"></a>00032 <span class="preprocessor">#include &lt;<a class="code" href="DOMDocumentType_8hpp.html">xercesc/dom/DOMDocumentType.hpp</a>&gt;</span>
+<a name="l00033"></a>00033 <span class="preprocessor">#include &lt;xercesc/validators/DTD/DTDElementDecl.hpp&gt;</span>
+<a name="l00034"></a>00034 <span class="preprocessor">#include &lt;xercesc/framework/XMLBufferMgr.hpp&gt;</span>
+<a name="l00035"></a>00035 <span class="preprocessor">#include &lt;<a class="code" href="PSVIHandler_8hpp.html">xercesc/framework/psvi/PSVIHandler.hpp</a>&gt;</span>
+<a name="l00036"></a>00036 
+<a name="l00037"></a>00037 <a class="code" href="XercesDefs_8hpp.html#43d74fa53d868d978f3e97cbb78b194d">XERCES_CPP_NAMESPACE_BEGIN</a>
+<a name="l00038"></a>00038 
+<a name="l00039"></a>00039 <span class="keyword">class </span>XMLPScanToken;
+<a name="l00040"></a>00040 <span class="keyword">class </span>XMLScanner;
+<a name="l00041"></a>00041 <span class="keyword">class </span><a class="code" href="classXMLValidator.html" title="This abstract class provides the interface for all validators.">XMLValidator</a>;
+<a name="l00042"></a>00042 <span class="keyword">class </span>DOMDocumentImpl;
+<a name="l00043"></a>00043 <span class="keyword">class </span>DOMDocumentTypeImpl;
+<a name="l00044"></a>00044 <span class="keyword">class </span><a class="code" href="classDOMElement.html" title="By far the vast majority of objects (apart from text) that authors encounter when...">DOMElement</a>;
+<a name="l00045"></a>00045 <span class="keyword">class </span>GrammarResolver;
+<a name="l00046"></a>00046 <span class="keyword">class </span><a class="code" href="classXMLGrammarPool.html">XMLGrammarPool</a>;
+<a name="l00047"></a>00047 <span class="keyword">class </span><a class="code" href="classPSVIHandler.html" title="This abstract class provides the interface for the scanner to return PSVI information...">PSVIHandler</a>;
+<a name="l00048"></a>00048 
+<a name="l00053"></a><a class="code" href="classAbstractDOMParser.html">00053</a> <span class="keyword">class </span><a class="code" href="XercesDefs_8hpp.html#12b3de3d73b0c001f05eacd202c9f2f9"></a> <a class="code" href="classAbstractDOMParser.html" title="This class implements the Document Object Model (DOM) interface.">AbstractDOMParser</a> :
+<a name="l00054"></a>00054 
+<a name="l00055"></a>00055     <span class="keyword">public</span> <a class="code" href="classXMemory.html" title="This class makes it possible to override the C++ memory management by adding new/delete...">XMemory</a>
+<a name="l00056"></a>00056     , <span class="keyword">public</span> <a class="code" href="classXMLDocumentHandler.html" title="This abstract class provides the interface for the scanner to return XML document...">XMLDocumentHandler</a>
+<a name="l00057"></a>00057     , <span class="keyword">public</span> <a class="code" href="classXMLErrorReporter.html" title="This abstract class defines a callback mechanism for the scanner.">XMLErrorReporter</a>
+<a name="l00058"></a>00058     , <span class="keyword">public</span> <a class="code" href="classXMLEntityHandler.html" title="This abstract class is a callback mechanism for the scanner.">XMLEntityHandler</a>
+<a name="l00059"></a>00059     , <span class="keyword">public</span> DocTypeHandler
+<a name="l00060"></a>00060     , <span class="keyword">public</span> <a class="code" href="classPSVIHandler.html" title="This abstract class provides the interface for the scanner to return PSVI information...">PSVIHandler</a>
+<a name="l00061"></a>00061 {
+<a name="l00062"></a>00062 <span class="keyword">public</span> :
+<a name="l00063"></a>00063     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00064"></a>00064     <span class="comment">//  Class types</span>
+<a name="l00065"></a>00065     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00068"></a>00068 <span class="comment"></span>
+<a name="l00076"></a><a class="code" href="classAbstractDOMParser.html#35600d583c42ceea9b04ee10814238a6">00076</a>     <span class="keyword">enum</span> <a class="code" href="classAbstractDOMParser.html#35600d583c42ceea9b04ee10814238a6" title="ValScheme enum used in setValidationScheme Val_Never: Do not report validation errors...">ValSchemes</a>
+<a name="l00077"></a>00077     {
+<a name="l00078"></a><a class="code" href="classAbstractDOMParser.html#35600d583c42ceea9b04ee10814238a6e900bed8cd4513de8917e57c9c493529">00078</a>         Val_Never
+<a name="l00079"></a><a class="code" href="classAbstractDOMParser.html#35600d583c42ceea9b04ee10814238a675cbf76f8d5709f0db3a6bd7667c6bc5">00079</a>         , Val_Always
+<a name="l00080"></a><a class="code" href="classAbstractDOMParser.html#35600d583c42ceea9b04ee10814238a6d2a6a8edfe6e80a94872161008cdbb70">00080</a>         , Val_Auto
+<a name="l00081"></a>00081     };
+<a name="l00082"></a>00082 
+<a name="l00084"></a>00084 
+<a name="l00085"></a>00085 
+<a name="l00086"></a>00086     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00087"></a>00087     <span class="comment">//  Constructors and Detructor</span>
+<a name="l00088"></a>00088     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00091"></a>00091 <span class="comment"></span>
+<a name="l00095"></a>00095     <span class="keyword">virtual</span> ~<a class="code" href="classAbstractDOMParser.html" title="This class implements the Document Object Model (DOM) interface.">AbstractDOMParser</a>();
+<a name="l00096"></a>00096 
+<a name="l00098"></a>00098 
+<a name="l00099"></a>00099     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00100"></a>00100     <span class="comment">//  Utility methods</span>
+<a name="l00101"></a>00101     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00102"></a>00102 
+<a name="l00110"></a>00110     <span class="keywordtype">void</span> reset();
+<a name="l00111"></a>00111 
+<a name="l00125"></a>00125     <a class="code" href="classDOMDocument.html" title="The DOMDocument interface represents the entire XML document.">DOMDocument</a>* adoptDocument();
+<a name="l00126"></a>00126 
+<a name="l00128"></a>00128 
+<a name="l00129"></a>00129 
+<a name="l00130"></a>00130     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00131"></a>00131     <span class="comment">//  Getter methods</span>
+<a name="l00132"></a>00132     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00133"></a>00133 
+<a name="l00136"></a>00136 
+<a name="l00148"></a>00148     <a class="code" href="classDOMDocument.html" title="The DOMDocument interface represents the entire XML document.">DOMDocument</a>* getDocument();
+<a name="l00149"></a>00149 
+<a name="l00157"></a>00157     <span class="keyword">const</span> <a class="code" href="classXMLValidator.html" title="This abstract class provides the interface for all validators.">XMLValidator</a>&amp; getValidator() <span class="keyword">const</span>;
+<a name="l00158"></a>00158 
+<a name="l00166"></a>00166     ValSchemes getValidationScheme() <span class="keyword">const</span>;
+<a name="l00167"></a>00167 
+<a name="l00178"></a>00178     <span class="keywordtype">bool</span> getDoSchema() <span class="keyword">const</span>;
+<a name="l00179"></a>00179 
+<a name="l00190"></a>00190     <span class="keywordtype">bool</span> getValidationSchemaFullChecking() <span class="keyword">const</span>;
+<a name="l00191"></a>00191 
+<a name="l00202"></a>00202     <span class="keywordtype">bool</span> getIdentityConstraintChecking() <span class="keyword">const</span>;
+<a name="l00203"></a>00203 
+<a name="l00215"></a>00215     <span class="keywordtype">int</span> getErrorCount() <span class="keyword">const</span>;
+<a name="l00216"></a>00216 
+<a name="l00227"></a>00227     <span class="keywordtype">bool</span> getDoNamespaces() <span class="keyword">const</span>;
+<a name="l00228"></a>00228 
+<a name="l00241"></a>00241     <span class="keywordtype">bool</span> getExitOnFirstFatalError() <span class="keyword">const</span>;
+<a name="l00242"></a>00242 
+<a name="l00253"></a>00253     <span class="keywordtype">bool</span> getValidationConstraintFatal() <span class="keyword">const</span>;
+<a name="l00254"></a>00254 
+<a name="l00264"></a>00264     <span class="keywordtype">bool</span>  getCreateEntityReferenceNodes()<span class="keyword">const</span>;
+<a name="l00265"></a>00265 
+<a name="l00276"></a>00276     <span class="keywordtype">bool</span> getIncludeIgnorableWhitespace() <span class="keyword">const</span>;
+<a name="l00277"></a>00277 
+<a name="l00297"></a>00297     XMLCh* getExternalSchemaLocation() <span class="keyword">const</span>;
+<a name="l00298"></a>00298 
+<a name="l00318"></a>00318     XMLCh* getExternalNoNamespaceSchemaLocation() <span class="keyword">const</span>;
+<a name="l00319"></a>00319 
+<a name="l00335"></a>00335     <a class="code" href="classSecurityManager.html" title="Allow application to force the parser to behave in a security-conscious way.">SecurityManager</a>* getSecurityManager() <span class="keyword">const</span>;
+<a name="l00336"></a>00336 
+<a name="l00348"></a>00348     <span class="keywordtype">bool</span> getLoadExternalDTD() <span class="keyword">const</span>;
+<a name="l00349"></a>00349 
+<a name="l00358"></a>00358     <span class="keywordtype">bool</span>  getCreateCommentNodes()<span class="keyword">const</span>;
+<a name="l00359"></a>00359 
+<a name="l00371"></a>00371     <span class="keywordtype">bool</span> getCalculateSrcOfs() <span class="keyword">const</span>;
+<a name="l00372"></a>00372 
+<a name="l00383"></a>00383     <span class="keywordtype">bool</span> getStandardUriConformant() <span class="keyword">const</span>;
+<a name="l00384"></a>00384 
+<a name="l00391"></a>00391     <a class="code" href="classPSVIHandler.html" title="This abstract class provides the interface for the scanner to return PSVI information...">PSVIHandler</a>* getPSVIHandler();
+<a name="l00392"></a>00392 
+<a name="l00399"></a>00399     <span class="keyword">const</span> <a class="code" href="classPSVIHandler.html" title="This abstract class provides the interface for the scanner to return PSVI information...">PSVIHandler</a>* getPSVIHandler() <span class="keyword">const</span>;
+<a name="l00400"></a>00400 
+<a name="l00410"></a>00410     <span class="keywordtype">bool</span>  getCreateSchemaInfo() <span class="keyword">const</span>;
+<a name="l00411"></a>00411 
+<a name="l00423"></a>00423     <span class="keywordtype">bool</span> getGenerateSyntheticAnnotations() <span class="keyword">const</span>;
+<a name="l00424"></a>00424 
+<a name="l00432"></a>00432     <span class="keywordtype">bool</span> getValidateAnnotations() <span class="keyword">const</span>;
+<a name="l00433"></a>00433 
+<a name="l00441"></a>00441     <span class="keywordtype">bool</span> getIgnoreAnnotations() <span class="keyword">const</span>;
+<a name="l00442"></a>00442 
+<a name="l00450"></a>00450     <span class="keywordtype">bool</span> getDisableDefaultEntityResolution() <span class="keyword">const</span>;
+<a name="l00451"></a>00451 
+<a name="l00459"></a>00459     <span class="keywordtype">bool</span> getSkipDTDValidation() <span class="keyword">const</span>;
+<a name="l00460"></a>00460 
+<a name="l00462"></a>00462 
+<a name="l00463"></a>00463 
+<a name="l00464"></a>00464     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00465"></a>00465     <span class="comment">//  Setter methods</span>
+<a name="l00466"></a>00466     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00467"></a>00467 
+<a name="l00481"></a>00481     <span class="keywordtype">void</span> setGenerateSyntheticAnnotations(<span class="keyword">const</span> <span class="keywordtype">bool</span> newValue);
+<a name="l00482"></a>00482 
+<a name="l00490"></a>00490     <span class="keywordtype">void</span> setValidateAnnotations(<span class="keyword">const</span> <span class="keywordtype">bool</span> newValue);
+<a name="l00491"></a>00491 
+<a name="l00506"></a>00506     <span class="keywordtype">void</span> setDoNamespaces(<span class="keyword">const</span> <span class="keywordtype">bool</span> newState);
+<a name="l00507"></a>00507 
+<a name="l00524"></a>00524     <span class="keywordtype">void</span> setExitOnFirstFatalError(<span class="keyword">const</span> <span class="keywordtype">bool</span> newState);
+<a name="l00525"></a>00525 
+<a name="l00545"></a>00545     <span class="keywordtype">void</span> setValidationConstraintFatal(<span class="keyword">const</span> <span class="keywordtype">bool</span> newState);
+<a name="l00546"></a>00546 
+<a name="l00565"></a>00565     <span class="keywordtype">void</span> setCreateEntityReferenceNodes(<span class="keyword">const</span> <span class="keywordtype">bool</span> create);
+<a name="l00566"></a>00566 
+<a name="l00588"></a>00588     <span class="keywordtype">void</span> setIncludeIgnorableWhitespace(<span class="keyword">const</span> <span class="keywordtype">bool</span> include);
+<a name="l00589"></a>00589 
+<a name="l00606"></a>00606     <span class="keywordtype">void</span> setValidationScheme(<span class="keyword">const</span> ValSchemes newScheme);
+<a name="l00607"></a>00607 
+<a name="l00623"></a>00623     <span class="keywordtype">void</span> setDoSchema(<span class="keyword">const</span> <span class="keywordtype">bool</span> newState);
+<a name="l00624"></a>00624 
+<a name="l00641"></a>00641     <span class="keywordtype">void</span> setValidationSchemaFullChecking(<span class="keyword">const</span> <span class="keywordtype">bool</span> schemaFullChecking);
+<a name="l00642"></a>00642 
+<a name="l00656"></a>00656     <span class="keywordtype">void</span> setIdentityConstraintChecking(<span class="keyword">const</span> <span class="keywordtype">bool</span> newState);
+<a name="l00657"></a>00657 
+<a name="l00678"></a>00678     <span class="keywordtype">void</span> setExternalSchemaLocation(<span class="keyword">const</span> XMLCh* <span class="keyword">const</span> schemaLocation);
+<a name="l00679"></a>00679 
+<a name="l00688"></a>00688     <span class="keywordtype">void</span> setExternalSchemaLocation(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> schemaLocation);
+<a name="l00689"></a>00689 
+<a name="l00704"></a>00704     <span class="keywordtype">void</span> setExternalNoNamespaceSchemaLocation(<span class="keyword">const</span> XMLCh* <span class="keyword">const</span> noNamespaceSchemaLocation);
+<a name="l00705"></a>00705 
+<a name="l00714"></a>00714     <span class="keywordtype">void</span> setExternalNoNamespaceSchemaLocation(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> noNamespaceSchemaLocation);
+<a name="l00715"></a>00715 
+<a name="l00731"></a>00731     <span class="keywordtype">void</span> setSecurityManager(<a class="code" href="classSecurityManager.html" title="Allow application to force the parser to behave in a security-conscious way.">SecurityManager</a>* <span class="keyword">const</span> securityManager);
+<a name="l00732"></a>00732 
+<a name="l00749"></a>00749     <span class="keywordtype">void</span> setLoadExternalDTD(<span class="keyword">const</span> <span class="keywordtype">bool</span> newState);
+<a name="l00750"></a>00750 
+<a name="l00761"></a>00761     <span class="keywordtype">void</span> setCreateCommentNodes(<span class="keyword">const</span> <span class="keywordtype">bool</span> create);
+<a name="l00762"></a>00762 
+<a name="l00775"></a>00775     <span class="keywordtype">void</span> setCalculateSrcOfs(<span class="keyword">const</span> <span class="keywordtype">bool</span> newState);
+<a name="l00776"></a>00776 
+<a name="l00787"></a>00787     <span class="keywordtype">void</span> setStandardUriConformant(<span class="keyword">const</span> <span class="keywordtype">bool</span> newState);
+<a name="l00788"></a>00788 
+<a name="l00796"></a>00796     <span class="keywordtype">void</span> useScanner(<span class="keyword">const</span> XMLCh* <span class="keyword">const</span> scannerName);
+<a name="l00797"></a>00797 
+<a name="l00805"></a>00805     <span class="keywordtype">void</span> useImplementation(<span class="keyword">const</span> XMLCh* <span class="keyword">const</span> implementationFeatures);
+<a name="l00806"></a>00806 
+<a name="l00815"></a>00815     <span class="keyword">virtual</span> <span class="keywordtype">void</span> setPSVIHandler(<a class="code" href="classPSVIHandler.html" title="This abstract class provides the interface for the scanner to return PSVI information...">PSVIHandler</a>* <span class="keyword">const</span> handler);
+<a name="l00816"></a>00816 
+<a name="l00826"></a>00826     <span class="keywordtype">void</span>  setCreateSchemaInfo(<span class="keyword">const</span> <span class="keywordtype">bool</span> newState);
+<a name="l00827"></a>00827 
+<a name="l00837"></a>00837     <span class="keywordtype">void</span> setIgnoreAnnotations(<span class="keyword">const</span> <span class="keywordtype">bool</span> newValue);
+<a name="l00838"></a>00838 
+<a name="l00853"></a>00853     <span class="keywordtype">void</span> setDisableDefaultEntityResolution(<span class="keyword">const</span> <span class="keywordtype">bool</span> newValue);
+<a name="l00854"></a>00854 
+<a name="l00867"></a>00867     <span class="keywordtype">void</span> setSkipDTDValidation(<span class="keyword">const</span> <span class="keywordtype">bool</span> newValue);
+<a name="l00869"></a>00869 
+<a name="l00870"></a>00870 
+<a name="l00871"></a>00871     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00872"></a>00872     <span class="comment">//  Parsing methods</span>
+<a name="l00873"></a>00873     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00874"></a>00874 
+<a name="l00877"></a>00877 
+<a name="l00893"></a>00893     <span class="keywordtype">void</span> parse(<span class="keyword">const</span> <a class="code" href="classInputSource.html" title="A single input source for an XML entity.">InputSource</a>&amp; source);
+<a name="l00894"></a>00894 
+<a name="l00911"></a>00911     <span class="keywordtype">void</span> parse(<span class="keyword">const</span> XMLCh* <span class="keyword">const</span> systemId);
+<a name="l00912"></a>00912 
+<a name="l00928"></a>00928     <span class="keywordtype">void</span> parse(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> systemId);
+<a name="l00929"></a>00929 
+<a name="l00956"></a>00956     <span class="keywordtype">bool</span> parseFirst
+<a name="l00957"></a>00957     (
+<a name="l00958"></a>00958         <span class="keyword">const</span>   XMLCh* <span class="keyword">const</span>    systemId
+<a name="l00959"></a>00959         ,       XMLPScanToken&amp;  toFill
+<a name="l00960"></a>00960     );
+<a name="l00961"></a>00961 
+<a name="l00989"></a>00989     <span class="keywordtype">bool</span> parseFirst
+<a name="l00990"></a>00990     (
+<a name="l00991"></a>00991         <span class="keyword">const</span>   <span class="keywordtype">char</span>* <span class="keyword">const</span>     systemId
+<a name="l00992"></a>00992         ,       XMLPScanToken&amp;  toFill
+<a name="l00993"></a>00993     );
+<a name="l00994"></a>00994 
+<a name="l01022"></a>01022     <span class="keywordtype">bool</span> parseFirst
+<a name="l01023"></a>01023     (
+<a name="l01024"></a>01024         <span class="keyword">const</span>   <a class="code" href="classInputSource.html" title="A single input source for an XML entity.">InputSource</a>&amp;    source
+<a name="l01025"></a>01025         ,       XMLPScanToken&amp;  toFill
+<a name="l01026"></a>01026     );
+<a name="l01027"></a>01027 
+<a name="l01050"></a>01050     <span class="keywordtype">bool</span> parseNext(XMLPScanToken&amp; token);
+<a name="l01051"></a>01051 
+<a name="l01077"></a>01077     <span class="keywordtype">void</span> parseReset(XMLPScanToken&amp; token);
+<a name="l01078"></a>01078 
+<a name="l01080"></a>01080 
+<a name="l01081"></a>01081     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l01082"></a>01082     <span class="comment">//  Implementation of the PSVIHandler interface.</span>
+<a name="l01083"></a>01083     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l01084"></a>01084     
+<a name="l01087"></a>01087 
+<a name="l01098"></a>01098     <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classPSVIHandler.html#46acb45860c9eaa73475bb7fda7f64a8" title="Receive notification of the PSVI properties of an element.">handleElementPSVI</a>
+<a name="l01099"></a>01099     (
+<a name="l01100"></a>01100         <span class="keyword">const</span>   XMLCh* <span class="keyword">const</span>            localName 
+<a name="l01101"></a>01101         , <span class="keyword">const</span> XMLCh* <span class="keyword">const</span>            uri
+<a name="l01102"></a>01102         ,       <a class="code" href="classPSVIElement.html">PSVIElement</a> *           elementInfo
+<a name="l01103"></a>01103     );
+<a name="l01104"></a>01104 
+<a name="l01105"></a>01105     <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classPSVIHandler.html#cd004d71c09d8cdcdfe3f86a2c89c91a" title="Receive notification of partial PSVI properties of an element.">handlePartialElementPSVI</a>
+<a name="l01106"></a>01106     (
+<a name="l01107"></a>01107         <span class="keyword">const</span>   XMLCh* <span class="keyword">const</span>            localName 
+<a name="l01108"></a>01108         , <span class="keyword">const</span> XMLCh* <span class="keyword">const</span>            uri
+<a name="l01109"></a>01109         ,       <a class="code" href="classPSVIElement.html">PSVIElement</a> *           elementInfo
+<a name="l01110"></a>01110     );
+<a name="l01122"></a>01122     <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classPSVIHandler.html#0a29cbe9bd41efdb73af2bb180511b46" title="Enables PSVI information about attributes to be passed back to the application.">handleAttributesPSVI</a>
+<a name="l01123"></a>01123     (
+<a name="l01124"></a>01124         <span class="keyword">const</span>   XMLCh* <span class="keyword">const</span>            localName 
+<a name="l01125"></a>01125         , <span class="keyword">const</span> XMLCh* <span class="keyword">const</span>            uri
+<a name="l01126"></a>01126         ,       <a class="code" href="classPSVIAttributeList.html" title="A container for the PSVI contributions to attributes that occur on a particular element...">PSVIAttributeList</a> *     psviAttributes
+<a name="l01127"></a>01127     );
+<a name="l01129"></a>01129 
+<a name="l01130"></a>01130     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l01131"></a>01131     <span class="comment">//  Implementation of the XMLDocumentHandler interface.</span>
+<a name="l01132"></a>01132     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l01133"></a>01133 
+<a name="l01136"></a>01136 
+<a name="l01149"></a>01149     <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classXMLDocumentHandler.html#0464060874d15cbabea8d6b50cebbcfd" title="Receive notification of character data.">docCharacters</a>
+<a name="l01150"></a>01150     (
+<a name="l01151"></a>01151         <span class="keyword">const</span>   XMLCh* <span class="keyword">const</span>    chars
+<a name="l01152"></a>01152         , <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>    length
+<a name="l01153"></a>01153         , <span class="keyword">const</span> <span class="keywordtype">bool</span>            cdataSection
+<a name="l01154"></a>01154     );
+<a name="l01155"></a>01155 
+<a name="l01164"></a>01164     <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classXMLDocumentHandler.html#797efd9c442d68cce9ff3c33709f3205" title="Receive notification of comments in the XML content being parsed.">docComment</a>
+<a name="l01165"></a>01165     (
+<a name="l01166"></a>01166         <span class="keyword">const</span>   XMLCh* <span class="keyword">const</span>    comment
+<a name="l01167"></a>01167     );
+<a name="l01168"></a>01168 
+<a name="l01181"></a>01181     <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classXMLDocumentHandler.html#fe1ef8ce4db872d933e06bc338a0914f" title="Receive notification of PI&amp;#39;s parsed in the XML content.">docPI</a>
+<a name="l01182"></a>01182     (
+<a name="l01183"></a>01183         <span class="keyword">const</span>   XMLCh* <span class="keyword">const</span>    target
+<a name="l01184"></a>01184         , <span class="keyword">const</span> XMLCh* <span class="keyword">const</span>    data
+<a name="l01185"></a>01185     );
+<a name="l01186"></a>01186 
+<a name="l01191"></a>01191     <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classXMLDocumentHandler.html#6e18eebd0193230974b4b8d66afd9932" title="Receive notification after the scanner has parsed the end of the document.">endDocument</a>();
+<a name="l01192"></a>01192 
+<a name="l01209"></a>01209     <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classXMLDocumentHandler.html#3f0fa424c89fdfeeefbc112ac66f2976" title="Receive notification of the end of an element.">endElement</a>
+<a name="l01210"></a>01210     (
+<a name="l01211"></a>01211         <span class="keyword">const</span>   <a class="code" href="classXMLElementDecl.html" title="This class defines the core information of an element declaration.">XMLElementDecl</a>&amp; elemDecl
+<a name="l01212"></a>01212         , <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>    urlId
+<a name="l01213"></a>01213         , <span class="keyword">const</span> <span class="keywordtype">bool</span>            isRoot
+<a name="l01214"></a>01214         , <span class="keyword">const</span> XMLCh* <span class="keyword">const</span>    elemPrefix
+<a name="l01215"></a>01215     );
+<a name="l01216"></a>01216 
+<a name="l01225"></a>01225     <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classXMLDocumentHandler.html#14b27af49a415848ea7e4f544622e8cc" title="Receive notification when a referenced entity&amp;#39;s content ends.">endEntityReference</a>
+<a name="l01226"></a>01226     (
+<a name="l01227"></a>01227         <span class="keyword">const</span>   <a class="code" href="classXMLEntityDecl.html" title="This class defines that core information that defines an XML entity, no matter what...">XMLEntityDecl</a>&amp;  entDecl
+<a name="l01228"></a>01228     );
+<a name="l01229"></a>01229 
+<a name="l01248"></a>01248     <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classXMLDocumentHandler.html#e9be0bef7de33e0e4d62400528379550" title="Receive notification of ignorable whitespace in element content.">ignorableWhitespace</a>
+<a name="l01249"></a>01249     (
+<a name="l01250"></a>01250         <span class="keyword">const</span>   XMLCh* <span class="keyword">const</span>    chars
+<a name="l01251"></a>01251         , <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>    length
+<a name="l01252"></a>01252         , <span class="keyword">const</span> <span class="keywordtype">bool</span>            cdataSection
+<a name="l01253"></a>01253     );
+<a name="l01254"></a>01254 
+<a name="l01261"></a>01261     <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classXMLDocumentHandler.html#549b9b77f35e2c7cb4c1722d034841bf" title="Reset the document handler&amp;#39;s state, if required.">resetDocument</a>();
+<a name="l01262"></a>01262 
+<a name="l01267"></a>01267     <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classXMLDocumentHandler.html#8b9e5f68340f083cd0eb69cc85692084" title="Receive notification of the start of a new document.">startDocument</a>();
+<a name="l01268"></a>01268 
+<a name="l01296"></a>01296     <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classXMLDocumentHandler.html#3451d565d85e4971a55e67b87847b667" title="Receive notification of a new start tag.">startElement</a>
+<a name="l01297"></a>01297     (
+<a name="l01298"></a>01298         <span class="keyword">const</span>   <a class="code" href="classXMLElementDecl.html" title="This class defines the core information of an element declaration.">XMLElementDecl</a>&amp;         elemDecl
+<a name="l01299"></a>01299         , <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>            urlId
+<a name="l01300"></a>01300         , <span class="keyword">const</span> XMLCh* <span class="keyword">const</span>            elemPrefix
+<a name="l01301"></a>01301         , <span class="keyword">const</span> RefVectorOf&lt;XMLAttr&gt;&amp;   attrList
+<a name="l01302"></a>01302         , <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>            attrCount
+<a name="l01303"></a>01303         , <span class="keyword">const</span> <span class="keywordtype">bool</span>                    isEmpty
+<a name="l01304"></a>01304         , <span class="keyword">const</span> <span class="keywordtype">bool</span>                    isRoot
+<a name="l01305"></a>01305     );
+<a name="l01306"></a>01306 
+<a name="l01316"></a>01316     <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classXMLDocumentHandler.html#2d3ab93a0191825f8452a4980d163f37" title="Receive notification when the scanner hits an entity reference.">startEntityReference</a>
+<a name="l01317"></a>01317     (
+<a name="l01318"></a>01318         <span class="keyword">const</span>   <a class="code" href="classXMLEntityDecl.html" title="This class defines that core information that defines an XML entity, no matter what...">XMLEntityDecl</a>&amp;  entDecl
+<a name="l01319"></a>01319     );
+<a name="l01320"></a>01320 
+<a name="l01339"></a>01339     <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classXMLDocumentHandler.html#262b2d7e996c21b466f4e573c052a583" title="Receive notification of an XML declaration.">XMLDecl</a>
+<a name="l01340"></a>01340     (
+<a name="l01341"></a>01341         <span class="keyword">const</span>   XMLCh* <span class="keyword">const</span>    versionStr
+<a name="l01342"></a>01342         , <span class="keyword">const</span> XMLCh* <span class="keyword">const</span>    encodingStr
+<a name="l01343"></a>01343         , <span class="keyword">const</span> XMLCh* <span class="keyword">const</span>    standaloneStr
+<a name="l01344"></a>01344         , <span class="keyword">const</span> XMLCh* <span class="keyword">const</span>    actualEncStr
+<a name="l01345"></a>01345     );
+<a name="l01346"></a>01346 
+<a name="l01366"></a>01366     <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classXMLDocumentHandler.html#1b97692134ab156bc68839903c6d4598" title="Receive notification of the name and namespace of the type that validated the element...">elementTypeInfo</a>
+<a name="l01367"></a>01367     (
+<a name="l01368"></a>01368         <span class="keyword">const</span>   XMLCh* <span class="keyword">const</span>    typeName
+<a name="l01369"></a>01369         , <span class="keyword">const</span> XMLCh* <span class="keyword">const</span>    typeURI
+<a name="l01370"></a>01370     );
+<a name="l01372"></a>01372 
+<a name="l01373"></a>01373 
+<a name="l01374"></a>01374     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l01375"></a>01375     <span class="comment">//  Implementation of the deprecated DocTypeHandler interface.</span>
+<a name="l01376"></a>01376     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l01379"></a>01379 <span class="comment"></span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> attDef
+<a name="l01380"></a>01380     (
+<a name="l01381"></a>01381         <span class="keyword">const</span>   DTDElementDecl&amp;     elemDecl
+<a name="l01382"></a>01382         , <span class="keyword">const</span> DTDAttDef&amp;          attDef
+<a name="l01383"></a>01383         , <span class="keyword">const</span> <span class="keywordtype">bool</span>                ignoring
+<a name="l01384"></a>01384     );
+<a name="l01385"></a>01385 
+<a name="l01386"></a>01386     <span class="keyword">virtual</span> <span class="keywordtype">void</span> doctypeComment
+<a name="l01387"></a>01387     (
+<a name="l01388"></a>01388         <span class="keyword">const</span>   XMLCh* <span class="keyword">const</span>    comment
+<a name="l01389"></a>01389     );
+<a name="l01390"></a>01390 
+<a name="l01391"></a>01391     <span class="keyword">virtual</span> <span class="keywordtype">void</span> doctypeDecl
+<a name="l01392"></a>01392     (
+<a name="l01393"></a>01393         <span class="keyword">const</span>   DTDElementDecl&amp; elemDecl
+<a name="l01394"></a>01394         , <span class="keyword">const</span> XMLCh* <span class="keyword">const</span>    publicId
+<a name="l01395"></a>01395         , <span class="keyword">const</span> XMLCh* <span class="keyword">const</span>    systemId
+<a name="l01396"></a>01396         , <span class="keyword">const</span> <span class="keywordtype">bool</span>            hasIntSubset
+<a name="l01397"></a>01397         , <span class="keyword">const</span> <span class="keywordtype">bool</span>            hasExtSubset = <span class="keyword">false</span>
+<a name="l01398"></a>01398     );
+<a name="l01399"></a>01399 
+<a name="l01400"></a>01400     <span class="keyword">virtual</span> <span class="keywordtype">void</span> doctypePI
+<a name="l01401"></a>01401     (
+<a name="l01402"></a>01402         <span class="keyword">const</span>   XMLCh* <span class="keyword">const</span>    target
+<a name="l01403"></a>01403         , <span class="keyword">const</span> XMLCh* <span class="keyword">const</span>    data
+<a name="l01404"></a>01404     );
+<a name="l01405"></a>01405 
+<a name="l01406"></a>01406     <span class="keyword">virtual</span> <span class="keywordtype">void</span> doctypeWhitespace
+<a name="l01407"></a>01407     (
+<a name="l01408"></a>01408         <span class="keyword">const</span>   XMLCh* <span class="keyword">const</span>    chars
+<a name="l01409"></a>01409         , <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>    length
+<a name="l01410"></a>01410     );
+<a name="l01411"></a>01411 
+<a name="l01412"></a>01412     <span class="keyword">virtual</span> <span class="keywordtype">void</span> elementDecl
+<a name="l01413"></a>01413     (
+<a name="l01414"></a>01414         <span class="keyword">const</span>   DTDElementDecl&amp; decl
+<a name="l01415"></a>01415         , <span class="keyword">const</span> <span class="keywordtype">bool</span>            isIgnored
+<a name="l01416"></a>01416     );
+<a name="l01417"></a>01417 
+<a name="l01418"></a>01418     <span class="keyword">virtual</span> <span class="keywordtype">void</span> endAttList
+<a name="l01419"></a>01419     (
+<a name="l01420"></a>01420         <span class="keyword">const</span>   DTDElementDecl&amp; elemDecl
+<a name="l01421"></a>01421     );
+<a name="l01422"></a>01422 
+<a name="l01423"></a>01423     <span class="keyword">virtual</span> <span class="keywordtype">void</span> endIntSubset();
+<a name="l01424"></a>01424 
+<a name="l01425"></a>01425     <span class="keyword">virtual</span> <span class="keywordtype">void</span> endExtSubset();
+<a name="l01426"></a>01426 
+<a name="l01427"></a>01427     <span class="keyword">virtual</span> <span class="keywordtype">void</span> entityDecl
+<a name="l01428"></a>01428     (
+<a name="l01429"></a>01429         <span class="keyword">const</span>   DTDEntityDecl&amp;  entityDecl
+<a name="l01430"></a>01430         , <span class="keyword">const</span> <span class="keywordtype">bool</span>            isPEDecl
+<a name="l01431"></a>01431         , <span class="keyword">const</span> <span class="keywordtype">bool</span>            isIgnored
+<a name="l01432"></a>01432     );
+<a name="l01433"></a>01433 
+<a name="l01434"></a>01434     <span class="keyword">virtual</span> <span class="keywordtype">void</span> resetDocType();
+<a name="l01435"></a>01435 
+<a name="l01436"></a>01436     <span class="keyword">virtual</span> <span class="keywordtype">void</span> notationDecl
+<a name="l01437"></a>01437     (
+<a name="l01438"></a>01438         <span class="keyword">const</span>   <a class="code" href="classXMLNotationDecl.html" title="This class represents the core information about a notation declaration that all...">XMLNotationDecl</a>&amp;    notDecl
+<a name="l01439"></a>01439         , <span class="keyword">const</span> <span class="keywordtype">bool</span>                isIgnored
+<a name="l01440"></a>01440     );
+<a name="l01441"></a>01441 
+<a name="l01442"></a>01442     <span class="keyword">virtual</span> <span class="keywordtype">void</span> startAttList
+<a name="l01443"></a>01443     (
+<a name="l01444"></a>01444         <span class="keyword">const</span>   DTDElementDecl&amp; elemDecl
+<a name="l01445"></a>01445     );
+<a name="l01446"></a>01446 
+<a name="l01447"></a>01447     <span class="keyword">virtual</span> <span class="keywordtype">void</span> startIntSubset();
+<a name="l01448"></a>01448 
+<a name="l01449"></a>01449     <span class="keyword">virtual</span> <span class="keywordtype">void</span> startExtSubset();
+<a name="l01450"></a>01450 
+<a name="l01451"></a>01451     <span class="keyword">virtual</span> <span class="keywordtype">void</span> TextDecl
+<a name="l01452"></a>01452     (
+<a name="l01453"></a>01453         <span class="keyword">const</span>   XMLCh* <span class="keyword">const</span>    versionStr
+<a name="l01454"></a>01454         , <span class="keyword">const</span> XMLCh* <span class="keyword">const</span>    encodingStr
+<a name="l01455"></a>01455     );
+<a name="l01456"></a>01456 
+<a name="l01457"></a>01457 
+<a name="l01459"></a>01459 
+<a name="l01460"></a>01460 
+<a name="l01461"></a>01461     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l01462"></a>01462     <span class="comment">//  Deprecated Methods</span>
+<a name="l01463"></a>01463     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l01476"></a>01476 <span class="comment"></span>    <span class="keywordtype">bool</span> getDoValidation() <span class="keyword">const</span>;
+<a name="l01477"></a>01477 
+<a name="l01491"></a>01491     <span class="keywordtype">void</span> setDoValidation(<span class="keyword">const</span> <span class="keywordtype">bool</span> newState);
+<a name="l01492"></a>01492 
+<a name="l01506"></a>01506     <span class="keywordtype">bool</span> getExpandEntityReferences() <span class="keyword">const</span>;
+<a name="l01507"></a>01507 
+<a name="l01524"></a>01524     <span class="keywordtype">void</span> setExpandEntityReferences(<span class="keyword">const</span> <span class="keywordtype">bool</span> expand);
+<a name="l01525"></a>01525 
+<a name="l01527"></a>01527 
+<a name="l01528"></a>01528 <span class="keyword">protected</span> :
+<a name="l01529"></a>01529     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l01530"></a>01530     <span class="comment">//  Protected Constructor Methods</span>
+<a name="l01531"></a>01531     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l01550"></a>01550 <span class="comment"></span>    <a class="code" href="classAbstractDOMParser.html" title="This class implements the Document Object Model (DOM) interface.">AbstractDOMParser</a>
+<a name="l01551"></a>01551     (
+<a name="l01552"></a>01552           <a class="code" href="classXMLValidator.html" title="This abstract class provides the interface for all validators.">XMLValidator</a>* <span class="keyword">const</span>   valToAdopt = 0
+<a name="l01553"></a>01553         , <a class="code" href="classMemoryManager.html" title="Configurable memory manager.">MemoryManager</a>* <span class="keyword">const</span>  manager = <a class="code" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252" title="The configurable memory manager.">XMLPlatformUtils::fgMemoryManager</a>
+<a name="l01554"></a>01554         , <a class="code" href="classXMLGrammarPool.html">XMLGrammarPool</a>* <span class="keyword">const</span> gramPool = 0
+<a name="l01555"></a>01555     );
+<a name="l01556"></a>01556 
+<a name="l01558"></a>01558 
+<a name="l01559"></a>01559     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l01560"></a>01560     <span class="comment">//  Protected getter methods</span>
+<a name="l01561"></a>01561     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l01569"></a>01569 <span class="comment"></span>    <a class="code" href="classDOMNode.html" title="The DOMNode interface is the primary datatype for the entire Document Object Model...">DOMNode</a>* getCurrentNode();
+<a name="l01570"></a>01570 
+<a name="l01575"></a>01575     XMLScanner* getScanner() <span class="keyword">const</span>;
+<a name="l01576"></a>01576 
+<a name="l01581"></a>01581     GrammarResolver* getGrammarResolver() <span class="keyword">const</span>;
+<a name="l01582"></a>01582 
+<a name="l01588"></a>01588     <span class="keywordtype">bool</span> getParseInProgress() <span class="keyword">const</span>;
+<a name="l01589"></a>01589 
+<a name="l01590"></a>01590     <a class="code" href="classMemoryManager.html" title="Configurable memory manager.">MemoryManager</a>* getMemoryManager() <span class="keyword">const</span>;
+<a name="l01591"></a>01591 
+<a name="l01593"></a>01593 
+<a name="l01594"></a>01594 
+<a name="l01595"></a>01595     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l01596"></a>01596     <span class="comment">//  Protected setter methods</span>
+<a name="l01597"></a>01597     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l01598"></a>01598 
+<a name="l01601"></a>01601 
+<a name="l01609"></a>01609     <span class="keywordtype">void</span> setCurrentNode(<a class="code" href="classDOMNode.html" title="The DOMNode interface is the primary datatype for the entire Document Object Model...">DOMNode</a>* toSet);
+<a name="l01610"></a>01610 
+<a name="l01617"></a>01617     <span class="keywordtype">void</span> setDocument(<a class="code" href="classDOMDocument.html" title="The DOMDocument interface represents the entire XML document.">DOMDocument</a>* toSet);
+<a name="l01618"></a>01618 
+<a name="l01625"></a>01625     <span class="keywordtype">void</span> setParseInProgress(<span class="keyword">const</span> <span class="keywordtype">bool</span> toSet);
+<a name="l01627"></a>01627 
+<a name="l01628"></a>01628     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l01629"></a>01629     <span class="comment">//  Protected Helper methods</span>
+<a name="l01630"></a>01630     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l01633"></a>01633 <span class="comment"></span>    <span class="keyword">virtual</span> <a class="code" href="classDOMElement.html" title="By far the vast majority of objects (apart from text) that authors encounter when...">DOMElement</a>* createElementNSNode(<span class="keyword">const</span> XMLCh *fNamespaceURI,
+<a name="l01634"></a>01634                                               <span class="keyword">const</span> XMLCh *qualifiedName);
+<a name="l01635"></a>01635 
+<a name="l01636"></a>01636     <span class="keywordtype">void</span> resetPool();
+<a name="l01637"></a>01637 
+<a name="l01641"></a>01641     <span class="keywordtype">bool</span> isDocumentAdopted() <span class="keyword">const</span>;
+<a name="l01642"></a>01642 
+<a name="l01644"></a>01644 
+<a name="l01645"></a>01645 
+<a name="l01646"></a>01646 <span class="keyword">private</span> :
+<a name="l01647"></a>01647     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l01648"></a>01648     <span class="comment">//  Initialize/Cleanup methods</span>
+<a name="l01649"></a>01649     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l01650"></a>01650     <span class="keywordtype">void</span> initialize();
+<a name="l01651"></a>01651     <span class="keywordtype">void</span> cleanUp();
+<a name="l01652"></a>01652     <span class="keywordtype">void</span> resetInProgress();
+<a name="l01653"></a>01653 
+<a name="l01654"></a>01654     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l01655"></a>01655     <span class="comment">//  Unimplemented constructors and operators</span>
+<a name="l01656"></a>01656     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l01657"></a>01657     <a class="code" href="classAbstractDOMParser.html" title="This class implements the Document Object Model (DOM) interface.">AbstractDOMParser</a>(<span class="keyword">const</span> <a class="code" href="classAbstractDOMParser.html" title="This class implements the Document Object Model (DOM) interface.">AbstractDOMParser</a>&amp;);
+<a name="l01658"></a>01658     <a class="code" href="classAbstractDOMParser.html" title="This class implements the Document Object Model (DOM) interface.">AbstractDOMParser</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="classAbstractDOMParser.html" title="This class implements the Document Object Model (DOM) interface.">AbstractDOMParser</a>&amp;);
+<a name="l01659"></a>01659 
+<a name="l01660"></a>01660 <span class="keyword">protected</span>:
+<a name="l01661"></a>01661     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l01662"></a>01662     <span class="comment">//  Protected data members</span>
+<a name="l01663"></a>01663     <span class="comment">//</span>
+<a name="l01664"></a>01664     <span class="comment">//  fCurrentNode</span>
+<a name="l01665"></a>01665     <span class="comment">//  fCurrentParent</span>
+<a name="l01666"></a>01666     <span class="comment">//      Used to track the current node during nested element events. Since</span>
+<a name="l01667"></a>01667     <span class="comment">//      the tree must be built from a set of disjoint callbacks, we need</span>
+<a name="l01668"></a>01668     <span class="comment">//      these to keep up with where we currently are.</span>
+<a name="l01669"></a>01669     <span class="comment">//</span>
+<a name="l01670"></a>01670     <span class="comment">//  fCurrentEntity</span>
+<a name="l01671"></a>01671     <span class="comment">//      Used to track the current entity decl.  If a text decl is seen later on,</span>
+<a name="l01672"></a>01672     <span class="comment">//      it is used to update the encoding and version information.</span>
+<a name="l01673"></a>01673     <span class="comment">//</span>
+<a name="l01674"></a>01674     <span class="comment">//  fDocument</span>
+<a name="l01675"></a>01675     <span class="comment">//      The root document object, filled with the document contents.</span>
+<a name="l01676"></a>01676     <span class="comment">//</span>
+<a name="l01677"></a>01677     <span class="comment">//  fCreateEntityReferenceNodes</span>
+<a name="l01678"></a>01678     <span class="comment">//      Indicates whether entity reference nodes should be created.</span>
+<a name="l01679"></a>01679     <span class="comment">//</span>
+<a name="l01680"></a>01680     <span class="comment">//  fIncludeIgnorableWhitespace</span>
+<a name="l01681"></a>01681     <span class="comment">//      Indicates whether ignorable whiltespace should be added to</span>
+<a name="l01682"></a>01682     <span class="comment">//      the DOM tree for validating parsers.</span>
+<a name="l01683"></a>01683     <span class="comment">//</span>
+<a name="l01684"></a>01684     <span class="comment">//  fScanner</span>
+<a name="l01685"></a>01685     <span class="comment">//      The scanner used for this parser. This is created during the</span>
+<a name="l01686"></a>01686     <span class="comment">//      constructor.</span>
+<a name="l01687"></a>01687     <span class="comment">//</span>
+<a name="l01688"></a>01688     <span class="comment">//  fImplementationFeatures</span>
+<a name="l01689"></a>01689     <span class="comment">//      The implementation features that we use to get an implementation</span>
+<a name="l01690"></a>01690     <span class="comment">//      for use in creating the DOMDocument used during parse. If this is</span>
+<a name="l01691"></a>01691     <span class="comment">//      null then the default DOMImplementation is used</span>
+<a name="l01692"></a>01692     <span class="comment">//</span>
+<a name="l01693"></a>01693     <span class="comment">//  fNodeStack</span>
+<a name="l01694"></a>01694     <span class="comment">//      Used to track previous parent nodes during nested element events.</span>
+<a name="l01695"></a>01695     <span class="comment">//</span>
+<a name="l01696"></a>01696     <span class="comment">//  fParseInProgress</span>
+<a name="l01697"></a>01697     <span class="comment">//      Used to prevent multiple entrance to the parser while its doing</span>
+<a name="l01698"></a>01698     <span class="comment">//      a parse.</span>
+<a name="l01699"></a>01699     <span class="comment">//</span>
+<a name="l01700"></a>01700     <span class="comment">//  fWithinElement</span>
+<a name="l01701"></a>01701     <span class="comment">//      A flag to indicate that the parser is within at least one level</span>
+<a name="l01702"></a>01702     <span class="comment">//      of element processing.</span>
+<a name="l01703"></a>01703     <span class="comment">//</span>
+<a name="l01704"></a>01704     <span class="comment">//  fDocumentType</span>
+<a name="l01705"></a>01705     <span class="comment">//      Used to store and update the documentType variable information</span>
+<a name="l01706"></a>01706     <span class="comment">//      in fDocument</span>
+<a name="l01707"></a>01707     <span class="comment">//</span>
+<a name="l01708"></a>01708     <span class="comment">//  fDocumentVector</span>
+<a name="l01709"></a>01709     <span class="comment">//      Store all the previous fDocument(s) (thus not the current fDocument)</span>
+<a name="l01710"></a>01710     <span class="comment">//      created in this parser.  It is destroyed when the parser is destructed.</span>
+<a name="l01711"></a>01711     <span class="comment">//</span>
+<a name="l01712"></a>01712     <span class="comment">//  fCreateCommentNodes</span>
+<a name="l01713"></a>01713     <span class="comment">//      Indicates whether comment nodes should be created.</span>
+<a name="l01714"></a>01714     <span class="comment">//</span>
+<a name="l01715"></a>01715     <span class="comment">//  fDocumentAdoptedByUser</span>
+<a name="l01716"></a>01716     <span class="comment">//      The DOMDocument ownership has been transferred to application</span>
+<a name="l01717"></a>01717     <span class="comment">//      If set to true, the parser does not own the document anymore</span>
+<a name="l01718"></a>01718     <span class="comment">//      and thus will not release its memory.</span>
+<a name="l01719"></a>01719     <span class="comment">//</span>
+<a name="l01720"></a>01720     <span class="comment">//  fInternalSubset</span>
+<a name="l01721"></a>01721     <span class="comment">//      Buffer for storing the internal subset information.</span>
+<a name="l01722"></a>01722     <span class="comment">//      Once complete (after DOCTYPE is finished scanning), send</span>
+<a name="l01723"></a>01723     <span class="comment">//      it to DocumentType Node</span>
+<a name="l01724"></a>01724     <span class="comment">//</span>
+<a name="l01725"></a>01725     <span class="comment">//   fGrammarPool</span>
+<a name="l01726"></a>01726     <span class="comment">//      The grammar pool passed from external application (through derivatives).</span>
+<a name="l01727"></a>01727     <span class="comment">//      which could be 0, not owned.</span>
+<a name="l01728"></a>01728     <span class="comment">//</span>
+<a name="l01729"></a>01729     <span class="comment">//  fCreateSchemaInfo</span>
+<a name="l01730"></a>01730     <span class="comment">//      Indicates whether element and attributes will have schema info associated</span>
+<a name="l01731"></a>01731     <span class="comment">//</span>
+<a name="l01732"></a>01732     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l01733"></a><a class="code" href="classAbstractDOMParser.html#466e41e2e0421c277a8c85d3b256a186">01733</a>     <span class="keywordtype">bool</span>                          fCreateEntityReferenceNodes;
+<a name="l01734"></a><a class="code" href="classAbstractDOMParser.html#8a7e0cf5bacfe221a85ee034bc6fe0af">01734</a>     <span class="keywordtype">bool</span>                          fIncludeIgnorableWhitespace;
+<a name="l01735"></a><a class="code" href="classAbstractDOMParser.html#cb4feb06f070e242497a1c690114dd87">01735</a>     <span class="keywordtype">bool</span>                          fWithinElement;
+<a name="l01736"></a><a class="code" href="classAbstractDOMParser.html#82c8666ba31bbfa1aca0393433b07fc8">01736</a>     <span class="keywordtype">bool</span>                          fParseInProgress;
+<a name="l01737"></a><a class="code" href="classAbstractDOMParser.html#3d9ada6b8e4d4c15bed016cca60890bb">01737</a>     <span class="keywordtype">bool</span>                          fCreateCommentNodes;
+<a name="l01738"></a><a class="code" href="classAbstractDOMParser.html#b01b9796ce375e989afc9581ed05c347">01738</a>     <span class="keywordtype">bool</span>                          fDocumentAdoptedByUser;
+<a name="l01739"></a><a class="code" href="classAbstractDOMParser.html#f370f062bed3b195658de6eaaae821f7">01739</a>     <span class="keywordtype">bool</span>                          fCreateSchemaInfo;
+<a name="l01740"></a><a class="code" href="classAbstractDOMParser.html#5ab6deecc1d700bdab928302c4848c09">01740</a>     XMLScanner*                   fScanner;
+<a name="l01741"></a><a class="code" href="classAbstractDOMParser.html#7edaf68f904c3ee95c6cf8c19e3bd5fd">01741</a>     XMLCh*                        fImplementationFeatures;
+<a name="l01742"></a><a class="code" href="classAbstractDOMParser.html#dcd780cde367ea9fa3d4c8f3c088b147">01742</a>     <a class="code" href="classDOMNode.html" title="The DOMNode interface is the primary datatype for the entire Document Object Model...">DOMNode</a>*                      fCurrentParent;
+<a name="l01743"></a><a class="code" href="classAbstractDOMParser.html#5d28c386ec46be8da09150b34bb9c347">01743</a>     <a class="code" href="classDOMNode.html" title="The DOMNode interface is the primary datatype for the entire Document Object Model...">DOMNode</a>*                      fCurrentNode;
+<a name="l01744"></a><a class="code" href="classAbstractDOMParser.html#df8f5877b0a9b43556365c5090786274">01744</a>     <a class="code" href="classDOMEntity.html" title="This interface represents an entity, either parsed or unparsed, in an XML document...">DOMEntity</a>*                    fCurrentEntity;
+<a name="l01745"></a><a class="code" href="classAbstractDOMParser.html#084620e0ae4eb82bb148987bb05cc45c">01745</a>     DOMDocumentImpl*              fDocument;
+<a name="l01746"></a><a class="code" href="classAbstractDOMParser.html#795c5ffdb0e23e53d1c7515cfd724ce8">01746</a>     ValueStackOf&lt;DOMNode*&gt;*       fNodeStack;
+<a name="l01747"></a><a class="code" href="classAbstractDOMParser.html#52c6e83629886e40d0e7a7d71887f393">01747</a>     DOMDocumentTypeImpl*          fDocumentType;
+<a name="l01748"></a><a class="code" href="classAbstractDOMParser.html#fcdd73f0abc66ed73900578494a9bf04">01748</a>     RefVectorOf&lt;DOMDocumentImpl&gt;* fDocumentVector;
+<a name="l01749"></a><a class="code" href="classAbstractDOMParser.html#fd0a611c05d8e6c170abe3c2b8cb456b">01749</a>     GrammarResolver*              fGrammarResolver;
+<a name="l01750"></a><a class="code" href="classAbstractDOMParser.html#df5bd40691b16e2ca2e3e5d2f9443da0">01750</a>     XMLStringPool*                fURIStringPool;
+<a name="l01751"></a><a class="code" href="classAbstractDOMParser.html#06faad2a2e52455451ec9f82d9a469d8">01751</a>     <a class="code" href="classXMLValidator.html" title="This abstract class provides the interface for all validators.">XMLValidator</a>*                 fValidator;
+<a name="l01752"></a><a class="code" href="classAbstractDOMParser.html#91992884db4e8a235f30afa278d3be4c">01752</a>     <a class="code" href="classMemoryManager.html" title="Configurable memory manager.">MemoryManager</a>*                fMemoryManager;
+<a name="l01753"></a><a class="code" href="classAbstractDOMParser.html#318bbe7a281aa336da46b846b92acddf">01753</a>     <a class="code" href="classXMLGrammarPool.html">XMLGrammarPool</a>*               fGrammarPool;
+<a name="l01754"></a><a class="code" href="classAbstractDOMParser.html#e698f4791f2fa0342a204d5fd1e5cea2">01754</a>     XMLBufferMgr                  fBufMgr;
+<a name="l01755"></a><a class="code" href="classAbstractDOMParser.html#43db6935c5e4847cadfb5f30b4a6d988">01755</a>     XMLBuffer&amp;                    fInternalSubset;
+<a name="l01756"></a><a class="code" href="classAbstractDOMParser.html#1033ab4309ef69eef9a2b80eee597ee8">01756</a>     <a class="code" href="classPSVIHandler.html" title="This abstract class provides the interface for the scanner to return PSVI information...">PSVIHandler</a>*                  fPSVIHandler;
+<a name="l01757"></a>01757 };
+<a name="l01758"></a>01758 
+<a name="l01759"></a>01759 
+<a name="l01760"></a>01760 
+<a name="l01761"></a>01761 <span class="comment">// ---------------------------------------------------------------------------</span>
+<a name="l01762"></a>01762 <span class="comment">//  AbstractDOMParser: Getter methods</span>
+<a name="l01763"></a>01763 <span class="comment">// ---------------------------------------------------------------------------</span>
+<a name="l01764"></a><a class="code" href="classAbstractDOMParser.html#9c42a6701a7b2d2ba88cb9a495877b22">01764</a> <span class="keyword">inline</span> <span class="keywordtype">bool</span> <a class="code" href="classAbstractDOMParser.html#9c42a6701a7b2d2ba88cb9a495877b22" title="Get the &amp;#39;expand entity references&amp;#39; flag.">AbstractDOMParser::getExpandEntityReferences</a>()<span class="keyword"> const</span>
+<a name="l01765"></a>01765 <span class="keyword"></span>{
+<a name="l01766"></a>01766     <span class="keywordflow">return</span> !<a class="code" href="classAbstractDOMParser.html#466e41e2e0421c277a8c85d3b256a186">fCreateEntityReferenceNodes</a>;
+<a name="l01767"></a>01767 }
+<a name="l01768"></a><a class="code" href="classAbstractDOMParser.html#ff84ce03935820fb11dc340e3fd3345b">01768</a> <span class="keyword">inline</span> <span class="keywordtype">bool</span> <a class="code" href="classAbstractDOMParser.html#ff84ce03935820fb11dc340e3fd3345b" title="Get the &amp;#39;include entity references&amp;#39; flag.">AbstractDOMParser::getCreateEntityReferenceNodes</a>()<span class="keyword"> const</span>
+<a name="l01769"></a>01769 <span class="keyword"></span>{
+<a name="l01770"></a>01770     <span class="keywordflow">return</span> <a class="code" href="classAbstractDOMParser.html#466e41e2e0421c277a8c85d3b256a186">fCreateEntityReferenceNodes</a>;
+<a name="l01771"></a>01771 }
+<a name="l01772"></a>01772 
+<a name="l01773"></a><a class="code" href="classAbstractDOMParser.html#cb5692bf58b5fa6f38d3231013d95cfb">01773</a> <span class="keyword">inline</span> <span class="keywordtype">bool</span> <a class="code" href="classAbstractDOMParser.html#cb5692bf58b5fa6f38d3231013d95cfb" title="Get the &amp;#39;include ignorable whitespace&amp;#39; flag.">AbstractDOMParser::getIncludeIgnorableWhitespace</a>()<span class="keyword"> const</span>
+<a name="l01774"></a>01774 <span class="keyword"></span>{
+<a name="l01775"></a>01775     <span class="keywordflow">return</span> <a class="code" href="classAbstractDOMParser.html#8a7e0cf5bacfe221a85ee034bc6fe0af">fIncludeIgnorableWhitespace</a>;
+<a name="l01776"></a>01776 }
+<a name="l01777"></a>01777 
+<a name="l01778"></a><a class="code" href="classAbstractDOMParser.html#6211ba0ff1466db763e65e52df29c824">01778</a> <span class="keyword">inline</span> <span class="keywordtype">bool</span> <a class="code" href="classAbstractDOMParser.html#6211ba0ff1466db763e65e52df29c824" title="Get the parse in progress flag.">AbstractDOMParser::getParseInProgress</a>()<span class="keyword"> const</span>
+<a name="l01779"></a>01779 <span class="keyword"></span>{
+<a name="l01780"></a>01780     <span class="keywordflow">return</span> <a class="code" href="classAbstractDOMParser.html#82c8666ba31bbfa1aca0393433b07fc8">fParseInProgress</a>;
+<a name="l01781"></a>01781 }
+<a name="l01782"></a>01782 
+<a name="l01783"></a><a class="code" href="classAbstractDOMParser.html#cb4754fd05b7ef859d0b8f09ecd37fb7">01783</a> <span class="keyword">inline</span> XMLScanner* <a class="code" href="classAbstractDOMParser.html#cb4754fd05b7ef859d0b8f09ecd37fb7" title="Get the XML scanner.">AbstractDOMParser::getScanner</a>()<span class="keyword"> const</span>
+<a name="l01784"></a>01784 <span class="keyword"></span>{
+<a name="l01785"></a>01785     <span class="keywordflow">return</span> <a class="code" href="classAbstractDOMParser.html#5ab6deecc1d700bdab928302c4848c09">fScanner</a>;
+<a name="l01786"></a>01786 }
+<a name="l01787"></a>01787 
+<a name="l01788"></a><a class="code" href="classAbstractDOMParser.html#154195ec746f30382835f0df7ccf7706">01788</a> <span class="keyword">inline</span> GrammarResolver* <a class="code" href="classAbstractDOMParser.html#154195ec746f30382835f0df7ccf7706" title="Get the Grammar resolver.">AbstractDOMParser::getGrammarResolver</a>()<span class="keyword"> const</span>
+<a name="l01789"></a>01789 <span class="keyword"></span>{
+<a name="l01790"></a>01790     <span class="keywordflow">return</span> <a class="code" href="classAbstractDOMParser.html#fd0a611c05d8e6c170abe3c2b8cb456b">fGrammarResolver</a>;
+<a name="l01791"></a>01791 }
+<a name="l01792"></a>01792 
+<a name="l01793"></a><a class="code" href="classAbstractDOMParser.html#aa711bcb36bcd96e5deef76843777645">01793</a> <span class="keyword">inline</span> <span class="keywordtype">bool</span> <a class="code" href="classAbstractDOMParser.html#aa711bcb36bcd96e5deef76843777645" title="Get the &amp;#39;create comment node&amp;#39; flag.">AbstractDOMParser::getCreateCommentNodes</a>()<span class="keyword"> const</span>
+<a name="l01794"></a>01794 <span class="keyword"></span>{
+<a name="l01795"></a>01795     <span class="keywordflow">return</span> <a class="code" href="classAbstractDOMParser.html#3d9ada6b8e4d4c15bed016cca60890bb">fCreateCommentNodes</a>;
+<a name="l01796"></a>01796 }
+<a name="l01797"></a>01797 
+<a name="l01798"></a><a class="code" href="classAbstractDOMParser.html#2bcabec11963e9cbc0b6082c2e2f9282">01798</a> <span class="keyword">inline</span> <a class="code" href="classPSVIHandler.html" title="This abstract class provides the interface for the scanner to return PSVI information...">PSVIHandler</a>* <a class="code" href="classAbstractDOMParser.html#2bcabec11963e9cbc0b6082c2e2f9282" title="This method returns the installed PSVI handler.">AbstractDOMParser::getPSVIHandler</a>()
+<a name="l01799"></a>01799 {
+<a name="l01800"></a>01800     <span class="keywordflow">return</span> <a class="code" href="classAbstractDOMParser.html#1033ab4309ef69eef9a2b80eee597ee8">fPSVIHandler</a>;
+<a name="l01801"></a>01801 }
+<a name="l01802"></a>01802 
+<a name="l01803"></a><a class="code" href="classAbstractDOMParser.html#e78f62338fa3c7ab4e281f76ffbba35f">01803</a> <span class="keyword">inline</span> <span class="keyword">const</span> <a class="code" href="classPSVIHandler.html" title="This abstract class provides the interface for the scanner to return PSVI information...">PSVIHandler</a>* <a class="code" href="classAbstractDOMParser.html#2bcabec11963e9cbc0b6082c2e2f9282" title="This method returns the installed PSVI handler.">AbstractDOMParser::getPSVIHandler</a>()<span class="keyword"> const</span>
+<a name="l01804"></a>01804 <span class="keyword"></span>{
+<a name="l01805"></a>01805     <span class="keywordflow">return</span> <a class="code" href="classAbstractDOMParser.html#1033ab4309ef69eef9a2b80eee597ee8">fPSVIHandler</a>;
+<a name="l01806"></a>01806 }
+<a name="l01807"></a>01807 
+<a name="l01808"></a><a class="code" href="classAbstractDOMParser.html#93fb77ee0834a8bd202b70ea127ff0cf">01808</a> <span class="keyword">inline</span> <span class="keywordtype">bool</span> <a class="code" href="classAbstractDOMParser.html#93fb77ee0834a8bd202b70ea127ff0cf" title="Get the &amp;#39;associate schema info&amp;#39; flag.">AbstractDOMParser::getCreateSchemaInfo</a>()<span class="keyword"> const</span>
+<a name="l01809"></a>01809 <span class="keyword"></span>{
+<a name="l01810"></a>01810     <span class="keywordflow">return</span> <a class="code" href="classAbstractDOMParser.html#f370f062bed3b195658de6eaaae821f7">fCreateSchemaInfo</a>;
+<a name="l01811"></a>01811 }
+<a name="l01812"></a>01812 <span class="comment">// ---------------------------------------------------------------------------</span>
+<a name="l01813"></a>01813 <span class="comment">//  AbstractDOMParser: Setter methods</span>
+<a name="l01814"></a>01814 <span class="comment">// ---------------------------------------------------------------------------</span>
+<a name="l01815"></a><a class="code" href="classAbstractDOMParser.html#86bd820c7188f4f263047412b84bc8fb">01815</a> <span class="keyword">inline</span> <span class="keywordtype">void</span> <a class="code" href="classAbstractDOMParser.html#86bd820c7188f4f263047412b84bc8fb" title="Set the &amp;#39;expand entity references&amp;#39; flag.">AbstractDOMParser::setExpandEntityReferences</a>(<span class="keyword">const</span> <span class="keywordtype">bool</span> expand)
+<a name="l01816"></a>01816 {
+<a name="l01817"></a>01817     <a class="code" href="classAbstractDOMParser.html#466e41e2e0421c277a8c85d3b256a186">fCreateEntityReferenceNodes</a> = !expand;
+<a name="l01818"></a>01818 }
+<a name="l01819"></a>01819 
+<a name="l01820"></a><a class="code" href="classAbstractDOMParser.html#04560502577ac83060a2c9c495f8f85d">01820</a> <span class="keyword">inline</span> <span class="keywordtype">void</span> <a class="code" href="classAbstractDOMParser.html#04560502577ac83060a2c9c495f8f85d" title="Set the &amp;#39;include entity references&amp;#39; flag.">AbstractDOMParser::setCreateEntityReferenceNodes</a>(<span class="keyword">const</span> <span class="keywordtype">bool</span> create)
+<a name="l01821"></a>01821 {
+<a name="l01822"></a>01822     <a class="code" href="classAbstractDOMParser.html#466e41e2e0421c277a8c85d3b256a186">fCreateEntityReferenceNodes</a> = create;
+<a name="l01823"></a>01823 }
+<a name="l01824"></a>01824 
+<a name="l01825"></a><a class="code" href="classAbstractDOMParser.html#e3411bea02fd1e83b8f293854a5adc03">01825</a> <span class="keyword">inline</span> <span class="keywordtype">void</span> <a class="code" href="classAbstractDOMParser.html#e3411bea02fd1e83b8f293854a5adc03" title="Set the &amp;#39;include ignorable whitespace&amp;#39; flag.">AbstractDOMParser::setIncludeIgnorableWhitespace</a>(<span class="keyword">const</span> <span class="keywordtype">bool</span> include)
+<a name="l01826"></a>01826 {
+<a name="l01827"></a>01827     <a class="code" href="classAbstractDOMParser.html#8a7e0cf5bacfe221a85ee034bc6fe0af">fIncludeIgnorableWhitespace</a> = include;
+<a name="l01828"></a>01828 }
+<a name="l01829"></a>01829 
+<a name="l01830"></a><a class="code" href="classAbstractDOMParser.html#1919f1b0656a37896bbe902bc56291a0">01830</a> <span class="keyword">inline</span> <span class="keywordtype">void</span> <a class="code" href="classAbstractDOMParser.html#1919f1b0656a37896bbe902bc56291a0" title="Set the &amp;#39;create comment nodes&amp;#39; flag.">AbstractDOMParser::setCreateCommentNodes</a>(<span class="keyword">const</span> <span class="keywordtype">bool</span> create)
+<a name="l01831"></a>01831 {
+<a name="l01832"></a>01832     <a class="code" href="classAbstractDOMParser.html#3d9ada6b8e4d4c15bed016cca60890bb">fCreateCommentNodes</a> = create;
+<a name="l01833"></a>01833 }
+<a name="l01834"></a>01834 
+<a name="l01835"></a><a class="code" href="classAbstractDOMParser.html#5f62285b535e3b52051d2a17c420200f">01835</a> <span class="keyword">inline</span> <span class="keywordtype">void</span> <a class="code" href="classAbstractDOMParser.html#5f62285b535e3b52051d2a17c420200f" title="Set the implementation to use when creating the document.">AbstractDOMParser::useImplementation</a>(<span class="keyword">const</span> XMLCh* <span class="keyword">const</span> implementationFeatures)
+<a name="l01836"></a>01836 {
+<a name="l01837"></a>01837     <a class="code" href="classAbstractDOMParser.html#91992884db4e8a235f30afa278d3be4c">fMemoryManager</a>-&gt;<a class="code" href="classMemoryManager.html#f7dce9eab3a2a41e5b887ba735180e67" title="This method deallocates memory.">deallocate</a>(<a class="code" href="classAbstractDOMParser.html#7edaf68f904c3ee95c6cf8c19e3bd5fd">fImplementationFeatures</a>); 
+<a name="l01838"></a>01838     <a class="code" href="classAbstractDOMParser.html#7edaf68f904c3ee95c6cf8c19e3bd5fd">fImplementationFeatures</a> = <a class="code" href="classXMLString.html#31af5fc5e562ca4f7315825a7ac0f034" title="Replicates a string NOTE: The returned buffer is dynamically allocated and is the...">XMLString::replicate</a>(implementationFeatures, <a class="code" href="classAbstractDOMParser.html#91992884db4e8a235f30afa278d3be4c">fMemoryManager</a>); 
+<a name="l01839"></a>01839 }
+<a name="l01840"></a>01840 
+<a name="l01841"></a>01841 <span class="comment">// ---------------------------------------------------------------------------</span>
+<a name="l01842"></a>01842 <span class="comment">//  AbstractDOMParser: Protected getter methods</span>
+<a name="l01843"></a>01843 <span class="comment">// ---------------------------------------------------------------------------</span>
+<a name="l01844"></a><a class="code" href="classAbstractDOMParser.html#4bcd25a4b7f1f76f864d5c5ff3e91377">01844</a> <span class="keyword">inline</span> <a class="code" href="classDOMNode.html" title="The DOMNode interface is the primary datatype for the entire Document Object Model...">DOMNode</a>* <a class="code" href="classAbstractDOMParser.html#4bcd25a4b7f1f76f864d5c5ff3e91377" title="Get the current DOM node.">AbstractDOMParser::getCurrentNode</a>()
+<a name="l01845"></a>01845 {
+<a name="l01846"></a>01846     <span class="keywordflow">return</span> <a class="code" href="classAbstractDOMParser.html#5d28c386ec46be8da09150b34bb9c347">fCurrentNode</a>;
+<a name="l01847"></a>01847 }
+<a name="l01848"></a>01848 
+<a name="l01849"></a><a class="code" href="classAbstractDOMParser.html#fc213ededf95b5d14a0d27e6a48495de">01849</a> <span class="keyword">inline</span> <a class="code" href="classMemoryManager.html" title="Configurable memory manager.">MemoryManager</a>* <a class="code" href="classAbstractDOMParser.html#fc213ededf95b5d14a0d27e6a48495de">AbstractDOMParser::getMemoryManager</a>()<span class="keyword"> const</span>
+<a name="l01850"></a>01850 <span class="keyword"></span>{
+<a name="l01851"></a>01851     <span class="keywordflow">return</span> <a class="code" href="classAbstractDOMParser.html#91992884db4e8a235f30afa278d3be4c">fMemoryManager</a>;
+<a name="l01852"></a>01852 }
+<a name="l01853"></a>01853 
+<a name="l01854"></a>01854 <span class="comment">// ---------------------------------------------------------------------------</span>
+<a name="l01855"></a>01855 <span class="comment">//  AbstractDOMParser: Protected setter methods</span>
+<a name="l01856"></a>01856 <span class="comment">// ---------------------------------------------------------------------------</span>
+<a name="l01857"></a><a class="code" href="classAbstractDOMParser.html#9f0f778ed031b561ed3e7a5352104376">01857</a> <span class="keyword">inline</span> <span class="keywordtype">void</span> <a class="code" href="classAbstractDOMParser.html#9f0f778ed031b561ed3e7a5352104376" title="Set the current DOM node.">AbstractDOMParser::setCurrentNode</a>(<a class="code" href="classDOMNode.html" title="The DOMNode interface is the primary datatype for the entire Document Object Model...">DOMNode</a>* toSet)
+<a name="l01858"></a>01858 {
+<a name="l01859"></a>01859     <a class="code" href="classAbstractDOMParser.html#5d28c386ec46be8da09150b34bb9c347">fCurrentNode</a> = toSet;
+<a name="l01860"></a>01860 }
+<a name="l01861"></a>01861 
+<a name="l01862"></a><a class="code" href="classAbstractDOMParser.html#64c7033f4b7f06af960c817498357de6">01862</a> <span class="keyword">inline</span> <span class="keywordtype">void</span> <a class="code" href="classAbstractDOMParser.html#64c7033f4b7f06af960c817498357de6" title="Set the parse in progress flag.">AbstractDOMParser::setParseInProgress</a>(<span class="keyword">const</span> <span class="keywordtype">bool</span> toSet)
+<a name="l01863"></a>01863 {
+<a name="l01864"></a>01864     <a class="code" href="classAbstractDOMParser.html#82c8666ba31bbfa1aca0393433b07fc8">fParseInProgress</a> = toSet;
+<a name="l01865"></a>01865 }
+<a name="l01866"></a>01866 
+<a name="l01867"></a>01867 <a class="code" href="XercesDefs_8hpp.html#f03d5cb905763ef7a7bd22ab82718285">XERCES_CPP_NAMESPACE_END</a>
+<a name="l01868"></a>01868 
+<a name="l01869"></a>01869 <span class="preprocessor">#endif</span>
+<a name="l01870"></a>01870 <span class="preprocessor"></span>
+<a name="l01871"></a>01871 
+<a name="l01872"></a>01872 
+</pre></div>    </FONT></TD></TR></TABLE><BR>
+</TD></TR></TABLE></TD></TR></TABLE><BR><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD bgcolor="#0086b2"><IMG height="1" src="images/dot.gif" width="1" alt=""></TD></TR><TR><TD align="center"><FONT color="#0086b2" size="-1"><I>
+              Copyright &copy; 1994-2004 The Apache Software Foundation.
+              All Rights Reserved.
+            </I></FONT></TD></TR></TABLE></BODY></HTML>

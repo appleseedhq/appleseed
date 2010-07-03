@@ -1,0 +1,105 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Class template basic_bufferbuf</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../boost_interprocess_reference.html#header.boost.interprocess.streams.bufferstream_hpp" title="Header &lt;boost/interprocess/streams/bufferstream.hpp&gt;">
+<link rel="prev" href="make_managed_weak_ptr.html" title="Function template make_managed_weak_ptr">
+<link rel="next" href="basic_ibufferstream.html" title="Class template basic_ibufferstream">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="make_managed_weak_ptr.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_interprocess_reference.html#header.boost.interprocess.streams.bufferstream_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="basic_ibufferstream.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.interprocess.basic_bufferbuf"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Class template basic_bufferbuf</span></h2>
+<p>boost::interprocess::basic_bufferbuf</p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../boost_interprocess_reference.html#header.boost.interprocess.streams.bufferstream_hpp" title="Header &lt;boost/interprocess/streams/bufferstream.hpp&gt;">boost/interprocess/streams/bufferstream.hpp</a>&gt;
+
+</em></span><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> CharT, <span class="bold"><strong>typename</strong></span> CharTraits&gt; 
+<span class="bold"><strong>class</strong></span> <a class="link" href="basic_bufferbuf.html" title="Class template basic_bufferbuf">basic_bufferbuf</a> {
+<span class="bold"><strong>public</strong></span>:
+  <span class="emphasis"><em>// types</em></span>
+  <span class="bold"><strong>typedef</strong></span> CharT                                          <a name="boost.interprocess.basic_bufferbuf.char_type"></a>char_type;  
+  <span class="bold"><strong>typedef</strong></span> CharTraits::int_type                           <a name="boost.interprocess.basic_bufferbuf.int_type"></a>int_type;   
+  <span class="bold"><strong>typedef</strong></span> CharTraits::pos_type                           <a name="boost.interprocess.basic_bufferbuf.pos_type"></a>pos_type;   
+  <span class="bold"><strong>typedef</strong></span> CharTraits::off_type                           <a name="boost.interprocess.basic_bufferbuf.off_type"></a>off_type;   
+  <span class="bold"><strong>typedef</strong></span> CharTraits                                     <a name="boost.interprocess.basic_bufferbuf.traits_type"></a>traits_type;
+  <span class="bold"><strong>typedef</strong></span> std::basic_streambuf&lt; char_type, traits_type &gt; <a name="boost.interprocess.basic_bufferbuf.base_t"></a>base_t;     
+
+  <span class="emphasis"><em>// <a class="link" href="basic_bufferbuf.html#boost.interprocess.basic_bufferbufconstruct-copy-destruct">construct/copy/destruct</a></em></span>
+  <a class="link" href="basic_bufferbuf.html#id1770606-bb">basic_bufferbuf</a>(std::ios_base::openmode = std::ios_base::in|std::ios_base::out);
+  <a class="link" href="basic_bufferbuf.html#id1770619-bb">basic_bufferbuf</a>(CharT *, std::size_t, 
+                  std::ios_base::openmode = std::ios_base::in|std::ios_base::out);
+  <a class="link" href="basic_bufferbuf.html#id1770645-bb">~basic_bufferbuf</a>();
+
+  <span class="emphasis"><em>// <a class="link" href="basic_bufferbuf.html#id1770566-bb">public member functions</a></em></span>
+  <span class="type">std::pair&lt; CharT *, std::size_t &gt;</span> <a class="link" href="basic_bufferbuf.html#id1770570-bb">buffer</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="basic_bufferbuf.html#id1770582-bb">buffer</a>(CharT *, std::size_t) ;
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id2222657"></a><h2>Description</h2>
+<p>A streambuf class that controls the transmission of elements to and from a basic_xbufferstream. The elements are transmitted from a to a fixed size buffer </p>
+<div class="refsect2" lang="en">
+<a name="id2222665"></a><h3>
+<a name="boost.interprocess.basic_bufferbufconstruct-copy-destruct"></a><code class="computeroutput">basic_bufferbuf</code> 
+        public
+       construct/copy/destruct</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><a name="id1770606-bb"></a>basic_bufferbuf(std::ios_base::openmode mode = std::ios_base::in|std::ios_base::out);</pre>
+<p>Constructor. Does not throw. </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1770619-bb"></a>basic_bufferbuf(CharT * buffer, std::size_t length, 
+                std::ios_base::openmode mode = std::ios_base::in|std::ios_base::out);</pre>
+<p>Constructor. Assigns formatting buffer. Does not throw. </p>
+</li>
+<li><pre class="literallayout"><a name="id1770645-bb"></a>~basic_bufferbuf();</pre></li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id2222734"></a><h3>
+<a name="id1770566-bb"></a><code class="computeroutput">basic_bufferbuf</code> public member functions</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><span class="type">std::pair&lt; CharT *, std::size_t &gt;</span> <a name="id1770570-bb"></a>buffer() <span class="bold"><strong>const</strong></span>;</pre>
+<p>Returns the pointer and size of the internal buffer. Does not throw. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1770582-bb"></a>buffer(CharT * buffer, std::size_t length) ;</pre>
+<p>Sets the underlying buffer to a new value Does not throw. </p>
+</li>
+</ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2005 - 2008 Ion Gaztañaga<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="make_managed_weak_ptr.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_interprocess_reference.html#header.boost.interprocess.streams.bufferstream_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="basic_ibufferstream.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

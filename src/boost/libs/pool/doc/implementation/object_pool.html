@@ -1,0 +1,85 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+<head>
+  <meta http-equiv="Content-Language" content="en-us">
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+  <link href="../pool.css" rel="stylesheet" type="text/css">
+
+  <title>Object Pool Implementation</title>
+</head>
+
+<body>
+  <img src="../../../../boost.png" width="276" height="86" alt="C++ Boost">
+
+  <h1 align="center">Object Pool Implementation</h1>
+
+  <h2>Dependencies</h2>
+
+  <p>Includes the Boost header <span class="code">"pool.hpp"</span> (see
+  <a href="pool.html">pool.html</a>).</p>
+
+  <h2>Extensions to Public Interface</h2>
+
+  <p>Whenever an object of type <span class="code">ObjectPool</span> needs
+  memory from the system, it will request it from its <span class=
+  "code">UserAllocator</span> template parameter. The amount requested is
+  determined using a doubling algorithm; that is, each time more system
+  memory is allocated, the amount of system memory requested is doubled.
+  Users may control the doubling algorithm by using the following
+  extensions.</p>
+
+  <h3>Additional constructor parameter</h3>
+
+  <p>Users may pass an additional constructor parameter to <span class=
+  "code">ObjectPool</span>. This parameter is of type <span class=
+  "code">size_type</span>, and is the number of chunks to request from the
+  system the first time that object needs to allocate system memory. The
+  default is 32. This parameter may not be 0.</p>
+
+  <h3><span class="code">next_size</span> accessor functions</h3>
+
+  <p>The pair of functions <span class="code">size_type get_next_size()
+  const;</span> and <span class="code">void set_next_size(size_type);</span>
+  allow users to explicitly read and write the <span class=
+  "code">next_size</span> value. This value is the number of chunks to
+  request from the system the next time that object needs to allocate system
+  memory. This value should never be set to 0.</p>
+
+  <h2>Protected Interface</h2>
+
+  <h3>Synopsis</h3>
+  <pre class="code">
+template &lt;typename ElementType, typename UserAllocator = default_user_allocator_new_delete&gt;
+class object_pool: protected pool&lt;UserAllocator&gt;
+{
+  ... // public interface
+};
+</pre>
+
+  <h3>Protected Derivation</h3>ObjectPool derives from a simple segregated
+  storage via protected derivation; this exposes all the <a href=
+  "pool.html">Pool implementation details</a> to all classes derived from
+  ObjectPool as well.
+
+  <h2><a href="../interfaces/object_pool.html">Interface Description</a></h2>
+  <hr>
+
+  <p><a href="http://validator.w3.org/check?uri=referer"><img border="0" src=
+  "http://www.w3.org/Icons/valid-html401" alt="Valid HTML 4.01 Transitional"
+  height="31" width="88"></a></p>
+
+  <p>Revised 
+  <!--webbot bot="Timestamp" s-type="EDITED" s-format="%d %B, %Y" startspan -->05
+  December, 2006<!--webbot bot="Timestamp" endspan i-checksum="38516" --></p>
+
+  <p><i>Copyright &copy; 2000, 2001 Stephen Cleary (scleary AT jerviswebb DOT
+  com)</i></p>
+
+  <p><i>Distributed under the Boost Software License, Version 1.0. (See
+  accompanying file <a href="../../../../LICENSE_1_0.txt">LICENSE_1_0.txt</a>
+  or copy at <a href=
+  "http://www.boost.org/LICENSE_1_0.txt">http://www.boost.org/LICENSE_1_0.txt</a>)</i></p>
+</body>
+</html>

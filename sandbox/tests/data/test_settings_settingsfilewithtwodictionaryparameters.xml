@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+    <parameters name="sub1">
+        <parameter name="x" value="42" />
+        <parameter name="y" value="foo" />
+    </parameters>
+    <parameters name="sub2">
+        <parameter name="a" value="aa" />
+        <parameter name="b" value="bb" />
+    </parameters>
+</settings>

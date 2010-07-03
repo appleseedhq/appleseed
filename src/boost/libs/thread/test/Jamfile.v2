@@ -1,0 +1,61 @@
+#  (C) Copyright William E. Kempf 2001. 
+#  (C) Copyright 2007 Anthony Williams. 
+#  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+#  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+#
+# Boost.Threads test Jamfile
+#
+# Additional configuration variables used:
+#   1. PTW32 may be used on Win32 platforms to specify that the pthreads-win32
+#      library should be used instead of "native" threads. This feature is
+#      mostly used for testing and it's generally recommended you use the
+#      native threading libraries instead. PTW32 should be set to be a list
+#      of two strings, the first specifying the installation path of the
+#      pthreads-win32 library and the second specifying which library
+#      variant to link against (see the pthreads-win32 documentation).
+#      Example: jam -sPTW32="c:\pthreads-win32 pthreadVCE.lib"
+
+# bring in rules for testing
+import testing ;
+
+project
+    : requirements <library>/boost/test//boost_unit_test_framework/<link>static
+                   <threading>multi
+    ;
+
+rule thread-run ( sources )
+{
+    return 
+    [ run $(sources) ../build//boost_thread ]
+    [ run $(sources) ../src/tss_null.cpp ../build//boost_thread/<link>static 
+        : : : : $(sources[1]:B)_lib ]
+    ;
+}    
+
+{
+    test-suite "threads"
+        : [ thread-run test_thread.cpp ]
+          [ thread-run test_thread_id.cpp ]
+          [ thread-run test_hardware_concurrency.cpp ]
+          [ thread-run test_thread_move.cpp ]
+          [ thread-run test_thread_launching.cpp ]
+          [ thread-run test_thread_mf.cpp ]
+          [ thread-run test_move_function.cpp ]
+          [ thread-run test_mutex.cpp ]
+          [ thread-run test_condition_notify_one.cpp ]
+          [ thread-run test_condition_timed_wait_times_out.cpp ]
+          [ thread-run test_condition_notify_all.cpp ]
+          [ thread-run test_condition.cpp ]
+          [ thread-run test_tss.cpp ]
+          [ thread-run test_once.cpp ]
+          [ thread-run test_xtime.cpp ]
+          [ thread-run test_barrier.cpp ]
+          [ thread-run test_shared_mutex.cpp ]
+          [ thread-run test_shared_mutex_part_2.cpp ]
+          [ thread-run test_shared_mutex_timed_locks.cpp ]
+          [ thread-run test_lock_concept.cpp ]
+          [ thread-run test_generic_locks.cpp ]
+          [ compile-fail no_implicit_move_from_lvalue_thread.cpp ]
+          [ compile-fail no_implicit_assign_from_lvalue_thread.cpp ]
+    ;
+}

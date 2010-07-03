@@ -1,0 +1,156 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Class template period_formatter</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../date_time/doxy.html#header.boost.date_time.period_formatter_hpp" title="Header &lt;boost/date_time/period_formatter.hpp&gt;">
+<link rel="prev" href="period.html" title="Class template period">
+<link rel="next" href="period_parser.html" title="Class template period_parser">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="period.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../date_time/doxy.html#header.boost.date_time.period_formatter_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="period_parser.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.date_time.period_formatter"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Class template period_formatter</span></h2>
+<p>boost::date_time::period_formatter &#8212; Not a facet, but a class used to specify and control period formats. </p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../date_time/doxy.html#header.boost.date_time.period_formatter_hpp" title="Header &lt;boost/date_time/period_formatter.hpp&gt;">boost/date_time/period_formatter.hpp</a>&gt;
+
+</em></span><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> CharT, 
+         <span class="bold"><strong>typename</strong></span> OutItrT = std::ostreambuf_iterator&lt;CharT, std::char_traits&lt;CharT&gt; &gt; &gt; 
+<span class="bold"><strong>class</strong></span> <a class="link" href="period_formatter.html" title="Class template period_formatter">period_formatter</a> {
+<span class="bold"><strong>public</strong></span>:
+  <span class="emphasis"><em>// types</em></span>
+  <span class="bold"><strong>typedef</strong></span> std::basic_string&lt; CharT &gt;                     <a name="boost.date_time.period_formatter.string_type"></a>string_type;    
+  <span class="bold"><strong>typedef</strong></span> CharT                                          <a name="boost.date_time.period_formatter.char_type"></a>char_type;      
+  <span class="bold"><strong>typedef</strong></span> std::basic_string&lt; char_type &gt;::const_iterator <a name="boost.date_time.period_formatter.const_itr_type"></a>const_itr_type; 
+  <span class="bold"><strong>typedef</strong></span> std::vector&lt; std::basic_string&lt; CharT &gt; &gt;      <a name="boost.date_time.period_formatter.collection_type"></a>collection_type;
+
+  <span class="bold"><strong>enum</strong></span> <a name="boost.date_time.period_formatter.range_display_options"></a>range_display_options { AS_OPEN_RANGE, AS_CLOSED_RANGE };
+
+  <span class="emphasis"><em>// <a class="link" href="period_formatter.html#boost.date_time.period_formatterconstruct-copy-destruct">construct/copy/destruct</a></em></span>
+  <a class="link" href="period_formatter.html#id619638-bb">period_formatter</a>(range_display_options = AS_CLOSED_RANGE, 
+                   <span class="bold"><strong>const</strong></span> char_type *<span class="bold"><strong>const</strong></span>  = default_period_separator, 
+                   <span class="bold"><strong>const</strong></span> char_type *<span class="bold"><strong>const</strong></span>  = default_period_start_delimeter, 
+                   <span class="bold"><strong>const</strong></span> char_type *<span class="bold"><strong>const</strong></span>  = default_period_open_range_end_delimeter, 
+                   <span class="bold"><strong>const</strong></span> char_type *<span class="bold"><strong>const</strong></span>  = default_period_closed_range_end_delimeter);
+
+  <span class="emphasis"><em>// <a class="link" href="period_formatter.html#id1109744-bb">public member functions</a></em></span>
+  <span class="type">OutItrT</span> <a class="link" href="period_formatter.html#id1109748-bb">put_period_separator</a>(OutItrT &amp;) <span class="bold"><strong>const</strong></span>;
+  <span class="type">OutItrT</span> <a class="link" href="period_formatter.html#id724508-bb">put_period_start_delimeter</a>(OutItrT &amp;) <span class="bold"><strong>const</strong></span>;
+  <span class="type">OutItrT</span> <a class="link" href="period_formatter.html#id1112981-bb">put_period_end_delimeter</a>(OutItrT &amp;) <span class="bold"><strong>const</strong></span>;
+  <span class="type">range_display_options</span> <a class="link" href="period_formatter.html#id729835-bb">range_option</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="period_formatter.html#id756840-bb">range_option</a>(range_display_options) <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="period_formatter.html#id756857-bb">delimiter_strings</a>(<span class="bold"><strong>const</strong></span> string_type &amp;, <span class="bold"><strong>const</strong></span> string_type &amp;, 
+                         <span class="bold"><strong>const</strong></span> string_type &amp;, <span class="bold"><strong>const</strong></span> string_type &amp;) ;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> period_type, <span class="bold"><strong>typename</strong></span> facet_type&gt; 
+    <span class="type">OutItrT</span> <a class="link" href="period_formatter.html#id686169-bb">put_period</a>(OutItrT, std::ios_base &amp;, char_type, 
+                       <span class="bold"><strong>const</strong></span> period_type &amp;, <span class="bold"><strong>const</strong></span> facet_type &amp;) <span class="bold"><strong>const</strong></span>;
+  <span class="bold"><strong>static</strong></span> <span class="type"><span class="bold"><strong>const</strong></span> char_type</span> default_period_separator;
+  <span class="bold"><strong>static</strong></span> <span class="type"><span class="bold"><strong>const</strong></span> char_type</span> default_period_start_delimeter;
+  <span class="bold"><strong>static</strong></span> <span class="type"><span class="bold"><strong>const</strong></span> char_type</span> default_period_open_range_end_delimeter;
+  <span class="bold"><strong>static</strong></span> <span class="type"><span class="bold"><strong>const</strong></span> char_type</span> default_period_closed_range_end_delimeter;
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id1743858"></a><h2>Description</h2>
+<p>Provides settings for the following:</p>
+<div class="itemizedlist"><ul type="disc">
+<li><p>period_separator -- default '/'</p></li>
+<li><p>period_open_start_delimeter -- default '['</p></li>
+<li><p>period_open_range_end_delimeter -- default ')'</p></li>
+<li><p>period_closed_range_end_delimeter -- default ']'</p></li>
+<li><p>display_as_open_range, display_as_closed_range -- default closed_range</p></li>
+</ul></div>
+<p>
+</p>
+<p>Thus the default formatting for a period is as follows: </p>
+<pre class="programlisting">  [period.start()/period.last()]
+   *
+</pre>
+<p> So for a typical date_period this would be </p>
+<pre class="programlisting">  [2004-Jan-04/2004-Feb-01]
+   *
+</pre>
+<p> where the date formatting is controlled by the date facet </p>
+<div class="refsect2" lang="en">
+<a name="id1743906"></a><h3>
+<a name="boost.date_time.period_formatterconstruct-copy-destruct"></a><code class="computeroutput">period_formatter</code> 
+        public
+       construct/copy/destruct</h3>
+<div class="orderedlist"><ol type="1"><li>
+<pre class="literallayout"><a name="id619638-bb"></a>period_formatter(range_display_options range_option_in = AS_CLOSED_RANGE, 
+                 <span class="bold"><strong>const</strong></span> char_type *<span class="bold"><strong>const</strong></span>  period_separator = default_period_separator, 
+                 <span class="bold"><strong>const</strong></span> char_type *<span class="bold"><strong>const</strong></span>  period_start_delimeter = default_period_start_delimeter, 
+                 <span class="bold"><strong>const</strong></span> char_type *<span class="bold"><strong>const</strong></span>  period_open_range_end_delimeter = default_period_open_range_end_delimeter, 
+                 <span class="bold"><strong>const</strong></span> char_type *<span class="bold"><strong>const</strong></span>  period_closed_range_end_delimeter = default_period_closed_range_end_delimeter);</pre>Constructor that sets up period formatter options -- default should suffice most cases. </li></ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id1743995"></a><h3>
+<a name="id1109744-bb"></a><code class="computeroutput">period_formatter</code> public member functions</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><span class="type">OutItrT</span> <a name="id1109748-bb"></a>put_period_separator(OutItrT &amp; oitr) <span class="bold"><strong>const</strong></span>;</pre>Puts the characters between period elements into stream -- default is /. </li>
+<li>
+<pre class="literallayout"><span class="type">OutItrT</span> <a name="id724508-bb"></a>put_period_start_delimeter(OutItrT &amp; oitr) <span class="bold"><strong>const</strong></span>;</pre>Puts the period start characters into stream -- default is [. </li>
+<li>
+<pre class="literallayout"><span class="type">OutItrT</span> <a name="id1112981-bb"></a>put_period_end_delimeter(OutItrT &amp; oitr) <span class="bold"><strong>const</strong></span>;</pre>Puts the period end characters into stream as controled by open/closed range setting. </li>
+<li><pre class="literallayout"><span class="type">range_display_options</span> <a name="id729835-bb"></a>range_option() <span class="bold"><strong>const</strong></span>;</pre></li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id756840-bb"></a>range_option(range_display_options option) <span class="bold"><strong>const</strong></span>;</pre>Reset the range_option control. </li>
+<li><pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id756857-bb"></a>delimiter_strings(<span class="bold"><strong>const</strong></span> string_type &amp; separator, 
+                       <span class="bold"><strong>const</strong></span> string_type &amp; start_delim, 
+                       <span class="bold"><strong>const</strong></span> string_type &amp; open_end_delim, 
+                       <span class="bold"><strong>const</strong></span> string_type &amp; closed_end_delim) ;</pre></li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> period_type, <span class="bold"><strong>typename</strong></span> facet_type&gt; 
+  <span class="type">OutItrT</span> <a name="id686169-bb"></a>put_period(OutItrT next, std::ios_base &amp; a_ios, char_type a_fill, 
+                     <span class="bold"><strong>const</strong></span> period_type &amp; p, <span class="bold"><strong>const</strong></span> facet_type &amp; facet) <span class="bold"><strong>const</strong></span>;</pre>Generic code to output a period -- no matter the period type. <p>This generic code will output any period using a facet to to output the 'elements'. For example, in the case of a date_period the elements will be instances of a date which will be formatted according the to setup in the passed facet parameter.</p>
+<p>The steps for formatting a period are always the same:</p>
+<div class="itemizedlist"><ul type="disc">
+<li><p>put the start delimiter</p></li>
+<li><p>put start element</p></li>
+<li><p>put the separator</p></li>
+<li><p>put either last or end element depending on range settings</p></li>
+<li><p>put end delimeter depending on range settings</p></li>
+</ul></div>
+<p>
+</p>
+<p>Thus for a typical date period the result might look like this: </p>
+<pre class="programlisting">    [March 01, 2004/June 07, 2004]   &lt;-- closed range
+    [March 01, 2004/June 08, 2004)   &lt;-- open range
+
+     *
+</pre>
+<p> </p>
+</li>
+</ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2001-2005 CrystalClear Software, Inc<p>Subject to the Boost Software License, Version 1.0. (See accompanying file
+    <code class="filename">LICENSE_1_0.txt</code> or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)</p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="period.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../date_time/doxy.html#header.boost.date_time.period_formatter_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="period_parser.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

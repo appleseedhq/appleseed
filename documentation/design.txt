@@ -1,0 +1,210 @@
+
+* spirit
+
+  . easy and fun to develop and experiment with
+  . an experimentation and learning framework
+  . revisiting the basics of rendering and physics
+  . physically correct simulation
+  . quantitatively accurate rendering
+  . focusing on elegant constructions
+  . as efficient and flexible as possible
+  . maximize code reuse (and maintain a fully independant foundation library)
+  . extend to fluid simulation, rigid body dynamics, particles...
+  . mix and combine techniques and simulations
+  . make nice images and animations
+
+
+
+* physical layout of the appleseed project
+
+  in brief
+
+      library/
+        category/
+          component.h           component header file
+          component.cpp         component source file (optional)
+
+                         or
+
+      library/
+        category/
+          module.h              module main header file
+          module/               module implementation
+            component1.h        component header file
+            component1.cpp      component source file (optional)
+            component2.h        component header file
+            component2.cpp      component source file (optional)
+            ...
+
+
+  in details
+
+    the source tree is divided into libraries. currently there are
+    three libraries: foundation, image, renderer.
+
+    a library is divided into categories.
+
+    a category is divided into modules. each module is defined by
+    a single header file. the implementation of a module comes either
+    as a separate source file accompanying the header file, or as a
+    subdirectory containing multiple implementation files.
+
+
+  examples
+
+      foundation/               foundation library
+        math/                   math category
+          aabb.h                aabb component
+
+      foundation/               foundation library
+        math/                   math category
+          bsp.h                 bsp module main header file
+          bsp/                  bsp module implementation
+            intersector.h       bsp intersector
+            node.h              bsp tree node
+            tree.h              bsp tree
+
+
+
+* project layout
+
+  appleseed.foundation library
+
+    foundation is a collection of basic types, classes and algorithms
+    which would be needed or very useful in a variety of graphics or
+    simulation-related projects. it is desirable to make this library
+    as feature-rich as possible while at the same time to keep features
+    as independent as possible from the rest of appleseed.foundation.
+    files from this library may only depend on other files of this
+    library.
+
+    categories and modules:
+
+        core/
+          appleseed.h           informations about the appleseed library
+          compiler.h            compiler-specific definitions and utilities
+          concepts.h            collection of class concepts
+          exception.h           base class for all appleseed exceptions
+          types.h               integral types and type manipulation facilities
+
+        containers/
+          anyarray.h            an array of named and typed elements
+          pagedarray.h          templatized paged array
+          paramarray.h          array of parameters
+          statarray.h           array of statistics
+
+        math/
+          aabb.h                templatized aabb and specializations
+          bsp.h                 templatized bsp
+          bvh.h                 templatized bvh
+          color.h               templatized color and specializations
+          distrib.h             1d and 2d distributions warping
+          refframe.h            templatized 3d reference frame
+          matrix.h              templatized matrix and specializations
+          qmc.h                 templatized radical inverse and qr sequences
+          ray.h                 templatized ray and ray differentials classes
+          rng.h                 random number generators and utilities
+          scalar.h              scalar operations and utilities
+          spectrum.h            templatized spectra and specializations
+          vector.h              templatized vector and specializations
+
+        platform/
+          system.h              system utilities
+          timer.h               timer definition and default timer
+          x86timer.h            x86-specific timer counting clockticks
+
+        utility/
+          attribute.h           attribute system
+          cache.h               templatized thread-local caches (LRU, set-associative)
+          cachemanager.h        centralized cache manager
+          graph.h               generate function graphs
+          job.h                 multithreaded job manager
+          serial.h              serialization framework
+          stopwatch.h           templatized stopwatch
+          string.h              string manipulation utilities
+          tasktimer.h           measure the running time of a given piece of code
+          unittest.h            unit testing framework
+
+
+  appleseed.image library
+
+    image classes and utilities. provides tile and image templatized
+    classes, with or without support for flushing, and filtering and
+    image reconstruction functionalities. all the code of this library
+    may only depend on the appleseed.foundation library.
+
+    categories and modules:
+
+        image/
+          image.h               templatized image class
+          pixel.h               pixel utilities
+          tile.h                templatized tile class
+
+
+  appleseed.renderer library
+
+    all the rendering-specific code. implements a spectral, unbiased,
+    quantitatively accurate path tracer, which serves as a reference,
+    as well as other physically correct (but not necessarily unbiased)
+    renderers. all the code of this library may only depend on the
+    libraries appleseed.foundation and appleseed.image.
+
+    categories and modules:
+
+        global/
+          global.h              library-wide global header file
+
+        kernel/
+          raytracer.h           ray tracer
+          statictessellation.h  static tessellation class
+          tonemapping.h         tone mapping operators
+
+        modeling/
+          bsdf.h                bsdf models
+          camera.h              camera models
+          edf.h                 edf models
+          frame.h               frame class
+          light.h               light models
+          material.h            material class
+          scene.h               scene assemblies, objects, instances, etc.
+
+        renderers/
+          framerenderer.h       frame renderers
+          samplerenderer.h      sample renderers
+          tilecallback.h        tile callback interface
+          tilerenderer.h        tile renderers
+
+
+
+* open questions
+
+
+
+* random ideas
+
+  - systematically include one header file which would
+    include the integral types foundation header file,
+    maybe a configuration header file #defining some
+    compile-time stuff.
+    -> bad idea, creates too much coupling.
+
+  - print at the beginning whether the rendering will be
+    quantitatively accurate and, if not, print the
+    settings which prevent it from being correct and/or
+    accurate.
+
+  - browse channels or frame buffers with tabs
+
+
+
+* possible extensions
+
+  appleseed.foundation
+
+  appleseed.renderer
+
+    - bidirectional path tracing
+    - particle map + photon mapping and irradiance caching
+    - reyes-like rasterizer
+    - ray differentials + cached multiresolution tessellations
+    - bsdf approximation using multiple Phong or Gaussian lobes

@@ -1,0 +1,27 @@
+#  Copyright 2006 John Maddock, Paul A. Bristow and Xiaogang Zhang.
+#  Distributed under the Boost Software License, Version 1.0.
+#  (See accompanying file LICENSE_1_0.txt or copy at
+#  http://www.boost.org/LICENSE_1_0.txt).
+
+
+exe math_performance : 
+distributions.cpp
+main.cpp
+test_erf.cpp
+test_gamma.cpp
+test_ibeta.cpp
+test_igamma.cpp
+test_polynomial.cpp
+test_reference.cpp ;
+
+install dist-bin
+    :
+    math_performance
+    :
+    <install-type>EXE
+    <location>./bin
+    :
+    release
+    ;
+
+

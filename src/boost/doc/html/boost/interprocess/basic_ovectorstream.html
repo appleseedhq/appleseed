@@ -1,0 +1,117 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Class template basic_ovectorstream</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../boost_interprocess_reference.html#header.boost.interprocess.streams.vectorstream_hpp" title="Header &lt;boost/interprocess/streams/vectorstream.hpp&gt;">
+<link rel="prev" href="basic_ivectorstream.html" title="Class template basic_ivectorstream">
+<link rel="next" href="basic_vectorstream.html" title="Class template basic_vectorstream">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="basic_ivectorstream.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_interprocess_reference.html#header.boost.interprocess.streams.vectorstream_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="basic_vectorstream.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.interprocess.basic_ovectorstream"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Class template basic_ovectorstream</span></h2>
+<p>boost::interprocess::basic_ovectorstream</p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../boost_interprocess_reference.html#header.boost.interprocess.streams.vectorstream_hpp" title="Header &lt;boost/interprocess/streams/vectorstream.hpp&gt;">boost/interprocess/streams/vectorstream.hpp</a>&gt;
+
+</em></span><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> CharVector, <span class="bold"><strong>typename</strong></span> CharTraits&gt; 
+<span class="bold"><strong>class</strong></span> <a class="link" href="basic_ovectorstream.html" title="Class template basic_ovectorstream">basic_ovectorstream</a> {
+<span class="bold"><strong>public</strong></span>:
+  <span class="emphasis"><em>// types</em></span>
+  <span class="bold"><strong>typedef</strong></span> CharVector                                                               <a name="boost.interprocess.basic_ovectorstream.vector_type"></a>vector_type;
+  <span class="bold"><strong>typedef</strong></span> std::basic_ios&lt; <span class="bold"><strong>typename</strong></span> CharVector::value_type, CharTraits &gt;::char_type <a name="boost.interprocess.basic_ovectorstream.char_type"></a>char_type;  
+  <span class="bold"><strong>typedef</strong></span> std::basic_ios&lt; char_type, CharTraits &gt;::int_type                        <a name="boost.interprocess.basic_ovectorstream.int_type"></a>int_type;   
+  <span class="bold"><strong>typedef</strong></span> std::basic_ios&lt; char_type, CharTraits &gt;::pos_type                        <a name="boost.interprocess.basic_ovectorstream.pos_type"></a>pos_type;   
+  <span class="bold"><strong>typedef</strong></span> std::basic_ios&lt; char_type, CharTraits &gt;::off_type                        <a name="boost.interprocess.basic_ovectorstream.off_type"></a>off_type;   
+  <span class="bold"><strong>typedef</strong></span> std::basic_ios&lt; char_type, CharTraits &gt;::traits_type                     <a name="boost.interprocess.basic_ovectorstream.traits_type"></a>traits_type;
+
+  <span class="emphasis"><em>// <a class="link" href="basic_ovectorstream.html#boost.interprocess.basic_ovectorstreamconstruct-copy-destruct">construct/copy/destruct</a></em></span>
+  <a class="link" href="basic_ovectorstream.html#id1771646-bb">basic_ovectorstream</a>(std::ios_base::openmode = std::ios_base::out);
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> VectorParameter&gt; 
+    <a class="link" href="basic_ovectorstream.html#id1771660-bb">basic_ovectorstream</a>(<span class="bold"><strong>const</strong></span> VectorParameter &amp;, 
+                        std::ios_base::openmode = std::ios_base::out);
+  <a class="link" href="basic_ovectorstream.html#id1771687-bb">~basic_ovectorstream</a>();
+
+  <span class="emphasis"><em>// <a class="link" href="basic_ovectorstream.html#id1771577-bb">public member functions</a></em></span>
+  <span class="type"><a class="link" href="basic_vectorbuf.html" title="Class template basic_vectorbuf">basic_vectorbuf</a>&lt; CharVector, CharTraits &gt; *</span> <a class="link" href="basic_ovectorstream.html#id1771581-bb">rdbuf</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="basic_ovectorstream.html#id1771596-bb">swap_vector</a>(vector_type &amp;) ;
+  <span class="type"><span class="bold"><strong>const</strong></span> vector_type &amp;</span> <a class="link" href="basic_ovectorstream.html#id1771614-bb">vector</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="basic_ovectorstream.html#id1771627-bb">reserve</a>(<span class="bold"><strong>typename</strong></span> vector_type::size_type) ;
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id2225783"></a><h2>Description</h2>
+<p>A basic_ostream class that holds a character vector specified by CharVector template parameter as its formatting buffer. The vector must have contiguous storage, like std::vector, boost::interprocess::vector or boost::interprocess::basic_string </p>
+<div class="refsect2" lang="en">
+<a name="id2225793"></a><h3>
+<a name="boost.interprocess.basic_ovectorstreamconstruct-copy-destruct"></a><code class="computeroutput">basic_ovectorstream</code> 
+        public
+       construct/copy/destruct</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><a name="id1771646-bb"></a>basic_ovectorstream(std::ios_base::openmode mode = std::ios_base::out);</pre>
+<p>Constructor. Throws if vector_type default constructor throws. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> VectorParameter&gt; 
+  <a name="id1771660-bb"></a>basic_ovectorstream(<span class="bold"><strong>const</strong></span> VectorParameter &amp; param, 
+                      std::ios_base::openmode mode = std::ios_base::out);</pre>
+<p>Constructor. Throws if vector_type(const VectorParameter &amp;param) throws. </p>
+</li>
+<li><pre class="literallayout"><a name="id1771687-bb"></a>~basic_ovectorstream();</pre></li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id2225885"></a><h3>
+<a name="id1771577-bb"></a><code class="computeroutput">basic_ovectorstream</code> public member functions</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><span class="type"><a class="link" href="basic_vectorbuf.html" title="Class template basic_vectorbuf">basic_vectorbuf</a>&lt; CharVector, CharTraits &gt; *</span> <a name="id1771581-bb"></a>rdbuf() <span class="bold"><strong>const</strong></span>;</pre>
+<p>Returns the address of the stored stream buffer. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1771596-bb"></a>swap_vector(vector_type &amp; vect) ;</pre>
+<p>Swaps the underlying vector with the passed vector. This function resets the write position in the stream. Does not throw. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>const</strong></span> vector_type &amp;</span> <a name="id1771614-bb"></a>vector() <span class="bold"><strong>const</strong></span>;</pre>
+<p>Returns a const reference to the internal vector. Does not throw. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1771627-bb"></a>reserve(<span class="bold"><strong>typename</strong></span> vector_type::size_type size) ;</pre>
+<p>Calls reserve() method of the internal vector. Resets the stream to the first position. Throws if the internals vector's reserve throws. </p>
+</li>
+</ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2005 - 2008 Ion Gaztañaga<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="basic_ivectorstream.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_interprocess_reference.html#header.boost.interprocess.streams.vectorstream_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="basic_vectorstream.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

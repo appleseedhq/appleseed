@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="600" height ="400" version="1.1" xmlns="http://www.w3.org/2000/svg"
+ xmlns:xlink="http://www.w3.org/1999/xlink"
+ xmlns:ev="http://www.w3.org/2001/xml-events">
+
+<!-- SVG plot written using Boost.Plot program (Creator Jacob Voytko) --> 
+<!-- Use, modification and distribution of Boost.Plot subject to the --> 
+<!-- Boost Software License, Version 1.0.--> 
+<!-- (See accompanying file LICENSE_1_0.txt --> 
+<!-- or copy at http://www.boost.org/LICENSE_1_0.txt) --> 
+
+<!-- SVG Plot Copyright John Maddock 2008 --> 
+<meta name="copyright" content="John Maddock" />
+<meta name="date" content="2008" />
+<!-- Use, modification and distribution of this Scalable Vector Graphic file -->
+<!-- are subject to the Boost Software License, Version 1.0. -->
+<!-- (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt) -->
+
+<clipPath id="plot_window"><rect x="62.8" y="63" width="524.2" height="274.2"/></clipPath>
+<g id="imageBackground" stroke="rgb(119,136,153)" fill="rgb(255,255,255)" stroke-width="2"><rect x="0" y="0" width="600" height="400"/></g>
+<g id="plotBackground" stroke="rgb(119,136,153)" fill="rgb(255,255,255)" stroke-width="2"><rect x="61.8" y="62" width="526.2" height="276.2"/></g>
+<g id="yMinorGrid" stroke="rgb(200,220,255)" stroke-width="0.5"></g>
+<g id="yMajorGrid" stroke="rgb(200,220,255)" stroke-width="1"></g>
+<g id="xMinorGrid" stroke="rgb(200,220,255)" stroke-width="0.5"></g>
+<g id="xMajorGrid" stroke="rgb(200,220,255)" stroke-width="1"></g>
+<g id="yAxis" stroke="rgb(0,0,0)" stroke-width="1"><line x1="319.7" y1="62" x2="319.7" y2="338.2"/><line x1="61.8" y1="62" x2="61.8" y2="338.2"/></g>
+<g id="xAxis" stroke="rgb(0,0,0)" stroke-width="1"><line x1="61.8" y1="338.2" x2="588" y2="338.2"/></g>
+<g id="yMinorTicks" stroke="rgb(0,0,0)" stroke-width="1"><path d="M59.8,333.3 L61.8,333.3 M59.8,308.9 L61.8,308.9 M59.8,284.4 L61.8,284.4 M59.8,235.5 L61.8,235.5 M59.8,211 L61.8,211 M59.8,186.6 L61.8,186.6 M59.8,137.7 L61.8,137.7 M59.8,113.2 L61.8,113.2 M59.8,88.75 L61.8,88.75 "/></g>
+<g id="xMinorTicks" stroke="rgb(0,0,0)" stroke-width="1"><path d="M332.6,338.2 L332.6,340.2 M345.5,338.2 L345.5,340.2 M358.4,338.2 L358.4,340.2 M384.2,338.2 L384.2,340.2 M397.1,338.2 L397.1,340.2 M410,338.2 L410,340.2 M435.8,338.2 L435.8,340.2 M448.7,338.2 L448.7,340.2 M461.6,338.2 L461.6,340.2 M487.4,338.2 L487.4,340.2 M500.3,338.2 L500.3,340.2 M513.2,338.2 L513.2,340.2 M539,338.2 L539,340.2 M551.9,338.2 L551.9,340.2 M564.8,338.2 L564.8,340.2 M306.8,338.2 L306.8,340.2 M293.9,338.2 L293.9,340.2 M281.1,338.2 L281.1,340.2 M255.3,338.2 L255.3,340.2 M242.4,338.2 L242.4,340.2 M229.5,338.2 L229.5,340.2 M203.7,338.2 L203.7,340.2 M190.8,338.2 L190.8,340.2 M177.9,338.2 L177.9,340.2 M152.1,338.2 L152.1,340.2 M139.2,338.2 L139.2,340.2 M126.3,338.2 L126.3,340.2 M100.5,338.2 L100.5,340.2 M87.59,338.2 L87.59,340.2 M74.7,338.2 L74.7,340.2 "/></g>
+<g id="yMajorTicks" stroke="rgb(0,0,0)" stroke-width="2"><path d="M56.8,259.9 L61.8,259.9 M56.8,162.1 L61.8,162.1 M56.8,64.3 L61.8,64.3 "/></g>
+<g id="xMajorTicks" stroke="rgb(0,0,0)" stroke-width="2"><path d="M319.7,338.2 L319.7,343.2 M371.3,338.2 L371.3,343.2 M422.9,338.2 L422.9,343.2 M474.5,338.2 L474.5,343.2 M526.1,338.2 L526.1,343.2 M577.7,338.2 L577.7,343.2 M319.7,338.2 L319.7,343.2 M268.2,338.2 L268.2,343.2 M216.6,338.2 L216.6,343.2 M165,338.2 L165,343.2 M113.4,338.2 L113.4,343.2 M61.8,338.2 L61.8,343.2 "/></g>
+<g id="plotLabels">
+<text x="319.7" y="357.6" text-anchor="middle" font-size="12" font-family="Verdana">0</text>
+<text x="371.3" y="357.6" text-anchor="middle" font-size="12" font-family="Verdana">1</text>
+<text x="422.9" y="357.6" text-anchor="middle" font-size="12" font-family="Verdana">2</text>
+<text x="474.5" y="357.6" text-anchor="middle" font-size="12" font-family="Verdana">3</text>
+<text x="526.1" y="357.6" text-anchor="middle" font-size="12" font-family="Verdana">4</text>
+<text x="577.7" y="357.6" text-anchor="middle" font-size="12" font-family="Verdana">5</text>
+<text x="319.7" y="357.6" text-anchor="middle" font-size="12" font-family="Verdana">0</text>
+<text x="268.2" y="357.6" text-anchor="middle" font-size="12" font-family="Verdana">-1</text>
+<text x="216.6" y="357.6" text-anchor="middle" font-size="12" font-family="Verdana">-2</text>
+<text x="165" y="357.6" text-anchor="middle" font-size="12" font-family="Verdana">-3</text>
+<text x="113.4" y="357.6" text-anchor="middle" font-size="12" font-family="Verdana">-4</text>
+<text x="61.8" y="357.6" text-anchor="middle" font-size="12" font-family="Verdana">-5</text>
+<text x="50.8" y="262.3" text-anchor="end" font-size="12" font-family="Verdana">5</text>
+<text x="50.8" y="164.5" text-anchor="end" font-size="12" font-family="Verdana">10</text>
+<text x="50.8" y="66.7" text-anchor="end" font-size="12" font-family="Verdana">15</text></g>
+<g id="yLabel">
+<text x="30.2" y="200.1" text-anchor="middle" transform = "rotate(-90 30.2 200.1 )" font-size="14" font-family="Verdana">sinhc_pi(z)</text></g>
+<g id="xLabel">
+<text x="324.9" y="384" text-anchor="middle" font-size="14" font-family="Verdana">z</text></g>
+<g id="plotLines" stroke-width="2"><g clip-path="url(#plot_window)" stroke="rgb(0,0,139)" stroke-width="1"><path d="M61.8,67.42 L64.38,78.79 L66.96,89.69 L69.54,100.1 L72.12,110.1 L74.7,119.7 L77.28,128.9 L79.86,137.8 L82.44,146.2 L85.01,154.3 L87.59,162.1 L90.17,169.6 L92.75,176.7 L95.33,183.6 L97.91,190.1 L100.5,196.4 L103.1,202.5 L105.6,208.3 L108.2,213.8 L110.8,219.2 L113.4,224.3 L116,229.2 L118.5,233.9 L121.1,238.4 L123.7,242.7 L126.3,246.9 L128.9,250.9 L131.4,254.7 L134,258.4 L136.6,261.9 L139.2,265.3 L141.8,268.5 L144.3,271.7 L146.9,274.6 L149.5,277.5 L152.1,280.3 L154.7,282.9 L157.2,285.4 L159.8,287.9 L162.4,290.2 L165,292.4 L167.6,294.6 L170.1,296.6 L172.7,298.6 L175.3,300.5 L177.9,302.3 L180.5,304.1 L183,305.8 L185.6,307.4 L188.2,308.9 L190.8,310.4 L193.3,311.8 L195.9,313.2 L198.5,314.5 L201.1,315.8 L203.7,317 L206.2,318.1 L208.8,319.2 L211.4,320.3 L214,321.3 L216.6,322.3 L219.1,323.2 L221.7,324.1 L224.3,325 L226.9,325.8 L229.5,326.6 L232,327.3 L234.6,328 L237.2,328.7 L239.8,329.4 L242.4,330 L244.9,330.6 L247.5,331.2 L250.1,331.7 L252.7,332.2 L255.3,332.7 L257.8,333.2 L260.4,333.6 L263,334 L265.6,334.4 L268.2,334.8 L270.7,335.1 L273.3,335.4 L275.9,335.8 L278.5,336 L281,336.3 L283.6,336.6 L286.2,336.8 L288.8,337 L291.4,337.2 L293.9,337.4 L296.5,337.5 L299.1,337.7 L301.7,337.8 L304.3,337.9 L306.8,338 L309.4,338.1 L312,338.1 L314.6,338.2 L317.2,338.2 L319.7,338.2 L322.3,338.2 L324.9,338.2 L327.5,338.1 L330.1,338.1 L332.6,338 L335.2,337.9 L337.8,337.8 L340.4,337.7 L343,337.5 L345.5,337.4 L348.1,337.2 L350.7,337 L353.3,336.8 L355.9,336.6 L358.4,336.3 L361,336 L363.6,335.8 L366.2,335.4 L368.7,335.1 L371.3,334.8 L373.9,334.4 L376.5,334 L379.1,333.6 L381.6,333.2 L384.2,332.7 L386.8,332.2 L389.4,331.7 L392,331.2 L394.5,330.6 L397.1,330 L399.7,329.4 L402.3,328.7 L404.9,328 L407.4,327.3 L410,326.6 L412.6,325.8 L415.2,325 L417.8,324.1 L420.3,323.2 L422.9,322.3 L425.5,321.3 L428.1,320.3 L430.7,319.2 L433.2,318.1 L435.8,317 L438.4,315.8 L441,314.5 L443.6,313.2 L446.1,311.8 L448.7,310.4 L451.3,308.9 L453.9,307.4 L456.4,305.8 L459,304.1 L461.6,302.3 L464.2,300.5 L466.8,298.6 L469.3,296.6 L471.9,294.6 L474.5,292.4 L477.1,290.2 L479.7,287.9 L482.2,285.4 L484.8,282.9 L487.4,280.3 L490,277.5 L492.6,274.6 L495.1,271.7 L497.7,268.5 L500.3,265.3 L502.9,261.9 L505.5,258.4 L508,254.7 L510.6,250.9 L513.2,246.9 L515.8,242.7 L518.4,238.4 L520.9,233.9 L523.5,229.2 L526.1,224.3 L528.7,219.2 L531.3,213.8 L533.8,208.3 L536.4,202.5 L539,196.4 L541.6,190.1 L544.1,183.6 L546.7,176.7 L549.3,169.6 L551.9,162.1 L554.5,154.3 L557,146.2 L559.6,137.8 L562.2,128.9 L564.8,119.7 L567.4,110.1 L569.9,100.1 L572.5,89.69 L575.1,78.79 L577.7,67.42 " fill="none"/></g>
+</g>
+<g id="plotPoints" clip-path="url(#plot_window)"><g stroke="rgb(0,0,0)"></g>
+</g>
+<g id="limitPoints" stroke="rgb(119,136,153)" fill="rgb(250,235,215)"></g>
+<g id="legendBackground" stroke="rgb(119,136,153)" fill="rgb(255,255,255)"></g>
+<g id="legendPoints"></g>
+<g id="legendText"></g>
+<g id="title">
+<text x="300" y="40" text-anchor="middle" font-size="20" font-family="Verdana">sinhc_pi</text></g>
+</svg>

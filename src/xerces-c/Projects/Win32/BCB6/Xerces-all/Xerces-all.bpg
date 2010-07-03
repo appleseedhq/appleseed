@@ -1,0 +1,47 @@
+#------------------------------------------------------------------------------
+VERSION = BWS.01
+#------------------------------------------------------------------------------
+!ifndef ROOT
+ROOT = $(MAKEDIR)\..
+!endif
+#------------------------------------------------------------------------------
+MAKE = $(ROOT)\bin\make.exe -$(MAKEFLAGS) -f$**
+DCC = $(ROOT)\bin\dcc32.exe $**
+BRCC = $(ROOT)\bin\brcc32.exe $**
+#------------------------------------------------------------------------------
+PROJECTS = MakeBuildDirs XercesLib.dll DOMCount.exe DOMPrint.exe SAXCount.exe SAXPrint.exe SAX2Count.exe SAX2Print.exe DOMTest.exe EncodingTest.exe
+#------------------------------------------------------------------------------
+default: $(PROJECTS)
+#------------------------------------------------------------------------------
+
+MakeBuildDirs: MakeBuildDirs.bat
+  call $**
+
+XercesLib.dll: XercesLib\XercesLib.bpr
+  $(MAKE)
+
+DOMPrint.exe: DOMPrint\DOMPrint.bpr
+  $(MAKE)
+
+DOMCount.exe: DOMCount\DOMCount.bpr
+  $(MAKE)
+
+SAXCount.exe: SAXCount\SAXCount.bpr
+  $(MAKE)
+
+SAXPrint.exe: SAXPrint\SAXPrint.bpr
+  $(MAKE)
+
+SAX2Count.exe: SAX2Count\SAX2Count.bpr
+  $(MAKE)
+
+SAX2Print.exe: SAX2Print\SAX2Print.bpr
+  $(MAKE)
+
+DOMTest.exe: DOMTest\DOMTest.bpr
+  $(MAKE)
+
+EncodingTest.exe: EncodingTest\EncodingTest.bpr
+  $(MAKE)
+
+

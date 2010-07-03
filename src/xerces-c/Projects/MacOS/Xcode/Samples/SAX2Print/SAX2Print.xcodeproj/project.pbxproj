@@ -1,0 +1,293 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 42;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		900E8AA2055B217D000AC26D /* SAX2Print.hpp in Headers */ = {isa = PBXBuildFile; fileRef = F54F8B8C00F8F37F01000001 /* SAX2Print.hpp */; };
+		900E8AA3055B217D000AC26D /* SAX2PrintHandlers.hpp in Headers */ = {isa = PBXBuildFile; fileRef = F54F8B8E00F8F37F01000001 /* SAX2PrintHandlers.hpp */; };
+		900E8AA4055B217D000AC26D /* xerces_sample_prefix.h in Headers */ = {isa = PBXBuildFile; fileRef = F52345FA03AE621701A80065 /* xerces_sample_prefix.h */; };
+		900E8AA6055B217D000AC26D /* SAX2Print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F54F8B8B00F8F37F01000001 /* SAX2Print.cpp */; };
+		900E8AA7055B217D000AC26D /* SAX2PrintHandlers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F54F8B8D00F8F37F01000001 /* SAX2PrintHandlers.cpp */; };
+		904803D308B14FFE004A3442 /* SAX2FilterHandlers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 904803D108B14FFE004A3442 /* SAX2FilterHandlers.cpp */; };
+		904803D408B14FFE004A3442 /* SAX2FilterHandlers.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 904803D208B14FFE004A3442 /* SAX2FilterHandlers.hpp */; };
+		90EBD00108B15BA70020DED4 /* Xerces.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 90EBD00008B15BA70020DED4 /* Xerces.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXBuildStyle section */
+		F57843050313FA0D01A80065 /* Development GCC3 */ = {
+			isa = PBXBuildStyle;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				OPTIMIZATION_CFLAGS = "-O0";
+			};
+			name = "Development GCC3";
+		};
+		F57843060313FA1301A80065 /* Deployment GCC3 */ = {
+			isa = PBXBuildStyle;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+			};
+			name = "Deployment GCC3";
+		};
+/* End PBXBuildStyle section */
+
+/* Begin PBXFileReference section */
+		900E8AAD055B217D000AC26D /* SAX2Print */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SAX2Print; sourceTree = BUILT_PRODUCTS_DIR; };
+		904803D108B14FFE004A3442 /* SAX2FilterHandlers.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = SAX2FilterHandlers.cpp; path = ../../../../../samples/SAX2Print/SAX2FilterHandlers.cpp; sourceTree = SOURCE_ROOT; };
+		904803D208B14FFE004A3442 /* SAX2FilterHandlers.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = SAX2FilterHandlers.hpp; path = ../../../../../samples/SAX2Print/SAX2FilterHandlers.hpp; sourceTree = SOURCE_ROOT; };
+		90EBD00008B15BA70020DED4 /* Xerces.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Xerces.framework; path = ../../XercesLib/build/Development/Xerces.framework; sourceTree = SOURCE_ROOT; };
+		F52345FA03AE621701A80065 /* xerces_sample_prefix.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = xerces_sample_prefix.h; path = ../xerces_sample_prefix.h; sourceTree = SOURCE_ROOT; };
+		F54F8B8B00F8F37F01000001 /* SAX2Print.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = SAX2Print.cpp; sourceTree = "<group>"; };
+		F54F8B8C00F8F37F01000001 /* SAX2Print.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; path = SAX2Print.hpp; sourceTree = "<group>"; };
+		F54F8B8D00F8F37F01000001 /* SAX2PrintHandlers.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = SAX2PrintHandlers.cpp; sourceTree = "<group>"; };
+		F54F8B8E00F8F37F01000001 /* SAX2PrintHandlers.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; path = SAX2PrintHandlers.hpp; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		900E8AA8055B217D000AC26D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				90EBD00108B15BA70020DED4 /* Xerces.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0249A662FF388D9811CA2CEA /* External Frameworks and Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				90EBD00008B15BA70020DED4 /* Xerces.framework */,
+			);
+			name = "External Frameworks and Libraries";
+			sourceTree = "<group>";
+		};
+		08FB7794FE84155DC02AAC07 /* IDOMPrint */ = {
+			isa = PBXGroup;
+			children = (
+				F52345FA03AE621701A80065 /* xerces_sample_prefix.h */,
+				08FB7795FE84155DC02AAC07 /* SAX2Print */,
+				0249A662FF388D9811CA2CEA /* External Frameworks and Libraries */,
+				1AB674ADFE9D54B511CA2CBB /* Products */,
+			);
+			name = IDOMPrint;
+			sourceTree = "<group>";
+		};
+		08FB7795FE84155DC02AAC07 /* SAX2Print */ = {
+			isa = PBXGroup;
+			children = (
+				904803D108B14FFE004A3442 /* SAX2FilterHandlers.cpp */,
+				904803D208B14FFE004A3442 /* SAX2FilterHandlers.hpp */,
+				F54F8B8B00F8F37F01000001 /* SAX2Print.cpp */,
+				F54F8B8C00F8F37F01000001 /* SAX2Print.hpp */,
+				F54F8B8D00F8F37F01000001 /* SAX2PrintHandlers.cpp */,
+				F54F8B8E00F8F37F01000001 /* SAX2PrintHandlers.hpp */,
+			);
+			name = SAX2Print;
+			path = ../../../../../samples/SAX2Print;
+			sourceTree = SOURCE_ROOT;
+		};
+		1AB674ADFE9D54B511CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				900E8AAD055B217D000AC26D /* SAX2Print */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		900E8AA1055B217D000AC26D /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				900E8AA2055B217D000AC26D /* SAX2Print.hpp in Headers */,
+				900E8AA3055B217D000AC26D /* SAX2PrintHandlers.hpp in Headers */,
+				900E8AA4055B217D000AC26D /* xerces_sample_prefix.h in Headers */,
+				904803D408B14FFE004A3442 /* SAX2FilterHandlers.hpp in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		900E8AA0055B217D000AC26D /* SAX2Print */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 904803C008B14F57004A3442 /* Build configuration list for PBXNativeTarget "SAX2Print" */;
+			buildPhases = (
+				900E8AA1055B217D000AC26D /* Headers */,
+				900E8AA5055B217D000AC26D /* Sources */,
+				900E8AA8055B217D000AC26D /* Frameworks */,
+				900E8AAB055B217D000AC26D /* Rez */,
+			);
+			buildRules = (
+			);
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = ../../XercesLib/build;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = ../xerces_sample_prefix.h;
+				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
+				GCC_WARN_UNKNOWN_PRAGMAS = NO;
+				HEADER_SEARCH_PATHS = ../../../../../src/;
+				INSTALL_PATH = "$(HOME)/bin";
+				LIBRARY_SEARCH_PATHS = "";
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				OTHER_REZFLAGS = "";
+				PREBINDING = NO;
+				PRODUCT_NAME = SAX2Print;
+				REZ_EXECUTABLE = YES;
+				SECTORDER_FLAGS = "";
+				WARNING_CFLAGS = "-Wmost";
+			};
+			dependencies = (
+			);
+			name = SAX2Print;
+			productInstallPath = "$(HOME)/bin";
+			productName = IDOMPrint;
+			productReference = 900E8AAD055B217D000AC26D /* SAX2Print */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		08FB7793FE84155DC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 904803C408B14F57004A3442 /* Build configuration list for PBXProject "SAX2Print" */;
+			buildSettings = {
+			};
+			buildStyles = (
+				F57843050313FA0D01A80065 /* Development GCC3 */,
+				F57843060313FA1301A80065 /* Deployment GCC3 */,
+			);
+			hasScannedForEncodings = 1;
+			mainGroup = 08FB7794FE84155DC02AAC07 /* IDOMPrint */;
+			projectDirPath = "";
+			targets = (
+				900E8AA0055B217D000AC26D /* SAX2Print */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXRezBuildPhase section */
+		900E8AAB055B217D000AC26D /* Rez */ = {
+			isa = PBXRezBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXRezBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		900E8AA5055B217D000AC26D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				900E8AA6055B217D000AC26D /* SAX2Print.cpp in Sources */,
+				900E8AA7055B217D000AC26D /* SAX2PrintHandlers.cpp in Sources */,
+				904803D308B14FFE004A3442 /* SAX2FilterHandlers.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		904803C108B14F57004A3442 /* Development */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					../../XercesLib/build,
+					"$(SRCROOT)/../../XercesLib/build/Deployment",
+					"$(SRCROOT)/../../XercesLib/build/Development",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = ../xerces_sample_prefix.h;
+				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
+				GCC_WARN_UNKNOWN_PRAGMAS = NO;
+				HEADER_SEARCH_PATHS = ../../../../../src/;
+				INSTALL_PATH = "$(HOME)/bin";
+				LIBRARY_SEARCH_PATHS = "";
+				OPTIMIZATION_CFLAGS = "-O0";
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				OTHER_REZFLAGS = "";
+				PREBINDING = NO;
+				PRODUCT_NAME = SAX2Print;
+				REZ_EXECUTABLE = YES;
+				SECTORDER_FLAGS = "";
+				WARNING_CFLAGS = "-Wmost";
+			};
+			name = Development;
+		};
+		904803C208B14F57004A3442 /* Deployment */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					../../XercesLib/build,
+					"$(SRCROOT)/../../XercesLib/build/Deployment",
+					"$(SRCROOT)/../../XercesLib/build/Development",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = ../xerces_sample_prefix.h;
+				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
+				GCC_WARN_UNKNOWN_PRAGMAS = NO;
+				HEADER_SEARCH_PATHS = ../../../../../src/;
+				INSTALL_PATH = "$(HOME)/bin";
+				LIBRARY_SEARCH_PATHS = "";
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				OTHER_REZFLAGS = "";
+				PREBINDING = NO;
+				PRODUCT_NAME = SAX2Print;
+				REZ_EXECUTABLE = YES;
+				SECTORDER_FLAGS = "";
+				WARNING_CFLAGS = "-Wmost";
+			};
+			name = Deployment;
+		};
+		904803C508B14F57004A3442 /* Development */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Development;
+		};
+		904803C608B14F57004A3442 /* Deployment */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Deployment;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		904803C008B14F57004A3442 /* Build configuration list for PBXNativeTarget "SAX2Print" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				904803C108B14F57004A3442 /* Development */,
+				904803C208B14F57004A3442 /* Deployment */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Development;
+		};
+		904803C408B14F57004A3442 /* Build configuration list for PBXProject "SAX2Print" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				904803C508B14F57004A3442 /* Development */,
+				904803C608B14F57004A3442 /* Deployment */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Development;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
+}

@@ -1,0 +1,347 @@
+<HTML><HEAD><SCRIPT language="JavaScript" src="../resources/script.js" type="text/javascript"></SCRIPT><TITLE>Xerces-C++: XSMultiValueFacet Class Reference</TITLE><link href="XercesApi.css" rel="stylesheet" type="text/css"></HEAD><BODY alink="#ff0000" bgcolor="#ffffff" leftmargin="4" link="#0000ff" marginheight="4" marginwidth="4" text="#000000" topmargin="4" vlink="#0000aa"><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD align="left" height="60" rowspan="3" valign="top" width="135"><IMG border="0" height="60" hspace="0" src="../resources/logo.gif" vspace="0" width="135"></TD><TD align="left" colspan="4" height="5" valign="top" width="456"><IMG border="0" height="5" hspace="0" src="../resources/line.gif" vspace="0" width="456"></TD><TD align="left" height="60" rowspan="3" valign="top" width="29"><IMG border="0" height="60" hspace="0" src="../resources/right.gif" vspace="0" width="29"></TD></TR><TR><TD align="left" bgcolor="#0086b2" colspan="4" height="35" valign="top" width="456"><IMG alt="" border="0" height="35" hspace="0" src="../graphics/api-header.jpg" vspace="0" width="456"></TD></TR><TR><TD align="left" height="20" valign="top" width="168"><IMG border="0" height="20" hspace="0" src="../resources/bottom.gif" vspace="0" width="168"></TD><TD align="left" height="20" valign="top" width="96"><A href="http://xml.apache.org/" onMouseOut="rolloverOff('xml');" onMouseOver="rolloverOn('xml');" target="new"><IMG alt="http://xml.apache.org/" border="0" height="20" hspace="0" name="xml" onLoad="rolloverLoad('xml','../resources/button-xml-hi.gif','../resources/button-xml-lo.gif');" src="../resources/button-xml-lo.gif" vspace="0" width="96"></A></TD><TD align="left" height="20" valign="top" width="96"><A href="http://www.apache.org/" onMouseOut="rolloverOff('asf');" onMouseOver="rolloverOn('asf');" target="new"><IMG alt="http://www.apache.org/" border="0" height="20" hspace="0" name="asf" onLoad="rolloverLoad('asf','../resources/button-asf-hi.gif','../resources/button-asf-lo.gif');" src="../resources/button-asf-lo.gif" vspace="0" width="96"></A></TD><TD align="left" height="20" valign="top" width="96"><A href="http://www.w3.org/" onMouseOut="rolloverOff('w3c');" onMouseOver="rolloverOn('w3c');" target="new"><IMG alt="http://www.w3.org/" border="0" height="20" hspace="0" name="w3c" onLoad="rolloverLoad('w3c','../resources/button-w3c-hi.gif','../resources/button-w3c-lo.gif');" src="../resources/button-w3c-lo.gif" vspace="0" width="96"></A></TD></TR></TABLE><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD align="left" valign="top" width="120"><IMG border="0" height="14" hspace="0" src="../resources/join.gif" vspace="0" width="120"><BR>
+  <A href="../../index.html" onMouseOut="rolloverOff('side-ext-2');" onMouseOver="rolloverOn('side-ext-2');"><IMG alt="Home" border="0" height="12" hspace="0" name="side-ext-2" onLoad="rolloverLoad('side-ext-2','../graphics/ext-2-label-2.jpg','../graphics/ext-2-label-3.jpg');" src="../graphics/ext-2-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../index.html" onMouseOut="rolloverOff('side-index');" onMouseOver="rolloverOn('side-index');"><IMG alt="Readme" border="0" height="12" hspace="0" name="side-index" onLoad="rolloverLoad('side-index','../graphics/index-label-2.jpg','../graphics/index-label-3.jpg');" src="../graphics/index-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../charter.html" onMouseOut="rolloverOff('side-charter');" onMouseOver="rolloverOn('side-charter');"><IMG alt="Charter" border="0" height="12" hspace="0" name="side-charter" onLoad="rolloverLoad('side-charter','../graphics/charter-label-2.jpg','../graphics/charter-label-3.jpg');" src="../graphics/charter-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../releases.html" onMouseOut="rolloverOff('side-releases');" onMouseOver="rolloverOn('side-releases');"><IMG alt="Release Info" border="0" height="12" hspace="0" name="side-releases" onLoad="rolloverLoad('side-releases','../graphics/releases-label-2.jpg','../graphics/releases-label-3.jpg');" src="../graphics/releases-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../install.html" onMouseOut="rolloverOff('side-install');" onMouseOver="rolloverOn('side-install');"><IMG alt="Installation" border="0" height="12" hspace="0" name="side-install" onLoad="rolloverLoad('side-install','../graphics/install-label-2.jpg','../graphics/install-label-3.jpg');" src="../graphics/install-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="http://xerces.apache.org/xerces-c/download.cgi" onMouseOut="rolloverOff('side-ext-20');" onMouseOver="rolloverOn('side-ext-20');"><IMG alt="Download" border="0" height="12" hspace="0" name="side-ext-20" onLoad="rolloverLoad('side-ext-20','../graphics/ext-20-label-2.jpg','../graphics/ext-20-label-3.jpg');" src="../graphics/ext-20-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../build.html" onMouseOut="rolloverOff('side-build');" onMouseOver="rolloverOn('side-build');"><IMG alt="Build Instructions" border="0" height="12" hspace="0" name="side-build" onLoad="rolloverLoad('side-build','../graphics/build-label-2.jpg','../graphics/build-label-3.jpg');" src="../graphics/build-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../program.html" onMouseOut="rolloverOff('side-program');" onMouseOver="rolloverOn('side-program');"><IMG alt="Programming" border="0" height="12" hspace="0" name="side-program" onLoad="rolloverLoad('side-program','../graphics/program-label-2.jpg','../graphics/program-label-3.jpg');" src="../graphics/program-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../samples.html" onMouseOut="rolloverOff('side-samples');" onMouseOver="rolloverOn('side-samples');"><IMG alt="Samples" border="0" height="12" hspace="0" name="side-samples" onLoad="rolloverLoad('side-samples','../graphics/samples-label-2.jpg','../graphics/samples-label-3.jpg');" src="../graphics/samples-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../faqs.html" onMouseOut="rolloverOff('side-faqs');" onMouseOver="rolloverOn('side-faqs');"><IMG alt="FAQs" border="0" height="12" hspace="0" name="side-faqs" onLoad="rolloverLoad('side-faqs','../graphics/faqs-label-2.jpg','../graphics/faqs-label-3.jpg');" src="../graphics/faqs-label-3.jpg" vspace="0" width="120"></A><BR>
+
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../api.html" onMouseOut="rolloverOff('side-api');" onMouseOver="rolloverOn('side-api');"><IMG alt="API Docs" border="0" height="12" hspace="0" name="side-api" onLoad="rolloverLoad('side-api','../graphics/api-label-2.jpg','../graphics/api-label-3.jpg');" src="../graphics/api-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../ApacheDOMC++Binding.html" onMouseOut="rolloverOff('side-ext-88');" onMouseOver="rolloverOn('side-ext-88');"><IMG alt="DOM C++ Binding" border="0" height="12" hspace="0" name="side-ext-88" onLoad="rolloverLoad('side-ext-88','../graphics/ext-88-label-2.jpg','../graphics/ext-88-label-3.jpg');" src="../graphics/ext-88-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../migrate.html" onMouseOut="rolloverOff('side-migrate');" onMouseOver="rolloverOn('side-migrate');"><IMG alt="Migration Guide" border="0" height="12" hspace="0" name="side-migrate" onLoad="rolloverLoad('side-migrate','../graphics/migrate-label-2.jpg','../graphics/migrate-label-3.jpg');" src="../graphics/migrate-label-3.jpg" vspace="0" width="120"></A><BR>
+
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+    <A href="../feedback.html" onMouseOut="rolloverOff('side-feedback');" onMouseOver="rolloverOn('side-feedback');"><IMG alt="Feedback" border="0" height="12" hspace="0" name="side-feedback" onLoad="rolloverLoad('side-feedback','../graphics/feedback-label-2.jpg','../graphics/feedback-label-3.jpg');" src="../graphics/feedback-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../bug-report.html" onMouseOut="rolloverOff('side-bug-report');" onMouseOver="rolloverOn('side-bug-report');"><IMG alt="Bug-Reporting" border="0" height="12" hspace="0" name="side-bug-report" onLoad="rolloverLoad('side-bug-report','../graphics/bug-report-label-2.jpg','../graphics/bug-report-label-3.jpg');" src="../graphics/bug-report-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../mailing-lists.html" onMouseOut="rolloverOff('side-mailing-lists');" onMouseOver="rolloverOn('side-mailing-lists');"><IMG alt="Mailing Lists" border="0" height="12" hspace="0" name="side-mailing-lists" onLoad="rolloverLoad('side-mailing-lists','../graphics/mailing-lists-label-2.jpg','../graphics/mailing-lists-label-3.jpg');" src="../graphics/mailing-lists-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+    <A href="../source-repository.html" onMouseOut="rolloverOff('side-source-repository');" onMouseOver="rolloverOn('side-source-repository');"><IMG alt="Source Repository" border="0" height="12" hspace="0" name="side-source-repository" onLoad="rolloverLoad('side-source-repository','../graphics/source-repository-label-2.jpg','../graphics/source-repository-label-3.jpg');" src="../graphics/source-repository-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../applications.html" onMouseOut="rolloverOff('side-applications');" onMouseOver="rolloverOn('side-applications');"><IMG alt="Applications" border="0" height="12" hspace="0" name="side-applications" onLoad="rolloverLoad('side-applications','../graphics/applications-label-2.jpg','../graphics/applications-label-3.jpg');" src="../graphics/applications-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="14" hspace="0" src="../resources/close.gif" vspace="0" width="120"><BR></TD><TD align="left" valign="top" width="500"><TABLE border="0" cellpadding="3" cellspacing="0"><TR><TD>
+    <TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#FFFFFF" colspan="2" width="494"><TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#039acc" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#039acc" height="1" width="492"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#039acc" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" width="492"><FONT color="#ffffff" face="arial,helvetica,sanserif" size="+1"><IMG border="0" height="2" hspace="0" src="../resources/void.gif" vspace="0" width="2"><B>API Docs for SAX and DOM</B></FONT></TD><TD bgcolor="#017299" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#017299" height="1" width="492"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#017299" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></TD></TR><TR><TD width="10">&nbsp;</TD><TD width="484"><FONT color="#000000" face="arial,helvetica,sanserif">
+
+	    <P>
+<!-- Generated by Doxygen 1.5.3 -->
+<div class="tabs">
+  <ul>
+    <li><a href="index.html"><span>Main&nbsp;Page</span></a></li>
+    <li class="current"><a href="classes.html"><span>Classes</span></a></li>
+    <li><a href="files.html"><span>Files</span></a></li>
+    <li><a href="pages.html"><span>Related&nbsp;Pages</span></a></li>
+  </ul>
+</div>
+<div class="tabs">
+  <ul>
+    <li><a href="classes.html"><span>Alphabetical&nbsp;List</span></a></li>
+    <li><a href="annotated.html"><span>Class&nbsp;List</span></a></li>
+    <li><a href="hierarchy.html"><span>Class&nbsp;Hierarchy</span></a></li>
+    <li><a href="functions.html"><span>Class&nbsp;Members</span></a></li>
+  </ul>
+</div>
+<h1>XSMultiValueFacet Class Reference</h1><!-- doxytag: class="XSMultiValueFacet" --><!-- doxytag: inherits="XSObject" --><div class="dynheader">
+Inheritance diagram for XSMultiValueFacet:</div>
+<div class="dynsection">
+<p><center><img src="classXSMultiValueFacet__inherit__graph.png" border="0" usemap="#XSMultiValueFacet__inherit__map" alt="Inheritance graph"></center>
+<map name="XSMultiValueFacet__inherit__map">
+<area shape="rect" href="classXSObject.html" title="XSObject" alt="" coords="36,84,116,111"><area shape="rect" href="classXMemory.html" title="This class makes it possible to override the C++ memory management by adding new/delete..." alt="" coords="35,7,117,33"></map>
+<center><font size="2">[<a href="graph_legend.html">legend</a>]</font></center></div>
+
+<p>
+<a href="classXSMultiValueFacet-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
+<tr><td></td></tr>
+<tr><td colspan="2"><br><h2>Public Member Functions</h2></td></tr>
+<tr><td colspan="2"><div class="groupHeader">Constructors</div></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXSMultiValueFacet.html#24774a81a875610595daab298cae77a7">XSMultiValueFacet</a> (<a class="el" href="classXSSimpleTypeDefinition.html#bf93afa37a40fd7b8a92d571375a0b8e">XSSimpleTypeDefinition::FACET</a> facetKind, <a class="el" href="XSConstants_8hpp.html#ef973c7ee42adc6b41aa1bf50b8e19aa">StringList</a> *lexicalValues, bool isFixed, <a class="el" href="classXSAnnotation.html">XSAnnotation</a> *const headAnnot, <a class="el" href="classXSModel.html">XSModel</a> *const xsModel, <a class="el" href="classMemoryManager.html">MemoryManager</a> *const manager=<a class="el" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252">XMLPlatformUtils::fgMemoryManager</a>)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">The default constructor.  <a href="#24774a81a875610595daab298cae77a7"></a><br></td></tr>
+<tr><td colspan="2"><div class="groupHeader">Destructor</div></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXSMultiValueFacet.html#a0a79ef5ee39a5d1fc25238d2d37e9cd">~XSMultiValueFacet</a> ()</td></tr>
+
+<tr><td colspan="2"><div class="groupHeader">XSMultiValueFacet methods</div></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="classXSSimpleTypeDefinition.html#bf93afa37a40fd7b8a92d571375a0b8e">XSSimpleTypeDefinition::FACET</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXSMultiValueFacet.html#909b320668a2879113504259f89a03c3">getFacetKind</a> () const </td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight"><dl class="return" compact><dt><b>Returns:</b></dt><dd>An indication as to the facet's type; see <code><a class="el" href="classXSSimpleTypeDefinition.html#bf93afa37a40fd7b8a92d571375a0b8e">XSSimpleTypeDefinition::FACET</a></code> </dd></dl>
+ <a href="#909b320668a2879113504259f89a03c3"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="XSConstants_8hpp.html#ef973c7ee42adc6b41aa1bf50b8e19aa">StringList</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXSMultiValueFacet.html#cfcda96c9da3d0fd390afae6fa94b2ce">getLexicalFacetValues</a> ()</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight"><dl class="return" compact><dt><b>Returns:</b></dt><dd>Returns the values of a constraining facet. </dd></dl>
+ <a href="#cfcda96c9da3d0fd390afae6fa94b2ce"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXSMultiValueFacet.html#c09a53ed2fb6706a9d2bcbb04a1b14ae">isFixed</a> () const </td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Check whether a facet value is fixed.  <a href="#c09a53ed2fb6706a9d2bcbb04a1b14ae"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="XSConstants_8hpp.html#d1b2b08f8735f909f69d8dc7dfb301b5">XSAnnotationList</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXSMultiValueFacet.html#1490e6d1a88abbac0425cf9b9ac9b49d">getAnnotations</a> ()</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight"><dl class="return" compact><dt><b>Returns:</b></dt><dd>the annotations belonging to this facet's values </dd></dl>
+ <a href="#1490e6d1a88abbac0425cf9b9ac9b49d"></a><br></td></tr>
+<tr><td colspan="2"><br><h2>Protected Attributes</h2></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="classXSSimpleTypeDefinition.html#bf93afa37a40fd7b8a92d571375a0b8e">XSSimpleTypeDefinition::FACET</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXSMultiValueFacet.html#09a87c3809bbfb6fd000052a9a95c5ae">fFacetKind</a></td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXSMultiValueFacet.html#e0268037e3ca0ca0cb2db05e78b9d6d6">fIsFixed</a></td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="XSConstants_8hpp.html#ef973c7ee42adc6b41aa1bf50b8e19aa">StringList</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXSMultiValueFacet.html#0e7108c428023fb543c6311de717c47f">fLexicalValues</a></td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="XSConstants_8hpp.html#d1b2b08f8735f909f69d8dc7dfb301b5">XSAnnotationList</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXSMultiValueFacet.html#3fdc9b551102fd18875ef31eebfdd987">fXSAnnotationList</a></td></tr>
+
+</table>
+<hr><h2>Constructor &amp; Destructor Documentation</h2>
+<a class="anchor" name="24774a81a875610595daab298cae77a7"></a><!-- doxytag: member="XSMultiValueFacet::XSMultiValueFacet" ref="24774a81a875610595daab298cae77a7" args="(XSSimpleTypeDefinition::FACET facetKind, StringList *lexicalValues, bool isFixed, XSAnnotation *const headAnnot, XSModel *const xsModel, MemoryManager *const manager=XMLPlatformUtils::fgMemoryManager)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">XSMultiValueFacet::XSMultiValueFacet           </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classXSSimpleTypeDefinition.html#bf93afa37a40fd7b8a92d571375a0b8e">XSSimpleTypeDefinition::FACET</a>&nbsp;</td>
+          <td class="paramname"> <em>facetKind</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="XSConstants_8hpp.html#ef973c7ee42adc6b41aa1bf50b8e19aa">StringList</a> *&nbsp;</td>
+          <td class="paramname"> <em>lexicalValues</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&nbsp;</td>
+          <td class="paramname"> <em>isFixed</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classXSAnnotation.html">XSAnnotation</a> *const &nbsp;</td>
+          <td class="paramname"> <em>headAnnot</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classXSModel.html">XSModel</a> *const &nbsp;</td>
+          <td class="paramname"> <em>xsModel</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMemoryManager.html">MemoryManager</a> *const &nbsp;</td>
+          <td class="paramname"> <em>manager</em> = <code><a class="el" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252">XMLPlatformUtils::fgMemoryManager</a></code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+The default constructor. 
+<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>facetKind</em>&nbsp;</td><td></td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>lexicalValues</em>&nbsp;</td><td></td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>isFixed</em>&nbsp;</td><td></td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>headAnnot</em>&nbsp;</td><td></td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>xsModel</em>&nbsp;</td><td></td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>manager</em>&nbsp;</td><td>The configurable memory manager </td></tr>
+  </table>
+</dl>
+
+</div>
+</div><p>
+<a class="anchor" name="a0a79ef5ee39a5d1fc25238d2d37e9cd"></a><!-- doxytag: member="XSMultiValueFacet::~XSMultiValueFacet" ref="a0a79ef5ee39a5d1fc25238d2d37e9cd" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">XSMultiValueFacet::~XSMultiValueFacet           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<hr><h2>Member Function Documentation</h2>
+<a class="anchor" name="909b320668a2879113504259f89a03c3"></a><!-- doxytag: member="XSMultiValueFacet::getFacetKind" ref="909b320668a2879113504259f89a03c3" args="() const " -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classXSSimpleTypeDefinition.html#bf93afa37a40fd7b8a92d571375a0b8e">XSSimpleTypeDefinition::FACET</a> XSMultiValueFacet::getFacetKind           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"> const</td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>An indication as to the facet's type; see <code><a class="el" href="classXSSimpleTypeDefinition.html#bf93afa37a40fd7b8a92d571375a0b8e">XSSimpleTypeDefinition::FACET</a></code> </dd></dl>
+
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="cfcda96c9da3d0fd390afae6fa94b2ce"></a><!-- doxytag: member="XSMultiValueFacet::getLexicalFacetValues" ref="cfcda96c9da3d0fd390afae6fa94b2ce" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="XSConstants_8hpp.html#ef973c7ee42adc6b41aa1bf50b8e19aa">StringList</a> * XSMultiValueFacet::getLexicalFacetValues           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>Returns the values of a constraining facet. </dd></dl>
+
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="c09a53ed2fb6706a9d2bcbb04a1b14ae"></a><!-- doxytag: member="XSMultiValueFacet::isFixed" ref="c09a53ed2fb6706a9d2bcbb04a1b14ae" args="() const " -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool XSMultiValueFacet::isFixed           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"> const</td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Check whether a facet value is fixed. 
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="1490e6d1a88abbac0425cf9b9ac9b49d"></a><!-- doxytag: member="XSMultiValueFacet::getAnnotations" ref="1490e6d1a88abbac0425cf9b9ac9b49d" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="XSConstants_8hpp.html#d1b2b08f8735f909f69d8dc7dfb301b5">XSAnnotationList</a> * XSMultiValueFacet::getAnnotations           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>the annotations belonging to this facet's values </dd></dl>
+
+<p>
+
+</div>
+</div><p>
+<hr><h2>Member Data Documentation</h2>
+<a class="anchor" name="09a87c3809bbfb6fd000052a9a95c5ae"></a><!-- doxytag: member="XSMultiValueFacet::fFacetKind" ref="09a87c3809bbfb6fd000052a9a95c5ae" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classXSSimpleTypeDefinition.html#bf93afa37a40fd7b8a92d571375a0b8e">XSSimpleTypeDefinition::FACET</a> <a class="el" href="classXSMultiValueFacet.html#09a87c3809bbfb6fd000052a9a95c5ae">XSMultiValueFacet::fFacetKind</a><code> [protected]</code>          </td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="e0268037e3ca0ca0cb2db05e78b9d6d6"></a><!-- doxytag: member="XSMultiValueFacet::fIsFixed" ref="e0268037e3ca0ca0cb2db05e78b9d6d6" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="classXSMultiValueFacet.html#e0268037e3ca0ca0cb2db05e78b9d6d6">XSMultiValueFacet::fIsFixed</a><code> [protected]</code>          </td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="0e7108c428023fb543c6311de717c47f"></a><!-- doxytag: member="XSMultiValueFacet::fLexicalValues" ref="0e7108c428023fb543c6311de717c47f" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="XSConstants_8hpp.html#ef973c7ee42adc6b41aa1bf50b8e19aa">StringList</a>* <a class="el" href="classXSMultiValueFacet.html#0e7108c428023fb543c6311de717c47f">XSMultiValueFacet::fLexicalValues</a><code> [protected]</code>          </td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="3fdc9b551102fd18875ef31eebfdd987"></a><!-- doxytag: member="XSMultiValueFacet::fXSAnnotationList" ref="3fdc9b551102fd18875ef31eebfdd987" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="XSConstants_8hpp.html#d1b2b08f8735f909f69d8dc7dfb301b5">XSAnnotationList</a>* <a class="el" href="classXSMultiValueFacet.html#3fdc9b551102fd18875ef31eebfdd987">XSMultiValueFacet::fXSAnnotationList</a><code> [protected]</code>          </td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<hr>The documentation for this class was generated from the following file:<ul>
+<li><a class="el" href="XSMultiValueFacet_8hpp-source.html">XSMultiValueFacet.hpp</a></ul>
+    </FONT></TD></TR></TABLE><BR>
+</TD></TR></TABLE></TD></TR></TABLE><BR><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD bgcolor="#0086b2"><IMG height="1" src="images/dot.gif" width="1" alt=""></TD></TR><TR><TD align="center"><FONT color="#0086b2" size="-1"><I>
+              Copyright &copy; 1994-2004 The Apache Software Foundation.
+              All Rights Reserved.
+            </I></FONT></TD></TR></TABLE></BODY></HTML>

@@ -1,0 +1,598 @@
+<HTML><HEAD><SCRIPT language="JavaScript" src="../resources/script.js" type="text/javascript"></SCRIPT><TITLE>Xerces-C++: XMLValid Class Reference</TITLE><link href="XercesApi.css" rel="stylesheet" type="text/css"></HEAD><BODY alink="#ff0000" bgcolor="#ffffff" leftmargin="4" link="#0000ff" marginheight="4" marginwidth="4" text="#000000" topmargin="4" vlink="#0000aa"><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD align="left" height="60" rowspan="3" valign="top" width="135"><IMG border="0" height="60" hspace="0" src="../resources/logo.gif" vspace="0" width="135"></TD><TD align="left" colspan="4" height="5" valign="top" width="456"><IMG border="0" height="5" hspace="0" src="../resources/line.gif" vspace="0" width="456"></TD><TD align="left" height="60" rowspan="3" valign="top" width="29"><IMG border="0" height="60" hspace="0" src="../resources/right.gif" vspace="0" width="29"></TD></TR><TR><TD align="left" bgcolor="#0086b2" colspan="4" height="35" valign="top" width="456"><IMG alt="" border="0" height="35" hspace="0" src="../graphics/api-header.jpg" vspace="0" width="456"></TD></TR><TR><TD align="left" height="20" valign="top" width="168"><IMG border="0" height="20" hspace="0" src="../resources/bottom.gif" vspace="0" width="168"></TD><TD align="left" height="20" valign="top" width="96"><A href="http://xml.apache.org/" onMouseOut="rolloverOff('xml');" onMouseOver="rolloverOn('xml');" target="new"><IMG alt="http://xml.apache.org/" border="0" height="20" hspace="0" name="xml" onLoad="rolloverLoad('xml','../resources/button-xml-hi.gif','../resources/button-xml-lo.gif');" src="../resources/button-xml-lo.gif" vspace="0" width="96"></A></TD><TD align="left" height="20" valign="top" width="96"><A href="http://www.apache.org/" onMouseOut="rolloverOff('asf');" onMouseOver="rolloverOn('asf');" target="new"><IMG alt="http://www.apache.org/" border="0" height="20" hspace="0" name="asf" onLoad="rolloverLoad('asf','../resources/button-asf-hi.gif','../resources/button-asf-lo.gif');" src="../resources/button-asf-lo.gif" vspace="0" width="96"></A></TD><TD align="left" height="20" valign="top" width="96"><A href="http://www.w3.org/" onMouseOut="rolloverOff('w3c');" onMouseOver="rolloverOn('w3c');" target="new"><IMG alt="http://www.w3.org/" border="0" height="20" hspace="0" name="w3c" onLoad="rolloverLoad('w3c','../resources/button-w3c-hi.gif','../resources/button-w3c-lo.gif');" src="../resources/button-w3c-lo.gif" vspace="0" width="96"></A></TD></TR></TABLE><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD align="left" valign="top" width="120"><IMG border="0" height="14" hspace="0" src="../resources/join.gif" vspace="0" width="120"><BR>
+  <A href="../../index.html" onMouseOut="rolloverOff('side-ext-2');" onMouseOver="rolloverOn('side-ext-2');"><IMG alt="Home" border="0" height="12" hspace="0" name="side-ext-2" onLoad="rolloverLoad('side-ext-2','../graphics/ext-2-label-2.jpg','../graphics/ext-2-label-3.jpg');" src="../graphics/ext-2-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../index.html" onMouseOut="rolloverOff('side-index');" onMouseOver="rolloverOn('side-index');"><IMG alt="Readme" border="0" height="12" hspace="0" name="side-index" onLoad="rolloverLoad('side-index','../graphics/index-label-2.jpg','../graphics/index-label-3.jpg');" src="../graphics/index-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../charter.html" onMouseOut="rolloverOff('side-charter');" onMouseOver="rolloverOn('side-charter');"><IMG alt="Charter" border="0" height="12" hspace="0" name="side-charter" onLoad="rolloverLoad('side-charter','../graphics/charter-label-2.jpg','../graphics/charter-label-3.jpg');" src="../graphics/charter-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../releases.html" onMouseOut="rolloverOff('side-releases');" onMouseOver="rolloverOn('side-releases');"><IMG alt="Release Info" border="0" height="12" hspace="0" name="side-releases" onLoad="rolloverLoad('side-releases','../graphics/releases-label-2.jpg','../graphics/releases-label-3.jpg');" src="../graphics/releases-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../install.html" onMouseOut="rolloverOff('side-install');" onMouseOver="rolloverOn('side-install');"><IMG alt="Installation" border="0" height="12" hspace="0" name="side-install" onLoad="rolloverLoad('side-install','../graphics/install-label-2.jpg','../graphics/install-label-3.jpg');" src="../graphics/install-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="http://xerces.apache.org/xerces-c/download.cgi" onMouseOut="rolloverOff('side-ext-20');" onMouseOver="rolloverOn('side-ext-20');"><IMG alt="Download" border="0" height="12" hspace="0" name="side-ext-20" onLoad="rolloverLoad('side-ext-20','../graphics/ext-20-label-2.jpg','../graphics/ext-20-label-3.jpg');" src="../graphics/ext-20-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../build.html" onMouseOut="rolloverOff('side-build');" onMouseOver="rolloverOn('side-build');"><IMG alt="Build Instructions" border="0" height="12" hspace="0" name="side-build" onLoad="rolloverLoad('side-build','../graphics/build-label-2.jpg','../graphics/build-label-3.jpg');" src="../graphics/build-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../program.html" onMouseOut="rolloverOff('side-program');" onMouseOver="rolloverOn('side-program');"><IMG alt="Programming" border="0" height="12" hspace="0" name="side-program" onLoad="rolloverLoad('side-program','../graphics/program-label-2.jpg','../graphics/program-label-3.jpg');" src="../graphics/program-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../samples.html" onMouseOut="rolloverOff('side-samples');" onMouseOver="rolloverOn('side-samples');"><IMG alt="Samples" border="0" height="12" hspace="0" name="side-samples" onLoad="rolloverLoad('side-samples','../graphics/samples-label-2.jpg','../graphics/samples-label-3.jpg');" src="../graphics/samples-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../faqs.html" onMouseOut="rolloverOff('side-faqs');" onMouseOver="rolloverOn('side-faqs');"><IMG alt="FAQs" border="0" height="12" hspace="0" name="side-faqs" onLoad="rolloverLoad('side-faqs','../graphics/faqs-label-2.jpg','../graphics/faqs-label-3.jpg');" src="../graphics/faqs-label-3.jpg" vspace="0" width="120"></A><BR>
+
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../api.html" onMouseOut="rolloverOff('side-api');" onMouseOver="rolloverOn('side-api');"><IMG alt="API Docs" border="0" height="12" hspace="0" name="side-api" onLoad="rolloverLoad('side-api','../graphics/api-label-2.jpg','../graphics/api-label-3.jpg');" src="../graphics/api-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../ApacheDOMC++Binding.html" onMouseOut="rolloverOff('side-ext-88');" onMouseOver="rolloverOn('side-ext-88');"><IMG alt="DOM C++ Binding" border="0" height="12" hspace="0" name="side-ext-88" onLoad="rolloverLoad('side-ext-88','../graphics/ext-88-label-2.jpg','../graphics/ext-88-label-3.jpg');" src="../graphics/ext-88-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../migrate.html" onMouseOut="rolloverOff('side-migrate');" onMouseOver="rolloverOn('side-migrate');"><IMG alt="Migration Guide" border="0" height="12" hspace="0" name="side-migrate" onLoad="rolloverLoad('side-migrate','../graphics/migrate-label-2.jpg','../graphics/migrate-label-3.jpg');" src="../graphics/migrate-label-3.jpg" vspace="0" width="120"></A><BR>
+
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+    <A href="../feedback.html" onMouseOut="rolloverOff('side-feedback');" onMouseOver="rolloverOn('side-feedback');"><IMG alt="Feedback" border="0" height="12" hspace="0" name="side-feedback" onLoad="rolloverLoad('side-feedback','../graphics/feedback-label-2.jpg','../graphics/feedback-label-3.jpg');" src="../graphics/feedback-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../bug-report.html" onMouseOut="rolloverOff('side-bug-report');" onMouseOver="rolloverOn('side-bug-report');"><IMG alt="Bug-Reporting" border="0" height="12" hspace="0" name="side-bug-report" onLoad="rolloverLoad('side-bug-report','../graphics/bug-report-label-2.jpg','../graphics/bug-report-label-3.jpg');" src="../graphics/bug-report-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../mailing-lists.html" onMouseOut="rolloverOff('side-mailing-lists');" onMouseOver="rolloverOn('side-mailing-lists');"><IMG alt="Mailing Lists" border="0" height="12" hspace="0" name="side-mailing-lists" onLoad="rolloverLoad('side-mailing-lists','../graphics/mailing-lists-label-2.jpg','../graphics/mailing-lists-label-3.jpg');" src="../graphics/mailing-lists-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+    <A href="../source-repository.html" onMouseOut="rolloverOff('side-source-repository');" onMouseOver="rolloverOn('side-source-repository');"><IMG alt="Source Repository" border="0" height="12" hspace="0" name="side-source-repository" onLoad="rolloverLoad('side-source-repository','../graphics/source-repository-label-2.jpg','../graphics/source-repository-label-3.jpg');" src="../graphics/source-repository-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../applications.html" onMouseOut="rolloverOff('side-applications');" onMouseOver="rolloverOn('side-applications');"><IMG alt="Applications" border="0" height="12" hspace="0" name="side-applications" onLoad="rolloverLoad('side-applications','../graphics/applications-label-2.jpg','../graphics/applications-label-3.jpg');" src="../graphics/applications-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="14" hspace="0" src="../resources/close.gif" vspace="0" width="120"><BR></TD><TD align="left" valign="top" width="500"><TABLE border="0" cellpadding="3" cellspacing="0"><TR><TD>
+    <TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#FFFFFF" colspan="2" width="494"><TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#039acc" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#039acc" height="1" width="492"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#039acc" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" width="492"><FONT color="#ffffff" face="arial,helvetica,sanserif" size="+1"><IMG border="0" height="2" hspace="0" src="../resources/void.gif" vspace="0" width="2"><B>API Docs for SAX and DOM</B></FONT></TD><TD bgcolor="#017299" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#017299" height="1" width="492"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#017299" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></TD></TR><TR><TD width="10">&nbsp;</TD><TD width="484"><FONT color="#000000" face="arial,helvetica,sanserif">
+
+	    <P>
+<!-- Generated by Doxygen 1.5.3 -->
+<div class="tabs">
+  <ul>
+    <li><a href="index.html"><span>Main&nbsp;Page</span></a></li>
+    <li class="current"><a href="classes.html"><span>Classes</span></a></li>
+    <li><a href="files.html"><span>Files</span></a></li>
+    <li><a href="pages.html"><span>Related&nbsp;Pages</span></a></li>
+  </ul>
+</div>
+<div class="tabs">
+  <ul>
+    <li><a href="classes.html"><span>Alphabetical&nbsp;List</span></a></li>
+    <li><a href="annotated.html"><span>Class&nbsp;List</span></a></li>
+    <li><a href="hierarchy.html"><span>Class&nbsp;Hierarchy</span></a></li>
+    <li><a href="functions.html"><span>Class&nbsp;Members</span></a></li>
+  </ul>
+</div>
+<h1>XMLValid Class Reference</h1><!-- doxytag: class="XMLValid" -->
+<p>
+<a href="classXMLValid-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
+<tr><td></td></tr>
+<tr><td colspan="2"><br><h2>Public Types</h2></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">enum &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86">Codes</a> { <br>
+&nbsp;&nbsp;<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c860acc5a7b1330bc2f56a95fe660b16ef0">NoError</a> =  0, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86db84efbe54b9c3dee333ec19a47b063b">E_LowBounds</a> =  1, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86ed7a0c96a533ad5f51816f76d5c322bb">ElementNotDefined</a> =  2, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c863952caa2fe2cf1f5790fcbddc690b152">AttNotDefined</a> =  3, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86c337832167e9437a79e0e36cb58e11f4">NotationNotDeclared</a> =  4, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86bd2808b59b32b49c8de3cc6eff82c880">RootElemNotLikeDocType</a> =  5, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c8678a93b980c8f95aae53313153f73fa0d">RequiredAttrNotProvided</a> =  6, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86a6d98e72d00ac787abcb7d6e557d1dae">ElementNotValidForContent</a> =  7, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c8684c811da52a489beb7c6194637e47c50">BadIDAttrDefType</a> =  8, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86dcc48d9167f87679dc78b309e120ab3e">InvalidEmptyAttValue</a> =  9, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86abd1f48fd079663c9411a4dd2b3ff8e8">ElementAlreadyExists</a> =  10, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86e171e1218d0dea72997e1d794e244e7d">MultipleIdAttrs</a> =  11, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86343856efb6560e36004c0071ed483fff">ReusedIDValue</a> =  12, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86f28d7a0adda4ecf14442fa76f7f2fdcb">IDNotDeclared</a> =  13, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86f050985f40c5bb2b690fc7e7df94bfd6">UnknownNotRefAttr</a> =  14, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86d4286915f7502fc1a275a78ce7cd3e76">UndeclaredElemInDocType</a> =  15, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c866d53bd5e992e8407c8c9f2ab8538b00a">EmptyNotValidForContent</a> =  16, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86555e943bd4651d8f2ac39cf47e988633">AttNotDefinedForElement</a> =  17, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86697521a0ee1228302ba43ec342b3239f">BadEntityRefAttr</a> =  18, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c8688adbafa9b294a486df0c3290a8724d5">UnknownEntityRefAttr</a> =  19, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86f276fac49bd8a924afc8026c1055956a">ColonNotValidWithNS</a> =  20, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86dc11940eed6d0127f28d83747e291dc7">NotEnoughElemsForCM</a> =  21, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86e401c78e820d2a05fa66df9a978874d9">NoCharDataInCM</a> =  22, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86706fc243639465193b7eac36f550541d">DoesNotMatchEnumList</a> =  23, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c862980bb05ca0ba22f4669aae4f1e65a8d">AttrValNotName</a> =  24, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86f9da65d81a59d6d7c84acd940bf3b8e7">NoMultipleValues</a> =  25, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86e5a27fff05542ce3f266f4431b295a4a">NotSameAsFixedValue</a> =  26, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c8638ea47bb7a98f09244dabffb1a52b8db">RepElemInMixed</a> =  27, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86e192e8944339d45583c4779b058016f6">NoValidatorFor</a> =  28, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86192702b1f7b1b9596a5642332974f68b">IncorrectDatatype</a> =  29, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c868d1310723231ceb2c4174794640a2b85">NotADatatype</a> =  30, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c8677189c67802df988ad82614f4f76a5f6">TextOnlyContentWithType</a> =  31, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c868a9e03705960dbc80a90de77f15cbc85">FeatureUnsupported</a> =  32, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86eb4a375637db251e45dc0969c1bee880">NestedOnlyInElemOnly</a> =  33, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c868e16d231699cbd0973c98c6f392fb751">EltRefOnlyInMixedElemOnly</a> =  34, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c8656a8bab076ad848b1d95c34b1c19ac96">OnlyInEltContent</a> =  35, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c8626acabafe2a3af660255610b63102d0c">OrderIsAll</a> =  36, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86dea293723b7e02e88d3f1d9b9aca47a5">DatatypeWithType</a> =  37, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c869f1892c28fd99cd9b45c69d0982f3a53">DatatypeQualUnsupported</a> =  38, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86aac12ba08de6e014aeee5d7a066a26f4">GroupContentRestricted</a> =  39, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c863f2ba7229aeb561e56c4198a6bce566f">UnknownBaseDatatype</a> =  40, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c869fb394bc6296eccf446187c58de733a0">OneOfTypeRefArchRef</a> =  41, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86a785e8f8cad142e7f8638ae09e917282">NoContentForRef</a> =  42, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86d1545b249925c05f082a8f4d6338118a">IncorrectDefaultType</a> =  43, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c861be7ec8b6657f77f5d42b8a00b1b5c2d">IllegalAttContent</a> =  44, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86a83f4f836b5246e205d0bab5ae2c1c3d">ValueNotInteger</a> =  45, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c8637ffd7f179b390be3dd012d0cb0db045">DatatypeError</a> =  46, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86f8d6eb4ee1a13193ae519bab7f53c9d1">SchemaError</a> =  47, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c861db4a5a9e6310edd8c80d86aa246cfe4">TypeAlreadySet</a> =  48, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c864bc98baa5b394b89ffa8fd761a1130ae">ProhibitedAttributePresent</a> =  49, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c861156998d3d071664e6abfe1a9669c5ed">IllegalXMLSpace</a> =  50, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86e269e4af023402bbd81114228f0e48bb">NotBoolean</a> =  51, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86028ca06922303d3beec5622266894ae0">NotDecimal</a> =  52, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c8627c1293ea9999395524b03a6feb8587d">FacetsInconsistent</a> =  53, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86d87d0b89781206939bfac26ebe7a80dd">IllegalFacetValue</a> =  54, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c8664767f4b45056367bc8ce237216c28a1">IllegalDecimalFacet</a> =  55, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c8666318cfb6285e5fea05a094d2b8ae60c">UnknownFacet</a> =  56, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c865406c5a45476fb900076f017ea666d1e">InvalidEnumValue</a> =  57, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86bbbef2fc964683169d889109c42d2a8b">OutOfBounds</a> =  58, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c861e84b182fd1f9f3c045a47f0ea33e444">NotAnEnumValue</a> =  59, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86ce6080da02931fa667da731ff8df2d8a">NotInteger</a> =  60, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c868f899e55e3b4a4db9d2cd32998a12975">IllegalIntegerFacet</a> =  61, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86e695a898d460094a072ce38851598d44">NotReal</a> =  62, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c862a4f5894fb4a4f477c9db6e2acd48f98">IllegalRealFacet</a> =  63, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c8677bf911542ef67250f412cf55f04ad78">ScaleLargerThanPrecision</a> =  64, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86af64350b11eff59bd19b537d42cbbf72">PrecisionExceeded</a> =  65, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c8606f94266563c800e6181761389c7c21e">ScaleExceeded</a> =  66, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86ef221b03b07968c104d2d2da034c2feb">NotFloat</a> =  67, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86cfb3010c42b3361dfad630abe9b81fb3">SchemaRootError</a> =  68, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86c122a17784065d87895414f44d38968f">WrongTargetNamespace</a> =  69, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86cf22b12afd636a55309f1ed46e117a09">SimpleTypeHasChild</a> =  70, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86279ec2fceaed989b5f64b42858bf59e3">NoDatatypeValidatorForSimpleType</a> =  71, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86f74f1a9db424d7ea5a7ad5845206e2c0">GrammarNotFound</a> =  72, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c864f2055c1ca99cda77fb3193d03809377">DisplayErrorMessage</a> =  73, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c863dc6136a6f4628b0079126ce7d72444a">NillNotAllowed</a> =  74, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86093fe58b660a08af88410ad2f6849e1d">NilAttrNotEmpty</a> =  75, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c8683eae071ece8a0a43707422320c92340">FixedDifferentFromActual</a> =  76, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c8605594bcc72c029a88acc475197c6c079">NoDatatypeValidatorForAttribute</a> =  77, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c8685ee68540971596fffe32f6d8db2a1bd">GenericError</a> =  78, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c8659b28ed0b73bed8b2e2be9d8537e6adb">ElementNotQualified</a> =  79, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c8654427d46ed31aa0c56623ce2c3f45076">ElementNotUnQualified</a> =  80, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86c9f74fad56a58f116b748ba46290303e">VC_IllegalRefInStandalone</a> =  81, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86e6a77dc1a996235f16a2caec08a3e6a0">NoDefAttForStandalone</a> =  82, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c8653bfac1fcd1b5da564596a50ef484359">NoAttNormForStandalone</a> =  83, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86ee14b6ada56ef60e098b6245778be60f">NoWSForStandalone</a> =  84, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86d8e65283ddfcbf9204d1f5810381398c">VC_EntityNotFound</a> =  85, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c861657b4b650aa8d856b12fb31cfb73a9a">PartialMarkupInPE</a> =  86, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c8600f76ef132ff4a625f3386f627e4d803">DatatypeValidationFailure</a> =  87, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c8650d28dc79206563a2acb34fffd495610">UniqueParticleAttributionFail</a> =  88, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86a1dd923e0d0a981b28509c7d7a604d3e">NoAbstractInXsiType</a> =  89, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c862f6dc6b3546eaf549df2fda36b419815">NoDirectUseAbstractElement</a> =  90, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86841cc5ab8434c146ab1c1045fa7c9589">NoUseAbstractType</a> =  91, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c8681c68c17588868ca996df81fe07f3872">BadXsiType</a> =  92, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86f30af0818b9ebdb6d235d1ae63c4682a">NonDerivedXsiType</a> =  93, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86887fb5edfe46a742e922db4b7c9f4a41">NoSubforBlock</a> =  94, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c865c4593bcc57dcbe2a293905c47592677">AttributeNotQualified</a> =  95, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86d3b4c3408187f039d724380f117aa6fb">AttributeNotUnQualified</a> =  96, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86b8582cfcbd2507c840f00801daa37ba4">IC_FieldMultipleMatch</a> =  97, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c8609db642a3a8060203c43ac1db8574bc1">IC_UnknownField</a> =  98, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86f8ce16bf3fe3e04bb7c7cafd485e530b">IC_AbsentKeyValue</a> =  99, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86097551caa99946632bc88f2de057763e">IC_UniqueNotEnoughValues</a> =  100, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c863960de612a278e08c327560bf83e6d2d">IC_KeyNotEnoughValues</a> =  101, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c8619e04c5bf954bd24903e3ffd7907fa9f">IC_KeyRefNotEnoughValues</a> =  102, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c861bfb8c1bcee3d5a7f13b27543ce4960e">IC_KeyMatchesNillable</a> =  103, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86adf8ce632a481a3f7a4b130c780065de">IC_DuplicateUnique</a> =  104, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86773dfb34cb11b4756163b7d6f7841fc8">IC_DuplicateKey</a> =  105, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86df8a53254cf2fb427abc770e6bc3ee8b">IC_KeyRefOutOfScope</a> =  106, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c864c1e0c39f8add1148316c3e8d8b864aa">IC_KeyNotFound</a> =  107, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c869b8201ddbfe05d9cbf89187ba011f0b7">NonWSContent</a> =  108, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86532390a0667e0088aba8f8ef44979789">EmptyElemNotationAttr</a> =  109, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c8691c8312258b6bf201b2fafbeaa9a519d">EmptyElemHasContent</a> =  110, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86ed8693e31a121938ad9bfa3f96f80651">ElemOneNotationAttr</a> =  111, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86ce0629f79ab6d0566b09c85a20faf39c">AttrDupToken</a> =  112, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c867ba9d3c329f9d998db2c9d6d3f9875cd">ElemChildrenHasInvalidWS</a> =  113, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c865c83cc1111437f6dca4dd22d2c054421">E_HighBounds</a> =  114, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c8695f994db452370810d9b2f9d0526cd59">W_LowBounds</a> =  115, 
+<br>
+&nbsp;&nbsp;<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c868c0f305402e2c4f74387f2dcd6af19ef">W_HighBounds</a> =  116, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c8660af74eb55e26899970f2e2696cafd26">F_LowBounds</a> =  117, 
+<a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c861fa76f62b40380c8fdffd1a7361d033e">F_HighBounds</a> =  118
+<br>
+ }</td></tr>
+
+<tr><td colspan="2"><br><h2>Static Public Member Functions</h2></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLValid.html#5f3797ab4126ec38a57e77484d940288">isFatal</a> (const <a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86">XMLValid::Codes</a> toCheck)</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLValid.html#14404e486e2f4bbb1cc2212535a9cc05">isWarning</a> (const <a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86">XMLValid::Codes</a> toCheck)</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLValid.html#6126a3c79983c5bdea255c4527f225cc">isError</a> (const <a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86">XMLValid::Codes</a> toCheck)</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static <br>
+<a class="el" href="classXMLErrorReporter.html#db34298ba3609a10c52328e5050d4434">XMLErrorReporter::ErrTypes</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLValid.html#1fa09ce6fce66da949febc4450e45328">errorType</a> (const <a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86">XMLValid::Codes</a> toCheck)</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static <br>
+<a class="el" href="classDOMError.html#e103dba9019c82cbd9ce0afbf30cdb1a">DOMError::ErrorSeverity</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXMLValid.html#18d625516641788160c065874b29c645">DOMErrorType</a> (const <a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86">XMLValid::Codes</a> toCheck)</td></tr>
+
+</table>
+<hr><h2>Member Enumeration Documentation</h2>
+<a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86"></a><!-- doxytag: member="XMLValid::Codes" ref="c30e7f5d9612c52f5f1208c83f090c86" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86">XMLValid::Codes</a>          </td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+<dl compact><dt><b>Enumerator: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c860acc5a7b1330bc2f56a95fe660b16ef0"></a><!-- doxytag: member="NoError" ref="c30e7f5d9612c52f5f1208c83f090c860acc5a7b1330bc2f56a95fe660b16ef0" args="" -->NoError</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86db84efbe54b9c3dee333ec19a47b063b"></a><!-- doxytag: member="E_LowBounds" ref="c30e7f5d9612c52f5f1208c83f090c86db84efbe54b9c3dee333ec19a47b063b" args="" -->E_LowBounds</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86ed7a0c96a533ad5f51816f76d5c322bb"></a><!-- doxytag: member="ElementNotDefined" ref="c30e7f5d9612c52f5f1208c83f090c86ed7a0c96a533ad5f51816f76d5c322bb" args="" -->ElementNotDefined</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c863952caa2fe2cf1f5790fcbddc690b152"></a><!-- doxytag: member="AttNotDefined" ref="c30e7f5d9612c52f5f1208c83f090c863952caa2fe2cf1f5790fcbddc690b152" args="" -->AttNotDefined</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86c337832167e9437a79e0e36cb58e11f4"></a><!-- doxytag: member="NotationNotDeclared" ref="c30e7f5d9612c52f5f1208c83f090c86c337832167e9437a79e0e36cb58e11f4" args="" -->NotationNotDeclared</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86bd2808b59b32b49c8de3cc6eff82c880"></a><!-- doxytag: member="RootElemNotLikeDocType" ref="c30e7f5d9612c52f5f1208c83f090c86bd2808b59b32b49c8de3cc6eff82c880" args="" -->RootElemNotLikeDocType</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c8678a93b980c8f95aae53313153f73fa0d"></a><!-- doxytag: member="RequiredAttrNotProvided" ref="c30e7f5d9612c52f5f1208c83f090c8678a93b980c8f95aae53313153f73fa0d" args="" -->RequiredAttrNotProvided</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86a6d98e72d00ac787abcb7d6e557d1dae"></a><!-- doxytag: member="ElementNotValidForContent" ref="c30e7f5d9612c52f5f1208c83f090c86a6d98e72d00ac787abcb7d6e557d1dae" args="" -->ElementNotValidForContent</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c8684c811da52a489beb7c6194637e47c50"></a><!-- doxytag: member="BadIDAttrDefType" ref="c30e7f5d9612c52f5f1208c83f090c8684c811da52a489beb7c6194637e47c50" args="" -->BadIDAttrDefType</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86dcc48d9167f87679dc78b309e120ab3e"></a><!-- doxytag: member="InvalidEmptyAttValue" ref="c30e7f5d9612c52f5f1208c83f090c86dcc48d9167f87679dc78b309e120ab3e" args="" -->InvalidEmptyAttValue</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86abd1f48fd079663c9411a4dd2b3ff8e8"></a><!-- doxytag: member="ElementAlreadyExists" ref="c30e7f5d9612c52f5f1208c83f090c86abd1f48fd079663c9411a4dd2b3ff8e8" args="" -->ElementAlreadyExists</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86e171e1218d0dea72997e1d794e244e7d"></a><!-- doxytag: member="MultipleIdAttrs" ref="c30e7f5d9612c52f5f1208c83f090c86e171e1218d0dea72997e1d794e244e7d" args="" -->MultipleIdAttrs</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86343856efb6560e36004c0071ed483fff"></a><!-- doxytag: member="ReusedIDValue" ref="c30e7f5d9612c52f5f1208c83f090c86343856efb6560e36004c0071ed483fff" args="" -->ReusedIDValue</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86f28d7a0adda4ecf14442fa76f7f2fdcb"></a><!-- doxytag: member="IDNotDeclared" ref="c30e7f5d9612c52f5f1208c83f090c86f28d7a0adda4ecf14442fa76f7f2fdcb" args="" -->IDNotDeclared</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86f050985f40c5bb2b690fc7e7df94bfd6"></a><!-- doxytag: member="UnknownNotRefAttr" ref="c30e7f5d9612c52f5f1208c83f090c86f050985f40c5bb2b690fc7e7df94bfd6" args="" -->UnknownNotRefAttr</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86d4286915f7502fc1a275a78ce7cd3e76"></a><!-- doxytag: member="UndeclaredElemInDocType" ref="c30e7f5d9612c52f5f1208c83f090c86d4286915f7502fc1a275a78ce7cd3e76" args="" -->UndeclaredElemInDocType</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c866d53bd5e992e8407c8c9f2ab8538b00a"></a><!-- doxytag: member="EmptyNotValidForContent" ref="c30e7f5d9612c52f5f1208c83f090c866d53bd5e992e8407c8c9f2ab8538b00a" args="" -->EmptyNotValidForContent</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86555e943bd4651d8f2ac39cf47e988633"></a><!-- doxytag: member="AttNotDefinedForElement" ref="c30e7f5d9612c52f5f1208c83f090c86555e943bd4651d8f2ac39cf47e988633" args="" -->AttNotDefinedForElement</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86697521a0ee1228302ba43ec342b3239f"></a><!-- doxytag: member="BadEntityRefAttr" ref="c30e7f5d9612c52f5f1208c83f090c86697521a0ee1228302ba43ec342b3239f" args="" -->BadEntityRefAttr</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c8688adbafa9b294a486df0c3290a8724d5"></a><!-- doxytag: member="UnknownEntityRefAttr" ref="c30e7f5d9612c52f5f1208c83f090c8688adbafa9b294a486df0c3290a8724d5" args="" -->UnknownEntityRefAttr</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86f276fac49bd8a924afc8026c1055956a"></a><!-- doxytag: member="ColonNotValidWithNS" ref="c30e7f5d9612c52f5f1208c83f090c86f276fac49bd8a924afc8026c1055956a" args="" -->ColonNotValidWithNS</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86dc11940eed6d0127f28d83747e291dc7"></a><!-- doxytag: member="NotEnoughElemsForCM" ref="c30e7f5d9612c52f5f1208c83f090c86dc11940eed6d0127f28d83747e291dc7" args="" -->NotEnoughElemsForCM</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86e401c78e820d2a05fa66df9a978874d9"></a><!-- doxytag: member="NoCharDataInCM" ref="c30e7f5d9612c52f5f1208c83f090c86e401c78e820d2a05fa66df9a978874d9" args="" -->NoCharDataInCM</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86706fc243639465193b7eac36f550541d"></a><!-- doxytag: member="DoesNotMatchEnumList" ref="c30e7f5d9612c52f5f1208c83f090c86706fc243639465193b7eac36f550541d" args="" -->DoesNotMatchEnumList</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c862980bb05ca0ba22f4669aae4f1e65a8d"></a><!-- doxytag: member="AttrValNotName" ref="c30e7f5d9612c52f5f1208c83f090c862980bb05ca0ba22f4669aae4f1e65a8d" args="" -->AttrValNotName</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86f9da65d81a59d6d7c84acd940bf3b8e7"></a><!-- doxytag: member="NoMultipleValues" ref="c30e7f5d9612c52f5f1208c83f090c86f9da65d81a59d6d7c84acd940bf3b8e7" args="" -->NoMultipleValues</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86e5a27fff05542ce3f266f4431b295a4a"></a><!-- doxytag: member="NotSameAsFixedValue" ref="c30e7f5d9612c52f5f1208c83f090c86e5a27fff05542ce3f266f4431b295a4a" args="" -->NotSameAsFixedValue</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c8638ea47bb7a98f09244dabffb1a52b8db"></a><!-- doxytag: member="RepElemInMixed" ref="c30e7f5d9612c52f5f1208c83f090c8638ea47bb7a98f09244dabffb1a52b8db" args="" -->RepElemInMixed</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86e192e8944339d45583c4779b058016f6"></a><!-- doxytag: member="NoValidatorFor" ref="c30e7f5d9612c52f5f1208c83f090c86e192e8944339d45583c4779b058016f6" args="" -->NoValidatorFor</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86192702b1f7b1b9596a5642332974f68b"></a><!-- doxytag: member="IncorrectDatatype" ref="c30e7f5d9612c52f5f1208c83f090c86192702b1f7b1b9596a5642332974f68b" args="" -->IncorrectDatatype</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c868d1310723231ceb2c4174794640a2b85"></a><!-- doxytag: member="NotADatatype" ref="c30e7f5d9612c52f5f1208c83f090c868d1310723231ceb2c4174794640a2b85" args="" -->NotADatatype</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c8677189c67802df988ad82614f4f76a5f6"></a><!-- doxytag: member="TextOnlyContentWithType" ref="c30e7f5d9612c52f5f1208c83f090c8677189c67802df988ad82614f4f76a5f6" args="" -->TextOnlyContentWithType</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c868a9e03705960dbc80a90de77f15cbc85"></a><!-- doxytag: member="FeatureUnsupported" ref="c30e7f5d9612c52f5f1208c83f090c868a9e03705960dbc80a90de77f15cbc85" args="" -->FeatureUnsupported</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86eb4a375637db251e45dc0969c1bee880"></a><!-- doxytag: member="NestedOnlyInElemOnly" ref="c30e7f5d9612c52f5f1208c83f090c86eb4a375637db251e45dc0969c1bee880" args="" -->NestedOnlyInElemOnly</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c868e16d231699cbd0973c98c6f392fb751"></a><!-- doxytag: member="EltRefOnlyInMixedElemOnly" ref="c30e7f5d9612c52f5f1208c83f090c868e16d231699cbd0973c98c6f392fb751" args="" -->EltRefOnlyInMixedElemOnly</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c8656a8bab076ad848b1d95c34b1c19ac96"></a><!-- doxytag: member="OnlyInEltContent" ref="c30e7f5d9612c52f5f1208c83f090c8656a8bab076ad848b1d95c34b1c19ac96" args="" -->OnlyInEltContent</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c8626acabafe2a3af660255610b63102d0c"></a><!-- doxytag: member="OrderIsAll" ref="c30e7f5d9612c52f5f1208c83f090c8626acabafe2a3af660255610b63102d0c" args="" -->OrderIsAll</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86dea293723b7e02e88d3f1d9b9aca47a5"></a><!-- doxytag: member="DatatypeWithType" ref="c30e7f5d9612c52f5f1208c83f090c86dea293723b7e02e88d3f1d9b9aca47a5" args="" -->DatatypeWithType</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c869f1892c28fd99cd9b45c69d0982f3a53"></a><!-- doxytag: member="DatatypeQualUnsupported" ref="c30e7f5d9612c52f5f1208c83f090c869f1892c28fd99cd9b45c69d0982f3a53" args="" -->DatatypeQualUnsupported</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86aac12ba08de6e014aeee5d7a066a26f4"></a><!-- doxytag: member="GroupContentRestricted" ref="c30e7f5d9612c52f5f1208c83f090c86aac12ba08de6e014aeee5d7a066a26f4" args="" -->GroupContentRestricted</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c863f2ba7229aeb561e56c4198a6bce566f"></a><!-- doxytag: member="UnknownBaseDatatype" ref="c30e7f5d9612c52f5f1208c83f090c863f2ba7229aeb561e56c4198a6bce566f" args="" -->UnknownBaseDatatype</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c869fb394bc6296eccf446187c58de733a0"></a><!-- doxytag: member="OneOfTypeRefArchRef" ref="c30e7f5d9612c52f5f1208c83f090c869fb394bc6296eccf446187c58de733a0" args="" -->OneOfTypeRefArchRef</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86a785e8f8cad142e7f8638ae09e917282"></a><!-- doxytag: member="NoContentForRef" ref="c30e7f5d9612c52f5f1208c83f090c86a785e8f8cad142e7f8638ae09e917282" args="" -->NoContentForRef</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86d1545b249925c05f082a8f4d6338118a"></a><!-- doxytag: member="IncorrectDefaultType" ref="c30e7f5d9612c52f5f1208c83f090c86d1545b249925c05f082a8f4d6338118a" args="" -->IncorrectDefaultType</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c861be7ec8b6657f77f5d42b8a00b1b5c2d"></a><!-- doxytag: member="IllegalAttContent" ref="c30e7f5d9612c52f5f1208c83f090c861be7ec8b6657f77f5d42b8a00b1b5c2d" args="" -->IllegalAttContent</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86a83f4f836b5246e205d0bab5ae2c1c3d"></a><!-- doxytag: member="ValueNotInteger" ref="c30e7f5d9612c52f5f1208c83f090c86a83f4f836b5246e205d0bab5ae2c1c3d" args="" -->ValueNotInteger</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c8637ffd7f179b390be3dd012d0cb0db045"></a><!-- doxytag: member="DatatypeError" ref="c30e7f5d9612c52f5f1208c83f090c8637ffd7f179b390be3dd012d0cb0db045" args="" -->DatatypeError</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86f8d6eb4ee1a13193ae519bab7f53c9d1"></a><!-- doxytag: member="SchemaError" ref="c30e7f5d9612c52f5f1208c83f090c86f8d6eb4ee1a13193ae519bab7f53c9d1" args="" -->SchemaError</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c861db4a5a9e6310edd8c80d86aa246cfe4"></a><!-- doxytag: member="TypeAlreadySet" ref="c30e7f5d9612c52f5f1208c83f090c861db4a5a9e6310edd8c80d86aa246cfe4" args="" -->TypeAlreadySet</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c864bc98baa5b394b89ffa8fd761a1130ae"></a><!-- doxytag: member="ProhibitedAttributePresent" ref="c30e7f5d9612c52f5f1208c83f090c864bc98baa5b394b89ffa8fd761a1130ae" args="" -->ProhibitedAttributePresent</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c861156998d3d071664e6abfe1a9669c5ed"></a><!-- doxytag: member="IllegalXMLSpace" ref="c30e7f5d9612c52f5f1208c83f090c861156998d3d071664e6abfe1a9669c5ed" args="" -->IllegalXMLSpace</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86e269e4af023402bbd81114228f0e48bb"></a><!-- doxytag: member="NotBoolean" ref="c30e7f5d9612c52f5f1208c83f090c86e269e4af023402bbd81114228f0e48bb" args="" -->NotBoolean</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86028ca06922303d3beec5622266894ae0"></a><!-- doxytag: member="NotDecimal" ref="c30e7f5d9612c52f5f1208c83f090c86028ca06922303d3beec5622266894ae0" args="" -->NotDecimal</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c8627c1293ea9999395524b03a6feb8587d"></a><!-- doxytag: member="FacetsInconsistent" ref="c30e7f5d9612c52f5f1208c83f090c8627c1293ea9999395524b03a6feb8587d" args="" -->FacetsInconsistent</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86d87d0b89781206939bfac26ebe7a80dd"></a><!-- doxytag: member="IllegalFacetValue" ref="c30e7f5d9612c52f5f1208c83f090c86d87d0b89781206939bfac26ebe7a80dd" args="" -->IllegalFacetValue</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c8664767f4b45056367bc8ce237216c28a1"></a><!-- doxytag: member="IllegalDecimalFacet" ref="c30e7f5d9612c52f5f1208c83f090c8664767f4b45056367bc8ce237216c28a1" args="" -->IllegalDecimalFacet</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c8666318cfb6285e5fea05a094d2b8ae60c"></a><!-- doxytag: member="UnknownFacet" ref="c30e7f5d9612c52f5f1208c83f090c8666318cfb6285e5fea05a094d2b8ae60c" args="" -->UnknownFacet</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c865406c5a45476fb900076f017ea666d1e"></a><!-- doxytag: member="InvalidEnumValue" ref="c30e7f5d9612c52f5f1208c83f090c865406c5a45476fb900076f017ea666d1e" args="" -->InvalidEnumValue</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86bbbef2fc964683169d889109c42d2a8b"></a><!-- doxytag: member="OutOfBounds" ref="c30e7f5d9612c52f5f1208c83f090c86bbbef2fc964683169d889109c42d2a8b" args="" -->OutOfBounds</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c861e84b182fd1f9f3c045a47f0ea33e444"></a><!-- doxytag: member="NotAnEnumValue" ref="c30e7f5d9612c52f5f1208c83f090c861e84b182fd1f9f3c045a47f0ea33e444" args="" -->NotAnEnumValue</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86ce6080da02931fa667da731ff8df2d8a"></a><!-- doxytag: member="NotInteger" ref="c30e7f5d9612c52f5f1208c83f090c86ce6080da02931fa667da731ff8df2d8a" args="" -->NotInteger</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c868f899e55e3b4a4db9d2cd32998a12975"></a><!-- doxytag: member="IllegalIntegerFacet" ref="c30e7f5d9612c52f5f1208c83f090c868f899e55e3b4a4db9d2cd32998a12975" args="" -->IllegalIntegerFacet</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86e695a898d460094a072ce38851598d44"></a><!-- doxytag: member="NotReal" ref="c30e7f5d9612c52f5f1208c83f090c86e695a898d460094a072ce38851598d44" args="" -->NotReal</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c862a4f5894fb4a4f477c9db6e2acd48f98"></a><!-- doxytag: member="IllegalRealFacet" ref="c30e7f5d9612c52f5f1208c83f090c862a4f5894fb4a4f477c9db6e2acd48f98" args="" -->IllegalRealFacet</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c8677bf911542ef67250f412cf55f04ad78"></a><!-- doxytag: member="ScaleLargerThanPrecision" ref="c30e7f5d9612c52f5f1208c83f090c8677bf911542ef67250f412cf55f04ad78" args="" -->ScaleLargerThanPrecision</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86af64350b11eff59bd19b537d42cbbf72"></a><!-- doxytag: member="PrecisionExceeded" ref="c30e7f5d9612c52f5f1208c83f090c86af64350b11eff59bd19b537d42cbbf72" args="" -->PrecisionExceeded</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c8606f94266563c800e6181761389c7c21e"></a><!-- doxytag: member="ScaleExceeded" ref="c30e7f5d9612c52f5f1208c83f090c8606f94266563c800e6181761389c7c21e" args="" -->ScaleExceeded</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86ef221b03b07968c104d2d2da034c2feb"></a><!-- doxytag: member="NotFloat" ref="c30e7f5d9612c52f5f1208c83f090c86ef221b03b07968c104d2d2da034c2feb" args="" -->NotFloat</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86cfb3010c42b3361dfad630abe9b81fb3"></a><!-- doxytag: member="SchemaRootError" ref="c30e7f5d9612c52f5f1208c83f090c86cfb3010c42b3361dfad630abe9b81fb3" args="" -->SchemaRootError</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86c122a17784065d87895414f44d38968f"></a><!-- doxytag: member="WrongTargetNamespace" ref="c30e7f5d9612c52f5f1208c83f090c86c122a17784065d87895414f44d38968f" args="" -->WrongTargetNamespace</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86cf22b12afd636a55309f1ed46e117a09"></a><!-- doxytag: member="SimpleTypeHasChild" ref="c30e7f5d9612c52f5f1208c83f090c86cf22b12afd636a55309f1ed46e117a09" args="" -->SimpleTypeHasChild</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86279ec2fceaed989b5f64b42858bf59e3"></a><!-- doxytag: member="NoDatatypeValidatorForSimpleType" ref="c30e7f5d9612c52f5f1208c83f090c86279ec2fceaed989b5f64b42858bf59e3" args="" -->NoDatatypeValidatorForSimpleType</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86f74f1a9db424d7ea5a7ad5845206e2c0"></a><!-- doxytag: member="GrammarNotFound" ref="c30e7f5d9612c52f5f1208c83f090c86f74f1a9db424d7ea5a7ad5845206e2c0" args="" -->GrammarNotFound</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c864f2055c1ca99cda77fb3193d03809377"></a><!-- doxytag: member="DisplayErrorMessage" ref="c30e7f5d9612c52f5f1208c83f090c864f2055c1ca99cda77fb3193d03809377" args="" -->DisplayErrorMessage</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c863dc6136a6f4628b0079126ce7d72444a"></a><!-- doxytag: member="NillNotAllowed" ref="c30e7f5d9612c52f5f1208c83f090c863dc6136a6f4628b0079126ce7d72444a" args="" -->NillNotAllowed</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86093fe58b660a08af88410ad2f6849e1d"></a><!-- doxytag: member="NilAttrNotEmpty" ref="c30e7f5d9612c52f5f1208c83f090c86093fe58b660a08af88410ad2f6849e1d" args="" -->NilAttrNotEmpty</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c8683eae071ece8a0a43707422320c92340"></a><!-- doxytag: member="FixedDifferentFromActual" ref="c30e7f5d9612c52f5f1208c83f090c8683eae071ece8a0a43707422320c92340" args="" -->FixedDifferentFromActual</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c8605594bcc72c029a88acc475197c6c079"></a><!-- doxytag: member="NoDatatypeValidatorForAttribute" ref="c30e7f5d9612c52f5f1208c83f090c8605594bcc72c029a88acc475197c6c079" args="" -->NoDatatypeValidatorForAttribute</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c8685ee68540971596fffe32f6d8db2a1bd"></a><!-- doxytag: member="GenericError" ref="c30e7f5d9612c52f5f1208c83f090c8685ee68540971596fffe32f6d8db2a1bd" args="" -->GenericError</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c8659b28ed0b73bed8b2e2be9d8537e6adb"></a><!-- doxytag: member="ElementNotQualified" ref="c30e7f5d9612c52f5f1208c83f090c8659b28ed0b73bed8b2e2be9d8537e6adb" args="" -->ElementNotQualified</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c8654427d46ed31aa0c56623ce2c3f45076"></a><!-- doxytag: member="ElementNotUnQualified" ref="c30e7f5d9612c52f5f1208c83f090c8654427d46ed31aa0c56623ce2c3f45076" args="" -->ElementNotUnQualified</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86c9f74fad56a58f116b748ba46290303e"></a><!-- doxytag: member="VC_IllegalRefInStandalone" ref="c30e7f5d9612c52f5f1208c83f090c86c9f74fad56a58f116b748ba46290303e" args="" -->VC_IllegalRefInStandalone</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86e6a77dc1a996235f16a2caec08a3e6a0"></a><!-- doxytag: member="NoDefAttForStandalone" ref="c30e7f5d9612c52f5f1208c83f090c86e6a77dc1a996235f16a2caec08a3e6a0" args="" -->NoDefAttForStandalone</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c8653bfac1fcd1b5da564596a50ef484359"></a><!-- doxytag: member="NoAttNormForStandalone" ref="c30e7f5d9612c52f5f1208c83f090c8653bfac1fcd1b5da564596a50ef484359" args="" -->NoAttNormForStandalone</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86ee14b6ada56ef60e098b6245778be60f"></a><!-- doxytag: member="NoWSForStandalone" ref="c30e7f5d9612c52f5f1208c83f090c86ee14b6ada56ef60e098b6245778be60f" args="" -->NoWSForStandalone</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86d8e65283ddfcbf9204d1f5810381398c"></a><!-- doxytag: member="VC_EntityNotFound" ref="c30e7f5d9612c52f5f1208c83f090c86d8e65283ddfcbf9204d1f5810381398c" args="" -->VC_EntityNotFound</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c861657b4b650aa8d856b12fb31cfb73a9a"></a><!-- doxytag: member="PartialMarkupInPE" ref="c30e7f5d9612c52f5f1208c83f090c861657b4b650aa8d856b12fb31cfb73a9a" args="" -->PartialMarkupInPE</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c8600f76ef132ff4a625f3386f627e4d803"></a><!-- doxytag: member="DatatypeValidationFailure" ref="c30e7f5d9612c52f5f1208c83f090c8600f76ef132ff4a625f3386f627e4d803" args="" -->DatatypeValidationFailure</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c8650d28dc79206563a2acb34fffd495610"></a><!-- doxytag: member="UniqueParticleAttributionFail" ref="c30e7f5d9612c52f5f1208c83f090c8650d28dc79206563a2acb34fffd495610" args="" -->UniqueParticleAttributionFail</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86a1dd923e0d0a981b28509c7d7a604d3e"></a><!-- doxytag: member="NoAbstractInXsiType" ref="c30e7f5d9612c52f5f1208c83f090c86a1dd923e0d0a981b28509c7d7a604d3e" args="" -->NoAbstractInXsiType</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c862f6dc6b3546eaf549df2fda36b419815"></a><!-- doxytag: member="NoDirectUseAbstractElement" ref="c30e7f5d9612c52f5f1208c83f090c862f6dc6b3546eaf549df2fda36b419815" args="" -->NoDirectUseAbstractElement</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86841cc5ab8434c146ab1c1045fa7c9589"></a><!-- doxytag: member="NoUseAbstractType" ref="c30e7f5d9612c52f5f1208c83f090c86841cc5ab8434c146ab1c1045fa7c9589" args="" -->NoUseAbstractType</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c8681c68c17588868ca996df81fe07f3872"></a><!-- doxytag: member="BadXsiType" ref="c30e7f5d9612c52f5f1208c83f090c8681c68c17588868ca996df81fe07f3872" args="" -->BadXsiType</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86f30af0818b9ebdb6d235d1ae63c4682a"></a><!-- doxytag: member="NonDerivedXsiType" ref="c30e7f5d9612c52f5f1208c83f090c86f30af0818b9ebdb6d235d1ae63c4682a" args="" -->NonDerivedXsiType</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86887fb5edfe46a742e922db4b7c9f4a41"></a><!-- doxytag: member="NoSubforBlock" ref="c30e7f5d9612c52f5f1208c83f090c86887fb5edfe46a742e922db4b7c9f4a41" args="" -->NoSubforBlock</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c865c4593bcc57dcbe2a293905c47592677"></a><!-- doxytag: member="AttributeNotQualified" ref="c30e7f5d9612c52f5f1208c83f090c865c4593bcc57dcbe2a293905c47592677" args="" -->AttributeNotQualified</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86d3b4c3408187f039d724380f117aa6fb"></a><!-- doxytag: member="AttributeNotUnQualified" ref="c30e7f5d9612c52f5f1208c83f090c86d3b4c3408187f039d724380f117aa6fb" args="" -->AttributeNotUnQualified</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86b8582cfcbd2507c840f00801daa37ba4"></a><!-- doxytag: member="IC_FieldMultipleMatch" ref="c30e7f5d9612c52f5f1208c83f090c86b8582cfcbd2507c840f00801daa37ba4" args="" -->IC_FieldMultipleMatch</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c8609db642a3a8060203c43ac1db8574bc1"></a><!-- doxytag: member="IC_UnknownField" ref="c30e7f5d9612c52f5f1208c83f090c8609db642a3a8060203c43ac1db8574bc1" args="" -->IC_UnknownField</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86f8ce16bf3fe3e04bb7c7cafd485e530b"></a><!-- doxytag: member="IC_AbsentKeyValue" ref="c30e7f5d9612c52f5f1208c83f090c86f8ce16bf3fe3e04bb7c7cafd485e530b" args="" -->IC_AbsentKeyValue</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86097551caa99946632bc88f2de057763e"></a><!-- doxytag: member="IC_UniqueNotEnoughValues" ref="c30e7f5d9612c52f5f1208c83f090c86097551caa99946632bc88f2de057763e" args="" -->IC_UniqueNotEnoughValues</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c863960de612a278e08c327560bf83e6d2d"></a><!-- doxytag: member="IC_KeyNotEnoughValues" ref="c30e7f5d9612c52f5f1208c83f090c863960de612a278e08c327560bf83e6d2d" args="" -->IC_KeyNotEnoughValues</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c8619e04c5bf954bd24903e3ffd7907fa9f"></a><!-- doxytag: member="IC_KeyRefNotEnoughValues" ref="c30e7f5d9612c52f5f1208c83f090c8619e04c5bf954bd24903e3ffd7907fa9f" args="" -->IC_KeyRefNotEnoughValues</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c861bfb8c1bcee3d5a7f13b27543ce4960e"></a><!-- doxytag: member="IC_KeyMatchesNillable" ref="c30e7f5d9612c52f5f1208c83f090c861bfb8c1bcee3d5a7f13b27543ce4960e" args="" -->IC_KeyMatchesNillable</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86adf8ce632a481a3f7a4b130c780065de"></a><!-- doxytag: member="IC_DuplicateUnique" ref="c30e7f5d9612c52f5f1208c83f090c86adf8ce632a481a3f7a4b130c780065de" args="" -->IC_DuplicateUnique</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86773dfb34cb11b4756163b7d6f7841fc8"></a><!-- doxytag: member="IC_DuplicateKey" ref="c30e7f5d9612c52f5f1208c83f090c86773dfb34cb11b4756163b7d6f7841fc8" args="" -->IC_DuplicateKey</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86df8a53254cf2fb427abc770e6bc3ee8b"></a><!-- doxytag: member="IC_KeyRefOutOfScope" ref="c30e7f5d9612c52f5f1208c83f090c86df8a53254cf2fb427abc770e6bc3ee8b" args="" -->IC_KeyRefOutOfScope</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c864c1e0c39f8add1148316c3e8d8b864aa"></a><!-- doxytag: member="IC_KeyNotFound" ref="c30e7f5d9612c52f5f1208c83f090c864c1e0c39f8add1148316c3e8d8b864aa" args="" -->IC_KeyNotFound</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c869b8201ddbfe05d9cbf89187ba011f0b7"></a><!-- doxytag: member="NonWSContent" ref="c30e7f5d9612c52f5f1208c83f090c869b8201ddbfe05d9cbf89187ba011f0b7" args="" -->NonWSContent</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86532390a0667e0088aba8f8ef44979789"></a><!-- doxytag: member="EmptyElemNotationAttr" ref="c30e7f5d9612c52f5f1208c83f090c86532390a0667e0088aba8f8ef44979789" args="" -->EmptyElemNotationAttr</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c8691c8312258b6bf201b2fafbeaa9a519d"></a><!-- doxytag: member="EmptyElemHasContent" ref="c30e7f5d9612c52f5f1208c83f090c8691c8312258b6bf201b2fafbeaa9a519d" args="" -->EmptyElemHasContent</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86ed8693e31a121938ad9bfa3f96f80651"></a><!-- doxytag: member="ElemOneNotationAttr" ref="c30e7f5d9612c52f5f1208c83f090c86ed8693e31a121938ad9bfa3f96f80651" args="" -->ElemOneNotationAttr</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c86ce0629f79ab6d0566b09c85a20faf39c"></a><!-- doxytag: member="AttrDupToken" ref="c30e7f5d9612c52f5f1208c83f090c86ce0629f79ab6d0566b09c85a20faf39c" args="" -->AttrDupToken</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c867ba9d3c329f9d998db2c9d6d3f9875cd"></a><!-- doxytag: member="ElemChildrenHasInvalidWS" ref="c30e7f5d9612c52f5f1208c83f090c867ba9d3c329f9d998db2c9d6d3f9875cd" args="" -->ElemChildrenHasInvalidWS</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c865c83cc1111437f6dca4dd22d2c054421"></a><!-- doxytag: member="E_HighBounds" ref="c30e7f5d9612c52f5f1208c83f090c865c83cc1111437f6dca4dd22d2c054421" args="" -->E_HighBounds</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c8695f994db452370810d9b2f9d0526cd59"></a><!-- doxytag: member="W_LowBounds" ref="c30e7f5d9612c52f5f1208c83f090c8695f994db452370810d9b2f9d0526cd59" args="" -->W_LowBounds</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c868c0f305402e2c4f74387f2dcd6af19ef"></a><!-- doxytag: member="W_HighBounds" ref="c30e7f5d9612c52f5f1208c83f090c868c0f305402e2c4f74387f2dcd6af19ef" args="" -->W_HighBounds</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c8660af74eb55e26899970f2e2696cafd26"></a><!-- doxytag: member="F_LowBounds" ref="c30e7f5d9612c52f5f1208c83f090c8660af74eb55e26899970f2e2696cafd26" args="" -->F_LowBounds</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" name="c30e7f5d9612c52f5f1208c83f090c861fa76f62b40380c8fdffd1a7361d033e"></a><!-- doxytag: member="F_HighBounds" ref="c30e7f5d9612c52f5f1208c83f090c861fa76f62b40380c8fdffd1a7361d033e" args="" -->F_HighBounds</em>&nbsp;</td><td>
+</td></tr>
+</table>
+</dl>
+
+</div>
+</div><p>
+<hr><h2>Member Function Documentation</h2>
+<a class="anchor" name="5f3797ab4126ec38a57e77484d940288"></a><!-- doxytag: member="XMLValid::isFatal" ref="5f3797ab4126ec38a57e77484d940288" args="(const XMLValid::Codes toCheck)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static bool XMLValid::isFatal           </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86">XMLValid::Codes</a>&nbsp;</td>
+          <td class="paramname"> <em>toCheck</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="14404e486e2f4bbb1cc2212535a9cc05"></a><!-- doxytag: member="XMLValid::isWarning" ref="14404e486e2f4bbb1cc2212535a9cc05" args="(const XMLValid::Codes toCheck)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static bool XMLValid::isWarning           </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86">XMLValid::Codes</a>&nbsp;</td>
+          <td class="paramname"> <em>toCheck</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="6126a3c79983c5bdea255c4527f225cc"></a><!-- doxytag: member="XMLValid::isError" ref="6126a3c79983c5bdea255c4527f225cc" args="(const XMLValid::Codes toCheck)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static bool XMLValid::isError           </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86">XMLValid::Codes</a>&nbsp;</td>
+          <td class="paramname"> <em>toCheck</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="1fa09ce6fce66da949febc4450e45328"></a><!-- doxytag: member="XMLValid::errorType" ref="1fa09ce6fce66da949febc4450e45328" args="(const XMLValid::Codes toCheck)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="classXMLErrorReporter.html#db34298ba3609a10c52328e5050d4434">XMLErrorReporter::ErrTypes</a> XMLValid::errorType           </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86">XMLValid::Codes</a>&nbsp;</td>
+          <td class="paramname"> <em>toCheck</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="18d625516641788160c065874b29c645"></a><!-- doxytag: member="XMLValid::DOMErrorType" ref="18d625516641788160c065874b29c645" args="(const XMLValid::Codes toCheck)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="classDOMError.html#e103dba9019c82cbd9ce0afbf30cdb1a">DOMError::ErrorSeverity</a> XMLValid::DOMErrorType           </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86">XMLValid::Codes</a>&nbsp;</td>
+          <td class="paramname"> <em>toCheck</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<hr>The documentation for this class was generated from the following file:<ul>
+<li><a class="el" href="XMLValidityCodes_8hpp-source.html">XMLValidityCodes.hpp</a></ul>
+    </FONT></TD></TR></TABLE><BR>
+</TD></TR></TABLE></TD></TR></TABLE><BR><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD bgcolor="#0086b2"><IMG height="1" src="images/dot.gif" width="1" alt=""></TD></TR><TR><TD align="center"><FONT color="#0086b2" size="-1"><I>
+              Copyright &copy; 1994-2004 The Apache Software Foundation.
+              All Rights Reserved.
+            </I></FONT></TD></TR></TABLE></BODY></HTML>

@@ -1,0 +1,40 @@
+project tools/jam/doc ;
+
+import path ;
+
+using quickbook ;
+
+xml bjam
+    :
+    bjam.qbk
+    ;
+
+stage html
+    :
+    ../../../LICENSE_1_0.txt
+    ../../../boost.png
+    ../../../doc/src/boostbook.css
+    ;
+
+stage html/images
+    :
+    [ path.glob ../../../doc/src/images : *.png ]
+    ;
+
+boostbook standalone
+    :
+        bjam
+    :
+        #<format>html
+        <name>html
+        <dependency>html
+        <dependency>html/images
+        <xsl:param>boost.root=.
+        <xsl:param>nav.layout=none
+        <format>html:<xsl:param>admon.graphics.path=images/
+        <format>html:<xsl:param>navig.graphics.path=images/
+    ;
+
+# Copyright Rene Rivera 2005-2006. Use, modification, and distribution are
+# subject to the Boost Software License, Version 1.0. (See accompanying
+# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)

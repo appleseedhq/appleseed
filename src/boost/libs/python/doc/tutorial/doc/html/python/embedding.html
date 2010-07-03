@@ -1,0 +1,284 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Embedding</title>
+<link rel="stylesheet" href="../../../../../../../doc/html/boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.66.1">
+<link rel="start" href="../index.html" title="Chapter 1. python 1.0">
+<link rel="up" href="../index.html" title="Chapter 1. python 1.0">
+<link rel="prev" href="object.html" title=" Object Interface">
+<link rel="next" href="iterators.html" title="Iterators">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../../../../boost.png"></td>
+<td align="center"><a href="../../../../../../../index.htm">Home</a></td>
+<td align="center"><a href="../../../../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="../../../../../../../people/people.htm">People</a></td>
+<td align="center"><a href="../../../../../../../more/faq.htm">FAQ</a></td>
+<td align="center"><a href="../../../../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="object.html"><img src="../../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="../../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="iterators.html"><img src="../../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="python.embedding"></a>Embedding</h2></div></div></div>
+<div class="toc"><dl><dt><span class="section"><a href="embedding.html#python.using_the_interpreter">Using the interpreter</a></span></dt></dl></div>
+<p>
+      By now you should know how to use Boost.Python to call your C++ code from Python.
+      However, sometimes you may need to do the reverse: call Python code from the
+      C++-side. This requires you to <span class="emphasis"><em>embed</em></span> the Python interpreter
+      into your C++ program.
+    </p>
+<p>
+      Currently, Boost.Python does not directly support everything you'll need when
+      embedding. Therefore you'll need to use the <a href="http://www.python.org/doc/current/api/api.html" target="_top">Python/C
+      API</a> to fill in the gaps. However, Boost.Python already makes embedding
+      a lot easier and, in a future version, it may become unnecessary to touch the
+      Python/C API at all. So stay tuned... <span class="inlinemediaobject"><img src="../images/smiley.png" alt="smiley"></span>
+    </p>
+<a name="embedding.building_embedded_programs"></a><h2>
+<a name="id471330"></a>
+      Building embedded programs
+    </h2>
+<p>
+      To be able to embed python into your programs, you have to link to both Boost.Python's
+      as well as Python's own runtime library.
+    </p>
+<p>
+      Boost.Python's library comes in two variants. Both are located in Boost's
+      <tt class="literal">/libs/python/build/bin-stage</tt> subdirectory. On Windows, the
+      variants are called <tt class="literal">boost_python.lib</tt> (for release builds)
+      and <tt class="literal">boost_python_debug.lib</tt> (for debugging). If you can't
+      find the libraries, you probably haven't built Boost.Python yet. See <a href="../../../../building.html" target="_top">Building and Testing</a> on how to do this.
+    </p>
+<p>
+      Python's library can be found in the <tt class="literal">/libs</tt> subdirectory
+      of your Python directory. On Windows it is called pythonXY.lib where X.Y is
+      your major Python version number.
+    </p>
+<p>
+      Additionally, Python's <tt class="literal">/include</tt> subdirectory has to be added
+      to your include path.
+    </p>
+<p>
+      In a Jamfile, all the above boils down to:
+    </p>
+<pre class="programlisting">projectroot c:\projects\embedded_program ; # location of the program
+
+# bring in the rules for python
+SEARCH on python.jam = $(BOOST_BUILD_PATH) ;
+include python.jam ;
+
+exe embedded_program # name of the executable
+  : #sources
+     embedded_program.cpp
+  : # requirements
+     &lt;find-library&gt;boost_python &lt;library-path&gt;c:\boost\libs\python
+  $(PYTHON_PROPERTIES)
+    &lt;library-path&gt;$(PYTHON_LIB_PATH)
+    &lt;find-library&gt;$(PYTHON_EMBEDDED_LIBRARY) ;
+</pre>
+<a name="embedding.getting_started"></a><h2>
+<a name="id471435"></a>
+      Getting started
+    </h2>
+<p>
+      Being able to build is nice, but there is nothing to build yet. Embedding the
+      Python interpreter into one of your C++ programs requires these 4 steps:
+    </p>
+<div class="orderedlist"><ol type="1">
+<li>
+        #include <tt class="literal">&lt;boost/python.hpp&gt;</tt>
+</li>
+<li>
+        Call <a href="http://www.python.org/doc/current/api/initialization.html#l2h-652" target="_top">Py_Initialize</a>()
+        to start the interpreter and create the <tt class="literal"><span class="underline">_main</span>_</tt>
+        module.
+      </li>
+<li>
+        Call other Python C API routines to use the interpreter.
+      </li>
+</ol></div>
+<div class="note"><table border="0" summary="Note">
+<tr>
+<td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="../../../../../../../doc/html/images/note.png"></td>
+<th align="left">Note</th>
+</tr>
+<tr><td colspan="2" align="left" valign="top"><p>
+        <span class="bold"><b>Note that at this time you must not call <a href="http://www.python.org/doc/current/api/initialization.html#l2h-656" target="_top">Py_Finalize</a>()
+        to stop the interpreter. This may be fixed in a future version of boost.python.</b></span>
+      </p></td></tr>
+</table></div>
+<p>
+      (Of course, there can be other C++ code between all of these steps.)
+    </p>
+<div class="blockquote"><blockquote class="blockquote">
+<p>
+        </p>
+<p>
+          <span class="emphasis"><em><span class="bold"><b>Now that we can embed the interpreter in
+          our programs, lets see how to put it to use...</b></span></em></span>
+        </p>
+<p>
+      </p>
+</blockquote></div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="python.using_the_interpreter"></a>Using the interpreter</h3></div></div></div>
+<p>
+        As you probably already know, objects in Python are reference-counted. Naturally,
+        the <tt class="literal">PyObject</tt>s of the Python/C API are also reference-counted.
+        There is a difference however. While the reference-counting is fully automatic
+        in Python, the Python<span class="emphasis"><em>C API requires you to do it [@http:</em></span>/www.python.org/doc/current/api/refcounts.html
+        by hand]. This is messy and especially hard to get right in the presence
+        of C++ exceptions. Fortunately Boost.Python provides the <a href="../../../../v2/handle.html" target="_top">handle</a>
+        and <a href="../../../../v2/object.html" target="_top">object</a> class templates to
+        automate the process.
+      </p>
+<a name="using_the_interpreter.running_python_code"></a><h2>
+<a name="id471598"></a>
+        Running Python code
+      </h2>
+<p>
+        Boost.python provides three related functions to run Python code from C++.
+      </p>
+<pre class="programlisting">
+<span class="identifier">object</span> <span class="identifier">eval</span><span class="special">(</span><span class="identifier">str</span> <span class="identifier">expression</span><span class="special">,</span> <span class="identifier">object</span> <span class="identifier">globals</span> <span class="special">=</span> <span class="identifier">object</span><span class="special">(),</span> <span class="identifier">object</span> <span class="identifier">locals</span> <span class="special">=</span> <span class="identifier">object</span><span class="special">())</span>
+<span class="identifier">object</span> <span class="identifier">exec</span><span class="special">(</span><span class="identifier">str</span> <span class="identifier">code</span><span class="special">,</span> <span class="identifier">object</span> <span class="identifier">globals</span> <span class="special">=</span> <span class="identifier">object</span><span class="special">(),</span> <span class="identifier">object</span> <span class="identifier">locals</span> <span class="special">=</span> <span class="identifier">object</span><span class="special">())</span>
+<span class="identifier">object</span> <span class="identifier">exec_file</span><span class="special">(</span><span class="identifier">str</span> <span class="identifier">filename</span><span class="special">,</span> <span class="identifier">object</span> <span class="identifier">globals</span> <span class="special">=</span> <span class="identifier">object</span><span class="special">(),</span> <span class="identifier">object</span> <span class="identifier">locals</span> <span class="special">=</span> <span class="identifier">object</span><span class="special">())</span>
+</pre>
+<p>
+        eval evaluates the given expression and returns the resulting value. exec
+        executes the given code (typically a set of statements) returning the result,
+        and exec_file executes the code contained in the given file.
+      </p>
+<p>
+        The <tt class="literal">globals</tt> and <tt class="literal">locals</tt> parameters are
+        Python dictionaries containing the globals and locals of the context in which
+        to run the code. For most intents and purposes you can use the namespace
+        dictionary of the <tt class="literal"><span class="underline">_main</span>_</tt>
+        module for both parameters.
+      </p>
+<p>
+        Boost.python provides a function to import a module:
+      </p>
+<pre class="programlisting">
+<span class="identifier">object</span> <span class="identifier">import</span><span class="special">(</span><span class="identifier">str</span> <span class="identifier">name</span><span class="special">)</span>
+</pre>
+<p>
+        import imports a python module (potentially loading it into the running process
+        first), and returns it.
+      </p>
+<p>
+        Let's import the <tt class="literal"><span class="underline">_main</span>_</tt>
+        module and run some Python code in its namespace:
+      </p>
+<pre class="programlisting">
+<span class="identifier">object</span> <span class="identifier">main_module</span> <span class="special">=</span> <span class="identifier">import</span><span class="special">(</span><span class="string">"__main__"</span><span class="special">);</span>
+<span class="identifier">object</span> <span class="identifier">main_namespace</span> <span class="special">=</span> <span class="identifier">main_module</span><span class="special">.</span><span class="identifier">attr</span><span class="special">(</span><span class="string">"__dict__"</span><span class="special">);</span>
+
+<span class="identifier">object</span> <span class="identifier">ignored</span> <span class="special">=</span> <span class="identifier">exec</span><span class="special">(</span><span class="string">"hello = file('hello.txt', 'w')\n"</span>
+                      <span class="string">"hello.write('Hello world!')\n"</span>
+                      <span class="string">"hello.close()"</span><span class="special">,</span>
+                      <span class="identifier">main_namespace</span><span class="special">);</span>
+</pre>
+<p>
+        This should create a file called 'hello.txt' in the current directory containing
+        a phrase that is well-known in programming circles.
+      </p>
+<a name="using_the_interpreter.manipulating_python_objects"></a><h2>
+<a name="id472186"></a>
+        Manipulating Python objects
+      </h2>
+<p>
+        Often we'd like to have a class to manipulate Python objects. But we have
+        already seen such a class above, and in the <a href="object.html" target="_top">previous
+        section</a>: the aptly named <tt class="literal">object</tt> class and its
+        derivatives. We've already seen that they can be constructed from a <tt class="literal">handle</tt>.
+        The following examples should further illustrate this fact:
+      </p>
+<pre class="programlisting">
+<span class="identifier">object</span> <span class="identifier">main_module</span> <span class="special">=</span> <span class="identifier">import</span><span class="special">(</span><span class="string">"__main__"</span><span class="special">);</span>
+<span class="identifier">object</span> <span class="identifier">main_namespace</span> <span class="special">=</span> <span class="identifier">main_module</span><span class="special">.</span><span class="identifier">attr</span><span class="special">(</span><span class="string">"__dict__"</span><span class="special">);</span>
+<span class="identifier">object</span> <span class="identifier">ignored</span> <span class="special">=</span> <span class="identifier">exec</span><span class="special">(</span><span class="string">"result = 5 ** 2"</span><span class="special">,</span> <span class="identifier">main_namespace</span><span class="special">);</span>
+<span class="keyword">int</span> <span class="identifier">five_squared</span> <span class="special">=</span> <span class="identifier">extract</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;(</span><span class="identifier">main_namespace</span><span class="special">[</span><span class="string">"result"</span><span class="special">]);</span>
+</pre>
+<p>
+        Here we create a dictionary object for the <tt class="literal"><span class="underline">_main</span>_</tt>
+        module's namespace. Then we assign 5 squared to the result variable and read
+        this variable from the dictionary. Another way to achieve the same result
+        is to use eval instead, which returns the result directly:
+      </p>
+<pre class="programlisting">
+<span class="identifier">object</span> <span class="identifier">result</span> <span class="special">=</span> <span class="identifier">eval</span><span class="special">(</span><span class="string">"5 ** 2"</span><span class="special">);</span>
+<span class="keyword">int</span> <span class="identifier">five_squared</span> <span class="special">=</span> <span class="identifier">extract</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;(</span><span class="identifier">result</span><span class="special">);</span>
+</pre>
+<a name="using_the_interpreter.exception_handling"></a><h2>
+<a name="id472558"></a>
+        Exception handling
+      </h2>
+<p>
+        If an exception occurs in the evaluation of the python expression, <a href="../../../../v2/errors.html#error_already_set-spec" target="_top">error_already_set</a>
+        is thrown:
+      </p>
+<pre class="programlisting">
+<span class="keyword">try</span>
+<span class="special">{</span>
+    <span class="identifier">object</span> <span class="identifier">result</span> <span class="special">=</span> <span class="identifier">eval</span><span class="special">(</span><span class="string">"5/0"</span><span class="special">);</span>
+    <span class="comment">// execution will never get here:
+</span>    <span class="keyword">int</span> <span class="identifier">five_divided_by_zero</span> <span class="special">=</span> <span class="identifier">extract</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;(</span><span class="identifier">result</span><span class="special">);</span>
+<span class="special">}</span>
+<span class="keyword">catch</span><span class="special">(</span><span class="identifier">error_already_set</span> <span class="keyword">const</span> <span class="special">&amp;)</span>
+<span class="special">{</span>
+    <span class="comment">// handle the exception in some way
+</span><span class="special">}</span>
+</pre>
+<p>
+        The <tt class="literal">error_already_set</tt> exception class doesn't carry any
+        information in itself. To find out more about the Python exception that occurred,
+        you need to use the <a href="http://www.python.org/doc/api/exceptionHandling.html" target="_top">exception
+        handling functions</a> of the Python<span class="emphasis"><em>C API in your catch-statement.
+        This can be as simple as calling [@http:</em></span>/www.python.org/doc/api/exceptionHandling.html#l2h-70
+        PyErr_Print()] to print the exception's traceback to the console, or comparing
+        the type of the exception with those of the <a href="http://www.python.org/doc/api/standardExceptions.html" target="_top">standard
+        exceptions</a>:
+      </p>
+<pre class="programlisting">
+<span class="keyword">catch</span><span class="special">(</span><span class="identifier">error_already_set</span> <span class="keyword">const</span> <span class="special">&amp;)</span>
+<span class="special">{</span>
+    <span class="keyword">if</span> <span class="special">(</span><span class="identifier">PyErr_ExceptionMatches</span><span class="special">(</span><span class="identifier">PyExc_ZeroDivisionError</span><span class="special">))</span>
+    <span class="special">{</span>
+        <span class="comment">// handle ZeroDivisionError specially
+</span>    <span class="special">}</span>
+    <span class="keyword">else</span>
+    <span class="special">{</span>
+        <span class="comment">// print all other errors to stderr
+</span>        <span class="identifier">PyErr_Print</span><span class="special">();</span>
+    <span class="special">}</span>
+<span class="special">}</span>
+</pre>
+<p>
+        (To retrieve even more information from the exception you can use some of
+        the other exception handling functions listed <a href="http://www.python.org/doc/api/exceptionHandling.html" target="_top">here</a>.)
+      </p>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2002-2005 Joel
+      de Guzman, David Abrahams<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">
+        http://www.boost.org/LICENSE_1_0.txt </a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="object.html"><img src="../../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="../../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="iterators.html"><img src="../../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

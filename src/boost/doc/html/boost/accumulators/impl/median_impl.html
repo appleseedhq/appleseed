@@ -1,0 +1,75 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Struct template median_impl</title>
+<link rel="stylesheet" href="../../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../../accumulators/reference.html#header.boost.accumulators.statistics.median_hpp" title="Header &lt;boost/accumulators/statistics/median.hpp&gt;">
+<link rel="prev" href="../extract/with_p_square_cumulativ_id1073236.html" title="Global with_p_square_cumulative_distribution_median">
+<link rel="next" href="with_density_median_impl.html" title="Struct template with_density_median_impl">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../../boost.png"></td>
+<td align="center"><a href="../../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="../extract/with_p_square_cumulativ_id1073236.html"><img src="../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../../accumulators/reference.html#header.boost.accumulators.statistics.median_hpp"><img src="../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../../index.html"><img src="../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="with_density_median_impl.html"><img src="../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.accumulators.impl.median_impl"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Struct template median_impl</span></h2>
+<p>boost::accumulators::impl::median_impl &#8212; Median estimation based on the <span class="inlinemediaobject"><img src="../../../images/accumulators/form_6.png"></span> quantile estimator. </p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../../accumulators/reference.html#header.boost.accumulators.statistics.median_hpp" title="Header &lt;boost/accumulators/statistics/median.hpp&gt;">boost/accumulators/statistics/median.hpp</a>&gt;
+
+</em></span><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Sample&gt; 
+<span class="bold"><strong>struct</strong></span> <a class="link" href="median_impl.html" title="Struct template median_impl">median_impl</a> {
+  <span class="emphasis"><em>// types</em></span>
+  <span class="bold"><strong>typedef</strong></span> numeric::functional::average&lt; Sample, std::size_t &gt;::result_type <a name="boost.accumulators.impl.median_impl.result_type"></a>result_type;
+
+  <span class="emphasis"><em>// <a class="link" href="median_impl.html#boost.accumulators.impl.median_implconstruct-copy-destruct">construct/copy/destruct</a></em></span>
+  <a class="link" href="median_impl.html#id1073341-bb">median_impl</a>(dont_care);
+
+  <span class="emphasis"><em>// <a class="link" href="median_impl.html#id1073317-bb">public member functions</a></em></span>
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Args&gt; <span class="type">result_type</span> <a class="link" href="median_impl.html#id1073320-bb">result</a>(Args <span class="bold"><strong>const</strong></span> &amp;) <span class="bold"><strong>const</strong></span>;
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id1276228"></a><h2>Description</h2>
+<p>The <span class="inlinemediaobject"><img src="../../../images/accumulators/form_6.png"></span> algorithm is invoked with a quantile probability of 0.5. </p>
+<div class="refsect2" lang="en">
+<a name="id1276254"></a><h3>
+<a name="boost.accumulators.impl.median_implconstruct-copy-destruct"></a><code class="computeroutput">median_impl</code> 
+        public
+       construct/copy/destruct</h3>
+<div class="orderedlist"><ol type="1"><li><pre class="literallayout"><a name="id1073341-bb"></a>median_impl(dont_care);</pre></li></ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id1276288"></a><h3>
+<a name="id1073317-bb"></a><code class="computeroutput">median_impl</code> public member functions</h3>
+<div class="orderedlist"><ol type="1"><li><pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Args&gt; <span class="type">result_type</span> <a name="id1073320-bb"></a>result(Args <span class="bold"><strong>const</strong></span> &amp; args) <span class="bold"><strong>const</strong></span>;</pre></li></ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2005, 2006 Eric Niebler<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="../extract/with_p_square_cumulativ_id1073236.html"><img src="../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../../accumulators/reference.html#header.boost.accumulators.statistics.median_hpp"><img src="../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../../index.html"><img src="../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="with_density_median_impl.html"><img src="../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

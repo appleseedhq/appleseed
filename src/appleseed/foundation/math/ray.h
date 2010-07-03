@@ -1,0 +1,233 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2010 Francois Beaune
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#ifndef APPLESEED_FOUNDATION_MATH_RAY_H
+#define APPLESEED_FOUNDATION_MATH_RAY_H
+
+// appleseed.foundation headers.
+#include "foundation/math/vector.h"
+
+// Standard headers.
+#include <cassert>
+#include <cstddef>
+#include <limits>
+
+namespace foundation
+{
+
+//
+// Ray class.
+//
+// A ray is defined as a pair (origin, direction) where origin and direction are vectors
+// of arbitrary type and dimension, and two abscissa tmin and tmax with tmin >= 0.0 and
+// tmin <= tmax that define the ray interval. By convention, tmin is inclusive and tmax
+// is exclusive, i.e. the ray interval is [tmin, tmax).
+//
+
+template <typename T, size_t N>
+class Ray
+{
+  public:
+    // Types.
+    typedef T ValueType;
+    typedef Vector<T, N> VectorType;
+    typedef Ray<T, N> RayType;
+
+    // Dimension.
+    static const size_t Dimension = N;
+
+    // Public members.
+    VectorType  m_org;                      // ray origin
+    VectorType  m_dir;                      // ray direction (not necessarily unit-length)
+    ValueType   m_tmin;                     // beginning of the ray interval (inclusive)
+    ValueType   m_tmax;                     // end of the ray interval (exclusive)
+
+    // Constructors.
+    Ray();                                  // leave all fields uninitialized
+    Ray(
+        const VectorType&   org,
+        const VectorType&   dir,
+        const ValueType     tmin = ValueType(0.0),
+        const ValueType     tmax = std::numeric_limits<ValueType>::max());
+
+    // Return the point of the ray at abscissa t, t >= 0.
+    VectorType point_at(const ValueType t) const;
+};
+
+// Exact inequality and equality tests.
+template <typename T, size_t N> bool operator!=(const Ray<T, N>& lhs, const Ray<T, N>& rhs);
+template <typename T, size_t N> bool operator==(const Ray<T, N>& lhs, const Ray<T, N>& rhs);
+
+// Approximate equality tests.
+template <typename T, size_t N> bool feq(const Ray<T, N>& lhs, const Ray<T, N>& rhs);
+template <typename T, size_t N> bool feq(const Ray<T, N>& lhs, const Ray<T, N>& rhs, const T eps);
+
+
+//
+// Full specializations for 2D, 3D and 4D rays of type float and double.
+//
+
+typedef Ray<float,  2> Ray2f;
+typedef Ray<double, 2> Ray2d;
+typedef Ray<float,  3> Ray3f;
+typedef Ray<double, 3> Ray3d;
+typedef Ray<float,  4> Ray4f;
+typedef Ray<double, 4> Ray4d;
+
+
+//
+// Complementary information about a ray.
+//
+
+template <typename T, size_t N>
+class RayInfo
+{
+  public:
+    // Types.
+    typedef T ValueType;
+    typedef Vector<T, N> VectorType;
+    typedef Ray<T, N> RayType;
+    typedef RayInfo<T, N> RayInfoType;
+
+    // Dimension.
+    static const size_t Dimension = N;
+
+    // Reciprocal of the ray direction.
+    VectorType m_rcp_dir;
+
+    // Sign of the ray direction (for the i'th component, the sign value
+    // is 1 if the component is positive or null, and 0 if the component
+    // is strictly negative).
+    Vector<size_t, N> m_sgn_dir;
+
+    // Constructors.
+    RayInfo();                              // leave all fields uninitialized
+    explicit RayInfo(const RayType& ray);   // initialize with a ray
+};
+
+
+//
+// Full specializations of RayInfo for 2D, 3D and 4D rays of type float and double.
+//
+
+typedef RayInfo<float,  2> RayInfo2f;
+typedef RayInfo<double, 2> RayInfo2d;
+typedef RayInfo<float,  3> RayInfo3f;
+typedef RayInfo<double, 3> RayInfo3d;
+typedef RayInfo<float,  4> RayInfo4f;
+typedef RayInfo<double, 4> RayInfo4d;
+
+
+//
+// Ray class implementation.
+//
+
+template <typename T, size_t N>
+inline Ray<T, N>::Ray()
+{
+}
+
+template <typename T, size_t N>
+inline Ray<T, N>::Ray(
+    const VectorType&   org,
+    const VectorType&   dir,
+    const ValueType     tmin,
+    const ValueType     tmax)
+  : m_org(org)
+  , m_dir(dir)
+  , m_tmin(tmin)
+  , m_tmax(tmax)
+{
+}
+
+template <typename T, size_t N>
+inline typename Ray<T, N>::VectorType Ray<T, N>::point_at(const ValueType t) const
+{
+    assert(t >= 0.0);
+    return m_org + t * m_dir;
+}
+
+template <typename T, size_t N>
+inline bool operator!=(const Ray<T, N>& lhs, const Ray<T, N>& rhs)
+{
+    return
+           lhs.m_org  != rhs.m_org
+        || lhs.m_dir  != rhs.m_dir
+        || lhs.m_tmin != rhs.m_tmin
+        || lhs.m_tmax != rhs.m_tmax;
+}
+
+template <typename T, size_t N>
+inline bool operator==(const Ray<T, N>& lhs, const Ray<T, N>& rhs)
+{
+    return !(lhs != rhs);
+}
+
+template <typename T, size_t N>
+inline bool feq(const Ray<T, N>& lhs, const Ray<T, N>& rhs)
+{
+    return
+           feq(lhs.m_org,  rhs.m_org)
+        && feq(lhs.m_dir,  rhs.m_dir)
+        && feq(lhs.m_tmin, rhs.m_tmin)
+        && feq(lhs.m_tmax, rhs.m_tmax);
+}
+
+template <typename T, size_t N>
+inline bool feq(const Ray<T, N>& lhs, const Ray<T, N>& rhs, const T eps)
+{
+    return
+           feq(lhs.m_org,  rhs.m_org,  eps)
+        && feq(lhs.m_dir,  rhs.m_dir,  eps)
+        && feq(lhs.m_tmin, rhs.m_tmin, eps)
+        && feq(lhs.m_tmax, rhs.m_tmax, eps);
+}
+
+
+//
+// RayInfo class implementation.
+//
+
+template <typename T, size_t N>
+inline RayInfo<T, N>::RayInfo()
+{
+}
+
+template <typename T, size_t N>
+inline RayInfo<T, N>::RayInfo(const RayType& ray)
+{
+    for (size_t i = 0; i < Dimension; ++i)
+    {
+        m_rcp_dir[i] = ValueType(1.0) / ray.m_dir[i];
+        m_sgn_dir[i] = m_rcp_dir[i] >= ValueType(0.0) ? 1 : 0;
+    }
+}
+
+}       // namespace foundation
+
+#endif  // !APPLESEED_FOUNDATION_MATH_RAY_H

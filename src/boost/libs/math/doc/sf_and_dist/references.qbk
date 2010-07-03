@@ -1,0 +1,85 @@
+[section:refs References]
+
+[h4 General references]
+
+(Specific detailed sources for individual functions and distributions
+are given at the end of each individual section).
+
+[@http://dlmf.nist.gov/about/ DLMF (NIST Digital Library of Mathematical Functions)]
+is intended to be a  replacement for the legendary
+Abramowitz and Stegun's Handbook of Mathematical Functions,
+now scheduled to be completed in 2007.
+
+M. Abramowitz and I. A. Stegun (Eds.) (1964)
+Handbook of Mathematical Functions with Formulas, Graphs, and
+Mathematical Tables,      
+National Bureau of Standards Applied Mathematics Series, U.S. Government Printing Office, Washington, D.C..
+
+[@http://functions.wolfram.com/ The Wolfram Functions Site]
+The Wolfram Functions Site - Providing 
+the mathematical and scientific community with the world's largest 
+(and most authorititive) collection of formulas and graphics about mathematical functions.
+
+[@http://www.itl.nist.gov/div898/handbook/index.htm NIST/SEMATECH e-Handbook of Statistical Methods]
+
+[@http://documents.wolfram.com/mathematica/Add-onsLinks/StandardPackages/Statistics/DiscreteDistributions.html Mathematica Documentation: DiscreteDistributions]
+The Wolfram Research Documentation Center is a collection of online reference materials about Mathematica, CalculationCenter, and other Wolfram Research products.
+
+[@http://documents.wolfram.com/mathematica/Add-onsLinks/StandardPackages/Statistics/ContinuousDistributions.html Mathematica Documentation: ContinuousDistributions]
+The Wolfram Research Documentation Center is a collection of online reference materials about Mathematica, CalculationCenter, and other Wolfram Research products.
+
+Statistical Distributions (Wiley Series in Probability & Statistics) (Paperback)
+by N.A.J. Hastings, Brian Peacock, Merran Evans, ISBN: 0471371246, Wiley 2000.
+
+[@http://www.worldscibooks.com/mathematics/p191.html EXTREME VALUE DISTRIBUTIONS, Theory and Applications]
+Samuel Kotz & Saralees Nadarajah, ISBN 978-1-86094-224-2 & 1-86094-224-5 Oct 2000,
+Chapter 1.2 discusses the various extreme value distributions.
+
+[@http://bh0.physics.ubc.ca/People/matt/Doc/ThesesOthers/Phd/pugh.pdf pugh.pdf (application/pdf Object)]
+Pugh Msc Thesis on the Lanczos approximation to the gamma function.
+
+[@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2003 N1514, 03-0097, A Proposal to Add Mathematical Special Functions to the C++ Standard Library (version 2), Walter E. Brown]
+
+[h4 Calculators* that we found (and used to cross-check - as far as their widely-varying accuracy allowed).]
+
+[@http://www.adsciengineering.com/bpdcalc/ http://www.adsciengineering.com/bpdcalc/] Binomial Probability Distribution Calculator.
+
+[h4 Other Libraries]
+
+[@http://www.moshier.net/#Cephes Cephes library] by Shephen Moshier and his book:
+
+Methods and programs for mathematical functions, Stephen L B Moshier, Ellis Horwood (1989) ISBN 0745802893 0470216093 provided inspiration.
+
+[@http://www.moshier.net/cephes28.zip 100-decimal digit calculator] provided some spot values.
+
+[@http://www.csit.fsu.edu/~burkardt/cpp_src/dcdflib/dcdflib.html C++ version].
+
+[@http://lib.stat.cmu.edu/general/cdflib  CDFLIB Library of Fortran Routines for Cumulative Distribution functions.]
+
+[@http://www.csit.fsu.edu/~burkardt/f_src/dcdflib/dcdflib.html DCDFLIB C++ version]
+DCDFLIB is a library of C++ routines, using double precision arithmetic, for evaluating cumulative probability density functions.
+
+[@http://www.softintegration.com/docs/package/chnagstat/ http://www.softintegration.com/docs/package/chnagstat/]
+
+[@http://www.nag.com/numeric/numerical_libraries.asp NAG ]libraries.
+
+[@http://www.mathcad.com MathCAD]
+
+[@http://www.vni.com/products/imsl/jmsl/v30/api/com/imsl/stat/Cdf.html JMSL Numerical Library] (Java).
+
+John F Hart, Computer Approximations, (1978) ISBN 0 088275 642-7.
+
+William J Cody, Software Manual for the Elementary Functions, Prentice-Hall (1980) ISBN 0138220646.
+
+Nico Temme, Special Functions, An Introduction to the Classical Functions of Mathematical Physics, Wiley, ISBN: 0471-11313-1 (1996) who also gave valueable advice.
+
+[@http://www.cas.lancs.ac.uk/glossary_v1.1/prob.html#probdistn Statistics Glossary], Valerie Easton and John H. McColl.
+
+[endsect] [/section:references References]
+[/ 
+  Copyright 2006 John Maddock and Paul A. Bristow.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt).
+]
+

@@ -1,0 +1,26 @@
+HKCR
+{
+	Xerces.DOMDocument.2.8.0 = s 'Apache Xerces Parser for COM'
+	{
+		CLSID = s '{C4775B61-ECD6-11d4-94B4-00A0CC57CBCB}'
+	}
+	Xerces.DOMDocument = s 'Apache Xerces Parser For COM'
+	{
+		CLSID = s '{C4775B61-ECD6-11d4-94B4-00A0CC57CBCB}'
+		CurVer = s 'Xerces.DOMDocument.2.8.0'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {C4775B61-ECD6-11d4-94B4-00A0CC57CBCB} = s 'Apache Xerces Parser for COM'
+		{
+			ProgID = s 'Xerces.DOMDocument.2.8.0'
+			VersionIndependentProgID = s 'Xerces.DOMDocument'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%XMLMODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{C4775B62-ECD6-11d4-94B4-00A0CC57CBCB}'
+		}
+	}
+}

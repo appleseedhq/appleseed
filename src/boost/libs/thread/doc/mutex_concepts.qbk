@@ -1,0 +1,1119 @@
+[/
+  (C) Copyright 2007-8 Anthony Williams.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt).
+]
+
+[section:mutex_concepts Mutex Concepts]
+
+A mutex object facilitates protection against data races and allows thread-safe synchronization of data between threads. A thread
+obtains ownership of a mutex object by calling one of the lock functions and relinquishes ownership by calling the corresponding
+unlock function. Mutexes may be either recursive or non-recursive, and may grant simultaneous ownership to one or many
+threads. __boost_thread__ supplies recursive and non-recursive mutexes with exclusive ownership semantics, along with a shared
+ownership (multiple-reader / single-writer) mutex.
+
+__boost_thread__ supports four basic concepts for lockable objects: __lockable_concept_type__, __timed_lockable_concept_type__,
+__shared_lockable_concept_type__ and __upgrade_lockable_concept_type__. Each mutex type implements one or more of these concepts, as
+do the various lock types.
+
+[section:lockable `Lockable` Concept]
+
+The __lockable_concept__ models exclusive ownership. A type that implements the __lockable_concept__ shall provide the following
+member functions:
+
+* [lock_ref_link `void lock();`]
+* [try_lock_ref_link `bool try_lock();`]
+* [unlock_ref_link `void unlock();`]
+
+Lock ownership acquired through a call to __lock_ref__ or __try_lock_ref__ must be released through a call to __unlock_ref__.
+
+[section:lock `void lock()`]
+
+[variablelist
+
+[[Effects:] [The current thread blocks until ownership can be obtained for the current thread.]]
+
+[[Postcondition:] [The current thread owns `*this`.]]
+
+[[Throws:] [__thread_resource_error__ if an error occurs.]]
+
+]
+[endsect]
+
+[section:try_lock `bool try_lock()`]
+
+[variablelist
+
+[[Effects:] [Attempt to obtain ownership for the current thread without blocking.]]
+
+[[Returns:] [`true` if ownership was obtained for the current thread, `false` otherwise.]]
+
+[[Postcondition:] [If the call returns `true`, the current thread owns the `*this`.]]
+
+[[Throws:] [__thread_resource_error__ if an error occurs.]]
+
+]
+[endsect]
+
+[section:unlock `void unlock()`]
+
+[variablelist
+
+[[Precondition:] [The current thread owns `*this`.]]
+
+[[Effects:] [Releases ownership by the current thread.]]
+
+[[Postcondition:] [The current thread no longer owns `*this`.]]
+
+[[Throws:] [Nothing]]
+]
+[endsect]
+[endsect]
+
+[section:timed_lockable `TimedLockable` Concept]
+
+The __timed_lockable_concept__ refines the __lockable_concept__ to add support for
+timeouts when trying to acquire the lock.
+
+A type that implements the __timed_lockable_concept__ shall meet the requirements
+of the __lockable_concept__. In addition, the following member functions must be
+provided:
+
+* [timed_lock_ref_link `bool timed_lock(boost::system_time const& abs_time);`]
+* [timed_lock_duration_ref_link `template<typename DurationType> bool timed_lock(DurationType const& rel_time);`]
+
+Lock ownership acquired through a call to __timed_lock_ref__ must be released through a call to __unlock_ref__.
+
+[section:timed_lock `bool timed_lock(boost::system_time const& abs_time)`]
+
+[variablelist
+
+[[Effects:] [Attempt to obtain ownership for the current thread. Blocks until ownership can be obtained, or the specified time is
+reached. If the specified time has already passed, behaves as __try_lock_ref__.]]
+
+[[Returns:] [`true` if ownership was obtained for the current thread, `false` otherwise.]]
+
+[[Postcondition:] [If the call returns `true`, the current thread owns `*this`.]]
+
+[[Throws:] [__thread_resource_error__ if an error occurs.]]
+]
+[endsect]
+
+[section:timed_lock_duration `template<typename DurationType> bool
+timed_lock(DurationType const& rel_time)`]
+
+[variablelist
+
+[[Effects:] [As-if [timed_lock_ref_link
+`timed_lock(boost::get_system_time()+rel_time)`].]]
+
+]
+[endsect]
+
+[endsect]
+
+[section:shared_lockable `SharedLockable` Concept]
+
+The __shared_lockable_concept__ is a refinement of the __timed_lockable_concept__ that
+allows for ['shared ownership] as well as ['exclusive ownership]. This is the
+standard multiple-reader / single-write model: at most one thread can have
+exclusive ownership, and if any thread does have exclusive ownership, no other threads
+can have shared or exclusive ownership. Alternatively, many threads may have
+shared ownership.
+
+For a type to implement the __shared_lockable_concept__, as well as meeting the
+requirements of the __timed_lockable_concept__, it must also provide the following
+member functions:
+
+* [lock_shared_ref_link `void lock_shared();`]
+* [try_lock_shared_ref_link `bool try_lock_shared();`]
+* [unlock_shared_ref_link `bool unlock_shared();`]
+* [timed_lock_shared_ref_link `bool timed_lock_shared(boost::system_time const& abs_time);`]
+
+Lock ownership acquired through a call to __lock_shared_ref__, __try_lock_shared_ref__ or __timed_lock_shared_ref__ must be released
+through a call to __unlock_shared_ref__.
+
+[section:lock_shared `void lock_shared()`]
+
+[variablelist
+
+[[Effects:] [The current thread blocks until shared ownership can be obtained for the current thread.]]
+
+[[Postcondition:] [The current thread has shared ownership of `*this`.]]
+
+[[Throws:] [__thread_resource_error__ if an error occurs.]]
+
+]
+[endsect]
+
+[section:try_lock_shared `bool try_lock_shared()`]
+
+[variablelist
+
+[[Effects:] [Attempt to obtain shared ownership for the current thread without blocking.]]
+
+[[Returns:] [`true` if shared ownership was obtained for the current thread, `false` otherwise.]]
+
+[[Postcondition:] [If the call returns `true`, the current thread has shared ownership of `*this`.]]
+
+[[Throws:] [__thread_resource_error__ if an error occurs.]]
+
+]
+[endsect]
+
+[section:timed_lock_shared `bool timed_lock_shared(boost::system_time const& abs_time)`]
+
+[variablelist
+
+[[Effects:] [Attempt to obtain shared ownership for the current thread. Blocks until shared ownership can be obtained, or the
+specified time is reached. If the specified time has already passed, behaves as __try_lock_shared_ref__.]]
+
+[[Returns:] [`true` if shared ownership was acquired for the current thread, `false` otherwise.]]
+
+[[Postcondition:] [If the call returns `true`, the current thread has shared
+ownership of `*this`.]]
+
+[[Throws:] [__thread_resource_error__ if an error occurs.]]
+
+]
+[endsect]
+
+[section:unlock_shared `void unlock_shared()`]
+
+[variablelist
+
+[[Precondition:] [The current thread has shared ownership of `*this`.]]
+
+[[Effects:] [Releases shared ownership of `*this` by the current thread.]]
+
+[[Postcondition:] [The current thread no longer has shared ownership of `*this`.]]
+
+[[Throws:] [Nothing]]
+
+]
+[endsect]
+
+
+[endsect]
+
+[section:upgrade_lockable `UpgradeLockable` Concept]
+
+The __upgrade_lockable_concept__ is a refinement of the __shared_lockable_concept__ that allows for ['upgradable ownership] as well
+as ['shared ownership] and ['exclusive ownership]. This is an extension to the multiple-reader / single-write model provided by the
+__shared_lockable_concept__: a single thread may have ['upgradable ownership] at the same time as others have ['shared
+ownership]. The thread with ['upgradable ownership] may at any time attempt to upgrade that ownership to ['exclusive ownership]. If
+no other threads have shared ownership, the upgrade is completed immediately, and the thread now has ['exclusive ownership], which
+must be relinquished by a call to __unlock_ref__, just as if it had been acquired by a call to __lock_ref__.
+
+If a thread with ['upgradable ownership] tries to upgrade whilst other threads have ['shared ownership], the attempt will fail and
+the thread will block until ['exclusive ownership] can be acquired.
+
+Ownership can also be ['downgraded] as well as ['upgraded]: exclusive ownership of an implementation of the
+__upgrade_lockable_concept__ can be downgraded to upgradable ownership or shared ownership, and upgradable ownership can be
+downgraded to plain shared ownership.
+
+For a type to implement the __upgrade_lockable_concept__, as well as meeting the
+requirements of the __shared_lockable_concept__, it must also provide the following
+member functions:
+
+* [lock_upgrade_ref_link `void lock_upgrade();`]
+* [unlock_upgrade_ref_link `bool unlock_upgrade();`]
+* [unlock_upgrade_and_lock_ref_link `void unlock_upgrade_and_lock();`]
+* [unlock_and_lock_upgrade_ref_link `void unlock_and_lock_upgrade();`]
+* [unlock_upgrade_and_lock_shared_ref_link `void unlock_upgrade_and_lock_shared();`]
+
+Lock ownership acquired through a call to __lock_upgrade_ref__ must be released through a call to __unlock_upgrade_ref__. If the
+ownership type is changed through a call to one of the `unlock_xxx_and_lock_yyy()` functions, ownership must be released through a
+call to the unlock function corresponding to the new level of ownership.
+
+
+[section:lock_upgrade `void lock_upgrade()`]
+
+[variablelist
+
+[[Effects:] [The current thread blocks until upgrade ownership can be obtained for the current thread.]]
+
+[[Postcondition:] [The current thread has upgrade ownership of `*this`.]]
+
+[[Throws:] [__thread_resource_error__ if an error occurs.]]
+
+]
+[endsect]
+
+[section:unlock_upgrade `void unlock_upgrade()`]
+
+[variablelist
+
+[[Precondition:] [The current thread has upgrade ownership of `*this`.]]
+
+[[Effects:] [Releases upgrade ownership of `*this` by the current thread.]]
+
+[[Postcondition:] [The current thread no longer has upgrade ownership of `*this`.]]
+
+[[Throws:] [Nothing]]
+
+]
+[endsect]
+
+[section:unlock_upgrade_and_lock `void unlock_upgrade_and_lock()`]
+
+[variablelist
+
+[[Precondition:] [The current thread has upgrade ownership of `*this`.]]
+
+[[Effects:] [Atomically releases upgrade ownership of `*this` by the current thread and acquires exclusive ownership of `*this`. If
+any other threads have shared ownership, blocks until exclusive ownership can be acquired.]]
+
+[[Postcondition:] [The current thread has exclusive ownership of `*this`.]]
+
+[[Throws:] [Nothing]]
+
+]
+[endsect]
+
+[section:unlock_upgrade_and_lock_shared `void unlock_upgrade_and_lock_shared()`]
+
+[variablelist
+
+[[Precondition:] [The current thread has upgrade ownership of `*this`.]]
+
+[[Effects:] [Atomically releases upgrade ownership of `*this` by the current thread and acquires shared ownership of `*this` without
+blocking.]]
+
+[[Postcondition:] [The current thread has shared ownership of `*this`.]]
+
+[[Throws:] [Nothing]]
+
+]
+[endsect]
+
+[section:unlock_and_lock_upgrade `void unlock_and_lock_upgrade()`]
+
+[variablelist
+
+[[Precondition:] [The current thread has exclusive ownership of `*this`.]]
+
+[[Effects:] [Atomically releases exclusive ownership of `*this` by the current thread and acquires upgrade ownership of `*this`
+without blocking.]]
+
+[[Postcondition:] [The current thread has upgrade ownership of `*this`.]]
+
+[[Throws:] [Nothing]]
+
+]
+[endsect]
+
+[endsect]
+
+[endsect]
+
+[section:locks Lock Types]
+
+[section:lock_guard Class template `lock_guard`]
+
+    #include <boost/thread/locks.hpp>
+
+    template<typename Lockable>
+    class lock_guard
+    {
+    public:
+        explicit lock_guard(Lockable& m_);
+        lock_guard(Lockable& m_,boost::adopt_lock_t);
+
+        ~lock_guard();
+    };
+
+__lock_guard__ is very simple: on construction it
+acquires ownership of the implementation of the __lockable_concept__ supplied as
+the constructor parameter. On destruction, the ownership is released. This
+provides simple RAII-style locking of a __lockable_concept_type__ object, to facilitate exception-safe
+locking and unlocking. In addition, the [link
+thread.synchronization.locks.lock_guard.constructor_adopt `lock_guard(Lockable &
+m,boost::adopt_lock_t)` constructor] allows the __lock_guard__ object to
+take ownership of a lock already held by the current thread.
+
+[section:constructor `lock_guard(Lockable & m)`]
+
+[variablelist
+
+[[Effects:] [Stores a reference to `m`. Invokes [lock_ref_link `m.lock()`].]]
+
+[[Throws:] [Any exception thrown by the call to [lock_ref_link `m.lock()`].]]
+
+]
+
+[endsect]
+
+[section:constructor_adopt `lock_guard(Lockable & m,boost::adopt_lock_t)`]
+
+[variablelist
+
+[[Precondition:] [The current thread owns a lock on `m` equivalent to one
+obtained by a call to [lock_ref_link `m.lock()`].]]
+
+[[Effects:] [Stores a reference to `m`. Takes ownership of the lock state of
+`m`.]]
+
+[[Throws:] [Nothing.]]
+
+]
+
+[endsect]
+
+[section:destructor `~lock_guard()`]
+
+[variablelist
+
+[[Effects:] [Invokes [unlock_ref_link `m.unlock()`] on the __lockable_concept_type__
+object passed to the constructor.]]
+
+[[Throws:] [Nothing.]]
+
+]
+
+[endsect]
+
+[endsect]
+
+[section:unique_lock Class template `unique_lock`]
+
+    #include <boost/thread/locks.hpp>
+
+    template<typename Lockable>
+    class unique_lock
+    {
+    public:
+        unique_lock();
+        explicit unique_lock(Lockable& m_);
+        unique_lock(Lockable& m_,adopt_lock_t);
+        unique_lock(Lockable& m_,defer_lock_t);
+        unique_lock(Lockable& m_,try_to_lock_t);
+        unique_lock(Lockable& m_,system_time const& target_time);
+
+        ~unique_lock();
+
+        unique_lock(detail::thread_move_t<unique_lock<Lockable> > other);
+        unique_lock(detail::thread_move_t<upgrade_lock<Lockable> > other);
+
+        operator detail::thread_move_t<unique_lock<Lockable> >();
+        detail::thread_move_t<unique_lock<Lockable> > move();
+        unique_lock& operator=(detail::thread_move_t<unique_lock<Lockable> > other);
+        unique_lock& operator=(detail::thread_move_t<upgrade_lock<Lockable> > other);
+
+        void swap(unique_lock& other);
+        void swap(detail::thread_move_t<unique_lock<Lockable> > other);
+
+        void lock();
+        bool try_lock();
+
+        template<typename TimeDuration>
+        bool timed_lock(TimeDuration const& relative_time);
+        bool timed_lock(::boost::system_time const& absolute_time);
+
+        void unlock();
+
+        bool owns_lock() const;
+        operator ``['unspecified-bool-type]``() const;
+        bool operator!() const;
+
+        Lockable* mutex() const;
+        Lockable* release();
+    };
+
+__unique_lock__ is more complex than __lock_guard__: not only does it provide for RAII-style locking, it also allows for deferring
+acquiring the lock until the __lock_ref__ member function is called explicitly, or trying to acquire the lock in a non-blocking
+fashion, or with a timeout. Consequently, __unlock_ref__ is only called in the destructor if the lock object has locked the
+__lockable_concept_type__ object, or otherwise adopted a lock on the __lockable_concept_type__ object.
+
+Specializations of __unique_lock__ model the __timed_lockable_concept__ if the supplied __lockable_concept_type__ type itself models
+__timed_lockable_concept__ (e.g. `boost::unique_lock<boost::timed_mutex>`), or the __lockable_concept__ otherwise
+(e.g. `boost::unique_lock<boost::mutex>`). 
+
+An instance of __unique_lock__ is said to ['own] the lock state of a __lockable_concept_type__ `m` if __mutex_func_ref__ returns a
+pointer to `m` and __owns_lock_ref__ returns `true`. If an object that ['owns] the lock state of a __lockable_concept_type__ object
+is destroyed, then the destructor will invoke [unlock_ref_link `mutex()->unlock()`].
+
+The member functions of __unique_lock__ are not thread-safe. In particular, __unique_lock__ is intended to model the ownership of a
+__lockable_concept_type__ object by a particular thread, and the member functions that release ownership of the lock state
+(including the destructor) must be called by the same thread that acquired ownership of the lock state.
+
+[section:defaultconstructor `unique_lock()`]
+
+[variablelist
+
+[[Effects:] [Creates a lock object with no associated mutex.]]
+
+[[Postcondition:] [__owns_lock_ref__ returns `false`. __mutex_func_ref__ returns `NULL`.]]
+
+[[Throws:] [Nothing.]]
+
+]
+
+[endsect]
+
+[section:constructor `unique_lock(Lockable & m)`]
+
+[variablelist
+
+[[Effects:] [Stores a reference to `m`. Invokes [lock_ref_link `m.lock()`].]]
+
+[[Postcondition:] [__owns_lock_ref__ returns `true`. __mutex_func_ref__ returns `&m`.]]
+
+[[Throws:] [Any exception thrown by the call to [lock_ref_link `m.lock()`].]]
+
+]
+
+[endsect]
+
+[section:constructor_adopt `unique_lock(Lockable & m,boost::adopt_lock_t)`]
+
+[variablelist
+
+[[Precondition:] [The current thread owns an exclusive lock on `m`.]]
+
+[[Effects:] [Stores a reference to `m`. Takes ownership of the lock state of `m`.]]
+
+[[Postcondition:] [__owns_lock_ref__ returns `true`. __mutex_func_ref__ returns `&m`.]]
+
+[[Throws:] [Nothing.]]
+
+]
+
+[endsect]
+
+[section:constructor_defer `unique_lock(Lockable & m,boost::defer_lock_t)`]
+
+[variablelist
+
+[[Effects:] [Stores a reference to `m`.]]
+
+[[Postcondition:] [__owns_lock_ref__ returns `false`. __mutex_func_ref__ returns `&m`.]]
+
+[[Throws:] [Nothing.]]
+
+]
+
+[endsect]
+
+[section:constructor_try `unique_lock(Lockable & m,boost::try_to_lock_t)`]
+
+[variablelist
+
+[[Effects:] [Stores a reference to `m`. Invokes [try_lock_ref_link
+`m.try_lock()`], and takes ownership of the lock state if the call returns
+`true`.]]
+
+[[Postcondition:] [__mutex_func_ref__ returns `&m`. If the call to __try_lock_ref__
+returned `true`, then __owns_lock_ref__ returns `true`, otherwise __owns_lock_ref__
+returns `false`.]]
+
+[[Throws:] [Nothing.]]
+
+]
+
+[endsect]
+
+[section:constructor_abs_time `unique_lock(Lockable & m,boost::system_time const& abs_time)`]
+
+[variablelist
+
+[[Effects:] [Stores a reference to `m`. Invokes [timed_lock_ref_link
+`m.timed_lock(abs_time)`], and takes ownership of the lock state if the call
+returns `true`.]]
+
+[[Postcondition:] [__mutex_func_ref__ returns `&m`. If the call to __timed_lock_ref__
+returned `true`, then __owns_lock_ref__ returns `true`, otherwise __owns_lock_ref__
+returns `false`.]]
+
+[[Throws:] [Any exceptions thrown by the call to [timed_lock_ref_link `m.timed_lock(abs_time)`].]]
+
+]
+
+[endsect]
+
+[section:destructor `~unique_lock()`]
+
+[variablelist
+
+[[Effects:] [Invokes __mutex_func_ref__`->`[unlock_ref_link `unlock()`] if
+__owns_lock_ref__ returns `true`.]]
+
+[[Throws:] [Nothing.]]
+
+]
+
+[endsect]
+
+[section:owns_lock `bool owns_lock() const`]
+
+[variablelist
+
+[[Returns:] [`true` if the `*this` owns the lock on the __lockable_concept_type__
+object associated with `*this`.]]
+
+[[Throws:] [Nothing.]]
+
+]
+
+[endsect]
+
+[section:mutex `Lockable* mutex() const`]
+
+[variablelist
+
+[[Returns:] [A pointer to the __lockable_concept_type__ object associated with
+`*this`, or `NULL` if there is no such object.]]
+
+[[Throws:] [Nothing.]]
+
+]
+
+[endsect]
+
+[section:bool_conversion `operator unspecified-bool-type() const`]
+
+[variablelist
+
+[[Returns:] [If __owns_lock_ref__ would return `true`, a value that evaluates to
+`true` in boolean contexts, otherwise a value that evaluates to `false` in
+boolean contexts.]]
+
+[[Throws:] [Nothing.]]
+
+]
+
+[endsect]
+
+[section:operator_not `bool operator!() const`]
+
+[variablelist
+
+[[Returns:] [`!` __owns_lock_ref__.]]
+
+[[Throws:] [Nothing.]]
+
+]
+
+[endsect]
+
+[section:release `Lockable* release()`]
+
+[variablelist
+
+[[Effects:] [The association between `*this` and the __lockable_concept_type__ object is removed, without affecting the lock state
+of the __lockable_concept_type__ object. If __owns_lock_ref__ would have returned `true`, it is the responsibility of the calling
+code to ensure that the __lockable_concept_type__ is correctly unlocked.]]
+
+[[Returns:] [A pointer to the __lockable_concept_type__ object associated with `*this` at the point of the call, or `NULL` if there
+is no such object.]]
+
+[[Throws:] [Nothing.]]
+
+[[Postcondition:] [`*this` is no longer associated with any __lockable_concept_type__ object. __mutex_func_ref__ returns `NULL` and
+__owns_lock_ref__ returns `false`.]]
+
+]
+
+[endsect]
+
+[endsect]
+
+[section:shared_lock Class template `shared_lock`]
+
+    #include <boost/thread/locks.hpp>
+
+    template<typename Lockable>
+    class shared_lock
+    {
+    public:
+        shared_lock();
+        explicit shared_lock(Lockable& m_);
+        shared_lock(Lockable& m_,adopt_lock_t);
+        shared_lock(Lockable& m_,defer_lock_t);
+        shared_lock(Lockable& m_,try_to_lock_t);
+        shared_lock(Lockable& m_,system_time const& target_time);
+        shared_lock(detail::thread_move_t<shared_lock<Lockable> > other);
+        shared_lock(detail::thread_move_t<unique_lock<Lockable> > other);
+        shared_lock(detail::thread_move_t<upgrade_lock<Lockable> > other);
+
+        ~shared_lock();
+
+        operator detail::thread_move_t<shared_lock<Lockable> >();
+        detail::thread_move_t<shared_lock<Lockable> > move();
+
+        shared_lock& operator=(detail::thread_move_t<shared_lock<Lockable> > other);
+        shared_lock& operator=(detail::thread_move_t<unique_lock<Lockable> > other);
+        shared_lock& operator=(detail::thread_move_t<upgrade_lock<Lockable> > other);
+        void swap(shared_lock& other);
+
+        void lock();
+        bool try_lock();
+        bool timed_lock(boost::system_time const& target_time);
+        void unlock();
+
+        operator ``['unspecified-bool-type]``() const;
+        bool operator!() const;
+        bool owns_lock() const;
+    };
+
+Like __unique_lock__, __shared_lock__ models the __lockable_concept__, but rather than acquiring unique ownership of the supplied
+__lockable_concept_type__ object, locking an instance of __shared_lock__ acquires shared ownership.
+
+Like __unique_lock__, not only does it provide for RAII-style locking, it also allows for deferring acquiring the lock until the
+__lock_ref__ member function is called explicitly, or trying to acquire the lock in a non-blocking fashion, or with a
+timeout. Consequently, __unlock_ref__ is only called in the destructor if the lock object has locked the __lockable_concept_type__
+object, or otherwise adopted a lock on the __lockable_concept_type__ object.
+
+An instance of __shared_lock__ is said to ['own] the lock state of a __lockable_concept_type__ `m` if __mutex_func_ref__ returns a
+pointer to `m` and __owns_lock_ref__ returns `true`. If an object that ['owns] the lock state of a __lockable_concept_type__ object
+is destroyed, then the destructor will invoke [unlock_shared_ref_link `mutex()->unlock_shared()`].
+
+The member functions of __shared_lock__ are not thread-safe. In particular, __shared_lock__ is intended to model the shared
+ownership of a __lockable_concept_type__ object by a particular thread, and the member functions that release ownership of the lock
+state (including the destructor) must be called by the same thread that acquired ownership of the lock state.
+
+[section:defaultconstructor `shared_lock()`]
+
+[variablelist
+
+[[Effects:] [Creates a lock object with no associated mutex.]]
+
+[[Postcondition:] [__owns_lock_ref__ returns `false`. __mutex_func_ref__ returns `NULL`.]]
+
+[[Throws:] [Nothing.]]
+
+]
+
+[endsect]
+
+[section:constructor `shared_lock(Lockable & m)`]
+
+[variablelist
+
+[[Effects:] [Stores a reference to `m`. Invokes [lock_shared_ref_link `m.lock_shared()`].]]
+
+[[Postcondition:] [__owns_lock_shared_ref__ returns `true`. __mutex_func_ref__ returns `&m`.]]
+
+[[Throws:] [Any exception thrown by the call to [lock_shared_ref_link `m.lock_shared()`].]]
+
+]
+
+[endsect]
+
+[section:constructor_adopt `shared_lock(Lockable & m,boost::adopt_lock_t)`]
+
+[variablelist
+
+[[Precondition:] [The current thread owns an exclusive lock on `m`.]]
+
+[[Effects:] [Stores a reference to `m`. Takes ownership of the lock state of `m`.]]
+
+[[Postcondition:] [__owns_lock_shared_ref__ returns `true`. __mutex_func_ref__ returns `&m`.]]
+
+[[Throws:] [Nothing.]]
+
+]
+
+[endsect]
+
+[section:constructor_defer `shared_lock(Lockable & m,boost::defer_lock_t)`]
+
+[variablelist
+
+[[Effects:] [Stores a reference to `m`.]]
+
+[[Postcondition:] [__owns_lock_shared_ref__ returns `false`. __mutex_func_ref__ returns `&m`.]]
+
+[[Throws:] [Nothing.]]
+
+]
+
+[endsect]
+
+[section:constructor_try `shared_lock(Lockable & m,boost::try_to_lock_t)`]
+
+[variablelist
+
+[[Effects:] [Stores a reference to `m`. Invokes [try_lock_shared_ref_link
+`m.try_lock_shared()`], and takes ownership of the lock state if the call returns
+`true`.]]
+
+[[Postcondition:] [__mutex_func_ref__ returns `&m`. If the call to __try_lock_shared_ref__
+returned `true`, then __owns_lock_shared_ref__ returns `true`, otherwise __owns_lock_shared_ref__
+returns `false`.]]
+
+[[Throws:] [Nothing.]]
+
+]
+
+[endsect]
+
+[section:constructor_abs_time `shared_lock(Lockable & m,boost::system_time const& abs_time)`]
+
+[variablelist
+
+[[Effects:] [Stores a reference to `m`. Invokes [timed_lock_shared_ref_link
+`m.timed_lock(abs_time)`], and takes ownership of the lock state if the call
+returns `true`.]]
+
+[[Postcondition:] [__mutex_func_ref__ returns `&m`. If the call to __timed_lock_shared_ref__
+returned `true`, then __owns_lock_shared_ref__ returns `true`, otherwise __owns_lock_shared_ref__
+returns `false`.]]
+
+[[Throws:] [Any exceptions thrown by the call to [timed_lock_shared_ref_link `m.timed_lock(abs_time)`].]]
+
+]
+
+[endsect]
+
+[section:destructor `~shared_lock()`]
+
+[variablelist
+
+[[Effects:] [Invokes __mutex_func_ref__`->`[unlock_shared_ref_link `unlock_shared()`] if
+__owns_lock_shared_ref__ returns `true`.]]
+
+[[Throws:] [Nothing.]]
+
+]
+
+[endsect]
+
+[section:owns_lock `bool owns_lock() const`]
+
+[variablelist
+
+[[Returns:] [`true` if the `*this` owns the lock on the __lockable_concept_type__
+object associated with `*this`.]]
+
+[[Throws:] [Nothing.]]
+
+]
+
+[endsect]
+
+[section:mutex `Lockable* mutex() const`]
+
+[variablelist
+
+[[Returns:] [A pointer to the __lockable_concept_type__ object associated with
+`*this`, or `NULL` if there is no such object.]]
+
+[[Throws:] [Nothing.]]
+
+]
+
+[endsect]
+
+[section:bool_conversion `operator unspecified-bool-type() const`]
+
+[variablelist
+
+[[Returns:] [If __owns_lock_shared_ref__ would return `true`, a value that evaluates to
+`true` in boolean contexts, otherwise a value that evaluates to `false` in
+boolean contexts.]]
+
+[[Throws:] [Nothing.]]
+
+]
+
+[endsect]
+
+[section:operator_not `bool operator!() const`]
+
+[variablelist
+
+[[Returns:] [`!` __owns_lock_shared_ref__.]]
+
+[[Throws:] [Nothing.]]
+
+]
+
+[endsect]
+
+[section:release `Lockable* release()`]
+
+[variablelist
+
+[[Effects:] [The association between `*this` and the __lockable_concept_type__ object is removed, without affecting the lock state
+of the __lockable_concept_type__ object. If __owns_lock_shared_ref__ would have returned `true`, it is the responsibility of the calling
+code to ensure that the __lockable_concept_type__ is correctly unlocked.]]
+
+[[Returns:] [A pointer to the __lockable_concept_type__ object associated with `*this` at the point of the call, or `NULL` if there
+is no such object.]]
+
+[[Throws:] [Nothing.]]
+
+[[Postcondition:] [`*this` is no longer associated with any __lockable_concept_type__ object. __mutex_func_ref__ returns `NULL` and
+__owns_lock_shared_ref__ returns `false`.]]
+
+]
+
+[endsect]
+
+[endsect]
+
+[section:upgrade_lock Class template `upgrade_lock`]
+
+    #include <boost/thread/locks.hpp>
+
+    template<typename Lockable>
+    class upgrade_lock
+    {
+    public:
+        explicit upgrade_lock(Lockable& m_);
+
+        upgrade_lock(detail::thread_move_t<upgrade_lock<Lockable> > other);
+        upgrade_lock(detail::thread_move_t<unique_lock<Lockable> > other);
+
+        ~upgrade_lock();
+
+        operator detail::thread_move_t<upgrade_lock<Lockable> >();
+        detail::thread_move_t<upgrade_lock<Lockable> > move();
+
+        upgrade_lock& operator=(detail::thread_move_t<upgrade_lock<Lockable> > other);
+        upgrade_lock& operator=(detail::thread_move_t<unique_lock<Lockable> > other);
+
+        void swap(upgrade_lock& other);
+
+        void lock();
+        void unlock();
+
+        operator ``['unspecified-bool-type]``() const;
+        bool operator!() const;
+        bool owns_lock() const;
+    };
+
+Like __unique_lock__, __upgrade_lock__ models the __lockable_concept__, but rather than acquiring unique ownership of the supplied
+__lockable_concept_type__ object, locking an instance of __upgrade_lock__ acquires upgrade ownership.
+
+Like __unique_lock__, not only does it provide for RAII-style locking, it also allows for deferring acquiring the lock until the
+__lock_ref__ member function is called explicitly, or trying to acquire the lock in a non-blocking fashion, or with a
+timeout. Consequently, __unlock_ref__ is only called in the destructor if the lock object has locked the __lockable_concept_type__
+object, or otherwise adopted a lock on the __lockable_concept_type__ object.
+
+An instance of __upgrade_lock__ is said to ['own] the lock state of a __lockable_concept_type__ `m` if __mutex_func_ref__ returns a
+pointer to `m` and __owns_lock_ref__ returns `true`. If an object that ['owns] the lock state of a __lockable_concept_type__ object
+is destroyed, then the destructor will invoke [unlock_upgrade_ref_link `mutex()->unlock_upgrade()`].
+
+The member functions of __upgrade_lock__ are not thread-safe. In particular, __upgrade_lock__ is intended to model the upgrade
+ownership of a __lockable_concept_type__ object by a particular thread, and the member functions that release ownership of the lock
+state (including the destructor) must be called by the same thread that acquired ownership of the lock state.
+
+[endsect]
+
+[section:upgrade_to_unique_lock Class template `upgrade_to_unique_lock`]
+
+    #include <boost/thread/locks.hpp>
+
+    template <class Lockable>
+    class upgrade_to_unique_lock
+    {
+    public:
+        explicit upgrade_to_unique_lock(upgrade_lock<Lockable>& m_);
+
+        ~upgrade_to_unique_lock();
+
+        upgrade_to_unique_lock(detail::thread_move_t<upgrade_to_unique_lock<Lockable> > other);
+        upgrade_to_unique_lock& operator=(detail::thread_move_t<upgrade_to_unique_lock<Lockable> > other);
+        void swap(upgrade_to_unique_lock& other);
+
+        operator ``['unspecified-bool-type]``() const;
+        bool operator!() const;
+        bool owns_lock() const;
+    };
+
+__upgrade_to_unique_lock__ allows for a temporary upgrade of an __upgrade_lock__ to exclusive ownership. When constructed with a
+reference to an instance of __upgrade_lock__, if that instance has upgrade ownership on some __lockable_concept_type__ object, that
+ownership is upgraded to exclusive ownership. When the __upgrade_to_unique_lock__ instance is destroyed, the ownership of the
+__lockable_concept_type__ is downgraded back to ['upgrade ownership].
+
+[endsect]
+
+[section:scoped_try_lock Mutex-specific class `scoped_try_lock`]
+
+    class MutexType::scoped_try_lock
+    {
+    private:
+        MutexType::scoped_try_lock(MutexType::scoped_try_lock<MutexType>& other);
+        MutexType::scoped_try_lock& operator=(MutexType::scoped_try_lock<MutexType>& other);
+    public:
+        MutexType::scoped_try_lock();
+        explicit MutexType::scoped_try_lock(MutexType& m);
+        MutexType::scoped_try_lock(MutexType& m_,adopt_lock_t);
+        MutexType::scoped_try_lock(MutexType& m_,defer_lock_t);
+        MutexType::scoped_try_lock(MutexType& m_,try_to_lock_t);
+
+        MutexType::scoped_try_lock(MutexType::scoped_try_lock<MutexType>&& other);
+        MutexType::scoped_try_lock& operator=(MutexType::scoped_try_lock<MutexType>&& other);
+
+        void swap(MutexType::scoped_try_lock&& other);
+
+        void lock();
+        bool try_lock();
+        void unlock();
+        bool owns_lock() const;
+
+        MutexType* mutex() const;
+        MutexType* release();
+        bool operator!() const;
+
+        typedef ``['unspecified-bool-type]`` bool_type;
+        operator bool_type() const;
+    };
+
+The member typedef `scoped_try_lock` is provided for each distinct
+`MutexType` as a typedef to a class with the preceding definition. The
+semantics of each constructor and member function are identical to
+those of [unique_lock_link `boost::unique_lock<MutexType>`] for the same `MutexType`, except
+that the constructor that takes a single reference to a mutex will
+call [try_lock_ref_link `m.try_lock()`] rather than `m.lock()`.
+
+
+[endsect]
+
+[endsect]
+
+[section:lock_functions Lock functions]
+
+[section:lock_multiple Non-member function `lock(Lockable1,Lockable2,...)`]
+
+    template<typename Lockable1,typename Lockable2>
+    void lock(Lockable1& l1,Lockable2& l2);
+
+    template<typename Lockable1,typename Lockable2,typename Lockable3>
+    void lock(Lockable1& l1,Lockable2& l2,Lockable3& l3);
+
+    template<typename Lockable1,typename Lockable2,typename Lockable3,typename Lockable4>
+    void lock(Lockable1& l1,Lockable2& l2,Lockable3& l3,Lockable4& l4);
+
+    template<typename Lockable1,typename Lockable2,typename Lockable3,typename Lockable4,typename Lockable5>
+    void lock(Lockable1& l1,Lockable2& l2,Lockable3& l3,Lockable4& l4,Lockable5& l5);
+
+[variablelist
+
+[[Effects:] [Locks the __lockable_concept_type__ objects supplied as
+arguments in an unspecified and indeterminate order in a way that
+avoids deadlock. It is safe to call this function concurrently from
+multiple threads with the same mutexes (or other lockable objects) in
+different orders without risk of deadlock. If any of the __lock_ref__
+or __try_lock_ref__ operations on the supplied
+__lockable_concept_type__ objects throws an exception any locks
+acquired by the function will be released before the function exits.]]
+
+[[Throws:] [Any exceptions thrown by calling __lock_ref__ or
+__try_lock_ref__ on the supplied __lockable_concept_type__ objects.]]
+
+[[Postcondition:] [All the supplied __lockable_concept_type__ objects
+are locked by the calling thread.]]
+
+]
+
+[endsect]
+
+[section:lock_range Non-member function `lock(begin,end)`]
+
+    template<typename ForwardIterator>
+    void lock(ForwardIterator begin,ForwardIterator end);
+
+[variablelist
+
+[[Preconditions:] [The `value_type` of `ForwardIterator` must implement the __lockable_concept__]]
+
+[[Effects:] [Locks all the __lockable_concept_type__ objects in the
+supplied range in an unspecified and indeterminate order in a way that
+avoids deadlock. It is safe to call this function concurrently from
+multiple threads with the same mutexes (or other lockable objects) in
+different orders without risk of deadlock. If any of the __lock_ref__
+or __try_lock_ref__ operations on the __lockable_concept_type__
+objects in the supplied range throws an exception any locks acquired
+by the function will be released before the function exits.]]
+
+[[Throws:] [Any exceptions thrown by calling __lock_ref__ or
+__try_lock_ref__ on the supplied __lockable_concept_type__ objects.]]
+
+[[Postcondition:] [All the __lockable_concept_type__ objects in the
+supplied range are locked by the calling thread.]]
+
+]
+
+[endsect]
+
+[section:try_lock_multiple Non-member function `try_lock(Lockable1,Lockable2,...)`]
+
+    template<typename Lockable1,typename Lockable2>
+    int try_lock(Lockable1& l1,Lockable2& l2);
+
+    template<typename Lockable1,typename Lockable2,typename Lockable3>
+    int try_lock(Lockable1& l1,Lockable2& l2,Lockable3& l3);
+
+    template<typename Lockable1,typename Lockable2,typename Lockable3,typename Lockable4>
+    int try_lock(Lockable1& l1,Lockable2& l2,Lockable3& l3,Lockable4& l4);
+
+    template<typename Lockable1,typename Lockable2,typename Lockable3,typename Lockable4,typename Lockable5>
+    int try_lock(Lockable1& l1,Lockable2& l2,Lockable3& l3,Lockable4& l4,Lockable5& l5);
+
+[variablelist
+
+[[Effects:] [Calls __try_lock_ref__ on each of the
+__lockable_concept_type__ objects supplied as arguments. If any of the
+calls to __try_lock_ref__ returns `false` then all locks acquired are
+released and the zero-based index of the failed lock is returned.
+
+If any of the __try_lock_ref__ operations on the supplied
+__lockable_concept_type__ objects throws an exception any locks
+acquired by the function will be released before the function exits.]]
+
+[[Returns:] [`-1` if all the supplied __lockable_concept_type__ objects
+are now locked by the calling thread, the zero-based index of the
+object which could not be locked otherwise.]]
+
+[[Throws:] [Any exceptions thrown by calling __try_lock_ref__ on the
+supplied __lockable_concept_type__ objects.]]
+
+[[Postcondition:] [If the function returns `-1`, all the supplied
+__lockable_concept_type__ objects are locked by the calling
+thread. Otherwise any locks acquired by this function will have been
+released.]]
+
+]
+
+[endsect]
+
+[section:try_lock_range Non-member function `try_lock(begin,end)`]
+
+    template<typename ForwardIterator>
+    ForwardIterator try_lock(ForwardIterator begin,ForwardIterator end);
+
+[variablelist
+
+[[Preconditions:] [The `value_type` of `ForwardIterator` must implement the __lockable_concept__]]
+
+[[Effects:] [Calls __try_lock_ref__ on each of the
+__lockable_concept_type__ objects in the supplied range. If any of the
+calls to __try_lock_ref__ returns `false` then all locks acquired are
+released and an iterator referencing the failed lock is returned.
+
+If any of the __try_lock_ref__ operations on the supplied
+__lockable_concept_type__ objects throws an exception any locks
+acquired by the function will be released before the function exits.]]
+
+[[Returns:] [`end` if all the supplied __lockable_concept_type__
+objects are now locked by the calling thread, an iterator referencing
+the object which could not be locked otherwise.]]
+
+[[Throws:] [Any exceptions thrown by calling __try_lock_ref__ on the
+supplied __lockable_concept_type__ objects.]]
+
+[[Postcondition:] [If the function returns `end` then all the
+__lockable_concept_type__ objects in the supplied range are locked by
+the calling thread, otherwise all locks acquired by the function have
+been released.]]
+
+]
+
+[endsect]
+
+
+[endsect]

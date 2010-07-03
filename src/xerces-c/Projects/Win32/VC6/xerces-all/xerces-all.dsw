@@ -1,0 +1,587 @@
+Microsoft Developer Studio Workspace File, Format Version 6.00
+# WARNING: DO NOT EDIT OR DELETE THIS WORKSPACE FILE!
+
+###############################################################################
+
+Project: "CreateDOMDocument"=".\CreateDOMDocument\CreateDOMDocument.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XercesLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "DOMCount"=".\DOMCount\DOMCount.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XercesLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "DOMMemTest"=".\DOMMemTest\DOMMemTest.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XercesLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "DOMNormalizerTest"=".\DOMNormalizerTest\DOMNormalizerTest.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XercesLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "DOMPrint"=".\DOMPrint\DOMPrint.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XercesLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "DOMTest"=".\DOMTest\DOMTest.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XercesLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "DOMTraversalTest"=".\DOMTraversalTest\DOMTraversalTest.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XercesLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "DOMTypeInfoTest"=".\DOMTypeInfoTest\DOMTypeInfoTest.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XercesLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "DeprecatedDOMCount"=".\DeprecatedDOMCount\DeprecatedDOMCount.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XercesLib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name XercesDeprecatedDOMLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "EncodingTest"=".\EncodingTest\EncodingTest.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XercesLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "EnumVal"=".\EnumVal\EnumVal.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XercesLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "InitTermTest"=".\InitTermTest\InitTermTest.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XercesLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "MemHandlerTest"=".\MemHandlerTest\MemHandlerTest.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XercesLib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name XercesDeprecatedDOMLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "MemParse"=".\MemParse\MemParse.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XercesLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "PParse"=".\PParse\PParse.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XercesLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "PSVIWriter"=".\PSVIWriter\PSVIWriter.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XercesLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "RangeTest"=".\RangeTest\RangeTest.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XercesLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "Redirect"=".\Redirect\Redirect.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XercesLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "SAX2Count"=".\SAX2Count\SAX2Count.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XercesLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "SAX2Print"=".\SAX2Print\SAX2Print.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XercesLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "SAXCount"=".\SAXCount\SAXCount.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XercesLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "SAXPrint"=".\SAXPrint\SAXPrint.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XercesLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "SCMPrint"=".\SCMPrint\SCMPrint.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XercesLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "SEnumVal"=".\SEnumVal\SEnumVal.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XercesLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "StdInParse"=".\StdInParse\StdInParse.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XercesLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "ThreadTest"=".\ThreadTest\ThreadTest.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XercesLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "XSValueTest"=".\XSValueTest\XSValueTest.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XercesLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "XSerializerTest"=".\XSerializerTest\XSerializerTest.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XercesLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "XercesDeprecatedDOMLib"=".\XercesLib\XercesDeprecatedDOMLib.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XercesLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "XercesLib"=".\XercesLib\XercesLib.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "all"=".\all\all.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name CreateDOMDocument
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name DOMCount
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name DOMMemTest
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name DOMPrint
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name DOMTest
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name EncodingTest
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name EnumVal
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name InitTermTest
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name MemParse
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name PParse
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name RangeTest
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name Redirect
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name SAX2Count
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name SAX2Print
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name SAXCount
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name SAXPrint
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name SEnumVal
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name StdInParse
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name ThreadTest
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name XSerializerTest
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name MemHandlerTest
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name XercesLib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name DOMTraversalTest
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name DeprecatedDOMCount
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name DOMTypeInfoTest
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name DOMNormalizerTest
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name PSVIWriter
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name SCMPrint
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name XercesDeprecatedDOMLib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name XSValueTest
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "xml4com"=".\xerces-com\xerces-com.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XercesLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Global:
+
+Package=<5>
+{{{
+}}}
+
+Package=<3>
+{{{
+}}}
+
+###############################################################################
+

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- Copyright Aleksey Gurtovoy 2006. Distributed under the Boost -->
+<!-- Software License, Version 1.0. (See accompanying -->
+<!-- file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt) -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.3.6: http://docutils.sourceforge.net/" />
+<title>The MPL Reference Manual: Iteration Algorithms</title>
+<link rel="stylesheet" href="../style.css" type="text/css" />
+</head>
+<body class="docframe refmanual">
+<table class="header"><tr class="header"><td class="header-group navigation-bar"><span class="navigation-group"><a href="./inserters-inserter.html" class="navigation-link">Prev</a>&nbsp;<a href="./fold.html" class="navigation-link">Next</a></span><span class="navigation-group-separator">&nbsp;|&nbsp;</span><span class="navigation-group"><a href="./inserters.html" class="navigation-link">Back</a>&nbsp;<a href="./querying-algorithms.html" class="navigation-link">Along</a></span><span class="navigation-group-separator">&nbsp;|&nbsp;</span><span class="navigation-group"><a href="./algorithms.html" class="navigation-link">Up</a>&nbsp;<a href="../refmanual.html" class="navigation-link">Home</a></span><span class="navigation-group-separator">&nbsp;|&nbsp;</span><span class="navigation-group"><a href="./refmanual_toc.html" class="navigation-link">Full TOC</a></span></td>
+<td class="header-group page-location"><a href="../refmanual.html" class="navigation-link">Front Page</a> / <a href="./algorithms.html" class="navigation-link">Algorithms</a> / <a href="./iteration-algorithms.html" class="navigation-link">Iteration Algorithms</a></td>
+</tr></table><div class="header-separator"></div>
+<div class="section" id="iteration-algorithms">
+<h1><a class="toc-backref" href="./algorithms.html#id396" name="iteration-algorithms">Iteration Algorithms</a></h1>
+<a class="target" id="id90" name="id90"></a><p>Iteration algorithms are the basic building blocks behind many of the 
+MPL's algorithms, and are usually the first place to look at when 
+starting to build a new one. Abstracting away the details of sequence 
+iteration and employing various optimizations such as recursion 
+unrolling, they provide significant advantages over a hand-coded 
+approach.</p>
+<!-- Of all of iteration algorithms, ``iter_fold_if`` is the 
+most complex and at the same time the most fundamental. The rest of 
+the algorithms from the category |- -| ``iter_fold``, ``reverse_iter_fold``,
+``fold``, and ``reverse_fold`` |- -| simply provide a more high-level 
+(and more restricted) interface to the core ``iter_fold_if`` 
+functionality [#performace]_.
+
+.. [#performace] That's not to say that they are *implemented*
+through ``iter_fold_if`` |- -| they are often not, in particular 
+because the restricted functionality allows for more 
+optimizations. -->
+<!-- modtime: November 08, 2004 10:55:02 +0000 -->
+<!-- Algorithms/Iteration Algorithms//fold -->
+<ul class="toc simple" id="outline">
+<li><a class="reference" href="./fold.html" id="id397" name="id397">fold</a></li>
+<li><a class="reference" href="./iter-fold.html" id="id398" name="id398">iter_fold</a></li>
+<li><a class="reference" href="./reverse-fold.html" id="id399" name="id399">reverse_fold</a></li>
+<li><a class="reference" href="./reverse-iter-fold.html" id="id400" name="id400">reverse_iter_fold</a></li>
+<li><a class="reference" href="./accumulate.html" id="id401" name="id401">accumulate</a></li>
+</ul>
+</div>
+
+<div class="footer-separator"></div>
+<table class="footer"><tr class="footer"><td class="header-group navigation-bar"><span class="navigation-group"><a href="./inserters-inserter.html" class="navigation-link">Prev</a>&nbsp;<a href="./fold.html" class="navigation-link">Next</a></span><span class="navigation-group-separator">&nbsp;|&nbsp;</span><span class="navigation-group"><a href="./inserters.html" class="navigation-link">Back</a>&nbsp;<a href="./querying-algorithms.html" class="navigation-link">Along</a></span><span class="navigation-group-separator">&nbsp;|&nbsp;</span><span class="navigation-group"><a href="./algorithms.html" class="navigation-link">Up</a>&nbsp;<a href="../refmanual.html" class="navigation-link">Home</a></span><span class="navigation-group-separator">&nbsp;|&nbsp;</span><span class="navigation-group"><a href="./refmanual_toc.html" class="navigation-link">Full TOC</a></span></td>
+</tr></table></body>
+</html>

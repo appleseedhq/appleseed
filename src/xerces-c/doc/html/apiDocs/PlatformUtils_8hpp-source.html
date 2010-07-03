@@ -1,0 +1,365 @@
+<HTML><HEAD><SCRIPT language="JavaScript" src="../resources/script.js" type="text/javascript"></SCRIPT><TITLE>Xerces-C++: PlatformUtils.hpp Source File</TITLE><link href="XercesApi.css" rel="stylesheet" type="text/css"></HEAD><BODY alink="#ff0000" bgcolor="#ffffff" leftmargin="4" link="#0000ff" marginheight="4" marginwidth="4" text="#000000" topmargin="4" vlink="#0000aa"><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD align="left" height="60" rowspan="3" valign="top" width="135"><IMG border="0" height="60" hspace="0" src="../resources/logo.gif" vspace="0" width="135"></TD><TD align="left" colspan="4" height="5" valign="top" width="456"><IMG border="0" height="5" hspace="0" src="../resources/line.gif" vspace="0" width="456"></TD><TD align="left" height="60" rowspan="3" valign="top" width="29"><IMG border="0" height="60" hspace="0" src="../resources/right.gif" vspace="0" width="29"></TD></TR><TR><TD align="left" bgcolor="#0086b2" colspan="4" height="35" valign="top" width="456"><IMG alt="" border="0" height="35" hspace="0" src="../graphics/api-header.jpg" vspace="0" width="456"></TD></TR><TR><TD align="left" height="20" valign="top" width="168"><IMG border="0" height="20" hspace="0" src="../resources/bottom.gif" vspace="0" width="168"></TD><TD align="left" height="20" valign="top" width="96"><A href="http://xml.apache.org/" onMouseOut="rolloverOff('xml');" onMouseOver="rolloverOn('xml');" target="new"><IMG alt="http://xml.apache.org/" border="0" height="20" hspace="0" name="xml" onLoad="rolloverLoad('xml','../resources/button-xml-hi.gif','../resources/button-xml-lo.gif');" src="../resources/button-xml-lo.gif" vspace="0" width="96"></A></TD><TD align="left" height="20" valign="top" width="96"><A href="http://www.apache.org/" onMouseOut="rolloverOff('asf');" onMouseOver="rolloverOn('asf');" target="new"><IMG alt="http://www.apache.org/" border="0" height="20" hspace="0" name="asf" onLoad="rolloverLoad('asf','../resources/button-asf-hi.gif','../resources/button-asf-lo.gif');" src="../resources/button-asf-lo.gif" vspace="0" width="96"></A></TD><TD align="left" height="20" valign="top" width="96"><A href="http://www.w3.org/" onMouseOut="rolloverOff('w3c');" onMouseOver="rolloverOn('w3c');" target="new"><IMG alt="http://www.w3.org/" border="0" height="20" hspace="0" name="w3c" onLoad="rolloverLoad('w3c','../resources/button-w3c-hi.gif','../resources/button-w3c-lo.gif');" src="../resources/button-w3c-lo.gif" vspace="0" width="96"></A></TD></TR></TABLE><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD align="left" valign="top" width="120"><IMG border="0" height="14" hspace="0" src="../resources/join.gif" vspace="0" width="120"><BR>
+  <A href="../../index.html" onMouseOut="rolloverOff('side-ext-2');" onMouseOver="rolloverOn('side-ext-2');"><IMG alt="Home" border="0" height="12" hspace="0" name="side-ext-2" onLoad="rolloverLoad('side-ext-2','../graphics/ext-2-label-2.jpg','../graphics/ext-2-label-3.jpg');" src="../graphics/ext-2-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../index.html" onMouseOut="rolloverOff('side-index');" onMouseOver="rolloverOn('side-index');"><IMG alt="Readme" border="0" height="12" hspace="0" name="side-index" onLoad="rolloverLoad('side-index','../graphics/index-label-2.jpg','../graphics/index-label-3.jpg');" src="../graphics/index-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../charter.html" onMouseOut="rolloverOff('side-charter');" onMouseOver="rolloverOn('side-charter');"><IMG alt="Charter" border="0" height="12" hspace="0" name="side-charter" onLoad="rolloverLoad('side-charter','../graphics/charter-label-2.jpg','../graphics/charter-label-3.jpg');" src="../graphics/charter-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../releases.html" onMouseOut="rolloverOff('side-releases');" onMouseOver="rolloverOn('side-releases');"><IMG alt="Release Info" border="0" height="12" hspace="0" name="side-releases" onLoad="rolloverLoad('side-releases','../graphics/releases-label-2.jpg','../graphics/releases-label-3.jpg');" src="../graphics/releases-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../install.html" onMouseOut="rolloverOff('side-install');" onMouseOver="rolloverOn('side-install');"><IMG alt="Installation" border="0" height="12" hspace="0" name="side-install" onLoad="rolloverLoad('side-install','../graphics/install-label-2.jpg','../graphics/install-label-3.jpg');" src="../graphics/install-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="http://xerces.apache.org/xerces-c/download.cgi" onMouseOut="rolloverOff('side-ext-20');" onMouseOver="rolloverOn('side-ext-20');"><IMG alt="Download" border="0" height="12" hspace="0" name="side-ext-20" onLoad="rolloverLoad('side-ext-20','../graphics/ext-20-label-2.jpg','../graphics/ext-20-label-3.jpg');" src="../graphics/ext-20-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../build.html" onMouseOut="rolloverOff('side-build');" onMouseOver="rolloverOn('side-build');"><IMG alt="Build Instructions" border="0" height="12" hspace="0" name="side-build" onLoad="rolloverLoad('side-build','../graphics/build-label-2.jpg','../graphics/build-label-3.jpg');" src="../graphics/build-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../program.html" onMouseOut="rolloverOff('side-program');" onMouseOver="rolloverOn('side-program');"><IMG alt="Programming" border="0" height="12" hspace="0" name="side-program" onLoad="rolloverLoad('side-program','../graphics/program-label-2.jpg','../graphics/program-label-3.jpg');" src="../graphics/program-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../samples.html" onMouseOut="rolloverOff('side-samples');" onMouseOver="rolloverOn('side-samples');"><IMG alt="Samples" border="0" height="12" hspace="0" name="side-samples" onLoad="rolloverLoad('side-samples','../graphics/samples-label-2.jpg','../graphics/samples-label-3.jpg');" src="../graphics/samples-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../faqs.html" onMouseOut="rolloverOff('side-faqs');" onMouseOver="rolloverOn('side-faqs');"><IMG alt="FAQs" border="0" height="12" hspace="0" name="side-faqs" onLoad="rolloverLoad('side-faqs','../graphics/faqs-label-2.jpg','../graphics/faqs-label-3.jpg');" src="../graphics/faqs-label-3.jpg" vspace="0" width="120"></A><BR>
+
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../api.html" onMouseOut="rolloverOff('side-api');" onMouseOver="rolloverOn('side-api');"><IMG alt="API Docs" border="0" height="12" hspace="0" name="side-api" onLoad="rolloverLoad('side-api','../graphics/api-label-2.jpg','../graphics/api-label-3.jpg');" src="../graphics/api-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../ApacheDOMC++Binding.html" onMouseOut="rolloverOff('side-ext-88');" onMouseOver="rolloverOn('side-ext-88');"><IMG alt="DOM C++ Binding" border="0" height="12" hspace="0" name="side-ext-88" onLoad="rolloverLoad('side-ext-88','../graphics/ext-88-label-2.jpg','../graphics/ext-88-label-3.jpg');" src="../graphics/ext-88-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../migrate.html" onMouseOut="rolloverOff('side-migrate');" onMouseOver="rolloverOn('side-migrate');"><IMG alt="Migration Guide" border="0" height="12" hspace="0" name="side-migrate" onLoad="rolloverLoad('side-migrate','../graphics/migrate-label-2.jpg','../graphics/migrate-label-3.jpg');" src="../graphics/migrate-label-3.jpg" vspace="0" width="120"></A><BR>
+
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+    <A href="../feedback.html" onMouseOut="rolloverOff('side-feedback');" onMouseOver="rolloverOn('side-feedback');"><IMG alt="Feedback" border="0" height="12" hspace="0" name="side-feedback" onLoad="rolloverLoad('side-feedback','../graphics/feedback-label-2.jpg','../graphics/feedback-label-3.jpg');" src="../graphics/feedback-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../bug-report.html" onMouseOut="rolloverOff('side-bug-report');" onMouseOver="rolloverOn('side-bug-report');"><IMG alt="Bug-Reporting" border="0" height="12" hspace="0" name="side-bug-report" onLoad="rolloverLoad('side-bug-report','../graphics/bug-report-label-2.jpg','../graphics/bug-report-label-3.jpg');" src="../graphics/bug-report-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../mailing-lists.html" onMouseOut="rolloverOff('side-mailing-lists');" onMouseOver="rolloverOn('side-mailing-lists');"><IMG alt="Mailing Lists" border="0" height="12" hspace="0" name="side-mailing-lists" onLoad="rolloverLoad('side-mailing-lists','../graphics/mailing-lists-label-2.jpg','../graphics/mailing-lists-label-3.jpg');" src="../graphics/mailing-lists-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+    <A href="../source-repository.html" onMouseOut="rolloverOff('side-source-repository');" onMouseOver="rolloverOn('side-source-repository');"><IMG alt="Source Repository" border="0" height="12" hspace="0" name="side-source-repository" onLoad="rolloverLoad('side-source-repository','../graphics/source-repository-label-2.jpg','../graphics/source-repository-label-3.jpg');" src="../graphics/source-repository-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../applications.html" onMouseOut="rolloverOff('side-applications');" onMouseOver="rolloverOn('side-applications');"><IMG alt="Applications" border="0" height="12" hspace="0" name="side-applications" onLoad="rolloverLoad('side-applications','../graphics/applications-label-2.jpg','../graphics/applications-label-3.jpg');" src="../graphics/applications-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="14" hspace="0" src="../resources/close.gif" vspace="0" width="120"><BR></TD><TD align="left" valign="top" width="500"><TABLE border="0" cellpadding="3" cellspacing="0"><TR><TD>
+    <TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#FFFFFF" colspan="2" width="494"><TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#039acc" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#039acc" height="1" width="492"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#039acc" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" width="492"><FONT color="#ffffff" face="arial,helvetica,sanserif" size="+1"><IMG border="0" height="2" hspace="0" src="../resources/void.gif" vspace="0" width="2"><B>API Docs for SAX and DOM</B></FONT></TD><TD bgcolor="#017299" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#017299" height="1" width="492"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#017299" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></TD></TR><TR><TD width="10">&nbsp;</TD><TD width="484"><FONT color="#000000" face="arial,helvetica,sanserif">
+
+	    <P>
+<!-- Generated by Doxygen 1.5.3 -->
+<div class="tabs">
+  <ul>
+    <li><a href="index.html"><span>Main&nbsp;Page</span></a></li>
+    <li><a href="classes.html"><span>Classes</span></a></li>
+    <li class="current"><a href="files.html"><span>Files</span></a></li>
+    <li><a href="pages.html"><span>Related&nbsp;Pages</span></a></li>
+  </ul>
+</div>
+<h1>PlatformUtils.hpp</h1><a href="PlatformUtils_8hpp.html">Go to the documentation of this file.</a><div class="fragment"><pre class="fragment"><a name="l00001"></a>00001 <span class="comment">/*</span>
+<a name="l00002"></a>00002 <span class="comment"> * Licensed to the Apache Software Foundation (ASF) under one or more</span>
+<a name="l00003"></a>00003 <span class="comment"> * contributor license agreements.  See the NOTICE file distributed with</span>
+<a name="l00004"></a>00004 <span class="comment"> * this work for additional information regarding copyright ownership.</span>
+<a name="l00005"></a>00005 <span class="comment"> * The ASF licenses this file to You under the Apache License, Version 2.0</span>
+<a name="l00006"></a>00006 <span class="comment"> * (the "License"); you may not use this file except in compliance with</span>
+<a name="l00007"></a>00007 <span class="comment"> * the License.  You may obtain a copy of the License at</span>
+<a name="l00008"></a>00008 <span class="comment"> * </span>
+<a name="l00009"></a>00009 <span class="comment"> *      http://www.apache.org/licenses/LICENSE-2.0</span>
+<a name="l00010"></a>00010 <span class="comment"> * </span>
+<a name="l00011"></a>00011 <span class="comment"> * Unless required by applicable law or agreed to in writing, software</span>
+<a name="l00012"></a>00012 <span class="comment"> * distributed under the License is distributed on an "AS IS" BASIS,</span>
+<a name="l00013"></a>00013 <span class="comment"> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<a name="l00014"></a>00014 <span class="comment"> * See the License for the specific language governing permissions and</span>
+<a name="l00015"></a>00015 <span class="comment"> * limitations under the License.</span>
+<a name="l00016"></a>00016 <span class="comment"> */</span>
+<a name="l00017"></a>00017 
+<a name="l00018"></a>00018 <span class="comment">/*</span>
+<a name="l00019"></a>00019 <span class="comment"> * $Id: PlatformUtils.hpp 568078 2007-08-21 11:43:25Z amassari $</span>
+<a name="l00020"></a>00020 <span class="comment"> */</span>
+<a name="l00021"></a>00021 
+<a name="l00022"></a>00022 
+<a name="l00023"></a>00023 <span class="preprocessor">#if !defined(PLATFORMUTILS_HPP)</span>
+<a name="l00024"></a><a class="code" href="PlatformUtils_8hpp.html#442046e6c289b50d860c8c5cf3ec544b">00024</a> <span class="preprocessor"></span><span class="preprocessor">#define PLATFORMUTILS_HPP</span>
+<a name="l00025"></a>00025 <span class="preprocessor"></span>
+<a name="l00026"></a>00026 <span class="preprocessor">#include &lt;<a class="code" href="XMLException_8hpp.html">xercesc/util/XMLException.hpp</a>&gt;</span>
+<a name="l00027"></a>00027 <span class="preprocessor">#include &lt;<a class="code" href="PanicHandler_8hpp.html">xercesc/util/PanicHandler.hpp</a>&gt;</span>
+<a name="l00028"></a>00028 
+<a name="l00029"></a>00029 <a class="code" href="XercesDefs_8hpp.html#43d74fa53d868d978f3e97cbb78b194d">XERCES_CPP_NAMESPACE_BEGIN</a>
+<a name="l00030"></a>00030 
+<a name="l00031"></a>00031 <span class="keyword">class </span>XMLMsgLoader;
+<a name="l00032"></a>00032 <span class="keyword">class </span><a class="code" href="classXMLNetAccessor.html">XMLNetAccessor</a>;
+<a name="l00033"></a>00033 <span class="keyword">class </span><a class="code" href="classXMLTransService.html">XMLTransService</a>;
+<a name="l00034"></a>00034 <span class="keyword">class </span><a class="code" href="classMemoryManager.html" title="Configurable memory manager.">MemoryManager</a>;
+<a name="l00035"></a>00035 <span class="keyword">class </span>XMLMutex;
+<a name="l00036"></a>00036 
+<a name="l00037"></a>00037 <span class="comment">//</span>
+<a name="l00038"></a>00038 <span class="comment">//  For internal use only</span>
+<a name="l00039"></a>00039 <span class="comment">//</span>
+<a name="l00040"></a>00040 <span class="comment">//  This class provides a simple abstract API via which lazily evaluated</span>
+<a name="l00041"></a>00041 <span class="comment">//  data can be cleaned up.</span>
+<a name="l00042"></a>00042 <span class="comment">//</span>
+<a name="l00043"></a><a class="code" href="classXMLDeleter.html">00043</a> <span class="keyword">class </span><a class="code" href="XercesDefs_8hpp.html#97a524372e218133a8eb0aca39b4bd21"></a> <a class="code" href="classXMLDeleter.html">XMLDeleter</a>
+<a name="l00044"></a>00044 {
+<a name="l00045"></a>00045 <span class="keyword">public</span> :
+<a name="l00046"></a>00046     <span class="keyword">virtual</span> ~<a class="code" href="classXMLDeleter.html">XMLDeleter</a>();
+<a name="l00047"></a>00047 
+<a name="l00048"></a>00048 <span class="keyword">protected</span> :
+<a name="l00049"></a>00049     <a class="code" href="classXMLDeleter.html">XMLDeleter</a>();
+<a name="l00050"></a>00050 
+<a name="l00051"></a>00051 <span class="keyword">private</span> :
+<a name="l00052"></a>00052     <a class="code" href="classXMLDeleter.html">XMLDeleter</a>(<span class="keyword">const</span> <a class="code" href="classXMLDeleter.html">XMLDeleter</a>&amp;);
+<a name="l00053"></a>00053     <a class="code" href="classXMLDeleter.html">XMLDeleter</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="classXMLDeleter.html">XMLDeleter</a>&amp;);
+<a name="l00054"></a>00054 };
+<a name="l00055"></a>00055 
+<a name="l00056"></a>00056 
+<a name="l00065"></a><a class="code" href="classXMLPlatformUtils.html">00065</a> <span class="keyword">class </span><a class="code" href="XercesDefs_8hpp.html#97a524372e218133a8eb0aca39b4bd21"></a> <a class="code" href="classXMLPlatformUtils.html" title="Utilities that must be implemented in a platform-specific way.">XMLPlatformUtils</a>
+<a name="l00066"></a>00066 {
+<a name="l00067"></a>00067 <span class="keyword">public</span> :
+<a name="l00068"></a>00068 
+<a name="l00071"></a>00071 
+<a name="l00084"></a><a class="code" href="classXMLPlatformUtils.html#6bbba118a3327b2e7c1952bf04de2787">00084</a>     <span class="keyword">static</span> <a class="code" href="classXMLNetAccessor.html">XMLNetAccessor</a>*      fgNetAccessor;
+<a name="l00085"></a>00085 
+<a name="l00096"></a><a class="code" href="classXMLPlatformUtils.html#bb0ad83db922cbf891a70319b2e6702b">00096</a>     <span class="keyword">static</span> <a class="code" href="classXMLTransService.html">XMLTransService</a>*     fgTransService;
+<a name="l00097"></a>00097 <span class="preprocessor">#ifdef OS390</span>
+<a name="l00098"></a>00098 <span class="preprocessor"></span>    <span class="keyword">static</span> <a class="code" href="classXMLTransService.html">XMLTransService</a>*     fgTransService2;
+<a name="l00099"></a>00099 <span class="preprocessor">#endif</span>
+<a name="l00100"></a>00100 <span class="preprocessor"></span>
+<a name="l00105"></a><a class="code" href="classXMLPlatformUtils.html#ac6484e7073d5fb515ea791ee873b5bd">00105</a>     <span class="keyword">static</span> <a class="code" href="classPanicHandler.html" title="Receive notification of panic.">PanicHandler</a>*        fgUserPanicHandler;
+<a name="l00106"></a>00106     
+<a name="l00111"></a><a class="code" href="classXMLPlatformUtils.html#db96471b53887380718f80e54934925f">00111</a>     <span class="keyword">static</span> <a class="code" href="classPanicHandler.html" title="Receive notification of panic.">PanicHandler</a>*        fgDefaultPanicHandler;
+<a name="l00112"></a>00112 
+<a name="l00118"></a><a class="code" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252">00118</a>     <span class="keyword">static</span> <a class="code" href="classMemoryManager.html" title="Configurable memory manager.">MemoryManager</a>*       fgMemoryManager;
+<a name="l00119"></a>00119     
+<a name="l00128"></a><a class="code" href="classXMLPlatformUtils.html#8d48adb3e9ebe23f1760709006632283">00128</a>     <span class="keyword">static</span> <a class="code" href="classMemoryManager.html" title="Configurable memory manager.">MemoryManager</a>*       fgArrayMemoryManager;
+<a name="l00129"></a>00129 
+<a name="l00130"></a><a class="code" href="classXMLPlatformUtils.html#aa3859ca77bec01d7c5c4da4632ab761">00130</a>     <span class="keyword">static</span> XMLMutex*            fgAtomicMutex;
+<a name="l00131"></a>00131     
+<a name="l00133"></a>00133 
+<a name="l00134"></a>00134 
+<a name="l00137"></a>00137 
+<a name="l00168"></a>00168     <span class="keyword">static</span> <span class="keywordtype">void</span> Initialize(<span class="keyword">const</span> <span class="keywordtype">char</span>*          <span class="keyword">const</span> locale = <a class="code" href="classXMLUni.html#65fb61efef197f1387836a339477ab5e">XMLUni::fgXercescDefaultLocale</a>
+<a name="l00169"></a>00169                          , <span class="keyword">const</span> <span class="keywordtype">char</span>*          <span class="keyword">const</span> nlsHome = 0
+<a name="l00170"></a>00170                          ,       <a class="code" href="classPanicHandler.html" title="Receive notification of panic.">PanicHandler</a>*  <span class="keyword">const</span> panicHandler = 0
+<a name="l00171"></a>00171                          ,       <a class="code" href="classMemoryManager.html" title="Configurable memory manager.">MemoryManager</a>* <span class="keyword">const</span> memoryManager = 0
+<a name="l00172"></a>00172                          ,       <span class="keywordtype">bool</span>                 toInitStatics = <span class="keyword">false</span>);
+<a name="l00173"></a>00173 
+<a name="l00180"></a>00180     <span class="keyword">static</span> <span class="keywordtype">void</span> Terminate();
+<a name="l00181"></a>00181 
+<a name="l00198"></a>00198     <span class="keyword">static</span> <span class="keywordtype">void</span> panic
+<a name="l00199"></a>00199     (
+<a name="l00200"></a>00200         <span class="keyword">const</span>   <a class="code" href="classPanicHandler.html#ace4c4f408d68f168e1c2537e0ba5be2">PanicHandler::PanicReasons</a>    reason
+<a name="l00201"></a>00201     );
+<a name="l00202"></a>00202     
+<a name="l00204"></a>00204 
+<a name="l00207"></a>00207 
+<a name="l00221"></a>00221     <span class="keyword">static</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> curFilePos(FileHandle theFile
+<a name="l00222"></a>00222         , <a class="code" href="classMemoryManager.html" title="Configurable memory manager.">MemoryManager</a>* <span class="keyword">const</span> manager  = <a class="code" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252" title="The configurable memory manager.">XMLPlatformUtils::fgMemoryManager</a>);
+<a name="l00223"></a>00223 
+<a name="l00234"></a>00234     <span class="keyword">static</span> <span class="keywordtype">void</span> closeFile(FileHandle theFile
+<a name="l00235"></a>00235         , <a class="code" href="classMemoryManager.html" title="Configurable memory manager.">MemoryManager</a>* <span class="keyword">const</span> manager  = <a class="code" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252" title="The configurable memory manager.">XMLPlatformUtils::fgMemoryManager</a>);
+<a name="l00236"></a>00236 
+<a name="l00247"></a>00247     <span class="keyword">static</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> fileSize(FileHandle theFile
+<a name="l00248"></a>00248         , <a class="code" href="classMemoryManager.html" title="Configurable memory manager.">MemoryManager</a>* <span class="keyword">const</span> manager  = <a class="code" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252" title="The configurable memory manager.">XMLPlatformUtils::fgMemoryManager</a>);
+<a name="l00249"></a>00249 
+<a name="l00260"></a>00260     <span class="keyword">static</span> FileHandle openFile(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> fileName
+<a name="l00261"></a>00261         , <a class="code" href="classMemoryManager.html" title="Configurable memory manager.">MemoryManager</a>* <span class="keyword">const</span> manager  = <a class="code" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252" title="The configurable memory manager.">XMLPlatformUtils::fgMemoryManager</a>);
+<a name="l00262"></a>00262 
+<a name="l00273"></a>00273     <span class="keyword">static</span> FileHandle openFile(<span class="keyword">const</span> XMLCh* <span class="keyword">const</span> fileName
+<a name="l00274"></a>00274         , <a class="code" href="classMemoryManager.html" title="Configurable memory manager.">MemoryManager</a>* <span class="keyword">const</span> manager  = <a class="code" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252" title="The configurable memory manager.">XMLPlatformUtils::fgMemoryManager</a>);
+<a name="l00275"></a>00275 
+<a name="l00286"></a>00286     <span class="keyword">static</span> FileHandle openFileToWrite(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> fileName
+<a name="l00287"></a>00287         , <a class="code" href="classMemoryManager.html" title="Configurable memory manager.">MemoryManager</a>* <span class="keyword">const</span> manager  = <a class="code" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252" title="The configurable memory manager.">XMLPlatformUtils::fgMemoryManager</a>);
+<a name="l00288"></a>00288 
+<a name="l00299"></a>00299     <span class="keyword">static</span> FileHandle openFileToWrite(<span class="keyword">const</span> XMLCh* <span class="keyword">const</span> fileName
+<a name="l00300"></a>00300         , <a class="code" href="classMemoryManager.html" title="Configurable memory manager.">MemoryManager</a>* <span class="keyword">const</span> manager  = <a class="code" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252" title="The configurable memory manager.">XMLPlatformUtils::fgMemoryManager</a>);
+<a name="l00301"></a>00301 
+<a name="l00312"></a>00312     <span class="keyword">static</span> FileHandle openStdInHandle(<a class="code" href="classMemoryManager.html" title="Configurable memory manager.">MemoryManager</a>* <span class="keyword">const</span> manager  = <a class="code" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252" title="The configurable memory manager.">XMLPlatformUtils::fgMemoryManager</a>);
+<a name="l00313"></a>00313 
+<a name="l00330"></a>00330     <span class="keyword">static</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> readFileBuffer
+<a name="l00331"></a>00331     (
+<a name="l00332"></a>00332                 FileHandle      theFile
+<a name="l00333"></a>00333         , <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>    toRead
+<a name="l00334"></a>00334         ,       <a class="code" href="XercesDefs_8hpp.html#7470c7a32c59355685ebcd878a33f126">XMLByte</a>* <span class="keyword">const</span>  toFill
+<a name="l00335"></a>00335         , <a class="code" href="classMemoryManager.html" title="Configurable memory manager.">MemoryManager</a>* <span class="keyword">const</span> manager  = <a class="code" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252" title="The configurable memory manager.">XMLPlatformUtils::fgMemoryManager</a>
+<a name="l00336"></a>00336     );
+<a name="l00337"></a>00337 
+<a name="l00352"></a>00352     <span class="keyword">static</span> <span class="keywordtype">void</span> writeBufferToFile
+<a name="l00353"></a>00353     (
+<a name="l00354"></a>00354           FileHandle     <span class="keyword">const</span>  theFile
+<a name="l00355"></a>00355         , <span class="keywordtype">long</span>                  toWrite
+<a name="l00356"></a>00356         , <span class="keyword">const</span> <a class="code" href="XercesDefs_8hpp.html#7470c7a32c59355685ebcd878a33f126">XMLByte</a>* <span class="keyword">const</span>  toFlush
+<a name="l00357"></a>00357         , <a class="code" href="classMemoryManager.html" title="Configurable memory manager.">MemoryManager</a>* <span class="keyword">const</span> manager  = <a class="code" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252" title="The configurable memory manager.">XMLPlatformUtils::fgMemoryManager</a>
+<a name="l00358"></a>00358     );
+<a name="l00359"></a>00359 
+<a name="l00369"></a>00369     <span class="keyword">static</span> <span class="keywordtype">void</span> resetFile(FileHandle theFile
+<a name="l00370"></a>00370         , <a class="code" href="classMemoryManager.html" title="Configurable memory manager.">MemoryManager</a>* <span class="keyword">const</span> manager  = <a class="code" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252" title="The configurable memory manager.">XMLPlatformUtils::fgMemoryManager</a>);
+<a name="l00371"></a>00371 
+<a name="l00373"></a>00373 
+<a name="l00374"></a>00374 
+<a name="l00398"></a>00398     <span class="keyword">static</span> XMLCh* getFullPath
+<a name="l00399"></a>00399     (
+<a name="l00400"></a>00400         <span class="keyword">const</span> XMLCh* <span class="keyword">const</span> srcPath
+<a name="l00401"></a>00401         , <a class="code" href="classMemoryManager.html" title="Configurable memory manager.">MemoryManager</a>* <span class="keyword">const</span> manager = <a class="code" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252" title="The configurable memory manager.">XMLPlatformUtils::fgMemoryManager</a>
+<a name="l00402"></a>00402     );
+<a name="l00403"></a>00403 
+<a name="l00417"></a>00417     <span class="keyword">static</span> XMLCh* getCurrentDirectory
+<a name="l00418"></a>00418     (
+<a name="l00419"></a>00419         <a class="code" href="classMemoryManager.html" title="Configurable memory manager.">MemoryManager</a>* <span class="keyword">const</span> manager = <a class="code" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252" title="The configurable memory manager.">XMLPlatformUtils::fgMemoryManager</a>
+<a name="l00420"></a>00420     );
+<a name="l00421"></a>00421 
+<a name="l00431"></a>00431     <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">bool</span> isAnySlash(XMLCh c);
+<a name="l00432"></a>00432     
+<a name="l00442"></a>00442     <span class="keyword">static</span> <span class="keywordtype">void</span>   removeDotSlash(XMLCh* <span class="keyword">const</span> srcPath
+<a name="l00443"></a>00443         , <a class="code" href="classMemoryManager.html" title="Configurable memory manager.">MemoryManager</a>* <span class="keyword">const</span> manager = <a class="code" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252" title="The configurable memory manager.">XMLPlatformUtils::fgMemoryManager</a>);
+<a name="l00444"></a>00444 
+<a name="l00455"></a>00455     <span class="keyword">static</span> <span class="keywordtype">void</span>   removeDotDotSlash(XMLCh* <span class="keyword">const</span> srcPath
+<a name="l00456"></a>00456         , <a class="code" href="classMemoryManager.html" title="Configurable memory manager.">MemoryManager</a>* <span class="keyword">const</span> manager = <a class="code" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252" title="The configurable memory manager.">XMLPlatformUtils::fgMemoryManager</a>);
+<a name="l00457"></a>00457 
+<a name="l00471"></a>00471     <span class="keyword">static</span> <span class="keywordtype">bool</span> isRelative(<span class="keyword">const</span> XMLCh* <span class="keyword">const</span> toCheck
+<a name="l00472"></a>00472         , <a class="code" href="classMemoryManager.html" title="Configurable memory manager.">MemoryManager</a>* <span class="keyword">const</span> manager = <a class="code" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252" title="The configurable memory manager.">XMLPlatformUtils::fgMemoryManager</a>
+<a name="l00473"></a>00473         );
+<a name="l00474"></a>00474 
+<a name="l00494"></a>00494     <span class="keyword">static</span> XMLCh* weavePaths
+<a name="l00495"></a>00495     (
+<a name="l00496"></a>00496         <span class="keyword">const</span>   XMLCh* <span class="keyword">const</span>    basePath
+<a name="l00497"></a>00497         , <span class="keyword">const</span> XMLCh* <span class="keyword">const</span>    relativePath
+<a name="l00498"></a>00498         , <a class="code" href="classMemoryManager.html" title="Configurable memory manager.">MemoryManager</a>* <span class="keyword">const</span> manager = <a class="code" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252" title="The configurable memory manager.">XMLPlatformUtils::fgMemoryManager</a>
+<a name="l00499"></a>00499     );
+<a name="l00501"></a>00501 
+<a name="l00504"></a>00504 
+<a name="l00514"></a>00514     <span class="keyword">static</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> getCurrentMillis();
+<a name="l00516"></a>00516 
+<a name="l00519"></a>00519 
+<a name="l00527"></a>00527     <span class="keyword">static</span> <span class="keywordtype">void</span> closeMutex(<span class="keywordtype">void</span>* <span class="keyword">const</span> mtxHandle);
+<a name="l00528"></a>00528 
+<a name="l00536"></a>00536     <span class="keyword">static</span> <span class="keywordtype">void</span> lockMutex(<span class="keywordtype">void</span>* <span class="keyword">const</span> mtxHandle);
+<a name="l00537"></a>00537 
+<a name="l00547"></a>00547     <span class="keyword">static</span> <span class="keywordtype">void</span>* makeMutex(<a class="code" href="classMemoryManager.html" title="Configurable memory manager.">MemoryManager</a>* manager = <a class="code" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252" title="The configurable memory manager.">XMLPlatformUtils::fgMemoryManager</a>);
+<a name="l00548"></a>00548 
+<a name="l00561"></a>00561     <span class="keyword">static</span> <span class="keywordtype">void</span> unlockMutex(<span class="keywordtype">void</span>* <span class="keyword">const</span> mtxHandle);
+<a name="l00562"></a>00562 
+<a name="l00564"></a>00564 
+<a name="l00565"></a>00565 
+<a name="l00568"></a>00568 
+<a name="l00576"></a>00576     <span class="keyword">static</span> XMLMsgLoader* loadMsgSet(<span class="keyword">const</span> XMLCh* <span class="keyword">const</span> msgDomain);
+<a name="l00577"></a>00577 
+<a name="l00579"></a>00579 
+<a name="l00582"></a>00582 
+<a name="l00608"></a>00608     <span class="keyword">static</span> <span class="keywordtype">void</span>* compareAndSwap
+<a name="l00609"></a>00609     (
+<a name="l00610"></a>00610                 <span class="keywordtype">void</span>**      toFill
+<a name="l00611"></a>00611         , <span class="keyword">const</span> <span class="keywordtype">void</span>* <span class="keyword">const</span> newValue
+<a name="l00612"></a>00612         , <span class="keyword">const</span> <span class="keywordtype">void</span>* <span class="keyword">const</span> toCompare
+<a name="l00613"></a>00613     );
+<a name="l00614"></a>00614 
+<a name="l00616"></a>00616 
+<a name="l00617"></a>00617 
+<a name="l00620"></a>00620 
+<a name="l00640"></a>00640     <span class="keyword">static</span> <span class="keywordtype">int</span> atomicIncrement(<span class="keywordtype">int</span>&amp; location);
+<a name="l00641"></a>00641 
+<a name="l00661"></a>00661     <span class="keyword">static</span> <span class="keywordtype">int</span> atomicDecrement(<span class="keywordtype">int</span>&amp; location);
+<a name="l00662"></a>00662 
+<a name="l00664"></a>00664 
+<a name="l00678"></a>00678     <span class="keyword">static</span> <span class="keywordtype">void</span> recognizeNEL(<span class="keywordtype">bool</span> state
+<a name="l00679"></a>00679         , <a class="code" href="classMemoryManager.html" title="Configurable memory manager.">MemoryManager</a>* <span class="keyword">const</span> manager  = <a class="code" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252" title="The configurable memory manager.">XMLPlatformUtils::fgMemoryManager</a>);
+<a name="l00680"></a>00680 
+<a name="l00684"></a>00684     <span class="keyword">static</span> <span class="keywordtype">bool</span> isNELRecognized();
+<a name="l00686"></a>00686 
+<a name="l00698"></a>00698     <span class="keyword">static</span> <span class="keywordtype">void</span> strictIANAEncoding(<span class="keyword">const</span> <span class="keywordtype">bool</span> state);
+<a name="l00699"></a>00699 
+<a name="l00704"></a>00704     <span class="keyword">static</span> <span class="keywordtype">bool</span> isStrictIANAEncoding();
+<a name="l00706"></a>00706         
+<a name="l00714"></a>00714     <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">size_t</span> alignPointerForNewBlockAllocation(<span class="keywordtype">size_t</span> ptrSize);
+<a name="l00715"></a>00715 
+<a name="l00716"></a>00716 <span class="keyword">private</span> :
+<a name="l00717"></a>00717     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00718"></a>00718     <span class="comment">//  Unimplemented constructors and operators</span>
+<a name="l00719"></a>00719     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00720"></a>00720     <a class="code" href="classXMLPlatformUtils.html" title="Utilities that must be implemented in a platform-specific way.">XMLPlatformUtils</a>();
+<a name="l00721"></a>00721 
+<a name="l00724"></a>00724 
+<a name="l00730"></a>00730     <span class="keyword">static</span> XMLMsgLoader* loadAMsgSet(<span class="keyword">const</span> XMLCh* <span class="keyword">const</span> msgDomain);
+<a name="l00731"></a>00731 
+<a name="l00741"></a>00741     <span class="keyword">static</span> <a class="code" href="classXMLNetAccessor.html">XMLNetAccessor</a>* makeNetAccessor();
+<a name="l00742"></a>00742 
+<a name="l00753"></a>00753     <span class="keyword">static</span> <a class="code" href="classXMLTransService.html">XMLTransService</a>* makeTransService();
+<a name="l00754"></a>00754 
+<a name="l00761"></a>00761     <span class="keyword">static</span> <span class="keywordtype">void</span> platformInit();
+<a name="l00762"></a>00762 
+<a name="l00769"></a>00769     <span class="keyword">static</span> <span class="keywordtype">void</span> platformTerm();
+<a name="l00770"></a>00770 
+<a name="l00778"></a>00778     <span class="keyword">static</span> <span class="keywordtype">int</span>  searchSlashDotDotSlash(XMLCh* <span class="keyword">const</span> srcPath);
+<a name="l00779"></a>00779 
+<a name="l00781"></a>00781 
+<a name="l00784"></a>00784 
+<a name="l00791"></a>00791     <span class="keyword">static</span> <span class="keywordtype">bool</span> fgMemMgrAdopted;
+<a name="l00792"></a>00792 
+<a name="l00794"></a>00794 };
+<a name="l00795"></a>00795 
+<a name="l00796"></a>00796 
+<a name="l00797"></a><a class="code" href="PlatformUtils_8hpp.html#edc6dd597aa129848f08f420c08ef647">00797</a> <a class="code" href="XMLException_8hpp.html#57c0a8cea5d525b6091454d6a387e050">MakeXMLException</a>(XMLPlatformUtilsException, <a class="code" href="XercesDefs_8hpp.html#97a524372e218133a8eb0aca39b4bd21"></a>)
+<a name="l00798"></a>00798 
+<a name="l00799"></a>00799 
+<a name="l00800"></a>00800 <span class="comment">// ---------------------------------------------------------------------------</span>
+<a name="l00801"></a>00801 <span class="comment">//  XMLPlatformUtils: alignPointerForNewBlockAllocation</span>
+<a name="l00802"></a>00802 <span class="comment">// ---------------------------------------------------------------------------</span>
+<a name="l00803"></a>00803 <span class="comment">//  Calculate alignment required by platform for a new</span>
+<a name="l00804"></a>00804 <span class="comment">//  block allocation. We use this in our custom allocators</span>
+<a name="l00805"></a>00805 <span class="comment">//  to ensure that returned blocks are properly aligned.</span>
+<a name="l00806"></a>00806 <span class="comment">//  Note that, although this will take a pointer and return the position</span>
+<a name="l00807"></a>00807 <span class="comment">//  at which it should be placed for correct alignment, in our code</span>
+<a name="l00808"></a>00808 <span class="comment">//  we normally use size_t parameters to discover what the alignment</span>
+<a name="l00809"></a>00809 <span class="comment">//  of header blocks should be.  Thus, if this is to be</span>
+<a name="l00810"></a>00810 <span class="comment">//  used for the former purpose, to make compilers happy</span>
+<a name="l00811"></a>00811 <span class="comment">//  some casting will be necessary - neilg.</span>
+<a name="l00812"></a>00812 <span class="comment">//</span>
+<a name="l00813"></a>00813 <span class="comment">//  Note: XML_PLATFORM_NEW_BLOCK_ALIGNMENT may be specified on a</span>
+<a name="l00814"></a>00814 <span class="comment">//        per-architecture basis to dictate the alignment requirements</span>
+<a name="l00815"></a>00815 <span class="comment">//        of the architecture. In the absense of this specification,</span>
+<a name="l00816"></a>00816 <span class="comment">//        this routine guesses at the correct alignment value.</span>
+<a name="l00817"></a>00817 <span class="comment">//</span>
+<a name="l00818"></a>00818 <span class="comment">//        A XML_PLATFORM_NEW_BLOCK_ALIGNMENT value of zero is illegal.</span>
+<a name="l00819"></a>00819 <span class="comment">//        If a platform requires absolutely no alignment, a value</span>
+<a name="l00820"></a>00820 <span class="comment">//        of 1 should be specified ("align pointers on 1 byte boundaries").</span>
+<a name="l00821"></a>00821 <span class="comment">//</span>
+<a name="l00822"></a>00822 inline <span class="keywordtype">size_t</span>
+<a name="l00823"></a>00823 <a class="code" href="classXMLPlatformUtils.html" title="Utilities that must be implemented in a platform-specific way.">XMLPlatformUtils</a>::alignPointerForNewBlockAllocation(<span class="keywordtype">size_t</span> ptrSize)
+<a name="l00824"></a>00824 {
+<a name="l00825"></a>00825     <span class="comment">//  Macro XML_PLATFORM_NEW_BLOCK_ALIGNMENT may be defined</span>
+<a name="l00826"></a>00826     <span class="comment">//  as needed to dictate alignment requirements on a</span>
+<a name="l00827"></a>00827     <span class="comment">//  per-architecture basis. In the absense of that we</span>
+<a name="l00828"></a>00828     <span class="comment">//  take an educated guess.</span>
+<a name="l00829"></a>00829 <span class="preprocessor">    #ifdef XML_PLATFORM_NEW_BLOCK_ALIGNMENT</span>
+<a name="l00830"></a>00830 <span class="preprocessor"></span>        <span class="keywordtype">size_t</span> alignment = XML_PLATFORM_NEW_BLOCK_ALIGNMENT;
+<a name="l00831"></a>00831 <span class="preprocessor">    #else</span>
+<a name="l00832"></a>00832 <span class="preprocessor"></span>        <span class="keywordtype">size_t</span> alignment = (<span class="keyword">sizeof</span>(<span class="keywordtype">void</span>*) &gt;= <span class="keyword">sizeof</span>(<span class="keywordtype">double</span>)) ? <span class="keyword">sizeof</span>(<span class="keywordtype">void</span>*) : <span class="keyword">sizeof</span>(double);
+<a name="l00833"></a>00833 <span class="preprocessor">    #endif</span>
+<a name="l00834"></a>00834 <span class="preprocessor"></span>    
+<a name="l00835"></a>00835     <span class="comment">//  Calculate current alignment of pointer</span>
+<a name="l00836"></a>00836     <span class="keywordtype">size_t</span> current = ptrSize % alignment;
+<a name="l00837"></a>00837     
+<a name="l00838"></a>00838     <span class="comment">//  Adjust pointer alignment as needed</span>
+<a name="l00839"></a>00839     <span class="keywordflow">return</span> (current == 0)
+<a name="l00840"></a>00840          ? ptrSize
+<a name="l00841"></a>00841          : (ptrSize + alignment - current);
+<a name="l00842"></a>00842 }
+<a name="l00843"></a>00843 
+<a name="l00844"></a>00844 
+<a name="l00845"></a>00845 
+<a name="l00846"></a>00846 <span class="comment">// ---------------------------------------------------------------------------</span>
+<a name="l00847"></a>00847 <span class="comment">//  XMLDeleter: Public Destructor</span>
+<a name="l00848"></a>00848 <span class="comment">// ---------------------------------------------------------------------------</span>
+<a name="l00849"></a><a class="code" href="classXMLDeleter.html#23f136b5ae797442100a8dde98c3bc1b">00849</a> <span class="keyword">inline</span> <a class="code" href="classXMLDeleter.html#23f136b5ae797442100a8dde98c3bc1b">XMLDeleter::~XMLDeleter</a>()
+<a name="l00850"></a>00850 {
+<a name="l00851"></a>00851 }
+<a name="l00852"></a>00852 
+<a name="l00853"></a>00853 <span class="comment">// ---------------------------------------------------------------------------</span>
+<a name="l00854"></a>00854 <span class="comment">//  XMLDeleter: Hidden constructors and operators</span>
+<a name="l00855"></a>00855 <span class="comment">// ---------------------------------------------------------------------------</span>
+<a name="l00856"></a><a class="code" href="classXMLDeleter.html#34c158bd3663228d553e302bece2fb4b">00856</a> <span class="keyword">inline</span> <a class="code" href="classXMLDeleter.html#34c158bd3663228d553e302bece2fb4b">XMLDeleter::XMLDeleter</a>()
+<a name="l00857"></a>00857 {
+<a name="l00858"></a>00858 }
+<a name="l00859"></a>00859 
+<a name="l00860"></a>00860 <a class="code" href="XercesDefs_8hpp.html#f03d5cb905763ef7a7bd22ab82718285">XERCES_CPP_NAMESPACE_END</a>
+<a name="l00861"></a>00861 
+<a name="l00862"></a>00862 <span class="preprocessor">#endif</span>
+</pre></div>    </FONT></TD></TR></TABLE><BR>
+</TD></TR></TABLE></TD></TR></TABLE><BR><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD bgcolor="#0086b2"><IMG height="1" src="images/dot.gif" width="1" alt=""></TD></TR><TR><TD align="center"><FONT color="#0086b2" size="-1"><I>
+              Copyright &copy; 1994-2004 The Apache Software Foundation.
+              All Rights Reserved.
+            </I></FONT></TD></TR></TABLE></BODY></HTML>

@@ -1,0 +1,480 @@
+[library Boost.ScopeExit
+    [copyright 2006-2009 Alexander Nasonov]
+    [purpose execute arbitrary code at scope exit]
+    [license
+        Distributed under the Boost Software License, Version 1.0.
+        (See accompanying file LICENSE_1_0.txt or copy at
+        <ulink url="http://www.boost.org/LICENSE_1_0.txt">
+            http://www.boost.org/LICENSE_1_0.txt
+        </ulink>)
+    ]
+    [authors [Nasonov, Alexander]]
+    [category utility]
+    [id scope_exit]
+    [dirname scope_exit]
+]
+
+[/  Images   ]
+
+[def _note_                         [$images/note.png]]
+
+[/  Links   ]
+
+[def _scope_exit_ [link scope_exit ScopeExit]]
+[def _Tutorial_ [link scope_exit.tutorial Tutorial]]
+[def _Reference_ [link scope_exit.ref Reference]]
+[def _lambda_ [@../../../../libs/lambda/index.html Boost.Lambda]]
+[def _typeof_ [@../../../../libs/typeof/index.html Boost.Typeof]]
+[def _typeof_emulation_ [@../../../../libs/typeof/index.html typeof emulation]]
+[def _typeof_REGISTER_TYPE_ [@../../../../doc/html/typeof/refe.html#typeof.regtype BOOST_TYPEOF_REGISTER_TYPE]]
+[def _typeof_REGISTER_TEMPLATE_ [@../../../../doc/html/typeof/refe.html#typeof.regtemp BOOST_TYPEOF_REGISTER_TEMPLATE]]
+[def _pp_ [@../../../../libs/preprocessor/index.html Boost.Preprocessor]]
+[def _pp_seq_ [@../../../../libs/preprocessor/index.html Boost.Preprocessor sequence]]
+[def _ptr_container_ [@../../../../libs/ptr_container/doc/ptr_container.html Boost Pointer Container Library]]
+[def _multi_index_ [@../../../../libs/multi_index/doc/index.html Boost Multi-Index Containers Library]]
+[def _scope_guard_ [@http://www.ddj.com/dept/cpp/184403758 ScopeGuard]]
+[def _D_ [@http://www.digitalmars.com/d/index.html D]]
+[def _D_scope_exit_ [@http://www.digitalmars.com/d/2.0/statement.html#ScopeGuardStatement scope(exit)]]
+[def _RAII_ [@http://www.research.att.com/~bs/glossary.html#Gresource-acquisition-is-initialization RAII]]
+[def _strong_guarantee_ [@http://www.research.att.com/~bs/glossary.html#Gstrong-guarantee strong guarantee]]
+
+[section:intro Introduction]
+
+Nowadays, every C++ developer is familiar with _RAII_ technique.
+It binds resource acquisition and release to initialization and
+destruction of a variable that holds the resource. But there are
+times when writing a special class for such variable is not worth
+the effort.
+
+This is when _scope_exit_ macro comes into play. You put resource
+acquisition directly in your code and next to it you write a code
+that releases the resource.
+
+Read _Tutorial_ to find out how to write programs with
+_scope_exit_ or jump straight to the _Reference_ section.
+
+[endsect]
+
+[section:tutorial Tutorial]
+
+Imagine that you want to make many modifications to data members
+of the `World` class in the `World::addPerson` function.
+You start with adding a new `Person` object to a vector of persons:
+
+	void World::addPerson(Person const& person) {
+	    bool commit = false;
+	    m_persons.push_back(person);  // (1) direct action
+
+Some operation down the road may throw an exception and all changes
+to involved objects should be rolled back. This all-or-nothing semantic
+is also known as _strong_guarantee_.
+
+In particular, last added person must be deleted from `m_persons` when
+the function throws. All you need is to define a delayed action (release
+of a resource) right after the direct action (resource acquisition):
+
+	void World::addPerson(Person const& aPerson) {
+	    bool commit = false;
+	    m_persons.push_back(aPerson);  // (1) direct action
+	    BOOST_SCOPE_EXIT( (&commit)(&m_persons) )
+	    {
+	        if(!commit)
+	            m_persons.pop_back(); // (2) rollback action
+	    } BOOST_SCOPE_EXIT_END
+	
+	    // ...                        // (3) other operations
+	    
+	    commit = true;                // (4) turn all rollback actions into no-op
+	}
+
+The block below point `(1)` is a _scope_exit_ declaration.
+Unlike point `(1)`, an execution of the _scope_exit_ body will be
+delayed until the end of the current scope. In this case it will be
+executed either after point `(4)` or on any exception.
+
+The _scope_exit_ declaration starts with `BOOST_SCOPE_EXIT` macro
+invocation which accepts _pp_seq_ of captured variables. If a capture
+starts with the ampersand sign `&`, a reference to the captured variable
+will be available inside the _scope_exit_ body; otherwise, a copy of the
+variable will be made after the point `(1)` and only the copy will be
+available inside the body.
+
+In the example above, variables `commit` and `m_persons` are passed
+by reference because the final value of the `commit` variable should
+be used to determine whether to execute rollback action or not and
+the action should modify the `m_persons` object, not its copy.
+This is a most common case but passing a variable by value is
+sometimes useful as well.
+
+Consider a more complex case where `World::addPerson` can save intermediate
+states at some points and roll back to the last saved state. You can
+use `Person::m_evolution` to store a version of changes and increment it
+to cancel all rollback actions associated with those changes.
+
+If you pass a current value of `m_evolution` stored in the `checkpoint`
+variable by value, it will remain unchanged until the end of aa  scope
+and you can compare it with the final value of the `m_evolution`.
+If the latter wasn't incremented since you saved it, the rollback action
+inside the block should be executed:
+
+	void World::addPerson(Person const& aPerson) {
+	    m_persons.push_back(aPerson);
+	
+	    // This block must be no-throw
+	    Person& person = m_persons.back();
+	    Person::evolution_t checkpoint = person.m_evolution;
+	
+	    BOOST_SCOPE_EXIT( (checkpoint)(&person)(&m_persons) )
+	    {
+	        if(checkpoint == person.m_evolution)
+	            m_persons.pop_back();
+	    } BOOST_SCOPE_EXIT_END
+	
+	    // ...
+	
+	    checkpoint = ++person.m_evolution;
+	
+	    // Assign new id to the person
+	    World::id_t const prev_id = person.m_id;
+	    person.m_id = m_next_id++;
+	    BOOST_SCOPE_EXIT( (checkpoint)(&person)(&m_next_id)(prev_id) )
+	    {
+	        if(checkpoint == person.m_evolution) {
+	            m_next_id = person.m_id;
+	            person.m_id = prev_id;
+	        }
+	    } BOOST_SCOPE_EXIT_END
+	
+	    // ...
+	
+	    checkpoint = ++person.m_evolution;
+	}
+
+Full code listing can be found in [@../../example/world.cpp world.cpp].
+
+[endsect]
+
+[section:alternatives Alternatives]
+
+[h3 try-catch]
+
+This is an example of using a badly designed `File` class.  An
+instance of `File` doesn't close a file in a destructor, a programmer
+is expected to call the `close` member function explicitly.
+
+	File passwd;
+	try {
+	    passwd.open("/etc/passwd");
+	    // ...
+	    passwd.close();
+	}
+	catch(...) {
+	    log("could not get user info");
+	    if(passwd.is_open())
+	        passwd.close();
+	    throw;
+	}
+
+Note the following:
+
+* the `passwd` object is defined outside of the `try` block because
+this object is required inside the `catch` block to close the file,
+* the `passwd` object is not fully constructed until after the `open`
+member function returns, and
+* if opening throws, the `passwd.close()` should not be called,
+hence the call to `passwd.is_open()`.
+
+_scope_exit_ doesn't have any of these problems:
+
+	try {
+	    File passwd("/etc/passwd");
+	    BOOST_SCOPE_EXIT( (&passwd) ) {
+	        passwd.close();
+	    } BOOST_SCOPE_EXIT_END
+	    // ...
+	}
+	catch(...) {
+	    log("could not get user info");
+	    throw;
+	}
+
+[h3 RAII]
+
+_RAII_ is absolutely perfect for the `File` class introduced above.
+Use of a properly designed `File` class would look like:
+
+	try {
+	    File passwd("/etc/passwd");
+	    // ...
+	}
+	catch(...) {
+	    log("could not get user info");
+	    throw;
+	}
+
+However, using _RAII_ to build up a _strong_guarantee_ could introduce
+a lot of non-reusable _RAII_ types. For example:
+
+	m_persons.push_back(person);
+	pop_back_if_not_commit pop_back_if_not_commit_guard(commit, m_persons);
+
+The `pop_back_if_not_commit` class is either defined out of the scope or
+as a local class:
+
+	class pop_back_if_not_commit {
+	    bool m_commit;
+	    std::vector<Person>& m_vec;
+	    // ...
+	    ~pop_back_if_not_commit() {
+	        if(!m_commit)
+	            m_vec.pop_back();
+	    }
+	};
+
+In some cases _strong_guarantee_ can be accomplished with standard utilities:
+
+	std::auto_ptr<Person> spSuperMan(new Superman); 
+	m_persons.push_back(spSuperMan.get());
+	spSuperMan.release(); // m_persons successfully took ownership.
+
+or with specialized containers such as _ptr_container_ or
+_multi_index_.
+
+[h3 _scope_guard_]
+
+Imagine that you add a new currency rate:
+
+	bool commit = false;
+	std::string currency("EUR");
+	double rate = 1.3326;
+	std::map<std::string, double> rates;
+	bool currency_rate_inserted =
+	    rates.insert(std::make_pair(currency, rate)).second;
+	
+and then continue a transaction. If it cannot be completed, you erase
+the currency from `rates`. This is how you can do this with _scope_guard_
+and _lambda_:
+	
+	using namespace boost::lambda;
+	
+	ON_BLOCK_EXIT(
+	    if_(currency_rate_inserted && !_1) [
+	        bind(
+	            static_cast<
+	                std::map<std::string,double>::size_type (std::map<std::string,double>::*)(std::string const&)
+	            >(&std::map<std::string,double>::erase)
+	          , &rates
+	          , currency
+	          )
+	    ]
+	  , boost::cref(commit)
+	  );
+	
+	// ...
+	
+	commit = true;
+
+Note that
+
+* Boost.lambda expressions are hard to write correctly, for example,
+overloaded function must be explicitly casted, as demonstrated in
+this example,
+* condition in `if_` expression refers to `commit` variable indirectly
+through the `_1` placeholder,
+* setting a breakpoint inside `if_[ ... ]` requires in-depth knowledge
+of _lambda_ and debugging techniques.
+
+This code will look much better with native lambda expressions proposed
+for C++0x:
+
+	ON_BLOCK_EXIT(
+	    [currency_rate_inserted, &commit, &rates, &currency]() -> void
+	    {
+	        if(currency_rate_inserted && !commit)
+	            rates.erase(currency);
+	    }
+	);
+
+With _scope_exit_ you can simply do
+
+	BOOST_SCOPE_EXIT( (currency_rate_inserted)(&commit)(&rates)(&currency) )
+	{
+	    if(currency_rate_inserted && !commit)
+	        rates.erase(currency);
+	} BOOST_SCOPE_EXIT_END
+	
+	// ...
+	
+	commit = true;
+
+[h3 C++0x]
+
+In future releases _scope_exit_ will take advantages of C++0x features.
+
+* Passing capture list as _pp_seq_ will be replaced with a traditional
+macro invocation style:
+
+	BOOST_SCOPE_EXIT(currency_rate_inserted, &commit, &rates, &currency)
+	{
+	    if(currency_rate_inserted && !commit)
+	        rates.erase(currency);
+	} BOOST_SCOPE_EXIT_END
+	
+* `BOOST_SCOPE_EXIT_END` will be replaced with a semicolon:
+
+	BOOST_SCOPE_EXIT(currency_rate_inserted, &commit, &rates, &currency)
+	{
+	    if(currency_rate_inserted && !commit)
+	        rates.erase(currency);
+	};
+
+* Users will be able to capture local variables implicitly with lambda
+capture defaults `&` and `=`:
+
+	BOOST_SCOPE_EXIT(&, currency_rate_inserted)
+	{
+	    if(currency_rate_inserted && !commit)
+	        rates.erase(currency);
+	};
+
+* It will be possible to capture `this` pointer.
+
+[h3 The D Programming Language]
+
+_ScopeExit_ is similar to _D_scope_exit_ feature built
+into the _D_ programming language.
+
+A curious reader may notice that the library doesn't implement
+`scope(success)` and `scope(failure)` of the _D_ language.
+Unfortunately, it's not possible in C++ because failure or success
+condition cannot be determined by calling `std::uncaught_exception`.
+It's not a big problem, though. These two constructs can be
+expressed in terms of _D_scope_exit_ and a `bool commit` variable
+as explained in _Tutorial_. Refer to
+[@http://www.gotw.ca/gotw/047.htm Guru of the Week #47]
+for more details about `std::uncaught_exception` and if it has
+any good use at all.
+
+[endsect]
+
+[section:compilers Supported Compilers]
+
+The library should be usable on any compiler that supports _typeof_
+except
+
+* MSVC 7.1 and 8.0 fail to link if a function with _scope_exit_
+is included by multiple translation units.
+* GCC 3.3 can't compile _scope_exit_ inside a template. See
+[@http://lists.boost.org/Archives/boost/2007/02/116235.php this thread]
+for more details.
+
+The author tested the library on GCC 3.3, 3.4, 4.1, 4.2 and Intel 10.1.
+
+[endsect]
+
+[section:conf Configuration]
+
+Normally, no configuration is required for the library but
+note that the library depends on _typeof_ and you may want
+to configure or enforce _typeof_emulation_.
+
+[endsect]
+
+[section:ref Reference]
+
+[h3 BOOST_SCOPE_EXIT]
+
+A _scope_exit_ declaration has the following synopsis:
+
+	#include <boost/scope_exit.hpp>
+
+	BOOST_SCOPE_EXIT ( scope-exit-capture-list )
+	    function-body
+	BOOST_SCOPE_EXIT_END
+
+where
+
+	scope-exit-capture-list:
+	    ( scope-exit-capture )
+	    scope-exit-capture-list ( scope-exit-capture )
+	
+	scope-exit-capture:
+	    identifier
+	    &identifier
+	
+The _scope_exit_ declaration schedules an execution of `scope-exit-body`
+at the end of the current scope. The `scope-exit-body` statements are
+executed in the reverse order of _scope_exit_ declarations in the given
+scope. The scope must be local.
+
+Each `identifier` in `scope-exit-capture-list` must be a valid name
+in enclosing scope and it must appear exactly once in the list.
+If a `scope-exit-capture` starts with the ampersand sign `&`, the
+corresponding `identifier` will be available inside `scope-exit-body`;
+otherwise, a copy of it will be made at the point of _scope_exit_
+declaration and that copy will be available inside `scope-exit-body`.
+In the latter case, the `idenitifer` must be `CopyConstructible`.
+
+Only identifiers listed in `scope-exit-capture-list`, static variables,
+`extern` variables and functions, and enumerations from the enclosing
+scope can be used inside the `scope-exit-body`.
+
+[note `this` pointer is not an identifier and cannot be passed to
+` scope-exit-capture-list`.]
+
+The _scope_exit_ uses _typeof_ to determine types of
+`scope-exit-capture-list` elements. In order to compile code in
+_typeof_emulation_ mode, all types should be registered with
+_typeof_REGISTER_TYPE_ or _typeof_REGISTER_TEMPLATE_ macros,
+or appropriate _typeof_ headers should be included.
+
+[h3 BOOST_SCOPE_EXIT_TPL]
+
+This macro is a workaround for various versions of gcc. These compilers
+don't compile _scope_exit_ declaration inside function templates. As a
+workaround, the `_TPL` suffix should be appended to `BOOST_SCOPE_EXIT`.
+
+The problem boils down to the following code:
+
+	template<class T> void foo(T const& t) {
+	    int i = 0;
+	    struct Local {
+	        typedef __typeof__(i) typeof_i;
+	        typedef __typeof__(t) typeof_t;
+	    };
+	    typedef Local::typeof_i i_type;
+	    typedef Local::typeof_t t_type;
+	}
+	
+	int main() { foo(0); }
+
+This can be fixed by adding `typename` in front of `Local::typeof_i` and
+`Local::typeof_t`.
+
+See also [@http://gcc.gnu.org/bugzilla/show_bug.cgi?id=37920 GCC bug 37920].
+
+[note Although `BOOST_SCOPE_EXIT_TPL` has the same suffix as the
+`BOOST_TYPEOF_TPL`, it doesn't follow a convention of the _typeof_.]
+
+[endsect]
+
+[section:acknowledge Acknowledge]
+
+(in chronological order)
+
+Maxim Yegorushkin for sending me a code where he used a local struct
+to clean up resources.
+
+Andrei Alexandrescu for pointing me to _D_scope_exit_ construct of
+the _D_ programming language.
+
+Pavel Vozenilek and Maxim Yanchenko for reviews of early drafts of
+the library.
+
+Steven Watanabe for his valuable ideas.
+
+Jody Hagins for good comments that helped to significantly improve the documentation.
+
+Richard Webb for testing the library on MSVC compiler.
+
+[endsect]

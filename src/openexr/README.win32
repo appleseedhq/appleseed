@@ -1,0 +1,155 @@
+OpenEXR on Win32 platforms
+--------------------------
+
+OpenEXR has been tested on Windows XP with both Visual Studio .NET
+2003 (version 7.1) and Visual Studio 2005 (version 8.0).
+
+Due to limitations in Microsoft's C++ implementation in Visual Studio
+6.0, OpenEXR won't compile with the Microsoft Visual C++ 6.0 compiler.
+The changes required to make OpenEXR compile with Visual C++ 6.0 would
+break the existing API.
+
+It should be possible to link against the ImfCRgbaFile C interface
+with Microsoft Visual C++ 6.0 using the IlmImf DLLs built by Visual
+C++ 7.1 or higher.  However, we have not tested this configuration.
+Please let us know if you have problems.
+
+See the AUTHORS file for a list of people who contributed to the Win32
+port of OpenEXR.
+
+
+Using OpenEXR in your application (IMPORTANT)
+---------------------------------------------
+
+If you are linking your application aginst OpenEXR DLLs, you must
+define OPENEXR_DLL in your project's Preprocessor Definitions in order
+to get the correct signature for some of OpenEXR's symbols.
+
+If you are linking against OpenEXR static libs, you should *not* define
+the OPENEXR_DLL macro.
+
+You do not need to define any other preprocessor macros to use OpenEXR
+in your application.
+
+
+Build setup/requirements
+------------------------
+
+If you don't want or don't need to build these libraries from scratch,
+some releases may be available as pre-compiled libraries.  Check here:
+
+  http://openexr.com/downloads
+
+The projects for Visual Studio .NET 2003 can be found in vc\vc7, and
+for Visual Studio 2005 in vc\vc8.
+
+You'll need a compiled version of zlib (version 1.2.3 or better) in
+order to build the IlmImf library.  You'll need a compiled version of
+FLTK 1.1.7 in order to build the exrdisplay viewer.  You can get
+source code for these libraries here:
+
+http://www.zlib.net
+http://www.fltk.org
+
+FLTK 1.1.7 comes with a solution file for Visual Studio .NET 2003 in
+the vcnet\ directory, and one for Visual Studio 2005 in the vc2005\
+directory.  You only need to build the Debug and Release versions of
+the fltk and fltkgl projects.  exrdisplay uses the static lib versions
+of FLTK.
+
+Note that by default, the OpenEXR Visual Studio project expects the
+FLTK libraries in the following locations (assuming OpenEXR\ is your
+OpenEXR source directory):
+
+  fltk\
+       FL\
+          Enumerations.H
+          Fl.H
+          ...
+       lib\
+           fltk.lib
+           fltkgl.lib
+	   fltkd.lib
+	   fltkgld.lib
+	   ...
+  OpenEXR\...
+
+If you prefer, you can leave your FLTK directory where it is and
+change the exrdisplay.vcproj and/or exrdisplay_fragshader.vcproj
+Additional Include Directories setting to point to your FLTK install.
+
+In order to build the fragment shader version of exrdisplay, you'll
+need the Nvidia Cg SDK.  This is not required, it just accelerates the
+display of OpenEXR images.  The exrdisplay_fragshader project expects
+the SDK to be found in c:\Program Files\NVIDIA Corporation\Cg, but you
+can change this in the Additional Include Directories setting for the
+project, if you like.
+
+
+Building OpenEXR
+----------------
+
+Building OpenEXR requires the following steps:
+
+  * Obtain the zlib source code from www.zlib.net, and build the
+    following configurations of the workspace file found in zlib's
+    projects\visualc6 (Visual Studio will automatically upgrade the
+    workspace to a solution file):
+    
+      LIB ASM Debug
+      LIB ASM Release
+      DLL ASM Debug
+      DLL ASM Release
+
+    The ASM projects for zlib 1.2.3 don't build on Visual Studio 2005;
+    you'll get assembler errors on lines 647, 649, 663 and 720 in
+    zlib's contrib\masmx86\inffas32.asm file.  You can add 'dword ptr'
+    to the 2nd argument of the 'movd' instruction on each of those
+    lines to correct the problem, or you can build the (slower)
+    non-ASM versions of the libraries.
+
+  * In the following steps, wherever you see 'vc?', substitute 'vc7'
+    if you're compiling OpenEXR with Visual Studio .NET 2003, or 'vc8'
+    if you're compiling OpenEXR with Visual Studio 2005.
+
+  * From the zlib build, copy the following files:
+
+      zlib1d.dll zlib1.dll                                         -> OpenEXR\vc\vc?\bin
+      zconf.h zlib.h                                               -> OpenEXR\vc\vc?\include
+      zlib1.exp zlib1.lib zlib1d.exp zlib1d.lib zlibd.lib zlib.lib -> OpenEXR\vc\vc?\lib
+
+    The .dll, .exp and .lib files can be found in zlib's
+    projects\visualc6\Win32_* directories.
+
+  * If you want to build exrdisplay, obtain the FLTK source code and build
+    the Debug and Release configurations.
+
+  * Build the Release configuration of createDLL from the createDLL
+    solution file (OpenEXR\vc\vc?\createDLL.sln).
+
+  * Set up the MSVCLINK environment variable to point to
+      C:\Program Files\Microsoft Visual Studio .NET 2003\Vc7\bin\link.exe
+    or
+      C:\Program Files\Microsoft Visual Studio 8\VC\bin\link.exe      
+    (or similar), depending on which version of Visual Studio you're 
+    using.
+
+  * Open the OpenEXR solution file (OpenEXR\vc\vc?\OpenEXR.sln).
+
+  * Pick the configuration you need (Debug, DebugDLL, Release or ReleaseDLL)
+    and build it.  Note that the exrdisplay project will fail if you
+    have not built FLTK, and the exrdisplay_fragshader project will
+    fail if you have not built FTLK or if you have not installed the
+    NVIDIA Cg SDK.  All other projects, including the test programs,
+    should succeed.
+
+  * When your build is finished, the OpenEXR\vc\vc?\{bin,include\OpenEXR,lib} 
+    directories will contain all the files you need to use OpenEXR in
+    your application.
+  
+
+Known bugs
+----------
+
+exrdisplay_fragshader doesn't currently build on Windows.
+

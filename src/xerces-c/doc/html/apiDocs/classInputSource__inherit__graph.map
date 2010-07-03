@@ -1,0 +1,6 @@
+<area shape="rect" href="$classLocalFileInputSource.html" title="This class is a derivative of the standard InputSource class." alt="" coords="309,5,464,32">
+<area shape="rect" href="$classMemBufInputSource.html" title="This class is a derivative of the standard InputSource class." alt="" coords="309,56,464,83">
+<area shape="rect" href="$classStdInInputSource.html" title="This class is a derivative of the standard InputSource class." alt="" coords="320,107,453,133">
+<area shape="rect" href="$classURLInputSource.html" title="This class is a derivative of the standard InputSource class." alt="" coords="323,157,451,184">
+<area shape="rect" href="$classWrapper4DOMInputSource.html" title="Wrap a DOMInputSource object to a SAX InputSource." alt="" coords="289,208,484,235">
+<area shape="rect" href="$classXMemory.html" title="This class makes it possible to override the C++ memory management by adding new/delete..." alt="" coords="7,107,89,133">

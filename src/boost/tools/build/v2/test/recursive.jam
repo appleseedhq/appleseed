@@ -1,0 +1,117 @@
+# Copyright 2001, 2002 Dave Abrahams 
+# Copyright 2005 Rene Rivera 
+# Distributed under the Boost Software License, Version 1.0. 
+# (See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt) 
+
+##############################################################
+# Rules and actions that test Jam by invoking it recursively #
+#                                                            #
+# This is necessary for testing anything that requires Jam   #
+# to execute build actions whose results must be checked,    #
+# and anything which exits Jam with a failure code (e.g. a   #
+# failed assertion).                                         #
+##############################################################
+
+# Creates a fake target, always built, which succeeds in building if Invoking a
+# Jamfile containing the given string succeeds. If optional-expected-output is
+# supplied, creates another fake target which succeeds in building if
+# optional-expected-output is in the Jam output.
+#
+# RETURNS: the target name of the Jam command.
+rule Jam ( command : expected-output ? )
+{
+    local jam-cmd = "$(command:G=jam_command)" ;
+    
+    NOTFILE "$(jam-cmd)" ;
+    ALWAYS "$(jam-cmd)" ;
+    DEPENDS all : "$(jam-cmd)" ;
+
+    if ($NT)
+    {
+        redirect on $(jam-cmd) = "nul" ;
+    }
+    else if $(UNIX)
+    {
+        redirect on $(jam-cmd) = "/dev/null" ;
+    }
+
+    if $(VERBOSE)
+    {
+        redirect on $(jam-cmd) = ;
+    }
+
+    invoke-Jam "$(jam-cmd)" ;
+    
+    if $(expected-output)
+    {
+        redirect on $(jam-cmd) = "scratch-output.txt" ;
+        local output-target = "$(expected-output:G=$(command))" ;
+        NOTFILE "$(output-target)" ;
+        ALWAYS "$(output-target)" ;
+        DEPENDS all : "$(output-target)" ;
+        Expect-in-output "$(output-target)" ;
+        
+        if $(VERBOSE)
+        {
+            if $(NT) { VERBOSE on $(output-target) = "type " ; }
+            else { VERBOSE on $(output-target) = "cat " ; }
+        }
+    }
+    return $(jam-cmd) ;
+}
+
+# Just like the "Jam" rule, above, but only succeeds if the Jam command /fails/.
+rule Jam-fail ( command : expected-output ? )
+{
+    local target = [ Jam $(command) : $(expected-output) ] ;
+    FAIL_EXPECTED $(target) ;
+    return $(target) ;
+}
+
+# The temporary jamfile we write is called "temp.jam". If the user has set
+# BOOST_BUILD_ROOT, it will be built there.
+gBOOST_TEST_JAMFILE = temp.jam ;
+LOCATE on gBOOST_TEST_JAMFILE ?= $(BOOST_BUILD_ROOT) ;
+
+# Runs Jam on a temporary Jamfile which contains the string in $(command:G=)
+# and redirects the results into a file whose name is given by $(redirect) on
+# command
+rule invoke-Jam ( command )
+{
+    PREFIX on $(command) = "actions unbuilt { } unbuilt all ;" ;
+    if $(NT)
+    {
+        REMOVE on $(command) = $(SystemRoot)\System32\find ;
+    }
+    REMOVE on $(command) ?= rm ;
+}
+actions invoke-Jam
+{
+    echo $(PREFIX) $(<:G=) > $(gBOOST_TEST_JAMFILE)
+    jam -sBOOST_ROOT=../../.. -sJAMFILE=$(gBOOST_TEST_JAMFILE)  $(JAMARGS) >$(redirect)
+}
+#     $(REMOVE) $(gBOOST_TEST_JAMFILE)
+
+
+# These actions expect to find the ungristed part of $(<) in scratch-output.txt
+# and return a nonzero exit code otherwise
+if $(NT)
+{
+    # Explicitly get the NT find command in case someone has another find in their path.
+    actions quietly Expect-in-output
+    {
+        $(VERBOSE)scratch-output.txt ;
+        $(SystemRoot)\System32\find /C "$(<:G=)" scratch-output.txt >nul
+    }
+}
+else
+{
+    # Not really the right actions for Unix; the argument will be interpreted as
+    # a regular expression. Is there a simpler find?
+    actions quietly Expect-in-output
+    {
+        $(VERBOSE)scratch-output.txt;
+        grep "$(<:G=)" scratch-output.txt
+    }
+}
+

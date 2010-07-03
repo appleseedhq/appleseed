@@ -1,0 +1,60 @@
+# Copyright (c) 2002 Trustees of Indiana University
+#
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+project boost/graph
+    : requirements <include>../src
+    : source-location ../src
+    ;
+
+local optional_sources ;
+local optional_reqs ;
+
+if [ modules.peek : EXPAT_INCLUDE ] && [ modules.peek : EXPAT_LIBPATH ]
+{
+  local EXPAT_INCLUDE = [ modules.peek : EXPAT_INCLUDE ] ;
+  local EXPAT_LIBPATH = [ modules.peek : EXPAT_LIBPATH ] ;
+
+  if --debug-configuration in [ modules.peek : ARGV ]
+  {
+    ECHO "Expat include directory: $(EXPAT_INCLUDE)" ;
+    ECHO "Expat library directory: $(EXPAT_LIBPATH)" ;
+  }
+
+  alias graphml
+      : graphml.cpp
+      : # requirements
+      : # default built
+      : # usage requirements
+        <include>$(EXPAT_INCLUDE)
+        <library-path>$(EXPAT_LIBPATH)
+        <find-shared-library>expat
+      ;
+}
+else
+{
+    message graphml
+      : "warning: Graph library does not contain optional GraphML reader."
+      : "note: to enable GraphML support, set EXPAT_INCLUDE and EXPAT_LIBPATH to the"
+      : "note: directories containing the Expat headers and libraries, respectively."
+      ;
+}
+explicit graphml ;
+
+lib boost_graph
+    :
+    read_graphviz_spirit.cpp
+    graphml
+    :
+    <define>BOOST_GRAPH_NO_LIB=1
+    <link>shared:<define>BOOST_GRAPH_DYN_LINK=1
+    # # Intel compiler ICEs if we turn optimization on
+    <toolset>intel-vc71-win-9.1:<optimization>off
+    # Without these flags, MSVC 7.1 and 8.0 crash
+    <toolset>msvc-7.1:<cxxflags>-GR-
+    <toolset>msvc-8.0:<cxxflags>-GR-
+    ;
+
+boost-install boost_graph ;

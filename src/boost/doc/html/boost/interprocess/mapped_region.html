@@ -1,0 +1,144 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Class mapped_region</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../boost_interprocess_reference.html#header.boost.interprocess.mapped_region_hpp" title="Header &lt;boost/interprocess/mapped_region.hpp&gt;">
+<link rel="prev" href="basic_managed_windows_s_id1746062.html" title="Class template basic_managed_windows_shared_memory">
+<link rel="next" href="rbtree_best_fit.html" title="Class template rbtree_best_fit">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="basic_managed_windows_s_id1746062.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_interprocess_reference.html#header.boost.interprocess.mapped_region_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="rbtree_best_fit.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.interprocess.mapped_region"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Class mapped_region</span></h2>
+<p>boost::interprocess::mapped_region</p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../boost_interprocess_reference.html#header.boost.interprocess.mapped_region_hpp" title="Header &lt;boost/interprocess/mapped_region.hpp&gt;">boost/interprocess/mapped_region.hpp</a>&gt;
+
+</em></span>
+<span class="bold"><strong>class</strong></span> <a class="link" href="mapped_region.html" title="Class mapped_region">mapped_region</a> {
+<span class="bold"><strong>public</strong></span>:
+  <span class="emphasis"><em>// <a class="link" href="mapped_region.html#boost.interprocess.mapped_regionconstruct-copy-destruct">construct/copy/destruct</a></em></span>
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> MemoryMappable&gt; 
+    <a class="link" href="mapped_region.html#id1746436-bb">mapped_region</a>(<span class="bold"><strong>const</strong></span> MemoryMappable &amp;, mode_t, offset_t = 0, 
+                  std::size_t = 0, <span class="bold"><strong>const</strong></span> <span class="bold"><strong>void</strong></span> * = 0);
+  <a class="link" href="mapped_region.html#id1746486-bb">mapped_region</a>();
+  <a class="link" href="mapped_region.html#id1746491-bb">mapped_region</a>(<a class="link" href="mapped_region.html" title="Class mapped_region">mapped_region</a> &amp;&amp;);
+  mapped_region&amp; <a class="link" href="mapped_region.html#id1746511-bb"><span class="bold"><strong>operator</strong></span>=</a>(<a class="link" href="mapped_region.html" title="Class mapped_region">mapped_region</a> &amp;&amp;);
+  <a class="link" href="mapped_region.html#id1746506-bb">~mapped_region</a>();
+
+  <span class="emphasis"><em>// <a class="link" href="mapped_region.html#id1746333-bb">public member functions</a></em></span>
+  <span class="type">std::size_t</span> <a class="link" href="mapped_region.html#id1746336-bb">get_size</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>void</strong></span> *</span> <a class="link" href="mapped_region.html#id1746350-bb">get_address</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type">offset_t</span> <a class="link" href="mapped_region.html#id1746362-bb">get_offset</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type">mode_t</span> <a class="link" href="mapped_region.html#id1746375-bb">get_mode</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="mapped_region.html#id1746387-bb">flush</a>(std::size_t = 0, std::size_t = 0) ;
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="mapped_region.html#id1746416-bb">swap</a>(<a class="link" href="mapped_region.html" title="Class mapped_region">mapped_region</a> &amp;) ;
+
+  <span class="emphasis"><em>// <a class="link" href="mapped_region.html#id1746526-bb">public static functions</a></em></span>
+  <span class="type"><span class="bold"><strong>static</strong></span> std::size_t</span> <a class="link" href="mapped_region.html#id1746529-bb">get_page_size</a>() ;
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id2166793"></a><h2>Description</h2>
+<p>The mapped_region class represents a portion or region created from a memory_mappable object. </p>
+<div class="refsect2" lang="en">
+<a name="id2166801"></a><h3>
+<a name="boost.interprocess.mapped_regionconstruct-copy-destruct"></a><code class="computeroutput">mapped_region</code> 
+        public
+       construct/copy/destruct</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> MemoryMappable&gt; 
+  <a name="id1746436-bb"></a>mapped_region(<span class="bold"><strong>const</strong></span> MemoryMappable &amp; mapping, mode_t mode, 
+                offset_t offset = 0, std::size_t size = 0, 
+                <span class="bold"><strong>const</strong></span> <span class="bold"><strong>void</strong></span> * address = 0);</pre>
+<p>Creates a mapping region of the mapped memory "mapping", starting in offset "offset", and the mapping's size will be "size". The mapping can be opened for read-only "read_only" or read-write "read_write. </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1746486-bb"></a>mapped_region();</pre>
+<p>Default constructor. Address and size and offset will be 0. Does not throw </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1746491-bb"></a>mapped_region(<a class="link" href="mapped_region.html" title="Class mapped_region">mapped_region</a> &amp;&amp; other);</pre>
+<p>Move constructor. *this will be constructed taking ownership of "other"'s region and "other" will be left in default constructor state. </p>
+</li>
+<li>
+<pre class="literallayout">mapped_region&amp; <a name="id1746511-bb"></a><span class="bold"><strong>operator</strong></span>=(<a class="link" href="mapped_region.html" title="Class mapped_region">mapped_region</a> &amp;&amp; other);</pre>
+<p>Move assignment. If *this owns a memory mapped region, it will be destroyed and it will take ownership of "other"'s memory mapped region. </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1746506-bb"></a>~mapped_region();</pre>
+<p>Destroys the mapped region. Does not throw </p>
+</li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id2166965"></a><h3>
+<a name="id1746333-bb"></a><code class="computeroutput">mapped_region</code> public member functions</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><span class="type">std::size_t</span> <a name="id1746336-bb"></a>get_size() <span class="bold"><strong>const</strong></span>;</pre>
+<p>Returns the size of the mapping. Note for windows users: If windows_shared_memory is mapped using 0 as the size, it returns 0 because the size is unknown. Never throws. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span> *</span> <a name="id1746350-bb"></a>get_address() <span class="bold"><strong>const</strong></span>;</pre>
+<p>Returns the base address of the mapping. Never throws. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">offset_t</span> <a name="id1746362-bb"></a>get_offset() <span class="bold"><strong>const</strong></span>;</pre>
+<p>Returns the offset of the mapping from the beginning of the mapped memory. Never throws. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">mode_t</span> <a name="id1746375-bb"></a>get_mode() <span class="bold"><strong>const</strong></span>;</pre>
+<p>Returns the mode of the mapping used to construct the mapped file. Never throws. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1746387-bb"></a>flush(std::size_t mapping_offset = 0, std::size_t numbytes = 0) ;</pre>
+<p>Flushes to the disk a byte range within the mapped memory. Never throws </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1746416-bb"></a>swap(<a class="link" href="mapped_region.html" title="Class mapped_region">mapped_region</a> &amp; other) ;</pre>
+<p>Swaps the mapped_region with another mapped region </p>
+</li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id2184626"></a><h3>
+<a name="id1746526-bb"></a><code class="computeroutput">mapped_region</code> public static functions</h3>
+<div class="orderedlist"><ol type="1"><li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> std::size_t</span> <a name="id1746529-bb"></a>get_page_size() ;</pre>
+<p>Returns the size of the page. This size is the minimum memory that will be used by the system when mapping a memory mappable source. </p>
+</li></ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2005 - 2008 Ion Gaztañaga<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="basic_managed_windows_s_id1746062.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_interprocess_reference.html#header.boost.interprocess.mapped_region_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="rbtree_best_fit.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

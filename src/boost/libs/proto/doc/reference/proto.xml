@@ -1,0 +1,4 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<header name="boost/proto/proto.hpp">
+  <para>Includes all of Proto, except the Boost.Typeof registrations.</para>
+</header>

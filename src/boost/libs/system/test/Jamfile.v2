@@ -1,0 +1,43 @@
+# Boost System Library test Jamfile
+
+# Copyright Beman Dawes 2003, 2006
+
+# Distributed under the Boost Software License, Version 1.0.
+# See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt
+
+# See library home page at http://www.boost.org/libs/system
+
+project
+    : requirements
+      <library>/boost/system//boost_system
+      <toolset>msvc:<asynch-exceptions>on
+    ;
+
+   test-suite "system"
+       : [ run error_code_test.cpp
+           : # command line
+           : # input files
+           : # requirements
+                   <link>static
+         ]
+         [ run error_code_test.cpp
+           :  :  :  : error_code_test_dll
+         ]
+         [ run error_code_user_test.cpp
+           :  :  : <link>static
+         ]
+         [ run error_code_user_test.cpp
+           :  :  :  : error_code_user_test_dll
+         ]
+         [ run system_error_test.cpp
+           :  :  : <link>static
+         ]
+         [ run system_error_test.cpp
+            :  :  :  : system_error_test_dll
+         ]
+         [ run initialization_test.cpp
+         ]
+         [ run header_only_test.cpp
+           :  :  : <link>static
+         ]
+        ;

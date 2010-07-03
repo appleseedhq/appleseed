@@ -1,0 +1,340 @@
+<?xml version="1.0" standalone="no"?>
+<!--
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+
+<!DOCTYPE s1 SYSTEM "sbk:/style/dtd/document.dtd">
+
+<s1 title="Other Build Instructions">
+    <anchor name="ICUPerl"/>
+    <s2 title="Building &XercesCName; with ICU">
+        <p>&XercesCName; may be built in stand-alone mode using
+        native encoding support and also using ICU where you get support for over 180
+        different encodings and/or locale specific message support. ICU stands for
+        International Components for Unicode and is an open source distribution from
+        IBM. You can get ICU libraries from
+        <jump href="http://icu-project.org/">ICU project site</jump>.</p>
+
+        <note><em>Important:</em> Please remember that <em>ICU and
+        &XercesCName; must be built with the same compiler</em>,
+        preferably with the same version. You cannot for example,
+        build ICU with a threaded version of the xlC compiler and
+        build &XercesCName; with a non-threaded one.</note>
+        <p/>
+        <s3 title="Building on Windows">
+        <p>There are two options to build &XercesCName; with ICU on Windows. One is to use the
+        MSDEV GUI environment, and the other is to invoke the compiler from the
+        command line.</p>
+
+        <p>Using, the GUI environment, requires one to edit the project files.
+        Here, we will describe only the second option. It involves using the
+        perl script '<code>packageBinaries.pl</code>'.</p>
+
+        <p><em>Prerequisites:</em></p>
+        <ul>
+        <li>Perl 5.004 or higher</li>
+        <li>Cygwin tools or MKS Toolkit</li>
+        <li>zip.exe</li>
+        </ul>
+
+        <p>Extract &XercesCName; source files from the .zip archive using WinZip, say
+        in the root directory (an arbitrary drive x:). It should create a directory like
+        '<code>x:\&XercesCSrcInstallDir;</code>'.</p>
+
+        <p>Extract the ICU files, using WinZip, in root directory of the disk
+        where you have installed &XercesCName;, sources. After extraction, there
+        should be a new directory '<code>x:\icu</code>' which contains all the ICU
+        source files.</p>
+
+        <p>Start a command prompt to get a new shell window. Make sure you have
+        perl, cygwin tools (<code>uname</code>, <code>rm</code>,
+        <code>cp</code>, ...), and <code>zip.exe</code> somewhere in the
+        path. Next setup the environment for MSVC using
+        '<code>VCVARS32.BAT</code>' or a similar file. Then at the prompt
+        enter:</p>
+
+<source>set XERCESCROOT=x:\&XercesCSrcInstallDir;
+set ICUROOT=x:\icu
+cd x:\&XercesCSrcInstallDir;\scripts
+</source>
+
+        <p>To build with ICU, either specify using ICU transcoding service,</p>
+
+<source>
+perl packageBinaries.pl -s x:\&XercesCSrcInstallDir; -o x:\temp\&XercesCInstallDir;-win32 -t icu
+</source>
+
+        <p> or specify using ICU message loader service</p>
+
+<source>
+perl packageBinaries.pl -s x:\&XercesCSrcInstallDir; -o x:\temp\&XercesCInstallDir;-win32 -m icu
+</source>
+
+        <p>(Match the source directory to your system; the target directory can be
+        anything you want.)</p>
+
+        <p>If everything is setup right and works right, then you should see a
+        binary drop created in the target directory specified above. This script
+        will build both ICU and &XercesCName;, and copy the files (relevant to the binary
+        drop) to the target directory.</p>
+
+        <p>If the parser is built with icu message loader (as mentioned above), or message
+         catalog loader, you need an environment variable, XERCESC_NLS_HOME to point to
+         the directory, $XERCESCROOT/msg, where the message files reside.
+        </p>
+
+        <p>For a description of options available, you can enter:</p>
+<source>perl packageBinaries.pl</source>
+        </s3>
+        <s3 title="Building on UNIX">
+        <p>Extract &XercesCName; source files into, say, the home directory ($HOME).
+        It should create a directory like '<code>$HOME/&XercesCSrcInstallDir;</code>'.</p>
+
+        <p>Extract the ICU files into the same directory
+        where you have installed &XercesCName; sources. After extraction, there
+        should be a new directory '<code>$HOME/icu</code>' which contains all the ICU
+        source files.</p>
+
+        <p>Build the ICU according to the<jump href="http://icu-project.org/">
+        ICU Build instruction in ICU Readme</jump>.   Then have its dll, <code>libicuuc*</code>
+        and <code>libicudt*</code> available from your library search path.</p>
+
+        <p>Then build the &XercesCName; with ICU.  This is similar to building a standalone
+        &XercesCName; library as instructed in <jump href="build-winunix.html#UNIX">
+        "Building &XercesCName; on UNIX platforms"</jump>; except that you have to specify
+        the transcoder option <code>'-t icu'</code> and/or the message loader option
+        <code>'-m icu'</code>.  For example:</p>
+<source>runConfigure -plinux -cgcc -xg++ -minmem -nsocket -ticu -rpthread</source>
+
+        <p>Or instead of building the ICU and &XercesCName; manually in two steps,
+        you can use the bundled perl script '<code>packageBinaries.pl</code>' which
+        will build both of them in one step.  For example:</p>
+<source>export XERCESCROOT=$HOME/&XercesCSrcInstallDir;
+export ICUROOT=$HOME/icu
+cd $HOME/&XercesCSrcInstallDir;/scripts
+</source>
+
+        <p>To build with ICU, either specify using ICU transcoding service,</p>
+
+<source>
+perl packageBinaries.pl -s $HOME/&XercesCSrcInstallDir; -o $HOME/temp/&XercesCInstallDir;-aix -t icu
+</source>
+
+        <p> or specify using ICU message loader service</p>
+
+<source>
+perl packageBinaries.pl -s $HOME/&XercesCSrcInstallDir; -o $HOME/temp/&XercesCInstallDir;-aix -m icu
+</source>
+
+        <p>If the parser is built with icu message loader (as mentioned above), or message
+         catalog loader, you need an environment variable, XERCESC_NLS_HOME to point to
+         the directory, $XERCESCROOT/msg, where the message files reside.
+        </p>
+
+        </s3>
+    </s2>
+
+    <anchor name="RPMLinux"/>
+    <s2 title="Building &XercesCName; using RPM on Linux">
+        <p>&XercesCName; may be built from the distributed source archive directly on Linux
+        using RPM.  For example: </p>
+<source>
+rpm -ta &XercesCSrcInstallDir;.tar.gz (rpm 4.0 and older)
+or
+rpmbuild -ta &XercesCSrcInstallDir;.tar.gz (rpm 4.1 and later; ships with RedHat 8)
+</source>
+        <p>The &XercesCName; RPM specification can be found in
+           <br/><code>&XercesCSrcInstallDir;/xerces-c.spec</code>.</p>
+        <p>Please refer to the <jump href="http://www.rpm.org/RPM-HOWTO">RPM-HOWTO</jump>,
+           for more RPM related information.</p>
+    </s2>
+
+    <anchor name="WinCOM"/>
+    <s2 title="Building &XercesCName; COM Wrapper on Windows">
+        <p>To build the COM module for use with XML on Windows platforms, you
+        must first set up your machine appropriately with necessary tools and
+        software modules and then try to compile it. The end result is an additional
+        library that you can use along with the standard &XercesCName; for writing
+        VB templates or for use with IE 5.0 using JavaScript.</p>
+
+        <s3 title="Setting up your machine for COM">
+        <p>To build the COM project you will need to install the MS PlatformSDK.
+        Some of the header files we use don't come with Visual C++ 6.0. You may
+        download it from Microsoft's Website at <jump href="http://www.microsoft.com/msdownload/platformsdk/setuplauncher.htm">http://www.microsoft.com/msdownload/platformsdk/setuplauncher.htm</jump>
+        or directly FTP it from <jump href="ftp://ftp.microsoft.com/developr/PlatformSDK/April2000/Msi/WinNT/x86/InstMsi.exe">ftp://ftp.microsoft.com/developr/PlatformSDK/April2000/Msi/WinNT/x86/InstMsi.exe</jump>.</p>
+
+        <p>The installation is huge, but you don't need most of it. So you
+        may do a <em>custom install</em> by just selecting "Build Environment" and
+        choosing the required components. First select the top level Platform SDK.
+        Then click the down arrow and make all of the components unavailable. Next open the
+        "Build Environment" branch and select only the following items:</p>
+        <ul>
+        <li>Win32 API</li>
+        <li>Component Services</li>
+        <li>Web Services - Internet Explorer</li>
+        </ul>
+
+        <p><em>Important:</em> When the installation is complete you need to update VC6's
+        include path to include <code>..\platformsdk\include\atl30</code>. You do this by
+        choosing "Tools -> Options -> Directories". This path
+        should be placed <ref>second</ref> after the normal PlatformSDK include.
+        You change the order of the paths by clicking the up and down arrows.</p>
+
+        <note>The order in which the directories appear on your path is important. Your
+        first include path should be <code>..\platformsdk\include</code>. The second one
+        should be <code>..\platformsdk\include\atl30</code>.</note>
+        </s3>
+
+        <s3 title="Building COM module for &XercesCName;">
+        <p>Once you have set up your machine, build &XercesCName; COM module
+        by choosing the project named 'xml4com' inside the workspace. Then select your
+        build mode to be <em>xml4com - Win32 Release MinDependency</em>. Finally build the
+        project. This will produce a DLL named <code>xerces-com.dll</code> which needs
+        to be present in your path (on local machine) before you can use it.</p>
+        </s3>
+
+        <s3 title="Testing the COM module">
+        <p>There are some sample test programs in the <code>test/COMTest</code>
+        directory which show examples of navigating and searching an XML tree
+        using DOM. You need to browse the HTML files in this directory using
+        IE 5.0. Make sure that your build has worked properly, specially the
+        registration of the ActiveX controls that happens in the final step.</p>
+        <p>You may also want to check out the NIST DOM test suite at
+        <jump href="http://xw2k.sdct.itl.nist.gov/BRADY/DOM/">http://xw2k.sdct.itl.nist.gov/BRADY/DOM/</jump>.
+        You will have to modify the documents in the NIST suite to load the
+        Xerces COM object instead of the MSIE COM object.</p>
+        </s3>
+    </s2>
+
+
+    <anchor name="UserDoc"/>
+    <s2 title="Building User Documentation">
+        <p>The user documentation (this very page that you are reading
+        on the browser right now), was generated using an XML
+        application called StyleBook. This application makes use of
+        Xerces-J and Xalan to create the HTML file from the XML source
+        files. The XML source files for the documentation are part of
+        the &XercesCName; module. These files reside in the
+        <code>doc</code> directory.</p>
+
+        <p><em>Pre-requisites for building the user documentation are:</em></p>
+
+        <ul>
+          <li>JDK 1.2.2 (or later).</li>
+          <li>Xerces-J 1.0.1 (provided by &XercesCToolsInstallDir;)</li>
+          <li>Xalan-J 0.19.2 (provided by &XercesCToolsInstallDir;)</li>
+          <li>Stylebook 1.0-b2 (provided by &XercesCToolsInstallDir;)</li>
+        </ul>
+
+        <p>Before proceeding, copy the contents of the &XercesCToolsInstallDir;
+           distribution into your <code>$XERCESCROOT</code>. Then invoke
+           a terminal or a command window and setup PATH to include the
+           JDK 1.2.2 bin directory. Next, cd to the <code>$XERCESCROOT</code>
+           source root directory, and enter:</p>
+
+<source>
+createDocs.bat (Windows)
+./createDocs.sh (UNIX)
+</source>
+
+        <p>This should generate the .html files in the 'doc/html' directory.</p>
+
+        <p>To regenerate the API documentation, you need to have at least
+           <jump href="http://www.stack.nl/~dimitri/doxygen/">Doxygen</jump>
+           installed on your system.</p>
+
+        <p>If you want the API documentation to
+           contain dependency graphs, you also need to have <jump
+           href="http://www.research.att.com/sw/tools/graphviz/">GraphViz</jump> installed on
+           your system.</p>
+
+        <p>If you do not have GraphViz, or do not want to use it, you
+           have to edit file <code>$XERCESCROOT/doc/Doxyfile</code> and change <code>HAVE_DOT =
+           YES</code> into <code>HAVE_DOT = NO</code>.</p>
+
+        <p>To actually regenerate the API documentation, go to directory
+           <code>$XERCESCROOT/doc/</code> and start Doxygen. The result can be
+           found in directory <code>$XERCESCROOT/doc/html/apiDocs</code>.</p>
+    </s2>
+
+
+    <anchor name="PortInfo"/>
+    <s2 title="I wish to port &XercesCProjectName; to my favourite platform. Do you have any suggestions?">
+      <p>All platform dependent code in &XercesCProjectName; has been
+      isolated to a couple of files, which should ease the porting
+      effort.  Please refer to <jump href="program-others.html#PortingGuidelines">Porting
+      Guidelines</jump> for further details.</p>
+    </s2>
+
+
+    <anchor name="XMLChInfo"/>
+    <s2 title="What should I define XMLCh to be?">
+        <p>XMLCh should be defined to be a type suitable for holding a
+           utf-16 encoded (16 bit) value, usually an <code>unsigned short</code>. </p>
+
+        <p>All XML data is handled within &XercesCName; as strings of
+           XMLCh characters.  Regardless of the size of the
+           type chosen, the data stored in variables of type XMLCh
+           will always be utf-16 encoded values. </p>
+
+
+
+        <p>Unlike XMLCh, the  encoding
+               of wchar_t is platform dependent.  Sometimes it is utf-16
+               (AIX, Windows), sometimes ucs-4 (Solaris,
+               Linux), sometimes it is not based on Unicode at all
+               (HP/UX, AS/400, system 390).  </p>
+
+        <p>Some earlier releases of &XercesCName; defined XMLCh to be the
+           same type as wchar_t on most platforms, with the goal of making
+           it possible to pass XMLCh strings to library or system functions
+           that were expecting wchar_t parameters.  This approach has
+           been abandoned because of</p>
+
+           <ul>
+              <li>
+                 Portability problems with any code that assumes that
+                 the types of XMLCh and wchar_t are compatible
+              </li>
+
+              <li>Excessive memory usage, especially in the DOM, on
+                  platforms with 32 bit wchar_t.
+              </li>
+
+              <li>utf-16 encoded XMLCh is not always compatible with
+                  ucs-4 encoded wchar_t on Solaris and Linux.  The
+                  problem occurs with Unicode characters with values
+                  greater than 64k; in ucs-4 the value is stored as
+                  a single 32 bit quantity.  With utf-16, the value
+                  will be stored as a "surrogate pair" of two 16 bit
+                  values.  Even with XMLCh equated to wchar_t, xerces will
+                  still create the utf-16 encoded surrogate pairs, which
+                  are illegal in ucs-4 encoded wchar_t strings.
+               </li>
+           </ul>
+    </s2>
+
+    <anchor name="HelpInfo"/>
+    <s2 title="Where can I look for more help?">
+        <p>If you have read this page, followed the instructions, and
+        still cannot resolve your problem(s), there is more help. You
+        can find out if others have
+        solved this same problem before you, by checking the
+        <jump href="mailing-lists.html">&XercesCName; mailing list archives</jump> and
+	<jump href="&JiraURL;">&XercesCName; bug database</jump>.</p>
+    </s2>
+
+</s1>

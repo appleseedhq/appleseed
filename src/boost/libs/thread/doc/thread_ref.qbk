@@ -1,0 +1,1064 @@
+[/
+  (C) Copyright 2007-8 Anthony Williams.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt).
+]
+
+[section:thread_management Thread Management]
+
+[heading Synopsis]
+
+The __thread__ class is responsible for launching and managing threads. Each __thread__ object represents a single thread of execution,
+or __not_a_thread__, and at most one __thread__ object represents a given thread of execution: objects of type __thread__ are not
+copyable.
+
+Objects of type __thread__ are movable, however, so they can be stored in move-aware containers, and returned from functions. This
+allows the details of thread creation to be wrapped in a function.
+
+    boost::thread make_thread();
+
+    void f()
+    {
+        boost::thread some_thread=make_thread();
+        some_thread.join();
+    }
+
+[Note: On compilers that support rvalue references, __thread__ provides a proper move constructor and move-assignment operator, and
+therefore meets the C++0x ['MoveConstructible] and ['MoveAssignable] concepts. With such compilers, __thread__ can therefore be used
+with containers that support those concepts.
+
+For other compilers, move support is provided with a move emulation layer, so containers must explicitly detect that move emulation
+layer. See <boost/thread/detail/move.hpp> for details.]
+
+[heading Launching threads]
+
+A new thread is launched by passing an object of a callable type that can be invoked with no parameters to the constructor. The
+object is then copied into internal storage, and invoked on the newly-created thread of execution. If the object must not (or
+cannot) be copied, then `boost::ref` can be used to pass in a reference to the function object. In this case, the user of
+__boost_thread__ must ensure that the referred-to object outlives the newly-created thread of execution.
+
+    struct callable
+    {
+        void operator()();
+    };
+
+    boost::thread copies_are_safe()
+    {
+        callable x;
+        return boost::thread(x);
+    } // x is destroyed, but the newly-created thread has a copy, so this is OK
+
+    boost::thread oops()
+    {
+        callable x;
+        return boost::thread(boost::ref(x));
+    } // x is destroyed, but the newly-created thread still has a reference
+      // this leads to undefined behaviour
+
+If you wish to construct an instance of __thread__ with a function or callable object that requires arguments to be supplied,
+this can be done by passing additional arguments to the __thread__ constructor:
+
+    void find_the_question(int the_answer);
+
+    boost::thread deep_thought_2(find_the_question,42);
+
+The arguments are ['copied] into the internal thread structure: if a reference is required, use `boost::ref`, just as for references
+to callable functions.
+
+There is an unspecified limit on the number of additional arguments that can be passed.
+
+[heading Exceptions in thread functions]
+
+If the function or callable object passed to the __thread__ constructor propagates an exception when invoked that is not of type
+__thread_interrupted__, `std::terminate()` is called. 
+
+[heading Joining and detaching]
+
+When the __thread__ object that represents a thread of execution is destroyed the thread becomes ['detached]. Once a thread is
+detached, it will continue executing until the invocation of the function or callable object supplied on construction has completed,
+or the program is terminated. A thread can also be detached by explicitly invoking the __detach__ member function on the __thread__
+object. In this case, the __thread__ object ceases to represent the now-detached thread, and instead represents __not_a_thread__.
+
+In order to wait for a thread of execution to finish, the __join__ or __timed_join__ member functions of the __thread__ object must be
+used. __join__ will block the calling thread until the thread represented by the __thread__ object has completed. If the thread of
+execution represented by the __thread__ object has already completed, or the __thread__ object represents __not_a_thread__, then __join__
+returns immediately. __timed_join__ is similar, except that a call to __timed_join__ will also return if the thread being waited for
+does not complete when the specified time has elapsed.
+
+[heading Interruption]
+
+A running thread can be ['interrupted] by invoking the __interrupt__ member function of the corresponding __thread__ object. When the
+interrupted thread next executes one of the specified __interruption_points__ (or if it is currently __blocked__ whilst executing one)
+with interruption enabled, then a __thread_interrupted__ exception will be thrown in the interrupted thread. If not caught,
+this will cause the execution of the interrupted thread to terminate. As with any other exception, the stack will be unwound, and
+destructors for objects of automatic storage duration will be executed.
+
+If a thread wishes to avoid being interrupted, it can create an instance of __disable_interruption__. Objects of this class disable
+interruption for the thread that created them on construction, and restore the interruption state to whatever it was before on
+destruction:
+
+    void f()
+    {
+        // interruption enabled here
+        {
+            boost::this_thread::disable_interruption di;
+            // interruption disabled
+            {
+                boost::this_thread::disable_interruption di2;
+                // interruption still disabled
+            } // di2 destroyed, interruption state restored
+            // interruption still disabled
+        } // di destroyed, interruption state restored
+        // interruption now enabled
+    }
+
+The effects of an instance of __disable_interruption__ can be temporarily reversed by constructing an instance of
+__restore_interruption__, passing in the __disable_interruption__ object in question. This will
+restore the interruption state to what it was when the __disable_interruption__ object was constructed, and then
+disable interruption again when the __restore_interruption__ object is destroyed.
+
+    void g()
+    {
+        // interruption enabled here
+        {
+            boost::this_thread::disable_interruption di;
+            // interruption disabled
+            {
+                boost::this_thread::restore_interruption ri(di);
+                // interruption now enabled
+            } // ri destroyed, interruption disable again
+        } // di destroyed, interruption state restored
+        // interruption now enabled
+    }
+
+At any point, the interruption state for the current thread can be queried by calling __interruption_enabled__.
+
+[#interruption_points]
+
+[heading Predefined Interruption Points]
+
+The following functions are ['interruption points], which will throw __thread_interrupted__ if interruption is enabled for the
+current thread, and interruption is requested for the current thread:
+
+* [join_link `boost::thread::join()`]
+* [timed_join_link `boost::thread::timed_join()`]
+* [cond_wait_link `boost::condition_variable::wait()`]
+* [cond_timed_wait_link `boost::condition_variable::timed_wait()`]
+* [cond_any_wait_link `boost::condition_variable_any::wait()`]
+* [cond_any_timed_wait_link `boost::condition_variable_any::timed_wait()`]
+* [link thread.thread_management.thread.sleep `boost::thread::sleep()`]
+* __sleep__
+* __interruption_point__
+
+[heading Thread IDs]
+
+Objects of class __thread_id__ can be used to identify threads. Each running thread of execution has a unique ID obtainable
+from the corresponding __thread__ by calling the `get_id()` member function, or by calling `boost::this_thread::get_id()` from
+within the thread. Objects of class __thread_id__ can be copied, and used as keys in associative containers: the full range of
+comparison operators is provided. Thread IDs can also be written to an output stream using the stream insertion operator, though the
+output format is unspecified.
+
+Each instance of __thread_id__ either refers to some thread, or __not_a_thread__. Instances that refer to __not_a_thread__
+compare equal to each other, but not equal to any instances that refer to an actual thread of execution. The comparison operators on
+__thread_id__ yield a total order for every non-equal thread ID.
+
+[section:thread Class `thread`]
+
+    #include <boost/thread/thread.hpp>
+
+    class thread
+    {
+    public:
+        thread();
+        ~thread();
+
+        template <class F>
+        explicit thread(F f);
+
+        template <class F,class A1,class A2,...>
+        thread(F f,A1 a1,A2 a2,...);
+
+        template <class F>
+        thread(detail::thread_move_t<F> f);
+
+        // move support
+        thread(detail::thread_move_t<thread> x);
+        thread& operator=(detail::thread_move_t<thread> x);
+        operator detail::thread_move_t<thread>();
+        detail::thread_move_t<thread> move();
+
+        void swap(thread& x);
+
+        class id;
+        id get_id() const;
+
+        bool joinable() const;
+        void join();
+        bool timed_join(const system_time& wait_until);
+
+        template<typename TimeDuration>
+        bool timed_join(TimeDuration const& rel_time);
+
+        void detach();
+
+        static unsigned hardware_concurrency();
+
+        typedef platform-specific-type native_handle_type;
+        native_handle_type native_handle();
+
+        void interrupt();
+        bool interruption_requested() const;
+
+        // backwards compatibility
+        bool operator==(const thread& other) const;
+        bool operator!=(const thread& other) const;
+
+        static void yield();
+        static void sleep(const system_time& xt);
+    };
+
+    void swap(thread& lhs,thread& rhs);
+
+[section:default_constructor Default Constructor]
+
+    thread();
+
+[variablelist
+
+[[Effects:] [Constructs a __thread__ instance that refers to __not_a_thread__.]]
+
+[[Throws:] [Nothing]]
+
+]
+
+[endsect]
+
+[section:callable_constructor Thread Constructor]
+
+    template<typename Callable>
+    thread(Callable func);
+
+[variablelist
+
+[[Preconditions:] [`Callable` must by copyable.]]
+
+[[Effects:] [`func` is copied into storage managed internally by the thread library, and that copy is invoked on a newly-created
+thread of execution. If this invocation results in an exception being propagated into the internals of the thread library that is
+not of type __thread_interrupted__, then `std::terminate()` will be called.]]
+
+[[Postconditions:] [`*this` refers to the newly created thread of execution.]]
+
+[[Throws:] [__thread_resource_error__ if an error occurs.]]
+
+]
+
+[endsect]
+
+[section:multiple_argument_constructor Thread Constructor with arguments]
+
+    template <class F,class A1,class A2,...>
+    thread(F f,A1 a1,A2 a2,...);
+
+[variablelist
+
+[[Preconditions:] [`F` and each `A`n must by copyable or movable.]]
+
+[[Effects:] [As if [link
+thread.thread_management.thread.callable_constructor
+`thread(boost::bind(f,a1,a2,...))`. Consequently, `f` and each `a`n
+are copied into internal storage for access by the new thread.]]]
+
+[[Postconditions:] [`*this` refers to the newly created thread of execution.]]
+
+[[Throws:] [__thread_resource_error__ if an error occurs.]]
+
+[[Note:] [Currently up to nine additional arguments `a1` to `a9` can be specified in addition to the function `f`.]]
+
+]
+
+[endsect]
+
+[section:destructor Thread Destructor]
+
+    ~thread();
+
+[variablelist
+
+[[Effects:] [If `*this` has an associated thread of execution, calls __detach__. Destroys `*this`.]]
+
+[[Throws:] [Nothing.]]
+
+]
+
+[endsect]
+
+[section:joinable Member function `joinable()`]
+
+    bool joinable() const;
+
+[variablelist
+
+[[Returns:] [`true` if `*this` refers to a thread of execution, `false` otherwise.]]
+
+[[Throws:] [Nothing]]
+
+]
+
+
+[endsect]
+
+[section:join Member function `join()`]
+
+    void join();
+
+[variablelist
+
+[[Preconditions:] [`this->get_id()!=boost::this_thread::get_id()`]]
+
+[[Effects:] [If `*this` refers to a thread of execution, waits for that thread of execution to complete.]]
+
+[[Postconditions:] [If `*this` refers to a thread of execution on entry, that thread of execution has completed. `*this` no longer refers to any thread of execution.]]
+
+[[Throws:] [__thread_interrupted__ if the current thread of execution is interrupted.]]
+
+[[Notes:] [`join()` is one of the predefined __interruption_points__.]]
+
+]
+
+[endsect]
+
+[section:timed_join Member function `timed_join()`]
+
+    bool timed_join(const system_time& wait_until);
+
+    template<typename TimeDuration>
+    bool timed_join(TimeDuration const& rel_time);
+
+[variablelist
+
+[[Preconditions:] [`this->get_id()!=boost::this_thread::get_id()`]]
+
+[[Effects:] [If `*this` refers to a thread of execution, waits for that thread of execution to complete, the time `wait_until` has
+been reach or the specified duration `rel_time` has elapsed. If `*this` doesn't refer to a thread of execution, returns immediately.]]
+
+[[Returns:] [`true` if `*this` refers to a thread of execution on entry, and that thread of execution has completed before the call
+times out, `false` otherwise.]]
+
+[[Postconditions:] [If `*this` refers to a thread of execution on entry, and `timed_join` returns `true`, that thread of execution
+has completed, and `*this` no longer refers to any thread of execution. If this call to `timed_join` returns `false`, `*this` is
+unchanged.]]
+
+[[Throws:] [__thread_interrupted__ if the current thread of execution is interrupted.]]
+
+[[Notes:] [`timed_join()` is one of the predefined __interruption_points__.]]
+
+]
+
+[endsect]
+
+[section:detach Member function `detach()`]
+
+    void detach();
+
+[variablelist
+
+[[Effects:] [If `*this` refers to a thread of execution, that thread of execution becomes detached, and no longer has an associated __thread__ object.]]
+
+[[Postconditions:] [`*this` no longer refers to any thread of execution.]]
+
+[[Throws:] [Nothing]]
+
+]
+
+[endsect]
+
+
+[section:get_id Member function `get_id()`]
+
+    thread::id get_id() const;
+
+[variablelist
+
+[[Returns:] [If `*this` refers to a thread of execution, an instance of __thread_id__ that represents that thread. Otherwise returns
+a default-constructed __thread_id__.]]
+
+[[Throws:] [Nothing]]
+
+]
+
+[endsect]
+
+[section:interrupt Member function `interrupt()`]
+
+    void interrupt();
+
+[variablelist
+
+[[Effects:] [If `*this` refers to a thread of execution, request that the thread will be interrupted the next time it enters one of
+the predefined __interruption_points__ with interruption enabled, or if it is currently __blocked__ in a call to one of the
+predefined __interruption_points__ with interruption enabled .]]
+
+[[Throws:] [Nothing]]
+
+]
+        
+
+[endsect]
+
+[section:hardware_concurrency Static member function `hardware_concurrency()`]
+
+    unsigned hardware_concurrency();
+
+[variablelist
+
+[[Returns:] [The number of hardware threads available on the current system (e.g. number of CPUs or cores or hyperthreading units),
+or 0 if this information is not available.]]
+
+[[Throws:] [Nothing]]
+
+]
+
+[endsect]
+
+[section:nativehandle Member function `native_handle()`]
+
+    typedef platform-specific-type native_handle_type;
+    native_handle_type native_handle();
+
+[variablelist
+
+[[Effects:] [Returns an instance of `native_handle_type` that can be used with platform-specific APIs to manipulate the underlying
+implementation. If no such instance exists, `native_handle()` and `native_handle_type` are not present.]]
+
+[[Throws:] [Nothing.]]
+
+]
+
+[endsect]
+
+[section:equals `operator==`]
+
+    bool operator==(const thread& other) const;
+
+[variablelist
+
+[[Returns:] [`get_id()==other.get_id()`]]
+
+]
+
+[endsect]
+
+[section:not_equals `operator!=`]
+
+    bool operator!=(const thread& other) const;
+
+[variablelist
+
+[[Returns:] [`get_id()!=other.get_id()`]]
+
+]
+
+[endsect]
+
+[section:sleep Static member function `sleep()`]
+
+    void sleep(system_time const& abs_time);
+
+[variablelist
+
+[[Effects:] [Suspends the current thread until the specified time has been reached.]]
+
+[[Throws:] [__thread_interrupted__ if the current thread of execution is interrupted.]]
+
+[[Notes:] [`sleep()` is one of the predefined __interruption_points__.]]
+
+]
+
+[endsect]
+
+[section:yield Static member function `yield()`]
+
+    void yield();
+
+[variablelist
+
+[[Effects:] [See [link thread.thread_management.this_thread.yield `boost::this_thread::yield()`].]]
+
+]
+
+[endsect]
+
+[section:swap Member function `swap()`]
+
+    void swap(thread& other);
+
+[variablelist
+
+[[Effects:] [Exchanges the threads of execution associated with `*this` and `other`, so `*this` is associated with the thread of
+execution associated with `other` prior to the call, and vice-versa.]]
+
+[[Postconditions:] [`this->get_id()` returns the same value as `other.get_id()` prior to the call. `other.get_id()` returns the same
+value as `this->get_id()` prior to the call.]]
+
+[[Throws:] [Nothing.]]
+
+]
+
+[endsect]
+
+[section:non_member_swap Non-member function `swap()`]
+
+    #include <boost/thread/thread.hpp>
+
+    void swap(thread& lhs,thread& rhs);
+
+[variablelist
+
+[[Effects:] [[link thread.thread_management.thread.swap `lhs.swap(rhs)`].]]
+
+]
+
+[endsect]
+
+
+[section:id Class `boost::thread::id`]
+
+    #include <boost/thread/thread.hpp>
+
+    class thread::id
+    {
+    public:
+        id();
+
+        bool operator==(const id& y) const;
+        bool operator!=(const id& y) const;
+        bool operator<(const id& y) const;
+        bool operator>(const id& y) const;
+        bool operator<=(const id& y) const;
+        bool operator>=(const id& y) const;
+
+        template<class charT, class traits>
+        friend std::basic_ostream<charT, traits>& 
+        operator<<(std::basic_ostream<charT, traits>& os, const id& x);
+    };
+
+[section:constructor Default constructor]
+
+    id();
+
+[variablelist
+
+[[Effects:] [Constructs a __thread_id__ instance that represents __not_a_thread__.]]
+
+[[Throws:] [Nothing]]
+
+]
+
+[endsect]
+
+[section:is_equal `operator==`]
+
+    bool operator==(const id& y) const;
+
+[variablelist
+
+[[Returns:] [`true` if `*this` and `y` both represent the same thread of execution, or both represent __not_a_thread__, `false`
+otherwise.]]
+
+[[Throws:] [Nothing]]
+
+]
+
+[endsect]
+
+[section:not_equal `operator!=`]
+
+    bool operator!=(const id& y) const;
+
+[variablelist
+
+[[Returns:] [`true` if `*this` and `y` represent different threads of execution, or one represents a thread of execution, and
+the other represent __not_a_thread__, `false` otherwise.]]
+
+[[Throws:] [Nothing]]
+
+]
+
+[endsect]
+
+[section:less_than `operator<`]
+
+    bool operator<(const id& y) const;
+
+[variablelist
+
+[[Returns:] [`true` if `*this!=y` is `true` and the implementation-defined total order of __thread_id__ values places `*this` before
+`y`, `false` otherwise.]]
+
+[[Throws:] [Nothing]]
+
+[[Note:] [A __thread_id__ instance representing __not_a_thread__ will always compare less than an instance representing a thread of
+execution.]]
+
+]
+
+[endsect]
+
+
+[section:greater_than `operator>`]
+
+    bool operator>(const id& y) const;
+
+[variablelist
+
+[[Returns:] [`y<*this`]]
+
+[[Throws:] [Nothing]]
+
+]
+
+[endsect]
+
+[section:less_than_or_equal `operator>=`]
+
+    bool operator<=(const id& y) const;
+
+[variablelist
+
+[[Returns:] [`!(y<*this)`]]
+
+[[Throws:] [Nothing]]
+
+]
+
+[endsect]
+
+[section:greater_than_or_equal `operator>=`]
+
+    bool operator>=(const id& y) const;
+
+[variablelist
+
+[[Returns:] [`!(*this<y)`]]
+
+[[Throws:] [Nothing]]
+
+]
+
+[endsect]
+
+[section:stream_out Friend `operator<<`]
+
+    template<class charT, class traits>
+    friend std::basic_ostream<charT, traits>& 
+    operator<<(std::basic_ostream<charT, traits>& os, const id& x);
+
+[variablelist
+
+[[Effects:] [Writes a representation of the __thread_id__ instance `x` to the stream `os`, such that the representation of two
+instances of __thread_id__ `a` and `b` is the same if `a==b`, and different if `a!=b`.]]
+
+[[Returns:] [`os`]]
+
+]
+
+[endsect]
+
+
+[endsect]
+
+[endsect]
+
+[section:this_thread Namespace `this_thread`]
+
+[section:get_id Non-member function `get_id()`]
+
+    #include <boost/thread/thread.hpp>
+
+    namespace this_thread
+    {
+        thread::id get_id();
+    }
+
+[variablelist
+
+[[Returns:] [An instance of __thread_id__ that represents that currently executing thread.]]
+
+[[Throws:] [__thread_resource_error__ if an error occurs.]]
+
+]
+
+[endsect]
+
+[section:interruption_point Non-member function `interruption_point()`]
+
+    #include <boost/thread/thread.hpp>
+
+    namespace this_thread
+    {
+        void interruption_point();
+    }
+
+[variablelist
+
+[[Effects:] [Check to see if the current thread has been interrupted.]]
+
+[[Throws:] [__thread_interrupted__ if __interruption_enabled__ and __interruption_requested__ both return `true`.]]
+
+]
+
+[endsect]
+
+[section:interruption_requested Non-member function `interruption_requested()`]
+
+    #include <boost/thread/thread.hpp>
+
+    namespace this_thread
+    {
+        bool interruption_requested();
+    }
+
+[variablelist
+
+[[Returns:] [`true` if interruption has been requested for the current thread, `false` otherwise.]]
+
+[[Throws:] [Nothing.]]
+
+]
+
+[endsect]
+
+[section:interruption_enabled Non-member function `interruption_enabled()`]
+
+    #include <boost/thread/thread.hpp>
+
+    namespace this_thread
+    {
+        bool interruption_enabled();
+    }
+
+[variablelist
+
+[[Returns:] [`true` if interruption has been enabled for the current thread, `false` otherwise.]]
+
+[[Throws:] [Nothing.]]
+
+]
+
+[endsect]
+
+[section:sleep Non-member function `sleep()`]
+
+    #include <boost/thread/thread.hpp>
+
+    namespace this_thread
+    {
+        template<typename TimeDuration>
+        void sleep(TimeDuration const& rel_time);
+    }
+
+[variablelist
+
+[[Effects:] [Suspends the current thread until the specified time has elapsed.]]
+
+[[Throws:] [__thread_interrupted__ if the current thread of execution is interrupted.]]
+
+[[Notes:] [`sleep()` is one of the predefined __interruption_points__.]]
+
+]
+
+[endsect]
+
+[section:yield Non-member function `yield()`]
+
+    #include <boost/thread/thread.hpp>
+
+    namespace this_thread
+    {
+        void yield();
+    }
+
+[variablelist
+
+[[Effects:] [Gives up the remainder of the current thread's time slice, to allow other threads to run.]]
+
+[[Throws:] [Nothing.]]
+
+]
+
+[endsect]
+
+[section:disable_interruption Class `disable_interruption`]
+
+    #include <boost/thread/thread.hpp>
+
+    namespace this_thread
+    {
+        class disable_interruption
+        {
+        public:
+            disable_interruption();
+            ~disable_interruption();
+        };
+    }
+
+`boost::this_thread::disable_interruption` disables interruption for the current thread on construction, and restores the prior
+interruption state on destruction. Instances of `disable_interruption` cannot be copied or moved.
+
+[section:constructor Constructor]
+
+    disable_interruption();
+
+[variablelist
+
+[[Effects:] [Stores the current state of __interruption_enabled__ and disables interruption for the current thread.]]
+
+[[Postconditions:] [__interruption_enabled__ returns `false` for the current thread.]]
+
+[[Throws:] [Nothing.]]
+
+]
+
+[endsect]
+
+[section:destructor Destructor]
+
+    ~disable_interruption();
+
+[variablelist
+
+[[Preconditions:] [Must be called from the same thread from which `*this` was constructed.]]
+
+[[Effects:] [Restores the current state of __interruption_enabled__ for the current thread to that prior to the construction of `*this`.]]
+
+[[Postconditions:] [__interruption_enabled__ for the current thread returns the value stored in the constructor of `*this`.]]
+
+[[Throws:] [Nothing.]]
+
+]
+
+[endsect]
+
+[endsect]
+
+[section:restore_interruption Class `restore_interruption`]
+
+    #include <boost/thread/thread.hpp>
+
+    namespace this_thread
+    {
+        class restore_interruption
+        {
+        public:
+            explicit restore_interruption(disable_interruption& disabler);
+            ~restore_interruption();
+        };
+    }
+
+On construction of an instance of `boost::this_thread::restore_interruption`, the interruption state for the current thread is
+restored to the interruption state stored by the constructor of the supplied instance of __disable_interruption__. When the instance
+is destroyed, interruption is again disabled. Instances of `restore_interruption` cannot be copied or moved.
+
+[section:constructor Constructor]
+
+    explicit restore_interruption(disable_interruption& disabler);
+
+[variablelist
+
+[[Preconditions:] [Must be called from the same thread from which `disabler` was constructed.]]
+
+[[Effects:] [Restores the current state of __interruption_enabled__ for the current thread to that prior to the construction of `disabler`.]]
+
+[[Postconditions:] [__interruption_enabled__ for the current thread returns the value stored in the constructor of `disabler`.]]
+
+[[Throws:] [Nothing.]]
+
+]
+
+[endsect]
+
+[section:destructor Destructor]
+
+    ~restore_interruption();
+
+[variablelist
+
+[[Preconditions:] [Must be called from the same thread from which `*this` was constructed.]]
+
+[[Effects:] [Disables interruption for the current thread.]]
+
+[[Postconditions:] [__interruption_enabled__ for the current thread returns `false`.]]
+
+[[Throws:] [Nothing.]]
+
+]
+
+[endsect]
+
+[endsect]
+
+[section:atthreadexit Non-member function template `at_thread_exit()`]
+
+    #include <boost/thread/thread.hpp>
+
+    template<typename Callable>
+    void at_thread_exit(Callable func);
+
+[variablelist
+
+[[Effects:] [A copy of `func` is placed in
+thread-specific storage. This copy is invoked when the current thread
+exits (even if the thread has been interrupted).]]
+
+[[Postconditions:] [A copy of `func` has been saved for invocation on thread exit.]]
+
+[[Throws:] [`std::bad_alloc` if memory cannot be allocated for the copy of the function, __thread_resource_error__ if any other
+error occurs within the thread library. Any exception thrown whilst copying `func` into internal storage.]]
+
+]
+
+[endsect]
+
+[endsect]
+
+[section:threadgroup Class `thread_group`]
+
+    #include <boost/thread/thread.hpp>
+
+    class thread_group:
+        private noncopyable
+    {
+    public:
+        thread_group();
+        ~thread_group();
+
+        template<typename F>
+        thread* create_thread(F threadfunc);
+        void add_thread(thread* thrd);
+        void remove_thread(thread* thrd);
+        void join_all();
+        void interrupt_all();
+        int size() const;
+    };
+
+`thread_group` provides for a collection of threads that are related in some fashion. New threads can be added to the group with
+`add_thread` and `create_thread` member functions. `thread_group` is not copyable or movable.
+
+[section:constructor Constructor]
+
+    thread_group();
+
+[variablelist
+
+[[Effects:] [Create a new thread group with no threads.]]
+
+]
+
+[endsect]
+
+[section:destructor Destructor]
+
+    ~thread_group();
+
+[variablelist
+
+[[Effects:] [Destroy `*this` and `delete` all __thread__ objects in the group.]]
+
+]
+
+[endsect]
+
+[section:create_thread Member function `create_thread()`]
+
+    template<typename F>
+    thread* create_thread(F threadfunc);
+
+[variablelist
+
+[[Effects:] [Create a new __thread__ object as-if by `new thread(threadfunc)` and add it to the group.]]
+
+[[Postcondition:] [`this->size()` is increased by one, the new thread is running.]]
+
+[[Returns:] [A pointer to the new __thread__ object.]]
+
+]
+
+[endsect]
+
+[section:add_thread Member function `add_thread()`]
+
+    void add_thread(thread* thrd);
+
+[variablelist
+
+[[Precondition:] [The expression `delete thrd` is well-formed and will not result in undefined behaviour.]]
+
+[[Effects:] [Take ownership of the __thread__ object pointed to by `thrd` and add it to the group.]]
+
+[[Postcondition:] [`this->size()` is increased by one.]]
+
+]
+
+[endsect]
+
+[section:remove_thread Member function `remove_thread()`]
+
+    void remove_thread(thread* thrd);
+
+[variablelist
+
+[[Effects:] [If `thrd` is a member of the group, remove it without calling `delete`.]]
+
+[[Postcondition:] [If `thrd` was a member of the group, `this->size()` is decreased by one.]]
+
+]
+
+[endsect]
+
+[section:join_all Member function `join_all()`]
+
+    void join_all();
+
+[variablelist
+
+[[Effects:] [Call `join()` on each __thread__ object in the group.]]
+
+[[Postcondition:] [Every thread in the group has terminated.]]
+
+[[Note:] [Since __join__ is one of the predefined __interruption_points__, `join_all()` is also an interruption point.]]
+
+]
+
+[endsect]
+
+[section:interrupt_all Member function `interrupt_all()`]
+
+    void interrupt_all();
+
+[variablelist
+
+[[Effects:] [Call `interrupt()` on each __thread__ object in the group.]]
+
+]
+
+[endsect]
+
+[section:size Member function `size()`]
+
+    int size();
+
+[variablelist
+
+[[Returns:] [The number of threads in the group.]]
+
+[[Throws:] [Nothing.]]
+
+]
+
+[endsect]
+
+
+[endsect]
+
+[endsect]

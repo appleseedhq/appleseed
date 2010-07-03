@@ -1,0 +1,149 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+# 
+#      http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+#
+#
+# $Id: Makefile.in 568078 2007-08-21 11:43:25Z amassari $
+#
+
+SAXPrint_DIR=SAXPrint
+SAX2Print_DIR=SAX2Print
+SAXCount_DIR=SAXCount
+SAX2Count_DIR=SAX2Count
+DOMPrint_DIR=DOMPrint
+DOMCount_DIR=DOMCount
+Redirect_DIR=Redirect
+MemParse_DIR=MemParse
+PParse_DIR=PParse
+StdInParse_DIR=StdInParse
+EnumVal_DIR=EnumVal
+SEnumVal_DIR=SEnumVal
+CreateDOMDocument_DIR=CreateDOMDocument
+SCMPrint_DIR=SCMPrint
+PSVIWriter_DIR=PSVIWriter
+
+LIB_DIR=${XERCESCROOT}/lib
+
+PLATFORM = @platform@
+COMPILER = @compiler@
+CXXVER = @cxxver@
+GCC = @GCC@
+GXX = @GXX@
+CXXFLAGS = @cxxflags@
+CFLAGS = @cflags@
+PREFIX = @prefix@
+THREADS = @threads@
+EXTRA_LIBS = @extra_libs@
+BITSTOBUILD = @bitstobuild@
+
+all::	saxprint sax2print saxcount sax2count domprint domcount redirect memparse pparse stdinparse enumval senumval createdomdocument psviwriter scmprint
+
+saxprint::
+	@echo Building "SAXPrint"
+	$(MAKE) -C $(SAXPrint_DIR) $(MAKE_FLAGS)
+
+sax2print::
+	@echo Building "SAX2Print"
+	$(MAKE) -C $(SAX2Print_DIR) $(MAKE_FLAGS)
+
+saxcount::
+	@echo Building "SAXCount"
+	$(MAKE) -C $(SAXCount_DIR) $(MAKE_FLAGS)
+
+sax2count::
+	@echo Building "SAX2Count"
+	$(MAKE) -C $(SAX2Count_DIR) $(MAKE_FLAGS)
+
+domprint::
+	@echo Building "DOMPrint"
+	$(MAKE) -C $(DOMPrint_DIR) $(MAKE_FLAGS)
+
+domcount::
+	@echo Building "DOMCount"
+	$(MAKE) -C $(DOMCount_DIR) $(MAKE_FLAGS)
+
+memparse::
+	@echo Building "MemParse"
+	$(MAKE) -C $(MemParse_DIR) $(MAKE_FLAGS)
+
+redirect::
+	@echo Building "Redirect"
+	$(MAKE) -C $(Redirect_DIR) $(MAKE_FLAGS)
+
+pparse::
+	@echo Building "PParse"
+	$(MAKE) -C $(PParse_DIR) $(MAKE_FLAGS)
+
+stdinparse::
+	@echo Building "StdInParse"
+	$(MAKE) -C $(StdInParse_DIR) $(MAKE_FLAGS)
+
+enumval::
+	@echo Building "EnumVal"
+	$(MAKE) -C $(EnumVal_DIR) $(MAKE_FLAGS)
+
+senumval::
+	@echo Building "SEnumVal"
+	$(MAKE) -C $(SEnumVal_DIR) $(MAKE_FLAGS)
+
+createdomdocument::
+	@echo Building "CreateDOMDocument"
+	$(MAKE) -C $(CreateDOMDocument_DIR) $(MAKE_FLAGS)
+
+psviwriter::
+	@echo Building "PSVIWriter"
+	$(MAKE) -C $(PSVIWriter_DIR) $(MAKE_FLAGS)
+
+scmprint::
+	@echo Building "SCMPrint"
+	$(MAKE) -C $(SCMPrint_DIR) $(MAKE_FLAGS)
+	
+clean::
+	$(MAKE) -C $(SAXPrint_DIR) $@
+	$(MAKE) -C $(SAX2Print_DIR) $@
+	$(MAKE) -C $(SAXCount_DIR) $@
+	$(MAKE) -C $(SAX2Count_DIR) $@
+	$(MAKE) -C $(DOMPrint_DIR) $@
+	$(MAKE) -C $(DOMCount_DIR) $@
+	$(MAKE) -C $(MemParse_DIR) $@
+	$(MAKE) -C $(Redirect_DIR) $@
+	$(MAKE) -C $(PParse_DIR) $@
+	$(MAKE) -C $(StdInParse_DIR) $@
+	$(MAKE) -C $(EnumVal_DIR) $@
+	$(MAKE) -C $(SEnumVal_DIR) $@
+	$(MAKE) -C $(CreateDOMDocument_DIR) $@
+	$(MAKE) -C $(PSVIWriter_DIR) $@
+	$(MAKE) -C $(SCMPrint_DIR) $@
+	
+distclean::
+	$(MAKE) -C $(SAXPrint_DIR) $@
+	$(MAKE) -C $(SAX2Print_DIR) $@
+	$(MAKE) -C $(SAXCount_DIR) $@
+	$(MAKE) -C $(SAX2Count_DIR) $@
+	$(MAKE) -C $(DOMPrint_DIR) $@
+	$(MAKE) -C $(DOMCount_DIR) $@
+	$(MAKE) -C $(MemParse_DIR) $@
+	$(MAKE) -C $(Redirect_DIR) $@
+	$(MAKE) -C $(PParse_DIR) $@
+	$(MAKE) -C $(StdInParse_DIR) $@
+	$(MAKE) -C $(EnumVal_DIR) $@
+	$(MAKE) -C $(SEnumVal_DIR) $@
+	$(MAKE) -C $(CreateDOMDocument_DIR) $@
+	$(MAKE) -C $(PSVIWriter_DIR) $@
+	$(MAKE) -C $(SCMPrint_DIR) $@	
+	rm -f Makefile config.cache config.log config.status
+	rm -f *~ core
+

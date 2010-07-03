@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+    <parameter name="message_coloring" value="true" />
+    <parameters name="generic_frame_renderer">
+        <parameter name="rendering_threads" value="1" />
+    </parameters>
+    <parameters name="progressive_frame_renderer">
+        <parameter name="rendering_threads" value="1" />
+    </parameters>
+</settings>

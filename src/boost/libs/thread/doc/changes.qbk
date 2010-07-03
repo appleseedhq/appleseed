@@ -1,0 +1,83 @@
+[/
+  (C) Copyright 2007-8 Anthony Williams.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt).
+]
+
+[section:changes Changes since boost 1.35]
+
+The 1.36.0 release of Boost includes a few new features in the thread library:
+
+* New generic __lock_multiple_ref__ and __try_lock_multiple_ref__ functions for locking multiple mutexes at once.
+
+* Rvalue reference support for move semantics where the compilers supports it.
+
+* A few bugs fixed and missing functions added (including the serious win32 condition variable bug).
+
+* `scoped_try_lock` types are now backwards-compatible with Boost 1.34.0 and previous releases.
+
+* Support for passing function arguments to the thread function by supplying additional arguments to the __thread__ constructor.
+
+* Backwards-compatibility overloads added for `timed_lock` and `timed_wait` functions to allow use of `xtime` for timeouts.
+
+[heading Changes since boost 1.34]
+
+Almost every line of code in __boost_thread__ has been changed since the 1.34 release of boost. However, most of the interface
+changes have been extensions, so the new code is largely backwards-compatible with the old code. The new features and breaking
+changes are described below.
+
+[heading New Features]
+
+* Instances of __thread__ and of the various lock types are now movable.
+
+* Threads can be interrupted at __interruption_points__.
+
+* Condition variables can now be used with any type that implements the __lockable_concept__, through the use of
+`boost::condition_variable_any` (`boost::condition` is a `typedef` to `boost::condition_variable_any`, provided for backwards
+compatibility). `boost::condition_variable` is provided as an optimization, and will only work with
+`boost::unique_lock<boost::mutex>` (`boost::mutex::scoped_lock`).
+
+* Thread IDs are separated from __thread__, so a thread can obtain it's own ID (using `boost::this_thread::get_id()`), and IDs can
+be used as keys in associative containers, as they have the full set of comparison operators.
+
+* Timeouts are now implemented using the Boost DateTime library, through a typedef `boost::system_time` for absolute timeouts, and
+with support for relative timeouts in many cases. `boost::xtime` is supported for backwards compatibility only.
+
+* Locks are implemented as publicly accessible templates `boost::lock_guard`, `boost::unique_lock`, `boost::shared_lock`, and
+`boost::upgrade_lock`, which are templated on the type of the mutex. The __lockable_concept__ has been extended to include publicly
+available __lock_ref__ and __unlock_ref__ member functions, which are used by the lock types.
+
+[heading Breaking Changes]
+
+The list below should cover all changes to the public interface which break backwards compatibility.
+
+* __try_mutex__ has been removed, and the functionality subsumed into __mutex__. __try_mutex__ is left as a `typedef`,
+but is no longer a separate class.
+
+* __recursive_try_mutex__ has been removed, and the functionality subsumed into
+__recursive_mutex__. __recursive_try_mutex__ is left as a `typedef`, but is no longer a separate class.
+
+* `boost::detail::thread::lock_ops` has been removed. Code that relies on the `lock_ops` implementation detail will no longer work,
+as this has been removed, as it is no longer necessary now that mutex types now have public __lock_ref__ and __unlock_ref__ member
+functions.
+
+* `scoped_lock` constructors with a second parameter of type `bool` are no longer provided. With previous boost releases,
+``boost::mutex::scoped_lock some_lock(some_mutex,false);`` could be used to create a lock object that was associated with a mutex,
+but did not lock it on construction. This facility has now been replaced with the constructor that takes a
+`boost::defer_lock_type` as the second parameter: ``boost::mutex::scoped_lock some_lock(some_mutex,boost::defer_lock);``
+
+* The `locked()` member function of the `scoped_lock` types has been renamed to __owns_lock_ref__.
+
+* You can no longer obtain a __thread__ instance representing the current thread: a default-constructed __thread__ object is not
+associated with any thread. The only use for such a thread object was to support the comparison operators: this functionality has
+been moved to __thread_id__.
+
+* The broken `boost::read_write_mutex` has been replaced with __shared_mutex__.
+
+* __mutex__ is now never recursive. For Boost releases prior to 1.35 __mutex__ was recursive on Windows and not on POSIX platforms.
+
+* When using a __recursive_mutex__ with a call to [cond_any_wait_link `boost::condition_variable_any::wait()`], the mutex is only
+  unlocked one level, and not completely. This prior behaviour was not guaranteed and did not feature in the tests.
+
+[endsect]

@@ -1,0 +1,267 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Basics</title>
+<link rel="stylesheet" href="../../../../../../doc/html/boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.66.1">
+<link rel="start" href="../index.html" title="Chapter 1. Phoenix 2.0">
+<link rel="up" href="../index.html" title="Chapter 1. Phoenix 2.0">
+<link rel="prev" href="starter_kit.html" title="Starter Kit">
+<link rel="next" href="organization.html" title="Organization">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../../../boost.png"></td>
+<td align="center"><a href="../../../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../../libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="starter_kit.html"><img src="../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="organization.html"><img src="../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="phoenix.basics"></a><a href="basics.html" title="Basics">Basics</a></h2></div></div></div>
+<p>
+      Almost everything is a function in the Phoenix library that can be evaluated
+      as <tt class="computeroutput"><span class="identifier">f</span><span class="special">(</span><span class="identifier">a1</span><span class="special">,</span> <span class="identifier">a2</span><span class="special">,</span> <span class="special">...,</span> a<span class="emphasis"><em>n</em></span><span class="special">)</span></tt>, where <span class="emphasis"><em>n</em></span> is the function's
+      arity, or number of arguments that the function expects. Operators are also
+      functions. For example, <tt class="computeroutput"><span class="identifier">a</span> <span class="special">+</span> <span class="identifier">b</span></tt> is just
+      a function with arity == 2 (or binary). <tt class="computeroutput"><span class="identifier">a</span>
+      <span class="special">+</span> <span class="identifier">b</span></tt>
+      is the same as <tt class="computeroutput"><span class="identifier">add</span><span class="special">(</span><span class="identifier">a</span><span class="special">,</span> <span class="identifier">b</span><span class="special">)</span></tt>, <tt class="computeroutput"><span class="identifier">a</span>
+      <span class="special">+</span> <span class="identifier">b</span> <span class="special">+</span> <span class="identifier">c</span></tt> is the
+      same as <tt class="computeroutput"><span class="identifier">add</span><span class="special">(</span><span class="identifier">add</span><span class="special">(</span><span class="identifier">a</span><span class="special">,</span> <span class="identifier">b</span><span class="special">),</span>
+      <span class="identifier">c</span><span class="special">)</span></tt>.
+    </p>
+<div class="note"><table border="0" summary="Note">
+<tr>
+<td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="../../../../../../doc/html/images/note.png"></td>
+<th align="left">Note</th>
+</tr>
+<tr><td colspan="2" align="left" valign="top"><p>
+        Amusingly, functions may even return functions. We shall see what this means
+        in a short while.
+      </p></td></tr>
+</table></div>
+<a name="phoenix.basics.partial_function_application"></a><h2>
+<a name="id459690"></a>
+      <a href="basics.html#phoenix.basics.partial_function_application">Partial Function
+      Application</a>
+    </h2>
+<p>
+      Think of a function as a black box. You pass arguments and it returns something
+      back. The figure below depicts the typical scenario.
+    </p>
+<p>
+      <span class="inlinemediaobject"><img src="../images/fbox.png" alt="fbox"></span>
+    </p>
+<p>
+      A fully evaluated function is one in which all the arguments are given. All
+      functions in plain C++ are fully evaluated. When you call the <tt class="computeroutput"><span class="identifier">sin</span><span class="special">(</span><span class="identifier">x</span><span class="special">)</span></tt> function, you have to pass a number x. The
+      function will return a result in return: the sin of x. When you call the <tt class="computeroutput"><span class="identifier">add</span><span class="special">(</span><span class="identifier">x</span><span class="special">,</span> <span class="identifier">y</span><span class="special">)</span></tt>
+      function, you have to pass two numbers x and y. The function will return the
+      sum of the two numbers. The figure below is a fully evaluated <tt class="computeroutput"><span class="identifier">add</span></tt> function.
+    </p>
+<p>
+      <span class="inlinemediaobject"><img src="../images/adder.png" alt="adder"></span>
+    </p>
+<p>
+      A partially applied function, on the other hand, is one in which not all the
+      arguments are supplied. If we are able to partially apply the function <tt class="computeroutput"><span class="identifier">add</span></tt> above, we may pass only the first argument.
+      In doing so, the function does not have all the required information it needs
+      to perform its task to compute and return a result. What it returns instead
+      is another function, a lambda function --another black box. Unlike the original
+      <tt class="computeroutput"><span class="identifier">add</span></tt> function which has an arity
+      of 2, the resulting lambda function has an arity of 1. Why? because we already
+      supplied part of the input: <tt class="computeroutput"><span class="number">2</span></tt>
+    </p>
+<p>
+      <span class="inlinemediaobject"><img src="../images/add2.png" alt="add2"></span>
+    </p>
+<p>
+      Now, when we shove in a number into our lambda function, it will return 2 plus
+      whatever we pass in. The lambda function essentially remembers 1) the original
+      function, <tt class="computeroutput"><span class="identifier">add</span></tt>, and 2) the partial
+      input, 2. The figure below illustrates a case where we pass 3 to our lambda
+      function, which then returns 5:
+    </p>
+<p>
+      <span class="inlinemediaobject"><img src="../images/add2_call.png" alt="add2_call"></span>
+    </p>
+<p>
+      Obviously, partially applying the <tt class="computeroutput"><span class="identifier">add</span></tt>
+      function, as we see above, cannot be done directly in C++ where we are expected
+      to supply all the arguments that a function expects. That's where the Phoenix
+      library comes in. The library provides the facilities to do partial function
+      application.
+    </p>
+<a name="phoenix.basics.stl_and_higher_order_functions"></a><h2>
+<a name="id459960"></a>
+      <a href="basics.html#phoenix.basics.stl_and_higher_order_functions">STL and higher
+      order functions</a>
+    </h2>
+<p>
+      So, what's all the fuss? What makes partial function application so useful?
+      Recall our original example in the <a href="starter_kit.html" title="Starter Kit">previous
+      section</a>:
+    </p>
+<pre class="programlisting">
+<span class="identifier">find_if</span><span class="special">(</span><span class="identifier">c</span><span class="special">.</span><span class="identifier">begin</span><span class="special">(),</span> <span class="identifier">c</span><span class="special">.</span><span class="identifier">end</span><span class="special">(),</span> <span class="identifier">arg1</span> <span class="special">%</span> <span class="number">2</span> <span class="special">==</span> <span class="number">1</span><span class="special">)</span>
+</pre>
+<p>
+      The expression <tt class="computeroutput"><span class="identifier">arg1</span> <span class="special">%</span>
+      <span class="number">2</span> <span class="special">==</span> <span class="number">1</span></tt> evaluates to a lambda function. <tt class="computeroutput"><span class="identifier">arg1</span></tt> is a placeholder for an argument to
+      be supplied later. Hence, since there's only one unsupplied argument, the lambda
+      function has an arity 1. It just so happens that <tt class="computeroutput"><span class="identifier">find_if</span></tt>
+      supplies the unsupplied argument as it loops from <tt class="computeroutput"><span class="identifier">c</span><span class="special">.</span><span class="identifier">begin</span><span class="special">()</span></tt>
+      to <tt class="computeroutput"><span class="identifier">c</span><span class="special">.</span><span class="identifier">end</span><span class="special">()</span></tt>.
+    </p>
+<div class="note"><table border="0" summary="Note">
+<tr>
+<td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="../../../../../../doc/html/images/note.png"></td>
+<th align="left">Note</th>
+</tr>
+<tr><td colspan="2" align="left" valign="top"><p>
+        Higher order functions are functions which can take other functions as arguments,
+        and may also return functions as results. Higher order functions are functions
+        that are treated like any other objects and can be used as arguments and
+        return values from functions.
+      </p></td></tr>
+</table></div>
+<a name="phoenix.basics.lazy_evaluation"></a><h2>
+<a name="id460216"></a>
+      <a href="basics.html#phoenix.basics.lazy_evaluation">Lazy Evaluation</a>
+    </h2>
+<p>
+      In Phoenix, to put it more accurately, function evaluation has two stages:
+    </p>
+<div class="orderedlist"><ol type="1">
+<li>
+        Partial application
+      </li>
+<li>
+        Final evaluation
+      </li>
+</ol></div>
+<p>
+      The first stage is handled by a set of generator functions. These are your
+      front ends (in the client's perspective). These generators create (through
+      partial function application), higher order functions that can be passed on
+      just like any other function pointer or function object. The second stage,
+      the actual function call, can be invoked or executed anytime in the future,
+      or not at all; hence <span class="emphasis"><em>"lazy"</em></span>.
+    </p>
+<p>
+      If we look more closely, the first step involves partial function application:
+    </p>
+<pre class="programlisting">
+<span class="identifier">arg1</span> <span class="special">%</span> <span class="number">2</span> <span class="special">==</span> <span class="number">1</span>
+</pre>
+<p>
+      The second step is the actual function invocation (done inside the <tt class="computeroutput"><span class="identifier">find_if</span></tt> function. These are the back-ends
+      (often, the final invocation is never actually seen by the client). In our
+      example, the <tt class="computeroutput"><span class="identifier">find_if</span></tt>, if we
+      take a look inside, we'll see something like:
+    </p>
+<pre class="programlisting">
+<span class="keyword">template</span> <span class="special">&lt;</span><span class="keyword">class</span> <span class="identifier">InputIterator</span><span class="special">,</span> <span class="keyword">class</span> <span class="identifier">Predicate</span><span class="special">&gt;</span>
+<span class="identifier">InputIterator</span>
+<span class="identifier">find_if</span><span class="special">(</span><span class="identifier">InputIterator</span> <span class="identifier">first</span><span class="special">,</span> <span class="identifier">InputIterator</span> <span class="identifier">last</span><span class="special">,</span> <span class="identifier">Predicate</span> <span class="identifier">pred</span><span class="special">)</span>
+<span class="special">{</span>
+    <span class="keyword">while</span> <span class="special">(</span><span class="identifier">first</span> <span class="special">!=</span> <span class="identifier">last</span> <span class="special">&amp;&amp;</span> <span class="special">!</span><span class="identifier">pred</span><span class="special">(*</span><span class="identifier">first</span><span class="special">))</span>  <span class="comment">// &lt;--- The lambda function is called here
+</span>        <span class="special">++</span><span class="identifier">first</span><span class="special">;</span>                            <span class="comment">//      passing in *first
+</span>    <span class="keyword">return</span> <span class="identifier">first</span><span class="special">;</span>
+<span class="special">}</span>
+</pre>
+<p>
+      Again, typically, we, as clients, see only the first step. However, in this
+      document and in the examples and tests provided, don't be surprised to see
+      the first and second steps juxtaposed in order to illustrate the complete semantics
+      of Phoenix expressions. Examples:
+    </p>
+<pre class="programlisting">
+<span class="keyword">int</span> <span class="identifier">x</span> <span class="special">=</span> <span class="number">1</span><span class="special">;</span>
+<span class="keyword">int</span> <span class="identifier">y</span> <span class="special">=</span> <span class="number">2</span><span class="special">;</span>
+
+<span class="identifier">cout</span> <span class="special">&lt;&lt;</span> <span class="special">(</span><span class="identifier">arg1</span> <span class="special">%</span> <span class="number">2</span> <span class="special">==</span> <span class="number">1</span><span class="special">)(</span><span class="identifier">x</span><span class="special">)</span> <span class="special">&lt;&lt;</span> <span class="identifier">endl</span><span class="special">;</span> <span class="comment">// prints 1 or true
+</span><span class="identifier">cout</span> <span class="special">&lt;&lt;</span> <span class="special">(</span><span class="identifier">arg1</span> <span class="special">%</span> <span class="number">2</span> <span class="special">==</span> <span class="number">1</span><span class="special">)(</span><span class="identifier">y</span><span class="special">)</span> <span class="special">&lt;&lt;</span> <span class="identifier">endl</span><span class="special">;</span> <span class="comment">// prints 0 or false
+</span></pre>
+<a name="phoenix.basics.forwarding_function_problem"></a><h2>
+<a name="id460845"></a>
+      <a href="basics.html#phoenix.basics.forwarding_function_problem">Forwarding Function
+      Problem</a>
+    </h2>
+<p>
+      Usually, we, as clients, write the call-back functions while libraries (such
+      as STL) provide the callee (e.g. <tt class="computeroutput"><span class="identifier">find_if</span></tt>).
+      In case the role is reversed, e.g. if you have to write an STL algorithm that
+      takes in a predicate, or develop a GUI library that accepts event handlers,
+      you have to be aware of a little known problem in C++ called the "<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2002/n1385.htm" target="_top">Forwarding
+      Function Problem</a>".
+    </p>
+<p>
+      Look again at the code above:
+    </p>
+<pre class="programlisting">
+<span class="special">(</span><span class="identifier">arg1</span> <span class="special">%</span> <span class="number">2</span> <span class="special">==</span> <span class="number">1</span><span class="special">)(</span><span class="identifier">x</span><span class="special">)</span>
+</pre>
+<p>
+      Notice that, in the second-stage (the final evaluation), we used a variable
+      <tt class="computeroutput"><span class="identifier">x</span></tt>. Be aware that the second
+      stage cannot accept non-const temporaries and literal constants. Hence, this
+      will fail:
+    </p>
+<pre class="programlisting">
+<span class="special">(</span><span class="identifier">arg1</span> <span class="special">%</span> <span class="number">2</span> <span class="special">==</span> <span class="number">1</span><span class="special">)(</span><span class="number">123</span><span class="special">)</span> <span class="comment">// Error!
+</span></pre>
+<p>
+      Disallowing non-const rvalues partially solves the "<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2002/n1385.htm" target="_top">Forwarding
+      Function Problem</a>" but prohibits code like above.
+    </p>
+<a name="phoenix.basics.polymorphic_functions"></a><h2>
+<a name="id461055"></a>
+      <a href="basics.html#phoenix.basics.polymorphic_functions">Polymorphic Functions</a>
+    </h2>
+<p>
+      Unless otherwise noted, Phoenix generated functions are fully polymorphic.
+      For instance, the <tt class="computeroutput"><span class="identifier">add</span></tt> example
+      above can apply to integers, floating points, user defined complex numbers
+      or even strings. Example:
+    </p>
+<pre class="programlisting">
+<span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="identifier">h</span><span class="special">(</span><span class="string">"Hello"</span><span class="special">);</span>
+<span class="keyword">char</span> <span class="keyword">const</span><span class="special">*</span> <span class="identifier">w</span> <span class="special">=</span> <span class="string">" World"</span><span class="special">;</span>
+<span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="identifier">r</span> <span class="special">=</span> <span class="identifier">add</span><span class="special">(</span><span class="identifier">arg1</span><span class="special">,</span> <span class="identifier">arg2</span><span class="special">)(</span><span class="identifier">h</span><span class="special">,</span> <span class="identifier">w</span><span class="special">);</span>
+</pre>
+<p>
+      evaluates to <tt class="computeroutput"><span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span><span class="special">(</span><span class="string">"Hello
+      World"</span><span class="special">)</span></tt>. The observant
+      reader might notice that this function call in fact takes in heterogeneous
+      arguments where <tt class="computeroutput"><span class="identifier">arg1</span></tt> is of
+      type <tt class="computeroutput"><span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span></tt> and <tt class="computeroutput"><span class="identifier">arg2</span></tt>
+      is of type <tt class="computeroutput"><span class="keyword">char</span> <span class="keyword">const</span><span class="special">*</span></tt>. <tt class="computeroutput"><span class="identifier">add</span></tt>
+      still works because the C++ standard library allows the expression <tt class="computeroutput"><span class="identifier">a</span> <span class="special">+</span> <span class="identifier">b</span></tt>
+      where <tt class="computeroutput"><span class="identifier">a</span></tt> is a <tt class="computeroutput"><span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span></tt>
+      and <tt class="computeroutput"><span class="identifier">b</span></tt> is a <tt class="computeroutput"><span class="keyword">char</span>
+      <span class="keyword">const</span><span class="special">*</span></tt>.
+    </p>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2002-2005 Joel
+      de Guzman, Dan Marsden<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="starter_kit.html"><img src="../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="organization.html"><img src="../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

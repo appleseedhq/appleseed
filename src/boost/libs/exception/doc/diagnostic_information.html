@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN'
+'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'>
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='en'>
+<head>
+	<meta http-equiv='Content-Type' content='text/html; charset=utf-8'/>
+	<title>diagnostic_information</title>
+	<link href='reno.css' type='text/css' rel='stylesheet'/>
+</head>
+<body>
+<div class="body-0">
+<div class="body-1">
+<div class="body-2">
+<div>
+<div id="boost_logo">
+<a href="http://www.boost.org"><img style="border:0" src="http://www.boost.org/boost.png" alt="Boost" width="277" height="86"/></a>
+</div>
+<h1>Boost Exception</h1>
+</div>
+<!-- Copyright (c) 2006-2009 Emil Dotchevski and Reverge Studios, Inc. -->
+<!-- Distributed under the Boost Software License, Version 1.0. (See accompanying -->
+<!-- file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt) -->
+<div class="RenoIncludeDIV"><div class="RenoAutoDIV"><h3>diagnostic_information</h3>
+</div>
+<div class="RenoIncludeDIV"><p><span class="RenoEscape">&#35;<!--<wiki>`&#35;</wiki>--></span>include &lt;<span class="RenoLink"><a href="exception_diagnostic_information_hpp.html">boost/exception/diagnostic_information.hpp</a></span>&gt;<span class="RenoBR">&nbsp;</span><br/></p>
+<pre>namespace
+boost
+    {
+<span class="RenoIncludeSPAN">    template &lt;class E&gt;
+    std::string <span class="RenoLink">diagnostic_information</span>( E const &amp; e );</span>
+    }</pre>
+</div><h4>Returns:</h4>
+<p>A string value that contains varying amount of implementation-specific diagnostic information about the passed exception object:</p>
+<div><ul><li>If E can be statically converted to boost::<span class="RenoLink"><a href="exception.html">exception</a></span>, the returned value contains the string representations of all <span class="RenoLink"><a href="error_info.html">error_info</a></span> objects stored in the boost::<span class="RenoLink"><a href="exception.html">exception</a></span> through <span class="RenoLink"><a href="exception_operator_shl.html">operator&lt;&lt;</a></span>, along with other diagnostic information relevant to the exception. If e can be dynamically converted to std::exception, the returned value also contains the what() string.</li>
+<li>Otherwise, if E can be statically converted std::exception:<div><ul><li>if e can be dynamically converted to boost::exception, the returned value is the same as if E could be statically converted to boost::<span class="RenoLink"><a href="exception.html">exception</a></span>;</li>
+<li>otherwise the returned value contains the what() string.</li>
+</ul></div>
+</li>
+<li>Otherwise, the boost::<span class="RenoLink">diagnostic_information</span> template is not available.</li>
+</ul></div>
+<p>The string representation of each <span class="RenoLink"><a href="error_info.html">error_info</a></span> object is deduced by a function call that is bound at the time the <span class="RenoLink"><a href="error_info.html">error_info</a></span>&lt;Tag,T&gt; template is instantiated. The following overload resolutions are attempted in order:</p>
+<div><ol><li>Unqualified call to to_string(x), where x is of type <span class="RenoLink"><a href="error_info.html">error_info</a></span>&lt;Tag,T&gt; (the return value is expected to be of type std::string.)</li>
+<li>Unqualified call to to_string(x.<span class="RenoLink"><a href="error_info_value.html">value</a></span>()) (the return value is expected to be of type std::string.)</li>
+<li>Unqualified call to s &lt;&lt; x.<span class="RenoLink"><a href="error_info_value.html">value</a></span>(), where s is a std::ostringstream.</li>
+</ol></div>
+<p>The first successfully bound function is used at the time <span class="RenoLink">diagnostic_information</span> is called; if all 3 overload resolutions are unsuccessful, the system is unable to convert the <span class="RenoLink"><a href="error_info.html">error_info</a></span> object to string, and <i>an unspecified stub string value is used without issuing a compile error.</i></p>
+<h4>Notes:</h4>
+<div><ul><li>The format of the returned string is unspecified.</li>
+<li>The returned string is <i>not</i> user-friendly.</li>
+<li>The returned string may include additional platform-specific diagnostic information.</li>
+</ul></div>
+<div class="RenoIncludeDIV"><h4>Example:</h4>
+<p>this is a possible output from the <span class="RenoLink">diagnostic_information</span> function, as used in <i>libs/exception/example/example_io.cpp:</i></p>
+<pre>example_io.cpp(83): Throw in function class boost::shared_ptr&lt;struct _iobuf&gt; __cdecl my_fopen(const char *,const char *)
+Dynamic exception type: class boost::exception_detail::clone_impl&lt;class fopen_error&gt;
+std::exception::what: example_io error
+[struct tag_errno *] = 2, OS says "No such file or directory"
+[struct tag_file_name *] = tmp1.txt
+[struct tag_function *] = fopen
+[struct tag_open_mode *] = rb</pre>
+</div></div><div class="RenoAutoDIV"><div class="RenoHR"><hr/></div>
+<h3>See Also:</h3>
+<div class="RenoPageList"><a href="BOOST_THROW_EXCEPTION.html">BOOST_THROW_EXCEPTION<br/>
+</a><a href="boost-exception.html">Boost Exception<br/>
+</a><a href="exception_diagnostic_information_hpp.html">boost/exception/diagnostic_information.hpp<br/>
+</a><a href="configuration_macros.html">Configuration Macros<br/>
+</a><a href="current_exception_diagnostic_information.html">current_exception_diagnostic_information<br/>
+</a><a href="tutorial_diagnostic_information.html">Diagnostic Information<br/>
+</a><a href="frequently_asked_questions.html">Frequently Asked Questions<br/>
+</a><a href="motivation.html">Motivation<br/>
+</a><a href="throw_exception.html">throw_exception<br/>
+</a></div>
+</div>
+<!-- Copyright (c) 2006-2009 Emil Dotchevski and Reverge Studios, Inc. -->
+<!-- Distributed under the Boost Software License, Version 1.0. (See accompanying -->
+<!-- file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt) -->
+<div id="footer">
+<p>&nbsp;</p>
+<hr/>
+<p>
+<a class="logo" href="http://jigsaw.w3.org/css-validator/check/referer"><img class="logo_pic" src="valid-css.png" alt="Valid CSS" height="31" width="88"/></a>
+<a class="logo" href="http://validator.w3.org/check?uri=referer"><img class="logo_pic" src="valid-xhtml.png" alt="Valid XHTML 1.0" height="31" width="88"/></a>
+<small>Copyright (c) 2006-2009 by Emil Dotchevski and Reverge Studios, Inc.<br/>
+Distributed under the <a href="http://www.boost.org/LICENSE_1_0.txt">Boost Software License, Version 1.0</a>.</small>
+</p>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>

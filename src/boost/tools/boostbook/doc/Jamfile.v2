@@ -1,0 +1,16 @@
+#   Copyright (c) 2002 Douglas Gregor <doug.gregor -at- gmail.com>
+# 
+#   Distributed under the Boost Software License, Version 1.0.
+#   (See accompanying file LICENSE_1_0.txt or copy at
+#   http://www.boost.org/LICENSE_1_0.txt)
+
+project boost/doc ;
+import boostbook : boostbook ;
+
+boostbook boostbook : boostbook.xml :
+    <xsl:param>html.stylesheet=../../../../doc/html/boostbook.css
+    <xsl:param>boost.root=../../../..
+    <xsl:param>boost.libraries=../../../../libs/libraries.htm
+    <xsl:param>navig.graphics=1
+    ;
+

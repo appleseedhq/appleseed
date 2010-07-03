@@ -1,0 +1,287 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+<head>
+  <meta http-equiv="Content-Language" content="en-us">
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+  <link href="../pool.css" rel="stylesheet" type="text/css">
+
+  <title>object_pool - Boost Object Pool Allocator</title>
+</head>
+
+<body>
+  <img src="../../../../boost.png" width="276" height="86" alt="C++ Boost">
+
+  <h1 align="center">object_pool - Boost Object Pool Allocator</h1>
+
+  <h2>Introduction</h2>
+
+  <p>object_pool.hpp provides a template type that can be used for fast and 
+  efficient memory allocation. It also provides automatic destruction of 
+  non-deallocated objects. For information on other pool-based interfaces, see <a href="../interfaces.html">
+  the other pool interfaces</a>.</p>
+
+  <h2>Synopsis</h2>
+  <pre class="code">
+template &lt;typename ElementType, typename UserAllocator = default_user_allocator_new_delete&gt;
+class object_pool
+{
+  private:
+    object_pool(const object_pool &amp;);
+    void operator=(const object_pool &amp;);
+
+  public:
+    typedef ElementType element_type;
+    typedef UserAllocator user_allocator;
+    typedef typename pool&lt;UserAllocator&gt;::size_type size_type;
+    typedef typename pool&lt;UserAllocator&gt;::difference_type difference_type;
+
+    object_pool();
+    ~object_pool();
+
+    element_type * malloc();
+    void free(element_type * p);
+    bool is_from(element_type * p) const;
+
+    element_type * construct();
+    // other construct() functions
+    void destroy(element_type * p);
+};
+</pre>
+
+  <h2>Template Parameters</h2>
+
+  <h3>ElementType</h3>
+
+  <p>The template parameter is the type of object to allocate/deallocate. It 
+  must have a non-throwing destructor.</p>
+
+  <h3>UserAllocator</h3>
+
+  <p>Defines the method that the underlying Pool will use to allocate memory 
+  from the system. See <a href="user_allocator.html">User Allocators</a> for 
+  details.</p>
+
+  <h2>Semantics</h2>
+
+  <table border align="center" summary="">
+    <caption>
+      <em>Symbol Table</em>
+    </caption>
+
+    <tr>
+      <th>Symbol</th>
+
+      <th>Meaning</th>
+    </tr>
+
+    <tr>
+      <td class="code">ObjectPool</td>
+
+      <td><span class="code">object_pool&lt;ElementType, UserAllocator&gt;</span></td>
+    </tr>
+
+    <tr>
+      <td class="code">t</td>
+
+      <td>value of type <span class="code">ObjectPool</span></td>
+    </tr>
+
+    <tr>
+      <td class="code">u</td>
+
+      <td>value of type <span class="code">const ObjectPool</span></td>
+    </tr>
+
+    <tr>
+      <td class="code">p</td>
+
+      <td>value of type <span class="code">ElementType *</span></td>
+    </tr>
+  </table><br>
+
+  <table border align="center" summary="">
+    <caption>
+      <em>Typedefs</em>
+    </caption>
+
+    <tr>
+      <th>Expression</th>
+
+      <th>Type</th>
+    </tr>
+
+    <tr>
+      <td class="code">ObjectPool::element_type</td>
+
+      <td class="code">ElementType</td>
+    </tr>
+
+    <tr>
+      <td class="code">ObjectPool::user_allocator</td>
+
+      <td class="code">UserAllocator</td>
+    </tr>
+
+    <tr>
+      <td class="code">ObjectPool::size_type</td>
+
+      <td class="code">pool&lt;UserAllocator&gt;::size_type</td>
+    </tr>
+
+    <tr>
+      <td class="code">ObjectPool::difference_type</td>
+
+      <td class="code">pool&lt;UserAllocator&gt;::difference_type</td>
+    </tr>
+  </table><br>
+
+  <table border align="center" summary="">
+    <caption>
+      <em>Constructors, Destructors, and Testing</em>
+    </caption>
+
+    <tr>
+      <th>Expression</th>
+
+      <th>Return Type</th>
+
+      <th>Notes</th>
+    </tr>
+
+    <tr>
+      <td class="code">ObjectPool()</td>
+
+      <td>not used</td>
+
+      <td>Constructs a new empty <span class="code">ObjectPool</span></td>
+    </tr>
+
+    <tr>
+      <td class="code">(&amp;t)-&gt;~ObjectPool()</td>
+
+      <td>not used</td>
+
+      <td>Destructs the <span class="code">ObjectPool</span>; <span class=
+      "code">~ElementType()</span> is called for each allocated ElementType 
+      that has not been deallocated. O(N).</td>
+    </tr>
+
+    <tr>
+      <td class="code">u.is_from(p)</td>
+
+      <td class="code">bool</td>
+
+      <td>Returns <span class="code">true</span> if <span class=
+      "code">p</span> was allocated from <span class="code">u</span> or may be 
+      returned as the result of a future allocation from <span class=
+      "code">u</span>. Returns <span class="code">false</span> if
+      <span class="code">p</span> was allocated from some other pool or may be 
+      returned as the result of a future allocation from some other pool. 
+      Otherwise, the return value is meaningless; note that this function may
+      <strong>not</strong> be used to reliably test random pointer values.</td>
+    </tr>
+  </table><br>
+
+  <table border align="center" summary="">
+    <caption>
+      <em>Allocation and Deallocation</em>
+    </caption>
+
+    <tr>
+      <th>Expression</th>
+
+      <th>Return Type</th>
+
+      <th>Pre-Condition</th>
+
+      <th>Semantic Equivalence</th>
+
+      <th>Notes</th>
+    </tr>
+
+    <tr>
+      <td class="code">t.malloc()</td>
+
+      <td class="code">ElementType *</td>
+
+      <td></td>
+
+      <td></td>
+
+      <td>Allocates memory that can hold an object of type <span class=
+      "code">ElementType</span>. If out of memory, returns <span class=
+      "code">0</span>. Amortized O(1).</td>
+    </tr>
+
+    <tr>
+      <td class="code">t.free(p)</td>
+
+      <td>not used</td>
+
+      <td><span class="code">p</span> must have been previously allocated from <span class="code">
+      t</span></td>
+
+      <td></td>
+
+      <td>Deallocates a chunk of memory. Note that <span class=
+      "code">p</span> may not be <span class="code">0</span>. Note that the 
+      destructor for <span class="code">p</span> is not called. O(N).</td>
+    </tr>
+
+    <tr>
+      <td class="code">t.construct(???)</td>
+
+      <td class="code">ElementType *</td>
+
+      <td><span class="code">ElementType</span> must have a constructor 
+      matching <span class="code">???</span>; the number of parameters given 
+      must not exceed what is supported through <a href=
+      "../implementation/pool_construct.html">pool_construct</a></td>
+
+      <td></td>
+
+      <td>Allocates and initializes an object of type <span class=
+      "code">ElementType</span>. If out of memory, returns <span class=
+      "code">0</span>. Amortized O(1).</td>
+    </tr>
+
+    <tr>
+      <td class="code">t.destroy(p)</td>
+
+      <td>not used</td>
+
+      <td><span class="code">p</span> must have been previously allocated from <span class="code">
+      t</span></td>
+
+      <td class="code">p-&gt;~ElementType(); t.free(p);</td>
+
+      <td></td>
+    </tr>
+  </table>
+
+  <h2>Symbols</h2>
+
+  <ul>
+    <li>boost::object_pool</li>
+  </ul>
+
+  <h2><a href="../implementation/object_pool.html">Implementation Details</a></h2>
+  <hr>
+
+  <p><a href="http://validator.w3.org/check?uri=referer"><img border="0" src=
+  "http://www.w3.org/Icons/valid-html401" alt="Valid HTML 4.01 Transitional"
+  height="31" width="88"></a></p>
+
+  <p>Revised 
+  <!--webbot bot="Timestamp" s-type="EDITED" s-format="%d %B, %Y" startspan -->05 December, 2006<!--webbot bot="Timestamp" endspan i-checksum="38516" --></p>
+
+  <p><i>Copyright &copy; 2000, 2001 Stephen Cleary (scleary AT jerviswebb DOT com)</i></p>
+
+  <p><i>Distributed under the Boost Software License, Version 1.0. (See 
+  accompanying file <a href="../../../../LICENSE_1_0.txt">LICENSE_1_0.txt</a>
+  or copy at <a href=
+  "http://www.boost.org/LICENSE_1_0.txt">http://www.boost.org/LICENSE_1_0.txt</a>)</i></p>
+</body>
+</html>

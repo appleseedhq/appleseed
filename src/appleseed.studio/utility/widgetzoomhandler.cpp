@@ -1,0 +1,224 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2010 Francois Beaune
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Interface header.
+#include "widgetzoomhandler.h"
+
+// appleseed.foundation headers.
+#include "foundation/math/scalar.h"
+
+// Qt headers.
+#include <QEvent>
+#include <QKeyEvent>
+#include <QScrollArea>
+#include <QScrollBar>
+#include <QWidget>
+#include <QWheelEvent>
+
+// Standard headers.
+#include <algorithm>
+
+using namespace foundation;
+using namespace std;
+
+namespace appleseed {
+namespace studio {
+
+namespace
+{
+    const double ScaleFactorMultiplier = 1.2;
+
+    const double MinWidgetSize = 1.0;           // in pixels
+    const double MaxWidgetSize = 65536.0;       // in pixels
+
+    const double MinScaleFactor = 1.0 / 65536.0;
+    const double MaxScaleFactor = 65536.0;
+}
+
+WidgetZoomHandler::WidgetZoomHandler(
+    QScrollArea*    scroll_area,
+    QWidget*        widget,
+    const int       content_width,
+    const int       content_height)
+  : m_scroll_area(scroll_area)
+  , m_widget(widget)
+  , m_content_width(content_width)
+  , m_content_height(content_height)
+  , m_scale_factor(1.0)
+{
+    compute_min_max_scale_factors();
+
+    m_scroll_area->installEventFilter(this);
+    m_scroll_area->viewport()->installEventFilter(this);
+}
+
+WidgetZoomHandler::~WidgetZoomHandler()
+{
+    m_scroll_area->viewport()->removeEventFilter(this);
+    m_scroll_area->removeEventFilter(this);
+}
+
+bool WidgetZoomHandler::eventFilter(QObject* object, QEvent* event)
+{
+    switch (event->type())
+    {
+      case QEvent::KeyPress:
+        if (handle_key_press_event(static_cast<QKeyEvent*>(event)))
+            return true;
+        break;
+
+      case QEvent::Wheel:
+        if (handle_wheel_event(static_cast<QWheelEvent*>(event)))
+            return true;
+        break;
+    }
+
+    return QObject::eventFilter(object, event);
+}
+
+bool WidgetZoomHandler::handle_key_press_event(QKeyEvent* event)
+{
+    switch (event->key())
+    {
+      case Qt::Key_Plus:
+        zoom_in();
+        return true;
+
+      case Qt::Key_Minus:
+        zoom_out();
+        return true;
+
+      case Qt::Key_Equal:
+        if (event->modifiers() & Qt::ShiftModifier)
+        {
+            zoom_in();
+            return true;
+        }
+        break;
+
+      case Qt::Key_Asterisk:
+        reset_zoom();
+        return true;
+    }
+
+    return false;
+}
+
+bool WidgetZoomHandler::handle_wheel_event(QWheelEvent* event)
+{
+    if (event->delta() > 0)
+    {
+        zoom_in();
+        return true;
+    }
+    else if (event->delta() < 0)
+    {
+        zoom_out();
+        return true;
+    }
+
+    return false;
+}
+
+void WidgetZoomHandler::zoom_in()
+{
+    multiply_scale_factor(ScaleFactorMultiplier);
+}
+
+void WidgetZoomHandler::zoom_out()
+{
+    multiply_scale_factor(1.0 / ScaleFactorMultiplier);
+}
+
+void WidgetZoomHandler::reset_zoom()
+{
+    const double rcp_scale_factor = 1.0 / m_scale_factor;
+
+    m_scale_factor = 1.0;
+
+    apply_scale_factor(rcp_scale_factor);
+}
+
+void WidgetZoomHandler::compute_min_max_scale_factors()
+{
+    m_min_scale_factor =
+        max(
+            MinScaleFactor,
+            max(
+                MinWidgetSize / m_content_width,
+                MinWidgetSize / m_content_height));
+
+    m_max_scale_factor =
+        min(
+            MaxScaleFactor,
+            min(
+                MaxWidgetSize / m_content_width,
+                MaxWidgetSize / m_content_height));
+}
+
+void WidgetZoomHandler::multiply_scale_factor(const double multiplier)
+{
+    const double old_scale_factor = m_scale_factor;
+
+    m_scale_factor *= multiplier;
+    m_scale_factor = clamp(m_scale_factor, m_min_scale_factor, m_max_scale_factor);
+
+    const double applied_scale_factor = m_scale_factor / old_scale_factor;
+
+    apply_scale_factor(applied_scale_factor);
+}
+
+void WidgetZoomHandler::apply_scale_factor(const double multiplier)
+{
+    set_widget_size();
+    adjust_scrollbar(m_scroll_area->horizontalScrollBar(), multiplier);
+    adjust_scrollbar(m_scroll_area->verticalScrollBar(), multiplier);
+}
+
+void WidgetZoomHandler::set_widget_size() const
+{
+    const int width = truncate<int>(m_content_width * m_scale_factor);
+    const int height = truncate<int>(m_content_height * m_scale_factor);
+
+    m_widget->setFixedSize(width, height);
+}
+
+void WidgetZoomHandler::adjust_scrollbar(QScrollBar* scrollbar, const double multiplier) const
+{
+    const double slider_start = scrollbar->value();
+    const double slider_length = scrollbar->pageStep();
+    const double slider_center = slider_start + slider_length / 2;
+
+    const double new_slider_center = multiplier * slider_center;
+    const double new_slider_start = new_slider_center - slider_length / 2;
+
+    scrollbar->setValue(static_cast<int>(new_slider_start));
+}
+
+}   // namespace studio
+}   // namespace appleseed

@@ -1,0 +1,1103 @@
+<HTML><HEAD><SCRIPT language="JavaScript" src="../resources/script.js" type="text/javascript"></SCRIPT><TITLE>Xerces-C++: Class Members</TITLE><link href="XercesApi.css" rel="stylesheet" type="text/css"></HEAD><BODY alink="#ff0000" bgcolor="#ffffff" leftmargin="4" link="#0000ff" marginheight="4" marginwidth="4" text="#000000" topmargin="4" vlink="#0000aa"><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD align="left" height="60" rowspan="3" valign="top" width="135"><IMG border="0" height="60" hspace="0" src="../resources/logo.gif" vspace="0" width="135"></TD><TD align="left" colspan="4" height="5" valign="top" width="456"><IMG border="0" height="5" hspace="0" src="../resources/line.gif" vspace="0" width="456"></TD><TD align="left" height="60" rowspan="3" valign="top" width="29"><IMG border="0" height="60" hspace="0" src="../resources/right.gif" vspace="0" width="29"></TD></TR><TR><TD align="left" bgcolor="#0086b2" colspan="4" height="35" valign="top" width="456"><IMG alt="" border="0" height="35" hspace="0" src="../graphics/api-header.jpg" vspace="0" width="456"></TD></TR><TR><TD align="left" height="20" valign="top" width="168"><IMG border="0" height="20" hspace="0" src="../resources/bottom.gif" vspace="0" width="168"></TD><TD align="left" height="20" valign="top" width="96"><A href="http://xml.apache.org/" onMouseOut="rolloverOff('xml');" onMouseOver="rolloverOn('xml');" target="new"><IMG alt="http://xml.apache.org/" border="0" height="20" hspace="0" name="xml" onLoad="rolloverLoad('xml','../resources/button-xml-hi.gif','../resources/button-xml-lo.gif');" src="../resources/button-xml-lo.gif" vspace="0" width="96"></A></TD><TD align="left" height="20" valign="top" width="96"><A href="http://www.apache.org/" onMouseOut="rolloverOff('asf');" onMouseOver="rolloverOn('asf');" target="new"><IMG alt="http://www.apache.org/" border="0" height="20" hspace="0" name="asf" onLoad="rolloverLoad('asf','../resources/button-asf-hi.gif','../resources/button-asf-lo.gif');" src="../resources/button-asf-lo.gif" vspace="0" width="96"></A></TD><TD align="left" height="20" valign="top" width="96"><A href="http://www.w3.org/" onMouseOut="rolloverOff('w3c');" onMouseOver="rolloverOn('w3c');" target="new"><IMG alt="http://www.w3.org/" border="0" height="20" hspace="0" name="w3c" onLoad="rolloverLoad('w3c','../resources/button-w3c-hi.gif','../resources/button-w3c-lo.gif');" src="../resources/button-w3c-lo.gif" vspace="0" width="96"></A></TD></TR></TABLE><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD align="left" valign="top" width="120"><IMG border="0" height="14" hspace="0" src="../resources/join.gif" vspace="0" width="120"><BR>
+  <A href="../../index.html" onMouseOut="rolloverOff('side-ext-2');" onMouseOver="rolloverOn('side-ext-2');"><IMG alt="Home" border="0" height="12" hspace="0" name="side-ext-2" onLoad="rolloverLoad('side-ext-2','../graphics/ext-2-label-2.jpg','../graphics/ext-2-label-3.jpg');" src="../graphics/ext-2-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../index.html" onMouseOut="rolloverOff('side-index');" onMouseOver="rolloverOn('side-index');"><IMG alt="Readme" border="0" height="12" hspace="0" name="side-index" onLoad="rolloverLoad('side-index','../graphics/index-label-2.jpg','../graphics/index-label-3.jpg');" src="../graphics/index-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../charter.html" onMouseOut="rolloverOff('side-charter');" onMouseOver="rolloverOn('side-charter');"><IMG alt="Charter" border="0" height="12" hspace="0" name="side-charter" onLoad="rolloverLoad('side-charter','../graphics/charter-label-2.jpg','../graphics/charter-label-3.jpg');" src="../graphics/charter-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../releases.html" onMouseOut="rolloverOff('side-releases');" onMouseOver="rolloverOn('side-releases');"><IMG alt="Release Info" border="0" height="12" hspace="0" name="side-releases" onLoad="rolloverLoad('side-releases','../graphics/releases-label-2.jpg','../graphics/releases-label-3.jpg');" src="../graphics/releases-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../install.html" onMouseOut="rolloverOff('side-install');" onMouseOver="rolloverOn('side-install');"><IMG alt="Installation" border="0" height="12" hspace="0" name="side-install" onLoad="rolloverLoad('side-install','../graphics/install-label-2.jpg','../graphics/install-label-3.jpg');" src="../graphics/install-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="http://xerces.apache.org/xerces-c/download.cgi" onMouseOut="rolloverOff('side-ext-20');" onMouseOver="rolloverOn('side-ext-20');"><IMG alt="Download" border="0" height="12" hspace="0" name="side-ext-20" onLoad="rolloverLoad('side-ext-20','../graphics/ext-20-label-2.jpg','../graphics/ext-20-label-3.jpg');" src="../graphics/ext-20-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../build.html" onMouseOut="rolloverOff('side-build');" onMouseOver="rolloverOn('side-build');"><IMG alt="Build Instructions" border="0" height="12" hspace="0" name="side-build" onLoad="rolloverLoad('side-build','../graphics/build-label-2.jpg','../graphics/build-label-3.jpg');" src="../graphics/build-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../program.html" onMouseOut="rolloverOff('side-program');" onMouseOver="rolloverOn('side-program');"><IMG alt="Programming" border="0" height="12" hspace="0" name="side-program" onLoad="rolloverLoad('side-program','../graphics/program-label-2.jpg','../graphics/program-label-3.jpg');" src="../graphics/program-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../samples.html" onMouseOut="rolloverOff('side-samples');" onMouseOver="rolloverOn('side-samples');"><IMG alt="Samples" border="0" height="12" hspace="0" name="side-samples" onLoad="rolloverLoad('side-samples','../graphics/samples-label-2.jpg','../graphics/samples-label-3.jpg');" src="../graphics/samples-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../faqs.html" onMouseOut="rolloverOff('side-faqs');" onMouseOver="rolloverOn('side-faqs');"><IMG alt="FAQs" border="0" height="12" hspace="0" name="side-faqs" onLoad="rolloverLoad('side-faqs','../graphics/faqs-label-2.jpg','../graphics/faqs-label-3.jpg');" src="../graphics/faqs-label-3.jpg" vspace="0" width="120"></A><BR>
+
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../api.html" onMouseOut="rolloverOff('side-api');" onMouseOver="rolloverOn('side-api');"><IMG alt="API Docs" border="0" height="12" hspace="0" name="side-api" onLoad="rolloverLoad('side-api','../graphics/api-label-2.jpg','../graphics/api-label-3.jpg');" src="../graphics/api-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../ApacheDOMC++Binding.html" onMouseOut="rolloverOff('side-ext-88');" onMouseOver="rolloverOn('side-ext-88');"><IMG alt="DOM C++ Binding" border="0" height="12" hspace="0" name="side-ext-88" onLoad="rolloverLoad('side-ext-88','../graphics/ext-88-label-2.jpg','../graphics/ext-88-label-3.jpg');" src="../graphics/ext-88-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../migrate.html" onMouseOut="rolloverOff('side-migrate');" onMouseOver="rolloverOn('side-migrate');"><IMG alt="Migration Guide" border="0" height="12" hspace="0" name="side-migrate" onLoad="rolloverLoad('side-migrate','../graphics/migrate-label-2.jpg','../graphics/migrate-label-3.jpg');" src="../graphics/migrate-label-3.jpg" vspace="0" width="120"></A><BR>
+
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+    <A href="../feedback.html" onMouseOut="rolloverOff('side-feedback');" onMouseOver="rolloverOn('side-feedback');"><IMG alt="Feedback" border="0" height="12" hspace="0" name="side-feedback" onLoad="rolloverLoad('side-feedback','../graphics/feedback-label-2.jpg','../graphics/feedback-label-3.jpg');" src="../graphics/feedback-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../bug-report.html" onMouseOut="rolloverOff('side-bug-report');" onMouseOver="rolloverOn('side-bug-report');"><IMG alt="Bug-Reporting" border="0" height="12" hspace="0" name="side-bug-report" onLoad="rolloverLoad('side-bug-report','../graphics/bug-report-label-2.jpg','../graphics/bug-report-label-3.jpg');" src="../graphics/bug-report-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../mailing-lists.html" onMouseOut="rolloverOff('side-mailing-lists');" onMouseOver="rolloverOn('side-mailing-lists');"><IMG alt="Mailing Lists" border="0" height="12" hspace="0" name="side-mailing-lists" onLoad="rolloverLoad('side-mailing-lists','../graphics/mailing-lists-label-2.jpg','../graphics/mailing-lists-label-3.jpg');" src="../graphics/mailing-lists-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+    <A href="../source-repository.html" onMouseOut="rolloverOff('side-source-repository');" onMouseOver="rolloverOn('side-source-repository');"><IMG alt="Source Repository" border="0" height="12" hspace="0" name="side-source-repository" onLoad="rolloverLoad('side-source-repository','../graphics/source-repository-label-2.jpg','../graphics/source-repository-label-3.jpg');" src="../graphics/source-repository-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../applications.html" onMouseOut="rolloverOff('side-applications');" onMouseOver="rolloverOn('side-applications');"><IMG alt="Applications" border="0" height="12" hspace="0" name="side-applications" onLoad="rolloverLoad('side-applications','../graphics/applications-label-2.jpg','../graphics/applications-label-3.jpg');" src="../graphics/applications-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="14" hspace="0" src="../resources/close.gif" vspace="0" width="120"><BR></TD><TD align="left" valign="top" width="500"><TABLE border="0" cellpadding="3" cellspacing="0"><TR><TD>
+    <TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#FFFFFF" colspan="2" width="494"><TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#039acc" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#039acc" height="1" width="492"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#039acc" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" width="492"><FONT color="#ffffff" face="arial,helvetica,sanserif" size="+1"><IMG border="0" height="2" hspace="0" src="../resources/void.gif" vspace="0" width="2"><B>API Docs for SAX and DOM</B></FONT></TD><TD bgcolor="#017299" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#017299" height="1" width="492"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#017299" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></TD></TR><TR><TD width="10">&nbsp;</TD><TD width="484"><FONT color="#000000" face="arial,helvetica,sanserif">
+
+	    <P>
+<!-- Generated by Doxygen 1.5.3 -->
+<div class="tabs">
+  <ul>
+    <li><a href="index.html"><span>Main&nbsp;Page</span></a></li>
+    <li class="current"><a href="classes.html"><span>Classes</span></a></li>
+    <li><a href="files.html"><span>Files</span></a></li>
+    <li><a href="pages.html"><span>Related&nbsp;Pages</span></a></li>
+  </ul>
+</div>
+<div class="tabs">
+  <ul>
+    <li><a href="classes.html"><span>Alphabetical&nbsp;List</span></a></li>
+    <li><a href="annotated.html"><span>Class&nbsp;List</span></a></li>
+    <li><a href="hierarchy.html"><span>Class&nbsp;Hierarchy</span></a></li>
+    <li class="current"><a href="functions.html"><span>Class&nbsp;Members</span></a></li>
+  </ul>
+</div>
+<div class="tabs">
+  <ul>
+    <li class="current"><a href="functions.html"><span>All</span></a></li>
+    <li><a href="functions_func.html"><span>Functions</span></a></li>
+    <li><a href="functions_vars.html"><span>Variables</span></a></li>
+    <li><a href="functions_type.html"><span>Typedefs</span></a></li>
+    <li><a href="functions_enum.html"><span>Enumerations</span></a></li>
+    <li><a href="functions_eval.html"><span>Enumerator</span></a></li>
+    <li><a href="functions_rela.html"><span>Related&nbsp;Functions</span></a></li>
+  </ul>
+</div>
+<div class="tabs">
+  <ul>
+    <li><a href="functions.html#index_a"><span>a</span></a></li>
+    <li><a href="functions_0x62.html#index_b"><span>b</span></a></li>
+    <li><a href="functions_0x63.html#index_c"><span>c</span></a></li>
+    <li><a href="functions_0x64.html#index_d"><span>d</span></a></li>
+    <li><a href="functions_0x65.html#index_e"><span>e</span></a></li>
+    <li><a href="functions_0x66.html#index_f"><span>f</span></a></li>
+    <li class="current"><a href="functions_0x67.html#index_g"><span>g</span></a></li>
+    <li><a href="functions_0x68.html#index_h"><span>h</span></a></li>
+    <li><a href="functions_0x69.html#index_i"><span>i</span></a></li>
+    <li><a href="functions_0x6a.html#index_j"><span>j</span></a></li>
+    <li><a href="functions_0x6c.html#index_l"><span>l</span></a></li>
+    <li><a href="functions_0x6d.html#index_m"><span>m</span></a></li>
+    <li><a href="functions_0x6e.html#index_n"><span>n</span></a></li>
+    <li><a href="functions_0x6f.html#index_o"><span>o</span></a></li>
+    <li><a href="functions_0x70.html#index_p"><span>p</span></a></li>
+    <li><a href="functions_0x71.html#index_q"><span>q</span></a></li>
+    <li><a href="functions_0x72.html#index_r"><span>r</span></a></li>
+    <li><a href="functions_0x73.html#index_s"><span>s</span></a></li>
+    <li><a href="functions_0x74.html#index_t"><span>t</span></a></li>
+    <li><a href="functions_0x75.html#index_u"><span>u</span></a></li>
+    <li><a href="functions_0x76.html#index_v"><span>v</span></a></li>
+    <li><a href="functions_0x77.html#index_w"><span>w</span></a></li>
+    <li><a href="functions_0x78.html#index_x"><span>x</span></a></li>
+    <li><a href="functions_0x7e.html#index_~"><span>~</span></a></li>
+  </ul>
+</div>
+
+<p>
+Here is a list of all class members with links to the classes they belong to:
+<p>
+<h3><a class="anchor" name="index_g">- g -</a></h3><ul>
+<li>GenericError
+: <a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c8685ee68540971596fffe32f6d8db2a1bd">XMLValid</a>
+<li>gEOCFakeId
+: <a class="el" href="classXMLContentModel.html#6c7e86fe01536167f9dc248a63c789d2">XMLContentModel</a>
+<li>gEpsilonFakeId
+: <a class="el" href="classXMLContentModel.html#aee75509cc04d94b294eee1f8b919ebb">XMLContentModel</a>
+<li>GET
+: <a class="el" href="classXMLNetHTTPInfo.html#e66949d1255a66a71a87b2b56f74b970a96dc580a6480638d5419823141a631d">XMLNetHTTPInfo</a>
+<li>getAbstract()
+: <a class="el" href="classXSComplexTypeDefinition.html#0d9e13a04534d6d205d6b607b4f1f86c">XSComplexTypeDefinition</a>
+, <a class="el" href="classXSElementDeclaration.html#dbcc4f5fa475dca0a5a03158ea8a5f44">XSElementDeclaration</a>
+<li>getActualEncoding()
+: <a class="el" href="classDOMEntity.html#9a280da7d9cb82e4861a714a8095c5d5">DOMEntity</a>
+, <a class="el" href="classDOMDocument.html#edffa212ce94f181a566d245a2174012">DOMDocument</a>
+<li>getActualValue()
+: <a class="el" href="classPSVIItem.html#cafcb8716a7b8314cfc20c58c8d004f7">PSVIItem</a>
+, <a class="el" href="classXSValue.html#163c5e53a8941aeb15477c6dff2c9ea8">XSValue</a>
+<li>getAnnotation()
+: <a class="el" href="classXSModelGroupDefinition.html#b14688682434b3a8366af2bd51485a1c">XSModelGroupDefinition</a>
+, <a class="el" href="classXSNotationDeclaration.html#dc3d6ce19044a0f63afb99e6f5eddc76">XSNotationDeclaration</a>
+, <a class="el" href="classXSWildcard.html#cc6ef8477bc542ae0b789157f8ddfb5c">XSWildcard</a>
+, <a class="el" href="classXSAttributeDeclaration.html#cc315dc99570fe46ec3f198db5a60cda">XSAttributeDeclaration</a>
+, <a class="el" href="classXSAttributeGroupDefinition.html#b460b7c955cec0c7674df705e998eace">XSAttributeGroupDefinition</a>
+, <a class="el" href="classXSElementDeclaration.html#4a749b98b0f91e98b7e394b822237714">XSElementDeclaration</a>
+, <a class="el" href="classXSFacet.html#26a14fd2b05eda4b8b8885e001fe6dfa">XSFacet</a>
+, <a class="el" href="classXSModelGroup.html#a29856861198043324740602f55062f7">XSModelGroup</a>
+<li>getAnnotations()
+: <a class="el" href="classXSComplexTypeDefinition.html#81e1fca336072f5c8845ccf5f1e1a7ac">XSComplexTypeDefinition</a>
+, <a class="el" href="classXSIDCDefinition.html#8c462cecc17ef198b455847024378873">XSIDCDefinition</a>
+, <a class="el" href="classXSModel.html#ca0a3e3e51d18be86d8cac68c7a04f3b">XSModel</a>
+, <a class="el" href="classXSMultiValueFacet.html#1490e6d1a88abbac0425cf9b9ac9b49d">XSMultiValueFacet</a>
+, <a class="el" href="classXSNamespaceItem.html#6eaed0d2fa0bf54df7e8df7f35aa20ee">XSNamespaceItem</a>
+, <a class="el" href="classXSSimpleTypeDefinition.html#07097deff1bd0f7d901c0ae1e43ba09d">XSSimpleTypeDefinition</a>
+<li>getAnnotationString()
+: <a class="el" href="classXSAnnotation.html#e23ca6320105bd7ed8022d36b8e99c7e">XSAnnotation</a>
+<li>getAnonymous()
+: <a class="el" href="classXSComplexTypeDefinition.html#8a6daa50999eb4f5115117304eb08bcb">XSComplexTypeDefinition</a>
+, <a class="el" href="classXSSimpleTypeDefinition.html#ef7cabfa92c06f5050e135347a54ad7b">XSSimpleTypeDefinition</a>
+, <a class="el" href="classXSTypeDefinition.html#d10c04658d38dc1cc8a566bc65ab93ab">XSTypeDefinition</a>
+<li>getAttDef()
+: <a class="el" href="classXMLAttDefList.html#2e13c3cadf0e6247ce8a285f44830e28">XMLAttDefList</a>
+<li>getAttDefCount()
+: <a class="el" href="classXMLAttDefList.html#929ba9e6c0aa67997a7cca60b40277d8">XMLAttDefList</a>
+<li>getAttDefList()
+: <a class="el" href="classXMLElementDecl.html#b48919296a6dccd95aa06e698991c080">XMLElementDecl</a>
+<li>getAttName()
+: <a class="el" href="classXMLAttr.html#d1f6f75fb9ba0f7ea90145a839cae1c8">XMLAttr</a>
+<li>getAttrDeclaration()
+: <a class="el" href="classXSAttributeUse.html#7942f6c3a27a0c53d393214bc641d68d">XSAttributeUse</a>
+<li>getAttribute()
+: <a class="el" href="classDOMElement.html#6556e56c88fbcf9f6043e9dc2642b47f">DOMElement</a>
+<li>getAttributeDeclaration()
+: <a class="el" href="classPSVIAttribute.html#eea6e5d21b86bce5f0ae3974754f18f7">PSVIAttribute</a>
+, <a class="el" href="classXSModel.html#58583821296f66cfecd7211b577fca6c">XSModel</a>
+, <a class="el" href="classXSNamespaceItem.html#dc0f3459564d7ed4c2f2adadbf69bc1e">XSNamespaceItem</a>
+<li>getAttributeGroup()
+: <a class="el" href="classXSModel.html#1c1a6effd1fb5833706c382e59dbd907">XSModel</a>
+, <a class="el" href="classXSNamespaceItem.html#0dcd8157cb8f4622f670ef487b5cc0eb">XSNamespaceItem</a>
+<li>getAttributeNameAtIndex()
+: <a class="el" href="classPSVIAttributeList.html#b6f6f6c0c3b9f09c34911749b0da4ce6">PSVIAttributeList</a>
+<li>getAttributeNamespaceAtIndex()
+: <a class="el" href="classPSVIAttributeList.html#3583e3e23136fa82a7fa432db2411d3f">PSVIAttributeList</a>
+<li>getAttributeNode()
+: <a class="el" href="classDOMElement.html#9d6a102d853eafe6619be4324c1555c3">DOMElement</a>
+<li>getAttributeNodeNS()
+: <a class="el" href="classDOMElement.html#f9e9e397bb80c0183f04700eff7cbde8">DOMElement</a>
+<li>getAttributeNS()
+: <a class="el" href="classDOMElement.html#820669f88229851a9ce3ddd3fbd7713d">DOMElement</a>
+<li>getAttributePSVIAtIndex()
+: <a class="el" href="classPSVIAttributeList.html#7f1eea23afa6c6329a9849776e2b7ed4">PSVIAttributeList</a>
+<li>getAttributePSVIByName()
+: <a class="el" href="classPSVIAttributeList.html#83a414b15124e5112006ce6a29818099">PSVIAttributeList</a>
+<li>getAttributes()
+: <a class="el" href="classDOMNode.html#53957cd54f9f818c70f0f47f1c60b34a">DOMNode</a>
+, <a class="el" href="classXMLSchemaDescription.html#d51ccd60def9959035937c6c9d7657d6">XMLSchemaDescription</a>
+<li>getAttributeUses()
+: <a class="el" href="classXSAttributeGroupDefinition.html#d627fb54854ba2a0e43a2118aab953ff">XSAttributeGroupDefinition</a>
+, <a class="el" href="classXSComplexTypeDefinition.html#d597896d30443a09d2a16ef5c6f769de">XSComplexTypeDefinition</a>
+<li>getAttributeWildcard()
+: <a class="el" href="classXSAttributeGroupDefinition.html#27277dbf6259fd171ed3336e48a406fa">XSAttributeGroupDefinition</a>
+, <a class="el" href="classXSComplexTypeDefinition.html#de2f301dfd7e78f02960818dcf91da21">XSComplexTypeDefinition</a>
+<li>getAttTypeString()
+: <a class="el" href="classXMLAttDef.html#729fd9de63ec5987d1389971254f7c51">XMLAttDef</a>
+<li>getBaseName()
+: <a class="el" href="classXMLElementDecl.html#4b8e71ee50aafabc32c08c4b7024d00c">XMLElementDecl</a>
+<li>getBaseType()
+: <a class="el" href="classXSComplexTypeDefinition.html#48c4a1c2d9080795761412a2dbf7a625">XSComplexTypeDefinition</a>
+, <a class="el" href="classXSSimpleTypeDefinition.html#a50dc3b532516ec7e26b29b1a19e97f3">XSSimpleTypeDefinition</a>
+, <a class="el" href="classXSTypeDefinition.html#ac9f9ecba9b43ef6c70bec4029082a03">XSTypeDefinition</a>
+<li>getBaseURI()
+: <a class="el" href="classXMLEntityDecl.html#e942c8bb057af9d1d4e9089db812bf2a">XMLEntityDecl</a>
+, <a class="el" href="classXMLNotationDecl.html#fc7519412168f88fbd2acb6d46619812">XMLNotationDecl</a>
+, <a class="el" href="classXMLResourceIdentifier.html#3d15e5a7f6cc8b254e47d1adefaef2d8">XMLResourceIdentifier</a>
+, <a class="el" href="classDOMInputSource.html#83c130dd79a64b0531324a0c3975ea83">DOMInputSource</a>
+, <a class="el" href="classDOMNode.html#ff14f2954d06e240bde35a9bec5117d0">DOMNode</a>
+, <a class="el" href="classWrapper4InputSource.html#a6ce1aa6d741509b7eb4a77616960125">Wrapper4InputSource</a>
+<li>getBlockSize()
+: <a class="el" href="classXMLTranscoder.html#3f3bebde4fbb402b4435cbb3a2e991e9">XMLTranscoder</a>
+<li>getBooleanValue()
+: <a class="el" href="classDOMXPathResult.html#cab3ba41dfaec6c38e4c0c485bdc204b">DOMXPathResult</a>
+<li>getBounded()
+: <a class="el" href="classXSSimpleTypeDefinition.html#470f31d8c634bee36b3a1fb77267d2ea">XSSimpleTypeDefinition</a>
+<li>getBufMgr()
+: <a class="el" href="classXMLValidator.html#c4bd73e48ce289a6a402258a0d9346b8">XMLValidator</a>
+<li>getCalculateSrcOfs()
+: <a class="el" href="classAbstractDOMParser.html#74588901c0cd9dee189c8e22d041a39a">AbstractDOMParser</a>
+, <a class="el" href="classSAXParser.html#42497dd55ad9b5707180aa5f4b974ab7">SAXParser</a>
+<li>getCanonicalRepresentation()
+: <a class="el" href="classPSVIItem.html#35299729332eb1d651450366ea45cf00">PSVIItem</a>
+, <a class="el" href="classXSValue.html#2fae8a32ee828c0364a5731698027001">XSValue</a>
+, <a class="el" href="classBase64.html#0020eaf92c8cffa7d2cad75a1390fb07">Base64</a>
+, <a class="el" href="classHexBin.html#7abc9675188fc6d96307cbe28e956995">HexBin</a>
+, <a class="el" href="classXMLAbstractDoubleFloat.html#60aa07880038186fd1dc30c322ce7d85">XMLAbstractDoubleFloat</a>
+, <a class="el" href="classXMLBigDecimal.html#1bc1ba1bf13cdeeb703d13bff7afb50f">XMLBigDecimal</a>
+, <a class="el" href="classXMLBigInteger.html#3710dd1814a1b7e7b16e40ca58d16bd9">XMLBigInteger</a>
+<li>getCategory()
+: <a class="el" href="classXSIDCDefinition.html#ea528a4996024b73a2fd3f76462b9564">XSIDCDefinition</a>
+<li>getCharDataOpts()
+: <a class="el" href="classXMLElementDecl.html#f43f4f07449e45f5a39cea54749e6f45">XMLElementDecl</a>
+<li>getChildNodes()
+: <a class="el" href="classDOMNode.html#28990e120a00edb3cd40cb92be962a5f">DOMNode</a>
+<li>getCode()
+: <a class="el" href="classOutOfMemoryException.html#c33cb1c137bcff5cc964882a05ae5542">OutOfMemoryException</a>
+, <a class="el" href="classXMLException.html#f01995fe70a480e3efe878e0b2805cca">XMLException</a>
+<li>getCollapsed()
+: <a class="el" href="classDOMRange.html#654c1d89653bd03d39c6891130a0ee99">DOMRange</a>
+<li>getColumnNumber()
+: <a class="el" href="classDOMLocator.html#9d9032a19cd0378df78cecb794170b8a">DOMLocator</a>
+, <a class="el" href="classLocator.html#4818382d13d2d3ed905d00fbaca756eb">Locator</a>
+, <a class="el" href="classSAXParseException.html#ecb7d127e77807c59431d5c87b9c848b">SAXParseException</a>
+<li>getCommonAncestorContainer()
+: <a class="el" href="classDOMRange.html#1e978223e6dce5643f6dd4489c5ef286">DOMRange</a>
+<li>getComponents()
+: <a class="el" href="classXSModel.html#4d6fa542eb174ac0fa63a898651d8f3d">XSModel</a>
+, <a class="el" href="classXSNamespaceItem.html#51892d74d1fa7f373688800fe29df931">XSNamespaceItem</a>
+<li>getComponentsByNamespace()
+: <a class="el" href="classXSModel.html#5fb9ebbee36e5aa0b7f79a3462fb68ef">XSModel</a>
+<li>getCompositor()
+: <a class="el" href="classXSModelGroup.html#b8d3bd77d56fc8631a423700076235ea">XSModelGroup</a>
+<li>getConstraintType()
+: <a class="el" href="classXSAttributeDeclaration.html#40ab25fbcafac616b64d44ec026993cf">XSAttributeDeclaration</a>
+, <a class="el" href="classXSAttributeUse.html#ef6c2eb8675025ae10f06be592576624">XSAttributeUse</a>
+, <a class="el" href="classXSElementDeclaration.html#4cd38dbc1f4aeb503ac0b1655f080345">XSElementDeclaration</a>
+, <a class="el" href="classXSWildcard.html#ec3e704d323b120d6f9f6c28829c408e">XSWildcard</a>
+<li>getConstraintValue()
+: <a class="el" href="classXSAttributeDeclaration.html#a702fa24dbd2afc0bf5d546ee8baba02">XSAttributeDeclaration</a>
+, <a class="el" href="classXSAttributeUse.html#56e15d95208fb5a7f71ad1ac8372fc98">XSAttributeUse</a>
+, <a class="el" href="classXSElementDeclaration.html#6ef8e0e4e845215174215a765a2dcb43">XSElementDeclaration</a>
+<li>getContentHandler()
+: <a class="el" href="classSAX2XMLReader.html#9fda35bb540194c1a8a5a4a95c0bcdb7">SAX2XMLReader</a>
+<li>getContentLeafNameTypeVector()
+: <a class="el" href="classXMLContentModel.html#bee1c99662fc9caa0b928158fad86fc7">XMLContentModel</a>
+<li>getContentModel()
+: <a class="el" href="classXMLElementDecl.html#8b438615592593409ed52de910b5db2c">XMLElementDecl</a>
+<li>getContentSpec()
+: <a class="el" href="classXMLElementDecl.html#e4e15ae8c4c565e1fecfdc2738ad2519">XMLElementDecl</a>
+<li>getContentType()
+: <a class="el" href="classXSComplexTypeDefinition.html#ecb3d5d3d919dc921e42d0d9ff42d304">XSComplexTypeDefinition</a>
+<li>getContextType()
+: <a class="el" href="classXMLSchemaDescription.html#721c2d5101b34ccbf93b1899bce82b3f">XMLSchemaDescription</a>
+<li>getCreateCommentNodes()
+: <a class="el" href="classAbstractDOMParser.html#aa711bcb36bcd96e5deef76843777645">AbstractDOMParser</a>
+<li>getCreateEntityReferenceNodes()
+: <a class="el" href="classAbstractDOMParser.html#ff84ce03935820fb11dc340e3fd3345b">AbstractDOMParser</a>
+<li>getCreateReason()
+: <a class="el" href="classXMLAttDef.html#0b760da965b5ceed724a493b831fb081">XMLAttDef</a>
+, <a class="el" href="classXMLElementDecl.html#dc24848e8722ceed15af8366900206fd">XMLElementDecl</a>
+<li>getCreateSchemaInfo()
+: <a class="el" href="classAbstractDOMParser.html#93fb77ee0834a8bd202b70ea127ff0cf">AbstractDOMParser</a>
+<li>getCurrentDirectory()
+: <a class="el" href="classXMLPlatformUtils.html#8385708fc8ef23f163a09f19d378231c">XMLPlatformUtils</a>
+<li>getCurrentMillis()
+: <a class="el" href="classXMLPlatformUtils.html#4d315cfa7b9ec38b47b458fde5f2f443">XMLPlatformUtils</a>
+<li>getCurrentNode()
+: <a class="el" href="classDOMTreeWalker.html#cbb2df243b57253839796b8fcc66b462">DOMTreeWalker</a>
+, <a class="el" href="classAbstractDOMParser.html#4bcd25a4b7f1f76f864d5c5ff3e91377">AbstractDOMParser</a>
+<li>getData()
+: <a class="el" href="classDOMCharacterData.html#8398b3ff50a448455f975a8b732586d8">DOMCharacterData</a>
+, <a class="el" href="classDOMProcessingInstruction.html#2a9975a8ac29d65940748678eadf78cc">DOMProcessingInstruction</a>
+<li>getDataLength()
+: <a class="el" href="classBase64.html#be54a9197869f005c2bd626b3b9f155c">Base64</a>
+, <a class="el" href="classHexBin.html#5ee657128c61a8323da8ba1d91219d2a">HexBin</a>
+<li>getDataType()
+: <a class="el" href="classXSValue.html#dfe7887ffcb902124f6ee24220d6e2d0">XSValue</a>
+<li>getDatatypeValidator()
+: <a class="el" href="classXSSimpleTypeDefinition.html#9e6f76f1426c0cf55035c4dc5dd2efca">XSSimpleTypeDefinition</a>
+<li>getDateCanonicalRepresentation()
+: <a class="el" href="classXMLDateTime.html#4c0936ddc962f4bd5d1c90bf1a1136ff">XMLDateTime</a>
+<li>getDateTimeCanonicalRepresentation()
+: <a class="el" href="classXMLDateTime.html#1fffbada5d8c19bcd4f67056a83e7b65">XMLDateTime</a>
+<li>getDeclarationHandler()
+: <a class="el" href="classSAX2XMLReader.html#8f814c6f2a2b1750ea6672de7c2392cd">SAX2XMLReader</a>
+<li>getDeclaredInIntSubset()
+: <a class="el" href="classXMLEntityDecl.html#f30d0669b00e04f3b1738ec45f835e70">XMLEntityDecl</a>
+<li>getDefAttTypeString()
+: <a class="el" href="classXMLAttDef.html#ee3ba882b706999b8dd6731e9efd9c72">XMLAttDef</a>
+<li>getDefaultType()
+: <a class="el" href="classXMLAttDef.html#0e7ac147ebdd7952acb412972e717022">XMLAttDef</a>
+<li>getDefinedFacets()
+: <a class="el" href="classXSSimpleTypeDefinition.html#0701449d34494a9d50c44fb65a1f3d74">XSSimpleTypeDefinition</a>
+<li>getDerivationMethod()
+: <a class="el" href="classXSComplexTypeDefinition.html#769d81f0d1f1e7890449edbe78b27dc6">XSComplexTypeDefinition</a>
+<li>getDisableDefaultEntityResolution()
+: <a class="el" href="classAbstractDOMParser.html#6618ac48a1b78b7fe8a669769220c2d7">AbstractDOMParser</a>
+, <a class="el" href="classSAXParser.html#2be75e01041f2bc218fe7f6768c413ad">SAXParser</a>
+<li>getDisallowedSubstitutions()
+: <a class="el" href="classXSElementDeclaration.html#f5dff46454b106ccf67882c11438e45f">XSElementDeclaration</a>
+<li>getDoctype()
+: <a class="el" href="classDOMDocument.html#60e27207f8c6dde40e91f6acc347172d">DOMDocument</a>
+<li>getDocument()
+: <a class="el" href="classAbstractDOMParser.html#143bc9285686b49f0f06a184b079292a">AbstractDOMParser</a>
+<li>getDocumentElement()
+: <a class="el" href="classDOMDocument.html#0138eae33ffdd7ae03d307bfbee31ded">DOMDocument</a>
+<li>getDocumentHandler()
+: <a class="el" href="classSAXParser.html#5c19e19874e6d78aef1e95569d182377">SAXParser</a>
+<li>getDocumentLocations()
+: <a class="el" href="classXSNamespaceItem.html#5a8f5550c7fe07864393bfd6403b225e">XSNamespaceItem</a>
+<li>getDocumentURI()
+: <a class="el" href="classDOMDocument.html#a15ff81f6dd57aa4eb4ef6c9ada54fbc">DOMDocument</a>
+<li>getDOMConfiguration()
+: <a class="el" href="classDOMDocument.html#6a920a2aab92493f39393483e7414c4e">DOMDocument</a>
+<li>getDOMImplementation()
+: <a class="el" href="classDOMImplementationRegistry.html#142f6dd9e0b65cda6dd6cc3dc06fc849">DOMImplementationRegistry</a>
+, <a class="el" href="classDOMImplementationSource.html#374937f8a634ce599aa18069929296c4">DOMImplementationSource</a>
+<li>getDOMTypeInfoName()
+: <a class="el" href="classXMLAttDef.html#8fcc0760eb330e53b7dbcaa485ce4af5">XMLAttDef</a>
+, <a class="el" href="classXMLElementDecl.html#ef1431d209e30c86d0a830d3e04ecf5c">XMLElementDecl</a>
+<li>getDOMTypeInfoUri()
+: <a class="el" href="classXMLAttDef.html#6ad13466381c570c088aa4c6c1cf50d9">XMLAttDef</a>
+, <a class="el" href="classXMLElementDecl.html#4276d3d9d678442a55fbe7c23e1a2635">XMLElementDecl</a>
+<li>getDoNamespaces()
+: <a class="el" href="classAbstractDOMParser.html#d3546d284d5054ce7c389a1a0813f72f">AbstractDOMParser</a>
+, <a class="el" href="classSAXParser.html#b78957153a98726694123d10ca0fd987">SAXParser</a>
+<li>getDoSchema()
+: <a class="el" href="classAbstractDOMParser.html#ceaeace2aaaa8df67429d2a98ea4c6d9">AbstractDOMParser</a>
+, <a class="el" href="classSAXParser.html#2e99011fdd8d078f221056cc7a861f6b">SAXParser</a>
+<li>getDoValidation()
+: <a class="el" href="classAbstractDOMParser.html#789fb6657edc7f470a4bd10a563f0bbf">AbstractDOMParser</a>
+, <a class="el" href="classSAXParser.html#a578a9608974e2d31ea71c4edd30a12b">SAXParser</a>
+<li>getDTDHandler()
+: <a class="el" href="classSAX2XMLReader.html#89f6ad6b94dce1d82f86d88084cafeaf">SAX2XMLReader</a>
+<li>getElementById()
+: <a class="el" href="classDOMDocument.html#fb3e89ba1247d689c4570f40003ea5db">DOMDocument</a>
+<li>getElementDeclaration()
+: <a class="el" href="classPSVIElement.html#d9c545af7ad2b8a5ce1365ca48cf6c9c">PSVIElement</a>
+, <a class="el" href="classXSModel.html#7fdb9a6e30f456fb0d3da3f621f11799">XSModel</a>
+, <a class="el" href="classXSNamespaceItem.html#b5394d81460fa82af57fbc8dd974056a">XSNamespaceItem</a>
+<li>getElementName()
+: <a class="el" href="classXMLElementDecl.html#a8581855ead5baddd945aab819c91ead">XMLElementDecl</a>
+<li>getElementsByTagName()
+: <a class="el" href="classDOMDocument.html#4caab53f01e6489e2bc1cf9e96d748bd">DOMDocument</a>
+, <a class="el" href="classDOMElement.html#66733ea942d0237694d2e0051c974957">DOMElement</a>
+<li>getElementsByTagNameNS()
+: <a class="el" href="classDOMDocument.html#1cad8e1f6e079533ed69726d62f4cb3f">DOMDocument</a>
+, <a class="el" href="classDOMElement.html#6ca51a268e95982a19cb45c2f7ea5fa4">DOMElement</a>
+<li>getElementTerm()
+: <a class="el" href="classXSParticle.html#b010280eccee0f5074a79c216b6052a8">XSParticle</a>
+<li>getEnclosingCTDefinition()
+: <a class="el" href="classXSAttributeDeclaration.html#f5a9611074998c31ff6bef1033d47e68">XSAttributeDeclaration</a>
+, <a class="el" href="classXSElementDeclaration.html#841726e2e62fc7306cd3d7bbec28fe61">XSElementDeclaration</a>
+<li>getEnclosingElementName()
+: <a class="el" href="classXMLSchemaDescription.html#616f8cbc0bbf3fca75566340db120699">XMLSchemaDescription</a>
+<li>getEncoding()
+: <a class="el" href="classDOMDocument.html#a5aeb92e17446c6be9bcdaf55c21b159">DOMDocument</a>
+, <a class="el" href="classDOMEntity.html#c0017a0d5234046197f48da439780619">DOMEntity</a>
+, <a class="el" href="classDOMInputSource.html#cf478593829779e090e7f7f49a696890">DOMInputSource</a>
+, <a class="el" href="classDOMWriter.html#cdfdf08cff662188d36032abd5aeae07">DOMWriter</a>
+, <a class="el" href="classWrapper4DOMInputSource.html#eb66b02bd3fe31216672229902dfd328">Wrapper4DOMInputSource</a>
+, <a class="el" href="classWrapper4InputSource.html#cf21154a9da7d6147ca942b155e3cf5b">Wrapper4InputSource</a>
+, <a class="el" href="classInputSource.html#70b363bf9af9aa831b40f4cceebd1d75">InputSource</a>
+<li>getEncodingName()
+: <a class="el" href="classXMLFormatter.html#dab7f0c3362593dbdbd779c15ab1d5dc">XMLFormatter</a>
+, <a class="el" href="classXMLTranscoder.html#e6504b962e5540dc19cb7b8a10b1c263">XMLTranscoder</a>
+<li>getEndContainer()
+: <a class="el" href="classDOMRange.html#1be5b6cb356ca847a8e1eb5a9131c4ed">DOMRange</a>
+<li>getEndOffset()
+: <a class="el" href="classDOMRange.html#cafa27c9b763b71951088a545111c84b">DOMRange</a>
+<li>getEntities()
+: <a class="el" href="classDOMDocumentType.html#6a7251f16118136075158a822a1a238b">DOMDocumentType</a>
+<li>getEntityDeclPool()
+: <a class="el" href="classValidationContext.html#59a5d886229a96ac718f4e884debd7eb">ValidationContext</a>
+<li>getEntityExpansionLimit()
+: <a class="el" href="classSecurityManager.html#fa434d387a3b7cc489d20d2275f2d7d7">SecurityManager</a>
+<li>getEntityResolver()
+: <a class="el" href="classDOMBuilder.html#14454cabc5eb774614c8fdba867abfcd">DOMBuilder</a>
+, <a class="el" href="classSAXParser.html#a5d7b8295c0d5ee5f25a13fed458d4e7">SAXParser</a>
+, <a class="el" href="classXercesDOMParser.html#ee65258bf91265109cae4af97c5727af">XercesDOMParser</a>
+, <a class="el" href="classSAX2XMLReader.html#ef939a6a68ded3d000f8ecbd80cc5089">SAX2XMLReader</a>
+<li>getEnumeration()
+: <a class="el" href="classXMLAttDef.html#cdb1d7a844ec3b9f03494cc619d00ed2">XMLAttDef</a>
+<li>getErrorCount()
+: <a class="el" href="classAbstractDOMParser.html#48623511017115b5dfe99af49be15e56">AbstractDOMParser</a>
+, <a class="el" href="classSAXParser.html#e00d6b0127b536e154433128fcd82443">SAXParser</a>
+, <a class="el" href="classSAX2XMLReader.html#6a6f6b7af13342e221b8cac6335af05c">SAX2XMLReader</a>
+<li>getErrorHandler()
+: <a class="el" href="classDOMBuilder.html#3669f6347f252e7e5e3ceb63dbc3314d">DOMBuilder</a>
+, <a class="el" href="classDOMWriter.html#822cc241e7946e32f8b76e83f1f2c1b1">DOMWriter</a>
+, <a class="el" href="classSAXParser.html#c1fc8cf19c9011490e586a369f0b6f85">SAXParser</a>
+, <a class="el" href="classXercesDOMParser.html#c1bb89e72d35cd07fd571f573541f57c">XercesDOMParser</a>
+, <a class="el" href="classSAX2XMLReader.html#96bb93cd1b62dd75068325cbcdfbb581">SAX2XMLReader</a>
+<li>getErrorNode()
+: <a class="el" href="classDOMLocator.html#3ad4aa6c243883d52003d4455034cee5">DOMLocator</a>
+<li>getErrorType()
+: <a class="el" href="classXMLException.html#437e8f44bb213d4d89ee5240c9e9823c">XMLException</a>
+<li>getEscapeFlags()
+: <a class="el" href="classXMLFormatter.html#d8e3fc00bcf307f9073eb9cf12b414d9">XMLFormatter</a>
+<li>getExitOnFirstFatalError()
+: <a class="el" href="classAbstractDOMParser.html#f0d73dabd5dd7fdfa83825ea02441a7c">AbstractDOMParser</a>
+, <a class="el" href="classSAXParser.html#263f5b58a640107ca5389962abaec4e6">SAXParser</a>
+, <a class="el" href="classSAX2XMLReader.html#693dae9983a6d951c1fb36f0a9eab111">SAX2XMLReader</a>
+<li>getExpandEntityReferences()
+: <a class="el" href="classDOMNodeIterator.html#b588cd981c8402be330f07f0e6b8002e">DOMNodeIterator</a>
+, <a class="el" href="classDOMTreeWalker.html#ff66d5b94a168e71e5e4a519b82034f5">DOMTreeWalker</a>
+, <a class="el" href="classAbstractDOMParser.html#9c42a6701a7b2d2ba88cb9a495877b22">AbstractDOMParser</a>
+<li>getExternalNoNamespaceSchemaLocation()
+: <a class="el" href="classAbstractDOMParser.html#d13d93c3469ae5c8fc3925cf15979ce4">AbstractDOMParser</a>
+, <a class="el" href="classSAXParser.html#47da2233c10beb0ac5c9ea361feb81da">SAXParser</a>
+<li>getExternalSchemaLocation()
+: <a class="el" href="classAbstractDOMParser.html#8e946288a4418b921c6b77e6d9d7efa5">AbstractDOMParser</a>
+, <a class="el" href="classSAXParser.html#3e7c6ead1fb233c3af18cb77fb8e3ea0">SAXParser</a>
+<li>getFacetKind()
+: <a class="el" href="classXSFacet.html#a8b78315bfe6a4473a573a58f21edef1">XSFacet</a>
+, <a class="el" href="classXSMultiValueFacet.html#909b320668a2879113504259f89a03c3">XSMultiValueFacet</a>
+<li>getFacets()
+: <a class="el" href="classXSSimpleTypeDefinition.html#892c39535f644903696b7fa6cd692de0">XSSimpleTypeDefinition</a>
+<li>getFeature()
+: <a class="el" href="classDOMBuilder.html#90ddf329536b2cab4bc548e284dbeb22">DOMBuilder</a>
+, <a class="el" href="classDOMWriter.html#ae92d3e73685802a1ac8d3ccadeacfb0">DOMWriter</a>
+, <a class="el" href="classSAX2XMLReader.html#6a704107fbb8c3552589236e959238be">SAX2XMLReader</a>
+<li>getFieldStrs()
+: <a class="el" href="classXSIDCDefinition.html#71cf20017f0d713393a6d1d8c8a505c7">XSIDCDefinition</a>
+<li>getFilter()
+: <a class="el" href="classDOMBuilder.html#4fdbdacdf8657a7d9bcba51bfcfac069">DOMBuilder</a>
+, <a class="el" href="classDOMNodeIterator.html#f1ca0dcbf2ce5ab9396f6f35d2769dff">DOMNodeIterator</a>
+, <a class="el" href="classDOMTreeWalker.html#07b3562342a65c37ac9d0465a81a45e0">DOMTreeWalker</a>
+, <a class="el" href="classDOMWriter.html#ca303ee6bb09571afa7259305f50c557">DOMWriter</a>
+<li>getFinal()
+: <a class="el" href="classXSTypeDefinition.html#b0c00282184fafcd1b1a2ebd15b5da8d">XSTypeDefinition</a>
+<li>getFinite()
+: <a class="el" href="classXSSimpleTypeDefinition.html#f26b701ab015b7fa05714319566ff7c6">XSSimpleTypeDefinition</a>
+<li>getFirstChild()
+: <a class="el" href="classDOMNode.html#24c2077f1694052682fc0ae21b9b535a">DOMNode</a>
+<li>getFixedFacets()
+: <a class="el" href="classXSSimpleTypeDefinition.html#d03424a6ab4b27297eb7c4552b7e2a06">XSSimpleTypeDefinition</a>
+<li>getFormattedContentModel()
+: <a class="el" href="classXMLElementDecl.html#59e5effbc797fc985d5006181c37a83f">XMLElementDecl</a>
+<li>getFormattedString()
+: <a class="el" href="classXMLAbstractDoubleFloat.html#c897e4a4c9b8bd8a17880dc7c148a1ff">XMLAbstractDoubleFloat</a>
+, <a class="el" href="classXMLBigDecimal.html#8117d2f6951ae26a199d28fd21215aa1">XMLBigDecimal</a>
+, <a class="el" href="classXMLDateTime.html#ec6793ef66fbc79b72e2f02482cfc510">XMLDateTime</a>
+, <a class="el" href="classXMLNumber.html#9ee7bb914f65bbf0d6edc2835bfa28f6">XMLNumber</a>
+<li>getFragment()
+: <a class="el" href="classXMLUri.html#77aac5245d5921c494fb217e20da3f70">XMLUri</a>
+, <a class="el" href="classXMLURL.html#85f623ccbd4690de8316b80d8f36f121">XMLURL</a>
+<li>getFullName()
+: <a class="el" href="classXMLAttDef.html#66e9915b5fd1a6232320a0c8bdb4adb5">XMLAttDef</a>
+, <a class="el" href="classXMLElementDecl.html#ab7a3db5fbbe3c7e21956d78fa18ab6d">XMLElementDecl</a>
+<li>getFullPath()
+: <a class="el" href="classXMLPlatformUtils.html#41d767f41350edd2bd8853714b9124d8">XMLPlatformUtils</a>
+<li>getGenerateSyntheticAnnotations()
+: <a class="el" href="classAbstractDOMParser.html#1783957a08be20da7753b34466d9903c">AbstractDOMParser</a>
+, <a class="el" href="classSAXParser.html#5070cc15fe52f35887324c5157c7fcf9">SAXParser</a>
+<li>getGrammar()
+: <a class="el" href="classDOMBuilder.html#73bcb94169faab8b9baa51cf1364c56b">DOMBuilder</a>
+, <a class="el" href="classXMLValidator.html#a29939689b60fae3ce963a75e71583bf">XMLValidator</a>
+, <a class="el" href="classSAXParser.html#25b2fb8df7d0f5eae8c184116a9c0f86">SAXParser</a>
+, <a class="el" href="classXercesDOMParser.html#84fb7f2836b7de3724b623e8c96e5eaf">XercesDOMParser</a>
+, <a class="el" href="classSAX2XMLReader.html#edc75b118c38b2beb51cb074f25c04b5">SAX2XMLReader</a>
+<li>getGrammarEnumerator()
+: <a class="el" href="classXMLGrammarPool.html#3cc5ab2ad55b562cb636871b7d9895e8">XMLGrammarPool</a>
+<li>getGrammarKey()
+: <a class="el" href="classXMLGrammarDescription.html#329bc66450f479c6ef5cf09f6fe15f14">XMLGrammarDescription</a>
+<li>getGrammarResolver()
+: <a class="el" href="classAbstractDOMParser.html#154195ec746f30382835f0df7ccf7706">AbstractDOMParser</a>
+, <a class="el" href="classSAXParser.html#64a257c98cc32901b51053626878f515">SAXParser</a>
+<li>getGrammarType()
+: <a class="el" href="classXMLDTDDescription.html#5755d73d480db8af579119dfac1ee277">XMLDTDDescription</a>
+, <a class="el" href="classXMLGrammarDescription.html#638d8f89481b5bcb576a2e79f2e39a9a">XMLGrammarDescription</a>
+, <a class="el" href="classXMLSchemaDescription.html#ca3b66dc3359afca23537fc7029af410">XMLSchemaDescription</a>
+<li>getHost()
+: <a class="el" href="classXMLUri.html#42105a5531c568f587a6e1df4339c1ec">XMLUri</a>
+, <a class="el" href="classXMLURL.html#e98f110517cfa1523ccfaf573157adab">XMLURL</a>
+<li>getId()
+: <a class="el" href="classXMLAttDef.html#f74b551ec7a711155f3f9ff8d039e7ad">XMLAttDef</a>
+, <a class="el" href="classXMLElementDecl.html#d59c671130bf40c69e53cf624088f0bd">XMLElementDecl</a>
+, <a class="el" href="classXMLEntityDecl.html#1daab3ab2fca6824d970d7f8bb165a02">XMLEntityDecl</a>
+, <a class="el" href="classXMLNotationDecl.html#d72c2f71313a9073ea94ffb0f5e4f433">XMLNotationDecl</a>
+, <a class="el" href="classXSObject.html#21bc762e2144881968dfcc260b9f2940">XSObject</a>
+, <a class="el" href="classXMLSynchronizedStringPool.html#990d108549bac9df5302eef45f6fd2dc">XMLSynchronizedStringPool</a>
+, <a class="el" href="classXMLTransService.html#9420eda816319e543e2584ca18865f02">XMLTransService</a>
+, <a class="el" href="classXMLNetAccessor.html#7b7e331714dd33b76c45f8bb158fcd7b">XMLNetAccessor</a>
+<li>getIdentityConstraintChecking()
+: <a class="el" href="classAbstractDOMParser.html#624b47468912f79fcb5d793e14cbd353">AbstractDOMParser</a>
+, <a class="el" href="classSAXParser.html#d3bb2515b61b245069bf3bb329907f3c">SAXParser</a>
+<li>getIdentityConstraints()
+: <a class="el" href="classXSElementDeclaration.html#c63fd21fe3f08659c25b1b9eb256579b">XSElementDeclaration</a>
+<li>getIdRefList()
+: <a class="el" href="classValidationContext.html#37705461b20a9165507d5d63625c7eb4">ValidationContext</a>
+<li>getIgnoreAnnotations()
+: <a class="el" href="classAbstractDOMParser.html#66d643f471aada28e9fdefa5284552bc">AbstractDOMParser</a>
+, <a class="el" href="classSAXParser.html#5412c5a73b1ba5aaaf52abca68dca699">SAXParser</a>
+<li>getIgnoreCachedDTD()
+: <a class="el" href="classSAXParser.html#152ceefdfe1799b4ed098a68a273a801">SAXParser</a>
+, <a class="el" href="classXercesDOMParser.html#f499ac78efa26c7db490094259f0b51a">XercesDOMParser</a>
+<li>getIgnoreSerializedAnnotations()
+: <a class="el" href="classXMLGrammarPool.html#9b8187ba62782cc03c0ad1fc6a658023">XMLGrammarPool</a>
+<li>getImplementation()
+: <a class="el" href="classDOMDocument.html#7d827d93e437cf978c897285a1639a61">DOMDocument</a>
+, <a class="el" href="classDOMImplementation.html#c0ed9121832e5d550f1e25040476752e">DOMImplementation</a>
+<li>getIncludeIgnorableWhitespace()
+: <a class="el" href="classAbstractDOMParser.html#cb5692bf58b5fa6f38d3231013d95cfb">AbstractDOMParser</a>
+<li>getIndex()
+: <a class="el" href="classAttributes.html#d188296dccacd4afe4433eec382b20c8">Attributes</a>
+<li>getInterface()
+: <a class="el" href="classDOMImplementation.html#4babe0a0f17ca4462f4e2ce664a29a93">DOMImplementation</a>
+, <a class="el" href="classDOMNode.html#5117d700160a36ff4ee4be6fc01cc8f9">DOMNode</a>
+<li>getInternalSubset()
+: <a class="el" href="classDOMDocumentType.html#a8acdacee10fc42e3e78c7f8bc8141a3">DOMDocumentType</a>
+<li>getIntVal()
+: <a class="el" href="classXMLBigDecimal.html#758312308c4ece7ca7966a6bd7408f5c">XMLBigDecimal</a>
+<li>getInvalidIteratorState()
+: <a class="el" href="classDOMXPathResult.html#6203550451cb9d2535e08e5f6c17a50a">DOMXPathResult</a>
+<li>getIsOpen()
+: <a class="el" href="classBinFileInputStream.html#ef94117b67875be1d8dc286f946ce8f4">BinFileInputStream</a>
+<li>getIsParameter()
+: <a class="el" href="classXMLEntityDecl.html#20fa5685909c32bc6ceb97c351375113">XMLEntityDecl</a>
+<li>getIsSchemaSpecified()
+: <a class="el" href="classPSVIItem.html#cf7f820f0d6f4f925e9fdd9664cf99d9">PSVIItem</a>
+<li>getIsSpecialChar()
+: <a class="el" href="classXMLEntityDecl.html#9a5c01473a2e199a3652e5279f932798">XMLEntityDecl</a>
+<li>getIssueFatalErrorIfNotFound()
+: <a class="el" href="classDOMInputSource.html#76b39aae3710effcb25ca9df6bf57620">DOMInputSource</a>
+, <a class="el" href="classWrapper4DOMInputSource.html#c5aa4e0ed1abd87a33eb1cdbcd90f512">Wrapper4DOMInputSource</a>
+, <a class="el" href="classWrapper4InputSource.html#cdde60aa8b64b4bb2091df9871d26283">Wrapper4InputSource</a>
+, <a class="el" href="classInputSource.html#4b8eee7896615e4e2ddb9acbc72543ed">InputSource</a>
+<li>getIsWhitespaceInElementContent()
+: <a class="el" href="classDOMText.html#f4655ba55ec5b6a9122ffff3c92279bf">DOMText</a>
+<li>getItemType()
+: <a class="el" href="classXSSimpleTypeDefinition.html#da5bbd4dff24e5c1be8ffcc44c95dc50">XSSimpleTypeDefinition</a>
+<li>getKey()
+: <a class="el" href="classXMLEntityDecl.html#f360a36167d6f3dd9c5e18af48ea9bce">XMLEntityDecl</a>
+, <a class="el" href="classXMLNotationDecl.html#97ae9341ca3229761415f2567260c9a8">XMLNotationDecl</a>
+<li>getLastChild()
+: <a class="el" href="classDOMNode.html#a8466aebd1f2d312013aeba417ee1220">DOMNode</a>
+<li>getLen()
+: <a class="el" href="classMemBufFormatTarget.html#75724272276aa4f748e93a88f3cbaf0a">MemBufFormatTarget</a>
+<li>getLength()
+: <a class="el" href="classDOMCharacterData.html#9473da96d7b6a606832288c87600b37f">DOMCharacterData</a>
+, <a class="el" href="classDOMNamedNodeMap.html#1f29385d052b41722d124d32a50fb6e5">DOMNamedNodeMap</a>
+, <a class="el" href="classDOMNodeList.html#3c0bae7c8cf84cdb9d61e1c1fdcbdcc2">DOMNodeList</a>
+, <a class="el" href="classPSVIAttributeList.html#14d55d765b92ca9b95163ca9b3f4c520">PSVIAttributeList</a>
+, <a class="el" href="classXSNamedMap.html#2f0328d26200cd4e4d8c33e870d3a7d8">XSNamedMap&lt; TVal &gt;</a>
+, <a class="el" href="classAttributeList.html#ddc265faf59d1130454c6cd89d8b0062">AttributeList</a>
+, <a class="el" href="classAttributes.html#841c96af58c9204fb31c91085dd08456">Attributes</a>
+<li>getLexicalEnumeration()
+: <a class="el" href="classXSSimpleTypeDefinition.html#26810dff623d26e3740a91935813269a">XSSimpleTypeDefinition</a>
+<li>getLexicalFacetValue()
+: <a class="el" href="classXSFacet.html#9a7c0ad5f6c5ccfed2d030c30b8b428d">XSFacet</a>
+, <a class="el" href="classXSSimpleTypeDefinition.html#070e6475048345194563f01b4a080fa2">XSSimpleTypeDefinition</a>
+<li>getLexicalFacetValues()
+: <a class="el" href="classXSMultiValueFacet.html#cfcda96c9da3d0fd390afae6fa94b2ce">XSMultiValueFacet</a>
+<li>getLexicalHandler()
+: <a class="el" href="classSAX2XMLReader.html#2279a6a050eef26c67ba11620044a0ec">SAX2XMLReader</a>
+<li>getLexicalPattern()
+: <a class="el" href="classXSSimpleTypeDefinition.html#dd9482067ba28ccab5a1e1bb352f61e3">XSSimpleTypeDefinition</a>
+<li>getLineCol()
+: <a class="el" href="classXSAnnotation.html#c1e292d53ea4b72b4b4bdd90017ec9ad">XSAnnotation</a>
+<li>getLineNumber()
+: <a class="el" href="classDOMLocator.html#8d183a06b61e56fefa1f259eb1c96b9d">DOMLocator</a>
+, <a class="el" href="classLocator.html#fd463e2649bd1c128131048e972e563b">Locator</a>
+, <a class="el" href="classSAXParseException.html#220d238653018b327126a12c8bf2f4c5">SAXParseException</a>
+<li>getLoadExternalDTD()
+: <a class="el" href="classAbstractDOMParser.html#8d2c7052e74dba558dc16a5e18f815bd">AbstractDOMParser</a>
+, <a class="el" href="classSAXParser.html#2d720b8a2c55a21a4734a6ae55b5ddb1">SAXParser</a>
+<li>getLocalName()
+: <a class="el" href="classDOMNode.html#4b5979c0fc8c91573d0d603bdad1551c">DOMNode</a>
+, <a class="el" href="classAttributes.html#7c9b328c34e1a0681b13a1e6a1c0a157">Attributes</a>
+<li>getLocalPart()
+: <a class="el" href="classQName.html#a22c091478cc3ec4fa64c9d448fdeb0d">QName</a>
+<li>getLocation()
+: <a class="el" href="classDOMError.html#33a72f6361c6eb8d4373786b5bee8c79">DOMError</a>
+<li>getLocationHints()
+: <a class="el" href="classXMLSchemaDescription.html#3318fae01c2b237aa4ed211388927192">XMLSchemaDescription</a>
+<li>getLocator()
+: <a class="el" href="classXMLResourceIdentifier.html#f30d4bfa42e1728b00c391f2c5c4f8ec">XMLResourceIdentifier</a>
+<li>getMaxOccurs()
+: <a class="el" href="classXSParticle.html#dc429fa2a410395f92de296c1da71693">XSParticle</a>
+<li>getMaxOccursUnbounded()
+: <a class="el" href="classXSParticle.html#72eff48a8fd4397a3aebd3cfb6c7a5ca">XSParticle</a>
+<li>getMemberTypeDefinition()
+: <a class="el" href="classPSVIAttribute.html#c7550071703bbaf439cf756c14019a43">PSVIAttribute</a>
+, <a class="el" href="classPSVIElement.html#dce462e4ea52fbe7722ad86102884c2e">PSVIElement</a>
+, <a class="el" href="classPSVIItem.html#449e9771b633e222f0345bb3ebd1ec8c">PSVIItem</a>
+<li>getMemberTypes()
+: <a class="el" href="classXSSimpleTypeDefinition.html#b06df3530837d43d65e5eabed9990c73">XSSimpleTypeDefinition</a>
+<li>getMemoryManager()
+: <a class="el" href="classXMLBigDecimal.html#a08035f601040c0df7d05a36fb04108f">XMLBigDecimal</a>
+, <a class="el" href="classXMLAttDef.html#d8c83665c3cbc0d9792c1dcc0703e56d">XMLAttDef</a>
+, <a class="el" href="classXMLAttDefList.html#bf9b6a20154c8e5d56d58b7f8061a1c9">XMLAttDefList</a>
+, <a class="el" href="classXMLElementDecl.html#7fcea325660b738e0407cde416e5b4f4">XMLElementDecl</a>
+, <a class="el" href="classXMLEntityDecl.html#adce21e0f4469ddbb274334ed35e3373">XMLEntityDecl</a>
+, <a class="el" href="classXMLGrammarDescription.html#b6f00d9a49aaf3c919418a2998c99426">XMLGrammarDescription</a>
+, <a class="el" href="classXMLGrammarPool.html#e12c5153eb902652d3ebd5c8d504e5b3">XMLGrammarPool</a>
+, <a class="el" href="classXMLNotationDecl.html#f4747732a8dbe76fe3e80cde3908b3c6">XMLNotationDecl</a>
+, <a class="el" href="classInputSource.html#8abf186a8be413a303fc9847268c3446">InputSource</a>
+, <a class="el" href="classAbstractDOMParser.html#fc213ededf95b5d14a0d27e6a48495de">AbstractDOMParser</a>
+, <a class="el" href="classQName.html#9311502f6bca34d328a1f5acad48a94a">QName</a>
+, <a class="el" href="classXMLTranscoder.html#3affa8b64dffd3829d81869049d69d14">XMLTranscoder</a>
+, <a class="el" href="classXMLAbstractDoubleFloat.html#cb3b26332583efb33e3650a43709129d">XMLAbstractDoubleFloat</a>
+, <a class="el" href="classXMLURL.html#1755ee7fadef034c9f54464c301fe684">XMLURL</a>
+<li>getMessage()
+: <a class="el" href="classSAXException.html#f0acaa8dadb596c76eba2d15782a9072">SAXException</a>
+, <a class="el" href="classDOMError.html#ab1dcd7a2d657d9aefcb27ddc14fbdcf">DOMError</a>
+, <a class="el" href="classDOMException.html#60efacd2438bd49be92305b236aa954a">DOMException</a>
+, <a class="el" href="classOutOfMemoryException.html#17aabe2ca36cd775da74a4d93efdca4f">OutOfMemoryException</a>
+, <a class="el" href="classXMLException.html#6c1f5ed1a8da1cd8fb5c6e870ed31009">XMLException</a>
+<li>getMinOccurs()
+: <a class="el" href="classXSParticle.html#65808e0ae8007cb8a83f29feccd06776">XSParticle</a>
+<li>getModelGroup()
+: <a class="el" href="classXSModelGroupDefinition.html#b01bec0e745d156a444f349ae3ddb0ec">XSModelGroupDefinition</a>
+<li>getModelGroupDefinition()
+: <a class="el" href="classXSModel.html#7b54b569c7d7439034ef8700550c15ce">XSModel</a>
+, <a class="el" href="classXSNamespaceItem.html#1f34a57a02cf61458c0191710c4020ac">XSNamespaceItem</a>
+<li>getModelGroupTerm()
+: <a class="el" href="classXSParticle.html#c718435c3b8ee0677ad617ab42d9e787">XSParticle</a>
+<li>getMultiValueFacets()
+: <a class="el" href="classXSSimpleTypeDefinition.html#30a1640e35d539fa3bb196f0a56c65a1">XSSimpleTypeDefinition</a>
+<li>getName()
+: <a class="el" href="classXSModelGroupDefinition.html#36d96c757ca04516e5faf96fa68d9ca1">XSModelGroupDefinition</a>
+, <a class="el" href="classXSAttributeGroupDefinition.html#f77a055f5ac9dbb3d65cffd70804c19a">XSAttributeGroupDefinition</a>
+, <a class="el" href="classXMLAttr.html#18927ce8e8ea49d622fd20016cec01ec">XMLAttr</a>
+, <a class="el" href="classDOMAttr.html#4db050a7d2fb0d44f529c098fbc9c149">DOMAttr</a>
+, <a class="el" href="classDOMDocumentType.html#ff13ce9943531e3dd961961305e3bf9a">DOMDocumentType</a>
+, <a class="el" href="classDOMTypeInfo.html#7daf964a17a94df7db687d03c06c0c1d">DOMTypeInfo</a>
+, <a class="el" href="classXMLEntityDecl.html#05242032478ab8b623868bb816d6d171">XMLEntityDecl</a>
+, <a class="el" href="classXMLNotationDecl.html#38544a2d45bd574a3fdcd28a2b900182">XMLNotationDecl</a>
+, <a class="el" href="classXSAttributeDeclaration.html#dd4c1a52aa266e93b8b2e95bf27ccc74">XSAttributeDeclaration</a>
+, <a class="el" href="classXSComplexTypeDefinition.html#766d7899033852a739c857c98d55313d">XSComplexTypeDefinition</a>
+, <a class="el" href="classXSElementDeclaration.html#e179c61a3e698c8bae18e27c3c08890c">XSElementDeclaration</a>
+, <a class="el" href="classXSIDCDefinition.html#64efad0d1b94b9475281f88ba49f821e">XSIDCDefinition</a>
+, <a class="el" href="classXSNotationDeclaration.html#37f7f26cff15809773b614ffd123c113">XSNotationDeclaration</a>
+, <a class="el" href="classXSObject.html#6d4fd599e6486b6bc8dd06cb99759f51">XSObject</a>
+, <a class="el" href="classXSSimpleTypeDefinition.html#0ea3da8b94f6d0bcd16eded3d2813da2">XSSimpleTypeDefinition</a>
+, <a class="el" href="classXSTypeDefinition.html#559b76d77511967d133e7859d8ea1294">XSTypeDefinition</a>
+, <a class="el" href="classAttributeList.html#f671efb4c52f9de59b28ec0d5db65a25">AttributeList</a>
+<li>getNamedItem()
+: <a class="el" href="classDOMNamedNodeMap.html#bfefdac5bf23757f82bec7d37b57e2f3">DOMNamedNodeMap</a>
+<li>getNamedItemNS()
+: <a class="el" href="classDOMNamedNodeMap.html#55c126b6993c455cd31e70712b471ea6">DOMNamedNodeMap</a>
+<li>getNamespace()
+: <a class="el" href="classXSNotationDeclaration.html#331741978024625b4e2319dd648f1f4f">XSNotationDeclaration</a>
+, <a class="el" href="classXSComplexTypeDefinition.html#1ef52639d494120a855c41c8a9110472">XSComplexTypeDefinition</a>
+<li>getNameSpace()
+: <a class="el" href="classXMLResourceIdentifier.html#8c498d10b53f15eca067fec1bd7ba634">XMLResourceIdentifier</a>
+<li>getNamespace()
+: <a class="el" href="classDOMTypeInfo.html#1c538a3ff5f512fee87ae5402605bfb3">DOMTypeInfo</a>
+, <a class="el" href="classXSAttributeDeclaration.html#a59c5c17248f25fc8712222f85f0d555">XSAttributeDeclaration</a>
+, <a class="el" href="classXSAttributeGroupDefinition.html#78667a2404dc9b794ce79d0e5267a91d">XSAttributeGroupDefinition</a>
+, <a class="el" href="classXSElementDeclaration.html#14db9bb23788f0d06695045463d723d2">XSElementDeclaration</a>
+, <a class="el" href="classXSIDCDefinition.html#461d717261484d395818315abc62d9b5">XSIDCDefinition</a>
+, <a class="el" href="classXSModelGroupDefinition.html#23cd485048e41ff839eb6a40ac05b849">XSModelGroupDefinition</a>
+, <a class="el" href="classXSObject.html#8826fc266bad97aea3d4f319b188bd0c">XSObject</a>
+, <a class="el" href="classXSSimpleTypeDefinition.html#24decce7b15daada38ce5aaeeea18370">XSSimpleTypeDefinition</a>
+, <a class="el" href="classXSTypeDefinition.html#7447cf7b677b8b6ce6210fca7b1b91ee">XSTypeDefinition</a>
+<li>getNameSpaceId()
+: <a class="el" href="classXMLNotationDecl.html#89dd92bfa85179b68cb565d383464582">XMLNotationDecl</a>
+<li>getNamespaceItem()
+: <a class="el" href="classXSNotationDeclaration.html#9f26a987ab65d91f655fcb9a1f5432fe">XSNotationDeclaration</a>
+, <a class="el" href="classXSElementDeclaration.html#d77ef870ebfe5cbe3d07ed591ea3b107">XSElementDeclaration</a>
+, <a class="el" href="classXSAttributeDeclaration.html#06674539d2b09d6a4332e89c69f9f8d9">XSAttributeDeclaration</a>
+, <a class="el" href="classXSAttributeGroupDefinition.html#a5a2f74472ff27ea34c6e0391b8dee0e">XSAttributeGroupDefinition</a>
+, <a class="el" href="classXSComplexTypeDefinition.html#87f4bdc3ac76f1bb676d6800bd2f8ce9">XSComplexTypeDefinition</a>
+, <a class="el" href="classXSIDCDefinition.html#5b3647c7277a9c91430866a17926b86f">XSIDCDefinition</a>
+, <a class="el" href="classXSModel.html#a78f4d47daad9e19ea63d4ef0d392163">XSModel</a>
+, <a class="el" href="classXSModelGroupDefinition.html#09851d6185e8caf12917b4005ce0cd7e">XSModelGroupDefinition</a>
+, <a class="el" href="classXSObject.html#f118c3c00b4df60399b070661aa3591f">XSObject</a>
+, <a class="el" href="classXSSimpleTypeDefinition.html#348ce897d2516380e4696435479cb34c">XSSimpleTypeDefinition</a>
+, <a class="el" href="classXSTypeDefinition.html#03eda9b3b838672be352a90b4fc6be8e">XSTypeDefinition</a>
+<li>getNamespaceItems()
+: <a class="el" href="classXSModel.html#2dd8884638b5c4b2a8403b4f287a05c3">XSModel</a>
+<li>getNamespaces()
+: <a class="el" href="classXSModel.html#810078bfdeac0f58c72e5bb0dafeb6e3">XSModel</a>
+<li>getNamespaceURI()
+: <a class="el" href="classDOMNode.html#eda3f2767daa297b35ab121d8f94d17f">DOMNode</a>
+<li>getNewLine()
+: <a class="el" href="classDOMWriter.html#ec62a22ba85641a2a1ecc9e7cfa0c6ba">DOMWriter</a>
+<li>getNext()
+: <a class="el" href="classXSAnnotation.html#c52a8a20e3ac10cc0895c44ff53e22f2">XSAnnotation</a>
+<li>getNextSibling()
+: <a class="el" href="classDOMNode.html#4149ddc7ca78a13610e57dcd5cfb42d7">DOMNode</a>
+<li>getNextState()
+: <a class="el" href="classXMLContentModel.html#7bb12d3a6e46d75651855144f784aef7">XMLContentModel</a>
+<li>getNillable()
+: <a class="el" href="classXSElementDeclaration.html#9736d84cc90a5c85d76f9da899ae6cf9">XSElementDeclaration</a>
+<li>getNodeName()
+: <a class="el" href="classDOMNode.html#54c23f04202c5b401167d0853ab8aba5">DOMNode</a>
+<li>getNodeType()
+: <a class="el" href="classDOMNode.html#0662a228a1b2e4d26527f79c575db086">DOMNode</a>
+<li>getNodeValue()
+: <a class="el" href="classDOMNode.html#482f63884206b59d30c49dec3ecd0301">DOMNode</a>
+<li>getNotationDeclaration()
+: <a class="el" href="classXSModel.html#ac36a41edee91f50e6bdaa8f65af893a">XSModel</a>
+, <a class="el" href="classPSVIElement.html#b91b0330014d533a379618784332f3b9">PSVIElement</a>
+, <a class="el" href="classXSNamespaceItem.html#c9ee9b1812ebd0ce312fbe549cec0978">XSNamespaceItem</a>
+<li>getNotationName()
+: <a class="el" href="classDOMEntity.html#bef54ff6c7767b0feac7388c53782848">DOMEntity</a>
+, <a class="el" href="classXMLEntityDecl.html#5f2de0ff5fbace013d141d04b3cce5ae">XMLEntityDecl</a>
+<li>getNotations()
+: <a class="el" href="classDOMDocumentType.html#183e3b2068bed2ce02d5d61ad9e84db2">DOMDocumentType</a>
+<li>getNsConstraintList()
+: <a class="el" href="classXSWildcard.html#aaeac93a0e653ea4eb9530c40a8a13d3">XSWildcard</a>
+<li>getNumberValue()
+: <a class="el" href="classDOMXPathResult.html#15e02a76d2751a344030603238518edf">DOMXPathResult</a>
+<li>getNumeric()
+: <a class="el" href="classXSSimpleTypeDefinition.html#d0daaf43cfbe5e933bb911b81b748e4c">XSSimpleTypeDefinition</a>
+<li>getNumericProperty()
+: <a class="el" href="classDOMPSVITypeInfo.html#2806d24610274f9936417e528c1829ab">DOMPSVITypeInfo</a>
+<li>getObjectType()
+: <a class="el" href="classXMLElementDecl.html#c073a720a71b31b939d49a3ff2b0de29">XMLElementDecl</a>
+<li>getOffset()
+: <a class="el" href="classDOMLocator.html#d3ba186d63baa2b302e09122e4e535d4">DOMLocator</a>
+<li>getOrdered()
+: <a class="el" href="classXSSimpleTypeDefinition.html#c2a9e9a83ad9ff4b022d6ad22152505b">XSSimpleTypeDefinition</a>
+<li>getOwnerDocument()
+: <a class="el" href="classDOMNode.html#51104c45d1a157bc17582573451fffdf">DOMNode</a>
+<li>getOwnerElement()
+: <a class="el" href="classDOMAttr.html#aceec3a54617d511aa3d00c15c65227a">DOMAttr</a>
+, <a class="el" href="classDOMXPathNamespace.html#da897416a1bcfb92c22adb6e763f8045">DOMXPathNamespace</a>
+<li>getPanicReasonString()
+: <a class="el" href="classPanicHandler.html#1697ada99db00b56afb1f8355e5d90b4">PanicHandler</a>
+<li>getParameter()
+: <a class="el" href="classDOMConfiguration.html#a6810645f4a72fbca7050973a533ddb5">DOMConfiguration</a>
+<li>getParent()
+: <a class="el" href="classSAX2XMLFilter.html#4db50b194cf05ffaed52f4d2c8c86919">SAX2XMLFilter</a>
+<li>getParentNode()
+: <a class="el" href="classDOMNode.html#9f9d38e5496a6dc21e346588520e02c7">DOMNode</a>
+<li>getParseInProgress()
+: <a class="el" href="classAbstractDOMParser.html#6211ba0ff1466db763e65e52df29c824">AbstractDOMParser</a>
+<li>getParticle()
+: <a class="el" href="classXSComplexTypeDefinition.html#054d84cb033e00e0e4ab30c63e36c04b">XSComplexTypeDefinition</a>
+<li>getParticles()
+: <a class="el" href="classXSModelGroup.html#39db5527a4582091ab7e9896433b1671">XSModelGroup</a>
+<li>getPassword()
+: <a class="el" href="classXMLURL.html#2bc886637eedcdbb37c84bd3d03af252">XMLURL</a>
+<li>getPath()
+: <a class="el" href="classXMLUri.html#be23d90317ad6366e0537231820a6dc6">XMLUri</a>
+, <a class="el" href="classXMLURL.html#1bbd40d962ec01f169fbbdba30774858">XMLURL</a>
+<li>getPort()
+: <a class="el" href="classXMLUri.html#e8a7376d22dbb897cb5790766deb9a69">XMLUri</a>
+<li>getPortNum()
+: <a class="el" href="classXMLURL.html#20030dcdff403742474242bed24ba878">XMLURL</a>
+<li>getPrefix()
+: <a class="el" href="classDOMNode.html#d4a1eef0522d8df9139199fbc325f735">DOMNode</a>
+, <a class="el" href="classQName.html#5f5c1b806bb0eb966d47324b30a3199d">QName</a>
+, <a class="el" href="classXMLAttr.html#aacdcbc48f8db0149eed17d3f3607107">XMLAttr</a>
+<li>getPreviousSibling()
+: <a class="el" href="classDOMNode.html#d152534812012fe1e1f294f3fe1d3537">DOMNode</a>
+<li>getPrimitiveType()
+: <a class="el" href="classXSSimpleTypeDefinition.html#3b60dc99f9fe335c4072b4f6d82e9f3d">XSSimpleTypeDefinition</a>
+<li>getProcessContents()
+: <a class="el" href="classXSWildcard.html#7c7d2f315169fdf130c95fb5cdfa423b">XSWildcard</a>
+<li>getProhibitedSubstitutions()
+: <a class="el" href="classXSComplexTypeDefinition.html#b7e661366f6064e4f3522109a5beb2f9">XSComplexTypeDefinition</a>
+<li>getProperty()
+: <a class="el" href="classDOMBuilder.html#dc0028d383fea23bedce3f1233e25551">DOMBuilder</a>
+, <a class="el" href="classSAX2XMLReader.html#909627968ffa64bb14e673d5e2caf6f7">SAX2XMLReader</a>
+<li>getProtocol()
+: <a class="el" href="classXMLURL.html#6188f1c730511db43d171ea7f88eaaf8">XMLURL</a>
+<li>getProtocolName()
+: <a class="el" href="classXMLURL.html#3e961bbd916f8c004309a96e27edc1f5">XMLURL</a>
+<li>getProvided()
+: <a class="el" href="classXMLAttDef.html#01539484f09f217f6ffe535faf14ec67">XMLAttDef</a>
+<li>getPSVIAttributeToFill()
+: <a class="el" href="classPSVIAttributeList.html#e7bebd86133a05b5cd610bd6f025831f">PSVIAttributeList</a>
+<li>getPSVIHandler()
+: <a class="el" href="classAbstractDOMParser.html#e78f62338fa3c7ab4e281f76ffbba35f">AbstractDOMParser</a>
+, <a class="el" href="classSAXParser.html#da18c84c47a802ca1a720c06ab10fc47">SAXParser</a>
+, <a class="el" href="classAbstractDOMParser.html#2bcabec11963e9cbc0b6082c2e2f9282">AbstractDOMParser</a>
+<li>getPublicId()
+: <a class="el" href="classSAXParseException.html#25334797e270de1ff8acc1c73c4b3d7b">SAXParseException</a>
+, <a class="el" href="classDOMNotation.html#61d6de4dc908cc9dabd7b4ef5c7efbc8">DOMNotation</a>
+, <a class="el" href="classXMLNotationDecl.html#12ef2bfd6982a73bf29df52625176fc9">XMLNotationDecl</a>
+, <a class="el" href="classLocator.html#907679d51b2c8b606a29a09dd0b234ac">Locator</a>
+, <a class="el" href="classDOMDocumentType.html#aecabd3bbe0d36f6d5fa8e34cf855983">DOMDocumentType</a>
+, <a class="el" href="classDOMInputSource.html#a5497f97ef63e245bea1ce6ed3ab7406">DOMInputSource</a>
+, <a class="el" href="classWrapper4DOMInputSource.html#cd85e6d7e43b0ba43fced18ec99e4d54">Wrapper4DOMInputSource</a>
+, <a class="el" href="classXSNotationDeclaration.html#65e1f7ca7ad052d163f712e5472c573b">XSNotationDeclaration</a>
+, <a class="el" href="classInputSource.html#394888614a429622bf936b8253542cfb">InputSource</a>
+, <a class="el" href="classXMLResourceIdentifier.html#06a56d9b78aea6ca81df98b0e3a04744">XMLResourceIdentifier</a>
+, <a class="el" href="classDOMEntity.html#0d6bf370a104c657326a5f09d67326b9">DOMEntity</a>
+, <a class="el" href="classWrapper4InputSource.html#271ec62b413bf74bcb30db52cbef9e35">Wrapper4InputSource</a>
+, <a class="el" href="classXMLEntityDecl.html#556294721983195f3b11d17ef6096782">XMLEntityDecl</a>
+<li>getQName()
+: <a class="el" href="classXMLAttr.html#8c22a37ae1a502bd48336a8f6df231e0">XMLAttr</a>
+, <a class="el" href="classAttributes.html#3a577ac433de90076749b52ef7a24cdb">Attributes</a>
+<li>getQuery()
+: <a class="el" href="classXMLURL.html#3a067170273d9ceacf3270a1e2d78f6a">XMLURL</a>
+<li>getQueryString()
+: <a class="el" href="classXMLUri.html#477400b973e2b51b7ec50e49c066aad4">XMLUri</a>
+<li>getRawBuffer()
+: <a class="el" href="classMemBufFormatTarget.html#c749d93d31423e0904b82d6abe658ca5">MemBufFormatTarget</a>
+<li>getRawData()
+: <a class="el" href="classXMLDateTime.html#bc4f731b561f768585210c1b60e441be">XMLDateTime</a>
+, <a class="el" href="classXMLNumber.html#e9d0f1ea61d2a6d5fb705c3c44962c39">XMLNumber</a>
+, <a class="el" href="classXMLBigDecimal.html#15c8256cf233946e77d77ba6893810bd">XMLBigDecimal</a>
+, <a class="el" href="classXMLAbstractDoubleFloat.html#e373fc3c8e388a817a07b6c3bc8a7c37">XMLAbstractDoubleFloat</a>
+, <a class="el" href="classXMLBigInteger.html#277ec8b518eebcd4cd0072c7145a4ed9">XMLBigInteger</a>
+<li>getRawName()
+: <a class="el" href="classQName.html#153e7cc021b9a63f3b1add304b6b0698">QName</a>
+<li>getReaderMgr()
+: <a class="el" href="classXMLValidator.html#75bbad9d31e2f7188afb14f941632c12">XMLValidator</a>
+<li>getRefKey()
+: <a class="el" href="classXSIDCDefinition.html#98bcf2697942fd128adad859b1027798">XSIDCDefinition</a>
+<li>getRegBasedAuthority()
+: <a class="el" href="classXMLUri.html#b1306e8b575f86bcec0c59a3c678ebf4">XMLUri</a>
+<li>getRelatedData()
+: <a class="el" href="classDOMError.html#60cf03cb9a6862ce07eec58efb873aa3">DOMError</a>
+<li>getRelatedException()
+: <a class="el" href="classDOMError.html#35fbeab2be3fa0828045dae20cb9b14a">DOMError</a>
+<li>getRequired()
+: <a class="el" href="classXSAttributeDeclaration.html#116a972d4e24e98fe7d99f06dd9f578d">XSAttributeDeclaration</a>
+, <a class="el" href="classXSAttributeUse.html#755b19f46d45be322ef361c32f57c051">XSAttributeUse</a>
+<li>getResourceIdentifierType()
+: <a class="el" href="classXMLResourceIdentifier.html#ec01b34f3cb604088e92c2e399af7f32">XMLResourceIdentifier</a>
+<li>getResultType()
+: <a class="el" href="classDOMXPathResult.html#ea4b6efc014e1e6c959a878da04ab1c7">DOMXPathResult</a>
+<li>getRoot()
+: <a class="el" href="classDOMNodeIterator.html#e0d9e45b67db8611aef943caee6b3be0">DOMNodeIterator</a>
+, <a class="el" href="classDOMTreeWalker.html#4f56d8b912b3a81cf6ed340868c45fab">DOMTreeWalker</a>
+<li>getRootGrammar()
+: <a class="el" href="classDOMBuilder.html#3fd1ac5581830048b8206fc2ef00b681">DOMBuilder</a>
+, <a class="el" href="classSAXParser.html#f8e72a2c6923576dc77888e6febdaea5">SAXParser</a>
+, <a class="el" href="classXercesDOMParser.html#4e1aeb7bc63d4edf95ade1d168c60f62">XercesDOMParser</a>
+, <a class="el" href="classSAX2XMLReader.html#a294a6a334a9bfd2b5ec048419875f5f">SAX2XMLReader</a>
+<li>getRootName()
+: <a class="el" href="classXMLDTDDescription.html#b46d69b935439c28daf6187a04dbe100">XMLDTDDescription</a>
+<li>getScale()
+: <a class="el" href="classXMLBigDecimal.html#ec720182797944b71b47d1f494cb64ab">XMLBigDecimal</a>
+<li>getScanner()
+: <a class="el" href="classAbstractDOMParser.html#cb4754fd05b7ef859d0b8f09ecd37fb7">AbstractDOMParser</a>
+, <a class="el" href="classSAXParser.html#fca882e35007fb148ebebce061172eab">SAXParser</a>
+, <a class="el" href="classXMLValidator.html#a534361df30152927e8db95838c20d63">XMLValidator</a>
+<li>getSchemaDefault()
+: <a class="el" href="classPSVIItem.html#73622709ed5ed8bac0dce0298cebb122">PSVIItem</a>
+<li>getSchemaInformation()
+: <a class="el" href="classPSVIElement.html#ddf220369929a23041f924cc46ca47ed">PSVIElement</a>
+<li>getSchemaLocation()
+: <a class="el" href="classXMLResourceIdentifier.html#36ed06e4d9d672ed9fa00326a90f7178">XMLResourceIdentifier</a>
+<li>getSchemaNamespace()
+: <a class="el" href="classXSNamespaceItem.html#efcddd8b5c5b62c1b9ae0efbdf6e470e">XSNamespaceItem</a>
+<li>getSchemaNormalizedValue()
+: <a class="el" href="classPSVIItem.html#410eb9545a5fa0ca17d50dba4fc2d990">PSVIItem</a>
+<li>getScheme()
+: <a class="el" href="classXMLUri.html#dc7f1e2937100718f079635e742b92ed">XMLUri</a>
+<li>getScope()
+: <a class="el" href="classXSAttributeDeclaration.html#8583d01627459791873e0777ba1dfa6c">XSAttributeDeclaration</a>
+, <a class="el" href="classXSElementDeclaration.html#9c7e725cc7f3157b297dd0e15c4650d0">XSElementDeclaration</a>
+<li>getSecurityManager()
+: <a class="el" href="classSAXParser.html#39fc25b3f00389f23dd1fa85b83231e5">SAXParser</a>
+, <a class="el" href="classAbstractDOMParser.html#01c4707f63fd6fded77daa9b374eae4f">AbstractDOMParser</a>
+<li>getSelectorStr()
+: <a class="el" href="classXSIDCDefinition.html#33ba37bcecc2c13b003ff1c600914e39">XSIDCDefinition</a>
+<li>getSeverity()
+: <a class="el" href="classDOMError.html#df8c59ec3fd2d5648f601c506b283d23">DOMError</a>
+<li>getSign()
+: <a class="el" href="classXMLBigDecimal.html#a4e0dbeef21634b8e0683d23bf8618ff">XMLBigDecimal</a>
+, <a class="el" href="classXMLAbstractDoubleFloat.html#b39e1642e75d17c00b00db918e139ea2">XMLAbstractDoubleFloat</a>
+, <a class="el" href="classXMLNumber.html#6e6b402f5170844a4807ff7208d38033">XMLNumber</a>
+, <a class="el" href="classXMLDateTime.html#5a64b985edb57b36d39168c1e111dfc1">XMLDateTime</a>
+, <a class="el" href="classXMLBigInteger.html#90dfbe25ebc46f2ea8b1790962ddf2ec">XMLBigInteger</a>
+<li>getSimpleType()
+: <a class="el" href="classXSComplexTypeDefinition.html#b1fc0b8ab254acc39c83905b8c8cf024">XSComplexTypeDefinition</a>
+<li>getSingleNodeValue()
+: <a class="el" href="classDOMXPathResult.html#f8f69f720f421e996e3f0566b0c561b7">DOMXPathResult</a>
+<li>getSize()
+: <a class="el" href="classBinFileInputStream.html#89140c72b2c2dedb7b45f7c81bd53907">BinFileInputStream</a>
+, <a class="el" href="classBinMemInputStream.html#93d9cbc32beed8fff8f7d5484aba6c79">BinMemInputStream</a>
+<li>getSkipDTDValidation()
+: <a class="el" href="classAbstractDOMParser.html#b77d408b412af4be111708a60bcfec75">AbstractDOMParser</a>
+, <a class="el" href="classSAXParser.html#d2b82af101cd5f0aa867dfe83f59bf3f">SAXParser</a>
+<li>getSnapshotLength()
+: <a class="el" href="classDOMXPathResult.html#a504f206d2967900174f550f1063cfaa">DOMXPathResult</a>
+<li>getSpecified()
+: <a class="el" href="classXMLAttr.html#e7cffa5ffbef189b265e072a95e4d9e2">XMLAttr</a>
+, <a class="el" href="classDOMAttr.html#be27f82f8a21e06fea72499168f082b3">DOMAttr</a>
+<li>getSrcFile()
+: <a class="el" href="classOutOfMemoryException.html#86967d9b88b5f64575caa174139a2de0">OutOfMemoryException</a>
+, <a class="el" href="classXMLException.html#ee9ee8779d5203845555954c6e7e643d">XMLException</a>
+<li>getSrcLine()
+: <a class="el" href="classXMLException.html#96bbc00f664e2fba66cfc58095a6df35">XMLException</a>
+, <a class="el" href="classOutOfMemoryException.html#80df429b607c6908ceb7e9800fbcbd9b">OutOfMemoryException</a>
+<li>getSrcOffset()
+: <a class="el" href="classSAX2XMLReader.html#62b318d390f6c99bc254a2c7a2892230">SAX2XMLReader</a>
+, <a class="el" href="classSAXParser.html#c55452bc6700f4ac7bcd2d3e4990725f">SAXParser</a>
+, <a class="el" href="classXercesDOMParser.html#b6ae08439ba3a8b6910e6ad1b56f815a">XercesDOMParser</a>
+, <a class="el" href="classDOMBuilder.html#5db08e45e2b30c46bc69c52b859380f9">DOMBuilder</a>
+<li>getStandalone()
+: <a class="el" href="classDOMDocument.html#68df15ddb2f73fcb766ddce00e6fc76f">DOMDocument</a>
+<li>getStandardUriConformant()
+: <a class="el" href="classAbstractDOMParser.html#88ef8d824bd9b4e381cb1090fd022310">AbstractDOMParser</a>
+, <a class="el" href="classSAXParser.html#65dfdb53e28e2906bb205f986ef5d917">SAXParser</a>
+<li>getStartContainer()
+: <a class="el" href="classDOMRange.html#f4db1a7e3566b625edc162a281e735d2">DOMRange</a>
+<li>getStartOffset()
+: <a class="el" href="classDOMRange.html#3f1f2dccaefcc2686c3c527a82f5f0fd">DOMRange</a>
+<li>getStrictErrorChecking()
+: <a class="el" href="classDOMDocument.html#6b06f541a0f3c72a18e2bab9b1370035">DOMDocument</a>
+<li>getStringCount()
+: <a class="el" href="classXMLSynchronizedStringPool.html#89d0a0f69f30851d16a87d08d6e48eaf">XMLSynchronizedStringPool</a>
+<li>getStringProperty()
+: <a class="el" href="classDOMPSVITypeInfo.html#bc1807a47d79c0c15c09d988f6657e2b">DOMPSVITypeInfo</a>
+<li>getStringValue()
+: <a class="el" href="classDOMXPathResult.html#a592b89fbd30c4f2b1631488208fbb33">DOMXPathResult</a>
+<li>getSubstitutionGroupAffiliation()
+: <a class="el" href="classXSElementDeclaration.html#c586c786e938dcc52c48488f6f457614">XSElementDeclaration</a>
+<li>getSubstitutionGroupExclusions()
+: <a class="el" href="classXSElementDeclaration.html#3f3c3c3155de4c6170efd04fce86baec">XSElementDeclaration</a>
+<li>getSystemId()
+: <a class="el" href="classXSNotationDeclaration.html#d5933c1c30b311415783804779a19d53">XSNotationDeclaration</a>
+, <a class="el" href="classDOMDocumentType.html#057ec11dc5954de3d98b3ddb7b06a37d">DOMDocumentType</a>
+, <a class="el" href="classWrapper4DOMInputSource.html#47ba23f87b136f52756a5b6686b30377">Wrapper4DOMInputSource</a>
+, <a class="el" href="classLocator.html#a9c43733fdf27000a867c3824f8ed5c5">Locator</a>
+, <a class="el" href="classWrapper4InputSource.html#45e5b53bc3ed14474b6bc9dc68edff7a">Wrapper4InputSource</a>
+, <a class="el" href="classDOMNotation.html#ead050b5af59b52fa07416258aebd0bb">DOMNotation</a>
+, <a class="el" href="classDOMInputSource.html#54dc39d32276cb26f6ccb81dac20252d">DOMInputSource</a>
+, <a class="el" href="classDOMEntity.html#e829cbf20475de6b94c134af47d0acd9">DOMEntity</a>
+, <a class="el" href="classXSAnnotation.html#14a0a4b674ee6c334f6cad8d888e09c0">XSAnnotation</a>
+, <a class="el" href="classInputSource.html#0ab7381f8cf189abc2b97fe22dacb31e">InputSource</a>
+, <a class="el" href="classSAXParseException.html#8eca07709a189e218149e642f8636c55">SAXParseException</a>
+, <a class="el" href="classXMLNotationDecl.html#79b35cd16d73ee246def38e3b883bf95">XMLNotationDecl</a>
+, <a class="el" href="classXMLEntityDecl.html#3a1517f35811c2accaa227dbb1a56b14">XMLEntityDecl</a>
+, <a class="el" href="classXMLResourceIdentifier.html#fa87375a9880443c1bf4970d53d839ee">XMLResourceIdentifier</a>
+, <a class="el" href="classXMLDTDDescription.html#b9b1219d8df4c697e5e699ebfa6bbb16">XMLDTDDescription</a>
+<li>getTagName()
+: <a class="el" href="classDOMElement.html#600e7e2ab376ad3435ef49d682e358dd">DOMElement</a>
+<li>getTarget()
+: <a class="el" href="classDOMProcessingInstruction.html#3a849f30a273536c0712a0700182413d">DOMProcessingInstruction</a>
+<li>getTargetNamespace()
+: <a class="el" href="classXMLSchemaDescription.html#ce14b22c0737184b37dc33335954713c">XMLSchemaDescription</a>
+<li>getTermType()
+: <a class="el" href="classXSParticle.html#64fe26def75ebd00112ef407a05794aa">XSParticle</a>
+<li>getTextContent()
+: <a class="el" href="classDOMNode.html#676aacf9c5bcc6335be34bd952b10d44">DOMNode</a>
+<li>getTimeCanonicalRepresentation()
+: <a class="el" href="classXMLDateTime.html#3a3f76fda820e9828b41263b8bff988a">XMLDateTime</a>
+<li>getTotalDigit()
+: <a class="el" href="classXMLBigInteger.html#a2183a0ea5bd48491d305d4785512a59">XMLBigInteger</a>
+, <a class="el" href="classXMLBigDecimal.html#5957db81ea9aff436b9d59d7f76650d7">XMLBigDecimal</a>
+<li>getTranscoder()
+: <a class="el" href="classXMLFormatter.html#2fbe2dc5d70af17410941f318c9f13e1">XMLFormatter</a>
+<li>getTriggeringComponent()
+: <a class="el" href="classXMLSchemaDescription.html#b00772dd1944098b99d0f1262ee21adc">XMLSchemaDescription</a>
+<li>getType()
+: <a class="el" href="classAttributeList.html#9f6f66d9709e8937fc39c53a6e9e8306">AttributeList</a>
+, <a class="el" href="classXMLAttDef.html#44e92262a33da395468cfcfb5b6b6abd">XMLAttDef</a>
+, <a class="el" href="classXMLException.html#01b176bc6d8e2a6c6941950891ff5ae1">XMLException</a>
+, <a class="el" href="classXSObject.html#7c358bf79a6a7f933420569e2b5fdaa0">XSObject</a>
+, <a class="el" href="classAttributes.html#42d81859a6d65a9ae9cafd2356074444">Attributes</a>
+, <a class="el" href="classXMLAbstractDoubleFloat.html#cd84990fef02bca0f78d79d0112bb695">XMLAbstractDoubleFloat</a>
+, <a class="el" href="classAttributeList.html#c9e0a577b0d4b4d3b1fc97fc15f30046">AttributeList</a>
+, <a class="el" href="classAttributes.html#1bac20e1865c9ae744682f037d047eaf">Attributes</a>
+, <a class="el" href="classOutOfMemoryException.html#a1f0ffa983b9149899f9e453ecee165c">OutOfMemoryException</a>
+, <a class="el" href="classXMLAttr.html#694b2c0c63c6c7b121721552d9ac34b5">XMLAttr</a>
+, <a class="el" href="classDOMError.html#556020b5f675145302a2236ab1554b95">DOMError</a>
+<li>getTypeCategory()
+: <a class="el" href="classXSTypeDefinition.html#324843fb61a8bbeec0f09d0a874aeed1">XSTypeDefinition</a>
+<li>getTypeDefinition()
+: <a class="el" href="classXSNamespaceItem.html#64614ac43b0f78ab17bea947220f149e">XSNamespaceItem</a>
+, <a class="el" href="classXSModel.html#27e4921cf5cb5e70197b84b6e35afaab">XSModel</a>
+, <a class="el" href="classPSVIElement.html#e4a488dfbd3db06f094caa1641a2a793">PSVIElement</a>
+, <a class="el" href="classPSVIAttribute.html#597c95c9a060bc9f6b0d48affddbb918">PSVIAttribute</a>
+, <a class="el" href="classXSAttributeDeclaration.html#e8830394f097fe11413f8f60abecb10e">XSAttributeDeclaration</a>
+, <a class="el" href="classPSVIItem.html#9cc0cb40716fea65f041aa836a04d41e">PSVIItem</a>
+, <a class="el" href="classXSElementDeclaration.html#56741928ce2c4f177e04b772b724ff10">XSElementDeclaration</a>
+<li>getTypeInfo()
+: <a class="el" href="classDOMElement.html#46f1e0a0aa4015ccc381c71c185ee851">DOMElement</a>
+, <a class="el" href="classDOMAttr.html#2924785f3ac5c2a7460908b482392b68">DOMAttr</a>
+<li>getUnRepFlags()
+: <a class="el" href="classXMLFormatter.html#ac2a568c66da13437bc696d9dcedb2ca">XMLFormatter</a>
+<li>getURI()
+: <a class="el" href="classDOMLocator.html#0d805c3f31e1fe0791568c2568a9711f">DOMLocator</a>
+, <a class="el" href="classXMLElementDecl.html#c2d6e48600f45dcaaedd6f278e7d285e">XMLElementDecl</a>
+, <a class="el" href="classAttributes.html#c6b3eb3d403a833bb6df0a713b5634b2">Attributes</a>
+, <a class="el" href="classQName.html#e8a5c241b363084db7ca67c1982df060">QName</a>
+<li>getURIId()
+: <a class="el" href="classXMLAttr.html#c84cf41c14530df46e67dbd50bfee73f">XMLAttr</a>
+<li>getURIStringPool()
+: <a class="el" href="classXSModel.html#d65ba195302a726f2f8aec45184db48b">XSModel</a>
+, <a class="el" href="classXMLGrammarPool.html#f9f72a65d9b8b15b6f94b9e526e2acd1">XMLGrammarPool</a>
+<li>getUriText()
+: <a class="el" href="classXMLUri.html#853e674cf82bffef9dce833d8b73aa79">XMLUri</a>
+<li>getURIText()
+: <a class="el" href="classDOMBuilder.html#fe038bac8989085ae32d57e9cfd6600a">DOMBuilder</a>
+, <a class="el" href="classSAX2XMLReader.html#f20b4b419f902f2fc46bb2d7043077da">SAX2XMLReader</a>
+, <a class="el" href="classSAXParser.html#90d9f36173a738d487afe138f4c13099">SAXParser</a>
+, <a class="el" href="classXercesDOMParser.html#6d72be5fe39822e7820c9fd4098b9b83">XercesDOMParser</a>
+<li>getURLText()
+: <a class="el" href="classXMLURL.html#aea536ac1d18b86d8d68387012425e66">XMLURL</a>
+<li>getUser()
+: <a class="el" href="classXMLURL.html#bba79215fd9f1c32589d0e63b39dafa3">XMLURL</a>
+<li>getUserData()
+: <a class="el" href="classDOMNode.html#9f80685f77433d7849a84f6c129b8b13">DOMNode</a>
+<li>getUserInfo()
+: <a class="el" href="classXMLUri.html#8bc1fe4c424591b3305c1c3fe0ee41f9">XMLUri</a>
+<li>getValidateAnnotations()
+: <a class="el" href="classAbstractDOMParser.html#cac649307565c4b4fcb70e2b9b00cdc5">AbstractDOMParser</a>
+, <a class="el" href="classSAXParser.html#3e6b27c5e568cae1579f0fa975d76bff">SAXParser</a>
+<li>getValidatingMemberType()
+: <a class="el" href="classValidationContext.html#4bd46e8c4fa0fe1266e1d6ae481069fa">ValidationContext</a>
+<li>getValidatingTypeName()
+: <a class="el" href="classXMLAttr.html#72079f11645130ffeb2457047c787aa5">XMLAttr</a>
+<li>getValidatingTypeURI()
+: <a class="el" href="classXMLAttr.html#8e1a7c64cc8fa9a149b45a36ed601817">XMLAttr</a>
+<li>getValidationAttempted()
+: <a class="el" href="classPSVIItem.html#a6a22cb93f4525e04ac0909140ff27ae">PSVIItem</a>
+<li>getValidationConstraintFatal()
+: <a class="el" href="classSAX2XMLReader.html#f2d257d62e2b044095409d84181c6424">SAX2XMLReader</a>
+, <a class="el" href="classAbstractDOMParser.html#215e3b46fde70c5815e416da3b590180">AbstractDOMParser</a>
+, <a class="el" href="classSAXParser.html#a77be55be11e0d975edb969a347d6258">SAXParser</a>
+<li>getValidationContext()
+: <a class="el" href="classPSVIItem.html#d5ddb819372c07d30af6596d04406fb4">PSVIItem</a>
+<li>getValidationSchemaFullChecking()
+: <a class="el" href="classSAXParser.html#cb80a8287930238a1ac9f849327bb134">SAXParser</a>
+, <a class="el" href="classAbstractDOMParser.html#55c90fafee3f09b14f04ab3d2a72be8c">AbstractDOMParser</a>
+<li>getValidationScheme()
+: <a class="el" href="classAbstractDOMParser.html#5e9a30e324f353478c44817f9c1e1434">AbstractDOMParser</a>
+, <a class="el" href="classSAXParser.html#5e6716325aded10abf4af5c48508127e">SAXParser</a>
+<li>getValidator()
+: <a class="el" href="classAbstractDOMParser.html#97367ce7cb042d9697a3d6a1d813f516">AbstractDOMParser</a>
+, <a class="el" href="classSAXParser.html#ea7c14688f99249ae00ae018c44d88d2">SAXParser</a>
+, <a class="el" href="classSAX2XMLReader.html#a9fd92dd2a348d0884c2ec8156c755db">SAX2XMLReader</a>
+<li>getValidity()
+: <a class="el" href="classPSVIItem.html#d24932fb573c4775bd368dc8830c268b">PSVIItem</a>
+<li>getValue()
+: <a class="el" href="classAttributeList.html#156441032c80aa4214619c205bd1cd34">AttributeList</a>
+, <a class="el" href="classXMLAbstractDoubleFloat.html#f079dd6e66d8099dc4b495f2201c52e6">XMLAbstractDoubleFloat</a>
+, <a class="el" href="classXMLAttDef.html#c6a04434627143abf6b4cf83c975001c">XMLAttDef</a>
+, <a class="el" href="classXMLAttr.html#5ea30a1754f474cf1bf779043c2b4006">XMLAttr</a>
+, <a class="el" href="classXMLEntityDecl.html#7ad3be40448f8e0175df31c483050cd7">XMLEntityDecl</a>
+, <a class="el" href="classAttributeList.html#feb329f05e0c21538314ee0ca36617a1">AttributeList</a>
+, <a class="el" href="classXMLBigDecimal.html#16de9538a6208254bf598401e7c7ad0a">XMLBigDecimal</a>
+, <a class="el" href="classAttributes.html#b65afadbc02bce427ee27f62b2b489a1">Attributes</a>
+, <a class="el" href="classAttributeList.html#11561fecbfb9222ceccdc3538d2fe09e">AttributeList</a>
+, <a class="el" href="classAttributes.html#85671a2fbb3b5799934186624bf483ff">Attributes</a>
+, <a class="el" href="classDOMAttr.html#a1d0843486eca92c597f669558f43e26">DOMAttr</a>
+<li>getValueForId()
+: <a class="el" href="classXMLSynchronizedStringPool.html#aa148c6daa5907ad53cd8bbbd1ce9341">XMLSynchronizedStringPool</a>
+<li>getValueLen()
+: <a class="el" href="classXMLEntityDecl.html#64aa6d6a8ce814cb45d9ebe8f5a3335a">XMLEntityDecl</a>
+<li>getVariety()
+: <a class="el" href="classXSSimpleTypeDefinition.html#5c32ad4dbf87017d037bbacef247a16f">XSSimpleTypeDefinition</a>
+<li>getVersion()
+: <a class="el" href="classDOMDocument.html#7963c45117bdff7ea51998c30a49a7fd">DOMDocument</a>
+, <a class="el" href="classDOMEntity.html#a2434d516d4deeef0063747a52915110">DOMEntity</a>
+<li>getWhatToShow()
+: <a class="el" href="classDOMNodeIterator.html#158d09309300c7388c2e53fc515c5c95">DOMNodeIterator</a>
+, <a class="el" href="classDOMWriterFilter.html#1df4a484aa7fede7c9af2077a3b364eb">DOMWriterFilter</a>
+, <a class="el" href="classDOMTreeWalker.html#03bb5384771d9b231a6cce337aa075a6">DOMTreeWalker</a>
+<li>getWholeText()
+: <a class="el" href="classDOMText.html#d61a77f44cd33e99865cabb77a32e181">DOMText</a>
+<li>getWildcardTerm()
+: <a class="el" href="classXSParticle.html#e1c9f1cd29148076263da28867ef7e86">XSParticle</a>
+<li>getXMLEntityResolver()
+: <a class="el" href="classSAXParser.html#7ea691979dde005502ee233ae3b933da">SAXParser</a>
+, <a class="el" href="classXercesDOMParser.html#3f2c65fc9bdf5224e3fc794f1c4cc83c">XercesDOMParser</a>
+, <a class="el" href="classSAXParser.html#0f56e0e25beea27307a5470b7955d55e">SAXParser</a>
+<li>getXSModel()
+: <a class="el" href="classXMLGrammarPool.html#ebd77170b4ecac2cb0d7d42f1976219b">XMLGrammarPool</a>
+<li>getXSObject()
+: <a class="el" href="classXSModel.html#234a8b99c4211f991399b91b8c6fbddc">XSModel</a>
+<li>getXSObjectById()
+: <a class="el" href="classXSModel.html#7bc6ddbf5b297a36329cea96a5107104">XSModel</a>
+<li>gInvalidTrans
+: <a class="el" href="classXMLContentModel.html#301a0529251980e5ef563661afe80523">XMLContentModel</a>
+<li>GlobalAttributeWithNameRef
+: <a class="el" href="classXMLErrs.html#efe9817ef5442905d86fd17cb0c35e472d75f1a678b6a9bea8c58cbefbd9dfab">XMLErrs</a>
+<li>GlobalElementWithRef
+: <a class="el" href="classXMLErrs.html#efe9817ef5442905d86fd17cb0c35e47dba0ecab39b4d0c3db4393e5793a65d9">XMLErrs</a>
+<li>GlobalNoNameElement
+: <a class="el" href="classXMLErrs.html#efe9817ef5442905d86fd17cb0c35e47faa54bdcfe43a86cb54b64559be3aa3c">XMLErrs</a>
+<li>gMappings
+: <a class="el" href="classXMLTransService.html#b5b6bf01e0fbc4ecc66130d3b5005573">XMLTransService</a>
+<li>gMappingsRecognizer
+: <a class="el" href="classXMLTransService.html#f569d0ab4005d965d97a19c9173b62cc">XMLTransService</a>
+<li>GrammarNotFound
+: <a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86f74f1a9db424d7ea5a7ad5845206e2c0">XMLValid</a>
+<li>GREATER_THAN
+: <a class="el" href="classXMLNumber.html#f1ee68e409f0dae17059decd5b6a048db88773c574467f6b74d67258984751d6">XMLNumber</a>
+<li>GroupContentError
+: <a class="el" href="classXMLErrs.html#efe9817ef5442905d86fd17cb0c35e47a132a9bde60b94d5aa304cdb89e7bcab">XMLErrs</a>
+<li>GroupContentRestricted
+: <a class="el" href="classXMLValid.html#c30e7f5d9612c52f5f1208c83f090c86aac12ba08de6e014aeee5d7a066a26f4">XMLValid</a>
+</ul>
+    </FONT></TD></TR></TABLE><BR>
+</TD></TR></TABLE></TD></TR></TABLE><BR><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD bgcolor="#0086b2"><IMG height="1" src="images/dot.gif" width="1" alt=""></TD></TR><TR><TD align="center"><FONT color="#0086b2" size="-1"><I>
+              Copyright &copy; 1994-2004 The Apache Software Foundation.
+              All Rights Reserved.
+            </I></FONT></TD></TR></TABLE></BODY></HTML>

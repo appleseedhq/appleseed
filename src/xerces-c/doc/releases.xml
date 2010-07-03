@@ -1,0 +1,164 @@
+<?xml version="1.0"  encoding="iso-8859-1" standalone="no"?>
+<!--
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+
+<!DOCTYPE s1 SYSTEM "sbk:/style/dtd/document.dtd">
+
+<s1 title="Releases">
+
+&releases-releases-plan;
+
+<s2 title="Releases Archive">
+
+    <p> For release information about &XercesCName; 2.6.0 or earlier,
+        please refer to <jump href="releases_archive.html">Releases Archive</jump>.
+    </p>
+</s2>
+
+<s2 title="Release Information for &XercesCName; &XercesCVersion;">
+
+<p>The following new features and bug fixes have been implemented in
+&XercesCName; &XercesCVersion;:</p>
+
+&releases-fixed-bugs-para;
+
+<table>
+    <tr>
+        <th>Date</th>
+        <th>Contributor</th>
+        <th>Description</th>
+    </tr>
+
+
+<tr><td>2007-08-23</td><td>Scott Cantor</td><td>RPM spec file update to support 64 bit builds (XERCESC-1740)</td></tr>
+<tr><td>2007-08-22</td><td>Boris Kolpackov</td><td>Remove option to explicitly link against libc.</td></tr>
+<tr><td>2007-08-22</td><td>Alberto Massari</td><td>Rename afxres.h to winres.h (XERCESC-1737).</td></tr>
+<tr><td>2007-08-21</td><td>Boris Kolpackov</td><td>Static build option.</td></tr>
+<tr><td>2007-08-21</td><td>Boris Kolpackov</td><td>Exponential growth for DOM heap.</td></tr>
+<tr><td>2007-08-21</td><td>Boris Kolpackov</td><td>Add HTTPS scheme to URI.</td></tr>
+<tr><td>2007-08-21</td><td>Boris Kolpackov</td><td>64 bit Windows build (XERCESC-1531).</td></tr>
+<tr><td>2007-08-21</td><td>Boris Kolpackov</td><td>Explicit type conversion to get rid of a warning.</td></tr>
+<tr><td>2007-08-21</td><td>Boris Kolpackov</td><td>Auto-detect HP aCC3 vs aCC6 compiler versions.</td></tr>
+<tr><td>2007-08-21</td><td>Boris Kolpackov</td><td>Verbose mode (add VERBOSE=1 to the gmake command line).</td></tr>
+<tr><td>2007-08-21</td><td>Boris Kolpackov</td><td>Support for g++ on AIX and HP-UX.</td></tr>
+<tr><td>2007-08-21</td><td>Boris Kolpackov</td><td>Change optimization level on GNU/Linux from -O to -O2.</td></tr>
+<tr><td>2007-08-21</td><td>Boris Kolpackov</td><td>Add appendChildFast and call it in parser. Performance patch.</td></tr>
+<tr><td>2007-08-21</td><td>Boris Kolpackov</td><td>64 bit compile/link options auto-detection for Solaris.</td></tr>
+<tr><td>2007-08-21</td><td>Boris Kolpackov</td><td>VC8 projects.</td></tr>
+<tr><td>2007-07-30</td><td>Alberto Massari</td><td>The GroupContentRestricted error is used for both 'sequence' and 'choice' models, so get the model at runtime (XERCESC-1724).</td></tr>
+<tr><td>2007-07-26</td><td>Alberto Massari</td><td>XSWildcard was always getting a 'strict' processContent when the namespace list contained more than 2 elements.</td></tr>
+<tr><td>2007-07-23</td><td>Christian Will</td><td>Performance patch for XERCESC-1657.</td></tr>
+<tr><td>2007-07-23</td><td>Anton Nikolaevsky</td><td> Patch for XERCESC-1591.</td></tr>
+<tr><td>2007-07-18</td><td>Alberto Massari</td><td>Send the NODE_CLONED notification for each node in the tree when cloning the entire DOMDocument (XERCESC-1722).</td></tr>
+<tr><td>2007-06-15</td><td>David Bertoni</td><td>Fix for null pointer dereference in the case where the expression is empty and the case-insensitive option is specified.</td></tr>
+<tr><td>2007-06-09</td><td>Gilbert Chan</td><td>Apply base whitespace facet to enumeration values.</td></tr>
+<tr><td>2007-06-09</td><td>John Kim</td><td>Suppress DTD error message for attribute referring to unknown entity when attribute not used.</td></tr>
+<tr><td>2007-06-08</td><td>Alberto Massari</td><td>Add missing include for MinGW (XERCESC-1617)</td></tr>
+<tr><td>2007-06-01</td><td>David Cargill</td><td>Schema fixes for anonymous type with mixed and substitution with bock.</td></tr>
+<tr><td>2007-05-22</td><td>David Cargill</td><td>For enumeration only check base as per spec.</td></tr>
+<tr><td>2007-05-22</td><td>David Cargill</td><td>Only complain when NOTATION is in schema namespace.</td></tr>
+<tr><td>2007-05-15</td><td>Alberto Massari</td><td>mblen returns 0 when given an empty string; rewrote code to only use mbstowcs (XERCESC-1702).</td></tr>
+<tr><td>2007-04-17</td><td>Alberto Massari</td><td>In the Windows registry, the code page for an encoding is stored in @InternetEncoding, not in @Codepage (XERCESC-1092).</td></tr>
+<tr><td>2007-03-28</td><td>David Cargill</td><td>Various schema fixes.</td></tr>
+<tr><td>2007-03-27</td><td>Alberto Massari</td><td>Performance improvements.</td></tr>
+<tr><td>2007-03-27</td><td>Alberto Massari</td><td>A decimal value of 0.0 was treated as a positive number, so it was different from 0.</td></tr>
+<tr><td>2007-03-08</td><td>Alberto Massari</td><td>Fixed infinite loop when an XPath expression contained an unexpected character (XERCESC-1682).</td></tr>
+<tr><td>2007-03-06</td><td>Boris Kolpackov</td><td>IconvGNU and IconvFBSD transcoders override application-set locale (XERCESC-1660).</td></tr>
+<tr><td>2007-02-07</td><td>Alberto Massari</td><td>Even if the XSTS suite thinks differently, the XMLSchema 1.1 clarifies that two values derived from the same value space should be treated as equals; so find out the common ancestor and use it to perform the comparison.</td></tr>
+<tr><td>2007-02-06</td><td>Alberto Massari</td><td>When invoking the userData handlers, first build a snapshot of the map, so that the callbacks can update it safely.</td></tr>
+<tr><td>2007-01-31</td><td>Alberto Massari</td><td>Equal lexical values of unrelated types must be treated as different.</td></tr>
+<tr><td>2007-01-31</td><td>Alberto Massari</td><td>Handle escaped characters in schemaLocation attributes.</td></tr>
+<tr><td>2007-01-31</td><td>Alberto Massari</td><td>Before using a local memory manager, check that we have a valid pointer.</td></tr>
+<tr><td>2007-01-30</td><td>Alberto Massari</td><td>Allow 'list' and 'union' in the finalDefault attribute of a schema (XERCESC-1633).</td></tr>
+<tr><td>2007-01-30</td><td>Alberto Massari</td><td>Only xs:key should complain if not all the fields of an identity constraint are not found in the XML instance (XERCESC-1237).</td></tr>
+<tr><td>2007-01-29</td><td>David Cargill</td><td>Complex type restriction with substation group fix.</td></tr>
+<tr><td>2007-01-25</td><td>David Cargill</td><td>Schema and UTF32 fixes.</td></tr>
+<tr><td>2007-01-02</td><td>Alberto Massari</td><td>When calling getAttributeNodeNS, ensure we are providing a localName (XERCESC-1473).</td></tr>
+<tr><td>2006-12-30</td><td>Charles McLouth</td><td>Added support for WinSock and Windows Transcoder on Mingw/msys platform (XERCESC-1617).</td></tr>
+<tr><td>2006-12-27</td><td>Alberto Massari</td><td>Detect open() failures (XERCESC-1658).</td></tr>
+<tr><td>2006-12-11</td><td>Alberto Massari</td><td>Performance improvement: allocate memory only when the data inside the XMLElementDecl cannot be reused.</td></tr>
+<tr><td>2006-12-03</td><td>David Cargill</td><td>Schema derivation fixes.</td></tr>
+<tr><td>2006-12-03</td><td>David Cargill</td><td>Case insensitive regular expression fixes.</td></tr>
+<tr><td>2006-12-03</td><td>David Cargill</td><td>Static initialization fix.</td></tr>
+<tr><td>2006-10-20</td><td>Alberto Massari</td><td>Report the correct error when the XML PI has 'XML' instead of 'xml' (XERCESC-1641).</td></tr>
+<tr><td>2006-10-10</td><td>Alberto Massari</td><td>Allow whitespace-only nodes to be added as children of a DOMDocument.</td></tr>
+<tr><td>2006-10-05</td><td>David Cargill</td><td>Handle anonymous types properly.</td></tr>
+<tr><td>2006-10-05</td><td>David Cargill</td><td>Don't add extra whitespace when validating datatypes.</td></tr>
+<tr><td>2006-10-05</td><td>David Cargill</td><td>Treat "." as invalid double/float.</td></tr>
+<tr><td>2006-09-29</td><td>David Bertoni</td><td>Removed unnecessary transcoding of file names, that resulted in round-trip transcoding.  Moved calls to initializer list to avoid initializing to a default value.</td></tr>
+<tr><td>2006-09-27</td><td>David Bertoni</td><td>Fixed some bugs where the literal 0 was being used as the value of an invalid file handle.  This affects platforms like Solaris, which use open/close, etc., instead of fopen/fclose, etc.</td></tr>
+<tr><td>2006-09-26</td><td>Boris Kolpackov</td><td>When checking for a valid restriction, take into account substitution groups (XERCESC-1281).</td></tr>
+<tr><td>2006-09-11</td><td>Alberto Massari</td><td>Don't crash if an external parameter entity has no SYSTEM id (XERCESC-1536).</td></tr>
+<tr><td>2006-08-23</td><td>Alberto Massari</td><td>Default or fixed attribute values should be whitespace normalized, if the datatype requires it, before being validated.</td></tr>
+<tr><td>2006-08-23</td><td>Alberto Massari</td><td>DOMLSParserImpl::loadGrammar should not release the previously loaded DOMDocument (XERCESC-1626).</td></tr>
+<tr><td>2006-08-10</td><td>Alberto Massari</td><td>Fix memory leak (XERCESC-1624).</td></tr>
+<tr><td>2006-07-07</td><td>Jay Hansen</td><td>OS400 fixes.</td></tr>
+<tr><td>2006-07-06</td><td>David Cargill</td><td>Fix crashes that can occur when a non-default memory manager tries to clean up after running out of memory.</td></tr>
+<tr><td>2006-05-30</td><td>Alberto Massari</td><td>SAX2XMLReader should use the prefix reported by the reader, not the one stored in the element declaration (XERCESC-1598)</td></tr>
+<tr><td>2006-05-30</td><td>Alberto Massari</td><td>DGXMLScanner was treating predefined entities inside attribute values as if they were in the element content (XERCESC-1597)</td></tr>
+<tr><td>2006-05-08</td><td>David Cargill</td><td>Documentation update. Default validation is never, not auto.</td></tr>
+<tr><td>2006-04-29</td><td>David Cargill</td><td>Better message for invalid boolean datatype.</td></tr>
+<tr><td>2006-04-28</td><td>David Cargill</td><td>Performance fix, don't use QName as colon location is already available.</td></tr>
+<tr><td>2006-04-28</td><td>David Cargill</td><td>Use ln -fs instead of ln -f to avoid error message during Unix build.</td></tr>
+<tr><td>2006-04-19</td><td>Alberto Massari</td><td>Fix an error that manifested itself when a DTD defined a general entity using a parameter entity for specifying the name.</td></tr>
+<tr><td>2006-04-18</td><td>Alberto Massari</td><td>setEncoding was relying on XMLRecognizer::encodingForName to return OtherEncoding when presented with a endian-neutral UTF16/UTF32 encoding, but it doesn't do it anymore.</td></tr>
+<tr><td>2006-04-18</td><td>David Cargill</td><td>Put xmlns attributes in registry to avoid errors when checking for required attributes.</td></tr>
+<tr><td>2006-04-18</td><td>David Cargill</td><td>Ensure decimal is valid on getActualValue call when toValidate is true.</td></tr>
+<tr><td>2006-04-18</td><td>David Cargill</td><td>Thread safety fix, don't do lazy evaluation of patterns.</td></tr>
+<tr><td>2006-03-27</td><td>Alberto Massari</td><td>Allow whitespace at the beginning and after the union operator in XPath expressions of identity constraints.</td></tr>
+<tr><td>2006-03-23</td><td>David Cargill</td><td>Make getCanonical for float and double have consistent behaviour with getActual.</td></tr>
+<tr><td>2006-03-21</td><td>Alberto Massari</td><td>If "entities" feature is set to TRUE, entities reference inside attribute values should be serialized as "&amp;ent;"</td></tr>
+<tr><td>2006-03-19</td><td>Alberto Massari</td><td>Factory method is no more inline to avoid including an internal header in a public one (XERCESC-1579).</td></tr>
+<tr><td>2006-03-17</td><td>David Cargill</td><td>Display actual errorCode when reporting an error.</td></tr>
+<tr><td>2006-03-05</td><td>Alberto Massari</td><td>Allow non-standard names for the C++ compiler.</td></tr>
+<tr><td>2006-03-03</td><td>Alberto Massari</td><td>Updated Borland C++ 6 projects.</td></tr>
+<tr><td>2006-02-28</td><td>Alberto Massari</td><td>Remove BOM-detection code inside refreshCharBuffer: the fix for XERCESC-1284 makes it unnecessary, and the UTF-8 part was updating the wrong index (XERCESC-1385).</td></tr>
+<tr><td>2006-02-24</td><td>Alberto Massari</td><td>Improve performances of addRange.</td></tr>
+<tr><td>2006-02-18</td><td>Alberto Massari</td><td>When serializing attribute values, escape also carriage returns and tabs (XERCESC-1547).</td></tr>
+<tr><td>2006-02-18</td><td>Alberto Massari</td><td>If an encoding has been forced on a InputSource, ignore a compatible BOM found in the stream (XERCESC-1284).</td></tr>
+<tr><td>2006-02-06</td><td>Tobias Schuette</td><td>Fix for XERCESC-1491.</td></tr>
+<tr><td>2006-02-06</td><td>David Cargill</td><td>Put annotations for duplicate elements on the first element.</td></tr>
+<tr><td>2006-02-06</td><td>David Cargill</td><td>Update schema limitations and clarify float and double behaviour.</td></tr>
+<tr><td>2006-01-30</td><td>Khaled Noaman</td><td>Do not generate error message if switchGrammar fails when laxly validating.</td></tr>
+<tr><td>2006-01-21</td><td>Mark Weaver</td><td>Fix for XERCESC-1555.</td></tr>
+<tr><td>2006-01-21</td><td>David Bertoni</td><td>Fixes for XERCESC-1548.</td></tr>
+<tr><td>2006-01-16</td><td>David Cargill</td><td>Fix for XERCESC-1546. Canonical value of list was putting in an extra null character.</td></tr>
+<tr><td>2006-01-16</td><td>Alberto Massari</td><td>When evaluating a union in a regular expression, take the branch that matches the longest part of the input string (XERCESC-1521).</td></tr>
+<tr><td>2005-12-30</td><td>Khaled Noaman</td><td>Fix for erroneous duplicate id problem.</td></tr>
+<tr><td>2005-12-28</td><td>David Cargill</td><td>Uniconv390 fixes.</td></tr>
+<tr><td>2005-12-28</td><td>David Cargill</td><td>Put debug code under specific flag so it only gets built when needed instead of for each debug build.</td></tr>
+<tr><td>2005-12-28</td><td>David Cargill</td><td>Fix size of boolean structure.</td></tr>
+<tr><td>2005-12-28</td><td>David Cargill</td><td>Schema fixes for union of union and empty element.</td></tr>
+<tr><td>2005-12-27</td><td>Alberto Massari</td><td>Improve validation performances when dealing with schemas with lots of top level definitions (XERCESC-1542).</td></tr>
+<tr><td>2005-12-26</td><td>Alberto Massari</td><td>Fix for XERCESC-1533 (default attributes in the definition for an element that is not validated because of errors would be added to the list of attributes even if already present).</td></tr>
+<tr><td>2005-12-15</td><td>David Bertoni</td><td>Added missing parameter (XERCESC-1538).</td></tr>
+<tr><td>2005-12-14</td><td>Alberto Massari</td><td>When cloning or importing a node, also copy the type information (XERCESC-1517).</td></tr>
+<tr><td>2005-11-15</td><td>David Cargill</td><td>Treat "+" and "-" as invalid numeric schema values.</td></tr>
+<tr><td>2005-11-15</td><td>David Cargill</td><td>Fix bug where very long element names gives parsing error.</td></tr>
+<tr><td>2005-11-09</td><td>Alberto Massari</td><td>Generated static library in lowercase like the dynamic one (XERCESC-1522).</td></tr>
+<tr><td>2005-10-31</td><td>Alberto Massari</td><td>Nodes that implement getFeature should also implement isSupported (XERCESC- 1479).</td></tr>
+<tr><td>2005-10-15</td><td>David Cargill</td><td>Fix for XERCESC-1515.</td></tr>
+<tr><td>2005-10-15</td><td>David Cargill</td><td>Message update for QName fix and XERCESC-1515.</td></tr>
+<tr><td>2005-10-12</td><td>David Cargill</td><td>QName fix.  Need to verify that the prefix is defined.</td></tr>
+<tr><td>2005-10-12</td><td>David Cargill</td><td>Check for valid schema characters for float and double.</td></tr>
+<tr><td>2005-10-12</td><td>David Cargill</td><td>Annotation bug fixes.</td></tr>
+<tr><td>2005-09-28</td><td>Alberto Massari</td><td>closesocket should be dynamically bound (XERCESC-1467).</td></tr>
+
+</table>
+</s2>
+
+</s1>

@@ -1,0 +1,23 @@
+# Copyright 2002, 2003 Dave Abrahams 
+# Distributed under the Boost Software License, Version 1.0. 
+# (See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt) 
+
+TOOLS = $(TOOLS[1]) ;
+project-root ;
+
+# bring in rules for testing
+import testing ;
+
+lib mylib : lib.cpp ;
+
+compile foo.cpp : : compile ;
+compile-fail foo.cpp : <define>NOCOMPILE : nocompile ;
+
+link foo.cpp <lib>mylib : : link ;
+link-fail foo.cpp  <lib>mylib : <define>NOLINK : nolink ;
+
+run foo.cpp  <lib>mylib
+  : # args
+  : # input-files
+  : <define>RUN
+  : run ;

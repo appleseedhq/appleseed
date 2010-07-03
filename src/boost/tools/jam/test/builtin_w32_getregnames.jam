@@ -1,0 +1,17 @@
+#~ Copyright 2006 Rene Rivera.
+#~ Distributed under the Boost Software License, Version 1.0.
+#~ (See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt)
+
+ECHO --- Testing W32_GETREGNAMES builtin... ;
+
+if $(NT)
+{
+    assert "Beep" "ExtendedSounds"
+        : (==) : [ W32_GETREGNAMES "HKEY_CURRENT_USER\\Control Panel\\Sound" : values ] ;
+    assert "Beep" "ExtendedSounds"
+        : (==) : [ W32_GETREGNAMES "HKCU\\Control Panel\\Sound" : values ] ;
+    assert "Control" "Enum" "Hardware Profiles" "Services"
+        : (==) : [ W32_GETREGNAMES "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet" : subkeys ] ;
+    assert "Control" "Enum" "Hardware Profiles" "Services"
+        : (==) : [ W32_GETREGNAMES "HKLM\\SYSTEM\\CurrentControlSet" : subkeys ] ;
+}

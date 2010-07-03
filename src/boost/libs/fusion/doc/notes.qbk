@@ -1,0 +1,153 @@
+[/==============================================================================
+    Copyright (C) 2001-2007 Joel de Guzman, Dan Marsden, Tobias Schwinger
+
+    Use, modification and distribution is subject to the Boost Software
+    License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+    http://www.boost.org/LICENSE_1_0.txt)
+===============================================================================/]
+[section Notes]
+
+[heading Recursive Inlined Functions]
+
+An interesting peculiarity of functions like __at__ when applied to a
+__forward_sequence__ like __list__ is that what could have been linear
+runtime complexity effectively becomes constant O(1) due to compiler
+optimization of C++ inlined functions, however deeply recursive (up to a
+certain compiler limit of course). Compile time complexity remains linear.
+
+[heading Overloaded Functions]
+
+Associative sequences use function overloading to implement membership
+testing and type associated key lookup. This amounts to constant runtime
+and amortized constant compile time complexities. There is an overloaded
+function, `f(k)`, for each key /type/ `k`. The compiler chooses the
+appropriate function given a key, `k`.
+
+[heading Tag Dispatching]
+
+Tag dispatching is a generic programming technique for selecting template
+specializations. There are typically 3 components involved in the tag
+dispatching mechanism:
+
+# A type for which an appropriate template specialization is required
+# A metafunction that associates the type with a tag type
+# A template that is specialized for the tag type
+
+For example, the fusion `result_of::begin` metafunction is implemented
+as follows:
+
+    template <typename Sequence>
+    struct begin
+    {
+        typedef typename
+            result_of::begin_impl<typename traits::tag_of<Sequence>::type>::
+            template apply<Sequence>::type
+        type;
+    };
+
+In the case:
+
+# `Sequence` is the type for which a suitable implementation of
+   `result_of::begin_impl` is required
+# `traits::tag_of` is the metafunction that associates `Sequence`
+   with an appropriate tag
+# `result_of::begin_impl` is the template which is specialized to provide
+   an implementation for each tag type
+
+[heading Extensibility]
+
+Unlike __mpl__, there is no extensibe sequence concept in fusion. This does
+not mean that Fusion sequences are not extensible. In fact, all Fusion
+sequences are inherently extensible. It is just that the manner of sequence
+extension in Fusion is diferent from both __stl__ and __mpl__ on account of
+the lazy nature of fusion __algorithms__. __stl__ containers extend
+themselves in place though member functions such as __push_back__ and
+__insert__. __mpl__ sequences, on the other hand, are extended through
+"intrinsic" functions that actually return whole sequences. __mpl__ is
+purely functional and can not have side effects. For example, __mpl__'s
+`push_back` does not actually mutate an `mpl::vector`. It can't do that.
+Instead, it returns an extended `mpl::vector`.
+
+Like __mpl__, Fusion too is purely functional and can not have side
+effects. With runtime efficiency in mind, Fusion sequences are extended
+through generic functions that return __views__. __views__ are sequences
+that do not actually contain data, but instead impart an alternative
+presentation over the data from one or more underlying sequences. __views__
+are proxies. They provide an efficient yet purely functional way to work on
+potentially expensive sequence operations. For example, given a __vector__,
+Fusion's __push_back__ returns a __joint_view__, instead of an actual
+extended __vector__. A __joint_view__ holds a reference to the original
+sequence plus the appended data --making it very cheap to pass around.
+
+[heading Element Conversion]
+
+Functions that take in elemental values to form sequences (e.g.
+__make_list__) convert their arguments to something suitable to be stored
+as a sequence element. In general, the element types are stored as plain
+values. Example:
+
+    __make_list__(1, 'x')
+
+returns a __list__`<int, char>`.
+
+There are a few exceptions, however.
+
+[*Arrays:]
+
+Array arguments are deduced to reference to const types. For example
+[footnote Note that the type of a string literal is an array of const
+characters, not `const char*`. To get __make_list__ to create a __list__
+with an element of a non-const array type one must use the `ref` wrapper
+(see __note_boost_ref__).]:
+
+    __make_list__("Donald", "Daisy")
+
+creates a __list__ of type
+
+    __list__<const char (&)[7], const char (&)[6]>
+
+[*Function pointers:]
+
+Function pointers are deduced to the plain non-reference type (i.e. to
+plain function pointer). Example:
+
+    void f(int i);
+      ...
+    __make_list__(&f);
+
+creates a __list__ of type
+
+    __list__<void (*)(int)>
+
+[heading boost::ref]
+
+Fusion's generation functions (e.g. __make_list__) by default stores the
+element types as plain non-reference types. Example:
+
+    void foo(const A& a, B& b) {
+        ...
+        __make_list__(a, b)
+
+creates a __list__ of type
+
+    __list__<A, B>
+
+Sometimes the plain non-reference type is not desired. You can use
+`boost::ref` and `boost::cref` to store references or const references
+(respectively) instead. The mechanism does not compromise const correctness
+since a const object wrapped with ref results in a tuple element with const
+reference type (see the fifth code line below). Examples:
+
+For example:
+
+    A a; B b; const A ca = a;
+    __make_list__(cref(a), b);          // creates list<const A&, B>
+    __make_list__(ref(a), b);           // creates list<A&, B>
+    __make_list__(ref(a), cref(b));     // creates list<A&, const B&>
+    __make_list__(cref(ca));            // creates list<const A&>
+    __make_list__(ref(ca));             // creates list<const A&>
+
+See __boost_ref__ for details.
+
+[endsect]
+

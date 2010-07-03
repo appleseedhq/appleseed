@@ -1,0 +1,189 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Class interprocess_upgradable_mutex</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../boost_interprocess_reference.html#header.boost.interprocess.sync.interprocess_upgradable_mutex_hpp" title="Header &lt;boost/interprocess/sync/interprocess_upgradable_mutex.hpp&gt;">
+<link rel="prev" href="interprocess_semaphore.html" title="Class interprocess_semaphore">
+<link rel="next" href="defer_lock_type.html" title="Struct defer_lock_type">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="interprocess_semaphore.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_interprocess_reference.html#header.boost.interprocess.sync.interprocess_upgradable_mutex_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="defer_lock_type.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.interprocess.interprocess_upgradable_id1772717"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Class interprocess_upgradable_mutex</span></h2>
+<p>boost::interprocess::interprocess_upgradable_mutex</p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../boost_interprocess_reference.html#header.boost.interprocess.sync.interprocess_upgradable_mutex_hpp" title="Header &lt;boost/interprocess/sync/interprocess_upgradable_mutex.hpp&gt;">boost/interprocess/sync/interprocess_upgradable_mutex.hpp</a>&gt;
+
+</em></span>
+<span class="bold"><strong>class</strong></span> <a class="link" href="interprocess_upgradable_id1772717.html" title="Class interprocess_upgradable_mutex">interprocess_upgradable_mutex</a> {
+<span class="bold"><strong>public</strong></span>:
+  <span class="emphasis"><em>// <a class="link" href="interprocess_upgradable_id1772717.html#boost.interprocess.interprocess_upgradable_id1772717construct-copy-destruct">construct/copy/destruct</a></em></span>
+  <a class="link" href="interprocess_upgradable_id1772717.html#id1772730-bb">interprocess_upgradable_mutex</a>(<span class="bold"><strong>const</strong></span> <a class="link" href="interprocess_upgradable_id1772717.html" title="Class interprocess_upgradable_mutex">interprocess_upgradable_mutex</a> &amp;);
+  <a class="link" href="interprocess_upgradable_id1772717.html#id1773109-bb">interprocess_upgradable_mutex</a>();
+  interprocess_upgradable_mutex&amp; 
+  <a class="link" href="interprocess_upgradable_id1772717.html#id1772740-bb"><span class="bold"><strong>operator</strong></span>=</a>(<span class="bold"><strong>const</strong></span> <a class="link" href="interprocess_upgradable_id1772717.html" title="Class interprocess_upgradable_mutex">interprocess_upgradable_mutex</a> &amp;);
+  <a class="link" href="interprocess_upgradable_id1772717.html#id1773115-bb">~interprocess_upgradable_mutex</a>();
+
+  <span class="emphasis"><em>// <a class="link" href="interprocess_upgradable_id1772717.html#id1772751-bb">public member functions</a></em></span>
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="interprocess_upgradable_id1772717.html#id1772754-bb">lock</a>() ;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="interprocess_upgradable_id1772717.html#id1772770-bb">try_lock</a>() ;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="interprocess_upgradable_id1772717.html#id1772786-bb">timed_lock</a>(<span class="bold"><strong>const</strong></span> boost::posix_time::ptime &amp;) ;
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="interprocess_upgradable_id1772717.html#id1772809-bb">unlock</a>() ;
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="interprocess_upgradable_id1772717.html#id1772824-bb">lock_sharable</a>() ;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="interprocess_upgradable_id1772717.html#id1772839-bb">try_lock_sharable</a>() ;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="interprocess_upgradable_id1772717.html#id1772856-bb">timed_lock_sharable</a>(<span class="bold"><strong>const</strong></span> boost::posix_time::ptime &amp;) ;
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="interprocess_upgradable_id1772717.html#id1772878-bb">unlock_sharable</a>() ;
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="interprocess_upgradable_id1772717.html#id1772893-bb">lock_upgradable</a>() ;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="interprocess_upgradable_id1772717.html#id1772908-bb">try_lock_upgradable</a>() ;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="interprocess_upgradable_id1772717.html#id1772925-bb">timed_lock_upgradable</a>(<span class="bold"><strong>const</strong></span> boost::posix_time::ptime &amp;) ;
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="interprocess_upgradable_id1772717.html#id1772948-bb">unlock_upgradable</a>() ;
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="interprocess_upgradable_id1772717.html#id1772963-bb">unlock_and_lock_upgradable</a>() ;
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="interprocess_upgradable_id1772717.html#id1772978-bb">unlock_and_lock_sharable</a>() ;
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="interprocess_upgradable_id1772717.html#id1772994-bb">unlock_upgradable_and_lock_sharable</a>() ;
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="interprocess_upgradable_id1772717.html#id1773010-bb">unlock_upgradable_and_lock</a>() ;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="interprocess_upgradable_id1772717.html#id1773027-bb">try_unlock_upgradable_and_lock</a>() ;
+  <span class="type">*<span class="bold"><strong>bool</strong></span></span> <a class="link" href="interprocess_upgradable_id1772717.html#id1773046-bb">timed_unlock_upgradable_and_lock</a>(<span class="bold"><strong>const</strong></span> boost::posix_time::ptime &amp;) ;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="interprocess_upgradable_id1772717.html#id1773072-bb">try_unlock_sharable_and_lock</a>() ;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="interprocess_upgradable_id1772717.html#id1773090-bb">try_unlock_sharable_and_lock_upgradable</a>() ;
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id2230088"></a><h2>Description</h2>
+<p>Wraps a interprocess_upgradable_mutex that can be placed in shared memory and can be shared between processes. Allows timed lock tries </p>
+<div class="refsect2" lang="en">
+<a name="id2230096"></a><h3>
+<a name="boost.interprocess.interprocess_upgradable_id1772717construct-copy-destruct"></a><code class="computeroutput">interprocess_upgradable_mutex</code> 
+        public
+       construct/copy/destruct</h3>
+<div class="orderedlist"><ol type="1">
+<li><pre class="literallayout"><a name="id1772730-bb"></a>interprocess_upgradable_mutex(<span class="bold"><strong>const</strong></span> <a class="link" href="interprocess_upgradable_id1772717.html" title="Class interprocess_upgradable_mutex">interprocess_upgradable_mutex</a> &amp;);</pre></li>
+<li>
+<pre class="literallayout"><a name="id1773109-bb"></a>interprocess_upgradable_mutex();</pre>
+<p>Constructs the upgradable lock. Throws interprocess_exception on error. </p>
+</li>
+<li><pre class="literallayout">interprocess_upgradable_mutex&amp; 
+<a name="id1772740-bb"></a><span class="bold"><strong>operator</strong></span>=(<span class="bold"><strong>const</strong></span> <a class="link" href="interprocess_upgradable_id1772717.html" title="Class interprocess_upgradable_mutex">interprocess_upgradable_mutex</a> &amp;);</pre></li>
+<li>
+<pre class="literallayout"><a name="id1773115-bb"></a>~interprocess_upgradable_mutex();</pre>
+<p>Destroys the upgradable lock. Does not throw. </p>
+</li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id2230213"></a><h3>
+<a name="id1772751-bb"></a><code class="computeroutput">interprocess_upgradable_mutex</code> public member functions</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1772754-bb"></a>lock() ;</pre>
+<p>Effects: The calling thread tries to obtain exclusive ownership of the mutex, and if another thread has exclusive, sharable or upgradable ownership of the mutex, it waits until it can obtain the ownership. Throws: interprocess_exception on error. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1772770-bb"></a>try_lock() ;</pre>
+<p>Effects: The calling thread tries to acquire exclusive ownership of the mutex without waiting. If no other thread has exclusive, sharable or upgradable ownership of the mutex this succeeds. Returns: If it can acquire exclusive ownership immediately returns true. If it has to wait, returns false. Throws: interprocess_exception on error. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1772786-bb"></a>timed_lock(<span class="bold"><strong>const</strong></span> boost::posix_time::ptime &amp; abs_time) ;</pre>
+<p>Effects: The calling thread tries to acquire exclusive ownership of the mutex waiting if necessary until no other thread has has exclusive, sharable or upgradable ownership of the mutex or abs_time is reached. Returns: If acquires exclusive ownership, returns true. Otherwise returns false. Throws: interprocess_exception on error. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1772809-bb"></a>unlock() ;</pre>
+<p>Precondition: The thread must have exclusive ownership of the mutex. Effects: The calling thread releases the exclusive ownership of the mutex. Throws: An exception derived from interprocess_exception on error. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1772824-bb"></a>lock_sharable() ;</pre>
+<p>Effects: The calling thread tries to obtain sharable ownership of the mutex, and if another thread has exclusive or upgradable ownership of the mutex, waits until it can obtain the ownership. Throws: interprocess_exception on error. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1772839-bb"></a>try_lock_sharable() ;</pre>
+<p>Effects: The calling thread tries to acquire sharable ownership of the mutex without waiting. If no other thread has has exclusive or upgradable ownership of the mutex this succeeds. Returns: If it can acquire sharable ownership immediately returns true. If it has to wait, returns false. Throws: interprocess_exception on error. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1772856-bb"></a>timed_lock_sharable(<span class="bold"><strong>const</strong></span> boost::posix_time::ptime &amp; abs_time) ;</pre>
+<p>Effects: The calling thread tries to acquire sharable ownership of the mutex waiting if necessary until no other thread has has exclusive or upgradable ownership of the mutex or abs_time is reached. Returns: If acquires sharable ownership, returns true. Otherwise returns false. Throws: interprocess_exception on error. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1772878-bb"></a>unlock_sharable() ;</pre>
+<p>Precondition: The thread must have sharable ownership of the mutex. Effects: The calling thread releases the sharable ownership of the mutex. Throws: An exception derived from interprocess_exception on error. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1772893-bb"></a>lock_upgradable() ;</pre>
+<p>Effects: The calling thread tries to obtain upgradable ownership of the mutex, and if another thread has exclusive or upgradable ownership of the mutex, waits until it can obtain the ownership. Throws: interprocess_exception on error. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1772908-bb"></a>try_lock_upgradable() ;</pre>
+<p>Effects: The calling thread tries to acquire upgradable ownership of the mutex without waiting. If no other thread has has exclusive or upgradable ownership of the mutex this succeeds. Returns: If it can acquire upgradable ownership immediately returns true. If it has to wait, returns false. Throws: interprocess_exception on error. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1772925-bb"></a>timed_lock_upgradable(<span class="bold"><strong>const</strong></span> boost::posix_time::ptime &amp; abs_time) ;</pre>
+<p>Effects: The calling thread tries to acquire upgradable ownership of the mutex waiting if necessary until no other thread has has exclusive or upgradable ownership of the mutex or abs_time is reached. Returns: If acquires upgradable ownership, returns true. Otherwise returns false. Throws: interprocess_exception on error. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1772948-bb"></a>unlock_upgradable() ;</pre>
+<p>Precondition: The thread must have upgradable ownership of the mutex. Effects: The calling thread releases the upgradable ownership of the mutex. Throws: An exception derived from interprocess_exception on error. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1772963-bb"></a>unlock_and_lock_upgradable() ;</pre>
+<p>Precondition: The thread must have exclusive ownership of the mutex. Effects: The thread atomically releases exclusive ownership and acquires upgradable ownership. This operation is non-blocking. Throws: An exception derived from interprocess_exception on error. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1772978-bb"></a>unlock_and_lock_sharable() ;</pre>
+<p>Precondition: The thread must have exclusive ownership of the mutex. Effects: The thread atomically releases exclusive ownership and acquires sharable ownership. This operation is non-blocking. Throws: An exception derived from interprocess_exception on error. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1772994-bb"></a>unlock_upgradable_and_lock_sharable() ;</pre>
+<p>Precondition: The thread must have upgradable ownership of the mutex. Effects: The thread atomically releases upgradable ownership and acquires sharable ownership. This operation is non-blocking. Throws: An exception derived from interprocess_exception on error. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1773010-bb"></a>unlock_upgradable_and_lock() ;</pre>
+<p>Precondition: The thread must have upgradable ownership of the mutex. Effects: The thread atomically releases upgradable ownership and acquires exclusive ownership. This operation will block until all threads with sharable ownership release their sharable lock. Throws: An exception derived from interprocess_exception on error. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1773027-bb"></a>try_unlock_upgradable_and_lock() ;</pre>
+<p>Precondition: The thread must have upgradable ownership of the mutex. Effects: The thread atomically releases upgradable ownership and tries to acquire exclusive ownership. This operation will fail if there are threads with sharable ownership, but it will maintain upgradable ownership. Returns: If acquires exclusive ownership, returns true. Otherwise returns false. Throws: An exception derived from interprocess_exception on error. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">*<span class="bold"><strong>bool</strong></span></span> <a name="id1773046-bb"></a>timed_unlock_upgradable_and_lock(<span class="bold"><strong>const</strong></span> boost::posix_time::ptime &amp; abs_time) ;</pre>
+<p>Precondition: The thread must have upgradable ownership of the mutex. Effects: The thread atomically releases upgradable ownership and tries to acquire exclusive ownership, waiting if necessary until abs_time. This operation will fail if there are threads with sharable ownership or timeout reaches, but it will maintain upgradable ownership. Returns: If acquires exclusive ownership, returns true. Otherwise returns false. Throws: An exception derived from interprocess_exception on error. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1773072-bb"></a>try_unlock_sharable_and_lock() ;</pre>
+<p>Precondition: The thread must have sharable ownership of the mutex. Effects: The thread atomically releases sharable ownership and tries to acquire exclusive ownership. This operation will fail if there are threads with sharable or upgradable ownership, but it will maintain sharable ownership. Returns: If acquires exclusive ownership, returns true. Otherwise returns false. Throws: An exception derived from interprocess_exception on error. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1773090-bb"></a>try_unlock_sharable_and_lock_upgradable() ;</pre>
+<p>Precondition: The thread must have sharable ownership of the mutex. Effects: The thread atomically releases sharable ownership and tries to acquire upgradable ownership. This operation will fail if there are threads with sharable or upgradable ownership, but it will maintain sharable ownership. Returns: If acquires upgradable ownership, returns true. Otherwise returns false. Throws: An exception derived from interprocess_exception on error. </p>
+</li>
+</ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2005 - 2008 Ion Gaztañaga<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="interprocess_semaphore.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_interprocess_reference.html#header.boost.interprocess.sync.interprocess_upgradable_mutex_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="defer_lock_type.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Class template iset_index</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../boost_interprocess_reference.html#header.boost.interprocess.indexes.iset_index_hpp" title="Header &lt;boost/interprocess/indexes/iset_index.hpp&gt;">
+<link rel="prev" href="flat_map_index.html" title="Class template flat_map_index">
+<link rel="next" href="iunordered_set_index.html" title="Class template iunordered_set_index">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="flat_map_index.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_interprocess_reference.html#header.boost.interprocess.indexes.iset_index_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="iunordered_set_index.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.interprocess.iset_index"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Class template iset_index</span></h2>
+<p>boost::interprocess::iset_index</p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../boost_interprocess_reference.html#header.boost.interprocess.indexes.iset_index_hpp" title="Header &lt;boost/interprocess/indexes/iset_index.hpp&gt;">boost/interprocess/indexes/iset_index.hpp</a>&gt;
+
+</em></span><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> MapConfig&gt; 
+<span class="bold"><strong>class</strong></span> <a class="link" href="iset_index.html" title="Class template iset_index">iset_index</a> {
+<span class="bold"><strong>public</strong></span>:
+  <span class="emphasis"><em>// types</em></span>
+  <span class="bold"><strong>typedef</strong></span> index_type::iterator           <a name="boost.interprocess.iset_index.iterator"></a>iterator;          
+  <span class="bold"><strong>typedef</strong></span> index_type::const_iterator     <a name="boost.interprocess.iset_index.const_iterator"></a>const_iterator;    
+  <span class="bold"><strong>typedef</strong></span> index_type::insert_commit_data <a name="boost.interprocess.iset_index.insert_commit_data"></a>insert_commit_data;
+  <span class="bold"><strong>typedef</strong></span> index_type::value_type         <a name="boost.interprocess.iset_index.value_type"></a>value_type;        
+
+  <span class="emphasis"><em>// <a class="link" href="iset_index.html#boost.interprocess.iset_indexconstruct-copy-destruct">construct/copy/destruct</a></em></span>
+  <a class="link" href="iset_index.html#id1744019-bb">iset_index</a>(<span class="bold"><strong>typename</strong></span> MapConfig::segment_manager_base *);
+
+  <span class="emphasis"><em>// <a class="link" href="iset_index.html#id1743939-bb">public member functions</a></em></span>
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="iset_index.html#id1743943-bb">reserve</a>(std::size_t) ;
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="iset_index.html#id1743961-bb">shrink_to_fit</a>() ;
+  <span class="type">iterator</span> <a class="link" href="iset_index.html#id1743971-bb">find</a>(<span class="bold"><strong>const</strong></span> intrusive_compare_key_type &amp;) ;
+  <span class="type">const_iterator</span> <a class="link" href="iset_index.html#id1743985-bb">find</a>(<span class="bold"><strong>const</strong></span> intrusive_compare_key_type &amp;) <span class="bold"><strong>const</strong></span>;
+  <span class="type">std::pair&lt; iterator, <span class="bold"><strong>bool</strong></span> &gt;</span> 
+  <a class="link" href="iset_index.html#id1743999-bb">insert_check</a>(<span class="bold"><strong>const</strong></span> intrusive_compare_key_type &amp;, insert_commit_data &amp;) ;
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id2158544"></a><h2>Description</h2>
+<p>Index type based in boost::intrusive::set. Just derives from boost::intrusive::set and defines the interface needed by managed memory segments </p>
+<div class="refsect2" lang="en">
+<a name="id2158552"></a><h3>
+<a name="boost.interprocess.iset_indexconstruct-copy-destruct"></a><code class="computeroutput">iset_index</code> 
+        public
+       construct/copy/destruct</h3>
+<div class="orderedlist"><ol type="1"><li>
+<pre class="literallayout"><a name="id1744019-bb"></a>iset_index(<span class="bold"><strong>typename</strong></span> MapConfig::segment_manager_base *);</pre>
+<p>Constructor. Takes a pointer to the segment manager. Can throw </p>
+</li></ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id2158594"></a><h3>
+<a name="id1743939-bb"></a><code class="computeroutput">iset_index</code> public member functions</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1743943-bb"></a>reserve(std::size_t) ;</pre>
+<p>This reserves memory to optimize the insertion of n elements in the index </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1743961-bb"></a>shrink_to_fit() ;</pre>This frees all unnecessary memory. </li>
+<li><pre class="literallayout"><span class="type">iterator</span> <a name="id1743971-bb"></a>find(<span class="bold"><strong>const</strong></span> intrusive_compare_key_type &amp; key) ;</pre></li>
+<li><pre class="literallayout"><span class="type">const_iterator</span> <a name="id1743985-bb"></a>find(<span class="bold"><strong>const</strong></span> intrusive_compare_key_type &amp; key) <span class="bold"><strong>const</strong></span>;</pre></li>
+<li><pre class="literallayout"><span class="type">std::pair&lt; iterator, <span class="bold"><strong>bool</strong></span> &gt;</span> 
+<a name="id1743999-bb"></a>insert_check(<span class="bold"><strong>const</strong></span> intrusive_compare_key_type &amp; key, 
+             insert_commit_data &amp; commit_data) ;</pre></li>
+</ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2005 - 2008 Ion Gaztañaga<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="flat_map_index.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_interprocess_reference.html#header.boost.interprocess.indexes.iset_index_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="iunordered_set_index.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

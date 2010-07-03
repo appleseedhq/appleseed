@@ -1,0 +1,246 @@
+<?xml encoding="ISO-8859-1"?>
+
+<!ENTITY XercesCFullName        "Xerces C++ Parser">            <!-- fullproductname -->
+<!ENTITY XercesCName            "Xerces-C++">                   <!-- productname -->
+<!ENTITY XercesCVersion         "2.8.0">                        <!-- versionnumber -->
+<!ENTITY XercesCVersion152      "1.5.2">                        <!-- versionnumber -->
+<!ENTITY XercesCProjectName     "Xerces">                       <!-- projectname -->
+<!ENTITY XercesCInstallDir      "xerces-c_2_8_0">               <!-- installdirname -->
+<!ENTITY XercesCSrcInstallDir   "xerces-c-src_2_8_0">           <!-- sourcedirectory -->
+<!ENTITY XercesCToolsInstallDir "xerces-c-tools_2_8_0">         <!-- sourcedirectory -->
+<!ENTITY XercesCWindowsLib      "xerces-c_2">                   <!-- windowslibname -->
+<!ENTITY XercesCWindowsDLL      "xerces-c_2_8">                 <!-- windowsDLLname -->
+<!ENTITY XercesCUnixSoName      "28.0">                         <!-- unixlibname -->
+<!ENTITY XercesCUnixVersion     "28">                           <!-- unixlibname -->
+<!ENTITY XercesCUnixLib         "libxerces-c">                  <!-- unixlibname -->
+<!ENTITY XercesCNamespace       "xercesc">                      <!-- C++ namespace name -->
+<!ENTITY XercesCNSVersion       "xercesc_2_8">                  <!-- C++ namespace name with Version -->
+<!ENTITY XercesCDevelEmailAddress "c-dev@xerces.apache.org"> <!-- emailaddress -->
+<!ENTITY XercesCDevelSAddress   "c-dev-subscribe@xerces.apache.org"> <!-- emailaddress -->
+<!ENTITY XercesCDevelUAddress   "c-dev-unsubscribe@xerces.apache.org"> <!-- emailaddress -->
+<!ENTITY XercesCDevelHAddress   "c-dev-help@xerces.apache.org"> <!-- emailaddress -->
+<!ENTITY XercesCUserEmailAddress "c-users@xerces.apache.org"> <!-- emailaddress -->
+<!ENTITY XercesCUserSAddress    "c-users-subscribe@xerces.apache.org"> <!-- emailaddress -->
+<!ENTITY XercesCUserUAddress    "c-users-unsubscribe@xerces.apache.org"> <!-- emailaddress -->
+<!ENTITY XercesCUserHAddress    "c-users-help@xerces.apache.org"> <!-- emailaddress -->
+<!ENTITY JiraURL  "http&colon;//issues.apache.org/jira/browse/XERCESC "> <!-- url -->
+<!ENTITY XercesDistDir        "xerces.apache.org/xerces-c/download.cgi"> <!-- download directory -->
+
+<!ENTITY colon "&#58;">
+<!ENTITY percent "&#37;">
+
+<!-- value for home entity in xerces-c_book.xml -->
+<!ENTITY home '
+<external href="../index.html"  label="Home"/>
+'>
+
+<!-- value for releases_plan entity in xerces-c_book.xml -->
+<!ENTITY releases_plan '
+<hidden id="releases_plan" source="releases_plan.xml"/>
+'>
+
+<!-- value for faq-distrib entity in xerces-c_book.xml -->
+<!ENTITY faq-distrib '
+<entry id="faq-distrib" source="faq-distrib.xml"/>
+'>
+
+<!-- value for faq-contributing entity in xerces-c_book.xml -->
+<!ENTITY faq-contributing '
+<entry id="faq-contributing" source="faq-contributing.xml"/>
+'>
+
+<!-- Entity for bug report information used in bug-report.xml -->
+<!ENTITY bug-report '
+<s2 title="How to report bugs">
+<p> Please report bugs to <jump href="&JiraURL;">Jira</jump>,
+the Apache bug database.  Pick the product "Xerces-C++"
+using the following components&colon;
+</p>
+<table>
+<tr><th><em>Component</em></th><th><em>Description</em></th></tr>
+<tr><td>DOM</td><td>Items specific to DOM</td></tr>
+<tr><td>SAX/SAX2</td><td>Items specific to SAX or SAX2</td></tr>
+<tr><td>Non-Validating Parser</td><td>General Parsing Problem</td></tr>
+<tr><td>Validating Parser (DTD)</td><td>DTD related parser issue</td></tr>
+<tr><td>Validating Parser (Schema)</td><td>Schema related parser issue</td></tr>
+<tr><td>Utilities</td><td>Items related to utilities like MessageLoader, Transcoder, NetAccessors, Platform specific utilities</td></tr>
+<tr><td>Build</td><td>Problem with build, makefile, project files</td></tr>
+<tr><td>Documentation</td><td>Documentation bugs such as FAQ, Programming Guide</td></tr>
+<tr><td>Samples/Tests</td><td>Samples or test cases related issues</td></tr>
+<tr><td>Miscellaneous</td><td>Items not covered in other categories</td></tr>
+</table>
+<p>A copy of your bug report is sent automatically to the
+<jump href="mailing-lists.html">&XercesCName; development mailing list</jump>.
+</p>
+</s2>
+<s2 title="Search first">
+<p> Check the <jump href="&JiraURL;">Jira</jump> database
+before submitting your bug report to avoid creating a duplicate report.
+Even the bug has been reported already, you may add a comment to the existing report
+since your contribution may lead to a quicker identification/resolution to the bug reported.
+</p>
+<p> Here is the list of
+<jump href=
+"http&colon;//issues.apache.org/jira/secure/IssueNavigator.jspa?reset=true&amp;pid=10510&amp;statusIds=1">
+outstanding bugs</jump>  that are currently reported in Jira.
+</p>
+</s2>
+<s2 title="Write a good bug report">
+<p> Writing a useful bug report, which makes the bug reproducible, is the first step
+towards the resolution of the bug. Specifics about the bug, like
+</p>
+<ul>
+<li>&XercesCName; version number</li>
+<li>Platform</li>
+<li>Operating system and version number</li>
+<li>Compiler and version number</li>
+<li>The XML document (or excerpt) that failed</li>
+<li>The C++ application code that failed</li>
+<li>Whether you built the &XercesCName; library yourself or used the
+binary distribution</li>
+<li>What happened</li>
+</ul>
+<p>
+are all necessary information to allow developer to reproduce,
+identify, evaluate and eventually, fix the bug, which is the very
+purpose of your reporting of the bug.
+</p>
+<p>If you are providing a patch please review the information in
+<jump href="faq-contributing.html#Submitting Patches">Submitting Patches</jump>.
+</p>
+</s2>
+'>
+
+<!-- build-winunix.xml & faq-distrib.xml supported platforms -->
+<!ENTITY build-winunix-supported-platforms '
+<table>
+<tr><th><em>Operating System</em></th><th><em>Compiler</em></th></tr>
+<tr><th colspan="2"><em>32-bit</em></th></tr>
+<tr><td>Windows x86</td><td>MS Visual C++ 7.1 (2003)</td></tr>
+<tr><td>Windows x86</td><td>MS Visual C++ 8.0 (2005)</td></tr>
+<tr><td>Linux x86</td><td>GCC 3.4.x or later</td></tr>
+<tr><td>Solaris 10 x86</td><td>GCC 3.4.x or later</td></tr>
+<tr><td>Solaris 10 x86</td><td>Sun C++ 5.7 (Studio 10) or later</td></tr>
+<tr><td>Solaris 10 SPARC</td><td>GCC 3.4.x or later</td></tr>
+<tr><td>Solaris 10 SPARC</td><td>Sun C++ 5.7 (Studio 10) or later</td></tr>
+<tr><td>AIX 5.3 PowerPC</td><td>IBM XL C++ 7.0 or later</td></tr>
+<tr><td>HP-UX 11i PA-RISC</td><td>HP aCC A.03.x</td></tr>
+<tr><td>HP-UX 11i IA-64</td><td>HP aCC A.06.x</td></tr>
+<tr><td>MacOS X 10.4 "Tiger" x86</td><td>GCC 4.0.x (Xcode 2.x) or later</td></tr>
+<tr><td>MacOS X 10.4 "Tiger" PowerPC</td><td>GCC 4.0.x (Xcode 2.x) or later</td></tr>
+
+<tr><th colspan="2"><em>64-bit</em></th></tr>
+<tr><td>Windows x86-64</td><td>MS Visual C++ 8.0 (2005)</td></tr>
+<tr><td>Linux x86-64</td><td>GCC 3.4.x or later</td></tr>
+<tr><td>Solaris 10 x86-64</td><td>GCC 3.4.x or later</td></tr>
+<tr><td>Solaris 10 x86-64</td><td>Sun C++ 5.7 (Studio 10) or later</td></tr>
+<tr><td>Solaris 10 SPARC</td><td>GCC 3.4.x or later</td></tr>
+<tr><td>Solaris 10 SPARC</td><td>Sun C++ 5.7 (Studio 10) or later</td></tr>
+<tr><td>AIX 5.3 PowerPC</td><td>IBM XL C++ 7.0 or later</td></tr>
+<tr><td>HP-UX 11i PA-RISC</td><td>HP aCC A.03.x</td></tr>
+<tr><td>HP-UX 11i IA-64</td><td>HP aCC A.06.x</td></tr>
+</table>
+'>
+
+<!-- note in build-winunix.xml about building on untested platforms -->
+<!ENTITY build-winunix-note '
+<p>While older platforms/compilers will most likely work, if you are not using any of
+   these compilers, you are taking a calculated risk
+by exploring untested grounds. Your effort in making &XercesCName; work on
+new platforms/compilers is greatly appreciated and any problems you face can be addressed
+on the <jump href="mailing-lists.html">&XercesCName; mailing lists</jump>.
+</p>
+'>
+
+<!-- support faq info for faq-other.xml -->
+<!ENTITY faq-other-support '
+<faq title="Is there any kind of support available for &XercesCName;?">
+<q>Is there any kind of support available for &XercesCName;?</q>
+<a>
+<p>&XercesCName; comes with <em>no</em> formal support.</p>
+<p>Every volunteer project obtains its strength from the people involved in
+it. Mailing lists provide a simple and effective communication mechanism. You
+are welcome to join any of these mailing lists (or all of them if you wish).
+You can choose to lurk, or to actively participate. It is up to you. Before you
+join these lists, you should look over the resources in the Reference Library
+section</p>
+<p>Instructions for subscribing as well as archives are available at the
+<jump href="mailing-lists.html">&XercesCName; mailing lists</jump> page.</p>
+</a>
+</faq>
+'>
+
+<!-- patch faq info for faq-other.xml -->
+<!ENTITY faq-other-patch '
+<faq title="I have a patch to the &XercesCName; source code. How do I submit it?">
+<q>I have a patch to the &XercesCName; source code. How do I submit it?</q>
+<a>
+<p>Mail it to the <jump href="mailing-lists.html">&XercesCName;
+development mailing list</jump>. Its also a good idea to add a report to
+<jump href="&JiraURL;">Jira</jump> to track the issue There are no set rules about
+how or what must be included -- if you have fixed a problem or enhanced the code
+in some way, we really would like to get your changes, and will take them in
+any reasonable form.</p>
+<p>Generally a diff of the changed files against the current sources from
+<jump href="source-repository.html">SVN</jump> is good, along with some kind of
+description of what the change is. (Working with the current sources is important!)</p>
+</a>
+</faq>
+'>
+
+<!-- note with link to faq-distrib in faq-build.xml -->
+<!ENTITY faq-build-faq-distrib1 '
+(please refer to
+<jump href="faq-distrib.html#faq-1">FAQ&colon; What platforms / compilers are
+being used to build the binary distribution kits?</jump>)
+'>
+
+<!ENTITY faq-build-faq-distrib3 '
+(for exact name
+see <jump href="faq-distrib.html#faq-3">FAQ&colon; Which DLLs do I need to distribute with my application?</jump>)
+'>
+
+<!-- note with link to faq-distrib in install.xml per solaris and gtar -->
+<!ENTITY install-faq-distrib11 '
+See
+<jump href="faq-distrib.html#faq-11">FAQ</jump> for more information.
+'>
+
+<!-- note with link to releases-plan in releases.xml -->
+<!ENTITY releases-releases-plan '
+<s2 title="Releases Plan">
+<p> For future release plan about &XercesCName;,
+please refer to <jump href="releases_plan.html">Releases Plan</jump>.
+</p>
+</s2>
+'>
+
+<!-- paragraph in releases.xml with table of bugzilla bugs fixed -->
+<!ENTITY releases-fixed-bugs-para '
+'>
+
+<!-- feedback info in schema.xml -->
+<!ENTITY schema-feedback-info '
+<p>We would very much appreciate feedback on the package via the
+<jump href="mailing-lists.html">&XercesCName; mailing lists</jump>,
+and we encourage the submission of bugs as described on the
+<jump href="bug-report.html">Bug Reporting</jump> page.
+Please read this document before using this package.
+</p>
+'>
+
+
+<!-- bug report / contact info in feedback.xml -->
+<!ENTITY feedback-bug-report '
+<p>Please browse through this bundled documentation completely.  Most of
+the common questions have been answered in the FAQs. Specifically, do
+read the answer to "<jump href="faq-other.html#faq-4"> Is there any kind
+of support available for &XercesCName;?</jump>". Browsing this
+documentation, may be the quickest way to get an answer. Of course, if
+all else fails, as mentioned in the link above, you can post a question
+to one of the <jump href="mailing-lists.html">&XercesCName; mailing
+lists</jump>.</p> <p>See <jump href="bug-report.html">Bug Reporting</jump>
+if you would like to report a defect (which is greatly appreciated).</p>
+'>
+
+

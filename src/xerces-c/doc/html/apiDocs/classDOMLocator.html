@@ -1,0 +1,437 @@
+<HTML><HEAD><SCRIPT language="JavaScript" src="../resources/script.js" type="text/javascript"></SCRIPT><TITLE>Xerces-C++: DOMLocator Class Reference</TITLE><link href="XercesApi.css" rel="stylesheet" type="text/css"></HEAD><BODY alink="#ff0000" bgcolor="#ffffff" leftmargin="4" link="#0000ff" marginheight="4" marginwidth="4" text="#000000" topmargin="4" vlink="#0000aa"><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD align="left" height="60" rowspan="3" valign="top" width="135"><IMG border="0" height="60" hspace="0" src="../resources/logo.gif" vspace="0" width="135"></TD><TD align="left" colspan="4" height="5" valign="top" width="456"><IMG border="0" height="5" hspace="0" src="../resources/line.gif" vspace="0" width="456"></TD><TD align="left" height="60" rowspan="3" valign="top" width="29"><IMG border="0" height="60" hspace="0" src="../resources/right.gif" vspace="0" width="29"></TD></TR><TR><TD align="left" bgcolor="#0086b2" colspan="4" height="35" valign="top" width="456"><IMG alt="" border="0" height="35" hspace="0" src="../graphics/api-header.jpg" vspace="0" width="456"></TD></TR><TR><TD align="left" height="20" valign="top" width="168"><IMG border="0" height="20" hspace="0" src="../resources/bottom.gif" vspace="0" width="168"></TD><TD align="left" height="20" valign="top" width="96"><A href="http://xml.apache.org/" onMouseOut="rolloverOff('xml');" onMouseOver="rolloverOn('xml');" target="new"><IMG alt="http://xml.apache.org/" border="0" height="20" hspace="0" name="xml" onLoad="rolloverLoad('xml','../resources/button-xml-hi.gif','../resources/button-xml-lo.gif');" src="../resources/button-xml-lo.gif" vspace="0" width="96"></A></TD><TD align="left" height="20" valign="top" width="96"><A href="http://www.apache.org/" onMouseOut="rolloverOff('asf');" onMouseOver="rolloverOn('asf');" target="new"><IMG alt="http://www.apache.org/" border="0" height="20" hspace="0" name="asf" onLoad="rolloverLoad('asf','../resources/button-asf-hi.gif','../resources/button-asf-lo.gif');" src="../resources/button-asf-lo.gif" vspace="0" width="96"></A></TD><TD align="left" height="20" valign="top" width="96"><A href="http://www.w3.org/" onMouseOut="rolloverOff('w3c');" onMouseOver="rolloverOn('w3c');" target="new"><IMG alt="http://www.w3.org/" border="0" height="20" hspace="0" name="w3c" onLoad="rolloverLoad('w3c','../resources/button-w3c-hi.gif','../resources/button-w3c-lo.gif');" src="../resources/button-w3c-lo.gif" vspace="0" width="96"></A></TD></TR></TABLE><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD align="left" valign="top" width="120"><IMG border="0" height="14" hspace="0" src="../resources/join.gif" vspace="0" width="120"><BR>
+  <A href="../../index.html" onMouseOut="rolloverOff('side-ext-2');" onMouseOver="rolloverOn('side-ext-2');"><IMG alt="Home" border="0" height="12" hspace="0" name="side-ext-2" onLoad="rolloverLoad('side-ext-2','../graphics/ext-2-label-2.jpg','../graphics/ext-2-label-3.jpg');" src="../graphics/ext-2-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../index.html" onMouseOut="rolloverOff('side-index');" onMouseOver="rolloverOn('side-index');"><IMG alt="Readme" border="0" height="12" hspace="0" name="side-index" onLoad="rolloverLoad('side-index','../graphics/index-label-2.jpg','../graphics/index-label-3.jpg');" src="../graphics/index-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../charter.html" onMouseOut="rolloverOff('side-charter');" onMouseOver="rolloverOn('side-charter');"><IMG alt="Charter" border="0" height="12" hspace="0" name="side-charter" onLoad="rolloverLoad('side-charter','../graphics/charter-label-2.jpg','../graphics/charter-label-3.jpg');" src="../graphics/charter-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../releases.html" onMouseOut="rolloverOff('side-releases');" onMouseOver="rolloverOn('side-releases');"><IMG alt="Release Info" border="0" height="12" hspace="0" name="side-releases" onLoad="rolloverLoad('side-releases','../graphics/releases-label-2.jpg','../graphics/releases-label-3.jpg');" src="../graphics/releases-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../install.html" onMouseOut="rolloverOff('side-install');" onMouseOver="rolloverOn('side-install');"><IMG alt="Installation" border="0" height="12" hspace="0" name="side-install" onLoad="rolloverLoad('side-install','../graphics/install-label-2.jpg','../graphics/install-label-3.jpg');" src="../graphics/install-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="http://xerces.apache.org/xerces-c/download.cgi" onMouseOut="rolloverOff('side-ext-20');" onMouseOver="rolloverOn('side-ext-20');"><IMG alt="Download" border="0" height="12" hspace="0" name="side-ext-20" onLoad="rolloverLoad('side-ext-20','../graphics/ext-20-label-2.jpg','../graphics/ext-20-label-3.jpg');" src="../graphics/ext-20-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../build.html" onMouseOut="rolloverOff('side-build');" onMouseOver="rolloverOn('side-build');"><IMG alt="Build Instructions" border="0" height="12" hspace="0" name="side-build" onLoad="rolloverLoad('side-build','../graphics/build-label-2.jpg','../graphics/build-label-3.jpg');" src="../graphics/build-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../program.html" onMouseOut="rolloverOff('side-program');" onMouseOver="rolloverOn('side-program');"><IMG alt="Programming" border="0" height="12" hspace="0" name="side-program" onLoad="rolloverLoad('side-program','../graphics/program-label-2.jpg','../graphics/program-label-3.jpg');" src="../graphics/program-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../samples.html" onMouseOut="rolloverOff('side-samples');" onMouseOver="rolloverOn('side-samples');"><IMG alt="Samples" border="0" height="12" hspace="0" name="side-samples" onLoad="rolloverLoad('side-samples','../graphics/samples-label-2.jpg','../graphics/samples-label-3.jpg');" src="../graphics/samples-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../faqs.html" onMouseOut="rolloverOff('side-faqs');" onMouseOver="rolloverOn('side-faqs');"><IMG alt="FAQs" border="0" height="12" hspace="0" name="side-faqs" onLoad="rolloverLoad('side-faqs','../graphics/faqs-label-2.jpg','../graphics/faqs-label-3.jpg');" src="../graphics/faqs-label-3.jpg" vspace="0" width="120"></A><BR>
+
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../api.html" onMouseOut="rolloverOff('side-api');" onMouseOver="rolloverOn('side-api');"><IMG alt="API Docs" border="0" height="12" hspace="0" name="side-api" onLoad="rolloverLoad('side-api','../graphics/api-label-2.jpg','../graphics/api-label-3.jpg');" src="../graphics/api-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../ApacheDOMC++Binding.html" onMouseOut="rolloverOff('side-ext-88');" onMouseOver="rolloverOn('side-ext-88');"><IMG alt="DOM C++ Binding" border="0" height="12" hspace="0" name="side-ext-88" onLoad="rolloverLoad('side-ext-88','../graphics/ext-88-label-2.jpg','../graphics/ext-88-label-3.jpg');" src="../graphics/ext-88-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../migrate.html" onMouseOut="rolloverOff('side-migrate');" onMouseOver="rolloverOn('side-migrate');"><IMG alt="Migration Guide" border="0" height="12" hspace="0" name="side-migrate" onLoad="rolloverLoad('side-migrate','../graphics/migrate-label-2.jpg','../graphics/migrate-label-3.jpg');" src="../graphics/migrate-label-3.jpg" vspace="0" width="120"></A><BR>
+
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+    <A href="../feedback.html" onMouseOut="rolloverOff('side-feedback');" onMouseOver="rolloverOn('side-feedback');"><IMG alt="Feedback" border="0" height="12" hspace="0" name="side-feedback" onLoad="rolloverLoad('side-feedback','../graphics/feedback-label-2.jpg','../graphics/feedback-label-3.jpg');" src="../graphics/feedback-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../bug-report.html" onMouseOut="rolloverOff('side-bug-report');" onMouseOver="rolloverOn('side-bug-report');"><IMG alt="Bug-Reporting" border="0" height="12" hspace="0" name="side-bug-report" onLoad="rolloverLoad('side-bug-report','../graphics/bug-report-label-2.jpg','../graphics/bug-report-label-3.jpg');" src="../graphics/bug-report-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../mailing-lists.html" onMouseOut="rolloverOff('side-mailing-lists');" onMouseOver="rolloverOn('side-mailing-lists');"><IMG alt="Mailing Lists" border="0" height="12" hspace="0" name="side-mailing-lists" onLoad="rolloverLoad('side-mailing-lists','../graphics/mailing-lists-label-2.jpg','../graphics/mailing-lists-label-3.jpg');" src="../graphics/mailing-lists-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+    <A href="../source-repository.html" onMouseOut="rolloverOff('side-source-repository');" onMouseOver="rolloverOn('side-source-repository');"><IMG alt="Source Repository" border="0" height="12" hspace="0" name="side-source-repository" onLoad="rolloverLoad('side-source-repository','../graphics/source-repository-label-2.jpg','../graphics/source-repository-label-3.jpg');" src="../graphics/source-repository-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../applications.html" onMouseOut="rolloverOff('side-applications');" onMouseOver="rolloverOn('side-applications');"><IMG alt="Applications" border="0" height="12" hspace="0" name="side-applications" onLoad="rolloverLoad('side-applications','../graphics/applications-label-2.jpg','../graphics/applications-label-3.jpg');" src="../graphics/applications-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="14" hspace="0" src="../resources/close.gif" vspace="0" width="120"><BR></TD><TD align="left" valign="top" width="500"><TABLE border="0" cellpadding="3" cellspacing="0"><TR><TD>
+    <TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#FFFFFF" colspan="2" width="494"><TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#039acc" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#039acc" height="1" width="492"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#039acc" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" width="492"><FONT color="#ffffff" face="arial,helvetica,sanserif" size="+1"><IMG border="0" height="2" hspace="0" src="../resources/void.gif" vspace="0" width="2"><B>API Docs for SAX and DOM</B></FONT></TD><TD bgcolor="#017299" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#017299" height="1" width="492"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#017299" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></TD></TR><TR><TD width="10">&nbsp;</TD><TD width="484"><FONT color="#000000" face="arial,helvetica,sanserif">
+
+	    <P>
+<!-- Generated by Doxygen 1.5.3 -->
+<div class="tabs">
+  <ul>
+    <li><a href="index.html"><span>Main&nbsp;Page</span></a></li>
+    <li class="current"><a href="classes.html"><span>Classes</span></a></li>
+    <li><a href="files.html"><span>Files</span></a></li>
+    <li><a href="pages.html"><span>Related&nbsp;Pages</span></a></li>
+  </ul>
+</div>
+<div class="tabs">
+  <ul>
+    <li><a href="classes.html"><span>Alphabetical&nbsp;List</span></a></li>
+    <li><a href="annotated.html"><span>Class&nbsp;List</span></a></li>
+    <li><a href="hierarchy.html"><span>Class&nbsp;Hierarchy</span></a></li>
+    <li><a href="functions.html"><span>Class&nbsp;Members</span></a></li>
+  </ul>
+</div>
+<h1>DOMLocator Class Reference</h1><!-- doxytag: class="DOMLocator" --><a class="el" href="classDOMLocator.html" title="DOMLocator is an interface that describes a location.">DOMLocator</a> is an interface that describes a location.  
+<a href="#_details">More...</a>
+<p>
+
+<p>
+<a href="classDOMLocator-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
+<tr><td></td></tr>
+<tr><td colspan="2"><br><h2>Public Member Functions</h2></td></tr>
+<tr><td colspan="2"><div class="groupHeader">Destructor</div></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDOMLocator.html#1fc9fd28a1c98ab4ec1fdebef56e53d7">~DOMLocator</a> ()</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Destructor.  <a href="#1fc9fd28a1c98ab4ec1fdebef56e53d7"></a><br></td></tr>
+<tr><td colspan="2"><div class="groupHeader">Functions introduced in DOM Level 3</div></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual XMLSSize_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDOMLocator.html#8d183a06b61e56fefa1f259eb1c96b9d">getLineNumber</a> () const =0</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the line number where the error occured.  <a href="#8d183a06b61e56fefa1f259eb1c96b9d"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual XMLSSize_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDOMLocator.html#9d9032a19cd0378df78cecb794170b8a">getColumnNumber</a> () const =0</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the column number where the error occured.  <a href="#9d9032a19cd0378df78cecb794170b8a"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual XMLSSize_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDOMLocator.html#d3ba186d63baa2b302e09122e4e535d4">getOffset</a> () const =0</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the byte or character offset into the input source, if we're parsing a file or a byte stream then this will be the byte offset into that stream, but if a character media is parsed then the offset will be the character offset.  <a href="#d3ba186d63baa2b302e09122e4e535d4"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual <a class="el" href="classDOMNode.html">DOMNode</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDOMLocator.html#3ad4aa6c243883d52003d4455034cee5">getErrorNode</a> () const =0</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the <a class="el" href="classDOMNode.html" title="The DOMNode interface is the primary datatype for the entire Document Object Model...">DOMNode</a> where the error occured, or <code>null</code> if there is no node available.  <a href="#3ad4aa6c243883d52003d4455034cee5"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual const XMLCh *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDOMLocator.html#0d805c3f31e1fe0791568c2568a9711f">getURI</a> () const =0</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the URI where the error occured, or <code>null</code> if there is no URI available.  <a href="#0d805c3f31e1fe0791568c2568a9711f"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDOMLocator.html#2caa08cd9fd51f3985ebb2fdb6cb6bce">setLineNumber</a> (const XMLSSize_t lineNumber)=0</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the line number of the error.  <a href="#2caa08cd9fd51f3985ebb2fdb6cb6bce"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDOMLocator.html#2355d56421a88fe1623c236138850db5">setColumnNumber</a> (const XMLSSize_t columnNumber)=0</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the column number of the error.  <a href="#2355d56421a88fe1623c236138850db5"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDOMLocator.html#a46a256c0997555b0338a24a55fe4b78">setOffset</a> (const XMLSSize_t offset)=0</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the byte/character offset.  <a href="#a46a256c0997555b0338a24a55fe4b78"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDOMLocator.html#1505eef20f9b1cfd4e9e6d1be11ed900">setErrorNode</a> (<a class="el" href="classDOMNode.html">DOMNode</a> *const errorNode)=0</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the <a class="el" href="classDOMNode.html" title="The DOMNode interface is the primary datatype for the entire Document Object Model...">DOMNode</a> where the error occured.  <a href="#1505eef20f9b1cfd4e9e6d1be11ed900"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDOMLocator.html#d48c38062faad1c7709ad472bc33eded">setURI</a> (const XMLCh *const uri)=0</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the URI where the error occured.  <a href="#d48c38062faad1c7709ad472bc33eded"></a><br></td></tr>
+<tr><td colspan="2"><br><h2>Protected Member Functions</h2></td></tr>
+<tr><td colspan="2"><div class="groupHeader">Hidden constructors</div></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDOMLocator.html#388c4a12e5c0b09520d7c2860219be46">DOMLocator</a> ()</td></tr>
+
+</table>
+<hr><a name="_details"></a><h2>Detailed Description</h2>
+<a class="el" href="classDOMLocator.html" title="DOMLocator is an interface that describes a location.">DOMLocator</a> is an interface that describes a location. 
+<p>
+(e.g. where an error occured).<p>
+<dl class="see" compact><dt><b>See also:</b></dt><dd><a class="el" href="classDOMError.html#e63e21de6b2b2b1f00d9c40a2b72fe15">DOMError::DOMError</a> </dd></dl>
+<dl class="since" compact><dt><b>Since:</b></dt><dd>DOM Level 3 </dd></dl>
+<hr><h2>Constructor &amp; Destructor Documentation</h2>
+<a class="anchor" name="388c4a12e5c0b09520d7c2860219be46"></a><!-- doxytag: member="DOMLocator::DOMLocator" ref="388c4a12e5c0b09520d7c2860219be46" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">DOMLocator::DOMLocator           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [protected]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="1fc9fd28a1c98ab4ec1fdebef56e53d7"></a><!-- doxytag: member="DOMLocator::~DOMLocator" ref="1fc9fd28a1c98ab4ec1fdebef56e53d7" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual DOMLocator::~DOMLocator           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Destructor. 
+<p>
+
+</div>
+</div><p>
+<hr><h2>Member Function Documentation</h2>
+<a class="anchor" name="8d183a06b61e56fefa1f259eb1c96b9d"></a><!-- doxytag: member="DOMLocator::getLineNumber" ref="8d183a06b61e56fefa1f259eb1c96b9d" args="() const =0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual XMLSSize_t DOMLocator::getLineNumber           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"> const<code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the line number where the error occured. 
+<p>
+The value is -1 if there is no line number available.<p>
+<b>"Experimental - subject to change"</b><p>
+<dl class="see" compact><dt><b>See also:</b></dt><dd><a class="el" href="classDOMLocator.html#2caa08cd9fd51f3985ebb2fdb6cb6bce" title="Set the line number of the error.">setLineNumber</a> </dd></dl>
+<dl class="since" compact><dt><b>Since:</b></dt><dd>DOM Level 3 </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="9d9032a19cd0378df78cecb794170b8a"></a><!-- doxytag: member="DOMLocator::getColumnNumber" ref="9d9032a19cd0378df78cecb794170b8a" args="() const =0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual XMLSSize_t DOMLocator::getColumnNumber           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"> const<code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the column number where the error occured. 
+<p>
+The value is -1 if there is no column number available.<p>
+<b>"Experimental - subject to change"</b><p>
+<dl class="see" compact><dt><b>See also:</b></dt><dd><a class="el" href="classDOMLocator.html#2355d56421a88fe1623c236138850db5" title="Set the column number of the error.">setColumnNumber</a> </dd></dl>
+<dl class="since" compact><dt><b>Since:</b></dt><dd>DOM Level 3 </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="d3ba186d63baa2b302e09122e4e535d4"></a><!-- doxytag: member="DOMLocator::getOffset" ref="d3ba186d63baa2b302e09122e4e535d4" args="() const =0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual XMLSSize_t DOMLocator::getOffset           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"> const<code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the byte or character offset into the input source, if we're parsing a file or a byte stream then this will be the byte offset into that stream, but if a character media is parsed then the offset will be the character offset. 
+<p>
+The value is -1 if there is no offset available.<p>
+<b>"Experimental - subject to change"</b><p>
+<dl class="see" compact><dt><b>See also:</b></dt><dd><a class="el" href="classDOMLocator.html#a46a256c0997555b0338a24a55fe4b78" title="Set the byte/character offset.">setOffset</a> </dd></dl>
+<dl class="since" compact><dt><b>Since:</b></dt><dd>DOM Level 3 </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="3ad4aa6c243883d52003d4455034cee5"></a><!-- doxytag: member="DOMLocator::getErrorNode" ref="3ad4aa6c243883d52003d4455034cee5" args="() const =0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual <a class="el" href="classDOMNode.html">DOMNode</a>* DOMLocator::getErrorNode           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"> const<code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the <a class="el" href="classDOMNode.html" title="The DOMNode interface is the primary datatype for the entire Document Object Model...">DOMNode</a> where the error occured, or <code>null</code> if there is no node available. 
+<p>
+<b>"Experimental - subject to change"</b><p>
+<dl class="see" compact><dt><b>See also:</b></dt><dd><a class="el" href="classDOMLocator.html#1505eef20f9b1cfd4e9e6d1be11ed900" title="Set the DOMNode where the error occured.">setErrorNode</a> </dd></dl>
+<dl class="since" compact><dt><b>Since:</b></dt><dd>DOM Level 3 </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="0d805c3f31e1fe0791568c2568a9711f"></a><!-- doxytag: member="DOMLocator::getURI" ref="0d805c3f31e1fe0791568c2568a9711f" args="() const =0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual const XMLCh* DOMLocator::getURI           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"> const<code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the URI where the error occured, or <code>null</code> if there is no URI available. 
+<p>
+<b>"Experimental - subject to change"</b><p>
+<dl class="see" compact><dt><b>See also:</b></dt><dd><a class="el" href="classDOMLocator.html#d48c38062faad1c7709ad472bc33eded" title="Set the URI where the error occured.">setURI</a> </dd></dl>
+<dl class="since" compact><dt><b>Since:</b></dt><dd>DOM Level 3 </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="2caa08cd9fd51f3985ebb2fdb6cb6bce"></a><!-- doxytag: member="DOMLocator::setLineNumber" ref="2caa08cd9fd51f3985ebb2fdb6cb6bce" args="(const XMLSSize_t lineNumber)=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void DOMLocator::setLineNumber           </td>
+          <td>(</td>
+          <td class="paramtype">const XMLSSize_t&nbsp;</td>
+          <td class="paramname"> <em>lineNumber</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the line number of the error. 
+<p>
+<b>"Experimental - subject to change"</b><p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>lineNumber</em>&nbsp;</td><td>the line number to set</td></tr>
+  </table>
+</dl>
+<dl class="see" compact><dt><b>See also:</b></dt><dd>getLinNumner </dd></dl>
+<dl class="since" compact><dt><b>Since:</b></dt><dd>DOM Level 3 </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="2355d56421a88fe1623c236138850db5"></a><!-- doxytag: member="DOMLocator::setColumnNumber" ref="2355d56421a88fe1623c236138850db5" args="(const XMLSSize_t columnNumber)=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void DOMLocator::setColumnNumber           </td>
+          <td>(</td>
+          <td class="paramtype">const XMLSSize_t&nbsp;</td>
+          <td class="paramname"> <em>columnNumber</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the column number of the error. 
+<p>
+<b>"Experimental - subject to change"</b><p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>columnNumber</em>&nbsp;</td><td>the column number to set.</td></tr>
+  </table>
+</dl>
+<dl class="see" compact><dt><b>See also:</b></dt><dd>getColumnNumner </dd></dl>
+<dl class="since" compact><dt><b>Since:</b></dt><dd>DOM Level 3 </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="a46a256c0997555b0338a24a55fe4b78"></a><!-- doxytag: member="DOMLocator::setOffset" ref="a46a256c0997555b0338a24a55fe4b78" args="(const XMLSSize_t offset)=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void DOMLocator::setOffset           </td>
+          <td>(</td>
+          <td class="paramtype">const XMLSSize_t&nbsp;</td>
+          <td class="paramname"> <em>offset</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the byte/character offset. 
+<p>
+<b>"Experimental - subject to change"</b><p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>offset</em>&nbsp;</td><td>the byte/characte offset to set.</td></tr>
+  </table>
+</dl>
+<dl class="see" compact><dt><b>See also:</b></dt><dd><a class="el" href="classDOMLocator.html#d3ba186d63baa2b302e09122e4e535d4" title="Get the byte or character offset into the input source, if we&#39;re parsing a file...">getOffset</a> </dd></dl>
+<dl class="since" compact><dt><b>Since:</b></dt><dd>DOM Level 3 </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="1505eef20f9b1cfd4e9e6d1be11ed900"></a><!-- doxytag: member="DOMLocator::setErrorNode" ref="1505eef20f9b1cfd4e9e6d1be11ed900" args="(DOMNode *const errorNode)=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void DOMLocator::setErrorNode           </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classDOMNode.html">DOMNode</a> *const &nbsp;</td>
+          <td class="paramname"> <em>errorNode</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the <a class="el" href="classDOMNode.html" title="The DOMNode interface is the primary datatype for the entire Document Object Model...">DOMNode</a> where the error occured. 
+<p>
+<b>"Experimental - subject to change"</b><p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>errorNode</em>&nbsp;</td><td>the <a class="el" href="classDOMNode.html" title="The DOMNode interface is the primary datatype for the entire Document Object Model...">DOMNode</a> to set</td></tr>
+  </table>
+</dl>
+<dl class="see" compact><dt><b>See also:</b></dt><dd><a class="el" href="classDOMLocator.html#3ad4aa6c243883d52003d4455034cee5" title="Get the DOMNode where the error occured, or null if there is no node available.">getErrorNode</a> </dd></dl>
+<dl class="since" compact><dt><b>Since:</b></dt><dd>DOM Level 3 </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="d48c38062faad1c7709ad472bc33eded"></a><!-- doxytag: member="DOMLocator::setURI" ref="d48c38062faad1c7709ad472bc33eded" args="(const XMLCh *const uri)=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void DOMLocator::setURI           </td>
+          <td>(</td>
+          <td class="paramtype">const XMLCh *const &nbsp;</td>
+          <td class="paramname"> <em>uri</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the URI where the error occured. 
+<p>
+<b>"Experimental - subject to change"</b><p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>uri</em>&nbsp;</td><td>the URI to set.</td></tr>
+  </table>
+</dl>
+<dl class="see" compact><dt><b>See also:</b></dt><dd><a class="el" href="classDOMLocator.html#0d805c3f31e1fe0791568c2568a9711f" title="Get the URI where the error occured, or null if there is no URI available.">getURI</a> </dd></dl>
+<dl class="since" compact><dt><b>Since:</b></dt><dd>DOM Level 3 </dd></dl>
+
+</div>
+</div><p>
+<hr>The documentation for this class was generated from the following file:<ul>
+<li><a class="el" href="DOMLocator_8hpp-source.html">DOMLocator.hpp</a></ul>
+    </FONT></TD></TR></TABLE><BR>
+</TD></TR></TABLE></TD></TR></TABLE><BR><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD bgcolor="#0086b2"><IMG height="1" src="images/dot.gif" width="1" alt=""></TD></TR><TR><TD align="center"><FONT color="#0086b2" size="-1"><I>
+              Copyright &copy; 1994-2004 The Apache Software Foundation.
+              All Rights Reserved.
+            </I></FONT></TD></TR></TABLE></BODY></HTML>

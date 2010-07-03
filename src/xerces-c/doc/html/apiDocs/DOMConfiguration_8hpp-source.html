@@ -1,0 +1,131 @@
+<HTML><HEAD><SCRIPT language="JavaScript" src="../resources/script.js" type="text/javascript"></SCRIPT><TITLE>Xerces-C++: DOMConfiguration.hpp Source File</TITLE><link href="XercesApi.css" rel="stylesheet" type="text/css"></HEAD><BODY alink="#ff0000" bgcolor="#ffffff" leftmargin="4" link="#0000ff" marginheight="4" marginwidth="4" text="#000000" topmargin="4" vlink="#0000aa"><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD align="left" height="60" rowspan="3" valign="top" width="135"><IMG border="0" height="60" hspace="0" src="../resources/logo.gif" vspace="0" width="135"></TD><TD align="left" colspan="4" height="5" valign="top" width="456"><IMG border="0" height="5" hspace="0" src="../resources/line.gif" vspace="0" width="456"></TD><TD align="left" height="60" rowspan="3" valign="top" width="29"><IMG border="0" height="60" hspace="0" src="../resources/right.gif" vspace="0" width="29"></TD></TR><TR><TD align="left" bgcolor="#0086b2" colspan="4" height="35" valign="top" width="456"><IMG alt="" border="0" height="35" hspace="0" src="../graphics/api-header.jpg" vspace="0" width="456"></TD></TR><TR><TD align="left" height="20" valign="top" width="168"><IMG border="0" height="20" hspace="0" src="../resources/bottom.gif" vspace="0" width="168"></TD><TD align="left" height="20" valign="top" width="96"><A href="http://xml.apache.org/" onMouseOut="rolloverOff('xml');" onMouseOver="rolloverOn('xml');" target="new"><IMG alt="http://xml.apache.org/" border="0" height="20" hspace="0" name="xml" onLoad="rolloverLoad('xml','../resources/button-xml-hi.gif','../resources/button-xml-lo.gif');" src="../resources/button-xml-lo.gif" vspace="0" width="96"></A></TD><TD align="left" height="20" valign="top" width="96"><A href="http://www.apache.org/" onMouseOut="rolloverOff('asf');" onMouseOver="rolloverOn('asf');" target="new"><IMG alt="http://www.apache.org/" border="0" height="20" hspace="0" name="asf" onLoad="rolloverLoad('asf','../resources/button-asf-hi.gif','../resources/button-asf-lo.gif');" src="../resources/button-asf-lo.gif" vspace="0" width="96"></A></TD><TD align="left" height="20" valign="top" width="96"><A href="http://www.w3.org/" onMouseOut="rolloverOff('w3c');" onMouseOver="rolloverOn('w3c');" target="new"><IMG alt="http://www.w3.org/" border="0" height="20" hspace="0" name="w3c" onLoad="rolloverLoad('w3c','../resources/button-w3c-hi.gif','../resources/button-w3c-lo.gif');" src="../resources/button-w3c-lo.gif" vspace="0" width="96"></A></TD></TR></TABLE><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD align="left" valign="top" width="120"><IMG border="0" height="14" hspace="0" src="../resources/join.gif" vspace="0" width="120"><BR>
+  <A href="../../index.html" onMouseOut="rolloverOff('side-ext-2');" onMouseOver="rolloverOn('side-ext-2');"><IMG alt="Home" border="0" height="12" hspace="0" name="side-ext-2" onLoad="rolloverLoad('side-ext-2','../graphics/ext-2-label-2.jpg','../graphics/ext-2-label-3.jpg');" src="../graphics/ext-2-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../index.html" onMouseOut="rolloverOff('side-index');" onMouseOver="rolloverOn('side-index');"><IMG alt="Readme" border="0" height="12" hspace="0" name="side-index" onLoad="rolloverLoad('side-index','../graphics/index-label-2.jpg','../graphics/index-label-3.jpg');" src="../graphics/index-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../charter.html" onMouseOut="rolloverOff('side-charter');" onMouseOver="rolloverOn('side-charter');"><IMG alt="Charter" border="0" height="12" hspace="0" name="side-charter" onLoad="rolloverLoad('side-charter','../graphics/charter-label-2.jpg','../graphics/charter-label-3.jpg');" src="../graphics/charter-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../releases.html" onMouseOut="rolloverOff('side-releases');" onMouseOver="rolloverOn('side-releases');"><IMG alt="Release Info" border="0" height="12" hspace="0" name="side-releases" onLoad="rolloverLoad('side-releases','../graphics/releases-label-2.jpg','../graphics/releases-label-3.jpg');" src="../graphics/releases-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../install.html" onMouseOut="rolloverOff('side-install');" onMouseOver="rolloverOn('side-install');"><IMG alt="Installation" border="0" height="12" hspace="0" name="side-install" onLoad="rolloverLoad('side-install','../graphics/install-label-2.jpg','../graphics/install-label-3.jpg');" src="../graphics/install-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="http://xerces.apache.org/xerces-c/download.cgi" onMouseOut="rolloverOff('side-ext-20');" onMouseOver="rolloverOn('side-ext-20');"><IMG alt="Download" border="0" height="12" hspace="0" name="side-ext-20" onLoad="rolloverLoad('side-ext-20','../graphics/ext-20-label-2.jpg','../graphics/ext-20-label-3.jpg');" src="../graphics/ext-20-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../build.html" onMouseOut="rolloverOff('side-build');" onMouseOver="rolloverOn('side-build');"><IMG alt="Build Instructions" border="0" height="12" hspace="0" name="side-build" onLoad="rolloverLoad('side-build','../graphics/build-label-2.jpg','../graphics/build-label-3.jpg');" src="../graphics/build-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../program.html" onMouseOut="rolloverOff('side-program');" onMouseOver="rolloverOn('side-program');"><IMG alt="Programming" border="0" height="12" hspace="0" name="side-program" onLoad="rolloverLoad('side-program','../graphics/program-label-2.jpg','../graphics/program-label-3.jpg');" src="../graphics/program-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../samples.html" onMouseOut="rolloverOff('side-samples');" onMouseOver="rolloverOn('side-samples');"><IMG alt="Samples" border="0" height="12" hspace="0" name="side-samples" onLoad="rolloverLoad('side-samples','../graphics/samples-label-2.jpg','../graphics/samples-label-3.jpg');" src="../graphics/samples-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../faqs.html" onMouseOut="rolloverOff('side-faqs');" onMouseOver="rolloverOn('side-faqs');"><IMG alt="FAQs" border="0" height="12" hspace="0" name="side-faqs" onLoad="rolloverLoad('side-faqs','../graphics/faqs-label-2.jpg','../graphics/faqs-label-3.jpg');" src="../graphics/faqs-label-3.jpg" vspace="0" width="120"></A><BR>
+
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../api.html" onMouseOut="rolloverOff('side-api');" onMouseOver="rolloverOn('side-api');"><IMG alt="API Docs" border="0" height="12" hspace="0" name="side-api" onLoad="rolloverLoad('side-api','../graphics/api-label-2.jpg','../graphics/api-label-3.jpg');" src="../graphics/api-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../ApacheDOMC++Binding.html" onMouseOut="rolloverOff('side-ext-88');" onMouseOver="rolloverOn('side-ext-88');"><IMG alt="DOM C++ Binding" border="0" height="12" hspace="0" name="side-ext-88" onLoad="rolloverLoad('side-ext-88','../graphics/ext-88-label-2.jpg','../graphics/ext-88-label-3.jpg');" src="../graphics/ext-88-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../migrate.html" onMouseOut="rolloverOff('side-migrate');" onMouseOver="rolloverOn('side-migrate');"><IMG alt="Migration Guide" border="0" height="12" hspace="0" name="side-migrate" onLoad="rolloverLoad('side-migrate','../graphics/migrate-label-2.jpg','../graphics/migrate-label-3.jpg');" src="../graphics/migrate-label-3.jpg" vspace="0" width="120"></A><BR>
+
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+    <A href="../feedback.html" onMouseOut="rolloverOff('side-feedback');" onMouseOver="rolloverOn('side-feedback');"><IMG alt="Feedback" border="0" height="12" hspace="0" name="side-feedback" onLoad="rolloverLoad('side-feedback','../graphics/feedback-label-2.jpg','../graphics/feedback-label-3.jpg');" src="../graphics/feedback-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../bug-report.html" onMouseOut="rolloverOff('side-bug-report');" onMouseOver="rolloverOn('side-bug-report');"><IMG alt="Bug-Reporting" border="0" height="12" hspace="0" name="side-bug-report" onLoad="rolloverLoad('side-bug-report','../graphics/bug-report-label-2.jpg','../graphics/bug-report-label-3.jpg');" src="../graphics/bug-report-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../mailing-lists.html" onMouseOut="rolloverOff('side-mailing-lists');" onMouseOver="rolloverOn('side-mailing-lists');"><IMG alt="Mailing Lists" border="0" height="12" hspace="0" name="side-mailing-lists" onLoad="rolloverLoad('side-mailing-lists','../graphics/mailing-lists-label-2.jpg','../graphics/mailing-lists-label-3.jpg');" src="../graphics/mailing-lists-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+    <A href="../source-repository.html" onMouseOut="rolloverOff('side-source-repository');" onMouseOver="rolloverOn('side-source-repository');"><IMG alt="Source Repository" border="0" height="12" hspace="0" name="side-source-repository" onLoad="rolloverLoad('side-source-repository','../graphics/source-repository-label-2.jpg','../graphics/source-repository-label-3.jpg');" src="../graphics/source-repository-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../applications.html" onMouseOut="rolloverOff('side-applications');" onMouseOver="rolloverOn('side-applications');"><IMG alt="Applications" border="0" height="12" hspace="0" name="side-applications" onLoad="rolloverLoad('side-applications','../graphics/applications-label-2.jpg','../graphics/applications-label-3.jpg');" src="../graphics/applications-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="14" hspace="0" src="../resources/close.gif" vspace="0" width="120"><BR></TD><TD align="left" valign="top" width="500"><TABLE border="0" cellpadding="3" cellspacing="0"><TR><TD>
+    <TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#FFFFFF" colspan="2" width="494"><TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#039acc" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#039acc" height="1" width="492"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#039acc" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" width="492"><FONT color="#ffffff" face="arial,helvetica,sanserif" size="+1"><IMG border="0" height="2" hspace="0" src="../resources/void.gif" vspace="0" width="2"><B>API Docs for SAX and DOM</B></FONT></TD><TD bgcolor="#017299" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#017299" height="1" width="492"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#017299" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></TD></TR><TR><TD width="10">&nbsp;</TD><TD width="484"><FONT color="#000000" face="arial,helvetica,sanserif">
+
+	    <P>
+<!-- Generated by Doxygen 1.5.3 -->
+<div class="tabs">
+  <ul>
+    <li><a href="index.html"><span>Main&nbsp;Page</span></a></li>
+    <li><a href="classes.html"><span>Classes</span></a></li>
+    <li class="current"><a href="files.html"><span>Files</span></a></li>
+    <li><a href="pages.html"><span>Related&nbsp;Pages</span></a></li>
+  </ul>
+</div>
+<h1>DOMConfiguration.hpp</h1><a href="DOMConfiguration_8hpp.html">Go to the documentation of this file.</a><div class="fragment"><pre class="fragment"><a name="l00001"></a>00001 <span class="comment">/*</span>
+<a name="l00002"></a>00002 <span class="comment"> * Licensed to the Apache Software Foundation (ASF) under one or more</span>
+<a name="l00003"></a>00003 <span class="comment"> * contributor license agreements.  See the NOTICE file distributed with</span>
+<a name="l00004"></a>00004 <span class="comment"> * this work for additional information regarding copyright ownership.</span>
+<a name="l00005"></a>00005 <span class="comment"> * The ASF licenses this file to You under the Apache License, Version 2.0</span>
+<a name="l00006"></a>00006 <span class="comment"> * (the "License"); you may not use this file except in compliance with</span>
+<a name="l00007"></a>00007 <span class="comment"> * the License.  You may obtain a copy of the License at</span>
+<a name="l00008"></a>00008 <span class="comment"> * </span>
+<a name="l00009"></a>00009 <span class="comment"> *      http://www.apache.org/licenses/LICENSE-2.0</span>
+<a name="l00010"></a>00010 <span class="comment"> * </span>
+<a name="l00011"></a>00011 <span class="comment"> * Unless required by applicable law or agreed to in writing, software</span>
+<a name="l00012"></a>00012 <span class="comment"> * distributed under the License is distributed on an "AS IS" BASIS,</span>
+<a name="l00013"></a>00013 <span class="comment"> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<a name="l00014"></a>00014 <span class="comment"> * See the License for the specific language governing permissions and</span>
+<a name="l00015"></a>00015 <span class="comment"> * limitations under the License.</span>
+<a name="l00016"></a>00016 <span class="comment"> */</span>
+<a name="l00017"></a>00017 
+<a name="l00018"></a>00018 <span class="preprocessor">#if !defined(DOMCONFIGURATION_HPP)</span>
+<a name="l00019"></a><a class="code" href="DOMConfiguration_8hpp.html#95725ee472dd0050ab8ce84414a448f6">00019</a> <span class="preprocessor"></span><span class="preprocessor">#define DOMCONFIGURATION_HPP</span>
+<a name="l00020"></a>00020 <span class="preprocessor"></span>
+<a name="l00021"></a>00021 <span class="comment">//------------------------------------------------------------------------------------</span>
+<a name="l00022"></a>00022 <span class="comment">//  Includes</span>
+<a name="l00023"></a>00023 <span class="comment">//------------------------------------------------------------------------------------</span>
+<a name="l00024"></a>00024 
+<a name="l00025"></a>00025 <span class="preprocessor">#include &lt;<a class="code" href="XMLString_8hpp.html">xercesc/util/XMLString.hpp</a>&gt;</span>
+<a name="l00026"></a>00026 
+<a name="l00027"></a>00027 <a class="code" href="XercesDefs_8hpp.html#43d74fa53d868d978f3e97cbb78b194d">XERCES_CPP_NAMESPACE_BEGIN</a>
+<a name="l00028"></a>00028 
+<a name="l00418"></a><a class="code" href="classDOMConfiguration.html">00418</a> <span class="keyword">class </span><a class="code" href="XercesDefs_8hpp.html#40e97a4d60600cb8128a2eb5d6504e26"></a> <a class="code" href="classDOMConfiguration.html" title="The DOMConfiguration interface represents the configuration of a document and maintains...">DOMConfiguration</a>
+<a name="l00419"></a>00419 {
+<a name="l00420"></a>00420 <span class="keyword">protected</span>:
+<a name="l00421"></a>00421     <span class="comment">//-----------------------------------------------------------------------------------</span>
+<a name="l00422"></a>00422     <span class="comment">//  Constructor</span>
+<a name="l00423"></a>00423     <span class="comment">//-----------------------------------------------------------------------------------</span>
+<a name="l00426"></a><a class="code" href="classDOMConfiguration.html#fa77dad79085286f13ea1506ec564d90">00426</a> <span class="comment"></span>    <a class="code" href="classDOMConfiguration.html" title="The DOMConfiguration interface represents the configuration of a document and maintains...">DOMConfiguration</a>() {};
+<a name="l00428"></a>00428 
+<a name="l00429"></a>00429 <span class="keyword">private</span>:
+<a name="l00430"></a>00430     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00431"></a>00431     <span class="comment">// Unimplemented constructors and operators</span>
+<a name="l00432"></a>00432     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00435"></a>00435 <span class="comment"></span>    <a class="code" href="classDOMConfiguration.html" title="The DOMConfiguration interface represents the configuration of a document and maintains...">DOMConfiguration</a>(<span class="keyword">const</span> <a class="code" href="classDOMConfiguration.html" title="The DOMConfiguration interface represents the configuration of a document and maintains...">DOMConfiguration</a> &amp;);
+<a name="l00436"></a>00436     <a class="code" href="classDOMConfiguration.html" title="The DOMConfiguration interface represents the configuration of a document and maintains...">DOMConfiguration</a> &amp; operator = (<span class="keyword">const</span> <a class="code" href="classDOMConfiguration.html" title="The DOMConfiguration interface represents the configuration of a document and maintains...">DOMConfiguration</a> &amp;);
+<a name="l00438"></a>00438 
+<a name="l00439"></a>00439 <span class="keyword">public</span>:
+<a name="l00440"></a>00440 
+<a name="l00441"></a>00441     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00442"></a>00442     <span class="comment">//  Setter methods</span>
+<a name="l00443"></a>00443     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00444"></a>00444     
+<a name="l00458"></a>00458     <span class="keyword">virtual</span> <span class="keywordtype">void</span> setParameter(<span class="keyword">const</span> XMLCh* name, <span class="keyword">const</span> <span class="keywordtype">void</span>* value) = 0;
+<a name="l00459"></a>00459 
+<a name="l00460"></a>00460     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00461"></a>00461     <span class="comment">//  Getter methods</span>
+<a name="l00462"></a>00462     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00473"></a>00473 <span class="comment"></span>    <span class="keyword">virtual</span> <span class="keyword">const</span> <span class="keywordtype">void</span>* getParameter(<span class="keyword">const</span> XMLCh* name) <span class="keyword">const</span> = 0;
+<a name="l00474"></a>00474 
+<a name="l00475"></a>00475                                         
+<a name="l00476"></a>00476     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00477"></a>00477     <span class="comment">//  Query methods</span>
+<a name="l00478"></a>00478     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00479"></a>00479 
+<a name="l00489"></a>00489     <span class="keyword">virtual</span> <span class="keywordtype">bool</span> canSetParameter(<span class="keyword">const</span> XMLCh* name, <span class="keyword">const</span> <span class="keywordtype">void</span>* value) <span class="keyword">const</span> = 0;
+<a name="l00490"></a>00490 
+<a name="l00491"></a>00491     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00492"></a>00492     <span class="comment">//  All constructors are hidden, just the destructor is available</span>
+<a name="l00493"></a>00493     <span class="comment">// -----------------------------------------------------------------------</span>
+<a name="l00500"></a><a class="code" href="classDOMConfiguration.html#42d0b82d5ddbaae795ffbdbb15ed38ef">00500</a> <span class="comment"></span>    <span class="keyword">virtual</span> ~<a class="code" href="classDOMConfiguration.html" title="The DOMConfiguration interface represents the configuration of a document and maintains...">DOMConfiguration</a>() {};
+<a name="l00502"></a>00502 };
+<a name="l00503"></a>00503     
+<a name="l00504"></a>00504 <a class="code" href="XercesDefs_8hpp.html#f03d5cb905763ef7a7bd22ab82718285">XERCES_CPP_NAMESPACE_END</a>
+<a name="l00505"></a>00505 
+<a name="l00506"></a>00506 <span class="preprocessor">#endif </span>
+<a name="l00507"></a>00507 <span class="preprocessor"></span>
+</pre></div>    </FONT></TD></TR></TABLE><BR>
+</TD></TR></TABLE></TD></TR></TABLE><BR><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD bgcolor="#0086b2"><IMG height="1" src="images/dot.gif" width="1" alt=""></TD></TR><TR><TD align="center"><FONT color="#0086b2" size="-1"><I>
+              Copyright &copy; 1994-2004 The Apache Software Foundation.
+              All Rights Reserved.
+            </I></FONT></TD></TR></TABLE></BODY></HTML>

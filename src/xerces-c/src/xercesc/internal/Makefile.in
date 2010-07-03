@@ -1,0 +1,130 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+# 
+#      http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+#
+#
+# $Id: Makefile.in 570129 2007-08-27 14:10:51Z amassari $
+#
+
+PLATFORM = @platform@
+CC  = @cc@
+CXX = @cxx@
+CXXVER = @cxxver@
+GCC = @GCC@
+GXX = @GXX@
+CXXFLAGS = @cxxflags@
+CFLAGS = @cflags@
+PREFIX = @prefix@
+PREFIX_INCLUDE = @prefix_include@
+LDFLAGS = @ldflags@
+LIBS = @libs@
+OSVER = @osver@
+USELIBWWW = @uselibwww@
+MESSAGELOADER = @messageloader@
+TRANSCODER = @transcoder@
+THREADS = @threads@
+LIBTYPE = @libtype@
+ARCH = @host_cpu@
+
+include ../Makefile.incl
+
+MODULE = internal
+
+INTERNAL_CPP_PUBHEADERS = \
+	BinFileOutputStream.hpp \
+	BinMemOutputStream.hpp \
+	CharTypeTables.hpp \
+	DGXMLScanner.hpp \
+	ElemStack.hpp \
+	EndOfEntityException.hpp \
+	IANAEncodings.hpp \
+	MemoryManagerArrayImpl.hpp \
+	MemoryManagerImpl.hpp \
+	ReaderMgr.hpp \
+	SGXMLScanner.hpp \
+	ValidationContextImpl.hpp \
+	VecAttrListImpl.hpp \
+	VecAttributesImpl.hpp \
+	IGXMLScanner.hpp \
+	WFXMLScanner.hpp \
+	XMLGrammarPoolImpl.hpp \
+	XMLInternalErrorHandler.hpp \
+	XMLReader.hpp \
+	XMLScanner.hpp \
+	XMLScannerResolver.hpp \
+	XProtoType.hpp \
+	XSAXMLScanner.hpp \
+	XSerializable.hpp \
+	XSerializationException.hpp \
+	XSerializeEngine.hpp \
+	XSObjectFactory.hpp \
+	XTemplateSerializer.hpp
+				
+INTERNAL_CPP_PRIVHEADERS =
+
+INTERNAL_C_FILES =
+
+INTERNAL_CPP_OBJECTS = \
+	BinFileOutputStream.$(TO) \
+	BinMemOutputStream.$(TO) \
+	DGXMLScanner.$(TO) \
+	ElemStack.$(TO) \
+	IGXMLScanner.$(TO) \
+	IGXMLScanner2.$(TO) \
+	MemoryManagerArrayImpl.$(TO) \
+	MemoryManagerImpl.$(TO) \
+	ReaderMgr.$(TO) \
+	SGXMLScanner.$(TO) \
+	ValidationContextImpl.$(TO) \
+	VecAttrListImpl.$(TO) \
+	VecAttributesImpl.$(TO) \
+	WFXMLScanner.$(TO) \
+	XMLGrammarPoolImpl.$(TO) \
+	XMLReader.$(TO) \
+	XMLScanner.$(TO) \
+	XMLScannerResolver.$(TO) \
+	XProtoType.$(TO) \
+	XSAXMLScanner.$(TO) \
+	XSerializeEngine.$(TO) \
+	XSObjectFactory.$(TO) \
+	XTemplateSerializer.$(TO)
+	
+all::	includes $(INTERNAL_CPP_OBJECTS)
+
+includes::	pubheaders $(INTERNAL_C_FILES)
+
+pubheaders::
+	$Qmkdir -p $(XML_INC_DIR)/$(MODULE)
+	@echo "  (CP)  $(XML_INC_DIR)/$(MODULE)"
+	$Q$(CP) $(INTERNAL_CPP_PUBHEADERS) $(INTERNAL_C_FILES) $(XML_INC_DIR)/$(MODULE)
+
+# this may generate unnecessary dependencies, but it makes life easier
+depend:: includes
+	@echo "  (DEP)"
+	$Q$(MAKE_DEPEND) $(XML_INCL) *.cpp > $(DEPFILE)
+
+clean::
+	@echo "Making clean in $(MODULE) ..."
+	$(RM2) $(addprefix $(XML_OBJ_DIR)/,$(INTERNAL_CPP_OBJECTS))
+
+distclean::	clean
+	$(RM) Makefile $(DEPFILE)
+	@echo "Removing all $(MODULE) header files ..."
+	$(RM2) $(addprefix $(XML_INC_DIR)/$(MODULE)/,$(INTERNAL_CPP_PUBHEADERS))
+
+install::
+	-mkdir -p $(DESTDIR)$(PREFIX_INCLUDE)/$(MODULE)
+	$(CP) $(INTERNAL_CPP_PUBHEADERS) $(INTERNAL_C_FILES) $(DESTDIR)$(PREFIX_INCLUDE)/$(MODULE)

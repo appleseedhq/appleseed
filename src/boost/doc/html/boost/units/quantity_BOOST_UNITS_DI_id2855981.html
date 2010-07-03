@@ -1,0 +1,164 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Class template quantity&lt;BOOST_UNITS_DIMENSIONLESS_UNIT(System), Y&gt;</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../boost_units/Reference.html#header.boost.units.quantity_hpp" title="Header &lt;boost/units/quantity.hpp&gt;">
+<link rel="prev" href="quantity.html" title="Class template quantity">
+<link rel="next" href="add_typeof_helper_quant_id2856570.html" title="Struct template add_typeof_helper&lt;quantity&lt; unit&lt; Dim1, System1 &gt;, X &gt;, quantity&lt; unit&lt; Dim2, System2 &gt;, Y &gt;&gt;">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="quantity.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_units/Reference.html#header.boost.units.quantity_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="add_typeof_helper_quant_id2856570.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.units.quantity_BOOST_UNITS_DI_id2855981"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Class template quantity&lt;BOOST_UNITS_DIMENSIONLESS_UNIT(System), Y&gt;</span></h2>
+<p>boost::units::quantity&lt;BOOST_UNITS_DIMENSIONLESS_UNIT(System), Y&gt;</p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../boost_units/Reference.html#header.boost.units.quantity_hpp" title="Header &lt;boost/units/quantity.hpp&gt;">boost/units/quantity.hpp</a>&gt;
+
+</em></span><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> System, <span class="bold"><strong>typename</strong></span> Y&gt; 
+<span class="bold"><strong>class</strong></span> <a class="link" href="quantity_BOOST_UNITS_DI_id2855981.html" title="Class template quantity&lt;BOOST_UNITS_DIMENSIONLESS_UNIT(System), Y&gt;">quantity</a>&lt;BOOST_UNITS_DIMENSIONLESS_UNIT(System), Y&gt; {
+<span class="bold"><strong>public</strong></span>:
+  <span class="emphasis"><em>// types</em></span>
+  <span class="bold"><strong>typedef</strong></span> <a class="link" href="quantity.html" title="Class template quantity">quantity</a>&lt; <a class="link" href="unit.html" title="Class template unit">unit</a>&lt; <a class="link" href="dimensionless_type.html" title="Struct dimensionless_type">dimensionless_type</a>, System &gt;, Y &gt; <a name="boost.units.quantity_BOOST_UNITS_DI_id2855981.this_type"></a>this_type;     
+  <span class="bold"><strong>typedef</strong></span> Y                                                 <a name="boost.units.quantity_BOOST_UNITS_DI_id2855981.value_type"></a>value_type;    
+  <span class="bold"><strong>typedef</strong></span> System                                            <a name="boost.units.quantity_BOOST_UNITS_DI_id2855981.system_type"></a>system_type;   
+  <span class="bold"><strong>typedef</strong></span> <a class="link" href="dimensionless_type.html" title="Struct dimensionless_type">dimensionless_type</a>                                <a name="boost.units.quantity_BOOST_UNITS_DI_id2855981.dimension_type"></a>dimension_type;
+  <span class="bold"><strong>typedef</strong></span> <a class="link" href="unit.html" title="Class template unit">unit</a>&lt; dimension_type, system_type &gt;               <a name="boost.units.quantity_BOOST_UNITS_DI_id2855981.unit_type"></a>unit_type;     
+
+  <span class="emphasis"><em>// <a class="link" href="quantity_BOOST_UNITS_DI_id2855981.html#boost.units.quantity_BOOST_UNITS_DI_id2855981construct-copy-destruct">construct/copy/destruct</a></em></span>
+  quantity&amp; <a class="link" href="quantity_BOOST_UNITS_DI_id2855981.html#id2856484-bb"><span class="bold"><strong>operator</strong></span>=</a>(<span class="bold"><strong>const</strong></span> this_type &amp;);
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> YY&gt; 
+    quantity&amp; <a class="link" href="quantity_BOOST_UNITS_DI_id2855981.html#id2856494-bb"><span class="bold"><strong>operator</strong></span>=</a>(<span class="bold"><strong>const</strong></span> <a class="link" href="quantity.html" title="Class template quantity">quantity</a>&lt; <a class="link" href="unit.html" title="Class template unit">unit</a>&lt; dimension_type, system_type &gt;, YY &gt; &amp;);
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> System2&gt; 
+    quantity&amp; <a class="link" href="quantity_BOOST_UNITS_DI_id2855981.html#id2856523-bb"><span class="bold"><strong>operator</strong></span>=</a>(<span class="bold"><strong>const</strong></span> <a class="link" href="quantity.html" title="Class template quantity">quantity</a>&lt; BOOST_UNITS_DIMENSIONLESS_UNIT(System2), Y &gt; &amp;);
+
+  <span class="emphasis"><em>// <a class="link" href="quantity_BOOST_UNITS_DI_id2855981.html#id2856058-bb">public member functions</a></em></span>
+  <span class="type"></span> <a class="link" href="quantity_BOOST_UNITS_DI_id2855981.html#id2856062-bb">quantity</a>() ;
+  <span class="type"></span> <a class="link" href="quantity_BOOST_UNITS_DI_id2855981.html#id2856068-bb">quantity</a>(value_type) ;
+  <span class="type"></span> <a class="link" href="quantity_BOOST_UNITS_DI_id2855981.html#id2856086-bb">quantity</a>(<span class="bold"><strong>const</strong></span> this_type &amp;) ;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> YY&gt; 
+    <span class="type"></span> <a class="link" href="quantity_BOOST_UNITS_DI_id2855981.html#id2856102-bb">quantity</a>(<span class="bold"><strong>const</strong></span> <a class="link" href="quantity.html" title="Class template quantity">quantity</a>&lt; <a class="link" href="unit.html" title="Class template unit">unit</a>&lt; dimension_type, system_type &gt;, YY &gt; &amp;, 
+              <span class="emphasis"><em>unspecified</em></span> = 0) ;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> YY&gt; 
+    <span class="type"></span> <a class="link" href="quantity_BOOST_UNITS_DI_id2855981.html#id2856145-bb">quantity</a>(<span class="bold"><strong>const</strong></span> <a class="link" href="quantity.html" title="Class template quantity">quantity</a>&lt; <a class="link" href="unit.html" title="Class template unit">unit</a>&lt; dimension_type, system_type &gt;, YY &gt; &amp;, 
+              <span class="emphasis"><em>unspecified</em></span> = 0) ;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> System2, <span class="bold"><strong>typename</strong></span> Y2&gt; 
+    <span class="type"></span> <a class="link" href="quantity_BOOST_UNITS_DI_id2855981.html#id2856189-bb">quantity</a>(<span class="bold"><strong>const</strong></span> <a class="link" href="quantity.html" title="Class template quantity">quantity</a>&lt; <a class="link" href="unit.html" title="Class template unit">unit</a>&lt; <a class="link" href="dimensionless_type.html" title="Struct dimensionless_type">dimensionless_type</a>, System2 &gt;, Y2 &gt; &amp;, 
+              <span class="emphasis"><em>unspecified</em></span> = 0, <span class="emphasis"><em>unspecified</em></span> = 0, <span class="emphasis"><em>unspecified</em></span> = 0) ;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> System2, <span class="bold"><strong>typename</strong></span> Y2&gt; 
+    <span class="type"></span> <a class="link" href="quantity_BOOST_UNITS_DI_id2855981.html#id2856254-bb">quantity</a>(<span class="bold"><strong>const</strong></span> <a class="link" href="quantity.html" title="Class template quantity">quantity</a>&lt; <a class="link" href="unit.html" title="Class template unit">unit</a>&lt; <a class="link" href="dimensionless_type.html" title="Struct dimensionless_type">dimensionless_type</a>, System2 &gt;, Y2 &gt; &amp;, 
+              <span class="emphasis"><em>unspecified</em></span> = 0, <span class="emphasis"><em>unspecified</em></span> = 0, <span class="emphasis"><em>unspecified</em></span> = 0) ;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> System2, <span class="bold"><strong>typename</strong></span> Y2&gt; 
+    <span class="type"></span> <a class="link" href="quantity_BOOST_UNITS_DI_id2855981.html#id2856320-bb">quantity</a>(<span class="bold"><strong>const</strong></span> <a class="link" href="quantity.html" title="Class template quantity">quantity</a>&lt; <a class="link" href="unit.html" title="Class template unit">unit</a>&lt; <a class="link" href="dimensionless_type.html" title="Struct dimensionless_type">dimensionless_type</a>, System2 &gt;, Y2 &gt; &amp;, 
+              <span class="emphasis"><em>unspecified</em></span> = 0) ;
+  <a class="link" href="quantity_BOOST_UNITS_DI_id2855981.html#id2856369-bb"><span class="bold"><strong>operator</strong></span> value_type</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>const</strong></span> value_type &amp;</span> <a class="link" href="quantity_BOOST_UNITS_DI_id2855981.html#id2856384-bb">value</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type">this_type &amp;</span> <a class="link" href="quantity_BOOST_UNITS_DI_id2855981.html#id2856400-bb"><span class="bold"><strong>operator</strong></span>+=</a>(<span class="bold"><strong>const</strong></span> this_type &amp;) ;
+  <span class="type">this_type &amp;</span> <a class="link" href="quantity_BOOST_UNITS_DI_id2855981.html#id2856423-bb"><span class="bold"><strong>operator</strong></span>-=</a>(<span class="bold"><strong>const</strong></span> this_type &amp;) ;
+  <span class="type">this_type &amp;</span> <a class="link" href="quantity_BOOST_UNITS_DI_id2855981.html#id2856447-bb"><span class="bold"><strong>operator</strong></span>*=</a>(<span class="bold"><strong>const</strong></span> value_type &amp;) ;
+  <span class="type">this_type &amp;</span> <a class="link" href="quantity_BOOST_UNITS_DI_id2855981.html#id2856468-bb"><span class="bold"><strong>operator</strong></span>/=</a>(<span class="bold"><strong>const</strong></span> value_type &amp;) ;
+
+  <span class="emphasis"><em>// <a class="link" href="quantity_BOOST_UNITS_DI_id2855981.html#id2856544-bb">public static functions</a></em></span>
+  <span class="type"><span class="bold"><strong>static</strong></span> this_type</span> <a class="link" href="quantity_BOOST_UNITS_DI_id2855981.html#id2856548-bb">from_value</a>(<span class="bold"><strong>const</strong></span> value_type &amp;) ;
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id3832900"></a><h2>Description</h2>
+<p>Specialization for dimensionless quantities. Implicit conversions between unit systems are allowed because all dimensionless quantities are equivalent. Implicit construction and assignment from and conversion to <code class="computeroutput">value_type</code> is also allowed. </p>
+<div class="refsect2" lang="en">
+<a name="id3832916"></a><h3>
+<a name="boost.units.quantity_BOOST_UNITS_DI_id2855981construct-copy-destruct"></a><code class="computeroutput">quantity</code> 
+        public
+       construct/copy/destruct</h3>
+<div class="orderedlist"><ol type="1">
+<li><pre class="literallayout">quantity&amp; <a name="id2856484-bb"></a><span class="bold"><strong>operator</strong></span>=(<span class="bold"><strong>const</strong></span> this_type &amp; source);</pre></li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> YY&gt; 
+  quantity&amp; <a name="id2856494-bb"></a><span class="bold"><strong>operator</strong></span>=(<span class="bold"><strong>const</strong></span> <a class="link" href="quantity.html" title="Class template quantity">quantity</a>&lt; <a class="link" href="unit.html" title="Class template unit">unit</a>&lt; dimension_type, system_type &gt;, YY &gt; &amp; source);</pre>implicit assignment between value types is allowed if allowed for value types themselves </li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> System2&gt; 
+  quantity&amp; <a name="id2856523-bb"></a><span class="bold"><strong>operator</strong></span>=(<span class="bold"><strong>const</strong></span> <a class="link" href="quantity.html" title="Class template quantity">quantity</a>&lt; BOOST_UNITS_DIMENSIONLESS_UNIT(System2), Y &gt; &amp; source);</pre>implicit assignment between different unit systems is allowed </li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id3833062"></a><h3>
+<a name="id2856058-bb"></a><code class="computeroutput">quantity</code> public member functions</h3>
+<div class="orderedlist"><ol type="1">
+<li><pre class="literallayout"><span class="type"></span> <a name="id2856062-bb"></a>quantity() ;</pre></li>
+<li>
+<pre class="literallayout"><span class="type"></span> <a name="id2856068-bb"></a>quantity(value_type val) ;</pre>construction from raw <code class="computeroutput">value_type</code> is allowed </li>
+<li><pre class="literallayout"><span class="type"></span> <a name="id2856086-bb"></a>quantity(<span class="bold"><strong>const</strong></span> this_type &amp; source) ;</pre></li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> YY&gt; 
+  <span class="type"></span> <a name="id2856102-bb"></a>quantity(<span class="bold"><strong>const</strong></span> <a class="link" href="quantity.html" title="Class template quantity">quantity</a>&lt; <a class="link" href="unit.html" title="Class template unit">unit</a>&lt; dimension_type, system_type &gt;, YY &gt; &amp; source, 
+            <span class="emphasis"><em>unspecified</em></span> = 0) ;</pre>implicit conversion between value types is allowed if allowed for value types themselves </li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> YY&gt; 
+  <span class="type"></span> <a name="id2856145-bb"></a>quantity(<span class="bold"><strong>const</strong></span> <a class="link" href="quantity.html" title="Class template quantity">quantity</a>&lt; <a class="link" href="unit.html" title="Class template unit">unit</a>&lt; dimension_type, system_type &gt;, YY &gt; &amp; source, 
+            <span class="emphasis"><em>unspecified</em></span> = 0) ;</pre>implicit conversion between value types is not allowed if not allowed for value types themselves </li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> System2, <span class="bold"><strong>typename</strong></span> Y2&gt; 
+  <span class="type"></span> <a name="id2856189-bb"></a>quantity(<span class="bold"><strong>const</strong></span> <a class="link" href="quantity.html" title="Class template quantity">quantity</a>&lt; <a class="link" href="unit.html" title="Class template unit">unit</a>&lt; <a class="link" href="dimensionless_type.html" title="Struct dimensionless_type">dimensionless_type</a>, System2 &gt;, Y2 &gt; &amp; source, 
+            <span class="emphasis"><em>unspecified</em></span> = 0, <span class="emphasis"><em>unspecified</em></span> = 0, <span class="emphasis"><em>unspecified</em></span> = 0) ;</pre>implicit conversion between different unit systems is allowed </li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> System2, <span class="bold"><strong>typename</strong></span> Y2&gt; 
+  <span class="type"></span> <a name="id2856254-bb"></a>quantity(<span class="bold"><strong>const</strong></span> <a class="link" href="quantity.html" title="Class template quantity">quantity</a>&lt; <a class="link" href="unit.html" title="Class template unit">unit</a>&lt; <a class="link" href="dimensionless_type.html" title="Struct dimensionless_type">dimensionless_type</a>, System2 &gt;, Y2 &gt; &amp; source, 
+            <span class="emphasis"><em>unspecified</em></span> = 0, <span class="emphasis"><em>unspecified</em></span> = 0, <span class="emphasis"><em>unspecified</em></span> = 0) ;</pre>implicit conversion between different unit systems is allowed </li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> System2, <span class="bold"><strong>typename</strong></span> Y2&gt; 
+  <span class="type"></span> <a name="id2856320-bb"></a>quantity(<span class="bold"><strong>const</strong></span> <a class="link" href="quantity.html" title="Class template quantity">quantity</a>&lt; <a class="link" href="unit.html" title="Class template unit">unit</a>&lt; <a class="link" href="dimensionless_type.html" title="Struct dimensionless_type">dimensionless_type</a>, System2 &gt;, Y2 &gt; &amp; source, 
+            <span class="emphasis"><em>unspecified</em></span> = 0) ;</pre>
+<p>conversion between different unit systems is explicit when the units are not equivalent. </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id2856369-bb"></a><span class="bold"><strong>operator</strong></span> value_type() <span class="bold"><strong>const</strong></span>;</pre>implicit conversion to <code class="computeroutput">value_type</code> is allowed </li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>const</strong></span> value_type &amp;</span> <a name="id2856384-bb"></a>value() <span class="bold"><strong>const</strong></span>;</pre>constant accessor to value <p>can add a quantity of the same type if add_typeof_helper&lt;value_type,value_type&gt;::type is convertible to value_type </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">this_type &amp;</span> <a name="id2856400-bb"></a><span class="bold"><strong>operator</strong></span>+=(<span class="bold"><strong>const</strong></span> this_type &amp; source) ;</pre>can subtract a quantity of the same type if subtract_typeof_helper&lt;value_type,value_type&gt;::type is convertible to value_type </li>
+<li>
+<pre class="literallayout"><span class="type">this_type &amp;</span> <a name="id2856423-bb"></a><span class="bold"><strong>operator</strong></span>-=(<span class="bold"><strong>const</strong></span> this_type &amp; source) ;</pre>can multiply a quantity by a scalar value_type if multiply_typeof_helper&lt;value_type,value_type&gt;::type is convertible to value_type </li>
+<li>
+<pre class="literallayout"><span class="type">this_type &amp;</span> <a name="id2856447-bb"></a><span class="bold"><strong>operator</strong></span>*=(<span class="bold"><strong>const</strong></span> value_type &amp; val) ;</pre>can divide a quantity by a scalar value_type if divide_typeof_helper&lt;value_type,value_type&gt;::type is convertible to value_type </li>
+<li><pre class="literallayout"><span class="type">this_type &amp;</span> <a name="id2856468-bb"></a><span class="bold"><strong>operator</strong></span>/=(<span class="bold"><strong>const</strong></span> value_type &amp; val) ;</pre></li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id3833653"></a><h3>
+<a name="id2856544-bb"></a><code class="computeroutput">quantity</code> public static functions</h3>
+<div class="orderedlist"><ol type="1"><li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> this_type</span> <a name="id2856548-bb"></a>from_value(<span class="bold"><strong>const</strong></span> value_type &amp; val) ;</pre>Construct quantity directly from <code class="computeroutput">value_type</code>. </li></ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2003 -2008 Matthias Christian Schabel, 2007-2008 Steven
+      Watanabe<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="quantity.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_units/Reference.html#header.boost.units.quantity_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="add_typeof_helper_quant_id2856570.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

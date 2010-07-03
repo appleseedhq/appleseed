@@ -1,0 +1,116 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2010 Francois Beaune
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// appleseed.foundation headers.
+#include "foundation/platform/types.h"
+#include "foundation/utility/benchmark.h"
+#include "foundation/utility/poolallocator.h"
+
+// Standard headers.
+#include <cstddef>
+#include <memory>
+
+FOUNDATION_BENCHMARK_SUITE(Foundation_Utility_PoolAllocator)
+{
+    using namespace foundation;
+    using namespace std;
+
+    template <typename Allocator>
+    struct Fixture
+    {
+        Allocator m_allocator;
+
+        void repeated_allocation_deallocation()
+        {
+            uint32* p = m_allocator.allocate(1);
+            m_allocator.deallocate(p, 1);
+        }
+
+        void first_allocated_first_deallocated_batch()
+        {
+            const size_t N = 100;
+            uint32* p[N];
+
+            for (size_t i = 0; i < N; ++i)
+                p[i] = m_allocator.allocate(1);
+
+            for (size_t i = 0; i < N; ++i)
+                m_allocator.deallocate(p[i], 1);
+        }
+
+        void first_allocated_last_deallocated_batch()
+        {
+            const size_t N = 100;
+            uint32* p[N];
+
+            for (size_t i = 0; i < N; ++i)
+                p[i] = m_allocator.allocate(1);
+
+            for (size_t i = N; i; --i)
+                m_allocator.deallocate(p[i - 1], 1);
+        }
+    };
+
+    typedef allocator<uint32> DefaultAllocator;
+    typedef PoolAllocator<uint32> PoolAllocator;
+
+    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(RepeatedAllocation_PoolAllocator, Fixture<PoolAllocator>)
+    {
+        m_allocator.allocate(1);
+    }
+
+    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(RepeatedAllocationDeallocation_DefaultAllocator, Fixture<DefaultAllocator>)
+    {
+        repeated_allocation_deallocation();
+    }
+
+    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(RepeatedAllocationDeallocation_PoolAllocator, Fixture<PoolAllocator>)
+    {
+        repeated_allocation_deallocation();
+    }
+
+    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(FirstAllocatedFirstDeallocatedBatch_DefaultAllocator, Fixture<DefaultAllocator>)
+    {
+        first_allocated_first_deallocated_batch();
+    }
+
+    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(FirstAllocatedFirstDeallocatedBatch_PoolAllocator, Fixture<PoolAllocator>)
+    {
+        first_allocated_first_deallocated_batch();
+    }
+
+    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(FirstAllocatedLastDeallocatedBatch_DefaultAllocator, Fixture<DefaultAllocator>)
+    {
+        first_allocated_last_deallocated_batch();
+    }
+
+    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(FirstAllocatedLastDeallocatedBatch_PoolAllocator, Fixture<PoolAllocator>)
+    {
+        first_allocated_last_deallocated_batch();
+    }
+}

@@ -1,0 +1,432 @@
+<HTML><HEAD><SCRIPT language="JavaScript" src="../resources/script.js" type="text/javascript"></SCRIPT><TITLE>Xerces-C++: XSWildcard Class Reference</TITLE><link href="XercesApi.css" rel="stylesheet" type="text/css"></HEAD><BODY alink="#ff0000" bgcolor="#ffffff" leftmargin="4" link="#0000ff" marginheight="4" marginwidth="4" text="#000000" topmargin="4" vlink="#0000aa"><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD align="left" height="60" rowspan="3" valign="top" width="135"><IMG border="0" height="60" hspace="0" src="../resources/logo.gif" vspace="0" width="135"></TD><TD align="left" colspan="4" height="5" valign="top" width="456"><IMG border="0" height="5" hspace="0" src="../resources/line.gif" vspace="0" width="456"></TD><TD align="left" height="60" rowspan="3" valign="top" width="29"><IMG border="0" height="60" hspace="0" src="../resources/right.gif" vspace="0" width="29"></TD></TR><TR><TD align="left" bgcolor="#0086b2" colspan="4" height="35" valign="top" width="456"><IMG alt="" border="0" height="35" hspace="0" src="../graphics/api-header.jpg" vspace="0" width="456"></TD></TR><TR><TD align="left" height="20" valign="top" width="168"><IMG border="0" height="20" hspace="0" src="../resources/bottom.gif" vspace="0" width="168"></TD><TD align="left" height="20" valign="top" width="96"><A href="http://xml.apache.org/" onMouseOut="rolloverOff('xml');" onMouseOver="rolloverOn('xml');" target="new"><IMG alt="http://xml.apache.org/" border="0" height="20" hspace="0" name="xml" onLoad="rolloverLoad('xml','../resources/button-xml-hi.gif','../resources/button-xml-lo.gif');" src="../resources/button-xml-lo.gif" vspace="0" width="96"></A></TD><TD align="left" height="20" valign="top" width="96"><A href="http://www.apache.org/" onMouseOut="rolloverOff('asf');" onMouseOver="rolloverOn('asf');" target="new"><IMG alt="http://www.apache.org/" border="0" height="20" hspace="0" name="asf" onLoad="rolloverLoad('asf','../resources/button-asf-hi.gif','../resources/button-asf-lo.gif');" src="../resources/button-asf-lo.gif" vspace="0" width="96"></A></TD><TD align="left" height="20" valign="top" width="96"><A href="http://www.w3.org/" onMouseOut="rolloverOff('w3c');" onMouseOver="rolloverOn('w3c');" target="new"><IMG alt="http://www.w3.org/" border="0" height="20" hspace="0" name="w3c" onLoad="rolloverLoad('w3c','../resources/button-w3c-hi.gif','../resources/button-w3c-lo.gif');" src="../resources/button-w3c-lo.gif" vspace="0" width="96"></A></TD></TR></TABLE><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD align="left" valign="top" width="120"><IMG border="0" height="14" hspace="0" src="../resources/join.gif" vspace="0" width="120"><BR>
+  <A href="../../index.html" onMouseOut="rolloverOff('side-ext-2');" onMouseOver="rolloverOn('side-ext-2');"><IMG alt="Home" border="0" height="12" hspace="0" name="side-ext-2" onLoad="rolloverLoad('side-ext-2','../graphics/ext-2-label-2.jpg','../graphics/ext-2-label-3.jpg');" src="../graphics/ext-2-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../index.html" onMouseOut="rolloverOff('side-index');" onMouseOver="rolloverOn('side-index');"><IMG alt="Readme" border="0" height="12" hspace="0" name="side-index" onLoad="rolloverLoad('side-index','../graphics/index-label-2.jpg','../graphics/index-label-3.jpg');" src="../graphics/index-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../charter.html" onMouseOut="rolloverOff('side-charter');" onMouseOver="rolloverOn('side-charter');"><IMG alt="Charter" border="0" height="12" hspace="0" name="side-charter" onLoad="rolloverLoad('side-charter','../graphics/charter-label-2.jpg','../graphics/charter-label-3.jpg');" src="../graphics/charter-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../releases.html" onMouseOut="rolloverOff('side-releases');" onMouseOver="rolloverOn('side-releases');"><IMG alt="Release Info" border="0" height="12" hspace="0" name="side-releases" onLoad="rolloverLoad('side-releases','../graphics/releases-label-2.jpg','../graphics/releases-label-3.jpg');" src="../graphics/releases-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../install.html" onMouseOut="rolloverOff('side-install');" onMouseOver="rolloverOn('side-install');"><IMG alt="Installation" border="0" height="12" hspace="0" name="side-install" onLoad="rolloverLoad('side-install','../graphics/install-label-2.jpg','../graphics/install-label-3.jpg');" src="../graphics/install-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="http://xerces.apache.org/xerces-c/download.cgi" onMouseOut="rolloverOff('side-ext-20');" onMouseOver="rolloverOn('side-ext-20');"><IMG alt="Download" border="0" height="12" hspace="0" name="side-ext-20" onLoad="rolloverLoad('side-ext-20','../graphics/ext-20-label-2.jpg','../graphics/ext-20-label-3.jpg');" src="../graphics/ext-20-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../build.html" onMouseOut="rolloverOff('side-build');" onMouseOver="rolloverOn('side-build');"><IMG alt="Build Instructions" border="0" height="12" hspace="0" name="side-build" onLoad="rolloverLoad('side-build','../graphics/build-label-2.jpg','../graphics/build-label-3.jpg');" src="../graphics/build-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../program.html" onMouseOut="rolloverOff('side-program');" onMouseOver="rolloverOn('side-program');"><IMG alt="Programming" border="0" height="12" hspace="0" name="side-program" onLoad="rolloverLoad('side-program','../graphics/program-label-2.jpg','../graphics/program-label-3.jpg');" src="../graphics/program-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../samples.html" onMouseOut="rolloverOff('side-samples');" onMouseOver="rolloverOn('side-samples');"><IMG alt="Samples" border="0" height="12" hspace="0" name="side-samples" onLoad="rolloverLoad('side-samples','../graphics/samples-label-2.jpg','../graphics/samples-label-3.jpg');" src="../graphics/samples-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../faqs.html" onMouseOut="rolloverOff('side-faqs');" onMouseOver="rolloverOn('side-faqs');"><IMG alt="FAQs" border="0" height="12" hspace="0" name="side-faqs" onLoad="rolloverLoad('side-faqs','../graphics/faqs-label-2.jpg','../graphics/faqs-label-3.jpg');" src="../graphics/faqs-label-3.jpg" vspace="0" width="120"></A><BR>
+
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+     <A href="../api.html" onMouseOut="rolloverOff('side-api');" onMouseOver="rolloverOn('side-api');"><IMG alt="API Docs" border="0" height="12" hspace="0" name="side-api" onLoad="rolloverLoad('side-api','../graphics/api-label-2.jpg','../graphics/api-label-3.jpg');" src="../graphics/api-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../ApacheDOMC++Binding.html" onMouseOut="rolloverOff('side-ext-88');" onMouseOver="rolloverOn('side-ext-88');"><IMG alt="DOM C++ Binding" border="0" height="12" hspace="0" name="side-ext-88" onLoad="rolloverLoad('side-ext-88','../graphics/ext-88-label-2.jpg','../graphics/ext-88-label-3.jpg');" src="../graphics/ext-88-label-3.jpg" vspace="0" width="120"></A><BR>
+     <A href="../migrate.html" onMouseOut="rolloverOff('side-migrate');" onMouseOver="rolloverOn('side-migrate');"><IMG alt="Migration Guide" border="0" height="12" hspace="0" name="side-migrate" onLoad="rolloverLoad('side-migrate','../graphics/migrate-label-2.jpg','../graphics/migrate-label-3.jpg');" src="../graphics/migrate-label-3.jpg" vspace="0" width="120"></A><BR>
+
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+    <A href="../feedback.html" onMouseOut="rolloverOff('side-feedback');" onMouseOver="rolloverOn('side-feedback');"><IMG alt="Feedback" border="0" height="12" hspace="0" name="side-feedback" onLoad="rolloverLoad('side-feedback','../graphics/feedback-label-2.jpg','../graphics/feedback-label-3.jpg');" src="../graphics/feedback-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../bug-report.html" onMouseOut="rolloverOff('side-bug-report');" onMouseOver="rolloverOn('side-bug-report');"><IMG alt="Bug-Reporting" border="0" height="12" hspace="0" name="side-bug-report" onLoad="rolloverLoad('side-bug-report','../graphics/bug-report-label-2.jpg','../graphics/bug-report-label-3.jpg');" src="../graphics/bug-report-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../mailing-lists.html" onMouseOut="rolloverOff('side-mailing-lists');" onMouseOver="rolloverOn('side-mailing-lists');"><IMG alt="Mailing Lists" border="0" height="12" hspace="0" name="side-mailing-lists" onLoad="rolloverLoad('side-mailing-lists','../graphics/mailing-lists-label-2.jpg','../graphics/mailing-lists-label-3.jpg');" src="../graphics/mailing-lists-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="6" hspace="0" src="../resources/separator.gif" vspace="0" width="120"><BR>
+
+    <A href="../source-repository.html" onMouseOut="rolloverOff('side-source-repository');" onMouseOver="rolloverOn('side-source-repository');"><IMG alt="Source Repository" border="0" height="12" hspace="0" name="side-source-repository" onLoad="rolloverLoad('side-source-repository','../graphics/source-repository-label-2.jpg','../graphics/source-repository-label-3.jpg');" src="../graphics/source-repository-label-3.jpg" vspace="0" width="120"></A><BR>
+    <A href="../applications.html" onMouseOut="rolloverOff('side-applications');" onMouseOver="rolloverOn('side-applications');"><IMG alt="Applications" border="0" height="12" hspace="0" name="side-applications" onLoad="rolloverLoad('side-applications','../graphics/applications-label-2.jpg','../graphics/applications-label-3.jpg');" src="../graphics/applications-label-3.jpg" vspace="0" width="120"></A><BR>
+
+  <IMG border="0" height="14" hspace="0" src="../resources/close.gif" vspace="0" width="120"><BR></TD><TD align="left" valign="top" width="500"><TABLE border="0" cellpadding="3" cellspacing="0"><TR><TD>
+    <TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#FFFFFF" colspan="2" width="494"><TABLE border="0" cellpadding="0" cellspacing="0" width="494"><TR><TD bgcolor="#039acc" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#039acc" height="1" width="492"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#039acc" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#0086b2" width="492"><FONT color="#ffffff" face="arial,helvetica,sanserif" size="+1"><IMG border="0" height="2" hspace="0" src="../resources/void.gif" vspace="0" width="2"><B>API Docs for SAX and DOM</B></FONT></TD><TD bgcolor="#017299" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR><TR><TD bgcolor="#0086b2" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD><TD bgcolor="#017299" height="1" width="492"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="492"></TD><TD bgcolor="#017299" height="1" width="1"><IMG border="0" height="1" hspace="0" src="../resources/void.gif" vspace="0" width="1"></TD></TR></TABLE></TD></TR><TR><TD width="10">&nbsp;</TD><TD width="484"><FONT color="#000000" face="arial,helvetica,sanserif">
+
+	    <P>
+<!-- Generated by Doxygen 1.5.3 -->
+<div class="tabs">
+  <ul>
+    <li><a href="index.html"><span>Main&nbsp;Page</span></a></li>
+    <li class="current"><a href="classes.html"><span>Classes</span></a></li>
+    <li><a href="files.html"><span>Files</span></a></li>
+    <li><a href="pages.html"><span>Related&nbsp;Pages</span></a></li>
+  </ul>
+</div>
+<div class="tabs">
+  <ul>
+    <li><a href="classes.html"><span>Alphabetical&nbsp;List</span></a></li>
+    <li><a href="annotated.html"><span>Class&nbsp;List</span></a></li>
+    <li><a href="hierarchy.html"><span>Class&nbsp;Hierarchy</span></a></li>
+    <li><a href="functions.html"><span>Class&nbsp;Members</span></a></li>
+  </ul>
+</div>
+<h1>XSWildcard Class Reference</h1><!-- doxytag: class="XSWildcard" --><!-- doxytag: inherits="XSObject" --><div class="dynheader">
+Inheritance diagram for XSWildcard:</div>
+<div class="dynsection">
+<p><center><img src="classXSWildcard__inherit__graph.png" border="0" usemap="#XSWildcard__inherit__map" alt="Inheritance graph"></center>
+<map name="XSWildcard__inherit__map">
+<area shape="rect" href="classXSObject.html" title="XSObject" alt="" coords="11,84,91,111"><area shape="rect" href="classXMemory.html" title="This class makes it possible to override the C++ memory management by adding new/delete..." alt="" coords="9,7,92,33"></map>
+<center><font size="2">[<a href="graph_legend.html">legend</a>]</font></center></div>
+
+<p>
+<a href="classXSWildcard-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
+<tr><td></td></tr>
+<tr><td colspan="2"><br><h2>Public Types</h2></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">enum &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXSWildcard.html#cc3a6c061271f221ae2163a76ed50d00">NAMESPACE_CONSTRAINT</a> { <a class="el" href="classXSWildcard.html#cc3a6c061271f221ae2163a76ed50d00db91a73ac43168e6a9d0917fc306b944">NSCONSTRAINT_ANY</a> =  1, 
+<a class="el" href="classXSWildcard.html#cc3a6c061271f221ae2163a76ed50d002ff44f3a37a5a726df268c795036fef1">NSCONSTRAINT_NOT</a> =  2, 
+<a class="el" href="classXSWildcard.html#cc3a6c061271f221ae2163a76ed50d003830fcde95863ec2446e150bcd891b1c">NSCONSTRAINT_DERIVATION_LIST</a> =  3
+ }</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">enum &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXSWildcard.html#229e1dbbac24f157cb9972e0fc4688ef">PROCESS_CONTENTS</a> { <a class="el" href="classXSWildcard.html#229e1dbbac24f157cb9972e0fc4688efc86049ce0adb9c5c57faacd43642c738">PC_STRICT</a> =  1, 
+<a class="el" href="classXSWildcard.html#229e1dbbac24f157cb9972e0fc4688efa2b0698602fcfbe48a5090028e5ee38e">PC_SKIP</a> =  2, 
+<a class="el" href="classXSWildcard.html#229e1dbbac24f157cb9972e0fc4688ef48595bb01419328fb602fa1915959fe0">PC_LAX</a> =  3
+ }</td></tr>
+
+<tr><td colspan="2"><br><h2>Public Member Functions</h2></td></tr>
+<tr><td colspan="2"><div class="groupHeader">Constructors</div></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXSWildcard.html#7e5853193eff1578203e47aa18606319">XSWildcard</a> (SchemaAttDef *const attWildCard, <a class="el" href="classXSAnnotation.html">XSAnnotation</a> *const annot, <a class="el" href="classXSModel.html">XSModel</a> *const xsModel, <a class="el" href="classMemoryManager.html">MemoryManager</a> *const manager=<a class="el" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252">XMLPlatformUtils::fgMemoryManager</a>)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">The default constructor.  <a href="#7e5853193eff1578203e47aa18606319"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXSWildcard.html#d1b71e89290bc9f06bfa4bc8afb89788">XSWildcard</a> (const ContentSpecNode *const elmWildCard, <a class="el" href="classXSAnnotation.html">XSAnnotation</a> *const annot, <a class="el" href="classXSModel.html">XSModel</a> *const xsModel, <a class="el" href="classMemoryManager.html">MemoryManager</a> *const manager=<a class="el" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252">XMLPlatformUtils::fgMemoryManager</a>)</td></tr>
+
+<tr><td colspan="2"><div class="groupHeader">Destructor</div></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXSWildcard.html#ece9cf9bf41d2a6be91ba6cde8960531">~XSWildcard</a> ()</td></tr>
+
+<tr><td colspan="2"><div class="groupHeader">XSWildcard methods</div></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="classXSWildcard.html#cc3a6c061271f221ae2163a76ed50d00">NAMESPACE_CONSTRAINT</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXSWildcard.html#ec3e704d323b120d6f9f6c28829c408e">getConstraintType</a> () const </td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Namespace constraint: A constraint type: any, not, list.  <a href="#ec3e704d323b120d6f9f6c28829c408e"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="XSConstants_8hpp.html#ef973c7ee42adc6b41aa1bf50b8e19aa">StringList</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXSWildcard.html#aaeac93a0e653ea4eb9530c40a8a13d3">getNsConstraintList</a> ()</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Namespace constraint.  <a href="#aaeac93a0e653ea4eb9530c40a8a13d3"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="classXSWildcard.html#229e1dbbac24f157cb9972e0fc4688ef">PROCESS_CONTENTS</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXSWildcard.html#7c7d2f315169fdf130c95fb5cdfa423b">getProcessContents</a> () const </td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">[process contents]: one of skip, lax or strict.  <a href="#7c7d2f315169fdf130c95fb5cdfa423b"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="classXSAnnotation.html">XSAnnotation</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXSWildcard.html#cc6ef8477bc542ae0b789157f8ddfb5c">getAnnotation</a> () const </td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Optional.  <a href="#cc6ef8477bc542ae0b789157f8ddfb5c"></a><br></td></tr>
+<tr><td colspan="2"><br><h2>Protected Attributes</h2></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="classXSWildcard.html#cc3a6c061271f221ae2163a76ed50d00">NAMESPACE_CONSTRAINT</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXSWildcard.html#069a80339e42d7514f9a03674e49d642">fConstraintType</a></td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="classXSWildcard.html#229e1dbbac24f157cb9972e0fc4688ef">PROCESS_CONTENTS</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXSWildcard.html#f0850a0cb6fc997e51057a169d664bbc">fProcessContents</a></td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="XSConstants_8hpp.html#ef973c7ee42adc6b41aa1bf50b8e19aa">StringList</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXSWildcard.html#071304e5f8eacb263cb6cee57bf01363">fNsConstraintList</a></td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="classXSAnnotation.html">XSAnnotation</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classXSWildcard.html#d94a99d3207ae710ec0830f3d542d5fd">fAnnotation</a></td></tr>
+
+</table>
+<hr><h2>Member Enumeration Documentation</h2>
+<a class="anchor" name="cc3a6c061271f221ae2163a76ed50d00"></a><!-- doxytag: member="XSWildcard::NAMESPACE_CONSTRAINT" ref="cc3a6c061271f221ae2163a76ed50d00" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="classXSWildcard.html#cc3a6c061271f221ae2163a76ed50d00">XSWildcard::NAMESPACE_CONSTRAINT</a>          </td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+<dl compact><dt><b>Enumerator: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" name="cc3a6c061271f221ae2163a76ed50d00db91a73ac43168e6a9d0917fc306b944"></a><!-- doxytag: member="NSCONSTRAINT_ANY" ref="cc3a6c061271f221ae2163a76ed50d00db91a73ac43168e6a9d0917fc306b944" args="" -->NSCONSTRAINT_ANY</em>&nbsp;</td><td>
+Namespace Constraint: any namespace is allowed. </td></tr>
+<tr><td valign="top"><em><a class="anchor" name="cc3a6c061271f221ae2163a76ed50d002ff44f3a37a5a726df268c795036fef1"></a><!-- doxytag: member="NSCONSTRAINT_NOT" ref="cc3a6c061271f221ae2163a76ed50d002ff44f3a37a5a726df268c795036fef1" args="" -->NSCONSTRAINT_NOT</em>&nbsp;</td><td>
+Namespace Constraint: namespaces in the list are not allowed. </td></tr>
+<tr><td valign="top"><em><a class="anchor" name="cc3a6c061271f221ae2163a76ed50d003830fcde95863ec2446e150bcd891b1c"></a><!-- doxytag: member="NSCONSTRAINT_DERIVATION_LIST" ref="cc3a6c061271f221ae2163a76ed50d003830fcde95863ec2446e150bcd891b1c" args="" -->NSCONSTRAINT_DERIVATION_LIST</em>&nbsp;</td><td>
+Namespace Constraint: namespaces in the list are allowed. </td></tr>
+</table>
+</dl>
+
+</div>
+</div><p>
+<a class="anchor" name="229e1dbbac24f157cb9972e0fc4688ef"></a><!-- doxytag: member="XSWildcard::PROCESS_CONTENTS" ref="229e1dbbac24f157cb9972e0fc4688ef" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="classXSWildcard.html#229e1dbbac24f157cb9972e0fc4688ef">XSWildcard::PROCESS_CONTENTS</a>          </td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+<dl compact><dt><b>Enumerator: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" name="229e1dbbac24f157cb9972e0fc4688efc86049ce0adb9c5c57faacd43642c738"></a><!-- doxytag: member="PC_STRICT" ref="229e1dbbac24f157cb9972e0fc4688efc86049ce0adb9c5c57faacd43642c738" args="" -->PC_STRICT</em>&nbsp;</td><td>
+There must be a top-level declaration for the item available, or the item must have an xsi:type, and the item must be valid as appropriate. </td></tr>
+<tr><td valign="top"><em><a class="anchor" name="229e1dbbac24f157cb9972e0fc4688efa2b0698602fcfbe48a5090028e5ee38e"></a><!-- doxytag: member="PC_SKIP" ref="229e1dbbac24f157cb9972e0fc4688efa2b0698602fcfbe48a5090028e5ee38e" args="" -->PC_SKIP</em>&nbsp;</td><td>
+No constraints at all: the item must simply be well-formed XML. </td></tr>
+<tr><td valign="top"><em><a class="anchor" name="229e1dbbac24f157cb9972e0fc4688ef48595bb01419328fb602fa1915959fe0"></a><!-- doxytag: member="PC_LAX" ref="229e1dbbac24f157cb9972e0fc4688ef48595bb01419328fb602fa1915959fe0" args="" -->PC_LAX</em>&nbsp;</td><td>
+If the item, or any items among its [children] is an element information item, has a uniquely determined declaration available, it must be valid with respect to that definition, that is, validate where you can, don't worry when you can't. </td></tr>
+</table>
+</dl>
+
+</div>
+</div><p>
+<hr><h2>Constructor &amp; Destructor Documentation</h2>
+<a class="anchor" name="7e5853193eff1578203e47aa18606319"></a><!-- doxytag: member="XSWildcard::XSWildcard" ref="7e5853193eff1578203e47aa18606319" args="(SchemaAttDef *const attWildCard, XSAnnotation *const annot, XSModel *const xsModel, MemoryManager *const manager=XMLPlatformUtils::fgMemoryManager)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">XSWildcard::XSWildcard           </td>
+          <td>(</td>
+          <td class="paramtype">SchemaAttDef *const &nbsp;</td>
+          <td class="paramname"> <em>attWildCard</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classXSAnnotation.html">XSAnnotation</a> *const &nbsp;</td>
+          <td class="paramname"> <em>annot</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classXSModel.html">XSModel</a> *const &nbsp;</td>
+          <td class="paramname"> <em>xsModel</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMemoryManager.html">MemoryManager</a> *const &nbsp;</td>
+          <td class="paramname"> <em>manager</em> = <code><a class="el" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252">XMLPlatformUtils::fgMemoryManager</a></code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+The default constructor. 
+<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>attWildCard</em>&nbsp;</td><td></td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>annot</em>&nbsp;</td><td></td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>xsModel</em>&nbsp;</td><td></td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>manager</em>&nbsp;</td><td>The configurable memory manager </td></tr>
+  </table>
+</dl>
+
+</div>
+</div><p>
+<a class="anchor" name="d1b71e89290bc9f06bfa4bc8afb89788"></a><!-- doxytag: member="XSWildcard::XSWildcard" ref="d1b71e89290bc9f06bfa4bc8afb89788" args="(const ContentSpecNode *const elmWildCard, XSAnnotation *const annot, XSModel *const xsModel, MemoryManager *const manager=XMLPlatformUtils::fgMemoryManager)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">XSWildcard::XSWildcard           </td>
+          <td>(</td>
+          <td class="paramtype">const ContentSpecNode *const &nbsp;</td>
+          <td class="paramname"> <em>elmWildCard</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classXSAnnotation.html">XSAnnotation</a> *const &nbsp;</td>
+          <td class="paramname"> <em>annot</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classXSModel.html">XSModel</a> *const &nbsp;</td>
+          <td class="paramname"> <em>xsModel</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMemoryManager.html">MemoryManager</a> *const &nbsp;</td>
+          <td class="paramname"> <em>manager</em> = <code><a class="el" href="classXMLPlatformUtils.html#97eff0d9fff3567bea3acd3ca4d95252">XMLPlatformUtils::fgMemoryManager</a></code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="ece9cf9bf41d2a6be91ba6cde8960531"></a><!-- doxytag: member="XSWildcard::~XSWildcard" ref="ece9cf9bf41d2a6be91ba6cde8960531" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">XSWildcard::~XSWildcard           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<hr><h2>Member Function Documentation</h2>
+<a class="anchor" name="ec3e704d323b120d6f9f6c28829c408e"></a><!-- doxytag: member="XSWildcard::getConstraintType" ref="ec3e704d323b120d6f9f6c28829c408e" args="() const " -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classXSWildcard.html#cc3a6c061271f221ae2163a76ed50d00">XSWildcard::NAMESPACE_CONSTRAINT</a> XSWildcard::getConstraintType           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"> const</td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Namespace constraint: A constraint type: any, not, list. 
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="aaeac93a0e653ea4eb9530c40a8a13d3"></a><!-- doxytag: member="XSWildcard::getNsConstraintList" ref="aaeac93a0e653ea4eb9530c40a8a13d3" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="XSConstants_8hpp.html#ef973c7ee42adc6b41aa1bf50b8e19aa">StringList</a> * XSWildcard::getNsConstraintList           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Namespace constraint. 
+<p>
+For <code>constraintType</code> <code>NSCONSTRAINT_DERIVATION_LIST</code>, the list contains allowed namespaces. For <code>constraintType</code> <code>NSCONSTRAINT_NOT</code>, the list contains disallowed namespaces. 
+</div>
+</div><p>
+<a class="anchor" name="7c7d2f315169fdf130c95fb5cdfa423b"></a><!-- doxytag: member="XSWildcard::getProcessContents" ref="7c7d2f315169fdf130c95fb5cdfa423b" args="() const " -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classXSWildcard.html#229e1dbbac24f157cb9972e0fc4688ef">XSWildcard::PROCESS_CONTENTS</a> XSWildcard::getProcessContents           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"> const</td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+[process contents]: one of skip, lax or strict. 
+<p>
+Valid constants values are: <code>PC_SKIP, PC_LAX, PC_STRICT</code>. 
+</div>
+</div><p>
+<a class="anchor" name="cc6ef8477bc542ae0b789157f8ddfb5c"></a><!-- doxytag: member="XSWildcard::getAnnotation" ref="cc6ef8477bc542ae0b789157f8ddfb5c" args="() const " -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classXSAnnotation.html">XSAnnotation</a> * XSWildcard::getAnnotation           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"> const</td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Optional. 
+<p>
+An [annotation]. 
+</div>
+</div><p>
+<hr><h2>Member Data Documentation</h2>
+<a class="anchor" name="069a80339e42d7514f9a03674e49d642"></a><!-- doxytag: member="XSWildcard::fConstraintType" ref="069a80339e42d7514f9a03674e49d642" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classXSWildcard.html#cc3a6c061271f221ae2163a76ed50d00">NAMESPACE_CONSTRAINT</a> <a class="el" href="classXSWildcard.html#069a80339e42d7514f9a03674e49d642">XSWildcard::fConstraintType</a><code> [protected]</code>          </td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="f0850a0cb6fc997e51057a169d664bbc"></a><!-- doxytag: member="XSWildcard::fProcessContents" ref="f0850a0cb6fc997e51057a169d664bbc" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classXSWildcard.html#229e1dbbac24f157cb9972e0fc4688ef">PROCESS_CONTENTS</a> <a class="el" href="classXSWildcard.html#f0850a0cb6fc997e51057a169d664bbc">XSWildcard::fProcessContents</a><code> [protected]</code>          </td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="071304e5f8eacb263cb6cee57bf01363"></a><!-- doxytag: member="XSWildcard::fNsConstraintList" ref="071304e5f8eacb263cb6cee57bf01363" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="XSConstants_8hpp.html#ef973c7ee42adc6b41aa1bf50b8e19aa">StringList</a>* <a class="el" href="classXSWildcard.html#071304e5f8eacb263cb6cee57bf01363">XSWildcard::fNsConstraintList</a><code> [protected]</code>          </td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="d94a99d3207ae710ec0830f3d542d5fd"></a><!-- doxytag: member="XSWildcard::fAnnotation" ref="d94a99d3207ae710ec0830f3d542d5fd" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classXSAnnotation.html">XSAnnotation</a>* <a class="el" href="classXSWildcard.html#d94a99d3207ae710ec0830f3d542d5fd">XSWildcard::fAnnotation</a><code> [protected]</code>          </td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<hr>The documentation for this class was generated from the following file:<ul>
+<li><a class="el" href="XSWildcard_8hpp-source.html">XSWildcard.hpp</a></ul>
+    </FONT></TD></TR></TABLE><BR>
+</TD></TR></TABLE></TD></TR></TABLE><BR><TABLE border="0" cellpadding="0" cellspacing="0" width="620"><TR><TD bgcolor="#0086b2"><IMG height="1" src="images/dot.gif" width="1" alt=""></TD></TR><TR><TD align="center"><FONT color="#0086b2" size="-1"><I>
+              Copyright &copy; 1994-2004 The Apache Software Foundation.
+              All Rights Reserved.
+            </I></FONT></TD></TR></TABLE></BODY></HTML>

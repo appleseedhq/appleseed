@@ -1,0 +1,422 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+# 
+#      http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+#
+#
+# $Id: Makefile.incl 570159 2007-08-27 15:43:48Z amassari $
+#
+#
+
+################## LIBRARY NAMES AND DIRECTORIES ##################
+
+ifeq (${SYSOVR},OS400)
+PLATFORM = OS400
+endif
+INCLUDES= -I. -I${XERCESCROOT}/include
+LIB_DIR=${XERCESCROOT}/lib
+ifneq (${PLATFORM},OS400)
+LIBNAME=xerces-c
+LIBDEPDOM=xerces-depdom
+else
+LIBNAME=xercesc
+LIBDEPDOM=xercesdepdom
+endif
+THISLIB=${LIB_DIR}/${LIBNAME}
+
+LIBRARY_NAMES=-l${LIBNAME}
+LIBRARY_DEPDOM=-l${LIBDEPDOM}
+LIBRARY_SEARCH_PATHS=-L${LIB_DIR}
+
+TO = o
+####################### PLATFORM DEPENDENCIES #####################
+
+#=============== IRIX SPECIFIC OPTIONS =========================
+ifeq (${PLATFORM}, IRIX)
+  ifeq (${GXX}, yes)
+	CMP= -c ${CXXFLAGS}
+	CC= ${COMPILER} -c -D${PLATFORM} -fpic
+	LINK = ${COMPILER} -D${PLATFORM} -fpic ${LDFLAGS}
+	PLATFORM_LIB_LINK_OPTIONS=-L/usr/lib -L/usr/local/lib
+	EXTRA_LINK_OPTIONS=${EXTRA_LIBS}
+
+        ifneq (${THREADS},none)
+          CC += -D_REENTRANT
+        endif
+  else
+	CMP= -c ${CXXFLAGS}
+	CC= ${COMPILER} -c -D${PLATFORM} -LANG:pch -LANG:std -O2 -I/usr/local/include -no_auto_include
+	LINK =  ${COMPILER} -D${PLATFORM} ${LDFLAGS}
+	PLATFORM_LIB_LINK_OPTIONS=
+	EXTRA_LINK_OPTIONS=${EXTRA_LIBS}
+
+        ifneq (${THREADS},none)
+          CC += -D_REENTRANT
+        endif
+  endif
+endif
+
+#=============== SOLARIS SPECIFIC OPTIONS =========================
+ifeq (${PLATFORM}, SOLARIS)
+  ifeq (${GXX}, yes)
+	CMP= -c ${CXXFLAGS}
+	CC= ${COMPILER} -c -D${PLATFORM} -fpic
+	LINK = ${COMPILER} -D${PLATFORM} -fpic ${LDFLAGS}
+	PLATFORM_LIB_LINK_OPTIONS=-L/usr/lib -L/usr/local/lib
+	EXTRA_LINK_OPTIONS=${EXTRA_LIBS}
+
+        ifneq (${THREADS},none)
+          CC += -D_REENTRANT
+        endif
+  else
+	CMP= -c ${CXXFLAGS}
+	CC= ${COMPILER} -c -D${PLATFORM} -pic
+        LINK =  ${COMPILER} -D${PLATFORM} ${LDFLAGS}
+	PLATFORM_LIB_LINK_OPTIONS=-L/usr/lib
+	EXTRA_LINK_OPTIONS=-lc -lgen ${EXTRA_LIBS}
+
+        ifneq (${THREADS},none)
+          CC += -D_REENTRANT -mt
+        endif
+  endif
+endif
+
+#=============== OPENSERVER SPECIFIC OPTIONS =========================
+ifeq (${PLATFORM}, OPENSERVER)
+  CC=${COMPILER} -D${PLATFORM} -fPIC
+  CMP=-c ${CXXFLAGS}
+  LINK=${CC} ${LDFLAGS}
+  EXTRA_LINK_OPTIONS=-lc -lsocket ${EXTRA_LIBS}
+  PLATFORM_LIB_LINK_OPTIONS=-L/usr/lib -L/usr/local/lib
+endif
+
+#=============== UNIXWARE SPECIFIC OPTIONS =========================
+ifeq (${PLATFORM}, UNIXWARE)
+  CMP= -O2 -c ${CXXFLAGS}
+  CC= ${COMPILER} -D${PLATFORM} -fpic
+  LINK = ${COMPILER} -D${PLATFORM} -fpic ${LDFLAGS}
+  EXTRA_LINK_OPTIONS=-lc -lsocket ${EXTRA_LIBS}
+  PLATFORM_LIB_LINK_OPTIONS=-L/usr/lib -L/usr/local/lib
+
+  ifneq (${THREADS},none)
+    CMP += -D_REENTRANT -pthread
+    LINK += -pthread
+  endif
+endif
+
+#================= PTX SPECIFIC OPTIONS ===========================
+ifeq (${PLATFORM}, PTX)
+  CMP = -c -KPIC -D${PLATFORM} -w -O
+  CC= ${COMPILER}
+  LINK =  ${COMPILER} -D${PLATFORM} ${LDFLAGS}
+  EXTRA_LINK_OPTIONS=-lm -lgen ${EXTRA_LIBS}
+  PLATFORM_LIB_LINK_OPTIONS=-L/usr/local/lib -L${XMLINSTALL}/lib
+
+  ifneq (${THREADS},none)
+    CMP += -Kthread
+    LINK += -Kthread
+  endif
+
+endif
+
+#================= AIX SPECIFIC OPTIONS ===========================
+ifeq (${PLATFORM}, AIX)
+  ifeq (${GXX}, yes)
+    CMP= -c ${CXXFLAGS}
+    CC= ${COMPILER} -c -D${PLATFORM} -fpic
+    LINK = ${COMPILER} -D${PLATFORM} -fpic ${LDFLAGS}
+    PLATFORM_LIB_LINK_OPTIONS=-L/usr/lib -L/usr/local/lib
+    EXTRA_LINK_OPTIONS= ${EXTRA_LIBS}
+
+    ifneq (${THREADS},none)
+      CC += -D_REENTRANT
+    endif
+  else
+    ifeq (${CXXVER}, v5compat)
+      CMP= -c ${CXXFLAGS} -qnotempinc -qnamemangling=v5
+    else
+      CMP= -c ${CXXFLAGS} -qnotempinc -qnamemangling=ansi
+    endif
+
+    ifneq (${THREADS},none)
+      CMP += -D_THREAD_SAFE
+    endif
+
+    CC=${COMPILER} -D${PLATFORM}
+    LINK =  ${COMPILER} ${LDFLAGS}
+    ifeq (${BITSTOBUILD}, 64)
+	EXTRA_LINK_OPTIONS=-bmaxdata:0x80000000000
+    else
+	EXTRA_LINK_OPTIONS=-bmaxdata:0x80000000
+    endif
+  endif
+endif
+
+#=============== OS400 SPECIFIC OPTIONS =========================
+ifeq (${PLATFORM}, OS400)
+ifeq (${SYSOVR},OS400)
+MYCC = cross compiler path here
+TO = qwobj
+else
+MYCC = icc
+LINK =  ${CC} -v ${LDFLAGS}
+endif
+CMP= -c -DOS400 ${CXXFLAGS}
+CXX = $(MYCC)
+CC = $(MYCC)
+#INCLUDES    += -I${ICUROOT}/include
+EXTRA_LINK_OPTIONS=-q OPTION='*DUPPROC *DUPVAR' ${EXTRA_LIBS}
+endif
+
+#=============== BEOS SPECIFIC OPTIONS =========================
+ifeq (${PLATFORM}, BEOS)
+CMP= -c ${CXXFLAGS}
+CC= ${COMPILER} -c -D${PLATFORM} -DAPP_NO_THREADS -fpic
+LINK =  ${COMPILER} -D${PLATFORM} -fpic ${LDFLAGS}
+PLATFORM_LIB_LINK_OPTIONS=-L/boot/develop/lib/x86 -L/boot/home/config/lib
+EXTRA_LINK_OPTIONS=-lbe ${EXTRA_LIBS}
+endif
+
+#=============== LINUX SPECIFIC OPTIONS =========================
+ifeq (${PLATFORM}, LINUX)
+  ifeq (${COMPILER}, xlC_r)
+    CMP= -c ${CXXFLAGS} -qnotempinc
+    CC= ${COMPILER} -c -D${PLATFORM}
+    LINK =  ${COMPILER} ${LDFLAGS}
+    PLATFORM_LIB_LINK_OPTIONS=-L/usr/local/lib
+    EXTRA_LINK_OPTIONS=${EXTRA_LIBS}
+
+    ifneq (${THREADS},none)
+      CMP += -D_REENTRANT
+    endif
+  else
+    CMP= -c ${CXXFLAGS}
+    CC= ${COMPILER} -c -D${PLATFORM} -fpic
+    LINK =  ${COMPILER} -D${PLATFORM} -fpic ${LDFLAGS}
+    PLATFORM_LIB_LINK_OPTIONS=-L/usr/local/lib
+    EXTRA_LINK_OPTIONS=${EXTRA_LIBS}
+
+    ifneq (${THREADS},none)
+      CMP += -D_REENTRANT
+    endif
+  endif
+endif
+
+#=============== QNX SPECIFIC OPTIONS =========================
+ifeq (${PLATFORM}, QNX)
+CMP= -c ${CXXFLAGS}
+CC= ${COMPILER}
+LINK = ${COMPILER} ${LDFLAGS}
+PLATFORM_LIB_LINK_OPTIONS=-L/usr/local/lib
+EXTRA_LINK_OPTIONS=${EXTRA_LIBS}
+endif
+
+
+#=============== CYGWIN SPECIFIC OPTIONS =========================
+ifeq (${PLATFORM}, CYGWIN)
+CMP= -c ${CXXFLAGS}
+CC= ${COMPILER} -c -D__${PLATFORM}__
+LINK =  ${COMPILER} -D__${PLATFORM}__ ${LDFLAGS}
+PLATFORM_LIB_LINK_OPTIONS=-L/usr/lib -L/usr/local/lib
+EXTRA_LINK_OPTIONS=${EXTRA_LIBS}
+endif
+
+#=============== INTERIX SPECIFIC OPTIONS =========================
+ifeq (${PLATFORM}, INTERIX)
+  CMP= -c ${CXXFLAGS}
+  CC= ${COMPILER} -c -D${PLATFORM} -D_ALL_SOURCE
+  LINK =  ${COMPILER} -D${PLATFORM} ${LDFLAGS}
+  PLATFORM_LIB_LINK_OPTIONS=-L/usr/local/lib
+  EXTRA_LINK_OPTIONS=-lc ${EXTRA_LIBS}
+
+  ifneq (${THREADS},none)
+    CMP += -D_REENTRANT
+  endif
+endif
+
+#=============== MINGW SPECIFIC OPTIONS =========================
+ifeq (${PLATFORM}, MINGW)
+CMP= -c ${CXXFLAGS} -fexceptions
+CC= ${COMPILER} -c -D__${PLATFORM}__ -DPLATFORM_WIN32
+LINK =  ${COMPILER} -D__${PLATFORM}__ ${LDFLAGS}
+PLATFORM_LIB_LINK_OPTIONS=-L/usr/lib -L/usr/local/lib
+EXTRA_LINK_OPTIONS=${EXTRA_LIBS}
+endif
+
+#=============== FREEBSD SPECIFIC OPTIONS =========================
+ifeq (${PLATFORM}, FREEBSD)
+  CMP= -c ${CXXFLAGS}
+  CC= ${COMPILER} -c -D${PLATFORM} -fPIC
+  LINK = ${COMPILER} -D${PLATFORM} -fPIC ${LDFLAGS}
+  PLATFORM_LIB_LINK_OPTIONS=-Wl,-rpath,${XERCESCROOT}/lib
+  ifdef ICUROOT
+    PLATFORM_LIB_LINK_OPTIONS+=-L${ICUROOT} -Wl,-rpath,${ICUROOT}
+    EXTRA_LINK_OPTIONS=-licudata -lstdc++ ${EXTRA_LIBS}
+  else
+    EXTRA_LINK_OPTIONS=${EXTRA_LIBS} -lstdc++
+  endif
+endif
+
+#=============== NETBSD SPECIFIC OPTIONS =========================
+ifeq (${PLATFORM}, NETBSD)
+  CMP= -c ${CXXFLAGS}
+  CC= ${COMPILER} -c -D${PLATFORM} -fPIC
+  LINK = ${COMPILER} -D${PLATFORM} -fPIC ${LDFLAGS}
+  PLATFORM_LIB_LINK_OPTIONS=-Wl,-rpath,${XERCESCROOT}/lib
+  ifdef ICUROOT
+    PLATFORM_LIB_LINK_OPTIONS+=-L${ICUROOT} -Wl,-rpath,${ICUROOT}
+    EXTRA_LINK_OPTIONS=-licudata -lstdc++ ${EXTRA_LIBS}
+  else
+    EXTRA_LINK_OPTIONS=${EXTRA_LIBS} -lstdc++
+  endif
+endif
+
+#================= HP SPECIFIC OPTIONS ===========================
+ifeq (${PLATFORM}, HPUX)
+  ifeq (${GXX}, yes)
+    CMP= -c ${CXXFLAGS}
+    CC= ${COMPILER} -c -D${PLATFORM} -fpic
+    LINK = ${COMPILER} -D${PLATFORM} -fpic ${LDFLAGS}
+    PLATFORM_LIB_LINK_OPTIONS=-L/usr/lib -L/usr/local/lib
+    EXTRA_LINK_OPTIONS= ${EXTRA_LIBS}
+
+    ifneq (${THREADS},none)
+      CMP += -D_REENTRANT
+    endif
+  else
+  ifeq (${COMPILER}, aCC)
+    ifeq (${CXXVER}, aCC05)
+      CMP = -c $(CXXFLAGS) -D_HP_UX -DHPaCC -w +z
+      ifneq (${THREADS},none)
+        CMP += -mt
+      endif
+    else
+      CMP = -c +DAportable $(CXXFLAGS) -D_HP_UX -DHPaCC -w +z
+    endif
+
+    CC = aCC
+    LINK =  ${CC} -Wl,+s -Wl,+b,. ${LDFLAGS}
+
+    ifeq (${CXXVER}, aCC05)
+      PLATFORM_LIB_LINK_OPTIONS=-L/opt/aCC/lib -L/usr/ccs/lib
+    else
+      PLATFORM_LIB_LINK_OPTIONS=-L/opt/aCC/lib -L/usr/ccs/lib
+    endif
+
+    ifneq (${THREADS},none)
+      ifeq (${CXXVER}, aCC05)
+        PLATFORM_LIB_LINK_OPTIONS += -mt
+      else
+        PLATFORM_LIB_LINK_OPTIONS += -lpthread
+      endif
+    endif
+  else
+    ifneq (${DEBUG}, 1)
+      CXXFLAGS = -w +O1
+    endif
+    APPL_NAME = $(notdir $(shell pwd))
+    TEMPLATESDIR = $(XERCESCROOT)/bin/obj/$(APPL_NAME)/ptrepository
+    COMMON_CMP = $(CXXFLAGS) -D_HP_UX -DHPCC +DAportable -w +eh +z -z \
+        -ptr$(TEMPLATESDIR)
+    CMP = -c $(COMMON_CMP)
+    CC = CC
+    LINK =  ${CC} $(COMMON_CMP) -Wl,+s -Wl,+b,. ${LDFLAGS}
+    PLATFORM_LIB_LINK_OPTIONS=-L/opt/CC/lib -L/usr/lib
+  endif
+  endif
+endif
+
+#================= OS390 SPECIFIC OPTIONS ===========================
+###################################################################
+#                    IMPORTANT NOTE                               #
+###################################################################
+# Before you try to run the Makefile, make sure you have two      #
+# environment variables set.                                      #
+#                                                                 #
+# export XERCESCROOT=<the directory where you installed XERCES-C> #
+#                                                                 #
+# If you are going to do the OS390BATCH build, make sure you have #
+# the OS390BATCH environment variable set.                        #
+#                                                                 #
+#   export OS390BATCH=1                                           #
+#                                                                 #
+# Also,                                                           #
+#                                                                 #
+#   export LOADMOD=USERID.LOAD                                    #
+#   export LOADEXP=SYS1.SIXMEXP or &hlq.SIXMEXP                   #
+#                                                                 #
+# to specify your LOADMOD and the IXM4C56X definition sidedeck    #
+# dataset.  							  #
+###################################################################
+
+ifeq (${PLATFORM}, OS390)
+ifeq (${OS390_XPLINK},1)
+XPLINK_CCOPTS=-Wc,'XPLINK'
+XPLINK_LKOPTS=-Wl,'XPLINK'
+else
+XPLINK_CCOPTS=
+XPLINK_LKOPTS=
+endif
+CMP= -c -DOS390 ${CXXFLAGS} ${XPLINK_CCOPTS}
+## OS390BATCH
+ifeq (${OS390BATCH},1)
+CC = _CXX_CXXSUFFIX="cpp" c++ -W0,"langlvl(extended)" -Wc,"TMPLPARSE(NO)" -Wc,"float(IEEE)" -DOS390 -D_OPEN_THREADS -D_XOPEN_SOURCE_EXTENDED -DOS390BATCH
+else
+CC = _CXX_CXXSUFFIX="cpp" c++ -W0,"langlvl(extended)" -Wc,"TMPLPARSE(NO)" -Wc,"float(IEEE)" -DOS390 -D_OPEN_THREADS -D_XOPEN_SOURCE_EXTENDED
+endif
+LINK =  ${CC} ${LDFLAGS} ${XPLINK_LKOPTS}
+PLATFORM_LIB_LINK_OPTIONS=
+EXTRA_LINK_OPTIONS=
+ifeq (${OS390_XPLINK},1)
+OS390SIDEDECK=.xplink.x
+OS390BATCH_MAIN_DLL=IXM4C6XX
+OS390BATCH_DEPDOM_DLL=IXMDD6XX
+else
+OS390SIDEDECK=.x
+OS390BATCH_MAIN_DLL=IXM4C56X
+OS390BATCH_DEPDOM_DLL=IXMDD56X
+endif
+## OS390BATCH
+ifeq (${OS390BATCH},1)
+LIBRARY_NAMES="//'${LOADEXP}(${OS390BATCH_MAIN_DLL})'"
+LIBRARY_DEPDOM="//'${LOADEXP}(${OS390BATCH_DEPDOM_DLL})'"
+else
+LIBRARY_NAMES=${LIB_DIR}/lib${LIBNAME}${VER}${OS390SIDEDECK}
+LIBRARY_DEPDOM=${LIB_DIR}/lib${LIBDEPDOM}${VER}${OS390SIDEDECK}
+endif
+LIBRARY_SEARCH_PATHS=
+endif
+
+
+#=============== TRU64 SPECIFIC OPTIONS =========================
+ifeq (${PLATFORM}, TRU64)
+CMP= -c ${CXXFLAGS}
+CC = ${COMPILER} -c -D${PLATFORM}
+LINK = ${COMPILER} -D${PLATFORM} ${LDFLAGS}
+PLATFORM_LIB_LINK_OPTIONS=-L/usr/lib -L/usr/local/lib
+endif
+
+
+#=============== MacOS SPECIFIC OPTIONS =========================
+ifeq (${PLATFORM}, MACOSX)
+  CMP= -c ${CXXFLAGS}
+  CC= ${COMPILER} -c -D${PLATFORM}
+  LINK = ${COMPILER} -D${PLATFORM} ${LDFLAGS}
+  PLATFORM_LIB_LINK_OPTIONS=-L/usr/lib -framework CoreServices
+
+  ifneq (${THREADS},none)
+    CMP += -D_REENTRANT
+  endif
+endif

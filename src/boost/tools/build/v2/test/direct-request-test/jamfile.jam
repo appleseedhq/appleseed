@@ -1,0 +1,13 @@
+# Copyright 2002 Vladimir Prus 
+# Distributed under the Boost Software License, Version 1.0. 
+# (See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt) 
+
+
+# This will link correctly only if symbol MACROS is defined when compiling
+# b.cpp. However, this is only possible if that symbol is requested
+# on command line and b.cpp is compiled with directly requested
+# properties.
+
+exe a : a.cpp b ;
+
+lib b : b.cpp ;

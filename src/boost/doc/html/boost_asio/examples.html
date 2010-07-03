@@ -1,0 +1,344 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Examples</title>
+<link rel="stylesheet" href="../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../boost_asio.html" title="Boost.Asio">
+<link rel="up" href="../boost_asio.html" title="Boost.Asio">
+<link rel="prev" href="tutorial/tutdaytime7/src.html" title="Source listing for Daytime.7">
+<link rel="next" href="reference.html" title="Reference">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../boost.png"></td>
+<td align="center"><a href="../../../index.html">Home</a></td>
+<td align="center"><a href="../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="tutorial/tutdaytime7/src.html"><img src="../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../boost_asio.html"><img src="../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../boost_asio.html"><img src="../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="reference.html"><img src="../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="boost_asio.examples"></a><a class="link" href="examples.html" title="Examples"> Examples</a>
+</h2></div></div></div>
+<a name="boost_asio.examples.allocation"></a><h4>
+<a name="id1173504"></a>
+      <a class="link" href="examples.html#boost_asio.examples.allocation">Allocation</a>
+    </h4>
+<p>
+      This example shows how to customise the allocation of memory associated with
+      asynchronous operations.
+    </p>
+<div class="itemizedlist"><ul type="disc"><li><a href="example/allocation/server.cpp" target="_top">boost_asio/example/allocation/server.cpp</a></li></ul></div>
+<a name="boost_asio.examples.buffers"></a><h4>
+<a name="id1173541"></a>
+      <a class="link" href="examples.html#boost_asio.examples.buffers">Buffers</a>
+    </h4>
+<p>
+      This example demonstrates how to create reference counted buffers that can
+      be used with socket read and write operations.
+    </p>
+<div class="itemizedlist"><ul type="disc"><li><a href="example/buffers/reference_counted.cpp" target="_top">boost_asio/example/buffers/reference_counted.cpp</a></li></ul></div>
+<a name="boost_asio.examples.chat"></a><h4>
+<a name="id1173579"></a>
+      <a class="link" href="examples.html#boost_asio.examples.chat">Chat</a>
+    </h4>
+<p>
+      This example implements a chat server and client. The programs use a custom
+      protocol with a fixed length message header and variable length message body.
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li><a href="example/chat/chat_message.hpp" target="_top">boost_asio/example/chat/chat_message.hpp</a></li>
+<li><a href="example/chat/chat_client.cpp" target="_top">boost_asio/example/chat/chat_client.cpp</a></li>
+<li><a href="example/chat/chat_server.cpp" target="_top">boost_asio/example/chat/chat_server.cpp</a></li>
+</ul></div>
+<p>
+      The following POSIX-specific chat client demonstrates how to use the <a class="link" href="reference/posix__stream_descriptor.html" title="posix::stream_descriptor">posix::stream_descriptor</a>
+      class to perform console input and output.
+    </p>
+<div class="itemizedlist"><ul type="disc"><li><a href="example/chat/posix_chat_client.cpp" target="_top">boost_asio/example/chat/posix_chat_client.cpp</a></li></ul></div>
+<a name="boost_asio.examples.echo"></a><h4>
+<a name="id1173663"></a>
+      <a class="link" href="examples.html#boost_asio.examples.echo">Echo</a>
+    </h4>
+<p>
+      A collection of simple clients and servers, showing the use of both synchronous
+      and asynchronous operations.
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li><a href="example/echo/async_tcp_echo_server.cpp" target="_top">boost_asio/example/echo/async_tcp_echo_server.cpp</a></li>
+<li><a href="example/echo/async_udp_echo_server.cpp" target="_top">boost_asio/example/echo/async_udp_echo_server.cpp</a></li>
+<li><a href="example/echo/blocking_tcp_echo_client.cpp" target="_top">boost_asio/example/echo/blocking_tcp_echo_client.cpp</a></li>
+<li><a href="example/echo/blocking_tcp_echo_server.cpp" target="_top">boost_asio/example/echo/blocking_tcp_echo_server.cpp</a></li>
+<li><a href="example/echo/blocking_udp_echo_client.cpp" target="_top">boost_asio/example/echo/blocking_udp_echo_client.cpp</a></li>
+<li><a href="example/echo/blocking_udp_echo_server.cpp" target="_top">boost_asio/example/echo/blocking_udp_echo_server.cpp</a></li>
+</ul></div>
+<a name="boost_asio.examples.http_client"></a><h4>
+<a name="id1173753"></a>
+      <a class="link" href="examples.html#boost_asio.examples.http_client">HTTP Client</a>
+    </h4>
+<p>
+      Example programs implementing simple HTTP 1.0 clients. These examples show
+      how to use the <a class="link" href="reference/read_until.html" title="read_until">read_until</a>
+      and <a class="link" href="reference/async_read_until.html" title="async_read_until">async_read_until</a>
+      functions.
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li><a href="example/http/client/sync_client.cpp" target="_top">boost_asio/example/http/client/sync_client.cpp</a></li>
+<li><a href="example/http/client/async_client.cpp" target="_top">boost_asio/example/http/client/async_client.cpp</a></li>
+</ul></div>
+<a name="boost_asio.examples.http_server"></a><h4>
+<a name="id1173815"></a>
+      <a class="link" href="examples.html#boost_asio.examples.http_server">HTTP Server</a>
+    </h4>
+<p>
+      This example illustrates the use of asio in a simple single-threaded server
+      implementation of HTTP 1.0. It demonstrates how to perform a clean shutdown
+      by cancelling all outstanding asynchronous operations.
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li><a href="example/http/server/connection.cpp" target="_top">boost_asio/example/http/server/connection.cpp</a></li>
+<li><a href="example/http/server/connection.hpp" target="_top">boost_asio/example/http/server/connection.hpp</a></li>
+<li><a href="example/http/server/connection_manager.cpp" target="_top">boost_asio/example/http/server/connection_manager.cpp</a></li>
+<li><a href="example/http/server/connection_manager.hpp" target="_top">boost_asio/example/http/server/connection_manager.hpp</a></li>
+<li><a href="example/http/server/header.hpp" target="_top">boost_asio/example/http/server/header.hpp</a></li>
+<li><a href="example/http/server/mime_types.cpp" target="_top">boost_asio/example/http/server/mime_types.cpp</a></li>
+<li><a href="example/http/server/mime_types.hpp" target="_top">boost_asio/example/http/server/mime_types.hpp</a></li>
+<li><a href="example/http/server/posix_main.cpp" target="_top">boost_asio/example/http/server/posix_main.cpp</a></li>
+<li><a href="example/http/server/reply.cpp" target="_top">boost_asio/example/http/server/reply.cpp</a></li>
+<li><a href="example/http/server/reply.hpp" target="_top">boost_asio/example/http/server/reply.hpp</a></li>
+<li><a href="example/http/server/request.hpp" target="_top">boost_asio/example/http/server/request.hpp</a></li>
+<li><a href="example/http/server/request_handler.cpp" target="_top">boost_asio/example/http/server/request_handler.cpp</a></li>
+<li><a href="example/http/server/request_handler.hpp" target="_top">boost_asio/example/http/server/request_handler.hpp</a></li>
+<li><a href="example/http/server/request_parser.cpp" target="_top">boost_asio/example/http/server/request_parser.cpp</a></li>
+<li><a href="example/http/server/request_parser.hpp" target="_top">boost_asio/example/http/server/request_parser.hpp</a></li>
+<li><a href="example/http/server/server.cpp" target="_top">boost_asio/example/http/server/server.cpp</a></li>
+<li><a href="example/http/server/server.hpp" target="_top">boost_asio/example/http/server/server.hpp</a></li>
+<li><a href="example/http/server/win_main.cpp" target="_top">boost_asio/example/http/server/win_main.cpp</a></li>
+</ul></div>
+<a name="boost_asio.examples.http_server_2"></a><h4>
+<a name="id1174027"></a>
+      <a class="link" href="examples.html#boost_asio.examples.http_server_2">HTTP Server 2</a>
+    </h4>
+<p>
+      An HTTP server using an io_service-per-CPU design.
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li><a href="example/http/server2/connection.cpp" target="_top">boost_asio/example/http/server2/connection.cpp</a></li>
+<li><a href="example/http/server2/connection.hpp" target="_top">boost_asio/example/http/server2/connection.hpp</a></li>
+<li><a href="example/http/server2/header.hpp" target="_top">boost_asio/example/http/server2/header.hpp</a></li>
+<li><a href="example/http/server2/io_service_pool.cpp" target="_top">boost_asio/example/http/server2/io_service_pool.cpp</a></li>
+<li><a href="example/http/server2/io_service_pool.hpp" target="_top">boost_asio/example/http/server2/io_service_pool.hpp</a></li>
+<li><a href="example/http/server2/mime_types.cpp" target="_top">boost_asio/example/http/server2/mime_types.cpp</a></li>
+<li><a href="example/http/server2/mime_types.hpp" target="_top">boost_asio/example/http/server2/mime_types.hpp</a></li>
+<li><a href="example/http/server2/posix_main.cpp" target="_top">boost_asio/example/http/server2/posix_main.cpp</a></li>
+<li><a href="example/http/server2/reply.cpp" target="_top">boost_asio/example/http/server2/reply.cpp</a></li>
+<li><a href="example/http/server2/reply.hpp" target="_top">boost_asio/example/http/server2/reply.hpp</a></li>
+<li><a href="example/http/server2/request.hpp" target="_top">boost_asio/example/http/server2/request.hpp</a></li>
+<li><a href="example/http/server2/request_handler.cpp" target="_top">boost_asio/example/http/server2/request_handler.cpp</a></li>
+<li><a href="example/http/server2/request_handler.hpp" target="_top">boost_asio/example/http/server2/request_handler.hpp</a></li>
+<li><a href="example/http/server2/request_parser.cpp" target="_top">boost_asio/example/http/server2/request_parser.cpp</a></li>
+<li><a href="example/http/server2/request_parser.hpp" target="_top">boost_asio/example/http/server2/request_parser.hpp</a></li>
+<li><a href="example/http/server2/server.cpp" target="_top">boost_asio/example/http/server2/server.cpp</a></li>
+<li><a href="example/http/server2/server.hpp" target="_top">boost_asio/example/http/server2/server.hpp</a></li>
+<li><a href="example/http/server2/win_main.cpp" target="_top">boost_asio/example/http/server2/win_main.cpp</a></li>
+</ul></div>
+<a name="boost_asio.examples.http_server_3"></a><h4>
+<a name="id1174236"></a>
+      <a class="link" href="examples.html#boost_asio.examples.http_server_3">HTTP Server 3</a>
+    </h4>
+<p>
+      An HTTP server using a single io_service and a thread pool calling <code class="computeroutput"><span class="identifier">io_service</span><span class="special">::</span><span class="identifier">run</span><span class="special">()</span></code>.
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li><a href="example/http/server3/connection.cpp" target="_top">boost_asio/example/http/server3/connection.cpp</a></li>
+<li><a href="example/http/server3/connection.hpp" target="_top">boost_asio/example/http/server3/connection.hpp</a></li>
+<li><a href="example/http/server3/header.hpp" target="_top">boost_asio/example/http/server3/header.hpp</a></li>
+<li><a href="example/http/server3/mime_types.cpp" target="_top">boost_asio/example/http/server3/mime_types.cpp</a></li>
+<li><a href="example/http/server3/mime_types.hpp" target="_top">boost_asio/example/http/server3/mime_types.hpp</a></li>
+<li><a href="example/http/server3/posix_main.cpp" target="_top">boost_asio/example/http/server3/posix_main.cpp</a></li>
+<li><a href="example/http/server3/reply.cpp" target="_top">boost_asio/example/http/server3/reply.cpp</a></li>
+<li><a href="example/http/server3/reply.hpp" target="_top">boost_asio/example/http/server3/reply.hpp</a></li>
+<li><a href="example/http/server3/request.hpp" target="_top">boost_asio/example/http/server3/request.hpp</a></li>
+<li><a href="example/http/server3/request_handler.cpp" target="_top">boost_asio/example/http/server3/request_handler.cpp</a></li>
+<li><a href="example/http/server3/request_handler.hpp" target="_top">boost_asio/example/http/server3/request_handler.hpp</a></li>
+<li><a href="example/http/server3/request_parser.cpp" target="_top">boost_asio/example/http/server3/request_parser.cpp</a></li>
+<li><a href="example/http/server3/request_parser.hpp" target="_top">boost_asio/example/http/server3/request_parser.hpp</a></li>
+<li><a href="example/http/server3/server.cpp" target="_top">boost_asio/example/http/server3/server.cpp</a></li>
+<li><a href="example/http/server3/server.hpp" target="_top">boost_asio/example/http/server3/server.hpp</a></li>
+<li><a href="example/http/server3/win_main.cpp" target="_top">boost_asio/example/http/server3/win_main.cpp</a></li>
+</ul></div>
+<a name="boost_asio.examples.invocation"></a><h4>
+<a name="id1174445"></a>
+      <a class="link" href="examples.html#boost_asio.examples.invocation">Invocation</a>
+    </h4>
+<p>
+      This example shows how to customise handler invocation. Completion handlers
+      are added to a priority queue rather than executed immediately.
+    </p>
+<div class="itemizedlist"><ul type="disc"><li><a href="example/invocation/prioritised_handlers.cpp" target="_top">boost_asio/example/invocation/prioritised_handlers.cpp</a></li></ul></div>
+<a name="boost_asio.examples.iostreams"></a><h4>
+<a name="id1174484"></a>
+      <a class="link" href="examples.html#boost_asio.examples.iostreams">Iostreams</a>
+    </h4>
+<p>
+      Two examples showing how to use <a class="link" href="reference/ip__tcp/iostream.html" title="ip::tcp::iostream">ip::tcp::iostream</a>.
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li><a href="example/iostreams/daytime_client.cpp" target="_top">boost_asio/example/iostreams/daytime_client.cpp</a></li>
+<li><a href="example/iostreams/daytime_server.cpp" target="_top">boost_asio/example/iostreams/daytime_server.cpp</a></li>
+</ul></div>
+<a name="boost_asio.examples.multicast"></a><h4>
+<a name="id1174537"></a>
+      <a class="link" href="examples.html#boost_asio.examples.multicast">Multicast</a>
+    </h4>
+<p>
+      An example showing the use of multicast to transmit packets to a group of subscribers.
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li><a href="example/multicast/receiver.cpp" target="_top">boost_asio/example/multicast/receiver.cpp</a></li>
+<li><a href="example/multicast/sender.cpp" target="_top">boost_asio/example/multicast/sender.cpp</a></li>
+</ul></div>
+<a name="boost_asio.examples.serialization"></a><h4>
+<a name="id1174586"></a>
+      <a class="link" href="examples.html#boost_asio.examples.serialization">Serialization</a>
+    </h4>
+<p>
+      This example shows how Boost.Serialization can be used with asio to encode
+      and decode structures for transmission over a socket.
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li><a href="example/serialization/client.cpp" target="_top">boost_asio/example/serialization/client.cpp</a></li>
+<li><a href="example/serialization/connection.hpp" target="_top">boost_asio/example/serialization/connection.hpp</a></li>
+<li><a href="example/serialization/server.cpp" target="_top">boost_asio/example/serialization/server.cpp</a></li>
+<li><a href="example/serialization/stock.hpp" target="_top">boost_asio/example/serialization/stock.hpp</a></li>
+</ul></div>
+<a name="boost_asio.examples.services"></a><h4>
+<a name="id1174653"></a>
+      <a class="link" href="examples.html#boost_asio.examples.services">Services</a>
+    </h4>
+<p>
+      This example demonstrates how to integrate custom functionality (in this case,
+      for logging) into asio's <a class="link" href="reference/io_service.html" title="io_service">io_service</a>,
+      and how to use a custom service with <a class="link" href="reference/basic_stream_socket.html" title="basic_stream_socket">basic_stream_socket&lt;&gt;</a>.
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li><a href="example/services/basic_logger.hpp" target="_top">boost_asio/example/services/basic_logger.hpp</a></li>
+<li><a href="example/services/daytime_client.cpp" target="_top">boost_asio/example/services/daytime_client.cpp</a></li>
+<li><a href="example/services/logger.hpp" target="_top">boost_asio/example/services/logger.hpp</a></li>
+<li><a href="example/services/logger_service.cpp" target="_top">boost_asio/example/services/logger_service.cpp</a></li>
+<li><a href="example/services/logger_service.hpp" target="_top">boost_asio/example/services/logger_service.hpp</a></li>
+<li><a href="example/services/stream_socket_service.hpp" target="_top">boost_asio/example/services/stream_socket_service.hpp</a></li>
+</ul></div>
+<a name="boost_asio.examples.socks_4"></a><h4>
+<a name="id1174757"></a>
+      <a class="link" href="examples.html#boost_asio.examples.socks_4">SOCKS 4</a>
+    </h4>
+<p>
+      Example client program implementing the SOCKS 4 protocol for communication
+      via a proxy.
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li><a href="example/socks4/sync_client.cpp" target="_top">boost_asio/example/socks4/sync_client.cpp</a></li>
+<li><a href="example/socks4/socks4.hpp" target="_top">boost_asio/example/socks4/socks4.hpp</a></li>
+</ul></div>
+<a name="boost_asio.examples.ssl"></a><h4>
+<a name="id1174805"></a>
+      <a class="link" href="examples.html#boost_asio.examples.ssl">SSL</a>
+    </h4>
+<p>
+      Example client and server programs showing the use of the <a class="link" href="reference/ssl__stream.html" title="ssl::stream">ssl::stream&lt;&gt;</a>
+      template with asynchronous operations.
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li><a href="example/ssl/client.cpp" target="_top">boost_asio/example/ssl/client.cpp</a></li>
+<li><a href="example/ssl/server.cpp" target="_top">boost_asio/example/ssl/server.cpp</a></li>
+</ul></div>
+<a name="boost_asio.examples.timeouts"></a><h4>
+<a name="id1174859"></a>
+      <a class="link" href="examples.html#boost_asio.examples.timeouts">Timeouts</a>
+    </h4>
+<p>
+      A collection of examples showing how to cancel long running asynchronous operations
+      after a period of time.
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li><a href="example/timeouts/accept_timeout.cpp" target="_top">boost_asio/example/timeouts/accept_timeout.cpp</a></li>
+<li><a href="example/timeouts/connect_timeout.cpp" target="_top">boost_asio/example/timeouts/connect_timeout.cpp</a></li>
+<li><a href="example/timeouts/datagram_receive_timeout.cpp" target="_top">boost_asio/example/timeouts/datagram_receive_timeout.cpp</a></li>
+<li><a href="example/timeouts/stream_receive_timeout.cpp" target="_top">boost_asio/example/timeouts/stream_receive_timeout.cpp</a></li>
+</ul></div>
+<a name="boost_asio.examples.timers"></a><h4>
+<a name="id1174928"></a>
+      <a class="link" href="examples.html#boost_asio.examples.timers">Timers</a>
+    </h4>
+<p>
+      Examples showing how to customise deadline_timer using different time types.
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li><a href="example/timers/tick_count_timer.cpp" target="_top">boost_asio/example/timers/tick_count_timer.cpp</a></li>
+<li><a href="example/timers/time_t_timer.cpp" target="_top">boost_asio/example/timers/time_t_timer.cpp</a></li>
+</ul></div>
+<a name="boost_asio.examples.porthopper"></a><h4>
+<a name="id1174976"></a>
+      <a class="link" href="examples.html#boost_asio.examples.porthopper">Porthopper</a>
+    </h4>
+<p>
+      Example illustrating mixed synchronous and asynchronous operations, and how
+      to use Boost.Lambda with Boost.Asio.
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li><a href="example/porthopper/protocol.hpp" target="_top">boost_asio/example/porthopper/protocol.hpp</a></li>
+<li><a href="example/porthopper/client.cpp" target="_top">boost_asio/example/porthopper/client.cpp</a></li>
+<li><a href="example/porthopper/server.cpp" target="_top">boost_asio/example/porthopper/server.cpp</a></li>
+</ul></div>
+<a name="boost_asio.examples.nonblocking"></a><h4>
+<a name="id1175033"></a>
+      <a class="link" href="examples.html#boost_asio.examples.nonblocking">Nonblocking</a>
+    </h4>
+<p>
+      Example demonstrating reactor-style operations for integrating a third-party
+      library that wants to perform the I/O operations itself.
+    </p>
+<div class="itemizedlist"><ul type="disc"><li><a href="example/nonblocking/third_party_lib.cpp" target="_top">boost_asio/example/nonblocking/third_party_lib.cpp</a></li></ul></div>
+<a name="boost_asio.examples.unix_domain_sockets"></a><h4>
+<a name="id1175072"></a>
+      <a class="link" href="examples.html#boost_asio.examples.unix_domain_sockets">UNIX Domain Sockets</a>
+    </h4>
+<p>
+      Examples showing how to use UNIX domain (local) sockets.
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li><a href="example/local/connect_pair.cpp" target="_top">boost_asio/example/local/connect_pair.cpp</a></li>
+<li><a href="example/local/stream_server.cpp" target="_top">boost_asio/example/local/stream_server.cpp</a></li>
+<li><a href="example/local/stream_client.cpp" target="_top">boost_asio/example/local/stream_client.cpp</a></li>
+</ul></div>
+<a name="boost_asio.examples.windows"></a><h4>
+<a name="id1175129"></a>
+      <a class="link" href="examples.html#boost_asio.examples.windows">Windows</a>
+    </h4>
+<p>
+      An example showing how to use the Windows-specific function <code class="computeroutput"><span class="identifier">TransmitFile</span></code>
+      with Boost.Asio.
+    </p>
+<div class="itemizedlist"><ul type="disc"><li><a href="example/windows/transmit_file.cpp" target="_top">boost_asio/example/windows/transmit_file.cpp</a></li></ul></div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2003 - 2008 Christopher M. Kohlhoff<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="tutorial/tutdaytime7/src.html"><img src="../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../boost_asio.html"><img src="../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../boost_asio.html"><img src="../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="reference.html"><img src="../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

@@ -1,0 +1,649 @@
+<?xml version="1.0" standalone="no"?>
+<!--
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+
+<!DOCTYPE s1 SYSTEM "sbk:/style/dtd/document.dtd">
+
+<s1 title="Deprecated - Java-like DOM">
+
+    <s2 title="Deprecated - Java-like DOM">
+      <p>Earlier, &XercesCName; has provided a set of C++ DOM interfaces that is
+        very similar in design and use, to the Java DOM API bindings.
+        It uses smart pointer interface and uses reference counting in memory management.
+      </p>
+      <p>
+        Currently, such interface has been deprecated and is provided just as a viable
+        alternative for those users who like the idea of Java-like smart pointer design.
+        Please note that such interface may not be kept up to date to the latest
+        W3C DOM specification.
+      </p>
+      <p>
+        Users are recommended to migrate to the
+        <jump href="ApacheDOMC++Binding.html">Apache Recommended DOM C++ binding</jump>.
+      </p>
+    </s2>
+
+    <s2 title="Using this set of deprecated API">
+        <s3 title="Accessing API from application code">
+
+    <source>
+    // C++
+    #include &lt;xercesc/dom/deprecated/DOM.hpp></source>
+
+    <source>// Compared to Java
+    import org.w3c.dom.*</source>
+
+          <p>The header file &lt;dom/deprecated/DOM.hpp&gt; includes all the
+            individual headers for this set of deprecated DOM API classes. </p>
+        </s3>
+
+        <s3 title="Class Names">
+          <p>The C++ class names are prefixed with "DOM_". The intent is
+            to prevent conflicts between DOM class names and other names
+            that may already be in use by an application or other
+            libraries that a DOM based application must link with.</p>
+
+            <p>The use of C++ namespaces would also have solved this
+            conflict problem, but for the fact that many compilers do not
+            yet support them.</p>
+
+    <source>DOM_Document   myDocument;   // C++
+    DOM_Node       aNode;
+    DOM_Text       someText;</source>
+
+    <source>Document       myDocument;   // Compared to Java
+    Node           aNode;
+    Text           someText;</source>
+
+          <p>If you wish to use the Java class names in C++, then you need
+            to typedef them in C++. This is not advisable for the general
+            case - conflicts really do occur - but can be very useful when
+            converting a body of existing Java code to C++.</p>
+
+    <source>typedef DOM_Document  Document;
+    typedef DOM_Node      Node;
+
+    Document   myDocument;        // Now C++ usage is
+                                  // indistinguishable from Java
+    Node       aNode;</source>
+        </s3>
+
+
+        <s3 title="Objects and Memory Management">
+          <p>This deprecated C++ DOM implementation uses automatic memory management,
+            implemented using reference counting.  As a result, the C++
+            code for most DOM operations is very similar to the equivalent
+            Java code, right down to the use of factory methods in the DOM
+            document class for nearly all object creation, and the lack of
+            any explicit object deletion.</p>
+
+          <p>Consider the following code snippets </p>
+
+    <source>// This is C++
+    DOM_Node       aNode;
+    aNode = someDocument.createElement("ElementName");
+    DOM_Node docRootNode = someDoc.getDocumentElement();
+    docRootNode.AppendChild(aNode);</source>
+
+    <source>// This is Java
+    Node       aNode;
+    aNode = someDocument.createElement("ElementName");
+    Node docRootNode = someDoc.getDocumentElement();
+    docRootNode.AppendChild(aNode);</source>
+
+          <p>The Java and the C++ are identical on the surface, except for
+            the class names, and this similarity remains true for most DOM
+            code. </p>
+
+          <p>However, Java and C++ handle objects in somewhat different
+            ways, making it important to understand a little bit of what
+            is going on beneath the surface.</p>
+
+          <p>In Java, the variable <code>aNode</code> is an object reference ,
+            essentially a pointer. It is initially == null, and references
+            an object only after the assignment statement in the second
+            line of the code.</p>
+
+          <p>In C++ the variable <code>aNode</code> is, from the C++ language's
+            perspective, an actual live object. It is constructed when the
+            first line of the code executes, and DOM_Node::operator = ()
+            executes at the second line. The C++ class DOM_Node
+            essentially a form of a smart-pointer; it implements much of
+            the behavior of a Java Object Reference variable, and
+            delegates the DOM behaviors to an implementation class that
+            lives behind the scenes. </p>
+
+          <p>Key points to remember when using the C++ DOM classes:</p>
+
+          <ul>
+            <li>Create them as local variables, or as member variables of
+            some other class. Never "new" a DOM object into the heap or
+            make an ordinary C pointer variable to one, as this will
+            greatly confuse the automatic memory management. </li>
+
+            <li>The "real" DOM objects - nodes, attributes, CData
+            sections, whatever, do live on the heap, are created with the
+            create... methods on class DOM_Document. DOM_Node and the
+            other DOM classes serve as reference variables to the
+            underlying heap objects.</li>
+
+            <li>The visible DOM classes may be freely copied (assigned),
+            passed as parameters to functions, or returned by value from
+            functions.</li>
+
+            <li>Memory management of the underlying DOM heap objects is
+            automatic, implemented by means of reference counting. So long
+            as some part of a document can be reached, directly or
+            indirectly, via reference variables that are still alive in
+            the application program, the corresponding document data will
+            stay alive in the heap. When all possible paths of access have
+            been closed off (all of the application's DOM objects have
+            gone out of scope) the heap data itself will be automatically
+            deleted. </li>
+
+            <li>There are restrictions on the ability to subclass the DOM
+            classes. </li>
+
+          </ul>
+
+        </s3>
+
+        <s3 title="String Type - DOMString">
+          <p>Class DOMString provides the mechanism for passing string
+            data to and from the DOM API. DOMString is not intended to be
+            a completely general string class, but rather to meet the
+            specific needs of the DOM API.</p>
+
+          <p>The design derives from two primary sources: from the DOM's
+            CharacterData interface and from class <code>java.lang.string</code>.</p>
+
+          <p>Main features are:</p>
+
+          <ul>
+            <li>It stores Unicode text.</li>
+
+            <li>Automatic memory management, using reference counting.</li>
+
+            <li>DOMStrings are mutable - characters can be inserted,
+            deleted or appended.</li>
+
+          </ul>
+          <p></p>
+
+          <p>When a string is passed into a method of the DOM, when
+            setting the value of a Node, for example, the string is cloned
+            so that any subsequent alteration or reuse of the string by
+            the application will not alter the document contents.
+            Similarly, when strings from the document are returned to an
+            application via the DOM API, the string is cloned so that the
+            document can not be inadvertently altered by subsequent edits
+            to the string.</p>
+
+          <note>The ICU classes are a more general solution to UNICODE
+            character handling for C++ applications.  ICU is an Open
+            Source Unicode library, available at the <jump
+            href="http://icu-project.org/">ICU
+            project website</jump>.</note>
+
+        </s3>
+
+        <s3 title="Equality Testing">
+          <p>The DOMString equality operators (and all of the rest of the
+            DOM class conventions) are modeled after the Java
+            equivalents. The equals() method compares the content of the
+            string, while the == operator checks whether the string
+            reference variables (the application program variables) refer
+            to the same underlying string in memory. This is also true of
+            DOM_Node, DOM_Element, etc., in that operator == tells whether
+            the variables in the application are referring to the same
+            actual node or not. It's all very Java-like </p>
+
+          <ul>
+            <li>bool operator == () is true if the DOMString variables
+            refer to the same underlying storage. </li>
+
+            <li>bool equals() is true if the strings contain the same
+            characters. </li>
+
+          </ul>
+          <p>Here is an example of how the equality operators work: </p>
+    <source>DOMString a = "Hello";
+    DOMString b = a;
+    DOMString c = a.clone();
+    if (b == a)           //  This is true
+    if (a == c)           //  This is false
+    if (a.equals(c))       //  This is true
+    b = b + " World";
+    if (b == a)           // Still true, and the string's
+                          //    value is "Hello World"
+    if (a.equals(c))      // false.  a is "Hello World";
+                          //    c is still "Hello".</source>
+        </s3>
+
+        <s3 title="Downcasting">
+          <p>Application code sometimes must cast an object reference from
+            DOM_Node to one of the classes deriving from DOM_Node,
+            DOM_Element, for example.  The syntax for doing this in C++ is
+            different from that in Java.</p>
+
+    <source>// This is C++
+    DOM_Node       aNode = someFunctionReturningNode();
+    DOM_Element    el = (DOM_Element &amp;) aNode;</source>
+
+    <source>// This is Java
+    Node       aNode = someFunctionReturningNode();
+    Element    el = (Element) aNode;</source>
+
+          <p>The C++ cast is not type-safe; the Java cast is checked for
+            compatible types at runtime.  If necessary, a type-check can
+            be made in C++ using the node type information: </p>
+
+    <source>// This is C++
+
+    DOM_Node       aNode = someFunctionReturningNode();
+    DOM_Element    el;    // by default, el will == null.
+
+    if (anode.getNodeType() == DOM_Node::ELEMENT_NODE)
+       el = (DOM_Element &amp;) aNode;
+    else
+       // aNode does not refer to an element.
+       // Do something to recover here.</source>
+
+        </s3>
+
+        <s3 title="Subclassing">
+          <p>The C++ DOM classes, DOM_Node, DOM_Attr, DOM_Document, etc.,
+            are not designed to be subclassed by an application
+            program. </p>
+
+          <p>As an alternative, the DOM_Node class provides a User Data
+            field for use by applications as a hook for extending nodes by
+            referencing additional data or objects.  See the API
+            description for DOM_Node for details.</p>
+        </s3>
+    </s2>
+
+    <s2 title="DOMParser">
+        <s3 title="Constructing a DOMParser">
+          <p>In order to use &XercesCName; to parse XML files using the deprecated DOM, you
+            will need to create an instance of the DOMParser class. The example
+            below shows the code you need in order to create an instance of the
+            DOMParser.</p>
+
+          <source>
+    #include &lt;xercesc/dom/deprecated/DOMParser.hpp>
+    #include &lt;xercesc/dom/deprecated/DOM.hpp>
+    #include &lt;xercesc/sax/HandlerBase.hpp>
+    #include &lt;xercesc/util/XMLString.hpp>
+
+    #if defined(XERCES_NEW_IOSTREAMS)
+    #include &lt;iostream>
+    #else
+    #include &lt;iostream.h>
+    #endif
+
+    XERCES_CPP_NAMESPACE_USE
+
+    int main (int argc, char* args[]) {
+
+        try {
+            XMLPlatformUtils::Initialize();
+        }
+        catch (const XMLException&amp; toCatch) {
+            char* message = XMLString::transcode(toCatch.getMessage());
+            cout &lt;&lt; "Error during initialization! :\n"
+                 &lt;&lt; message &lt;&lt; "\n";
+            XMLString::release(&amp;message);
+            return 1;
+        }
+
+        char* xmlFile = "x1.xml";
+        DOMParser* parser = new DOMParser();
+        parser->setValidationScheme(DOMParser::Val_Always);
+        parser->setDoNamespaces(true);    // optional
+
+        ErrorHandler* errHandler = (ErrorHandler*) new HandlerBase();
+        parser->setErrorHandler(errHandler);
+
+        try {
+            parser->parse(xmlFile);
+        }
+        catch (const XMLException&amp; toCatch) {
+            char* message = XMLString::transcode(toCatch.getMessage());
+            cout &lt;&lt; "Exception message is: \n"
+                 &lt;&lt; message &lt;&lt; "\n";
+            XMLString::release(&amp;message);
+            return -1;
+        }
+        catch (const DOM_DOMException&amp; toCatch) {
+            cout &lt;&lt; "Exception message is: \n"
+                 &lt;&lt; toCatch.code &lt;&lt; "\n";
+            return -1;
+        }
+        catch (...) {
+            cout &lt;&lt; "Unexpected Exception \n" ;
+            return -1;
+        }
+
+        delete parser;
+        delete errHandler;
+        return 0;
+    }
+          </source>
+        </s3>
+
+
+        <anchor name="DeprecatedDOMFeatures"/>
+        <s3 title="DOMParser Supported Features">
+
+           <p>The behavior of the DOMParser is dependant on the values of the following features.  All
+           of the features below are set using the "setter" methods (e.g. <code>setDoNamespaces</code>),
+           and are queried using the corresponding "getter" methods (e.g. <code>getDoNamespaces</code>).
+           The following only gives you a quick summary of supported features.  Please
+           refer to <jump href="api.html">API Documentation</jump> for complete detail.
+           </p>
+           <p>None of these features can be modified in the middle of a parse, or an exception will be thrown.</p>
+
+
+            <anchor name="createEntityRef"/>
+            <table>
+                <tr><th colspan="2"><em>void setCreateEntityReferenceNodes(const bool)</em></th></tr>
+                <tr><th><em>true:</em></th><td> Create EntityReference nodes in the DOM tree.   The
+                EntityReference nodes and their child nodes will be read-only. </td></tr>
+                <tr><th><em>false:</em></th><td> Do not create EntityReference nodes in the DOM tree.  No
+                EntityReference nodes will be created, only the nodes corresponding to their fully
+                expanded sustitution text will be created.  </td></tr>
+                <tr><th><em>default:</em></th><td> true </td></tr>
+                <tr><th><em>note:</em></th><td> This feature only affects the appearance of
+                EntityReference nodes in the DOM tree. The document will always contain the entity
+                reference child nodes. </td></tr>
+            </table>
+            <p/>
+
+            <table>
+                <tr><th colspan="2"><em>void setExpandEntityReferences(const bool)</em> (deprecated) <br/>
+                please use <link anchor="createEntityRef">setCreateEntityReferenceNodes</link> </th></tr>
+                <tr><th><em>true:</em></th><td> Do not create EntityReference nodes in the DOM tree.  No
+                EntityReference nodes will be created, only the nodes corresponding to their fully
+                expanded sustitution text will be created.  </td></tr>
+                <tr><th><em>false:</em></th><td> Create EntityReference nodes in the DOM tree.   The
+                EntityReference nodes and their child nodes will be read-only. </td></tr>
+                <tr><th><em>default:</em></th><td> false </td></tr>
+                <tr><th><em>see:</em></th><td>
+                <link anchor="createEntityRef">setCreateEntityReferenceNodes</link>
+                </td></tr>
+            </table>
+            <p/>
+
+            <table>
+                <tr><th colspan="2"><em>void setIncludeIgnorableWhitespace(const bool)</em></th></tr>
+                <tr><th><em>true:</em></th><td> Include text nodes that can be considered "ignorable
+                whitespace" in the DOM tree. </td></tr>
+                <tr><th><em>false:</em></th><td> Do not include ignorable whitespace in the DOM tree. </td></tr>
+                <tr><th><em>default:</em></th><td> true </td></tr>
+                <tr><th><em>note:</em></th><td> The only way that the parser can determine if text is
+                ignorable is by reading the associated grammar and having a content model for the
+                document. When ignorable whitespace text nodes are included in the DOM tree,
+                they will be flagged as ignorable; and the method DOMText::isIgnorableWhitespace()
+                will return true for those text nodes.   </td></tr>
+            </table>
+            <p/>
+
+            <anchor name="namespaces"/>
+            <table>
+                <tr><th colspan="2"><em>void setDoNamespaces(const bool)</em></th></tr>
+                <tr><th><em>true:</em></th><td> Perform Namespace processing </td></tr>
+                <tr><th><em>false:</em></th><td> Do not perform Namespace processing</td></tr>
+                <tr><th><em>default:</em></th><td> false </td></tr>
+                <tr><th><em>note:</em></th><td> If the validation scheme is set to Val_Always or Val_Auto, then the
+                document must contain a grammar that supports the use of namespaces </td></tr>
+                <tr><th><em>see:</em></th><td>
+                <link anchor="validation-dynamic">setValidationScheme</link>
+                </td></tr>
+            </table>
+            <p/>
+
+            <anchor name="validation"/>
+            <table>
+                <tr><th colspan="2"><em>void setDoValidation(const bool)</em> (deprecated) <br/>
+                please use <link anchor="validation-dynamic">setValidationScheme</link>
+                </th></tr>
+                <tr><th><em>true:</em></th><td> Report all validation errors. </td></tr>
+                <tr><th><em>false:</em></th><td> Do not report validation errors. </td></tr>
+                <tr><th><em>default:</em></th><td> see the default of
+                <link anchor="validation-dynamic">setValidationScheme</link>
+                </td></tr>
+                <tr><th><em>see:</em></th><td>
+                <link anchor="validation-dynamic">setValidationScheme</link>
+                </td></tr>
+            </table>
+
+            <p/>
+
+            <anchor name="validation-dynamic"/>
+            <table>
+                <tr><th colspan="2"><em>void setValidationScheme(const ValSchemes)</em></th></tr>
+                <tr><th><em>Val_Auto:</em></th><td> The parser will report validation errors only if a grammar is specified.</td></tr>
+                <tr><th><em>Val_Always:</em></th><td> The parser will always report validation errors. </td></tr>
+                <tr><th><em>Val_Never:</em></th><td> Do not report validation errors. </td></tr>
+                <tr><th><em>default:</em></th><td> Val_Never </td></tr>
+                <tr><th><em>note:</em></th><td> If set to Val_Always, the document must
+                specify a grammar.  If this feature is set to Val_Never and document specifies a grammar,
+                that grammar might be parsed but no validation of the document contents will be
+                performed. </td></tr>
+                <tr><th><em>see:</em></th><td>
+                <link anchor="load-external-dtd">setLoadExternalDTD</link>
+                </td></tr>
+            </table>
+
+            <p/>
+
+            <anchor name="schema"/>
+            <table>
+                <tr><th colspan="2"><em>void setDoSchema(const bool)</em></th></tr>
+                <tr><th><em>true:</em></th><td> Enable the parser's schema support.  </td></tr>
+                <tr><th><em>false:</em></th><td> Disable the parser's schema support. </td></tr>
+                <tr><th><em>default:</em></th><td> false </td></tr>
+                <tr><th><em>note</em></th><td> If set to true, namespace processing must also be turned on. </td></tr>
+                <tr><th><em>see:</em></th><td>
+                <link anchor="namespaces">setDoNamespaces</link>
+                </td></tr>
+            </table>
+
+            <p/>
+
+            <table>
+                <tr><th colspan="2"><em>void setValidationSchemaFullChecking(const bool)</em></th></tr>
+                <tr><th><em>true:</em></th><td> Enable full schema constraint checking, including checking
+                             which may be time-consuming or memory intensive. Currently, particle unique
+                             attribution constraint checking and particle derivation restriction checking
+                             are controlled by this option. </td></tr>
+                <tr><th><em>false:</em></th><td> Disable full schema constraint checking . </td></tr>
+                <tr><th><em>default:</em></th><td> false </td></tr>
+                <tr><th><em>note:</em></th><td> This feature checks the Schema grammar itself for
+                additional errors that are time-consuming or memory intensive. It does <em>not</em> affect the
+                level of checking performed on document instances that use Schema grammars.</td></tr>
+                <tr><th><em>see:</em></th><td>
+                <link anchor="schema">setDoSchema</link>
+                </td></tr>
+            </table>
+
+            <p/>
+
+            <anchor name="load-external-dtd"/>
+            <table>
+                <tr><th colspan="2"><em>void setLoadExternalDTD(const bool)</em></th></tr>
+                <tr><th><em>true:</em></th><td> Load the External DTD . </td></tr>
+                <tr><th><em>false:</em></th><td> Ignore the external DTD completely. </td></tr>
+                <tr><th><em>default:</em></th><td> true </td></tr>
+                <tr><th><em>note</em></th><td> This feature is ignored and DTD is always loaded
+                if the validation scheme is set to Val_Always or Val_Auto. </td></tr>
+                <tr><th><em>see:</em></th><td>
+                <link anchor="validation-dynamic">setValidationScheme</link>
+                </td></tr>
+            </table>
+
+            <p/>
+
+            <anchor name="continue-after-fatal"/>
+            <table>
+                <tr><th colspan="2"><em>void setExitOnFirstFatalError(const bool)</em></th></tr>
+                <tr><th><em>true:</em></th><td> Stops parse on first fatal error. </td></tr>
+                <tr><th><em>false:</em></th><td> Attempt to continue parsing after a fatal error. </td></tr>
+                <tr><th><em>default:</em></th><td> true </td></tr>
+                <tr><th><em>note:</em></th><td> The behavior of the parser when this feature is set to
+                false is <em>undetermined</em>! Therefore use this feature with extreme caution because
+                the parser may get stuck in an infinite loop or worse.</td></tr>
+            </table>
+
+            <p/>
+
+            <table>
+                <tr><th colspan="2"><em>void setValidationConstraintFatal(const bool)</em></th></tr>
+                <tr><th><em>true:</em></th><td> The parser will treat validation error as fatal and will
+                exit depends on the state of
+                <link anchor="continue-after-fatal">setExitOnFirstFatalError</link>
+                </td></tr>
+                <tr><th><em>false:</em></th><td> The parser will report the error and continue processing. </td></tr>
+                <tr><th><em>default:</em></th><td> false </td></tr>
+                <tr><th><em>note:</em></th><td> Setting this true does not mean the validation error will
+                be printed with the word "Fatal Error".   It is still printed as "Error", but the parser
+                will exit if
+                <link anchor="continue-after-fatal">setExitOnFirstFatalError</link>
+                is set to true.</td></tr>
+                <tr><th><em>see:</em></th><td>
+                <link anchor="continue-after-fatal">setExitOnFirstFatalError</link>
+                </td></tr>
+            </table>
+
+            <p/>
+
+            <anchor name="use-cached"/>
+            <table>
+                <tr><th colspan="2"><em>void useCachedGrammarInParse(const bool)</em></th></tr>
+                <tr><th><em>true:</em></th><td>Use cached grammar if it exists in the pool.</td></tr>
+                <tr><th><em>false:</em></th><td>Parse the schema grammar.</td></tr>
+                <tr><th><em>default:</em></th><td> false </td></tr>
+                <tr><th><em>note:</em></th><td>The getter function for this method is called isUsingCachedGrammarInParse</td></tr>
+                <tr><th><em>note:</em></th><td>If the grammar caching option is enabled, this option is set to true automatically.
+                Any setting to this option by the users is a no-op.</td></tr>
+                <tr><th><em>see:</em></th><td>
+                <link anchor="cache-grammar">cacheGrammarFromParse</link>
+                </td></tr>
+            </table>
+
+            <p/>
+
+            <anchor name="cache-grammar"/>
+            <table>
+                <tr><th colspan="2"><em>void cacheGrammarFromParse(const bool)</em></th></tr>
+                <tr><th><em>true:</em></th><td>cache the grammar in the pool for re-use in subsequent parses.</td></tr>
+                <tr><th><em>false:</em></th><td>Do not cache the grammar in the pool</td></tr>
+                <tr><th><em>default:</em></th><td> false </td></tr>
+                <tr><th><em>note:</em></th><td>The getter function for this method is called isCachingGrammarFromParse</td></tr>
+                <tr><th><em>note:</em></th><td> If set to true, the useCachedGrammarInParse
+                is also set to true automatically.</td></tr>
+                <tr><th><em>see:</em></th><td>
+                <link anchor="use-cached">useCachedGrammarInParse</link>
+                </td></tr>
+            </table>
+
+            <p/>
+
+            <anchor name="StandardUriConformant"/>
+            <table>
+                <tr><th colspan="2"><em>void setStandardUriConformant(const bool)</em></th></tr>
+                <tr><th><em>true:</em></th><td> Force standard uri conformance. </td></tr>
+                <tr><th><em>false:</em></th><td> Do not force standard uri conformance. </td></tr>
+                <tr><th><em>default:</em></th><td> false </td></tr>
+                <tr><th><em>note:</em></th><td> If set to true, malformed uri will be rejected
+                and fatal error will be issued. </td></tr>
+            </table>
+            <p/>
+
+            <anchor name="CalculateSrcOffset"/>
+            <table>
+                <tr><th colspan="2"><em>void setCalculateSrcOfs(const bool)</em></th></tr>
+                <tr><th><em>true:</em></th><td> Enable src offset calculation. </td></tr>
+                <tr><th><em>false:</em></th><td> Disable src offset calculation. </td></tr>
+                <tr><th><em>default:</em></th><td> false </td></tr>
+                <tr><th><em>note:</em></th><td> If set to true, the user can inquire about
+                the current src offset within the input source. Setting it to false (default)
+                improves the performance.</td></tr>
+            </table>
+            <p/>
+
+            <table>
+                <tr><th colspan="2"><em>void setExternalSchemaLocation(const XMLCh* const)</em></th></tr>
+                <tr><th><em>Description</em></th><td> The XML Schema Recommendation explicitly states that
+                            the inclusion of schemaLocation/ noNamespaceSchemaLocation attributes in the
+                            instance document is only a hint; it does not mandate that these attributes
+                            must be used to locate schemas.  Similar situation happens to &lt;import&gt;
+                            element in schema documents. This property allows the user to specify a list
+                            of schemas to use.  If the targetNamespace of a schema specified using this
+                            method matches the targetNamespace of a schema occurring in the instance
+                            document in schemaLocation attribute, or
+                            if the targetNamespace matches the namespace attribute of &lt;import&gt;
+                            element, the schema specified by the user using this property will
+                            be used (i.e., the schemaLocation attribute in the instance document
+                            or on the &lt;import&gt; element will be effectively ignored).</td></tr>
+                <tr><th><em>Value</em></th><td> The syntax is the same as for schemaLocation attributes
+                                 in instance documents: e.g, "http://www.example.com file_name.xsd".
+                                 The user can specify more than one XML Schema in the list.</td></tr>
+                <tr><th><em>Value Type</em></th><td> XMLCh* </td></tr>
+            </table>
+
+            <p/>
+            <table>
+                <tr><th colspan="2"><em>void setExternalNoNamespaceSchemaLocation(const XMLCh* const)</em></th></tr>
+                <tr><th><em>Description</em></th><td> The XML Schema Recommendation explicitly states that
+                            the inclusion of schemaLocation/ noNamespaceSchemaLocation attributes in the
+                            instance document is only a hint; it does not mandate that these attributes
+                            must be used to locate schemas.  This property allows the user to specify the
+                            no target namespace XML Schema Location externally.  If specified, the instance
+                            document's noNamespaceSchemaLocation attribute will be effectively ignored.</td></tr>
+                <tr><th><em>Value</em></th><td> The syntax is the same as for the noNamespaceSchemaLocation
+                            attribute that may occur in an instance document: e.g."file_name.xsd".</td></tr>
+                <tr><th><em>Value Type</em></th><td> XMLCh* </td></tr>
+            </table>
+
+            <p/>
+
+            <table>
+                <tr><th colspan="2"><em>void useScanner(const XMLCh* const)</em></th></tr>
+                <tr><th><em>Description</em></th><td> This property allows the user to specify the name of
+                            the XMLScanner to use for scanning XML documents. If not specified, the default
+                            scanner "IGXMLScanner" is used.</td></tr>
+                <tr><th><em>Value</em></th><td> The recognized scanner names are: <br/>
+                            1."WFXMLScanner" - scanner that performs well-formedness checking only.<br/>
+                            2. "DGXMLScanner" - scanner that handles XML documents with DTD grammar information.<br/>
+                            3. "SGXMLScanner" - scanner that handles XML documents with XML schema grammar information.<br/>
+			    4. "IGXMLScanner" - scanner that handles XML documents with DTD or/and XML schema grammar information.<br/>
+                            Users can use the predefined constants defined in XMLUni directly (fgWFXMLScanner, fgDGXMLScanner,
+                            fgSGXMLScanner, or fgIGXMLScanner) or a string that matches the value of
+                            one of those constants.</td></tr>
+                <tr><th><em>Value Type</em></th><td> XMLCh* </td></tr>
+                <tr><th><em>note: </em></th><td> See <jump href="program-others.html#UseSpecificScanner">Use Specific Scanner</jump>
+                for more programming details. </td></tr>
+            </table>
+
+            <p/>
+
+        </s3>
+    </s2>
+
+</s1>

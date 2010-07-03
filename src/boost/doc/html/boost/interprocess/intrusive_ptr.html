@@ -1,0 +1,162 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Class template intrusive_ptr</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../boost_interprocess_reference.html#header.boost.interprocess.smart_ptr.intrusive_ptr_hpp" title="Header &lt;boost/interprocess/smart_ptr/intrusive_ptr.hpp&gt;">
+<link rel="prev" href="enable_shared_from_this.html" title="Class template enable_shared_from_this">
+<link rel="next" href="operator___id1767568.html" title="Function template operator==">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="enable_shared_from_this.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_interprocess_reference.html#header.boost.interprocess.smart_ptr.intrusive_ptr_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="operator___id1767568.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.interprocess.intrusive_ptr"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Class template intrusive_ptr</span></h2>
+<p>boost::interprocess::intrusive_ptr</p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../boost_interprocess_reference.html#header.boost.interprocess.smart_ptr.intrusive_ptr_hpp" title="Header &lt;boost/interprocess/smart_ptr/intrusive_ptr.hpp&gt;">boost/interprocess/smart_ptr/intrusive_ptr.hpp</a>&gt;
+
+</em></span><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T, <span class="bold"><strong>typename</strong></span> VoidPointer&gt; 
+<span class="bold"><strong>class</strong></span> <a class="link" href="intrusive_ptr.html" title="Class template intrusive_ptr">intrusive_ptr</a> {
+<span class="bold"><strong>public</strong></span>:
+  <span class="emphasis"><em>// types</em></span>
+  <span class="bold"><strong>typedef</strong></span> boost::pointer_to_other&lt; VoidPointer, T &gt;::type <a name="boost.interprocess.intrusive_ptr.pointer"></a>pointer;       <span class="emphasis"><em>// Provides the type of the internal stored pointer. </em></span>
+  <span class="bold"><strong>typedef</strong></span> T                                               <a name="boost.interprocess.intrusive_ptr.element_type"></a>element_type;  <span class="emphasis"><em>// Provides the type of the stored pointer. </em></span>
+
+  <span class="emphasis"><em>// <a class="link" href="intrusive_ptr.html#boost.interprocess.intrusive_ptrconstruct-copy-destruct">construct/copy/destruct</a></em></span>
+  <a class="link" href="intrusive_ptr.html#id1767453-bb">intrusive_ptr</a>();
+  <a class="link" href="intrusive_ptr.html#id1767459-bb">intrusive_ptr</a>(<span class="bold"><strong>const</strong></span> pointer &amp;, <span class="bold"><strong>bool</strong></span> = true);
+  <a class="link" href="intrusive_ptr.html#id1767479-bb">intrusive_ptr</a>(<a class="link" href="intrusive_ptr.html" title="Class template intrusive_ptr">intrusive_ptr</a> <span class="bold"><strong>const</strong></span> &amp;);
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> U&gt; <a class="link" href="intrusive_ptr.html#id1767494-bb">intrusive_ptr</a>(<a class="link" href="intrusive_ptr.html" title="Class template intrusive_ptr">intrusive_ptr</a>&lt; U, VP &gt; <span class="bold"><strong>const</strong></span> &amp;);
+  intrusive_ptr&amp; <a class="link" href="intrusive_ptr.html#id1767522-bb"><span class="bold"><strong>operator</strong></span>=</a>(<a class="link" href="intrusive_ptr.html" title="Class template intrusive_ptr">intrusive_ptr</a> <span class="bold"><strong>const</strong></span> &amp;);
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> U&gt; 
+    intrusive_ptr&amp; <a class="link" href="intrusive_ptr.html#id1767536-bb"><span class="bold"><strong>operator</strong></span>=</a>(<a class="link" href="intrusive_ptr.html" title="Class template intrusive_ptr">intrusive_ptr</a>&lt; U, VP &gt; <span class="bold"><strong>const</strong></span> &amp;);
+  intrusive_ptr&amp; <a class="link" href="intrusive_ptr.html#id1767557-bb"><span class="bold"><strong>operator</strong></span>=</a>(pointer);
+  <a class="link" href="intrusive_ptr.html#id1767516-bb">~intrusive_ptr</a>();
+
+  <span class="emphasis"><em>// <a class="link" href="intrusive_ptr.html#id1767348-bb">public member functions</a></em></span>
+  <span class="type">pointer &amp;</span> <a class="link" href="intrusive_ptr.html#id1767351-bb">get</a>() ;
+  <span class="type"><span class="bold"><strong>const</strong></span> pointer &amp;</span> <a class="link" href="intrusive_ptr.html#id1767363-bb">get</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type">T &amp;</span> <a class="link" href="intrusive_ptr.html#id1767375-bb"><span class="bold"><strong>operator</strong></span>*</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>const</strong></span> pointer &amp;</span> <a class="link" href="intrusive_ptr.html#id1767386-bb"><span class="bold"><strong>operator</strong></span>-&gt;</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type">pointer &amp;</span> <a class="link" href="intrusive_ptr.html#id1767398-bb"><span class="bold"><strong>operator</strong></span>-&gt;</a>() ;
+  <a class="link" href="intrusive_ptr.html#id1767409-bb"><span class="bold"><strong>operator</strong></span> unspecified_bool_type</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>bool</strong></span></span> <a class="link" href="intrusive_ptr.html#id1767422-bb"><span class="bold"><strong>operator</strong></span>!</a>() <span class="bold"><strong>const</strong></span>;
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a class="link" href="intrusive_ptr.html#id1767433-bb">swap</a>(<a class="link" href="intrusive_ptr.html" title="Class template intrusive_ptr">intrusive_ptr</a> &amp;) ;
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id2196200"></a><h2>Description</h2>
+<p>The intrusive_ptr class template stores a pointer to an object with an embedded reference count. intrusive_ptr is parameterized on T (the type of the object pointed to) and VoidPointer(a void pointer type that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&lt;T, void *&gt; defines a class with a T* member whereas intrusive_ptr&lt;T, offset_ptr&lt;void&gt; &gt; defines a class with a offset_ptr&lt;T&gt; member. Relies on unqualified calls to:</p>
+<p>void intrusive_ptr_add_ref(T * p); void intrusive_ptr_release(T * p);</p>
+<p>with (p != 0)</p>
+<p>The object is responsible for destroying itself. </p>
+<div class="refsect2" lang="en">
+<a name="id2196214"></a><h3>
+<a name="boost.interprocess.intrusive_ptrconstruct-copy-destruct"></a><code class="computeroutput">intrusive_ptr</code> 
+        public
+       construct/copy/destruct</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><a name="id1767453-bb"></a>intrusive_ptr();</pre>
+<p>Constructor. Initializes internal pointer to 0. Does not throw </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1767459-bb"></a>intrusive_ptr(<span class="bold"><strong>const</strong></span> pointer &amp; p, <span class="bold"><strong>bool</strong></span> add_ref = true);</pre>
+<p>Constructor. Copies pointer and if "p" is not zero and "add_ref" is true calls intrusive_ptr_add_ref(get_pointer(p)). Does not throw </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1767479-bb"></a>intrusive_ptr(<a class="link" href="intrusive_ptr.html" title="Class template intrusive_ptr">intrusive_ptr</a> <span class="bold"><strong>const</strong></span> &amp; rhs);</pre>
+<p>Copy constructor. Copies the internal pointer and if "p" is not zero calls intrusive_ptr_add_ref(get_pointer(p)). Does not throw </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> U&gt; <a name="id1767494-bb"></a>intrusive_ptr(<a class="link" href="intrusive_ptr.html" title="Class template intrusive_ptr">intrusive_ptr</a>&lt; U, VP &gt; <span class="bold"><strong>const</strong></span> &amp; rhs);</pre>
+<p>Constructor from related. Copies the internal pointer and if "p" is not zero calls intrusive_ptr_add_ref(get_pointer(p)). Does not throw </p>
+</li>
+<li>
+<pre class="literallayout">intrusive_ptr&amp; <a name="id1767522-bb"></a><span class="bold"><strong>operator</strong></span>=(<a class="link" href="intrusive_ptr.html" title="Class template intrusive_ptr">intrusive_ptr</a> <span class="bold"><strong>const</strong></span> &amp; rhs);</pre>
+<p>Assignment operator. Equivalent to intrusive_ptr(r).swap(*this). Does not throw </p>
+</li>
+<li>
+<pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> U&gt; 
+  intrusive_ptr&amp; <a name="id1767536-bb"></a><span class="bold"><strong>operator</strong></span>=(<a class="link" href="intrusive_ptr.html" title="Class template intrusive_ptr">intrusive_ptr</a>&lt; U, VP &gt; <span class="bold"><strong>const</strong></span> &amp; rhs);</pre>
+<p>Assignment from related. Equivalent to intrusive_ptr(r).swap(*this). Does not throw </p>
+</li>
+<li>
+<pre class="literallayout">intrusive_ptr&amp; <a name="id1767557-bb"></a><span class="bold"><strong>operator</strong></span>=(pointer rhs);</pre>
+<p>Assignment from pointer. Equivalent to intrusive_ptr(r).swap(*this). Does not throw </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1767516-bb"></a>~intrusive_ptr();</pre>
+<p>Destructor. If internal pointer is not 0, calls intrusive_ptr_release(get_pointer(m_ptr)). Does not throw </p>
+</li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id2196481"></a><h3>
+<a name="id1767348-bb"></a><code class="computeroutput">intrusive_ptr</code> public member functions</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><span class="type">pointer &amp;</span> <a name="id1767351-bb"></a>get() ;</pre>
+<p>Returns a reference to the internal pointer. Does not throw </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>const</strong></span> pointer &amp;</span> <a name="id1767363-bb"></a>get() <span class="bold"><strong>const</strong></span>;</pre>
+<p>Returns a reference to the internal pointer. Does not throw </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">T &amp;</span> <a name="id1767375-bb"></a><span class="bold"><strong>operator</strong></span>*() <span class="bold"><strong>const</strong></span>;</pre>
+<p>Returns *get(). Does not throw </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>const</strong></span> pointer &amp;</span> <a name="id1767386-bb"></a><span class="bold"><strong>operator</strong></span>-&gt;() <span class="bold"><strong>const</strong></span>;</pre>
+<p>Returns *get(). Does not throw </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type">pointer &amp;</span> <a name="id1767398-bb"></a><span class="bold"><strong>operator</strong></span>-&gt;() ;</pre>
+<p>Returns get(). Does not throw </p>
+</li>
+<li>
+<pre class="literallayout"><a name="id1767409-bb"></a><span class="bold"><strong>operator</strong></span> unspecified_bool_type() <span class="bold"><strong>const</strong></span>;</pre>
+<p>Conversion to boolean. Does not throw </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>bool</strong></span></span> <a name="id1767422-bb"></a><span class="bold"><strong>operator</strong></span>!() <span class="bold"><strong>const</strong></span>;</pre>
+<p>Not operator. Does not throw </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>void</strong></span></span> <a name="id1767433-bb"></a>swap(<a class="link" href="intrusive_ptr.html" title="Class template intrusive_ptr">intrusive_ptr</a> &amp; rhs) ;</pre>
+<p>Exchanges the contents of the two smart pointers. Does not throw </p>
+</li>
+</ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2005 - 2008 Ion Gaztañaga<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="enable_shared_from_this.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../boost_interprocess_reference.html#header.boost.interprocess.smart_ptr.intrusive_ptr_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="operator___id1767568.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

@@ -1,0 +1,204 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Class template circular_list_algorithms</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.74.3">
+<link rel="home" href="../../index.html" title="The Boost C++ Libraries BoostBook Documentation Subset">
+<link rel="up" href="../../intrusive/reference.html#header.boost.intrusive.circular_list_algorithms_hpp" title="Header &lt;boost/intrusive/circular_list_algorithms.hpp&gt;">
+<link rel="prev" href="bs_set_member_hook.html" title="Class template bs_set_member_hook">
+<link rel="next" href="circular_slist_algorithms.html" title="Class template circular_slist_algorithms">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="bs_set_member_hook.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../intrusive/reference.html#header.boost.intrusive.circular_list_algorithms_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="circular_slist_algorithms.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="refentry" lang="en">
+<a name="boost.intrusive.circular_list_algorithms"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Class template circular_list_algorithms</span></h2>
+<p>boost::intrusive::circular_list_algorithms</p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="emphasis"><em>// In header: &lt;<a class="link" href="../../intrusive/reference.html#header.boost.intrusive.circular_list_algorithms_hpp" title="Header &lt;boost/intrusive/circular_list_algorithms.hpp&gt;">boost/intrusive/circular_list_algorithms.hpp</a>&gt;
+
+</em></span><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> NodeTraits&gt; 
+<span class="bold"><strong>class</strong></span> <a class="link" href="circular_list_algorithms.html" title="Class template circular_list_algorithms">circular_list_algorithms</a> {
+<span class="bold"><strong>public</strong></span>:
+  <span class="emphasis"><em>// types</em></span>
+  <span class="bold"><strong>typedef</strong></span> NodeTraits::node           <a name="boost.intrusive.circular_list_algorithms.node"></a>node;          
+  <span class="bold"><strong>typedef</strong></span> NodeTraits::node_ptr       <a name="boost.intrusive.circular_list_algorithms.node_ptr"></a>node_ptr;      
+  <span class="bold"><strong>typedef</strong></span> NodeTraits::const_node_ptr <a name="boost.intrusive.circular_list_algorithms.const_node_ptr"></a>const_node_ptr;
+  <span class="bold"><strong>typedef</strong></span> NodeTraits                 <a name="boost.intrusive.circular_list_algorithms.node_traits"></a>node_traits;   
+
+  <span class="emphasis"><em>// <a class="link" href="circular_list_algorithms.html#id2085949-bb">public static functions</a></em></span>
+  <span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>void</strong></span></span> <a class="link" href="circular_list_algorithms.html#id2085952-bb">init</a>(node_ptr) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>bool</strong></span></span> <a class="link" href="circular_list_algorithms.html#id2085989-bb">inited</a>(const_node_ptr) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>void</strong></span></span> <a class="link" href="circular_list_algorithms.html#id2086025-bb">init_header</a>(node_ptr) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>bool</strong></span></span> <a class="link" href="circular_list_algorithms.html#id2086067-bb">unique</a>(const_node_ptr) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> std::size_t</span> <a class="link" href="circular_list_algorithms.html#id2086114-bb">count</a>(const_node_ptr) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> node_ptr</span> <a class="link" href="circular_list_algorithms.html#id2086159-bb">unlink</a>(node_ptr) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>void</strong></span></span> <a class="link" href="circular_list_algorithms.html#id2086203-bb">unlink</a>(node_ptr, node_ptr) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>void</strong></span></span> <a class="link" href="circular_list_algorithms.html#id2086253-bb">link_before</a>(node_ptr, node_ptr) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>void</strong></span></span> <a class="link" href="circular_list_algorithms.html#id2086302-bb">link_after</a>(node_ptr, node_ptr) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>void</strong></span></span> <a class="link" href="circular_list_algorithms.html#id2086351-bb">swap_nodes</a>(node_ptr, node_ptr) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>void</strong></span></span> <a class="link" href="circular_list_algorithms.html#id2086370-bb">transfer</a>(node_ptr, node_ptr, node_ptr) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>void</strong></span></span> <a class="link" href="circular_list_algorithms.html#id2086426-bb">transfer</a>(node_ptr, node_ptr) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>void</strong></span></span> <a class="link" href="circular_list_algorithms.html#id2086478-bb">reverse</a>(node_ptr) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>void</strong></span></span> <a class="link" href="circular_list_algorithms.html#id2086514-bb">move_backwards</a>(node_ptr, std::size_t) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>void</strong></span></span> <a class="link" href="circular_list_algorithms.html#id2086556-bb">move_forward</a>(node_ptr, std::size_t) ;
+
+  <span class="emphasis"><em>// <a class="link" href="circular_list_algorithms.html#id2086598-bb">private static functions</a></em></span>
+  <span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>void</strong></span></span> <a class="link" href="circular_list_algorithms.html#id2086602-bb">swap_prev</a>(node_ptr, node_ptr) ;
+  <span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>void</strong></span></span> <a class="link" href="circular_list_algorithms.html#id2086654-bb">swap_next</a>(node_ptr, node_ptr) ;
+};</pre></div>
+<div class="refsect1" lang="en">
+<a name="id2476941"></a><h2>Description</h2>
+<p>circular_list_algorithms provides basic algorithms to manipulate nodes forming a circular doubly linked list. An empty circular list is formed by a node whose pointers point to itself.</p>
+<p>circular_list_algorithms is configured with a NodeTraits class, which encapsulates the information about the node to be manipulated. NodeTraits must support the following interface:</p>
+<p><span class="bold"><strong>Typedefs</strong></span>:</p>
+<p><code class="computeroutput">node</code>: The type of the node that forms the circular list</p>
+<p><code class="computeroutput">node_ptr</code>: A pointer to a node</p>
+<p><code class="computeroutput">const_node_ptr</code>: A pointer to a const node</p>
+<p><span class="bold"><strong>Static functions</strong></span>:</p>
+<p><code class="computeroutput">static node_ptr get_previous(const_node_ptr n);</code></p>
+<p><code class="computeroutput">static void set_previous(node_ptr n, node_ptr prev);</code></p>
+<p><code class="computeroutput">static node_ptr get_next(const_node_ptr n);</code></p>
+<p><code class="computeroutput">static void set_next(node_ptr n, node_ptr next);</code> </p>
+<div class="refsect2" lang="en">
+<a name="id2477017"></a><h3>
+<a name="id2085949-bb"></a><code class="computeroutput">circular_list_algorithms</code> public static functions</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>void</strong></span></span> <a name="id2085952-bb"></a>init(node_ptr this_node) ;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Constructs an non-used list element, so that inited(this_node) == true</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>bool</strong></span></span> <a name="id2085989-bb"></a>inited(const_node_ptr this_node) ;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Returns true is "this_node" is in a non-used state as if it was initialized by the "init" function.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>void</strong></span></span> <a name="id2086025-bb"></a>init_header(node_ptr this_node) ;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Constructs an empty list, making this_node the only node of the circular list: <code class="computeroutput">NodeTraits::get_next(this_node) == NodeTraits::get_previous(this_node) == this_node</code>.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>bool</strong></span></span> <a name="id2086067-bb"></a>unique(const_node_ptr this_node) ;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: this_node must be in a circular list or be an empty circular list.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Returns true is "this_node" is the only node of a circular list: <code class="computeroutput">return NodeTraits::get_next(this_node) == this_node</code></p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> std::size_t</span> <a name="id2086114-bb"></a>count(const_node_ptr this_node) ;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: this_node must be in a circular list or be an empty circular list.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Returns the number of nodes in a circular list. If the circular list is empty, returns 1.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> node_ptr</span> <a name="id2086159-bb"></a>unlink(node_ptr this_node) ;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: this_node must be in a circular list or be an empty circular list.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Unlinks the node from the circular list.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>void</strong></span></span> <a name="id2086203-bb"></a>unlink(node_ptr b, node_ptr e) ;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: b and e must be nodes of the same circular list or an empty range.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Unlinks the node [b, e) from the circular list.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>void</strong></span></span> <a name="id2086253-bb"></a>link_before(node_ptr nxt_node, node_ptr this_node) ;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: nxt_node must be a node of a circular list.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Links this_node before nxt_node in the circular list.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>void</strong></span></span> <a name="id2086302-bb"></a>link_after(node_ptr prev_node, node_ptr this_node) ;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: prev_node must be a node of a circular list.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Links this_node after prev_node in the circular list.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing. </p>
+</li>
+<li><pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>void</strong></span></span> <a name="id2086351-bb"></a>swap_nodes(node_ptr this_node, node_ptr other_node) ;</pre></li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>void</strong></span></span> <a name="id2086370-bb"></a>transfer(node_ptr p, node_ptr b, node_ptr e) ;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: b and e must be nodes of the same circular list or an empty range. and p must be a node of a different circular list or may not be an iterator in <span class="bold"><strong>Effects</strong></span>: Removes the nodes from [b, e) range from their circular list and inserts them before p in p's circular list.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>void</strong></span></span> <a name="id2086426-bb"></a>transfer(node_ptr p, node_ptr i) ;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: i must a node of a circular list and p must be a node of a different circular list.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Removes the node i from its circular list and inserts it before p in p's circular list. If p == i or p == NodeTraits::get_next(i), this function is a null operation.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>void</strong></span></span> <a name="id2086478-bb"></a>reverse(node_ptr p) ;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Reverses the order of elements in the list.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: This function is linear time. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>void</strong></span></span> <a name="id2086514-bb"></a>move_backwards(node_ptr p, std::size_t n) ;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Moves the node p n positions towards the end of the list.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Linear to the number of moved positions. </p>
+</li>
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>void</strong></span></span> <a name="id2086556-bb"></a>move_forward(node_ptr p, std::size_t n) ;</pre>
+<p><span class="bold"><strong>Effects</strong></span>: Moves the node p n positions towards the beginning of the list.</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Linear to the number of moved positions. </p>
+</li>
+</ol></div>
+</div>
+<div class="refsect2" lang="en">
+<a name="id2477803"></a><h3>
+<a name="id2086598-bb"></a><code class="computeroutput">circular_list_algorithms</code> private static functions</h3>
+<div class="orderedlist"><ol type="1">
+<li>
+<pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>void</strong></span></span> <a name="id2086602-bb"></a>swap_prev(node_ptr this_node, node_ptr other_node) ;</pre>
+<p><span class="bold"><strong>Requires</strong></span>: this_node and other_node must be nodes inserted in circular lists or be empty circular lists.</p>
+<p><span class="bold"><strong>Effects</strong></span>: Swaps the position of the nodes: this_node is inserted in other_nodes position in the second circular list and the other_node is inserted in this_node's position in the first circular list.</p>
+<p><span class="bold"><strong>Complexity</strong></span>: Constant</p>
+<p><span class="bold"><strong>Throws</strong></span>: Nothing. </p>
+</li>
+<li><pre class="literallayout"><span class="type"><span class="bold"><strong>static</strong></span> <span class="bold"><strong>void</strong></span></span> <a name="id2086654-bb"></a>swap_next(node_ptr this_node, node_ptr other_node) ;</pre></li>
+</ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2005 Olaf Krzikalla, 2006-2008 Ion Gaztañaga<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="bs_set_member_hook.html"><img src="../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../../intrusive/reference.html#header.boost.intrusive.circular_list_algorithms_hpp"><img src="../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="circular_slist_algorithms.html"><img src="../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

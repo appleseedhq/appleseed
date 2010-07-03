@@ -1,0 +1,840 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2010 Francois Beaune
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#ifndef APPLESEED_FOUNDATION_UTILITY_STRING_H
+#define APPLESEED_FOUNDATION_UTILITY_STRING_H
+
+// appleseed.foundation headers.
+#include "foundation/core/exception.h"
+#include "foundation/math/scalar.h"
+#include "foundation/platform/types.h"
+#include "foundation/utility/typetraits.h"
+
+// Standard headers.
+#include <algorithm>
+#include <cassert>
+#include <cctype>
+#include <cstddef>
+#include <cstring>
+#include <ctime>
+#include <iomanip>
+#include <ios>
+#include <iterator>
+#include <sstream>
+#include <string>
+
+namespace foundation
+{
+
+// todo: add a new function pretty_time_compact() that would return
+// strings of the form xx:xx:xx.xx.
+
+
+//
+// Constants.
+//
+
+// All blank characters in one string.
+extern const char* Blanks;
+
+
+//
+// String <-> value conversion functions.
+//
+
+// Exception thrown by the utility function foundation::from_string()
+// when an error occurred when converting a value to a string.
+struct ExceptionStringConversionError : public Exception {};
+
+// Convert a value to a string.
+template <typename T>
+std::string to_string(const T& value);
+
+// Convert an array of values to a string.
+template <typename T>
+std::string to_string(
+    const T             array[],
+    const size_t        n,
+    const std::string&  separator = " ");
+
+// Convert a string to a value.
+template <typename T>
+T from_string(const std::string& s);
+
+
+//
+// String manipulation functions.
+//
+
+// Duplicate a string. Return a pointer to the new string,
+// allocated with new []. The returned string must be freed
+// with delete [].
+char* strdup(const char* s);
+
+// Convert all characters of a string to lower case.
+std::string lower_case(const std::string& s);
+
+// Convert all characters of a string to upper case.
+std::string upper_case(const std::string& s);
+
+// Compare two strings lexicographically, regardless of their case.
+// Returns -1 if lhs < rhs, +1 if lhs > rhs, and 0 if lhs == rhs.
+int strcmp_nocase(
+    const std::string&          lhs,
+    const std::string&          rhs);
+
+// Return a given string left- or right-padded to a given length.
+// The string 's' is returned unchanged if it is already longer than
+// the specified length.
+std::string pad_left(
+    const std::string&          s,
+    const char                  padding,
+    const size_t                length);
+std::string pad_right(
+    const std::string&          s,
+    const char                  padding,
+    const size_t                length);
+
+// Remove leading, trailing or leading and trailing characters from
+// a given string. Typically used to remove blanks around a string.
+std::string trim_left(
+    const std::string&          s,
+    const std::string&          delimiters = Blanks);
+std::string trim_right(
+    const std::string&          s,
+    const std::string&          delimiters = Blanks);
+std::string trim_both(
+    const std::string&          s,
+    const std::string&          delimiters = Blanks);
+
+// Split a given string into multiple individual tokens of a given
+// type, according to a set of delimiting characters.
+template <typename Vec>
+void tokenize(
+    const std::string&          s,
+    const std::string&          delimiters,
+    Vec&                        tokens);
+
+// A variant of tokenize() that stores the tokens into a C array of
+// a given maximum size. Returns the number of tokens stored in the
+// array. 'max_tokens' must be greater than 0.
+template <typename T>
+size_t tokenize(
+    const std::string&          s,
+    const std::string&          delimiters,
+    T                           tokens[],
+    const size_t                max_tokens);
+
+// Like tokenize(), but consider that there are empty tokens between delimiters.
+template <typename Vec>
+void split(
+    const std::string&          s,
+    const std::string&          delimiters,
+    Vec&                        tokens);
+
+
+//
+// Filename manipulation functions.
+//
+
+// Return a time stamp string based on the current date and time.
+// The returned string has the form YYYYMMDD.HHmmSS.XXX, where:
+//   Y = year, M = month, D = day
+//   H = hour, m = minute, s = second
+//   X is implementation defined
+std::string get_time_stamp_string();
+
+
+//
+// Pretty-print functions.
+//
+
+// Capitalize the first letter of each word of a string and convert
+// all other characters to lower case. Everything else is preserved.
+std::string capitalize(const std::string& s);
+
+// Return the plural of a unit, depending on a value.
+template <typename T>
+std::string plural(
+    const T                     value,
+    const std::string&          unit);
+template <typename T>
+std::string plural(
+    const T                     value,
+    const std::string&          unit_singular,
+    const std::string&          unit_plural);
+
+// Pretty-print an unsigned integer value.
+std::string pretty_uint(const uint64 value);
+
+// Pretty-print a signed integer value.
+std::string pretty_int(const int64 value);
+
+// Pretty-print a floating-point value.
+std::string pretty_scalar(
+    const double                value,
+    const std::streamsize       precision = 1);
+
+// Pretty-print the ratio n/d.
+// Returns the string "infinite" if n is greater than zero and d equals zero.
+// Returns the string "n/a" if n and d are zero.
+template <typename T>
+std::string pretty_ratio(
+    const T                     n,
+    const T                     d,
+    const std::streamsize       precision = 1);
+
+// Pretty-print the ratio n/d as a percentage.
+// Returns the string "infinite" if n is greater than zero and d equals zero.
+// Returns the string "n/a" if n and d are zero.
+template <typename T>
+std::string pretty_percent(
+    const T                     n,
+    const T                     d,
+    const std::streamsize       precision = 1);
+
+// Pretty-print a time value, given in seconds.
+std::string pretty_time(
+    const double                time,
+    const std::streamsize       precision = 1);
+
+// Pretty-print a size, given in bytes.
+std::string pretty_size(
+    const uint64                size,
+    const std::streamsize       precision = 1);
+
+
+//
+// Value-to-string conversion functions implementation.
+//
+
+// General case.
+template <typename T>
+std::string to_string(const T& value)
+{
+    std::stringstream sstr;
+
+    if (IsPointer<T>::R)
+    {
+        sstr << "0x" << std::hex << value;
+    }
+    else
+    {
+        sstr << value;
+    }
+
+    return sstr.str();
+}
+
+// Handle 8-bit integers as integers, not as characters.
+template <>
+inline std::string to_string(const int8& value)
+{
+    return to_string(static_cast<int>(value));
+}
+template <>
+inline std::string to_string(const uint8& value)
+{
+    return to_string(static_cast<unsigned int>(value));
+}
+
+// Handle C-strings separately.
+inline std::string to_string(const char* value)
+{
+    std::stringstream sstr;
+    sstr << (value ? value : "<null>");
+    return sstr.str();
+}
+inline std::string to_string(char* value)
+{
+    return to_string(static_cast<const char*>(value));
+}
+
+// Convert an array of values to a string.
+template <typename T>
+std::string to_string(
+    const T             array[],
+    const size_t        n,
+    const std::string&  separator)
+{
+    std::string s;
+
+    for (size_t i = 0; i < n; ++i)
+    {
+        if (i > 0)
+            s += separator;
+        s += to_string(array[i]);
+    }
+
+    return s;
+}
+
+
+//
+// String-to-value conversion functions implementation.
+//
+
+template <typename T>
+T from_string(const std::string& s)
+{
+    std::stringstream sstr;
+    sstr << s;
+
+    T val;
+    sstr >> val;
+
+    if (sstr.fail())
+        throw ExceptionStringConversionError();
+
+    return val;
+}
+template <>
+inline std::string from_string(const std::string& s)
+{
+    return s;
+}
+template <>
+inline bool from_string(const std::string& s)
+{
+    if (s == "1" || s == "true" || s == "on" || s == "yes")
+        return true;
+    else if (s == "0" || s == "false" || s == "off" || s == "no")
+        return false;
+    else throw ExceptionStringConversionError();
+}
+template <>
+inline int8 from_string(const std::string& s)
+{
+    std::stringstream sstr;
+    sstr << s;
+
+    int val;
+    sstr >> val;
+
+    if (sstr.fail())
+        throw ExceptionStringConversionError();
+
+    return static_cast<int8>(val);
+}
+template <>
+inline uint8 from_string(const std::string& s)
+{
+    std::stringstream sstr;
+    sstr << s;
+
+    unsigned int val;
+    sstr >> val;
+
+    if (sstr.fail())
+        throw ExceptionStringConversionError();
+
+    return static_cast<uint8>(val);
+}
+
+
+//
+// String manipulation functions implementation.
+//
+
+// Duplicate a string.
+inline char* strdup(const char* s)
+{
+    assert(s);
+    char* result = new char[std::strlen(s) + 1];
+    if (result)
+        std::strcpy(result, s);
+    return result;
+}
+
+// Convert all characters of a string to lower case.
+inline std::string lower_case(const std::string& s)
+{
+    std::string result;
+    std::transform(
+        s.begin(),
+        s.end(),
+        std::back_inserter(result),
+        static_cast<int(*)(int)>(std::tolower));
+    return result;
+}
+
+// Convert all characters of a string to upper case.
+inline std::string upper_case(const std::string& s)
+{
+    std::string result;
+    std::transform(
+        s.begin(),
+        s.end(),
+        std::back_inserter(result),
+        static_cast<int(*)(int)>(std::toupper));
+    return result;
+}
+
+// Compare two strings lexicographically, regardless of their case.
+inline int strcmp_nocase(
+    const std::string&          lhs,
+    const std::string&          rhs)
+{
+    std::string::const_iterator lhs_it = lhs.begin();
+    std::string::const_iterator rhs_it = rhs.begin();
+
+    while (lhs_it != lhs.end() && rhs_it != rhs.end())
+    {
+        if (std::toupper(*lhs_it) != std::toupper(*rhs_it))
+            return (std::toupper(*lhs_it) < std::toupper(*rhs_it)) ? -1 : 1;
+        ++lhs_it;
+        ++rhs_it;
+    }
+
+    if (lhs.size() == rhs.size())
+        return 0;
+    else return lhs.size() < rhs.size() ? -1 : 1;
+}
+
+// Return a given string left- or right-padded to a given length.
+inline std::string pad_left(
+    const std::string&          s,
+    const char                  padding,
+    const size_t                length)
+{
+    if (s.size() >= length)
+         return s;
+    else return std::string(length - s.size(), padding) + s;
+}
+inline std::string pad_right(
+    const std::string&          s,
+    const char                  padding,
+    const size_t                length)
+{
+    if (s.size() >= length)
+         return s;
+    else return s + std::string(length - s.size(), padding);
+}
+
+// Remove leading, trailing or leading and trailing characters from
+// a given string.
+inline std::string trim_left(
+    const std::string&          s,
+    const std::string&          delimiters)
+{
+    const std::string::size_type begin = s.find_first_not_of(delimiters);
+    return begin == std::string::npos ? "" : s.substr(begin);
+}
+inline std::string trim_right(
+    const std::string&          s,
+    const std::string&          delimiters)
+{
+    const std::string::size_type end = s.find_last_not_of(delimiters);
+    return end == std::string::npos ? "" : s.substr(0, end + 1);
+}
+inline std::string trim_both(
+    const std::string&          s,
+    const std::string&          delimiters)
+{
+    const std::string::size_type begin = s.find_first_not_of(delimiters);
+    const std::string::size_type end = s.find_last_not_of(delimiters);
+    return begin == std::string::npos ? "" : s.substr(begin, end - begin + 1);
+}
+
+// Split a given string into multiple individual tokens of a given
+// type, according to a set of delimiting characters.
+template <typename Vec>
+void tokenize(
+    const std::string&          s,
+    const std::string&          delimiters,
+    Vec&                        tokens)
+{
+    // Skip delimiters at the beginning.
+    std::string::size_type last_pos = s.find_first_not_of(delimiters, 0);
+
+    // Find the next delimiter.
+    std::string::size_type pos = s.find_first_of(delimiters, last_pos);
+
+    while (pos != std::string::npos || last_pos != std::string::npos)
+    {
+        // Found a token, append it to the vector.
+        tokens.push_back(
+            from_string<typename Vec::value_type>(
+                s.substr(last_pos, pos - last_pos)));
+
+        // Skip delimiters.
+        last_pos = s.find_first_not_of(delimiters, pos);
+
+        // Find the next delimiter.
+        pos = s.find_first_of(delimiters, last_pos);
+    }
+}
+
+// A variant of tokenize() that stores the tokens into a C array of
+// a given maximum size. Returns the number of tokens stored in the
+// array. 'max_tokens' must be greater than 0.
+template <typename T>
+size_t tokenize(
+    const std::string&          s,
+    const std::string&          delimiters,
+    T                           tokens[],
+    const size_t                max_tokens)
+{
+    assert(tokens);
+    assert(max_tokens > 0);
+
+    // Skip delimiters at the beginning.
+    std::string::size_type last_pos = s.find_first_not_of(delimiters, 0);
+
+    // Find the next delimiter.
+    std::string::size_type pos = s.find_first_of(delimiters, last_pos);
+
+    size_t token_count = 0;
+    while (pos != std::string::npos || last_pos != std::string::npos)
+    {
+        // Found a token, insert it into the array.
+        assert(token_count < max_tokens);
+        tokens[token_count++] =
+            from_string<T>(s.substr(last_pos, pos - last_pos));
+        if (token_count == max_tokens)
+            break;
+
+        // Skip delimiters.
+        last_pos = s.find_first_not_of(delimiters, pos);
+
+        // Find the next delimiter.
+        pos = s.find_first_of(delimiters, last_pos);
+    }
+
+    // Return the number of tokens that were stored.
+    return token_count;
+}
+
+// Like tokenize(), but consider that there are empty tokens between delimiters.
+template <typename Vec>
+void split(
+    const std::string&          s,
+    const std::string&          delimiters,
+    Vec&                        tokens)
+{
+    std::string::size_type pos = 0;
+
+    while (pos < s.size())
+    {
+        // Find the next delimiter.
+        std::string::size_type delimiter_pos =
+            s.find_first_of(delimiters, pos);
+
+        // Append the token to the vector.
+        tokens.push_back(
+            from_string<typename Vec::value_type>(
+                s.substr(pos, delimiter_pos - pos)));
+
+        // Skip the delimiter.
+        pos = delimiter_pos == std::string::npos
+            ? std::string::npos
+            : delimiter_pos + 1;
+    }
+}
+
+
+//
+// Filename manipulation functions implementation.
+//
+
+// Return a time stamp string based on the current date and time.
+inline std::string get_time_stamp_string()
+{
+    // Retrieve the current date and time.
+    std::time_t t;
+    time(&t);
+    const std::tm* local_time = std::localtime(&t);
+
+    // Build the time stamp string.
+    std::stringstream sstr;
+    sstr << std::setfill('0');
+    sstr << std::setw(4) << local_time->tm_year + 1900;
+    sstr << std::setw(2) << local_time->tm_mon + 1;
+    sstr << std::setw(2) << local_time->tm_mday;
+    sstr << ".";
+    sstr << std::setw(2) << local_time->tm_hour;
+    sstr << std::setw(2) << local_time->tm_min;
+    sstr << std::setw(2) << local_time->tm_sec;
+    sstr << ".";
+    sstr << std::setw(3) << 0;  // milliseconds not available, set field to 000
+
+    return sstr.str();
+}
+
+
+//
+// Pretty-print functions implementation.
+//
+
+// Capitalize the first letter of each word of a string and convert
+// all other characters to lower case. Everything else is preserved.
+inline std::string capitalize(const std::string& s)
+{
+    std::string result = s;
+    bool cap = true;
+
+    for (std::string::iterator i = result.begin(); i != result.end(); ++i)
+    {
+        if (std::isspace(*i))
+            cap = true;
+        else
+        {
+            *i = cap ? std::toupper(*i) : std::tolower(*i);
+            cap = false;
+        }
+    }
+
+    return result;
+}
+
+// Return the plural of a unit, depending on a value.
+template <typename T>
+std::string plural(
+    const T                     value,
+    const std::string&          unit)
+{
+    return unit + (value > T(1) ? "s" : "");
+}
+template <typename T>
+std::string plural(
+    const T                     value,
+    const std::string&          unit_singular,
+    const std::string&          unit_plural)
+{
+    return value > T(1) ? unit_plural : unit_singular;
+}
+
+// Pretty-print an unsigned integer value.
+inline std::string pretty_uint(const uint64 value)
+{
+    const std::string s = to_string(value);
+    std::string result;
+    size_t digits = 0;
+
+    for (std::string::const_reverse_iterator i = s.rbegin(), e = s.rend(); i != e; ++i)
+    {
+        if (digits == 3)
+        {
+            result += ',';
+            digits = 0;
+        }
+        result += *i;
+        ++digits;
+    }
+
+    std::reverse(result.begin(), result.end());
+
+    return result;
+}
+
+// Pretty-print a signed integer value.
+inline std::string pretty_int(const int64 value)
+{
+    const std::string result = pretty_uint(abs(value));
+    return value < 0 ? '-' + result : result;
+}
+
+// Pretty-print a floating-point value.
+inline std::string pretty_scalar(
+    const double                value,
+    const std::streamsize       precision)
+{
+    assert(precision >= 0);
+
+    std::stringstream sstr;
+    sstr << std::fixed;
+    sstr << std::setprecision(precision);
+    sstr << value;
+
+    return sstr.str();
+}
+
+// Pretty-print the ratio n/d.
+template <typename T>
+inline std::string pretty_ratio(
+    const T                     n,
+    const T                     d,
+    const std::streamsize       precision)
+{
+    assert(n >= 0);
+    assert(d >= 0);
+    assert(precision >= 0);
+
+    // Handle special cases.
+    if (d == 0)
+        return n == 0 ? "n/a" : "infinite";
+
+    // Pretty-print.
+    return pretty_scalar(static_cast<double>(n) / d, precision);
+}
+
+// Pretty-print the ratio n/d as a percentage.
+template <typename T>
+inline std::string pretty_percent(
+    const T                     n,
+    const T                     d,
+    const std::streamsize       precision)
+{
+    assert(n >= 0);
+    assert(d >= 0);
+    assert(precision >= 0);
+
+    // Handle special cases.
+    if (d == 0)
+        return n == 0 ? "n/a" : "infinite";
+
+    // Pretty-print.
+    return pretty_ratio(
+        static_cast<double>(n * 100.0),
+        static_cast<double>(d),
+        precision) + "%";
+}
+
+// Pretty-print a time value, given in seconds.
+inline std::string pretty_time(
+    const double                time,
+    const std::streamsize       precision)
+{
+    assert(time >= 0.0);
+    assert(precision >= 0);
+
+    std::string result;
+
+    // Handle the case where the input time is less than 1 second.
+    if (time < 1.0)
+    {
+        const double ms = 1000.0 * time;
+        result += pretty_scalar(ms, precision > 3 ? precision - 3 : 0);
+        result += " ms";
+        return result;
+    }
+
+    // Number of seconds in 1 minute, 1 hour, 1 day and 1 week.
+    const size_t Minute = 60;
+    const size_t Hour   = 60 * Minute;
+    const size_t Day    = 24 * Hour;
+    const size_t Week   = 7  * Day;
+
+    const size_t seconds = static_cast<size_t>(time);
+    size_t s = seconds;
+
+    // Compute and print the number of weeks.
+    if (seconds >= Week)
+    {
+        const size_t w = s / Week;
+        s -= w * Week;
+        result += pretty_uint(w);
+        result += plural(w, " week");
+        result += ' ';
+    }
+
+    // Compute and print the number of days.
+    if (seconds >= Day)
+    {
+        const size_t d = s / Day;
+        s -= d * Day;
+        result += to_string(d);
+        result += plural(d, " day");
+        result += ' ';
+    }
+
+    // Compute and print the number of hours.
+    if (seconds >= Hour)
+    {
+        const size_t h = s / Hour;
+        s -= h * Hour;
+        result += to_string(h);
+        result += plural(h, " hour");
+        result += ' ';
+    }
+
+    // Compute and print the number of minutes.
+    if (seconds >= Minute)
+    {
+        const size_t m = s / Minute;
+        s -= m * Minute;
+        result += to_string(m);
+        result += plural(m, " minute");
+        result += ' ';
+    }
+
+    // Print the number of seconds.
+    result += to_string(s);
+    result += pretty_scalar(time - seconds, precision).substr(1);
+    result += plural(s, " second");
+
+    return result;
+}
+
+// Pretty-print a size, given in bytes.
+inline std::string pretty_size(
+    const uint64                size,
+    const std::streamsize       precision)
+{
+    assert(precision >= 0);
+
+    // Number of bytes in 1 kilobyte, 1 megabyte, 1 gigabyte and 1 terabyte.
+    const uint64 KB = 1024;
+    const uint64 MB = 1024 * KB;
+    const uint64 GB = 1024 * MB;
+    const uint64 TB = 1024 * GB;
+
+    // Pretty-print.
+    if (size == 0)
+    {
+        return "0 byte";
+    }
+    else if (size == 1)
+    {
+        return "1 byte";
+    }
+    else if (size < KB)
+    {
+        return pretty_uint(size) + " bytes";
+    }
+    else if (size < MB)
+    {
+        return pretty_ratio(size, KB, precision) + " KB";
+    }
+    else if (size < GB)
+    {
+        return pretty_ratio(size, MB, precision) + " MB";
+    }
+    else if (size < TB)
+    {
+        return pretty_ratio(size, GB, precision) + " GB";
+    }
+    else
+    {
+        return pretty_ratio(size, TB, precision) + " TB";
+    }
+}
+
+}       // namespace foundation
+
+#endif  // !APPLESEED_FOUNDATION_UTILITY_STRING_H

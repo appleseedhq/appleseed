@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <scene>
+        <camera name="camera" model="pinhole_camera">
+            <parameter name="film_dimensions" value="0.025 0.025" />
+            <parameter name="focal_length" value="0.035" />
+        </camera>
+    </scene>
+    <output>
+        <frame name="beauty">
+            <parameter name="camera" value="camera" />
+            <parameter name="resolution" value="512 512" />
+        </frame>
+    </output>
+    <configurations>
+        <configuration name="final" base="invalid_base_configuration" />
+        <configuration name="interactive" base="base_interactive" />
+    </configurations>
+</project>

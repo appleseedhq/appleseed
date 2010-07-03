@@ -1,0 +1,6 @@
+<area shape="rect" href="$classXercesDOMParser.html" title="This class implements the Document Object Model (DOM) interface." alt="" coords="304,161,443,188">
+<area shape="rect" href="$classXMemory.html" title="This class makes it possible to override the C++ memory management by adding new/delete..." alt="" coords="5,7,88,33">
+<area shape="rect" href="$classXMLDocumentHandler.html" title="This abstract class provides the interface for the scanner to return XML document..." alt="" coords="112,7,280,33">
+<area shape="rect" href="$classXMLErrorReporter.html" title="This abstract class defines a callback mechanism for the scanner." alt="" coords="304,7,443,33">
+<area shape="rect" href="$classXMLEntityHandler.html" title="This abstract class is a callback mechanism for the scanner." alt="" coords="467,7,605,33">
+<area shape="rect" href="$classPSVIHandler.html" title="This abstract class provides the interface for the scanner to return PSVI information..." alt="" coords="629,7,733,33">
