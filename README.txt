@@ -1,1 +1,1 @@
-appleseed is a modern photorealistic rendering platform.
+appleseed is a modern, open source photorealistic rendering platform available under the MIT license.
