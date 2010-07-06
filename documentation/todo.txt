@@ -112,6 +112,8 @@
 
     - add texture transforms (vertical flipping is important).
 
+    - bug: the reported render time is not correct in final rendering mode.
+
 
 
 * appleseed.cli
