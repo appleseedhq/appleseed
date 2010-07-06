@@ -73,7 +73,7 @@
             <surface_shader name="physical_shader" model="physical_surface_shader" />
             <surface_shader name="ao_shader" model="diagnostic_surface_shader">
                 <parameter name="mode" value="ambient_occlusion" />
-                <parameters name="ao">
+                <parameters name="ambient_occlusion">
                     <parameter name="max_distance" value="0.5" />
                     <parameter name="samples" value="32" />
                 </parameters>
