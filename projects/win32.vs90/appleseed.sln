@@ -5,7 +5,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "documentation", "documentat
 		..\..\documentation\coding guidelines.txt = ..\..\documentation\coding guidelines.txt
 		..\..\documentation\compiling.txt = ..\..\documentation\compiling.txt
 		..\..\documentation\design.txt = ..\..\documentation\design.txt
-		..\..\documentation\todo.txt = ..\..\documentation\todo.txt
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "appleseed", "..\..\src\appleseed\projects\win32.vs90\appleseed.vcproj", "{D11538AE-787F-4C85-A1A7-69C75F5B43FA}"
