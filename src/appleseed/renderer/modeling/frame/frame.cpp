@@ -463,11 +463,13 @@ namespace
         {
             for (size_t x = 0; x < tile_width; ++x)
             {
-                Color4f linear_rgb;
-                tile.get_pixel(x, y, linear_rgb);
+                Color4f linear_rgba;
+                tile.get_pixel(x, y, linear_rgba);
 
-                linear_rgb = clamp_to_zero(linear_rgb);
-                const float lum = luminance(linear_rgb.rgb());
+                linear_rgba = clamp_to_zero(linear_rgba);
+
+                const float lum = luminance(linear_rgba.rgb());
+                assert(lum >= 0.0f);
 
                 accumulated_luminance += static_cast<double>(lum);
             }
