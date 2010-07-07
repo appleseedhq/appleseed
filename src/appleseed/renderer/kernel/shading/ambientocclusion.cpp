@@ -91,8 +91,14 @@ double compute_ambient_occlusion(
             ++occluded_samples;
     }
 
-    // Return occlusion as a scalar between 0.0 and 1.0.
-    return static_cast<double>(occluded_samples) / computed_samples;
+    // Compute occlusion as a scalar between 0.0 and 1.0.
+    double occlusion = static_cast<double>(occluded_samples);
+    if (computed_samples > 1)
+        occlusion /= computed_samples;
+    assert(occlusion >= 0.0);
+    assert(occlusion <= 1.0);
+
+    return occlusion;
 }
 
 }   // namespace renderer
