@@ -3288,6 +3288,10 @@
 					RelativePath="..\..\renderer\api\tracecontext.h"
 					>
 				</File>
+				<File
+					RelativePath="..\..\renderer\api\utility.h"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="meta"
