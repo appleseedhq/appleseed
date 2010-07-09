@@ -71,19 +71,11 @@ namespace
           , m_name(name)
           , m_transform(transform)
         {
-            m_film_dimensions = get_film_dimensions(m_params, m_name);
-
-            m_focal_length =
-                get_focal_length(
-                    m_params,
-                    m_film_dimensions[0],
-                    m_name);
-
-            m_f_stop = get_f_stop(m_params, m_name);
+            m_film_dimensions = get_film_dimensions();
+            m_focal_length = get_focal_length(m_film_dimensions[0]);
+            m_f_stop = get_f_stop();
 
             get_focal_distance(
-                m_params,
-                m_name,
                 m_autofocus_enabled,
                 m_autofocus_target,
                 m_focal_distance);

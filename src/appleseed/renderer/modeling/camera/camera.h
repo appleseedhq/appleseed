@@ -93,29 +93,28 @@ class RENDERERDLL Camera
         const foundation::Vector3d& point) const = 0;   // point in camera space
 
   protected:
-    // Utility function to retrieve the film dimensions from a parameter array.
-    static foundation::Vector2d get_film_dimensions(
-        const ParamArray&           params,
-        const std::string&          camera_name);
+    // Utility function to retrieve the film dimensions from renderer::Entity::m_params.
+    foundation::Vector2d get_film_dimensions() const;
 
     // Utility function to retrieve the focal length from a parameter array.
-    static double get_focal_length(
-        const ParamArray&           params,
-        const double                film_width,
-        const std::string&          camera_name);
+    double get_focal_length(const double film_width) const;
 
     // Utility function to retrieve the f-stop value from a parameter array.
-    static double get_f_stop(
-        const ParamArray&           params,
-        const std::string&          camera_name);
+    double get_f_stop() const;
 
     // Utility function to retrieve the focal distance from a parameter array.
-    static void get_focal_distance(
-        const ParamArray&           params,
-        const std::string&          camera_name,
+    void get_focal_distance(
         bool&                       autofocus_enabled,
         foundation::Vector2d&       autofocus_target,
-        double&                     focal_distance);
+        double&                     focal_distance) const;
+
+  private:
+    bool has_param(const char* name) const;
+    bool has_params(const char* name1, const char* name2) const;
+
+    double get_greater_than_zero(
+        const char*                 name,
+        const double                default_value) const;
 };
 
 
