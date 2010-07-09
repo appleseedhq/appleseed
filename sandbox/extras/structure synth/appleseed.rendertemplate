@@ -16,7 +16,7 @@
             <parameter name="aspect_ratio" value="{aspect}" />
             <parameter name="horizontal_fov" value="{fov}" />
             <transform>
-                <matrix>{columnmatrix}</matrix>
+                <matrix>{CamColumnMatrix}</matrix>
             </transform>
         </camera>
         <assembly name="assembly">
