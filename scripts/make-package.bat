@@ -51,6 +51,7 @@ copy ..\sandbox\bin\%platform%\%configuration%\*.dll appleseed\bin\ >>%log-file%
 echo Adding dependencies to staging directory...
 copy C:\Qt\2009.03-%platform%\qt\bin\QtCore4.dll appleseed\bin\ >>%log-file% 2>&1
 copy C:\Qt\2009.03-%platform%\qt\bin\QtGui4.dll appleseed\bin\ >>%log-file% 2>&1
+xcopy /E runtimes\%platform%\*.* appleseed\bin\ >>%log-file% 2>&1
 
 echo Adding LICENSE.txt and README.txt...
 copy ..\LICENSE.txt appleseed\ >>%log-file% 2>&1
