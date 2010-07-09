@@ -38,6 +38,8 @@
 
 // Forward declarations.
 namespace renderer  { class Camera; }
+namespace renderer  { class Scene; }
+
 class QEvent;
 class QMouseEvent;
 class QWidget;
@@ -54,7 +56,7 @@ class CameraController
     // Constructor.
     CameraController(
         QWidget*            render_widget,
-        renderer::Camera*   camera);
+        renderer::Scene*    scene);
 
     // Destructor.
     ~CameraController();
@@ -72,6 +74,8 @@ class CameraController
     ControllerType      m_controller;
 
     virtual bool eventFilter(QObject* object, QEvent* event);
+
+    void set_controller_target(const renderer::Scene* scene);
 
     foundation::Vector2d get_mouse_position(const QMouseEvent* event) const;
 

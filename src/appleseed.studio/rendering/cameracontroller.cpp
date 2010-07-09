@@ -31,6 +31,8 @@
 
 // appleseed.renderer headers.
 #include "renderer/api/camera.h"
+#include "renderer/api/scene.h"
+#include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
@@ -52,17 +54,14 @@ namespace studio {
 
 CameraController::CameraController(
     QWidget*    render_widget,
-    Camera*     camera)
+    Scene*      scene)
   : m_render_widget(render_widget)
-  , m_camera(camera)
+  , m_camera(scene->get_camera())
 {
     m_controller.set_transform(
         m_camera->get_transform().get_local_to_parent());
 
-    m_controller.set_target(
-        m_camera->get_parameters().get_optional<Vector3d>(
-            "controller_target",
-            m_controller.get_target()));
+    set_controller_target(scene);
 
     m_render_widget->installEventFilter(this);
 }
@@ -100,6 +99,26 @@ bool CameraController::eventFilter(QObject* object, QEvent* event)
     }
 
     return QObject::eventFilter(object, event);
+}
+
+void CameraController::set_controller_target(const Scene* scene)
+{
+    if (m_camera->get_parameters().strings().exist("controller_target"))
+    {
+        m_controller.set_target(
+            m_camera->get_parameters().get_optional<Vector3d>(
+                "controller_target",
+                Vector3d(0.0)));
+    }
+    else
+    {
+        const GAABB3 scene_bbox =
+            compute_parent_bbox<GAABB3>(
+                scene->assembly_instances().begin(),
+                scene->assembly_instances().end());
+
+        m_controller.set_target(Vector3d(scene_bbox.center()));
+    }
 }
 
 Vector2d CameraController::get_mouse_position(const QMouseEvent* event) const

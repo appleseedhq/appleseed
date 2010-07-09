@@ -139,7 +139,7 @@ void RenderingManager::start_rendering(
     m_camera_controller.reset(
         new CameraController(
             m_render_widget,
-            m_project->get_scene()->get_camera()));
+            m_project->get_scene()));
 
     connect(
         m_camera_controller.get(), SIGNAL(signal_camera_changed()),
