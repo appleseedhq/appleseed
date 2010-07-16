@@ -1,8 +1,8 @@
-﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.50727</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{8519DA50-93B4-44E1-A63B-F60CA6642398}</ProjectGuid>
     <OutputType>Exe</OutputType>
@@ -10,14 +10,19 @@
     <RootNamespace>buildtracker</RootNamespace>
     <AssemblyName>BuildTracker</AssemblyName>
     <StartupObject>buildtracker.BuildTracker</StartupObject>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>2.0</OldToolsVersion>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <BaseIntermediateOutputPath>..\..\..\build\win32.vs80\tools\BuildTracker\</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath>..\..\..\build\win32.vs90\tools\BuildTracker\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)Debug\</IntermediateOutputPath>
-    <OutputPath>..\..\..\build\win32.vs80\tools\BuildTracker\Debug\</OutputPath>
+    <OutputPath>..\..\..\build\win32.vs90\tools\BuildTracker\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -25,9 +30,9 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <BaseIntermediateOutputPath>..\..\..\build\win32.vs80\tools\BuildTracker\</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath>..\..\..\build\win32.vs90\tools\BuildTracker\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)Release\</IntermediateOutputPath>
-    <OutputPath>..\..\..\build\win32.vs80\tools\BuildTracker\Release\</OutputPath>
+    <OutputPath>..\..\..\build\win32.vs90\tools\BuildTracker\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
