@@ -28,6 +28,19 @@
 
 
 #
+# Find Packages.
+#
+
+# OpenGL.
+find_package(OpenGL REQUIRED)
+
+# Qt 4.
+find_package(Qt4 REQUIRED)
+set(QT_USE_QTOPENGL TRUE)
+include(${QT_USE_FILE})
+
+
+#
 # Source Files.
 #
 
@@ -45,6 +58,7 @@ set(debug_tests_sources
     debug/tests/testrunnerthread.h
     debug/tests/testwindow.cpp
     debug/tests/testwindow.h
+    debug/tests/testwindow.ui
 )
 list(APPEND appleseed.studio_sources
     ${debug_tests_sources}
@@ -56,6 +70,7 @@ source_group("debug\\tests" FILES
 set(help_about_sources
     help/about/aboutwindow.cpp
     help/about/aboutwindow.h
+    help/about/aboutwindow.ui
 )
 list(APPEND appleseed.studio_sources
     ${help_about_sources}
@@ -79,6 +94,7 @@ set(mainwindow_sources
     mainwindow/logwidget.h
     mainwindow/mainwindow.cpp
     mainwindow/mainwindow.h
+    mainwindow/mainwindow.ui
     mainwindow/projectexplorer.cpp
     mainwindow/projectexplorer.h
     mainwindow/projectmanager.cpp
@@ -160,10 +176,47 @@ source_group("utility" FILES
 
 
 #
-# Target.
+# Autogenerate ui_* files.
 #
 
-add_executable(appleseed.studio ${appleseed.studio_sources})
+set(appleseed.studio_ui_files
+    debug/tests/testwindow.ui
+    help/about/aboutwindow.ui
+    mainwindow/mainwindow.ui
+)
+
+QT4_WRAP_UI(appleseed.studio_generated_ui_files
+    ${appleseed.studio_ui_files}
+)
+
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
+
+#
+# Autogenerate moc_* files.
+#
+
+# Collect all header files amongst the source files.
+filter_list(
+    appleseed.studio_moc_files
+    "${appleseed.studio_sources}"
+    ".*\\\\.h"
+)
+
+QT4_WRAP_CPP(appleseed.studio_generated_moc_files
+    ${appleseed.studio_moc_files}
+)
+
+
+#
+# Define the target and its dependencies.
+#
+
+add_executable(appleseed.studio
+    ${appleseed.studio_sources}
+    ${appleseed.studio_generated_ui_files}
+    ${appleseed.studio_generated_moc_files}
+)
 
 target_link_libraries(appleseed.studio appleseed appleseed.shared)
 
@@ -205,3 +258,8 @@ set_property(TARGET appleseed.studio APPEND PROPERTY COMPILE_DEFINITIONS_SHIP
 #
 
 link_against_static_libraries(appleseed.studio)
+
+target_link_libraries(appleseed.studio
+    ${OPENGL_LIBRARY}
+    ${QT_LIBRARIES}
+)

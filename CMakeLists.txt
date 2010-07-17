@@ -31,6 +31,16 @@ cmake_minimum_required(VERSION 2.6)
 # CMP0008: Libraries linked by full-path must have a valid library file name.
 cmake_policy(SET CMP0008 NEW)
 
+# Filter a list of items using a regular expression.
+macro(filter_list output_list input_list regex)
+    foreach(item ${input_list})
+        if(${item} MATCHES ${regex})
+            list(APPEND ${output_list} ${item})
+        endif()
+    endforeach()
+endmacro()
+
+# Create the configurations. Must come before project().
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release;Profile;Ship" CACHE STRING "" FORCE)
 
 project(appleseed)

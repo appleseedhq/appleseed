@@ -142,7 +142,7 @@ if(WIN32 AND MSVC90)
             optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs90/xerces-c/Static\ Release/xerces-c_static_2.lib
         )
 
-    endmacro(link_against_static_libraries)
+    endmacro()
 
 endif()
 
