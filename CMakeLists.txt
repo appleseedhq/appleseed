@@ -31,6 +31,11 @@ cmake_minimum_required(VERSION 2.6)
 # CMP0008: Libraries linked by full-path must have a valid library file name.
 cmake_policy(SET CMP0008 NEW)
 
+# Replace slashes by backslashes in a string.
+macro(slashes_to_backslashes output input)
+    string(REGEX REPLACE "/" "\\\\" ${output} ${input})
+endmacro()
+
 # Filter a list of items using a regular expression.
 macro(filter_list output_list input_list regex)
     foreach(item ${input_list})
@@ -38,6 +43,17 @@ macro(filter_list output_list input_list regex)
             list(APPEND ${output_list} ${item})
         endif()
     endforeach()
+endmacro()
+
+# Copy a target binary to the sandbox.
+macro(add_copy_target_to_sandbox_command target)
+    if(WIN32 AND MSVC90)
+        slashes_to_backslashes(project_source_dir_win ${PROJECT_SOURCE_DIR})
+        add_custom_command(TARGET ${target} POST_BUILD
+            COMMAND mkdir ${project_source_dir_win}\\sandbox\\bin\\win32.vs90\\$(ConfigurationName) 2> nul
+            COMMAND copy $(TargetPath) ${project_source_dir_win}\\sandbox\\bin\\win32.vs90\\$(ConfigurationName)
+        )
+    endif()
 endmacro()
 
 # Create the configurations. Must come before project().

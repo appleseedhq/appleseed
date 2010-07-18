@@ -118,3 +118,10 @@ set_property(TARGET appleseed.cli APPEND PROPERTY COMPILE_DEFINITIONS_SHIP
 #
 
 link_against_static_libraries(appleseed.cli)
+
+
+#
+# Post-Build Command.
+#
+
+add_copy_target_to_sandbox_command(appleseed.cli)

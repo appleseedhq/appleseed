@@ -96,3 +96,10 @@ set_property(TARGET appleseed.shared APPEND PROPERTY COMPILE_DEFINITIONS_SHIP
 #
 
 link_against_static_libraries(appleseed.shared)
+
+
+#
+# Post-Build Command.
+#
+
+add_copy_target_to_sandbox_command(appleseed.shared)

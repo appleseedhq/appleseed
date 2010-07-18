@@ -174,9 +174,19 @@ source_group("utility" FILES
     ${utility_sources}
 )
 
+set(resources
+    resources/resources.qrc
+)
+list(APPEND appleseed.studio_sources
+    ${resources}
+)
+source_group("resources" FILES
+    ${resources}
+)
+
 
 #
-# Autogenerate ui_* files.
+# Generate ui_* files.
 #
 
 set(appleseed.studio_ui_files
@@ -193,7 +203,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 
 #
-# Autogenerate moc_* files.
+# Generate moc_* files.
 #
 
 # Collect all header files amongst the source files.
@@ -205,6 +215,17 @@ filter_list(
 
 QT4_WRAP_CPP(appleseed.studio_generated_moc_files
     ${appleseed.studio_moc_files}
+#   OPTIONS
+#   -nw     # suppress warnings
+)
+
+
+#
+# Compile resource files.
+#
+
+QT4_ADD_RESOURCES(appleseed.studio_resource_files
+    ${resources}
 )
 
 
@@ -216,6 +237,7 @@ add_executable(appleseed.studio
     ${appleseed.studio_sources}
     ${appleseed.studio_generated_ui_files}
     ${appleseed.studio_generated_moc_files}
+    ${appleseed.studio_resource_files}
 )
 
 target_link_libraries(appleseed.studio appleseed appleseed.shared)
@@ -263,3 +285,10 @@ target_link_libraries(appleseed.studio
     ${OPENGL_LIBRARY}
     ${QT_LIBRARIES}
 )
+
+
+#
+# Post-Build Command.
+#
+
+add_copy_target_to_sandbox_command(appleseed.studio)
