@@ -30,10 +30,14 @@
 #include "foundation/utility/kvpair.h"
 #include "foundation/utility/test.h"
 
+// Standard headers.
+#include <string>
+
+using namespace foundation;
+using namespace std;
+
 FOUNDATION_TEST_SUITE(Foundation_Utility_KVPair)
 {
-    using namespace foundation;
-
     FOUNDATION_TEST_CASE(FoundationLookupKVPairArray_GivenKeyOfExistingEntry_ReturnsPointerToEntry)
     {
         enum Colors { Red, Green, Blue };
@@ -50,7 +54,7 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_KVPair)
 
         FOUNDATION_ASSERT_NEQ(0, kvpair);
 
-        FOUNDATION_EXPECT_EQ("Green", kvpair->m_value);
+        FOUNDATION_EXPECT_EQ(string("Green"), kvpair->m_value);
     }
 
     FOUNDATION_TEST_CASE(FoundationLookupKVPairArray_GivenKeyOfNonExistingEntry_ReturnsNullPointer)
