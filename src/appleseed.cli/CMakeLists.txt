@@ -95,22 +95,7 @@ include_directories(
 # Preprocessor Definitions.
 #
 
-set_property(TARGET appleseed.cli APPEND PROPERTY COMPILE_DEFINITIONS_DEBUG
-    ${preprocessor_definitions_debug}
-)
-
-set_property(TARGET appleseed.cli APPEND PROPERTY COMPILE_DEFINITIONS_RELEASE
-    ${preprocessor_definitions_release}
-)
-
-set_property(TARGET appleseed.cli APPEND PROPERTY COMPILE_DEFINITIONS_PROFILE
-    ${preprocessor_definitions_release}
-)
-
-set_property(TARGET appleseed.cli APPEND PROPERTY COMPILE_DEFINITIONS_SHIP
-    ${preprocessor_definitions_release}
-    SHIP
-)
+append_common_preprocessor_definitions(appleseed.cli)
 
 
 #

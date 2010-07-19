@@ -65,29 +65,14 @@ include_directories(
 # Preprocessor Definitions.
 #
 
-set(appleseed_shared_preprocessor_definitions_common
+append_common_preprocessor_definitions(appleseed.shared)
+
+set(appleseed_shared_preprocessor_definitions
     APPLESEED_SHARED_EXPORTS
 )
 
-set_property(TARGET appleseed.shared APPEND PROPERTY COMPILE_DEFINITIONS_DEBUG
-    ${preprocessor_definitions_debug}
-    ${appleseed_shared_preprocessor_definitions_common}
-)
-
-set_property(TARGET appleseed.shared APPEND PROPERTY COMPILE_DEFINITIONS_RELEASE
-    ${preprocessor_definitions_release}
-    ${appleseed_shared_preprocessor_definitions_common}
-)
-
-set_property(TARGET appleseed.shared APPEND PROPERTY COMPILE_DEFINITIONS_PROFILE
-    ${preprocessor_definitions_release}
-    ${appleseed_shared_preprocessor_definitions_common}
-)
-
-set_property(TARGET appleseed.shared APPEND PROPERTY COMPILE_DEFINITIONS_SHIP
-    ${preprocessor_definitions_release}
-    ${appleseed_shared_preprocessor_definitions_common}
-    SHIP
+append_custom_preprocessor_definitions(appleseed.shared
+    "${appleseed_shared_preprocessor_definitions}"
 )
 
 

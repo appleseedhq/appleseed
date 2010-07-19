@@ -45,15 +45,21 @@ macro(filter_list output_list input_list regex)
     endforeach()
 endmacro()
 
-# Copy a target binary to the sandbox.
-macro(add_copy_target_to_sandbox_command target)
-    if(WIN32 AND MSVC90)
-        slashes_to_backslashes(project_source_dir_win ${PROJECT_SOURCE_DIR})
-        add_custom_command(TARGET ${target} POST_BUILD
-            COMMAND mkdir ${project_source_dir_win}\\sandbox\\bin\\win32.vs90\\$(ConfigurationName) 2> nul
-            COMMAND copy $(TargetPath) ${project_source_dir_win}\\sandbox\\bin\\win32.vs90\\$(ConfigurationName)
-        )
-    endif()
+# Convert a semicolon-separated list to a whitespace-separated string.
+macro(convert_list_to_string output_string input_list)
+    foreach(item ${input_list})
+        if(DEFINED ${output_string})
+            set(${output_string} "${${output_string}} ${item}")
+        else()
+            set(${output_string} "${item}")
+        endif()
+    endforeach()
+endmacro()
+
+# Assign a whitespace-separated string to a variable, given a list.
+macro(set_to_string output_variable first_arg)
+    set(arg_list ${first_arg} ${ARGN})
+    convert_list_to_string(${output_variable} "${arg_list}")
 endmacro()
 
 # Create the configurations. Must come before project().
@@ -61,4 +67,5 @@ set(CMAKE_CONFIGURATION_TYPES "Debug;Release;Profile;Ship" CACHE STRING "" FORCE
 
 project(appleseed)
 
+# Build the products from source.
 add_subdirectory(src)

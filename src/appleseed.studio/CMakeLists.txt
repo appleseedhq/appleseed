@@ -215,8 +215,6 @@ filter_list(
 
 QT4_WRAP_CPP(appleseed.studio_generated_moc_files
     ${appleseed.studio_moc_files}
-#   OPTIONS
-#   -nw     # suppress warnings
 )
 
 
@@ -257,22 +255,7 @@ include_directories(
 # Preprocessor Definitions.
 #
 
-set_property(TARGET appleseed.studio APPEND PROPERTY COMPILE_DEFINITIONS_DEBUG
-    ${preprocessor_definitions_debug}
-)
-
-set_property(TARGET appleseed.studio APPEND PROPERTY COMPILE_DEFINITIONS_RELEASE
-    ${preprocessor_definitions_release}
-)
-
-set_property(TARGET appleseed.studio APPEND PROPERTY COMPILE_DEFINITIONS_PROFILE
-    ${preprocessor_definitions_release}
-)
-
-set_property(TARGET appleseed.studio APPEND PROPERTY COMPILE_DEFINITIONS_SHIP
-    ${preprocessor_definitions_release}
-    SHIP
-)
+append_common_preprocessor_definitions(appleseed.studio)
 
 
 #

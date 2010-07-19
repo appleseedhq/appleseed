@@ -1216,31 +1216,16 @@ add_library(appleseed SHARED ${appleseed_sources})
 # Preprocessor Definitions.
 #
 
-set(appleseed_preprocessor_definitions_common
+append_common_preprocessor_definitions(appleseed)
+
+set(appleseed_preprocessor_definitions
     APPLESEED_FOUNDATION_EXPORTS
     APPLESEED_RENDERER_EXPORTS
     APPLESEED_FOUNDATION_USE_SSE
 )
 
-set_property(TARGET appleseed APPEND PROPERTY COMPILE_DEFINITIONS_DEBUG
-    ${preprocessor_definitions_debug}
-    ${appleseed_preprocessor_definitions_common}
-)
-
-set_property(TARGET appleseed APPEND PROPERTY COMPILE_DEFINITIONS_RELEASE
-    ${preprocessor_definitions_release}
-    ${appleseed_preprocessor_definitions_common}
-)
-
-set_property(TARGET appleseed APPEND PROPERTY COMPILE_DEFINITIONS_PROFILE
-    ${preprocessor_definitions_release}
-    ${appleseed_preprocessor_definitions_common}
-)
-
-set_property(TARGET appleseed APPEND PROPERTY COMPILE_DEFINITIONS_SHIP
-    ${preprocessor_definitions_release}
-    ${appleseed_preprocessor_definitions_common}
-    SHIP
+append_custom_preprocessor_definitions(appleseed
+    "${appleseed_preprocessor_definitions}"
 )
 
 

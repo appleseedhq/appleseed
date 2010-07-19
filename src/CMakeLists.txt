@@ -28,21 +28,6 @@
 
 
 #
-# Compilation/Linking Flags.
-#
-
-# Profile Configuration.
-set(CMAKE_CXX_FLAGS_PROFILE ${CMAKE_CXX_FLAGS_RELEASE})
-set(CMAKE_EXE_LINKER_FLAGS_PROFILE ${CMAKE_EXE_LINKER_FLAGS_RELEASE})
-set(CMAKE_SHARED_LINKER_FLAGS_PROFILE ${CMAKE_SHARED_LINKER_FLAGS_RELEASE})
-
-# Ship Configuration.
-set(CMAKE_CXX_FLAGS_SHIP ${CMAKE_CXX_FLAGS_RELEASE})
-set(CMAKE_EXE_LINKER_FLAGS_SHIP ${CMAKE_EXE_LINKER_FLAGS_RELEASE})
-set(CMAKE_SHARED_LINKER_FLAGS_SHIP ${CMAKE_SHARED_LINKER_FLAGS_RELEASE})
-
-
-#
 # Include Paths.
 #
 
@@ -58,46 +43,244 @@ include_directories(
 
 
 #
-# Preprocessor Definitions.
+# Preprocessor definitions common to all configurations.
 #
 
+# All Platforms.
 set(preprocessor_definitions_common
-    WIN32
-    XML_LIBRARY                         # to allow static linking against Xerces-C
-    _CRT_SECURE_NO_WARNINGS
-    _USRDLL
-    _WINDOWS
-)    
+)
 
+# Windows.
+if(WIN32)
+    set(preprocessor_definitions_common
+        ${preprocessor_definitions_common}
+        WIN32
+        XML_LIBRARY                         # allow static linking against Xerces-C
+        _CRT_SECURE_NO_WARNINGS
+        _USRDLL
+        _WINDOWS
+    )
+endif()
+
+
+#
+# Preprocessor definitions for Debug configuration.
+#
+
+# All Platforms.
 set(preprocessor_definitions_debug
     ${preprocessor_definitions_common}
     DEBUG
     _DEBUG
-    _HAS_ITERATOR_DEBUGGING=0
-)    
+)
 
+# Visual Studio (any version) on Windows.
+if(WIN32 AND MSVC)
+    set(preprocessor_definitions_debug
+        ${preprocessor_definitions_debug}
+        _HAS_ITERATOR_DEBUGGING=0
+    )
+endif()
+
+
+#
+# Preprocessor definitions for Release configuration.
+#
+
+# All Platforms.
 set(preprocessor_definitions_release
     ${preprocessor_definitions_common}
     NDEBUG
-    _SECURE_SCL=0
-)    
+)
 
-
-#
-# Platform-specific Options.
-#
-
-if(MSVC)
-
-    # Treat warnings as errors.
-    add_definitions(/WX)
-
-    # Disable the following warnings:
-    #   C4290: C++ exception specification ignored except to indicate a function is not __declspec(nothrow)
-    #   C4355: 'this' : used in base member initializer list
-    add_definitions(/wd4290 /wd4355)
-
+# Visual Studio (any version) on Windows.
+if(WIN32 AND MSVC)
+    set(preprocessor_definitions_release
+        ${preprocessor_definitions_release}
+        _SECURE_SCL=0
+    )
 endif()
+
+
+#
+# Preprocessor definitions for Ship configuration.
+#
+
+# All Platforms.
+set(preprocessor_definitions_ship
+    ${preprocessor_definitions_release}
+    SHIP
+)
+
+
+#
+# Preprocessor definitions for Profile configuration.
+#
+
+# All Platforms.
+set(preprocessor_definitions_profile
+    ${preprocessor_definitions_release}
+)
+
+
+#
+# Convenience macros to set preprocessor definitions.
+#
+
+macro(append_common_preprocessor_definitions target)
+    set_property(TARGET ${target} APPEND PROPERTY
+        COMPILE_DEFINITIONS_DEBUG ${preprocessor_definitions_debug}
+    )
+    set_property(TARGET ${target} APPEND PROPERTY
+        COMPILE_DEFINITIONS_RELEASE ${preprocessor_definitions_release}
+    )
+    set_property(TARGET ${target} APPEND PROPERTY
+        COMPILE_DEFINITIONS_SHIP ${preprocessor_definitions_ship}
+    )
+    set_property(TARGET ${target} APPEND PROPERTY
+        COMPILE_DEFINITIONS_PROFILE ${preprocessor_definitions_profile}
+    )
+endmacro()
+
+macro(append_custom_preprocessor_definitions target definitions)
+    set_property(TARGET ${target} APPEND PROPERTY
+        COMPILE_DEFINITIONS_DEBUG ${definitions}
+    )
+    set_property(TARGET ${target} APPEND PROPERTY
+        COMPILE_DEFINITIONS_RELEASE ${definitions}
+    )
+    set_property(TARGET ${target} APPEND PROPERTY
+        COMPILE_DEFINITIONS_SHIP ${definitions}
+    )
+    set_property(TARGET ${target} APPEND PROPERTY
+        COMPILE_DEFINITIONS_PROFILE ${definitions}
+    )
+endmacro()
+
+
+#
+# Compilation/linking flags common to all configurations.
+#
+
+# Visual Studio (any version) on Windows.
+if(WIN32 AND MSVC)
+    set(compiler_flags_common
+        /WX                                 # Treat Warnings As Errors
+        /GF                                 # Enable String Pooling
+        /wd4290                             # C4290: C++ exception specification ignored except to indicate a function is not __declspec(nothrow)
+        /wd4355                             # C4355: 'this' : used in base member initializer list
+    )
+
+    set(linker_flags_common
+        /WX                                 # Treat Warnings As Errors
+    )
+endif()
+
+
+#
+# Compilation/linking flags for Debug configuration.
+#
+
+# Visual Studio (any version) on Windows.
+if(WIN32 AND MSVC)
+    set(compiler_flags_debug
+        ${compiler_flags_common}
+        /ZI                                 # set Debug Information Format to Program Database for Edit & Continue
+        /MDd                                # set Runtime Library to Multi-threaded Debug DLL
+    )
+
+    set(linker_flags_debug
+        ${linker_flags_common}
+    )
+endif()
+
+
+#
+# Compilation/linking flags for Release configuration.
+#
+
+# Visual Studio (any version) on Windows.
+if(WIN32 AND MSVC)
+    set(compiler_flags_release
+        ${compiler_flags_common}
+        /Zi                                 # set Debug Information Format to Program Database
+        /Ox                                 # Full Optimization
+        /Ob2                                # set Inline Function Expansion to Any Suitable
+        /Oi                                 # Enable Intrinsic Functions
+        /Ot                                 # Favor Fast Code
+        /Oy                                 # Omit Frame Pointers
+        /MD                                 # set Runtime Library to Multi-threaded DLL
+        /GS-                                # set Buffer Security Check to No
+        /arch:SSE2                          # Streaming SIMD Extensions 2
+        /fp:fast                            # set Floating Point Model to Fast
+    )
+
+    set(linker_flags_release
+        ${linker_flags_common}
+        /OPT:REF                            # Eliminate Unreferenced Data
+        /OPT:ICF                            # Remove Redundant COMDATs
+    )
+endif()
+
+
+#
+# Compilation/linking flags for Ship configuration.
+#
+
+# Visual Studio (any version) on Windows.
+if(WIN32 AND MSVC)
+    set(compiler_flags_ship
+        ${compiler_flags_release}
+        /GL                                 # Enable link-time code generation
+    )
+
+    set(linker_flags_ship
+        ${linker_flags_release}
+        /LTCG                               # Use Link Time Code Generation
+    )
+endif()
+
+
+#
+# Compilation/linking flags for Profile configuration.
+#
+
+# Visual Studio (any version) on Windows.
+if(WIN32 AND MSVC)
+    set(compiler_flags_profile
+        ${compiler_flags_ship}
+    )
+
+    set(linker_flags_profile
+        ${linker_flags_ship}
+        /DEBUG                              # Generate Debug Info
+    )
+endif()
+
+
+#
+# Set Compilation/Linking Flags.
+#
+
+# Debug.
+set_to_string(CMAKE_CXX_FLAGS_DEBUG ${compiler_flags_debug})
+set_to_string(CMAKE_EXE_LINKER_FLAGS_DEBUG ${linker_flags_debug})
+set_to_string(CMAKE_SHARED_LINKER_FLAGS_DEBUG ${linker_flags_debug})
+
+# Release.
+set_to_string(CMAKE_CXX_FLAGS_RELEASE ${compiler_flags_release})
+set_to_string(CMAKE_EXE_LINKER_FLAGS_RELEASE ${linker_flags_release})
+set_to_string(CMAKE_SHARED_LINKER_FLAGS_RELEASE ${linker_flags_release})
+
+# Ship.
+set_to_string(CMAKE_CXX_FLAGS_SHIP ${compiler_flags_ship})
+set_to_string(CMAKE_EXE_LINKER_FLAGS_SHIP ${linker_flags_ship})
+set_to_string(CMAKE_SHARED_LINKER_FLAGS_SHIP ${linker_flags_ship})
+
+# Profile.
+set_to_string(CMAKE_CXX_FLAGS_PROFILE ${compiler_flags_profile})
+set_to_string(CMAKE_EXE_LINKER_FLAGS_PROFILE ${linker_flags_profile})
+set_to_string(CMAKE_SHARED_LINKER_FLAGS_PROFILE ${linker_flags_profile})
 
 
 #
@@ -117,23 +300,28 @@ if(WIN32 AND MSVC90)
 
         # OpenEXR.
         target_link_libraries(${target}
-            ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/Half/\$\(ConfigurationName\)/Half.lib
-            ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/Iex/\$\(ConfigurationName\)/Iex.lib
-            ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/IlmImf/\$\(ConfigurationName\)/IlmImf.lib
-            ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/IlmThread/\$\(ConfigurationName\)/IlmThread.lib
-            ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/Imath/\$\(ConfigurationName\)/Imath.lib
+            debug       ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/Half/Debug/Half.lib
+            debug       ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/Iex/Debug/Iex.lib
+            debug       ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/IlmImf/Debug/IlmImf.lib
+            debug       ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/IlmThread/Debug/IlmThread.lib
+            debug       ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/Imath/Debug/Imath.lib
+            optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/Half/Release/Half.lib
+            optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/Iex/Release/Iex.lib
+            optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/IlmImf/Release/IlmImf.lib
+            optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/IlmThread/Release/IlmThread.lib
+            optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/Imath/Release/Imath.lib
         )
 
         # zlib.
         target_link_libraries(${target}
-            debug       ${CMAKE_SOURCE_DIR}/build/win32.vs90/zlib/Win32_LIB_ASM_\$\(ConfigurationName\)/zlibd.lib
-            optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs90/zlib/Win32_LIB_ASM_\$\(ConfigurationName\)/zlib.lib
+            debug       ${CMAKE_SOURCE_DIR}/build/win32.vs90/zlib/Win32_LIB_ASM_Debug/zlibd.lib
+            optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs90/zlib/Win32_LIB_ASM_Release/zlib.lib
         )
 
         # libpng.
         target_link_libraries(${target}
-            debug       ${CMAKE_SOURCE_DIR}/build/win32.vs90/libpng/Win32_LIB_ASM_\$\(ConfigurationName\)/libpngd.lib
-            optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs90/libpng/Win32_LIB_ASM_\$\(ConfigurationName\)/libpng.lib
+            debug       ${CMAKE_SOURCE_DIR}/build/win32.vs90/libpng/Win32_LIB_ASM_Debug/libpngd.lib
+            optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs90/libpng/Win32_LIB_ASM_Release/libpng.lib
         )
 
         # Xerces-C.
@@ -148,7 +336,22 @@ endif()
 
 
 #
-# Recurse into subdirectories.
+# Copy a target binary to the sandbox.
+#
+
+macro(add_copy_target_to_sandbox_command target)
+    if(WIN32 AND MSVC90)
+        slashes_to_backslashes(project_source_dir_win ${PROJECT_SOURCE_DIR})
+        add_custom_command(TARGET ${target} POST_BUILD
+            COMMAND mkdir ${project_source_dir_win}\\sandbox\\bin\\win32.vs90\\$(ConfigurationName) 2> nul
+            COMMAND copy $(TargetPath) ${project_source_dir_win}\\sandbox\\bin\\win32.vs90\\$(ConfigurationName)
+        )
+    endif()
+endmacro()
+
+
+#
+# Build the individual products.
 #
 
 add_subdirectory(appleseed)
