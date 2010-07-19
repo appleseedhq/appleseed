@@ -34,7 +34,7 @@
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/implptr.h"
 #include "foundation/utility/kvpair.h"
 
 // Forward declarations.
@@ -95,11 +95,8 @@ class RENDERERDLL DiagnosticSurfaceShader
         ShadingResult&          shading_result) const;
 
   private:
-    const std::string           m_name;
-    foundation::Dictionary      m_shading_modes;
-    ShadingMode                 m_shading_mode;
-    double                      m_ao_max_distance;
-    size_t                      m_ao_samples;
+    struct Impl;
+    foundation::impl_ptr<Impl, false> impl;
 
     void extract_parameters();
 };
