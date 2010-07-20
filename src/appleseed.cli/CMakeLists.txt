@@ -76,9 +76,9 @@ source_group("" FILES
 # Target.
 #
 
-add_executable(appleseed.cli ${appleseed.cli_sources})
-
-target_link_libraries(appleseed.cli appleseed appleseed.shared)
+add_executable(appleseed.cli
+    ${appleseed.cli_sources}
+)
 
 
 #
@@ -102,7 +102,12 @@ append_common_preprocessor_definitions(appleseed.cli)
 # Static Libraries.
 #
 
-link_against_static_libraries(appleseed.cli)
+link_against_common_static_libraries(appleseed.cli)
+
+target_link_libraries(appleseed.cli
+    appleseed
+    appleseed.shared
+)
 
 
 #

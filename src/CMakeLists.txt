@@ -142,7 +142,8 @@ macro(append_common_preprocessor_definitions target)
     )
 endmacro()
 
-macro(append_custom_preprocessor_definitions target definitions)
+macro(append_custom_preprocessor_definitions target first_definition)
+    set(definitions ${first_definition} ${ARGN})
     set_property(TARGET ${target} APPEND PROPERTY
         COMPILE_DEFINITIONS_DEBUG ${definitions}
     )
@@ -263,24 +264,24 @@ endif()
 #
 
 # Debug.
-set_to_string(CMAKE_CXX_FLAGS_DEBUG ${compiler_flags_debug})
-set_to_string(CMAKE_EXE_LINKER_FLAGS_DEBUG ${linker_flags_debug})
-set_to_string(CMAKE_SHARED_LINKER_FLAGS_DEBUG ${linker_flags_debug})
+convert_list_to_string(CMAKE_CXX_FLAGS_DEBUG "${compiler_flags_debug}")
+convert_list_to_string(CMAKE_EXE_LINKER_FLAGS_DEBUG "${linker_flags_debug}")
+convert_list_to_string(CMAKE_SHARED_LINKER_FLAGS_DEBUG "${linker_flags_debug}")
 
 # Release.
-set_to_string(CMAKE_CXX_FLAGS_RELEASE ${compiler_flags_release})
-set_to_string(CMAKE_EXE_LINKER_FLAGS_RELEASE ${linker_flags_release})
-set_to_string(CMAKE_SHARED_LINKER_FLAGS_RELEASE ${linker_flags_release})
+convert_list_to_string(CMAKE_CXX_FLAGS_RELEASE "${compiler_flags_release}")
+convert_list_to_string(CMAKE_EXE_LINKER_FLAGS_RELEASE "${linker_flags_release}")
+convert_list_to_string(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${linker_flags_release}")
 
 # Ship.
-set_to_string(CMAKE_CXX_FLAGS_SHIP ${compiler_flags_ship})
-set_to_string(CMAKE_EXE_LINKER_FLAGS_SHIP ${linker_flags_ship})
-set_to_string(CMAKE_SHARED_LINKER_FLAGS_SHIP ${linker_flags_ship})
+convert_list_to_string(CMAKE_CXX_FLAGS_SHIP "${compiler_flags_ship}")
+convert_list_to_string(CMAKE_EXE_LINKER_FLAGS_SHIP "${linker_flags_ship}")
+convert_list_to_string(CMAKE_SHARED_LINKER_FLAGS_SHIP "${linker_flags_ship}")
 
 # Profile.
-set_to_string(CMAKE_CXX_FLAGS_PROFILE ${compiler_flags_profile})
-set_to_string(CMAKE_EXE_LINKER_FLAGS_PROFILE ${linker_flags_profile})
-set_to_string(CMAKE_SHARED_LINKER_FLAGS_PROFILE ${linker_flags_profile})
+convert_list_to_string(CMAKE_CXX_FLAGS_PROFILE "${compiler_flags_profile}")
+convert_list_to_string(CMAKE_EXE_LINKER_FLAGS_PROFILE "${linker_flags_profile}")
+convert_list_to_string(CMAKE_SHARED_LINKER_FLAGS_PROFILE "${linker_flags_profile}")
 
 
 #
@@ -296,7 +297,7 @@ if(WIN32 AND MSVC90)
     # hence it is not included in the macro below.
     link_directories(${CMAKE_SOURCE_DIR}/build/win32.vs90/boost/lib)
 
-    macro(link_against_static_libraries target)
+    macro(link_against_common_static_libraries target)
 
         # OpenEXR.
         target_link_libraries(${target}

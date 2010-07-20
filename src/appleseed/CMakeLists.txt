@@ -1209,7 +1209,9 @@ source_group("renderer\\modeling\\texture" FILES
 # Target.
 #
 
-add_library(appleseed SHARED ${appleseed_sources})
+add_library(appleseed SHARED
+    ${appleseed_sources}
+)
 
 
 #
@@ -1218,14 +1220,10 @@ add_library(appleseed SHARED ${appleseed_sources})
 
 append_common_preprocessor_definitions(appleseed)
 
-set(appleseed_preprocessor_definitions
+append_custom_preprocessor_definitions(appleseed
     APPLESEED_FOUNDATION_EXPORTS
     APPLESEED_RENDERER_EXPORTS
     APPLESEED_FOUNDATION_USE_SSE
-)
-
-append_custom_preprocessor_definitions(appleseed
-    "${appleseed_preprocessor_definitions}"
 )
 
 
@@ -1233,7 +1231,7 @@ append_custom_preprocessor_definitions(appleseed
 # Static Libraries.
 #
 
-link_against_static_libraries(appleseed)
+link_against_common_static_libraries(appleseed)
 
 
 #

@@ -238,8 +238,6 @@ add_executable(appleseed.studio
     ${appleseed.studio_resource_files}
 )
 
-target_link_libraries(appleseed.studio appleseed appleseed.shared)
-
 
 #
 # Include Paths.
@@ -262,11 +260,13 @@ append_common_preprocessor_definitions(appleseed.studio)
 # Static Libraries.
 #
 
-link_against_static_libraries(appleseed.studio)
+link_against_common_static_libraries(appleseed.studio)
 
 target_link_libraries(appleseed.studio
-    ${OPENGL_LIBRARY}
+    appleseed
+    appleseed.shared
     ${QT_LIBRARIES}
+    ${OPENGL_LIBRARY}
 )
 
 
