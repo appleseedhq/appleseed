@@ -234,7 +234,6 @@ set(foundation_math_sources
     foundation/math/scalar.h
     foundation/math/spline.h
     foundation/math/split.h
-    foundation/math/transform\ -\ Copie.h
     foundation/math/transform.h
     foundation/math/triangulator.h
     foundation/math/vector.h
