@@ -54,7 +54,7 @@ class IMeshFileWriter
     struct ExceptionIOError : public Exception {};
 
     // Destructor.
-    virtual ~IMeshFileWriter() = 0 {}
+    virtual ~IMeshFileWriter() {}
 
     // Write a mesh file.
     virtual void write(

@@ -49,7 +49,7 @@ class IMeshBuilder
 {
   public:
     // Destructor.
-    virtual ~IMeshBuilder() = 0 {}
+    virtual ~IMeshBuilder() {}
 
     // Begin the definition of a mesh.
     virtual void begin_mesh(const std::string& name) = 0;

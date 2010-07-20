@@ -59,7 +59,7 @@ class ILazyFactory
     typedef Object ObjectType;
 
     // Destructor.
-    virtual ~ILazyFactory() = 0 {}
+    virtual ~ILazyFactory() {}
 
     // Create the object.
     virtual std::auto_ptr<Object> create() = 0;

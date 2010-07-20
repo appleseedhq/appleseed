@@ -54,7 +54,7 @@ class IMeshFileReader
     struct ExceptionIOError : public Exception {};
 
     // Destructor.
-    virtual ~IMeshFileReader() = 0 {}
+    virtual ~IMeshFileReader() {}
 
     // Read a mesh file.
     virtual void read(

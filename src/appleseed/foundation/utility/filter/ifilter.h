@@ -59,7 +59,7 @@ class FOUNDATIONDLL IFilter
 {
   public:
     // Destructor.
-    virtual ~IFilter() = 0 {}
+    virtual ~IFilter() {}
 
     virtual bool accepts(const char* name) const = 0;
 };

@@ -81,7 +81,7 @@ class FOUNDATIONDLL ISerializable
 {
   public:
     // Destructor.
-    virtual ~ISerializable() = 0 {}
+    virtual ~ISerializable() {}
 
     // Serialization method.
     virtual Serializer* serialize(

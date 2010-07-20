@@ -60,7 +60,7 @@ class IImageFileReader
     };
 
     // Destructor.
-    virtual ~IImageFileReader() = 0 {}
+    virtual ~IImageFileReader() {}
 
     // Read an image file.
     virtual void read(

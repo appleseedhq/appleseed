@@ -44,7 +44,7 @@ class RENDERERDLL IRendererController
 {
   public:
     // Destructor.
-    virtual ~IRendererController() = 0 {}
+    virtual ~IRendererController() {}
 
     // This method is called before rendering begins.
     virtual void on_rendering_begin() = 0;

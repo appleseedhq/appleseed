@@ -66,7 +66,7 @@ class FOUNDATIONDLL IJob
 {
   public:
     // Destructor.
-    virtual ~IJob() = 0 {}
+    virtual ~IJob() {}
 
     // Execute the job.
     virtual void execute(const size_t thread_index) = 0;

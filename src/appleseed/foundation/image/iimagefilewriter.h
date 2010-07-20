@@ -60,7 +60,7 @@ class IImageFileWriter
     };
 
     // Destructor.
-    virtual ~IImageFileWriter() = 0 {}
+    virtual ~IImageFileWriter() {}
 
     // Write an image file.
     virtual void write(

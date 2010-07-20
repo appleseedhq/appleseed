@@ -60,7 +60,7 @@ class IMeshWalker
     };
 
     // Destructor.
-    virtual ~IMeshWalker() = 0 {}
+    virtual ~IMeshWalker() {}
 
     // Return the name of the mesh.
     virtual std::string get_name() const = 0;

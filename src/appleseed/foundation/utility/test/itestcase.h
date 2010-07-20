@@ -67,7 +67,7 @@ class FOUNDATIONDLL ITestCase
 {
   public:
     // Destructor.
-    virtual ~ITestCase() = 0 {}
+    virtual ~ITestCase() {}
 
     // Return the name of the test case.
     virtual const char* get_name() const = 0;

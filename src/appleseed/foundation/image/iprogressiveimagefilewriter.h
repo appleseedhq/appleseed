@@ -80,7 +80,7 @@ class FOUNDATIONDLL IProgressiveImageFileWriter
     };
 
     // Destructor.
-    virtual ~IProgressiveImageFileWriter() = 0 {}
+    virtual ~IProgressiveImageFileWriter() {}
 
     // Open an image file for writing.
     virtual void open(

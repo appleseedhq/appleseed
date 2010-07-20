@@ -63,7 +63,7 @@ class FOUNDATIONDLL ICloneable
 {
   public:
     // Destructor.
-    virtual ~ICloneable() = 0 {}
+    virtual ~ICloneable() {}
 
     // Return an exact copy of this object.
     virtual ICloneable* clone() const = 0;

@@ -48,7 +48,7 @@ class IRegion
 {
   public:
     // Destructor.
-    virtual ~IRegion() = 0 {}
+    virtual ~IRegion() {}
 
     // Return the local space bounding box of the region.
     virtual const GAABB3& get_local_bbox() const = 0;

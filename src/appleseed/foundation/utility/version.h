@@ -85,7 +85,7 @@ class FOUNDATIONDLL IVersionable
 {
   public:
     // Destructor.
-    virtual ~IVersionable() = 0 {}
+    virtual ~IVersionable() {}
 
     // Return the version ID of this object.
     virtual VersionID get_version_id() const = 0;

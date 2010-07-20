@@ -72,7 +72,7 @@ class FOUNDATIONDLL ICanvas
 {
   public:
     // Destructor.
-    virtual ~ICanvas() = 0 {}
+    virtual ~ICanvas() {}
 
     // Access canvas properties.
     virtual const CanvasProperties& properties() const = 0;

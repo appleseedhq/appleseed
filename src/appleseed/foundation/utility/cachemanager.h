@@ -71,7 +71,7 @@ class FOUNDATIONDLL IFlushable
 {
   public:
     // Destructor.
-    virtual ~IFlushable() = 0 {}
+    virtual ~IFlushable() {}
 
     // Return the number of bytes that can be flushed.
     virtual size_t get_flushable_size() const = 0;

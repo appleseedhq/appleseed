@@ -117,7 +117,7 @@ class IElementHandler
     typedef IElementHandler<ElementID> ElementHandlerType;
 
     // Destructor.
-    virtual ~IElementHandler() = 0 {}
+    virtual ~IElementHandler() {}
 
     // Receive notification of the start of an element.
     virtual void start_element(

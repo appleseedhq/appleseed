@@ -78,7 +78,7 @@ class FOUNDATIONDLL IIdentifiable
 {
   public:
     // Destructor.
-    virtual ~IIdentifiable() = 0 {}
+    virtual ~IIdentifiable() {}
 
     // Return the unique ID of this object.
     virtual UniqueID get_uid() const = 0;

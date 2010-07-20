@@ -63,7 +63,7 @@ class FOUNDATIONDLL IBenchmarkCase
 {
   public:
     // Destructor.
-    virtual ~IBenchmarkCase() = 0 {}
+    virtual ~IBenchmarkCase() {}
 
     // Return the name of the benchmark case.
     virtual const char* get_name() const = 0;

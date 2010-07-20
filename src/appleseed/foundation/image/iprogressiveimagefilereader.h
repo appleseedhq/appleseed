@@ -81,7 +81,7 @@ class FOUNDATIONDLL IProgressiveImageFileReader
     };
 
     // Destructor.
-    virtual ~IProgressiveImageFileReader() = 0 {}
+    virtual ~IProgressiveImageFileReader() {}
 
     // Open an image file.
     virtual void open(
