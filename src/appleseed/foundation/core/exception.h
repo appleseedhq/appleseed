@@ -30,6 +30,9 @@
 #define APPLESEED_FOUNDATION_CORE_EXCEPTION_H
 
 // Standard headers.
+#include <cassert>
+#include <cstddef>
+#include <cstring>
 #include <exception>
 
 namespace foundation
@@ -44,12 +47,57 @@ class Exception
 {
   public:
     // Constructors.
-    Exception() {}
-    Exception(const char* what)
-      : std::exception(what)
-    {
-    }
+    Exception();
+    explicit Exception(const char* what);
+
+    // Returns a generic, implementation-defined description of the exception.
+    virtual const char* what() const;
+
+  protected:
+    // Copy a string to another, ensuring that no overflow occurs and that the
+    // resulting string is always properly null-terminated.
+    static void copy_string(
+        char*           destination,
+        const char*     source,
+        const size_t    destination_size);
+
+  private:
+    char m_what[4096];
 };
+
+
+//
+// Exception class implementation.
+//
+
+inline Exception::Exception()
+{
+    copy_string(m_what, "foundation::Exception", sizeof(m_what));
+}
+
+inline Exception::Exception(const char* what)
+{
+    copy_string(m_what, what, sizeof(m_what));
+}
+
+inline const char* Exception::what() const
+{
+    return m_what;
+}
+
+inline void Exception::copy_string(
+    char*           destination,
+    const char*     source,
+    const size_t    destination_size)
+{
+    assert(destination);
+    assert(source);
+    assert(destination_size > 0);
+
+    std::strncpy(destination, source, destination_size - 1);
+
+    destination[destination_size - 1] = '\0';
+}
 
 }       // namespace foundation
 

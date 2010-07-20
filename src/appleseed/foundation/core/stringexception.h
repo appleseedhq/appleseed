@@ -32,11 +32,6 @@
 // appleseed.foundation headers.
 #include "foundation/core/exception.h"
 
-// Standard headers.
-#include <cassert>
-#include <cstddef>
-#include <cstring>
-
 namespace foundation
 {
 
@@ -48,35 +43,31 @@ class StringException
   : public Exception
 {
   public:
-    // Constructors.
-    StringException(const char* s)
-    {
-        store_copy(s);
-    }
-    StringException(const char* what, const char* s)
-      : Exception(what)
-    {
-        store_copy(s);
-    }
+    // Constructor.
+    StringException(const char* what, const char* s);
 
-    // Return the string stored in the exception.
-    const char* string() const
-    {
-        return m_string;
-    }
+    // Return the additional string stored in the exception.
+    const char* string() const;
 
   private:
-    static const size_t MaxStringLength = 4096;
-    char m_string[MaxStringLength + 1];
-
-    // Store a copy of the string passed in argument.
-    void store_copy(const char* s)
-    {
-        assert(s);
-        std::strncpy(m_string, s, MaxStringLength);
-        m_string[MaxStringLength] = '\0';
-    }
+    char m_string[4096];
 };
+
+
+//
+// String class implementation.
+//
+
+inline StringException::StringException(const char* what, const char* s)
+  : Exception(what)
+{
+    copy_string(m_string, s, sizeof(m_string));
+}
+
+inline const char* StringException::string() const
+{
+    return m_string;
+}
 
 }       // namespace foundation
 
