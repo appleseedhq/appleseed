@@ -343,9 +343,12 @@ endif()
 macro(add_copy_target_to_sandbox_command target)
     if(WIN32 AND MSVC90)
         slashes_to_backslashes(project_source_dir_win ${PROJECT_SOURCE_DIR})
+        
+        set(bin_directory ${project_source_dir_win}\\sandbox\\bin\\win32.vs90\\$(ConfigurationName))
+        
         add_custom_command(TARGET ${target} POST_BUILD
-            COMMAND mkdir ${project_source_dir_win}\\sandbox\\bin\\win32.vs90\\$(ConfigurationName) 2> nul
-            COMMAND copy $(TargetPath) ${project_source_dir_win}\\sandbox\\bin\\win32.vs90\\$(ConfigurationName)
+            COMMAND if not exist ${bin_directory} mkdir ${bin_directory}
+            COMMAND copy $(TargetPath) ${bin_directory}
         )
     endif()
 endmacro()
