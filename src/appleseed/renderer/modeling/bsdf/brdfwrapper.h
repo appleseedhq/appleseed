@@ -113,7 +113,7 @@ void BRDFWrapper<Base>::sample(
     const double cos_ng = foundation::dot(shading_normal, geometric_normal);
     if (cos_ng <= 0.0)
     {
-        mode = None;
+        mode = Base::None;
         return;
     }
 
@@ -121,7 +121,7 @@ void BRDFWrapper<Base>::sample(
     const double cos_og = foundation::dot(outgoing, geometric_normal);
     if (cos_og <= 0.0)
     {
-        mode = None;
+        mode = Base::None;
         return;
     }
 

@@ -129,8 +129,8 @@ inline void ImageImportanceSampler<T, ImageSampler>::sample(
 {
     if (m_cdf_y.valid())
     {
-        const CDF::ItemWeightPair ry = m_cdf_y.sample(s[1]);
-        const CDF::ItemWeightPair rx = m_cdf_x[ry.first].sample(s[0]);
+        const typename CDF::ItemWeightPair ry = m_cdf_y.sample(s[1]);
+        const typename CDF::ItemWeightPair rx = m_cdf_x[ry.first].sample(s[0]);
 
         x = rx.first;
         y = ry.first;
@@ -155,8 +155,8 @@ inline T ImageImportanceSampler<T, ImageSampler>::get_pdf(
     {
         if (m_cdf_x[y].valid())
         {
-            const CDF::ItemWeightPair ry = m_cdf_y[y];
-            const CDF::ItemWeightPair rx = m_cdf_x[y][x];
+            const typename CDF::ItemWeightPair ry = m_cdf_y[y];
+            const typename CDF::ItemWeightPair rx = m_cdf_x[y][x];
 
             return rx.second * ry.second;
         }

@@ -55,7 +55,7 @@ FOUNDATION_TEST_SUITE(Renderer_Modeling_Entity_EntityMap)
     FOUNDATION_TEST_CASE(Swap_GivenEntityMapWithOneItemAndAnotherEmptyEntityMap_MovesItemToOtherContainer)
     {
         EntityMap m1;
-        m1.insert(auto_release_ptr<DummyEntity>(new DummyEntity()));
+        m1.insert(auto_release_ptr<Entity>(new DummyEntity()));
 
         EntityMap m2;
         m2.swap(m1);

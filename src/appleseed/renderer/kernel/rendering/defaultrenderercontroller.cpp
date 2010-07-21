@@ -71,7 +71,8 @@ DefaultRendererController::Status DefaultRendererController::on_progress()
 {
     const uint32 PollRate = 10;    // hertz
 
-    sleep(1000 / PollRate);
+    // The namespace qualifier is necessary for disambiguation.
+    foundation::sleep(1000 / PollRate);
 
     return ContinueRendering;
 }

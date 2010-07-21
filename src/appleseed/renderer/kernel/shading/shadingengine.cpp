@@ -119,10 +119,11 @@ void ShadingEngine::shade(
         if (environment_shader)
         {
             // There is an environment shader: execute it.
+            InputEvaluator input_evaluator(shading_context.get_texture_cache());
             const ShadingRay& ray = shading_point.get_ray();
             const Vector3d direction = normalize(ray.m_dir);
             environment_shader->evaluate(
-                InputEvaluator(shading_context.get_texture_cache()),
+                input_evaluator,
                 direction,
                 shading_result);
         }

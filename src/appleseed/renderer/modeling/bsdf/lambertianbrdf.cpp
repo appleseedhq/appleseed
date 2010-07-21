@@ -210,7 +210,7 @@ namespace
         Spectrum        m_brdf_value;                   // precomputed value of the BRDF
     };
 
-    typedef public BRDFWrapper<LambertianBRDFImpl> LambertianBRDF;
+    typedef BRDFWrapper<LambertianBRDFImpl> LambertianBRDF;
 
 }   // anonymous namespace
 

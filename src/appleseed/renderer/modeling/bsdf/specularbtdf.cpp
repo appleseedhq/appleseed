@@ -222,7 +222,7 @@ namespace
         const string    m_name;
     };
 
-    typedef public BTDFWrapper<SpecularBTDFImpl> SpecularBTDF;
+    typedef BTDFWrapper<SpecularBTDFImpl> SpecularBTDF;
 
 }   // anonymous namespace
 

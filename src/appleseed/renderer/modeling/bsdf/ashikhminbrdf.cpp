@@ -509,7 +509,7 @@ namespace
         }
     };
 
-    typedef public BRDFWrapper<AshikhminBRDFImpl> AshikhminBRDF;
+    typedef BRDFWrapper<AshikhminBRDFImpl> AshikhminBRDF;
 
 }   // anonymous namespace
 

@@ -55,7 +55,7 @@ FOUNDATION_TEST_SUITE(Renderer_Modeling_Entity_EntityVector)
     FOUNDATION_TEST_CASE(Swap_GivenEntityVectorWithOneItemAndAnotherEmptyEntityVector_MovesItemToOtherContainer)
     {
         EntityVector v1;
-        v1.insert(auto_release_ptr<DummyEntity>(new DummyEntity()));
+        v1.insert(auto_release_ptr<Entity>(new DummyEntity()));
 
         EntityVector v2;
         v2.swap(v1);

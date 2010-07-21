@@ -159,7 +159,7 @@ namespace
         const string    m_name;
     };
 
-    typedef public BRDFWrapper<SpecularBRDFImpl> SpecularBRDF;
+    typedef BRDFWrapper<SpecularBRDFImpl> SpecularBRDF;
 
 }   // anonymous namespace
 

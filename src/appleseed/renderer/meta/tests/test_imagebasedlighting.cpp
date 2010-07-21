@@ -136,6 +136,7 @@ FOUNDATION_TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
 
     FOUNDATION_TEST_CASE_WITH_FIXTURE(ComputeImageBasedLighting_GivenSceneWithoutEnvironmentEDF_ReturnsZeroRadiance, Fixture)
     {
+        NullBSDF bsdf;
         Spectrum radiance;
 
         compute_image_based_lighting(
@@ -145,7 +146,7 @@ FOUNDATION_TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
             Vector3d(0.0, 1.0, 0.0),
             Basis3d(Vector3d(0.0, 1.0, 0.0)),
             Vector3d(0.0, 1.0, 0.0),
-            NullBSDF(),
+            bsdf,
             0,              // BSDF data
             1,              // number of samples in BSDF sampling
             0,              // number of samples in environment sampling
