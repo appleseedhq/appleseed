@@ -231,7 +231,8 @@ void BenchmarkSuite::register_case(IBenchmarkCaseFactory* factory)
 // Run all the registered benchmark cases.
 void BenchmarkSuite::run(BenchmarkResult& suite_result) const
 {
-    run(LetThroughFilter(), suite_result);
+    LetThroughFilter filter;
+    run(filter, suite_result);
 }
 
 // Run those benchmark cases whose name pass a given filter.

@@ -38,10 +38,10 @@ using namespace std;
 
 FOUNDATION_TEST_SUITE(Foundation_Utility_KVPair)
 {
+    enum Colors { Red, Green, Blue };
+
     FOUNDATION_TEST_CASE(FoundationLookupKVPairArray_GivenKeyOfExistingEntry_ReturnsPointerToEntry)
     {
-        enum Colors { Red, Green, Blue };
-
         static const KeyValuePair<Colors, const char*> ColorNames[] =
         {
             { Red, "Red" },
@@ -59,8 +59,6 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_KVPair)
 
     FOUNDATION_TEST_CASE(FoundationLookupKVPairArray_GivenKeyOfNonExistingEntry_ReturnsNullPointer)
     {
-        enum Colors { Red, Green, Blue };
-
         static const KeyValuePair<Colors, const char*> ColorNames[] =
         {
             { Green, "Green" },

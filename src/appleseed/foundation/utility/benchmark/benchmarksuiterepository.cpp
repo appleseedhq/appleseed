@@ -75,7 +75,8 @@ void BenchmarkSuiteRepository::register_suite(BenchmarkSuite* suite)
 // Run all the registered benchmark suites.
 void BenchmarkSuiteRepository::run(BenchmarkResult& result) const
 {
-    run(LetThroughFilter(), result);
+    LetThroughFilter filter;
+    run(filter, result);
 }
 
 // Run those benchmark suites whose name pass a given filter.

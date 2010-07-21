@@ -132,11 +132,10 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
         //-----------------------------------------------------------------------------
 
         // Forces the compiler to believe that 'a' cannot be optimized away
-        #define USED(a) Used( 0, a )
+        #define USED(a) Used( 0, &a )
 
-        // Verifies the expression; also forces the compiler to believe that 'b'
-        // cannot be optimized away.
-        #define VERIFY(b) { USED(b); if (!(b)) throw Exception("VERIFY(" #b ") failed"); }
+        // Verifies the expression
+        #define VERIFY(b) { if (!(b)) throw Exception("VERIFY(" #b ") failed"); }
 
         // Output error message; includes file and line number
         #define OUTERR(e) { throw Exception(e); }
@@ -240,7 +239,7 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
             {
                 // Sets require a comparison functor prior to the allocator 
                 // object in the container ctor
-                return Set( std::less< Allocator::value_type >(), a );
+                return Set( std::less< typename Allocator::value_type >(), a );
             }
 
             // Construct a map by specifying the allocator
@@ -248,13 +247,13 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
             static Map GetCopiedMap( const Allocator& aIn )
             {
                 // map allocators are pair allocators
-                typedef std::pair< const Allocator::value_type, int > Pair;
+                typedef std::pair< const typename Allocator::value_type, int > Pair;
                 typedef typename Allocator::template rebind< Pair >::other Alloc;
                 Alloc a( aIn );
                 
                 // Maps require a comparison functor prior to the allocator 
                 // object in the map ctor.
-                return Map( std::less< Allocator::value_type >(), a );
+                return Map( std::less< typename Allocator::value_type >(), a );
             }
 
             // Construct an adapter (stack, queue) by specifying the allocator
@@ -271,7 +270,7 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
             {
                 // Priority queues require a comparison functor prior to the 
                 // allocator object in the container ctor.
-                return PriorityQueue( std::less< Allocator::value_type >(), Container( a ) );
+                return PriorityQueue( std::less< typename Allocator::value_type >(), Container( a ) );
             }
 
         };
@@ -679,13 +678,13 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
         void TestMemberFunctionPresence( const Allocator& a )
         {
             // Typedefs
-            Allocator::size_type       st;
-            Allocator::difference_type dt;
-            Allocator::pointer         p;
-            Allocator::const_pointer   cp;
-            Allocator::value_type      v;
-            Allocator::reference       r = v;   // Note: must be initialized
-            Allocator::const_reference cr = v;  // Note: must be initialized
+            typename Allocator::size_type       st;
+            typename Allocator::difference_type dt;
+            typename Allocator::pointer         p;
+            typename Allocator::const_pointer   cp;
+            typename Allocator::value_type      v;
+            typename Allocator::reference       r = v;   // Note: must be initialized
+            typename Allocator::const_reference cr = v;  // Note: must be initialized
             
             // allocator()
             Allocator b( Policy< Allocator >::Construct( a ) );
@@ -695,7 +694,7 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
             Allocator c(a);
             
             // allocator( const allocator<U>& ) and rebind
-            Allocator::rebind< C >::other d( c );
+            typename Allocator::template rebind< C >::other d( c );
             
             // Although operator=() may be implemented by an allocator, it is 
             // not required by the C++ Standard, nor is it to be used by 
@@ -771,10 +770,10 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
         void TestMemberFunctions( const Allocator& a )
         {
             // Typedefs
-            Allocator::pointer         p = NULL;
-            Allocator::value_type      v;
-            Allocator::reference       r = v;   // Note: must be initialized
-            Allocator::const_reference cr = v;  // Note: must be initialized
+            typename Allocator::pointer         p = NULL;
+            typename Allocator::value_type      v;
+            typename Allocator::reference       r = v;   // Note: must be initialized
+            typename Allocator::const_reference cr = v;  // Note: must be initialized
 
             // allocator()
             Allocator b( Policy< Allocator >::Construct( a ) );
@@ -787,8 +786,8 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
             VERIFY( c == a );
             
             // allocator( const allocator<U>& ) and rebind
-            Allocator::rebind< C >::other d( c );
-            Allocator::rebind< Allocator::value_type >::other e( d );
+            typename Allocator::template rebind< C >::other d( c );
+            typename Allocator::template rebind< typename Allocator::value_type >::other e( d );
             VERIFY( c == e );
             
             // address( reference )
@@ -812,7 +811,7 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
             VERIFY( p != NULL );
             
             // Write to allocated memory
-            memset( p, 'x', sizeof( Allocator::value_type ) );
+            memset( p, 'x', sizeof( typename Allocator::value_type ) );
 
             // deallocate( pointer, size_type )
             c.deallocate( p, 1 );
@@ -829,7 +828,7 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
             VERIFY( p != NULL );
             
             // Write to allocated memory
-            memset( p, 'x', sizeof( Allocator::value_type ) );
+            memset( p, 'x', sizeof( typename Allocator::value_type ) );
             
             // construct( pointer, const T& )
             c.construct( p, v );
@@ -853,7 +852,7 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
             VERIFY( p != NULL );
             
             // Write to allocated memory
-            memset( p, 'x', sizeof( Allocator::value_type ) * 2 );
+            memset( p, 'x', sizeof( typename Allocator::value_type ) * 2 );
             
             // construct( pointer, const T& )
             c.construct( p, v );
@@ -927,11 +926,11 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
         template< typename Allocator, typename Container >
         void TestVector( const Allocator& a, Container& c )
         {
-            c.push_back( Allocator::value_type() );
+            c.push_back( typename Allocator::value_type() );
             c.clear();
-            c.push_back( Allocator::value_type() );
+            c.push_back( typename Allocator::value_type() );
             c.reserve( 100 );
-            VERIFY( c[0] == Allocator::value_type() );
+            VERIFY( c[0] == typename Allocator::value_type() );
             c.clear();
             USED( a );
             USED( c );
@@ -942,10 +941,10 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
         template< typename Allocator, typename Container >
         void TestDeque( const Allocator& a, Container& c )
         {
-            c.push_back( Allocator::value_type() );
+            c.push_back( typename Allocator::value_type() );
             c.clear();
-            c.assign( 100, Allocator::value_type() );
-            VERIFY( c.front() == Allocator::value_type() );
+            c.assign( 100, typename Allocator::value_type() );
+            VERIFY( c.front() == typename Allocator::value_type() );
             c.clear();
             USED( a );
             USED( c );
@@ -956,10 +955,10 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
         template< typename Allocator, typename Container >
         void TestList( const Allocator& a, Container& c )
         {
-            c.push_back( Allocator::value_type() );
+            c.push_back( typename Allocator::value_type() );
             c.clear();
-           c.insert( c.begin(), 100, Allocator::value_type() );
-            VERIFY( c.front() == Allocator::value_type() );
+           c.insert( c.begin(), 100, typename Allocator::value_type() );
+            VERIFY( c.front() == typename Allocator::value_type() );
             c.clear();
             USED( a );
             USED( c );
@@ -970,12 +969,12 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
         template< typename Allocator, typename Container >
         void TestSet( const Allocator& a, Container& c )
         {
-            c.insert( Allocator::value_type() );
+            c.insert( typename Allocator::value_type() );
             c.clear();
             for( int i = 0; i < 100; ++i )
-                c.insert( Allocator::value_type( i ) );
-            c.insert( Allocator::value_type( 0 ) );        
-            VERIFY( c.find( Allocator::value_type( 0 ) ) == c.begin() );
+                c.insert( typename Allocator::value_type( i ) );
+            c.insert( typename Allocator::value_type( 0 ) );        
+            VERIFY( c.find( typename Allocator::value_type( 0 ) ) == c.begin() );
             c.clear();
             USED( a );
             USED( c );
@@ -986,12 +985,12 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
         template< typename Allocator, typename Container >
         void TestMap( const Allocator& a, Container& c )
         {
-            c.insert( std::make_pair( Allocator::value_type(), 1 ) );
+            c.insert( std::make_pair( typename Allocator::value_type(), 1 ) );
             c.clear();
             for( int i = 0; i < 100; ++i )
-                c.insert( std::make_pair( Allocator::value_type( i ), i ) );
-            c.insert( std::make_pair( Allocator::value_type( 0 ), 0 ) );
-            VERIFY( c.find( Allocator::value_type( 0 ) ) == c.begin() );
+                c.insert( std::make_pair( typename Allocator::value_type( i ), i ) );
+            c.insert( std::make_pair( typename Allocator::value_type( 0 ), 0 ) );
+            VERIFY( c.find( typename Allocator::value_type( 0 ) ) == c.begin() );
             c.clear();
             USED( a );
             USED( c );
@@ -1002,10 +1001,10 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
         template< typename Allocator, typename Container >
         void TestString( const Allocator& a, Container& c )
         {
-            c.push_back( Allocator::value_type() );
+            c.push_back( typename Allocator::value_type() );
             c.clear();
-            c.assign( 100, Allocator::value_type( 1 ) );
-            VERIFY( c.find( Allocator::value_type( 1 ) ) == 0 );
+            c.assign( 100, typename Allocator::value_type( 1 ) );
+            VERIFY( c.find( typename Allocator::value_type( 1 ) ) == 0 );
             c.clear();
             USED( a );
             USED( c );
@@ -1019,9 +1018,9 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
             c.push( v );
             c.pop();
             for( int i = 0; i < 100; ++i )
-                c.push( Allocator::value_type( i ) );
+                c.push( typename Allocator::value_type( i ) );
         #if( !defined(_MSC_VER) || _MSC_VER < 1310 )
-            VERIFY( c.top() == Allocator::value_type( 99 ) );
+            VERIFY( c.top() == typename Allocator::value_type( 99 ) );
         #endif    
             for( int i = 0; i < 100; ++i )
                 c.pop();
@@ -1051,11 +1050,11 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
         template< typename Allocator, typename Container >
         void TestQueue( const Allocator&, Container& c )
         {
-            c.push( Allocator::value_type() );
+            c.push( typename Allocator::value_type() );
             c.pop();
             for( int i = 0; i < 100; ++i )
-                c.push( Allocator::value_type( i ) );
-            VERIFY( c.front() == Allocator::value_type( 0 ) );        
+                c.push( typename Allocator::value_type( i ) );
+            VERIFY( c.front() == typename Allocator::value_type( 0 ) );        
             for( int i = 0; i < 100; ++i )
                 c.pop();
             USED( c );
@@ -1066,10 +1065,10 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
         template< typename Allocator, typename Container >
         void TestPriorityQueue( const Allocator&, Container& c )
         {
-            c.push( Allocator::value_type() );
+            c.push( typename Allocator::value_type() );
             c.pop();
             for( int i = 0; i < 100; ++i )
-                c.push( Allocator::value_type( i ) );
+                c.push( typename Allocator::value_type( i ) );
             for( int i = 0; i < 100; ++i )
                 c.pop();
             USED( c );
@@ -1080,10 +1079,10 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
         template< typename Allocator >
         void TestVector( const Allocator& a )
         {
-            typedef std::vector< Allocator::value_type, Allocator > Vector;
+            typedef std::vector< typename Allocator::value_type, Allocator > Vector;
             
-            Vector v1( Policy< Allocator >::GetDefault< Vector >( a ) );
-            Vector v2( Policy< Allocator >::GetCopied< Vector >( a ) );
+            Vector v1( Policy< Allocator >::template GetDefault< Vector >( a ) );
+            Vector v2( Policy< Allocator >::template GetCopied< Vector >( a ) );
             
             TestVector( a, v1 );
             TestVector( a, v2 );
@@ -1099,10 +1098,10 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
         template< typename Allocator >
         void TestDeque( const Allocator& a )
         {
-            typedef std::deque< Allocator::value_type, Allocator > Deque;
+            typedef std::deque< typename Allocator::value_type, Allocator > Deque;
             
-            Deque d1( Policy< Allocator >::GetDefault< Deque >( a ) );
-            Deque d2( Policy< Allocator >::GetCopied< Deque >( a ) );
+            Deque d1( Policy< Allocator >::template GetDefault< Deque >( a ) );
+            Deque d2( Policy< Allocator >::template GetCopied< Deque >( a ) );
             
             TestDeque( a, d1 );
             TestDeque( a, d2 );
@@ -1118,10 +1117,10 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
         template< typename Allocator >
         void TestList( const Allocator& a )
         {
-            typedef std::list< Allocator::value_type, Allocator > List;
+            typedef std::list< typename Allocator::value_type, Allocator > List;
             
-            List l1( Policy< Allocator >::GetDefault< List >( a ) );
-            List l2( Policy< Allocator >::GetCopied< List >( a ) );
+            List l1( Policy< Allocator >::template GetDefault< List >( a ) );
+            List l2( Policy< Allocator >::template GetCopied< List >( a ) );
             
             TestList( a, l1 );
             TestList( a, l2 );
@@ -1142,12 +1141,12 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
         template< typename Allocator >
         void TestSet( const Allocator& a )
         {
-            typedef std::set< Allocator::value_type, 
-                              std::less< Allocator::value_type >,
+            typedef std::set< typename Allocator::value_type, 
+                              std::less< typename Allocator::value_type >,
                               Allocator > Set;
             
-            Set s1( Policy< Allocator >::GetDefaultSet< Set >( a ) );
-            Set s2( Policy< Allocator >::GetCopiedSet< Set >( a ) );
+            Set s1( Policy< Allocator >::template GetDefaultSet< Set >( a ) );
+            Set s2( Policy< Allocator >::template GetCopiedSet< Set >( a ) );
             
             TestSet( a, s1 );
             TestSet( a, s2 );
@@ -1163,12 +1162,12 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
         template< typename Allocator >
         void TestMultiset( const Allocator& a )
         {
-            typedef std::multiset< Allocator::value_type, 
-                                   std::less< Allocator::value_type >,
+            typedef std::multiset< typename Allocator::value_type, 
+                                   std::less< typename Allocator::value_type >,
                                    Allocator > Multiset;
             
-            Multiset s1( Policy< Allocator >::GetDefaultSet< Multiset >( a ) );
-            Multiset s2( Policy< Allocator >::GetCopiedSet< Multiset >( a ) );
+            Multiset s1( Policy< Allocator >::template GetDefaultSet< Multiset >( a ) );
+            Multiset s2( Policy< Allocator >::template GetCopiedSet< Multiset >( a ) );
             
             TestSet( a, s1 );
             TestSet( a, s2 );
@@ -1185,15 +1184,15 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
         void TestMap( const Allocator& a )
         {
             // map allocators are pair allocators
-            typedef std::pair< const Allocator::value_type, int > Pair;
+            typedef std::pair< const typename Allocator::value_type, int > Pair;
             typedef typename Allocator::template rebind< Pair >::other Alloc;
 
-            typedef std::map< Allocator::value_type, int,
-                              std::less< Allocator::value_type >,
+            typedef std::map< typename Allocator::value_type, int,
+                              std::less< typename Allocator::value_type >,
                               Alloc > Map;
             
-            Map m1( Policy< Allocator >::GetDefaultMap< Map >( a ) );
-            Map m2( Policy< Allocator >::GetCopiedMap< Map >( a ) );
+            Map m1( Policy< Allocator >::template GetDefaultMap< Map >( a ) );
+            Map m2( Policy< Allocator >::template GetCopiedMap< Map >( a ) );
             
             TestMap( a, m1 );
             TestMap( a, m2 );
@@ -1210,15 +1209,15 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
         void TestMultimap( const Allocator& a )
         {
             // map allocators are pair allocators
-            typedef std::pair< const Allocator::value_type, int > Pair;
+            typedef std::pair< const typename Allocator::value_type, int > Pair;
             typedef typename Allocator::template rebind< Pair >::other Alloc;
 
-            typedef std::multimap< Allocator::value_type, int,
-                                   std::less< Allocator::value_type >,
+            typedef std::multimap< typename Allocator::value_type, int,
+                                   std::less< typename Allocator::value_type >,
                                    Alloc > Multimap;
             
-            Multimap m1( Policy< Allocator >::GetDefaultMap< Multimap >( a ) );
-            Multimap m2( Policy< Allocator >::GetCopiedMap< Multimap >( a ) );
+            Multimap m1( Policy< Allocator >::template GetDefaultMap< Multimap >( a ) );
+            Multimap m2( Policy< Allocator >::template GetCopiedMap< Multimap >( a ) );
             
             TestMap( a, m1 );
             TestMap( a, m2 );
@@ -1248,8 +1247,8 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
             // string
             CharAlloc a( aIn );
 
-            String s1( Policy< Allocator >::GetDefault< String >( a ) );
-            String s2( Policy< Allocator >::GetCopied< String >( a ) );
+            String s1( Policy< Allocator >::template GetDefault< String >( a ) );
+            String s2( Policy< Allocator >::template GetCopied< String >( a ) );
             
             TestString( a, s1 );
             TestString( a, s2 );
@@ -1261,8 +1260,8 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
             
             // wstring
             WCharAlloc wa( aIn );
-            WString w1( Policy< Allocator >::GetDefault< WString >( wa ) );
-            WString w2( Policy< Allocator >::GetCopied< WString >( wa ) );
+            WString w1( Policy< Allocator >::template GetDefault< WString >( wa ) );
+            WString w2( Policy< Allocator >::template GetCopied< WString >( wa ) );
             
             TestString( wa, w1 );
             TestString( wa, w2 );
@@ -1279,26 +1278,26 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
         void TestStack( const Allocator& a )
         {
             // A stack can be made out of deque or vector
-            typedef std::deque< Allocator::value_type, Allocator > Deque;
-            typedef std::vector< Allocator::value_type, Allocator > Vector;
+            typedef std::deque< typename Allocator::value_type, Allocator > Deque;
+            typedef std::vector< typename Allocator::value_type, Allocator > Vector;
 
-            typedef std::stack< Allocator::value_type, Deque > DStack;
-            typedef std::stack< Allocator::value_type, Vector > VStack;
+            typedef std::stack< typename Allocator::value_type, Deque > DStack;
+            typedef std::stack< typename Allocator::value_type, Vector > VStack;
             
-            DStack d1( Policy< Allocator >::GetDefaultAdapter< DStack, Deque >( a ) );
-            DStack d2( Policy< Allocator >::GetCopiedAdapter< DStack, Deque >( a ) );
-            VStack v1( Policy< Allocator >::GetDefaultAdapter< VStack, Vector >( a ) );
-            VStack v2( Policy< Allocator >::GetCopiedAdapter< VStack, Vector >( a ) );
+            DStack d1( Policy< Allocator >::template GetDefaultAdapter< DStack, Deque >( a ) );
+            DStack d2( Policy< Allocator >::template GetCopiedAdapter< DStack, Deque >( a ) );
+            VStack v1( Policy< Allocator >::template GetDefaultAdapter< VStack, Vector >( a ) );
+            VStack v2( Policy< Allocator >::template GetCopiedAdapter< VStack, Vector >( a ) );
 
-            Allocator::value_type v;
+            typename Allocator::value_type v;
             
             // Test deque stacks
-            TestStack< Allocator::value_type >( v, a, d1 );
-            TestStack< Allocator::value_type >( v, a, d2 );
+            TestStack< typename Allocator::value_type >( v, a, d1 );
+            TestStack< typename Allocator::value_type >( v, a, d2 );
 
             // Test vector stacks    
-            TestStack< Allocator::value_type >( v, a, v1 );
-            TestStack< Allocator::value_type >( v, a, v2 );
+            TestStack< typename Allocator::value_type >( v, a, v1 );
+            TestStack< typename Allocator::value_type >( v, a, v2 );
         }
 
         //-----------------------------------------------------------------------------
@@ -1307,16 +1306,16 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
         void TestQueue( const Allocator& a )
         {
             // A queue can be made out of deque or list
-            typedef std::deque< Allocator::value_type, Allocator > Deque;
-            typedef std::list< Allocator::value_type, Allocator > List;
+            typedef std::deque< typename Allocator::value_type, Allocator > Deque;
+            typedef std::list< typename Allocator::value_type, Allocator > List;
 
-            typedef std::queue< Allocator::value_type, Deque > DQueue;
-            typedef std::queue< Allocator::value_type, List > LQueue;
+            typedef std::queue< typename Allocator::value_type, Deque > DQueue;
+            typedef std::queue< typename Allocator::value_type, List > LQueue;
             
-            DQueue d1( Policy< Allocator >::GetDefaultAdapter< DQueue, Deque >( a ) );
-            DQueue d2( Policy< Allocator >::GetCopiedAdapter< DQueue, Deque >( a ) );
-            LQueue l1( Policy< Allocator >::GetDefaultAdapter< LQueue, List >( a ) );
-            LQueue l2( Policy< Allocator >::GetCopiedAdapter< LQueue, List >( a ) );
+            DQueue d1( Policy< Allocator >::template GetDefaultAdapter< DQueue, Deque >( a ) );
+            DQueue d2( Policy< Allocator >::template GetCopiedAdapter< DQueue, Deque >( a ) );
+            LQueue l1( Policy< Allocator >::template GetDefaultAdapter< LQueue, List >( a ) );
+            LQueue l2( Policy< Allocator >::template GetCopiedAdapter< LQueue, List >( a ) );
 
             // Test deque queues
             TestQueue( a, d1 );
@@ -1333,16 +1332,16 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
         void TestPriorityQueue( const Allocator& a )
         {
             // A priority queue can be made out of vector or deque
-            typedef std::vector< Allocator::value_type, Allocator > Vector;
-            typedef std::deque< Allocator::value_type, Allocator > Deque;
+            typedef std::vector< typename Allocator::value_type, Allocator > Vector;
+            typedef std::deque< typename Allocator::value_type, Allocator > Deque;
 
-            typedef std::priority_queue< Allocator::value_type, Vector > VQueue;
-            typedef std::priority_queue< Allocator::value_type, Deque > DQueue;
+            typedef std::priority_queue< typename Allocator::value_type, Vector > VQueue;
+            typedef std::priority_queue< typename Allocator::value_type, Deque > DQueue;
             
-            VQueue v1( Policy< Allocator >::GetDefaultPriorityQueue< VQueue, Vector >( a ) );
-            VQueue v2( Policy< Allocator >::GetCopiedPriorityQueue< VQueue, Vector >( a ) );
-            DQueue d1( Policy< Allocator >::GetDefaultPriorityQueue< DQueue, Deque >( a ) );
-            DQueue d2( Policy< Allocator >::GetCopiedPriorityQueue< DQueue, Deque >( a ) );
+            VQueue v1( Policy< Allocator >::template GetDefaultPriorityQueue< VQueue, Vector >( a ) );
+            VQueue v2( Policy< Allocator >::template GetCopiedPriorityQueue< VQueue, Vector >( a ) );
+            DQueue d1( Policy< Allocator >::template GetDefaultPriorityQueue< DQueue, Deque >( a ) );
+            DQueue d2( Policy< Allocator >::template GetCopiedPriorityQueue< DQueue, Deque >( a ) );
 
             // Test vector queues
             TestPriorityQueue( a, v1 );
@@ -1377,14 +1376,33 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
         void TestAlloc( const Allocator& a )
         {
             // Verify functionality with a variety of types
-            Allocator::rebind< bool >::other   b( a ); // tests vector<bool> specialization
-            Allocator::rebind< C >::other      c( a ); // POD types
-            Allocator::rebind< D >::other      d( a ); // allocated internal type
-            Allocator::rebind< E >::other      e( a ); // complicated type
-            Allocator::rebind< int >::other    i( a ); // simple test
-            Allocator::rebind< void* >::other  v( a ); // void pointers
-            Allocator::rebind< char* >::other  p( a ); // regular pointers
-            Allocator::rebind< void >::other   x( a ); // must provide this specialization
+            typename Allocator::template rebind< bool >::other   b( a ); // tests vector<bool> specialization
+            typename Allocator::template rebind< C >::other      c( a ); // POD types
+            typename Allocator::template rebind< D >::other      d( a ); // allocated internal type
+            typename Allocator::template rebind< E >::other      e( a ); // complicated type
+            typename Allocator::template rebind< int >::other    i( a ); // simple test
+            typename Allocator::template rebind< void* >::other  v( a ); // void pointers
+            typename Allocator::template rebind< char* >::other  p( a ); // regular pointers
+//          typename Allocator::template rebind< void >::other   x( a ); // must provide this specialization
+
+            //
+            // (About the commented line above:)
+            //
+            // Really?  The following code snippet doesn't compile on Comeau C++ 4.3.10.1:
+            //
+            //   #include <memory>
+            //
+            //   void foo()
+            //   {
+            //       std::allocator<int> a;
+            //       std::allocator<int>::rebind<void>::other b(a);
+            //   }
+            //
+            // It gives:
+            //
+            //   Error: no suitable user-defined conversion from
+            //     "std::allocator<int>" to "std::allocator<void>" exists
+            //
 
             TestMemberFunctionPresence( a ); // in StlAllocatorTestMembers.h
 
@@ -1415,7 +1433,7 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
 
     }   // namespace StlAllocatorTestbed
 
-    FOUNDATION_TEST_CASE(STLAllocatorTestbedtByPeteInsee)
+    FOUNDATION_TEST_CASE(STLAllocatorTestbedByPeteInsee)
     {
         // Although some allocator type must be specified (like int), the
         // testing functions internally use allocator::rebind to test a wide

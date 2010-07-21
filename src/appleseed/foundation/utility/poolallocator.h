@@ -147,8 +147,8 @@ class PoolAllocator
       , m_fallback_alloc(allocator)
     {
     }
-    template <typename OtherT, typename OtherFallBackAllocator>
-    PoolAllocator(const PoolAllocator<OtherT, PageSize, OtherFallBackAllocator>& rhs)
+    template <typename U>
+    PoolAllocator(const PoolAllocator<U, PageSize, typename FallBackAllocator::template rebind<U>::other>& rhs)
       : m_pool(Pool::instance())
       , m_fallback_alloc(rhs.m_fallback_alloc)
     {
@@ -233,8 +233,8 @@ class PoolAllocator<void, PageSize, FallBackAllocator>
       : m_fallback_alloc(allocator)
     {
     }
-    template <typename OtherT, typename OtherFallBackAllocator>
-    PoolAllocator(const PoolAllocator<OtherT, PageSize, OtherFallBackAllocator>& rhs)
+    template <typename U>
+    PoolAllocator(const PoolAllocator<U, PageSize, typename FallBackAllocator::template rebind<U>::other>& rhs)
       : m_fallback_alloc(rhs.m_fallback_alloc)
     {
     }

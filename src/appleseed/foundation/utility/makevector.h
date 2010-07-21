@@ -43,16 +43,33 @@ namespace foundation
 // Build a std::vector<> out of a set of POD values.
 //
 
+std::vector<std::string> make_vector(const size_t n, const char* val, ...);
+
 template <typename T>
 std::vector<T> make_vector(const size_t n, const T val, ...);
-
-template <>
-std::vector<std::string> make_vector(const size_t n, const char* val, ...);
 
 
 //
 // make_vector() functions implementation.
 //
+
+inline std::vector<std::string> make_vector(const size_t n, const char* val, ...)
+{
+    assert(n > 0);
+
+    std::vector<std::string> vec;
+    vec.push_back(val);
+
+    va_list argptr;
+    va_start(argptr, val);
+
+    for (size_t i = 1; i < n; ++i)
+        vec.push_back(va_arg(argptr, char*));
+
+    va_end(argptr);
+
+    return vec;
+}
 
 template <typename T>
 std::vector<T> make_vector(const size_t n, const T val, ...)
@@ -67,25 +84,6 @@ std::vector<T> make_vector(const size_t n, const T val, ...)
 
     for (size_t i = 1; i < n; ++i)
         vec.push_back(va_arg(argptr, T));
-
-    va_end(argptr);
-
-    return vec;
-}
-
-template <>
-inline std::vector<std::string> make_vector(const size_t n, const char* val, ...)
-{
-    assert(n > 0);
-
-    std::vector<std::string> vec;
-    vec.push_back(val);
-
-    va_list argptr;
-    va_start(argptr, val);
-
-    for (size_t i = 1; i < n; ++i)
-        vec.push_back(va_arg(argptr, char*));
 
     va_end(argptr);
 
