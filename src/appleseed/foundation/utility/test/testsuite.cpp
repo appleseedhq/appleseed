@@ -107,7 +107,8 @@ void TestSuite::run(
     ITestListener&  test_listener,
     TestResult&     cumulated_result) const
 {
-    run(LetThroughFilter(), test_listener, cumulated_result);
+    LetThroughFilter filter;
+    run(filter, test_listener, cumulated_result);
 }
 
 // Run those test cases whose name pass a given filter.

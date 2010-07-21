@@ -130,7 +130,7 @@ class FOUNDATIONDLL JobQueue
     FOUNDATION_GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_Job_JobQueue, RunningJobIsDestructedWhenRetired);
 
     typedef std::list<IJob*, PoolAllocator<IJob*> > JobList;
-    typedef std::pair<IJob*, JobList::const_iterator> JobInfo;
+    typedef std::pair<IJob*, JobList::iterator> JobInfo;
 
     // Acquire a scheduled job for execution. Changes the job state from 'scheduled' to 'running'.
     JobInfo acquire_scheduled_job();

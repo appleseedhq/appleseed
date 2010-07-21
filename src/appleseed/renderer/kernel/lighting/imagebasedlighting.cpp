@@ -179,11 +179,12 @@ namespace
             const Vector2d s = child_context.next_vector2<2>();
 
             // Sample the environment.
+            InputEvaluator input_evaluator(shading_context.get_texture_cache());
             Vector3d incoming;
             Spectrum env_value;
             double env_prob;
             env_edf->sample(
-                InputEvaluator(shading_context.get_texture_cache()),
+                input_evaluator,
                 s,
                 incoming,
                 env_value,

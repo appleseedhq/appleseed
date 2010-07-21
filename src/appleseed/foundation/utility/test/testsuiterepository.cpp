@@ -95,7 +95,8 @@ void TestSuiteRepository::run(
     ITestListener&  test_listener,
     TestResult&     cumulated_result) const
 {
-    run(LetThroughFilter(), test_listener, cumulated_result);
+    LetThroughFilter filter;
+    run(filter, test_listener, cumulated_result);
 }
 
 // Run those test suites whose name pass a given filter.

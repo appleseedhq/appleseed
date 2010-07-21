@@ -163,9 +163,10 @@ namespace
                         if (env_edf)
                         {
                             // Evaluate the environment's EDF.
+                            InputEvaluator input_evaluator(texture_cache);
                             Spectrum emitted_radiance;
                             env_edf->evaluate(
-                                InputEvaluator(texture_cache),
+                                input_evaluator,
                                 -outgoing,
                                 emitted_radiance);
 

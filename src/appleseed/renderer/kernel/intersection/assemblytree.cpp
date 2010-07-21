@@ -258,7 +258,7 @@ void AssemblyTree::collect_assemblies(vector<UniqueID>& assemblies) const
 
     sort(assemblies.begin(), assemblies.end());
 
-    const vector<UniqueID>::const_iterator new_end =
+    const vector<UniqueID>::iterator new_end =
         unique(assemblies.begin(), assemblies.end());
 
     assemblies.erase(new_end, assemblies.end());
