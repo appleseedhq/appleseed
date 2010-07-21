@@ -95,7 +95,7 @@ include_directories(
 # Preprocessor Definitions.
 #
 
-append_common_preprocessor_definitions(appleseed.cli)
+apply_preprocessor_definitions(appleseed.cli)
 
 
 #

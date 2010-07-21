@@ -1,0 +1,173 @@
+
+#
+# This source file is part of appleseed.
+# Visit http://appleseedhq.net/ for additional information and resources.
+#
+# This software is released under the MIT license.
+#
+# Copyright (c) 2010 Francois Beaune
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+
+
+#
+# Microsoft Visual Studio 2008 (9.0) on Windows, generating 32-bit binaries.
+#
+
+
+#
+# Preprocessor Definitions.
+#
+
+# All configurations.
+set(preprocessor_definitions_common
+    WIN32
+    XML_LIBRARY                             # allow static linking against Xerces-C
+    _CRT_SECURE_NO_WARNINGS
+    _USRDLL
+    _WINDOWS
+)
+
+# Debug configuration.
+set(preprocessor_definitions_debug
+    _HAS_ITERATOR_DEBUGGING=0
+)
+
+# Release configuration.
+set(preprocessor_definitions_release
+    _SECURE_SCL=0
+)
+
+
+#
+# Compilation/Linking Flags.
+#
+
+# All configurations.
+set(compiler_flags_common
+    /WX                                     # Treat Warnings As Errors
+    /GF                                     # Enable String Pooling
+    /wd4290                                 # C4290: C++ exception specification ignored except to indicate a function is not __declspec(nothrow)
+    /wd4355                                 # C4355: 'this' : used in base member initializer list
+)
+set(linker_flags_common
+    /WX                                     # Treat Warnings As Errors
+)
+
+# Debug configuration.
+set(compiler_flags_debug
+    /ZI                                     # set Debug Information Format to Program Database for Edit & Continue
+    /MDd                                    # set Runtime Library to Multi-threaded Debug DLL
+)
+
+# Release configuration.
+set(compiler_flags_release
+    /Zi                                     # set Debug Information Format to Program Database
+    /Ox                                     # Full Optimization
+    /Ob2                                    # set Inline Function Expansion to Any Suitable
+    /Oi                                     # Enable Intrinsic Functions
+    /Ot                                     # Favor Fast Code
+    /Oy                                     # Omit Frame Pointers
+    /MD                                     # set Runtime Library to Multi-threaded DLL
+    /GS-                                    # set Buffer Security Check to No
+    /arch:SSE2                              # Streaming SIMD Extensions 2
+    /fp:fast                                # set Floating Point Model to Fast
+)
+set(linker_flags_release
+    /OPT:REF                                # Eliminate Unreferenced Data
+    /OPT:ICF                                # Remove Redundant COMDATs
+)
+
+# Ship configuration.
+set(compiler_flags_ship
+    /GL                                     # Enable link-time code generation
+)
+set(linker_flags_ship
+    /LTCG                                   # Use Link Time Code Generation
+)
+
+# Profile configuration.
+set(linker_flags_profile
+    /DEBUG                                  # Generate Debug Info
+)
+
+
+#
+# Static Libraries.
+#
+
+# boost.
+# We only provide the search path for boost libraries, since on Windows,
+# the boost libraries link themselves through #pragma statements. Note
+# that this instruction needs to appear before any targets that needs it,
+# hence it is not included in the macro below.
+link_directories(${CMAKE_SOURCE_DIR}/build/win32.vs90/boost/lib)
+
+macro(link_against_common_static_libraries target)
+
+    # OpenEXR.
+    target_link_libraries(${target}
+        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/Half/Debug/Half.lib
+        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/Iex/Debug/Iex.lib
+        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/IlmImf/Debug/IlmImf.lib
+        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/IlmThread/Debug/IlmThread.lib
+        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/Imath/Debug/Imath.lib
+        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/Half/Release/Half.lib
+        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/Iex/Release/Iex.lib
+        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/IlmImf/Release/IlmImf.lib
+        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/IlmThread/Release/IlmThread.lib
+        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/Imath/Release/Imath.lib
+    )
+
+    # zlib.
+    target_link_libraries(${target}
+        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs90/zlib/Win32_LIB_ASM_Debug/zlibd.lib
+        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs90/zlib/Win32_LIB_ASM_Release/zlib.lib
+    )
+
+    # libpng.
+    target_link_libraries(${target}
+        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs90/libpng/Win32_LIB_ASM_Debug/libpngd.lib
+        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs90/libpng/Win32_LIB_ASM_Release/libpng.lib
+    )
+
+    # Xerces-C.
+    target_link_libraries(${target}
+        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs90/xerces-c/Static\ Debug/xerces-c_static_2D.lib
+        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs90/xerces-c/Static\ Release/xerces-c_static_2.lib
+    )
+
+endmacro()
+
+
+#
+# Copy a target binary to the sandbox.
+#
+
+macro(add_copy_target_to_sandbox_command target)
+    slashes_to_backslashes(project_source_dir_win ${PROJECT_SOURCE_DIR})
+
+    set(bin_directory ${project_source_dir_win}\\sandbox\\bin\\win32.vs90\\$(ConfigurationName))
+
+    add_custom_command(TARGET ${target} POST_BUILD
+        COMMAND if not exist ${bin_directory} mkdir ${bin_directory}
+        COMMAND copy $(TargetPath) ${bin_directory}
+    )
+endmacro()

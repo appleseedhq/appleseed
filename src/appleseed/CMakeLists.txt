@@ -1217,7 +1217,7 @@ add_library(appleseed SHARED
 # Preprocessor Definitions.
 #
 
-append_common_preprocessor_definitions(appleseed)
+apply_preprocessor_definitions(appleseed)
 
 append_custom_preprocessor_definitions(appleseed
     APPLESEED_FOUNDATION_EXPORTS

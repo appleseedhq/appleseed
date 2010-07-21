@@ -65,7 +65,7 @@ include_directories(
 # Preprocessor Definitions.
 #
 
-append_common_preprocessor_definitions(appleseed.shared)
+apply_preprocessor_definitions(appleseed.shared)
 
 append_custom_preprocessor_definitions(appleseed.shared
     APPLESEED_SHARED_EXPORTS

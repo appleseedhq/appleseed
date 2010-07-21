@@ -253,7 +253,7 @@ include_directories(
 # Preprocessor Definitions.
 #
 
-append_common_preprocessor_definitions(appleseed.studio)
+apply_preprocessor_definitions(appleseed.studio)
 
 
 #

@@ -1,0 +1,124 @@
+
+#
+# This source file is part of appleseed.
+# Visit http://appleseedhq.net/ for additional information and resources.
+#
+# This software is released under the MIT license.
+#
+# Copyright (c) 2010 Francois Beaune
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+
+
+#
+# gcc 4.x.x on Mac OS X, generating 32-bit binaries.
+#
+
+
+#
+# Preprocessor Definitions.
+#
+
+# All configurations.
+set(preprocessor_definitions_common
+)
+
+# Debug configuration.
+set(preprocessor_definitions_debug
+)
+
+# Release configuration.
+set(preprocessor_definitions_release
+)
+
+
+#
+# Compilation/Linking Flags.
+#
+
+# All configurations.
+set(compiler_flags_common
+    -Werror                                 # Treat Warnings As Errors
+)
+set(linker_flags_common
+    -Werror                                 # Treat Warnings As Errors
+)
+
+# Debug configuration.
+set(compiler_flags_debug
+)
+
+# Release configuration.
+set(compiler_flags_release
+    -Ofast                                  # Maximum optimization, disregarding strict standards compliance
+)
+set(linker_flags_release
+)
+
+# Ship configuration.
+set(compiler_flags_ship
+)
+set(linker_flags_ship
+)
+
+# Profile configuration.
+set(linker_flags_profile
+)
+
+
+#
+# Static Libraries.
+#
+
+macro(link_against_common_static_libraries target)
+
+    # OpenEXR.
+    target_link_libraries(${target}
+        ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/openexr/Half/Release/libHalf.a
+        ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/openexr/Iex/Release/libIex.a
+        ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/openexr/IlmImf/Release/libIlmImf.a
+        ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/openexr/IlmThread/Release/libIlmThread.a
+        ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/openexr/Imath/Release/libImath.a
+    )
+
+    # zlib.
+    target_link_libraries(${target}
+        ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/zlib/libz.a
+    )
+
+    # libpng.
+    target_link_libraries(${target}
+        ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/libpng/libpng.a
+    )
+
+    # Xerces-C.
+    target_link_libraries(${target}
+        ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/xerces-c/libxerces-c.a
+    )
+
+endmacro()
+
+
+#
+# Copy a target binary to the sandbox.
+#
+
+macro(add_copy_target_to_sandbox_command target)
+endmacro()
