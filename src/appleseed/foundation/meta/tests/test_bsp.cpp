@@ -283,7 +283,10 @@ FOUNDATION_TEST_SUITE(Foundation_Math_BSP_Intersector)
             root_leaf->insert(AABB3d(Vector3d(0.0, -0.5, -0.7), Vector3d(1.0, 0.5, 0.7)));
 
             bsp::Builder<Tree, LeafFactory, LeafSplitter> builder;
-            builder.build(m_tree, root_leaf, LeafFactory(), LeafSplitter());
+            LeafFactory leaf_factory;
+            LeafSplitter leaf_splitter;
+
+            builder.build(m_tree, root_leaf, leaf_factory, leaf_splitter);
         }
     };
 

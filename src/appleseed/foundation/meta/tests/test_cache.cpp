@@ -103,7 +103,9 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Cache_DualStageCache)
             128,
             1> cache(key_hasher, element_swapper, MyInvalidKey);
 
-        cache.check_integrity(MyIntegrityChecker());
+        MyIntegrityChecker checker;
+
+        cache.check_integrity(checker);
 
         LCG rng;
 
@@ -115,7 +117,7 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Cache_DualStageCache)
             const MyElement* value = cache.get(key);
             FOUNDATION_EXPECT_EQ(expected, *value);
 
-            cache.check_integrity(MyIntegrityChecker());
+            cache.check_integrity(checker);
         }
     }
 }
