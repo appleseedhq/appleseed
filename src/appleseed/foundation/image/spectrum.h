@@ -56,8 +56,12 @@ class RegularSpectrum
     typedef T ValueType;
     static const size_t Samples = N;
 
-    // Number of samples such that the size of the sample array is a multiple of 16 bytes.
-    static const size_t InternalSamples = (((N * sizeof(T)) + 15) & ~15) / sizeof(T);
+#ifdef APPLESEED_FOUNDATION_USE_SSE
+    // Number of stored samples such that the size of the sample array is a multiple of 16 bytes.
+    static const size_t StoredSamples = (((N * sizeof(T)) + 15) & ~15) / sizeof(T);
+#else
+    static const size_t StoredSamples = N;
+#endif
 
     // Constructors.
     RegularSpectrum();                                      // leave all components uninitialized
@@ -77,7 +81,7 @@ class RegularSpectrum
 
   private:
     FOUNDATION_ALIGN_SSE_VARIABLE
-    ValueType m_samples[InternalSamples];
+    ValueType m_samples[StoredSamples];
 };
 
 // Exact inequality and equality tests.
@@ -142,7 +146,7 @@ typedef RegularSpectrum<double, 31> Spectrum31d;
 template <typename T, size_t N>
 inline RegularSpectrum<T, N>::RegularSpectrum()
 {
-    for (size_t i = N; i < InternalSamples; ++i)
+    for (size_t i = N; i < StoredSamples; ++i)
         m_samples[i] = T(0.0);
 }
 
@@ -154,7 +158,7 @@ inline RegularSpectrum<T, N>::RegularSpectrum(const ValueType* rhs)
     for (size_t i = 0; i < N; ++i)
         m_samples[i] = rhs[i];
 
-    for (size_t i = N; i < InternalSamples; ++i)
+    for (size_t i = N; i < StoredSamples; ++i)
         m_samples[i] = T(0.0);
 }
 
@@ -168,14 +172,14 @@ template <typename T, size_t N>
 template <typename U>
 inline RegularSpectrum<T, N>::RegularSpectrum(const RegularSpectrum<U, N>& rhs)
 {
-    for (size_t i = 0; i < InternalSamples; ++i)
+    for (size_t i = 0; i < StoredSamples; ++i)
         m_samples[i] = static_cast<ValueType>(rhs[i]);
 }
 
 template <typename T, size_t N>
 inline void RegularSpectrum<T, N>::set(const ValueType val)
 {
-    for (size_t i = 0; i < InternalSamples; ++i)
+    for (size_t i = 0; i < StoredSamples; ++i)
         m_samples[i] = val;
 }
 
@@ -396,7 +400,7 @@ inline RegularSpectrum<T, N>& operator-=(RegularSpectrum<T, N>& lhs, const Regul
 template <typename T, size_t N>
 inline RegularSpectrum<T, N>& operator*=(RegularSpectrum<T, N>& lhs, const T rhs)
 {
-    for (size_t i = 0; i < RegularSpectrum<T, N>::InternalSamples; ++i)
+    for (size_t i = 0; i < RegularSpectrum<T, N>::StoredSamples; ++i)
         lhs[i] *= rhs;
 
     return lhs;

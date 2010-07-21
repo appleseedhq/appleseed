@@ -34,7 +34,9 @@
 #include "foundation/math/ray.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
+#ifdef APPLESEED_FOUNDATION_USE_SSE
 #include "foundation/platform/sse.h"
+#endif
 #include "foundation/platform/types.h"
 
 // Standard headers.
@@ -220,6 +222,7 @@ FOUNDATION_FORCE_INLINE bool TriangleSSK<float>::intersect(
     const ValueType detw = det - detu - detv;
 
     // Check that the intersection point lies inside the triangle.
+#ifdef APPLESEED_FOUNDATION_USE_SSE
     FOUNDATION_ALIGN_SSE_VARIABLE float detarray[4] = { detu, detu, detv, detw };
     const sse4f mu = loadps(detarray);
     const sse4f mv = shuffleps(mu, mu, _MM_SHUFFLE(2, 3, 3, 2));
@@ -229,6 +232,12 @@ FOUNDATION_FORCE_INLINE bool TriangleSSK<float>::intersect(
     const int mask = movemaskps(cmp);
     if (mask != 0xF)
         return false;
+#else
+    if (detu * detv < 0.0f ||
+        detu * detw < 0.0f ||
+        detv * detw < 0.0f)
+        return false;
+#endif
 
     const ValueType rdet = ValueType(1.0) / det;
 
@@ -273,6 +282,7 @@ FOUNDATION_FORCE_INLINE bool TriangleSSK<double>::intersect(
     const ValueType detw = det - detu - detv;
 
     // Check that the intersection point lies inside the triangle.
+#ifdef APPLESEED_FOUNDATION_USE_SSE
     const sse2d zero = set1pd(0.0);
     const sse2d mdetu = set1pd(detu);
     const sse2d mdetv = set1pd(detv);
@@ -282,6 +292,12 @@ FOUNDATION_FORCE_INLINE bool TriangleSSK<double>::intersect(
         & movemaskpd(cmpgepd(mulpd(mdetv, mdetvw), zero));
     if (mask != 3)
         return false;
+#else
+    if (detu * detv < 0.0 ||
+        detu * detw < 0.0 ||
+        detv * detw < 0.0)
+        return false;
+#endif
 
     const ValueType rdet = ValueType(1.0) / det;
 
@@ -322,6 +338,7 @@ FOUNDATION_FORCE_INLINE bool TriangleSSK<float>::intersect(const RayType& ray) c
     const ValueType detw = det - detu - detv;
 
     // Check that the intersection point lies inside the triangle.
+#ifdef APPLESEED_FOUNDATION_USE_SSE
     FOUNDATION_ALIGN_SSE_VARIABLE float detarray[4] = { detu, detu, detv, detw };
     const sse4f mu = loadps(detarray);
     const sse4f mv = shuffleps(mu, mu, _MM_SHUFFLE(2, 3, 3, 2));
@@ -331,6 +348,12 @@ FOUNDATION_FORCE_INLINE bool TriangleSSK<float>::intersect(const RayType& ray) c
     const int mask = movemaskps(cmp);
     if (mask != 0xF)
         return false;
+#else
+    if (detu * detv < 0.0f ||
+        detu * detw < 0.0f ||
+        detv * detw < 0.0f)
+        return false;
+#endif
 
     // Calculate t parameter and test bounds.
     const ValueType t = dett / det;
@@ -363,6 +386,7 @@ FOUNDATION_FORCE_INLINE bool TriangleSSK<double>::intersect(const RayType& ray) 
     const ValueType detw = det - detu - detv;
 
     // Check that the intersection point lies inside the triangle.
+#ifdef APPLESEED_FOUNDATION_USE_SSE
     const sse2d zero = set1pd(0.0);
     const sse2d mdetu = set1pd(detu);
     const sse2d mdetv = set1pd(detv);
@@ -372,6 +396,12 @@ FOUNDATION_FORCE_INLINE bool TriangleSSK<double>::intersect(const RayType& ray) 
         & movemaskpd(cmpgepd(mulpd(mdetv, mdetvw), zero));
     if (mask != 3)
         return false;
+#else
+    if (detu * detv < 0.0 ||
+        detu * detw < 0.0 ||
+        detv * detw < 0.0)
+        return false;
+#endif
 
     // Calculate t parameter and test bounds.
     const ValueType t = dett / det;

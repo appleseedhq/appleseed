@@ -30,7 +30,9 @@
 #include "foundation/math/combination.h"
 #include "foundation/math/fp.h"
 #include "foundation/math/minmax.h"
+#ifdef APPLESEED_FOUNDATION_USE_SSE
 #include "foundation/platform/sse.h"
+#endif
 #include "foundation/utility/casts.h"
 #include "foundation/utility/test.h"
 #include "foundation/utility/typetraits.h"

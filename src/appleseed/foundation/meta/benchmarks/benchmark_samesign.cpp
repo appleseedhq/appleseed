@@ -29,7 +29,9 @@
 // appleseed.foundation headers.
 #include "foundation/math/rng.h"
 #include "foundation/platform/compiler.h"
+#ifdef APPLESEED_FOUNDATION_USE_SSE
 #include "foundation/platform/sse.h"
+#endif
 #include "foundation/utility/benchmark.h"
 #include "foundation/utility/casts.h"
 #include "foundation/utility/otherwise.h"
@@ -129,6 +131,17 @@ FOUNDATION_BENCHMARK_SUITE(SameSign)
 
     FOUNDATION_NO_INLINE bool same_sign_multiplication(const float a, const float b, const float c)
     {
+        return a * b >= 0.0f && a * c >= 0.0f && b * c >= 0.0f;
+    }
+
+#ifdef APPLESEED_FOUNDATION_USE_SSE
+
+    //
+    // SSE implementation of the 3-component multiplication-based variant.
+    //
+
+    FOUNDATION_NO_INLINE bool same_sign_multiplication_sse(const float a, const float b, const float c)
+    {
         FOUNDATION_ALIGN_SSE_VARIABLE float u[4] = { a, a, b, c };
 
         const sse4f mu = loadps(u);
@@ -140,6 +153,8 @@ FOUNDATION_BENCHMARK_SUITE(SameSign)
 
         return mask == 0xF;
     }
+
+#endif
 
     struct Fixture
     {
@@ -215,4 +230,14 @@ FOUNDATION_BENCHMARK_SUITE(SameSign)
         for (size_t i = 0; i < InvocationCount; ++i)
             m_result ^= same_sign_multiplication(m_values[i], m_values[i + 1], m_values[i + 2]);
     }
+
+#ifdef APPLESEED_FOUNDATION_USE_SSE
+
+    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(SameSignMultiplicationSSE3, Fixture)
+    {
+        for (size_t i = 0; i < InvocationCount; ++i)
+            m_result ^= same_sign_multiplication_sse(m_values[i], m_values[i + 1], m_values[i + 2]);
+    }
+
+#endif
 }
