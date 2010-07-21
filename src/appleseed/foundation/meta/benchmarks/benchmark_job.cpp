@@ -1,4 +1,4 @@
-﻿
+
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
