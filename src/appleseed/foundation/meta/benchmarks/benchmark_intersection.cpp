@@ -99,6 +99,9 @@ FOUNDATION_BENCHMARK_SUITE(Foundation_Math_Intersection_RayAABB)
     struct Fixture
       : public FixtureBase<T>
     {
+        typedef typename FixtureBase<T>::VectorType VectorType;
+        typedef typename FixtureBase<T>::RayType RayType;
+        typedef typename FixtureBase<T>::RayInfoType RayInfoType;
         typedef AABB<T, 3> AABBType;
 
         static const size_t RayCount = 1000;
@@ -161,6 +164,10 @@ namespace
     struct RayTriangleFixture
       : public FixtureBase<T>
     {
+        typedef typename FixtureBase<T>::VectorType VectorType;
+        typedef typename FixtureBase<T>::RayType RayType;
+        typedef typename FixtureBase<T>::RayInfoType RayInfoType;
+
         static const size_t RayCount = 1000;
 
         TriangleType    m_triangle;
@@ -223,9 +230,9 @@ namespace
             const T             min,
             const T             max)
         {
-            const VectorType v0 = get_random_vector<3>(rng, min, max);
-            const VectorType v1 = get_random_vector<3>(rng, min, max);
-            const VectorType v2 = get_random_vector<3>(rng, min, max);
+            const VectorType v0 = FixtureBase<T>::template get_random_vector<3>(rng, min, max);
+            const VectorType v1 = FixtureBase<T>::template get_random_vector<3>(rng, min, max);
+            const VectorType v2 = FixtureBase<T>::template get_random_vector<3>(rng, min, max);
             return TriangleType(v0, v1, v2);
         }
 

@@ -137,7 +137,7 @@ class PoolAllocator
         typedef PoolAllocator<
             U,
             PageSize,
-            typename FallBackAllocator::rebind<U>::other
+            typename FallBackAllocator::template rebind<U>::other
         > other;
     };
 
@@ -224,7 +224,7 @@ class PoolAllocator<void, PageSize, FallBackAllocator>
         typedef PoolAllocator<
             U,
             PageSize,
-            typename FallBackAllocator::rebind<U>::other
+            typename FallBackAllocator::template rebind<U>::other
         > other;
     };
 

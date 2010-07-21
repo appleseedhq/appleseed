@@ -36,11 +36,11 @@
 #include <cstddef>
 #include <cstring>
 
+using namespace foundation;
+using namespace std;
+
 FOUNDATION_BENCHMARK_SUITE(Foundation_Math_Permutation)
 {
-    using namespace foundation;
-    using namespace std;
-
     template <size_t ItemSize>      // in 4-byte words
     struct FixtureBase
     {
@@ -71,12 +71,14 @@ FOUNDATION_BENCHMARK_SUITE(Foundation_Math_Permutation)
     struct SmallItemFixture
       : public FixtureBase<ItemSize>
     {
-        Item m_temp[ItemCount];
+        typedef FixtureBase<ItemSize> Base;
+
+        typename Base::Item m_temp[Base::ItemCount];
 
         void payload()
         {
-            small_item_reorder(m_items, m_temp, m_ordering1, ItemCount);
-            small_item_reorder(m_items, m_temp, m_ordering2, ItemCount);
+            small_item_reorder(Base::m_items, m_temp, Base::m_ordering1, Base::ItemCount);
+            small_item_reorder(Base::m_items, m_temp, Base::m_ordering2, Base::ItemCount);
         }
     };
 
@@ -84,12 +86,14 @@ FOUNDATION_BENCHMARK_SUITE(Foundation_Math_Permutation)
     struct LargeItemFixture
       : public FixtureBase<ItemSize>
     {
-        size_t m_tags[ItemCount];
+        typedef FixtureBase<ItemSize> Base;
+
+        size_t m_tags[Base::ItemCount];
 
         void payload()
         {
-            large_item_reorder(m_items, m_tags, m_ordering1, ItemCount);
-            large_item_reorder(m_items, m_tags, m_ordering2, ItemCount);
+            large_item_reorder(Base::m_items, m_tags, Base::m_ordering1, Base::ItemCount);
+            large_item_reorder(Base::m_items, m_tags, Base::m_ordering2, Base::ItemCount);
         }
     };
 
