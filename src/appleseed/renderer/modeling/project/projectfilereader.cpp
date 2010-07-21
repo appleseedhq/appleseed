@@ -1169,7 +1169,7 @@ namespace
       public:
         // Constructor.
         explicit BSDFElementHandler(ElementInfo& info)
-          : EntityElementHandler("bsdf", info)
+          : EntityElementHandler<BSDF, BSDFFactoryDispatcher>("bsdf", info)
         {
         }
     };
@@ -1185,7 +1185,7 @@ namespace
       public:
         // Constructor.
         explicit EDFElementHandler(ElementInfo& info)
-          : EntityElementHandler("edf", info)
+          : EntityElementHandler<EDF, EDFFactoryDispatcher>("edf", info)
         {
         }
     };
@@ -1201,7 +1201,7 @@ namespace
       public:
         // Constructor.
         explicit SurfaceShaderElementHandler(ElementInfo& info)
-          : EntityElementHandler("surface shader", info)
+          : EntityElementHandler<SurfaceShader, SurfaceShaderFactoryDispatcher>("surface shader", info)
         {
         }
     };
@@ -1303,7 +1303,7 @@ namespace
       public:
         // Constructor.
         explicit EnvironmentEDFElementHandler(ElementInfo& info)
-          : EntityElementHandler("environment edf", info)
+          : EntityElementHandler<EnvironmentEDF, EnvironmentEDFFactoryDispatcher>("environment edf", info)
         {
         }
     };
@@ -1319,7 +1319,7 @@ namespace
       public:
         // Constructor.
         explicit EnvironmentShaderElementHandler(ElementInfo& info)
-          : EntityElementHandler("environment shader", info)
+          : EntityElementHandler<EnvironmentShader, EnvironmentShaderFactoryDispatcher>("environment shader", info)
         {
         }
     };
