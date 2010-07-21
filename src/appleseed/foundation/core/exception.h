@@ -51,7 +51,7 @@ class Exception
     explicit Exception(const char* what);
 
     // Returns a generic, implementation-defined description of the exception.
-    virtual const char* what() const;
+    virtual const char* what() const throw();
 
   protected:
     // Copy a string to another, ensuring that no overflow occurs and that the
@@ -80,7 +80,7 @@ inline Exception::Exception(const char* what)
     copy_string(m_what, what, sizeof(m_what));
 }
 
-inline const char* Exception::what() const
+inline const char* Exception::what() const throw()
 {
     return m_what;
 }
