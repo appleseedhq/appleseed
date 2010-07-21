@@ -35,7 +35,9 @@
 #include "foundation/math/minmax.h"
 #include "foundation/math/ray.h"
 #include "foundation/math/vector.h"
+#ifdef APPLESEED_FOUNDATION_USE_SSE
 #include "foundation/platform/sse.h"
+#endif
 
 // Standard headers.
 #include <cassert>
