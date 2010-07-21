@@ -208,7 +208,7 @@ inline std::pair<Item, Weight> CDF<Item, Weight>::sample(const Weight x) const
     assert(x >= Weight(0.0));
     assert(x < Weight(1.0));
 
-    const DensityVector::const_iterator i =
+    const typename DensityVector::const_iterator i =
         std::upper_bound(
             m_densities.begin(),
             m_densities.end(),
