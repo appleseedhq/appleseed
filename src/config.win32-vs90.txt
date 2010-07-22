@@ -113,11 +113,11 @@ set(linker_flags_profile
 # Static Libraries.
 #
 
-# boost.
-# We only provide the search path for boost libraries, since on Windows,
-# the boost libraries link themselves through #pragma statements. Note
-# that this instruction needs to appear before any targets that needs it,
-# hence it is not included in the macro below.
+# Boost C++ Libraries.
+# We only provide the search path for the Boost libraries, since on Windows,
+# they link themselves through #pragma statements. Note that this instruction
+# needs to appear before any targets that needs it, thus it is not included
+# in the link_against_common_static_libraries() macro below.
 link_directories(${CMAKE_SOURCE_DIR}/build/win32.vs90/boost/lib)
 
 macro(link_against_common_static_libraries target)
