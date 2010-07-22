@@ -48,6 +48,11 @@ namespace renderer
 // SampleGenerator class implementation.
 //
 
+namespace
+{
+    const size_t SampleBatchSize = 67;
+}
+
 // Constructor.
 SampleGenerator::SampleGenerator(
     Frame&              frame,

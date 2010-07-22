@@ -61,8 +61,6 @@ class SampleGenerator
         Sample              samples[]);
 
   private:
-    static const size_t SampleBatchSize = 67;
-
     Frame&                                  m_frame;
     ISampleRenderer*                        m_sample_renderer;
     const size_t                            m_generator_index;

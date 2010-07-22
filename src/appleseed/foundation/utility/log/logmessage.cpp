@@ -27,78 +27,53 @@
 //
 
 // Interface header.
-#include "filelogtarget.h"
+#include "logmessage.h"
 
 // Standard headers.
 #include <cassert>
-
-using namespace std;
 
 namespace foundation
 {
 
 //
-// FileLogTarget class implementation.
+// LogMessage class implementation.
 //
 
-// Constructor.
-FileLogTarget::FileLogTarget()
-  : m_file(0)
+const LogMessage::FormattingFlags DefaultFormattingFlags =
+    static_cast<LogMessage::FormattingFlags>(
+        LogMessage::DisplayCategory |
+        LogMessage::DisplayMessage);
+
+const char* LogMessage::get_category_name(const Category c)
 {
-}
-
-// Destructor.
-FileLogTarget::~FileLogTarget()
-{
-    close();
-}
-
-// Delete this instance.
-void FileLogTarget::release()
-{
-    delete this;
-}
-
-// Write a message.
-void FileLogTarget::write(
-    const LogMessage::Category  category,
-    const char*                 file,
-    const size_t                line,
-    const char*                 message)
-{
-    if (m_file)
-        write_message(m_file, category, message);
-}
-
-bool FileLogTarget::open(const char* filename)
-{
-    assert(filename);
-
-    close();
-
-    m_file = fopen(filename, "wt");
-
-    return m_file != 0;
-}
-
-void FileLogTarget::close()
-{
-    if (m_file)
+    static const char* Names[NumMessageCategories] =
     {
-        fclose(m_file);
-        m_file = 0;
-    }
+        "info",
+        "debug",
+        "warning",
+        "error",
+        "fatal"
+    };
+
+    assert(c < NumMessageCategories);
+
+    return Names[c];
 }
 
-bool FileLogTarget::is_open() const
+const char* LogMessage::get_padded_category_name(const Category c)
 {
-    return m_file != 0;
-}
+    static const char* Names[NumMessageCategories] =
+    {
+        "info   ",
+        "debug  ",
+        "warning",
+        "error  ",
+        "fatal  "
+    };
 
-// Create an instance of a log target that outputs to a file.
-FileLogTarget* create_file_log_target()
-{
-    return new FileLogTarget();
+    assert(c < NumMessageCategories);
+
+    return Names[c];
 }
 
 }   // namespace foundation

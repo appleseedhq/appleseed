@@ -29,9 +29,6 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_LOG_LOGMESSAGE_H
 #define APPLESEED_FOUNDATION_UTILITY_LOG_LOGMESSAGE_H
 
-// Standard headers.
-#include <cassert>
-
 //
 // On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
 // and to __declspec(dllimport) when building an application using the DLL.
@@ -85,40 +82,13 @@ class FOUNDATIONDLL LogMessage
     };
 
     // Default message formatting flags.
-    static const FormattingFlags DefaultFormattingFlags =
-        static_cast<FormattingFlags>(DisplayCategory | DisplayMessage);
+    static const FormattingFlags DefaultFormattingFlags;
 
     // Return a string identifying a given message category.
-    static const char* get_category_name(const Category c)
-    {
-        static const char* Names[NumMessageCategories] =
-        {
-            "info",
-            "debug",
-            "warning",
-            "error",
-            "fatal"
-        };
-
-        assert(c < NumMessageCategories);
-        return Names[c];
-    }
+    static const char* get_category_name(const Category c);
 
     // Return a category name padded with spaces to the right.
-    static const char* get_padded_category_name(const Category c)
-    {
-        static const char* Names[NumMessageCategories] =
-        {
-            "info   ",
-            "debug  ",
-            "warning",
-            "error  ",
-            "fatal  "
-        };
-
-        assert(c < NumMessageCategories);
-        return Names[c];
-    }
+    static const char* get_padded_category_name(const Category c);
 };
 
 }       // namespace foundation

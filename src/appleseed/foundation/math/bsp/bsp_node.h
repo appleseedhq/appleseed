@@ -54,8 +54,8 @@ class Node
 
     // Node types.
     typedef uint32 Type;
-    static const Type Leaf     = 0x00000000UL;
-    static const Type Interior = 0x80000000UL;
+    static const Type Leaf;
+    static const Type Interior;
 
     // Set/get the node type.
     void set_type(const Type type);
@@ -111,6 +111,12 @@ class Node
 //
 // Node class implementation.
 //
+
+template <typename T>
+const typename Node<T>::Type Node<T>::Leaf = 0x00000000UL;
+
+template <typename T>
+const typename Node<T>::Type Node<T>::Interior = 0x80000000UL;
 
 // Set/get the node type.
 template <typename T>

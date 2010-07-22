@@ -49,6 +49,11 @@ namespace foundation
 // OBJMeshFileReader class implementation.
 //
 
+namespace
+{
+    const size_t Undefined = ~size_t(0);
+}
+
 struct OBJMeshFileReader::Impl
 {
     enum Symbol
@@ -82,8 +87,6 @@ struct OBJMeshFileReader::Impl
 
     typedef map<string, Symbol> KeywordTable;
     typedef map<string, size_t> MaterialMap;
-
-    static const size_t Undefined = ~size_t(0);
 
     // Read options.
     const Options           m_options;

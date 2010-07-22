@@ -501,6 +501,7 @@ set(foundation_utility_log_sources
     foundation/utility/log/helpers.h
     foundation/utility/log/logger.cpp
     foundation/utility/log/logger.h
+    foundation/utility/log/logmessage.cpp
     foundation/utility/log/logmessage.h
     foundation/utility/log/logtargetbase.h
     foundation/utility/log/openfilelogtarget.cpp

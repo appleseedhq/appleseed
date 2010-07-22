@@ -32,17 +32,17 @@
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 
+using namespace foundation;
+
 FOUNDATION_TEST_SUITE(Foundation_Image_Tile)
 {
-    using namespace foundation;
+    const PixelFormat TilePixelFormat = PixelFormatFloat;
+    const size_t TileWidth = 32;
+    const size_t TileHeight = 32;
+    const size_t TileChannels = 3;
 
     struct FixtureTile
     {
-        static const PixelFormat TilePixelFormat = PixelFormatFloat;
-        static const size_t TileWidth = 32;
-        static const size_t TileHeight = 32;
-        static const size_t TileChannels = 3;
-
         Tile tile;
 
         FixtureTile()
