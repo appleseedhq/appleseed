@@ -89,13 +89,32 @@ set(linker_flags_profile
 
 macro(link_against_common_static_libraries target)
 
+    # Platform Libraries.
+    set_target_properties(${target} PROPERTIES
+        LINK_FLAGS "-framework Cocoa"
+    )
+
+    # Boost C++ Libraries.
+    target_link_libraries(${target}
+        debug       ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/boost/lib/libboost_date_time-xgcc40-mt-sd-1_39.a
+        debug       ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/boost/lib/libboost_filesystem-xgcc40-mt-sd-1_39.a
+        debug       ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/boost/lib/libboost_regex-xgcc40-mt-sd-1_39.a
+        debug       ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/boost/lib/libboost_system-xgcc40-mt-sd-1_39.a
+        debug       ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/boost/lib/libboost_thread-xgcc40-mt-sd-1_39.a
+        optimized   ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/boost/lib/libboost_date_time-xgcc40-mt-s-1_39.a
+        optimized   ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/boost/lib/libboost_filesystem-xgcc40-mt-s-1_39.a
+        optimized   ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/boost/lib/libboost_regex-xgcc40-mt-s-1_39.a
+        optimized   ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/boost/lib/libboost_system-xgcc40-mt-s-1_39.a
+        optimized   ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/boost/lib/libboost_thread-xgcc40-mt-s-1_39.a
+    )
+
     # OpenEXR.
     target_link_libraries(${target}
-        ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/openexr/Half/Release/libHalf.a
-        ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/openexr/Iex/Release/libIex.a
-        ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/openexr/IlmImf/Release/libIlmImf.a
-        ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/openexr/IlmThread/Release/libIlmThread.a
-        ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/openexr/Imath/Release/libImath.a
+        ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/openexr/libHalf.a
+        ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/openexr/libIex.a
+        ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/openexr/libIlmImf.a
+        ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/openexr/libIlmThread.a
+        ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/openexr/libImath.a
     )
 
     # zlib.
