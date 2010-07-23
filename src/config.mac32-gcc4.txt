@@ -141,7 +141,8 @@ endmacro()
 #
 
 macro(add_copy_target_to_sandbox_command target)
+    get_target_property(target_path ${target} LOCATION)
     add_custom_command(TARGET ${target} POST_BUILD
-        COMMAND cp ${target} ${PROJECT_SOURCE_DIR}/sandbox/bin/${CMAKE_BUILD_TYPE}
+        COMMAND cp ${target_path} ${PROJECT_SOURCE_DIR}/sandbox/bin/${CMAKE_BUILD_TYPE}
     )
 endmacro()
