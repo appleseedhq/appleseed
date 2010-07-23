@@ -65,6 +65,13 @@ endmacro()
 # Create the configurations. Must come before project().
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release;Profile;Ship" CACHE STRING "" FORCE)
 
+# Select a configuration, if none is selected yet.
+if(NOT CMAKE_BUILD_TYPE)
+    convert_list_to_string(config_types_string ${CMAKE_CONFIGURATION_TYPES})
+    set(CMAKE_BUILD_TYPE Release
+        CACHE STRING "Choose the type of build, options are: ${config_types_string}" FORCE)
+endif()
+
 project(appleseed)
 
 # Build the products from source.
