@@ -54,6 +54,9 @@
 using namespace foundation;
 using namespace std;
 
+Q_DECLARE_METATYPE(ITestCaseFactory*);
+Q_DECLARE_METATYPE(TestSuite*);
+
 namespace appleseed {
 namespace studio {
 
@@ -372,9 +375,6 @@ void TestWindow::slot_uncheck_all_tests()
     set_all_items_check_state(m_ui->treewidget_tests, 0, Qt::Unchecked);
     update_checked_tests_label();
 }
-
-Q_DECLARE_METATYPE(ITestCaseFactory*);
-Q_DECLARE_METATYPE(TestSuite*);
 
 namespace
 {
