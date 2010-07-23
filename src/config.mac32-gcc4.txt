@@ -67,7 +67,8 @@ set(compiler_flags_debug
 
 # Release configuration.
 set(compiler_flags_release
-    -Ofast                                  # Maximum optimization, disregarding strict standards compliance
+    -O3                                     # Maximum optimization
+    -ffast-math                             # Disregard strict standards compliance
 )
 set(linker_flags_release
 )
@@ -140,4 +141,7 @@ endmacro()
 #
 
 macro(add_copy_target_to_sandbox_command target)
+    add_custom_command(TARGET ${target} POST_BUILD
+        COMMAND cp ${target} ${PROJECT_SOURCE_DIR}/sandbox/bin/${CMAKE_BUILD_TYPE}
+    )
 endmacro()
