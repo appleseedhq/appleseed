@@ -92,12 +92,16 @@ FOUNDATION_TEST_SUITE(Foundation_Math_MinMax)
 
     float ssemin_reference(const float a, const float b)
     {
-        return _mm_min_ss(_mm_set_ss(a), _mm_set_ss(b)).m128_f32[0];
+        float ret;
+        storess(&ret, minss(setss(a), setss(b)));
+        return ret;
     }
 
     float ssemax_reference(const float a, const float b)
     {
-        return _mm_max_ss(_mm_set_ss(a), _mm_set_ss(b)).m128_f32[0];
+        float ret;
+        storess(&ret, maxss(setss(a), setss(b)));
+        return ret;
     }
 
     FOUNDATION_TEST_CASE(SSEMinAndSSEMax_GivenPermutationsOfSpecialFloatingPointNumbers_MatchMINSSAndMAXSS)

@@ -360,8 +360,8 @@ inline bool clip<float>(
 
     if (hit)
     {
-        ray.m_tmin = maxps(ray_tmin, tmin).m128_f32[0];
-        ray.m_tmax = minps(ray_tmax, tmax).m128_f32[0];
+        storess(&ray.m_tmin, maxps(ray_tmin, tmin));
+        storess(&ray.m_tmax, minps(ray_tmax, tmax));
     }
 
     return hit;
@@ -414,8 +414,8 @@ inline bool clip<double>(
 
     if (hit)
     {
-        ray.m_tmin = maxpd(ray_tmin, tmin).m128d_f64[0];
-        ray.m_tmax = minpd(ray_tmax, tmax).m128d_f64[0];
+        storesd(&ray.m_tmin, maxpd(ray_tmin, tmin));
+        storesd(&ray.m_tmax, minpd(ray_tmax, tmax));
     }
 
     return hit;
