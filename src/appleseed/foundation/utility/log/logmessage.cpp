@@ -39,7 +39,7 @@ namespace foundation
 // LogMessage class implementation.
 //
 
-const LogMessage::FormattingFlags DefaultFormattingFlags =
+const LogMessage::FormattingFlags LogMessage::DefaultFormattingFlags =
     static_cast<LogMessage::FormattingFlags>(
         LogMessage::DisplayCategory |
         LogMessage::DisplayMessage);
