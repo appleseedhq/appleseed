@@ -515,6 +515,7 @@ source_group("foundation\\utility\\log" FILES
 )
 
 set(foundation_utility_settings_sources
+    foundation/utility/settings/settings.xsd
     foundation/utility/settings/settingsfilereader.cpp
     foundation/utility/settings/settingsfilereader.h
     foundation/utility/settings/settingsfilewriter.cpp
@@ -1118,6 +1119,7 @@ set(renderer_modeling_project_sources
     renderer/modeling/project/inputbinder.h
     renderer/modeling/project/project.cpp
     renderer/modeling/project/project.h
+    renderer/modeling/project/project.xsd
     renderer/modeling/project/projectfilereader.cpp
     renderer/modeling/project/projectfilereader.h
     renderer/modeling/project/projectfilewriter.cpp
@@ -1204,6 +1206,18 @@ source_group("renderer\\modeling\\texture" FILES
     ${renderer_modeling_texture_sources}
 )
 
+# Collect all XML Schema files amongst the source files.
+filter_list(
+    appleseed_schema_files
+    "${appleseed_sources}"
+    ".*\\\\.xsd"
+)
+
+# Exclude all XML Schema files from the build.
+set_source_files_properties(${appleseed_schema_files} PROPERTIES
+    HEADER_FILE_ONLY TRUE
+)
+
 
 #
 # Target.
@@ -1235,7 +1249,14 @@ link_against_common_static_libraries(appleseed)
 
 
 #
-# Post-Build Command.
+# Post-Build Commands.
 #
 
 add_copy_target_to_sandbox_command(appleseed)
+
+# Copy all XML schema files to the sandbox.
+foreach(schema_file ${appleseed_schema_files})
+    add_custom_command(TARGET appleseed POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${schema_file} ${PROJECT_SOURCE_DIR}/sandbox/schemas/
+    )
+endforeach()
