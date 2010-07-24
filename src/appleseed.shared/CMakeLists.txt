@@ -84,7 +84,7 @@ target_link_libraries(appleseed.shared
 
 
 #
-# Post-Build Command.
+# Post-Build Commands.
 #
 
 add_copy_target_to_sandbox_command(appleseed.shared)

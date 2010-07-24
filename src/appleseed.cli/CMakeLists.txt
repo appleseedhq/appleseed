@@ -111,7 +111,7 @@ target_link_libraries(appleseed.cli
 
 
 #
-# Post-Build Command.
+# Post-Build Commands.
 #
 
 add_copy_target_to_sandbox_command(appleseed.cli)
