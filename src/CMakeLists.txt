@@ -139,8 +139,11 @@ endmacro()
 set(compiler_flags_common
     ${compiler_flags_common}
 )
-set(linker_flags_common
-    ${linker_flags_common}
+set(exe_linker_flags_common
+    ${exe_linker_flags_common}
+)
+set(shared_lib_linker_flags_common
+    ${shared_lib_linker_flags_common}
 )
 
 # Debug configuration.
@@ -148,9 +151,13 @@ set(compiler_flags_debug
     ${compiler_flags_debug}
     ${compiler_flags_common}
 )
-set(linker_flags_debug
-    ${linker_flags_debug}
-    ${linker_flags_common}
+set(exe_linker_flags_debug
+    ${exe_linker_flags_debug}
+    ${exe_linker_flags_common}
+)
+set(shared_lib_linker_flags_debug
+    ${shared_lib_linker_flags_debug}
+    ${shared_lib_linker_flags_common}
 )
 
 # Release configuration.
@@ -158,9 +165,13 @@ set(compiler_flags_release
     ${compiler_flags_release}
     ${compiler_flags_common}
 )
-set(linker_flags_release
-    ${linker_flags_release}
-    ${linker_flags_common}
+set(exe_linker_flags_release
+    ${exe_linker_flags_release}
+    ${exe_linker_flags_common}
+)
+set(shared_lib_linker_flags_release
+    ${shared_lib_linker_flags_release}
+    ${shared_lib_linker_flags_common}
 )
 
 # Ship configuration.
@@ -168,9 +179,13 @@ set(compiler_flags_ship
     ${compiler_flags_ship}
     ${compiler_flags_release}               # the Ship configuration inherits from the Release configuration
 )
-set(linker_flags_ship
-    ${linker_flags_ship}
-    ${linker_flags_release}                 # the Ship configuration inherits from the Release configuration
+set(exe_linker_flags_ship
+    ${exe_linker_flags_ship}
+    ${exe_linker_flags_release}             # the Ship configuration inherits from the Release configuration
+)
+set(shared_lib_linker_flags_ship
+    ${shared_lib_linker_flags_ship}
+    ${shared_lib_linker_flags_release}      # the Ship configuration inherits from the Release configuration
 )
 
 # Profile configuration.
@@ -178,30 +193,34 @@ set(compiler_flags_profile
     ${compiler_flags_profile}
     ${compiler_flags_ship}                  # the Profile configuration inherits from the Ship configuration
 )
-set(linker_flags_profile
-    ${linker_flags_profile}
-    ${linker_flags_ship}                    # the Profile configuration inherits from the Ship configuration
+set(exe_linker_flags_profile
+    ${exe_linker_flags_profile}
+    ${exe_linker_flags_ship}                # the Profile configuration inherits from the Ship configuration
+)
+set(shared_lib_linker_flags_profile
+    ${shared_lib_linker_flags_profile}
+    ${shared_lib_linker_flags_ship}         # the Profile configuration inherits from the Ship configuration
 )
 
 # Apply Debug configuration compilation/linking flags.
 convert_list_to_string(CMAKE_CXX_FLAGS_DEBUG "${compiler_flags_debug}")
-convert_list_to_string(CMAKE_EXE_LINKER_FLAGS_DEBUG "${linker_flags_debug}")
-convert_list_to_string(CMAKE_SHARED_LINKER_FLAGS_DEBUG "${linker_flags_debug}")
+convert_list_to_string(CMAKE_EXE_LINKER_FLAGS_DEBUG "${exe_linker_flags_debug}")
+convert_list_to_string(CMAKE_SHARED_LINKER_FLAGS_DEBUG "${shared_lib_linker_flags_debug}")
 
 # Apply Release configuration compilation/linking flags.
 convert_list_to_string(CMAKE_CXX_FLAGS_RELEASE "${compiler_flags_release}")
-convert_list_to_string(CMAKE_EXE_LINKER_FLAGS_RELEASE "${linker_flags_release}")
-convert_list_to_string(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${linker_flags_release}")
+convert_list_to_string(CMAKE_EXE_LINKER_FLAGS_RELEASE "${exe_linker_flags_release}")
+convert_list_to_string(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${shared_lib_linker_flags_release}")
 
 # Apply Ship configuration compilation/linking flags.
 convert_list_to_string(CMAKE_CXX_FLAGS_SHIP "${compiler_flags_ship}")
-convert_list_to_string(CMAKE_EXE_LINKER_FLAGS_SHIP "${linker_flags_ship}")
-convert_list_to_string(CMAKE_SHARED_LINKER_FLAGS_SHIP "${linker_flags_ship}")
+convert_list_to_string(CMAKE_EXE_LINKER_FLAGS_SHIP "${exe_linker_flags_ship}")
+convert_list_to_string(CMAKE_SHARED_LINKER_FLAGS_SHIP "${shared_lib_linker_flags_ship}")
 
 # Apply Profile configuration compilation/linking flags.
 convert_list_to_string(CMAKE_CXX_FLAGS_PROFILE "${compiler_flags_profile}")
-convert_list_to_string(CMAKE_EXE_LINKER_FLAGS_PROFILE "${linker_flags_profile}")
-convert_list_to_string(CMAKE_SHARED_LINKER_FLAGS_PROFILE "${linker_flags_profile}")
+convert_list_to_string(CMAKE_EXE_LINKER_FLAGS_PROFILE "${exe_linker_flags_profile}")
+convert_list_to_string(CMAKE_SHARED_LINKER_FLAGS_PROFILE "${shared_lib_linker_flags_profile}")
 
 
 #

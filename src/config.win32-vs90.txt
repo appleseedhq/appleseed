@@ -67,8 +67,11 @@ set(compiler_flags_common
     /wd4290                                 # C4290: C++ exception specification ignored except to indicate a function is not __declspec(nothrow)
     /wd4355                                 # C4355: 'this' : used in base member initializer list
 )
-set(linker_flags_common
+set(exe_linker_flags_common
     /WX                                     # Treat Warnings As Errors
+)
+set(shared_lib_linker_flags_common
+    ${exe_linker_flags_common}
 )
 
 # Debug configuration.
@@ -90,22 +93,31 @@ set(compiler_flags_release
     /arch:SSE2                              # Streaming SIMD Extensions 2
     /fp:fast                                # set Floating Point Model to Fast
 )
-set(linker_flags_release
+set(exe_linker_flags_release
     /OPT:REF                                # Eliminate Unreferenced Data
     /OPT:ICF                                # Remove Redundant COMDATs
+)
+set(shared_lib_linker_flags_release
+    ${exe_linker_flags_release}
 )
 
 # Ship configuration.
 set(compiler_flags_ship
     /GL                                     # Enable link-time code generation
 )
-set(linker_flags_ship
+set(exe_linker_flags_ship
     /LTCG                                   # Use Link Time Code Generation
+)
+set(shared_lib_linker_flags_ship
+    ${exe_linker_flags_ship}
 )
 
 # Profile configuration.
-set(linker_flags_profile
+set(exe_linker_flags_profile
     /DEBUG                                  # Generate Debug Info
+)
+set(shared_lib_linker_flags_profile
+    ${exe_linker_flags_profile}
 )
 
 
