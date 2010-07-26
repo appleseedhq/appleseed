@@ -117,7 +117,10 @@ void CameraController::set_controller_target(const Scene* scene)
                 scene->assembly_instances().begin(),
                 scene->assembly_instances().end());
 
-        m_controller.set_target(Vector3d(scene_bbox.center()));
+        m_controller.set_target(
+            scene_bbox.is_valid()
+                ? Vector3d(scene_bbox.center())
+                : Vector3d(0.0));
     }
 }
 
