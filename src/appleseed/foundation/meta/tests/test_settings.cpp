@@ -56,7 +56,7 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_SettingsFileReader)
 
         bool read(const char* filename)
         {
-            return m_reader.read(filename, "", m_dictionary);
+            return m_reader.read(filename, "../schemas/settings.xsd", m_dictionary);
         }
     };
 

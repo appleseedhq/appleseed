@@ -74,7 +74,9 @@ namespace
         {
             if (node->getNodeType() == DOMNode::ELEMENT_NODE)
             {
-                if (transcode(node->getNodeName()) == "parameters")
+                const string element_name = transcode(node->getNodeName());
+
+                if (element_name == "parameters")
                 {
                     DOMNamedNodeMap* attributes = node->getAttributes();
                     DOMNode* name_attribute = attributes->getNamedItem(name_attribute_name.c_str());
@@ -86,7 +88,7 @@ namespace
                         transcode(name_attribute->getNodeValue()),
                         child_dictionary);
                 }
-                else
+                else if (element_name == "parameter")
                 {
                     DOMNamedNodeMap* attributes = node->getAttributes();
                     DOMNode* name_attribute = attributes->getNamedItem(name_attribute_name.c_str());
@@ -140,13 +142,18 @@ bool SettingsFileReader::read(
         return false;
     }
 
-    // If an error occurred, we won't have a document. Bail out.
+    // Bail out if we won't have a document.
     const DOMDocument* document = parser->getDocument();
     if (!document)
         return false;
 
+    // Bail out if we won't have a root node.
+    const DOMNode* root_node = document->getFirstChild();
+    if (!root_node)
+        return false;
+
     // Build a dictionary out of the XML document.
-    build_dictionary(document->getFirstChild(), settings);
+    build_dictionary(root_node, settings);
 
     return true;
 }
