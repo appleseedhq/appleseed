@@ -165,18 +165,16 @@ class PoolAllocator
 
     pointer allocate(size_type n, const_pointer hint = 0)
     {
-        assert(n > 0);
-        return n > 1
-            ? m_fallback_alloc.allocate(n, hint)
-            : static_cast<pointer>(m_pool.allocate());
+        return n == 1
+            ? static_cast<pointer>(m_pool.allocate())
+            : m_fallback_alloc.allocate(n, hint);
     }
 
     void deallocate(pointer p, size_type n)
     {
-        if (n > 1)
-            m_fallback_alloc.deallocate(p, n);
-        else if (p)
+        if (p && n == 1)
             m_pool.deallocate(p);
+        else m_fallback_alloc.deallocate(p, n);
     }
 
     size_type max_size() const
