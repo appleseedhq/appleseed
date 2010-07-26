@@ -29,44 +29,60 @@
 #ifndef APPLESEED_FOUNDATION_PLATFORM_TYPES_H
 #define APPLESEED_FOUNDATION_PLATFORM_TYPES_H
 
-namespace foundation
-{
-
 //
-// Integral types.
-//
-
 // Visual C++.
+//
+
 #if defined _MSC_VER
 
-// Signed integral types.
-typedef char                int8;           // 8-bit signed integer
-typedef short               int16;          // 16-bit signed integer
-typedef int                 int32;          // 32-bit signed integer
-typedef long long           int64;          // 64-bit signed integer
+// Define std::uintptr_t.
+#include <cstddef>
 
-// Unsigned integral types.
-typedef unsigned char       uint8;          // 8-bit unsigned integer
-typedef unsigned short      uint16;         // 16-bit unsigned integer
-typedef unsigned int        uint32;         // 32-bit unsigned integer
-typedef unsigned long long  uint64;         // 64-bit unsigned integer
+namespace foundation
+{
+    // Signed integral types.
+    typedef char                int8;
+    typedef short               int16;
+    typedef int                 int32;
+    typedef long long           int64;
 
+    // Unsigned integral types.
+    typedef unsigned char       uint8;
+    typedef unsigned short      uint16;
+    typedef unsigned int        uint32;
+    typedef unsigned long long  uint64;
+}
+
+
+//
 // gcc.
+//
+
 #elif defined __GNUC__
 
-// Signed integral types.
-typedef char                int8;           // 8-bit signed integer
-typedef short               int16;          // 16-bit signed integer
-typedef int                 int32;          // 32-bit signed integer
-typedef long long           int64;          // 64-bit signed integer
+// Define std::uintptr_t.
+#include <cstddef>
 
-// Unsigned integral types.
-typedef unsigned char       uint8;          // 8-bit unsigned integer
-typedef unsigned short      uint16;         // 16-bit unsigned integer
-typedef unsigned int        uint32;         // 32-bit unsigned integer
-typedef unsigned long long  uint64;         // 64-bit unsigned integer
+namespace foundation
+{
+    // Signed integral types.
+    typedef char                int8;
+    typedef short               int16;
+    typedef int                 int32;
+    typedef long long           int64;
 
+    // Unsigned integral types.
+    typedef unsigned char       uint8;
+    typedef unsigned short      uint16;
+    typedef unsigned int        uint32;
+    typedef unsigned long long  uint64;
+}
+
+
+//
 // Unsupported platform.
+//
+
 #else
 #error Integral types are not defined on this platform.
 #endif
@@ -77,7 +93,5 @@ typedef unsigned long long  uint64;         // 64-bit unsigned integer
 //
 
 #define FMT_SIZE_T "%lu"
-
-}       // namespace foundation
 
 #endif  // !APPLESEED_FOUNDATION_PLATFORM_TYPES_H

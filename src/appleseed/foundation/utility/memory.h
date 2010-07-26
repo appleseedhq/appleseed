@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
+#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cassert>
