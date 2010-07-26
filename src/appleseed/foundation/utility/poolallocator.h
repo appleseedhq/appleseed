@@ -52,7 +52,6 @@ namespace foundation
 
 namespace impl
 {
-
     template <
         size_t ItemSize,    // in bytes
         size_t PageSize     // in bytes
@@ -112,8 +111,7 @@ namespace impl
         Node*       m_free_head;
         size_t      m_free_index;
     };
-
-}   // namespace impl
+}
 
 template <
     typename    T,
