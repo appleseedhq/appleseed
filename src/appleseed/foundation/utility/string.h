@@ -233,22 +233,45 @@ std::string pretty_size(
 // Value-to-string conversion functions implementation.
 //
 
-// General case.
+namespace impl
+{
+    template <typename T, bool IsPointer>
+    struct ToString;
+
+    // General case.
+    template <typename T>
+    struct ToString<T, false>
+    {
+        static std::string to_string(const T& value)
+        {
+            std::stringstream sstr;
+            sstr << value;
+            return sstr.str();
+        }
+    };
+
+    // Pointers.
+    template <typename T>
+    struct ToString<T, true>
+    {
+        static std::string to_string(const T& value)
+        {
+            std::stringstream sstr;
+            sstr << "0x"
+                 << std::hex
+                 << std::uppercase
+                 << std::setw(2 * sizeof(void*))
+                 << std::setfill('0')
+                 << reinterpret_cast<uintptr_t>(value);
+            return sstr.str();
+        }
+    };
+}
+
 template <typename T>
 std::string to_string(const T& value)
 {
-    std::stringstream sstr;
-
-    if (IsPointer<T>::R)
-    {
-        sstr << "0x" << std::hex << value;
-    }
-    else
-    {
-        sstr << value;
-    }
-
-    return sstr.str();
+    return impl::ToString<T, IsPointer<T>::R>::to_string(value);
 }
 
 // Handle 8-bit integers as integers, not as characters.
@@ -263,7 +286,7 @@ inline std::string to_string(const uint8& value)
     return to_string(static_cast<unsigned int>(value));
 }
 
-// Handle C-strings separately.
+// Handle C strings separately.
 inline std::string to_string(const char* value)
 {
     std::stringstream sstr;
@@ -275,7 +298,6 @@ inline std::string to_string(char* value)
     return to_string(static_cast<const char*>(value));
 }
 
-// Convert an array of values to a string.
 template <typename T>
 std::string to_string(
     const T             array[],
@@ -313,11 +335,13 @@ T from_string(const std::string& s)
 
     return val;
 }
+
 template <>
 inline std::string from_string(const std::string& s)
 {
     return s;
 }
+
 template <>
 inline bool from_string(const std::string& s)
 {
@@ -327,6 +351,7 @@ inline bool from_string(const std::string& s)
         return false;
     else throw ExceptionStringConversionError();
 }
+
 template <>
 inline int8 from_string(const std::string& s)
 {
@@ -341,6 +366,7 @@ inline int8 from_string(const std::string& s)
 
     return static_cast<int8>(val);
 }
+
 template <>
 inline uint8 from_string(const std::string& s)
 {
@@ -361,7 +387,6 @@ inline uint8 from_string(const std::string& s)
 // String manipulation functions implementation.
 //
 
-// Duplicate a string.
 inline char* strdup(const char* s)
 {
     assert(s);
@@ -371,7 +396,6 @@ inline char* strdup(const char* s)
     return result;
 }
 
-// Convert all characters of a string to lower case.
 inline std::string lower_case(const std::string& s)
 {
     std::string result;
@@ -383,7 +407,6 @@ inline std::string lower_case(const std::string& s)
     return result;
 }
 
-// Convert all characters of a string to upper case.
 inline std::string upper_case(const std::string& s)
 {
     std::string result;
@@ -395,7 +418,6 @@ inline std::string upper_case(const std::string& s)
     return result;
 }
 
-// Compare two strings lexicographically, regardless of their case.
 inline int strcmp_nocase(
     const std::string&          lhs,
     const std::string&          rhs)
@@ -416,7 +438,6 @@ inline int strcmp_nocase(
     else return lhs.size() < rhs.size() ? -1 : 1;
 }
 
-// Return a given string left- or right-padded to a given length.
 inline std::string pad_left(
     const std::string&          s,
     const char                  padding,
@@ -426,6 +447,7 @@ inline std::string pad_left(
          return s;
     else return std::string(length - s.size(), padding) + s;
 }
+
 inline std::string pad_right(
     const std::string&          s,
     const char                  padding,
@@ -436,8 +458,6 @@ inline std::string pad_right(
     else return s + std::string(length - s.size(), padding);
 }
 
-// Remove leading, trailing or leading and trailing characters from
-// a given string.
 inline std::string trim_left(
     const std::string&          s,
     const std::string&          delimiters)
@@ -445,6 +465,7 @@ inline std::string trim_left(
     const std::string::size_type begin = s.find_first_not_of(delimiters);
     return begin == std::string::npos ? "" : s.substr(begin);
 }
+
 inline std::string trim_right(
     const std::string&          s,
     const std::string&          delimiters)
@@ -452,6 +473,7 @@ inline std::string trim_right(
     const std::string::size_type end = s.find_last_not_of(delimiters);
     return end == std::string::npos ? "" : s.substr(0, end + 1);
 }
+
 inline std::string trim_both(
     const std::string&          s,
     const std::string&          delimiters)
@@ -461,8 +483,6 @@ inline std::string trim_both(
     return begin == std::string::npos ? "" : s.substr(begin, end - begin + 1);
 }
 
-// Split a given string into multiple individual tokens of a given
-// type, according to a set of delimiting characters.
 template <typename Vec>
 void tokenize(
     const std::string&          s,
@@ -490,9 +510,6 @@ void tokenize(
     }
 }
 
-// A variant of tokenize() that stores the tokens into a C array of
-// a given maximum size. Returns the number of tokens stored in the
-// array. 'max_tokens' must be greater than 0.
 template <typename T>
 size_t tokenize(
     const std::string&          s,
@@ -530,7 +547,6 @@ size_t tokenize(
     return token_count;
 }
 
-// Like tokenize(), but consider that there are empty tokens between delimiters.
 template <typename Vec>
 void split(
     const std::string&          s,
@@ -562,7 +578,6 @@ void split(
 // Filename manipulation functions implementation.
 //
 
-// Return a time stamp string based on the current date and time.
 inline std::string get_time_stamp_string()
 {
     // Retrieve the current date and time.
@@ -591,8 +606,6 @@ inline std::string get_time_stamp_string()
 // Pretty-print functions implementation.
 //
 
-// Capitalize the first letter of each word of a string and convert
-// all other characters to lower case. Everything else is preserved.
 inline std::string capitalize(const std::string& s)
 {
     std::string result = s;
@@ -612,7 +625,6 @@ inline std::string capitalize(const std::string& s)
     return result;
 }
 
-// Return the plural of a unit, depending on a value.
 template <typename T>
 std::string plural(
     const T                     value,
@@ -620,6 +632,7 @@ std::string plural(
 {
     return unit + (value > T(1) ? "s" : "");
 }
+
 template <typename T>
 std::string plural(
     const T                     value,
@@ -629,7 +642,6 @@ std::string plural(
     return value > T(1) ? unit_plural : unit_singular;
 }
 
-// Pretty-print an unsigned integer value.
 inline std::string pretty_uint(const uint64 value)
 {
     const std::string s = to_string(value);
@@ -652,14 +664,12 @@ inline std::string pretty_uint(const uint64 value)
     return result;
 }
 
-// Pretty-print a signed integer value.
 inline std::string pretty_int(const int64 value)
 {
     const std::string result = pretty_uint(abs(value));
     return value < 0 ? '-' + result : result;
 }
 
-// Pretty-print a floating-point value.
 inline std::string pretty_scalar(
     const double                value,
     const std::streamsize       precision)
@@ -674,7 +684,6 @@ inline std::string pretty_scalar(
     return sstr.str();
 }
 
-// Pretty-print the ratio n/d.
 template <typename T>
 inline std::string pretty_ratio(
     const T                     n,
@@ -693,7 +702,6 @@ inline std::string pretty_ratio(
     return pretty_scalar(static_cast<double>(n) / d, precision);
 }
 
-// Pretty-print the ratio n/d as a percentage.
 template <typename T>
 inline std::string pretty_percent(
     const T                     n,
@@ -715,7 +723,6 @@ inline std::string pretty_percent(
         precision) + "%";
 }
 
-// Pretty-print a time value, given in seconds.
 inline std::string pretty_time(
     const double                time,
     const std::streamsize       precision)
@@ -791,7 +798,6 @@ inline std::string pretty_time(
     return result;
 }
 
-// Pretty-print a size, given in bytes.
 inline std::string pretty_size(
     const uint64                size,
     const std::streamsize       precision)
