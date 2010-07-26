@@ -156,7 +156,7 @@ LogWidget* MainWindow::create_log_widget() const
 
     QFont font;
     font.setFamily(QString::fromUtf8("Consolas"));
-    font.setPointSize(8);
+    font.setPixelSize(11);
     log_widget->setFont(font);
 
     return log_widget;
