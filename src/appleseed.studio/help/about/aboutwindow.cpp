@@ -55,7 +55,11 @@ AboutWindow::AboutWindow(QWidget* parent)
 {
     m_ui->setupUi(this);
 
-    setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowCloseButtonHint);
+    setWindowFlags(
+        Qt::Dialog |
+        Qt::CustomizeWindowHint |
+        Qt::MSWindowsFixedSizeDialogHint |
+        Qt::WindowCloseButtonHint);
 
     set_version_string();
 
