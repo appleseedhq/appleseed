@@ -308,6 +308,16 @@ QMenu::separator
 QMenu::right-arrow
 {
     image: url(":/widgets/menu_arrow_right.png");
+}
+
+QMenu::right-arrow:selected
+{
+    image: url(":/widgets/menu_arrow_right_selected.png");
+}
+
+QMenu::right-arrow,
+QMenu::right-arrow:selected
+{
     margin: 4px;
 }
 
