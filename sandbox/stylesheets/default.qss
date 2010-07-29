@@ -51,8 +51,8 @@
 QWidget
 {
     background-color: rgb(50, 50, 50);
-    border: 1px solid rgb(40, 40, 40);
     color: rgb(210, 210, 210);
+    border: 0px;
 }
 
 
@@ -67,29 +67,17 @@ QMainWindow::separator
     height: 1px;
 }
 
-/* Not necessarily desirable...
-QMainWindow::separator:hover
-{
-    background-color: rgb(190, 140, 50);
-}
-*/
-
 
 /*
  * Status bar
  */
 
-QStatusBar::item
+QStatusBar
 {
-     border: 0px;
+    border: 1px solid rgb(40, 40, 40);
 }
 
-
-/*
- * Labels
- */
-
-QLabel
+QStatusBar::item
 {
     border: 0px;
 }
@@ -135,19 +123,14 @@ QScrollBar::sub-line:hover
     background-color: rgb(190, 140, 50);
 }
 
-QAbstractScrollArea::corner
-{
-    background-color: transparent;
-}
-
 
 /*
  * Scroll areas
  */
 
-QScrollArea
+QAbstractScrollArea::corner
 {
-    border: 0px;
+    background-color: transparent;
 }
 
 
@@ -181,7 +164,6 @@ QScrollBar::sub-line:horizontal
 QScrollBar:left-arrow:horizontal,
 QScrollBar::right-arrow:horizontal
 {
-    border: 0px;
     width: 6px;
     height: 9px;
 }
@@ -237,7 +219,6 @@ QScrollBar::sub-line:vertical
 QScrollBar::up-arrow:vertical,
 QScrollBar::down-arrow:vertical
 {
-    border: 0px;
     width: 9px;
     height: 7px;
 }
@@ -270,6 +251,7 @@ QScrollBar:down-arrow:vertical:disabled
 QMenuBar
 {
     background-color: rgb(60, 60, 60);
+    border: 1px solid rgb(40, 40, 40);
 }
 
 QMenuBar::item
@@ -296,6 +278,7 @@ QMenuBar::item:disabled
 QMenu
 {
     background-color: rgb(60, 60, 60);
+    border: 1px solid rgb(40, 40, 40);
 }
 
 QMenu::item
@@ -327,7 +310,12 @@ QMenu::separator
  * Toolbars
  */
 
-/* Does not work
+QToolBar
+{
+    border: 1px solid rgb(40, 40, 40);
+}
+
+/* Does not work:
 QToolBar::separator
 {
     margin-left: 10px;
@@ -337,7 +325,6 @@ QToolBar::separator
 
 QToolButton
 {
-    border: 0px;
     margin-left: 2px;
     margin-right: 2px;
 }
@@ -447,10 +434,20 @@ QPushButton:disabled
  * Tree views
  */
 
+QTreeView
+{
+    border: 1px solid rgb(40, 40, 40);
+}
+QTreeView#treewidget_project_explorer_scene,
+QTreeView#treeview_project_explorer_renders
+{
+    border: 0px;
+}
+
 QHeaderView::section
 {
     background-color: rgb(60, 60, 60);
-    border: 1px;
+    border: 0px;
     padding: 3px 11px 4px 11px;
 }
 
@@ -501,18 +498,11 @@ QTreeView::branch:has-children:open:disabled
  * Checkboxes
  */
 
-QCheckBox
-{
-    border: 0px;
-}
-
-/* This results in an unpleasant light gray border around items checkboxes.
 QCheckBox::indicator,
 QAbstractItemView::indicator
 {
     background-color: rgb(60, 60, 60);
 }
-*/
 
 QCheckBox::indicator:hover,
 QAbstractItemView::indicator:hover
