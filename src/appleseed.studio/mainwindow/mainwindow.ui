@@ -51,7 +51,7 @@
      <x>0</x>
      <y>0</y>
      <width>1280</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_file">
@@ -216,6 +216,9 @@
            <attribute name="headerVisible">
             <bool>false</bool>
            </attribute>
+           <attribute name="headerVisible">
+            <bool>false</bool>
+           </attribute>
            <column>
             <property name="text">
              <string notr="true">1</string>
@@ -231,7 +234,7 @@
         </attribute>
         <layout class="QGridLayout" name="gridLayout_4">
          <item row="0" column="0">
-          <widget class="QTreeWidget" name="treeview_project_explorer_renders">
+          <widget class="QTreeWidget" name="treewidget_project_explorer_renders">
            <property name="selectionMode">
             <enum>QAbstractItemView::ExtendedSelection</enum>
            </property>
@@ -241,6 +244,9 @@
            <property name="allColumnsShowFocus">
             <bool>true</bool>
            </property>
+           <attribute name="headerVisible">
+            <bool>false</bool>
+           </attribute>
            <attribute name="headerVisible">
             <bool>false</bool>
            </attribute>

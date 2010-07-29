@@ -90,6 +90,7 @@ MainWindow::MainWindow(QWidget* parent)
     m_ui->setupUi(this);
 
     disable_mac_focus_rect(*m_ui->treewidget_project_explorer_scene);
+    disable_mac_focus_rect(*m_ui->treewidget_project_explorer_renders);
 
     statusBar()->addWidget(&m_status_bar);
 
