@@ -66,7 +66,7 @@ const char* Appleseed::get_lib_version()
 // Return the maturity level of the library.
 const char* Appleseed::get_lib_maturity_level()
 {
-    return "alpha-1";
+    return "alpha-2";
 }
 
 // Return the build number of the library.
@@ -76,7 +76,7 @@ size_t Appleseed::get_lib_build_number()
     // whose name is unique (the text after build_number_ is a GUID).
     // Before compilation begins, a tool searches for this variable declaration
     // (in this file) and increases the build number by 1.
-    static const size_t build_number_335A07D9_68C1_4E21_86FA_60C64BD6FE6C = 7606;
+    static const size_t build_number_335A07D9_68C1_4E21_86FA_60C64BD6FE6C = 7618;
     return build_number_335A07D9_68C1_4E21_86FA_60C64BD6FE6C;
 }
 
