@@ -305,6 +305,12 @@ QMenu::separator
     margin: 4px 4px 4px 4px;
 }
 
+QMenu::right-arrow
+{
+    image: url(":/widgets/menu_arrow_right.png");
+    margin: 4px;
+}
+
 
 /*
  * Toolbars
