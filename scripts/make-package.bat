@@ -2,6 +2,7 @@
 
 set platform=win32.vs90
 set configuration=Ship
+set qt-path=C:\Qt\2010.04\qt
 
 set package-name=appleseed-VERSION-MATURITY-%platform%.zip
 set package-path=..\archives\%package-name%
@@ -12,13 +13,13 @@ echo Starting to build %package-path%
 echo.
 
 echo Removing left over package...
-del %package-path% 2>nul
+if exist %package-path% del %package-path%
 
 echo Removing left over staging directory...
-rmdir /S /Q appleseed 2>nul
+if exist appleseed rmdir /S /Q appleseed
 
 echo Clearing log file...
-del %log-file% 2>nul
+if exist %log-file% del %log-file%
 
 echo Archiving sandbox from HEAD...
 pushd ..\sandbox >>%log-file% 2>&1
@@ -41,16 +42,16 @@ rmdir /S /Q "appleseed\scenes\tests\self intersections" >>%log-file% 2>&1
 rmdir /S /Q appleseed\scenes\winosi\renders >>%log-file% 2>&1
 
 echo Adding local schemas to staging directory...
-mkdir appleseed\schemas >>%log-file% 2>&1
-copy ..\sandbox\schemas\* appleseed\schemas\ >>%log-file% 2>&1
+if not exist appleseed\schemas mkdir appleseed\schemas >>%log-file% 2>&1
+copy ..\sandbox\schemas\*.xsd appleseed\schemas\ >>%log-file% 2>&1
 
 echo Adding local binaries to staging directory...
-copy ..\sandbox\bin\%platform%\%configuration%\*.exe appleseed\bin\ >>%log-file% 2>&1
-copy ..\sandbox\bin\%platform%\%configuration%\*.dll appleseed\bin\ >>%log-file% 2>&1
+copy ..\sandbox\bin\%configuration%\*.exe appleseed\bin\ >>%log-file% 2>&1
+copy ..\sandbox\bin\%configuration%\*.dll appleseed\bin\ >>%log-file% 2>&1
 
 echo Adding dependencies to staging directory...
-copy C:\Qt\2009.03-%platform%\qt\bin\QtCore4.dll appleseed\bin\ >>%log-file% 2>&1
-copy C:\Qt\2009.03-%platform%\qt\bin\QtGui4.dll appleseed\bin\ >>%log-file% 2>&1
+copy %qt-path%\lib\QtCore4.dll appleseed\bin\ >>%log-file% 2>&1
+copy %qt-path%\lib\QtGui4.dll appleseed\bin\ >>%log-file% 2>&1
 xcopy /E runtimes\%platform%\*.* appleseed\bin\ >>%log-file% 2>&1
 
 echo Adding LICENSE.txt and README.txt...
