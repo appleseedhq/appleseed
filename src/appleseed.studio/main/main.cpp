@@ -58,7 +58,6 @@ using namespace std;
 
 namespace
 {
-
     void display_incorrect_installation_error()
     {
         // We need the path to the application's executable to construct the error message.
@@ -138,7 +137,13 @@ namespace
         }
     }
 
-}   // anonymous namespace
+    void configure_application(QApplication& application)
+    {
+        application.setAttribute(Qt::AA_DontUseNativeMenuBar, true);
+
+        set_default_stylesheet(application);
+    }
+}
 
 
 //
@@ -151,7 +156,7 @@ int main(int argc, char *argv[])
 
     check_installation();
 
-    set_default_stylesheet(application);
+    configure_application(application);
 
     appleseed::studio::MainWindow window;
     window.show();
