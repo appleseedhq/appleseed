@@ -34,6 +34,7 @@
 
 // appleseed.studio headers.
 #include "debug/tests/testoutputitem.h"
+#include "utility/tweaks.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/test.h"
@@ -70,7 +71,11 @@ TestWindow::TestWindow(QWidget* parent)
   , m_ui(new Ui::TestWindow())
 {
     m_ui->setupUi(this);
+
     m_ui->splitter->setSizes(QList<int>() << 300 << 600);
+
+    disable_mac_focus_rect(*m_ui->treewidget_output);
+    disable_mac_focus_rect(*m_ui->label_tests_results);
 
     m_output_widget.reset(new TestOutputWidgetDecorator(m_ui->treewidget_output));
     m_result_widget.reset(new TestResultWidgetDecorator(m_ui->label_tests_results));

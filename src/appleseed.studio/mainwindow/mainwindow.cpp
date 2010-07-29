@@ -34,6 +34,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/logwidget.h"
+#include "utility/tweaks.h"
 
 // appleseed.shared headers.
 #include "application/application.h"
@@ -87,6 +88,8 @@ MainWindow::MainWindow(QWidget* parent)
   , m_rendering_manager(m_status_bar)
 {
     m_ui->setupUi(this);
+
+    disable_mac_focus_rect(*m_ui->treewidget_project_explorer_scene);
 
     statusBar()->addWidget(&m_status_bar);
 

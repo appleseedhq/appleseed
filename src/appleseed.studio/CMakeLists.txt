@@ -164,6 +164,8 @@ set(utility_sources
     utility/qtiostreamop.h
     utility/scrollareapanhandler.cpp
     utility/scrollareapanhandler.h
+    utility/tweaks.cpp
+    utility/tweaks.h
     utility/widgetzoomhandler.cpp
     utility/widgetzoomhandler.h
 )
