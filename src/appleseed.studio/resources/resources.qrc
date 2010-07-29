@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/" >
+    <qresource prefix="/">
         <file>icons/page_white.png</file>
         <file>icons/folder.png</file>
         <file>icons/disk.png</file>
@@ -20,5 +20,6 @@
         <file>widgets/scrollbar_arrow_right_enabled.png</file>
         <file>widgets/scrollbar_arrow_up_disabled.png</file>
         <file>widgets/scrollbar_arrow_up_enabled.png</file>
+        <file>images/aboutwindow.png</file>
     </qresource>
 </RCC>

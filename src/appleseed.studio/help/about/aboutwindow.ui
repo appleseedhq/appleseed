@@ -104,24 +104,6 @@ p, li { white-space: pre-wrap; }
       <property name="margin">
        <number>20</number>
       </property>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_product_name">
-        <property name="font">
-         <font>
-          <family>Tw Cen MT</family>
-          <pointsize>22</pointsize>
-          <weight>50</weight>
-          <bold>false</bold>
-         </font>
-        </property>
-        <property name="text">
-         <string>appleseed.studio</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_version_string">
         <property name="font">
@@ -137,12 +119,25 @@ p, li { white-space: pre-wrap; }
         </property>
        </widget>
       </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_product_image">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="pixmap">
+         <pixmap resource="../../resources/resources.qrc">:/images/aboutwindow.png</pixmap>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="../../resources/resources.qrc"/>
+  <include location="../../resources/resources.qrc"/>
+ </resources>
  <connections/>
 </ui>
