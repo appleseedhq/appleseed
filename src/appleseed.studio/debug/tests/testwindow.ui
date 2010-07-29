@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1302</width>
-    <height>989</height>
+    <width>800</width>
+    <height>600</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -51,6 +51,9 @@
            <property name="allColumnsShowFocus">
             <bool>true</bool>
            </property>
+           <attribute name="headerVisible">
+            <bool>true</bool>
+           </attribute>
            <attribute name="headerVisible">
             <bool>true</bool>
            </attribute>
@@ -162,6 +165,15 @@
            </attribute>
            <attribute name="headerShowSortIndicator" stdset="0">
             <bool>true</bool>
+           </attribute>
+           <attribute name="headerDefaultSectionSize">
+            <number>100</number>
+           </attribute>
+           <attribute name="headerShowSortIndicator" stdset="0">
+            <bool>true</bool>
+           </attribute>
+           <attribute name="headerHighlightSections">
+            <bool>false</bool>
            </attribute>
            <column>
             <property name="text">
