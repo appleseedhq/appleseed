@@ -58,13 +58,13 @@ const char* Appleseed::get_lib_name()
 
 const char* Appleseed::get_lib_version()
 {
-    static const char* LibVersionToken = "1.1.0-UNOFFICIAL"
+    static const char* LibVersionToken = "1.1.0-UNOFFICIAL";
     return LibVersionToken;
 }
 
 const char* Appleseed::get_lib_maturity_level()
 {
-    static const char* LibMaturityLevelToken = "alpha-2"
+    static const char* LibMaturityLevelToken = "alpha-2";
     return LibMaturityLevelToken;
 }
 
