@@ -28,7 +28,7 @@
 #
 
 # Package builder settings.
-VersionString = "1.0"
+VersionString = "1.1"
 SettingsFileName = "appleseed.package.configuration.xml"
 
 # Imports.
@@ -109,7 +109,7 @@ class Settings:
         self.configuration = tree.findtext("configuration")
         self.platform = tree.findtext("platform")
         self.appleseed_path = tree.findtext("appleseed_path")
-        self.qt_path = tree.findtext("qt_path")
+        self.qt_runtime_path = tree.findtext("qt_runtime_path")
         self.platform_runtime_path = tree.findtext("platform_runtime_path")
         self.package_output_path = tree.findtext("package_output_path")
 
@@ -122,7 +122,7 @@ class Settings:
         print "  Configuration:             " + self.configuration
         print "  Platform:                  " + self.platform + " (Python says " + os.name + ")"
         print "  Path to appleseed:         " + self.appleseed_path
-        print "  Path to Qt libraries:      " + self.qt_path
+        print "  Path to Qt runtime:        " + self.qt_runtime_path
         print "  Path to platform runtime:  " + self.platform_runtime_path
         print "  Output directory:          " + self.package_output_path
         print "  Output file path:          " + self.package_filepath
@@ -227,9 +227,14 @@ class WindowsPackageBuilder(PackageBuilder):
 
     def add_dependencies_to_stage(self):
         progress("Windows-specific: adding dependencies to staging directory")
-        shutil.copy(os.path.join(self.settings.qt_path, "lib/QtCore4.dll"), "appleseed/bin/")
-        shutil.copy(os.path.join(self.settings.qt_path, "lib/QtGui4.dll"), "appleseed/bin/")
+        self.copy_qt_framework("QtCore")
+        self.copy_qt_framework("QtGui")
         dir_util.copy_tree(self.settings.platform_runtime_path, "appleseed/bin/Microsoft.VC90.CRT")
+
+    def copy_qt_framework(self, framework_name):
+        src_path = os.path.join(self.settings.qt_runtime_path, framework_name + "4" + ".dll")
+        dst_path = os.path.join("appleseed", "bin")
+        shutil.copy(src_path, dst_path)
 
 
 #
@@ -239,6 +244,7 @@ class WindowsPackageBuilder(PackageBuilder):
 class MacPackageBuilder(PackageBuilder):
     def alterate_stage(self):
         self.fixup_binaries()
+        self.add_dependencies_to_stage()
 
     def fixup_binaries(self):
         progress("Mac-specific: fixing up binaries")
@@ -270,6 +276,19 @@ class MacPackageBuilder(PackageBuilder):
 
     def fixup(self, target, args):
         os.system("install_name_tool " + args + " " + os.path.join("appleseed/bin/", target))
+
+    def add_dependencies_to_stage(self):
+        progress("Mac-specific: adding dependencies to staging directory")
+        self.copy_qt_framework("QtCore")
+        self.copy_qt_framework("QtGui")
+        self.copy_qt_framework("QtOpenGL")
+
+    def copy_qt_framework(self, framework_name):
+        framework_path = os.path.join(framework_name + ".framework", "Versions", "4")
+        src_path = os.path.join(self.settings.qt_runtime_path, framework_path, framework_name)
+        dest_path = os.path.join("appleseed", "bin", framework_path)
+        os.makedirs(dest_path)
+        shutil.copy(src_path, dest_path)
 
 
 #

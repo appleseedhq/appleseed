@@ -3,6 +3,6 @@
     <platform>win32-vs90</platform>
     <appleseed_path>C:\appleseed</appleseed_path>
     <package_output_path>C:\appleseed\archives\releases</package_output_path>
-    <qt_path>C:\Qt\2010.04\qt</qt_path>
+    <qt_runtime_path>C:\Qt\2010.04\qt\lib</qt_runtime_path>
     <platform_runtime_path>C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\redist\x86\Microsoft.VC90.CRT</platform_runtime_path>
 </configuration>
