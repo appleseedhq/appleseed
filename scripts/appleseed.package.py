@@ -28,7 +28,7 @@
 #
 
 # Package builder settings.
-VersionString = "1.1"
+VersionString = "1.2"
 SettingsFileName = "appleseed.package.configuration.xml"
 
 # Imports.
@@ -37,6 +37,7 @@ from distutils import archive_util, dir_util
 import glob
 import os
 import platform
+import re
 import shutil
 import sys
 import zipfile
@@ -50,7 +51,8 @@ def progress(message):
     print("  " + message + "...")
 
 def fatal(message):
-    print("\n  FATAL: " + message + ", aborting.")
+    print
+    print("FATAL: " + message + ", aborting.")
     sys.exit(1)
 
 def safe_delete_file(path):
@@ -91,19 +93,15 @@ def copy_glob(input_pattern, output_path):
 #
 
 class Settings:
-    def __init__(self):
-        print "Loading settings from " + SettingsFileName + "..."
-        self.load()
-        self.complete()
-        self.print_summary()
-
     def load(self):
+        print "Loading settings from " + SettingsFileName + "..."
         tree = ElementTree()
         try:
             tree.parse(SettingsFileName)
         except IOError:
-            fatal("failed to load configuration file " + SettingsFileName)
+            fatal("failed to load configuration file '" + SettingsFileName + "'")
         self.load_values(tree)
+        self.print_summary()
 
     def load_values(self, tree):
         self.configuration = tree.findtext("configuration")
@@ -113,19 +111,75 @@ class Settings:
         self.platform_runtime_path = tree.findtext("platform_runtime_path")
         self.package_output_path = tree.findtext("package_output_path")
 
-    def complete(self):
-        self.package_filename = "appleseed-VERSION-MATURITY-" + self.platform + ".zip"
-        self.package_filepath = os.path.join(self.package_output_path, self.package_filename)
-
     def print_summary(self):
-        print "\nSettings:\n"
+        print
         print "  Configuration:             " + self.configuration
         print "  Platform:                  " + self.platform + " (Python says " + os.name + ")"
         print "  Path to appleseed:         " + self.appleseed_path
         print "  Path to Qt runtime:        " + self.qt_runtime_path
         print "  Path to platform runtime:  " + self.platform_runtime_path
         print "  Output directory:          " + self.package_output_path
-        print "  Output file path:          " + self.package_filepath
+        print
+
+
+#
+# Package information parser.
+#
+
+class PackageInfo:
+    def __init__(self, settings):
+        self.settings = settings
+
+    def load(self):
+        appleseed_file_path = os.path.join(self.settings.appleseed_path, "src", "appleseed", "foundation", "core", "appleseed.cpp")
+        print "Loading package information from " + appleseed_file_path + "..."
+        self.load_values(appleseed_file_path)
+        self.build_package_path()
+        self.print_summary()
+
+    def load_values(self, appleseed_file_path):
+        text = self.load_text_file(appleseed_file_path)
+        self.version = self.get_string_value(text, "LibVersionToken")
+        self.maturity_level = self.get_string_value(text, "LibMaturityLevelToken")
+        self.build = self.get_numeric_value(text, "LibBuildNumberToken")
+
+    def load_text_file(self, path):
+        try:
+            f = open(path, "r")
+            text = f.read()
+            f.close()
+            return text
+        except IOError:
+            fatal("failed to load file '" + path + "'")
+
+    def get_string_value(self, text, token):
+        p = re.compile(r"\b" + token + r"\b\s*=\s*\"(?P<value>[^\"]*)\"")
+        m = p.search(text)
+        if m:
+            return m.group("value")
+        else:
+            fatal("failed to extract the value of '" + token + "'")
+
+    def get_numeric_value(self, text, token):
+        p = re.compile(r"\b" + token + r"\b\s*=\s*(?P<value>\d+)")
+        m = p.search(text)
+        if m:
+            return m.group("value")
+        else:
+            fatal("failed to extract the value of '" + token + "'")
+
+    def build_package_path(self):
+        full_version = self.version + "-" + self.maturity_level
+        package_name = "appleseed-" + full_version + "-" + self.settings.platform + ".zip"
+        self.package_path = os.path.join(self.settings.package_output_path, full_version, package_name)
+
+    def print_summary(self):
+        print
+        print "  Version:                   " + self.version
+        print "  Maturity level:            " + self.maturity_level
+        print "  Build:                     " + self.build
+        print "  Package path:              " + self.package_path
+        print
 
 
 #
@@ -133,11 +187,18 @@ class Settings:
 #
 
 class PackageBuilder:
-    def __init__(self, settings):
+    def __init__(self, settings, package_info):
         self.settings = settings
+        self.package_info = package_info
 
     def build_package(self):
-        print "\nBuilding " + self.settings.package_filename + ":\n"
+        print "Building package:"
+        print
+        self.orchestrate()
+        print
+        print "The package was successfully built."
+
+    def orchestrate(self):
         self.remove_leftovers()
         self.retrieve_sandbox_from_git_repository()
         self.deploy_sandbox_to_stage()
@@ -149,7 +210,6 @@ class PackageBuilder:
         self.alterate_stage()
         self.build_final_zip_file()
         self.remove_stage()
-        print "\nThe package was successfully created."
 
     def alterate_stage(self):
         return
@@ -158,7 +218,7 @@ class PackageBuilder:
         progress("Removing leftovers from previous invocations")
         safe_delete_directory("appleseed")
         safe_delete_file("sandbox.zip")
-        safe_delete_file(self.settings.package_filepath)
+        safe_delete_file(self.package_info.package_path)
 
     def retrieve_sandbox_from_git_repository(self):
         progress("Retrieving sandbox from Git repository")
@@ -199,8 +259,8 @@ class PackageBuilder:
 
     def build_final_zip_file(self):
         progress("Building final zip file from staging directory")
-        package_base_filepath = os.path.splitext(self.settings.package_filepath)[0]
-        archive_util.make_zipfile(package_base_filepath, "appleseed")
+        package_base_path = os.path.splitext(self.package_info.package_path)[0]
+        archive_util.make_zipfile(package_base_path, "appleseed")
 
     def create_preserve_file(self, path):
         f = open(os.path.join(path, "preserve.txt"), "w")
@@ -297,13 +357,18 @@ class MacPackageBuilder(PackageBuilder):
 
 def main():
     print "appleseed.package version " + VersionString
+    print
 
     settings = Settings()
+    package_info = PackageInfo(settings)
+
+    settings.load()
+    package_info.load()
 
     if os.name == "nt":
-        package_builder = WindowsPackageBuilder(settings)
+        package_builder = WindowsPackageBuilder(settings, package_info)
     elif os.name == "posix" and platform.mac_ver()[0] != "":
-        package_builder = MacPackageBuilder(settings)
+        package_builder = MacPackageBuilder(settings, package_info)
     else:
         fatal("unsupported platform")
 
