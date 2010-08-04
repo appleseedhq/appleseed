@@ -26,29 +26,30 @@
 // THE SOFTWARE.
 //
 
+
 //
 // BuildTracker test file.
 //
 
 // Counter 1.
-static const size_t build_number_335A07D9_68C1_4E21_86FA_60C64BD6FE6C = 0;
+static const size_t BuildNumberToken = 0;
 
 // Counter 2.
 static const size_t
-    build_number_335A07D9_68C1_4E21_86FA_60C64BD6FE6C = 10;
+    BuildNumberToken = 10;
 
 // Counter 3.
-static const size_t build_number_335A07D9_68C1_4E21_86FA_60C64BD6FE6C =
+static const size_t BuildNumberToken =
     20;
 
 // Counter 4.
-static const size_t build_number_335A07D9_68C1_4E21_86FA_60C64BD6FE6C
+static const size_t BuildNumberToken
     = 30;
 
 // Counter 5.
-static const size_t build_number_335A07D9_68C1_4E21_86FA_60C64BD6FE6C
+static const size_t BuildNumberToken
     =
     40;
 
 // This one should not be updated (value must be 42).
-static const size_t my_build_number_335A07D9_68C1_4E21_86FA_60C64BD6FE6C = 42;
+static const size_t BuildNumberToken2 = 42;

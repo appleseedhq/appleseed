@@ -28,31 +28,27 @@
 
 using System;
 using System.IO;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace buildtracker
 {
     class BuildTracker
     {
-        // Build counter variable name.
-        static String BuildCounterVariable = "build_number_335A07D9_68C1_4E21_86FA_60C64BD6FE6C";
-
-        // The main entry point for the application.
-        static void Main(String[] args)
+        static void Main(string[] args)
         {
             // Check command line and print usage if incomplete.
-            if (args.Length < 1)
+            if (args.Length < 2)
             {
-                Console.WriteLine("Usage: BuildTracker filename");
+                Console.WriteLine("Usage: BuildTracker filename token");
                 return;
             }
 
             // Collect command line arguments.
-            String path = args[0];
+            string path = args[0];
+            string token = args[1];
 
             // Read the contents of the file.
-            String contents;
+            string contents;
             try
             {
                 contents = File.ReadAllText(path);
@@ -64,11 +60,7 @@ namespace buildtracker
             }
 
             // Find all build counters.
-            String pattern =
-                  @"(?<decl>\b"
-                + BuildCounterVariable
-                + @"\b\s*=\s*)(?<value>\d+)";
-            Regex regexp = new Regex(pattern);
+            Regex regexp = new Regex(@"(?<decl>\b" + token + @"\b\s*=\s*)(?<value>\d+)");
             MatchCollection matches = regexp.Matches(contents);
 
             // Increase all build counters.
