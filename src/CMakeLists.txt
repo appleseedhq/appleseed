@@ -32,11 +32,11 @@
 #
 
 if(WIN32 AND MSVC)
-include(config.win32-vs90.txt)
+    include(config.win32-vs90.txt)
 elseif(APPLE)
-include(config.mac32-gcc4.txt)
+    include(config.mac32-gcc4.txt)
 else()
-message(FATAL_ERROR "Unsupported platform/compiler, edit ${CMAKE_CURRENT_LIST_FILE} to add support for it.")
+    message(FATAL_ERROR "Unsupported platform/compiler, edit ${CMAKE_CURRENT_LIST_FILE} to add support for it.")
 endif()
 
 

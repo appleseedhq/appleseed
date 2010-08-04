@@ -240,6 +240,12 @@ add_executable(appleseed.studio
     ${appleseed.studio_resource_files}
 )
 
+if(WIN32)
+    set_target_properties(appleseed.studio PROPERTIES
+        WIN32_EXECUTABLE TRUE
+    )
+endif()
+
 
 #
 # Include Paths.
@@ -270,6 +276,12 @@ target_link_libraries(appleseed.studio
     ${QT_LIBRARIES}
     ${OPENGL_LIBRARY}
 )
+
+if(WIN32)
+    target_link_libraries(appleseed.studio
+        ${QT_QTMAIN_LIBRARY}
+    )
+endif()
 
 
 #
