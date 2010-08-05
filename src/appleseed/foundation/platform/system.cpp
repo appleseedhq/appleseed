@@ -30,73 +30,59 @@
 #include "system.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/thread.h"
 #include "foundation/platform/x86timer.h"
 
 namespace foundation
 {
 
 //
-// CPUs.
+// System class implementation.
 //
 
-// Return the number of CPUs installed in the system.
-size_t System::get_cpu_count()
+size_t System::get_logical_cpu_core_count()
 {
-    return 1;
+    const size_t concurrency =
+        static_cast<size_t>(boost::thread::hardware_concurrency());
+
+    return concurrency > 1 ? concurrency : 1;
 }
 
-// Return the frequency, in Hz, of the CPU at this instant.
-static uint64 get_cpu_frequency(const uint32 calibration_time_ms)
+uint64 System::get_cpu_core_frequency(const size_t /*cpu_id*/, const uint32 calibration_time_ms)
 {
     return X86Timer(calibration_time_ms).frequency();
 }
 
-
-//
-// CPU caches.
-//
-
-// Return the size in bytes of the L1 data cache of a given CPU.
-size_t System::get_l1_data_cache_size(size_t /*cpu_id*/)
+size_t System::get_l1_data_cache_size(const size_t /*cpu_id*/)
 {
     // todo: implement.
     return 8 * 1024;
 }
 
-// Return the size in bytes of a L1 data cache line of a given CPU.
-size_t System::get_l1_data_cache_line_size(size_t /*cpu_id*/)
+size_t System::get_l1_data_cache_line_size(const size_t /*cpu_id*/)
 {
     // todo: implement.
     return 64;
 }
 
-// Return the size in bytes of the L2 data cache of a given CPU.
-size_t System::get_l2_data_cache_size(size_t /*cpu_id*/)
+size_t System::get_l2_data_cache_size(const size_t /*cpu_id*/)
 {
     // todo: implement.
     return 512 * 1024;
 }
 
-// Return the size in bytes of a L2 data cache line of a given CPU.
-size_t System::get_l2_data_cache_line_size(size_t /*cpu_id*/)
+size_t System::get_l2_data_cache_line_size(const size_t /*cpu_id*/)
 {
     // todo: implement.
     return 64;
 }
 
-
-//
-// Physical memory.
-//
-
-// Return the size in bytes of the total physical memory in the system.
 size_t System::get_total_ram_size()
 {
     // todo: implement.
     return 1571564 * 1024;
 }
 
-// Return the size in bytes of the available physical memory in the system.
 size_t System::get_available_ram_size()
 {
     // todo: implement.

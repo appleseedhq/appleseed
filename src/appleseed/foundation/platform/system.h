@@ -67,30 +67,32 @@ class FOUNDATIONDLL System
 {
   public:
     //
-    // CPUs.
+    // CPU cores.
     //
 
-    // Return the number of CPUs installed in the system.
-    static size_t get_cpu_count();
+    // Return the number of logical CPU cores available in the system.
+    static size_t get_logical_cpu_core_count();
 
-    // Return the frequency, in Hz, of the CPU at this instant.
-    static uint64 get_cpu_frequency(const uint32 calibration_time_ms = 10);
+    // Return the frequency, in Hz, of a given CPU core at this instant.
+    static uint64 get_cpu_core_frequency(
+        const size_t    cpu_id,
+        const uint32    calibration_time_ms = 10);
 
     //
     // CPU caches.
     //
 
     // Return the size in bytes of the L1 data cache of a given CPU.
-    static size_t get_l1_data_cache_size(size_t cpu_id);
+    static size_t get_l1_data_cache_size(const size_t cpu_id);
 
     // Return the size in bytes of a L1 data cache line of a given CPU.
-    static size_t get_l1_data_cache_line_size(size_t cpu_id);
+    static size_t get_l1_data_cache_line_size(const size_t cpu_id);
 
     // Return the size in bytes of the L2 data cache of a given CPU.
-    static size_t get_l2_data_cache_size(size_t cpu_id);
+    static size_t get_l2_data_cache_size(const size_t cpu_id);
 
     // Return the size in bytes of a L2 data cache line of a given CPU.
-    static size_t get_l2_data_cache_line_size(size_t cpu_id);
+    static size_t get_l2_data_cache_line_size(const size_t cpu_id);
 
     //
     // Physical memory.
