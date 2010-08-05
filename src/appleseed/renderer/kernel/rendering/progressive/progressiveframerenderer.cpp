@@ -33,6 +33,7 @@
 #include "renderer/kernel/rendering/progressive/progressiveframebuffer.h"
 #include "renderer/kernel/rendering/progressive/samplegenerator.h"
 #include "renderer/kernel/rendering/progressive/samplegeneratorjob.h"
+#include "renderer/kernel/rendering/framerendererbase.h"
 #include "renderer/kernel/rendering/isamplerenderer.h"
 #include "renderer/kernel/rendering/itilecallback.h"
 #include "renderer/modeling/frame/frame.h"
@@ -64,7 +65,7 @@ namespace
     //
 
     class ProgressiveFrameRenderer
-      : public IFrameRenderer
+      : public FrameRendererBase
     {
       public:
         // Constructor.
@@ -113,6 +114,8 @@ namespace
                 new ProgressiveFrameBuffer(
                     frame.properties().m_canvas_width,
                     frame.properties().m_canvas_height));
+
+            print_rendering_thread_count(m_params.m_thread_count);
         }
 
         // Destructor.
@@ -196,14 +199,12 @@ namespace
         struct Parameters
         {
             const size_t    m_thread_count;         // number of rendering threads
-            const size_t    m_initial_level;        // initial refinement level
             const size_t    m_samples_per_pass;     // number of samples added per pass, per pixel, when oversampling
 
             // Constructor, extract parameters.
             explicit Parameters(const ParamArray& params)
-              : m_thread_count( params.get_optional<size_t>("rendering_threads", 1) )
-              , m_initial_level( params.get_optional<size_t>("initial_level", 4) )
-              , m_samples_per_pass( params.get_optional<size_t>("samples_per_pass", 1) )
+              : m_thread_count(FrameRendererBase::get_rendering_thread_count(params))
+              , m_samples_per_pass(params.get_optional<size_t>("samples_per_pass", 1))
             {
             }
         };

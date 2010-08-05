@@ -796,6 +796,8 @@ source_group("renderer\\kernel\\rendering\\progressive" FILES
 set(renderer_kernel_rendering_sources
     renderer/kernel/rendering/defaultrenderercontroller.cpp
     renderer/kernel/rendering/defaultrenderercontroller.h
+    renderer/kernel/rendering/framerendererbase.cpp
+    renderer/kernel/rendering/framerendererbase.h
     renderer/kernel/rendering/iframerenderer.h
     renderer/kernel/rendering/irenderercontroller.h
     renderer/kernel/rendering/isamplerenderer.h

@@ -30,6 +30,7 @@
 #include "genericframerenderer.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/rendering/framerendererbase.h"
 #include "renderer/kernel/rendering/itilecallback.h"
 #include "renderer/kernel/rendering/itilerenderer.h"
 #include "renderer/kernel/rendering/tilejob.h"
@@ -57,7 +58,7 @@ namespace
     //
 
     class GenericFrameRenderer
-      : public IFrameRenderer
+      : public FrameRendererBase
     {
       public:
         // Constructor.
@@ -90,6 +91,8 @@ namespace
                 for (size_t i = 0; i < m_params.m_thread_count; ++i)
                     m_tile_callbacks.push_back(callback_factory->create());
             }
+
+            print_rendering_thread_count(m_params.m_thread_count);
         }
 
         // Destructor.
@@ -163,7 +166,7 @@ namespace
             const TileJobFactory::TileOrdering  m_tile_ordering;    // tile rendering order
 
             explicit Parameters(const ParamArray& params)
-              : m_thread_count(params.get_optional<size_t>("rendering_threads", 1))
+              : m_thread_count(FrameRendererBase::get_rendering_thread_count(params))
               , m_tile_ordering(get_tile_ordering(params))
             {
             }
