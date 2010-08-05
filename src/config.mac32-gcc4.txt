@@ -70,7 +70,6 @@ set(shared_lib_linker_flags_common
 # Release configuration.
 set(compiler_flags_release
     -O3                                     # Maximum optimization
-    -ffast-math                             # Disregard strict standards compliance
 )
 
 # Ship configuration.
