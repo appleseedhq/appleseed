@@ -83,11 +83,13 @@ CommandLine::CommandLine()
     m_display_options.set_description("display the recognized command line options");
     m_parser.add_option_handler(&m_display_options);
 
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined __APPLE__ || defined _WIN32
+
     // Display output.
     m_display_output.add_name("--display-output");
     m_display_output.set_description("display the output image");
     m_parser.add_option_handler(&m_display_output);
+
 #endif
 
     // Run unit tests.

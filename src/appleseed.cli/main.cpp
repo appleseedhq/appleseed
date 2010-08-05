@@ -350,14 +350,16 @@ namespace
         project->set_frame(new_frame);
     }
 
+#if defined __APPLE__ || defined _WIN32
+
     // Invoke a system command to open an image file.
     void display_frame(const string& path)
     {
         const string quoted_path = "\"" + path + "\"";
 
-#if defined(__APPLE__)
+#if defined __APPLE__
         const string command = "open " + quoted_path;
-#elif defined(_WIN32)
+#elif defined _WIN32
         const string command = quoted_path;
 #else
 #error Unsupported platform.
@@ -366,6 +368,8 @@ namespace
         RENDERER_LOG_DEBUG("executing '%s'", command.c_str());
         std::system(command.c_str());   // needs std:: qualifier
     }
+
+#endif
 
     // Render one frame of a given project.
     void render_frame(
@@ -413,9 +417,13 @@ namespace
             project.get_frame()->write(g_cl.m_output.values()[0].c_str());
         }
 
+#if defined __APPLE__ || defined _WIN32
+
         // Display the output image.
         if (g_cl.m_display_output.found())
             display_frame(archive_path);
+
+#endif
 
         // Deallocate the memory used by the path to the archived image.
         delete [] archive_path;

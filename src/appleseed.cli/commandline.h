@@ -55,7 +55,7 @@ class CommandLine
     foundation::FlagOptionHandler                   m_version;
     foundation::FlagOptionHandler                   m_message_coloring;
     foundation::FlagOptionHandler                   m_display_options;
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined __APPLE__ || defined _WIN32
     foundation::FlagOptionHandler                   m_display_output;
 #endif
     foundation::ValueOptionHandler<std::string>     m_run_unit_tests;
