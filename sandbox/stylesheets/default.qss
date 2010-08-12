@@ -321,6 +321,17 @@ QMenu::right-arrow:selected
     margin: 4px;
 }
 
+QMenu::tearoff
+{
+    height: 10px;
+    background-color: rgb(100, 100, 100);
+}
+
+QMenu::tearoff:selected
+{
+    background-color: rgb(190, 140, 50);
+}
+
 
 /*
  * Toolbars
