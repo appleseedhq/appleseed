@@ -269,6 +269,7 @@ source_group("foundation\\mesh" FILES
 
 set(foundation_meta_benchmarks_sources
     foundation/meta/benchmarks/benchmark_cdf.cpp
+    foundation/meta/benchmarks/benchmark_fastmath.cpp
     foundation/meta/benchmarks/benchmark_intersection.cpp
     foundation/meta/benchmarks/benchmark_job.cpp
     foundation/meta/benchmarks/benchmark_matrix.cpp
@@ -322,6 +323,7 @@ set(foundation_meta_tests_sources
     foundation/meta/tests/test_dispatcher.cpp
     foundation/meta/tests/test_distance.cpp
     foundation/meta/tests/test_exrimagefilewriter.cpp
+    foundation/meta/tests/test_fastmath.cpp
     foundation/meta/tests/test_filter.cpp
     foundation/meta/tests/test_fp.cpp
     foundation/meta/tests/test_fresnel.cpp

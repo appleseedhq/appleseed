@@ -30,6 +30,10 @@
 #define APPLESEED_FOUNDATION_MATH_FASTMATH_H
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+#ifdef APPLESEED_FOUNDATION_USE_SSE
+#include "foundation/platform/sse.h"
+#endif
 #include "foundation/platform/types.h"
 #include "foundation/utility/casts.h"
 
@@ -55,9 +59,11 @@ float fast_pow2(const float x);
 
 // Fast approximation of a^b.
 float fast_pow(const float a, const float b);
+void fast_pow(float a[4], const float b);
 
 // Fast approximation of a^b, more accurate than fast_pow().
 float fast_pow_refined(const float a, const float b);
+void fast_pow_refined(float a[4], const float b);
 
 // Fast approximation of the square root.
 float fast_sqrt(const float x);
@@ -74,6 +80,8 @@ double fast_rcp_sqrt(const double x);
 //
 //   Fast log2 and pow2:
 //     Production Rendering, Springer-Verlag, 2004
+//       and
+//     http://www.dctsystems.co.uk/Software/power.c
 //
 //   Fast square root:
 //     http://en.wikipedia.org/wiki/Methods_of_computing_square_roots
@@ -82,21 +90,19 @@ double fast_rcp_sqrt(const double x);
 //     http://www.lomont.org/Math/Papers/2003/InvSqrt.pdf
 //
 
-// Fast approximation of the base 2 logarithm.
 inline float fast_log2(const float x)
 {
     assert(x > 0.0f);
-    float y = binary_cast<int32>(x);
+    float y = static_cast<float>(binary_cast<int32>(x));
     y *= 0.1192092896e-6f;                  // y *= pow(2.0f, -23)
     y -= 127.0f;
     return y;
 }
 
-// Fast approximation of the base 2 logarithm, more accurate than fast_log2().
 inline float fast_log2_refined(const float x)
 {
     assert(x > 0.0f);
-    float y = binary_cast<int32>(x);
+    float y = static_cast<float>(binary_cast<int32>(x));
     y *= 0.1192092896e-6f;                  // y *= pow(2.0f, -23)
     y -= 127.0f;
     float z = y - std::floor(y);
@@ -104,31 +110,122 @@ inline float fast_log2_refined(const float x)
     return y + z;
 }
 
-// Fast approximation of 2^x.
 inline float fast_pow2(const float x)
 {
     float y = x - std::floor(x);
     y = (y - y * y) * 0.33971f;
     float z = x + 127.0f - y;
     z *= 8388608.0f;                        // z *= pow(2.0f, 23)
-    return z;
+    return binary_cast<float>(static_cast<int32>(z));
 }
 
-// Fast approximation of a^b.
 inline float fast_pow(const float a, const float b)
 {
-    assert(a > 0.0f);
-    return fast_pow2(b * fast_log2(a));
+    assert(a >= 0.0f);
+    return a > 0.0f ? fast_pow2(b * fast_log2(a)) : 0.0f;
 }
 
-// Fast approximation of a^b, more accurate than fast_pow().
+#ifdef APPLESEED_FOUNDATION_USE_SSE
+
+inline void fast_pow(float a[4], const float b)
+{
+    const sse4f K = set1ps(127.0f);
+
+    sse4f x = _mm_cvtepi32_ps(_mm_load_si128((__m128i*)a));
+
+    x = mulps(x, set1ps(0.1192092896e-6f));     // x *= pow(2.0f, -23)
+    x = subps(x, K);
+    x = mulps(x, set1ps(b));
+
+    // SSE implementation of std::floor.
+    // Reference: http://www.masm32.com/board/index.php?topic=9515.msg78719#msg78719
+
+    const sse4f floor_x =
+        _mm_cvtepi32_ps(
+            _mm_sub_epi32(
+                _mm_cvttps_epi32(x),
+                _mm_srli_epi32(_mm_castps_si128(x), 31)));
+
+    sse4f y = subps(x, floor_x);
+    y = subps(y, mulps(y, y));
+    y = mulps(y, set1ps(0.33971f));
+
+    sse4f z = subps(addps(x, K), y);
+    z = mulps(z, set1ps(8388608.0f));           // z *= pow(2.0f, 23)
+
+    _mm_store_si128((__m128i*)a, _mm_cvtps_epi32(z));
+}
+
+#else
+
+inline void fast_pow(float a[4], const float b)
+{
+    a[0] = fast_pow(a[0], b);
+    a[1] = fast_pow(a[1], b);
+    a[2] = fast_pow(a[2], b);
+    a[3] = fast_pow(a[3], b);
+}
+
+#endif  // APPLESEED_FOUNDATION_USE_SSE
+
 inline float fast_pow_refined(const float a, const float b)
 {
-    assert(a > 0.0f);
-    return fast_pow2(b * fast_log2_refined(a));
+    assert(a >= 0.0f);
+    return a > 0.0f ? fast_pow2(b * fast_log2_refined(a)) : 0.0f;
 }
 
-// Fast approximation of the square root.
+#ifdef APPLESEED_FOUNDATION_USE_SSE
+
+inline void fast_pow_refined(float a[4], const float b)
+{
+    const sse4f K = set1ps(127.0f);
+
+    sse4f x = _mm_cvtepi32_ps(_mm_load_si128((__m128i*)a));
+
+    x = mulps(x, set1ps(0.1192092896e-6f));     // x *= pow(2.0f, -23)
+    x = subps(x, K);
+
+    const sse4f floor_x1 =
+        _mm_cvtepi32_ps(
+            _mm_sub_epi32(
+                _mm_cvttps_epi32(x),
+                _mm_srli_epi32(_mm_castps_si128(x), 31)));
+
+    sse4f z1 = subps(x, floor_x1);
+    z1 = subps(z1, mulps(z1, z1));
+    z1 = mulps(z1, set1ps(0.346607f));
+    x = addps(x, z1);
+
+    x = mulps(x, set1ps(b));
+
+    const sse4f floor_x =
+        _mm_cvtepi32_ps(
+            _mm_sub_epi32(
+                _mm_cvttps_epi32(x),
+                _mm_srli_epi32(_mm_castps_si128(x), 31)));
+
+    sse4f y = subps(x, floor_x);
+    y = subps(y, mulps(y, y));
+    y = mulps(y, set1ps(0.33971f));
+
+    sse4f z = subps(addps(x, K), y);
+    z = mulps(z, set1ps(8388608.0f));           // z *= pow(2.0f, 23)
+
+    _mm_store_si128((__m128i*)a, _mm_cvtps_epi32(z));
+}
+
+#else
+
+inline void fast_pow_refined(float a[4], const float b)
+{
+    a[0] = fast_pow_refined(a[0], b);
+    a[1] = fast_pow_refined(a[1], b);
+    a[2] = fast_pow_refined(a[2], b);
+    a[3] = fast_pow_refined(a[3], b);
+}
+
+#endif  // APPLESEED_FOUNDATION_USE_SSE
+
 inline float fast_sqrt(const float x)
 {
     assert(x >= 0.0f);
@@ -139,7 +236,6 @@ inline float fast_sqrt(const float x)
     return binary_cast<float>(i);
 }
 
-// Fast approximation of the reciprocal square root, single precision.
 inline float fast_rcp_sqrt(const float x)
 {
     assert(x >= 0.0f);
@@ -151,7 +247,6 @@ inline float fast_rcp_sqrt(const float x)
     return z;
 }
 
-// Fast approximation of the reciprocal square root, double precision.
 inline double fast_rcp_sqrt(const double x)
 {
     assert(x >= 0.0);
