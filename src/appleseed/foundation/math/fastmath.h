@@ -78,6 +78,9 @@ double fast_rcp_sqrt(const double x);
 //
 // References:
 //
+//   Fast floor:
+//     http://www.masm32.com/board/index.php?topic=9515.msg78719#msg78719
+//
 //   Fast log2 and pow2:
 //     Production Rendering, Springer-Verlag, 2004
 //       and
@@ -129,31 +132,20 @@ inline float fast_pow(const float a, const float b)
 
 inline void fast_pow(float a[4], const float b)
 {
-    const sse4f K = set1ps(127.0f);
-
     sse4f x = _mm_cvtepi32_ps(_mm_load_si128((__m128i*)a));
 
+    const sse4f K = set1ps(127.0f);
     x = mulps(x, set1ps(0.1192092896e-6f));     // x *= pow(2.0f, -23)
     x = subps(x, K);
     x = mulps(x, set1ps(b));
 
-    // SSE implementation of std::floor.
-    // Reference: http://www.masm32.com/board/index.php?topic=9515.msg78719#msg78719
-
-    const sse4f floor_x =
-        _mm_cvtepi32_ps(
-            _mm_sub_epi32(
-                _mm_cvttps_epi32(x),
-                _mm_srli_epi32(_mm_castps_si128(x), 31)));
-
-    sse4f y = subps(x, floor_x);
+    sse4f y = subps(x, FOUNDATION_FLOOR_SSE(x));
     y = subps(y, mulps(y, y));
     y = mulps(y, set1ps(0.33971f));
+    y = subps(addps(x, K), y);
+    y = mulps(y, set1ps(8388608.0f));           // y *= pow(2.0f, 23)
 
-    sse4f z = subps(addps(x, K), y);
-    z = mulps(z, set1ps(8388608.0f));           // z *= pow(2.0f, 23)
-
-    _mm_store_si128((__m128i*)a, _mm_cvtps_epi32(z));
+    _mm_store_si128((__m128i*)a, _mm_cvtps_epi32(y));
 }
 
 #else
@@ -178,40 +170,27 @@ inline float fast_pow_refined(const float a, const float b)
 
 inline void fast_pow_refined(float a[4], const float b)
 {
-    const sse4f K = set1ps(127.0f);
-
     sse4f x = _mm_cvtepi32_ps(_mm_load_si128((__m128i*)a));
 
+    const sse4f K = set1ps(127.0f);
     x = mulps(x, set1ps(0.1192092896e-6f));     // x *= pow(2.0f, -23)
     x = subps(x, K);
 
-    const sse4f floor_x1 =
-        _mm_cvtepi32_ps(
-            _mm_sub_epi32(
-                _mm_cvttps_epi32(x),
-                _mm_srli_epi32(_mm_castps_si128(x), 31)));
-
-    sse4f z1 = subps(x, floor_x1);
-    z1 = subps(z1, mulps(z1, z1));
-    z1 = mulps(z1, set1ps(0.346607f));
-    x = addps(x, z1);
+    // One Newton-Raphson refinement step.
+    sse4f z = subps(x, FOUNDATION_FLOOR_SSE(x));
+    z = subps(z, mulps(z, z));
+    z = mulps(z, set1ps(0.346607f));
+    x = addps(x, z);
 
     x = mulps(x, set1ps(b));
 
-    const sse4f floor_x =
-        _mm_cvtepi32_ps(
-            _mm_sub_epi32(
-                _mm_cvttps_epi32(x),
-                _mm_srli_epi32(_mm_castps_si128(x), 31)));
-
-    sse4f y = subps(x, floor_x);
+    sse4f y = subps(x, FOUNDATION_FLOOR_SSE(x));
     y = subps(y, mulps(y, y));
     y = mulps(y, set1ps(0.33971f));
+    y = subps(addps(x, K), y);
+    y = mulps(y, set1ps(8388608.0f));           // y *= pow(2.0f, 23)
 
-    sse4f z = subps(addps(x, K), y);
-    z = mulps(z, set1ps(8388608.0f));           // z *= pow(2.0f, 23)
-
-    _mm_store_si128((__m128i*)a, _mm_cvtps_epi32(z));
+    _mm_store_si128((__m128i*)a, _mm_cvtps_epi32(y));
 }
 
 #else
