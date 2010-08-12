@@ -58,8 +58,10 @@ typedef __m128d sse2d;
 // Single-precision packet instructions.
 #define addps           _mm_add_ps
 #define andps           _mm_and_ps
+#define andnotps        _mm_andnot_ps
 #define cmpgeps         _mm_cmpge_ps
 #define cmpgtps         _mm_cmpgt_ps
+#define cmpleps         _mm_cmple_ps
 #define cmpltps         _mm_cmplt_ps
 #define divps           _mm_div_ps
 #define loadps          _mm_load_ps
@@ -84,8 +86,10 @@ typedef __m128d sse2d;
 // Double-precision packet instructions.
 #define addpd           _mm_add_pd
 #define andpd           _mm_and_pd
+#define andnotpd        _mm_andnot_pd
 #define cmpgepd         _mm_cmpge_pd
 #define cmpgtpd         _mm_cmpgt_pd
+#define cmplepd         _mm_cmple_pd
 #define cmpltpd         _mm_cmplt_pd
 #define divpd           _mm_div_pd
 #define loadpd          _mm_load_pd
@@ -106,6 +110,21 @@ typedef __m128d sse2d;
 #define storepd         _mm_store_pd
 #define storeupd        _mm_storeu_pd
 #define subpd           _mm_sub_pd
+
+
+//
+// 4-way SSE implementation of std::floor().
+//
+// Reference:
+//
+//   http://www.masm32.com/board/index.php?topic=9515.msg78719#msg78719
+//
+
+#define FOUNDATION_FLOOR_SSE(x)                             \
+    _mm_cvtepi32_ps(                                        \
+        _mm_sub_epi32(                                      \
+            _mm_cvttps_epi32(x),                            \
+            _mm_srli_epi32(_mm_castps_si128(x), 31)))
 
 }       // namespace foundation
 
