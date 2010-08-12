@@ -58,7 +58,7 @@ void ShadingResult::transform_to_color_space(
 
           case ColorSpaceSRGB:
             rgb_out =
-                linear_rgb_to_srgb(
+                fast_linear_rgb_to_srgb(
                     Color3f(m_color[0], m_color[1], m_color[2]));
             return;
 
@@ -92,8 +92,9 @@ void ShadingResult::transform_to_color_space(
 
           case ColorSpaceCIEXYZ:
             rgb_out =
-                linear_rgb_to_ciexyz(srgb_to_linear_rgb(
-                    Color3f(m_color[0], m_color[1], m_color[2])));
+                linear_rgb_to_ciexyz(
+                    srgb_to_linear_rgb(
+                        Color3f(m_color[0], m_color[1], m_color[2])));
             return;
 
           case ColorSpaceSpectral:
@@ -118,8 +119,9 @@ void ShadingResult::transform_to_color_space(
 
           case ColorSpaceSRGB:
             rgb_out =
-                linear_rgb_to_srgb(ciexyz_to_linear_rgb(
-                    Color3f(m_color[0], m_color[1], m_color[2])));
+                fast_linear_rgb_to_srgb(
+                    ciexyz_to_linear_rgb(
+                        Color3f(m_color[0], m_color[1], m_color[2])));
             return;
 
           case ColorSpaceCIEXYZ:
@@ -146,7 +148,7 @@ void ShadingResult::transform_to_color_space(
 
           case ColorSpaceSRGB:
             rgb_out =
-                linear_rgb_to_srgb(
+                fast_linear_rgb_to_srgb(
                     ciexyz_to_linear_rgb(
                         spectrum_to_ciexyz<float>(lighting, m_color)));
             return;

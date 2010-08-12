@@ -621,7 +621,7 @@ Color4f Frame::linear_rgb_to_frame(const Color4f& linear_rgb) const
         break;
 
       case ColorSpaceSRGB:
-        result.rgb() = linear_rgb_to_srgb(linear_rgb.rgb());
+        result.rgb() = fast_linear_rgb_to_srgb(linear_rgb.rgb());
         result.a = linear_rgb.a;
         break;
 
