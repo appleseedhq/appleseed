@@ -86,6 +86,28 @@ FOUNDATION_TEST_SUITE(Foundation_Image_ColorSpace)
             1.0e-6);
     }
 
+    FOUNDATION_TEST_CASE(TestFastLinearRGBTosRGBConversion)
+    {
+        const Color3f linear_rgb(0.5f, 0.7f, 0.2f);
+        const Color3f srgb = fast_linear_rgb_to_srgb(linear_rgb);
+
+        FOUNDATION_EXPECT_FEQ_EPS(
+            Color3f(0.736652f, 0.856132f, 0.484787f),
+            srgb,
+            1.0e-5f);
+    }
+
+    FOUNDATION_TEST_CASE(TestFastsRGBToLinearRGBConversion)
+    {
+        const Color3f srgb(0.73535698f, 0.85430583f, 0.48452920f);
+        const Color3f linear_rgb = fast_srgb_to_linear_rgb(srgb);
+
+        FOUNDATION_EXPECT_FEQ_EPS(
+            Color3f(0.501289f, 0.709248f, 0.199818f),
+            linear_rgb,
+            1.0e-5f);
+    }
+
     static Spectrum31f get_white_spectrum()
     {
         // The white color from the Cornell Box scene.

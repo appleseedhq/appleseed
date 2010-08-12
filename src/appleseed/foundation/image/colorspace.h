@@ -32,7 +32,12 @@
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/image/spectrum.h"
+#include "foundation/math/fastmath.h"
 #include "foundation/math/spline.h"
+#include "foundation/platform/compiler.h"
+#ifdef APPLESEED_FOUNDATION_USE_SSE
+#include "foundation/platform/sse.h"
+#endif
 #include "foundation/utility/otherwise.h"
 
 // Standard headers.
@@ -84,6 +89,12 @@ Color<T, 3> linear_rgb_to_srgb(const Color<T, 3>& linear_rgb);
 // Convert a color from the sRGB color space to the linear RGB color space.
 template <typename T>
 Color<T, 3> srgb_to_linear_rgb(const Color<T, 3>& srgb);
+
+// Variants of the above functions using a fast approximation of the power function.
+float fast_linear_rgb_to_srgb(const float c);
+float fast_srgb_to_linear_rgb(const float c);
+Color3f fast_linear_rgb_to_srgb(const Color3f& linear_rgb);
+Color3f fast_srgb_to_linear_rgb(const Color3f& srgb);
 
 
 //
@@ -171,10 +182,8 @@ extern const Spectrum31f RGBCMFStilesBurch195910Def[3];     // Stiles and Burch 
 class LightingConditions
 {
   public:
-    // Public members.
     Color3f                     m_cmf[31];                  // precomputed values of (cmf[0], cmf[1], cmf[2]) * illuminant
 
-    // Constructor.
     LightingConditions(
         const Spectrum31f&      illuminant,                 // illuminant
         const Spectrum31f       cmf[3]);                    // color matching functions
@@ -236,7 +245,6 @@ void spectrum_to_spectrum(
 // CIE XYZ <-> linear RGB transformations implementation.
 //
 
-// Convert a color from the CIE XYZ color space to the linear RGB color space.
 template <typename T>
 inline Color<T, 3> ciexyz_to_linear_rgb(const Color<T, 3>& xyz)
 {
@@ -246,7 +254,6 @@ inline Color<T, 3> ciexyz_to_linear_rgb(const Color<T, 3>& xyz)
         T( 0.055648) * xyz[0] + T(-0.204043) * xyz[1] + T( 1.057311) * xyz[2]);
 }
 
-// Convert a color from the linear RGB color space to the CIE XYZ color space.
 template <typename T>
 inline Color<T, 3> linear_rgb_to_ciexyz(const Color<T, 3>& linear_rgb)
 {
@@ -261,7 +268,6 @@ inline Color<T, 3> linear_rgb_to_ciexyz(const Color<T, 3>& linear_rgb)
 // Linear RGB <-> sRGB transformations.
 //
 
-// Convert a color component from the linear RGB color space to the sRGB color space.
 template <typename T>
 inline T linear_rgb_to_srgb(const T c)
 {
@@ -270,7 +276,6 @@ inline T linear_rgb_to_srgb(const T c)
         : T(1.055) * std::pow(c, T(1.0 / 2.4)) - T(0.055);
 }
 
-// Convert a color component from the sRGB color space to the linear RGB color space.
 template <typename T>
 inline T srgb_to_linear_rgb(const T c)
 {
@@ -279,7 +284,6 @@ inline T srgb_to_linear_rgb(const T c)
         : std::pow((c + T(0.055)) * T(1.0 / 1.055), T(2.4));
 }
 
-// Convert a color from the linear RGB color space to the sRGB color space.
 template <typename T>
 inline Color<T, 3> linear_rgb_to_srgb(const Color<T, 3>& linear_rgb)
 {
@@ -289,7 +293,6 @@ inline Color<T, 3> linear_rgb_to_srgb(const Color<T, 3>& linear_rgb)
         linear_rgb_to_srgb(linear_rgb[2]));
 }
 
-// Convert a color from the sRGB color space to the linear RGB color space.
 template <typename T>
 inline Color<T, 3> srgb_to_linear_rgb(const Color<T, 3>& srgb)
 {
@@ -297,6 +300,84 @@ inline Color<T, 3> srgb_to_linear_rgb(const Color<T, 3>& srgb)
         srgb_to_linear_rgb(srgb[0]),
         srgb_to_linear_rgb(srgb[1]),
         srgb_to_linear_rgb(srgb[2]));
+}
+
+inline float fast_linear_rgb_to_srgb(const float c)
+{
+    return c <= 0.0031308f
+        ? 12.92f * c
+        : 1.055f * fast_pow_refined(c, 1.0f / 2.4f) - 0.055f;
+}
+
+inline float fast_srgb_to_linear_rgb(const float c)
+{
+    return c <= 0.04045f
+        ? (1.0f / 12.92f) * c
+        : fast_pow_refined((c + 0.055f) * (1.0f / 1.055f), 2.4f);
+}
+
+#ifdef APPLESEED_FOUNDATION_USE_SSE
+
+inline Color3f fast_linear_rgb_to_srgb(const Color3f& linear_rgb)
+{
+    FOUNDATION_ALIGN_SSE_VARIABLE float transfer[4] =
+    {
+        linear_rgb[0],
+        linear_rgb[1],
+        linear_rgb[2],
+        linear_rgb[2]
+    };
+
+    sse4f c = loadps(transfer);
+
+    // Compute y = pow(c, 1.0f / 2.4f), see foundation/math/fastmath.h for details.
+    const sse4f K = set1ps(127.0f);
+    sse4f x = _mm_cvtepi32_ps(_mm_castps_si128(c));
+    x = mulps(x, set1ps(0.1192092896e-6f));
+    x = subps(x, K);
+    sse4f z = subps(x, FOUNDATION_FLOOR_SSE(x));
+    z = subps(z, mulps(z, z));
+    z = mulps(z, set1ps(0.346607f));
+    x = addps(x, z);
+    x = mulps(x, set1ps(1.0f / 2.4f));
+    sse4f y = subps(x, FOUNDATION_FLOOR_SSE(x));
+    y = subps(y, mulps(y, y));
+    y = mulps(y, set1ps(0.33971f));
+    y = subps(addps(x, K), y);
+    y = mulps(y, set1ps(8388608.0f));
+    y = _mm_castsi128_ps(_mm_cvtps_epi32(y));
+
+    // Compute both outcomes of the branch.
+    const sse4f a = mulps(set1ps(12.92f), c);
+    const sse4f b = subps(mulps(set1ps(1.055f), y), set1ps(0.055f));
+
+    // Interleave them based on the actual comparison.
+    const sse4f mask = cmpleps(c, set1ps(0.0031308f));
+    c = addps(andps(mask, a), andnotps(mask, b));
+
+    storeps(transfer, c);
+
+    return Color3f(transfer[0], transfer[1], transfer[2]);
+}
+
+#else
+
+inline Color3f fast_linear_rgb_to_srgb(const Color3f& linear_rgb)
+{
+    return Color3f(
+        fast_linear_rgb_to_srgb(linear_rgb[0]),
+        fast_linear_rgb_to_srgb(linear_rgb[1]),
+        fast_linear_rgb_to_srgb(linear_rgb[2]));
+}
+
+#endif  // APPLESEED_FOUNDATION_USE_SSE
+
+inline Color3f fast_srgb_to_linear_rgb(const Color3f& srgb)
+{
+    return Color3f(
+        fast_srgb_to_linear_rgb(srgb[0]),
+        fast_srgb_to_linear_rgb(srgb[1]),
+        fast_srgb_to_linear_rgb(srgb[2]));
 }
 
 
@@ -365,7 +446,6 @@ inline T luminance(const Color<T, 3>& linear_rgb)
 // Spectrum <-> CIE XYZ transformations implementation.
 //
 
-// Convert a spectrum to a color in the CIE XYZ color space.
 template <typename T, typename Spectrum>
 Color<T, 3> spectrum_to_ciexyz(
     const LightingConditions&   lighting,
@@ -389,7 +469,6 @@ Color<T, 3> spectrum_to_ciexyz(
     return Color<T, 3>(x, y, z);
 }
 
-// Convert a color in the CIE XYZ color space to a spectrum.
 template <typename T, typename Spectrum>
 void ciexyz_to_spectrum(
     const LightingConditions&   lighting,
@@ -410,7 +489,6 @@ void ciexyz_to_spectrum(
 // Linear RGB to spectrum transformation implementation.
 //
 
-// Convert a color in the linear RGB color space to a spectrum.
 template <typename T, typename Spectrum>
 void linear_rgb_to_spectrum(
     const LightingConditions&   lighting,
@@ -436,8 +514,6 @@ void linear_rgb_to_spectrum(
 // Spectrum <-> Spectrum transformation implementation.
 //
 
-// Convert a spectrum defined over a given set of wavelengths
-// to a spectrum defined over a different set of wavelengths.
 template <typename T>
 void spectrum_to_spectrum(
     const size_t                input_count,
@@ -449,6 +525,7 @@ void spectrum_to_spectrum(
     T                           working_storage[])
 {
     const bool own_memory = (working_storage == 0);
+
     if (own_memory)
         working_storage = new T[input_count];
 
