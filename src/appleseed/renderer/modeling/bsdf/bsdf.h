@@ -72,10 +72,10 @@ class RENDERERDLL BSDF
     // Scattering modes.
     enum Mode
     {
-        None = 0,                   // absorption
-        Diffuse,                    // diffuse reflection
-        Glossy,                     // glossy reflection
-        Specular                    // specular reflection
+        None        = 0,            // absorption
+        Diffuse     = 1 << 0,       // diffuse reflection
+        Glossy      = 1 << 1,       // glossy reflection
+        Specular    = 1 << 2        // specular reflection
     };
 
     // Probability density of the Dirac Delta.
