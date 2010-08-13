@@ -173,9 +173,13 @@ endmacro()
 # Copy a target binary to the sandbox.
 #
 
+macro(get_sandbox_bin_path path)
+    slashes_to_backslashes(${path} ${PROJECT_SOURCE_DIR})
+    set(${path} ${${path}}\\sandbox\\bin\\$(ConfigurationName)\\)
+endmacro()
+
 macro(add_copy_target_to_sandbox_command target)
-    slashes_to_backslashes(sandbox_path ${PROJECT_SOURCE_DIR})
-    set(sandbox_path ${sandbox_path}\\sandbox\\bin\\$(ConfigurationName)\\)
+    get_sandbox_bin_path(sandbox_path)
 
     add_custom_command(TARGET ${target} POST_BUILD
         COMMAND if not exist ${sandbox_path} mkdir ${sandbox_path}
