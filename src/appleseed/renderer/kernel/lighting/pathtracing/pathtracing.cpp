@@ -30,31 +30,28 @@
 #include "pathtracing.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/lighting/directlighting.h"
 #include "renderer/kernel/lighting/imagebasedlighting.h"
 #include "renderer/kernel/lighting/lightsampler.h"
+#include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
-#include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/input/inputevaluator.h"
-#include "renderer/modeling/input/inputparams.h"
 #include "renderer/modeling/material/material.h"
-#include "renderer/modeling/surfaceshader/surfaceshader.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
-#include "foundation/math/distance.h"
 #include "foundation/math/mis.h"
 #include "foundation/math/population.h"
-#include "foundation/math/rr.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/string.h"
+
+// Forward declarations.
+namespace renderer  { class InputParams; }
 
 using namespace foundation;
 using namespace std;
@@ -66,7 +63,7 @@ namespace
 {
 
     //
-    // Path tracing lighting engine.
+    // Path Tracing lighting engine.
     //
     // Implementation of spectral, Monte Carlo forward path tracing,
     // optionally with next event estimation.
@@ -115,311 +112,28 @@ namespace
             const ShadingPoint&     shading_point,
             Spectrum&               radiance)   // output radiance, in W.sr^-1.m^-2
         {
-            // Initialize path radiance.
-            radiance.set(0.0f);
+            typedef PathTracer<
+                PathVertexVisitor,
+                BSDF::Diffuse | BSDF::Glossy | BSDF::Specular,
+                false                           // not adjoint
+            > PathTracer;
 
-            // Retrieve items from the shading context.
-            const Intersector& intersector = shading_context.get_intersector();
-            SamplingContext sampling_context = shading_context.get_sampling_context();
-            TextureCache& texture_cache = shading_context.get_texture_cache();
+            PathVertexVisitor vertex_visitor(
+                m_light_sampler,
+                m_params,
+                shading_context);
 
-            ShadingPoint shading_points[2];
-            size_t shading_point_index = 0;
-            const ShadingPoint* shading_point_ptr = &shading_point;
+            PathTracer path_tracer(
+                vertex_visitor,
+                m_params.m_minimum_path_length);
 
-            // Trace one path.
-            Spectrum throughput(1.0f);
-            size_t path_length = 0;
-            bool specular = true;
-            double bsdf_prob = -1.0;
-            while (true)
-            {
-                // Limit the length of the path.
-                const size_t MaxPathLength = 10000;
-                ++path_length;
-                if (path_length >= MaxPathLength)
-                {
-                    RENDERER_LOG_WARNING(
-                        "reached path length limit (%s), terminating path",
-                        pretty_int(path_length).c_str());
-                    break;
-                }
-
-                // Retrieve the ray.
-                const ShadingRay& ray = shading_point_ptr->get_ray();
-                const Vector3d outgoing = normalize(-ray.m_dir);
-
-                // If the ray didn't hit anything, terminate the path.
-                if (!shading_point_ptr->hit())
-                {
-                    if (!m_params.m_next_event_estimation)
-                    {
-                        // Retrieve the environment's EDF.
-                        const Scene& scene = shading_point_ptr->get_scene();
-                        const Environment* environment = scene.get_environment();
-                        const EnvironmentEDF* env_edf =
-                            environment ? environment->get_environment_edf() : 0;
-
-                        if (env_edf)
-                        {
-                            // Evaluate the environment's EDF.
-                            InputEvaluator input_evaluator(texture_cache);
-                            Spectrum emitted_radiance;
-                            env_edf->evaluate(
-                                input_evaluator,
-                                -outgoing,
-                                emitted_radiance);
-
-                            // Update the path radiance.
-                            emitted_radiance *= throughput;
-                            radiance += emitted_radiance;
-                        }
-                    }
-
-                    // Terminate the path.
-                    break;
-                }
-
-                // Retrieve the material at the shading point.
-                const Material* material = shading_point_ptr->get_material();
-
-                // Terminate the path if the surface has no material.
-                if (material == 0)
-                    break;
-
-                // Retrieve the geometry of the intersection.
-                const InputParams& input_params = shading_point_ptr->get_input_params();
-                const Vector3d& point = shading_point_ptr->get_point();
-                const Vector3d& geometric_normal = shading_point_ptr->get_geometric_normal();
-                const Vector3d& shading_normal = shading_point_ptr->get_shading_normal();
-                const Basis3d& shading_basis = shading_point_ptr->get_shading_basis();
-
-                // Retrieve the surface shader.
-                const SurfaceShader& surface_shader = material->get_surface_shader();
-
-                // Evaluate the alpha mask at the shading point.
-                Alpha alpha_mask;
-                surface_shader.evaluate_alpha_mask(
+            const size_t path_length =
+                path_tracer.trace(
                     shading_context,
-                    *shading_point_ptr,
-                    alpha_mask);
+                    shading_point,
+                    radiance);
 
-                // Handle alpha masking.
-                const double cutoff_prob = 1.0 - alpha_mask[0];
-                if (cutoff_prob > 0.0)
-                {
-                    if (sampling_context.next_double1() >= 1.0 - cutoff_prob)
-                    {
-                        // Construct a ray that continues in the same direction as the incoming ray.
-                        const ShadingRay cutoff_ray(
-                            point,
-                            ray.m_dir,
-                            0.0f,           // ray time
-                            ~0);            // ray flags
-
-                        // Trace the ray.
-                        shading_points[shading_point_index].clear();
-                        intersector.trace(
-                            cutoff_ray,
-                            shading_points[shading_point_index],
-                            shading_point_ptr);
-
-                        // Update the pointers to the shading points.
-                        shading_point_ptr = &shading_points[shading_point_index];
-                        shading_point_index = 1 - shading_point_index;
-
-                        continue;
-                    }
-                }
-
-                // Retrieve the BSDF.
-                // Terminate the path if the material has no BSDF.
-                const BSDF* bsdf = material->get_bsdf();
-                if (bsdf == 0)
-                    break;
-
-                // Evaluate the input values of the BSDF.
-                InputEvaluator bsdf_input_evaluator(texture_cache);
-                const void* bsdf_data =
-                    bsdf_input_evaluator.evaluate(
-                        bsdf->get_inputs(),
-                        input_params);
-
-                // Retrieve the EDF.
-                const EDF* edf = material->get_edf();
-
-                // Evaluate the input values of the EDF (if any).
-                InputEvaluator edf_input_evaluator(texture_cache);
-                const void* edf_data = edf
-                    ? edf_input_evaluator.evaluate(
-                        edf->get_inputs(),
-                        input_params)
-                    : 0;
-
-                if (m_params.m_next_event_estimation)
-                {
-                    // Generate a single light sample.
-                    clear_keep_memory(m_light_samples);
-                    m_light_sampler.sample(
-                        sampling_context,
-                        point,
-                        shading_normal,
-                        m_params.m_dl_sample_count,
-                        m_light_samples);
-
-                    // Compute the incident radiance due to this light sample.
-                    Spectrum direct_radiance;
-                    compute_direct_lighting(
-                        shading_context,
-                        point,
-                        geometric_normal,
-                        shading_basis,
-                        outgoing,
-                        *bsdf,
-                        bsdf_data,
-                        m_light_samples,
-                        direct_radiance,
-                        shading_point_ptr);
-
-                    // Compute image-based lighting.
-                    Spectrum ibl_radiance;
-                    compute_image_based_lighting(
-                        shading_context,
-                        shading_point_ptr->get_scene(),
-                        point,
-                        geometric_normal,
-                        shading_basis,
-                        outgoing,
-                        *bsdf,
-                        bsdf_data,
-                        m_params.m_ibl_bsdf_sample_count,
-                        m_params.m_ibl_env_sample_count,
-                        ibl_radiance,
-                        shading_point_ptr);
-
-                    // Update the path radiance.
-                    direct_radiance += ibl_radiance;
-                    direct_radiance *= throughput;
-                    radiance += direct_radiance;
-
-                    if (edf)
-                    {
-                        // Compute the emitted radiance.
-                        Spectrum emitted_radiance;
-                        edf->evaluate(
-                            edf_data,
-                            geometric_normal,
-                            shading_basis,
-                            outgoing,
-                            emitted_radiance);
-
-                        if (!specular)
-                        {
-                            // Compute the probability density with respect to surface area
-                            // of choosing this point through sampling of the light sources.
-                            const double sample_probability =
-                                m_light_sampler.evaluate_pdf(*shading_point_ptr);
-
-                            // Compute the probability density with respect to surface area
-                            // of the direction obtained through sampling of the BSDF.
-                            double px = bsdf_prob;
-                            px *= max(dot(outgoing, shading_normal), 0.0);
-                            px /= square(shading_point_ptr->get_distance());
-
-                            // Multiply the emitted radiance by the MIS weight.
-                            const double mis_weight = mis_power2(px, sample_probability);
-                            emitted_radiance *= static_cast<float>(mis_weight);
-                        }
-
-                        // Update the path radiance.
-                        emitted_radiance *= throughput;
-                        radiance += emitted_radiance;
-                    }
-                }
-                else
-                {
-                    if (edf)
-                    {
-                        // Compute the emitted radiance.
-                        Spectrum emitted_radiance;
-                        edf->evaluate(
-                            edf_data,
-                            geometric_normal,
-                            shading_basis,
-                            outgoing,
-                            emitted_radiance);
-
-                        // Update the path radiance.
-                        emitted_radiance *= throughput;
-                        radiance += emitted_radiance;
-                    }
-                }
-
-                // Generate a uniform sample in [0,1)^4.
-                sampling_context = sampling_context.split(4, 1);
-                const Vector4d s = sampling_context.next_vector2<4>();
-
-                // Sample the BSDF.
-                Vector3d incoming;
-                Spectrum bsdf_value;
-                BSDF::Mode mode;
-                bsdf->sample(
-                    bsdf_data,
-                    geometric_normal,
-                    shading_basis,
-                    Vector3d(s[0], s[1], s[2]),
-                    outgoing,
-                    incoming,
-                    bsdf_value,
-                    bsdf_prob,
-                    mode);
-                specular = (mode == BSDF::Specular);
-
-                // Handle absorption.
-                if (mode == BSDF::None)
-                    break;
-
-                // Multiply the BSDF value by cos(theta).
-                assert(is_normalized(incoming));
-                const double cos_in = abs(dot(incoming, shading_normal));
-                bsdf_value *= static_cast<float>(cos_in);
-
-                // Update the path throughput.
-                throughput *= bsdf_value;
-
-                // Use Russian Roulette to cut the path without introducing bias.
-                if (path_length >= m_params.m_minimum_path_length)
-                {
-                    const double scattering_prob =
-                        min(static_cast<double>(max_value(bsdf_value)), 1.0);
-
-                    if (!pass_rr(scattering_prob, s[3]))
-                        break;
-
-                    assert(scattering_prob > 0.0);
-                    throughput /= static_cast<float>(scattering_prob);
-                }
-
-                // Construct the scattered ray.
-                const ShadingRay scattered_ray(
-                    point,
-                    incoming,
-                    0.0f,           // ray time
-                    ~0);            // ray flags
-
-                // Trace the ray.
-                shading_points[shading_point_index].clear();
-                intersector.trace(
-                    scattered_ray,
-                    shading_points[shading_point_index],
-                    shading_point_ptr);
-
-                // Update the pointers to the shading points.
-                shading_point_ptr = &shading_points[shading_point_index];
-                shading_point_index = 1 - shading_point_index;
-            }
-
-            // Update path statistics.
+            // Update statistics.
             ++m_stats.m_path_count;
             m_stats.m_path_length.insert(path_length);
         }
@@ -456,6 +170,175 @@ namespace
               : m_path_count(0)
             {
             }
+        };
+
+        class PathVertexVisitor
+        {
+          public:
+            PathVertexVisitor(
+                const LightSampler&     light_sampler,
+                const Parameters&       params,
+                const ShadingContext&   shading_context)
+              : m_light_sampler(light_sampler)
+              , m_params(params)
+              , m_shading_context(shading_context)
+              , m_texture_cache(shading_context.get_texture_cache())
+            {
+            }
+
+            void get_vertex_radiance(
+                SamplingContext&        sampling_context,
+                const ShadingPoint&     shading_point,
+                const Vector3d&         outgoing,
+                const BSDF*             bsdf,
+                const void*             bsdf_data,
+                const BSDF::Mode        bsdf_mode,
+                const double            bsdf_prob,
+                Spectrum&               vertex_radiance)
+            {
+                const Vector3d& point = shading_point.get_point();
+                const Vector3d& geometric_normal = shading_point.get_geometric_normal();
+                const Vector3d& shading_normal = shading_point.get_shading_normal();
+                const Basis3d& shading_basis = shading_point.get_shading_basis();
+                const Material* material = shading_point.get_material();
+                const InputParams& input_params = shading_point.get_input_params();
+
+                // Retrieve the EDF.
+                const EDF* edf = material->get_edf();
+
+                // Evaluate the input values of the EDF (if any).
+                InputEvaluator edf_input_evaluator(m_texture_cache);
+                const void* edf_data = edf
+                    ? edf_input_evaluator.evaluate(
+                        edf->get_inputs(),
+                        input_params)
+                    : 0;
+
+                if (m_params.m_next_event_estimation)
+                {
+                    // Generate a single light sample.
+                    clear_keep_memory(m_light_samples);
+                    m_light_sampler.sample(
+                        sampling_context,
+                        point,
+                        shading_normal,
+                        m_params.m_dl_sample_count,
+                        m_light_samples);
+
+                    // Compute the incident radiance due to this light sample.
+                    compute_direct_lighting(
+                        m_shading_context,
+                        point,
+                        geometric_normal,
+                        shading_basis,
+                        outgoing,
+                        *bsdf,
+                        bsdf_data,
+                        m_light_samples,
+                        vertex_radiance,
+                        &shading_point);
+
+                    // Compute image-based lighting.
+                    Spectrum ibl_radiance;
+                    compute_image_based_lighting(
+                        m_shading_context,
+                        shading_point.get_scene(),
+                        point,
+                        geometric_normal,
+                        shading_basis,
+                        outgoing,
+                        *bsdf,
+                        bsdf_data,
+                        m_params.m_ibl_bsdf_sample_count,
+                        m_params.m_ibl_env_sample_count,
+                        ibl_radiance,
+                        &shading_point);
+                    vertex_radiance += ibl_radiance;
+
+                    if (edf)
+                    {
+                        // Compute the emitted radiance.
+                        Spectrum emitted_radiance;
+                        edf->evaluate(
+                            edf_data,
+                            geometric_normal,
+                            shading_basis,
+                            outgoing,
+                            emitted_radiance);
+
+                        if (bsdf_mode != BSDF::Specular)
+                        {
+                            // Compute the probability density with respect to surface area
+                            // of choosing this point through sampling of the light sources.
+                            const double sample_probability =
+                                m_light_sampler.evaluate_pdf(shading_point);
+
+                            // Compute the probability density with respect to surface area
+                            // of the direction obtained through sampling of the BSDF.
+                            double px = bsdf_prob;
+                            px *= max(dot(outgoing, shading_normal), 0.0);
+                            px /= square(shading_point.get_distance());
+
+                            // Multiply the emitted radiance by the MIS weight.
+                            const double mis_weight = mis_power2(px, sample_probability);
+                            emitted_radiance *= static_cast<float>(mis_weight);
+                        }
+
+                        vertex_radiance += emitted_radiance;
+                    }
+                }
+                else
+                {
+                    if (edf)
+                    {
+                        // Compute the emitted radiance.
+                        Spectrum emitted_radiance;
+                        edf->evaluate(
+                            edf_data,
+                            geometric_normal,
+                            shading_basis,
+                            outgoing,
+                            emitted_radiance);
+                        vertex_radiance += emitted_radiance;
+                    }
+                }
+            }
+
+            bool get_environment_radiance(
+                const ShadingPoint&     shading_point,
+                const Vector3d&         outgoing,
+                Spectrum&               environment_radiance)
+            {
+                if (m_params.m_next_event_estimation)
+                    return false;
+
+                const Scene& scene = shading_point.get_scene();
+
+                // Retrieve the environment.
+                const Environment* environment = scene.get_environment();
+                if (!environment)
+                    return false;
+
+                // Retrieve the environment's EDF.
+                const EnvironmentEDF* env_edf = environment->get_environment_edf();
+                if (!env_edf)
+                    return false;
+
+                InputEvaluator input_evaluator(m_texture_cache);
+                env_edf->evaluate(
+                    input_evaluator,
+                    -outgoing,
+                    environment_radiance);
+
+                return true;
+            }
+
+          private:
+            const LightSampler&     m_light_sampler;
+            const Parameters&       m_params;
+            const ShadingContext&   m_shading_context;
+            TextureCache&           m_texture_cache;
+            LightSampleVector       m_light_samples;
         };
 
         const Parameters        m_params;
