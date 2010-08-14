@@ -738,6 +738,7 @@ set(renderer_kernel_lighting_sources
     renderer/kernel/lighting/imageimportancesampler.h
     renderer/kernel/lighting/lightsampler.cpp
     renderer/kernel/lighting/lightsampler.h
+    renderer/kernel/lighting/pathtracer.h
     renderer/kernel/lighting/transmission.cpp
     renderer/kernel/lighting/transmission.h
 )
