@@ -124,10 +124,14 @@ class LightSampler
 
     LightCDF                    m_light_cdf;
 
+    // Collect all lights from a given scene.
+    void collect_lights(const Scene& scene);
+
     // Collect lights from a given assembly instance.
-    void collect_lights(
-        const AssemblyInstance&         assembly_instance,
-        const Assembly&                 assembly);
+    void collect_lights(const AssemblyInstance& assembly_instance);
+
+    // Collect all emitting triangles from a given scene.
+    void collect_emitting_triangles(const Scene& scene);
 
     // Collect emitting triangles from a given assembly instance.
     void collect_emitting_triangles(

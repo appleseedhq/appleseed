@@ -63,7 +63,6 @@ namespace renderer
 // LightSampler::EmittingTriangle class implementation.
 //
 
-// Constructor.
 LightSampler::EmittingTriangle::EmittingTriangle(
     const Vector3d&         v0,
     const Vector3d&         v1,
@@ -137,47 +136,15 @@ namespace
 
 }   // anonymous namespace
 
-// Constructor.
 LightSampler::LightSampler(const Scene& scene)
   : m_total_emissive_area(0.0)
   , m_rcp_total_emissive_area(0.0)
 {
     RENDERER_LOG_INFO("collecting light emitters...");
 
-    //
-    // First, collect all lights from all assemblies.
-    //
-
-    // Loop over the assembly instances of the scene.
-    for (const_each<AssemblyInstanceContainer> i = scene.assembly_instances(); i; ++i)
-    {
-        // Retrieve the assembly instance.
-        const AssemblyInstance& assembly_instance = *i;
-
-        // Retrieve the assembly.
-        const Assembly& assembly = assembly_instance.get_assembly();
-
-        // Collect lights.
-        collect_lights(assembly_instance, assembly);
-    }
-
-    //
-    // Second, collect all emitting triangles from all assemblies.
-    //
-
-    // Loop over the assembly instances of the scene.
-    for (const_each<AssemblyInstanceContainer> i = scene.assembly_instances(); i; ++i)
-    {
-        // Retrieve the assembly instance.
-        const AssemblyInstance& assembly_instance = *i;
-
-        // Retrieve the assembly.
-        const Assembly& assembly = assembly_instance.get_assembly();
-
-        // Collect emitting triangles.
-        if (has_emitting_materials(assembly))
-            collect_emitting_triangles(assembly_instance, assembly);
-    }
+    // Collect all lights and light emitting triangles.
+    collect_lights(scene);
+    collect_emitting_triangles(scene);
 
     // Compute the reciprocal of the total area of the triangles emitting light.
     m_rcp_total_emissive_area = 1.0 / m_total_emissive_area;
@@ -194,12 +161,16 @@ LightSampler::LightSampler(const Scene& scene)
         plural(m_emitting_triangles.size(), "triangle").c_str());
 }
 
-// Collect lights from a given assembly instance.
-void LightSampler::collect_lights(
-    const AssemblyInstance& assembly_instance,
-    const Assembly&         assembly)
+void LightSampler::collect_lights(const Scene& scene)
+{
+    for (const_each<AssemblyInstanceContainer> i = scene.assembly_instances(); i; ++i)
+        collect_lights(*i);
+}
+
+void LightSampler::collect_lights(const AssemblyInstance& assembly_instance)
 {
     // Loop over the lights of the assembly.
+    const Assembly& assembly = assembly_instance.get_assembly();
     const LightContainer& lights = assembly.lights();
     const size_t light_count = lights.size();
     for (size_t i = 0; i < light_count; ++i)
@@ -212,13 +183,26 @@ void LightSampler::collect_lights(
         const size_t light_index = m_lights.size();
         m_lights.push_back(light);
 
+        // todo: compute importance.
+        const double importance = 1.0;
+
         // Insert the light into the CDF.
-        const double importance = 1.0;          // todo: compute importance
         m_light_cdf.insert(light_index, importance);
     }
 }
 
-// Collect emitting triangles from a given assembly instance.
+void LightSampler::collect_emitting_triangles(const Scene& scene)
+{
+    for (const_each<AssemblyInstanceContainer> i = scene.assembly_instances(); i; ++i)
+    {
+        const AssemblyInstance& assembly_instance = *i;
+        const Assembly& assembly = assembly_instance.get_assembly();
+
+        if (has_emitting_materials(assembly))
+            collect_emitting_triangles(assembly_instance, assembly);
+    }
+}
+
 void LightSampler::collect_emitting_triangles(
     const AssemblyInstance& assembly_instance,
     const Assembly&         assembly)
@@ -329,7 +313,6 @@ void LightSampler::collect_emitting_triangles(
     }
 }
 
-// Sample the set of emitters.
 void LightSampler::sample(
     const SamplingContext&  sampling_context,
     const Vector3d&         point,
@@ -381,7 +364,6 @@ void LightSampler::sample(
     }
 }
 
-// Generate a sample for a given light.
 void LightSampler::sample_light(
     const SamplingContext&  sampling_context,
     const size_t            light_index,
@@ -395,7 +377,6 @@ void LightSampler::sample_light(
     // todo: implement.
 }
 
-// Generate a sample on the surface of a given emitting triangle.
 void LightSampler::sample_emitting_triangle(
     const SamplingContext&  sampling_context,
     const Vector3d&         point,
