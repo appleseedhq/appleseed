@@ -601,6 +601,8 @@ set(foundation_utility_sources
     foundation/utility/string.cpp
     foundation/utility/string.h
     foundation/utility/test.h
+    foundation/utility/testutils.cpp
+    foundation/utility/testutils.h
     foundation/utility/tls.h
     foundation/utility/typetraits.h
     foundation/utility/uid.cpp

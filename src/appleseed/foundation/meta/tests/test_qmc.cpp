@@ -28,16 +28,13 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
-#include "foundation/image/color.h"
-#include "foundation/image/drawing.h"
-#include "foundation/image/genericimagefilewriter.h"
-#include "foundation/image/image.h"
 #include "foundation/math/permutation.h"
 #include "foundation/math/qmc.h"
 #include "foundation/math/rng.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
+#include "foundation/utility/testutils.h"
 
 // Standard headers.
 #include <cstddef>
@@ -111,24 +108,6 @@ FOUNDATION_TEST_SUITE(Foundation_Math_QMC)
         FOUNDATION_EXPECT_FEQ(7.0 / 9, permuted_radical_inverse<double>(3, Perm, 7));
     }
 
-    void generate_image(
-        const string&               image_filename,
-        const vector<Vector2d>&     points)
-    {
-        Image image(
-            512, 512,
-            32, 32,
-            3,
-            PixelFormatFloat);
-
-        image.clear(Color3f(0.0f));
-
-        for (size_t i = 0; i < points.size(); ++i)
-            Drawing::draw_dot(image, points[i], Color3f(1.0f));
-
-        GenericImageFileWriter().write(image_filename, image);
-    }
-
     static const size_t PointCount = 256;
 
     FOUNDATION_TEST_CASE(Generate2DRandomSequenceImage)
@@ -144,7 +123,7 @@ FOUNDATION_TEST_SUITE(Foundation_Math_QMC)
             points.push_back(p);
         }
 
-        generate_image("output/test_qmc_random.png", points);
+        write_point_cloud_image("output/test_qmc_random.png", points);
     }
 
     void apply_permutation(
@@ -184,7 +163,7 @@ FOUNDATION_TEST_SUITE(Foundation_Math_QMC)
             + (initial_instance > 0 ? to_string(initial_instance) : "")
             + ".png";
 
-        generate_image(filename, points);
+        write_point_cloud_image(filename, points);
     }
 
     FOUNDATION_TEST_CASE(Generate2DHaltonSequenceImages)
@@ -230,7 +209,7 @@ FOUNDATION_TEST_SUITE(Foundation_Math_QMC)
         for (size_t i = 0; i < PointCount; ++i)
             points.push_back(hammersley_sequence<double, 2>(bases, perms, i, PointCount));
 
-        generate_image(
+        write_point_cloud_image(
             "output/test_qmc_hammersley_" + permutation + "_scrambled_" + to_string(b) + ".png",
             points);
     }
@@ -269,7 +248,7 @@ FOUNDATION_TEST_SUITE(Foundation_Math_QMC)
         for (size_t i = 0; i < PointCount; ++i)
             points.push_back(hammersley_zaremba_sequence<double, 2>(bases, i, PointCount));
 
-        generate_image(
+        write_point_cloud_image(
             "output/test_qmc_hammersley_zaremba_" + to_string(b) + ".png",
             points);
     }
