@@ -29,13 +29,19 @@
 // appleseed.foundation headers.
 #include "foundation/math/rng.h"
 #include "foundation/math/sampling.h"
+#include "foundation/math/vector.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
+#include "foundation/utility/testutils.h"
+
+// Standard headers.
+#include <vector>
+
+using namespace foundation;
+using namespace std;
 
 FOUNDATION_TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
 {
-    using namespace foundation;
-
     typedef MersenneTwister RNG;
     typedef QMCSamplingContext<RNG> QMCSamplingContext;
     typedef QMCSamplingContext::VectorType VectorType;
@@ -153,5 +159,68 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Sampling_RQMCSamplingContext)
         FOUNDATION_EXPECT_EQ(7, child_child_context.m_base_instance);
         FOUNDATION_EXPECT_EQ(4, child_child_context.m_dimension);
         FOUNDATION_EXPECT_EQ(0, child_child_context.m_instance);
+    }
+}
+
+FOUNDATION_TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext_DirectIlluminationSimulation)
+{
+    typedef MersenneTwister RNG;
+    typedef QMCSamplingContext<RNG> SamplingContext;
+
+    void shade(
+        const SamplingContext&  sampling_context,
+        const size_t            light_sample_count,
+        vector<Vector2d>&       light_samples)
+    {
+        SamplingContext child_context = sampling_context.split(2, light_sample_count);
+
+        for (size_t i = 0; i < light_sample_count; ++i)
+        {
+            const Vector2d s = child_context.next_vector2<2>();
+            light_samples.push_back(s);
+        }
+    }
+
+    void render(
+        const size_t            pixel_sample_count,
+        const size_t            light_sample_count)
+    {
+        RNG rng;
+        SamplingContext sampling_context(rng, 2, pixel_sample_count, 0);
+
+        vector<Vector2d> pixel_samples;
+        vector<Vector2d> light_samples;
+
+        for (size_t i = 0; i < pixel_sample_count; ++i)
+        {
+            const Vector2d s = sampling_context.next_vector2<2>();
+
+            pixel_samples.push_back(s);
+
+            shade(sampling_context, light_sample_count, light_samples);
+        }
+
+        const string title =
+            "output/test_sampling_" +
+            "P" + to_string(pixel_sample_count) + "_" +
+            "L" + to_string(light_sample_count);
+
+        write_point_cloud_image(title + "_pixel_samples.png", pixel_samples);
+        write_point_cloud_image(title + "_light_samples.png", light_samples);
+    }
+
+    FOUNDATION_TEST_CASE(TestWith1PixelSampleAnd256LightSamples)
+    {
+        render(1, 256);
+    }
+
+    FOUNDATION_TEST_CASE(TestWith16PixelSamplesAnd16LightSamples)
+    {
+        render(16, 16);
+    }
+
+    FOUNDATION_TEST_CASE(TestWith256PixelSamplesAnd1LightSample)
+    {
+        render(256, 1);
     }
 }
