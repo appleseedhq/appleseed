@@ -140,33 +140,33 @@ Vector<T, Dim> halton_zaremba_sequence(
 
 // Return the n'th sample of a Hammersley sequence of arbitrary dimension.
 // Samples are contained in the unit hypercube [0,1)^Dim.
-// todo: replace num argument by rcp_num?
+// todo: replace count argument by rcp_count?
 template <typename T, size_t Dim>
 Vector<T, Dim> hammersley_sequence(
     const size_t    bases[],    // bases (Dim-1 entries, prime numbers)
     size_t          n,          // input digits
-    size_t          num);       // total number of samples in sequence
+    size_t          count);     // total number of samples in sequence
 
 // Return the n'th sample of a Hammersley sequence of arbitrary dimension
 // with digits permutation. Samples are contained in the unit hypercube
 // [0,1)^Dim.
-// todo: replace num argument by rcp_num?
+// todo: replace count argument by rcp_count?
 template <typename T, size_t Dim>
 Vector<T, Dim> hammersley_sequence(
     const size_t    bases[],    // bases (Dim-1 entries, prime numbers)
     const size_t    perms[],    // permutation tables, one per base
     size_t          n,          // input digits
-    size_t          num);       // total number of samples in sequence
+    size_t          count);     // total number of samples in sequence
 
 // Return the n'th sample of a Hammersley-Zaremba sequence (Hammersley
 // sequence using folded radical inverse). Samples are contained in the
 // unit hypercube [0,1)^Dim.
-// todo: replace num argument by rcp_num?
+// todo: replace count argument by rcp_count?
 template <typename T, size_t Dim>
 Vector<T, Dim> hammersley_zaremba_sequence(
     const size_t    bases[],    // bases (Dim-1 entries, prime numbers)
     size_t          n,          // input digits
-    size_t          num);       // total number of samples in sequence
+    size_t          count);     // total number of samples in sequence
 
 
 //
@@ -180,7 +180,7 @@ Vector<T, Dim> hammersley_zaremba_sequence(
 // Warning: very slow, only for offline usage.
 template <typename T, size_t Dim>
 void best_candidate_sequence(
-    size_t          num,        // total number of samples in sequence
+    size_t          count,      // total number of samples in sequence
     size_t          num_cand,   // number of candidates per sample
     Vector<T, Dim>  samples[]); // [out] generated samples
 
@@ -189,7 +189,6 @@ void best_candidate_sequence(
 // Radical inverse functions implementation.
 //
 
-// Compute the radical inverse of a given positive integer.
 template <typename T>
 inline T radical_inverse(
     size_t          base,
@@ -214,7 +213,6 @@ inline T radical_inverse(
     return x;
 }
 
-// Fast implementation of the radical inverse in base 2.
 template <typename T>
 inline T radical_inverse_base2(
     size_t          n)
@@ -250,7 +248,6 @@ inline T radical_inverse_base2(
 #endif
 }
 
-// Compute the folded radical inverse of a given positive integer.
 template <typename T>
 inline T folded_radical_inverse(
     size_t          base,
@@ -277,7 +274,6 @@ inline T folded_radical_inverse(
     return x;
 }
 
-// Fast implementation of the folded radical inverse in base 2.
 template <typename T>
 inline T folded_radical_inverse_base2(
     size_t          n)
@@ -297,7 +293,6 @@ inline T folded_radical_inverse_base2(
     return x;
 }
 
-// Compute the radical inverse of a given positive integer with digit permutation.
 template <typename T>
 inline T permuted_radical_inverse(
     const size_t    base,
@@ -331,7 +326,6 @@ inline T permuted_radical_inverse(
 // Halton sequences implementation.
 //
 
-// Return the n'th sample of a Halton sequence of arbitrary dimension.
 template <typename T, size_t Dim>
 inline Vector<T, Dim> halton_sequence(
     const size_t    bases[],
@@ -343,7 +337,6 @@ inline Vector<T, Dim> halton_sequence(
     return p;
 }
 
-// Return the n'th sample of a Halton sequence of arbitrary dimension with digit permutation.
 template <typename T, size_t Dim>
 inline Vector<T, Dim> halton_sequence(
     const size_t    bases[],
@@ -359,7 +352,6 @@ inline Vector<T, Dim> halton_sequence(
     return p;
 }
 
-// Return the n'th sample of a Halton-Zaremba sequence.
 template <typename T, size_t Dim>
 inline Vector<T, Dim> halton_zaremba_sequence(
     const size_t    bases[],
@@ -376,15 +368,14 @@ inline Vector<T, Dim> halton_zaremba_sequence(
 // Hammersley sequences implementation.
 //
 
-// Return the n'th sample of a Hammersley sequence of arbitrary dimension.
 template <typename T, size_t Dim>
 inline Vector<T, Dim> hammersley_sequence(
     const size_t    bases[],
     size_t          n,
-    size_t          num)
+    size_t          count)
 {
     Vector<T, Dim> p;
-    p[0] = static_cast<T>(n) / num;
+    p[0] = static_cast<T>(n) / count;
     for (size_t i = 1; i < Dim; ++i)
         p[i] = radical_inverse<T>(bases[i - 1], n);
     return p;
@@ -395,10 +386,10 @@ inline Vector<T, Dim> hammersley_sequence(
     const size_t    bases[],
     const size_t    perms[],
     size_t          n,
-    size_t          num)
+    size_t          count)
 {
     Vector<T, Dim> p;
-    p[0] = static_cast<T>(n) / num;
+    p[0] = static_cast<T>(n) / count;
     for (size_t i = 1; i < Dim; ++i)
     {
         p[i] = permuted_radical_inverse<T>(bases[i - 1], perms, n);
@@ -407,15 +398,14 @@ inline Vector<T, Dim> hammersley_sequence(
     return p;
 }
 
-// Return the n'th sample of a Hammersley-Zaremba sequence.
 template <typename T, size_t Dim>
 inline Vector<T, Dim> hammersley_zaremba_sequence(
     const size_t    bases[],
     size_t          n,
-    size_t          num)
+    size_t          count)
 {
     Vector<T, Dim> p;
-    p[0] = static_cast<T>(n) / num;
+    p[0] = static_cast<T>(n) / count;
     for (size_t i = 1; i < Dim; ++i)
         p[i] = folded_radical_inverse<T>(bases[i - 1], n);
     return p;
@@ -426,16 +416,15 @@ inline Vector<T, Dim> hammersley_zaremba_sequence(
 // Best-candidate sequences implementation.
 //
 
-// Generate a best-candidate sequence of arbitrary dimension.
 template <typename T, size_t Dim>
 inline void best_candidate_sequence(
-    size_t          num,
+    size_t          count,
     size_t          num_cand,
     Vector<T, Dim>  samples[])
 {
     // Compute acceleration grid size.
     const size_t grid_size =
-        truncate<size_t>(std::ceil(std::pow(num, T(1.0) / Dim) * 0.1));
+        truncate<size_t>(std::ceil(std::pow(count, T(1.0) / Dim) * 0.1));
 
     // Allocate acceleration grid.
     const size_t num_cells = pow_int(grid_size, Dim);
@@ -443,7 +432,7 @@ inline void best_candidate_sequence(
 
     MersenneTwister mt;
 
-    for (size_t n = 0; n < num; ++n)
+    for (size_t n = 0; n < count; ++n)
     {
         // Compute a sample by generating a small number of
         // candidates samples and keeping only the best one.
