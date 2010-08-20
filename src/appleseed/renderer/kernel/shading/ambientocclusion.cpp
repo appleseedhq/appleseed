@@ -47,8 +47,8 @@ namespace renderer
 //
 
 double compute_ambient_occlusion(
-    const Intersector&      intersector,
     const SamplingContext&  sampling_context,
+    const Intersector&      intersector,
     const Vector3d&         point,
     const Vector3d&         geometic_normal,
     const Basis3d&          shading_basis,

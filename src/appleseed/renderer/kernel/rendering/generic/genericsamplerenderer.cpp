@@ -93,7 +93,7 @@ namespace
 
         // Render a sample at a given point on the image plane.
         virtual void render_sample(
-            const SamplingContext&  sampling_context,
+            SamplingContext&        sampling_context,
             const Vector2d&         image_point,        // point in image plane, in NDC
             ShadingResult&          shading_result)
         {
@@ -117,13 +117,13 @@ namespace
             // Construct a shading context.
             ShadingContext shading_context(
                 m_intersector,
-                sampling_context,
                 m_lighting_conditions,
                 m_texture_cache,
                 *m_lighting_engine);
 
             // Shade the intersection point.
             m_shading_engine.shade(
+                sampling_context,
                 shading_context,
                 shading_point,
                 shading_result);

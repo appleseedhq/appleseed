@@ -52,16 +52,12 @@ class ShadingContext
     // Constructor.
     ShadingContext(
         const Intersector&                      intersector,
-        const SamplingContext&                  sampling_context,
         const foundation::LightingConditions&   lighting_conditions,
         TextureCache&                           texture_cache,
         ILightingEngine&                        lighting_engine);
 
     // Return the intersector.
     const Intersector& get_intersector() const;
-
-    // Return the sampling context.
-    const SamplingContext& get_sampling_context() const;
 
     // Return the lighting conditions.
     const foundation::LightingConditions& get_lighting_conditions() const;
@@ -74,7 +70,6 @@ class ShadingContext
 
   private:
     const Intersector&                          m_intersector;
-    const SamplingContext&                      m_sampling_context;
     const foundation::LightingConditions&       m_lighting_conditions;
     TextureCache&                               m_texture_cache;
     ILightingEngine&                            m_lighting_engine;
@@ -85,46 +80,33 @@ class ShadingContext
 // ShadingContext class implementation.
 //
 
-// Constructor.
 inline ShadingContext::ShadingContext(
     const Intersector&                          intersector,
-    const SamplingContext&                      sampling_context,
     const foundation::LightingConditions&       lighting_conditions,
     TextureCache&                               texture_cache,
     ILightingEngine&                            lighting_engine)
   : m_intersector(intersector)
-  , m_sampling_context(sampling_context)
   , m_lighting_conditions(lighting_conditions)
   , m_texture_cache(texture_cache)
   , m_lighting_engine(lighting_engine)
 {
 }
 
-// Return the intersector.
 inline const Intersector& ShadingContext::get_intersector() const
 {
     return m_intersector;
 }
 
-// Return the sampling context.
-inline const SamplingContext& ShadingContext::get_sampling_context() const
-{
-    return m_sampling_context;
-}
-
-// Return the lighting conditions.
 inline const foundation::LightingConditions& ShadingContext::get_lighting_conditions() const
 {
     return m_lighting_conditions;
 }
 
-// Return the texture cache.
 inline TextureCache& ShadingContext::get_texture_cache() const
 {
     return m_texture_cache;
 }
 
-// Return the light transport solver.
 inline ILightingEngine& ShadingContext::get_lighting_engine() const
 {
     return m_lighting_engine;

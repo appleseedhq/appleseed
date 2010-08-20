@@ -44,20 +44,47 @@ namespace renderer
 //
 
 double compute_transmission(
+    SamplingContext&                sampling_context,
     const ShadingContext&           shading_context,
     const foundation::Vector3d&     origin,
     const foundation::Vector3d&     direction,
     const double                    max_distance,
     const ShadingPoint*             parent_shading_point = 0);
 
-inline double compute_transmission(
+double compute_transmission(
+    SamplingContext&                sampling_context,
     const ShadingContext&           shading_context,
     const foundation::Vector3d&     origin,
     const foundation::Vector3d&     direction,
-    const ShadingPoint*             parent_shading_point = 0)
+    const ShadingPoint*             parent_shading_point = 0);
+
+
+//
+// Compute the transmission factor between two points in space.
+//
+
+double compute_transmission_between(
+    SamplingContext&                sampling_context,
+    const ShadingContext&           shading_context,
+    const foundation::Vector3d&     origin,
+    const foundation::Vector3d&     target,
+    const ShadingPoint*             parent_shading_point = 0);
+
+
+//
+// Implementation.
+//
+
+inline double compute_transmission(
+    SamplingContext&                sampling_context,
+    const ShadingContext&           shading_context,
+    const foundation::Vector3d&     origin,
+    const foundation::Vector3d&     direction,
+    const ShadingPoint*             parent_shading_point)
 {
     return
         compute_transmission(
+            sampling_context,
             shading_context,
             origin,
             direction,
@@ -65,19 +92,16 @@ inline double compute_transmission(
             parent_shading_point);
 }
 
-
-//
-// Compute the transmission factor between two points in space.
-//
-
 inline double compute_transmission_between(
+    SamplingContext&                sampling_context,
     const ShadingContext&           shading_context,
     const foundation::Vector3d&     origin,
     const foundation::Vector3d&     target,
-    const ShadingPoint*             parent_shading_point = 0)
+    const ShadingPoint*             parent_shading_point)
 {
     return
         compute_transmission(
+            sampling_context,
             shading_context,
             origin,
             target - origin,

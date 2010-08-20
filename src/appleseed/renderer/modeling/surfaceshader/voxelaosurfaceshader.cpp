@@ -141,6 +141,7 @@ namespace
 
         // Evaluate the shading at a given point.
         virtual void evaluate(
+            SamplingContext&        sampling_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
             ShadingResult&          shading_result) const
@@ -196,8 +197,8 @@ namespace
                 double min_distance;
                 occlusion =
                     compute_fast_ambient_occlusion(
+                        sampling_context,
                         *m_voxel_tree_intersector,
-                        shading_context.get_sampling_context(),
                         safe_origin,
                         shading_point.get_geometric_normal(),
                         shading_point.get_shading_basis(),
@@ -222,8 +223,8 @@ namespace
                 // Compute classic ambient occlusion.
                 occlusion =
                     compute_ambient_occlusion(
+                        sampling_context,
                         shading_context.get_intersector(),
-                        shading_context.get_sampling_context(),
                         shading_point.get_point(),
                         shading_point.get_geometric_normal(),
                         shading_point.get_shading_basis(),
@@ -248,8 +249,8 @@ namespace
                 // Compute classic ambient occlusion.
                 const double classic_occlusion =
                     compute_ambient_occlusion(
+                        sampling_context,
                         shading_context.get_intersector(),
-                        shading_context.get_sampling_context(),
                         shading_point.get_point(),
                         shading_point.get_geometric_normal(),
                         shading_point.get_shading_basis(),
@@ -261,8 +262,8 @@ namespace
                 double min_distance;
                 const double fast_occlusion =
                     compute_fast_ambient_occlusion(
+                        sampling_context,
                         *m_voxel_tree_intersector,
-                        shading_context.get_sampling_context(),
                         safe_origin,
                         shading_point.get_geometric_normal(),
                         shading_point.get_shading_basis(),

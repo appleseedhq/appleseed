@@ -136,7 +136,7 @@ namespace
 
         // Generate a ray.
         virtual void generate_ray(
-            const SamplingContext&  sampling_context,
+            SamplingContext&        sampling_context,
             const Vector2d&         point,
             const float             time,
             ShadingRay&             ray) const
@@ -148,8 +148,8 @@ namespace
             ray.m_flags = ~0;
 
             // Sample the surface of the lens.
-            SamplingContext child_context = sampling_context.split(2, 0);
-            const Vector2d s = child_context.next_vector2<2>();
+            sampling_context = sampling_context.split(2, 1);
+            const Vector2d s = sampling_context.next_vector2<2>();
             const Vector2d lens_point = m_lens_radius * sample_disk_uniform(s);
 
             // Set the ray origin.

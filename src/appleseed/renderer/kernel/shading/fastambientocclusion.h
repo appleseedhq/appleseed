@@ -128,8 +128,8 @@ class AOVoxelTreeIntersector
 //
 
 double compute_fast_ambient_occlusion(
-    const AOVoxelTreeIntersector&   intersector,
     const SamplingContext&          sampling_context,
+    const AOVoxelTreeIntersector&   intersector,
     const foundation::Vector3d&     point,
     const foundation::Vector3d&     geometic_normal,
     const foundation::Basis3d&      basis,

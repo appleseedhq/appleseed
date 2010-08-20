@@ -47,6 +47,7 @@ namespace renderer
 //
 
 double compute_transmission(
+    SamplingContext&        sampling_context,
     const ShadingContext&   shading_context,
     const Vector3d&         point,
     const Vector3d&         direction,
@@ -104,6 +105,7 @@ double compute_transmission(
         // Evaluate the alpha mask at the shading point.
         Alpha alpha_mask;
         surface_shader.evaluate_alpha_mask(
+            sampling_context,
             shading_context,
             *shading_point_ptr,
             alpha_mask);

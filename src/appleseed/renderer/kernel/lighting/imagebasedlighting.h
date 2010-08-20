@@ -49,6 +49,7 @@ namespace renderer
 //
 
 void compute_image_based_lighting(
+    SamplingContext&                sampling_context,
     const ShadingContext&           shading_context,
     const Scene&                    scene,
     const foundation::Vector3d&     point,              // world space point

@@ -114,7 +114,7 @@ namespace
 
         // Generate a ray.
         virtual void generate_ray(
-            const SamplingContext&  sampling_context,
+            SamplingContext&        sampling_context,
             const Vector2d&         point,
             const float             time,
             ShadingRay&             ray) const

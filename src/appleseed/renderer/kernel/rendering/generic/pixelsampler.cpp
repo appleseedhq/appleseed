@@ -26,38 +26,48 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_SHADING_AMBIENTOCCLUSION_H
-#define APPLESEED_RENDERER_KERNEL_SHADING_AMBIENTOCCLUSION_H
-
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
+// Interface header.
+#include "pixelsampler.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/basis.h"
+#include "foundation/math/scalar.h"
 
-// Forward declarations.
-namespace renderer      { class Intersector; }
-namespace renderer      { class ShadingPoint; }
+using namespace foundation;
 
 namespace renderer
 {
 
 //
-// Compute classic ambient occlusion at a given point in space.
-//
-// todo: implement optional computation of the mean unoccluded direction.
+// PixelSampler class implementation.
 //
 
-double compute_ambient_occlusion(
-    const SamplingContext&          sampling_context,
-    const Intersector&              intersector,
-    const foundation::Vector3d&     point,              // world space point
-    const foundation::Vector3d&     geometic_normal,    // world space geometric normal, unit-length
-    const foundation::Basis3d&      shading_basis,      // world space orthonormal basis around shading normal
-    const double                    max_distance,
-    const size_t                    sample_count,
-    const ShadingPoint*             parent_shading_point = 0);
+void PixelSampler::initialize(const size_t sample_count)
+{
+    m_log_period = log2(sample_count * 32);
 
-}       // namespace renderer
+    if (m_log_period > 16)
+        m_log_period = 16;
 
-#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_AMBIENTOCCLUSION_H
+    m_period = 1 << m_log_period;
+    m_sigma.resize(m_period);
+
+    // Precompute the first N values of 2^N * radical_inverse_base2(0..N-1).
+    for (size_t i = 0; i < m_period; ++i)
+    {
+        size_t b = m_period;
+        size_t x = 0;
+
+        for (size_t n = i; n; n >>= 1)
+        {
+            b >>= 1;
+            x += (n & 1) * b;
+        }
+
+        m_sigma[i] = x;
+    }
+
+    m_rcp_period = 1.0 / m_period;
+    m_period_mask = m_period - 1;
+}
+
+}   // namespace renderer

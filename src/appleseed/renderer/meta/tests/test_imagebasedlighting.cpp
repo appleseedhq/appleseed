@@ -75,7 +75,6 @@ FOUNDATION_TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
           , m_texture_cache(m_scene, 1)
           , m_shading_context(
                 m_intersector,
-                m_sampling_context,
                 m_lighting_conditions,
                 m_texture_cache,
                 m_lighting_engine)
@@ -140,6 +139,7 @@ FOUNDATION_TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
         Spectrum radiance;
 
         compute_image_based_lighting(
+            m_sampling_context,
             m_shading_context,
             m_scene,
             Vector3d(0.0),
@@ -183,6 +183,7 @@ FOUNDATION_TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
 
         Spectrum radiance;
         compute_image_based_lighting(
+            m_sampling_context,
             m_shading_context,
             m_scene,
             Vector3d(0.0),

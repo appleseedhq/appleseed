@@ -81,7 +81,7 @@ class LightSampler
 
     // Sample the set of emitters.
     void sample(
-        const SamplingContext&          sampling_context,
+        SamplingContext&                sampling_context,
         const foundation::Vector3d&     point,              // world space point where lighting is to be computed
         const foundation::Vector3d&     normal,             // world space normal at that point, unit-length
         const size_t                    sample_count,
@@ -140,14 +140,14 @@ class LightSampler
 
     // Generate a sample for a given light.
     void sample_light(
-        const SamplingContext&          sampling_context,
+        const foundation::Vector2d&     s,
         const size_t                    light_index,
         const double                    light_prob,
         LightSample&                    sample) const;
 
     // Generate a sample on the surface of a given emitting triangle.
     void sample_emitting_triangle(
-        const SamplingContext&          sampling_context,
+        const foundation::Vector2d&     s,
         const foundation::Vector3d&     point,
         const size_t                    triangle_index,
         const double                    triangle_prob,

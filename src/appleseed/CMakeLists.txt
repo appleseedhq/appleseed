@@ -771,6 +771,8 @@ set(renderer_kernel_rendering_generic_sources
     renderer/kernel/rendering/generic/genericsamplerenderer.h
     renderer/kernel/rendering/generic/generictilerenderer.cpp
     renderer/kernel/rendering/generic/generictilerenderer.h
+    renderer/kernel/rendering/generic/pixelsampler.cpp
+    renderer/kernel/rendering/generic/pixelsampler.h
 )
 list(APPEND appleseed_sources
     ${renderer_kernel_rendering_generic_sources}

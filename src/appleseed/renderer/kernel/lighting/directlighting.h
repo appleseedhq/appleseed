@@ -49,6 +49,7 @@ namespace renderer
 //
 
 void compute_direct_lighting(
+    SamplingContext&                sampling_context,
     const ShadingContext&           shading_context,
     const foundation::Vector3d&     point,              // world space point
     const foundation::Vector3d&     geometric_normal,   // world space geometric normal, unit-length

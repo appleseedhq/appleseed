@@ -64,12 +64,14 @@ class RENDERERDLL SurfaceShader
 
     // Evaluate the shading at a given point.
     virtual void evaluate(
+        SamplingContext&        sampling_context,
         const ShadingContext&   shading_context,
         const ShadingPoint&     shading_point,
         ShadingResult&          shading_result) const = 0;
 
     // Evaluate the alpha mask at a given point.
     virtual void evaluate_alpha_mask(
+        SamplingContext&        sampling_context,
         const ShadingContext&   shading_context,
         const ShadingPoint&     shading_point,
         Alpha&                  alpha) const;
@@ -98,6 +100,7 @@ inline void SurfaceShader::on_frame_end(const Scene& scene)
 
 // Evaluate the alpha mask at a given point.
 inline void SurfaceShader::evaluate_alpha_mask(
+    SamplingContext&        sampling_context,
     const ShadingContext&   shading_context,
     const ShadingPoint&     shading_point,
     Alpha&                  alpha) const

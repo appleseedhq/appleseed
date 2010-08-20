@@ -31,6 +31,7 @@
 #include "foundation/math/sampling.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/iostreamop.h"
+#include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
 #include "foundation/utility/testutils.h"
 
@@ -201,7 +202,7 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext_DirectIllumina
         }
 
         const string title =
-            "output/test_sampling_" +
+            string("output/test_sampling_") +
             "P" + to_string(pixel_sample_count) + "_" +
             "L" + to_string(light_sample_count);
 

@@ -58,6 +58,7 @@ namespace
     //
 
     void compute_ibl_bsdf_sampling(
+        SamplingContext&            sampling_context,
         const ShadingContext&       shading_context,
         const EnvironmentEDF*       env_edf,
         const Vector3d&             point,
@@ -75,14 +76,13 @@ namespace
         radiance.set(0.0f);
 
         // Create a sampling context.
-        SamplingContext child_context =
-            shading_context.get_sampling_context().split(3, bsdf_sample_count);
+        sampling_context = sampling_context.split(3, bsdf_sample_count);
 
         // Compute direct illumination from this set of light samples.
         for (size_t i = 0; i < bsdf_sample_count; ++i)
         {
             // Generate a uniform sample in [0,1)^3.
-            const Vector3d s = child_context.next_vector2<3>();
+            const Vector3d s = sampling_context.next_vector2<3>();
 
             // Sample the BSDF.
             Vector3d incoming;
@@ -113,6 +113,7 @@ namespace
             // Compute the transmission factor toward the incoming direction.
             const double transmission =
                 compute_transmission(
+                    sampling_context,
                     shading_context,
                     point,
                     incoming,
@@ -152,6 +153,7 @@ namespace
     //
 
     void compute_ibl_environment_sampling(
+        SamplingContext&            sampling_context,
         const ShadingContext&       shading_context,
         const EnvironmentEDF*       env_edf,
         const Vector3d&             point,
@@ -169,14 +171,13 @@ namespace
         radiance.set(0.0f);
 
         // Create a sampling context.
-        SamplingContext child_context =
-            shading_context.get_sampling_context().split(2, env_sample_count);
+        sampling_context = sampling_context.split(2, env_sample_count);
 
         // Compute direct illumination from this set of light samples.
         for (size_t i = 0; i < env_sample_count; ++i)
         {
             // Generate a uniform sample in [0,1)^2.
-            const Vector2d s = child_context.next_vector2<2>();
+            const Vector2d s = sampling_context.next_vector2<2>();
 
             // Sample the environment.
             InputEvaluator input_evaluator(shading_context.get_texture_cache());
@@ -201,6 +202,7 @@ namespace
             // Compute the transmission factor toward the incoming direction.
             const double transmission =
                 compute_transmission(
+                    sampling_context,
                     shading_context,
                     point,
                     incoming,
@@ -250,6 +252,7 @@ namespace
 //
 
 void compute_image_based_lighting(
+    SamplingContext&            sampling_context,
     const ShadingContext&       shading_context,
     const Scene&                scene,
     const Vector3d&             point,
@@ -279,6 +282,7 @@ void compute_image_based_lighting(
 
     // Sample the BSDF.
     compute_ibl_bsdf_sampling(
+        sampling_context,
         shading_context,
         env_edf,
         point,
@@ -295,6 +299,7 @@ void compute_image_based_lighting(
     // Sample the environment.
     Spectrum radiance_env_sampling;
     compute_ibl_environment_sampling(
+        sampling_context,
         shading_context,
         env_edf,
         point,

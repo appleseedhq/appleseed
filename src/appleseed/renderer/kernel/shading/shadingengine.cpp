@@ -81,6 +81,7 @@ ShadingEngine::ShadingEngine(const ParamArray& params)
 
 // Shade a given intersection point.
 void ShadingEngine::shade(
+    SamplingContext&        sampling_context,
     const ShadingContext&   shading_context,
     const ShadingPoint&     shading_point,
     ShadingResult&          shading_result) const
@@ -104,6 +105,7 @@ void ShadingEngine::shade(
 
         // Execute the surface shader.
         surface_shader.evaluate(
+            sampling_context,
             shading_context,
             shading_point,
             shading_result);

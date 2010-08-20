@@ -308,8 +308,8 @@ bool AOVoxelTreeIntersector::trace(
 //
 
 double compute_fast_ambient_occlusion(
-    const AOVoxelTreeIntersector&   intersector,
     const SamplingContext&          sampling_context,
+    const AOVoxelTreeIntersector&   intersector,
     const Vector3d&                 point,
     const Vector3d&                 geometic_normal,
     const Basis3d&                  basis,

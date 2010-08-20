@@ -50,7 +50,7 @@ class RENDERERDLL ISampleRenderer
     // The point is expressed in normalized device coordinates (NDC).
     // See renderer::Camera class documentation for details.
     virtual void render_sample(
-        const SamplingContext&          sampling_context,
+        SamplingContext&                sampling_context,
         const foundation::Vector2d&     image_point,            // point in image plane, in NDC
         ShadingResult&                  shading_result) = 0;
 };

@@ -82,7 +82,7 @@ class RENDERERDLL Camera
     // the image resolution. time is the time at which the ray must be generated.
     // The generated ray is expressed in world space.
     virtual void generate_ray(
-        const SamplingContext&      sampling_context,
+        SamplingContext&            sampling_context,
         const foundation::Vector2d& point,              // point on film plane, in NDC
         const float                 time,               // time at which to generate the ray
         ShadingRay&                 ray) const = 0;

@@ -95,6 +95,7 @@ namespace
 
         // Evaluate the shading at a given point.
         virtual void evaluate(
+            SamplingContext&        sampling_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
             ShadingResult&          shading_result) const
@@ -108,6 +109,7 @@ namespace
 
             // Compute the lighting.
             lighting_engine.compute_lighting(
+                sampling_context,
                 shading_context,
                 shading_point,
                 shading_result.m_color);
@@ -118,6 +120,7 @@ namespace
 
         // Evaluate the alpha mask at a given point.
         virtual void evaluate_alpha_mask(
+            SamplingContext&        sampling_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
             Alpha&                  alpha) const

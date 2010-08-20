@@ -314,7 +314,7 @@ void LightSampler::collect_emitting_triangles(
 }
 
 void LightSampler::sample(
-    const SamplingContext&  sampling_context,
+    SamplingContext&        sampling_context,
     const Vector3d&         point,
     const Vector3d&         normal,
     const size_t            sample_count,
@@ -327,15 +327,15 @@ void LightSampler::sample(
         return;
 
     // Create a sampling context.
-    SamplingContext child_context = sampling_context.split(1, sample_count);
+    sampling_context = sampling_context.split(3, sample_count);
 
     // Generate light samples.
     const size_t light_count = m_lights.size();
     for (size_t i = 0; i < sample_count; ++i)
     {
         // Sample the set of emitters (lights and emitting triangles).
-        const double s = child_context.next_double2();
-        const LightCDF::ItemWeightPair result = m_light_cdf.sample(s);
+        const Vector3d s = sampling_context.next_vector2<3>();
+        const LightCDF::ItemWeightPair result = m_light_cdf.sample(s[0]);
         const size_t emitter_index = result.first;
         const double emitter_prob = result.second;
 
@@ -344,7 +344,7 @@ void LightSampler::sample(
         if (emitter_index < light_count)
         {
             sample_light(
-                child_context,
+                Vector2d(s[1], s[2]),
                 emitter_index,
                 emitter_prob,
                 sample);
@@ -352,7 +352,7 @@ void LightSampler::sample(
         else
         {
             sample_emitting_triangle(
-                child_context,
+                Vector2d(s[1], s[2]),
                 point,
                 emitter_index - light_count,
                 emitter_prob,
@@ -365,7 +365,7 @@ void LightSampler::sample(
 }
 
 void LightSampler::sample_light(
-    const SamplingContext&  sampling_context,
+    const Vector2d&         s,
     const size_t            light_index,
     const double            light_prob,
     LightSample&            sample) const
@@ -378,7 +378,7 @@ void LightSampler::sample_light(
 }
 
 void LightSampler::sample_emitting_triangle(
-    const SamplingContext&  sampling_context,
+    const Vector2d&         s,
     const Vector3d&         point,
     const size_t            triangle_index,
     const double            triangle_prob,
@@ -388,7 +388,6 @@ void LightSampler::sample_emitting_triangle(
     const EmittingTriangle& triangle = m_emitting_triangles[triangle_index];
 
     // Uniformly sample the surface of the triangle.
-    const Vector2d s = sampling_context.split(2, 1).next_vector2<2>();
     const Vector3d bary = sample_triangle_uniform(s);
 
     // Set the barycentric coordinates.

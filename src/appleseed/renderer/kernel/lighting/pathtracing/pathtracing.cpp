@@ -108,6 +108,7 @@ namespace
 
         // Compute the lighting at a given point of the scene.
         virtual void compute_lighting(
+            SamplingContext&        sampling_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
             Spectrum&               radiance)   // output radiance, in W.sr^-1.m^-2
@@ -129,6 +130,7 @@ namespace
 
             const size_t path_length =
                 path_tracer.trace(
+                    sampling_context,
                     shading_context,
                     shading_point,
                     radiance);
@@ -227,6 +229,7 @@ namespace
 
                     // Compute the incident radiance due to this light sample.
                     compute_direct_lighting(
+                        sampling_context,
                         m_shading_context,
                         point,
                         geometric_normal,
@@ -241,6 +244,7 @@ namespace
                     // Compute image-based lighting.
                     Spectrum ibl_radiance;
                     compute_image_based_lighting(
+                        sampling_context,
                         m_shading_context,
                         shading_point.get_scene(),
                         point,

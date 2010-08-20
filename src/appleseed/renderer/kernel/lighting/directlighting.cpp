@@ -52,6 +52,7 @@ namespace renderer
 //
 
 void compute_direct_lighting(
+    SamplingContext&            sampling_context,
     const ShadingContext&       shading_context,
     const Vector3d&             point,
     const Vector3d&             geometric_normal,
@@ -91,6 +92,7 @@ void compute_direct_lighting(
         // Compute the transmission factor between the light sample and the shading point.
         const double transmission =
             compute_transmission_between(
+                sampling_context,
                 shading_context,
                 point,
                 sample.m_input_params.m_point,

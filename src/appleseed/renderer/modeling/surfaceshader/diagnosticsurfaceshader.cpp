@@ -160,6 +160,7 @@ const char* DiagnosticSurfaceShader::get_name() const
 
 // Evaluate the shading at a given point.
 void DiagnosticSurfaceShader::evaluate(
+    SamplingContext&        sampling_context,
     const ShadingContext&   shading_context,
     const ShadingPoint&     shading_point,
     ShadingResult&          shading_result) const
@@ -281,8 +282,8 @@ void DiagnosticSurfaceShader::evaluate(
             // Compute the occlusion.
             const double occlusion =
                 compute_ambient_occlusion(
+                    sampling_context,
                     shading_context.get_intersector(),
-                    shading_context.get_sampling_context(),
                     shading_point.get_point(),
                     shading_point.get_geometric_normal(),
                     shading_point.get_shading_basis(),

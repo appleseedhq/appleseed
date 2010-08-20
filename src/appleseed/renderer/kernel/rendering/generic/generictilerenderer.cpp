@@ -30,6 +30,7 @@
 #include "generictilerenderer.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/rendering/generic/pixelsampler.h"
 #include "renderer/kernel/rendering/isamplerenderer.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/frame/frame.h"
@@ -105,13 +106,17 @@ namespace
                 m_pixel_ordering[i].y = static_cast<uint16>(y);
             }
 
-            // Build the subsamples permutation table.
-            build_sigma_table();
+            // Initialize the pixel sampler.
+            m_pixel_sampler.initialize(m_params.m_max_samples);
 
             // Compute the approximate size of one side of the subpixel grid inside a pixel.
             m_sqrt_max_samples =
                 static_cast<size_t>(sqrt(
                     static_cast<double>(m_params.m_max_samples)));
+
+            m_rcp_sample_canvas_width = 1.0 / (properties.m_canvas_width * m_sqrt_max_samples);
+            m_rcp_sample_canvas_height = 1.0 / (properties.m_canvas_height * m_sqrt_max_samples);
+            m_rcp_sample_count = 1.0f / m_params.m_max_samples;
         }
 
         // Destructor.
@@ -142,11 +147,10 @@ namespace
             Tile& tile = frame.tile(tile_x, tile_y);
             const size_t tile_width = tile.get_width();
             const size_t tile_height = tile.get_height();
-            const size_t tile_origin_x = tile_width * tile_x;
-            const size_t tile_origin_y = tile_height * tile_y;
+            const size_t tile_origin_x = properties.m_tile_width * tile_x;
+            const size_t tile_origin_y = properties.m_tile_height * tile_y;
 
             // Precompute some stuff.
-            const float pixel_scale = 1.0f / m_params.m_max_samples;
             const LightingConditions& lighting_conditions =
                 frame.get_lighting_conditions();
 
@@ -188,73 +192,60 @@ namespace
 
 #endif  // RENDERER_PIXEL_BREAKPOINT
 
-                // Precompute some stuff.
-                const size_t base_sx = ix * m_sqrt_max_samples;
-                const size_t base_sy = iy * m_sqrt_max_samples;
-
                 // Initialize the pixel color.
                 Color4f pixel_color(0.0f);
 
                 // Render, filter and accumulate samples.
-                for (size_t j = 0; j < m_params.m_max_samples; ++j)
+                const size_t base_sx = ix * m_sqrt_max_samples;
+                const size_t base_sy = iy * m_sqrt_max_samples;
+                for (size_t sy = 0; sy < m_sqrt_max_samples; ++sy)
                 {
-                    // Compute the (approximate...) coordinates of the sample in the image.
-                    const size_t sx = base_sx + j % m_sqrt_max_samples;
-                    const size_t sy = base_sy + j / m_sqrt_max_samples;
+                    for (size_t sx = 0; sx < m_sqrt_max_samples; ++sx)
+                    {
+                        // Compute the sample position in sample space and the instance number.
+                        Vector2d sample_position;
+                        size_t instance;
+                        m_pixel_sampler.sample(
+                            base_sx + sx,
+                            base_sy + sy,
+                            sample_position,
+                            instance);
 
-                    // Deterministically scramble the samples of the image.
-                    const size_t kx = sx & (m_sigma_size - 1);
-                    const size_t ky = sy & (m_sigma_size - 1);
-                    const size_t instance = (ky << m_sigma_power) + m_sigma[kx];
+                        // Transform the sample position from sample space to NDC.
+                        sample_position[0] = sample_position[0] * m_rcp_sample_canvas_width - 0.5;
+                        sample_position[1] = 0.5 - sample_position[1] * m_rcp_sample_canvas_height;
 
-                    // Create a sampling context.
-                    SamplingContext sampling_context(
-                        m_rng,
-                        2,              // number of dimensions
-                        0,              // number of samples
-                        instance);      // initial instance number
+                        // Create a sampling context.
+                        SamplingContext sampling_context(
+                            m_rng,
+                            2,              // number of dimensions
+                            0,              // number of samples
+                            instance);      // initial instance number
 
-                    // Compute the sample coordinates in [0,1)^2.
-                    const size_t Bases[1] = { 2 };
-                    const Vector2d s =
-                        hammersley_sequence<double, 2>(
-                            Bases,
-                            j,
-                            m_params.m_max_samples);
+                        // Render the sample.
+                        ShadingResult shading_result;
+                        m_sample_renderer->render_sample(
+                            sampling_context,
+                            sample_position,
+                            shading_result);
 
-                    // Compute the sample position, in NDC.
-                    const Vector2d sample_position =
-                        frame.get_sample_position(
-                            tile_x,
-                            tile_y,
-                            tx,
-                            ty,
-                            s.x,
-                            s.y);
+                        // todo: implement proper sample filtering.
+                        // todo: detect invalid sample values (NaN, infinity, etc.), set
+                        // them to black and mark them as faulty in the diagnostic map.
 
-                    // Render the sample.
-                    ShadingResult shading_result;
-                    m_sample_renderer->render_sample(
-                        sampling_context,
-                        sample_position,
-                        shading_result);
+                        // Transform the sample to the linear RGB color space.
+                        shading_result.transform_to_linear_rgb(lighting_conditions);
 
-                    // todo: implement proper sample filtering.
-                    // todo: detect invalid sample values (NaN, infinity, etc.), set
-                    // them to black and mark them as faulty in the diagnostic map.
-
-                    // Transform the sample to the linear RGB color space.
-                    shading_result.transform_to_linear_rgb(lighting_conditions);
-
-                    // Accumulate the sample.
-                    pixel_color[0] += shading_result.m_color[0];
-                    pixel_color[1] += shading_result.m_color[1];
-                    pixel_color[2] += shading_result.m_color[2];
-                    pixel_color[3] += shading_result.m_alpha[0];
+                        // Accumulate the sample.
+                        pixel_color[0] += shading_result.m_color[0];
+                        pixel_color[1] += shading_result.m_color[1];
+                        pixel_color[2] += shading_result.m_color[2];
+                        pixel_color[3] += shading_result.m_alpha[0];
+                    }
                 }
 
                 // Finish computing the pixel color.
-                pixel_color *= pixel_scale;
+                pixel_color *= m_rcp_sample_count;
 
                 // Store the pixel color into the tile.
                 tile.set_pixel(tx, ty, pixel_color);
@@ -295,35 +286,12 @@ namespace
         SamplingContext::RNGType    m_rng;
 
         vector<Pixel>               m_pixel_ordering;
+        PixelSampler                m_pixel_sampler;
 
-        vector<size_t>              m_sigma;            // subsamples permutation table
-        size_t                      m_sigma_size;       // equal to m_sigma.size()
-        size_t                      m_sigma_power;      // log2 of m_sigma_size
         size_t                      m_sqrt_max_samples;
-
-        // Build the subsamples permutation table.
-        void build_sigma_table()
-        {
-            m_sigma_power = log2(m_params.m_max_samples) + 4;
-            m_sigma_power = min<size_t>(m_sigma_power, 16);
-
-            m_sigma_size = 1 << m_sigma_power;
-            m_sigma.resize(m_sigma_size);
-
-            for (size_t i = 0; i < m_sigma_size; ++i)
-            {
-                size_t x = 0;
-                size_t b = m_sigma_size;
-
-                for (size_t n = i; n; n >>= 1)
-                {
-                    b >>= 1;
-                    x += (n & 1) * b;
-                }
-
-                m_sigma[i] = x;
-            }
-        }
+        double                      m_rcp_sample_canvas_width;
+        double                      m_rcp_sample_canvas_height;
+        float                       m_rcp_sample_count;
     };
 
 }   // anonymous namespace

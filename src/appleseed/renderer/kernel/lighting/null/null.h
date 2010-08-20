@@ -56,6 +56,7 @@ class NullLightingEngine
 
     // Compute the lighting at a given point of the scene.
     virtual void compute_lighting(
+        SamplingContext&        sampling_context,
         const ShadingContext&   shading_context,
         const ShadingPoint&     shading_point,
         Spectrum&               radiance)

@@ -72,6 +72,7 @@ class PathTracer
         const size_t            rr_minimum_path_length);
 
     size_t trace(
+        SamplingContext&        sampling_context,
         const ShadingContext&   shading_context,
         const ShadingPoint&     shading_point,
         Spectrum&               radiance);          // output radiance, in W.sr^-1.m^-2
@@ -107,6 +108,7 @@ template <
     bool        Adjoint
 >
 size_t PathTracer<PathVertexVisitor, ScatteringModesMask, Adjoint>::trace(
+    SamplingContext&            sampling_context,
     const ShadingContext&       shading_context,
     const ShadingPoint&         shading_point,
     Spectrum&                   radiance)
@@ -116,7 +118,6 @@ size_t PathTracer<PathVertexVisitor, ScatteringModesMask, Adjoint>::trace(
 
     // Retrieve items from the shading context.
     const Intersector& intersector = shading_context.get_intersector();
-    SamplingContext sampling_context = shading_context.get_sampling_context();
     TextureCache& texture_cache = shading_context.get_texture_cache();
 
     ShadingPoint shading_points[2];
@@ -171,6 +172,7 @@ size_t PathTracer<PathVertexVisitor, ScatteringModesMask, Adjoint>::trace(
         // Evaluate the alpha mask at the shading point.
         Alpha alpha_mask;
         surface_shader.evaluate_alpha_mask(
+            sampling_context,
             shading_context,
             *shading_point_ptr,
             alpha_mask);

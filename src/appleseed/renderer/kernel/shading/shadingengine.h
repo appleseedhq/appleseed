@@ -55,6 +55,7 @@ class ShadingEngine
 
     // Shade a given intersection point.
     void shade(
+        SamplingContext&        sampling_context,
         const ShadingContext&   shading_context,
         const ShadingPoint&     shading_point,
         ShadingResult&          shading_result) const;
