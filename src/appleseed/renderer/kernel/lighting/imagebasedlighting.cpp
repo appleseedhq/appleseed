@@ -123,14 +123,17 @@ namespace
             if (transmission == 0.0)
                 continue;
 
-            InputEvaluator input_evaluator(shading_context.get_texture_cache());
-
             // Evaluate the environment's EDF.
+            InputEvaluator input_evaluator(shading_context.get_texture_cache());
             Spectrum env_value;
-            env_edf->evaluate(input_evaluator, incoming, env_value);
+            double env_prob;
+            env_edf->evaluate(
+                input_evaluator,
+                incoming,
+                env_value,
+                env_prob);
 
             // Compute MIS weight.
-            const double env_prob = env_edf->evaluate_pdf(input_evaluator, incoming);
             const double mis_weight =
                 bsdf_prob < 0.0
                     ? 1.0

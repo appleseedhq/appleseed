@@ -85,7 +85,7 @@ namespace
         {
         }
 
-        double operator()(const size_t x, const size_t y)
+        double operator()(const size_t x, const size_t y) const
         {
             if (m_source == 0)
                 return 0.0;
@@ -117,7 +117,6 @@ namespace
       : public EnvironmentEDF
     {
       public:
-        // Constructor.
         LatLongMapEnvironmentEDF(
             const char*         name,
             const ParamArray&   params)
@@ -130,40 +129,33 @@ namespace
             m_inputs.declare("exitance", InputFormatSpectrum);
         }
 
-        // Delete this instance.
         virtual void release()
         {
             delete this;
         }
 
-        // Return the name of this EDF.
         virtual const char* get_name() const
         {
             return m_name.c_str();
         }
 
-        // Return a string identifying the model of this EDF.
         virtual const char* get_model() const
         {
             return LatLongMapEnvironmentEDFFactory::get_model();
         }
 
-        // This method is called once before rendering each frame.
         virtual void on_frame_begin(const Scene& scene)
         {
             if (m_importance_sampler.get() == 0)
                 build_importance_map(scene);
         }
 
-        // Sample the EDF and compute the emission direction, the probability
-        // density with which it was chosen and the value of the EDF for this
-        // direction.
         virtual void sample(
-            InputEvaluator&         input_evaluator,
-            const Vector2d&         s,                      // sample in [0,1)^2
-            Vector3d&               outgoing,               // world space emission direction, unit-length
-            Spectrum&               value,                  // EDF value for this direction
-            double&                 probability) const      // PDF value
+            InputEvaluator&     input_evaluator,
+            const Vector2d&     s,
+            Vector3d&           outgoing,
+            Spectrum&           value,
+            double&             probability) const
         {
             // Sample the importance map.
             size_t x, y;
@@ -174,79 +166,72 @@ namespace
             const double u = (2.0 * x + 1.0) / (2.0 * m_importance_map_width);
             const double v = (2.0 * y + 1.0) / (2.0 * m_importance_map_height);
 
-            // Compute the spherical coordinates of the sample.
             double theta, phi;
             unit_square_to_angles(u, v, theta, phi);
 
             // Compute the world space emission direction.
             outgoing = Vector3d::unit_vector(theta, phi);
 
-            // Lookup the environment map.
-            InputParams input_params;
-            input_params.m_uv[0] = u;
-            input_params.m_uv[1] = 1.0 - v;
-            const InputValues* values =
-                input_evaluator.evaluate<InputValues>(m_inputs, input_params);
-            value = values->m_exitance;
+            lookup_environment_map(input_evaluator, u, v, value);
 
-            // Compute the probability density of the emission direction.
             probability = prob_xy * m_probability_scale / sin(theta);
         }
 
-        // Evaluate the EDF for a given emission direction.
         virtual void evaluate(
-            InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing,               // world space emission direction, unit-length
-            Spectrum&               value) const            // EDF value for this direction
+            InputEvaluator&     input_evaluator,
+            const Vector3d&     outgoing,
+            Spectrum&           value) const
         {
             assert(is_normalized(outgoing));
 
-            // Compute the spherical coordinates of the emission direction.
             double theta, phi;
             unit_vector_to_angles(outgoing, theta, phi);
 
-            // Convert the spherical coordinates of the emission direction to [0,1]^2.
             double u, v;
             angles_to_unit_square(theta, phi, u, v);
 
-            // Lookup the environment map.
-            InputParams input_params;
-            input_params.m_uv[0] = u;
-            input_params.m_uv[1] = 1.0 - v;
-            const InputValues* values =
-                input_evaluator.evaluate<InputValues>(m_inputs, input_params);
-            value = values->m_exitance;
+            lookup_environment_map(input_evaluator, u, v, value);
         }
 
-        // Evaluate the PDF for a given emission direction.
-        virtual double evaluate_pdf(
-            InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing) const         // world space emission direction, unit-length
+        virtual void evaluate(
+            InputEvaluator&     input_evaluator,
+            const Vector3d&     outgoing,
+            Spectrum&           value,
+            double&             probability) const
         {
             assert(is_normalized(outgoing));
 
-            // Compute the spherical coordinates of the emission direction.
             double theta, phi;
             unit_vector_to_angles(outgoing, theta, phi);
 
-            // Convert the spherical coordinates of the emission direction to [0,1]^2.
             double u, v;
             angles_to_unit_square(theta, phi, u, v);
 
-            // Compute the probability density of this sample in the importance map.
-            const size_t x = truncate<size_t>(m_importance_map_width * u);
-            const size_t y = truncate<size_t>(m_importance_map_height * v);
-            const double prob_xy = m_importance_sampler->get_pdf(x, y);
+            lookup_environment_map(input_evaluator, u, v, value);
 
-            // Compute the probability density of the emission direction.
-            return prob_xy * m_probability_scale / sin(theta);
+            probability = compute_pdf(u, v, theta);
+        }
+
+        virtual double evaluate_pdf(
+            InputEvaluator&     input_evaluator,
+            const Vector3d&     outgoing) const
+        {
+            assert(is_normalized(outgoing));
+
+            double theta, phi;
+            unit_vector_to_angles(outgoing, theta, phi);
+
+            double u, v;
+            angles_to_unit_square(theta, phi, u, v);
+
+            return compute_pdf(u, v, theta);
         }
 
       private:
         struct InputValues
         {
             Spectrum    m_exitance;
-            Alpha       m_exitance_alpha;       // unused
+            Alpha       m_exitance_alpha;   // unused
         };
 
         typedef ImageImportanceSampler<double, ImageSampler> ImageImportanceSampler;
@@ -257,10 +242,11 @@ namespace
         double                              m_probability_scale;
         auto_ptr<ImageImportanceSampler>    m_importance_sampler;
 
+        // Compute the spherical coordinates of a given direction.
         static void unit_vector_to_angles(
-            const Vector3d&         v,          // unit length
-            double&                 theta,      // in [0, Pi]
-            double&                 phi)        // in [-Pi, Pi]
+            const Vector3d&     v,          // unit length
+            double&             theta,      // in [0, Pi]
+            double&             phi)        // in [-Pi, Pi]
         {
             assert(is_normalized(v));
 
@@ -268,11 +254,12 @@ namespace
             phi = atan2(v[2], v[0]);
         }
 
+        // Convert a given direction from spherical coordinates to [0,1]^2.
         static void angles_to_unit_square(
-            const double            theta,      // in [0, Pi]
-            const double            phi,        // in [-Pi, Pi]
-            double&                 u,          // in [0, 1]
-            double&                 v)          // in [0, 1]
+            const double        theta,      // in [0, Pi]
+            const double        phi,        // in [-Pi, Pi]
+            double&             u,          // in [0, 1]
+            double&             v)          // in [0, 1]
         {
             assert(theta >= 0.0);
             assert(theta <= Pi);
@@ -283,11 +270,12 @@ namespace
             v = (1.0 / Pi) * theta;
         }
 
+        // Convert a given direction from [0,1]^2 to spherical coordinates.
         static void unit_square_to_angles(
-            const double            u,          // in [0, 1]
-            const double            v,          // in [0, 1]
-            double&                 theta,      // in [0, Pi]
-            double&                 phi)        // in [-Pi, Pi]
+            const double        u,          // in [0, 1]
+            const double        v,          // in [0, 1]
+            double&             theta,      // in [0, Pi]
+            double&             phi)        // in [-Pi, Pi]
         {
             assert(u >= 0.0);
             assert(u <= 1.0);
@@ -361,6 +349,36 @@ namespace
                 "built importance map for environment edf \"%s\"",
                 m_name.c_str());
         }
+
+        void lookup_environment_map(
+            InputEvaluator&     input_evaluator,
+            const double        u,
+            const double        v,
+            Spectrum&           value) const
+        {
+            InputParams input_params;
+            input_params.m_uv[0] = u;
+            input_params.m_uv[1] = 1.0 - v;
+
+            const InputValues* values =
+                input_evaluator.evaluate<InputValues>(m_inputs, input_params);
+
+            value = values->m_exitance;
+        }
+
+        double compute_pdf(
+            const double        u,
+            const double        v,
+            const double        theta) const
+        {
+            // Compute the probability density of this sample in the importance map.
+            const size_t x = truncate<size_t>(m_importance_map_width * u);
+            const size_t y = truncate<size_t>(m_importance_map_height * v);
+            const double prob_xy = m_importance_sampler->get_pdf(x, y);
+
+            // Compute the probability density of the emission direction.
+            return prob_xy * m_probability_scale / sin(theta);
+        }
     };
 
 }   // anonymous namespace
@@ -370,13 +388,11 @@ namespace
 // LatLongMapEnvironmentEDFFactory class implementation.
 //
 
-// Return a string identifying this EDF model.
 const char* LatLongMapEnvironmentEDFFactory::get_model()
 {
     return "latlong_map_environment_edf";
 }
 
-// Create a new lat-long environment map EDF.
 auto_release_ptr<EnvironmentEDF> LatLongMapEnvironmentEDFFactory::create(
     const char*         name,
     const ParamArray&   params)

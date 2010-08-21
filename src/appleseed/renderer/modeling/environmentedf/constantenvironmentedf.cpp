@@ -54,7 +54,6 @@ namespace
       : public EnvironmentEDF
     {
       public:
-        // Constructor.
         ConstantEnvironmentEDF(
             const char*         name,
             const ParamArray&   params)
@@ -64,25 +63,21 @@ namespace
             m_inputs.declare("exitance", InputFormatSpectrum);
         }
 
-        // Delete this instance.
         virtual void release()
         {
             delete this;
         }
 
-        // Return a string identifying the model of this EDF.
         virtual const char* get_model() const
         {
             return ConstantEnvironmentEDFFactory::get_model();
         }
 
-        // Return the name of this EDF.
         virtual const char* get_name() const
         {
             return m_name.c_str();
         }
 
-        // This method is called once before rendering each frame.
         virtual void on_frame_begin(const Scene& scene)
         {
             assert(m_inputs.source("exitance"));
@@ -92,51 +87,47 @@ namespace
             m_inputs.evaluate_uniforms(&m_values);
         }
 
-        // Sample the EDF and compute the emission direction, the probability
-        // density with which it was chosen and the value of the EDF for this
-        // direction.
         virtual void sample(
-            InputEvaluator&         input_evaluator,
-            const Vector2d&         s,                      // sample in [0,1)^2
-            Vector3d&               outgoing,               // world space emission direction, unit-length
-            Spectrum&               value,                  // EDF value for this direction
-            double&                 probability) const      // PDF value
+            InputEvaluator&     input_evaluator,
+            const Vector2d&     s,
+            Vector3d&           outgoing,
+            Spectrum&           value,
+            double&             probability) const
         {
-            // Compute emission direction.
             outgoing = sample_sphere_uniform(s);
-
-            // Compute value.
             value = m_values.m_exitance;
-
-            // Compute probability.
             probability = 1.0 / (4.0 * Pi);
         }
 
-        // Evaluate the EDF for a given emission direction.
         virtual void evaluate(
-            InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing,               // world space emission direction, unit-length
-            Spectrum&               value) const            // EDF value for this direction
+            InputEvaluator&     input_evaluator,
+            const Vector3d&     outgoing,
+            Spectrum&           value) const
         {
             assert(is_normalized(outgoing));
-
-            // Compute value.
             value = m_values.m_exitance;
         }
 
-        // Evaluate the PDF for a given emission direction.
-        virtual double evaluate_pdf(
-            InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing) const         // world space emission direction, unit-length
+        virtual void evaluate(
+            InputEvaluator&     input_evaluator,
+            const Vector3d&     outgoing,
+            Spectrum&           value,
+            double&             probability) const
         {
             assert(is_normalized(outgoing));
+            value = m_values.m_exitance;
+            probability = 1.0 / (4.0 * Pi);
+        }
 
-            // Compute probability.
+        virtual double evaluate_pdf(
+            InputEvaluator&     input_evaluator,
+            const Vector3d&     outgoing) const
+        {
+            assert(is_normalized(outgoing));
             return 1.0 / (4.0 * Pi);
         }
 
       private:
-        // Input values.
         struct InputValues
         {
             Spectrum    m_exitance;
@@ -165,13 +156,11 @@ namespace
 // ConstantEnvironmentEDFFactory class implementation.
 //
 
-// Return a string identifying this EDF model.
 const char* ConstantEnvironmentEDFFactory::get_model()
 {
     return "constant_environment_edf";
 }
 
-// Create a new constant-emittance EDF.
 auto_release_ptr<EnvironmentEDF> ConstantEnvironmentEDFFactory::create(
     const char*         name,
     const ParamArray&   params)

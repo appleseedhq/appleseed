@@ -54,7 +54,6 @@ namespace
       : public EnvironmentEDF
     {
       public:
-        // Constructor.
         GradientEnvironmentEDF(
             const char*         name,
             const ParamArray&   params)
@@ -65,25 +64,21 @@ namespace
             m_inputs.declare("zenith_exitance", InputFormatSpectrum);
         }
 
-        // Delete this instance.
         virtual void release()
         {
             delete this;
         }
 
-        // Return a string identifying the model of this EDF.
         virtual const char* get_model() const
         {
             return GradientEnvironmentEDFFactory::get_model();
         }
 
-        // Return the name of this EDF.
         virtual const char* get_name() const
         {
             return m_name.c_str();
         }
 
-        // This method is called once before rendering each frame.
         virtual void on_frame_begin(const Scene& scene)
         {
             assert(m_inputs.source("horizon_exitance"));
@@ -95,51 +90,47 @@ namespace
             m_inputs.evaluate_uniforms(&m_values);
         }
 
-        // Sample the EDF and compute the emission direction, the probability
-        // density with which it was chosen and the value of the EDF for this
-        // direction.
         virtual void sample(
-            InputEvaluator&         input_evaluator,
-            const Vector2d&         s,                      // sample in [0,1)^2
-            Vector3d&               outgoing,               // world space emission direction, unit-length
-            Spectrum&               value,                  // EDF value for this direction
-            double&                 probability) const      // PDF value
+            InputEvaluator&     input_evaluator,
+            const Vector2d&     s,
+            Vector3d&           outgoing,
+            Spectrum&           value,
+            double&             probability) const
         {
-            // Compute emission direction.
             outgoing = sample_sphere_uniform(s);
-
-            // Compute value.
             compute_gradient(outgoing.y, value);
-
-            // Compute probability.
             probability = 1.0 / (4.0 * Pi);
         }
 
-        // Evaluate the EDF for a given emission direction.
         virtual void evaluate(
-            InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing,               // world space emission direction, unit-length
-            Spectrum&               value) const            // EDF value for this direction
+            InputEvaluator&     input_evaluator,
+            const Vector3d&     outgoing,
+            Spectrum&           value) const
         {
             assert(is_normalized(outgoing));
-
-            // Compute value.
             compute_gradient(outgoing.y, value);
         }
 
-        // Evaluate the PDF for a given emission direction.
-        virtual double evaluate_pdf(
-            InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing) const         // world space emission direction, unit-length
+        virtual void evaluate(
+            InputEvaluator&     input_evaluator,
+            const Vector3d&     outgoing,
+            Spectrum&           value,
+            double&             probability) const
         {
             assert(is_normalized(outgoing));
+            compute_gradient(outgoing.y, value);
+            probability = 1.0 / (4.0 * Pi);
+        }
 
-            // Compute probability.
+        virtual double evaluate_pdf(
+            InputEvaluator&     input_evaluator,
+            const Vector3d&     outgoing) const
+        {
+            assert(is_normalized(outgoing));
             return 1.0 / (4.0 * Pi);
         }
 
       private:
-        // Input values.
         struct InputValues
         {
             Spectrum    m_horizon_exitance;
@@ -185,13 +176,11 @@ namespace
 // GradientEnvironmentEDFFactory class implementation.
 //
 
-// Return a string identifying this EDF model.
 const char* GradientEnvironmentEDFFactory::get_model()
 {
     return "gradient_environment_edf";
 }
 
-// Create a new gradient EDF.
 auto_release_ptr<EnvironmentEDF> GradientEnvironmentEDFFactory::create(
     const char*         name,
     const ParamArray&   params)

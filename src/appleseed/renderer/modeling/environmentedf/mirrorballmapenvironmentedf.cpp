@@ -61,7 +61,6 @@ namespace
       : public EnvironmentEDF
     {
       public:
-        // Constructor.
         MirrorBallMapEnvironmentEDF(
             const char*         name,
             const ParamArray&   params)
@@ -71,63 +70,58 @@ namespace
             m_inputs.declare("exitance", InputFormatSpectrum);
         }
 
-        // Delete this instance.
         virtual void release()
         {
             delete this;
         }
 
-        // Return the name of this EDF.
         virtual const char* get_name() const
         {
             return m_name.c_str();
         }
 
-        // Return a string identifying the model of this EDF.
         virtual const char* get_model() const
         {
             return MirrorBallMapEnvironmentEDFFactory::get_model();
         }
 
-        // Sample the EDF and compute the emission direction, the probability
-        // density with which it was chosen and the value of the EDF for this
-        // direction.
         virtual void sample(
-            InputEvaluator&         input_evaluator,
-            const Vector2d&         s,                      // sample in [0,1)^2
-            Vector3d&               outgoing,               // world space emission direction, unit-length
-            Spectrum&               value,                  // EDF value for this direction
-            double&                 probability) const      // PDF value
+            InputEvaluator&     input_evaluator,
+            const Vector2d&     s,
+            Vector3d&           outgoing,
+            Spectrum&           value,
+            double&             probability) const
         {
-            // Compute emission direction.
             outgoing = sample_sphere_uniform(s);
-
-            // Compute value.
             lookup_envmap(input_evaluator, outgoing, value);
-
-            // Compute probability.
             probability = 1.0 / (4.0 * Pi);
         }
 
-        // Evaluate the EDF for a given emission direction.
         virtual void evaluate(
-            InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing,               // world space emission direction, unit-length
-            Spectrum&               value) const            // EDF value for this direction
+            InputEvaluator&     input_evaluator,
+            const Vector3d&     outgoing,
+            Spectrum&           value) const
         {
             assert(is_normalized(outgoing));
-
-            // Lookup the environment map.
             lookup_envmap(input_evaluator, outgoing, value);
         }
 
-        // Evaluate the PDF for a given emission direction.
-        virtual double evaluate_pdf(
-            InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing) const         // world space emission direction, unit-length
+        virtual void evaluate(
+            InputEvaluator&     input_evaluator,
+            const Vector3d&     outgoing,
+            Spectrum&           value,
+            double&             probability) const
         {
             assert(is_normalized(outgoing));
+            lookup_envmap(input_evaluator, outgoing, value);
+            probability = 1.0 / (4.0 * Pi);
+        }
 
+        virtual double evaluate_pdf(
+            InputEvaluator&     input_evaluator,
+            const Vector3d&     outgoing) const
+        {
+            assert(is_normalized(outgoing));
             return 1.0 / (4.0 * Pi);
         }
 
@@ -141,9 +135,9 @@ namespace
         const string    m_name;
 
         void lookup_envmap(
-            InputEvaluator&         input_evaluator,
-            const Vector3d&         direction,
-            Spectrum&               value) const
+            InputEvaluator&     input_evaluator,
+            const Vector3d&     direction,
+            Spectrum&           value) const
         {
             // Compute the texture coordinates corresponding to this direction.
             InputParams input_params;
@@ -166,13 +160,11 @@ namespace
 // MirrorBallMapEnvironmentEDFFactory class implementation.
 //
 
-// Return a string identifying this EDF model.
 const char* MirrorBallMapEnvironmentEDFFactory::get_model()
 {
     return "mirrorball_map_environment_edf";
 }
 
-// Create a new mirror ball environment map EDF.
 auto_release_ptr<EnvironmentEDF> MirrorBallMapEnvironmentEDFFactory::create(
     const char*         name,
     const ParamArray&   params)
