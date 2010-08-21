@@ -119,7 +119,6 @@ namespace
             const size_t    tile_y,
             Tile*           tile)
         {
-            mutex::scoped_lock lock(m_mutex);
             delete tile;
         }
 
