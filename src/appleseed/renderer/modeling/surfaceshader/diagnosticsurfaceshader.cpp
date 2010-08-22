@@ -340,7 +340,7 @@ void DiagnosticSurfaceShader::evaluate(
             const double d2 = square_distance_point_segment(point_fs, v2_fs, v0_fs);
 
             // Film space thickness of the wires.
-            const double SquareWireThickness = square(0.002);
+            const double SquareWireThickness = square(0.0005);
 
             if (min(d0, d1, d2) < SquareWireThickness)
             {
