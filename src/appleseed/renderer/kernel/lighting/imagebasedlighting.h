@@ -37,7 +37,7 @@
 
 // Forward declarations.
 namespace renderer      { class BSDF; }
-namespace renderer      { class Scene; }
+namespace renderer      { class EnvironmentEDF; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
 
@@ -51,7 +51,7 @@ namespace renderer
 void compute_image_based_lighting(
     SamplingContext&                sampling_context,
     const ShadingContext&           shading_context,
-    const Scene&                    scene,
+    const EnvironmentEDF&           environment_edf,
     const foundation::Vector3d&     point,              // world space point
     const foundation::Vector3d&     geometric_normal,   // world space geometric normal, unit-length
     const foundation::Basis3d&      shading_basis,      // world space orthonormal basis around shading normal

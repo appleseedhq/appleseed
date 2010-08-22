@@ -37,7 +37,6 @@
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/nullbsdf.h"
 #include "renderer/modeling/bsdf/specularbrdf.h"
-#include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/constantenvironmentedf.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/color/colorentity.h"
@@ -121,39 +120,7 @@ FOUNDATION_TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
 
             return env_edf;
         }
-
-        auto_release_ptr<Environment> create_environment(
-            const char*             name,
-            const EnvironmentEDF*   environment_edf)
-        {
-            ParamArray params;
-            params.insert("environment_edf", "not used");
-
-            return EnvironmentFactory::create(name, environment_edf);
-        }
     };
-
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(ComputeImageBasedLighting_GivenSceneWithoutEnvironmentEDF_ReturnsZeroRadiance, Fixture)
-    {
-        NullBSDF bsdf;
-        Spectrum radiance;
-
-        compute_image_based_lighting(
-            m_sampling_context,
-            m_shading_context,
-            m_scene,
-            Vector3d(0.0),
-            Vector3d(0.0, 1.0, 0.0),
-            Basis3d(Vector3d(0.0, 1.0, 0.0)),
-            Vector3d(0.0, 1.0, 0.0),
-            bsdf,
-            0,              // BSDF data
-            1,              // number of samples in BSDF sampling
-            0,              // number of samples in environment sampling
-            radiance);
-
-        FOUNDATION_EXPECT_EQ(Spectrum(0.0f), radiance);
-    }
 
     FOUNDATION_TEST_CASE_WITH_FIXTURE(ComputeImageBasedLighting_GivenSpecularBRDFAndUniformWhiteEnrironmentEDF_ReturnsOne, Fixture)
     {
@@ -169,9 +136,6 @@ FOUNDATION_TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
         auto_release_ptr<EnvironmentEDF> env_edf(
             create_constant_environment_edf("constant_environment_edf", *white.get()));
 
-        m_scene.set_environment(
-            create_environment("environment", env_edf.get()));
-
         InputEvaluator input_evaluator(m_texture_cache);
         const void* brdf_data =
             input_evaluator.evaluate(
@@ -185,7 +149,7 @@ FOUNDATION_TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
         compute_image_based_lighting(
             m_sampling_context,
             m_shading_context,
-            m_scene,
+            *env_edf,
             Vector3d(0.0),
             Vector3d(0.0, 1.0, 0.0),
             Basis3d(Vector3d(0.0, 1.0, 0.0)),

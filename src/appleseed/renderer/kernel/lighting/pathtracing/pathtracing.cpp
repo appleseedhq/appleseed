@@ -42,6 +42,7 @@
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/material/material.h"
+#include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
@@ -51,6 +52,7 @@
 #include "foundation/utility/string.h"
 
 // Forward declarations.
+namespace renderer  { class EnvironmentEDF; }
 namespace renderer  { class InputParams; }
 
 using namespace foundation;
@@ -120,9 +122,11 @@ namespace
             > PathTracer;
 
             PathVertexVisitor vertex_visitor(
-                m_light_sampler,
                 m_params,
-                shading_context);
+                m_light_sampler,
+                m_light_samples,
+                shading_context,
+                shading_point.get_scene());
 
             PathTracer path_tracer(
                 vertex_visitor,
@@ -178,14 +182,19 @@ namespace
         {
           public:
             PathVertexVisitor(
-                const LightSampler&     light_sampler,
                 const Parameters&       params,
-                const ShadingContext&   shading_context)
-              : m_light_sampler(light_sampler)
-              , m_params(params)
+                const LightSampler&     light_sampler,
+                LightSampleVector&      light_samples,
+                const ShadingContext&   shading_context,
+                const Scene&            scene)
+              : m_params(params)
+              , m_light_sampler(light_sampler)
+              , m_light_samples(light_samples)
               , m_shading_context(shading_context)
               , m_texture_cache(shading_context.get_texture_cache())
             {
+                const Environment* environment = scene.get_environment();
+                m_env_edf = environment ? environment->get_environment_edf() : 0;
             }
 
             void get_vertex_radiance(
@@ -241,23 +250,26 @@ namespace
                         vertex_radiance,
                         &shading_point);
 
-                    // Compute image-based lighting.
-                    Spectrum ibl_radiance;
-                    compute_image_based_lighting(
-                        sampling_context,
-                        m_shading_context,
-                        shading_point.get_scene(),
-                        point,
-                        geometric_normal,
-                        shading_basis,
-                        outgoing,
-                        *bsdf,
-                        bsdf_data,
-                        m_params.m_ibl_bsdf_sample_count,
-                        m_params.m_ibl_env_sample_count,
-                        ibl_radiance,
-                        &shading_point);
-                    vertex_radiance += ibl_radiance;
+                    if (m_env_edf)
+                    {
+                        // Compute image-based lighting.
+                        Spectrum ibl_radiance;
+                        compute_image_based_lighting(
+                            sampling_context,
+                            m_shading_context,
+                            *m_env_edf,
+                            point,
+                            geometric_normal,
+                            shading_basis,
+                            outgoing,
+                            *bsdf,
+                            bsdf_data,
+                            m_params.m_ibl_bsdf_sample_count,
+                            m_params.m_ibl_env_sample_count,
+                            ibl_radiance,
+                            &shading_point);
+                        vertex_radiance += ibl_radiance;
+                    }
 
                     if (edf)
                     {
@@ -338,11 +350,12 @@ namespace
             }
 
           private:
-            const LightSampler&     m_light_sampler;
             const Parameters&       m_params;
+            const LightSampler&     m_light_sampler;
+            LightSampleVector&      m_light_samples;
             const ShadingContext&   m_shading_context;
             TextureCache&           m_texture_cache;
-            LightSampleVector       m_light_samples;
+            const EnvironmentEDF*   m_env_edf;
         };
 
         const Parameters        m_params;

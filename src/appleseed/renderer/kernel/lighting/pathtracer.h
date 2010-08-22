@@ -142,14 +142,10 @@ size_t PathTracer<PathVertexVisitor, ScatteringModesMask, Adjoint>::trace(
         if (!shading_point_ptr->hit())
         {
             Spectrum environment_radiance;
-
-            const bool has_env_radiance =
-                m_vertex_visitor.get_environment_radiance(
+            if (m_vertex_visitor.get_environment_radiance(
                     *shading_point_ptr,
                     normalize(-ray.m_dir),
-                    environment_radiance);
-
-            if (has_env_radiance)
+                    environment_radiance))
             {
                 // Update the path radiance.
                 environment_radiance *= throughput;

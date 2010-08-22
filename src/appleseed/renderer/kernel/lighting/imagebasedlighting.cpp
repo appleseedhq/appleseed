@@ -35,12 +35,9 @@
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
-#include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
-#include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/input/inputparams.h"
-#include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/mis.h"
@@ -60,7 +57,7 @@ namespace
     void compute_ibl_bsdf_sampling(
         SamplingContext&            sampling_context,
         const ShadingContext&       shading_context,
-        const EnvironmentEDF*       env_edf,
+        const EnvironmentEDF&       environment_edf,
         const Vector3d&             point,
         const Vector3d&             geometric_normal,
         const Basis3d&              shading_basis,
@@ -127,7 +124,7 @@ namespace
             InputEvaluator input_evaluator(shading_context.get_texture_cache());
             Spectrum env_value;
             double env_prob;
-            env_edf->evaluate(
+            environment_edf.evaluate(
                 input_evaluator,
                 incoming,
                 env_value,
@@ -158,7 +155,7 @@ namespace
     void compute_ibl_environment_sampling(
         SamplingContext&            sampling_context,
         const ShadingContext&       shading_context,
-        const EnvironmentEDF*       env_edf,
+        const EnvironmentEDF&       environment_edf,
         const Vector3d&             point,
         const Vector3d&             geometric_normal,
         const Basis3d&              shading_basis,
@@ -187,7 +184,7 @@ namespace
             Vector3d incoming;
             Spectrum env_value;
             double env_prob;
-            env_edf->sample(
+            environment_edf.sample(
                 input_evaluator,
                 s,
                 incoming,
@@ -257,7 +254,7 @@ namespace
 void compute_image_based_lighting(
     SamplingContext&            sampling_context,
     const ShadingContext&       shading_context,
-    const Scene&                scene,
+    const EnvironmentEDF&       environment_edf,
     const Vector3d&             point,
     const Vector3d&             geometric_normal,
     const Basis3d&              shading_basis,
@@ -272,22 +269,11 @@ void compute_image_based_lighting(
     assert(is_normalized(geometric_normal));
     assert(is_normalized(outgoing));
 
-    // Retrieve the environment's EDF.
-    const Environment* environment = scene.get_environment();
-    const EnvironmentEDF* env_edf = environment ? environment->get_environment_edf() : 0;
-
-    // No EDF implies no image-based lighting.
-    if (env_edf == 0)
-    {
-        radiance.set(0.0f);
-        return;
-    }
-
     // Sample the BSDF.
     compute_ibl_bsdf_sampling(
         sampling_context,
         shading_context,
-        env_edf,
+        environment_edf,
         point,
         geometric_normal,
         shading_basis,
@@ -304,7 +290,7 @@ void compute_image_based_lighting(
     compute_ibl_environment_sampling(
         sampling_context,
         shading_context,
-        env_edf,
+        environment_edf,
         point,
         geometric_normal,
         shading_basis,
