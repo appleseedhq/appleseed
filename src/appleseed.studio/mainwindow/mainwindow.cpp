@@ -97,7 +97,6 @@ MainWindow::MainWindow(QWidget* parent)
     build_toolbar();
     build_log();
     build_override_shading_menu_item();
-    build_project_explorer();
 
     build_connections();
 
@@ -230,12 +229,6 @@ void MainWindow::build_override_shading_menu_item()
     }
 }
 
-void MainWindow::build_project_explorer()
-{
-    m_project_explorer.reset(
-        new ProjectExplorer(m_ui->treewidget_project_explorer_scene));
-}
-
 void MainWindow::build_connections()
 {
     build_menu_items_connections();
@@ -302,7 +295,7 @@ void MainWindow::print_library_information()
 
 QString MainWindow::get_project_filter_string()
 {
-    return tr("Project Files (*.appleseed);;All Files (*.*)");
+    return "Project Files (*.appleseed);;All Files (*.*)";
 }
 
 namespace
@@ -356,20 +349,17 @@ void MainWindow::update_workspace()
 
     update_project_explorer();
     update_window_title();
-    enable_disable_menu_items(false);
+    enable_disable_widgets(false);
 }
 
 void MainWindow::update_project_explorer()
 {
-    if (m_project_manager.is_project_open())
-    {
-        const Project* project = m_project_manager.get_project();
-        m_project_explorer->update(*project);
-    }
-    else
-    {
-        m_project_explorer->clear();
-    }
+    Project* project = m_project_manager.get_project();
+
+    m_project_explorer.reset(
+        new ProjectExplorer(
+            m_ui->treewidget_project_explorer_scene,
+            project));
 }
 
 void MainWindow::update_window_title()
@@ -390,25 +380,35 @@ void MainWindow::update_window_title()
     setWindowTitle(title);
 }
 
+void MainWindow::enable_disable_widgets(const bool rendering)
+{
+    const bool is_project_open = m_project_manager.is_project_open();
+
+    // Project Explorer.
+    m_ui->treewidget_project_explorer_scene->setEnabled(is_project_open);
+
+    enable_disable_menu_items(rendering);
+}
+
 void MainWindow::enable_disable_menu_items(const bool rendering)
 {
     const bool is_project_open = m_project_manager.is_project_open();
 
-    const bool allow_changing_project = !rendering;
+    const bool allow_replacing_project = !rendering;
     const bool allow_saving_project = is_project_open && !rendering;
     const bool allow_starting_rendering = is_project_open && !rendering;
     const bool allow_stopping_rendering = is_project_open && rendering;
 
     // File -> New Project.
-    m_ui->action_file_new_project->setEnabled(allow_changing_project);
-    m_action_new_project->setEnabled(allow_changing_project);
+    m_ui->action_file_new_project->setEnabled(allow_replacing_project);
+    m_action_new_project->setEnabled(allow_replacing_project);
 
     // File -> Open Project.
-    m_ui->action_file_open_project->setEnabled(allow_changing_project);
-    m_action_open_project->setEnabled(allow_changing_project);
+    m_ui->action_file_open_project->setEnabled(allow_replacing_project);
+    m_action_open_project->setEnabled(allow_replacing_project);
 
     // File -> Open Built-in Project.
-    m_ui->menu_file_open_builtin_project->setEnabled(allow_changing_project);
+    m_ui->menu_file_open_builtin_project->setEnabled(allow_replacing_project);
 
     // File -> Reload Project.
     m_ui->action_file_reload_project->setEnabled(
@@ -512,7 +512,7 @@ void MainWindow::start_rendering(const bool interactive)
 {
     assert(m_project_manager.is_project_open());
 
-    enable_disable_menu_items(true);
+    enable_disable_widgets(true);
 
     const char* configuration_name =
         interactive
@@ -640,7 +640,7 @@ void MainWindow::slot_open_project()
         QString filepath =
             QFileDialog::getOpenFileName(
                 this,
-                tr("Open..."),
+                "Open...",
                 "",
                 get_project_filter_string(),
                 &selected_filter,
@@ -731,7 +731,7 @@ void MainWindow::slot_save_project_as()
     QString filepath =
         QFileDialog::getSaveFileName(
             this,
-            tr("Save As..."),
+            "Save As...",
             "",
             get_project_filter_string(),
             &selected_filter,

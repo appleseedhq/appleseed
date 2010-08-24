@@ -50,6 +50,7 @@
 // Qt headers.
 #include <QCloseEvent>
 #include <QMainWindow>
+#include <QObject>
 #include <QScrollArea>
 #include <QString>
 
@@ -140,7 +141,6 @@ class MainWindow
     void build_log();
 
     void build_override_shading_menu_item();
-    void build_project_explorer();
 
     void build_connections();
     void build_menu_items_connections();
@@ -157,6 +157,7 @@ class MainWindow
     void update_project_explorer();
     void update_window_title();
 
+    void enable_disable_widgets(const bool rendering);
     void enable_disable_menu_items(const bool rendering);
 
     void on_project_change();

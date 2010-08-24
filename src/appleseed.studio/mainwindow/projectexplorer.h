@@ -32,28 +32,52 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
+// Qt headers.
+#include <QList>
+#include <QObject>
+
+// Standard headers.
+#include <string>
+
 // Forward declarations.
+namespace renderer  { class Assembly; }
 namespace renderer  { class Project; }
-namespace renderer  { class Scene; }
+class QMenu;
+class QPoint;
 class QTreeWidget;
+class QTreeWidgetItem;
 
 namespace appleseed {
 namespace studio {
 
 class ProjectExplorer
-  : public foundation::NonCopyable
+  : public QObject
+  , foundation::NonCopyable
 {
+    Q_OBJECT
+
   public:
-    explicit ProjectExplorer(QTreeWidget* tree_widget);
-
-    void clear();
-
-    void update(const renderer::Project& project);
+    ProjectExplorer(QTreeWidget* tree_widget, renderer::Project* project);
 
   private:
-    QTreeWidget*    m_tree_widget;
+    QTreeWidget*        m_tree_widget;
+    renderer::Project*  m_project;
 
-    void update(const renderer::Scene& scene);
+    void update_tree_widget();
+
+    QMenu* build_context_menu(const QList<QTreeWidgetItem*> selected_items) const;
+    QMenu* build_generic_context_menu() const;
+    QMenu* build_assembly_context_menu(const void* assembly) const;
+
+    void add_objects(
+        const renderer::Assembly&   assembly,
+        const std::string&          path) const;
+
+  private slots:
+    void slot_context_menu(const QPoint&);
+
+    void slot_add_assembly();
+    void slot_add_objects();
 };
 
 }       // namespace studio
