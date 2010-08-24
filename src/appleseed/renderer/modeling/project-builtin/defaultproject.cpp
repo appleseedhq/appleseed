@@ -60,6 +60,20 @@ auto_release_ptr<Project> DefaultProjectFactory::create()
     // Create a scene.
     auto_ptr<Scene> scene(new Scene());
 
+    // Create an assembly.
+    auto_release_ptr<Assembly> assembly(
+        AssemblyFactory::create("assembly", ParamArray()));
+
+    // Create an instance of the assembly and insert it into the scene.
+    scene->assembly_instances().insert(
+        AssemblyInstanceFactory::create(
+            "assembly_inst",
+            *assembly,
+            Transformd(Matrix4d::identity())));
+
+    // Insert the assembly into the scene.
+    scene->assemblies().insert(assembly);
+
     //
     // Camera.
     //
