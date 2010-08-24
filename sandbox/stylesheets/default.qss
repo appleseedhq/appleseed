@@ -466,7 +466,7 @@ QTreeView
     border: 1px solid rgb(40, 40, 40);
 }
 QTreeView#treewidget_project_explorer_scene,
-QTreeView#treeview_project_explorer_renders
+QTreeView#treewidget_project_explorer_renders
 {
     border: 0px;
 }
@@ -572,4 +572,14 @@ QCheckBox::indicator:indeterminate:disabled,
 QAbstractItemView::indicator:indeterminate:disabled
 {
     image: url(":/widgets/checkbox_indeterminate_disabled.png");
+}
+
+
+/*
+ * Line input
+ */
+ 
+QLineEdit
+{
+    border: 1px solid rgb(40, 40, 40);
 }
