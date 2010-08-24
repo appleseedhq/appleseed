@@ -77,7 +77,8 @@ class ProjectExplorer
     void slot_context_menu(const QPoint&);
 
     void slot_add_assembly();
-    void slot_add_objects();
+    void slot_instantiate_assembly();
+    void slot_add_objects_to_assembly();
 };
 
 }       // namespace studio

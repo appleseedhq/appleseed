@@ -294,7 +294,11 @@ QMenu* ProjectExplorer::build_assembly_context_menu(const void* assembly) const
     if (assembly)
     {
         context_menu
-            ->addAction("Add Objects...", this, SLOT(slot_add_objects()))
+            ->addAction("Instantiate...", this, SLOT(slot_instantiate_assembly()))
+            ->setData(QVariant::fromValue(assembly));
+
+        context_menu
+            ->addAction("Add Objects...", this, SLOT(slot_add_objects_to_assembly()))
             ->setData(QVariant::fromValue(assembly));
     }
     else
@@ -546,7 +550,40 @@ void ProjectExplorer::slot_add_assembly()
         update_tree_widget();
 }
 
-void ProjectExplorer::slot_add_objects()
+void ProjectExplorer::slot_instantiate_assembly()
+{
+    AssemblyInstanceContainer& assembly_instances =
+        m_project->get_scene()->assembly_instances();
+
+    const Assembly& assembly = get_entity_from_data<Assembly>(sender());
+
+    const string instance_name_suggestion =
+        get_name_suggestion(
+            string(assembly.get_name()) + "_inst",
+            assembly_instances);
+
+    const QString instance_name =
+        getNonEmptyText(
+            m_tree_widget,
+            "Instantiate Assembly...",
+            "Assembly Instance Name:",
+            QLineEdit::Normal,
+            QString::fromStdString(instance_name_suggestion));
+
+    if (!instance_name.isEmpty())
+    {
+        assembly_instances.insert(
+            auto_release_ptr<AssemblyInstance>(
+                AssemblyInstanceFactory::create(
+                    instance_name.toAscii().constData(),
+                    assembly,
+                    Transformd(Matrix4d::identity()))));
+
+        update_tree_widget();
+    }
+}
+
+void ProjectExplorer::slot_add_objects_to_assembly()
 {
     QFileDialog::Options options;
     QString selected_filter;
@@ -562,8 +599,10 @@ void ProjectExplorer::slot_add_objects()
 
     if (!filepath.isEmpty())
     {
+        const Assembly& assembly = get_entity_from_data<Assembly>(sender());
+
         add_objects(
-            get_entity_from_data<Assembly>(sender()),
+            assembly,
             filepath.toStdString());
 
         update_tree_widget();
