@@ -48,9 +48,8 @@ namespace renderer
 struct AssemblyInstance::Impl
 {
     // Order of data members impacts performance, preserve it.
-    Transformd          m_transform;
-    GAABB3              m_parent_bbox;
-    string              m_name;
+    Transformd  m_transform;
+    string      m_name;
 };
 
 // Constructor.
@@ -65,13 +64,6 @@ AssemblyInstance::AssemblyInstance(
     assert(name);
 
     impl->m_transform = transform;
-
-    impl->m_parent_bbox =
-        transform.transform_to_parent(
-            compute_parent_bbox<GAABB3>(
-                assembly.object_instances().begin(),
-                assembly.object_instances().end()));
-
     impl->m_name = name;
 }
 
@@ -100,9 +92,13 @@ const Transformd& AssemblyInstance::get_transform() const
 }
 
 // Return the parent space bounding box of the instance.
-const GAABB3& AssemblyInstance::get_parent_bbox() const
+GAABB3 AssemblyInstance::compute_parent_bbox() const
 {
-    return impl->m_parent_bbox;
+    return
+        impl->m_transform.transform_to_parent(
+            get_parent_bbox<GAABB3>(
+                m_assembly.object_instances().begin(),
+                m_assembly.object_instances().end()));
 }
 
 

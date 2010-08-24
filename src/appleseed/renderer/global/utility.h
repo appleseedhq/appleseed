@@ -36,9 +36,26 @@ namespace renderer
 {
 
 //
-// Compute the bounding box of a set of objects.  The objects must implement
-// a get_parent_bbox() method that return their bounding box in parent space.
+// Compute the bounding box of a set of objects.
 //
+// The first method requires that the objects implement a get_parent_bbox() method
+// that return their bounding box in parent space.
+//
+// The second method requires that the objects implement a compute_parent_bbox() method
+// that return their bounding box in parent space.
+//
+
+template <typename BBox, typename Iterator>
+BBox get_parent_bbox(const Iterator begin, const Iterator end)
+{
+    BBox bbox;
+    bbox.invalidate();
+
+    for (Iterator i = begin; i != end; ++i)
+        bbox.insert(i->get_parent_bbox());
+
+    return bbox;
+}
 
 template <typename BBox, typename Iterator>
 BBox compute_parent_bbox(const Iterator begin, const Iterator end)
@@ -47,7 +64,7 @@ BBox compute_parent_bbox(const Iterator begin, const Iterator end)
     bbox.invalidate();
 
     for (Iterator i = begin; i != end; ++i)
-        bbox.insert(i->get_parent_bbox());
+        bbox.insert(i->compute_parent_bbox());
 
     return bbox;
 }

@@ -268,7 +268,7 @@ void AssemblyTree::create_triangle_tree(const Assembly& assembly)
 {
     // Compute the assembly space bounding box of the assembly.
     const GAABB3 assembly_bbox =
-        compute_parent_bbox<GAABB3>(
+        get_parent_bbox<GAABB3>(
             assembly.object_instances().begin(),
             assembly.object_instances().end());
 
@@ -363,7 +363,7 @@ void AssemblyTree::build_assembly_tree()
         // Insert the assembly instance into the root leaf.
         insert(
             assembly_instance.get_uid(),
-            assembly_instance.get_parent_bbox());
+            assembly_instance.compute_parent_bbox());
     }
 
     // Log a progress message.

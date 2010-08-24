@@ -332,7 +332,7 @@ namespace
             // Create the root leaf of the region tree.
             auto_ptr<IntermRegionLeaf> root_leaf(factory.create_leaf());
             root_leaf->m_extent =
-                compute_parent_bbox<GAABB3>(
+                get_parent_bbox<GAABB3>(
                     assembly.object_instances().begin(),
                     assembly.object_instances().end());
 

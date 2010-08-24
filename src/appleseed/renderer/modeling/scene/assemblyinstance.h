@@ -66,7 +66,7 @@ class RENDERERDLL AssemblyInstance
     const foundation::Transformd& get_transform() const;
 
     // Return the parent space bounding box of the instance.
-    const GAABB3& get_parent_bbox() const;
+    GAABB3 compute_parent_bbox() const;
 
   private:
     friend class AssemblyInstanceFactory;
