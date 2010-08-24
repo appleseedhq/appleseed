@@ -36,6 +36,7 @@
 #include "debug/tests/testrunnerthread.h"
 
 // Qt headers.
+#include <QObject>
 #include <QWidget>
 
 // Standard headers.

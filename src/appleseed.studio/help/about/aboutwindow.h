@@ -30,6 +30,7 @@
 #define APPLESEED_STUDIO_HELP_ABOUT_ABOUTWINDOW_H
 
 // Qt headers.
+#include <QObject>
 #include <QWidget>
 
 // Forward declarations.

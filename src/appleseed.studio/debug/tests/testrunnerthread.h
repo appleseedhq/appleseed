@@ -30,6 +30,7 @@
 #define APPLESEED_STUDIO_DEBUG_TESTS_TESTRUNNERTHREAD_H
 
 // Qt headers.
+#include <QObject>
 #include <QThread>
 
 // Forward declarations.
