@@ -103,7 +103,6 @@ class ProjectExplorer
     void build_tree_widget();
 
     QTreeWidgetItem* insert_assembly_items(
-        QTreeWidget*                        tree_widget,
         const renderer::AssemblyContainer&  assemblies);
 
     void insert_objects(
@@ -123,7 +122,7 @@ class ProjectExplorer
     QMenu* build_assembly_context_menu(const void* assembly) const;
 
   private slots:
-    void slot_context_menu(const QPoint&);
+    void slot_context_menu(const QPoint& point);
 
     void slot_add_assembly();
     void slot_instantiate_assembly();

@@ -124,7 +124,7 @@ namespace
     };
 
     template <typename ParentWidget>
-    QTreeWidgetItem* make_entity_item(
+    QTreeWidgetItem* insert_entity_item(
         ParentWidget*               parent_widget,
         const char*                 title,
         const EntityType            entity_type,
@@ -145,13 +145,13 @@ namespace
     }
 
     template <typename ParentWidget>
-    QTreeWidgetItem* make_root_item(
+    QTreeWidgetItem* insert_collection_root_item(
         ParentWidget*               parent_widget,
         const char*                 title,
         const EntityType            entity_type)
     {
         QTreeWidgetItem* root_item =
-            make_entity_item(
+            insert_entity_item(
                 parent_widget,
                 title,
                 entity_type,
@@ -164,61 +164,32 @@ namespace
         return root_item;
     }
 
-    template <typename EntityContainer>
-    QTreeWidgetItem* insert_entity_items(
-        QTreeWidget*                tree_widget,
+    template <typename ParentWidget, typename EntityContainer>
+    QTreeWidgetItem* insert_collection_items(
+        ParentWidget*               parent_widget,
         const char*                 root_item_title,
         const EntityType            entity_type,
         const EntityContainer&      entities)
     {
         QTreeWidgetItem* root_item =
-            make_root_item(tree_widget, root_item_title, entity_type);
-
-        insert_entity_items(root_item, entity_type, entities);
-
-        tree_widget->addTopLevelItem(root_item);
-
-        return root_item;
-    }
-
-    template <typename EntityContainer>
-    QTreeWidgetItem* insert_entity_items(
-        QTreeWidgetItem*            parent_item,
-        const char*                 root_item_title,
-        const EntityType            entity_type,
-        const EntityContainer&      entities)
-    {
-        QTreeWidgetItem* root_item =
-            make_root_item(parent_item, root_item_title, entity_type);
-
-        insert_entity_items(root_item, entity_type, entities);
-
-        parent_item->addChild(root_item);
-
-        return root_item;
-    }
-
-    template <typename EntityContainer>
-    void insert_entity_items(
-        QTreeWidgetItem*            parent_item,
-        const EntityType            entity_type,
-        const EntityContainer&      entities)
-    {
-        assert(parent_item);
+            insert_collection_root_item(
+                parent_widget,
+                root_item_title,
+                entity_type);
 
         for (const_each<EntityContainer> i = entities; i; ++i)
         {
             const Entity& entity = *i;
 
             QTreeWidgetItem* entity_item =
-                make_entity_item(
-                    parent_item,
+                insert_entity_item(
+                    root_item,
                     entity.get_name(),
                     entity_type,
                     &entity);
-
-            parent_item->addChild(entity_item);
         }
+
+        return root_item;
     }
 }
 
@@ -228,51 +199,141 @@ void ProjectExplorer::build_tree_widget()
     {
         const Scene& scene = *m_project->get_scene();
 
-        m_scene_items.m_color_items = insert_entity_items(m_tree_widget, "Colors", ItemColor, scene.colors());
-        m_scene_items.m_texture_items = insert_entity_items(m_tree_widget, "Textures", ItemTexture, scene.textures());
-        m_scene_items.m_texture_instance_items = insert_entity_items(m_tree_widget, "Texture Instances", ItemTextureInstance, scene.texture_instances());
-        m_scene_items.m_environment_edf_items = insert_entity_items(m_tree_widget, "Environment EDFs", ItemEnvironmentEDF, scene.environment_edfs());
-        m_scene_items.m_environment_shader_items = insert_entity_items(m_tree_widget, "Environment Shaders", ItemEnvironmentShader, scene.environment_shaders());
-        m_scene_items.m_assembly_items = insert_assembly_items(m_tree_widget, scene.assemblies());
-        m_scene_items.m_assembly_instance_items = insert_entity_items(m_tree_widget, "Assembly Instances", ItemAssemblyInstance, scene.assembly_instances());
+        m_scene_items.m_color_items =
+            insert_collection_items(
+                m_tree_widget,
+                "Colors",
+                ItemColor,
+                scene.colors());
+
+        m_scene_items.m_texture_items =
+            insert_collection_items(
+                m_tree_widget,
+                "Textures",
+                ItemTexture,
+                scene.textures());
+
+        m_scene_items.m_texture_instance_items =
+            insert_collection_items(
+                m_tree_widget,
+                "Texture Instances",
+                ItemTextureInstance,
+                scene.texture_instances());
+
+        m_scene_items.m_environment_edf_items =
+            insert_collection_items(
+                m_tree_widget,
+                "Environment EDFs",
+                ItemEnvironmentEDF,
+                scene.environment_edfs());
+
+        m_scene_items.m_environment_shader_items =
+            insert_collection_items(
+                m_tree_widget,
+                "Environment Shaders",
+                ItemEnvironmentShader,
+                scene.environment_shaders());
+
+        m_scene_items.m_assembly_items = insert_assembly_items(scene.assemblies());
+
+        m_scene_items.m_assembly_instance_items =
+            insert_collection_items(
+                m_tree_widget,
+                "Assembly Instances",
+                ItemAssemblyInstance,
+                scene.assembly_instances());
     }
 }
 
-QTreeWidgetItem* ProjectExplorer::insert_assembly_items(
-    QTreeWidget*                tree_widget,
-    const AssemblyContainer&    assemblies)
+QTreeWidgetItem* ProjectExplorer::insert_assembly_items(const AssemblyContainer& assemblies)
 {
     QTreeWidgetItem* root_item =
-        make_root_item(tree_widget, "Assemblies", ItemAssembly);
-
-    tree_widget->addTopLevelItem(root_item);
+        insert_collection_root_item(m_tree_widget, "Assemblies", ItemAssembly);
 
     for (const_each<AssemblyContainer> i = assemblies; i; ++i)
     {
         const Assembly& assembly = *i;
 
         QTreeWidgetItem* assembly_item =
-            make_entity_item(
+            insert_entity_item(
                 root_item,
                 assembly.get_name(),
                 ItemAssembly,
                 &assembly);
 
-        root_item->addChild(assembly_item);
-
         AssemblyItems assembly_items;
 
         assembly_items.m_assembly_item = assembly_item;
-        assembly_items.m_color_items = insert_entity_items(assembly_item, "Colors", ItemColor, i->colors());
-        assembly_items.m_texture_items = insert_entity_items(assembly_item, "Textures", ItemTexture, i->textures());
-        assembly_items.m_texture_instance_items = insert_entity_items(assembly_item, "Texture Instances", ItemTextureInstance, i->texture_instances());
-        assembly_items.m_bsdf_items = insert_entity_items(assembly_item, "BSDFs", ItemBSDF, i->bsdfs());
-        assembly_items.m_edf_items = insert_entity_items(assembly_item, "EDFs", ItemEDF, i->edfs());
-        assembly_items.m_surface_shader_items = insert_entity_items(assembly_item, "Surface Shaders", ItemSurfaceShader, i->surface_shaders());
-        assembly_items.m_material_items = insert_entity_items(assembly_item, "Materials", ItemMaterial, i->materials());
-        assembly_items.m_light_items = insert_entity_items(assembly_item, "Lights", ItemLight, i->lights());
-        assembly_items.m_object_items = insert_entity_items(assembly_item, "Objects", ItemObject, i->objects());
-        assembly_items.m_object_instance_items = insert_entity_items(assembly_item, "Object Instances", ItemObjectInstance, i->object_instances());
+
+        assembly_items.m_color_items =
+            insert_collection_items(
+                assembly_item,
+                "Colors",
+                ItemColor,
+                i->colors());
+
+        assembly_items.m_texture_items =
+            insert_collection_items(
+                assembly_item,
+                "Textures",
+                ItemTexture,
+                i->textures());
+
+        assembly_items.m_texture_instance_items =
+            insert_collection_items(
+                assembly_item,
+                "Texture Instances",
+                ItemTextureInstance,
+                i->texture_instances());
+
+        assembly_items.m_bsdf_items =
+            insert_collection_items(
+                assembly_item,
+                "BSDFs",
+                ItemBSDF,
+                i->bsdfs());
+
+        assembly_items.m_edf_items =
+            insert_collection_items(
+                assembly_item,
+                "EDFs",
+                ItemEDF,
+                i->edfs());
+
+        assembly_items.m_surface_shader_items =
+            insert_collection_items(
+                assembly_item,
+                "Surface Shaders",
+                ItemSurfaceShader,
+                i->surface_shaders());
+
+        assembly_items.m_material_items =
+            insert_collection_items(
+                assembly_item,
+                "Materials",
+                ItemMaterial,
+                i->materials());
+
+        assembly_items.m_light_items =
+            insert_collection_items(
+                assembly_item,
+                "Lights",
+                ItemLight,
+                i->lights());
+
+        assembly_items.m_object_items =
+            insert_collection_items(
+                assembly_item,
+                "Objects",
+                ItemObject,
+                i->objects());
+
+        assembly_items.m_object_instance_items =
+            insert_collection_items(
+                assembly_item,
+                "Object Instances",
+                ItemObjectInstance,
+                i->object_instances());
 
         m_assembly_items[assembly.get_uid()] = assembly_items;
     }
@@ -296,12 +357,11 @@ void ProjectExplorer::insert_objects(
     {
         MeshObject* object = mesh_objects[i];
 
-        object_items->addChild(
-            make_entity_item(
-                object_items,
-                object->get_name(),
-                ItemObject,
-                object));
+        insert_entity_item(
+            object_items,
+            object->get_name(),
+            ItemObject,
+            object);
 
         const size_t object_index = objects.insert(auto_release_ptr<Object>(object));
 
@@ -315,12 +375,11 @@ void ProjectExplorer::insert_objects(
                 Transformd(Matrix4d::identity()),
                 material_indices));
 
-        object_instance_items->addChild(
-            make_entity_item(
-                object_instance_items,
-                object_instance.get()->get_name(),
-                ItemObjectInstance,
-                object_instance.get()));
+        insert_entity_item(
+            object_instance_items,
+            object_instance.get()->get_name(),
+            ItemObjectInstance,
+            object_instance.get());
 
         object_instances.insert(object_instance);
     }
@@ -344,12 +403,11 @@ void ProjectExplorer::insert_textures(
             params,
             search_paths));
 
-    texture_items->addChild(
-        make_entity_item(
-            texture_items,
-            texture.get()->get_name(),
-            ItemTexture,
-            texture.get()));
+    insert_entity_item(
+        texture_items,
+        texture.get()->get_name(),
+        ItemTexture,
+        texture.get());
 
     textures.insert(texture);
 }
@@ -588,12 +646,11 @@ void ProjectExplorer::slot_add_assembly()
                 assembly_name.c_str(),
                 ParamArray()));
 
-        m_scene_items.m_assembly_items->addChild(
-            make_entity_item(
-                m_scene_items.m_assembly_items,
-                assembly.get()->get_name(),
-                ItemAssembly,
-                assembly.get()));
+        insert_entity_item(
+            m_scene_items.m_assembly_items,
+            assembly.get()->get_name(),
+            ItemAssembly,
+            assembly.get());
 
         assemblies.insert(assembly);
     }
@@ -626,12 +683,11 @@ void ProjectExplorer::slot_instantiate_assembly()
                 assembly,
                 Transformd(Matrix4d::identity())));
 
-        m_scene_items.m_assembly_instance_items->addChild(
-            make_entity_item(
-                m_scene_items.m_assembly_instance_items,
-                assembly_instance.get()->get_name(),
-                ItemAssemblyInstance,
-                assembly_instance.get()));
+        insert_entity_item(
+            m_scene_items.m_assembly_instance_items,
+            assembly_instance.get()->get_name(),
+            ItemAssemblyInstance,
+            assembly_instance.get());
 
         assembly_instances.insert(assembly_instance);
     }
