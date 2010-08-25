@@ -114,7 +114,9 @@ class ProjectExplorer
 
     void insert_textures(
         renderer::TextureContainer&         textures,
+        renderer::TextureInstanceContainer& texture_instances,
         QTreeWidgetItem*                    texture_items,
+        QTreeWidgetItem*                    texture_instance_items,
         const std::string&                  path) const;
 
     QMenu* build_context_menu(const QList<QTreeWidgetItem*> selected_items) const;

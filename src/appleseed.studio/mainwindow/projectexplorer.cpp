@@ -387,20 +387,22 @@ void ProjectExplorer::insert_objects(
 
 void ProjectExplorer::insert_textures(
     TextureContainer&           textures,
+    TextureInstanceContainer&   texture_instances,
     QTreeWidgetItem*            texture_items,
+    QTreeWidgetItem*            texture_instance_items,
     const string&               path) const
 {
     const string texture_name = filesystem::path(path).replace_extension().filename();
 
-    ParamArray params;
-    params.insert("filename", path);
-    params.insert("color_space", "srgb");
+    ParamArray texture_params;
+    texture_params.insert("filename", path);
+    texture_params.insert("color_space", "srgb");
 
     SearchPaths search_paths;
     auto_release_ptr<Texture> texture(
         DiskTextureFactory::create(
             texture_name.c_str(),
-            params,
+            texture_params,
             search_paths));
 
     insert_entity_item(
@@ -409,7 +411,26 @@ void ProjectExplorer::insert_textures(
         ItemTexture,
         texture.get());
 
-    textures.insert(texture);
+    const size_t texture_index = textures.insert(texture);
+
+    ParamArray texture_instance_params;
+    texture_instance_params.insert("addressing_mode", "clamp");
+    texture_instance_params.insert("filtering_mode", "bilinear");
+
+    const string texture_instance_name = texture_name + "_inst";
+    auto_release_ptr<TextureInstance> texture_instance(
+        TextureInstanceFactory::create(
+            texture_instance_name.c_str(),
+            texture_instance_params,
+            texture_index));
+
+    insert_entity_item(
+        texture_instance_items,
+        texture_instance.get()->get_name(),
+        ItemTextureInstance,
+        texture_instance.get());
+
+    texture_instances.insert(texture_instance);
 }
 
 QMenu* ProjectExplorer::build_context_menu(const QList<QTreeWidgetItem*> selected_items) const
@@ -742,7 +763,9 @@ void ProjectExplorer::slot_add_textures_to_assembly()
     {
         insert_textures(
             assembly.textures(),
+            assembly.texture_instances(),
             assembly_items.m_texture_items,
+            assembly_items.m_texture_instance_items,
             filepaths[i].toStdString());
     }
 }
