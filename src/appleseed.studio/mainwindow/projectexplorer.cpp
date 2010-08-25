@@ -45,6 +45,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/searchpaths.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
 
@@ -267,7 +268,7 @@ QMenu* ProjectExplorer::build_context_menu(const QList<QTreeWidgetItem*> selecte
 
     const EntityType entity_type =
         static_cast<EntityType>(selected_item->data(0, Qt::UserRole).value<int>());
-    
+
     const void* entity = selected_item->data(1, Qt::UserRole).value<const void*>();
 
     switch (entity_type)
@@ -300,6 +301,10 @@ QMenu* ProjectExplorer::build_assembly_context_menu(const void* assembly) const
         context_menu
             ->addAction("Add Objects...", this, SLOT(slot_add_objects_to_assembly()))
             ->setData(QVariant::fromValue(assembly));
+
+        context_menu
+            ->addAction("Add Textures...", this, SLOT(slot_add_textures_to_assembly()))
+            ->setData(QVariant::fromValue(assembly));
     }
     else
     {
@@ -309,40 +314,9 @@ QMenu* ProjectExplorer::build_assembly_context_menu(const void* assembly) const
     return context_menu;
 }
 
-void ProjectExplorer::add_objects(const Assembly& assembly, const string& path) const
-{
-    const string base_name = filesystem::path(path).replace_extension().filename();
-
-    const MeshObjectArray mesh_objects =
-        MeshObjectReader().read(path.c_str(), base_name.c_str(), ParamArray());
-
-    for (size_t i = 0; i < mesh_objects.size(); ++i)
-    {
-        MeshObject* object = mesh_objects[i];
-        const size_t object_index =
-            assembly.objects().insert(auto_release_ptr<Object>(object));
-
-        const string object_instance_name = string(object->get_name()) + "_inst";
-        MaterialIndexArray material_indices;
-        auto_release_ptr<ObjectInstance> object_instance(
-            ObjectInstanceFactory::create(
-                object_instance_name.c_str(),
-                *object,
-                object_index,
-                Transformd(Matrix4d::identity()),
-                material_indices));
-        assembly.object_instances().insert(object_instance);
-    }
-}
-
 void ProjectExplorer::slot_context_menu(const QPoint& point)
 {
-    assert(m_project);
-
-    const QList<QTreeWidgetItem*> selected_items = m_tree_widget->selectedItems();
-    assert(selected_items.size() <= 1);
-
-    QMenu* context_menu = build_context_menu(selected_items);
+    QMenu* context_menu = build_context_menu(m_tree_widget->selectedItems());
 
     if (context_menu)
         context_menu->exec(m_tree_widget->mapToGlobal(point));
@@ -535,6 +509,53 @@ namespace
 
         return *static_cast<const T*>(action_data);
     }
+
+    void insert_objects(
+        ObjectContainer&            objects,
+        ObjectInstanceContainer&    object_instances,
+        const string&               path)
+    {
+        const string base_name = filesystem::path(path).replace_extension().filename();
+
+        const MeshObjectArray mesh_objects =
+            MeshObjectReader().read(path.c_str(), base_name.c_str(), ParamArray());
+
+        for (size_t i = 0; i < mesh_objects.size(); ++i)
+        {
+            MeshObject* object = mesh_objects[i];
+            const size_t object_index = objects.insert(auto_release_ptr<Object>(object));
+
+            const string object_instance_name = string(object->get_name()) + "_inst";
+            MaterialIndexArray material_indices;
+
+            object_instances.insert(
+                auto_release_ptr<ObjectInstance>(
+                    ObjectInstanceFactory::create(
+                        object_instance_name.c_str(),
+                        *object,
+                        object_index,
+                        Transformd(Matrix4d::identity()),
+                        material_indices)));
+        }
+    }
+
+    void insert_textures(TextureContainer& textures, const string& path)
+    {
+        const string texture_name = filesystem::path(path).replace_extension().filename();
+
+        ParamArray params;
+        params.insert("filename", path);
+        params.insert("color_space", "srgb");
+
+        SearchPaths search_paths;
+
+        textures.insert(
+            auto_release_ptr<Texture>(
+                DiskTextureFactory::create(
+                    texture_name.c_str(),
+                    params,
+                    search_paths)));
+    }
 }
 
 void ProjectExplorer::slot_add_assembly()
@@ -588,25 +609,52 @@ void ProjectExplorer::slot_add_objects_to_assembly()
     QFileDialog::Options options;
     QString selected_filter;
 
-    QString filepath =
-        QFileDialog::getOpenFileName(
+    const QStringList filepaths =
+        QFileDialog::getOpenFileNames(
             m_tree_widget,
-            "Import...",
+            "Add Objects...",
             "",
             "Geometry Files (*.obj);;All Files (*.*)",
             &selected_filter,
             options);
 
-    if (!filepath.isEmpty())
+    const Assembly& assembly = get_entity_from_data<Assembly>(sender());
+
+    for (int i = 0; i < filepaths.size(); ++i)
     {
-        const Assembly& assembly = get_entity_from_data<Assembly>(sender());
-
-        add_objects(
-            assembly,
-            filepath.toStdString());
-
-        update_tree_widget();
+        insert_objects(
+            assembly.objects(),
+            assembly.object_instances(),
+            filepaths[i].toStdString());
     }
+
+    update_tree_widget();
+}
+
+void ProjectExplorer::slot_add_textures_to_assembly()
+{
+    QFileDialog::Options options;
+    QString selected_filter;
+
+    const QStringList filepaths =
+        QFileDialog::getOpenFileNames(
+            m_tree_widget,
+            "Add Textures...",
+            "",
+            "Texture Files (*.exr);;All Files (*.*)",
+            &selected_filter,
+            options);
+
+    const Assembly& assembly = get_entity_from_data<Assembly>(sender());
+
+    for (int i = 0; i < filepaths.size(); ++i)
+    {
+        insert_textures(
+            assembly.textures(),
+            filepaths[i].toStdString());
+    }
+
+    update_tree_widget();
 }
 
 }   // namespace studio

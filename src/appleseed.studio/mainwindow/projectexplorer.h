@@ -40,7 +40,6 @@
 #include <string>
 
 // Forward declarations.
-namespace renderer  { class Assembly; }
 namespace renderer  { class Project; }
 class QMenu;
 class QPoint;
@@ -69,16 +68,13 @@ class ProjectExplorer
     QMenu* build_generic_context_menu() const;
     QMenu* build_assembly_context_menu(const void* assembly) const;
 
-    void add_objects(
-        const renderer::Assembly&   assembly,
-        const std::string&          path) const;
-
   private slots:
     void slot_context_menu(const QPoint&);
 
     void slot_add_assembly();
     void slot_instantiate_assembly();
     void slot_add_objects_to_assembly();
+    void slot_add_textures_to_assembly();
 };
 
 }       // namespace studio
