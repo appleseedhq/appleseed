@@ -29,14 +29,19 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECTEXPLORER_H
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECTEXPLORER_H
 
+// appleseed.renderer headers.
+#include "renderer/api/scene.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/utility/uid.h"
 
 // Qt headers.
 #include <QList>
 #include <QObject>
 
 // Standard headers.
+#include <map>
 #include <string>
 
 // Forward declarations.
@@ -59,10 +64,59 @@ class ProjectExplorer
     ProjectExplorer(QTreeWidget* tree_widget, renderer::Project* project);
 
   private:
-    QTreeWidget*        m_tree_widget;
-    renderer::Project*  m_project;
+    QTreeWidget*            m_tree_widget;
+    renderer::Project*      m_project;
 
-    void update_tree_widget();
+    struct SceneItems
+    {
+        QTreeWidgetItem*    m_color_items;
+        QTreeWidgetItem*    m_texture_items;
+        QTreeWidgetItem*    m_texture_instance_items;
+        QTreeWidgetItem*    m_environment_edf_items;
+        QTreeWidgetItem*    m_environment_shader_items;
+        QTreeWidgetItem*    m_assembly_items;
+        QTreeWidgetItem*    m_assembly_instance_items;
+
+        void clear();
+    };
+
+    struct AssemblyItems
+    {
+        QTreeWidgetItem*    m_assembly_item;
+        QTreeWidgetItem*    m_color_items;
+        QTreeWidgetItem*    m_texture_items;
+        QTreeWidgetItem*    m_texture_instance_items;
+        QTreeWidgetItem*    m_bsdf_items;
+        QTreeWidgetItem*    m_edf_items;
+        QTreeWidgetItem*    m_surface_shader_items;
+        QTreeWidgetItem*    m_material_items;
+        QTreeWidgetItem*    m_light_items;
+        QTreeWidgetItem*    m_object_items;
+        QTreeWidgetItem*    m_object_instance_items;
+    };
+
+    typedef std::map<foundation::UniqueID, AssemblyItems> AssemblyItemsMap;
+
+    SceneItems              m_scene_items;
+    AssemblyItemsMap        m_assembly_items;
+
+    void build_tree_widget();
+
+    QTreeWidgetItem* insert_assembly_items(
+        QTreeWidget*                        tree_widget,
+        const renderer::AssemblyContainer&  assemblies);
+
+    void insert_objects(
+        renderer::ObjectContainer&          objects,
+        renderer::ObjectInstanceContainer&  object_instances,
+        QTreeWidgetItem*                    object_items,
+        QTreeWidgetItem*                    object_instance_items,
+        const std::string&                  path) const;
+
+    void insert_textures(
+        renderer::TextureContainer&         textures,
+        QTreeWidgetItem*                    texture_items,
+        const std::string&                  path) const;
 
     QMenu* build_context_menu(const QList<QTreeWidgetItem*> selected_items) const;
     QMenu* build_generic_context_menu() const;
