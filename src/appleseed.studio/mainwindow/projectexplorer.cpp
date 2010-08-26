@@ -348,14 +348,20 @@ void ProjectExplorer::insert_objects(
     QTreeWidgetItem*            object_instance_items,
     const string&               path) const
 {
-    const string base_name = filesystem::path(path).replace_extension().filename();
+    const string base_object_name = filesystem::path(path).replace_extension().filename();
 
     const MeshObjectArray mesh_objects =
-        MeshObjectReader().read(path.c_str(), base_name.c_str(), ParamArray());
+        MeshObjectReader().read(
+            path.c_str(),
+            base_object_name.c_str(),
+            ParamArray());
 
     for (size_t i = 0; i < mesh_objects.size(); ++i)
     {
         MeshObject* object = mesh_objects[i];
+
+        object->get_parameters().insert("filename", filesystem::path(path).filename());
+        object->get_parameters().insert("__common_base_name", base_object_name);
 
         insert_entity_item(
             object_items,
