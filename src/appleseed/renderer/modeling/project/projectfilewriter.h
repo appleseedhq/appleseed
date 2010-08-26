@@ -47,7 +47,9 @@ class RENDERERDLL ProjectFileWriter
   public:
     // Write a project to disk. The project must be named.
     // Return true on success, false otherwise.
-    static bool write(const Project& project);
+    static bool write(
+        const Project&  project,
+        const bool      omit_header_comment = false);
 };
 
 }       // namespace renderer
