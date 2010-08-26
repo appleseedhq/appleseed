@@ -369,7 +369,7 @@ namespace
         ElementValues
     };
 
-    typedef DefaultElementHandler<ProjectElementID> DefaultElementHandler;
+    typedef ElementHandlerBase<ProjectElementID> ElementHandlerBase;
 
 
     //
@@ -377,7 +377,7 @@ namespace
     //
 
     class ParameterElementHandler
-      : public DefaultElementHandler
+      : public ElementHandlerBase
     {
       public:
         // Constructor.
@@ -389,8 +389,9 @@ namespace
         // Receive notification of the start of an element.
         virtual void start_element(const Attributes& attrs)
         {
-            m_name = DefaultElementHandler::get_value(attrs, "name");
-            m_value = DefaultElementHandler::get_value(attrs, "value");
+            // We need to fully qualify the call to get_value().
+            m_name = ElementHandlerBase::get_value(attrs, "name");
+            m_value = ElementHandlerBase::get_value(attrs, "value");
         }
 
         // Retrieve the name of the parameter.
@@ -417,7 +418,7 @@ namespace
     //
 
     class ParametrizedElementHandler
-      : public DefaultElementHandler
+      : public ElementHandlerBase
     {
       public:
         typedef IElementHandler<ProjectElementID> ElementHandlerType;
@@ -576,7 +577,7 @@ namespace
     //
 
     class LookAtElementHandler
-      : public DefaultElementHandler
+      : public ElementHandlerBase
     {
       public:
         // Constructor.
@@ -632,7 +633,7 @@ namespace
     //
 
     class MatrixElementHandler
-      : public DefaultElementHandler
+      : public ElementHandlerBase
     {
       public:
         // Constructor.
@@ -691,7 +692,7 @@ namespace
     //
 
     class RotationElementHandler
-      : public DefaultElementHandler
+      : public ElementHandlerBase
     {
       public:
         // Constructor.
@@ -736,7 +737,7 @@ namespace
     //
 
     class ScalingElementHandler
-      : public DefaultElementHandler
+      : public ElementHandlerBase
     {
       public:
         // Constructor.
@@ -769,7 +770,7 @@ namespace
     //
 
     class TranslationElementHandler
-      : public DefaultElementHandler
+      : public ElementHandlerBase
     {
       public:
         // Constructor.
@@ -802,7 +803,7 @@ namespace
     //
 
     class TransformElementHandler
-      : public DefaultElementHandler
+      : public ElementHandlerBase
     {
       public:
         // Constructor.
@@ -901,7 +902,7 @@ namespace
     //
 
     class ValuesElementHandler
-      : public DefaultElementHandler
+      : public ElementHandlerBase
     {
       public:
         // Constructor.
@@ -1718,7 +1719,7 @@ namespace
     //
 
     class AssignMaterialElementHandler
-      : public DefaultElementHandler
+      : public ElementHandlerBase
     {
       public:
         // Constructor.
@@ -2256,7 +2257,7 @@ namespace
     //
 
     class SceneElementHandler
-      : public DefaultElementHandler
+      : public ElementHandlerBase
     {
       public:
         // Constructor.
@@ -2533,7 +2534,7 @@ namespace
     //
 
     class OutputElementHandler
-      : public DefaultElementHandler
+      : public ElementHandlerBase
     {
       public:
         // Constructor.
@@ -2657,7 +2658,7 @@ namespace
     //
 
     class ConfigurationsElementHandler
-      : public DefaultElementHandler
+      : public ElementHandlerBase
     {
       public:
         // Constructor.
@@ -2728,7 +2729,7 @@ namespace
     //
 
     class ProjectElementHandler
-      : public DefaultElementHandler
+      : public ElementHandlerBase
     {
       public:
         // Constructor.

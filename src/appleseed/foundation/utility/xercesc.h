@@ -46,6 +46,7 @@
 // Standard headers.
 #include <cassert>
 #include <map>
+#include <memory>
 #include <stack>
 #include <string>
 
@@ -105,6 +106,7 @@ std::basic_string<char> transcode(const XMLCh* s);
 std::basic_string<XMLCh> transcode(const char* s);
 std::basic_string<XMLCh> transcode(const std::string& s);
 
+
 //
 // Element handler interface.
 //
@@ -140,7 +142,43 @@ class IElementHandler
     virtual void end_child_element(
         const ElementID             element,
         ElementHandlerType*         handler) = 0;
+};
 
+
+//
+// A convenient base class for element handlers.
+//
+
+template <typename ElementID>
+class ElementHandlerBase
+  : public IElementHandler<ElementID>
+{
+  public:
+    typedef IElementHandler<ElementID> ElementHandlerType;
+
+    // Receive notification of the start of an element.
+    virtual void start_element(
+        const xercesc::Attributes&  attrs);
+
+    // Receive notification of the end of an element.
+    virtual void end_element();
+
+    // Receive notification of character data inside an element.
+    virtual void characters(
+        const XMLCh* const          chars,
+        const unsigned int          length);
+
+    // Receive notification of the start of a child element.
+    virtual void start_child_element(
+        const ElementID             element,
+        ElementHandlerType*         handler);
+
+    // Receive notification of the end of a child element.
+    virtual void end_child_element(
+        const ElementID             element,
+        ElementHandlerType*         handler);
+
+  protected:
     // Utility function to retrieve the value of an attribute.
     static std::string get_value(
         const xercesc::Attributes&  attrs,
@@ -150,38 +188,21 @@ class IElementHandler
 
 
 //
-// Default element handler, implements all the methods of the
-// IElementHandler interface but does nothing.
+// Element handler factory interface.
 //
 
 template <typename ElementID>
-class DefaultElementHandler
-  : public IElementHandler<ElementID>
+class IElementHandlerFactory
+  : public NonCopyable
 {
   public:
     typedef IElementHandler<ElementID> ElementHandlerType;
 
-    // Receive notification of the start of an element.
-    virtual void start_element(
-        const xercesc::Attributes&  attrs) {}
+    // Destructor.
+    virtual ~IElementHandlerFactory() {}
 
-    // Receive notification of the end of an element.
-    virtual void end_element() {}
-
-    // Receive notification of character data inside an element.
-    virtual void characters(
-        const XMLCh* const          chars,
-        const unsigned int          length) {}
-
-    // Receive notification of the start of a child element.
-    virtual void start_child_element(
-        const ElementID             element,
-        ElementHandlerType*         handler) {}
-
-    // Receive notification of the end of a child element.
-    virtual void end_child_element(
-        const ElementID             element,
-        ElementHandlerType*         handler) {}
+    // Create a new instance of the element handler.
+    virtual std::auto_ptr<ElementHandlerType> create() = 0;
 };
 
 
@@ -304,12 +325,43 @@ inline std::basic_string<XMLCh> transcode(const std::string& s)
 
 
 //
-// IElementHandler class implementation.
+// ElementHandlerBase class implementation.
 //
 
-// Utility function to retrieve the value of an attribute.
 template <typename ElementID>
-inline std::string IElementHandler<ElementID>::get_value(
+void ElementHandlerBase<ElementID>::start_element(
+    const xercesc::Attributes&  attrs)
+{
+}
+
+template <typename ElementID>
+void ElementHandlerBase<ElementID>::end_element()
+{
+}
+
+template <typename ElementID>
+void ElementHandlerBase<ElementID>::characters(
+    const XMLCh* const          chars,
+    const unsigned int          length)
+{
+}
+
+template <typename ElementID>
+void ElementHandlerBase<ElementID>::start_child_element(
+    const ElementID             element,
+    ElementHandlerType*         handler)
+{
+}
+
+template <typename ElementID>
+void ElementHandlerBase<ElementID>::end_child_element(
+    const ElementID             element,
+    ElementHandlerType*         handler)
+{
+}
+
+template <typename ElementID>
+inline std::string ElementHandlerBase<ElementID>::get_value(
     const xercesc::Attributes&  attrs,
     const std::string&          name,
     const std::string&          default_value)
@@ -323,16 +375,14 @@ inline std::string IElementHandler<ElementID>::get_value(
 // SAX2ContentHandler class implementation.
 //
 
-// Constructor.
 template <typename ElementID>
 SAX2ContentHandler<ElementID>::SAX2ContentHandler()
 {
     // Push an empty element handler on the stack to avoid
     // special-casing for an empty stack.
-    m_eh_stack.push(new DefaultElementHandler<ElementID>());
+    m_eh_stack.push(new ElementHandlerBase<ElementID>());
 }
 
-// Register an element.
 template <typename ElementID>
 void SAX2ContentHandler<ElementID>::register_element(
     const std::string&              name,
@@ -345,7 +395,6 @@ void SAX2ContentHandler<ElementID>::register_element(
     m_elements[name] = record;
 }
 
-// Receive notification of the start of an element.
 template <typename ElementID>
 void SAX2ContentHandler<ElementID>::startElement(
     const XMLCh* const              uri,
@@ -367,11 +416,10 @@ void SAX2ContentHandler<ElementID>::startElement(
     else
     {
         // Push an empty element handler on the stack.
-        m_eh_stack.push(new DefaultElementHandler<ElementID>());
+        m_eh_stack.push(new ElementHandlerBase<ElementID>());
     }
 }
 
-// Receive notification of the end of an element.
 template <typename ElementID>
 void SAX2ContentHandler<ElementID>::endElement(
     const XMLCh* const              uri,
@@ -396,7 +444,6 @@ void SAX2ContentHandler<ElementID>::endElement(
     }
 }
 
-// Receive notification of character data inside an element.
 template <typename ElementID>
 void SAX2ContentHandler<ElementID>::characters(
     const XMLCh* const              chars,
