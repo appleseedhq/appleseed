@@ -908,6 +908,7 @@ set(renderer_meta_tests_sources
     renderer/meta/tests/test_intersector.cpp
     renderer/meta/tests/test_lightsampler.cpp
     renderer/meta/tests/test_paramarray.cpp
+    renderer/meta/tests/test_projectfilereader.cpp
 )
 list(APPEND appleseed_sources
     ${renderer_meta_tests_sources}

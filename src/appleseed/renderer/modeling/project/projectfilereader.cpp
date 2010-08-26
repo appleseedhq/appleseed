@@ -2807,6 +2807,107 @@ namespace
         Project*        m_project;
     };
 
+
+    //
+    // Content handler.
+    //
+
+    class ContentHandler
+      : public SAX2ContentHandler<ProjectElementID>
+    {
+      public:
+        ContentHandler(Project* project, ElementInfo& element_info)
+          : m_element_info(element_info)
+        {
+            register_factory_helper<AssemblyElementHandler>("assembly", ElementAssembly);
+            register_factory_helper<AssemblyInstanceElementHandler>("assembly_instance", ElementAssemblyInstance);
+            register_factory_helper<AssignMaterialElementHandler>("assign_material", ElementAssignMaterial);
+            register_factory_helper<BSDFElementHandler>("bsdf", ElementBSDF);
+            register_factory_helper<CameraElementHandler>("camera", ElementCamera);
+            register_factory_helper<ColorElementHandler>("color", ElementColor);
+            register_factory_helper<ConfigurationElementHandler>("configuration", ElementConfiguration);
+            register_factory_helper<ConfigurationsElementHandler>("configurations", ElementConfigurations);
+            register_factory_helper<EDFElementHandler>("edf", ElementEDF);
+            register_factory_helper<EnvironmentElementHandler>("environment", ElementEnvironment);
+            register_factory_helper<EnvironmentEDFElementHandler>("environment_edf", ElementEnvironmentEDF);
+            register_factory_helper<EnvironmentShaderElementHandler>("environment_shader", ElementEnvironmentShader);
+            register_factory_helper<FrameElementHandler>("frame", ElementFrame);
+            register_factory_helper<LightElementHandler>("light", ElementLight);
+            register_factory_helper<LookAtElementHandler>("look_at", ElementLookAt);
+            register_factory_helper<MaterialElementHandler>("material", ElementMaterial);
+            register_factory_helper<MatrixElementHandler>("matrix", ElementMatrix);
+            register_factory_helper<ObjectElementHandler>("object", ElementObject);
+            register_factory_helper<ObjectInstanceElementHandler>("object_instance", ElementObjectInstance);
+            register_factory_helper<OutputElementHandler>("output", ElementOutput);
+            register_factory_helper<ParameterElementHandler>("parameter", ElementParameter);
+            register_factory_helper<ParametersElementHandler>("parameters", ElementParameters);
+            register_factory_helper<RotationElementHandler>("rotation", ElementRotation);
+            register_factory_helper<ScalingElementHandler>("scaling", ElementScaling);
+            register_factory_helper<SceneElementHandler>("scene", ElementScene);
+            register_factory_helper<SurfaceShaderElementHandler>("surface_shader", ElementSurfaceShader);
+            register_factory_helper<TextureElementHandler>("texture", ElementTexture);
+            register_factory_helper<TextureInstanceElementHandler>("texture_instance", ElementTextureInstance);
+            register_factory_helper<TransformElementHandler>("transform", ElementTransform);
+            register_factory_helper<TranslationElementHandler>("translation", ElementTranslation);
+            register_factory_helper<ValuesElementHandler>("values", ElementValues);
+
+            auto_ptr<IElementHandlerFactory<ProjectElementID> > factory(
+                new ProjectElementHandlerFactory(m_element_info, project));
+
+            register_factory("project", ElementProject, factory);
+        }
+
+      private:
+        ElementInfo& m_element_info;
+
+        struct ProjectElementHandlerFactory
+          : public IElementHandlerFactory<ProjectElementID>
+        {
+            ElementInfo&    m_element_info;
+            Project*        m_project;
+
+            ProjectElementHandlerFactory(ElementInfo& element_info, Project* project)
+              : m_element_info(element_info)
+              , m_project(project)
+            {
+            }
+
+            virtual auto_ptr<ElementHandlerType> create()
+            {
+                return auto_ptr<ElementHandlerType>(
+                    new ProjectElementHandler(m_element_info, m_project));
+            }
+        };
+
+        template <typename ElementHandler>
+        struct GenericElementHandlerFactory
+          : public IElementHandlerFactory<ProjectElementID>
+        {
+            ElementInfo&    m_element_info;
+
+            explicit GenericElementHandlerFactory(ElementInfo& element_info)
+              : m_element_info(element_info)
+            {
+            }
+
+            virtual auto_ptr<ElementHandlerType> create()
+            {
+                return auto_ptr<ElementHandlerType>(
+                    new ElementHandler(m_element_info));
+            }
+        };
+
+        template <typename ElementHandler>
+        void register_factory_helper(const string& name, const ProjectElementID id)
+        {
+            auto_ptr<IElementHandlerFactory<ProjectElementID> > factory(
+                new GenericElementHandlerFactory<ElementHandler>(
+                    m_element_info));
+
+            register_factory(name, id, factory);
+        }
+    };
+
 }   // anonymous namespace
 
 // Read a project from disk.
@@ -2867,60 +2968,30 @@ auto_release_ptr<Project> ProjectFileReader::load_project_file(
     auto_release_ptr<Project> project(ProjectFactory::create(project_filename));
     project->set_path(project_filename);
 
-    // Create the SAX2 XML parser.
+    // Create the error handler.
+    auto_ptr<ErrorLogger> error_handler(
+        new ErrorLoggerAndCounter(
+            project_filename,
+            event_counters));
+
+    // Create the content handler.
+    ElementInfo element_info(event_counters, project_filename);
+    auto_ptr<ContentHandler> content_handler(
+        new ContentHandler(
+            project.get(),
+            element_info));
+
+    // Create the parser.
     auto_ptr<SAX2XMLReader> parser(XMLReaderFactory::createXMLReader());
     parser->setFeature(XMLUni::fgSAX2CoreNameSpaces, true);         // perform namespace processing
     parser->setFeature(XMLUni::fgSAX2CoreValidation, true);         // report all validation errors
     parser->setFeature(XMLUni::fgXercesSchema, true);               // enable the parser's schema support
     parser->setProperty(
         XMLUni::fgXercesSchemaExternalNoNameSpaceSchemaLocation,
-        XMLString::transcode(schema_filename));                     // todo: memory leak?
-
-    // Create the error handler.
-    auto_ptr<ErrorLogger> error_handler(
-        new ErrorLoggerAndCounter(
-            project_filename,
-            event_counters));
+        const_cast<void*>(
+            static_cast<const void*>(
+                transcode(schema_filename).c_str())));
     parser->setErrorHandler(error_handler.get());
-
-    // Create the structure that will be passed to all element handlers.
-    ElementInfo element_info(event_counters, project_filename);
-
-    // Create the SAX2 content handler.
-    // todo: prevent memory leaks.
-    auto_ptr<SAX2ContentHandler<ProjectElementID> > content_handler(new SAX2ContentHandler<ProjectElementID>());
-    content_handler->register_element("assembly", ElementAssembly, new AssemblyElementHandler(element_info));
-    content_handler->register_element("assembly_instance", ElementAssemblyInstance, new AssemblyInstanceElementHandler(element_info));
-    content_handler->register_element("assign_material", ElementAssignMaterial, new AssignMaterialElementHandler(element_info));
-    content_handler->register_element("bsdf", ElementBSDF, new BSDFElementHandler(element_info));
-    content_handler->register_element("camera", ElementCamera, new CameraElementHandler(element_info));
-    content_handler->register_element("color", ElementColor, new ColorElementHandler(element_info));
-    content_handler->register_element("configuration", ElementConfiguration, new ConfigurationElementHandler(element_info));
-    content_handler->register_element("configurations", ElementConfigurations, new ConfigurationsElementHandler(element_info));
-    content_handler->register_element("edf", ElementEDF, new EDFElementHandler(element_info));
-    content_handler->register_element("environment", ElementEnvironment, new EnvironmentElementHandler(element_info));
-    content_handler->register_element("environment_edf", ElementEnvironmentEDF, new EnvironmentEDFElementHandler(element_info));
-    content_handler->register_element("environment_shader", ElementEnvironmentShader, new EnvironmentShaderElementHandler(element_info));
-    content_handler->register_element("frame", ElementFrame, new FrameElementHandler(element_info));
-    content_handler->register_element("light", ElementLight, new LightElementHandler(element_info));
-    content_handler->register_element("look_at", ElementLookAt, new LookAtElementHandler(element_info));
-    content_handler->register_element("material", ElementMaterial, new MaterialElementHandler(element_info));
-    content_handler->register_element("matrix", ElementMatrix, new MatrixElementHandler(element_info));
-    content_handler->register_element("object", ElementObject, new ObjectElementHandler(element_info));
-    content_handler->register_element("object_instance", ElementObjectInstance, new ObjectInstanceElementHandler(element_info));
-    content_handler->register_element("output", ElementOutput, new OutputElementHandler(element_info));
-    content_handler->register_element("parameter", ElementParameter, new ParameterElementHandler(element_info));
-    content_handler->register_element("parameters", ElementParameters, new ParametersElementHandler(element_info));
-    content_handler->register_element("project", ElementProject, new ProjectElementHandler(element_info, project.get()));
-    content_handler->register_element("rotation", ElementRotation, new RotationElementHandler(element_info));
-    content_handler->register_element("scaling", ElementScaling, new ScalingElementHandler(element_info));
-    content_handler->register_element("scene", ElementScene, new SceneElementHandler(element_info));
-    content_handler->register_element("surface_shader", ElementSurfaceShader, new SurfaceShaderElementHandler(element_info));
-    content_handler->register_element("texture", ElementTexture, new TextureElementHandler(element_info));
-    content_handler->register_element("texture_instance", ElementTextureInstance, new TextureInstanceElementHandler(element_info));
-    content_handler->register_element("transform", ElementTransform, new TransformElementHandler(element_info));
-    content_handler->register_element("translation", ElementTranslation, new TranslationElementHandler(element_info));
-    content_handler->register_element("values", ElementValues, new ValuesElementHandler(element_info));
     parser->setContentHandler(content_handler.get());
 
     // Load the project file.
@@ -2928,12 +2999,23 @@ auto_release_ptr<Project> ProjectFileReader::load_project_file(
     try
     {
         parser->parse(project_filename);
-        return project;
     }
-    catch (const XMLException&) {}
-    catch (const SAXParseException&) {}
+    catch (const XMLException&)
+    {
+        return auto_release_ptr<Project>(0);
+    }
+    catch (const SAXParseException&)
+    {
+        return auto_release_ptr<Project>(0);
+    }
 
-    return auto_release_ptr<Project>(0);
+    // Report a failure in case of warnings or errors.
+    if (error_handler->get_warning_count() > 0 ||
+        error_handler->get_error_count() > 0 ||
+        error_handler->get_fatal_error_count() > 0)
+        return auto_release_ptr<Project>(0);
+
+    return project;
 }
 
 auto_release_ptr<Project> ProjectFileReader::construct_builtin_project(

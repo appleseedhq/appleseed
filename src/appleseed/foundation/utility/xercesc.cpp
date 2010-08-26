@@ -42,7 +42,6 @@ namespace foundation
 
 mutex XercesCManager::s_mutex;
 
-// Initialize Xerces-C++.
 bool XercesCManager::initialize(Logger& logger)
 {
     mutex::scoped_lock lock(s_mutex);
@@ -64,7 +63,6 @@ bool XercesCManager::initialize(Logger& logger)
     return true;
 }
 
-// Terminate Xerces-C++.
 void XercesCManager::terminate()
 {
     mutex::scoped_lock lock(s_mutex);
@@ -97,35 +95,40 @@ bool XercesCContext::is_initialized() const
 // ErrorLogger class implementation.
 //
 
-// Constructor.
 ErrorLogger::ErrorLogger(
     Logger&         logger,
     const string&   input_filename)
   : m_logger(logger)
   , m_input_filename(input_filename)
 {
+    resetErrors();
 }
 
-// Reset the error handler object on its reuse.
 void ErrorLogger::resetErrors()
 {
+    m_warning_count = 0;
+    m_error_count = 0;
+    m_fatal_error_count = 0;
 }
 
-// Receive notification of a warning.
 void ErrorLogger::warning(const SAXParseException& e)
 {
+    ++m_warning_count;
+
     print(LogMessage::Warning, e);
 }
 
-// Receive notification of a recoverable error.
 void ErrorLogger::error(const SAXParseException& e)
 {
+    ++m_error_count;
+
     print(LogMessage::Error, e);
 }
 
-// Receive notification of a non-recoverable error.
 void ErrorLogger::fatalError(const SAXParseException& e)
 {
+    ++m_fatal_error_count;
+
     switch (e.getOriginalExceptionCode())
     {
       // Using our modified version of Xerces-C++, we can catch the case where
@@ -142,6 +145,21 @@ void ErrorLogger::fatalError(const SAXParseException& e)
         print(LogMessage::Error, e);
         break;
     }
+}
+
+size_t ErrorLogger::get_warning_count() const
+{
+    return m_warning_count;
+}
+
+size_t ErrorLogger::get_error_count() const
+{
+    return m_error_count;
+}
+
+size_t ErrorLogger::get_fatal_error_count() const
+{
+    return m_fatal_error_count;
 }
 
 void ErrorLogger::print(

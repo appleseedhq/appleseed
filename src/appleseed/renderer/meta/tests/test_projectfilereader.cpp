@@ -26,44 +26,40 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_TESTUTILS_H
-#define APPLESEED_FOUNDATION_UTILITY_TESTUTILS_H
+// appleseed.renderer headers.
+#include "renderer/global/global.h"
+#include "renderer/modeling/project/project.h"
+#include "renderer/modeling/project/projectfilereader.h"
+#include "renderer/modeling/project/projectfilewriter.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/vector.h"
+#include "foundation/utility/test.h"
+#include "foundation/utility/testutils.h"
 
-// Standard headers.
-#include <cstddef>
-#include <string>
-#include <vector>
+using namespace foundation;
+using namespace renderer;
 
-namespace foundation
+FOUNDATION_TEST_SUITE(Renderer_Modeling_Project_ProjectFileReader)
 {
+    FOUNDATION_TEST_CASE(ParsingOfConfigurationBlocks)
+    {
+        ProjectFileReader reader;
+        auto_release_ptr<Project> project =
+            reader.read(
+                "data/test_projectfilereader_configurationblocks.appleseed",
+                "../../schemas/project.xsd");   // path relative to input file
 
-// Load a text file into memory.
-bool load_text_file(
-    const std::string&              filename,
-    std::string&                    contents);
+        FOUNDATION_ASSERT_NEQ(0, project.get());
 
-// Compare two text files on disk.
-// Return true if they have the exact same content, false otherwise.
-// Return false in case one of the file (or both) could not be open.
-bool compare_text_files(
-    const std::string&              filename1,
-    const std::string&              filename2);
+        project->set_path("output/test_projectfilereader_configurationblocks.appleseed");
 
-// Write a 2D point cloud to an image file.
-void write_point_cloud_image(
-    const std::string&              image_path,
-    const size_t                    image_width,
-    const size_t                    image_height,
-    const std::vector<Vector2d>&    points);
+        ProjectFileWriter::write(*project.get(), true);
 
-// Write a 2D point cloud to a 512x512 image file.
-void write_point_cloud_image(
-    const std::string&              image_path,
-    const std::vector<Vector2d>&    points);
+        const bool identical =
+            compare_text_files(
+                "data/test_projectfilereader_configurationblocks.appleseed",
+                "output/test_projectfilereader_configurationblocks.appleseed");
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_TESTUTILS_H
+        FOUNDATION_EXPECT_TRUE(identical);
+    }
+}

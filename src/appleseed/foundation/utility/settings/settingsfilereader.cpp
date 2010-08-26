@@ -121,7 +121,6 @@ bool SettingsFileReader::read(
     parser->setValidationScheme(XercesDOMParser::Val_Always);
     parser->setDoNamespaces(true);
     parser->setDoSchema(true);
-    parser->setValidationSchemaFullChecking(false);
     parser->setExternalNoNamespaceSchemaLocation(schema_filename);
 
     // Create the error handler.
@@ -141,6 +140,12 @@ bool SettingsFileReader::read(
     {
         return false;
     }
+
+    // Bail out in case of warnings or errors.
+    if (error_handler->get_warning_count() > 0 ||
+        error_handler->get_error_count() > 0 ||
+        error_handler->get_fatal_error_count() > 0)
+        return false;
 
     // Bail out if we won't have a document.
     const DOMDocument* document = parser->getDocument();

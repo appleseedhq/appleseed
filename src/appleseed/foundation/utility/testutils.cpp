@@ -35,10 +35,43 @@
 #include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
 
+// Standard headers.
+#include <fstream>
+#include <sstream>
+
 using namespace std;
 
 namespace foundation
 {
+
+bool load_text_file(const string& filename, string& contents)
+{
+    ifstream file(filename.c_str());
+
+    if (!file.is_open())
+        return false;
+
+    stringstream sstr;
+    sstr << file.rdbuf();
+    contents = sstr.str();
+
+    return true;
+}
+
+bool compare_text_files(const string& filename1, const string& filename2)
+{
+    string contents1;
+
+    if (!load_text_file(filename1, contents1))
+        return false;
+
+    string contents2;
+    
+    if (!load_text_file(filename2, contents2))
+        return false;
+
+    return contents1 == contents2;
+}
 
 void write_point_cloud_image(
     const string&               image_path,

@@ -33,6 +33,7 @@
 #include "foundation/core/concepts.h"
 #include "foundation/platform/thread.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/foreach.h"
 #include "foundation/utility/log.h"
 
 // Xerces-C++ headers.
@@ -215,47 +216,52 @@ class SAX2ContentHandler
   : public xercesc::DefaultHandler
 {
   public:
+    typedef IElementHandlerFactory<ElementID> ElementHandlerFactoryType;
+
     // Constructor.
     SAX2ContentHandler();
 
-    // Register an element.
-    void register_element(
-        const std::string&          name,
-        const ElementID             id,
-        IElementHandler<ElementID>* handler);
+    // Destructor.
+    ~SAX2ContentHandler();
+
+    // Register a factory for a given element.
+    void register_factory(
+        const std::string&                          name,
+        const ElementID                             id,
+        std::auto_ptr<ElementHandlerFactoryType>    handler_factory);
 
     // Receive notification of the start of an element.
     virtual void startElement(
-        const XMLCh* const          uri,
-        const XMLCh* const          localname,
-        const XMLCh* const          qname,
-        const xercesc::Attributes&  attrs);
+        const XMLCh* const                          uri,
+        const XMLCh* const                          localname,
+        const XMLCh* const                          qname,
+        const xercesc::Attributes&                  attrs);
 
     // Receive notification of the end of an element.
     virtual void endElement(
-        const XMLCh* const          uri,
-        const XMLCh* const          localname,
-        const XMLCh* const          qname);
+        const XMLCh* const                          uri,
+        const XMLCh* const                          localname,
+        const XMLCh* const                          qname);
 
     // Receive notification of character data inside an element.
     virtual void characters(
-        const XMLCh* const          chars,
-        const unsigned int          length);
+        const XMLCh* const                          chars,
+        const unsigned int                          length);
 
   private:
     typedef IElementHandler<ElementID> ElementHandlerType;
 
-    struct ElementRecord
+    struct FactoryInfo
     {
-        ElementID           m_id;
-        ElementHandlerType* m_handler;
+        ElementID                   m_id;
+        ElementHandlerFactoryType*  m_handler_factory;
     };
 
-    typedef std::map<std::string, ElementRecord> ElementMap;
+    typedef std::map<std::string, FactoryInfo> FactoryInfoMap;
     typedef std::stack<ElementHandlerType*> ElementHandlerStack;
 
-    ElementMap              m_elements;
-    ElementHandlerStack     m_eh_stack;
+    FactoryInfoMap                  m_factory_info;
+    ElementHandlerStack             m_handler_stack;
 };
 
 
@@ -284,9 +290,18 @@ class ErrorLogger
     // Receive notification of a non-recoverable error.
     virtual void fatalError(const xercesc::SAXParseException& e);
 
+    // Read the notification counters.
+    size_t get_warning_count() const;
+    size_t get_error_count() const;
+    size_t get_fatal_error_count() const;
+
   private:
     Logger&             m_logger;
     const std::string   m_input_filename;
+
+    size_t              m_warning_count;
+    size_t              m_error_count;
+    size_t              m_fatal_error_count;
 
     void print(
         const LogMessage::Category          category,
@@ -378,79 +393,94 @@ inline std::string ElementHandlerBase<ElementID>::get_value(
 template <typename ElementID>
 SAX2ContentHandler<ElementID>::SAX2ContentHandler()
 {
-    // Push an empty element handler on the stack to avoid
-    // special-casing for an empty stack.
-    m_eh_stack.push(new ElementHandlerBase<ElementID>());
+    // Push a dummy element handler on the stack to avoid special-casing for an empty stack.
+    m_handler_stack.push(new ElementHandlerBase<ElementID>());
 }
 
 template <typename ElementID>
-void SAX2ContentHandler<ElementID>::register_element(
-    const std::string&              name,
-    const ElementID                 id,
-    IElementHandler<ElementID>*     handler)
+SAX2ContentHandler<ElementID>::~SAX2ContentHandler()
 {
-    ElementRecord record;
-    record.m_id = id;
-    record.m_handler = handler;
-    m_elements[name] = record;
+    while (!m_handler_stack.empty())
+    {
+        delete m_handler_stack.top();
+        m_handler_stack.pop();
+    }
+
+    for (const_each<FactoryInfoMap> i = m_factory_info; i; ++i)
+        delete i->second.m_handler_factory;
+
+    m_factory_info.clear();
+}
+
+template <typename ElementID>
+void SAX2ContentHandler<ElementID>::register_factory(
+    const std::string&                          name,
+    const ElementID                             id,
+    std::auto_ptr<ElementHandlerFactoryType>    handler_factory)
+{
+    FactoryInfo info;
+    info.m_id = id;
+    info.m_handler_factory = handler_factory.release();
+    m_factory_info[name] = info;
 }
 
 template <typename ElementID>
 void SAX2ContentHandler<ElementID>::startElement(
-    const XMLCh* const              uri,
-    const XMLCh* const              localname,
-    const XMLCh* const              qname,
-    const xercesc::Attributes&      attrs)
+    const XMLCh* const                          uri,
+    const XMLCh* const                          localname,
+    const XMLCh* const                          qname,
+    const xercesc::Attributes&                  attrs)
 {
-    const typename ElementMap::const_iterator it =
-        m_elements.find(transcode(localname));
+    const typename FactoryInfoMap::const_iterator it =
+        m_factory_info.find(transcode(localname));
 
-    if (it != m_elements.end())
+    ElementHandlerType* handler;
+
+    if (it == m_factory_info.end())
     {
-        m_eh_stack.top()->start_child_element(
-            it->second.m_id,
-            it->second.m_handler);
-        m_eh_stack.push(it->second.m_handler);
-        it->second.m_handler->start_element(attrs);
+        handler = new ElementHandlerBase<ElementID>();
     }
     else
     {
-        // Push an empty element handler on the stack.
-        m_eh_stack.push(new ElementHandlerBase<ElementID>());
+        handler = it->second.m_handler_factory->create().release();
+
+        m_handler_stack.top()->start_child_element(it->second.m_id, handler);
     }
+
+    m_handler_stack.push(handler);
+
+    handler->start_element(attrs);
 }
 
 template <typename ElementID>
 void SAX2ContentHandler<ElementID>::endElement(
-    const XMLCh* const              uri,
-    const XMLCh* const              localname,
-    const XMLCh* const              qname)
+    const XMLCh* const                          uri,
+    const XMLCh* const                          localname,
+    const XMLCh* const                          qname)
 {
-    const typename ElementMap::const_iterator it =
-        m_elements.find(transcode(localname));
+    ElementHandlerType* handler = m_handler_stack.top();
 
-    if (it != m_elements.end())
-    {
-        it->second.m_handler->end_element();
-        m_eh_stack.pop();
-        m_eh_stack.top()->end_child_element(
-            it->second.m_id,
-            it->second.m_handler);
-    }
-    else
-    {
-        // Pop empty element handler from the stack.
-        m_eh_stack.pop();
-    }
+    handler->end_element();
+
+    m_handler_stack.pop();
+
+    const typename FactoryInfoMap::const_iterator it =
+        m_factory_info.find(transcode(localname));
+
+    if (it != m_factory_info.end())
+        m_handler_stack.top()->end_child_element(it->second.m_id, handler);
+
+    delete handler;
 }
 
 template <typename ElementID>
 void SAX2ContentHandler<ElementID>::characters(
-    const XMLCh* const              chars,
-    const unsigned int              length)
+    const XMLCh* const                          chars,
+    const unsigned int                          length)
 {
-    assert(!m_eh_stack.empty());
-    m_eh_stack.top()->characters(chars, length);
+    assert(!m_handler_stack.empty());
+
+    m_handler_stack.top()->characters(chars, length);
 }
 
 }       // namespace foundation

@@ -31,18 +31,16 @@
 #include "foundation/utility/log.h"
 #include "foundation/utility/settings.h"
 #include "foundation/utility/test.h"
+#include "foundation/utility/testutils.h"
 
 // Standard headers.
-#include <fstream>
-#include <memory>
-#include <sstream>
 #include <string>
+
+using namespace foundation;
+using namespace std;
 
 FOUNDATION_TEST_SUITE(Foundation_Utility_SettingsFileReader)
 {
-    using namespace foundation;
-    using namespace std;
-
     struct Fixture
     {
         Logger                  m_logger;
@@ -56,7 +54,11 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_SettingsFileReader)
 
         bool read(const char* filename)
         {
-            return m_reader.read(filename, "../schemas/settings.xsd", m_dictionary);
+            return
+                m_reader.read(
+                    filename,
+                    "../../schemas/settings.xsd",   // path relative to input file
+                    m_dictionary);
         }
     };
 
@@ -99,38 +101,6 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_SettingsFileReader)
 
 FOUNDATION_TEST_SUITE(Foundation_Utility_SettingsFileWriter)
 {
-    using namespace foundation;
-    using namespace std;
-
-    bool load_file(const string& filename, string& contents)
-    {
-        ifstream file(filename.c_str());
-
-        if (!file.is_open())
-            return false;
-
-        stringstream sstr;
-        sstr << file.rdbuf();
-        contents = sstr.str();
-
-        return true;
-    }
-
-    bool compare_files(const string& filename1, const string& filename2)
-    {
-        string contents1;
-
-        if (!load_file(filename1, contents1))
-            return false;
-
-        string contents2;
-        
-        if (!load_file(filename2, contents2))
-            return false;
-
-        return contents1 == contents2;
-    }
-
     FOUNDATION_TEST_CASE(Write_GivenEmptyDictionary_WriteEmptySettingsFile)
     {
         Dictionary dictionary;
@@ -139,7 +109,7 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_SettingsFileWriter)
         writer.write("output/test_settings_emptysettingsfile.xml", dictionary);
 
         const bool identical =
-            compare_files(
+            compare_text_files(
                 "data/test_settings_emptysettingsfile.xml",
                 "output/test_settings_emptysettingsfile.xml");
 
@@ -156,7 +126,7 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_SettingsFileWriter)
         writer.write("output/test_settings_settingsfilewithtwoscalarparameters.xml", dictionary);
 
         const bool identical =
-            compare_files(
+            compare_text_files(
                 "data/test_settings_settingsfilewithtwoscalarparameters.xml",
                 "output/test_settings_settingsfilewithtwoscalarparameters.xml");
 
@@ -181,7 +151,7 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_SettingsFileWriter)
         writer.write("output/test_settings_settingsfilewithtwodictionaryparameters.xml", dictionary);
 
         const bool identical =
-            compare_files(
+            compare_text_files(
                 "data/test_settings_settingsfilewithtwodictionaryparameters.xml",
                 "output/test_settings_settingsfilewithtwodictionaryparameters.xml");
 
