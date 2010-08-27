@@ -29,6 +29,9 @@
 // Interface header.
 #include "projectexplorer.h"
 
+// appleseed.studio headers.
+#include "mainwindow/entityeditorwindow.h"
+
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
 #include "renderer/api/color.h"
@@ -117,6 +120,7 @@ namespace
         ItemEnvironmentEDF,
         ItemEnvironmentShader,
         ItemMaterial,
+        ItemMaterialCollection,
         ItemLight,
         ItemObject,
         ItemObjectInstance,
@@ -350,6 +354,8 @@ void ProjectExplorer::insert_assembly_items(const Assembly& assembly)
         insert_items(
             assembly_items.m_assembly_item,
             "Materials",
+            ItemMaterialCollection,
+            &assembly,
             ItemMaterial,
             assembly.materials());
 
@@ -492,6 +498,10 @@ QMenu* ProjectExplorer::build_item_context_menu(const QTreeWidgetItem* item) con
         menu = build_assembly_collection_context_menu();
         break;
 
+      case ItemMaterialCollection:
+        menu = build_material_collection_context_menu();
+        break;
+
       case ItemTextureCollection:
         menu = build_texture_collection_context_menu();
         break;
@@ -517,8 +527,9 @@ QMenu* ProjectExplorer::build_assembly_context_menu() const
 {
     QMenu* menu = new QMenu(m_tree_widget);
     menu->addAction("Instantiate...", this, SLOT(slot_instantiate_assembly()));
-    menu->addAction("Add Objects...", this, SLOT(slot_add_objects_to_assembly()));
-    menu->addAction("Add Textures...", this, SLOT(slot_add_textures_to_assembly()));
+    menu->addAction("Import Objects...", this, SLOT(slot_import_objects_to_assembly()));
+    menu->addAction("Import Textures...", this, SLOT(slot_import_textures_to_assembly()));
+    menu->addAction("Add Material...", this, SLOT(slot_add_material_to_assembly()));
     return menu;
 }
 
@@ -532,7 +543,14 @@ QMenu* ProjectExplorer::build_assembly_collection_context_menu() const
 QMenu* ProjectExplorer::build_texture_collection_context_menu() const
 {
     QMenu* menu = new QMenu(m_tree_widget);
-    menu->addAction("Add Textures...", this, SLOT(slot_add_textures_to_assembly()));
+    menu->addAction("Import Textures...", this, SLOT(slot_import_textures_to_assembly()));
+    return menu;
+}
+
+QMenu* ProjectExplorer::build_material_collection_context_menu() const
+{
+    QMenu* menu = new QMenu(m_tree_widget);
+    menu->addAction("Add Material...", this, SLOT(slot_add_material_to_assembly()));
     return menu;
 }
 
@@ -765,7 +783,7 @@ void ProjectExplorer::slot_instantiate_assembly()
     }
 }
 
-void ProjectExplorer::slot_add_objects_to_assembly()
+void ProjectExplorer::slot_import_objects_to_assembly()
 {
     QFileDialog::Options options;
     QString selected_filter;
@@ -773,7 +791,7 @@ void ProjectExplorer::slot_add_objects_to_assembly()
     const QStringList filepaths =
         QFileDialog::getOpenFileNames(
             m_tree_widget,
-            "Add Objects...",
+            "Import Objects...",
             "",
             "Geometry Files (*.obj);;All Files (*.*)",
             &selected_filter,
@@ -793,7 +811,7 @@ void ProjectExplorer::slot_add_objects_to_assembly()
     }
 }
 
-void ProjectExplorer::slot_add_textures_to_assembly()
+void ProjectExplorer::slot_import_textures_to_assembly()
 {
     QFileDialog::Options options;
     QString selected_filter;
@@ -801,7 +819,7 @@ void ProjectExplorer::slot_add_textures_to_assembly()
     const QStringList filepaths =
         QFileDialog::getOpenFileNames(
             m_tree_widget,
-            "Add Textures...",
+            "Import Textures...",
             "",
             "Texture Files (*.exr);;All Files (*.*)",
             &selected_filter,
@@ -819,6 +837,12 @@ void ProjectExplorer::slot_add_textures_to_assembly()
             assembly_items.m_texture_instance_items,
             filepaths[i].toStdString());
     }
+}
+
+void ProjectExplorer::slot_add_material_to_assembly()
+{
+    EntityEditorWindow* window = new EntityEditorWindow();
+    window->showNormal();
 }
 
 }   // namespace studio

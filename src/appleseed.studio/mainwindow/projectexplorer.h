@@ -122,14 +122,16 @@ class ProjectExplorer
     QMenu* build_assembly_context_menu() const;
     QMenu* build_assembly_collection_context_menu() const;
     QMenu* build_texture_collection_context_menu() const;
+    QMenu* build_material_collection_context_menu() const;
 
   private slots:
     void slot_context_menu(const QPoint& point);
 
     void slot_add_assembly();
     void slot_instantiate_assembly();
-    void slot_add_objects_to_assembly();
-    void slot_add_textures_to_assembly();
+    void slot_import_objects_to_assembly();
+    void slot_import_textures_to_assembly();
+    void slot_add_material_to_assembly();
 };
 
 }       // namespace studio

@@ -26,39 +26,35 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_HELP_ABOUT_ABOUTWINDOW_H
-#define APPLESEED_STUDIO_HELP_ABOUT_ABOUTWINDOW_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_ENTITYEDITORWINDOW_H
+#define APPLESEED_STUDIO_MAINWINDOW_ENTITYEDITORWINDOW_H
 
 // Qt headers.
 #include <QObject>
 #include <QWidget>
 
 // Forward declarations.
-namespace Ui { class AboutWindow; }
+namespace Ui { class EntityEditorWindow; }
 
 namespace appleseed {
 namespace studio {
 
-class AboutWindow
+class EntityEditorWindow
   : public QWidget
 {
     Q_OBJECT
 
   public:
-    explicit AboutWindow(QWidget* parent = 0);
+    explicit EntityEditorWindow(QWidget* parent = 0);
 
-    ~AboutWindow();
-
-    void center();
+    ~EntityEditorWindow();
 
   private:
     // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
-    Ui::AboutWindow* m_ui;
-
-    void set_version_string();
+    Ui::EntityEditorWindow* m_ui;
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_HELP_ABOUT_ABOUTWINDOW_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_ENTITYEDITORWINDOW_H
