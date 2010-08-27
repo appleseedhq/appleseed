@@ -37,7 +37,6 @@
 #include "foundation/utility/uid.h"
 
 // Qt headers.
-#include <QList>
 #include <QObject>
 
 // Standard headers.
@@ -102,8 +101,7 @@ class ProjectExplorer
 
     void build_tree_widget();
 
-    QTreeWidgetItem* insert_assembly_items(
-        const renderer::AssemblyContainer&  assemblies);
+    void insert_assembly_items(const renderer::Assembly& assembly);
 
     void insert_objects(
         renderer::ObjectContainer&          objects,
@@ -119,11 +117,11 @@ class ProjectExplorer
         QTreeWidgetItem*                    texture_instance_items,
         const std::string&                  path) const;
 
-    QMenu* build_context_menu(const QList<QTreeWidgetItem*> selected_items) const;
     QMenu* build_generic_context_menu() const;
-    QMenu* build_assembly_context_menu(const void* assembly) const;
+    QMenu* build_item_context_menu(const QTreeWidgetItem* item) const;
+    QMenu* build_assembly_context_menu() const;
     QMenu* build_assembly_collection_context_menu() const;
-    QMenu* build_texture_collection_context_menu(const void* assembly) const;
+    QMenu* build_texture_collection_context_menu() const;
 
   private slots:
     void slot_context_menu(const QPoint& point);
