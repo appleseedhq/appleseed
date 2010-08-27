@@ -103,9 +103,10 @@ ProjectExplorer::ProjectExplorer(QTreeWidget* tree_widget, Project* project)
 
 namespace
 {
-    enum EntityType
+    enum ItemType
     {
         ItemAssembly,
+        ItemAssemblyCollection,
         ItemAssemblyInstance,
         ItemBSDF,
         ItemCamera,
@@ -120,15 +121,17 @@ namespace
         ItemObjectInstance,
         ItemSurfaceShader,
         ItemTexture,
-        ItemTextureInstance
+        ItemTextureCollection,
+        ItemTextureInstance,
+        ItemCollection
     };
 
     template <typename ParentWidget>
-    QTreeWidgetItem* insert_entity_item(
+    QTreeWidgetItem* insert_item(
         ParentWidget*               parent_widget,
         const char*                 title,
-        const EntityType            entity_type,
-        const void*                 entity)
+        const ItemType              item_type,
+        const void*                 item_data)
     {
         assert(parent_widget);
         assert(title);
@@ -138,58 +141,92 @@ namespace
                 parent_widget,
                 QStringList() << title);
 
-        item->setData(0, Qt::UserRole, entity_type);
-        item->setData(1, Qt::UserRole, QVariant::fromValue(entity));
+        item->setData(0, Qt::UserRole, item_type);
+        item->setData(1, Qt::UserRole, QVariant::fromValue(item_data));
 
         return item;
     }
 
     template <typename ParentWidget>
-    QTreeWidgetItem* insert_collection_root_item(
+    QTreeWidgetItem* insert_collection_item(
         ParentWidget*               parent_widget,
         const char*                 title,
-        const EntityType            entity_type)
+        const ItemType              item_type,
+        const void*                 item_data)
     {
-        QTreeWidgetItem* root_item =
-            insert_entity_item(
+        QTreeWidgetItem* item =
+            insert_item(
                 parent_widget,
                 title,
-                entity_type,
-                0);
+                item_type,
+                item_data);
 
         QFont font;
         font.setBold(true);
-        root_item->setFont(0, font);
+        item->setFont(0, font);
 
-        return root_item;
+        return item;
+    }
+
+    template <typename ParentWidget>
+    QTreeWidgetItem* insert_collection_item(
+        ParentWidget*               parent_widget,
+        const char*                 title)
+    {
+        return
+            insert_collection_item(
+                parent_widget,
+                title,
+                ItemCollection,
+                0);
     }
 
     template <typename ParentWidget, typename EntityContainer>
-    QTreeWidgetItem* insert_collection_items(
+    QTreeWidgetItem* insert_items(
         ParentWidget*               parent_widget,
-        const char*                 root_item_title,
-        const EntityType            entity_type,
+        const char*                 root_title,
+        const ItemType              root_item_type,
+        const void*                 root_item_data,
+        const ItemType              item_type,
         const EntityContainer&      entities)
     {
         QTreeWidgetItem* root_item =
-            insert_collection_root_item(
+            insert_collection_item(
                 parent_widget,
-                root_item_title,
-                entity_type);
+                root_title,
+                root_item_type,
+                root_item_data);
 
         for (const_each<EntityContainer> i = entities; i; ++i)
         {
             const Entity& entity = *i;
 
             QTreeWidgetItem* entity_item =
-                insert_entity_item(
+                insert_item(
                     root_item,
                     entity.get_name(),
-                    entity_type,
+                    item_type,
                     &entity);
         }
 
         return root_item;
+    }
+
+    template <typename ParentWidget, typename EntityContainer>
+    QTreeWidgetItem* insert_items(
+        ParentWidget*               parent_widget,
+        const char*                 root_title,
+        const ItemType              item_type,
+        const EntityContainer&      entities)
+    {
+        return
+            insert_items(
+                parent_widget,
+                root_title,
+                ItemCollection,
+                0,
+                item_type,
+                entities);
     }
 }
 
@@ -200,35 +237,35 @@ void ProjectExplorer::build_tree_widget()
         const Scene& scene = *m_project->get_scene();
 
         m_scene_items.m_color_items =
-            insert_collection_items(
+            insert_items(
                 m_tree_widget,
                 "Colors",
                 ItemColor,
                 scene.colors());
 
         m_scene_items.m_texture_items =
-            insert_collection_items(
+            insert_items(
                 m_tree_widget,
                 "Textures",
                 ItemTexture,
                 scene.textures());
 
         m_scene_items.m_texture_instance_items =
-            insert_collection_items(
+            insert_items(
                 m_tree_widget,
                 "Texture Instances",
                 ItemTextureInstance,
                 scene.texture_instances());
 
         m_scene_items.m_environment_edf_items =
-            insert_collection_items(
+            insert_items(
                 m_tree_widget,
                 "Environment EDFs",
                 ItemEnvironmentEDF,
                 scene.environment_edfs());
 
         m_scene_items.m_environment_shader_items =
-            insert_collection_items(
+            insert_items(
                 m_tree_widget,
                 "Environment Shaders",
                 ItemEnvironmentShader,
@@ -237,7 +274,7 @@ void ProjectExplorer::build_tree_widget()
         m_scene_items.m_assembly_items = insert_assembly_items(scene.assemblies());
 
         m_scene_items.m_assembly_instance_items =
-            insert_collection_items(
+            insert_items(
                 m_tree_widget,
                 "Assembly Instances",
                 ItemAssemblyInstance,
@@ -248,14 +285,18 @@ void ProjectExplorer::build_tree_widget()
 QTreeWidgetItem* ProjectExplorer::insert_assembly_items(const AssemblyContainer& assemblies)
 {
     QTreeWidgetItem* root_item =
-        insert_collection_root_item(m_tree_widget, "Assemblies", ItemAssembly);
+        insert_collection_item(
+            m_tree_widget,
+            "Assemblies",
+            ItemAssemblyCollection,
+            0);
 
     for (const_each<AssemblyContainer> i = assemblies; i; ++i)
     {
         const Assembly& assembly = *i;
 
         QTreeWidgetItem* assembly_item =
-            insert_entity_item(
+            insert_item(
                 root_item,
                 assembly.get_name(),
                 ItemAssembly,
@@ -266,70 +307,72 @@ QTreeWidgetItem* ProjectExplorer::insert_assembly_items(const AssemblyContainer&
         assembly_items.m_assembly_item = assembly_item;
 
         assembly_items.m_color_items =
-            insert_collection_items(
+            insert_items(
                 assembly_item,
                 "Colors",
                 ItemColor,
                 i->colors());
 
         assembly_items.m_texture_items =
-            insert_collection_items(
+            insert_items(
                 assembly_item,
                 "Textures",
+                ItemTextureCollection,
+                &assembly,
                 ItemTexture,
                 i->textures());
 
         assembly_items.m_texture_instance_items =
-            insert_collection_items(
+            insert_items(
                 assembly_item,
                 "Texture Instances",
                 ItemTextureInstance,
                 i->texture_instances());
 
         assembly_items.m_bsdf_items =
-            insert_collection_items(
+            insert_items(
                 assembly_item,
                 "BSDFs",
                 ItemBSDF,
                 i->bsdfs());
 
         assembly_items.m_edf_items =
-            insert_collection_items(
+            insert_items(
                 assembly_item,
                 "EDFs",
                 ItemEDF,
                 i->edfs());
 
         assembly_items.m_surface_shader_items =
-            insert_collection_items(
+            insert_items(
                 assembly_item,
                 "Surface Shaders",
                 ItemSurfaceShader,
                 i->surface_shaders());
 
         assembly_items.m_material_items =
-            insert_collection_items(
+            insert_items(
                 assembly_item,
                 "Materials",
                 ItemMaterial,
                 i->materials());
 
         assembly_items.m_light_items =
-            insert_collection_items(
+            insert_items(
                 assembly_item,
                 "Lights",
                 ItemLight,
                 i->lights());
 
         assembly_items.m_object_items =
-            insert_collection_items(
+            insert_items(
                 assembly_item,
                 "Objects",
                 ItemObject,
                 i->objects());
 
         assembly_items.m_object_instance_items =
-            insert_collection_items(
+            insert_items(
                 assembly_item,
                 "Object Instances",
                 ItemObjectInstance,
@@ -363,7 +406,7 @@ void ProjectExplorer::insert_objects(
         object->get_parameters().insert("filename", filesystem::path(path).filename());
         object->get_parameters().insert("__common_base_name", base_object_name);
 
-        insert_entity_item(
+        insert_item(
             object_items,
             object->get_name(),
             ItemObject,
@@ -381,7 +424,7 @@ void ProjectExplorer::insert_objects(
                 Transformd(Matrix4d::identity()),
                 material_indices));
 
-        insert_entity_item(
+        insert_item(
             object_instance_items,
             object_instance.get()->get_name(),
             ItemObjectInstance,
@@ -411,7 +454,7 @@ void ProjectExplorer::insert_textures(
             texture_params,
             search_paths));
 
-    insert_entity_item(
+    insert_item(
         texture_items,
         texture.get()->get_name(),
         ItemTexture,
@@ -430,7 +473,7 @@ void ProjectExplorer::insert_textures(
             texture_instance_params,
             texture_index));
 
-    insert_entity_item(
+    insert_item(
         texture_instance_items,
         texture_instance.get()->get_name(),
         ItemTextureInstance,
@@ -446,15 +489,21 @@ QMenu* ProjectExplorer::build_context_menu(const QList<QTreeWidgetItem*> selecte
 
     const QTreeWidgetItem* selected_item = selected_items.first();
 
-    const EntityType entity_type =
-        static_cast<EntityType>(selected_item->data(0, Qt::UserRole).value<int>());
+    const ItemType item_type =
+        static_cast<ItemType>(selected_item->data(0, Qt::UserRole).value<int>());
 
-    const void* entity = selected_item->data(1, Qt::UserRole).value<const void*>();
+    const void* item_data = selected_item->data(1, Qt::UserRole).value<const void*>();
 
-    switch (entity_type)
+    switch (item_type)
     {
       case ItemAssembly:
-        return build_assembly_context_menu(entity);
+        return build_assembly_context_menu(item_data);
+
+      case ItemAssemblyCollection:
+        return build_assembly_collection_context_menu();
+
+      case ItemTextureCollection:
+        return build_texture_collection_context_menu(item_data);
 
       default:
         return 0;
@@ -463,43 +512,48 @@ QMenu* ProjectExplorer::build_context_menu(const QList<QTreeWidgetItem*> selecte
 
 QMenu* ProjectExplorer::build_generic_context_menu() const
 {
-    QMenu* context_menu = new QMenu(m_tree_widget);
-    context_menu->addAction("Add Assembly...", this, SLOT(slot_add_assembly()));
-    return context_menu;
+    QMenu* menu = new QMenu(m_tree_widget);
+    menu->addAction("Add Assembly...", this, SLOT(slot_add_assembly()));
+    return menu;
 }
 
 QMenu* ProjectExplorer::build_assembly_context_menu(const void* assembly) const
 {
-    QMenu* context_menu = new QMenu(m_tree_widget);
+    QMenu* menu = new QMenu(m_tree_widget);
+    menu
+        ->addAction("Instantiate...", this, SLOT(slot_instantiate_assembly()))
+        ->setData(QVariant::fromValue(assembly));
+    menu
+        ->addAction("Add Objects...", this, SLOT(slot_add_objects_to_assembly()))
+        ->setData(QVariant::fromValue(assembly));
+    menu
+        ->addAction("Add Textures...", this, SLOT(slot_add_textures_to_assembly()))
+        ->setData(QVariant::fromValue(assembly));
+    return menu;
+}
 
-    if (assembly)
-    {
-        context_menu
-            ->addAction("Instantiate...", this, SLOT(slot_instantiate_assembly()))
-            ->setData(QVariant::fromValue(assembly));
+QMenu* ProjectExplorer::build_assembly_collection_context_menu() const
+{
+    QMenu* menu = new QMenu(m_tree_widget);
+    menu->addAction("Add Assembly...", this, SLOT(slot_add_assembly()));
+    return menu;
+}
 
-        context_menu
-            ->addAction("Add Objects...", this, SLOT(slot_add_objects_to_assembly()))
-            ->setData(QVariant::fromValue(assembly));
-
-        context_menu
-            ->addAction("Add Textures...", this, SLOT(slot_add_textures_to_assembly()))
-            ->setData(QVariant::fromValue(assembly));
-    }
-    else
-    {
-        context_menu->addAction("Add Assembly...", this, SLOT(slot_add_assembly()));
-    }
-
-    return context_menu;
+QMenu* ProjectExplorer::build_texture_collection_context_menu(const void* assembly) const
+{
+    QMenu* menu = new QMenu(m_tree_widget);
+    menu
+        ->addAction("Add Textures...", this, SLOT(slot_add_textures_to_assembly()))
+        ->setData(QVariant::fromValue(assembly));
+    return menu;
 }
 
 void ProjectExplorer::slot_context_menu(const QPoint& point)
 {
-    QMenu* context_menu = build_context_menu(m_tree_widget->selectedItems());
+    QMenu* menu = build_context_menu(m_tree_widget->selectedItems());
 
-    if (context_menu)
-        context_menu->exec(m_tree_widget->mapToGlobal(point));
+    if (menu)
+        menu->exec(m_tree_widget->mapToGlobal(point));
 }
 
 namespace
@@ -640,15 +694,17 @@ namespace
     }
 
     template <typename T>
-    const T& get_entity_from_data(QObject* object)
+    const T& get_data(const QObject* object)
     {
+        assert(object);
+
         const QAction* action = qobject_cast<const QAction*>(object);
         assert(action);
 
-        const void* action_data = action->data().value<const void*>();
-        assert(action_data);
+        const void* data = action->data().value<const void*>();
+        assert(data);
 
-        return *static_cast<const T*>(action_data);
+        return *static_cast<const T*>(data);
     }
 }
 
@@ -673,7 +729,7 @@ void ProjectExplorer::slot_add_assembly()
                 assembly_name.c_str(),
                 ParamArray()));
 
-        insert_entity_item(
+        insert_item(
             m_scene_items.m_assembly_items,
             assembly.get()->get_name(),
             ItemAssembly,
@@ -688,7 +744,7 @@ void ProjectExplorer::slot_instantiate_assembly()
     AssemblyInstanceContainer& assembly_instances =
         m_project->get_scene()->assembly_instances();
 
-    const Assembly& assembly = get_entity_from_data<Assembly>(sender());
+    const Assembly& assembly = get_data<Assembly>(sender());
 
     const string instance_name_suggestion =
         get_name_suggestion(
@@ -710,7 +766,7 @@ void ProjectExplorer::slot_instantiate_assembly()
                 assembly,
                 Transformd(Matrix4d::identity())));
 
-        insert_entity_item(
+        insert_item(
             m_scene_items.m_assembly_instance_items,
             assembly_instance.get()->get_name(),
             ItemAssemblyInstance,
@@ -734,7 +790,7 @@ void ProjectExplorer::slot_add_objects_to_assembly()
             &selected_filter,
             options);
 
-    const Assembly& assembly = get_entity_from_data<Assembly>(sender());
+    const Assembly& assembly = get_data<Assembly>(sender());
     const AssemblyItems& assembly_items = m_assembly_items[assembly.get_uid()];
 
     for (int i = 0; i < filepaths.size(); ++i)
@@ -762,7 +818,7 @@ void ProjectExplorer::slot_add_textures_to_assembly()
             &selected_filter,
             options);
 
-    const Assembly& assembly = get_entity_from_data<Assembly>(sender());
+    const Assembly& assembly = get_data<Assembly>(sender());
     const AssemblyItems& assembly_items = m_assembly_items[assembly.get_uid()];
 
     for (int i = 0; i < filepaths.size(); ++i)

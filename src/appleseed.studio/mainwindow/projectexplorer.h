@@ -122,6 +122,8 @@ class ProjectExplorer
     QMenu* build_context_menu(const QList<QTreeWidgetItem*> selected_items) const;
     QMenu* build_generic_context_menu() const;
     QMenu* build_assembly_context_menu(const void* assembly) const;
+    QMenu* build_assembly_collection_context_menu() const;
+    QMenu* build_texture_collection_context_menu(const void* assembly) const;
 
   private slots:
     void slot_context_menu(const QPoint& point);
