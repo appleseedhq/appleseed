@@ -90,6 +90,9 @@ source_group("main" FILES
 )
 
 set(mainwindow_sources
+    mainwindow/entityeditorwindow.cpp
+    mainwindow/entityeditorwindow.h
+    mainwindow/entityeditorwindow.ui
     mainwindow/logwidget.cpp
     mainwindow/logwidget.h
     mainwindow/mainwindow.cpp
@@ -191,10 +194,11 @@ source_group("resources" FILES
 # Generate ui_* files.
 #
 
-set(appleseed.studio_ui_files
-    debug/tests/testwindow.ui
-    help/about/aboutwindow.ui
-    mainwindow/mainwindow.ui
+# Collect all .ui files amongst the source files.
+filter_list(
+    appleseed.studio_ui_files
+    "${appleseed.studio_sources}"
+    ".*\\\\.ui"
 )
 
 QT4_WRAP_UI(appleseed.studio_generated_ui_files
