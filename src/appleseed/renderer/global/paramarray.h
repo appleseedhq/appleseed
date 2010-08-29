@@ -52,6 +52,7 @@ class RENDERERDLL ParamArray
 {
   public:
     // Insert an item into the dictionary.
+    template <typename T> void insert(const char* key, const T& value);
     void insert_path(const char* path, const char* value);
     template <typename T> void insert_path(const char* path, const T& value);
     template <typename T> void insert_path(const std::string& path, const T& value);
@@ -103,6 +104,18 @@ class RENDERERDLL ParamArray
 //
 // ParamArray class implementation.
 //
+
+template <typename T>
+inline void ParamArray::insert(const char* key, const T& value)
+{
+    Dictionary::insert(key, value);
+}
+
+template <>
+inline void ParamArray::insert(const char* key, const ParamArray& value)
+{
+    dictionaries().insert(key, value);
+}
 
 template <typename T>
 inline void ParamArray::insert_path(const char* path, const T& value)
