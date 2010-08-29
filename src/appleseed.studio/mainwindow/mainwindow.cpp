@@ -773,7 +773,7 @@ void MainWindow::slot_camera_changed()
 void MainWindow::slot_show_test_window()
 {
     if (m_test_window.get() == 0)
-        m_test_window.reset(new TestWindow());
+        m_test_window.reset(new TestWindow(this));
 
     m_test_window->showNormal();
     m_test_window->activateWindow();
@@ -783,7 +783,7 @@ void MainWindow::slot_show_test_window()
 void MainWindow::slot_show_about_window()
 {
     if (m_about_window.get() == 0)
-        m_about_window.reset(new AboutWindow());
+        m_about_window.reset(new AboutWindow(this));
 
     m_about_window->center();
     m_about_window->showNormal();

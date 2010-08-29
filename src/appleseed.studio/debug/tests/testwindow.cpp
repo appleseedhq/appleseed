@@ -72,6 +72,8 @@ TestWindow::TestWindow(QWidget* parent)
 {
     m_ui->setupUi(this);
 
+    setWindowFlags(Qt::Window);
+
     m_ui->splitter->setSizes(QList<int>() << 300 << 600);
 
     disable_mac_focus_rect(*m_ui->treewidget_tests);
