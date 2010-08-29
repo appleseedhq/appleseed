@@ -782,13 +782,12 @@ void MainWindow::slot_show_test_window()
 
 void MainWindow::slot_show_about_window()
 {
-    if (m_about_window.get() == 0)
-        m_about_window.reset(new AboutWindow(this));
+    AboutWindow* about_window = new AboutWindow(this);
 
-    m_about_window->center();
-    m_about_window->showNormal();
-    m_about_window->activateWindow();
-    m_about_window->raise();
+    about_window->center();
+    about_window->showNormal();
+    about_window->activateWindow();
+    about_window->raise();
 }
 
 }   // namespace studio

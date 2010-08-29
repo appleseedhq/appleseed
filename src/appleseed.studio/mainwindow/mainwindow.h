@@ -97,7 +97,6 @@ class MainWindow
     std::auto_ptr<QtLogTarget>          m_log_target;
 
     std::auto_ptr<TestWindow>           m_test_window;
-    std::auto_ptr<AboutWindow>          m_about_window;
 
     renderer::ParamArray                m_settings;
 
