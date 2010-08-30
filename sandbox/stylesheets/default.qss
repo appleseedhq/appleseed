@@ -583,3 +583,13 @@ QLineEdit
 {
     border: 1px solid rgb(40, 40, 40);
 }
+
+
+/*
+ * Label
+ */
+
+QLabel[hasFrame="true"]
+{
+    border: 1px solid rgb(40, 40, 40);
+}
