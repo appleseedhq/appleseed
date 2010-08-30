@@ -859,7 +859,7 @@ void ProjectExplorer::slot_add_material_to_assembly()
     name_widget.insert("widget", "text_box");
     name_widget.insert("use", "required");
     name_widget.insert("default", material_name_suggestion);
-    bsdf_widget.insert("focus", "true");
+    name_widget.insert("focus", "true");
 
     Dictionary bsdf_widget;
     bsdf_widget.insert("name", "bsdf");
