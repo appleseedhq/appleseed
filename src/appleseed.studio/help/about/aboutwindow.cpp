@@ -67,9 +67,9 @@ AboutWindow::AboutWindow(QWidget* parent)
 
     connect(m_ui->dialogbuttonbox, SIGNAL(accepted()), this, SLOT(close()));
 
-    // Pressing the Escape key closes the window.
-    QShortcut* close_window_shortcut = new QShortcut(QKeySequence(Qt::Key_Escape), this);
-    connect(close_window_shortcut, SIGNAL(activated()), this, SLOT(close()));
+    connect(
+        new QShortcut(QKeySequence(Qt::Key_Escape), this), SIGNAL(activated()),
+        this, SLOT(close()));
 }
 
 AboutWindow::~AboutWindow()

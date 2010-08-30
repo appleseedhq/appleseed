@@ -777,7 +777,6 @@ void MainWindow::slot_show_test_window()
 
     m_test_window->showNormal();
     m_test_window->activateWindow();
-    m_test_window->raise();
 }
 
 void MainWindow::slot_show_about_window()
@@ -787,7 +786,6 @@ void MainWindow::slot_show_about_window()
     about_window->center();
     about_window->showNormal();
     about_window->activateWindow();
-    about_window->raise();
 }
 
 }   // namespace studio

@@ -93,7 +93,6 @@ TestWindow::TestWindow(QWidget* parent)
         this, SLOT(slot_on_tests_execution_complete(const int, const int)));
 
     build_connections();
-    build_shortcuts();
 
     configure_tests_treeview();
     configure_output_treeview();
@@ -116,6 +115,10 @@ void TestWindow::build_connections()
         this, SLOT(close()));
 
     connect(
+        new QShortcut(QKeySequence(Qt::Key_Escape), this), SIGNAL(activated()),
+        this, SLOT(close()));
+
+    connect(
         m_ui->pushbutton_check_all, SIGNAL(clicked()),
         this, SLOT(slot_check_all_tests()));
 
@@ -134,15 +137,6 @@ void TestWindow::build_connections()
     connect(
         m_ui->checkbox_show_all, SIGNAL(stateChanged(int)),
         this, SLOT(slot_filter_output_treeview()));
-}
-
-void TestWindow::build_shortcuts()
-{
-    // Pressing the Escape key closes the window.
-    QShortcut* close_window_shortcut = new QShortcut(QKeySequence(Qt::Key_Escape), this);
-    connect(
-        close_window_shortcut, SIGNAL(activated()),
-        this, SLOT(close()));
 }
 
 void TestWindow::configure_tests_treeview()
