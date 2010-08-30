@@ -51,6 +51,26 @@ namespace
     const ParamArray empty_param_array;
 }
 
+ParamArray::ParamArray()
+{
+}
+
+ParamArray::ParamArray(const ParamArray& rhs)
+  : Dictionary(rhs)
+{
+}
+
+ParamArray::ParamArray(const Dictionary& dictionary)
+  : Dictionary(dictionary)
+{
+}
+
+ParamArray& ParamArray::operator=(const ParamArray& rhs)
+{
+    Dictionary::operator=(rhs);
+    return *this;
+}
+
 void ParamArray::insert_path(const char* path, const char* value)
 {
     assert(path);

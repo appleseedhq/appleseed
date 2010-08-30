@@ -51,6 +51,14 @@ class RENDERERDLL ParamArray
   : public foundation::Dictionary
 {
   public:
+    // Constructors.
+    ParamArray();
+    ParamArray(const ParamArray& rhs);
+    ParamArray(const Dictionary& dictionary);
+
+    // Assignment operator.
+    ParamArray& operator=(const ParamArray& rhs);
+
     // Insert an item into the dictionary.
     template <typename T> void insert(const char* key, const T& value);
     void insert_path(const char* path, const char* value);
