@@ -56,6 +56,7 @@
 #include <QInputDialog>
 #include <QList>
 #include <QMenu>
+#include <QMessageBox>
 #include <QMetaType>
 #include <QPoint>
 #include <QString>
@@ -519,7 +520,7 @@ QMenu* ProjectExplorer::build_item_context_menu(const QTreeWidgetItem* item) con
 QMenu* ProjectExplorer::build_generic_context_menu() const
 {
     QMenu* menu = new QMenu(m_tree_widget);
-    menu->addAction("Add Assembly...", this, SLOT(slot_add_assembly()));
+    menu->addAction("Create Assembly...", this, SLOT(slot_add_assembly()));
     return menu;
 }
 
@@ -529,14 +530,14 @@ QMenu* ProjectExplorer::build_assembly_context_menu() const
     menu->addAction("Instantiate...", this, SLOT(slot_instantiate_assembly()));
     menu->addAction("Import Objects...", this, SLOT(slot_import_objects_to_assembly()));
     menu->addAction("Import Textures...", this, SLOT(slot_import_textures_to_assembly()));
-    menu->addAction("Add Material...", this, SLOT(slot_add_material_to_assembly()));
+    menu->addAction("Create Material...", this, SLOT(slot_add_material_to_assembly()));
     return menu;
 }
 
 QMenu* ProjectExplorer::build_assembly_collection_context_menu() const
 {
     QMenu* menu = new QMenu(m_tree_widget);
-    menu->addAction("Add Assembly...", this, SLOT(slot_add_assembly()));
+    menu->addAction("Create Assembly...", this, SLOT(slot_add_assembly()));
     return menu;
 }
 
@@ -550,7 +551,7 @@ QMenu* ProjectExplorer::build_texture_collection_context_menu() const
 QMenu* ProjectExplorer::build_material_collection_context_menu() const
 {
     QMenu* menu = new QMenu(m_tree_widget);
-    menu->addAction("Add Material...", this, SLOT(slot_add_material_to_assembly()));
+    menu->addAction("Create Material...", this, SLOT(slot_add_material_to_assembly()));
     return menu;
 }
 
@@ -705,17 +706,21 @@ namespace
     }
 
     template <typename T>
-    const T& get_data(const QObject* object)
+    const T& get(const QVariant& variant)
+    {
+        const void* data = variant.value<const void*>();
+        return *static_cast<const T*>(data);
+    }
+
+    template <typename T>
+    const T& get_from_action(const QObject* object)
     {
         assert(object);
 
         const QAction* action = qobject_cast<const QAction*>(object);
         assert(action);
 
-        const void* data = action->data().value<const void*>();
-        assert(data);
-
-        return *static_cast<const T*>(data);
+        return get<T>(action->data());
     }
 }
 
@@ -729,7 +734,7 @@ void ProjectExplorer::slot_add_assembly()
     const string assembly_name =
         get_entity_name(
             m_tree_widget,
-            "Add Assembly...",
+            "Create Assembly",
             "Assembly Name:",
             assembly_name_suggestion);
 
@@ -751,7 +756,7 @@ void ProjectExplorer::slot_instantiate_assembly()
     AssemblyInstanceContainer& assembly_instances =
         m_project->get_scene()->assembly_instances();
 
-    const Assembly& assembly = get_data<Assembly>(sender());
+    const Assembly& assembly = get_from_action<Assembly>(sender());
 
     const string instance_name_suggestion =
         get_name_suggestion(
@@ -761,7 +766,7 @@ void ProjectExplorer::slot_instantiate_assembly()
     const string instance_name =
         get_entity_name(
             m_tree_widget,
-            "Instantiate Assembly...",
+            "Instantiate Assembly",
             "Assembly Instance Name:",
             instance_name_suggestion);
 
@@ -797,7 +802,7 @@ void ProjectExplorer::slot_import_objects_to_assembly()
             &selected_filter,
             options);
 
-    const Assembly& assembly = get_data<Assembly>(sender());
+    const Assembly& assembly = get_from_action<Assembly>(sender());
     const AssemblyItems& assembly_items = m_assembly_items[assembly.get_uid()];
 
     for (int i = 0; i < filepaths.size(); ++i)
@@ -825,7 +830,7 @@ void ProjectExplorer::slot_import_textures_to_assembly()
             &selected_filter,
             options);
 
-    const Assembly& assembly = get_data<Assembly>(sender());
+    const Assembly& assembly = get_from_action<Assembly>(sender());
     const AssemblyItems& assembly_items = m_assembly_items[assembly.get_uid()];
 
     for (int i = 0; i < filepaths.size(); ++i)
@@ -841,8 +846,121 @@ void ProjectExplorer::slot_import_textures_to_assembly()
 
 void ProjectExplorer::slot_add_material_to_assembly()
 {
-    EntityEditorWindow* window = new EntityEditorWindow();
-    window->showNormal();
+    const Assembly& assembly = get_from_action<Assembly>(sender());
+
+    const string material_name_suggestion =
+        get_name_suggestion(
+            "material",
+            assembly.materials());
+
+    Dictionary name_widget;
+    name_widget.insert("name", "name");
+    name_widget.insert("label", "Name");
+    name_widget.insert("widget", "text_box");
+    name_widget.insert("use", "required");
+    name_widget.insert("default", material_name_suggestion);
+    bsdf_widget.insert("focus", "true");
+
+    Dictionary bsdf_widget;
+    bsdf_widget.insert("name", "bsdf");
+    bsdf_widget.insert("label", "BSDF");
+    bsdf_widget.insert("widget", "entity_picker");
+    bsdf_widget.insert("entity", "bsdf");
+    bsdf_widget.insert("use", "optional");
+
+    Dictionary edf_widget;
+    edf_widget.insert("name", "edf");
+    edf_widget.insert("label", "EDF");
+    edf_widget.insert("widget", "entity_picker");
+    edf_widget.insert("entity", "edf");
+    edf_widget.insert("use", "optional");
+
+    Dictionary surface_shader_widget;
+    surface_shader_widget.insert("name", "surface_shader");
+    surface_shader_widget.insert("label", "Surface Shader");
+    surface_shader_widget.insert("widget", "entity_picker");
+    surface_shader_widget.insert("entity", "surface_shader");
+    surface_shader_widget.insert("use", "required");
+
+    EntityEditorWindow::InputWidgetCollection input_widgets;
+    input_widgets.push_back(name_widget);
+    input_widgets.push_back(bsdf_widget);
+    input_widgets.push_back(edf_widget);
+    input_widgets.push_back(surface_shader_widget);
+
+    const QVariant data = qobject_cast<const QAction*>(sender())->data();
+
+    EntityEditorWindow* editor_window =
+        new EntityEditorWindow(
+            m_tree_widget,
+            m_project,
+            "Create Material",
+            input_widgets,
+            data);
+
+    connect(
+        editor_window, SIGNAL(accepted(QVariant, foundation::Dictionary)),
+        this, SLOT(slot_create_material_entity(QVariant, foundation::Dictionary)));
+
+    editor_window->showNormal();
+    editor_window->activateWindow();
+}
+
+namespace
+{
+    void display_entity_edition_error(
+        const QString&  title,
+        const QString&  message)
+    {
+        QMessageBox msgbox;
+        msgbox.setWindowTitle(title);
+        msgbox.setIcon(QMessageBox::Warning);
+        msgbox.setText(message);
+        msgbox.setStandardButtons(QMessageBox::Ok);
+        msgbox.setDefaultButton(QMessageBox::Ok);
+        msgbox.exec();
+    }
+}
+
+void ProjectExplorer::slot_create_material_entity(QVariant payload, Dictionary values)
+{
+    try
+    {
+        const Assembly& assembly = get<Assembly>(payload);
+        const AssemblyItems& assembly_items = m_assembly_items[assembly.get_uid()];
+
+        const string name = values.get<string>("name");
+
+        auto_release_ptr<Material> material(
+            MaterialFactory::create(
+                name.c_str(),
+                values,
+                assembly.surface_shaders(),
+                assembly.bsdfs(),
+                assembly.edfs()));
+
+        insert_item(
+            assembly_items.m_material_items,
+            name.c_str(),
+            ItemMaterial,
+            material.get());
+
+        assembly.materials().insert(material);
+
+        qobject_cast<QWidget*>(sender())->close();
+    }
+    catch (const ExceptionDictionaryItemNotFound& e)
+    {
+        display_entity_edition_error(
+            "Failed to create material",
+            QString("Required parameter \"%0\" missing").arg(e.string()));
+    }
+    catch (const ExceptionUnknownEntity& e)
+    {
+        display_entity_edition_error(
+            "Failed to create material",
+            QString("Unknown entity \"%0\"").arg(e.string()));
+    }
 }
 
 }   // namespace studio

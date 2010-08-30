@@ -32,19 +32,194 @@
 // UI definition header.
 #include "ui_entityeditorwindow.h"
 
+// appleseed.renderer headers.
+#include "renderer/api/project.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/foreach.h"
+#include "foundation/utility/string.h"
+
+// Qt headers.
+#include <QDialogButtonBox>
+#include <QFormLayout>
+#include <QHBoxLayout>
+#include <QKeySequence>
+#include <QLabel>
+#include <QPushButton>
+#include <QShortCut>
+#include <QString>
+
+using namespace foundation;
+using namespace renderer;
+using namespace std;
+
+namespace foundation
+{
+    template <>
+    inline QString from_string(const string& s)
+    {
+        return QString::fromStdString(s);
+    }
+}
+
 namespace appleseed {
 namespace studio {
 
-EntityEditorWindow::EntityEditorWindow(QWidget* parent)
+EntityEditorWindow::EntityEditorWindow(
+    QWidget*                        parent,
+    Project*                        project,
+    const string&                   window_title,
+    const InputWidgetCollection&    input_widgets,
+    const QVariant&                 payload)
   : QWidget(parent)
   , m_ui(new Ui::EntityEditorWindow())
+  , m_input_widgets(input_widgets)
+  , m_payload(payload)
 {
     m_ui->setupUi(this);
+
+    setAttribute(Qt::WA_DeleteOnClose);
+    setWindowFlags(Qt::Tool);
+    setWindowTitle(QString::fromStdString(window_title));
+
+    build_form();
+
+    resize(400, sizeHint().height());
+
+    connect(
+        m_ui->buttonbox->button(QDialogButtonBox::Ok), SIGNAL(clicked()),
+        this, SLOT(slot_accept()));
+
+    connect(
+        m_ui->buttonbox->button(QDialogButtonBox::Cancel), SIGNAL(clicked()),
+        this, SLOT(close()));
+
+    connect(
+        new QShortcut(QKeySequence(Qt::Key_Return), this), SIGNAL(activated()),
+        this, SLOT(slot_accept()));
+
+    connect(
+        new QShortcut(QKeySequence(Qt::Key_Escape), this), SIGNAL(activated()),
+        this, SLOT(close()));
 }
 
 EntityEditorWindow::~EntityEditorWindow()
 {
+    for (const_each<ValueReaderCollection> i = m_value_readers; i; ++i)
+        delete i->second;
+
     delete m_ui;
+}
+
+void EntityEditorWindow::build_form()
+{
+    QFormLayout* layout = new QFormLayout(m_ui->scrollarea_contents);
+
+    int left, top, right, bottom;
+    layout->getContentsMargins(&left, &top, &right, &bottom);
+    layout->setContentsMargins(0, top, 0, bottom);
+
+    for (const_each<InputWidgetCollection> i = m_input_widgets; i; ++i)
+        create_input_widget(layout, *i);
+
+    m_ui->scrollarea_contents->setLayout(layout);
+}
+
+void EntityEditorWindow::create_input_widget(QFormLayout* layout, const Dictionary& widget_params)
+{
+    const string widget_type = widget_params.get<string>("widget");
+
+    if (widget_type == "text_box")
+    {
+        create_text_box_input_widget(layout, widget_params);
+    }
+    else if (widget_type == "entity_picker")
+    {
+        create_entity_picker_input_widget(layout, widget_params);
+    }
+    else
+    {
+        assert(!"Unknown widget type.");
+    }
+}
+
+namespace
+{
+    QString get_label_text(const Dictionary& widget_params)
+    {
+        return widget_params.get<QString>("label") + ":";
+    }
+
+    bool should_be_focused(const Dictionary& widget_params)
+    {
+        return
+            widget_params.strings().exist("focus") &&
+            widget_params.strings().get<bool>("focus");
+    }
+}
+
+void EntityEditorWindow::create_text_box_input_widget(
+    QFormLayout*        layout,
+    const Dictionary&   widget_params)
+{
+    QLineEdit* line_edit = new QLineEdit(m_ui->scrollarea_contents);
+
+    if (widget_params.strings().exist("default"))
+        line_edit->setText(widget_params.strings().get<QString>("default"));
+
+    if (should_be_focused(widget_params))
+    {
+        line_edit->selectAll();
+        line_edit->setFocus();
+    }
+
+    const string name = widget_params.get<string>("name");
+    m_value_readers[name] = new LineEditValueReader(line_edit);
+
+    layout->addRow(get_label_text(widget_params), line_edit);
+}
+
+void EntityEditorWindow::create_entity_picker_input_widget(
+    QFormLayout*        layout,
+    const Dictionary&   widget_params)
+{
+    QLineEdit* line_edit = new QLineEdit(m_ui->scrollarea_contents);
+
+    if (widget_params.strings().exist("default"))
+        line_edit->setText(widget_params.strings().get<QString>("default"));
+
+    if (should_be_focused(widget_params))
+    {
+        line_edit->selectAll();
+        line_edit->setFocus();
+    }
+
+    QWidget* button = new QPushButton("Browse", m_ui->scrollarea_contents);
+    button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+
+    QHBoxLayout* sublayout = new QHBoxLayout(m_ui->scrollarea_contents);
+    sublayout->addWidget(line_edit);
+    sublayout->addWidget(button);
+
+    const string name = widget_params.get<string>("name");
+    m_value_readers[name] = new LineEditValueReader(line_edit);
+
+    layout->addRow(get_label_text(widget_params), sublayout);
+}
+
+void EntityEditorWindow::slot_accept()
+{
+    Dictionary values;
+
+    for (const_each<InputWidgetCollection> i = m_input_widgets; i; ++i)
+    {
+        const Dictionary& widget_params = *i;
+        const string name = widget_params.get<string>("name");
+        const string value = m_value_readers[name]->read();
+        values.insert(name, value);
+    }
+
+    emit accepted(m_payload, values);
 }
 
 }   // namespace studio

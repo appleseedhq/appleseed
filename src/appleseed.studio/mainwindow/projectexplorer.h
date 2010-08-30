@@ -34,10 +34,12 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/uid.h"
 
 // Qt headers.
 #include <QObject>
+#include <QVariant>
 
 // Standard headers.
 #include <map>
@@ -132,6 +134,8 @@ class ProjectExplorer
     void slot_import_objects_to_assembly();
     void slot_import_textures_to_assembly();
     void slot_add_material_to_assembly();
+
+    void slot_create_material_entity(QVariant payload, foundation::Dictionary values);
 };
 
 }       // namespace studio

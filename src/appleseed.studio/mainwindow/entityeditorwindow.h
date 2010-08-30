@@ -29,12 +29,25 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_ENTITYEDITORWINDOW_H
 #define APPLESEED_STUDIO_MAINWINDOW_ENTITYEDITORWINDOW_H
 
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/utility/containers/dictionary.h"
+
 // Qt headers.
+#include <QLineEdit>
 #include <QObject>
+#include <QVariant>
 #include <QWidget>
 
+// Standard headers.
+#include <map>
+#include <string>
+#include <vector>
+
 // Forward declarations.
-namespace Ui { class EntityEditorWindow; }
+namespace Ui        { class EntityEditorWindow; }
+namespace renderer  { class Project; }
+class QFormLayout;
 
 namespace appleseed {
 namespace studio {
@@ -45,13 +58,65 @@ class EntityEditorWindow
     Q_OBJECT
 
   public:
-    explicit EntityEditorWindow(QWidget* parent = 0);
+    typedef std::vector<foundation::Dictionary> InputWidgetCollection;
+
+    EntityEditorWindow(
+        QWidget*                        parent,
+        renderer::Project*              project,
+        const std::string&              window_title,
+        const InputWidgetCollection&    input_widgets,
+        const QVariant&                 payload);
 
     ~EntityEditorWindow();
 
+  signals:
+    void accepted(QVariant payload, foundation::Dictionary values);
+
   private:
     // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
-    Ui::EntityEditorWindow* m_ui;
+    Ui::EntityEditorWindow*             m_ui;
+
+    const InputWidgetCollection         m_input_widgets;
+    const QVariant                      m_payload;
+
+    class LineEditValueReader
+      : public foundation::NonCopyable
+    {
+      public:
+        explicit LineEditValueReader(QLineEdit* line_edit)
+          : m_line_edit(line_edit)
+        {
+        }
+
+        std::string read() const
+        {
+            return m_line_edit->text().toStdString();
+        }
+
+      private:
+        QLineEdit*  m_line_edit;
+    };
+
+    typedef std::map<std::string, LineEditValueReader*> ValueReaderCollection;
+
+    ValueReaderCollection               m_value_readers;
+
+    void build_form();
+    
+    void create_input_widget(
+        QFormLayout*                    layout,
+        const foundation::Dictionary&   widget_params);
+
+    void create_text_box_input_widget(
+        QFormLayout*                    layout,
+        const foundation::Dictionary&   widget_params);
+
+    void create_entity_picker_input_widget(
+        QFormLayout*                    layout,
+        const foundation::Dictionary&   widget_params);
+
+  private slots:
+    void slot_accept();
 };
 
 }       // namespace studio
