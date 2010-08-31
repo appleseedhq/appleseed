@@ -29,9 +29,6 @@
 // Interface header.
 #include "projectexplorer.h"
 
-// appleseed.studio headers.
-#include "mainwindow/entityeditorwindow.h"
-
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
 #include "renderer/api/color.h"
@@ -114,6 +111,7 @@ namespace
         ItemAssemblyCollection,
         ItemAssemblyInstance,
         ItemBSDF,
+        ItemBSDFCollection,
         ItemCamera,
         ItemColor,
         ItemEDF,
@@ -334,6 +332,8 @@ void ProjectExplorer::insert_assembly_items(const Assembly& assembly)
         insert_items(
             assembly_items.m_assembly_item,
             "BSDFs",
+            ItemBSDFCollection,
+            &assembly,
             ItemBSDF,
             assembly.bsdfs());
 
@@ -384,7 +384,115 @@ void ProjectExplorer::insert_assembly_items(const Assembly& assembly)
     m_assembly_items[assembly.get_uid()] = assembly_items;
 }
 
-void ProjectExplorer::insert_objects(
+QMenu* ProjectExplorer::build_item_context_menu(const QTreeWidgetItem* item) const
+{
+    const ItemType item_type =
+        static_cast<ItemType>(item->data(0, Qt::UserRole).value<int>());
+
+    QMenu* menu = 0;
+
+    switch (item_type)
+    {
+      case ItemAssembly:
+        menu = build_assembly_context_menu();
+        break;
+
+      case ItemAssemblyCollection:
+        menu = build_assembly_collection_context_menu();
+        break;
+
+      case ItemBSDFCollection:
+        menu = build_bsdf_collection_context_menu();
+        break;
+
+      case ItemMaterialCollection:
+        menu = build_material_collection_context_menu();
+        break;
+
+      case ItemTextureCollection:
+        menu = build_texture_collection_context_menu();
+        break;
+    }
+
+    if (menu)
+    {
+        for (const_each<QList<QAction*> > i = menu->actions(); i; ++i)
+            (*i)->setData(item->data(1, Qt::UserRole));
+    }
+
+    return menu;
+}
+
+QMenu* ProjectExplorer::build_generic_context_menu() const
+{
+    QMenu* menu = new QMenu(m_tree_widget);
+    menu->addAction("Create Assembly...", this, SLOT(slot_add_assembly()));
+    return menu;
+}
+
+QMenu* ProjectExplorer::build_assembly_context_menu() const
+{
+    QMenu* menu = new QMenu(m_tree_widget);
+    menu->addAction("Instantiate...", this, SLOT(slot_instantiate_assembly()));
+    menu->addSeparator();
+    menu->addAction("Import Objects...", this, SLOT(slot_import_objects_to_assembly()));
+    menu->addAction("Import Textures...", this, SLOT(slot_import_textures_to_assembly()));
+    menu->addSeparator();
+    menu->addAction("Create BSDF...", this, SLOT(slot_add_bsdf_to_assembly()));
+    menu->addAction("Create Material...", this, SLOT(slot_add_material_to_assembly()));
+    return menu;
+}
+
+QMenu* ProjectExplorer::build_assembly_collection_context_menu() const
+{
+    QMenu* menu = new QMenu(m_tree_widget);
+    menu->addAction("Create Assembly...", this, SLOT(slot_add_assembly()));
+    return menu;
+}
+
+QMenu* ProjectExplorer::build_texture_collection_context_menu() const
+{
+    QMenu* menu = new QMenu(m_tree_widget);
+    menu->addAction("Import Textures...", this, SLOT(slot_import_textures_to_assembly()));
+    return menu;
+}
+
+QMenu* ProjectExplorer::build_bsdf_collection_context_menu() const
+{
+    QMenu* menu = new QMenu(m_tree_widget);
+    menu->addAction("Create BSDF...", this, SLOT(slot_add_bsdf_to_assembly()));
+    return menu;
+}
+
+QMenu* ProjectExplorer::build_material_collection_context_menu() const
+{
+    QMenu* menu = new QMenu(m_tree_widget);
+    menu->addAction("Create Material...", this, SLOT(slot_add_material_to_assembly()));
+    return menu;
+}
+
+void ProjectExplorer::create_entity_editor_window(
+    const string&                                       window_title,
+    const EntityEditorWindow::InputWidgetCollection&    input_widgets,
+    const char*                                         slot)
+{
+    EntityEditorWindow* editor_window =
+        new EntityEditorWindow(
+            m_tree_widget,
+            m_project,
+            window_title,
+            input_widgets,
+            qobject_cast<const QAction*>(sender())->data());
+
+    connect(
+        editor_window, SIGNAL(accepted(QVariant, foundation::Dictionary)),
+        this, slot);
+
+    editor_window->showNormal();
+    editor_window->activateWindow();
+}
+
+void ProjectExplorer::import_objects(
     ObjectContainer&            objects,
     ObjectInstanceContainer&    object_instances,
     QTreeWidgetItem*            object_items,
@@ -434,7 +542,7 @@ void ProjectExplorer::insert_objects(
     }
 }
 
-void ProjectExplorer::insert_textures(
+void ProjectExplorer::import_textures(
     TextureContainer&           textures,
     TextureInstanceContainer&   texture_instances,
     QTreeWidgetItem*            texture_items,
@@ -480,79 +588,6 @@ void ProjectExplorer::insert_textures(
         texture_instance.get());
 
     texture_instances.insert(texture_instance);
-}
-
-QMenu* ProjectExplorer::build_item_context_menu(const QTreeWidgetItem* item) const
-{
-    const ItemType item_type =
-        static_cast<ItemType>(item->data(0, Qt::UserRole).value<int>());
-
-    QMenu* menu = 0;
-
-    switch (item_type)
-    {
-      case ItemAssembly:
-        menu = build_assembly_context_menu();
-        break;
-
-      case ItemAssemblyCollection:
-        menu = build_assembly_collection_context_menu();
-        break;
-
-      case ItemMaterialCollection:
-        menu = build_material_collection_context_menu();
-        break;
-
-      case ItemTextureCollection:
-        menu = build_texture_collection_context_menu();
-        break;
-    }
-
-    if (menu)
-    {
-        for (const_each<QList<QAction*> > i = menu->actions(); i; ++i)
-            (*i)->setData(item->data(1, Qt::UserRole));
-    }
-
-    return menu;
-}
-
-QMenu* ProjectExplorer::build_generic_context_menu() const
-{
-    QMenu* menu = new QMenu(m_tree_widget);
-    menu->addAction("Create Assembly...", this, SLOT(slot_add_assembly()));
-    return menu;
-}
-
-QMenu* ProjectExplorer::build_assembly_context_menu() const
-{
-    QMenu* menu = new QMenu(m_tree_widget);
-    menu->addAction("Instantiate...", this, SLOT(slot_instantiate_assembly()));
-    menu->addAction("Import Objects...", this, SLOT(slot_import_objects_to_assembly()));
-    menu->addAction("Import Textures...", this, SLOT(slot_import_textures_to_assembly()));
-    menu->addAction("Create Material...", this, SLOT(slot_add_material_to_assembly()));
-    return menu;
-}
-
-QMenu* ProjectExplorer::build_assembly_collection_context_menu() const
-{
-    QMenu* menu = new QMenu(m_tree_widget);
-    menu->addAction("Create Assembly...", this, SLOT(slot_add_assembly()));
-    return menu;
-}
-
-QMenu* ProjectExplorer::build_texture_collection_context_menu() const
-{
-    QMenu* menu = new QMenu(m_tree_widget);
-    menu->addAction("Import Textures...", this, SLOT(slot_import_textures_to_assembly()));
-    return menu;
-}
-
-QMenu* ProjectExplorer::build_material_collection_context_menu() const
-{
-    QMenu* menu = new QMenu(m_tree_widget);
-    menu->addAction("Create Material...", this, SLOT(slot_add_material_to_assembly()));
-    return menu;
 }
 
 void ProjectExplorer::slot_context_menu(const QPoint& point)
@@ -807,7 +842,7 @@ void ProjectExplorer::slot_import_objects_to_assembly()
 
     for (int i = 0; i < filepaths.size(); ++i)
     {
-        insert_objects(
+        import_objects(
             assembly.objects(),
             assembly.object_instances(),
             assembly_items.m_object_items,
@@ -835,7 +870,7 @@ void ProjectExplorer::slot_import_textures_to_assembly()
 
     for (int i = 0; i < filepaths.size(); ++i)
     {
-        insert_textures(
+        import_textures(
             assembly.textures(),
             assembly.texture_instances(),
             assembly_items.m_texture_items,
@@ -844,14 +879,51 @@ void ProjectExplorer::slot_import_textures_to_assembly()
     }
 }
 
+void ProjectExplorer::slot_add_bsdf_to_assembly()
+{
+    const Assembly& assembly = get_from_action<Assembly>(sender());
+
+    const string bsdf_name_suggestion =
+        get_name_suggestion("bsdf", assembly.bsdfs());
+
+    Dictionary name_widget;
+    name_widget.insert("name", "name");
+    name_widget.insert("label", "Name");
+    name_widget.insert("widget", "text_box");
+    name_widget.insert("use", "required");
+    name_widget.insert("default", bsdf_name_suggestion);
+
+    Dictionary model_items;
+    model_items.insert("Ashikhmin", AshikhminBRDFFactory::get_model());
+    model_items.insert("Lambertian", LambertianBRDFFactory::get_model());
+    model_items.insert("Phong", PhongBRDFFactory::get_model());
+    model_items.insert("Specular", SpecularBRDFFactory::get_model());
+
+    Dictionary model_widget;
+    model_widget.insert("name", "model");
+    model_widget.insert("label", "Model");
+    model_widget.insert("widget", "dropdown_list");
+    model_widget.insert("dropdown_items", model_items);
+    model_widget.insert("use", "required");
+    model_widget.insert("default", PhongBRDFFactory::get_model());
+    model_widget.insert("focus", "true");
+
+    EntityEditorWindow::InputWidgetCollection input_widgets;
+    input_widgets.push_back(name_widget);
+    input_widgets.push_back(model_widget);
+
+    create_entity_editor_window(
+        "Create BSDF",
+        input_widgets,
+        SLOT(slot_create_bsdf_entity(QVariant, foundation::Dictionary)));
+}
+
 void ProjectExplorer::slot_add_material_to_assembly()
 {
     const Assembly& assembly = get_from_action<Assembly>(sender());
 
     const string material_name_suggestion =
-        get_name_suggestion(
-            "material",
-            assembly.materials());
+        get_name_suggestion("material", assembly.materials());
 
     Dictionary name_widget;
     name_widget.insert("name", "name");
@@ -888,22 +960,10 @@ void ProjectExplorer::slot_add_material_to_assembly()
     input_widgets.push_back(edf_widget);
     input_widgets.push_back(surface_shader_widget);
 
-    const QVariant data = qobject_cast<const QAction*>(sender())->data();
-
-    EntityEditorWindow* editor_window =
-        new EntityEditorWindow(
-            m_tree_widget,
-            m_project,
-            "Create Material",
-            input_widgets,
-            data);
-
-    connect(
-        editor_window, SIGNAL(accepted(QVariant, foundation::Dictionary)),
-        this, SLOT(slot_create_material_entity(QVariant, foundation::Dictionary)));
-
-    editor_window->showNormal();
-    editor_window->activateWindow();
+    create_entity_editor_window(
+        "Create Material",
+        input_widgets,
+        SLOT(slot_create_material_entity(QVariant, foundation::Dictionary)));
 }
 
 namespace
@@ -919,6 +979,47 @@ namespace
         msgbox.setStandardButtons(QMessageBox::Ok);
         msgbox.setDefaultButton(QMessageBox::Ok);
         msgbox.exec();
+    }
+}
+
+void ProjectExplorer::slot_create_bsdf_entity(QVariant payload, Dictionary values)
+{
+    try
+    {
+        const Assembly& assembly = get<Assembly>(payload);
+        const AssemblyItems& assembly_items = m_assembly_items[assembly.get_uid()];
+
+        const string name = values.get<string>("name");
+        const string model = values.get<string>("model");
+
+        BSDFFactoryDispatcher dispatcher;
+        const BSDFFactoryDispatcher::CreateFunctionPtr create =
+            dispatcher.lookup(model.c_str());
+        assert(create);
+
+        auto_release_ptr<BSDF> bsdf(create(name.c_str(), values));
+
+        insert_item(
+            assembly_items.m_bsdf_items,
+            name.c_str(),
+            ItemBSDF,
+            bsdf.get());
+
+        assembly.bsdfs().insert(bsdf);
+
+        qobject_cast<QWidget*>(sender())->close();
+    }
+    catch (const ExceptionDictionaryItemNotFound& e)
+    {
+        display_entity_edition_error(
+            "Failed to create BSDF",
+            QString("Required parameter \"%0\" missing").arg(e.string()));
+    }
+    catch (const ExceptionUnknownEntity& e)
+    {
+        display_entity_edition_error(
+            "Failed to create BSDF",
+            QString("Unknown entity \"%0\"").arg(e.string()));
     }
 }
 

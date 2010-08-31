@@ -29,6 +29,9 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECTEXPLORER_H
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECTEXPLORER_H
 
+// appleseed.studio headers.
+#include "mainwindow/entityeditorwindow.h"
+
 // appleseed.renderer headers.
 #include "renderer/api/scene.h"
 
@@ -105,26 +108,32 @@ class ProjectExplorer
 
     void insert_assembly_items(const renderer::Assembly& assembly);
 
-    void insert_objects(
+    QMenu* build_generic_context_menu() const;
+    QMenu* build_item_context_menu(const QTreeWidgetItem* item) const;
+    QMenu* build_assembly_context_menu() const;
+    QMenu* build_assembly_collection_context_menu() const;
+    QMenu* build_texture_collection_context_menu() const;
+    QMenu* build_bsdf_collection_context_menu() const;
+    QMenu* build_material_collection_context_menu() const;
+
+    void create_entity_editor_window(
+        const std::string&                                  window_title,
+        const EntityEditorWindow::InputWidgetCollection&    input_widgets,
+        const char*                                         slot);
+
+    void import_objects(
         renderer::ObjectContainer&          objects,
         renderer::ObjectInstanceContainer&  object_instances,
         QTreeWidgetItem*                    object_items,
         QTreeWidgetItem*                    object_instance_items,
         const std::string&                  path) const;
 
-    void insert_textures(
+    void import_textures(
         renderer::TextureContainer&         textures,
         renderer::TextureInstanceContainer& texture_instances,
         QTreeWidgetItem*                    texture_items,
         QTreeWidgetItem*                    texture_instance_items,
         const std::string&                  path) const;
-
-    QMenu* build_generic_context_menu() const;
-    QMenu* build_item_context_menu(const QTreeWidgetItem* item) const;
-    QMenu* build_assembly_context_menu() const;
-    QMenu* build_assembly_collection_context_menu() const;
-    QMenu* build_texture_collection_context_menu() const;
-    QMenu* build_material_collection_context_menu() const;
 
   private slots:
     void slot_context_menu(const QPoint& point);
@@ -133,8 +142,10 @@ class ProjectExplorer
     void slot_instantiate_assembly();
     void slot_import_objects_to_assembly();
     void slot_import_textures_to_assembly();
+    void slot_add_bsdf_to_assembly();
     void slot_add_material_to_assembly();
 
+    void slot_create_bsdf_entity(QVariant payload, foundation::Dictionary values);
     void slot_create_material_entity(QVariant payload, foundation::Dictionary values);
 };
 
