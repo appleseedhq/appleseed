@@ -23,5 +23,7 @@
         <file>images/aboutwindow.png</file>
         <file>widgets/menu_arrow_right.png</file>
         <file>widgets/menu_arrow_right_selected.png</file>
+        <file>widgets/combobox_arrow_down.png</file>
+        <file>widgets/combobox_arrow_down_selected.png</file>
     </qresource>
 </RCC>

@@ -593,3 +593,34 @@ QLabel[hasFrame="true"]
 {
     border: 1px solid rgb(40, 40, 40);
 }
+
+
+/*
+ * Combo box
+ */
+
+QComboBox,
+QComboBox QAbstractItemView
+{
+    border: 1px solid rgb(40, 40, 40);
+}
+
+QComboBox::drop-down
+{
+    border-left: 1px solid rgb(40, 40, 40);
+}
+
+QComboBox::drop-down:hover
+{
+    background-color: rgb(190, 140, 50);
+}
+
+QComboBox::down-arrow
+{
+    image: url(":/widgets/combobox_arrow_down.png");
+}
+
+QComboBox::down-arrow:hover
+{
+    image: url(":/widgets/combobox_arrow_down_selected.png");
+}
