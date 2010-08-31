@@ -55,41 +55,43 @@ struct BSDFFactoryDispatcher::Impl
     Dispatcher<CreateFunctionPtr> m_dispatcher;
 };
 
-// Constructor.
 BSDFFactoryDispatcher::BSDFFactoryDispatcher()
   : impl(new Impl())
 {
-    // Declare the various factory functions.
     impl->m_dispatcher.declare(
         AshikhminBRDFFactory::get_model(),
         &AshikhminBRDFFactory::create);
+
     impl->m_dispatcher.declare(
         LambertianBRDFFactory::get_model(),
         &LambertianBRDFFactory::create);
+
 //     impl->m_dispatcher.declare(
 //         LambertianBTDFFactory::get_model(),
 //         &LambertianBTDFFactory::create);
+
     impl->m_dispatcher.declare(
         PhongBRDFFactory::get_model(),
         &PhongBRDFFactory::create);
+
 //     impl->m_dispatcher.declare(
 //         PhongBTDFFactory::get_model(),
 //         &PhongBTDFFactory::create);
+
     impl->m_dispatcher.declare(
         SpecularBRDFFactory::get_model(),
         &SpecularBRDFFactory::create);
+
     impl->m_dispatcher.declare(
         SpecularBTDFFactory::get_model(),
         &SpecularBTDFFactory::create);
 }
 
-// Destructor.
 BSDFFactoryDispatcher::~BSDFFactoryDispatcher()
 {
     delete impl;
 }
 
-// Lookup a factory function by name.
 BSDFFactoryDispatcher::CreateFunctionPtr
 BSDFFactoryDispatcher::lookup(const char* name) const
 {
