@@ -34,8 +34,10 @@
 #include "foundation/utility/containers/dictionary.h"
 
 // Qt headers.
+#include <QComboBox>
 #include <QLineEdit>
 #include <QObject>
+#include <QString>
 #include <QVariant>
 #include <QWidget>
 
@@ -79,8 +81,15 @@ class EntityEditorWindow
     const InputWidgetCollection         m_input_widgets;
     const QVariant                      m_payload;
 
-    class LineEditValueReader
+    class IValueReader
       : public foundation::NonCopyable
+    {
+      public:
+        virtual std::string read() const = 0;
+    };
+
+    class LineEditValueReader
+      : public IValueReader
     {
       public:
         explicit LineEditValueReader(QLineEdit* line_edit)
@@ -88,7 +97,7 @@ class EntityEditorWindow
         {
         }
 
-        std::string read() const
+        virtual std::string read() const
         {
             return m_line_edit->text().toStdString();
         }
@@ -97,7 +106,26 @@ class EntityEditorWindow
         QLineEdit*  m_line_edit;
     };
 
-    typedef std::map<std::string, LineEditValueReader*> ValueReaderCollection;
+    class ComboBoxValueReader
+      : public IValueReader
+    {
+      public:
+        explicit ComboBoxValueReader(QComboBox* combo_box)
+          : m_combo_box(combo_box)
+        {
+        }
+
+        virtual std::string read() const
+        {
+            const QVariant data = m_combo_box->itemData(m_combo_box->currentIndex());
+            return data.value<QString>().toStdString();
+        }
+
+      private:
+        QComboBox*  m_combo_box;
+    };
+
+    typedef std::map<std::string, IValueReader*> ValueReaderCollection;
 
     ValueReaderCollection               m_value_readers;
 
@@ -112,6 +140,10 @@ class EntityEditorWindow
         const foundation::Dictionary&   widget_params);
 
     void create_entity_picker_input_widget(
+        QFormLayout*                    layout,
+        const foundation::Dictionary&   widget_params);
+
+    void create_dropdown_list_input_widget(
         QFormLayout*                    layout,
         const foundation::Dictionary&   widget_params);
 

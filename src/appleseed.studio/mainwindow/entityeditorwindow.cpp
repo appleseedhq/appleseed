@@ -47,7 +47,6 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QShortCut>
-#include <QString>
 
 using namespace foundation;
 using namespace renderer;
@@ -137,6 +136,10 @@ void EntityEditorWindow::create_input_widget(QFormLayout* layout, const Dictiona
     {
         create_entity_picker_input_widget(layout, widget_params);
     }
+    else if (widget_type == "dropdown_list")
+    {
+        create_dropdown_list_input_widget(layout, widget_params);
+    }
     else
     {
         assert(!"Unknown widget type.");
@@ -205,6 +208,32 @@ void EntityEditorWindow::create_entity_picker_input_widget(
     m_value_readers[name] = new LineEditValueReader(line_edit);
 
     layout->addRow(get_label_text(widget_params), sublayout);
+}
+
+void EntityEditorWindow::create_dropdown_list_input_widget(
+    QFormLayout*        layout,
+    const Dictionary&   widget_params)
+{
+    QComboBox* combo_box = new QComboBox(m_ui->scrollarea_contents);
+    combo_box->setEditable(false);
+
+    const StringDictionary& items = widget_params.dictionaries().get("dropdown_items").strings();
+    for (const_each<StringDictionary> i = items; i; ++i)
+        combo_box->addItem(i->name(), i->value<QString>());
+
+    if (widget_params.strings().exist("default"))
+    {
+        const QString default_value = widget_params.strings().get<QString>("default");
+        combo_box->setCurrentIndex(combo_box->findData(QVariant::fromValue(default_value)));
+    }
+
+    if (should_be_focused(widget_params))
+        combo_box->setFocus();
+
+    const string name = widget_params.get<string>("name");
+    m_value_readers[name] = new ComboBoxValueReader(combo_box);
+
+    layout->addRow(get_label_text(widget_params), combo_box);
 }
 
 void EntityEditorWindow::slot_accept()
