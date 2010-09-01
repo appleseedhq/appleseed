@@ -29,6 +29,10 @@
 // Interface header.
 #include "projectexplorer.h"
 
+// appleseed.studio headers.
+#include "mainwindow/entityeditorwindow.h"
+#include "utility/tweaks.h"
+
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
 #include "renderer/api/color.h"
@@ -44,6 +48,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/kvpair.h"
+#include "foundation/utility/otherwise.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
@@ -72,7 +78,38 @@ using namespace foundation;
 using namespace renderer;
 using namespace std;
 
+namespace
+{
+    enum ItemType
+    {
+        ItemAssembly,
+        ItemAssemblyCollection,
+        ItemAssemblyInstance,
+        ItemBSDF,
+        ItemBSDFCollection,
+        ItemCamera,
+        ItemColor,
+        ItemEDF,
+        ItemEnvironment,
+        ItemEnvironmentEDF,
+        ItemEnvironmentShader,
+        ItemMaterial,
+        ItemMaterialCollection,
+        ItemLight,
+        ItemObject,
+        ItemObjectInstance,
+        ItemSurfaceShader,
+        ItemTexture,
+        ItemTextureCollection,
+        ItemTextureInstance,
+        ItemCollection
+    };
+
+    typedef QPair<ItemType, QVariant> PayloadType;
+}
+
 Q_DECLARE_METATYPE(const void*);
+Q_DECLARE_METATYPE(PayloadType);
 
 namespace appleseed {
 namespace studio {
@@ -105,31 +142,6 @@ ProjectExplorer::ProjectExplorer(QTreeWidget* tree_widget, Project* project)
 
 namespace
 {
-    enum ItemType
-    {
-        ItemAssembly,
-        ItemAssemblyCollection,
-        ItemAssemblyInstance,
-        ItemBSDF,
-        ItemBSDFCollection,
-        ItemCamera,
-        ItemColor,
-        ItemEDF,
-        ItemEnvironment,
-        ItemEnvironmentEDF,
-        ItemEnvironmentShader,
-        ItemMaterial,
-        ItemMaterialCollection,
-        ItemLight,
-        ItemObject,
-        ItemObjectInstance,
-        ItemSurfaceShader,
-        ItemTexture,
-        ItemTextureCollection,
-        ItemTextureInstance,
-        ItemCollection
-    };
-
     template <typename ParentWidget>
     QTreeWidgetItem* insert_item(
         ParentWidget*               parent_widget,
@@ -471,27 +483,6 @@ QMenu* ProjectExplorer::build_material_collection_context_menu() const
     return menu;
 }
 
-void ProjectExplorer::create_entity_editor_window(
-    const string&                                       window_title,
-    const EntityEditorWindow::InputWidgetCollection&    input_widgets,
-    const char*                                         slot)
-{
-    EntityEditorWindow* editor_window =
-        new EntityEditorWindow(
-            m_tree_widget,
-            m_project,
-            window_title,
-            input_widgets,
-            qobject_cast<const QAction*>(sender())->data());
-
-    connect(
-        editor_window, SIGNAL(accepted(QVariant, foundation::Dictionary)),
-        this, slot);
-
-    editor_window->showNormal();
-    editor_window->activateWindow();
-}
-
 void ProjectExplorer::import_objects(
     ObjectContainer&            objects,
     ObjectInstanceContainer&    object_instances,
@@ -590,17 +581,52 @@ void ProjectExplorer::import_textures(
     texture_instances.insert(texture_instance);
 }
 
-void ProjectExplorer::slot_context_menu(const QPoint& point)
+void ProjectExplorer::create_bsdf_entity(
+    const Assembly&             assembly,
+    const AssemblyItems&        assembly_items,
+    const Dictionary&           values)
 {
-    const QList<QTreeWidgetItem*> selected_items = m_tree_widget->selectedItems();
+    const string name = values.get<string>("name");
+    const string model = values.get<string>("model");
 
-    QMenu* menu =
-        selected_items.isEmpty()
-            ? build_generic_context_menu()
-            : build_item_context_menu(selected_items.first());
+    BSDFFactoryDispatcher dispatcher;
+    const BSDFFactoryDispatcher::CreateFunctionPtr create =
+        dispatcher.lookup(model.c_str());
+    assert(create);
 
-    if (menu)
-        menu->exec(m_tree_widget->mapToGlobal(point));
+    auto_release_ptr<BSDF> bsdf(create(name.c_str(), values));
+
+    insert_item(
+        assembly_items.m_bsdf_items,
+        name.c_str(),
+        ItemBSDF,
+        bsdf.get());
+
+    assembly.bsdfs().insert(bsdf);
+}
+
+void ProjectExplorer::create_material_entity(
+    const Assembly&             assembly,
+    const AssemblyItems&        assembly_items,
+    const Dictionary&           values)
+{
+    const string name = values.get<string>("name");
+
+    auto_release_ptr<Material> material(
+        MaterialFactory::create(
+            name.c_str(),
+            values,
+            assembly.surface_shaders(),
+            assembly.bsdfs(),
+            assembly.edfs()));
+
+    insert_item(
+        assembly_items.m_material_items,
+        name.c_str(),
+        ItemMaterial,
+        material.get());
+
+    assembly.materials().insert(material);
 }
 
 namespace
@@ -741,7 +767,7 @@ namespace
     }
 
     template <typename T>
-    const T& get(const QVariant& variant)
+    const T& qvariant_as(const QVariant& variant)
     {
         const void* data = variant.value<const void*>();
         return *static_cast<const T*>(data);
@@ -755,8 +781,21 @@ namespace
         const QAction* action = qobject_cast<const QAction*>(object);
         assert(action);
 
-        return get<T>(action->data());
+        return qvariant_as<T>(action->data());
     }
+}
+
+void ProjectExplorer::slot_context_menu(const QPoint& point)
+{
+    const QList<QTreeWidgetItem*> selected_items = m_tree_widget->selectedItems();
+
+    QMenu* menu =
+        selected_items.isEmpty()
+            ? build_generic_context_menu()
+            : build_item_context_menu(selected_items.first());
+
+    if (menu)
+        menu->exec(m_tree_widget->mapToGlobal(point));
 }
 
 void ProjectExplorer::slot_add_assembly()
@@ -879,6 +918,32 @@ void ProjectExplorer::slot_import_textures_to_assembly()
     }
 }
 
+namespace
+{
+    void open_entity_editor(
+        QWidget*                                            parent,
+        const string&                                       window_title,
+        const EntityEditorWindow::InputWidgetCollection&    input_widgets,
+        QObject*                                            receiver,
+        const QVariant&                                     receiver_data)
+    {
+        EntityEditorWindow* editor_window =
+            new EntityEditorWindow(
+                parent,
+                window_title,
+                receiver_data);
+
+        editor_window->build_form(input_widgets);
+
+        receiver->connect(
+            editor_window, SIGNAL(accepted(QVariant, foundation::Dictionary)),
+            receiver, SLOT(slot_create_entity(QVariant, foundation::Dictionary)));
+
+        editor_window->showNormal();
+        editor_window->activateWindow();
+    }
+}
+
 void ProjectExplorer::slot_add_bsdf_to_assembly()
 {
     const Assembly& assembly = get_from_action<Assembly>(sender());
@@ -892,6 +957,7 @@ void ProjectExplorer::slot_add_bsdf_to_assembly()
     name_widget.insert("widget", "text_box");
     name_widget.insert("use", "required");
     name_widget.insert("default", bsdf_name_suggestion);
+    name_widget.insert("focus", "true");
 
     Dictionary model_items;
     model_items.insert("Ashikhmin", AshikhminBRDFFactory::get_model());
@@ -905,17 +971,21 @@ void ProjectExplorer::slot_add_bsdf_to_assembly()
     model_widget.insert("widget", "dropdown_list");
     model_widget.insert("dropdown_items", model_items);
     model_widget.insert("use", "required");
-    model_widget.insert("default", PhongBRDFFactory::get_model());
-    model_widget.insert("focus", "true");
 
     EntityEditorWindow::InputWidgetCollection input_widgets;
     input_widgets.push_back(name_widget);
     input_widgets.push_back(model_widget);
 
-    create_entity_editor_window(
+    const QVariant receiver_data(
+        QVariant::fromValue(
+            PayloadType(ItemBSDF, qobject_cast<const QAction*>(sender())->data())));
+
+    open_entity_editor(
+        m_tree_widget,
         "Create BSDF",
         input_widgets,
-        SLOT(slot_create_bsdf_entity(QVariant, foundation::Dictionary)));
+        this,
+        receiver_data);
 }
 
 void ProjectExplorer::slot_add_material_to_assembly()
@@ -960,107 +1030,77 @@ void ProjectExplorer::slot_add_material_to_assembly()
     input_widgets.push_back(edf_widget);
     input_widgets.push_back(surface_shader_widget);
 
-    create_entity_editor_window(
+    const QVariant receiver_data(
+        QVariant::fromValue(
+            PayloadType(ItemMaterial, qobject_cast<const QAction*>(sender())->data())));
+
+    open_entity_editor(
+        m_tree_widget,
         "Create Material",
         input_widgets,
-        SLOT(slot_create_material_entity(QVariant, foundation::Dictionary)));
+        this,
+        receiver_data);
 }
 
 namespace
 {
-    void display_entity_edition_error(
-        const QString&  title,
+    const KeyValuePair<ItemType, const char*> EntityNames[] =
+    {
+        { ItemBSDF, "BSDF" },
+        { ItemMaterial, "material" }
+    };
+
+    void display_entity_creation_error(
+        const ItemType  item_type,
         const QString&  message)
     {
         QMessageBox msgbox;
-        msgbox.setWindowTitle(title);
+        msgbox.setWindowTitle(
+            QString("Failed to create %1").arg(
+                FOUNDATION_LOOKUP_KVPAIR_ARRAY(EntityNames, item_type)->m_value));
         msgbox.setIcon(QMessageBox::Warning);
         msgbox.setText(message);
         msgbox.setStandardButtons(QMessageBox::Ok);
         msgbox.setDefaultButton(QMessageBox::Ok);
+        set_minimum_width(msgbox, 300);
         msgbox.exec();
     }
 }
 
-void ProjectExplorer::slot_create_bsdf_entity(QVariant payload, Dictionary values)
+void ProjectExplorer::slot_create_entity(QVariant payload, Dictionary values)
 {
+    const ItemType item_type = payload.value<PayloadType>().first;
+    const Assembly& assembly = qvariant_as<Assembly>(payload.value<PayloadType>().second);
+    const AssemblyItems& assembly_items = m_assembly_items[assembly.get_uid()];
+
     try
     {
-        const Assembly& assembly = get<Assembly>(payload);
-        const AssemblyItems& assembly_items = m_assembly_items[assembly.get_uid()];
+        switch (item_type)
+        {
+          case ItemBSDF:
+            create_bsdf_entity(assembly, assembly_items, values);
+            break;
 
-        const string name = values.get<string>("name");
-        const string model = values.get<string>("model");
+          case ItemMaterial:
+            create_material_entity(assembly, assembly_items, values);
+            break;
 
-        BSDFFactoryDispatcher dispatcher;
-        const BSDFFactoryDispatcher::CreateFunctionPtr create =
-            dispatcher.lookup(model.c_str());
-        assert(create);
-
-        auto_release_ptr<BSDF> bsdf(create(name.c_str(), values));
-
-        insert_item(
-            assembly_items.m_bsdf_items,
-            name.c_str(),
-            ItemBSDF,
-            bsdf.get());
-
-        assembly.bsdfs().insert(bsdf);
+          assert_otherwise;
+        }
 
         qobject_cast<QWidget*>(sender())->close();
     }
     catch (const ExceptionDictionaryItemNotFound& e)
     {
-        display_entity_edition_error(
-            "Failed to create BSDF",
-            QString("Required parameter \"%0\" missing").arg(e.string()));
+        display_entity_creation_error(
+            item_type,
+            QString("Required parameter \"%0\" missing.").arg(e.string()));
     }
     catch (const ExceptionUnknownEntity& e)
     {
-        display_entity_edition_error(
-            "Failed to create BSDF",
-            QString("Unknown entity \"%0\"").arg(e.string()));
-    }
-}
-
-void ProjectExplorer::slot_create_material_entity(QVariant payload, Dictionary values)
-{
-    try
-    {
-        const Assembly& assembly = get<Assembly>(payload);
-        const AssemblyItems& assembly_items = m_assembly_items[assembly.get_uid()];
-
-        const string name = values.get<string>("name");
-
-        auto_release_ptr<Material> material(
-            MaterialFactory::create(
-                name.c_str(),
-                values,
-                assembly.surface_shaders(),
-                assembly.bsdfs(),
-                assembly.edfs()));
-
-        insert_item(
-            assembly_items.m_material_items,
-            name.c_str(),
-            ItemMaterial,
-            material.get());
-
-        assembly.materials().insert(material);
-
-        qobject_cast<QWidget*>(sender())->close();
-    }
-    catch (const ExceptionDictionaryItemNotFound& e)
-    {
-        display_entity_edition_error(
-            "Failed to create material",
-            QString("Required parameter \"%0\" missing").arg(e.string()));
-    }
-    catch (const ExceptionUnknownEntity& e)
-    {
-        display_entity_edition_error(
-            "Failed to create material",
-            QString("Unknown entity \"%0\"").arg(e.string()));
+        display_entity_creation_error(
+            item_type,
+            QString("Unknown entity \"%0\".").arg(e.string()));
     }
 }
 

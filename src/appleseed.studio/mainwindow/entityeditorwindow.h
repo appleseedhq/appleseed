@@ -48,7 +48,6 @@
 
 // Forward declarations.
 namespace Ui        { class EntityEditorWindow; }
-namespace renderer  { class Project; }
 class QFormLayout;
 
 namespace appleseed {
@@ -64,12 +63,12 @@ class EntityEditorWindow
 
     EntityEditorWindow(
         QWidget*                        parent,
-        renderer::Project*              project,
         const std::string&              window_title,
-        const InputWidgetCollection&    input_widgets,
         const QVariant&                 payload);
 
     ~EntityEditorWindow();
+
+    void build_form(const InputWidgetCollection& input_widgets);
 
   signals:
     void accepted(QVariant payload, foundation::Dictionary values);
@@ -78,7 +77,7 @@ class EntityEditorWindow
     // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
     Ui::EntityEditorWindow*             m_ui;
 
-    const InputWidgetCollection         m_input_widgets;
+    InputWidgetCollection               m_input_widgets;
     const QVariant                      m_payload;
 
     class IValueReader
@@ -128,8 +127,6 @@ class EntityEditorWindow
     typedef std::map<std::string, IValueReader*> ValueReaderCollection;
 
     ValueReaderCollection               m_value_readers;
-
-    void build_form();
     
     void create_input_widget(
         QFormLayout*                    layout,

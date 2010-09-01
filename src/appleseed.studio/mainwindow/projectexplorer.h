@@ -29,9 +29,6 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECTEXPLORER_H
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECTEXPLORER_H
 
-// appleseed.studio headers.
-#include "mainwindow/entityeditorwindow.h"
-
 // appleseed.renderer headers.
 #include "renderer/api/scene.h"
 
@@ -68,9 +65,6 @@ class ProjectExplorer
     ProjectExplorer(QTreeWidget* tree_widget, renderer::Project* project);
 
   private:
-    QTreeWidget*            m_tree_widget;
-    renderer::Project*      m_project;
-
     struct SceneItems
     {
         QTreeWidgetItem*    m_color_items;
@@ -101,6 +95,8 @@ class ProjectExplorer
 
     typedef std::map<foundation::UniqueID, AssemblyItems> AssemblyItemsMap;
 
+    QTreeWidget*            m_tree_widget;
+    renderer::Project*      m_project;
     SceneItems              m_scene_items;
     AssemblyItemsMap        m_assembly_items;
 
@@ -116,10 +112,15 @@ class ProjectExplorer
     QMenu* build_bsdf_collection_context_menu() const;
     QMenu* build_material_collection_context_menu() const;
 
-    void create_entity_editor_window(
-        const std::string&                                  window_title,
-        const EntityEditorWindow::InputWidgetCollection&    input_widgets,
-        const char*                                         slot);
+    void create_bsdf_entity(
+        const renderer::Assembly&           assembly,
+        const AssemblyItems&                assembly_items,
+        const foundation::Dictionary&       values);
+
+    void create_material_entity(
+        const renderer::Assembly&           assembly,
+        const AssemblyItems&                assembly_items,
+        const foundation::Dictionary&       values);
 
     void import_objects(
         renderer::ObjectContainer&          objects,
@@ -144,9 +145,7 @@ class ProjectExplorer
     void slot_import_textures_to_assembly();
     void slot_add_bsdf_to_assembly();
     void slot_add_material_to_assembly();
-
-    void slot_create_bsdf_entity(QVariant payload, foundation::Dictionary values);
-    void slot_create_material_entity(QVariant payload, foundation::Dictionary values);
+    void slot_create_entity(QVariant payload, foundation::Dictionary values);
 };
 
 }       // namespace studio

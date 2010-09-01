@@ -32,9 +32,6 @@
 // UI definition header.
 #include "ui_entityeditorwindow.h"
 
-// appleseed.renderer headers.
-#include "renderer/api/project.h"
-
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
@@ -49,7 +46,6 @@
 #include <QShortCut>
 
 using namespace foundation;
-using namespace renderer;
 using namespace std;
 
 namespace foundation
@@ -65,14 +61,11 @@ namespace appleseed {
 namespace studio {
 
 EntityEditorWindow::EntityEditorWindow(
-    QWidget*                        parent,
-    Project*                        project,
-    const string&                   window_title,
-    const InputWidgetCollection&    input_widgets,
-    const QVariant&                 payload)
+    QWidget*            parent,
+    const string&       window_title,
+    const QVariant&     payload)
   : QWidget(parent)
   , m_ui(new Ui::EntityEditorWindow())
-  , m_input_widgets(input_widgets)
   , m_payload(payload)
 {
     m_ui->setupUi(this);
@@ -80,10 +73,6 @@ EntityEditorWindow::EntityEditorWindow(
     setAttribute(Qt::WA_DeleteOnClose);
     setWindowFlags(Qt::Tool);
     setWindowTitle(QString::fromStdString(window_title));
-
-    build_form();
-
-    resize(400, sizeHint().height());
 
     connect(
         m_ui->buttonbox->button(QDialogButtonBox::Ok), SIGNAL(clicked()),
@@ -110,18 +99,22 @@ EntityEditorWindow::~EntityEditorWindow()
     delete m_ui;
 }
 
-void EntityEditorWindow::build_form()
+void EntityEditorWindow::build_form(const InputWidgetCollection& input_widgets)
 {
+    m_input_widgets = input_widgets;
+
     QFormLayout* layout = new QFormLayout(m_ui->scrollarea_contents);
 
     int left, top, right, bottom;
     layout->getContentsMargins(&left, &top, &right, &bottom);
     layout->setContentsMargins(0, top, 0, bottom);
 
-    for (const_each<InputWidgetCollection> i = m_input_widgets; i; ++i)
+    for (const_each<InputWidgetCollection> i = input_widgets; i; ++i)
         create_input_widget(layout, *i);
 
     m_ui->scrollarea_contents->setLayout(layout);
+
+    resize(400, sizeHint().height());
 }
 
 void EntityEditorWindow::create_input_widget(QFormLayout* layout, const Dictionary& widget_params)
