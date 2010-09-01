@@ -30,6 +30,7 @@
 #define APPLESEED_STUDIO_UTILITY_TWEAKS_H
 
 // Forward declarations.
+class QMessageBox;
 class QWidget;
 
 namespace appleseed {
@@ -37,6 +38,9 @@ namespace studio {
 
 // Disable the blue focus rectangle of certain widgets. Mac OS X only.
 void disable_mac_focus_rect(QWidget& widget);
+
+// Set the minimum width of a QMessageBox.
+void set_minimum_width(QMessageBox& msgbox, const int minimum_width);
 
 }       // namespace studio
 }       // namespace appleseed

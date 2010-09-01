@@ -30,6 +30,9 @@
 #include "tweaks.h"
 
 // Qt headers.
+#include <QGridLayout>
+#include <QMessageBox>
+#include <QSpacerItem>
 #include <Qt>
 #include <QWidget>
 
@@ -39,6 +42,25 @@ namespace studio {
 void disable_mac_focus_rect(QWidget& widget)
 {
     widget.setAttribute(Qt::WA_MacShowFocusRect, false);
+}
+
+void set_minimum_width(QMessageBox& msgbox, const int minimum_width)
+{
+    QSpacerItem* spacer =
+        new QSpacerItem(
+            minimum_width,
+            0,
+            QSizePolicy::Minimum,
+            QSizePolicy::Expanding);
+
+    QGridLayout* layout = static_cast<QGridLayout*>(msgbox.layout());
+
+    layout->addItem(
+        spacer,
+        layout->rowCount(),         // row
+        0,                          // column
+        1,                          // row span
+        layout->columnCount());     // column span
 }
 
 }   // namespace studio
