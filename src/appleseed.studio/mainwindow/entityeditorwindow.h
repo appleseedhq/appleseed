@@ -43,11 +43,12 @@
 
 // Standard headers.
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 // Forward declarations.
-namespace Ui        { class EntityEditorWindow; }
+namespace Ui { class EntityEditorWindow; }
 class QFormLayout;
 
 namespace appleseed {
@@ -59,31 +60,50 @@ class EntityEditorWindow
     Q_OBJECT
 
   public:
-    typedef std::vector<foundation::Dictionary> InputWidgetCollection;
+    typedef std::vector<foundation::Dictionary> WidgetDefinitionCollection;
+
+    class IFormFactory
+      : public foundation::NonCopyable
+    {
+      public:
+        virtual ~IFormFactory() {}
+
+        virtual void update(
+            const foundation::Dictionary&   values,
+            WidgetDefinitionCollection&     definitions) = 0;
+
+      protected:
+        typedef EntityEditorWindow::WidgetDefinitionCollection WidgetDefinitionCollection;
+
+        static std::string get_value(
+            const foundation::Dictionary&   values,
+            const std::string&              name,
+            const std::string&              default_value)
+        {
+            return values.strings().exist(name)
+                ? values.strings().get<std::string>(name)
+                : default_value;
+        }
+    };
 
     EntityEditorWindow(
-        QWidget*                        parent,
-        const std::string&              window_title,
-        const QVariant&                 payload);
+        QWidget*                            parent,
+        const std::string&                  window_title,
+        std::auto_ptr<IFormFactory>         form_factory,
+        const QVariant&                     payload);
 
     ~EntityEditorWindow();
-
-    void build_form(const InputWidgetCollection& input_widgets);
 
   signals:
     void accepted(QVariant payload, foundation::Dictionary values);
 
   private:
-    // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
-    Ui::EntityEditorWindow*             m_ui;
-
-    InputWidgetCollection               m_input_widgets;
-    const QVariant                      m_payload;
-
     class IValueReader
       : public foundation::NonCopyable
     {
       public:
+        virtual ~IValueReader() {}
+
         virtual std::string read() const = 0;
     };
 
@@ -126,26 +146,29 @@ class EntityEditorWindow
 
     typedef std::map<std::string, IValueReader*> ValueReaderCollection;
 
+    // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
+    Ui::EntityEditorWindow*             m_ui;
+
+    std::auto_ptr<IFormFactory>         m_form_factory;
+    const QVariant                      m_payload;
+
+    QFormLayout*                        m_form_layout;
+    WidgetDefinitionCollection          m_widget_definitions;
     ValueReaderCollection               m_value_readers;
-    
-    void create_input_widget(
-        QFormLayout*                    layout,
-        const foundation::Dictionary&   widget_params);
 
-    void create_text_box_input_widget(
-        QFormLayout*                    layout,
-        const foundation::Dictionary&   widget_params);
+    void create_form_layout();
+    void rebuild_form(const foundation::Dictionary& values);
 
-    void create_entity_picker_input_widget(
-        QFormLayout*                    layout,
-        const foundation::Dictionary&   widget_params);
+    void create_input_widget(const foundation::Dictionary& definition);
+    void create_text_box_input_widget(const foundation::Dictionary& definition);
+    void create_entity_picker_input_widget(const foundation::Dictionary& definition);
+    void create_dropdown_list_input_widget(const foundation::Dictionary& definition);
 
-    void create_dropdown_list_input_widget(
-        QFormLayout*                    layout,
-        const foundation::Dictionary&   widget_params);
+    foundation::Dictionary get_values() const;
 
   private slots:
     void slot_accept();
+    void slot_rebuild_form();
 };
 
 }       // namespace studio

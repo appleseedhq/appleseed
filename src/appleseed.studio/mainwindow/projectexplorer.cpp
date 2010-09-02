@@ -72,6 +72,7 @@
 
 // Standard headers.
 #include <cassert>
+#include <memory>
 
 using namespace boost;
 using namespace foundation;
@@ -921,19 +922,18 @@ void ProjectExplorer::slot_import_textures_to_assembly()
 namespace
 {
     void open_entity_editor(
-        QWidget*                                            parent,
-        const string&                                       window_title,
-        const EntityEditorWindow::InputWidgetCollection&    input_widgets,
-        QObject*                                            receiver,
-        const QVariant&                                     receiver_data)
+        QWidget*                                    parent,
+        const string&                               window_title,
+        auto_ptr<EntityEditorWindow::IFormFactory>  form_factory,
+        QObject*                                    receiver,
+        const QVariant&                             receiver_data)
     {
         EntityEditorWindow* editor_window =
             new EntityEditorWindow(
                 parent,
                 window_title,
+                form_factory,
                 receiver_data);
-
-        editor_window->build_form(input_widgets);
 
         receiver->connect(
             editor_window, SIGNAL(accepted(QVariant, foundation::Dictionary)),
@@ -944,37 +944,66 @@ namespace
     }
 }
 
+namespace
+{
+    class BSDFEditorFormFactory
+      : public EntityEditorWindow::IFormFactory
+    {
+      public:
+        explicit BSDFEditorFormFactory(const Assembly& assembly)
+          : m_assembly(assembly)
+        {
+        }
+
+        virtual void update(
+            const Dictionary&           values,
+            WidgetDefinitionCollection& definitions)
+        {
+            definitions.clear();
+
+            const string bsdf_name_suggestion =
+                get_name_suggestion("bsdf", m_assembly.bsdfs());
+
+            const string bsdf_name = get_value(values, "name", bsdf_name_suggestion);
+            const string bsdf_model = get_value(values, "model", AshikhminBRDFFactory::get_model());
+
+            Dictionary name_widget;
+            name_widget.insert("name", "name");
+            name_widget.insert("label", "Name");
+            name_widget.insert("widget", "text_box");
+            name_widget.insert("use", "required");
+            name_widget.insert("default", bsdf_name);
+            name_widget.insert("focus", "true");
+            definitions.push_back(name_widget);
+
+            Dictionary model_items;
+            model_items.insert("Ashikhmin", AshikhminBRDFFactory::get_model());
+            model_items.insert("Lambertian", LambertianBRDFFactory::get_model());
+            model_items.insert("Phong", PhongBRDFFactory::get_model());
+            model_items.insert("Specular", SpecularBRDFFactory::get_model());
+
+            Dictionary model_widget;
+            model_widget.insert("name", "model");
+            model_widget.insert("label", "Model");
+            model_widget.insert("widget", "dropdown_list");
+            model_widget.insert("dropdown_items", model_items);
+            model_widget.insert("use", "required");
+            model_widget.insert("default", bsdf_model);
+            model_widget.insert("on_change", "rebuild_form");
+            definitions.push_back(model_widget);
+        }
+
+      private:
+        const Assembly& m_assembly;
+    };
+}
+
 void ProjectExplorer::slot_add_bsdf_to_assembly()
 {
     const Assembly& assembly = get_from_action<Assembly>(sender());
 
-    const string bsdf_name_suggestion =
-        get_name_suggestion("bsdf", assembly.bsdfs());
-
-    Dictionary name_widget;
-    name_widget.insert("name", "name");
-    name_widget.insert("label", "Name");
-    name_widget.insert("widget", "text_box");
-    name_widget.insert("use", "required");
-    name_widget.insert("default", bsdf_name_suggestion);
-    name_widget.insert("focus", "true");
-
-    Dictionary model_items;
-    model_items.insert("Ashikhmin", AshikhminBRDFFactory::get_model());
-    model_items.insert("Lambertian", LambertianBRDFFactory::get_model());
-    model_items.insert("Phong", PhongBRDFFactory::get_model());
-    model_items.insert("Specular", SpecularBRDFFactory::get_model());
-
-    Dictionary model_widget;
-    model_widget.insert("name", "model");
-    model_widget.insert("label", "Model");
-    model_widget.insert("widget", "dropdown_list");
-    model_widget.insert("dropdown_items", model_items);
-    model_widget.insert("use", "required");
-
-    EntityEditorWindow::InputWidgetCollection input_widgets;
-    input_widgets.push_back(name_widget);
-    input_widgets.push_back(model_widget);
+    auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
+        new BSDFEditorFormFactory(assembly));
 
     const QVariant receiver_data(
         QVariant::fromValue(
@@ -983,52 +1012,76 @@ void ProjectExplorer::slot_add_bsdf_to_assembly()
     open_entity_editor(
         m_tree_widget,
         "Create BSDF",
-        input_widgets,
+        form_factory,
         this,
         receiver_data);
+}
+
+namespace
+{
+    class MaterialEditorFormFactory
+      : public EntityEditorWindow::IFormFactory
+    {
+      public:
+        explicit MaterialEditorFormFactory(const Assembly& assembly)
+          : m_assembly(assembly)
+        {
+        }
+
+        virtual void update(
+            const Dictionary&           values,
+            WidgetDefinitionCollection& definitions)
+        {
+            definitions.clear();
+
+            const string material_name_suggestion =
+                get_name_suggestion("material", m_assembly.materials());
+
+            Dictionary name_widget;
+            name_widget.insert("name", "name");
+            name_widget.insert("label", "Name");
+            name_widget.insert("widget", "text_box");
+            name_widget.insert("use", "required");
+            name_widget.insert("default", material_name_suggestion);
+            name_widget.insert("focus", "true");
+            definitions.push_back(name_widget);
+
+            Dictionary bsdf_widget;
+            bsdf_widget.insert("name", "bsdf");
+            bsdf_widget.insert("label", "BSDF");
+            bsdf_widget.insert("widget", "entity_picker");
+            bsdf_widget.insert("entity_type", "bsdf");
+            bsdf_widget.insert("use", "optional");
+            definitions.push_back(bsdf_widget);
+
+            Dictionary edf_widget;
+            edf_widget.insert("name", "edf");
+            edf_widget.insert("label", "EDF");
+            edf_widget.insert("widget", "entity_picker");
+            edf_widget.insert("entity_type", "edf");
+            edf_widget.insert("use", "optional");
+            definitions.push_back(edf_widget);
+
+            Dictionary surface_shader_widget;
+            surface_shader_widget.insert("name", "surface_shader");
+            surface_shader_widget.insert("label", "Surface Shader");
+            surface_shader_widget.insert("widget", "entity_picker");
+            surface_shader_widget.insert("entity_type", "surface_shader");
+            surface_shader_widget.insert("use", "required");
+            definitions.push_back(surface_shader_widget);
+        }
+
+      private:
+        const Assembly& m_assembly;
+    };
 }
 
 void ProjectExplorer::slot_add_material_to_assembly()
 {
     const Assembly& assembly = get_from_action<Assembly>(sender());
 
-    const string material_name_suggestion =
-        get_name_suggestion("material", assembly.materials());
-
-    Dictionary name_widget;
-    name_widget.insert("name", "name");
-    name_widget.insert("label", "Name");
-    name_widget.insert("widget", "text_box");
-    name_widget.insert("use", "required");
-    name_widget.insert("default", material_name_suggestion);
-    name_widget.insert("focus", "true");
-
-    Dictionary bsdf_widget;
-    bsdf_widget.insert("name", "bsdf");
-    bsdf_widget.insert("label", "BSDF");
-    bsdf_widget.insert("widget", "entity_picker");
-    bsdf_widget.insert("entity", "bsdf");
-    bsdf_widget.insert("use", "optional");
-
-    Dictionary edf_widget;
-    edf_widget.insert("name", "edf");
-    edf_widget.insert("label", "EDF");
-    edf_widget.insert("widget", "entity_picker");
-    edf_widget.insert("entity", "edf");
-    edf_widget.insert("use", "optional");
-
-    Dictionary surface_shader_widget;
-    surface_shader_widget.insert("name", "surface_shader");
-    surface_shader_widget.insert("label", "Surface Shader");
-    surface_shader_widget.insert("widget", "entity_picker");
-    surface_shader_widget.insert("entity", "surface_shader");
-    surface_shader_widget.insert("use", "required");
-
-    EntityEditorWindow::InputWidgetCollection input_widgets;
-    input_widgets.push_back(name_widget);
-    input_widgets.push_back(bsdf_widget);
-    input_widgets.push_back(edf_widget);
-    input_widgets.push_back(surface_shader_widget);
+    auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
+        new MaterialEditorFormFactory(assembly));
 
     const QVariant receiver_data(
         QVariant::fromValue(
@@ -1037,7 +1090,7 @@ void ProjectExplorer::slot_add_material_to_assembly()
     open_entity_editor(
         m_tree_widget,
         "Create Material",
-        input_widgets,
+        form_factory,
         this,
         receiver_data);
 }
