@@ -35,9 +35,6 @@
 // appleseed.foundation headers.
 #include "foundation/math/voxelgrid.h"
 
-// Standard headers.
-#include <memory>
-
 namespace renderer
 {
 
