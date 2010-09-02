@@ -30,7 +30,7 @@
 #define APPLESEED_RENDERER_MODELING_BSDF_SPECULARBRDF_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/modeling/bsdf/ibsdffactory.h"
 
 // Forward declarations.
 namespace renderer      { class BSDF; }
@@ -43,15 +43,16 @@ namespace renderer
 //
 
 class RENDERERDLL SpecularBRDFFactory
+  : public IBSDFFactory
 {
   public:
     // Return a string identifying this BSDF model.
     static const char* get_model();
 
-    // Create a new specular BRDF.
-    static foundation::auto_release_ptr<BSDF> create(
+    // Create a new BSDF instance.
+    virtual foundation::auto_release_ptr<BSDF> create(
         const char*         name,
-        const ParamArray&   params);
+        const ParamArray&   params) const;
 };
 
 }       // namespace renderer

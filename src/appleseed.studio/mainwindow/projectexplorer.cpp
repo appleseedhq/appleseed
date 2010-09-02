@@ -34,7 +34,6 @@
 #include "utility/tweaks.h"
 
 // appleseed.renderer headers.
-#include "renderer/api/bsdf.h"
 #include "renderer/api/color.h"
 #include "renderer/api/edf.h"
 #include "renderer/api/environmentedf.h"
@@ -549,7 +548,7 @@ void ProjectExplorer::import_textures(
 
     SearchPaths search_paths;
     auto_release_ptr<Texture> texture(
-        DiskTextureFactory::create(
+        DiskTextureFactory().create(
             texture_name.c_str(),
             texture_params,
             search_paths));
@@ -590,12 +589,10 @@ void ProjectExplorer::create_bsdf_entity(
     const string name = values.get<string>("name");
     const string model = values.get<string>("model");
 
-    BSDFFactoryDispatcher dispatcher;
-    const BSDFFactoryDispatcher::CreateFunctionPtr create =
-        dispatcher.lookup(model.c_str());
-    assert(create);
+    const IBSDFFactory* factory = m_bsdf_registrar.lookup(model.c_str());
+    assert(factory);
 
-    auto_release_ptr<BSDF> bsdf(create(name.c_str(), values));
+    auto_release_ptr<BSDF> bsdf(factory->create(name.c_str(), values));
 
     insert_item(
         assembly_items.m_bsdf_items,

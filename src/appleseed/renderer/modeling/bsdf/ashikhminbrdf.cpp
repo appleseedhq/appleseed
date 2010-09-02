@@ -75,7 +75,6 @@ namespace
       : public BSDF
     {
       public:
-        // Constructor.
         AshikhminBRDFImpl(
             const char*         name,
             const ParamArray&   params)
@@ -90,28 +89,24 @@ namespace
             m_inputs.declare("shininess_v", InputFormatScalar);
         }
 
-        // Delete this instance.
         virtual void release()
         {
             delete this;
         }
 
-        // Return a string identifying the model of this BSDF.
         virtual const char* get_model() const
         {
             return AshikhminBRDFFactory::get_model();
         }
 
-        // Return the name of this BSDF.
         virtual const char* get_name() const
         {
             return m_name.c_str();
         }
 
-        // This method is called once before rendering each frame.
         virtual void on_frame_begin(
             const Scene&        scene,
-            const void*         data)                   // input values
+            const void*         data)
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
@@ -131,19 +126,16 @@ namespace
             }
         }
 
-        // Given an outgoing direction, sample the BSDF and compute the incoming
-        // direction, the probability density with which it was chosen, the value
-        // of the BSDF divided by the probability density and the scattering mode.
         virtual void sample(
-            const void*         data,                   // input values
-            const Vector3d&     geometric_normal,       // world space geometric normal, unit-length
-            const Basis3d&      shading_basis,          // world space orthonormal basis around shading normal
-            const Vector3d&     s,                      // sample in [0,1)^3
-            const Vector3d&     outgoing,               // world space outgoing direction, unit-length
-            Vector3d&           incoming,               // world space incoming direction, unit-length
-            Spectrum&           value,                  // BSDF value divided by PDF value
-            double&             probability,            // PDF value
-            Mode&               mode) const             // scattering mode
+            const void*         data,
+            const Vector3d&     geometric_normal,
+            const Basis3d&      shading_basis,
+            const Vector3d&     s,
+            const Vector3d&     outgoing,
+            Vector3d&           incoming,
+            Spectrum&           value,
+            double&             probability,
+            Mode&               mode) const
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
@@ -298,14 +290,13 @@ namespace
             value /= static_cast<float>(probability);
         }
 
-        // Evaluate the BSDF for a given pair of directions.
         virtual void evaluate(
-            const void*         data,                   // input values
-            const Vector3d&     geometric_normal,       // world space geometric normal, unit-length
-            const Basis3d&      shading_basis,          // world space orthonormal basis around shading normal
-            const Vector3d&     outgoing,               // world space outgoing direction, unit-length
-            const Vector3d&     incoming,               // world space incoming direction, unit-length
-            Spectrum&           value) const            // BSDF value for this pair of directions
+            const void*         data,
+            const Vector3d&     geometric_normal,
+            const Basis3d&      shading_basis,
+            const Vector3d&     outgoing,
+            const Vector3d&     incoming,
+            Spectrum&           value) const
         {
             const Vector3d& shading_normal = shading_basis.get_normal();
 
@@ -362,13 +353,12 @@ namespace
             value += diffuse;
         }
 
-        // Evaluate the PDF for a given pair of directions.
         virtual double evaluate_pdf(
-            const void*         data,                   // input values
-            const Vector3d&     geometric_normal,       // world space geometric normal, unit-length
-            const Basis3d&      shading_basis,          // world space orthonormal basis around shading normal
-            const Vector3d&     outgoing,               // world space outgoing direction, unit-length
-            const Vector3d&     incoming) const         // world space incoming direction, unit-length
+            const void*         data,
+            const Vector3d&     geometric_normal,
+            const Basis3d&      shading_basis,
+            const Vector3d&     outgoing,
+            const Vector3d&     incoming) const
         {
             const Vector3d& shading_normal = shading_basis.get_normal();
 
@@ -425,12 +415,12 @@ namespace
         // Input values.
         struct InputValues
         {
-            Spectrum    m_rd;                           // diffuse reflectance of the substrate
-            Alpha       m_rd_alpha;                     // alpha channel of diffuse reflectance
-            Spectrum    m_rg;                           // glossy reflectance at normal incidence
-            Alpha       m_rg_alpha;                     // alpha channel of glossy reflectance
-            double      m_nu;                           // Phong-like exponent in first tangent direction
-            double      m_nv;                           // Phong-like exponent in second tangent direction
+            Spectrum    m_rd;           // diffuse reflectance of the substrate
+            Alpha       m_rd_alpha;     // alpha channel of diffuse reflectance
+            Spectrum    m_rg;           // glossy reflectance at normal incidence
+            Alpha       m_rg_alpha;     // alpha channel of glossy reflectance
+            double      m_nu;           // Phong-like exponent in first tangent direction
+            double      m_nv;           // Phong-like exponent in second tangent direction
         };
 
         // Precomputed reflectance-related values.
@@ -518,16 +508,14 @@ namespace
 // AshikhminBRDFFactory class implementation.
 //
 
-// Return a string identifying this BSDF model.
 const char* AshikhminBRDFFactory::get_model()
 {
     return "ashikhmin_brdf";
 }
 
-// Create a new Lambertian BRDF.
 auto_release_ptr<BSDF> AshikhminBRDFFactory::create(
     const char*         name,
-    const ParamArray&   params)
+    const ParamArray&   params) const
 {
     return
         auto_release_ptr<BSDF>(

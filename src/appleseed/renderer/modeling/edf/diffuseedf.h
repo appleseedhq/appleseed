@@ -30,7 +30,7 @@
 #define APPLESEED_RENDERER_MODELING_EDF_DIFFUSEEDF_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/modeling/edf/iedffactory.h"
 
 // Forward declarations.
 namespace renderer      { class EDF; }
@@ -43,15 +43,16 @@ namespace renderer
 //
 
 class RENDERERDLL DiffuseEDFFactory
+  : public IEDFFactory
 {
   public:
     // Return a string identifying this EDF model.
     static const char* get_model();
 
-    // Create a new diffuse EDF.
-    static foundation::auto_release_ptr<EDF> create(
+    // Create a new EDF instance.
+    virtual foundation::auto_release_ptr<EDF> create(
         const char*         name,
-        const ParamArray&   params);
+        const ParamArray&   params) const;
 };
 
 }       // namespace renderer

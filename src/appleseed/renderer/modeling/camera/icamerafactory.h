@@ -26,47 +26,39 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_TEXTURE_TEXTUREFACTORYDISPATCHER_H
-#define APPLESEED_RENDERER_MODELING_TEXTURE_TEXTUREFACTORYDISPATCHER_H
+#ifndef APPLESEED_RENDERER_MODELING_CAMERA_ICAMERAFACTORY_H
+#define APPLESEED_RENDERER_MODELING_CAMERA_ICAMERAFACTORY_H
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 
+// appleseed.foundation headers.
+#include "foundation/math/transform.h"
+
 // Forward declarations.
-namespace foundation    { class SearchPaths; }
-namespace renderer      { class Texture; }
+namespace renderer      { class Camera; }
 
 namespace renderer
 {
 
 //
-// Texture factory dispatcher.
+// Camera factory interface.
 //
 
-class RENDERERDLL TextureFactoryDispatcher
+class RENDERERDLL ICameraFactory
   : public foundation::NonCopyable
 {
   public:
-    typedef foundation::auto_release_ptr<Texture> (*CreateFunctionPtr)(
+    // Destructor.
+    virtual ~ICameraFactory() {}
+
+    // Create a new camera instance.
+    virtual foundation::auto_release_ptr<Camera> create(
         const char*                     name,
         const ParamArray&               params,
-        const foundation::SearchPaths&  search_paths);
-
-    // Constructor.
-    TextureFactoryDispatcher();
-
-    // Destructor.
-    ~TextureFactoryDispatcher();
-
-    // Lookup a factory function by name.
-    CreateFunctionPtr lookup(const char* name) const;
-
-  private:
-    // Private implementation.
-    struct Impl;
-    Impl* impl;
+        const foundation::Transformd&   transform) const = 0;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_TEXTURE_TEXTUREFACTORYDISPATCHER_H
+#endif  // !APPLESEED_RENDERER_MODELING_CAMERA_ICAMERAFACTORY_H

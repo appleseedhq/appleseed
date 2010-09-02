@@ -26,51 +26,35 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "environmentshaderfactorydispatcher.h"
+#ifndef APPLESEED_RENDERER_MODELING_EDF_IEDFFACTORY_H
+#define APPLESEED_RENDERER_MODELING_EDF_IEDFFACTORY_H
 
 // appleseed.renderer headers.
-#include "renderer/modeling/environmentshader/edfenvironmentshader.h"
+#include "renderer/global/global.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/dispatcher.h"
-
-using namespace foundation;
+// Forward declarations.
+namespace renderer      { class EDF; }
 
 namespace renderer
 {
 
 //
-// EnvironmentShaderFactoryDispatcher class implementation.
+// EDF factory interface.
 //
 
-struct EnvironmentShaderFactoryDispatcher::Impl
+class RENDERERDLL IEDFFactory
+  : public foundation::NonCopyable
 {
-    Dispatcher<CreateFunctionPtr> m_dispatcher;
+  public:
+    // Destructor.
+    virtual ~IEDFFactory() {}
+
+    // Create a new EDF instance.
+    virtual foundation::auto_release_ptr<EDF> create(
+        const char*         name,
+        const ParamArray&   params) const = 0;
 };
 
-// Constructor.
-EnvironmentShaderFactoryDispatcher::EnvironmentShaderFactoryDispatcher()
-  : impl(new Impl())
-{
-    // Declare the various factory functions.
-    impl->m_dispatcher.declare(
-        EDFEnvironmentShaderFactory::get_model(),
-        &EDFEnvironmentShaderFactory::create);
-}
+}       // namespace renderer
 
-// Destructor.
-EnvironmentShaderFactoryDispatcher::~EnvironmentShaderFactoryDispatcher()
-{
-    delete impl;
-}
-
-// Lookup a factory function by name.
-EnvironmentShaderFactoryDispatcher::CreateFunctionPtr
-EnvironmentShaderFactoryDispatcher::lookup(const char* name) const
-{
-    assert(name);
-    return impl->m_dispatcher.lookup(name);
-}
-
-}   // namespace renderer
+#endif  // !APPLESEED_RENDERER_MODELING_EDF_IEDFFACTORY_H

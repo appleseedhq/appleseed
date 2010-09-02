@@ -128,7 +128,6 @@ const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingMod
     { "wireframe" ,             "Wireframe" }
 };
 
-// Constructor.
 DiagnosticSurfaceShader::DiagnosticSurfaceShader(
     const char*             name,
     const ParamArray&       params)
@@ -140,25 +139,21 @@ DiagnosticSurfaceShader::DiagnosticSurfaceShader(
     extract_parameters();
 }
 
-// Delete this instance.
 void DiagnosticSurfaceShader::release()
 {
     delete this;
 }
 
-// Return a string identifying the model of this surface shader.
 const char* DiagnosticSurfaceShader::get_model() const
 {
     return DiagnosticSurfaceShaderFactory::get_model();
 }
 
-// Return the name of this surface shader.
 const char* DiagnosticSurfaceShader::get_name() const
 {
     return impl->m_name.c_str();
 }
 
-// Evaluate the shading at a given point.
 void DiagnosticSurfaceShader::evaluate(
     SamplingContext&        sampling_context,
     const ShadingContext&   shading_context,
@@ -402,16 +397,14 @@ void DiagnosticSurfaceShader::extract_parameters()
 // DiagnosticSurfaceShaderFactory class implementation.
 //
 
-// Return a string identifying this surface shader model.
 const char* DiagnosticSurfaceShaderFactory::get_model()
 {
     return "diagnostic_surface_shader";
 }
 
-// Create a new diagnostic surface shader.
 auto_release_ptr<SurfaceShader> DiagnosticSurfaceShaderFactory::create(
     const char*         name,
-    const ParamArray&   params)
+    const ParamArray&   params) const
 {
     return
         auto_release_ptr<SurfaceShader>(

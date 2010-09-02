@@ -30,7 +30,7 @@
 #define APPLESEED_RENDERER_MODELING_TEXTURE_WRITABLETEXTURE_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/modeling/texture/itexturefactory.h"
 
 // Forward declarations.
 namespace foundation    { class SearchPaths; }
@@ -44,16 +44,17 @@ namespace renderer
 //
 
 class RENDERERDLL WritableTextureFactory
+  : public ITextureFactory
 {
   public:
     // Return a string identifying this texture model.
     static const char* get_model();
 
-    // Create a new writable texture.
-    static foundation::auto_release_ptr<Texture> create(
+    // Create a new texture instance.
+    virtual foundation::auto_release_ptr<Texture> create(
         const char*                     name,
         const ParamArray&               params,
-        const foundation::SearchPaths&  search_paths);
+        const foundation::SearchPaths&  search_paths) const;
 };
 
 }       // namespace renderer

@@ -26,52 +26,37 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "texturefactorydispatcher.h"
+#ifndef APPLESEED_RENDERER_MODELING_TEXTURE_ITEXTUREFACTORY_H
+#define APPLESEED_RENDERER_MODELING_TEXTURE_ITEXTUREFACTORY_H
 
 // appleseed.renderer headers.
-#include "renderer/modeling/texture/disktexture.h"
-#include "renderer/modeling/texture/writabletexture.h"
+#include "renderer/global/global.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/dispatcher.h"
-
-using namespace foundation;
+// Forward declarations.
+namespace foundation    { class SearchPaths; }
+namespace renderer      { class Texture; }
 
 namespace renderer
 {
 
 //
-// TextureFactoryDispatcher class implementation.
+// Texture factory interface.
 //
 
-struct TextureFactoryDispatcher::Impl
+class RENDERERDLL ITextureFactory
+  : public foundation::NonCopyable
 {
-    Dispatcher<CreateFunctionPtr> m_dispatcher;
+  public:
+    // Destructor.
+    virtual ~ITextureFactory() {}
+
+    // Create a new texture instance.
+    virtual foundation::auto_release_ptr<Texture> create(
+        const char*                     name,
+        const ParamArray&               params,
+        const foundation::SearchPaths&  search_paths) const = 0;
 };
 
-// Constructor.
-TextureFactoryDispatcher::TextureFactoryDispatcher()
-  : impl(new Impl())
-{
-    // Declare the various factory functions.
-    impl->m_dispatcher.declare(
-        DiskTextureFactory::get_model(),
-        &DiskTextureFactory::create);
-}
+}       // namespace renderer
 
-// Destructor.
-TextureFactoryDispatcher::~TextureFactoryDispatcher()
-{
-    delete impl;
-}
-
-// Lookup a factory function by name.
-TextureFactoryDispatcher::CreateFunctionPtr
-TextureFactoryDispatcher::lookup(const char* name) const
-{
-    assert(name);
-    return impl->m_dispatcher.lookup(name);
-}
-
-}   // namespace renderer
+#endif  // !APPLESEED_RENDERER_MODELING_TEXTURE_ITEXTUREFACTORY_H

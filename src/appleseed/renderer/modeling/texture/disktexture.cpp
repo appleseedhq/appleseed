@@ -59,7 +59,6 @@ namespace
       : public Texture
     {
       public:
-        // Constructor.
         DiskTexture(
             const char*         name,
             const ParamArray&   params,
@@ -71,31 +70,26 @@ namespace
             extract_parameters(search_paths);
         }
 
-        // Delete this instance.
         virtual void release()
         {
             delete this;
         }
 
-        // Return a string identifying the model of this texture.
         virtual const char* get_model() const
         {
             return DiskTextureFactory::get_model();
         }
 
-        // Return the name of this texture.
         virtual const char* get_name() const
         {
             return m_name.c_str();
         }
 
-        // Return the color space of the texture.
         virtual ColorSpace get_color_space() const
         {
             return m_color_space;
         }
 
-        // Access canvas properties.
         virtual const CanvasProperties& properties()
         {
             mutex::scoped_lock lock(m_mutex);
@@ -103,7 +97,6 @@ namespace
             return m_props;
         }
 
-        // Load a given tile.
         virtual Tile* load_tile(
             const size_t    tile_x,
             const size_t    tile_y)
@@ -113,7 +106,6 @@ namespace
             return m_reader.read_tile(tile_x, tile_y);
         }
 
-        // Unload a given tile.
         virtual void unload_tile(
             const size_t    tile_x,
             const size_t    tile_y,
@@ -176,17 +168,15 @@ namespace
 // DiskTextureFactory class implementation.
 //
 
-// Return a string identifying this texture model.
 const char* DiskTextureFactory::get_model()
 {
     return "2d_texture";
 }
 
-// Create a new disk texture.
 auto_release_ptr<Texture> DiskTextureFactory::create(
     const char*         name,
     const ParamArray&   params,
-    const SearchPaths&  search_paths)
+    const SearchPaths&  search_paths) const
 {
     return
         auto_release_ptr<Texture>(

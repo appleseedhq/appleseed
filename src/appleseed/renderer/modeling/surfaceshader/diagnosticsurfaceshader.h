@@ -30,7 +30,7 @@
 #define APPLESEED_RENDERER_MODELING_SURFACESHADER_DIAGNOSTICSURFACESHADER_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/modeling/surfaceshader/isurfaceshaderfactory.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 
 // appleseed.foundation headers.
@@ -108,15 +108,16 @@ class RENDERERDLL DiagnosticSurfaceShader
 //
 
 class RENDERERDLL DiagnosticSurfaceShaderFactory
+  : public ISurfaceShaderFactory
 {
   public:
     // Return a string identifying this surface shader model.
     static const char* get_model();
 
-    // Create a new diagnostic surface shader.
-    static foundation::auto_release_ptr<SurfaceShader> create(
+    // Create a new surface shader instance.
+    virtual foundation::auto_release_ptr<SurfaceShader> create(
         const char*         name,
-        const ParamArray&   params);
+        const ParamArray&   params) const;
 };
 
 }       // namespace renderer

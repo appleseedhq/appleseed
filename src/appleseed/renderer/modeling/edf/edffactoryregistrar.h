@@ -26,49 +26,41 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_CAMERA_CAMERAFACTORYDISPATCHER_H
-#define APPLESEED_RENDERER_MODELING_CAMERA_CAMERAFACTORYDISPATCHER_H
+#ifndef APPLESEED_RENDERER_MODELING_EDF_EDFFACTORYREGISTRAR_H
+#define APPLESEED_RENDERER_MODELING_EDF_EDFFACTORYREGISTRAR_H
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/transform.h"
+#include "foundation/utility/implptr.h"
 
 // Forward declarations.
-namespace renderer      { class Camera; }
+namespace renderer      { class IEDFFactory; }
 
 namespace renderer
 {
 
 //
-// Camera factory dispatcher.
+// EDF factory registrar.
 //
 
-class RENDERERDLL CameraFactoryDispatcher
+class RENDERERDLL EDFFactoryRegistrar
   : public foundation::NonCopyable
 {
   public:
-    typedef foundation::auto_release_ptr<Camera> (*CreateFunctionPtr)(
-        const char*                     name,
-        const ParamArray&               params,
-        const foundation::Transformd&   transform);
+    typedef IEDFFactory FactoryType;
 
     // Constructor.
-    CameraFactoryDispatcher();
+    EDFFactoryRegistrar();
 
-    // Destructor.
-    ~CameraFactoryDispatcher();
-
-    // Lookup a factory function by name.
-    CreateFunctionPtr lookup(const char* name) const;
+    // Lookup a factory by name.
+    const FactoryType* lookup(const char* name) const;
 
   private:
-    // Private implementation.
-    struct Impl;
-    Impl* impl;
+    FOUNDATION_PIMPL(EDFFactoryRegistrar);
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_CAMERA_CAMERAFACTORYDISPATCHER_H
+#endif  // !APPLESEED_RENDERER_MODELING_EDF_EDFFACTORYREGISTRAR_H

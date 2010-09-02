@@ -57,11 +57,11 @@ ShadingEngine::ShadingEngine(const ParamArray& params)
 {
     // Create the material used to shade surfaces without materials.
     m_missing_material_sshader =
-        ConstantSurfaceShaderFactory::create(
+        ConstantSurfaceShaderFactory().create(
             "__missing_material_surface_shader",
             ParamArray());
     m_missing_material =
-        MaterialFactory::create(
+        MaterialFactory().create(
             "__missing_material",
             m_missing_material_sshader.get());
 
@@ -69,11 +69,11 @@ ShadingEngine::ShadingEngine(const ParamArray& params)
     if (params.dictionaries().exist("override_shading"))
     {
         m_diagnostic_material_sshader =
-            DiagnosticSurfaceShaderFactory::create(
+            DiagnosticSurfaceShaderFactory().create(
                 "__diagnostic_surface_shader",
                 params.child("override_shading"));
         m_diagnostic_material =
-            MaterialFactory::create(
+            MaterialFactory().create(
                 "__diagnostic_material",
                 m_diagnostic_material_sshader.get());
     }

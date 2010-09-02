@@ -508,7 +508,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
 
     // Create a new physical surface shader.
     assembly->surface_shaders().insert(
-        PhysicalSurfaceShaderFactory::create("physical_shader", ParamArray()));
+        PhysicalSurfaceShaderFactory().create("physical_shader", ParamArray()));
 
     //
     // White material.
@@ -520,7 +520,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         ParamArray params;
         params.insert("reflectance", "white");
         assembly->bsdfs().insert(
-            LambertianBRDFFactory::create("white_material_brdf", params));
+            LambertianBRDFFactory().create("white_material_brdf", params));
     }
     {
         // Create a new material.
@@ -547,7 +547,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         ParamArray params;
         params.insert("reflectance", "red");
         assembly->bsdfs().insert(
-            LambertianBRDFFactory::create("red_material_brdf", params));
+            LambertianBRDFFactory().create("red_material_brdf", params));
     }
     {
         // Create a new material.
@@ -574,7 +574,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         ParamArray params;
         params.insert("reflectance", "green");
         assembly->bsdfs().insert(
-            LambertianBRDFFactory::create("green_material_brdf", params));
+            LambertianBRDFFactory().create("green_material_brdf", params));
     }
     {
         // Create a new material.
@@ -601,14 +601,14 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         ParamArray params;
         params.insert("reflectance", "white");
         assembly->bsdfs().insert(
-            LambertianBRDFFactory::create("light_material_brdf", params));
+            LambertianBRDFFactory().create("light_material_brdf", params));
     }
     {
         // Create a new EDF.
         ParamArray params;
         params.insert("exitance", "light_exitance");
         assembly->edfs().insert(
-            DiffuseEDFFactory::create("light_material_edf", params));
+            DiffuseEDFFactory().create("light_material_edf", params));
     }
     {
         // Create a new material.
@@ -1023,7 +1023,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         params.insert("film_dimensions", "0.025 0.025");
         params.insert("focal_length", "0.035");
         auto_release_ptr<Camera> camera(
-            PinholeCameraFactory::create(
+            PinholeCameraFactory().create(
                 "camera",
                 params,
                 Transformd(

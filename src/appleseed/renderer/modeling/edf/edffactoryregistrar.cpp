@@ -26,45 +26,43 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SURFACESHADER_SURFACESHADERFACTORYDISPATCHER_H
-#define APPLESEED_RENDERER_MODELING_SURFACESHADER_SURFACESHADERFACTORYDISPATCHER_H
+// Interface header.
+#include "edffactoryregistrar.h"
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/modeling/edf/diffuseedf.h"
 
-// Forward declarations.
-namespace renderer      { class SurfaceShader; }
+// appleseed.foundation headers.
+#include "foundation/utility/registrar.h"
+
+using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
 
 //
-// Surface shader factory dispatcher.
+// EDFFactoryRegistrar class implementation.
 //
 
-class RENDERERDLL SurfaceShaderFactoryDispatcher
-  : public foundation::NonCopyable
+struct EDFFactoryRegistrar::Impl
 {
-  public:
-    typedef foundation::auto_release_ptr<SurfaceShader> (*CreateFunctionPtr)(
-        const char*         name,
-        const ParamArray&   params);
-
-    // Constructor.
-    SurfaceShaderFactoryDispatcher();
-
-    // Destructor.
-    ~SurfaceShaderFactoryDispatcher();
-
-    // Lookup a factory function by name.
-    CreateFunctionPtr lookup(const char* name) const;
-
-  private:
-    // Private implementation.
-    struct Impl;
-    Impl* impl;
+    Registrar<IEDFFactory> m_registrar;
 };
 
-}       // namespace renderer
+EDFFactoryRegistrar::EDFFactoryRegistrar()
+  : impl(new Impl())
+{
+    impl->m_registrar.insert(
+        DiffuseEDFFactory::get_model(),
+        auto_ptr<IEDFFactory>(new DiffuseEDFFactory()));
+}
 
-#endif  // !APPLESEED_RENDERER_MODELING_SURFACESHADER_SURFACESHADERFACTORYDISPATCHER_H
+const EDFFactoryRegistrar::FactoryType* EDFFactoryRegistrar::lookup(const char* name) const
+{
+    assert(name);
+
+    return impl->m_registrar.lookup(name);
+}
+
+}   // namespace renderer

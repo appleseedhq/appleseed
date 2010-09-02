@@ -49,7 +49,6 @@ namespace
       : public Camera
     {
       public:
-        // Constructor.
         PinholeCamera(
             const char*             name,
             const ParamArray&       params,
@@ -65,38 +64,32 @@ namespace
             m_rcp_film_height = 1.0 / m_film_dimensions[1];
         }
 
-        // Delete this instance.
         virtual void release()
         {
             delete this;
         }
 
-        // Return a string identifying the model of this camera.
         virtual const char* get_model() const
         {
             return PinholeCameraFactory::get_model();
         }
 
-        // Return the name of this camera.
         virtual const char* get_name() const
         {
             return m_name.c_str();
         }
 
-        // Set the camera transformation.
         virtual void set_transform(const Transformd& transform)
         {
             m_transform = transform;
             ++m_version_id;
         }
 
-        // Get the camera transformation.
         virtual const Transformd& get_transform() const
         {
             return m_transform;
         }
 
-        // This method is called once before rendering each frame.
         virtual void on_frame_begin(
             const Scene&            scene,
             const Intersector&      intersector)
@@ -112,7 +105,6 @@ namespace
                 m_ray_org /= w;
         }
 
-        // Generate a ray.
         virtual void generate_ray(
             SamplingContext&        sampling_context,
             const Vector2d&         point,
@@ -138,7 +130,6 @@ namespace
             ray.m_dir = m_transform.transform_vector_to_parent(target);
         }
 
-        // Project a 3D point back to the film plane.
         virtual Vector2d project(const Vector3d& point) const
         {
             const double k = -m_focal_length / point.z;
@@ -170,17 +161,15 @@ namespace
 // PinholeCameraFactory class implementation.
 //
 
-// Return a string identifying this camera model.
 const char* PinholeCameraFactory::get_model()
 {
     return "pinhole_camera";
 }
 
-// Create a new pinhole camera.
 auto_release_ptr<Camera> PinholeCameraFactory::create(
     const char*         name,
     const ParamArray&   params,
-    const Transformd&   transform)
+    const Transformd&   transform) const
 {
     return
         auto_release_ptr<Camera>(

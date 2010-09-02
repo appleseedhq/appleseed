@@ -27,54 +27,47 @@
 //
 
 // Interface header.
-#include "camerafactorydispatcher.h"
+#include "texturefactoryregistrar.h"
 
 // appleseed.renderer headers.
-#include "renderer/modeling/camera/pinholecamera.h"
-#include "renderer/modeling/camera/thinlenscamera.h"
+#include "renderer/modeling/texture/disktexture.h"
+#include "renderer/modeling/texture/writabletexture.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/dispatcher.h"
+#include "foundation/utility/registrar.h"
 
 using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
 
 //
-// CameraFactoryDispatcher class implementation.
+// TextureFactoryRegistrar class implementation.
 //
 
-struct CameraFactoryDispatcher::Impl
+struct TextureFactoryRegistrar::Impl
 {
-    Dispatcher<CreateFunctionPtr> m_dispatcher;
+    Registrar<ITextureFactory> m_registrar;
 };
 
-// Constructor.
-CameraFactoryDispatcher::CameraFactoryDispatcher()
+TextureFactoryRegistrar::TextureFactoryRegistrar()
   : impl(new Impl())
 {
-    // Declare the various factory functions.
-    impl->m_dispatcher.declare(
-        PinholeCameraFactory::get_model(),
-        &PinholeCameraFactory::create);
-    impl->m_dispatcher.declare(
-        ThinLensCameraFactory::get_model(),
-        &ThinLensCameraFactory::create);
+    impl->m_registrar.insert(
+        DiskTextureFactory::get_model(),
+        auto_ptr<ITextureFactory>(new DiskTextureFactory()));
+
+    impl->m_registrar.insert(
+        WritableTextureFactory::get_model(),
+        auto_ptr<ITextureFactory>(new WritableTextureFactory()));
 }
 
-// Destructor.
-CameraFactoryDispatcher::~CameraFactoryDispatcher()
-{
-    delete impl;
-}
-
-// Lookup a factory function by name.
-CameraFactoryDispatcher::CreateFunctionPtr
-CameraFactoryDispatcher::lookup(const char* name) const
+const TextureFactoryRegistrar::FactoryType* TextureFactoryRegistrar::lookup(const char* name) const
 {
     assert(name);
-    return impl->m_dispatcher.lookup(name);
+
+    return impl->m_registrar.lookup(name);
 }
 
 }   // namespace renderer

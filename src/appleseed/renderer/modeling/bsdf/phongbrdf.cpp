@@ -54,7 +54,6 @@ namespace
       : public BSDF
     {
       public:
-        // Constructor.
         PhongBRDF(
             const char*         name,
             const ParamArray&   params)
@@ -63,60 +62,52 @@ namespace
         {
         }
 
-        // Delete this instance.
         virtual void release()
         {
             delete this;
         }
 
-        // Return a string identifying the model of this BSDF.
         virtual const char* get_model() const
         {
             return PhongBRDFFactory::get_model();
         }
 
-        // Return the name of this BSDF.
         virtual const char* get_name() const
         {
             return m_name.c_str();
         }
 
-        // Given an outgoing direction, sample the BSDF and compute the incoming
-        // direction, the probability density with which it was chosen, the value
-        // of the BSDF divided by the probability density and the scattering mode.
         virtual void sample(
-            const void*         data,                   // input values
-            const Vector3d&     geometric_normal,       // world space geometric normal, unit-length
-            const Basis3d&      shading_basis,          // world space orthonormal basis around shading normal
-            const Vector3d&     s,                      // sample in [0,1)^3
-            const Vector3d&     outgoing,               // world space outgoing direction, unit-length
-            Vector3d&           incoming,               // world space incoming direction, unit-length
-            Spectrum&           value,                  // BSDF value divided by PDF value
-            double&             probability,            // PDF value
-            Mode&               mode) const             // scattering mode
+            const void*         data,
+            const Vector3d&     geometric_normal,
+            const Basis3d&      shading_basis,
+            const Vector3d&     s,
+            const Vector3d&     outgoing,
+            Vector3d&           incoming,
+            Spectrum&           value,
+            double&             probability,
+            Mode&               mode) const
         {
             // todo: implement.
         }
 
-        // Evaluate the BSDF for a given pair of directions.
         virtual void evaluate(
-            const void*         data,                   // input values
-            const Vector3d&     geometric_normal,       // world space geometric normal, unit-length
-            const Basis3d&      shading_basis,          // world space orthonormal basis around shading normal
-            const Vector3d&     outgoing,               // world space outgoing direction, unit-length
-            const Vector3d&     incoming,               // world space incoming direction, unit-length
-            Spectrum&           value) const            // BSDF value for this pair of directions
+            const void*         data,
+            const Vector3d&     geometric_normal,
+            const Basis3d&      shading_basis,
+            const Vector3d&     outgoing,
+            const Vector3d&     incoming,
+            Spectrum&           value) const
         {
             // todo: implement.
         }
 
-        // Evaluate the PDF for a given pair of directions.
         virtual double evaluate_pdf(
-            const void*         data,                   // input values
-            const Vector3d&     geometric_normal,       // world space geometric normal, unit-length
-            const Basis3d&      shading_basis,          // world space orthonormal basis around shading normal
-            const Vector3d&     outgoing,               // world space outgoing direction, unit-length
-            const Vector3d&     incoming) const         // world space incoming direction, unit-length
+            const void*         data,
+            const Vector3d&     geometric_normal,
+            const Basis3d&      shading_basis,
+            const Vector3d&     outgoing,
+            const Vector3d&     incoming) const
         {
             // todo: implement.
             return 0.0;
@@ -138,16 +129,14 @@ namespace
 // PhongBRDFFactory class implementation.
 //
 
-// Return a string identifying this BSDF model.
 const char* PhongBRDFFactory::get_model()
 {
     return "phong_brdf";
 }
 
-// Create a new Phong BRDF.
 auto_release_ptr<BSDF> PhongBRDFFactory::create(
     const char*         name,
-    const ParamArray&   params)
+    const ParamArray&   params) const
 {
     return
         auto_release_ptr<BSDF>(

@@ -27,76 +27,62 @@
 //
 
 // Interface header.
-#include "bsdffactorydispatcher.h"
+#include "bsdffactoryregistrar.h"
 
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/ashikhminbrdf.h"
 #include "renderer/modeling/bsdf/lambertianbrdf.h"
-#include "renderer/modeling/bsdf/lambertianbtdf.h"
 #include "renderer/modeling/bsdf/phongbrdf.h"
-#include "renderer/modeling/bsdf/phongbtdf.h"
 #include "renderer/modeling/bsdf/specularbrdf.h"
 #include "renderer/modeling/bsdf/specularbtdf.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/dispatcher.h"
+#include "foundation/utility/registrar.h"
 
 using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
 
 //
-// BSDFFactoryDispatcher class implementation.
+// BSDFFactoryRegistrar class implementation.
 //
 
-struct BSDFFactoryDispatcher::Impl
+struct BSDFFactoryRegistrar::Impl
 {
-    Dispatcher<CreateFunctionPtr> m_dispatcher;
+    Registrar<IBSDFFactory> m_registrar;
 };
 
-BSDFFactoryDispatcher::BSDFFactoryDispatcher()
+BSDFFactoryRegistrar::BSDFFactoryRegistrar()
   : impl(new Impl())
 {
-    impl->m_dispatcher.declare(
+    impl->m_registrar.insert(
         AshikhminBRDFFactory::get_model(),
-        &AshikhminBRDFFactory::create);
+        auto_ptr<IBSDFFactory>(new AshikhminBRDFFactory()));
 
-    impl->m_dispatcher.declare(
+    impl->m_registrar.insert(
         LambertianBRDFFactory::get_model(),
-        &LambertianBRDFFactory::create);
+        auto_ptr<IBSDFFactory>(new LambertianBRDFFactory()));
 
-//     impl->m_dispatcher.declare(
-//         LambertianBTDFFactory::get_model(),
-//         &LambertianBTDFFactory::create);
-
-    impl->m_dispatcher.declare(
+    impl->m_registrar.insert(
         PhongBRDFFactory::get_model(),
-        &PhongBRDFFactory::create);
+        auto_ptr<IBSDFFactory>(new PhongBRDFFactory()));
 
-//     impl->m_dispatcher.declare(
-//         PhongBTDFFactory::get_model(),
-//         &PhongBTDFFactory::create);
-
-    impl->m_dispatcher.declare(
+    impl->m_registrar.insert(
         SpecularBRDFFactory::get_model(),
-        &SpecularBRDFFactory::create);
+        auto_ptr<IBSDFFactory>(new SpecularBRDFFactory()));
 
-    impl->m_dispatcher.declare(
+    impl->m_registrar.insert(
         SpecularBTDFFactory::get_model(),
-        &SpecularBTDFFactory::create);
+        auto_ptr<IBSDFFactory>(new SpecularBTDFFactory()));
 }
 
-BSDFFactoryDispatcher::~BSDFFactoryDispatcher()
-{
-    delete impl;
-}
-
-BSDFFactoryDispatcher::CreateFunctionPtr
-BSDFFactoryDispatcher::lookup(const char* name) const
+const BSDFFactoryRegistrar::FactoryType* BSDFFactoryRegistrar::lookup(const char* name) const
 {
     assert(name);
-    return impl->m_dispatcher.lookup(name);
+
+    return impl->m_registrar.lookup(name);
 }
 
 }   // namespace renderer

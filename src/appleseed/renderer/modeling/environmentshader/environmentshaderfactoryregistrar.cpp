@@ -26,14 +26,44 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_TEXTURE_H
-#define APPLESEED_RENDERER_API_TEXTURE_H
+// Interface header.
+#include "environmentshaderfactoryregistrar.h"
 
-// API headers.
-#include "renderer/modeling/texture/disktexture.h"
-#include "renderer/modeling/texture/itexturefactory.h"
-#include "renderer/modeling/texture/texture.h"
-#include "renderer/modeling/texture/texturefactoryregistrar.h"
-#include "renderer/modeling/texture/writabletexture.h"
+// appleseed.renderer headers.
+#include "renderer/modeling/environmentshader/edfenvironmentshader.h"
 
-#endif  // !APPLESEED_RENDERER_API_TEXTURE_H
+// appleseed.foundation headers.
+#include "foundation/utility/registrar.h"
+
+using namespace foundation;
+using namespace std;
+
+namespace renderer
+{
+
+//
+// EnvironmentShaderFactoryRegistrar class implementation.
+//
+
+struct EnvironmentShaderFactoryRegistrar::Impl
+{
+    Registrar<IEnvironmentShaderFactory> m_registrar;
+};
+
+EnvironmentShaderFactoryRegistrar::EnvironmentShaderFactoryRegistrar()
+  : impl(new Impl())
+{
+    impl->m_registrar.insert(
+        EDFEnvironmentShaderFactory::get_model(),
+        auto_ptr<IEnvironmentShaderFactory>(new EDFEnvironmentShaderFactory()));
+}
+
+const EnvironmentShaderFactoryRegistrar::FactoryType*
+EnvironmentShaderFactoryRegistrar::lookup(const char* name) const
+{
+    assert(name);
+
+    return impl->m_registrar.lookup(name);
+}
+
+}   // namespace renderer

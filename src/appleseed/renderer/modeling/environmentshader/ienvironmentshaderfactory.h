@@ -26,34 +26,35 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_PHONGBTDF_H
-#define APPLESEED_RENDERER_MODELING_BSDF_PHONGBTDF_H
+#ifndef APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_IENVIRONMENTSHADERFACTORY_H
+#define APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_IENVIRONMENTSHADERFACTORY_H
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 
 // Forward declarations.
-namespace renderer      { class BSDF; }
+namespace renderer      { class EnvironmentShader; }
 
 namespace renderer
 {
 
 //
-// Phong BTDF factory.
+// Environment shader factory interface.
 //
 
-class RENDERERDLL PhongBTDFFactory
+class RENDERERDLL IEnvironmentShaderFactory
+  : public foundation::NonCopyable
 {
   public:
-    // Return a string identifying this BSDF model.
-    static const char* get_model();
+    // Destructor.
+    virtual ~IEnvironmentShaderFactory() {}
 
-    // Create a new Phong BTDF.
-    static foundation::auto_release_ptr<BSDF> create(
+    // Create a new environment shader instance.
+    virtual foundation::auto_release_ptr<EnvironmentShader> create(
         const char*         name,
-        const ParamArray&   params);
+        const ParamArray&   params) const = 0;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_PHONGBTDF_H
+#endif  // !APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_IENVIRONMENTSHADERFACTORY_H

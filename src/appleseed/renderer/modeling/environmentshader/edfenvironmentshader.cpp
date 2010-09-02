@@ -52,7 +52,6 @@ namespace
       : public EnvironmentShader
     {
       public:
-        // Constructor.
         EDFEnvironmentShader(
             const char*             name,
             const ParamArray&       params)
@@ -63,25 +62,21 @@ namespace
         {
         }
 
-        // Delete this instance.
         virtual void release()
         {
             delete this;
         }
 
-        // Return a string identifying the model of this environment shader.
         virtual const char* get_model() const
         {
             return EDFEnvironmentShaderFactory::get_model();
         }
 
-        // Return the name of this environment shader.
         virtual const char* get_name() const
         {
             return m_name.c_str();
         }
 
-        // This method is called once before rendering each frame.
         virtual void on_frame_begin(const Scene& scene)
         {
             m_env_edf = 0;
@@ -107,7 +102,6 @@ namespace
             }
         }
 
-        // Evaluate the environment for a given unit-length direction.
         virtual void evaluate(
             InputEvaluator&         input_evaluator,
             const Vector3d&         direction,
@@ -143,16 +137,14 @@ namespace
 // EDFEnvironmentShaderFactory class implementation.
 //
 
-// Return a string identifying this environment shader model.
 const char* EDFEnvironmentShaderFactory::get_model()
 {
     return "edf_environment_shader";
 }
 
-// Create a new EDF-based environment shader.
 auto_release_ptr<EnvironmentShader> EDFEnvironmentShaderFactory::create(
     const char*         name,
-    const ParamArray&   params)
+    const ParamArray&   params) const
 {
     return
         auto_release_ptr<EnvironmentShader>(

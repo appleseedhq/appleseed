@@ -26,14 +26,48 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_TEXTURE_H
-#define APPLESEED_RENDERER_API_TEXTURE_H
+// Interface header.
+#include "camerafactoryregistrar.h"
 
-// API headers.
-#include "renderer/modeling/texture/disktexture.h"
-#include "renderer/modeling/texture/itexturefactory.h"
-#include "renderer/modeling/texture/texture.h"
-#include "renderer/modeling/texture/texturefactoryregistrar.h"
-#include "renderer/modeling/texture/writabletexture.h"
+// appleseed.renderer headers.
+#include "renderer/modeling/camera/pinholecamera.h"
+#include "renderer/modeling/camera/thinlenscamera.h"
 
-#endif  // !APPLESEED_RENDERER_API_TEXTURE_H
+// appleseed.foundation headers.
+#include "foundation/utility/registrar.h"
+
+using namespace foundation;
+using namespace std;
+
+namespace renderer
+{
+
+//
+// CameraFactoryRegistrar class implementation.
+//
+
+struct CameraFactoryRegistrar::Impl
+{
+    Registrar<ICameraFactory> m_registrar;
+};
+
+CameraFactoryRegistrar::CameraFactoryRegistrar()
+  : impl(new Impl())
+{
+    impl->m_registrar.insert(
+        PinholeCameraFactory::get_model(),
+        auto_ptr<ICameraFactory>(new PinholeCameraFactory()));
+
+    impl->m_registrar.insert(
+        ThinLensCameraFactory::get_model(),
+        auto_ptr<ICameraFactory>(new ThinLensCameraFactory()));
+}
+
+const CameraFactoryRegistrar::FactoryType* CameraFactoryRegistrar::lookup(const char* name) const
+{
+    assert(name);
+
+    return impl->m_registrar.lookup(name);
+}
+
+}   // namespace renderer

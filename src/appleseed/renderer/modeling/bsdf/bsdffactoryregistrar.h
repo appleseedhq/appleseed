@@ -26,34 +26,41 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_LAMBERTIANBTDF_H
-#define APPLESEED_RENDERER_MODELING_BSDF_LAMBERTIANBTDF_H
+#ifndef APPLESEED_RENDERER_MODELING_BSDF_BSDFFACTORYREGISTRAR_H
+#define APPLESEED_RENDERER_MODELING_BSDF_BSDFFACTORYREGISTRAR_H
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/implptr.h"
+
 // Forward declarations.
-namespace renderer      { class BSDF; }
+namespace renderer      { class IBSDFFactory; }
 
 namespace renderer
 {
 
 //
-// Lambertian BTDF factory.
+// BSDF factory registrar.
 //
 
-class RENDERERDLL LambertianBTDFFactory
+class RENDERERDLL BSDFFactoryRegistrar
+  : public foundation::NonCopyable
 {
   public:
-    // Return a string identifying this BSDF model.
-    static const char* get_model();
+    typedef IBSDFFactory FactoryType;
 
-    // Create a new Lambertian BTDF.
-    static foundation::auto_release_ptr<BSDF> create(
-        const char*         name,
-        const ParamArray&   params);
+    // Constructor.
+    BSDFFactoryRegistrar();
+
+    // Lookup a factory by name.
+    const FactoryType* lookup(const char* name) const;
+
+  private:
+    FOUNDATION_PIMPL(BSDFFactoryRegistrar);
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_LAMBERTIANBTDF_H
+#endif  // !APPLESEED_RENDERER_MODELING_BSDF_BSDFFACTORYREGISTRAR_H

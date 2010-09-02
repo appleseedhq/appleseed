@@ -30,7 +30,7 @@
 #define APPLESEED_RENDERER_MODELING_CAMERA_THINLENSCAMERA_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/modeling/camera/icamerafactory.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
@@ -46,16 +46,17 @@ namespace renderer
 //
 
 class RENDERERDLL ThinLensCameraFactory
+  : public ICameraFactory
 {
   public:
     // Return a string identifying this camera model.
     static const char* get_model();
 
-    // Create a new thin lens camera.
-    static foundation::auto_release_ptr<Camera> create(
+    // Create a new camera instance.
+    virtual foundation::auto_release_ptr<Camera> create(
         const char*                     name,
         const ParamArray&               params,
-        const foundation::Transformd&   transform);
+        const foundation::Transformd&   transform) const;
 };
 
 }       // namespace renderer

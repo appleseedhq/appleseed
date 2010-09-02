@@ -155,7 +155,7 @@ FOUNDATION_TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
     FOUNDATION_TEST_CASE(CheckConstantEnvironmentEDFConsistency)
     {
         auto_release_ptr<EnvironmentEDF> env_edf(
-            ConstantEnvironmentEDFFactory::create("env_edf", ParamArray()));
+            ConstantEnvironmentEDFFactory().create("env_edf", ParamArray()));
 
         bind_color_to_input(env_edf, "exitance", Color3f(0.2f, 0.5f, 0.9f));
 
@@ -167,7 +167,7 @@ FOUNDATION_TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
     FOUNDATION_TEST_CASE(CheckGradientEnvironmentEDFConsistency)
     {
         auto_release_ptr<EnvironmentEDF> env_edf(
-            GradientEnvironmentEDFFactory::create("env_edf", ParamArray()));
+            GradientEnvironmentEDFFactory().create("env_edf", ParamArray()));
 
         bind_color_to_input(env_edf, "horizon_exitance", Color3f(1.0f, 0.2f, 0.2f));
         bind_color_to_input(env_edf, "zenith_exitance", Color3f(0.2f, 1.0f, 0.2f));
@@ -277,7 +277,7 @@ FOUNDATION_TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
         ParamArray params;
         params.insert("exitance", "texture_instance");
         auto_release_ptr<EnvironmentEDF> env_edf(
-            LatLongMapEnvironmentEDFFactory::create("env_edf", params));
+            LatLongMapEnvironmentEDFFactory().create("env_edf", params));
 
         bind_texture_to_input(scene, env_edf, "exitance", texture);
 
@@ -295,7 +295,7 @@ FOUNDATION_TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
         ParamArray params;
         params.insert("exitance", "texture_instance");
         auto_release_ptr<EnvironmentEDF> env_edf(
-            MirrorBallMapEnvironmentEDFFactory::create("env_edf", params));
+            MirrorBallMapEnvironmentEDFFactory().create("env_edf", params));
 
         bind_texture_to_input(scene, env_edf, "exitance", texture);
 

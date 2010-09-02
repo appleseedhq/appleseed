@@ -30,6 +30,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECTEXPLORER_H
 
 // appleseed.renderer headers.
+#include "renderer/api/bsdf.h"
 #include "renderer/api/scene.h"
 
 // appleseed.foundation headers.
@@ -95,10 +96,12 @@ class ProjectExplorer
 
     typedef std::map<foundation::UniqueID, AssemblyItems> AssemblyItemsMap;
 
-    QTreeWidget*            m_tree_widget;
-    renderer::Project*      m_project;
-    SceneItems              m_scene_items;
-    AssemblyItemsMap        m_assembly_items;
+    QTreeWidget*                            m_tree_widget;
+    renderer::Project*                      m_project;
+    SceneItems                              m_scene_items;
+    AssemblyItemsMap                        m_assembly_items;
+
+    renderer::BSDFFactoryRegistrar          m_bsdf_registrar;
 
     void build_tree_widget();
 

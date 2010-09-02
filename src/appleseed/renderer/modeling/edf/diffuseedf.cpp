@@ -55,7 +55,6 @@ namespace
       : public EDF
     {
       public:
-        // Constructor.
         DiffuseEDF(
             const char*         name,
             const ParamArray&   params)
@@ -65,35 +64,29 @@ namespace
             m_inputs.declare("exitance", InputFormatSpectrum);
         }
 
-        // Delete this instance.
         virtual void release()
         {
             delete this;
         }
 
-        // Return a string identifying the model of this EDF.
         virtual const char* get_model() const
         {
             return DiffuseEDFFactory::get_model();
         }
 
-        // Return the name of this EDF.
         virtual const char* get_name() const
         {
             return m_name.c_str();
         }
 
-        // Sample the EDF and compute the emission direction, the probability
-        // density with which it was chosen and the value of the EDF for this
-        // direction.
         virtual void sample(
-            const void*         data,                   // input values
-            const Vector3d&     geometric_normal,       // world space geometric normal, unit-length
-            const Basis3d&      shading_basis,          // world space orthonormal basis around shading normal
-            const Vector2d&     s,                      // sample in [0,1)^2
-            Vector3d&           outgoing,               // world space emission direction, unit-length
-            Spectrum&           value,                  // EDF value for this direction
-            double&             probability) const      // PDF value
+            const void*         data,
+            const Vector3d&     geometric_normal,
+            const Basis3d&      shading_basis,
+            const Vector2d&     s,
+            Vector3d&           outgoing,
+            Spectrum&           value,
+            double&             probability) const
         {
             assert(is_normalized(geometric_normal));
 
@@ -109,13 +102,12 @@ namespace
             probability = 1.0 / Pi;
         }
 
-        // Evaluate the EDF for a given emission direction.
         virtual void evaluate(
-            const void*         data,                   // input values
-            const Vector3d&     geometric_normal,       // world space geometric normal, unit-length
-            const Basis3d&      shading_basis,          // world space orthonormal basis around shading normal
-            const Vector3d&     outgoing,               // world space emission direction, unit-length
-            Spectrum&           value) const            // EDF value for this direction
+            const void*         data,
+            const Vector3d&     geometric_normal,
+            const Basis3d&      shading_basis,
+            const Vector3d&     outgoing,
+            Spectrum&           value) const
         {
             assert(is_normalized(geometric_normal));
             assert(is_normalized(outgoing));
@@ -124,12 +116,11 @@ namespace
             value = values->m_exitance;
         }
 
-        // Evaluate the PDF for a given emission direction.
         virtual double evaluate_pdf(
-            const void*         data,                   // input values
-            const Vector3d&     geometric_normal,       // world space geometric normal, unit-length
-            const Basis3d&      shading_basis,          // world space orthonormal basis around shading normal
-            const Vector3d&     outgoing) const         // world space emission direction, unit-length
+            const void*         data,
+            const Vector3d&     geometric_normal,
+            const Basis3d&      shading_basis,
+            const Vector3d&     outgoing) const
         {
             assert(is_normalized(geometric_normal));
             assert(is_normalized(outgoing));
@@ -141,8 +132,8 @@ namespace
         // Input values.
         struct InputValues
         {
-            Spectrum    m_exitance;                     // radiant exitance, in W.m^-2
-            Alpha       m_exitance_alpha;               // alpha channel of radiant exitance
+            Spectrum    m_exitance;         // radiant exitance, in W.m^-2
+            Alpha       m_exitance_alpha;   // alpha channel of radiant exitance
         };
 
         const string    m_name;
@@ -155,16 +146,14 @@ namespace
 // DiffuseEDFFactory class implementation.
 //
 
-// Return a string identifying this EDF model.
 const char* DiffuseEDFFactory::get_model()
 {
     return "diffuse_edf";
 }
 
-// Create a new diffuse EDF.
 auto_release_ptr<EDF> DiffuseEDFFactory::create(
     const char*         name,
-    const ParamArray&   params)
+    const ParamArray&   params) const
 {
     return
         auto_release_ptr<EDF>(

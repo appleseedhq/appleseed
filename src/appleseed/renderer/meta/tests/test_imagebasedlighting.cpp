@@ -99,7 +99,7 @@ FOUNDATION_TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
             ParamArray params;
             params.insert("reflectance", "not used");
 
-            auto_release_ptr<BSDF> brdf(SpecularBRDFFactory::create(name, params));
+            auto_release_ptr<BSDF> brdf(SpecularBRDFFactory().create(name, params));
 
             brdf->get_inputs().find("reflectance").bind(new ColorSource(reflectance));
 
@@ -114,7 +114,7 @@ FOUNDATION_TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
             params.insert("exitance", "not used");
 
             auto_release_ptr<EnvironmentEDF> env_edf(
-                ConstantEnvironmentEDFFactory::create(name, params));
+                ConstantEnvironmentEDFFactory().create(name, params));
 
             env_edf->get_inputs().find("exitance").bind(new ColorSource(exitance));
 

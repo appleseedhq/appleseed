@@ -30,7 +30,7 @@
 #define APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_CONSTANTENVIRONMENTEDF_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/modeling/environmentedf/ienvironmentedffactory.h"
 
 // Forward declarations.
 namespace renderer      { class EnvironmentEDF; }
@@ -43,15 +43,16 @@ namespace renderer
 //
 
 class RENDERERDLL ConstantEnvironmentEDFFactory
+  : public IEnvironmentEDFFactory
 {
   public:
-    // Return a string identifying this EDF model.
+    // Return a string identifying this environment EDF model.
     static const char* get_model();
 
-    // Create a new constant-emittance EDF.
-    static foundation::auto_release_ptr<EnvironmentEDF> create(
+    // Create a new environment EDF instance.
+    virtual foundation::auto_release_ptr<EnvironmentEDF> create(
         const char*         name,
-        const ParamArray&   params);
+        const ParamArray&   params) const;
 };
 
 }       // namespace renderer

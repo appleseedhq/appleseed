@@ -321,7 +321,6 @@ set(foundation_meta_tests_sources
     foundation/meta/tests/test_concepts.cpp
     foundation/meta/tests/test_countof.cpp
     foundation/meta/tests/test_dictionary.cpp
-    foundation/meta/tests/test_dispatcher.cpp
     foundation/meta/tests/test_distance.cpp
     foundation/meta/tests/test_exrimagefilewriter.cpp
     foundation/meta/tests/test_fastmath.cpp
@@ -349,6 +348,7 @@ set(foundation_meta_tests_sources
     foundation/meta/tests/test_population.cpp
     foundation/meta/tests/test_qmc.cpp
     foundation/meta/tests/test_ray.cpp
+    foundation/meta/tests/test_registrar.cpp
     foundation/meta/tests/test_sampling.cpp
     foundation/meta/tests/test_scalar.cpp
     foundation/meta/tests/test_settings.cpp
@@ -574,7 +574,6 @@ set(foundation_utility_sources
     foundation/utility/casts.h
     foundation/utility/commandlineparser.h
     foundation/utility/countof.h
-    foundation/utility/dispatcher.h
     foundation/utility/filter.h
     foundation/utility/foreach.h
     foundation/utility/implptr.h
@@ -593,6 +592,7 @@ set(foundation_utility_sources
     foundation/utility/numerictype.h
     foundation/utility/otherwise.h
     foundation/utility/poolallocator.h
+    foundation/utility/registrar.h
     foundation/utility/searchpaths.cpp
     foundation/utility/searchpaths.h
     foundation/utility/serialization.h
@@ -923,16 +923,15 @@ set(renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/brdfwrapper.h
     renderer/modeling/bsdf/bsdf.cpp
     renderer/modeling/bsdf/bsdf.h
-    renderer/modeling/bsdf/bsdffactorydispatcher.cpp
-    renderer/modeling/bsdf/bsdffactorydispatcher.h
+    renderer/modeling/bsdf/bsdffactoryregistrar.cpp
+    renderer/modeling/bsdf/bsdffactoryregistrar.h
     renderer/modeling/bsdf/btdfwrapper.h
+    renderer/modeling/bsdf/ibsdffactory.h
     renderer/modeling/bsdf/lambertianbrdf.cpp
     renderer/modeling/bsdf/lambertianbrdf.h
-    renderer/modeling/bsdf/lambertianbtdf.h
     renderer/modeling/bsdf/nullbsdf.h
     renderer/modeling/bsdf/phongbrdf.cpp
     renderer/modeling/bsdf/phongbrdf.h
-    renderer/modeling/bsdf/phongbtdf.h
     renderer/modeling/bsdf/specularbrdf.cpp
     renderer/modeling/bsdf/specularbrdf.h
     renderer/modeling/bsdf/specularbtdf.cpp
@@ -948,8 +947,9 @@ source_group("renderer\\modeling\\bsdf" FILES
 set(renderer_modeling_camera_sources
     renderer/modeling/camera/camera.cpp
     renderer/modeling/camera/camera.h
-    renderer/modeling/camera/camerafactorydispatcher.cpp
-    renderer/modeling/camera/camerafactorydispatcher.h
+    renderer/modeling/camera/camerafactoryregistrar.cpp
+    renderer/modeling/camera/camerafactoryregistrar.h
+    renderer/modeling/camera/icamerafactory.h
     renderer/modeling/camera/pinholecamera.cpp
     renderer/modeling/camera/pinholecamera.h
     renderer/modeling/camera/thinlenscamera.cpp
@@ -979,8 +979,9 @@ set(renderer_modeling_edf_sources
     renderer/modeling/edf/diffuseedf.cpp
     renderer/modeling/edf/diffuseedf.h
     renderer/modeling/edf/edf.h
-    renderer/modeling/edf/edffactorydispatcher.cpp
-    renderer/modeling/edf/edffactorydispatcher.h
+    renderer/modeling/edf/edffactoryregistrar.cpp
+    renderer/modeling/edf/edffactoryregistrar.h
+    renderer/modeling/edf/iedffactory.h
 )
 list(APPEND appleseed_sources
     ${renderer_modeling_edf_sources}
@@ -1019,10 +1020,11 @@ set(renderer_modeling_environmentedf_sources
     renderer/modeling/environmentedf/constantenvironmentedf.cpp
     renderer/modeling/environmentedf/constantenvironmentedf.h
     renderer/modeling/environmentedf/environmentedf.h
-    renderer/modeling/environmentedf/environmentedffactorydispatcher.cpp
-    renderer/modeling/environmentedf/environmentedffactorydispatcher.h
+    renderer/modeling/environmentedf/environmentedffactoryregistrar.cpp
+    renderer/modeling/environmentedf/environmentedffactoryregistrar.h
     renderer/modeling/environmentedf/gradientenvironmentedf.cpp
     renderer/modeling/environmentedf/gradientenvironmentedf.h
+    renderer/modeling/environmentedf/ienvironmentedffactory.h
     renderer/modeling/environmentedf/latlongmapenvironmentedf.cpp
     renderer/modeling/environmentedf/latlongmapenvironmentedf.h
     renderer/modeling/environmentedf/mirrorballmapenvironmentedf.cpp
@@ -1039,8 +1041,9 @@ set(renderer_modeling_environmentshader_sources
     renderer/modeling/environmentshader/edfenvironmentshader.cpp
     renderer/modeling/environmentshader/edfenvironmentshader.h
     renderer/modeling/environmentshader/environmentshader.h
-    renderer/modeling/environmentshader/environmentshaderfactorydispatcher.cpp
-    renderer/modeling/environmentshader/environmentshaderfactorydispatcher.h
+    renderer/modeling/environmentshader/environmentshaderfactoryregistrar.cpp
+    renderer/modeling/environmentshader/environmentshaderfactoryregistrar.h
+    renderer/modeling/environmentshader/ienvironmentshaderfactory.h
 )
 list(APPEND appleseed_sources
     ${renderer_modeling_environmentshader_sources}
@@ -1184,13 +1187,14 @@ set(renderer_modeling_surfaceshader_sources
     renderer/modeling/surfaceshader/constantsurfaceshader.h
     renderer/modeling/surfaceshader/diagnosticsurfaceshader.cpp
     renderer/modeling/surfaceshader/diagnosticsurfaceshader.h
+    renderer/modeling/surfaceshader/isurfaceshaderfactory.h
     renderer/modeling/surfaceshader/physicalsurfaceshader.cpp
     renderer/modeling/surfaceshader/physicalsurfaceshader.h
     renderer/modeling/surfaceshader/smokesurfaceshader.cpp
     renderer/modeling/surfaceshader/smokesurfaceshader.h
     renderer/modeling/surfaceshader/surfaceshader.h
-    renderer/modeling/surfaceshader/surfaceshaderfactorydispatcher.cpp
-    renderer/modeling/surfaceshader/surfaceshaderfactorydispatcher.h
+    renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.cpp
+    renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.h
     renderer/modeling/surfaceshader/voxelaosurfaceshader.cpp
     renderer/modeling/surfaceshader/voxelaosurfaceshader.h
 )
@@ -1204,9 +1208,10 @@ source_group("renderer\\modeling\\surfaceshader" FILES
 set(renderer_modeling_texture_sources
     renderer/modeling/texture/disktexture.cpp
     renderer/modeling/texture/disktexture.h
+    renderer/modeling/texture/itexturefactory.h
     renderer/modeling/texture/texture.h
-    renderer/modeling/texture/texturefactorydispatcher.cpp
-    renderer/modeling/texture/texturefactorydispatcher.h
+    renderer/modeling/texture/texturefactoryregistrar.cpp
+    renderer/modeling/texture/texturefactoryregistrar.h
     renderer/modeling/texture/writabletexture.cpp
     renderer/modeling/texture/writabletexture.h
 )

@@ -163,7 +163,7 @@ const char* ConstantEnvironmentEDFFactory::get_model()
 
 auto_release_ptr<EnvironmentEDF> ConstantEnvironmentEDFFactory::create(
     const char*         name,
-    const ParamArray&   params)
+    const ParamArray&   params) const
 {
     return
         auto_release_ptr<EnvironmentEDF>(

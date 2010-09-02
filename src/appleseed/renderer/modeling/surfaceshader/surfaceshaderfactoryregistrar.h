@@ -26,45 +26,41 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_EDF_EDFFACTORYDISPATCHER_H
-#define APPLESEED_RENDERER_MODELING_EDF_EDFFACTORYDISPATCHER_H
+#ifndef APPLESEED_RENDERER_MODELING_SURFACESHADER_SURFACESHADERFACTORYREGISTRAR_H
+#define APPLESEED_RENDERER_MODELING_SURFACESHADER_SURFACESHADERFACTORYREGISTRAR_H
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/implptr.h"
+
 // Forward declarations.
-namespace renderer      { class EDF; }
+namespace renderer      { class ISurfaceShaderFactory; }
 
 namespace renderer
 {
 
 //
-// EDF factory dispatcher.
+// Surface shader factory registrar.
 //
 
-class RENDERERDLL EDFFactoryDispatcher
+class RENDERERDLL SurfaceShaderFactoryRegistrar
   : public foundation::NonCopyable
 {
   public:
-    typedef foundation::auto_release_ptr<EDF> (*CreateFunctionPtr)(
-        const char*         name,
-        const ParamArray&   params);
+    typedef ISurfaceShaderFactory FactoryType;
 
     // Constructor.
-    EDFFactoryDispatcher();
+    SurfaceShaderFactoryRegistrar();
 
-    // Destructor.
-    ~EDFFactoryDispatcher();
-
-    // Lookup a factory function by name.
-    CreateFunctionPtr lookup(const char* name) const;
+    // Lookup a factory by name.
+    const FactoryType* lookup(const char* name) const;
 
   private:
-    // Private implementation.
-    struct Impl;
-    Impl* impl;
+    FOUNDATION_PIMPL(SurfaceShaderFactoryRegistrar);
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_EDF_EDFFACTORYDISPATCHER_H
+#endif  // !APPLESEED_RENDERER_MODELING_SURFACESHADER_SURFACESHADERFACTORYREGISTRAR_H

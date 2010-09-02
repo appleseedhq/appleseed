@@ -26,14 +26,41 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_TEXTURE_H
-#define APPLESEED_RENDERER_API_TEXTURE_H
+#ifndef APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_ENVIRONMENTEDFFACTORYREGISTRAR_H
+#define APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_ENVIRONMENTEDFFACTORYREGISTRAR_H
 
-// API headers.
-#include "renderer/modeling/texture/disktexture.h"
-#include "renderer/modeling/texture/itexturefactory.h"
-#include "renderer/modeling/texture/texture.h"
-#include "renderer/modeling/texture/texturefactoryregistrar.h"
-#include "renderer/modeling/texture/writabletexture.h"
+// appleseed.renderer headers.
+#include "renderer/global/global.h"
 
-#endif  // !APPLESEED_RENDERER_API_TEXTURE_H
+// appleseed.foundation headers.
+#include "foundation/utility/implptr.h"
+
+// Forward declarations.
+namespace renderer      { class IEnvironmentEDFFactory; }
+
+namespace renderer
+{
+
+//
+// Environment EDF factory registrar.
+//
+
+class RENDERERDLL EnvironmentEDFFactoryRegistrar
+  : public foundation::NonCopyable
+{
+  public:
+    typedef IEnvironmentEDFFactory FactoryType;
+
+    // Constructor.
+    EnvironmentEDFFactoryRegistrar();
+
+    // Lookup a factory by name.
+    const FactoryType* lookup(const char* name) const;
+
+  private:
+    FOUNDATION_PIMPL(EnvironmentEDFFactoryRegistrar);
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_ENVIRONMENTEDFFACTORYREGISTRAR_H

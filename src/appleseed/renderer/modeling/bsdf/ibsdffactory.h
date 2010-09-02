@@ -26,51 +26,35 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "edffactorydispatcher.h"
+#ifndef APPLESEED_RENDERER_MODELING_BSDF_IBSDFFACTORY_H
+#define APPLESEED_RENDERER_MODELING_BSDF_IBSDFFACTORY_H
 
 // appleseed.renderer headers.
-#include "renderer/modeling/edf/diffuseedf.h"
+#include "renderer/global/global.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/dispatcher.h"
-
-using namespace foundation;
+// Forward declarations.
+namespace renderer      { class BSDF; }
 
 namespace renderer
 {
 
 //
-// EDFFactoryDispatcher class implementation.
+// BSDF factory interface.
 //
 
-struct EDFFactoryDispatcher::Impl
+class RENDERERDLL IBSDFFactory
+  : public foundation::NonCopyable
 {
-    Dispatcher<CreateFunctionPtr> m_dispatcher;
+  public:
+    // Destructor.
+    virtual ~IBSDFFactory() {}
+
+    // Create a new BSDF instance.
+    virtual foundation::auto_release_ptr<BSDF> create(
+        const char*         name,
+        const ParamArray&   params) const = 0;
 };
 
-// Constructor.
-EDFFactoryDispatcher::EDFFactoryDispatcher()
-  : impl(new Impl())
-{
-    // Declare the various factory functions.
-    impl->m_dispatcher.declare(
-        DiffuseEDFFactory::get_model(),
-        &DiffuseEDFFactory::create);
-}
+}       // namespace renderer
 
-// Destructor.
-EDFFactoryDispatcher::~EDFFactoryDispatcher()
-{
-    delete impl;
-}
-
-// Lookup a factory function by name.
-EDFFactoryDispatcher::CreateFunctionPtr
-EDFFactoryDispatcher::lookup(const char* name) const
-{
-    assert(name);
-    return impl->m_dispatcher.lookup(name);
-}
-
-}   // namespace renderer
+#endif  // !APPLESEED_RENDERER_MODELING_BSDF_IBSDFFACTORY_H

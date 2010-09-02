@@ -58,7 +58,6 @@ namespace
       : public SurfaceShader
     {
       public:
-        // Constructor.
         PhysicalSurfaceShader(
             const char*             name,
             const ParamArray&       params)
@@ -69,31 +68,26 @@ namespace
             m_inputs.declare("alpha_mask", InputFormatSpectrum, true);
         }
 
-        // Delete this instance.
         virtual void release()
         {
             delete this;
         }
 
-        // Return a string identifying the model of this surface shader.
         virtual const char* get_model() const
         {
             return PhysicalSurfaceShaderFactory::get_model();
         }
 
-        // Return the name of this surface shader.
         virtual const char* get_name() const
         {
             return m_name.c_str();
         }
 
-        // This method is called once before rendering each frame.
         virtual void on_frame_begin(const Scene& scene)
         {
             m_has_alpha_mask = m_inputs.source("alpha_mask") != 0;
         }
 
-        // Evaluate the shading at a given point.
         virtual void evaluate(
             SamplingContext&        sampling_context,
             const ShadingContext&   shading_context,
@@ -118,7 +112,6 @@ namespace
             shading_result.m_alpha = Alpha(1.0);
         }
 
-        // Evaluate the alpha mask at a given point.
         virtual void evaluate_alpha_mask(
             SamplingContext&        sampling_context,
             const ShadingContext&   shading_context,
@@ -163,16 +156,14 @@ namespace
 // PhysicalSurfaceShaderFactory class implementation.
 //
 
-// Return a string identifying this surface shader model.
 const char* PhysicalSurfaceShaderFactory::get_model()
 {
     return "physical_surface_shader";
 }
 
-// Create a new physical surface shader.
 auto_release_ptr<SurfaceShader> PhysicalSurfaceShaderFactory::create(
     const char*         name,
-    const ParamArray&   params)
+    const ParamArray&   params) const
 {
     return
         auto_release_ptr<SurfaceShader>(

@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "surfaceshaderfactorydispatcher.h"
+#include "surfaceshaderfactoryregistrar.h"
 
 // appleseed.renderer headers.
 #include "renderer/modeling/surfaceshader/aosurfaceshader.h"
@@ -38,59 +38,57 @@
 #include "renderer/modeling/surfaceshader/voxelaosurfaceshader.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/dispatcher.h"
+#include "foundation/utility/registrar.h"
 
 using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
 
 //
-// SurfaceShaderFactoryDispatcher class implementation.
+// SurfaceShaderFactoryRegistrar class implementation.
 //
 
-struct SurfaceShaderFactoryDispatcher::Impl
+struct SurfaceShaderFactoryRegistrar::Impl
 {
-    Dispatcher<CreateFunctionPtr> m_dispatcher;
+    Registrar<ISurfaceShaderFactory> m_registrar;
 };
 
-// Constructor.
-SurfaceShaderFactoryDispatcher::SurfaceShaderFactoryDispatcher()
+SurfaceShaderFactoryRegistrar::SurfaceShaderFactoryRegistrar()
   : impl(new Impl())
 {
-    // Declare the various factory functions.
-    impl->m_dispatcher.declare(
+    impl->m_registrar.insert(
         AOSurfaceShaderFactory::get_model(),
-        &AOSurfaceShaderFactory::create);
-    impl->m_dispatcher.declare(
+        auto_ptr<ISurfaceShaderFactory>(new AOSurfaceShaderFactory()));
+
+    impl->m_registrar.insert(
         ConstantSurfaceShaderFactory::get_model(),
-        &ConstantSurfaceShaderFactory::create);
-    impl->m_dispatcher.declare(
+        auto_ptr<ISurfaceShaderFactory>(new ConstantSurfaceShaderFactory()));
+
+    impl->m_registrar.insert(
         DiagnosticSurfaceShaderFactory::get_model(),
-        &DiagnosticSurfaceShaderFactory::create);
-    impl->m_dispatcher.declare(
+        auto_ptr<ISurfaceShaderFactory>(new DiagnosticSurfaceShaderFactory()));
+
+    impl->m_registrar.insert(
         PhysicalSurfaceShaderFactory::get_model(),
-        &PhysicalSurfaceShaderFactory::create);
-    impl->m_dispatcher.declare(
+        auto_ptr<ISurfaceShaderFactory>(new PhysicalSurfaceShaderFactory()));
+
+    impl->m_registrar.insert(
         SmokeSurfaceShaderFactory::get_model(),
-        &SmokeSurfaceShaderFactory::create);
-    impl->m_dispatcher.declare(
+        auto_ptr<ISurfaceShaderFactory>(new SmokeSurfaceShaderFactory()));
+
+    impl->m_registrar.insert(
         VoxelAOSurfaceShaderFactory::get_model(),
-        &VoxelAOSurfaceShaderFactory::create);
+        auto_ptr<ISurfaceShaderFactory>(new VoxelAOSurfaceShaderFactory()));
 }
 
-// Destructor.
-SurfaceShaderFactoryDispatcher::~SurfaceShaderFactoryDispatcher()
-{
-    delete impl;
-}
-
-// Lookup a factory function by name.
-SurfaceShaderFactoryDispatcher::CreateFunctionPtr
-SurfaceShaderFactoryDispatcher::lookup(const char* name) const
+const SurfaceShaderFactoryRegistrar::FactoryType*
+SurfaceShaderFactoryRegistrar::lookup(const char* name) const
 {
     assert(name);
-    return impl->m_dispatcher.lookup(name);
+
+    return impl->m_registrar.lookup(name);
 }
 
 }   // namespace renderer

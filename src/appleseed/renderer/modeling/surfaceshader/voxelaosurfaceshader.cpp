@@ -65,7 +65,6 @@ namespace
       : public SurfaceShader
     {
       public:
-        // Constructor.
         VoxelAOSurfaceShader(
             const char*             name,
             const ParamArray&       params)
@@ -77,25 +76,21 @@ namespace
             extract_parameters();
         }
 
-        // Delete this instance.
         virtual void release()
         {
             delete this;
         }
 
-        // Return a string identifying the model of this surface shader.
         virtual const char* get_model() const
         {
             return VoxelAOSurfaceShaderFactory::get_model();
         }
 
-        // Return the name of this surface shader.
         virtual const char* get_name() const
         {
             return m_name.c_str();
         }
 
-        // This method is called once before rendering each frame.
         virtual void on_frame_begin(const Scene& scene)
         {
             // Rebuild the voxel tree if either the scene geometry or the transformations
@@ -139,7 +134,6 @@ namespace
             }
         }
 
-        // Evaluate the shading at a given point.
         virtual void evaluate(
             SamplingContext&        sampling_context,
             const ShadingContext&   shading_context,
@@ -351,16 +345,14 @@ namespace
 // VoxelAOSurfaceShaderFactory class implementation.
 //
 
-// Return a string identifying this surface shader model.
 const char* VoxelAOSurfaceShaderFactory::get_model()
 {
     return "voxel_ao_surface_shader";
 }
 
-// Return a new voxel-based ambient occlusion surface shader.
 auto_release_ptr<SurfaceShader> VoxelAOSurfaceShaderFactory::create(
     const char*         name,
-    const ParamArray&   params)
+    const ParamArray&   params) const
 {
     return
         auto_release_ptr<SurfaceShader>(

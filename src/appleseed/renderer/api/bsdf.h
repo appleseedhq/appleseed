@@ -32,11 +32,10 @@
 // API headers.
 #include "renderer/modeling/bsdf/ashikhminbrdf.h"
 #include "renderer/modeling/bsdf/bsdf.h"
-#include "renderer/modeling/bsdf/bsdffactorydispatcher.h"
+#include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
+#include "renderer/modeling/bsdf/ibsdffactory.h"
 #include "renderer/modeling/bsdf/lambertianbrdf.h"
-#include "renderer/modeling/bsdf/lambertianbtdf.h"
 #include "renderer/modeling/bsdf/phongbrdf.h"
-#include "renderer/modeling/bsdf/phongbtdf.h"
 #include "renderer/modeling/bsdf/specularbrdf.h"
 #include "renderer/modeling/bsdf/specularbtdf.h"
 

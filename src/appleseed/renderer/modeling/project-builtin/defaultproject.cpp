@@ -84,7 +84,7 @@ auto_release_ptr<Project> DefaultProjectFactory::create()
         params.insert("film_dimensions", "0.036 0.024");
         params.insert("focal_length", "0.035");
         auto_release_ptr<Camera> camera(
-            PinholeCameraFactory::create(
+            PinholeCameraFactory().create(
                 "camera",
                 params,
                 Transformd(Matrix4d::identity())));

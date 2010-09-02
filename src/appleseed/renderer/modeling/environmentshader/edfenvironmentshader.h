@@ -30,7 +30,7 @@
 #define APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_EDFENVIRONMENTSHADER_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/modeling/environmentshader/ienvironmentshaderfactory.h"
 
 // Forward declarations.
 namespace renderer      { class EnvironmentShader; }
@@ -43,15 +43,16 @@ namespace renderer
 //
 
 class RENDERERDLL EDFEnvironmentShaderFactory
+  : public IEnvironmentShaderFactory
 {
   public:
     // Return a string identifying this environment shader model.
     static const char* get_model();
 
-    // Create a new EDF-based environment shader.
-    static foundation::auto_release_ptr<EnvironmentShader> create(
+    // Create a new environment shader instance.
+    virtual foundation::auto_release_ptr<EnvironmentShader> create(
         const char*         name,
-        const ParamArray&   params);
+        const ParamArray&   params) const;
 };
 
 }       // namespace renderer

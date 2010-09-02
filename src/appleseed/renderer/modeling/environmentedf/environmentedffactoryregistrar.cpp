@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "environmentedffactorydispatcher.h"
+#include "environmentedffactoryregistrar.h"
 
 // appleseed.renderer headers.
 #include "renderer/modeling/environmentedf/constantenvironmentedf.h"
@@ -36,53 +36,49 @@
 #include "renderer/modeling/environmentedf/mirrorballmapenvironmentedf.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/dispatcher.h"
+#include "foundation/utility/registrar.h"
 
 using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
 
 //
-// EnvironmentEDFFactoryDispatcher class implementation.
+// EnvironmentEDFFactoryRegistrar class implementation.
 //
 
-struct EnvironmentEDFFactoryDispatcher::Impl
+struct EnvironmentEDFFactoryRegistrar::Impl
 {
-    Dispatcher<CreateFunctionPtr> m_dispatcher;
+    Registrar<IEnvironmentEDFFactory> m_registrar;
 };
 
-// Constructor.
-EnvironmentEDFFactoryDispatcher::EnvironmentEDFFactoryDispatcher()
+EnvironmentEDFFactoryRegistrar::EnvironmentEDFFactoryRegistrar()
   : impl(new Impl())
 {
-    // Declare the various factory functions.
-    impl->m_dispatcher.declare(
+    impl->m_registrar.insert(
         ConstantEnvironmentEDFFactory::get_model(),
-        ConstantEnvironmentEDFFactory::create);
-    impl->m_dispatcher.declare(
+        auto_ptr<IEnvironmentEDFFactory>(new ConstantEnvironmentEDFFactory()));
+
+    impl->m_registrar.insert(
         GradientEnvironmentEDFFactory::get_model(),
-        GradientEnvironmentEDFFactory::create);
-    impl->m_dispatcher.declare(
+        auto_ptr<IEnvironmentEDFFactory>(new GradientEnvironmentEDFFactory()));
+
+    impl->m_registrar.insert(
         LatLongMapEnvironmentEDFFactory::get_model(),
-        LatLongMapEnvironmentEDFFactory::create);
-    impl->m_dispatcher.declare(
+        auto_ptr<IEnvironmentEDFFactory>(new LatLongMapEnvironmentEDFFactory()));
+
+    impl->m_registrar.insert(
         MirrorBallMapEnvironmentEDFFactory::get_model(),
-        MirrorBallMapEnvironmentEDFFactory::create);
+        auto_ptr<IEnvironmentEDFFactory>(new MirrorBallMapEnvironmentEDFFactory()));
 }
 
-// Destructor.
-EnvironmentEDFFactoryDispatcher::~EnvironmentEDFFactoryDispatcher()
-{
-    delete impl;
-}
-
-// Lookup a factory function by name.
-EnvironmentEDFFactoryDispatcher::CreateFunctionPtr
-EnvironmentEDFFactoryDispatcher::lookup(const char* name) const
+const EnvironmentEDFFactoryRegistrar::FactoryType*
+EnvironmentEDFFactoryRegistrar::lookup(const char* name) const
 {
     assert(name);
-    return impl->m_dispatcher.lookup(name);
+
+    return impl->m_registrar.lookup(name);
 }
 
 }   // namespace renderer

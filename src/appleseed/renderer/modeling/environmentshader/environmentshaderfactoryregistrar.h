@@ -26,45 +26,41 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_BSDFFACTORYDISPATCHER_H
-#define APPLESEED_RENDERER_MODELING_BSDF_BSDFFACTORYDISPATCHER_H
+#ifndef APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_ENVIRONMENTSHADERFACTORYREGISTRAR_H
+#define APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_ENVIRONMENTSHADERFACTORYREGISTRAR_H
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/implptr.h"
+
 // Forward declarations.
-namespace renderer      { class BSDF; }
+namespace renderer      { class IEnvironmentShaderFactory; }
 
 namespace renderer
 {
 
 //
-// BSDF factory dispatcher.
+// Environment shader factory registrar.
 //
 
-class RENDERERDLL BSDFFactoryDispatcher
+class RENDERERDLL EnvironmentShaderFactoryRegistrar
   : public foundation::NonCopyable
 {
   public:
-    typedef foundation::auto_release_ptr<BSDF> (*CreateFunctionPtr)(
-        const char*         name,
-        const ParamArray&   params);
+    typedef IEnvironmentShaderFactory FactoryType;
 
     // Constructor.
-    BSDFFactoryDispatcher();
+    EnvironmentShaderFactoryRegistrar();
 
-    // Destructor.
-    ~BSDFFactoryDispatcher();
-
-    // Lookup a factory function by name.
-    CreateFunctionPtr lookup(const char* name) const;
+    // Lookup a factory by name.
+    const FactoryType* lookup(const char* name) const;
 
   private:
-    // Private implementation.
-    struct Impl;
-    Impl* impl;
+    FOUNDATION_PIMPL(EnvironmentShaderFactoryRegistrar);
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_BSDFFACTORYDISPATCHER_H
+#endif  // !APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_ENVIRONMENTSHADERFACTORYREGISTRAR_H

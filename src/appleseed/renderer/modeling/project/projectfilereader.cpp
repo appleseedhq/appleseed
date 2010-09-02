@@ -31,18 +31,23 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/utility.h"
-#include "renderer/modeling/bsdf/bsdffactorydispatcher.h"
 #include "renderer/modeling/bsdf/bsdf.h"
-#include "renderer/modeling/camera/camerafactorydispatcher.h"
+#include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
+#include "renderer/modeling/bsdf/ibsdffactory.h"
 #include "renderer/modeling/camera/camera.h"
+#include "renderer/modeling/camera/camerafactoryregistrar.h"
+#include "renderer/modeling/camera/icamerafactory.h"
 #include "renderer/modeling/color/colorentity.h"
 #include "renderer/modeling/edf/edf.h"
-#include "renderer/modeling/edf/edffactorydispatcher.h"
+#include "renderer/modeling/edf/edffactoryregistrar.h"
+#include "renderer/modeling/edf/iedffactory.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
-#include "renderer/modeling/environmentedf/environmentedffactorydispatcher.h"
+#include "renderer/modeling/environmentedf/environmentedffactoryregistrar.h"
+#include "renderer/modeling/environmentedf/ienvironmentedffactory.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
-#include "renderer/modeling/environmentshader/environmentshaderfactorydispatcher.h"
+#include "renderer/modeling/environmentshader/environmentshaderfactoryregistrar.h"
+#include "renderer/modeling/environmentshader/ienvironmentshaderfactory.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/geometry/meshobject.h"
 #include "renderer/modeling/geometry/meshobjectreader.h"
@@ -66,10 +71,12 @@
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/textureinstance.h"
+#include "renderer/modeling/surfaceshader/isurfaceshaderfactory.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
-#include "renderer/modeling/surfaceshader/surfaceshaderfactorydispatcher.h"
+#include "renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.h"
+#include "renderer/modeling/texture/itexturefactory.h"
 #include "renderer/modeling/texture/texture.h"
-#include "renderer/modeling/texture/texturefactorydispatcher.h"
+#include "renderer/modeling/texture/texturefactoryregistrar.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/matrix.h"
@@ -278,9 +285,9 @@ namespace
         }
     }
 
-    template <typename Entity, typename EntityFactoryDispatcher>
+    template <typename Entity, typename EntityFactoryRegistrar>
     auto_release_ptr<Entity> create_entity(
-        const EntityFactoryDispatcher&  entity_factory_dispatcher,
+        const EntityFactoryRegistrar&   registrar,
         const string&                   type,
         const string&                   model,
         const string&                   name,
@@ -289,12 +296,12 @@ namespace
     {
         try
         {
-            const typename EntityFactoryDispatcher::CreateFunctionPtr create =
-                entity_factory_dispatcher.lookup(model.c_str());
+            const typename EntityFactoryRegistrar::FactoryType* factory =
+                registrar.lookup(model.c_str());
 
-            if (create)
+            if (factory)
             {
-                return create(name.c_str(), params);
+                return factory->create(name.c_str(), params);
             }
             else
             {
@@ -522,7 +529,7 @@ namespace
     // Handle an entity element.
     //
 
-    template <typename Entity, typename EntityFactoryDispatcher>
+    template <typename Entity, typename EntityFactoryRegistrar>
     class EntityElementHandler
       : public ParametrizedElementHandler
     {
@@ -548,7 +555,7 @@ namespace
         {
             m_entity =
                 create_entity<Entity>(
-                    m_entity_factory_dispatcher,
+                    m_registrar,
                     m_entity_type,
                     m_model,
                     m_name,
@@ -564,7 +571,7 @@ namespace
 
       private:
         ElementInfo&                    m_info;
-        const EntityFactoryDispatcher   m_entity_factory_dispatcher;
+        const EntityFactoryRegistrar    m_registrar;
         const string                    m_entity_type;
         auto_release_ptr<Entity>        m_entity;
         string                          m_name;
@@ -1036,12 +1043,13 @@ namespace
         {
             try
             {
-                const TextureFactoryDispatcher::CreateFunctionPtr create =
-                    m_texture_factory_dispatcher.lookup(m_model.c_str());
-                if (create)
+                const TextureFactoryRegistrar::FactoryType* factory =
+                    m_texture_factory_registrar.lookup(m_model.c_str());
+
+                if (factory)
                 {
                     m_texture =
-                        create(
+                        factory->create(
                             m_name.c_str(),
                             m_params,
                             m_info.search_paths());
@@ -1072,7 +1080,7 @@ namespace
         }
 
       private:
-        const TextureFactoryDispatcher  m_texture_factory_dispatcher;
+        const TextureFactoryRegistrar   m_texture_factory_registrar;
         ElementInfo&                    m_info;
         auto_release_ptr<Texture>       m_texture;
         string                          m_name;
@@ -1165,12 +1173,12 @@ namespace
     //
 
     class BSDFElementHandler
-      : public EntityElementHandler<BSDF, BSDFFactoryDispatcher>
+      : public EntityElementHandler<BSDF, BSDFFactoryRegistrar>
     {
       public:
         // Constructor.
         explicit BSDFElementHandler(ElementInfo& info)
-          : EntityElementHandler<BSDF, BSDFFactoryDispatcher>("bsdf", info)
+          : EntityElementHandler<BSDF, BSDFFactoryRegistrar>("bsdf", info)
         {
         }
     };
@@ -1181,12 +1189,12 @@ namespace
     //
 
     class EDFElementHandler
-      : public EntityElementHandler<EDF, EDFFactoryDispatcher>
+      : public EntityElementHandler<EDF, EDFFactoryRegistrar>
     {
       public:
         // Constructor.
         explicit EDFElementHandler(ElementInfo& info)
-          : EntityElementHandler<EDF, EDFFactoryDispatcher>("edf", info)
+          : EntityElementHandler<EDF, EDFFactoryRegistrar>("edf", info)
         {
         }
     };
@@ -1197,12 +1205,12 @@ namespace
     //
 
     class SurfaceShaderElementHandler
-      : public EntityElementHandler<SurfaceShader, SurfaceShaderFactoryDispatcher>
+      : public EntityElementHandler<SurfaceShader, SurfaceShaderFactoryRegistrar>
     {
       public:
         // Constructor.
         explicit SurfaceShaderElementHandler(ElementInfo& info)
-          : EntityElementHandler<SurfaceShader, SurfaceShaderFactoryDispatcher>("surface shader", info)
+          : EntityElementHandler<SurfaceShader, SurfaceShaderFactoryRegistrar>("surface shader", info)
         {
         }
     };
@@ -1299,12 +1307,12 @@ namespace
     //
 
     class EnvironmentEDFElementHandler
-      : public EntityElementHandler<EnvironmentEDF, EnvironmentEDFFactoryDispatcher>
+      : public EntityElementHandler<EnvironmentEDF, EnvironmentEDFFactoryRegistrar>
     {
       public:
         // Constructor.
         explicit EnvironmentEDFElementHandler(ElementInfo& info)
-          : EntityElementHandler<EnvironmentEDF, EnvironmentEDFFactoryDispatcher>("environment edf", info)
+          : EntityElementHandler<EnvironmentEDF, EnvironmentEDFFactoryRegistrar>("environment edf", info)
         {
         }
     };
@@ -1315,12 +1323,12 @@ namespace
     //
 
     class EnvironmentShaderElementHandler
-      : public EntityElementHandler<EnvironmentShader, EnvironmentShaderFactoryDispatcher>
+      : public EntityElementHandler<EnvironmentShader, EnvironmentShaderFactoryRegistrar>
     {
       public:
         // Constructor.
         explicit EnvironmentShaderElementHandler(ElementInfo& info)
-          : EntityElementHandler<EnvironmentShader, EnvironmentShaderFactoryDispatcher>("environment shader", info)
+          : EntityElementHandler<EnvironmentShader, EnvironmentShaderFactoryRegistrar>("environment shader", info)
         {
         }
     };
@@ -1566,11 +1574,12 @@ namespace
         {
             try
             {
-                const CameraFactoryDispatcher::CreateFunctionPtr create =
-                    m_camera_factory_dispatcher.lookup(m_model.c_str());
-                if (create)
+                const CameraFactoryRegistrar::FactoryType* factory =
+                    m_camera_factory_registrar.lookup(m_model.c_str());
+
+                if (factory)
                 {
-                    m_camera = create(m_name.c_str(), m_params, m_transform);
+                    m_camera = factory->create(m_name.c_str(), m_params, m_transform);
                 }
                 else
                 {
@@ -1619,7 +1628,7 @@ namespace
         }
 
       private:
-        const CameraFactoryDispatcher   m_camera_factory_dispatcher;
+        const CameraFactoryRegistrar    m_camera_factory_registrar;
         ElementInfo&                    m_info;
         auto_release_ptr<Camera>        m_camera;
         string                          m_name;

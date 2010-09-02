@@ -26,14 +26,35 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_TEXTURE_H
-#define APPLESEED_RENDERER_API_TEXTURE_H
+#ifndef APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_IENVIRONMENTEDFFACTORY_H
+#define APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_IENVIRONMENTEDFFACTORY_H
 
-// API headers.
-#include "renderer/modeling/texture/disktexture.h"
-#include "renderer/modeling/texture/itexturefactory.h"
-#include "renderer/modeling/texture/texture.h"
-#include "renderer/modeling/texture/texturefactoryregistrar.h"
-#include "renderer/modeling/texture/writabletexture.h"
+// appleseed.renderer headers.
+#include "renderer/global/global.h"
 
-#endif  // !APPLESEED_RENDERER_API_TEXTURE_H
+// Forward declarations.
+namespace renderer      { class EnvironmentEDF; }
+
+namespace renderer
+{
+
+//
+// Environment EDF factory interface.
+//
+
+class RENDERERDLL IEnvironmentEDFFactory
+  : public foundation::NonCopyable
+{
+  public:
+    // Destructor.
+    virtual ~IEnvironmentEDFFactory() {}
+
+    // Create a new environment EDF instance.
+    virtual foundation::auto_release_ptr<EnvironmentEDF> create(
+        const char*         name,
+        const ParamArray&   params) const = 0;
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_IENVIRONMENTEDFFACTORY_H

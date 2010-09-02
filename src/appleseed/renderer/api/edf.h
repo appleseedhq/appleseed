@@ -32,6 +32,7 @@
 // API headers.
 #include "renderer/modeling/edf/diffuseedf.h"
 #include "renderer/modeling/edf/edf.h"
-#include "renderer/modeling/edf/edffactorydispatcher.h"
+#include "renderer/modeling/edf/edffactoryregistrar.h"
+#include "renderer/modeling/edf/iedffactory.h"
 
 #endif  // !APPLESEED_RENDERER_API_EDF_H

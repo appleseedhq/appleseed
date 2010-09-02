@@ -26,14 +26,42 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_TEXTURE_H
-#define APPLESEED_RENDERER_API_TEXTURE_H
+#ifndef APPLESEED_RENDERER_MODELING_CAMERA_CAMERAFACTORYREGISTRAR_H
+#define APPLESEED_RENDERER_MODELING_CAMERA_CAMERAFACTORYREGISTRAR_H
 
-// API headers.
-#include "renderer/modeling/texture/disktexture.h"
-#include "renderer/modeling/texture/itexturefactory.h"
-#include "renderer/modeling/texture/texture.h"
-#include "renderer/modeling/texture/texturefactoryregistrar.h"
-#include "renderer/modeling/texture/writabletexture.h"
+// appleseed.renderer headers.
+#include "renderer/global/global.h"
 
-#endif  // !APPLESEED_RENDERER_API_TEXTURE_H
+// appleseed.foundation headers.
+#include "foundation/math/transform.h"
+#include "foundation/utility/implptr.h"
+
+// Forward declarations.
+namespace renderer      { class ICameraFactory; }
+
+namespace renderer
+{
+
+//
+// Camera factory registrar.
+//
+
+class RENDERERDLL CameraFactoryRegistrar
+  : public foundation::NonCopyable
+{
+  public:
+    typedef ICameraFactory FactoryType;
+
+    // Constructor.
+    CameraFactoryRegistrar();
+
+    // Lookup a factory by name.
+    const FactoryType* lookup(const char* name) const;
+
+  private:
+    FOUNDATION_PIMPL(CameraFactoryRegistrar);
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_CAMERA_CAMERAFACTORYREGISTRAR_H

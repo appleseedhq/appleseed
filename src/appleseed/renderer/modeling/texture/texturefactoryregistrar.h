@@ -26,45 +26,41 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_ENVIRONMENTSHADERFACTORYDISPATCHER_H
-#define APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_ENVIRONMENTSHADERFACTORYDISPATCHER_H
+#ifndef APPLESEED_RENDERER_MODELING_TEXTURE_TEXTUREFACTORYREGISTRAR_H
+#define APPLESEED_RENDERER_MODELING_TEXTURE_TEXTUREFACTORYREGISTRAR_H
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/implptr.h"
+
 // Forward declarations.
-namespace renderer      { class EnvironmentShader; }
+namespace renderer      { class ITextureFactory; }
 
 namespace renderer
 {
 
 //
-// Environment shader factory dispatcher.
+// Texture factory registrar.
 //
 
-class RENDERERDLL EnvironmentShaderFactoryDispatcher
+class RENDERERDLL TextureFactoryRegistrar
   : public foundation::NonCopyable
 {
   public:
-    typedef foundation::auto_release_ptr<EnvironmentShader> (*CreateFunctionPtr)(
-        const char*         name,
-        const ParamArray&   params);
+    typedef ITextureFactory FactoryType;
 
     // Constructor.
-    EnvironmentShaderFactoryDispatcher();
+    TextureFactoryRegistrar();
 
-    // Destructor.
-    ~EnvironmentShaderFactoryDispatcher();
-
-    // Lookup a factory function by name.
-    CreateFunctionPtr lookup(const char* name) const;
+    // Lookup a factory by name.
+    const FactoryType* lookup(const char* name) const;
 
   private:
-    // Private implementation.
-    struct Impl;
-    Impl* impl;
+    FOUNDATION_PIMPL(TextureFactoryRegistrar);
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_SURFACESHADER_SURFACESHADERFACTORYDISPATCHER_H
+#endif  // !APPLESEED_RENDERER_MODELING_TEXTURE_TEXTUREFACTORYREGISTRAR_H

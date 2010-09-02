@@ -32,8 +32,9 @@
 // API headers.
 #include "renderer/modeling/environmentedf/constantenvironmentedf.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
-#include "renderer/modeling/environmentedf/environmentedffactorydispatcher.h"
+#include "renderer/modeling/environmentedf/environmentedffactoryregistrar.h"
 #include "renderer/modeling/environmentedf/gradientenvironmentedf.h"
+#include "renderer/modeling/environmentedf/ienvironmentedffactory.h"
 #include "renderer/modeling/environmentedf/latlongmapenvironmentedf.h"
 #include "renderer/modeling/environmentedf/mirrorballmapenvironmentedf.h"
 

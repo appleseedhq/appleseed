@@ -26,14 +26,16 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_DISPATCHER_H
-#define APPLESEED_FOUNDATION_UTILITY_DISPATCHER_H
+#ifndef APPLESEED_FOUNDATION_UTILITY_REGISTRAR_H
+#define APPLESEED_FOUNDATION_UTILITY_REGISTRAR_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/utility/foreach.h"
 
 // Standard headers.
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -41,53 +43,63 @@ namespace foundation
 {
 
 //
-// A function dispatcher, allows to call functions by name.
+// A generic registrar.
 //
 
-template <typename FunctionPtr>
-class Dispatcher
+template <typename T>
+class Registrar
   : public NonCopyable
 {
   public:
-    // Declare a new named function.
-    // Return false if a function was already declared with this name.
-    bool declare(
-        const std::string&  name,
-        FunctionPtr         function);
+    // Destructor.
+    ~Registrar();
 
-    // Lookup a function by name.
-    // Return 0 if the function could not be found.
-    FunctionPtr lookup(
-        const std::string&  name) const;
+    // Insert an item, replacing any existing item with the same name.
+    void insert(const std::string& name, std::auto_ptr<T> item);
+
+    // Lookup an item. Returns 0 if the item could not be found.
+    T* lookup(const std::string& name) const;
 
   private:
-    typedef std::map<std::string, FunctionPtr> FunctionMap;
-    FunctionMap m_function_map;
+    typedef std::map<std::string, T*> ItemRepository;
+
+    ItemRepository m_items;
 };
 
 
 //
-// Dispatcher class implementation.
+// Registrar class implementation.
 //
 
-// Declare a new named function.
-template <typename FunctionPtr>
-bool Dispatcher<FunctionPtr>::declare(
-    const std::string&      name,
-    FunctionPtr             function)
+template <typename T>
+Registrar<T>::~Registrar()
 {
-    return m_function_map.insert(std::make_pair(name, function)).second;
+    for (const_each<ItemRepository> i = m_items; i; ++i)
+        delete i->second;
 }
 
-// Lookup a function by name.
-template <typename FunctionPtr>
-FunctionPtr Dispatcher<FunctionPtr>::lookup(
-    const std::string&      name) const
+template <typename T>
+void Registrar<T>::insert(const std::string& name, std::auto_ptr<T> item)
 {
-    const typename FunctionMap::const_iterator i = m_function_map.find(name);
-    return i == m_function_map.end() ? 0 : i->second;
+    const ItemRepository::const_iterator i = m_items.find(name);
+
+    if (i != m_items.end())
+    {
+        delete i->second;
+        m_items.erase(i);
+    }
+
+    m_items.insert(i, std::make_pair(name, item.release()));
+}
+
+template <typename T>
+T* Registrar<T>::lookup(const std::string& name) const
+{
+    const ItemRepository::const_iterator i = m_items.find(name);
+
+    return i == m_items.end() ? 0 : i->second;
 }
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_UTILITY_DISPATCHER_H
+#endif  // !APPLESEED_FOUNDATION_UTILITY_REGISTRAR_H

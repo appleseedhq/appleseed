@@ -57,7 +57,6 @@ namespace
       : public SurfaceShader
     {
       public:
-        // Constructor.
         ConstantSurfaceShader(
             const char*             name,
             const ParamArray&       params)
@@ -67,25 +66,21 @@ namespace
             m_inputs.declare("color", InputFormatSpectrum);
         }
 
-        // Delete this instance.
         virtual void release()
         {
             delete this;
         }
 
-        // Return a string identifying the model of this surface shader.
         virtual const char* get_model() const
         {
             return ConstantSurfaceShaderFactory::get_model();
         }
 
-        // Return the name of this surface shader.
         virtual const char* get_name() const
         {
             return m_name.c_str();
         }
 
-        // Evaluate the shading at a given point.
         virtual void evaluate(
             SamplingContext&        sampling_context,
             const ShadingContext&   shading_context,
@@ -109,7 +104,6 @@ namespace
             shading_result.m_alpha = Alpha(1.0);
         }
 
-        // Evaluate the alpha mask at a given point.
         virtual void evaluate_alpha_mask(
             const SamplingContext&  sampling_context,
             const ShadingContext&   shading_context,
@@ -145,16 +139,14 @@ namespace
 // ConstantSurfaceShaderFactory class implementation.
 //
 
-// Return a string identifying this surface shader model.
 const char* ConstantSurfaceShaderFactory::get_model()
 {
     return "constant_surface_shader";
 }
 
-// Create a new constant color surface shader.
 auto_release_ptr<SurfaceShader> ConstantSurfaceShaderFactory::create(
     const char*         name,
-    const ParamArray&   params)
+    const ParamArray&   params) const
 {
     return
         auto_release_ptr<SurfaceShader>(

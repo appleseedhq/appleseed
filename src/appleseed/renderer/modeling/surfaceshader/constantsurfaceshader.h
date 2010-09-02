@@ -30,7 +30,7 @@
 #define APPLESEED_RENDERER_MODELING_SURFACESHADER_CONSTANTSURFACESHADER_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/modeling/surfaceshader/isurfaceshaderfactory.h"
 
 // Forward declarations.
 namespace renderer      { class SurfaceShader; }
@@ -43,15 +43,16 @@ namespace renderer
 //
 
 class RENDERERDLL ConstantSurfaceShaderFactory
+  : public ISurfaceShaderFactory
 {
   public:
     // Return a string identifying this surface shader model.
     static const char* get_model();
 
-    // Create a new constant color surface shader.
-    static foundation::auto_release_ptr<SurfaceShader> create(
+    // Create a new surface shader instance.
+    virtual foundation::auto_release_ptr<SurfaceShader> create(
         const char*         name,
-        const ParamArray&   params);
+        const ParamArray&   params) const;
 };
 
 }       // namespace renderer
