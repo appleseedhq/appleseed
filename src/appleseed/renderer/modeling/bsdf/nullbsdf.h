@@ -44,33 +44,26 @@ class NullBSDF
   : public BSDF
 {
   public:
-    // Constructor.
     NullBSDF()
       : BSDF(ParamArray())
     {
     }
 
-    // Delete this instance.
     virtual void release()
     {
         delete this;
     }
 
-    // Return a string identifying the model of this BSDF.
     virtual const char* get_model() const
     {
         return "null_bsdf";
     }
 
-    // Return the name of this instance.
     virtual const char* get_name() const
     {
         return "null_bsdf";
     }
 
-    // Given an outgoing direction, sample the BSDF and compute the incoming
-    // direction, the probability density with which it was chosen, the value
-    // of the BSDF divided by the probability density and the scattering mode.
     virtual void sample(
         const void*                 data,                       // input values
         const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
@@ -85,7 +78,6 @@ class NullBSDF
         mode = None;
     }
 
-    // Evaluate the BSDF for a given pair of directions.
     virtual void evaluate(
         const void*                 data,                       // input values
         const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
@@ -97,7 +89,6 @@ class NullBSDF
         value.set(0.0f);
     }
 
-    // Evaluate the PDF for a given pair of directions.
     virtual double evaluate_pdf(
         const void*                 data,                       // input values
         const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
