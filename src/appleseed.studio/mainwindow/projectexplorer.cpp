@@ -46,6 +46,7 @@
 #include "renderer/api/texture.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/containers/dictionaryarray.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/kvpair.h"
 #include "foundation/utility/otherwise.h"
@@ -589,7 +590,7 @@ void ProjectExplorer::create_bsdf_entity(
     const string name = values.get<string>("name");
     const string model = values.get<string>("model");
 
-    const IBSDFFactory* factory = m_bsdf_registrar.lookup(model.c_str());
+    const IBSDFFactory* factory = m_bsdf_factory_registrar.lookup(model.c_str());
     assert(factory);
 
     auto_release_ptr<BSDF> bsdf(factory->create(name.c_str(), values));
@@ -947,8 +948,11 @@ namespace
       : public EntityEditorWindow::IFormFactory
     {
       public:
-        explicit BSDFEditorFormFactory(const Assembly& assembly)
-          : m_assembly(assembly)
+        BSDFEditorFormFactory(
+            const BSDFFactoryRegistrar& bsdf_factory_registrar,
+            const Assembly&             assembly)
+          : m_bsdf_factory_registrar(bsdf_factory_registrar)
+          , m_assembly(assembly)
         {
         }
 
@@ -958,11 +962,11 @@ namespace
         {
             definitions.clear();
 
-            const string bsdf_name_suggestion =
-                get_name_suggestion("bsdf", m_assembly.bsdfs());
-
-            const string bsdf_name = get_value(values, "name", bsdf_name_suggestion);
-            const string bsdf_model = get_value(values, "model", AshikhminBRDFFactory::get_model());
+            const string bsdf_name =
+                get_value(
+                    values,
+                    "name",
+                    get_name_suggestion("bsdf", m_assembly.bsdfs()));
 
             Dictionary name_widget;
             name_widget.insert("name", "name");
@@ -973,11 +977,21 @@ namespace
             name_widget.insert("focus", "true");
             definitions.push_back(name_widget);
 
+            const BSDFFactoryArray bsdf_factories = m_bsdf_factory_registrar.get_factories();
             Dictionary model_items;
-            model_items.insert("Ashikhmin", AshikhminBRDFFactory::get_model());
-            model_items.insert("Lambertian", LambertianBRDFFactory::get_model());
-            model_items.insert("Phong", PhongBRDFFactory::get_model());
-            model_items.insert("Specular", SpecularBRDFFactory::get_model());
+
+            for (size_t i = 0; i < bsdf_factories.size(); ++i)
+            {
+                model_items.insert(
+                    bsdf_factories[i]->get_human_readable_model(),
+                    bsdf_factories[i]->get_model());
+            }
+
+            const string bsdf_model =
+                get_value(
+                    values,
+                    "model",
+                    bsdf_factories.empty() ? "" : bsdf_factories[0]->get_model());
 
             Dictionary model_widget;
             model_widget.insert("name", "model");
@@ -988,10 +1002,22 @@ namespace
             model_widget.insert("default", bsdf_model);
             model_widget.insert("on_change", "rebuild_form");
             definitions.push_back(model_widget);
+
+            if (!bsdf_model.empty())
+            {
+                const IBSDFFactory* bsdf_factory =
+                    m_bsdf_factory_registrar.lookup(bsdf_model.c_str());
+
+                const DictionaryArray properties = bsdf_factory->get_widget_definitions();
+
+                for (size_t i = 0; i < properties.size(); ++i)
+                    definitions.push_back(properties[i]);
+            }
         }
 
       private:
-        const Assembly& m_assembly;
+        const BSDFFactoryRegistrar& m_bsdf_factory_registrar;
+        const Assembly&             m_assembly;
     };
 }
 
@@ -1000,7 +1026,9 @@ void ProjectExplorer::slot_add_bsdf_to_assembly()
     const Assembly& assembly = get_from_action<Assembly>(sender());
 
     auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
-        new BSDFEditorFormFactory(assembly));
+        new BSDFEditorFormFactory(
+            m_bsdf_factory_registrar,
+            assembly));
 
     const QVariant receiver_data(
         QVariant::fromValue(

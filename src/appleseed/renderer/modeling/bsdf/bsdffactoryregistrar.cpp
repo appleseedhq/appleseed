@@ -45,9 +45,7 @@ using namespace std;
 namespace renderer
 {
 
-//
-// BSDFFactoryRegistrar class implementation.
-//
+FOUNDATION_DEFINE_ARRAY(BSDFFactoryArray);
 
 struct BSDFFactoryRegistrar::Impl
 {
@@ -57,25 +55,26 @@ struct BSDFFactoryRegistrar::Impl
 BSDFFactoryRegistrar::BSDFFactoryRegistrar()
   : impl(new Impl())
 {
-    impl->m_registrar.insert(
-        AshikhminBRDFFactory::get_model(),
-        auto_ptr<IBSDFFactory>(new AshikhminBRDFFactory()));
+    register_factory(new AshikhminBRDFFactory());
+    register_factory(new LambertianBRDFFactory());
+    register_factory(new PhongBRDFFactory());
+    register_factory(new SpecularBRDFFactory());
+    register_factory(new SpecularBTDFFactory());
+}
 
-    impl->m_registrar.insert(
-        LambertianBRDFFactory::get_model(),
-        auto_ptr<IBSDFFactory>(new LambertianBRDFFactory()));
+void BSDFFactoryRegistrar::register_factory(FactoryType* factory)
+{
+    impl->m_registrar.insert(factory->get_model(), auto_ptr<FactoryType>(factory));
+}
 
-    impl->m_registrar.insert(
-        PhongBRDFFactory::get_model(),
-        auto_ptr<IBSDFFactory>(new PhongBRDFFactory()));
+BSDFFactoryArray BSDFFactoryRegistrar::get_factories() const
+{
+    BSDFFactoryArray factories;
 
-    impl->m_registrar.insert(
-        SpecularBRDFFactory::get_model(),
-        auto_ptr<IBSDFFactory>(new SpecularBRDFFactory()));
+    for (const_each<Registrar<IBSDFFactory>::Items> i = impl->m_registrar.items(); i; ++i)
+        factories.push_back(i->second);
 
-    impl->m_registrar.insert(
-        SpecularBTDFFactory::get_model(),
-        auto_ptr<IBSDFFactory>(new SpecularBTDFFactory()));
+    return factories;
 }
 
 const BSDFFactoryRegistrar::FactoryType* BSDFFactoryRegistrar::lookup(const char* name) const

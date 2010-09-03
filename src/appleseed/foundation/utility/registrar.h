@@ -51,6 +51,8 @@ class Registrar
   : public NonCopyable
 {
   public:
+    typedef std::map<std::string, T*> Items;
+
     // Destructor.
     ~Registrar();
 
@@ -60,10 +62,11 @@ class Registrar
     // Lookup an item. Returns 0 if the item could not be found.
     T* lookup(const std::string& name) const;
 
-  private:
-    typedef std::map<std::string, T*> ItemRepository;
+    // Access the items directly.
+    const Items& items() const;
 
-    ItemRepository m_items;
+  private:
+    Items m_items;
 };
 
 
@@ -74,14 +77,14 @@ class Registrar
 template <typename T>
 Registrar<T>::~Registrar()
 {
-    for (const_each<ItemRepository> i = m_items; i; ++i)
+    for (const_each<Items> i = m_items; i; ++i)
         delete i->second;
 }
 
 template <typename T>
 void Registrar<T>::insert(const std::string& name, std::auto_ptr<T> item)
 {
-    const ItemRepository::const_iterator i = m_items.find(name);
+    const Items::const_iterator i = m_items.find(name);
 
     if (i != m_items.end())
     {
@@ -95,9 +98,15 @@ void Registrar<T>::insert(const std::string& name, std::auto_ptr<T> item)
 template <typename T>
 T* Registrar<T>::lookup(const std::string& name) const
 {
-    const ItemRepository::const_iterator i = m_items.find(name);
+    const Items::const_iterator i = m_items.find(name);
 
     return i == m_items.end() ? 0 : i->second;
+}
+
+template <typename T>
+const typename Registrar<T>::Items& Registrar<T>::items() const
+{
+    return m_items;
 }
 
 }       // namespace foundation

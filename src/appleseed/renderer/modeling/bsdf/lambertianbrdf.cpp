@@ -52,6 +52,8 @@ namespace
     // Lambertian BRDF.
     //
 
+    const char* Model = "lambertian_brdf";
+
     class LambertianBRDFImpl
       : public BSDF
     {
@@ -73,7 +75,7 @@ namespace
 
         virtual const char* get_model() const
         {
-            return LambertianBRDFFactory::get_model();
+            return Model;
         }
 
         virtual const char* get_name() const
@@ -209,9 +211,32 @@ namespace
 // LambertianBRDFFactory class implementation.
 //
 
-const char* LambertianBRDFFactory::get_model()
+const char* LambertianBRDFFactory::get_model() const
 {
-    return "lambertian_brdf";
+    return Model;
+}
+
+const char* LambertianBRDFFactory::get_human_readable_model() const
+{
+    return "Lambertian BRDF";
+}
+
+DictionaryArray LambertianBRDFFactory::get_widget_definitions() const
+{
+    DictionaryArray definitions;
+
+    {
+        Dictionary widget;
+        widget.insert("name", "reflectance");
+        widget.insert("label", "Reflectance");
+        widget.insert("widget", "entity_picker");
+        widget.insert("entity_type", "color");
+        widget.insert("use", "required");
+        widget.insert("default", "");
+        definitions.push_back(widget);
+    }
+
+    return definitions;
 }
 
 auto_release_ptr<BSDF> LambertianBRDFFactory::create(

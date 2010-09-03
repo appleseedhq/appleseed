@@ -53,6 +53,8 @@ namespace
     // Specular BTDF.
     //
 
+    const char* Model = "specular_btdf";
+
     class SpecularBTDFImpl
       : public BSDF
     {
@@ -74,7 +76,7 @@ namespace
 
         virtual const char* get_model() const
         {
-            return SpecularBTDFFactory::get_model();
+            return Model;
         }
 
         virtual const char* get_name() const
@@ -222,9 +224,42 @@ namespace
 // SpecularBTDFFactory class implementation.
 //
 
-const char* SpecularBTDFFactory::get_model()
+const char* SpecularBTDFFactory::get_model() const
 {
-    return "specular_btdf";
+    return Model;
+}
+
+const char* SpecularBTDFFactory::get_human_readable_model() const
+{
+    return "Specular BTDF";
+}
+
+DictionaryArray SpecularBTDFFactory::get_widget_definitions() const
+{
+    DictionaryArray definitions;
+
+    {
+        Dictionary widget;
+        widget.insert("name", "reflectance");
+        widget.insert("label", "Reflectance");
+        widget.insert("widget", "entity_picker");
+        widget.insert("entity_type", "color");
+        widget.insert("use", "required");
+        widget.insert("default", "");
+        definitions.push_back(widget);
+    }
+
+    {
+        Dictionary widget;
+        widget.insert("name", "ior");
+        widget.insert("label", "Index of Refraction");
+        widget.insert("widget", "text_box");
+        widget.insert("use", "required");
+        widget.insert("default", "1.5");
+        definitions.push_back(widget);
+    }
+
+    return definitions;
 }
 
 auto_release_ptr<BSDF> SpecularBTDFFactory::create(

@@ -101,7 +101,7 @@ class ProjectExplorer
     SceneItems                              m_scene_items;
     AssemblyItemsMap                        m_assembly_items;
 
-    renderer::BSDFFactoryRegistrar          m_bsdf_registrar;
+    renderer::BSDFFactoryRegistrar          m_bsdf_factory_registrar;
 
     void build_tree_widget();
 

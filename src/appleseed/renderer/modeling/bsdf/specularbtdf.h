@@ -32,6 +32,9 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/ibsdffactory.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/containers/dictionaryarray.h"
+
 // Forward declarations.
 namespace renderer      { class BSDF; }
 
@@ -47,7 +50,13 @@ class RENDERERDLL SpecularBTDFFactory
 {
   public:
     // Return a string identifying this BSDF model.
-    static const char* get_model();
+    virtual const char* get_model() const;
+
+    // Return a human-readable string identifying this BSDF model.
+    virtual const char* get_human_readable_model() const;
+
+    // Return a set of widget definitions for this BSDF model.
+    virtual foundation::DictionaryArray get_widget_definitions() const;
 
     // Create a new BSDF instance.
     virtual foundation::auto_release_ptr<BSDF> create(

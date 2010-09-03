@@ -33,6 +33,7 @@
 #include "renderer/global/global.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/containers/array.h"
 #include "foundation/utility/implptr.h"
 
 // Forward declarations.
@@ -40,6 +41,13 @@ namespace renderer      { class IBSDFFactory; }
 
 namespace renderer
 {
+
+//
+// An array of BSDF factories.
+//
+
+FOUNDATION_DECLARE_ARRAY(BSDFFactoryArray, IBSDFFactory*);
+
 
 //
 // BSDF factory registrar.
@@ -53,6 +61,12 @@ class RENDERERDLL BSDFFactoryRegistrar
 
     // Constructor.
     BSDFFactoryRegistrar();
+
+    // Register a BSDF factory.
+    void register_factory(FactoryType* factory);
+
+    // Retrieve the registered factories.
+    BSDFFactoryArray get_factories() const;
 
     // Lookup a factory by name.
     const FactoryType* lookup(const char* name) const;

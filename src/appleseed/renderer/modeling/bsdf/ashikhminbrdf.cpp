@@ -71,6 +71,8 @@ namespace
     //   http://jesper.kalliope.org/blog/library/dbrdfs.pdf
     //
 
+    const char* Model = "ashikhmin_brdf";
+
     class AshikhminBRDFImpl
       : public BSDF
     {
@@ -96,7 +98,7 @@ namespace
 
         virtual const char* get_model() const
         {
-            return AshikhminBRDFFactory::get_model();
+            return Model;
         }
 
         virtual const char* get_name() const
@@ -508,9 +510,63 @@ namespace
 // AshikhminBRDFFactory class implementation.
 //
 
-const char* AshikhminBRDFFactory::get_model()
+const char* AshikhminBRDFFactory::get_model() const
 {
-    return "ashikhmin_brdf";
+    return Model;
+}
+
+const char* AshikhminBRDFFactory::get_human_readable_model() const
+{
+    return "Ashikhmin-Shirley BRDF";
+}
+
+DictionaryArray AshikhminBRDFFactory::get_widget_definitions() const
+{
+    DictionaryArray definitions;
+
+    {
+        Dictionary widget;
+        widget.insert("name", "diffuse_reflectance");
+        widget.insert("label", "Diffuse Reflectance");
+        widget.insert("widget", "entity_picker");
+        widget.insert("entity_type", "color");
+        widget.insert("use", "required");
+        widget.insert("default", "");
+        definitions.push_back(widget);
+    }
+
+    {
+        Dictionary widget;
+        widget.insert("name", "glossy_reflectance");
+        widget.insert("label", "Glossy Reflectance");
+        widget.insert("widget", "entity_picker");
+        widget.insert("entity_type", "color");
+        widget.insert("use", "required");
+        widget.insert("default", "");
+        definitions.push_back(widget);
+    }
+
+    {
+        Dictionary widget;
+        widget.insert("name", "shininess_u");
+        widget.insert("label", "Shininess U");
+        widget.insert("widget", "text_box");
+        widget.insert("use", "required");
+        widget.insert("default", "1000.0");
+        definitions.push_back(widget);
+    }
+
+    {
+        Dictionary widget;
+        widget.insert("name", "shininess_v");
+        widget.insert("label", "Shininess V");
+        widget.insert("widget", "text_box");
+        widget.insert("use", "required");
+        widget.insert("default", "1000.0");
+        definitions.push_back(widget);
+    }
+
+    return definitions;
 }
 
 auto_release_ptr<BSDF> AshikhminBRDFFactory::create(

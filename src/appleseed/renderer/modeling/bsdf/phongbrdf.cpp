@@ -50,6 +50,8 @@ namespace
     // Phong BRDF.
     //
 
+    const char* Model = "phong_brdf";
+
     class PhongBRDF
       : public BSDF
     {
@@ -69,7 +71,7 @@ namespace
 
         virtual const char* get_model() const
         {
-            return PhongBRDFFactory::get_model();
+            return Model;
         }
 
         virtual const char* get_name() const
@@ -129,9 +131,20 @@ namespace
 // PhongBRDFFactory class implementation.
 //
 
-const char* PhongBRDFFactory::get_model()
+const char* PhongBRDFFactory::get_model() const
 {
-    return "phong_brdf";
+    return Model;
+}
+
+const char* PhongBRDFFactory::get_human_readable_model() const
+{
+    return "Phong BRDF";
+}
+
+DictionaryArray PhongBRDFFactory::get_widget_definitions() const
+{
+    DictionaryArray definitions;
+    return definitions;
 }
 
 auto_release_ptr<BSDF> PhongBRDFFactory::create(
