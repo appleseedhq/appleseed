@@ -34,28 +34,17 @@
 // appleseed.foundation headers.
 #include "foundation/utility/test.h"
 
-// Standard headers.
-#include <iostream>
-
-namespace foundation
-{
-    std::ostream& operator<<(std::ostream& s, const renderer::InputArray::iterator& i)
-    {
-        return s << "renderer::InputArray::iterator";
-    }
-}
+using namespace renderer;
+using namespace std;
 
 FOUNDATION_TEST_SUITE(Renderer_Modeling_Input_InputArray)
 {
-    using namespace renderer;
-    using namespace std;
-
     FOUNDATION_TEST_CASE(Find_GivenNameOfExistingInput_ReturnsInputIterator)
     {
         InputArray inputs;
         inputs.declare("x", InputFormatScalar);
 
-        const InputArray::iterator i = inputs.find("x");
+        const InputArray::const_iterator i = inputs.find("x");
 
         FOUNDATION_EXPECT_EQ("x", string(i.name()));
     }
@@ -65,9 +54,9 @@ FOUNDATION_TEST_SUITE(Renderer_Modeling_Input_InputArray)
         InputArray inputs;
         inputs.declare("x", InputFormatScalar);
 
-        const InputArray::iterator i = inputs.find("y");
+        const InputArray::const_iterator i = inputs.find("y");
 
-        FOUNDATION_EXPECT_EQ(inputs.end(), i);
+        FOUNDATION_EXPECT_TRUE(i == inputs.end());
     }
 
     FOUNDATION_TEST_CASE(Source_GivenNameOfNonExistingInput_ReturnsZero)

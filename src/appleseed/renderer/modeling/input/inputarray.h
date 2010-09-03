@@ -59,8 +59,60 @@ class RENDERERDLL InputArray
   : public foundation::NonCopyable
 {
   public:
-    // Input iterator.
-    class iterator
+    class iterator;
+
+    // Constant iterator.
+    class RENDERERDLL const_iterator
+    {
+      public:
+        // Value type.
+        typedef const_iterator value_type;
+
+        // Construction from a mutable iterator.
+        const_iterator(const iterator& rhs);
+
+        // Copy constructor.
+        const_iterator(const const_iterator& rhs);
+
+        // Assignment operator.
+        const_iterator& operator=(const const_iterator& rhs);
+
+        // Equality and inequality tests.
+        bool operator==(const const_iterator& rhs) const;
+        bool operator!=(const const_iterator& rhs) const;
+
+        // Preincrement and predecrement operators.
+        const_iterator& operator++();
+        const_iterator& operator--();
+
+        // Dereference operator.
+        const const_iterator& operator*() const;
+
+        // Get the name of the input.
+        const char* name() const;
+
+        // Get the format of the input.
+        InputFormat format() const;
+
+        // Return true if the input is optional, false otherwise.
+        bool is_optional() const;
+
+        // Get the source bound to this input (or 0 if no source is bound).
+        Source* source() const;
+
+      protected:
+        friend class InputArray;
+
+        // Constructor.
+        const_iterator(const InputArray* array, const size_t index);
+
+        const InputArray*   m_input_array;
+        size_t              m_input_index;
+    };
+
+    // Mutable iterator.
+    class RENDERERDLL iterator
+      : public const_iterator
     {
       public:
         // Value type.
@@ -72,10 +124,6 @@ class RENDERERDLL InputArray
         // Assignment operator.
         iterator& operator=(const iterator& rhs);
 
-        // Equality and inequality tests.
-        bool operator==(const iterator& rhs) const;
-        bool operator!=(const iterator& rhs) const;
-
         // Preincrement and predecrement operators.
         iterator& operator++();
         iterator& operator--();
@@ -83,29 +131,14 @@ class RENDERERDLL InputArray
         // Dereference operator.
         iterator& operator*();
 
-        // Get the name of the input.
-        const char* name() const;
-        
-        // Get the format of the input.
-        InputFormat format() const;
-
-        // Return true if the input is optional, false otherwise.
-        bool is_optional() const;
-
         // Bind a source to this input. Ownership of the source is passed to renderer::InputArray.
         void bind(Source* source);
-
-        // Get the source bound to this input (or 0 if no source is bound).
-        Source* source() const;
 
       private:
         friend class InputArray;
 
         // Constructor.
         iterator(const InputArray* array, const size_t index);
-
-        const InputArray*   m_input_array;
-        size_t              m_input_index;
     };
 
     // Constructor.
@@ -120,15 +153,18 @@ class RENDERERDLL InputArray
         const InputFormat   format,
         const bool          is_optional = false);
 
-    // Return an iterator to the first entry.
-    iterator begin() const;
+    // Return mutable begin and end input iterators.
+    iterator begin();
+    iterator end();
 
-    // Return an iterator one beyond the last entry.
-    iterator end() const;
+    // Return constant begin and end input iterators.
+    const_iterator begin() const;
+    const_iterator end() const;
 
     // Find a given input.
     // Return end() if the input could not be found.
-    iterator find(const char* name) const;
+    iterator find(const char* name);
+    const_iterator find(const char* name) const;
 
     // Get the source bound to a given input.
     // Return 0 if the input could not be found, or no source is bound to it.

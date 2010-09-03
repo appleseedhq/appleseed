@@ -64,13 +64,11 @@ struct InputArray::Impl
     InputDeclVector m_input_decls;
 };
 
-// Constructor.
 InputArray::InputArray()
   : impl(new Impl())
 {
 }
 
-// Destructor.
 InputArray::~InputArray()
 {
     for (each<Impl::InputDeclVector> i = impl->m_input_decls; i; ++i)
@@ -79,7 +77,6 @@ InputArray::~InputArray()
     delete impl;
 }
 
-// Declare an input.
 void InputArray::declare(
     const char*         name,
     const InputFormat   format,
@@ -96,20 +93,27 @@ void InputArray::declare(
     impl->m_input_decls.push_back(decl);
 }
 
-// Return an iterator to the first entry.
-InputArray::iterator InputArray::begin() const
+InputArray::iterator InputArray::begin()
 {
     return iterator(this, 0);
 }
 
-// Return an iterator one beyond the last entry.
-InputArray::iterator InputArray::end() const
+InputArray::iterator InputArray::end()
 {
     return iterator(this, impl->m_input_decls.size());
 }
 
-// Find a given input.
-InputArray::iterator InputArray::find(const char* name) const
+InputArray::const_iterator InputArray::begin() const
+{
+    return const_iterator(this, 0);
+}
+
+InputArray::const_iterator InputArray::end() const
+{
+    return const_iterator(this, impl->m_input_decls.size());
+}
+
+InputArray::iterator InputArray::find(const char* name)
 {
     assert(name);
 
@@ -124,7 +128,21 @@ InputArray::iterator InputArray::find(const char* name) const
     return end();
 }
 
-// Get the source bound to a given input.
+InputArray::const_iterator InputArray::find(const char* name) const
+{
+    assert(name);
+
+    const size_t input_count = impl->m_input_decls.size();
+
+    for (size_t i = 0; i < input_count; ++i)
+    {
+        if (impl->m_input_decls[i].m_name == name)
+            return const_iterator(this, i);
+    }
+
+    return end();
+}
+
 Source* InputArray::source(const char* name) const
 {
     assert(name);
@@ -138,7 +156,6 @@ Source* InputArray::source(const char* name) const
     return 0;
 }
 
-// Evaluate all inputs into a preallocated block of memory.
 void InputArray::evaluate(
     TextureCache&       texture_cache,
     const InputParams&  params,
@@ -181,7 +198,6 @@ void InputArray::evaluate(
     }
 }
 
-// Evaluate all uniform inputs.
 void InputArray::evaluate_uniforms(void* values) const
 {
     assert(values);
@@ -218,22 +234,100 @@ void InputArray::evaluate_uniforms(void* values) const
 
 
 //
-// InputArray::iterator class implementation.
+// InputArray::const_iterator class implementation.
 //
 
-// Constructors.
-InputArray::iterator::iterator(const InputArray* array, const size_t index)
+InputArray::const_iterator::const_iterator(const InputArray* array, const size_t index)
   : m_input_array(array)
   , m_input_index(index)
 {
 }
-InputArray::iterator::iterator(const iterator& rhs)
+
+InputArray::const_iterator::const_iterator(const iterator& rhs)
   : m_input_array(rhs.m_input_array)
   , m_input_index(rhs.m_input_index)
 {
 }
 
-// Assignment operator.
+InputArray::const_iterator::const_iterator(const const_iterator& rhs)
+  : m_input_array(rhs.m_input_array)
+  , m_input_index(rhs.m_input_index)
+{
+}
+
+InputArray::const_iterator& InputArray::const_iterator::operator=(const const_iterator& rhs)
+{
+    m_input_array = rhs.m_input_array;
+    m_input_index = rhs.m_input_index;
+    return *this;
+}
+
+bool InputArray::const_iterator::operator==(const const_iterator& rhs) const
+{
+    return
+        m_input_index == rhs.m_input_index &&
+        m_input_array == rhs.m_input_array;
+}
+
+bool InputArray::const_iterator::operator!=(const const_iterator& rhs) const
+{
+    return
+        m_input_index != rhs.m_input_index ||
+        m_input_array != rhs.m_input_array;
+}
+
+InputArray::const_iterator& InputArray::const_iterator::operator++()
+{
+    ++m_input_index;
+    return *this;
+}
+
+InputArray::const_iterator& InputArray::const_iterator::operator--()
+{
+    --m_input_index;
+    return *this;
+}
+
+const InputArray::const_iterator& InputArray::const_iterator::operator*() const
+{
+    return *this;
+}
+
+const char* InputArray::const_iterator::name() const
+{
+    return m_input_array->impl->m_input_decls[m_input_index].m_name.c_str();
+}
+
+InputFormat InputArray::const_iterator::format() const
+{
+    return m_input_array->impl->m_input_decls[m_input_index].m_format;
+}
+
+bool InputArray::const_iterator::is_optional() const
+{
+    return m_input_array->impl->m_input_decls[m_input_index].m_is_optional;
+}
+
+Source* InputArray::const_iterator::source() const
+{
+    return m_input_array->impl->m_input_decls[m_input_index].m_source;
+}
+
+
+//
+// InputArray::iterator class implementation.
+//
+
+InputArray::iterator::iterator(const InputArray* array, const size_t index)
+  : const_iterator(array, index)
+{
+}
+
+InputArray::iterator::iterator(const iterator& rhs)
+  : const_iterator(rhs)
+{
+}
+
 InputArray::iterator& InputArray::iterator::operator=(const iterator& rhs)
 {
     m_input_array = rhs.m_input_array;
@@ -241,66 +335,26 @@ InputArray::iterator& InputArray::iterator::operator=(const iterator& rhs)
     return *this;
 }
 
-// Equality and inequality tests.
-bool InputArray::iterator::operator==(const iterator& rhs) const
-{
-    return
-        m_input_index == rhs.m_input_index &&
-        m_input_array == rhs.m_input_array;
-}
-bool InputArray::iterator::operator!=(const iterator& rhs) const
-{
-    return
-        m_input_index != rhs.m_input_index ||
-        m_input_array != rhs.m_input_array;
-}
-
-// Preincrement and predecrement operators.
 InputArray::iterator& InputArray::iterator::operator++()
 {
     ++m_input_index;
     return *this;
 }
+
 InputArray::iterator& InputArray::iterator::operator--()
 {
     --m_input_index;
     return *this;
 }
 
-// Dereference operator.
 InputArray::iterator& InputArray::iterator::operator*()
 {
     return *this;
 }
 
-// Get the name of the entry.
-const char* InputArray::iterator::name() const
-{
-    return m_input_array->impl->m_input_decls[m_input_index].m_name.c_str();
-}
-
-// Get the format of the input.
-InputFormat InputArray::iterator::format() const
-{
-    return m_input_array->impl->m_input_decls[m_input_index].m_format;
-}
-
-// Return true if the input is optional, false otherwise.
-bool InputArray::iterator::is_optional() const
-{
-    return m_input_array->impl->m_input_decls[m_input_index].m_is_optional;
-}
-
-// Bind a source to this input.
 void InputArray::iterator::bind(Source* source)
 {
     m_input_array->impl->m_input_decls[m_input_index].m_source = source;
-}
-
-// Get the source bound to this input (or 0 if no source is bound).
-Source* InputArray::iterator::source() const
-{
-    return m_input_array->impl->m_input_decls[m_input_index].m_source;
 }
 
 }   // namespace renderer
