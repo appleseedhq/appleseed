@@ -62,6 +62,34 @@ macro(set_to_string output_variable first_arg)
     convert_list_to_string(${output_variable} "${arg_list}")
 endmacro()
 
+#
+# A variant of the QT4_WRAP_CPP macro designed to moc .cpp files.
+#
+# It differs from the original macro in two ways:
+#
+#   1.  It generates a file of the form moc_cpp_XXX.cxx for a given input file XXX.cpp,
+#       whereas the original macro generates a file of the form moc_XXX.cxx for a given
+#       input file XXX.h.
+#
+#   2.  It adds a dependency between the input file XXX.cpp and the generated file so
+#       that the generated file gets rebuild whenever the input file is modified. This
+#       is necessary because the generated file is to be included in the input file.
+#
+# The original QT4_WRAP_CPP macro can be found in share/cmake-2.8/Modules/Qt4Macros.cmake.
+#
+
+MACRO(QT4_WRAP_CPP_CPLUSPLUS_FILES outfiles)
+    QT4_GET_MOC_FLAGS(moc_flags)
+    QT4_EXTRACT_OPTIONS(moc_files moc_options ${ARGN})
+    FOREACH(it ${moc_files})
+        GET_FILENAME_COMPONENT(it ${it} ABSOLUTE)
+        QT4_MAKE_OUTPUT_FILE(${it} moc_cpp_ cxx outfile)
+        QT4_CREATE_MOC_COMMAND(${it} ${outfile} "${moc_flags}" "${moc_options}")
+        SET(${outfiles} ${${outfiles}} ${outfile})
+        SET_SOURCE_FILES_PROPERTIES(${it} PROPERTIES OBJECT_DEPENDS ${outfile})
+    ENDFOREACH(it)
+ENDMACRO()
+
 # Create the configurations. Must come before project().
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release;Profile;Ship" CACHE STRING "" FORCE)
 

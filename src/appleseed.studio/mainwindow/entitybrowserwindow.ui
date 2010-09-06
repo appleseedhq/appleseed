@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>EntityEditorWindow</class>
- <widget class="QWidget" name="EntityEditorWindow">
+ <class>EntityBrowserWindow</class>
+ <widget class="QWidget" name="EntityBrowserWindow">
   <property name="windowModality">
    <enum>Qt::ApplicationModal</enum>
   </property>
@@ -14,7 +14,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Entity Editor</string>
+   <string>Entity Browser</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="1" column="0">
@@ -25,21 +25,7 @@
     </widget>
    </item>
    <item row="0" column="0">
-    <widget class="QScrollArea" name="scrollarea">
-     <property name="widgetResizable">
-      <bool>true</bool>
-     </property>
-     <widget class="QWidget" name="scrollarea_contents">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>380</width>
-        <height>251</height>
-       </rect>
-      </property>
-     </widget>
-    </widget>
+    <widget class="QListWidget" name="listwidget"/>
    </item>
   </layout>
  </widget>

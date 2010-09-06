@@ -32,6 +32,11 @@
 // UI definition header.
 #include "ui_entityeditorwindow.h"
 
+// appleseed.studio headers.
+#include "mainwindow/entitybrowserwindow.h"
+#include "utility/interop.h"
+#include "utility/tweaks.h"
+
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
@@ -40,10 +45,11 @@
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QHBoxLayout>
-#include <QKeySequence>
 #include <QLabel>
 #include <QPushButton>
-#include <QShortCut>
+#include <QShortcut>
+#include <QSignalMapper>
+#include <Qt>
 
 // Standard headers.
 #include <cassert>
@@ -51,28 +57,20 @@
 using namespace foundation;
 using namespace std;
 
-namespace foundation
-{
-    template <>
-    inline QString from_string(const string& s)
-    {
-        return QString::fromStdString(s);
-    }
-}
-
 namespace appleseed {
 namespace studio {
 
 EntityEditorWindow::EntityEditorWindow(
-    QWidget*                parent,
-    const string&           window_title,
-    auto_ptr<IFormFactory>  form_factory,
-    const QVariant&         payload)
+    QWidget*                    parent,
+    const string&               window_title,
+    auto_ptr<IFormFactory>      form_factory,
+    auto_ptr<IEntityBrowser>    entity_browser)
   : QWidget(parent)
   , m_ui(new Ui::EntityEditorWindow())
   , m_form_factory(form_factory)
-  , m_payload(payload)
+  , m_entity_browser(entity_browser)
   , m_form_layout(0)
+  , m_signal_mapper(new QSignalMapper(this))
 {
     m_ui->setupUi(this);
 
@@ -86,6 +84,10 @@ EntityEditorWindow::EntityEditorWindow(
     rebuild_form(Dictionary());
 
     connect(
+        m_signal_mapper, SIGNAL(mapped(const QString&)),
+        this, SLOT(slot_open_entity_browser(const QString&)));
+
+    connect(
         m_ui->buttonbox->button(QDialogButtonBox::Ok), SIGNAL(clicked()),
         this, SLOT(slot_accept()));
 
@@ -94,17 +96,17 @@ EntityEditorWindow::EntityEditorWindow(
         this, SLOT(close()));
 
     connect(
-        new QShortcut(QKeySequence(Qt::Key_Return), this), SIGNAL(activated()),
+        create_window_local_shortcut(this, Qt::Key_Return), SIGNAL(activated()),
         this, SLOT(slot_accept()));
 
     connect(
-        new QShortcut(QKeySequence(Qt::Key_Escape), this), SIGNAL(activated()),
+        create_window_local_shortcut(this, Qt::Key_Escape), SIGNAL(activated()),
         this, SLOT(close()));
 }
 
 EntityEditorWindow::~EntityEditorWindow()
 {
-    for (const_each<ValueReaderCollection> i = m_value_readers; i; ++i)
+    for (const_each<WidgetProxyCollection> i = m_widget_proxies; i; ++i)
         delete i->second;
 
     delete m_ui;
@@ -113,7 +115,6 @@ EntityEditorWindow::~EntityEditorWindow()
 void EntityEditorWindow::create_form_layout()
 {
     m_form_layout = new QFormLayout(m_ui->scrollarea_contents);
-    m_ui->scrollarea_contents->setLayout(m_form_layout);
 
     int left, top, right, bottom;
     m_form_layout->getContentsMargins(&left, &top, &right, &bottom);
@@ -124,11 +125,14 @@ namespace
 {
     void delete_layout_items(QLayout* layout)
     {
-        for (QLayoutItem* item; item = layout->takeAt(0); )
+        while (!layout->isEmpty())
         {
+            QLayoutItem* item = layout->takeAt(0);
+
             if (item->layout())
                 delete_layout_items(item->layout());
             else item->widget()->deleteLater();
+
             delete item;
         }
     }
@@ -142,6 +146,19 @@ void EntityEditorWindow::rebuild_form(const Dictionary& values)
 
     for (const_each<WidgetDefinitionCollection> i = m_widget_definitions; i; ++i)
         create_input_widget(*i);
+}
+
+Dictionary EntityEditorWindow::get_widget_definition(const string& name) const
+{
+    for (const_each<WidgetDefinitionCollection> i = m_widget_definitions; i; ++i)
+    {
+        const Dictionary& definition = *i;
+
+        if (definition.get<string>("name") == name)
+            return definition;
+    }
+
+    return Dictionary();
 }
 
 void EntityEditorWindow::create_input_widget(const Dictionary& definition)
@@ -197,7 +214,7 @@ void EntityEditorWindow::create_text_box_input_widget(const Dictionary& definiti
     m_form_layout->addRow(get_label_text(definition), line_edit);
 
     const string name = definition.get<string>("name");
-    m_value_readers[name] = new LineEditValueReader(line_edit);
+    m_widget_proxies[name] = new LineEditProxy(line_edit);
 }
 
 void EntityEditorWindow::create_entity_picker_input_widget(const Dictionary& definition)
@@ -216,14 +233,18 @@ void EntityEditorWindow::create_entity_picker_input_widget(const Dictionary& def
     QWidget* button = new QPushButton("Browse", m_ui->scrollarea_contents);
     button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-    QHBoxLayout* layout = new QHBoxLayout(m_ui->scrollarea_contents);
+    connect(button, SIGNAL(clicked()), m_signal_mapper, SLOT(map()));
+
+    const string name = definition.get<string>("name");
+    m_signal_mapper->setMapping(button, QString::fromStdString(name));
+
+    QHBoxLayout* layout = new QHBoxLayout();
     layout->addWidget(line_edit);
     layout->addWidget(button);
 
     m_form_layout->addRow(get_label_text(definition), layout);
 
-    const string name = definition.get<string>("name");
-    m_value_readers[name] = new LineEditValueReader(line_edit);
+    m_widget_proxies[name] = new LineEditProxy(line_edit);
 }
 
 void EntityEditorWindow::create_dropdown_list_input_widget(const Dictionary& definition)
@@ -254,7 +275,7 @@ void EntityEditorWindow::create_dropdown_list_input_widget(const Dictionary& def
     m_form_layout->addRow(get_label_text(definition), combo_box);
 
     const string name = definition.get<string>("name");
-    m_value_readers[name] = new ComboBoxValueReader(combo_box);
+    m_widget_proxies[name] = new ComboBoxProxy(combo_box);
 }
 
 Dictionary EntityEditorWindow::get_values() const
@@ -266,7 +287,7 @@ Dictionary EntityEditorWindow::get_values() const
         const Dictionary& definition = *i;
 
         const string name = definition.get<string>("name");
-        const string value = m_value_readers.find(name)->second->read();
+        const string value = m_widget_proxies.find(name)->second->get();
 
         values.insert(name, value);
     }
@@ -274,15 +295,82 @@ Dictionary EntityEditorWindow::get_values() const
     return values;
 }
 
-void EntityEditorWindow::slot_accept()
-{
-    emit accepted(m_payload, get_values());
-}
-
 void EntityEditorWindow::slot_rebuild_form()
 {
     rebuild_form(get_values());
 }
 
+namespace
+{
+    class ForwardAcceptedSignal
+      : public QObject
+    {
+        Q_OBJECT
+
+      public:
+        ForwardAcceptedSignal(QObject* parent, const QString& widget_name)
+          : QObject(parent)
+          , m_widget_name(widget_name)
+        {
+        }
+
+      public slots:
+        void slot_accept(QString entity_name)
+        {
+            emit accepted(m_widget_name, entity_name);
+        }
+
+      signals:
+        void accepted(QString widget_name, QString entity_name);
+
+      private:
+        const QString m_widget_name;
+    };
+}
+
+void EntityEditorWindow::slot_open_entity_browser(const QString& widget_name)
+{
+    const Dictionary widget_definition = get_widget_definition(widget_name.toStdString());
+
+    EntityBrowserWindow* browser_window =
+        new EntityBrowserWindow(
+            this,
+            widget_definition.get<string>("label"));
+
+    const string entity_type = widget_definition.get<string>("entity_type");
+    const StringDictionary entities = m_entity_browser->get_entities(entity_type);
+
+    browser_window->add_items(entities);
+
+    ForwardAcceptedSignal* forward_signal =
+        new ForwardAcceptedSignal(browser_window, widget_name);
+
+    QObject::connect(
+        browser_window, SIGNAL(accepted(QString)),
+        forward_signal, SLOT(slot_accept(QString)));
+
+    QObject::connect(
+        forward_signal, SIGNAL(accepted(QString, QString)),
+        this, SLOT(slot_entity_browser_accept(QString, QString)));
+
+    browser_window->showNormal();
+    browser_window->activateWindow();
+}
+
+void EntityEditorWindow::slot_entity_browser_accept(QString widget_name, QString entity_name)
+{
+    m_widget_proxies[widget_name.toStdString()]->set(entity_name.toStdString());
+
+    // Close the entity browser.
+    qobject_cast<QWidget*>(sender()->parent())->close();
+}
+
+void EntityEditorWindow::slot_accept()
+{
+    emit accepted(get_values());
+}
+
 }   // namespace studio
 }   // namespace appleseed
+
+#include "mainwindow/moc_cpp_entityeditorwindow.cxx"

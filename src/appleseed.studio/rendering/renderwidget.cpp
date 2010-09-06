@@ -30,7 +30,7 @@
 #include "renderwidget.h"
 
 // appleseed.studio headers.
-#include "utility/qtiostreamop.h"
+#include "utility/interop.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/frame.h"

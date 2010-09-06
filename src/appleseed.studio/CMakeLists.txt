@@ -90,6 +90,9 @@ source_group("main" FILES
 )
 
 set(mainwindow_sources
+    mainwindow/entitybrowserwindow.cpp
+    mainwindow/entitybrowserwindow.h
+    mainwindow/entitybrowserwindow.ui
     mainwindow/entityeditorwindow.cpp
     mainwindow/entityeditorwindow.h
     mainwindow/entityeditorwindow.ui
@@ -164,7 +167,7 @@ source_group("rendering" FILES
 )
 
 set(utility_sources
-    utility/qtiostreamop.h
+    utility/interop.h
     utility/scrollareapanhandler.cpp
     utility/scrollareapanhandler.h
     utility/tweaks.cpp
@@ -212,15 +215,24 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 # Generate moc_* files.
 #
 
-# Collect all header files amongst the source files.
+# Moc .h files.
 filter_list(
-    appleseed.studio_moc_files
+    appleseed.studio_h_files
     "${appleseed.studio_sources}"
     ".*\\\\.h"
 )
+QT4_WRAP_CPP(appleseed.studio_generated_moc_h_files
+    ${appleseed.studio_h_files}
+)
 
-QT4_WRAP_CPP(appleseed.studio_generated_moc_files
-    ${appleseed.studio_moc_files}
+# Moc .cpp files.
+filter_list(
+    appleseed.studio_cpp_files
+    "${appleseed.studio_sources}"
+    ".*\\\\.cpp"
+)
+QT4_WRAP_CPP_CPLUSPLUS_FILES(appleseed.studio_generated_moc_cpp_files
+    ${appleseed.studio_cpp_files}
 )
 
 
@@ -240,7 +252,7 @@ QT4_ADD_RESOURCES(appleseed.studio_resource_files
 add_executable(appleseed.studio
     ${appleseed.studio_sources}
     ${appleseed.studio_generated_ui_files}
-    ${appleseed.studio_generated_moc_files}
+    ${appleseed.studio_generated_moc_h_files}
     ${appleseed.studio_resource_files}
 )
 

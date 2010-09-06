@@ -919,26 +919,146 @@ void ProjectExplorer::slot_import_textures_to_assembly()
 
 namespace
 {
-    void open_entity_editor(
-        QWidget*                                    parent,
-        const string&                               window_title,
-        auto_ptr<EntityEditorWindow::IFormFactory>  form_factory,
-        QObject*                                    receiver,
-        const QVariant&                             receiver_data)
+    class ForwardAcceptedSignal
+      : public QObject
+    {
+        Q_OBJECT
+
+      public:
+        explicit ForwardAcceptedSignal(QObject* parent, const QVariant& receiver_data)
+          : QObject(parent)
+          , m_receiver_data(receiver_data)
+        {
+        }
+
+      public slots:
+        void slot_accept(foundation::Dictionary values)
+        {
+            emit accepted(m_receiver_data, values);
+        }
+
+      signals:
+        void accepted(QVariant receiver_data, foundation::Dictionary values);
+
+      private:
+        const QVariant m_receiver_data;
+    };
+
+    void do_open_entity_editor(
+        QWidget*                                        parent,
+        const string&                                   window_title,
+        auto_ptr<EntityEditorWindow::IFormFactory>      form_factory,
+        auto_ptr<EntityEditorWindow::IEntityBrowser>    entity_browser,
+        QObject*                                        receiver,
+        const QVariant&                                 receiver_data)
     {
         EntityEditorWindow* editor_window =
             new EntityEditorWindow(
                 parent,
                 window_title,
                 form_factory,
-                receiver_data);
+                entity_browser);
 
-        receiver->connect(
-            editor_window, SIGNAL(accepted(QVariant, foundation::Dictionary)),
+        ForwardAcceptedSignal* forward_signal =
+            new ForwardAcceptedSignal(editor_window, receiver_data);
+
+        QObject::connect(
+            editor_window, SIGNAL(accepted(foundation::Dictionary)),
+            forward_signal, SLOT(slot_accept(foundation::Dictionary)));
+
+        QObject::connect(
+            forward_signal, SIGNAL(accepted(QVariant, foundation::Dictionary)),
             receiver, SLOT(slot_create_entity(QVariant, foundation::Dictionary)));
 
         editor_window->showNormal();
         editor_window->activateWindow();
+    }
+
+    class AssemblyEntityBrowser
+      : public EntityEditorWindow::IEntityBrowser
+    {
+      public:
+        explicit AssemblyEntityBrowser(const Assembly& assembly)
+          : m_assembly(assembly)
+        {
+        }
+
+        virtual StringDictionary get_entities(const string& type) const
+        {
+            if (type == "bsdf")
+            {
+                return get_entities(m_assembly.bsdfs());
+            }
+            else if (type == "color")
+            {
+                return get_entities(m_assembly.colors());
+            }
+            else if (type == "edf")
+            {
+                return get_entities(m_assembly.edfs());
+            }
+            else if (type == "surface_shader")
+            {
+                return get_entities(m_assembly.surface_shaders());
+            }
+            else
+            {
+                return StringDictionary();
+            }
+        }
+
+      private:
+        const Assembly& m_assembly;
+
+        template <typename EntityContainer>
+        static StringDictionary get_entities(const EntityContainer& entities)
+        {
+            StringDictionary result;
+
+            for (const_each<EntityContainer> i = entities; i; ++i)
+                result.insert(i->get_name(), i->get_name());
+
+            return result;
+        }
+    };
+
+    void open_entity_editor(
+        QWidget*                                        parent,
+        const string&                                   window_title,
+        auto_ptr<EntityEditorWindow::IFormFactory>      form_factory,
+        const Assembly&                                 assembly,
+        QObject*                                        receiver,
+        const QVariant&                                 receiver_data)
+    {
+        auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
+            new AssemblyEntityBrowser(assembly));
+
+        do_open_entity_editor(
+            parent,
+            window_title,
+            form_factory,
+            entity_browser,
+            receiver,
+            receiver_data);
+    }
+
+    void open_entity_editor(
+        QWidget*                                        parent,
+        const string&                                   window_title,
+        auto_ptr<EntityEditorWindow::IFormFactory>      form_factory,
+        const Scene&                                    scene,
+        QObject*                                        receiver,
+        const QVariant&                                 receiver_data)
+    {
+        auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser;
+
+        do_open_entity_editor(
+            parent,
+            window_title,
+            form_factory,
+            entity_browser,
+            receiver,
+            receiver_data);
     }
 }
 
@@ -958,7 +1078,7 @@ namespace
 
         virtual void update(
             const Dictionary&           values,
-            WidgetDefinitionCollection& definitions)
+            WidgetDefinitionCollection& definitions) const
         {
             definitions.clear();
 
@@ -1038,6 +1158,7 @@ void ProjectExplorer::slot_add_bsdf_to_assembly()
         m_tree_widget,
         "Create BSDF",
         form_factory,
+        assembly,
         this,
         receiver_data);
 }
@@ -1055,7 +1176,7 @@ namespace
 
         virtual void update(
             const Dictionary&           values,
-            WidgetDefinitionCollection& definitions)
+            WidgetDefinitionCollection& definitions) const
         {
             definitions.clear();
 
@@ -1116,6 +1237,7 @@ void ProjectExplorer::slot_add_material_to_assembly()
         m_tree_widget,
         "Create Material",
         form_factory,
+        assembly,
         this,
         receiver_data);
 }
@@ -1166,7 +1288,8 @@ void ProjectExplorer::slot_create_entity(QVariant payload, Dictionary values)
           assert_otherwise;
         }
 
-        qobject_cast<QWidget*>(sender())->close();
+        // Close the entity editor.
+        qobject_cast<QWidget*>(sender()->parent())->close();
     }
     catch (const ExceptionDictionaryItemNotFound& e)
     {
@@ -1184,3 +1307,5 @@ void ProjectExplorer::slot_create_entity(QVariant payload, Dictionary values)
 
 }   // namespace studio
 }   // namespace appleseed
+
+#include "mainwindow/moc_cpp_projectexplorer.cxx"

@@ -50,6 +50,7 @@
 // Forward declarations.
 namespace Ui { class EntityEditorWindow; }
 class QFormLayout;
+class QSignalMapper;
 
 namespace appleseed {
 namespace studio {
@@ -70,7 +71,7 @@ class EntityEditorWindow
 
         virtual void update(
             const foundation::Dictionary&   values,
-            WidgetDefinitionCollection&     definitions) = 0;
+            WidgetDefinitionCollection&     definitions) const = 0;
 
       protected:
         typedef EntityEditorWindow::WidgetDefinitionCollection WidgetDefinitionCollection;
@@ -86,37 +87,54 @@ class EntityEditorWindow
         }
     };
 
+    class IEntityBrowser
+      : public foundation::NonCopyable
+    {
+      public:
+        virtual ~IEntityBrowser() {}
+
+        virtual foundation::StringDictionary get_entities(
+            const std::string&              type) const = 0;
+    };
+
     EntityEditorWindow(
         QWidget*                            parent,
         const std::string&                  window_title,
         std::auto_ptr<IFormFactory>         form_factory,
-        const QVariant&                     payload);
+        std::auto_ptr<IEntityBrowser>       entity_browser);
 
     ~EntityEditorWindow();
 
   signals:
-    void accepted(QVariant payload, foundation::Dictionary values);
+    void accepted(foundation::Dictionary values);
 
   private:
-    class IValueReader
+    class IWidgetProxy
       : public foundation::NonCopyable
     {
       public:
-        virtual ~IValueReader() {}
+        virtual ~IWidgetProxy() {}
 
-        virtual std::string read() const = 0;
+        virtual void set(const std::string& value) = 0;
+
+        virtual std::string get() const = 0;
     };
 
-    class LineEditValueReader
-      : public IValueReader
+    class LineEditProxy
+      : public IWidgetProxy
     {
       public:
-        explicit LineEditValueReader(QLineEdit* line_edit)
+        explicit LineEditProxy(QLineEdit* line_edit)
           : m_line_edit(line_edit)
         {
         }
 
-        virtual std::string read() const
+        virtual void set(const std::string& value)
+        {
+            m_line_edit->setText(QString::fromStdString(value));
+        }
+
+        virtual std::string get() const
         {
             return m_line_edit->text().toStdString();
         }
@@ -125,16 +143,21 @@ class EntityEditorWindow
         QLineEdit*  m_line_edit;
     };
 
-    class ComboBoxValueReader
-      : public IValueReader
+    class ComboBoxProxy
+      : public IWidgetProxy
     {
       public:
-        explicit ComboBoxValueReader(QComboBox* combo_box)
+        explicit ComboBoxProxy(QComboBox* combo_box)
           : m_combo_box(combo_box)
         {
         }
 
-        virtual std::string read() const
+        virtual void set(const std::string& value)
+        {
+            // todo: implement.
+        }
+
+        virtual std::string get() const
         {
             const QVariant data = m_combo_box->itemData(m_combo_box->currentIndex());
             return data.value<QString>().toStdString();
@@ -144,20 +167,24 @@ class EntityEditorWindow
         QComboBox*  m_combo_box;
     };
 
-    typedef std::map<std::string, IValueReader*> ValueReaderCollection;
+    typedef std::map<std::string, IWidgetProxy*> WidgetProxyCollection;
 
     // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
     Ui::EntityEditorWindow*             m_ui;
 
     std::auto_ptr<IFormFactory>         m_form_factory;
-    const QVariant                      m_payload;
+    std::auto_ptr<IEntityBrowser>       m_entity_browser;
 
     QFormLayout*                        m_form_layout;
     WidgetDefinitionCollection          m_widget_definitions;
-    ValueReaderCollection               m_value_readers;
+    WidgetProxyCollection               m_widget_proxies;
+
+    QSignalMapper*                      m_signal_mapper;
 
     void create_form_layout();
     void rebuild_form(const foundation::Dictionary& values);
+
+    foundation::Dictionary get_widget_definition(const std::string& name) const;
 
     void create_input_widget(const foundation::Dictionary& definition);
     void create_text_box_input_widget(const foundation::Dictionary& definition);
@@ -167,8 +194,10 @@ class EntityEditorWindow
     foundation::Dictionary get_values() const;
 
   private slots:
-    void slot_accept();
     void slot_rebuild_form();
+    void slot_open_entity_browser(const QString& widget_name);
+    void slot_entity_browser_accept(QString widget_name, QString entity_name);
+    void slot_accept();
 };
 
 }       // namespace studio

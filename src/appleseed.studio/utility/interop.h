@@ -29,25 +29,25 @@
 #ifndef APPLESEED_STUDIO_UTILITY_QTIOSTREAMOP_H
 #define APPLESEED_STUDIO_UTILITY_QTIOSTREAMOP_H
 
+// appleseed.foundation headers.
+#include "foundation/utility/string.h"
+
 // Qt headers.
 #include <QColor>
+#include <QString>
 
 // Standard headers.
 #include <iostream>
+#include <string>
 
 namespace foundation
 {
 
-//
-// iostream operators for common Qt objects.
-//
-
-std::ostream& operator<<(std::ostream& s, const QColor& color);
-
-
-//
-// iostream operators implementation.
-//
+template <>
+inline QString from_string(const std::string& s)
+{
+    return QString::fromStdString(s);
+}
 
 inline std::ostream& operator<<(std::ostream& s, const QColor& color)
 {
