@@ -45,7 +45,7 @@
 
 
 /*
- * Global
+ * QWidget.
  */
 
 QWidget
@@ -57,7 +57,7 @@ QWidget
 
 
 /*
- * Main window
+ * QMainWindow.
  */
 
 QMainWindow::separator
@@ -69,7 +69,7 @@ QMainWindow::separator
 
 
 /*
- * Status bar
+ * QStatusBar.
  */
 
 QStatusBar
@@ -84,7 +84,7 @@ QStatusBar::item
 
 
 /*
- * Scrollbars
+ * QScrollBar.
  */
 
 QScrollBar
@@ -123,30 +123,26 @@ QScrollBar::sub-line:hover
     background-color: rgb(190, 140, 50);
 }
 
-
-/*
- * Scroll areas
- */
-
-QAbstractScrollArea::corner
-{
-    background-color: transparent;
-}
-
-
-/*
- * Horizontal scrollbars
- */
-
 QScrollBar:horizontal
 {
     height: 15px;
     margin: 0px 15px 0 15px;
 }
 
+QScrollBar:vertical
+{
+    width: 15px;
+    margin: 15px 0 15px 0;
+}
+
 QScrollBar::handle:horizontal
 {
     min-width: 15px;
+}
+
+QScrollBar::handle:vertical
+{
+    min-height: 15px;
 }
 
 QScrollBar::add-line:horizontal
@@ -155,10 +151,22 @@ QScrollBar::add-line:horizontal
     subcontrol-position: right;
 }
 
+QScrollBar::add-line:vertical
+{
+    height: 15px;
+    subcontrol-position: bottom;
+}
+
 QScrollBar::sub-line:horizontal
 {
     width: 15px;
     subcontrol-position: left;
+}
+
+QScrollBar::sub-line:vertical
+{
+    height: 15px;
+    subcontrol-position: top;
 }
 
 QScrollBar:left-arrow:horizontal,
@@ -168,54 +176,6 @@ QScrollBar::right-arrow:horizontal
     height: 9px;
 }
 
-QScrollBar:left-arrow:horizontal:enabled
-{
-    background-image: url(":/widgets/scrollbar_arrow_left_enabled.png");
-}
-
-QScrollBar:right-arrow:horizontal:enabled
-{
-    background-image: url(":/widgets/scrollbar_arrow_right_enabled.png");
-}
-
-QScrollBar:left-arrow:horizontal:disabled
-{
-    background-image: url(":/widgets/scrollbar_arrow_left_disabled.png");
-}
-
-QScrollBar:right-arrow:horizontal:disabled
-{
-    background-image: url(":/widgets/scrollbar_arrow_right_disabled.png");
-}
-
-
-/*
- * Vertical scrollbars
- */
-
-QScrollBar:vertical
-{
-    width: 15px;
-    margin: 15px 0 15px 0;
-}
-
-QScrollBar::handle:vertical
-{
-    min-height: 15px;
-}
-
-QScrollBar::add-line:vertical
-{
-    height: 15px;
-    subcontrol-position: bottom;
-}
-
-QScrollBar::sub-line:vertical
-{
-    height: 15px;
-    subcontrol-position: top;
-}
-
 QScrollBar::up-arrow:vertical,
 QScrollBar::down-arrow:vertical
 {
@@ -223,19 +183,39 @@ QScrollBar::down-arrow:vertical
     height: 7px;
 }
 
+QScrollBar:left-arrow:horizontal:enabled
+{
+    background-image: url(":/widgets/scrollbar_arrow_left_enabled.png");
+}
+
+QScrollBar:left-arrow:horizontal:disabled
+{
+    background-image: url(":/widgets/scrollbar_arrow_left_disabled.png");
+}
+
+QScrollBar:right-arrow:horizontal:enabled
+{
+    background-image: url(":/widgets/scrollbar_arrow_right_enabled.png");
+}
+
+QScrollBar:right-arrow:horizontal:disabled
+{
+    background-image: url(":/widgets/scrollbar_arrow_right_disabled.png");
+}
+
 QScrollBar:up-arrow:vertical:enabled
 {
     background-image: url(":/widgets/scrollbar_arrow_up_enabled.png");
 }
 
-QScrollBar:down-arrow:vertical:enabled
-{
-    background-image: url(":/widgets/scrollbar_arrow_down_enabled.png");
-}
-
 QScrollBar:up-arrow:vertical:disabled
 {
     background-image: url(":/widgets/scrollbar_arrow_up_disabled.png");
+}
+
+QScrollBar:down-arrow:vertical:enabled
+{
+    background-image: url(":/widgets/scrollbar_arrow_down_enabled.png");
 }
 
 QScrollBar:down-arrow:vertical:disabled
@@ -245,7 +225,17 @@ QScrollBar:down-arrow:vertical:disabled
 
 
 /*
- * Menu bars
+ * QAbstractScrollArea.
+ */
+
+QAbstractScrollArea::corner
+{
+    background-color: transparent;
+}
+
+
+/*
+ * QMenuBar.
  */
 
 QMenuBar
@@ -272,7 +262,7 @@ QMenuBar::item:disabled
 
 
 /*
- * Menu items
+ * QMenu.
  */
 
 QMenu
@@ -334,7 +324,8 @@ QMenu::tearoff:selected
 
 
 /*
- * Toolbars
+ * QToolBar.
+ * QToolButton.
  */
 
 QToolBar
@@ -370,7 +361,7 @@ QToolButton:pressed
 
 
 /*
- * Dock widgets
+ * QDockWidget.
  */
 
 QDockWidget::title
@@ -396,7 +387,8 @@ QDockWidget::close-button:hover
 
 
 /*
- * Tabs
+ * QTabWidget.
+ * QTabBar.
  */
 
 QTabWidget::pane
@@ -427,7 +419,7 @@ QTabBar::tab:selected
 
 
 /*
- * Push buttons
+ * QPushButton.
  */
 
 QPushButton
@@ -458,15 +450,16 @@ QPushButton:disabled
 
 
 /*
- * Tree views
+ * QTreeView.
+ * QHeaderView.
  */
 
 QTreeView
 {
     border: 1px solid rgb(40, 40, 40);
 }
-QTreeView#treewidget_project_explorer_scene,
-QTreeView#treewidget_project_explorer_renders
+
+QTabWidget QTreeView
 {
     border: 0px;
 }
@@ -522,7 +515,8 @@ QTreeView::branch:has-children:open:disabled
 
 
 /*
- * Checkboxes
+ * QCheckBox.
+ * QAbstractItemView.
  */
 
 QCheckBox::indicator,
@@ -576,7 +570,7 @@ QAbstractItemView::indicator:indeterminate:disabled
 
 
 /*
- * Line input
+ * QLineEdit.
  */
  
 QLineEdit
@@ -586,7 +580,7 @@ QLineEdit
 
 
 /*
- * Label
+ * QLabel.
  */
 
 QLabel[hasFrame="true"]
@@ -596,7 +590,7 @@ QLabel[hasFrame="true"]
 
 
 /*
- * Combo box
+ * QComboBox.
  */
 
 QComboBox,
@@ -627,7 +621,7 @@ QComboBox::down-arrow:hover
 
 
 /*
- * List widget
+ * QListWidget.
  */
 
 QListWidget
