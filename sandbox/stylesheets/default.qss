@@ -624,3 +624,13 @@ QComboBox::down-arrow:hover
 {
     image: url(":/widgets/combobox_arrow_down_selected.png");
 }
+
+
+/*
+ * List widget
+ */
+
+QListWidget
+{
+    border: 1px solid rgb(40, 40, 40);
+}
