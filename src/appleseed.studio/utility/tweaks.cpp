@@ -31,9 +31,10 @@
 
 // Qt headers.
 #include <QGridLayout>
+#include <QKeySequence>
 #include <QMessageBox>
+#include <QShortCut>
 #include <QSpacerItem>
-#include <Qt>
 #include <QWidget>
 
 namespace appleseed {
@@ -61,6 +62,17 @@ void set_minimum_width(QMessageBox& msgbox, const int minimum_width)
         0,                          // column
         1,                          // row span
         layout->columnCount());     // column span
+}
+
+QShortcut* create_window_local_shortcut(QWidget* parent, const Qt::Key key)
+{
+    return
+        new QShortcut(
+            QKeySequence(key),
+            parent,
+            0,
+            0,
+            Qt::WidgetWithChildrenShortcut);
 }
 
 }   // namespace studio

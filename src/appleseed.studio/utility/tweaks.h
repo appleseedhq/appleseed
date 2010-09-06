@@ -29,8 +29,12 @@
 #ifndef APPLESEED_STUDIO_UTILITY_TWEAKS_H
 #define APPLESEED_STUDIO_UTILITY_TWEAKS_H
 
+// Qt headers.
+#include <Qt>
+
 // Forward declarations.
 class QMessageBox;
+class QShortcut;
 class QWidget;
 
 namespace appleseed {
@@ -41,6 +45,10 @@ void disable_mac_focus_rect(QWidget& widget);
 
 // Set the minimum width of a QMessageBox.
 void set_minimum_width(QMessageBox& msgbox, const int minimum_width);
+
+// Create a keyboard shortcut that is active for a given window and its
+// child widgets, but not for its top-level children like subwindows.
+QShortcut* create_window_local_shortcut(QWidget* parent, const Qt::Key key);
 
 }       // namespace studio
 }       // namespace appleseed
