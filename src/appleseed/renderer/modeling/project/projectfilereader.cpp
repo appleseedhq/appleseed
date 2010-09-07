@@ -3105,8 +3105,10 @@ void ProjectFileReader::bind_inputs(
     Project&                project,
     EventCounters&          event_counters) const
 {
-    InputBinder input_binder(event_counters);
+    InputBinder input_binder;
     input_binder.bind(*project.get_scene());
+
+    event_counters.signal_errors(input_binder.get_error_count());
 }
 
 void ProjectFileReader::print_loading_results(

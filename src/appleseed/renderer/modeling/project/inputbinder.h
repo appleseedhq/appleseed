@@ -36,7 +36,6 @@
 
 // Forward declarations.
 namespace renderer      { class Assembly; }
-namespace renderer      { class EventCounters; }
 namespace renderer      { class Scene; }
 namespace renderer      { class SymbolTable; }
 
@@ -52,13 +51,16 @@ class InputBinder
 {
   public:
     // Constructor.
-    explicit InputBinder(EventCounters& event_counters);
+    InputBinder();
 
     // Bind all inputs of all entities in a scene.
     void bind(const Scene& scene);
 
+    // Return the number of reported binding errors.
+    size_t get_error_count() const;
+
   private:
-    EventCounters&  m_event_counters;
+    size_t  m_error_count;
 
     // Build the symbol table for a given scene.
     void build_scene_symbol_table(

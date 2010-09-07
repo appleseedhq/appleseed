@@ -43,7 +43,6 @@
 #include "renderer/modeling/input/texturesource.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
-#include "renderer/modeling/project/eventcounters.h"
 #include "renderer/modeling/project/symbol.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
@@ -67,13 +66,11 @@ namespace renderer
 // InputBinder class implementation.
 //
 
-// Constructor.
-InputBinder::InputBinder(EventCounters& event_counters)
-  : m_event_counters(event_counters)
+InputBinder::InputBinder()
+  : m_error_count(0)
 {
 }
 
-// Bind all inputs of all entities in a scene.
 void InputBinder::bind(const Scene& scene)
 {
     // Build the symbol table of the scene.
@@ -108,7 +105,11 @@ void InputBinder::bind(const Scene& scene)
     }
 }
 
-// Build the symbol table for a given scene.
+size_t InputBinder::get_error_count() const
+{
+    return m_error_count;
+}
+
 void InputBinder::build_scene_symbol_table(
     const Scene&                    scene,
     SymbolTable&                    symbols)
@@ -154,11 +155,10 @@ void InputBinder::build_scene_symbol_table(
     catch (const SymbolTable::ExceptionDuplicateSymbol& e)
     {
         RENDERER_LOG_ERROR("duplicate item \"%s\"", e.string());
-        m_event_counters.signal_error();
+        ++m_error_count;
     }
 }
 
-// Build the symbol table for a given assembly.
 void InputBinder::build_assembly_symbol_table(
     const Assembly&                 assembly,
     SymbolTable&                    symbols)
@@ -208,11 +208,10 @@ void InputBinder::build_assembly_symbol_table(
     catch (const SymbolTable::ExceptionDuplicateSymbol& e)
     {
         RENDERER_LOG_ERROR("duplicate item \"%s\"", e.string());
-        m_event_counters.signal_error();
+        ++m_error_count;
     }
 }
 
-// Bind all inputs of all entities of a given scene.
 void InputBinder::bind_scene_entities_inputs(
     const Scene&                    scene,
     const SymbolTable&              scene_symbols)
@@ -244,7 +243,6 @@ void InputBinder::bind_scene_entities_inputs(
     }
 }
 
-// Bind all inputs of all entities of a given assembly.
 void InputBinder::bind_assembly_entities_inputs(
     const Scene&                    scene,
     const SymbolTable&              scene_symbols,
@@ -297,7 +295,6 @@ void InputBinder::bind_assembly_entities_inputs(
     }
 }
 
-// Bind all inputs of a given entity of a given scene.
 void InputBinder::bind_scene_entity_inputs(
     const Scene&                    scene,
     const SymbolTable&              scene_symbols,
@@ -326,7 +323,7 @@ void InputBinder::bind_scene_entity_inputs(
                     entity_type,
                     entity_name,
                     input.name());
-                m_event_counters.signal_error();
+                ++m_error_count;
             }
             continue;
         }
@@ -341,7 +338,6 @@ void InputBinder::bind_scene_entity_inputs(
     }
 }
 
-// Bind all inputs of a given entity of a given assembly.
 void InputBinder::bind_assembly_entity_inputs(
     const Scene&                    scene,
     const SymbolTable&              scene_symbols,
@@ -372,7 +368,7 @@ void InputBinder::bind_assembly_entity_inputs(
                     entity_type,
                     entity_name,
                     input.name());
-                m_event_counters.signal_error();
+                ++m_error_count;
             }
             continue;
         }
@@ -389,7 +385,6 @@ void InputBinder::bind_assembly_entity_inputs(
     }
 }
 
-// Bind a given scene entity to a given input.
 void InputBinder::bind_scene_entity_to_input(
     const Scene&                    scene,
     const SymbolTable&              scene_symbols,
@@ -435,12 +430,11 @@ void InputBinder::bind_scene_entity_to_input(
             entity_name,
             param_value,
             input.name());
-        m_event_counters.signal_error();
+        ++m_error_count;
         break;
     }
 }
 
-// Bind a given assembly entity to a given input.
 void InputBinder::bind_assembly_entity_to_input(
     const Scene&                    scene,
     const SymbolTable&              scene_symbols,
@@ -490,12 +484,11 @@ void InputBinder::bind_assembly_entity_to_input(
             entity_name,
             param_value,
             input.name());
-        m_event_counters.signal_error();
+        ++m_error_count;
         break;
     }
 }
 
-// Bind a scalar to a given input.
 void InputBinder::bind_scalar_to_input(
     const char*                     entity_type,
     const char*                     entity_name,
@@ -515,11 +508,10 @@ void InputBinder::bind_scalar_to_input(
             entity_name,
             param_value,
             input.name());
-        m_event_counters.signal_error();
+        ++m_error_count;
     }
 }
 
-// Bind a color to a given input.
 void InputBinder::bind_color_to_input(
     const ColorContainer&           colors,
     const char*                     param_value,
@@ -534,7 +526,6 @@ void InputBinder::bind_color_to_input(
     input.bind(new ColorSource(*color_entity));
 }
 
-// Bind a texture instance to a given input.
 void InputBinder::bind_texture_instance_to_input(
     const TextureContainer&         textures,
     const TextureInstanceContainer& texture_instances,
@@ -573,7 +564,7 @@ void InputBinder::bind_texture_instance_to_input(
             param_value,
             input.name(),
             e.what());
-        m_event_counters.signal_error();
+        ++m_error_count;
     }
 }
 
