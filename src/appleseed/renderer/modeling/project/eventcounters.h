@@ -49,11 +49,13 @@ class EventCounters
     // Reset all counters.
     void clear();
 
-    // Signal a warning.
+    // Signal one or several warnings.
     void signal_warning();
+    void signal_warnings(const size_t warning_count);
 
-    // Signal an error.
+    // Signal one or several errors.
     void signal_error();
+    void signal_errors(const size_t error_count);
     
     // Read the event counters.
     size_t get_warning_count() const;
@@ -70,40 +72,47 @@ class EventCounters
 // EventCounters class implementation.
 //
 
-// Constructor.
 inline EventCounters::EventCounters()
 {
     clear();
 }
 
-// Reset all counters.
 inline void EventCounters::clear()
 {
     m_warning_count = 0;
     m_error_count = 0;
 }
 
-// Signal a warning.
 inline void EventCounters::signal_warning()
 {
     ++m_warning_count;
 }
 
-// Signal an error.
+inline void EventCounters::signal_warnings(const size_t warning_count)
+{
+    m_warning_count += warning_count;
+}
+
 inline void EventCounters::signal_error()
 {
     ++m_error_count;
 }
 
-// Read the event counters.
+inline void EventCounters::signal_errors(const size_t error_count)
+{
+    m_error_count += error_count;
+}
+
 inline size_t EventCounters::get_warning_count() const
 {
     return m_warning_count;
 }
+
 inline size_t EventCounters::get_error_count() const
 {
     return m_error_count;
 }
+
 inline bool EventCounters::has_errors() const
 {
     return m_error_count > 0;
