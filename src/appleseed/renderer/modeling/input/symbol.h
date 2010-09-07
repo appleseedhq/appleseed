@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_PROJECT_SYMBOL_H
-#define APPLESEED_RENDERER_MODELING_PROJECT_SYMBOL_H
+#ifndef APPLESEED_RENDERER_MODELING_INPUT_SYMBOL_H
+#define APPLESEED_RENDERER_MODELING_INPUT_SYMBOL_H
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
@@ -106,7 +106,6 @@ class SymbolTable
 // symbol_name() function implementation.
 //
 
-// Return a human-readable representation of a symbol identifier.
 inline const char* symbol_name(const SymbolID symbol_id)
 {
     typedef foundation::KeyValuePair<SymbolID, const char*> SymbolNameEntry;
@@ -144,7 +143,6 @@ inline const char* symbol_name(const SymbolID symbol_id)
 // SymbolTable class implementation.
 //
 
-// Insert a symbol.
 inline void SymbolTable::insert(
     const std::string&  name,
     const SymbolID      symbol_id)
@@ -153,7 +151,6 @@ inline void SymbolTable::insert(
         throw ExceptionDuplicateSymbol(name.c_str());
 }
 
-// Lookup a symbol.
 inline SymbolID SymbolTable::lookup(const std::string& name) const
 {
     const SymbolContainer::const_iterator i = m_symbols.find(name);
@@ -162,4 +159,4 @@ inline SymbolID SymbolTable::lookup(const std::string& name) const
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_PROJECT_SYMBOL_H
+#endif  // !APPLESEED_RENDERER_MODELING_INPUT_SYMBOL_H

@@ -1089,10 +1089,13 @@ set(renderer_modeling_input_sources
     renderer/modeling/input/colorsource.h
     renderer/modeling/input/inputarray.cpp
     renderer/modeling/input/inputarray.h
+    renderer/modeling/input/inputbinder.cpp
+    renderer/modeling/input/inputbinder.h
     renderer/modeling/input/inputevaluator.h
     renderer/modeling/input/inputparams.h
     renderer/modeling/input/scalarsource.h
     renderer/modeling/input/source.h
+    renderer/modeling/input/symbol.h
     renderer/modeling/input/texturesource.cpp
     renderer/modeling/input/texturesource.h
     renderer/modeling/input/uniforminputevaluator.h
@@ -1131,8 +1134,6 @@ set(renderer_modeling_project_sources
     renderer/modeling/project/configuration.h
     renderer/modeling/project/configurationcontainer.h
     renderer/modeling/project/eventcounters.h
-    renderer/modeling/project/inputbinder.cpp
-    renderer/modeling/project/inputbinder.h
     renderer/modeling/project/project.cpp
     renderer/modeling/project/project.h
     renderer/modeling/project/project.xsd
@@ -1140,7 +1141,6 @@ set(renderer_modeling_project_sources
     renderer/modeling/project/projectfilereader.h
     renderer/modeling/project/projectfilewriter.cpp
     renderer/modeling/project/projectfilewriter.h
-    renderer/modeling/project/symbol.h
 )
 list(APPEND appleseed_sources
     ${renderer_modeling_project_sources}
