@@ -110,47 +110,39 @@ size_t InputBinder::get_error_count() const
     return m_error_count;
 }
 
+namespace
+{
+    template <typename EntityContainer>
+    void insert_entities(
+        SymbolTable&                symbols,
+        const EntityContainer&      entities,
+        const SymbolTable::SymbolID symbol_id)
+    {
+        for (const_each<EntityContainer> i = entities; i; ++i)
+            symbols.insert(i->get_name(), symbol_id);
+    }
+}
+
 void InputBinder::build_scene_symbol_table(
     const Scene&                    scene,
     SymbolTable&                    symbols)
 {
     try
     {
-        // Insert the camera into the symbol table.
         if (scene.get_camera())
             symbols.insert(scene.get_camera()->get_name(), SymbolTable::SymbolCamera);
 
-        // Insert colors into the symbol table.
-        for (const_each<ColorContainer> i = scene.colors(); i; ++i)
-            symbols.insert(i->get_name(), SymbolTable::SymbolColor);
+        insert_entities(symbols, scene.colors(), SymbolTable::SymbolColor);
+        insert_entities(symbols, scene.textures(), SymbolTable::SymbolTexture);
+        insert_entities(symbols, scene.texture_instances(), SymbolTable::SymbolTextureInstance);
+        insert_entities(symbols, scene.environment_edfs(), SymbolTable::SymbolEnvironmentEDF);
+        insert_entities(symbols, scene.environment_shaders(), SymbolTable::SymbolEnvironmentShader);
 
-        // Insert textures into the symbol table.
-        for (const_each<TextureContainer> i = scene.textures(); i; ++i)
-            symbols.insert(i->get_name(), SymbolTable::SymbolTexture);
-
-        // Insert texture instances into the symbol table.
-        for (const_each<TextureInstanceContainer> i = scene.texture_instances(); i; ++i)
-            symbols.insert(i->get_name(), SymbolTable::SymbolTextureInstance);
-
-        // Insert environment EDFs into the symbol table.
-        for (const_each<EnvironmentEDFContainer> i = scene.environment_edfs(); i; ++i)
-            symbols.insert(i->get_name(), SymbolTable::SymbolEnvironmentEDF);
-
-        // Insert environment shaders into the symbol table.
-        for (const_each<EnvironmentShaderContainer> i = scene.environment_shaders(); i; ++i)
-            symbols.insert(i->get_name(), SymbolTable::SymbolEnvironmentShader);
-
-        // Insert the environment into the symbol table.
         if (scene.get_environment())
             symbols.insert(scene.get_environment()->get_name(), SymbolTable::SymbolEnvironment);
 
-        // Insert assemblies into the symbol table.
-        for (const_each<AssemblyContainer> i = scene.assemblies(); i; ++i)
-            symbols.insert(i->get_name(), SymbolTable::SymbolAssembly);
-
-        // Insert assembly instances into the symbol table.
-        for (const_each<AssemblyInstanceContainer> i = scene.assembly_instances(); i; ++i)
-            symbols.insert(i->get_name(), SymbolTable::SymbolAssemblyInstance);
+        insert_entities(symbols, scene.assemblies(), SymbolTable::SymbolAssembly);
+        insert_entities(symbols, scene.assembly_instances(), SymbolTable::SymbolAssemblyInstance);
     }
     catch (const SymbolTable::ExceptionDuplicateSymbol& e)
     {
@@ -165,45 +157,16 @@ void InputBinder::build_assembly_symbol_table(
 {
     try
     {
-        // Insert colors into the symbol table.
-        for (const_each<ColorContainer> i = assembly.colors(); i; ++i)
-            symbols.insert(i->get_name(), SymbolTable::SymbolColor);
-
-        // Insert textures into the symbol table.
-        for (const_each<TextureContainer> i = assembly.textures(); i; ++i)
-            symbols.insert(i->get_name(), SymbolTable::SymbolTexture);
-
-        // Insert texture instances into the symbol table.
-        for (const_each<TextureInstanceContainer> i = assembly.texture_instances(); i; ++i)
-            symbols.insert(i->get_name(), SymbolTable::SymbolTextureInstance);
-
-        // Insert BSDFs into the symbol table.
-        for (const_each<BSDFContainer> i = assembly.bsdfs(); i; ++i)
-            symbols.insert(i->get_name(), SymbolTable::SymbolBSDF);
-
-        // Insert EDFs into the symbol table.
-        for (const_each<EDFContainer> i = assembly.edfs(); i; ++i)
-            symbols.insert(i->get_name(), SymbolTable::SymbolEDF);
-
-        // Insert surface shaders into the symbol table.
-        for (const_each<SurfaceShaderContainer> i = assembly.surface_shaders(); i; ++i)
-            symbols.insert(i->get_name(), SymbolTable::SymbolSurfaceShader);
-
-        // Insert materials into the symbol table.
-        for (const_each<MaterialContainer> i = assembly.materials(); i; ++i)
-            symbols.insert(i->get_name(), SymbolTable::SymbolMaterial);
-
-        // Insert lights into the symbol table.
-        for (const_each<LightContainer> i = assembly.lights(); i; ++i)
-            symbols.insert(i->get_name(), SymbolTable::SymbolLight);
-
-        // Insert objects into the symbol table.
-        for (const_each<ObjectContainer> i = assembly.objects(); i; ++i)
-            symbols.insert(i->get_name(), SymbolTable::SymbolObject);
-
-        // Insert object instances into the symbol table.
-        for (const_each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
-            symbols.insert(i->get_name(), SymbolTable::SymbolObjectInstance);
+        insert_entities(symbols, assembly.colors(), SymbolTable::SymbolColor);
+        insert_entities(symbols, assembly.textures(), SymbolTable::SymbolTexture);
+        insert_entities(symbols, assembly.texture_instances(), SymbolTable::SymbolTextureInstance);
+        insert_entities(symbols, assembly.bsdfs(), SymbolTable::SymbolBSDF);
+        insert_entities(symbols, assembly.edfs(), SymbolTable::SymbolEDF);
+        insert_entities(symbols, assembly.surface_shaders(), SymbolTable::SymbolSurfaceShader);
+        insert_entities(symbols, assembly.materials(), SymbolTable::SymbolMaterial);
+        insert_entities(symbols, assembly.lights(), SymbolTable::SymbolLight);
+        insert_entities(symbols, assembly.objects(), SymbolTable::SymbolObject);
+        insert_entities(symbols, assembly.object_instances(), SymbolTable::SymbolObjectInstance);
     }
     catch (const SymbolTable::ExceptionDuplicateSymbol& e)
     {
