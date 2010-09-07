@@ -44,41 +44,33 @@ namespace renderer
 {
 
 //
-// Enumeration of the symbol identifiers.
-//
-
-enum SymbolID
-{
-    SymbolNotFound,
-    SymbolAssembly,
-    SymbolAssemblyInstance,
-    SymbolBSDF,
-    SymbolCamera,
-    SymbolColor,
-    SymbolEDF,
-    SymbolEnvironment,
-    SymbolEnvironmentEDF,
-    SymbolEnvironmentShader,
-    SymbolMaterial,
-    SymbolLight,
-    SymbolObject,
-    SymbolObjectInstance,
-    SymbolSurfaceShader,
-    SymbolTexture,
-    SymbolTextureInstance
-};
-
-// Return a human-readable representation of a symbol identifier.
-const char* symbol_name(const SymbolID symbol_id);
-
-
-//
-// Symbol table.
+// Symbol table used for input binding.
 //
 
 class SymbolTable
 {
   public:
+    enum SymbolID
+    {
+        SymbolNotFound,
+        SymbolAssembly,
+        SymbolAssemblyInstance,
+        SymbolBSDF,
+        SymbolCamera,
+        SymbolColor,
+        SymbolEDF,
+        SymbolEnvironment,
+        SymbolEnvironmentEDF,
+        SymbolEnvironmentShader,
+        SymbolMaterial,
+        SymbolLight,
+        SymbolObject,
+        SymbolObjectInstance,
+        SymbolSurfaceShader,
+        SymbolTexture,
+        SymbolTextureInstance
+    };
+
     // Exception thrown when attempting to insert a symbol
     // with the same name as an existing symbol.
     struct ExceptionDuplicateSymbol
@@ -87,6 +79,9 @@ class SymbolTable
         explicit ExceptionDuplicateSymbol(const char* name)
           : foundation::StringException("duplicate symbol", name) {}
     };
+
+    // Return a human-readable representation of a symbol identifier.
+    static const char* symbol_name(const SymbolID symbol_id);
 
     // Insert a symbol.
     void insert(
@@ -103,10 +98,10 @@ class SymbolTable
 
 
 //
-// symbol_name() function implementation.
+// SymbolTable class implementation.
 //
 
-inline const char* symbol_name(const SymbolID symbol_id)
+inline const char* SymbolTable::symbol_name(const SymbolID symbol_id)
 {
     typedef foundation::KeyValuePair<SymbolID, const char*> SymbolNameEntry;
 
@@ -138,11 +133,6 @@ inline const char* symbol_name(const SymbolID symbol_id)
     return symbol->m_value;
 }
 
-
-//
-// SymbolTable class implementation.
-//
-
 inline void SymbolTable::insert(
     const std::string&  name,
     const SymbolID      symbol_id)
@@ -151,7 +141,7 @@ inline void SymbolTable::insert(
         throw ExceptionDuplicateSymbol(name.c_str());
 }
 
-inline SymbolID SymbolTable::lookup(const std::string& name) const
+inline SymbolTable::SymbolID SymbolTable::lookup(const std::string& name) const
 {
     const SymbolContainer::const_iterator i = m_symbols.find(name);
     return i == m_symbols.end() ? SymbolNotFound : i->second;

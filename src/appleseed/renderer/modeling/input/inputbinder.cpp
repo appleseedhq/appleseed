@@ -118,39 +118,39 @@ void InputBinder::build_scene_symbol_table(
     {
         // Insert the camera into the symbol table.
         if (scene.get_camera())
-            symbols.insert(scene.get_camera()->get_name(), SymbolCamera);
+            symbols.insert(scene.get_camera()->get_name(), SymbolTable::SymbolCamera);
 
         // Insert colors into the symbol table.
         for (const_each<ColorContainer> i = scene.colors(); i; ++i)
-            symbols.insert(i->get_name(), SymbolColor);
+            symbols.insert(i->get_name(), SymbolTable::SymbolColor);
 
         // Insert textures into the symbol table.
         for (const_each<TextureContainer> i = scene.textures(); i; ++i)
-            symbols.insert(i->get_name(), SymbolTexture);
+            symbols.insert(i->get_name(), SymbolTable::SymbolTexture);
 
         // Insert texture instances into the symbol table.
         for (const_each<TextureInstanceContainer> i = scene.texture_instances(); i; ++i)
-            symbols.insert(i->get_name(), SymbolTextureInstance);
+            symbols.insert(i->get_name(), SymbolTable::SymbolTextureInstance);
 
         // Insert environment EDFs into the symbol table.
         for (const_each<EnvironmentEDFContainer> i = scene.environment_edfs(); i; ++i)
-            symbols.insert(i->get_name(), SymbolEnvironmentEDF);
+            symbols.insert(i->get_name(), SymbolTable::SymbolEnvironmentEDF);
 
         // Insert environment shaders into the symbol table.
         for (const_each<EnvironmentShaderContainer> i = scene.environment_shaders(); i; ++i)
-            symbols.insert(i->get_name(), SymbolEnvironmentShader);
+            symbols.insert(i->get_name(), SymbolTable::SymbolEnvironmentShader);
 
         // Insert the environment into the symbol table.
         if (scene.get_environment())
-            symbols.insert(scene.get_environment()->get_name(), SymbolEnvironment);
+            symbols.insert(scene.get_environment()->get_name(), SymbolTable::SymbolEnvironment);
 
         // Insert assemblies into the symbol table.
         for (const_each<AssemblyContainer> i = scene.assemblies(); i; ++i)
-            symbols.insert(i->get_name(), SymbolAssembly);
+            symbols.insert(i->get_name(), SymbolTable::SymbolAssembly);
 
         // Insert assembly instances into the symbol table.
         for (const_each<AssemblyInstanceContainer> i = scene.assembly_instances(); i; ++i)
-            symbols.insert(i->get_name(), SymbolAssemblyInstance);
+            symbols.insert(i->get_name(), SymbolTable::SymbolAssemblyInstance);
     }
     catch (const SymbolTable::ExceptionDuplicateSymbol& e)
     {
@@ -167,43 +167,43 @@ void InputBinder::build_assembly_symbol_table(
     {
         // Insert colors into the symbol table.
         for (const_each<ColorContainer> i = assembly.colors(); i; ++i)
-            symbols.insert(i->get_name(), SymbolColor);
+            symbols.insert(i->get_name(), SymbolTable::SymbolColor);
 
         // Insert textures into the symbol table.
         for (const_each<TextureContainer> i = assembly.textures(); i; ++i)
-            symbols.insert(i->get_name(), SymbolTexture);
+            symbols.insert(i->get_name(), SymbolTable::SymbolTexture);
 
         // Insert texture instances into the symbol table.
         for (const_each<TextureInstanceContainer> i = assembly.texture_instances(); i; ++i)
-            symbols.insert(i->get_name(), SymbolTextureInstance);
+            symbols.insert(i->get_name(), SymbolTable::SymbolTextureInstance);
 
         // Insert BSDFs into the symbol table.
         for (const_each<BSDFContainer> i = assembly.bsdfs(); i; ++i)
-            symbols.insert(i->get_name(), SymbolBSDF);
+            symbols.insert(i->get_name(), SymbolTable::SymbolBSDF);
 
         // Insert EDFs into the symbol table.
         for (const_each<EDFContainer> i = assembly.edfs(); i; ++i)
-            symbols.insert(i->get_name(), SymbolEDF);
+            symbols.insert(i->get_name(), SymbolTable::SymbolEDF);
 
         // Insert surface shaders into the symbol table.
         for (const_each<SurfaceShaderContainer> i = assembly.surface_shaders(); i; ++i)
-            symbols.insert(i->get_name(), SymbolSurfaceShader);
+            symbols.insert(i->get_name(), SymbolTable::SymbolSurfaceShader);
 
         // Insert materials into the symbol table.
         for (const_each<MaterialContainer> i = assembly.materials(); i; ++i)
-            symbols.insert(i->get_name(), SymbolMaterial);
+            symbols.insert(i->get_name(), SymbolTable::SymbolMaterial);
 
         // Insert lights into the symbol table.
         for (const_each<LightContainer> i = assembly.lights(); i; ++i)
-            symbols.insert(i->get_name(), SymbolLight);
+            symbols.insert(i->get_name(), SymbolTable::SymbolLight);
 
         // Insert objects into the symbol table.
         for (const_each<ObjectContainer> i = assembly.objects(); i; ++i)
-            symbols.insert(i->get_name(), SymbolObject);
+            symbols.insert(i->get_name(), SymbolTable::SymbolObject);
 
         // Insert object instances into the symbol table.
         for (const_each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
-            symbols.insert(i->get_name(), SymbolObjectInstance);
+            symbols.insert(i->get_name(), SymbolTable::SymbolObjectInstance);
     }
     catch (const SymbolTable::ExceptionDuplicateSymbol& e)
     {
@@ -223,7 +223,7 @@ void InputBinder::bind_scene_entities_inputs(
         bind_scene_entity_inputs(
             scene,
             scene_symbols,
-            symbol_name(SymbolEnvironmentEDF),
+            SymbolTable::symbol_name(SymbolTable::SymbolEnvironmentEDF),
             environment_edf.get_name(),
             environment_edf.get_parameters(),
             environment_edf.get_inputs());
@@ -236,7 +236,7 @@ void InputBinder::bind_scene_entities_inputs(
         bind_scene_entity_inputs(
             scene,
             scene_symbols,
-            symbol_name(SymbolEnvironmentShader),
+            SymbolTable::symbol_name(SymbolTable::SymbolEnvironmentShader),
             environment_shader.get_name(),
             environment_shader.get_parameters(),
             environment_shader.get_inputs());
@@ -258,7 +258,7 @@ void InputBinder::bind_assembly_entities_inputs(
             scene_symbols,
             assembly,
             assembly_symbols,
-            symbol_name(SymbolSurfaceShader),
+            SymbolTable::symbol_name(SymbolTable::SymbolSurfaceShader),
             surface_shader.get_name(),
             surface_shader.get_parameters(),
             surface_shader.get_inputs());
@@ -273,7 +273,7 @@ void InputBinder::bind_assembly_entities_inputs(
             scene_symbols,
             assembly,
             assembly_symbols,
-            symbol_name(SymbolBSDF),
+            SymbolTable::symbol_name(SymbolTable::SymbolBSDF),
             bsdf.get_name(),
             bsdf.get_parameters(),
             bsdf.get_inputs());
@@ -288,7 +288,7 @@ void InputBinder::bind_assembly_entities_inputs(
             scene_symbols,
             assembly,
             assembly_symbols,
-            symbol_name(SymbolEDF),
+            SymbolTable::symbol_name(SymbolTable::SymbolEDF),
             edf.get_name(),
             edf.get_parameters(),
             edf.get_inputs());
@@ -395,7 +395,7 @@ void InputBinder::bind_scene_entity_to_input(
 {
     switch (scene_symbols.lookup(param_value))
     {
-      case SymbolNotFound:
+      case SymbolTable::SymbolNotFound:
         // No entity with this name was found in this scope.
         // Attempt to interpret it as a numeric literal.
         bind_scalar_to_input(
@@ -405,14 +405,14 @@ void InputBinder::bind_scene_entity_to_input(
             input);
         break;
 
-      case SymbolColor:
+      case SymbolTable::SymbolColor:
         bind_color_to_input(
             scene.colors(),
             param_value,
             input);
         break;
 
-      case SymbolTextureInstance:
+      case SymbolTable::SymbolTextureInstance:
         bind_texture_instance_to_input(
             scene.textures(),
             scene.texture_instances(),
@@ -447,7 +447,7 @@ void InputBinder::bind_assembly_entity_to_input(
 {
     switch (assembly_symbols.lookup(param_value))
     {
-      case SymbolNotFound:
+      case SymbolTable::SymbolNotFound:
         // No entity with this name was found in this scope.
         // Attempt to bind the input to a scene entity.
         bind_scene_entity_to_input(
@@ -459,14 +459,14 @@ void InputBinder::bind_assembly_entity_to_input(
             input);
         break;
 
-      case SymbolColor:
+      case SymbolTable::SymbolColor:
         bind_color_to_input(
             assembly.colors(),
             param_value,
             input);
         break;
 
-      case SymbolTextureInstance:
+      case SymbolTable::SymbolTextureInstance:
         bind_texture_instance_to_input(
             assembly.textures(),
             assembly.texture_instances(),
