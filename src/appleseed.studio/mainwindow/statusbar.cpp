@@ -42,7 +42,6 @@ namespace studio {
 // StatusBar class implementation.
 //
 
-// Constructor.
 StatusBar::StatusBar()
   : m_timer(0)
   , m_timer_id(-1)
@@ -56,18 +55,19 @@ void StatusBar::set_text(const string& text)
 
 void StatusBar::start_rendering_time_display(RenderingTimer* timer)
 {
+    assert(m_timer_id == -1);
     assert(timer);
 
     m_timer = timer;
-
     m_timer_id = startTimer(1000 / 4);
 }
 
 void StatusBar::stop_rendering_time_display()
 {
+    assert(m_timer_id != -1);
+
     killTimer(m_timer_id);
     m_timer_id = -1;
-
     m_timer = 0;
 }
 

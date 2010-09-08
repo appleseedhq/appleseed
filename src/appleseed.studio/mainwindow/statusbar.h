@@ -51,7 +51,6 @@ class StatusBar
     Q_OBJECT
 
   public:
-    // Constructor.
     StatusBar();
 
     void set_text(const std::string& text);
