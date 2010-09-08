@@ -33,6 +33,7 @@
 #include "renderer/modeling/texture/texture.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/exceptionnotimplemented.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/image/tile.h"
@@ -85,6 +86,7 @@ namespace
         virtual ColorSpace get_color_space() const
         {
             // todo: implement.
+            throw ExceptionNotImplemented();
             return ColorSpaceLinearRGB;
         }
 
@@ -108,11 +110,8 @@ namespace
             mutex::scoped_lock lock(m_mutex);
 
             // todo: create a blank tile, or get the tile from the texture.
-            return new Tile(
-                32,
-                32,
-                4,
-                PixelFormatFloat);
+            throw ExceptionNotImplemented();
+            return 0;
         }
 
         virtual void unload_tile(
@@ -123,6 +122,7 @@ namespace
             mutex::scoped_lock lock(m_mutex);
 
             // todo: store the tile into the texture.
+            throw ExceptionNotImplemented();
         }
 
       private:
@@ -135,6 +135,7 @@ namespace
         void set_canvas_properties()
         {
             // todo: open texture file and set canvas properties.
+            throw ExceptionNotImplemented();
         }
     };
 
