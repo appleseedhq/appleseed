@@ -44,7 +44,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // Blank tile renderer.
     //
@@ -75,8 +74,7 @@ namespace
             tile.clear(Color4f(0.0f, 0.0f, 0.0f, 1.0f));
         }
     };
-
-}   // anonymous namespace
+}
 
 
 //

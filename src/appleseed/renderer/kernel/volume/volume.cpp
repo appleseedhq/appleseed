@@ -62,7 +62,6 @@ FluidChannels::FluidChannels()
 
 namespace
 {
-
     struct FluidFileHeader
     {
         long            m_id;
@@ -109,8 +108,7 @@ namespace
 
         return read;
     }
-
-}   // anonymous namespace
+}
 
 // Read a fluid file created by 3Delight for Maya.
 auto_ptr<VoxelGrid> read_fluid_file(

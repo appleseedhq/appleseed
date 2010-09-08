@@ -45,7 +45,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // Phong BRDF.
     //
@@ -123,8 +122,7 @@ namespace
 
         const string    m_name;
     };
-
-}   // anonymous namespace
+}
 
 
 //

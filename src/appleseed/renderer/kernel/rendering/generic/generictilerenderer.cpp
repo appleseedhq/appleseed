@@ -59,7 +59,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // Generic tile renderer.
     //
@@ -293,8 +292,7 @@ namespace
         double                      m_rcp_sample_canvas_height;
         float                       m_rcp_sample_count;
     };
-
-}   // anonymous namespace
+}
 
 
 //

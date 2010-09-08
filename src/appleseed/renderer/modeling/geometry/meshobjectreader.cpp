@@ -66,7 +66,6 @@ FOUNDATION_DEFINE_ARRAY(MeshObjectArray);
 
 namespace
 {
-
 //
 // Disable erroneous Visual Studio warning C4267:
 //
@@ -342,8 +341,7 @@ namespace
     };
 
 #pragma warning (pop)
-
-}   // anonymous namespace
+}
 
 // Read mesh objects from disk.
 MeshObjectArray MeshObjectReader::read(

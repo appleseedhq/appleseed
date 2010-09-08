@@ -45,7 +45,6 @@ float g_light_wavelengths[Spectrum::Samples];
 
 namespace
 {
-
     struct InitializeLightWavelengths
     {
         // Constructor, computes light wavelengths.
@@ -65,7 +64,6 @@ namespace
     };
 
     InitializeLightWavelengths dummy;
-
-}   // anonymous namespace
+}
 
 }   // namespace renderer

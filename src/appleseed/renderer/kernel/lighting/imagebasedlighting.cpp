@@ -49,7 +49,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // Compute image-based lighting via BSDF sampling.
     //
@@ -243,8 +242,7 @@ namespace
         if (env_sample_count > 1)
             radiance /= static_cast<float>(env_sample_count);
     }
-
-}   // anonymous namespace
+}
 
 
 //

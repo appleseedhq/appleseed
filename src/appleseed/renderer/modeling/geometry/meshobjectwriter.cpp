@@ -53,7 +53,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // Mesh object walker.
     //
@@ -143,8 +142,7 @@ namespace
       private:
         const MeshObject& m_object;
     };
-
-}   // anonymous namespace
+}
 
 // Write a mesh object to disk.
 bool MeshObjectWriter::write(

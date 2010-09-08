@@ -59,7 +59,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // Leaf of an intermediate region tree.
     //
@@ -402,8 +401,8 @@ namespace
       private:
         friend class renderer::RegionTree;
     };
+}
 
-}   // anonymous namespace
 
 //
 // RegionTree class implementation.

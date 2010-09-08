@@ -51,7 +51,6 @@ namespace foundation
 
 namespace
 {
-
     string pretty_callrate(
         const TimingResult& timing_result,
         const streamsize    precision = 1)
@@ -209,8 +208,7 @@ namespace
       private:
         Logger& m_logger;
     };
-
-}   // anonymous namespace
+}
 
 // Factory function.
 IBenchmarkListener* create_logger_benchmark_listener(Logger& logger)

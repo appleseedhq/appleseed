@@ -92,7 +92,6 @@ LightSampler::EmittingTriangle::EmittingTriangle(
 
 namespace
 {
-
     // Return true if a given assembly uses at least one material emitting light.
     bool has_emitting_materials(const Assembly& assembly)
     {
@@ -133,8 +132,7 @@ namespace
         // No material is emitting light.
         return false;
     }
-
-}   // anonymous namespace
+}
 
 LightSampler::LightSampler(const Scene& scene)
   : m_total_emissive_area(0.0)

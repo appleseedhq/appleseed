@@ -48,7 +48,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // Constant color surface shader.
     //
@@ -131,8 +130,7 @@ namespace
 
         const string    m_name;
     };
-
-}   // anonymous namespace
+}
 
 
 //

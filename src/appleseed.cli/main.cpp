@@ -72,7 +72,6 @@ using namespace std;
 
 namespace
 {
-
     CommandLine     g_cl;
     ParamArray      g_settings;
 
@@ -491,8 +490,7 @@ namespace
         // Render one frame of the project.
         render_frame(*project, params);
     }
-
-}   // anonymous namespace
+}
 
 
 //

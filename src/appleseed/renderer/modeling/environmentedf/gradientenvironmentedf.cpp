@@ -45,7 +45,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // Gradient environment EDF.
     //
@@ -168,8 +167,7 @@ namespace
             output += horizon_exitance;
         }
     };
-
-}   // anonymous namespace
+}
 
 
 //

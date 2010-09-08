@@ -63,7 +63,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // Path Tracing lighting engine.
     //
@@ -363,8 +362,7 @@ namespace
         const LightSampler&     m_light_sampler;
         LightSampleVector       m_light_samples;
     };
-
-}   // anonymous namespace
+}
 
 
 //

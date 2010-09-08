@@ -44,7 +44,6 @@ namespace foundation
 
 namespace
 {
-
     //
     // A log target that outputs to the console.
     //
@@ -111,8 +110,7 @@ namespace
             Console::instance().reset_text_color(Console::StdErr);
         }
     };
-
-}   // anonymous namespace
+}
 
 
 //

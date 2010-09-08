@@ -38,7 +38,6 @@ namespace foundation
 
 namespace
 {
-
     const float IlluminantCIED65Tab[31] =
     {
          82.754900f,        // 400 nm
@@ -108,8 +107,7 @@ namespace
         191.931000f,        // 690 nm
         198.261000f         // 700 nm
     };
-
-}   // anonymous namespace
+}
 
 // Daylight illuminants.
 const Spectrum31f IlluminantCIED65(IlluminantCIED65Tab);
@@ -124,7 +122,6 @@ const Spectrum31f IlluminantCIEA(IlluminantCIEATab);
 
 namespace
 {
-
     // XYZ color matching functions -- CIE 1931 2-deg.
     const float XYZCMFCIE19312DegTabX[31] =
     {
@@ -748,8 +745,7 @@ namespace
          5.2200E-06f,       // 690 nm
          2.5600E-06f        // 700 nm
     };
-
-}   // anonymous namespace
+}
 
 // XYZ color matching functions.
 const Spectrum31f XYZCMFCIE19312Deg[3] =

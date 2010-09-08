@@ -66,7 +66,6 @@ void spiral_ordering(
 
 namespace
 {
-
     void hilbert(
         vector<size_t>& ordering,
         const int       size_x,
@@ -99,8 +98,7 @@ namespace
                 ordering.push_back(size_t(point.y * size_x + point.x));
         }
     }
-
-}   // anonymous namespace
+}
 
 // Generate a Hilbert curve ordering.
 void hilbert_ordering(

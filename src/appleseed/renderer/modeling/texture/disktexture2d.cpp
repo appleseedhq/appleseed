@@ -50,7 +50,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // 2D disk texture.
     //
@@ -160,8 +159,7 @@ namespace
             }
         }
     };
-
-}   // anonymous namespace
+}
 
 
 //

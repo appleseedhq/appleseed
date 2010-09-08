@@ -48,7 +48,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // Specular BTDF.
     //
@@ -216,8 +215,7 @@ namespace
     };
 
     typedef BTDFWrapper<SpecularBTDFImpl> SpecularBTDF;
-
-}   // anonymous namespace
+}
 
 
 //

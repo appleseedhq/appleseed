@@ -49,7 +49,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // Physical surface shader.
     //
@@ -148,8 +147,7 @@ namespace
         const string        m_name;
         bool                m_has_alpha_mask;
     };
-
-}   // anonymous namespace
+}
 
 
 //

@@ -43,7 +43,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // EDF-based environment shader.
     //
@@ -129,8 +128,7 @@ namespace
         const string        m_env_edf_name;
         EnvironmentEDF*     m_env_edf;
     };
-
-}   // anonymous namespace
+}
 
 
 //

@@ -51,7 +51,6 @@ namespace foundation
 
 namespace
 {
-
     HANDLE get_device_handle(const Console::Device device)
     {
         switch (device)
@@ -85,8 +84,7 @@ namespace
           default:                      return 0;
         }
     }
-
-}   // anonymous namespace
+}
 
 struct Console::Impl
 {
@@ -147,7 +145,6 @@ void Console::reset_text_color(
 
 namespace
 {
-
     FILE* get_device_file(const Console::Device device)
     {
         switch (device)
@@ -181,8 +178,7 @@ namespace
           default:                      return "";
         }
     }
-
-}   // anonymous namespace
+}
 
 // Constructor.
 Console::Console()

@@ -53,7 +53,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // Generic sample renderer.
     //
@@ -152,8 +151,7 @@ namespace
         ILightingEngine*            m_lighting_engine;
         ShadingEngine&              m_shading_engine;
     };
-
-}   // anonymous namespace
+}
 
 
 //

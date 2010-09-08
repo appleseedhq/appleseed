@@ -46,7 +46,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // Diffuse EDF.
     //
@@ -138,8 +137,7 @@ namespace
 
         const string    m_name;
     };
-
-}   // anonymous namespace
+}
 
 
 //

@@ -50,7 +50,6 @@ namespace foundation
 
 namespace
 {
-
     //
     // IMeshWalker to IOBJMeshWalker adaptor.
     //
@@ -122,7 +121,6 @@ namespace
       private:
         const IMeshWalker& m_walker;
     };
-
 
     // Floating-point formatting settings.
     #define VectorFormat "%.15f"
@@ -295,8 +293,7 @@ namespace
           assert_otherwise;
         }
     }
-
-}   // anonymous namespace
+}
 
 // Write an OBJ mesh file.
 void OBJMeshFileWriter::write(

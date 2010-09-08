@@ -61,7 +61,6 @@ namespace renderer
 
 namespace
 {
-
     typedef vector<GAABB3> GAABB3Vector;
 
 
@@ -1010,8 +1009,7 @@ namespace
 
         assert(output_nodes.size() == input_nodes.size());
     }
-
-}   // anonymous namespace
+}
 
 
 //

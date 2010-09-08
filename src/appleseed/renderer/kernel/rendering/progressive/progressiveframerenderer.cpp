@@ -54,7 +54,6 @@ namespace renderer
 
 namespace
 {
-
     typedef vector<ISampleRenderer*> SampleRendererVector;
     typedef vector<SampleGenerator*> SampleGeneratorVector;
     typedef vector<ITileCallback*> TileCallbackVector;
@@ -221,8 +220,7 @@ namespace
 
         auto_ptr<ProgressiveFrameBuffer>    m_framebuffer;
     };
-
-}   // anonymous namespace
+}
 
 
 //

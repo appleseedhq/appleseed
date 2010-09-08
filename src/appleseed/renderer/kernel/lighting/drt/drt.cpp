@@ -62,7 +62,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // Distribution Ray Tracing (DRT) lighting engine.
     //
@@ -317,8 +316,7 @@ namespace
         const LightSampler&     m_light_sampler;
         LightSampleVector       m_light_samples;
     };
-
-}   // anonymous namespace
+}
 
 
 //

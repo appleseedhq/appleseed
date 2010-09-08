@@ -47,7 +47,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // Lambertian BRDF.
     //
@@ -203,8 +202,7 @@ namespace
     };
 
     typedef BRDFWrapper<LambertianBRDFImpl> LambertianBRDF;
-
-}   // anonymous namespace
+}
 
 
 //

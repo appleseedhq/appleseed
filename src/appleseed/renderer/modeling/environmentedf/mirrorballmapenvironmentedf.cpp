@@ -47,7 +47,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // Mirror ball environment map EDF.
     //
@@ -152,8 +151,7 @@ namespace
             value = values->m_exitance;
         }
     };
-
-}   // anonymous namespace
+}
 
 
 //

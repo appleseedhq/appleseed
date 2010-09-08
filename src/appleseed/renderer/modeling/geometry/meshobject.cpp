@@ -52,7 +52,6 @@ namespace renderer
 
 namespace
 {
-
     // A dummy region that simply wraps the tessellation stored in the object.
     class MeshRegion
       : public IRegion
@@ -91,8 +90,7 @@ namespace
         const GAABB3*                       m_local_bbox;
         mutable Lazy<StaticTriangleTess>    m_lazy_tess;
     };
-
-}   // namespace anonymous
+}
 
 struct MeshObject::Impl
 {

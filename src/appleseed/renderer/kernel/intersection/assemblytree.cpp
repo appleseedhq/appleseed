@@ -60,7 +60,6 @@ namespace renderer
 
 namespace
 {
-
     class BboxSortPredicate
     {
       public:
@@ -93,8 +92,7 @@ namespace
         if (v.size() < size)
             v.resize(size);
     }
-
-}   // anonymous namespace
+}
 
 class AssemblyTreePartitioner
   : public NonCopyable

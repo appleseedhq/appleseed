@@ -49,7 +49,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // Ambient occlusion surface shader.
     //
@@ -119,8 +118,7 @@ namespace
         const size_t    m_samples;
         const double    m_max_distance;
     };
-
-}   // anonymous namespace
+}
 
 
 //

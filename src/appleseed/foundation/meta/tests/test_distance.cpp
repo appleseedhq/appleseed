@@ -42,7 +42,6 @@ namespace foundation
 
 namespace
 {
-
     template <typename T, size_t N>
     void test_square_distance_point_aabb(
         ITestListener*  listener,
@@ -75,8 +74,7 @@ namespace
             FOUNDATION_CHECK_FEQ(square_distance(bbox, p), ValueType(13.0));
         }
     }
-
-}   // anonymous namespace
+}
 
 FOUNDATION_IMPLEMENT_TEST(UnitTestSquareDistancePointAABB, UnitTest, "foundation::square_distance(Point, AABB)")
 {
@@ -93,7 +91,6 @@ FOUNDATION_IMPLEMENT_TEST(UnitTestSquareDistancePointAABB, UnitTest, "foundation
 
 namespace
 {
-
     // Number of measurement runs.
     const size_t Runs = 1000;
 
@@ -141,8 +138,7 @@ namespace
         AABB<T, 3>      m_bboxes[Iterations];
         T               m_dist;
     };
-
-}   // anonymous namespace
+}
 
 FOUNDATION_IMPLEMENT_TEST(TimingTestSquareDistancePointAABB, TimingTest, "foundation::square_distance(Point, AABB)")
 {

@@ -40,7 +40,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // Pinhole camera.
     //
@@ -153,8 +152,7 @@ namespace
         double          m_rcp_film_height;      // film height reciprocal
         Vector3d        m_ray_org;              // origin of the rays
     };
-
-}   // anonymous namespace
+}
 
 
 //

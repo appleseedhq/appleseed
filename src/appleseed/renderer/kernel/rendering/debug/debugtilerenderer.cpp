@@ -44,7 +44,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // Debug tile renderer.
     //
@@ -93,8 +92,7 @@ namespace
             tile.set_pixel(max_x, max_y, Color4f(0.0f, 0.0f, 1.0f, 1.0f));      // bottom right pixel is blue
         }
     };
-
-}   // anonymous namespace
+}
 
 
 //

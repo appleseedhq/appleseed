@@ -48,7 +48,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // Return x^5.
     //
@@ -502,8 +501,7 @@ namespace
     };
 
     typedef BRDFWrapper<AshikhminBRDFImpl> AshikhminBRDF;
-
-}   // anonymous namespace
+}
 
 
 //

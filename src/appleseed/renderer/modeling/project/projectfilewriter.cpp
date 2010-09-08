@@ -86,7 +86,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // A class representing a XML element.
     //
@@ -723,8 +722,7 @@ namespace
             write_configurations(project);
         }
     };
-
-}   // anonymous namespace
+}
 
 // Write a project to disk.
 bool ProjectFileWriter::write(const Project& project, const bool omit_header_comment)

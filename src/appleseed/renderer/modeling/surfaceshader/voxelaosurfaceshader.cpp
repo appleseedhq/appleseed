@@ -56,7 +56,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // Voxel-based ambient occlusion surface shader.
     //
@@ -337,8 +336,7 @@ namespace
             }
         }
     };
-
-}   // anonymous namespace
+}
 
 
 //

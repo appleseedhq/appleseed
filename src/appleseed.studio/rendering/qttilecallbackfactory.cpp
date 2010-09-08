@@ -47,7 +47,6 @@ namespace studio {
 
 namespace
 {
-
     class QtTileCallback
       : public TileCallbackBase
     {
@@ -104,8 +103,7 @@ namespace
         IRenderWidget*      m_render_widget;
         const bool          m_highlight_tiles;
     };
-
-}   // anonymous namespace
+}
 
 
 //

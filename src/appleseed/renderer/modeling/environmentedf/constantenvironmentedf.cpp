@@ -45,7 +45,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // Constant-emittance environment EDF.
     //
@@ -148,8 +147,7 @@ namespace
             }
         }
     };
-
-}   // anonymous namespace
+}
 
 
 //

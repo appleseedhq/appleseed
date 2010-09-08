@@ -50,7 +50,6 @@ namespace renderer
 
 namespace
 {
-
     // Convert a tile from the sRGB color space to the linear RGB color space.
     void convert_tile_srgb_to_linear_rgb(Tile& tile)
     {
@@ -106,8 +105,7 @@ namespace
             }
         }
     }
-
-}   // anonymous namespace
+}
 
 // Constructor.
 TextureCache::TextureCache(

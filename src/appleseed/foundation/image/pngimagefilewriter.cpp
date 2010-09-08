@@ -57,7 +57,6 @@ namespace foundation
 
 namespace
 {
-
     // Fatal error callback.
     void error_callback(png_structp png_ptr, png_const_charp error_msg)
     {
@@ -162,8 +161,7 @@ namespace
 
         text_chunks.clear();
     }
-
-}   // anonymous namespace
+}
 
 // Write an OpenEXR image file.
 void PNGImageFileWriter::write(

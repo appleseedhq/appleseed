@@ -51,7 +51,6 @@ namespace foundation
 
 namespace
 {
-
     //
     // LoggerTestListener class implementation.
     //
@@ -175,8 +174,7 @@ namespace
         bool        m_suite_name_printed;
         bool        m_case_name_printed;
     };
-
-}   // anonymous namespace
+}
 
 // Factory function.
 ITestListener* create_logger_test_listener(Logger& logger, const bool verbose)

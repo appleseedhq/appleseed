@@ -756,7 +756,6 @@ FOUNDATION_TEST_SUITE(Foundation_Image_ColorSpace)
 
 namespace
 {
-
     class SpectrumToCIEXYZTask
       : public ITimeableTask
     {
@@ -792,8 +791,7 @@ namespace
         FOUNDATION_ALIGN_VARIABLE(32) SpectrumType  m_spectrum;
         FOUNDATION_ALIGN_VARIABLE(32) Color3Type    m_ciexyz;
     };
-
-}   // anonymous namespace
+}
 
 FOUNDATION_IMPLEMENT_TEST(TimingTestSpectrumToCIEXYZ, TimingTest, "foundation::spectrum_to_ciexyz()")
 {

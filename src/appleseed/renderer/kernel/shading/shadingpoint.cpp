@@ -137,7 +137,6 @@ void ShadingPoint::fetch_source_geometry() const
 
 namespace
 {
-
     // Robustly offset a given point along a given vector.
     inline Vector3d offset(const Vector3d& p, Vector3d n)
     {
@@ -187,8 +186,7 @@ namespace
 
         return res;
     }
-
-}   // anonymous namespace
+}
 
 void ShadingPoint::refine_and_offset() const
 {

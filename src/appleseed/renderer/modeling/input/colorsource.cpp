@@ -51,7 +51,6 @@ namespace renderer
 
 namespace
 {
-
     // Generate a set of regularly spaced wavelengths.
     void generate_wavelengths(
         const Vector2f&         range,
@@ -102,8 +101,7 @@ namespace
 
         return spectrum;
     }
-
-}   // anonymous namespace
+}
 
 // Constructor.
 ColorSource::ColorSource(const ColorEntity& color_entity)

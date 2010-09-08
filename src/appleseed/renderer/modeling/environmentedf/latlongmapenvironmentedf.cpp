@@ -55,7 +55,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // Latitude-longitude environment map EDF.
     //
@@ -380,8 +379,7 @@ namespace
             return prob_xy * m_probability_scale / sin(theta);
         }
     };
-
-}   // anonymous namespace
+}
 
 
 //

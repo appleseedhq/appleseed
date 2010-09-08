@@ -135,7 +135,6 @@ void AOVoxelTree::dump_tree_to_disk(const string& filename) const
 
 namespace
 {
-
     //
     // A triangle-bounding box intersection predicate.
     //
@@ -174,8 +173,7 @@ namespace
         GAABB3          m_triangle_bbox;
 
     };
-
-}   // anonymous namespace
+}
 
 // Build the tree.
 void AOVoxelTree::build(

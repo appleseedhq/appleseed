@@ -55,7 +55,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // Various constants.
     //
@@ -791,8 +790,7 @@ namespace
             return Color3f(0.0f);
         }
     };
-
-}   // anonymous namespace
+}
 
 
 //

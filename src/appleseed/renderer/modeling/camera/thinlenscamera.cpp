@@ -46,7 +46,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // A thin lens camera that supports active autofocus.
     //
@@ -265,8 +264,7 @@ namespace
             }
         }
     };
-
-}   // anonymous namespace
+}
 
 
 //

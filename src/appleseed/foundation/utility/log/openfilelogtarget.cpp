@@ -43,7 +43,6 @@ namespace foundation
 
 namespace
 {
-
     //
     // A log target that outputs to an open std::FILE.
     //
@@ -77,8 +76,7 @@ namespace
       private:
         FILE*   m_file;
     };
-
-}   // anonymous namespace
+}
 
 
 //

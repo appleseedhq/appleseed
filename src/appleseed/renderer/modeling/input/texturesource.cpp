@@ -56,7 +56,6 @@ namespace renderer
 
 namespace
 {
-
     // Compute a color from a given integer value.
     template <typename T>
     inline Color4f integer_to_color(const T i)
@@ -161,8 +160,7 @@ namespace
         }
         else tile.get_pixel(pixel_x, pixel_y, sample);
     }
-
-}   // anonymous namespace
+}
 
 // Constructor.
 TextureSource::TextureSource(

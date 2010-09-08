@@ -46,7 +46,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // Specular BRDF.
     //
@@ -153,8 +152,7 @@ namespace
     };
 
     typedef BRDFWrapper<SpecularBRDFImpl> SpecularBRDF;
-
-}   // anonymous namespace
+}
 
 
 //

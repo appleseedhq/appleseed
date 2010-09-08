@@ -49,7 +49,6 @@ namespace foundation
 
 namespace
 {
-
     //
     // XMLFileBenchmarkListener class implementation.
     //
@@ -216,8 +215,7 @@ namespace
                 m_indenter.c_str());
         }
     };
-
-}   // anonymous namespace
+}
 
 // Factory function.
 IBenchmarkListener* create_xmlfile_benchmark_listener(FILE* file)

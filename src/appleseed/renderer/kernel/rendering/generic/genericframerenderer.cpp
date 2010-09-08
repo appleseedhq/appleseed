@@ -52,7 +52,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // Generic frame renderer.
     //
@@ -216,8 +215,7 @@ namespace
 
         TileJobFactory              m_tile_job_factory;
     };
-
-}   // anonymous namespace
+}
 
 
 //

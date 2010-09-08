@@ -113,7 +113,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // Like foundation::ErrorHandler, but additionally keeps track
     // of the number of warnings and errors that were emitted.
@@ -2910,8 +2909,7 @@ namespace
             register_factory(name, id, factory);
         }
     };
-
-}   // anonymous namespace
+}
 
 auto_release_ptr<Project> ProjectFileReader::read(
     const char*             project_filename,

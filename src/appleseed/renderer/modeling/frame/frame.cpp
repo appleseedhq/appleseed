@@ -442,7 +442,6 @@ bool Frame::archive(
 
 namespace
 {
-
     inline Color4f clamp_to_zero(const Color4f& c)
     {
         return Color4f(
@@ -599,8 +598,7 @@ namespace
             FOUNDATION_EXPECT_FEQ(1.0, average_luminance);
         }
     }
-
-}   // anonymous namespace
+}
 
 // Compute and return the average luminance of the frame.
 double Frame::compute_average_luminance() const

@@ -49,7 +49,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // 2D writable texture.
     //
@@ -138,8 +137,7 @@ namespace
             throw ExceptionNotImplemented();
         }
     };
-
-}   // anonymous namespace
+}
 
 
 //
