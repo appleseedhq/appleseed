@@ -52,8 +52,7 @@ class Stopwatch
 {
   public:
     // Constructor, calibrates the stopwatch.
-    explicit Stopwatch(
-        const size_t overhead_measures = 10);
+    explicit Stopwatch(const size_t overhead_measures = 10);
 
     // Return the internal timer.
     Timer& get_timer();
@@ -79,11 +78,8 @@ class Stopwatch
     uint64  m_overhead;     // measured overhead of calling start() + measure()
     uint64  m_start;        // timer value when start() is called
     uint64  m_elapsed;      // elapsed time when measure() is called, adjusted for overhead
-
-    // Only if assert() is defined:
 #ifndef NDEBUG
     bool    m_is_running;   // true if start() was called at least once
-    bool    m_has_measure;  // true if measure() was called at least once
 #endif
 
     // Measure the overhead of calling start() + measure().
@@ -95,7 +91,6 @@ class Stopwatch
 // Stopwatch class implementation.
 //
 
-// Constructor, calibrates the stopwatch.
 template <typename Timer>
 Stopwatch<Timer>::Stopwatch(const size_t overhead_measures)
 {
@@ -117,18 +112,15 @@ Stopwatch<Timer>::Stopwatch(const size_t overhead_measures)
 
 #ifndef NDEBUG
     m_is_running = false;
-    m_has_measure = false;
 #endif
 }
 
-// Return the internal timer.
 template <typename Timer>
 inline Timer& Stopwatch<Timer>::get_timer()
 {
     return m_timer;
 }
 
-// Start or restart the stopwatch.
 template <typename Timer>
 inline void Stopwatch<Timer>::start()
 {
@@ -140,7 +132,6 @@ inline void Stopwatch<Timer>::start()
 #endif
 }
 
-// Measure the time elapsed since the last call to start().
 template <typename Timer>
 inline void Stopwatch<Timer>::measure()
 {
@@ -154,28 +145,20 @@ inline void Stopwatch<Timer>::measure()
     if (m_elapsed >= m_overhead)
         m_elapsed -= m_overhead;
     else m_elapsed = 0;
-
-#ifndef NDEBUG
-    m_has_measure = true;
-#endif
 }
 
-// Read the number of timer ticks elapsed since the last call to start().
 template <typename Timer>
 inline uint64 Stopwatch<Timer>::get_ticks() const
 {
-    assert(m_has_measure);
     return m_elapsed;
 }
 
-// Read the number of seconds elapsed since the last call to start().
 template <typename Timer>
 inline double Stopwatch<Timer>::get_seconds() const
 {
     return static_cast<double>(get_ticks()) / m_timer_freq;
 }
 
-// Measure the overhead of calling start() + measure().
 template <typename Timer>
 uint64 Stopwatch<Timer>::measure_overhead(const size_t measures)
 {
