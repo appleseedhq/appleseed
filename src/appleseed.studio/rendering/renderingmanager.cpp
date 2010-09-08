@@ -152,7 +152,9 @@ void RenderingManager::start_rendering(
     const bool highlight_tiles = mode == MasterRenderer::RenderOnce;
 
     m_tile_callback_factory.reset(
-        new QtTileCallbackFactory(m_render_widget, highlight_tiles));
+        new QtTileCallbackFactory(
+            m_render_widget,
+            highlight_tiles));
 
     m_master_renderer.reset(
         new MasterRenderer(
@@ -164,12 +166,6 @@ void RenderingManager::start_rendering(
 
     m_master_renderer_thread.reset(
         new MasterRendererThread(m_master_renderer.get()));
-
-    m_rendering_timer.start();
-    m_status_bar.start_rendering_time_display(&m_rendering_timer);
-
-    const int UpdateRate = 15;
-    m_render_widget_update_timer.start(1000 / UpdateRate, this);
 
     m_master_renderer_thread->start();
 }
@@ -286,6 +282,12 @@ void RenderingManager::slot_rendering_begin()
             .push("shading_engine")
             .dictionaries().remove("override_shading");
     }
+
+    m_rendering_timer.start();
+    m_status_bar.start_rendering_time_display(&m_rendering_timer);
+
+    const int UpdateRate = 15;
+    m_render_widget_update_timer.start(1000 / UpdateRate, this);
 }
 
 void RenderingManager::slot_rendering_end()
