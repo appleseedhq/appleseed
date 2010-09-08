@@ -58,6 +58,7 @@ class RENDERERDLL BSDFFactoryRegistrar
 {
   public:
     typedef IBSDFFactory FactoryType;
+    typedef BSDFFactoryArray FactoryArrayType;
 
     // Constructor.
     BSDFFactoryRegistrar();
@@ -66,7 +67,7 @@ class RENDERERDLL BSDFFactoryRegistrar
     void register_factory(FactoryType* factory);
 
     // Retrieve the registered factories.
-    BSDFFactoryArray get_factories() const;
+    FactoryArrayType get_factories() const;
 
     // Lookup a factory by name.
     const FactoryType* lookup(const char* name) const;

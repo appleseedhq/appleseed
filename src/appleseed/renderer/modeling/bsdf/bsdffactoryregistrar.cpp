@@ -69,9 +69,9 @@ void BSDFFactoryRegistrar::register_factory(FactoryType* factory)
 
 BSDFFactoryArray BSDFFactoryRegistrar::get_factories() const
 {
-    BSDFFactoryArray factories;
+    FactoryArrayType factories;
 
-    for (const_each<Registrar<IBSDFFactory>::Items> i = impl->m_registrar.items(); i; ++i)
+    for (const_each<Registrar<FactoryType>::Items> i = impl->m_registrar.items(); i; ++i)
         factories.push_back(i->second);
 
     return factories;

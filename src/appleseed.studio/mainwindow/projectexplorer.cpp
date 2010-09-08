@@ -42,7 +42,6 @@
 #include "renderer/api/light.h"
 #include "renderer/api/material.h"
 #include "renderer/api/project.h"
-#include "renderer/api/surfaceshader.h"
 #include "renderer/api/texture.h"
 
 // appleseed.foundation headers.
@@ -100,6 +99,7 @@ namespace
         ItemObject,
         ItemObjectInstance,
         ItemSurfaceShader,
+        ItemSurfaceShaderCollection,
         ItemTexture,
         ItemTextureCollection,
         ItemTextureInstance,
@@ -361,6 +361,8 @@ void ProjectExplorer::insert_assembly_items(const Assembly& assembly)
         insert_items(
             assembly_items.m_assembly_item,
             "Surface Shaders",
+            ItemSurfaceShaderCollection,
+            &assembly,
             ItemSurfaceShader,
             assembly.surface_shaders());
 
@@ -422,6 +424,10 @@ QMenu* ProjectExplorer::build_item_context_menu(const QTreeWidgetItem* item) con
         menu = build_material_collection_context_menu();
         break;
 
+      case ItemSurfaceShaderCollection:
+        menu = build_surface_shader_collection_context_menu();
+        break;
+
       case ItemTextureCollection:
         menu = build_texture_collection_context_menu();
         break;
@@ -452,6 +458,7 @@ QMenu* ProjectExplorer::build_assembly_context_menu() const
     menu->addAction("Import Textures...", this, SLOT(slot_import_textures_to_assembly()));
     menu->addSeparator();
     menu->addAction("Create BSDF...", this, SLOT(slot_add_bsdf_to_assembly()));
+    menu->addAction("Create Surface Shader...", this, SLOT(slot_add_surface_shader_to_assembly()));
     menu->addAction("Create Material...", this, SLOT(slot_add_material_to_assembly()));
     return menu;
 }
@@ -474,6 +481,13 @@ QMenu* ProjectExplorer::build_bsdf_collection_context_menu() const
 {
     QMenu* menu = new QMenu(m_tree_widget);
     menu->addAction("Create BSDF...", this, SLOT(slot_add_bsdf_to_assembly()));
+    return menu;
+}
+
+QMenu* ProjectExplorer::build_surface_shader_collection_context_menu() const
+{
+    QMenu* menu = new QMenu(m_tree_widget);
+    menu->addAction("Create Surface Shader...", this, SLOT(slot_add_surface_shader_to_assembly()));
     return menu;
 }
 
@@ -602,6 +616,29 @@ void ProjectExplorer::create_bsdf_entity(
         bsdf.get());
 
     assembly.bsdfs().insert(bsdf);
+}
+
+void ProjectExplorer::create_surface_shader_entity(
+    const Assembly&             assembly,
+    const AssemblyItems&        assembly_items,
+    const Dictionary&           values)
+{
+    const string name = values.get<string>("name");
+    const string model = values.get<string>("model");
+
+    const ISurfaceShaderFactory* factory =
+        m_surface_shader_factory_registrar.lookup(model.c_str());
+    assert(factory);
+
+    auto_release_ptr<SurfaceShader> surface_shader(factory->create(name.c_str(), values));
+
+    insert_item(
+        assembly_items.m_surface_shader_items,
+        name.c_str(),
+        ItemSurfaceShader,
+        surface_shader.get());
+
+    assembly.surface_shaders().insert(surface_shader);
 }
 
 void ProjectExplorer::create_material_entity(
@@ -1068,15 +1105,18 @@ namespace
 
 namespace
 {
-    class BSDFEditorFormFactory
+    template <typename FactoryRegistrar>
+    class EntityEditorFormFactory
       : public EntityEditorWindow::IFormFactory
     {
       public:
-        BSDFEditorFormFactory(
-            const BSDFFactoryRegistrar& bsdf_factory_registrar,
-            const Assembly&             assembly)
-          : m_bsdf_factory_registrar(bsdf_factory_registrar)
+        EntityEditorFormFactory(
+            const FactoryRegistrar&     factory_registrar,
+            const Assembly&             assembly,
+            const string&               name_suggestion)
+          : m_factory_registrar(factory_registrar)
           , m_assembly(assembly)
+          , m_name_suggestion(name_suggestion)
         {
         }
 
@@ -1086,36 +1126,33 @@ namespace
         {
             definitions.clear();
 
-            const string bsdf_name =
-                get_value(
-                    values,
-                    "name",
-                    get_name_suggestion("bsdf", m_assembly.bsdfs()));
+            const string name = get_value(values, "name", m_name_suggestion);
 
             Dictionary name_widget;
             name_widget.insert("name", "name");
             name_widget.insert("label", "Name");
             name_widget.insert("widget", "text_box");
             name_widget.insert("use", "required");
-            name_widget.insert("default", bsdf_name);
+            name_widget.insert("default", name);
             name_widget.insert("focus", "true");
             definitions.push_back(name_widget);
 
-            const BSDFFactoryArray bsdf_factories = m_bsdf_factory_registrar.get_factories();
+            const typename FactoryRegistrar::FactoryArrayType factories =
+                m_factory_registrar.get_factories();
             Dictionary model_items;
 
-            for (size_t i = 0; i < bsdf_factories.size(); ++i)
+            for (size_t i = 0; i < factories.size(); ++i)
             {
                 model_items.insert(
-                    bsdf_factories[i]->get_human_readable_model(),
-                    bsdf_factories[i]->get_model());
+                    factories[i]->get_human_readable_model(),
+                    factories[i]->get_model());
             }
 
-            const string bsdf_model =
+            const string model =
                 get_value(
                     values,
                     "model",
-                    bsdf_factories.empty() ? "" : bsdf_factories[0]->get_model());
+                    factories.empty() ? "" : factories[0]->get_model());
 
             Dictionary model_widget;
             model_widget.insert("name", "model");
@@ -1123,16 +1160,16 @@ namespace
             model_widget.insert("widget", "dropdown_list");
             model_widget.insert("dropdown_items", model_items);
             model_widget.insert("use", "required");
-            model_widget.insert("default", bsdf_model);
+            model_widget.insert("default", model);
             model_widget.insert("on_change", "rebuild_form");
             definitions.push_back(model_widget);
 
-            if (!bsdf_model.empty())
+            if (!model.empty())
             {
-                const IBSDFFactory* bsdf_factory =
-                    m_bsdf_factory_registrar.lookup(bsdf_model.c_str());
+                const typename FactoryRegistrar::FactoryType* factory =
+                    m_factory_registrar.lookup(model.c_str());
 
-                const DictionaryArray properties = bsdf_factory->get_widget_definitions();
+                const DictionaryArray properties = factory->get_widget_definitions();
 
                 for (size_t i = 0; i < properties.size(); ++i)
                     definitions.push_back(properties[i]);
@@ -1140,8 +1177,9 @@ namespace
         }
 
       private:
-        const BSDFFactoryRegistrar& m_bsdf_factory_registrar;
+        const FactoryRegistrar&     m_factory_registrar;
         const Assembly&             m_assembly;
+        const string                m_name_suggestion;
     };
 }
 
@@ -1150,9 +1188,10 @@ void ProjectExplorer::slot_add_bsdf_to_assembly()
     const Assembly& assembly = get_from_action<Assembly>(sender());
 
     auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
-        new BSDFEditorFormFactory(
+        new EntityEditorFormFactory<BSDFFactoryRegistrar>(
             m_bsdf_factory_registrar,
-            assembly));
+            assembly,
+            get_name_suggestion("bsdf", assembly.bsdfs())));
 
     const QVariant receiver_data(
         QVariant::fromValue(
@@ -1161,6 +1200,29 @@ void ProjectExplorer::slot_add_bsdf_to_assembly()
     open_entity_editor(
         m_tree_widget,
         "Create BSDF",
+        form_factory,
+        assembly,
+        this,
+        receiver_data);
+}
+
+void ProjectExplorer::slot_add_surface_shader_to_assembly()
+{
+    const Assembly& assembly = get_from_action<Assembly>(sender());
+
+    auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
+        new EntityEditorFormFactory<SurfaceShaderFactoryRegistrar>(
+            m_surface_shader_factory_registrar,
+            assembly,
+            get_name_suggestion("surface_shader", assembly.surface_shaders())));
+
+    const QVariant receiver_data(
+        QVariant::fromValue(
+            PayloadType(ItemSurfaceShader, qobject_cast<const QAction*>(sender())->data())));
+
+    open_entity_editor(
+        m_tree_widget,
+        "Create Surface Shader",
         form_factory,
         assembly,
         this,
@@ -1304,6 +1366,10 @@ void ProjectExplorer::slot_create_entity(QVariant payload, Dictionary values)
 
           case ItemMaterial:
             create_material_entity(assembly, assembly_items, values);
+            break;
+
+          case ItemSurfaceShader:
+            create_surface_shader_entity(assembly, assembly_items, values);
             break;
 
           assert_otherwise;

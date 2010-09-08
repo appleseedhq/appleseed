@@ -33,6 +33,7 @@
 #include "renderer/global/global.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/containers/array.h"
 #include "foundation/utility/implptr.h"
 
 // Forward declarations.
@@ -40,6 +41,13 @@ namespace renderer      { class ISurfaceShaderFactory; }
 
 namespace renderer
 {
+
+//
+// An array of surface shader factories.
+//
+
+FOUNDATION_DECLARE_ARRAY(SurfaceShaderFactoryArray, ISurfaceShaderFactory*);
+
 
 //
 // Surface shader factory registrar.
@@ -50,9 +58,16 @@ class RENDERERDLL SurfaceShaderFactoryRegistrar
 {
   public:
     typedef ISurfaceShaderFactory FactoryType;
+    typedef SurfaceShaderFactoryArray FactoryArrayType;
 
     // Constructor.
     SurfaceShaderFactoryRegistrar();
+
+    // Register a surface shader factory.
+    void register_factory(FactoryType* factory);
+
+    // Retrieve the registered factories.
+    FactoryArrayType get_factories() const;
 
     // Lookup a factory by name.
     const FactoryType* lookup(const char* name) const;

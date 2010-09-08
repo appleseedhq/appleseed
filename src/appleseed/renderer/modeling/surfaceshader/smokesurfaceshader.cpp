@@ -68,6 +68,8 @@ namespace
     // Smoke surface shader.
     //
 
+    const char* Model = "smoke_surface_shader";
+
     class SmokeSurfaceShader
       : public SurfaceShader
     {
@@ -107,7 +109,7 @@ namespace
 
         virtual const char* get_model() const
         {
-            return SmokeSurfaceShaderFactory::get_model();
+            return Model;
         }
 
         virtual const char* get_name() const
@@ -797,9 +799,20 @@ namespace
 // SmokeSurfaceShaderFactory class implementation.
 //
 
-const char* SmokeSurfaceShaderFactory::get_model()
+const char* SmokeSurfaceShaderFactory::get_model() const
 {
-    return "smoke_surface_shader";
+    return Model;
+}
+
+const char* SmokeSurfaceShaderFactory::get_human_readable_model() const
+{
+    return "Smoke";
+}
+
+DictionaryArray SmokeSurfaceShaderFactory::get_widget_definitions() const
+{
+    DictionaryArray definitions;
+    return definitions;
 }
 
 auto_release_ptr<SurfaceShader> SmokeSurfaceShaderFactory::create(

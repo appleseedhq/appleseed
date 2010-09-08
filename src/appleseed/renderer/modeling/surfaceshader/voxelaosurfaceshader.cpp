@@ -60,6 +60,8 @@ namespace
     // Voxel-based ambient occlusion surface shader.
     //
 
+    const char* Model = "voxel_ao_surface_shader";
+
     class VoxelAOSurfaceShader
       : public SurfaceShader
     {
@@ -82,7 +84,7 @@ namespace
 
         virtual const char* get_model() const
         {
-            return VoxelAOSurfaceShaderFactory::get_model();
+            return Model;
         }
 
         virtual const char* get_name() const
@@ -343,9 +345,20 @@ namespace
 // VoxelAOSurfaceShaderFactory class implementation.
 //
 
-const char* VoxelAOSurfaceShaderFactory::get_model()
+const char* VoxelAOSurfaceShaderFactory::get_model() const
 {
-    return "voxel_ao_surface_shader";
+    return Model;
+}
+
+const char* VoxelAOSurfaceShaderFactory::get_human_readable_model() const
+{
+    return "Voxel-Based Ambient Occlusion (experimental)";
+}
+
+DictionaryArray VoxelAOSurfaceShaderFactory::get_widget_definitions() const
+{
+    DictionaryArray definitions;
+    return definitions;
 }
 
 auto_release_ptr<SurfaceShader> VoxelAOSurfaceShaderFactory::create(

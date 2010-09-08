@@ -46,9 +46,7 @@ using namespace std;
 namespace renderer
 {
 
-//
-// SurfaceShaderFactoryRegistrar class implementation.
-//
+FOUNDATION_DEFINE_ARRAY(SurfaceShaderFactoryArray);
 
 struct SurfaceShaderFactoryRegistrar::Impl
 {
@@ -58,29 +56,27 @@ struct SurfaceShaderFactoryRegistrar::Impl
 SurfaceShaderFactoryRegistrar::SurfaceShaderFactoryRegistrar()
   : impl(new Impl())
 {
-    impl->m_registrar.insert(
-        AOSurfaceShaderFactory::get_model(),
-        auto_ptr<ISurfaceShaderFactory>(new AOSurfaceShaderFactory()));
+    register_factory(new AOSurfaceShaderFactory());
+    register_factory(new ConstantSurfaceShaderFactory());
+    register_factory(new DiagnosticSurfaceShaderFactory());
+    register_factory(new PhysicalSurfaceShaderFactory());
+    register_factory(new SmokeSurfaceShaderFactory());
+    register_factory(new VoxelAOSurfaceShaderFactory());
+}
 
-    impl->m_registrar.insert(
-        ConstantSurfaceShaderFactory::get_model(),
-        auto_ptr<ISurfaceShaderFactory>(new ConstantSurfaceShaderFactory()));
+void SurfaceShaderFactoryRegistrar::register_factory(FactoryType* factory)
+{
+    impl->m_registrar.insert(factory->get_model(), auto_ptr<FactoryType>(factory));
+}
 
-    impl->m_registrar.insert(
-        DiagnosticSurfaceShaderFactory::get_model(),
-        auto_ptr<ISurfaceShaderFactory>(new DiagnosticSurfaceShaderFactory()));
+SurfaceShaderFactoryArray SurfaceShaderFactoryRegistrar::get_factories() const
+{
+    FactoryArrayType factories;
 
-    impl->m_registrar.insert(
-        PhysicalSurfaceShaderFactory::get_model(),
-        auto_ptr<ISurfaceShaderFactory>(new PhysicalSurfaceShaderFactory()));
+    for (const_each<Registrar<FactoryType>::Items> i = impl->m_registrar.items(); i; ++i)
+        factories.push_back(i->second);
 
-    impl->m_registrar.insert(
-        SmokeSurfaceShaderFactory::get_model(),
-        auto_ptr<ISurfaceShaderFactory>(new SmokeSurfaceShaderFactory()));
-
-    impl->m_registrar.insert(
-        VoxelAOSurfaceShaderFactory::get_model(),
-        auto_ptr<ISurfaceShaderFactory>(new VoxelAOSurfaceShaderFactory()));
+    return factories;
 }
 
 const SurfaceShaderFactoryRegistrar::FactoryType*

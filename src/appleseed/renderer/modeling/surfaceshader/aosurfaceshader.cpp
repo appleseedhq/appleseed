@@ -53,6 +53,8 @@ namespace
     // Ambient occlusion surface shader.
     //
 
+    const char* Model = "ao_surface_shader";
+
     class AOSurfaceShader
       : public SurfaceShader
     {
@@ -74,7 +76,7 @@ namespace
 
         virtual const char* get_model() const
         {
-            return AOSurfaceShaderFactory::get_model();
+            return Model;
         }
 
         virtual const char* get_name() const
@@ -125,9 +127,41 @@ namespace
 // AOSurfaceShaderFactory class implementation.
 //
 
-const char* AOSurfaceShaderFactory::get_model()
+const char* AOSurfaceShaderFactory::get_model() const
 {
-    return "ao_surface_shader";
+    return Model;
+}
+
+const char* AOSurfaceShaderFactory::get_human_readable_model() const
+{
+    return "Ambient Occlusion";
+}
+
+DictionaryArray AOSurfaceShaderFactory::get_widget_definitions() const
+{
+    DictionaryArray definitions;
+
+    {
+        Dictionary widget;
+        widget.insert("name", "samples");
+        widget.insert("label", "Samples");
+        widget.insert("widget", "text_box");
+        widget.insert("use", "required");
+        widget.insert("default", "16");
+        definitions.push_back(widget);
+    }
+
+    {
+        Dictionary widget;
+        widget.insert("name", "max_distance");
+        widget.insert("label", "Maximum Occlusion Distance");
+        widget.insert("widget", "text_box");
+        widget.insert("use", "required");
+        widget.insert("default", "1.0");
+        definitions.push_back(widget);
+    }
+
+    return definitions;
 }
 
 auto_release_ptr<SurfaceShader> AOSurfaceShaderFactory::create(

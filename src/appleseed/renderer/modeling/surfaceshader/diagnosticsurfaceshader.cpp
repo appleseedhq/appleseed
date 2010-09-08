@@ -87,6 +87,8 @@ namespace
 // Diagnostic surface shader.
 //
 
+const char* Model = "diagnostic_surface_shader";
+
 struct DiagnosticSurfaceShader::Impl
 {
     string                      m_name;
@@ -146,7 +148,7 @@ void DiagnosticSurfaceShader::release()
 
 const char* DiagnosticSurfaceShader::get_model() const
 {
-    return DiagnosticSurfaceShaderFactory::get_model();
+    return Model;
 }
 
 const char* DiagnosticSurfaceShader::get_name() const
@@ -397,9 +399,20 @@ void DiagnosticSurfaceShader::extract_parameters()
 // DiagnosticSurfaceShaderFactory class implementation.
 //
 
-const char* DiagnosticSurfaceShaderFactory::get_model()
+const char* DiagnosticSurfaceShaderFactory::get_model() const
 {
-    return "diagnostic_surface_shader";
+    return Model;
+}
+
+const char* DiagnosticSurfaceShaderFactory::get_human_readable_model() const
+{
+    return "Diagnostics";
+}
+
+DictionaryArray DiagnosticSurfaceShaderFactory::get_widget_definitions() const
+{
+    DictionaryArray definitions;
+    return definitions;
 }
 
 auto_release_ptr<SurfaceShader> DiagnosticSurfaceShaderFactory::create(

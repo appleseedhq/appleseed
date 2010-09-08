@@ -32,6 +32,9 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/surfaceshader/isurfaceshaderfactory.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/containers/dictionaryarray.h"
+
 // Forward declarations.
 namespace renderer      { class SurfaceShader; }
 
@@ -47,7 +50,13 @@ class RENDERERDLL AOSurfaceShaderFactory
 {
   public:
     // Return a string identifying this surface shader model.
-    static const char* get_model();
+    virtual const char* get_model() const;
+
+    // Return a human-readable string identifying this surface shader model.
+    virtual const char* get_human_readable_model() const;
+
+    // Return a set of widget definitions for this surface shader model.
+    virtual foundation::DictionaryArray get_widget_definitions() const;
 
     // Create a new surface shader instance.
     virtual foundation::auto_release_ptr<SurfaceShader> create(

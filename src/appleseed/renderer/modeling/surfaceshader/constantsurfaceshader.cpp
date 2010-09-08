@@ -52,6 +52,8 @@ namespace
     // Constant color surface shader.
     //
 
+    const char* Model = "constant_surface_shader";
+
     class ConstantSurfaceShader
       : public SurfaceShader
     {
@@ -72,7 +74,7 @@ namespace
 
         virtual const char* get_model() const
         {
-            return ConstantSurfaceShaderFactory::get_model();
+            return Model;
         }
 
         virtual const char* get_name() const
@@ -137,9 +139,36 @@ namespace
 // ConstantSurfaceShaderFactory class implementation.
 //
 
-const char* ConstantSurfaceShaderFactory::get_model()
+const char* ConstantSurfaceShaderFactory::get_model() const
 {
-    return "constant_surface_shader";
+    return Model;
+}
+
+const char* ConstantSurfaceShaderFactory::get_human_readable_model() const
+{
+    return "Constant";
+}
+
+DictionaryArray ConstantSurfaceShaderFactory::get_widget_definitions() const
+{
+    DictionaryArray definitions;
+
+    {
+        Dictionary entity_types;
+        entity_types.insert("color", "Colors");
+        entity_types.insert("texture_instance", "Textures");
+
+        Dictionary widget;
+        widget.insert("name", "color");
+        widget.insert("label", "Color");
+        widget.insert("widget", "entity_picker");
+        widget.insert("entity_types", entity_types);
+        widget.insert("use", "required");
+        widget.insert("default", "");
+        definitions.push_back(widget);
+    }
+
+    return definitions;
 }
 
 auto_release_ptr<SurfaceShader> ConstantSurfaceShaderFactory::create(

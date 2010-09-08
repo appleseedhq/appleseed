@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
 #include "renderer/api/scene.h"
+#include "renderer/api/surfaceshader.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -102,6 +103,7 @@ class ProjectExplorer
     AssemblyItemsMap                        m_assembly_items;
 
     renderer::BSDFFactoryRegistrar          m_bsdf_factory_registrar;
+    renderer::SurfaceShaderFactoryRegistrar m_surface_shader_factory_registrar;
 
     void build_tree_widget();
 
@@ -113,9 +115,15 @@ class ProjectExplorer
     QMenu* build_assembly_collection_context_menu() const;
     QMenu* build_texture_collection_context_menu() const;
     QMenu* build_bsdf_collection_context_menu() const;
+    QMenu* build_surface_shader_collection_context_menu() const;
     QMenu* build_material_collection_context_menu() const;
 
     void create_bsdf_entity(
+        const renderer::Assembly&           assembly,
+        const AssemblyItems&                assembly_items,
+        const foundation::Dictionary&       values);
+
+    void create_surface_shader_entity(
         const renderer::Assembly&           assembly,
         const AssemblyItems&                assembly_items,
         const foundation::Dictionary&       values);
@@ -147,6 +155,7 @@ class ProjectExplorer
     void slot_import_objects_to_assembly();
     void slot_import_textures_to_assembly();
     void slot_add_bsdf_to_assembly();
+    void slot_add_surface_shader_to_assembly();
     void slot_add_material_to_assembly();
     void slot_create_entity(QVariant payload, foundation::Dictionary values);
 };

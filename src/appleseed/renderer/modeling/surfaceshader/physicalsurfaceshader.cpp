@@ -53,6 +53,8 @@ namespace
     // Physical surface shader.
     //
 
+    const char* Model = "physical_surface_shader";
+
     class PhysicalSurfaceShader
       : public SurfaceShader
     {
@@ -74,7 +76,7 @@ namespace
 
         virtual const char* get_model() const
         {
-            return PhysicalSurfaceShaderFactory::get_model();
+            return Model;
         }
 
         virtual const char* get_name() const
@@ -154,9 +156,20 @@ namespace
 // PhysicalSurfaceShaderFactory class implementation.
 //
 
-const char* PhysicalSurfaceShaderFactory::get_model()
+const char* PhysicalSurfaceShaderFactory::get_model() const
 {
-    return "physical_surface_shader";
+    return Model;
+}
+
+const char* PhysicalSurfaceShaderFactory::get_human_readable_model() const
+{
+    return "Physical";
+}
+
+DictionaryArray PhysicalSurfaceShaderFactory::get_widget_definitions() const
+{
+    DictionaryArray definitions;
+    return definitions;
 }
 
 auto_release_ptr<SurfaceShader> PhysicalSurfaceShaderFactory::create(
