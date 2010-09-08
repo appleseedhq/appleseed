@@ -131,7 +131,9 @@ class RENDERERDLL InputArray
         // Dereference operator.
         iterator& operator*();
 
-        // Bind a source to this input. Ownership of the source is passed to renderer::InputArray.
+        // Bind a source to this input, unbinding any previously bound source.
+        // The ownership of the source is passed to renderer::InputArray.
+        // 'source' may be 0, in which case the input is unbound.
         void bind(Source* source);
 
       private:

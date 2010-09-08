@@ -84,6 +84,9 @@ class RENDERERDLL MasterRenderer
     // Initialize the rendering components and render until completed or aborted.
     IRendererController::Status render_from_scratch();
 
+    // Bind all scene entities inputs. Return true on success, false otherwise.
+    bool bind_inputs() const;
+
     // Render (one or many frames) until rendering is completed or aborted.
     IRendererController::Status render_until_completed_or_aborted(IFrameRenderer* frame_renderer);
 

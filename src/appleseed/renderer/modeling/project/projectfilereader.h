@@ -67,19 +67,8 @@ class RENDERERDLL ProjectFileReader
         const char*             project_name,
         EventCounters&          event_counters) const;
 
-    // Process a newly constructed or loaded project.
-    void process_project(
-        Project&                project,
-        EventCounters&          event_counters) const;
-
-    // Perform validation tests on a project.
     void validate_project(
         const Project&          project,
-        EventCounters&          event_counters) const;
-
-    // Bind all inputs of all entities of a project.
-    void bind_inputs(
-        Project&                project,
         EventCounters&          event_counters) const;
 
     void print_loading_results(

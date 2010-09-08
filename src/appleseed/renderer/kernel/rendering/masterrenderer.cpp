@@ -53,7 +53,7 @@
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
-#include "renderer/modeling/input/inputparams.h"
+#include "renderer/modeling/input/inputbinder.h"
 #include "renderer/modeling/input/uniforminputevaluator.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/assembly.h"
@@ -78,7 +78,6 @@ namespace renderer
 // MasterRenderer class implementation.
 //
 
-// Constructor.
 MasterRenderer::MasterRenderer(
     Project&                project,
     const ParamArray&       params,
@@ -93,17 +92,16 @@ MasterRenderer::MasterRenderer(
 {
 }
 
-// Return the parameters of the master renderer.
 ParamArray& MasterRenderer::get_parameters()
 {
     return m_params;
 }
+
 const ParamArray& MasterRenderer::get_parameters() const
 {
     return m_params;
 }
 
-// Render the project.
 void MasterRenderer::render()
 {
     try
@@ -127,7 +125,6 @@ void MasterRenderer::render()
     }
 }
 
-// Continuously render from scratch.
 void MasterRenderer::do_render()
 {
     while (true)
@@ -154,11 +151,14 @@ void MasterRenderer::do_render()
     }
 }
 
-// Initialize the rendering components and render until completed or aborted.
 IRendererController::Status MasterRenderer::render_from_scratch()
 {
     assert(m_project.get_scene());
     assert(m_project.get_frame());
+
+    // Bind all scene entities inputs.
+    if (!bind_inputs())
+        return IRendererController::AbortRendering;
 
     // Create a light sampler.
     LightSampler light_sampler(*m_project.get_scene());
@@ -251,7 +251,13 @@ IRendererController::Status MasterRenderer::render_from_scratch()
     return render_until_completed_or_aborted(frame_renderer.get());
 }
 
-// Render (one or many frames) until rendering is completed or aborted.
+bool MasterRenderer::bind_inputs() const
+{
+    InputBinder input_binder;
+    input_binder.bind(*m_project.get_scene());
+    return input_binder.get_error_count() == 0;
+}
+
 IRendererController::Status MasterRenderer::render_until_completed_or_aborted(
     IFrameRenderer* frame_renderer)
 {
@@ -289,7 +295,6 @@ IRendererController::Status MasterRenderer::render_until_completed_or_aborted(
     }
 }
 
-// Wait until the frame being rendered is complete, or rendering was aborted.
 IRendererController::Status MasterRenderer::wait_until_frame_complete(
     IFrameRenderer* frame_renderer)
 {
@@ -401,7 +406,6 @@ namespace
     }
 }
 
-// Perform pre-frame rendering actions.
 void MasterRenderer::on_frame_begin() const
 {
     const Scene& scene = *m_project.get_scene();
@@ -417,7 +421,6 @@ void MasterRenderer::on_frame_begin() const
     invoke_on_frame_begin_collection(scene.assemblies(), scene, input_evaluator);
 }
 
-// Perform post-frame rendering actions.
 void MasterRenderer::on_frame_end() const
 {
     const Scene& scene = *m_project.get_scene();

@@ -52,12 +52,6 @@
 #include "renderer/modeling/geometry/meshobject.h"
 #include "renderer/modeling/geometry/meshobjectreader.h"
 #include "renderer/modeling/geometry/object.h"
-#include "renderer/modeling/input/colorsource.h"
-#include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/input/inputbinder.h"
-#include "renderer/modeling/input/scalarsource.h"
-#include "renderer/modeling/input/source.h"
-#include "renderer/modeling/input/texturesource.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/project/configuration.h"
@@ -2919,7 +2913,6 @@ namespace
 
 }   // anonymous namespace
 
-// Read a project from disk.
 auto_release_ptr<Project> ProjectFileReader::read(
     const char*             project_filename,
     const char*             schema_filename)
@@ -2938,8 +2931,8 @@ auto_release_ptr<Project> ProjectFileReader::read(
             schema_filename,
             event_counters));
 
-    if (project.get())
-        process_project(*project.get(), event_counters);
+    if (project.get() && !event_counters.has_errors())
+        validate_project(*project.get(), event_counters);
 
     print_loading_results(project_filename, false, event_counters);
 
@@ -2948,7 +2941,6 @@ auto_release_ptr<Project> ProjectFileReader::read(
         : project;
 }
 
-// Load a built-in project.
 auto_release_ptr<Project> ProjectFileReader::load_builtin(
     const char*             project_name)
 {
@@ -2958,8 +2950,8 @@ auto_release_ptr<Project> ProjectFileReader::load_builtin(
     auto_release_ptr<Project> project(
         construct_builtin_project(project_name, event_counters));
 
-    if (project.get())
-        process_project(*project.get(), event_counters);
+    if (project.get() && !event_counters.has_errors())
+        validate_project(*project.get(), event_counters);
 
     print_loading_results(project_name, true, event_counters);
 
@@ -3047,19 +3039,6 @@ auto_release_ptr<Project> ProjectFileReader::construct_builtin_project(
     }
 }
 
-// Process a newly constructed or loaded project.
-void ProjectFileReader::process_project(
-    Project&                project,
-    EventCounters&          event_counters) const
-{
-    if (!event_counters.has_errors())
-        validate_project(project, event_counters);
-
-    if (!event_counters.has_errors())
-        bind_inputs(project, event_counters);
-}
-
-// Perform validation tests on a project.
 void ProjectFileReader::validate_project(
     const Project&          project,
     EventCounters&          event_counters) const
@@ -3098,17 +3077,6 @@ void ProjectFileReader::validate_project(
         RENDERER_LOG_ERROR("the project must define an \"interactive\" configuration");
         event_counters.signal_error();
     }
-}
-
-// Bind all inputs of all entities of a project.
-void ProjectFileReader::bind_inputs(
-    Project&                project,
-    EventCounters&          event_counters) const
-{
-    InputBinder input_binder;
-    input_binder.bind(*project.get_scene());
-
-    event_counters.signal_errors(input_binder.get_error_count());
 }
 
 void ProjectFileReader::print_loading_results(

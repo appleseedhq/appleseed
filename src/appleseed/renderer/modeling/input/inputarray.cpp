@@ -354,7 +354,9 @@ InputArray::iterator& InputArray::iterator::operator*()
 
 void InputArray::iterator::bind(Source* source)
 {
-    m_input_array->impl->m_input_decls[m_input_index].m_source = source;
+    Impl::InputDecl& input_decl = m_input_array->impl->m_input_decls[m_input_index];
+    delete input_decl.m_source;
+    input_decl.m_source = source;
 }
 
 }   // namespace renderer
