@@ -515,7 +515,7 @@ const char* AshikhminBRDFFactory::get_model() const
 
 const char* AshikhminBRDFFactory::get_human_readable_model() const
 {
-    return "Ashikhmin-Shirley BRDF";
+    return "Ashikhmin-Shirley Reflection";
 }
 
 DictionaryArray AshikhminBRDFFactory::get_widget_definitions() const

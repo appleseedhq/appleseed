@@ -216,7 +216,7 @@ const char* LambertianBRDFFactory::get_model() const
 
 const char* LambertianBRDFFactory::get_human_readable_model() const
 {
-    return "Lambertian BRDF";
+    return "Lambertian Reflection";
 }
 
 DictionaryArray LambertianBRDFFactory::get_widget_definitions() const

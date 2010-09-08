@@ -166,7 +166,7 @@ const char* SpecularBRDFFactory::get_model() const
 
 const char* SpecularBRDFFactory::get_human_readable_model() const
 {
-    return "Specular BRDF";
+    return "Specular Reflection";
 }
 
 DictionaryArray SpecularBRDFFactory::get_widget_definitions() const

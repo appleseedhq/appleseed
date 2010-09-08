@@ -229,7 +229,7 @@ const char* SpecularBTDFFactory::get_model() const
 
 const char* SpecularBTDFFactory::get_human_readable_model() const
 {
-    return "Specular BTDF";
+    return "Specular Transmission";
 }
 
 DictionaryArray SpecularBTDFFactory::get_widget_definitions() const

@@ -137,7 +137,7 @@ const char* PhongBRDFFactory::get_model() const
 
 const char* PhongBRDFFactory::get_human_readable_model() const
 {
-    return "Phong BRDF";
+    return "Phong Reflection";
 }
 
 DictionaryArray PhongBRDFFactory::get_widget_definitions() const
