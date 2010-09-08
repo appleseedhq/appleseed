@@ -30,6 +30,7 @@
 #include "ordering.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/exceptionnotimplemented.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 
@@ -61,7 +62,7 @@ void spiral_ordering(
     const size_t        size_x,
     const size_t        size_y)
 {
-    assert(!"Not implemented yet.");
+    throw ExceptionNotImplemented();
 }
 
 namespace

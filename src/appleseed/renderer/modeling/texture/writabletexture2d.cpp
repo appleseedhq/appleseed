@@ -84,7 +84,6 @@ namespace
 
         virtual ColorSpace get_color_space() const
         {
-            // todo: implement.
             throw ExceptionNotImplemented();
             return ColorSpaceLinearRGB;
         }

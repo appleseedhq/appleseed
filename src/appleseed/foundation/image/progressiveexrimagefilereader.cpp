@@ -30,6 +30,7 @@
 #include "progressiveexrimagefilereader.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/exceptionnotimplemented.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
@@ -287,8 +288,7 @@ void ProgressiveEXRImageFileReader::read_image_attributes(
     ImageAttributes&    attrs)
 {
     assert(is_open());
-
-    // todo: implement.
+    throw ExceptionNotImplemented();
 }
 
 // Read an image tile. Returns a newly allocated tile.

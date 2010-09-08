@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/core/exceptionnotimplemented.h"
 #include "foundation/utility/containers/dictionary.h"
 
 // Qt headers.
@@ -51,6 +52,8 @@
 namespace Ui { class EntityEditorWindow; }
 class QFormLayout;
 class QSignalMapper;
+
+using namespace foundation;
 
 namespace appleseed {
 namespace studio {
@@ -154,7 +157,7 @@ class EntityEditorWindow
 
         virtual void set(const std::string& value)
         {
-            // todo: implement.
+            throw ExceptionNotImplemented();
         }
 
         virtual std::string get() const

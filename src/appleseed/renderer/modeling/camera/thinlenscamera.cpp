@@ -35,6 +35,7 @@
 #include "renderer/modeling/camera/camera.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/exceptionnotimplemented.h"
 #include "foundation/math/sampling.h"
 #include "foundation/utility/string.h"
 
@@ -176,12 +177,8 @@ namespace
 
         virtual Vector2d project(const Vector3d& point) const
         {
-            // todo: implement.
-            assert(!"Not implemented yet.");
-            const double k = -m_focal_length / point.z;
-            const double x = point.x * k * m_rcp_film_width;
-            const double y = point.y * k * m_rcp_film_height;
-            return Vector2d(x, y);
+            throw ExceptionNotImplemented();
+            return Vector2d(0.0);
         }
 
       private:

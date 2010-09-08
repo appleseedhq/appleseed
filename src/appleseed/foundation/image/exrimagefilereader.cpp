@@ -47,7 +47,6 @@ void EXRImageFileReader::read(
     ICanvas&            image,
     ImageAttributes&    image_attributes)
 {
-    // todo: implement.
     throw ExceptionNotImplemented();
 }
 

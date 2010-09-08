@@ -30,6 +30,7 @@
 #define APPLESEED_FOUNDATION_MATH_NOISE_H
 
 // appleseed.foundation headers.
+#include "foundation/core/exceptionnotimplemented.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 
@@ -144,14 +145,14 @@ namespace noise_impl
 template <typename T>
 T noise(const Vector<T, 1>& p)
 {
-    assert(!"Not implemented yet.");
+    throw ExceptionNotImplemented();
     return T(0.0);
 }
 
 template <typename T>
 T noise(const Vector<T, 2>& p)
 {
-    assert(!"Not implemented yet.");
+    throw ExceptionNotImplemented();
     return T(0.0);
 }
 
@@ -209,7 +210,7 @@ T noise(const Vector<T, 3>& p)
 template <typename T>
 T noise(const Vector<T, 4>& p)
 {
-    assert(!"Not implemented yet.");
+    throw ExceptionNotImplemented();
     return T(0.0);
 }
 

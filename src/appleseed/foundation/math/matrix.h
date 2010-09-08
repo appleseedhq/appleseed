@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exception.h"
+#include "foundation/core/exceptionnotimplemented.h"
 #include "foundation/math/quaternion.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -931,8 +932,7 @@ inline T trace(const Matrix<T, N, N>& mat)
 template <typename T, size_t N>
 inline T det(const Matrix<T, N, N>& mat)
 {
-    // todo: implement.
-    assert(!"Not implemented yet.");
+    throw ExceptionNotImplemented();
     return T(0.0);
 }
 

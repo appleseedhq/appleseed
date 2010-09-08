@@ -43,6 +43,7 @@
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/exceptionnotimplemented.h"
 #include "foundation/math/area.h"
 #include "foundation/math/sampling.h"
 #include "foundation/utility/foreach.h"
@@ -372,7 +373,7 @@ void LightSampler::sample_light(
     const Light* light = m_lights[light_index];
     assert(light);
 
-    // todo: implement.
+    throw ExceptionNotImplemented();
 }
 
 void LightSampler::sample_emitting_triangle(

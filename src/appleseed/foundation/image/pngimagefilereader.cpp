@@ -29,6 +29,9 @@
 // Interface header.
 #include "pngimagefilereader.h"
 
+// appleseed.foundation headers.
+#include "foundation/core/exceptionnotimplemented.h"
+
 using namespace std;
 
 namespace foundation
@@ -44,7 +47,7 @@ void PNGImageFileReader::read(
     ICanvas&            image,
     ImageAttributes&    image_attributes)
 {
-    // todo: implement.
+    throw ExceptionNotImplemented();
 }
 
 }   // namespace foundation

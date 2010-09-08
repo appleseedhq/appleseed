@@ -35,6 +35,7 @@
 #include "renderer/modeling/input/source.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/exceptionnotimplemented.h"
 #include "foundation/math/basis.h"
 
 using namespace foundation;
@@ -89,7 +90,7 @@ namespace
             double&             probability,
             Mode&               mode) const
         {
-            // todo: implement.
+            throw ExceptionNotImplemented();
         }
 
         virtual void evaluate(
@@ -100,7 +101,7 @@ namespace
             const Vector3d&     incoming,
             Spectrum&           value) const
         {
-            // todo: implement.
+            throw ExceptionNotImplemented();
         }
 
         virtual double evaluate_pdf(
@@ -110,7 +111,7 @@ namespace
             const Vector3d&     outgoing,
             const Vector3d&     incoming) const
         {
-            // todo: implement.
+            throw ExceptionNotImplemented();
             return 0.0;
         }
 

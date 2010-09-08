@@ -30,6 +30,7 @@
 #include "objmeshfilereader.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/exceptionnotimplemented.h"
 #include "foundation/math/vector.h"
 #include "foundation/mesh/iobjmeshbuilder.h"
 #include "foundation/mesh/objmeshfilelexer.h"
@@ -703,7 +704,7 @@ struct OBJMeshFileReader::Impl
         if (!m_inside_material_def)
             parse_error();
 
-        // todo: implement.
+        throw ExceptionNotImplemented();
     }
 
     void parse_kd_statement()
@@ -722,7 +723,7 @@ struct OBJMeshFileReader::Impl
         if (!m_inside_material_def)
             parse_error();
 
-        // todo: implement.
+        throw ExceptionNotImplemented();
     }
 
     void parse_ks_statement()
@@ -741,7 +742,7 @@ struct OBJMeshFileReader::Impl
         if (!m_inside_material_def)
             parse_error();
 
-        // todo: implement.
+        throw ExceptionNotImplemented();
     }
 
     void parse_map_kd_statement()
@@ -753,7 +754,7 @@ struct OBJMeshFileReader::Impl
         if (!m_inside_material_def)
             parse_error();
 
-        // todo: implement.
+        throw ExceptionNotImplemented();
     }
 
     void parse_newmtl_statement()

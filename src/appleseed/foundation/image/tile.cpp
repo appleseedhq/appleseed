@@ -29,6 +29,9 @@
 // Interface header.
 #include "tile.h"
 
+// appleseed.foundation headers.
+#include "foundation/core/exceptionnotimplemented.h"
+
 namespace foundation
 {
 
@@ -201,12 +204,12 @@ Tile::~Tile()
 // Implements the foundation::ISerializable interface.
 Serializer* Tile::serialize(Serializer* serializer)
 {
-    // todo: implement.
+    throw ExceptionNotImplemented();
     return serializer;
 }
 Deserializer* Tile::deserialize(Deserializer* deserializer)
 {
-    // todo: implement.
+    throw ExceptionNotImplemented();
     return deserializer;
 }
 

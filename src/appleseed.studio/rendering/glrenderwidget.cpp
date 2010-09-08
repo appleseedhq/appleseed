@@ -29,6 +29,9 @@
 // Interface header.
 #include "glrenderwidget.h"
 
+// appleseed.foundation headers.
+#include "foundation/core/exceptionnotimplemented.h"
+
 // Qt headers.
 #include <Qt>
 
@@ -76,7 +79,7 @@ void GLRenderWidget::highlight_region(
     const size_t    width,
     const size_t    height)
 {
-    assert(!"Not implemented yet");
+    throw ExceptionNotImplemented();
 }
 
 void GLRenderWidget::blit_tile(
@@ -84,13 +87,13 @@ void GLRenderWidget::blit_tile(
     const size_t    tile_x,
     const size_t    tile_y)
 {
-    assert(!"Not implemented yet");
+    throw ExceptionNotImplemented();
 }
 
 void GLRenderWidget::blit_frame(
     const Frame&    frame)
 {
-    assert(!"Not implemented yet");
+    throw ExceptionNotImplemented();
 }
 
 void GLRenderWidget::initializeGL()
