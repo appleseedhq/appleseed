@@ -1001,6 +1001,10 @@ namespace
             {
                 return get_entities(m_assembly.surface_shaders());
             }
+            else if (type == "texture_instance")
+            {
+                return get_entities(m_assembly.texture_instances());
+            }
             else
             {
                 return StringDictionary();
@@ -1183,38 +1187,55 @@ namespace
             const string material_name_suggestion =
                 get_name_suggestion("material", m_assembly.materials());
 
-            Dictionary name_widget;
-            name_widget.insert("name", "name");
-            name_widget.insert("label", "Name");
-            name_widget.insert("widget", "text_box");
-            name_widget.insert("use", "required");
-            name_widget.insert("default", material_name_suggestion);
-            name_widget.insert("focus", "true");
-            definitions.push_back(name_widget);
+            {
+                Dictionary widget;
+                widget.insert("name", "name");
+                widget.insert("label", "Name");
+                widget.insert("widget", "text_box");
+                widget.insert("use", "required");
+                widget.insert("default", material_name_suggestion);
+                widget.insert("focus", "true");
+                definitions.push_back(widget);
+            }
 
-            Dictionary bsdf_widget;
-            bsdf_widget.insert("name", "bsdf");
-            bsdf_widget.insert("label", "BSDF");
-            bsdf_widget.insert("widget", "entity_picker");
-            bsdf_widget.insert("entity_type", "bsdf");
-            bsdf_widget.insert("use", "optional");
-            definitions.push_back(bsdf_widget);
+            {
+                Dictionary entity_types;
+                entity_types.insert("bsdf", "BSDF");
 
-            Dictionary edf_widget;
-            edf_widget.insert("name", "edf");
-            edf_widget.insert("label", "EDF");
-            edf_widget.insert("widget", "entity_picker");
-            edf_widget.insert("entity_type", "edf");
-            edf_widget.insert("use", "optional");
-            definitions.push_back(edf_widget);
+                Dictionary widget;
+                widget.insert("name", "bsdf");
+                widget.insert("label", "BSDF");
+                widget.insert("widget", "entity_picker");
+                widget.insert("entity_types", entity_types);
+                widget.insert("use", "optional");
+                definitions.push_back(widget);
+            }
 
-            Dictionary surface_shader_widget;
-            surface_shader_widget.insert("name", "surface_shader");
-            surface_shader_widget.insert("label", "Surface Shader");
-            surface_shader_widget.insert("widget", "entity_picker");
-            surface_shader_widget.insert("entity_type", "surface_shader");
-            surface_shader_widget.insert("use", "required");
-            definitions.push_back(surface_shader_widget);
+            {
+                Dictionary entity_types;
+                entity_types.insert("edf", "EDF");
+
+                Dictionary widget;
+                widget.insert("name", "edf");
+                widget.insert("label", "EDF");
+                widget.insert("widget", "entity_picker");
+                widget.insert("entity_types", entity_types);
+                widget.insert("use", "optional");
+                definitions.push_back(widget);
+            }
+
+            {
+                Dictionary entity_types;
+                entity_types.insert("surface_shader", "Surface Shaders");
+
+                Dictionary widget;
+                widget.insert("name", "surface_shader");
+                widget.insert("label", "Surface Shader");
+                widget.insert("widget", "entity_picker");
+                widget.insert("entity_types", entity_types);
+                widget.insert("use", "required");
+                definitions.push_back(widget);
+            }
         }
 
       private:

@@ -315,13 +315,13 @@ namespace
         }
 
       public slots:
-        void slot_accept(QString entity_name)
+        void slot_accept(QString page_name, QString entity_name)
         {
-            emit accepted(m_widget_name, entity_name);
+            emit accepted(m_widget_name, page_name, entity_name);
         }
 
       signals:
-        void accepted(QString widget_name, QString entity_name);
+        void accepted(QString widget_name, QString page_name, QString entity_name);
 
       private:
         const QString m_widget_name;
@@ -337,27 +337,32 @@ void EntityEditorWindow::slot_open_entity_browser(const QString& widget_name)
             this,
             widget_definition.get<string>("label"));
 
-    const string entity_type = widget_definition.get<string>("entity_type");
-    const StringDictionary entities = m_entity_browser->get_entities(entity_type);
+    const Dictionary& entity_types = widget_definition.dictionaries().get("entity_types");
 
-    browser_window->add_items(entities);
+    for (const_each<StringDictionary> i = entity_types.strings(); i; ++i)
+    {
+        const string entity_type = i->name();
+        const string entity_label = i->value<string>();
+        const StringDictionary entities = m_entity_browser->get_entities(entity_type);
+        browser_window->add_items_page(entity_type, entity_label, entities);
+    }
 
     ForwardAcceptedSignal* forward_signal =
         new ForwardAcceptedSignal(browser_window, widget_name);
 
     QObject::connect(
-        browser_window, SIGNAL(accepted(QString)),
-        forward_signal, SLOT(slot_accept(QString)));
+        browser_window, SIGNAL(accepted(QString, QString)),
+        forward_signal, SLOT(slot_accept(QString, QString)));
 
     QObject::connect(
-        forward_signal, SIGNAL(accepted(QString, QString)),
-        this, SLOT(slot_entity_browser_accept(QString, QString)));
+        forward_signal, SIGNAL(accepted(QString, QString, QString)),
+        this, SLOT(slot_entity_browser_accept(QString, QString, QString)));
 
     browser_window->showNormal();
     browser_window->activateWindow();
 }
 
-void EntityEditorWindow::slot_entity_browser_accept(QString widget_name, QString entity_name)
+void EntityEditorWindow::slot_entity_browser_accept(QString widget_name, QString page_name, QString entity_name)
 {
     m_widget_proxies[widget_name.toStdString()]->set(entity_name.toStdString());
 

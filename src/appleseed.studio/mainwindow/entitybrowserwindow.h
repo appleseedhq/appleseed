@@ -35,11 +35,13 @@
 #include <QWidget>
 
 // Standard headers.
+#include <map>
 #include <string>
 
 // Forward declarations.
 namespace foundation    { class StringDictionary; }
 namespace Ui            { class EntityBrowserWindow; }
+class QListWidget;
 class QListWidgetItem;
 
 namespace appleseed {
@@ -52,21 +54,33 @@ class EntityBrowserWindow
 
   public:
     EntityBrowserWindow(
-        QWidget*            parent,
-        const std::string&  window_title);
+        QWidget*                            parent,
+        const std::string&                  window_title);
 
     ~EntityBrowserWindow();
 
-    void add_items(const foundation::StringDictionary& items);
+    void add_items_page(
+        const std::string&                  page_name,
+        const std::string&                  page_label,
+        const foundation::StringDictionary& items);
 
   signals:
-    void accepted(QString item_value);
+    void accepted(QString page_name, QString item_value);
 
   private:
+    struct Page
+    {
+        std::string     m_page_name;
+        QListWidget*    m_list_widget;
+    };
+
     // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
-    Ui::EntityBrowserWindow* m_ui;
+    Ui::EntityBrowserWindow*    m_ui;
+
+    std::map<int, Page>         m_pages;
 
   private slots:
+    void slot_current_tab_changed(int tab_index);
     void slot_item_selection_changed();
     void slot_item_activated(QListWidgetItem* current);
     void slot_accept();

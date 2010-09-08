@@ -171,6 +171,10 @@ const char* SpecularBRDFFactory::get_human_readable_model() const
 
 DictionaryArray SpecularBRDFFactory::get_widget_definitions() const
 {
+    Dictionary entity_types;
+    entity_types.insert("color", "Colors");
+    entity_types.insert("texture_instance", "Textures");
+
     DictionaryArray definitions;
 
     {
@@ -178,7 +182,7 @@ DictionaryArray SpecularBRDFFactory::get_widget_definitions() const
         widget.insert("name", "reflectance");
         widget.insert("label", "Reflectance");
         widget.insert("widget", "entity_picker");
-        widget.insert("entity_type", "color");
+        widget.insert("entity_types", entity_types);
         widget.insert("use", "required");
         widget.insert("default", "");
         definitions.push_back(widget);

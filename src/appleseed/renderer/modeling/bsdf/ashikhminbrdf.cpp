@@ -520,6 +520,10 @@ const char* AshikhminBRDFFactory::get_human_readable_model() const
 
 DictionaryArray AshikhminBRDFFactory::get_widget_definitions() const
 {
+    Dictionary entity_types;
+    entity_types.insert("color", "Colors");
+    entity_types.insert("texture_instance", "Textures");
+
     DictionaryArray definitions;
 
     {
@@ -527,7 +531,7 @@ DictionaryArray AshikhminBRDFFactory::get_widget_definitions() const
         widget.insert("name", "diffuse_reflectance");
         widget.insert("label", "Diffuse Reflectance");
         widget.insert("widget", "entity_picker");
-        widget.insert("entity_type", "color");
+        widget.insert("entity_types", entity_types);
         widget.insert("use", "required");
         widget.insert("default", "");
         definitions.push_back(widget);
@@ -538,7 +542,7 @@ DictionaryArray AshikhminBRDFFactory::get_widget_definitions() const
         widget.insert("name", "glossy_reflectance");
         widget.insert("label", "Glossy Reflectance");
         widget.insert("widget", "entity_picker");
-        widget.insert("entity_type", "color");
+        widget.insert("entity_types", entity_types);
         widget.insert("use", "required");
         widget.insert("default", "");
         definitions.push_back(widget);

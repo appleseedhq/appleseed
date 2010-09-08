@@ -56,8 +56,8 @@ namespace appleseed {
 namespace studio {
 
 EntityBrowserWindow::EntityBrowserWindow(
-    QWidget*        parent,
-    const string&   window_title)
+    QWidget*                parent,
+    const string&           window_title)
   : QWidget(parent)
   , m_ui(new Ui::EntityBrowserWindow())
 {
@@ -72,12 +72,8 @@ EntityBrowserWindow::EntityBrowserWindow(
     m_ui->buttonbox->button(QDialogButtonBox::Ok)->setEnabled(false);
 
     connect(
-        m_ui->listwidget, SIGNAL(itemSelectionChanged()),
-        this, SLOT(slot_item_selection_changed()));
-
-    connect(
-        m_ui->listwidget, SIGNAL(itemActivated(QListWidgetItem*)),
-        this, SLOT(slot_item_activated(QListWidgetItem*)));
+        m_ui->tab_widget, SIGNAL(currentChanged(int)),
+        this, SLOT(slot_current_tab_changed(int)));
 
     connect(
         m_ui->buttonbox->button(QDialogButtonBox::Ok), SIGNAL(clicked()),
@@ -101,33 +97,76 @@ EntityBrowserWindow::~EntityBrowserWindow()
     delete m_ui;
 }
 
-void EntityBrowserWindow::add_items(const StringDictionary& items)
+namespace
 {
-    for (const_each<StringDictionary> i = items; i; ++i)
+    void add_items_to_list_widget(QListWidget* list_widget, const StringDictionary& items)
     {
-        const QString item_label = i->name();
-        const QString item_value = i->value<QString>();
+        for (const_each<StringDictionary> i = items; i; ++i)
+        {
+            const QString item_label = i->name();
+            const QString item_value = i->value<QString>();
 
-        QListWidgetItem* item = new QListWidgetItem(item_label, m_ui->listwidget);
-        item->setData(0, item_value);
+            QListWidgetItem* item = new QListWidgetItem(item_label, list_widget);
+            item->setData(0, item_value);
+        }
     }
+}
+
+void EntityBrowserWindow::add_items_page(
+    const string&           page_name,
+    const string&           page_label,
+    const StringDictionary& items)
+{
+    QWidget* tab = new QWidget(m_ui->tab_widget);
+    QGridLayout* layout = new QGridLayout(tab);
+
+    QListWidget* list_widget = new QListWidget(tab);
+    layout->addWidget(list_widget, 0, 0, 1, 1);
+
+    add_items_to_list_widget(list_widget, items);
+
+    connect(
+        list_widget, SIGNAL(itemSelectionChanged()),
+        this, SLOT(slot_item_selection_changed()));
+
+    connect(
+        list_widget, SIGNAL(itemActivated(QListWidgetItem*)),
+        this, SLOT(slot_item_activated(QListWidgetItem*)));
+
+    const bool were_signals_blocked = m_ui->tab_widget->blockSignals(true);
+    const int tab_index = m_ui->tab_widget->addTab(tab, QString::fromStdString(page_label));
+    m_ui->tab_widget->blockSignals(were_signals_blocked);
+
+    Page page;
+    page.m_page_name = page_name;
+    page.m_list_widget = list_widget;
+    m_pages[tab_index] = page;
+}
+
+void EntityBrowserWindow::slot_current_tab_changed(int tab_index)
+{
+    slot_item_selection_changed();
 }
 
 void EntityBrowserWindow::slot_item_selection_changed()
 {
-    const bool item_selected = m_ui->listwidget->selectedItems().size() == 1;
+    const Page& page = m_pages[m_ui->tab_widget->currentIndex()];
+    const bool item_selected = page.m_list_widget->selectedItems().size() == 1;
 
     m_ui->buttonbox->button(QDialogButtonBox::Ok)->setEnabled(item_selected);
 }
 
 void EntityBrowserWindow::slot_item_activated(QListWidgetItem* item)
 {
-    emit accepted(item->data(0).toString());
+    const Page& page = m_pages[m_ui->tab_widget->currentIndex()];
+
+    emit accepted(QString::fromStdString(page.m_page_name), item->data(0).toString());
 }
 
 void EntityBrowserWindow::slot_accept()
 {
-    const QList<QListWidgetItem*> selected_items = m_ui->listwidget->selectedItems();
+    const Page& page = m_pages[m_ui->tab_widget->currentIndex()];
+    const QList<QListWidgetItem*> selected_items = page.m_list_widget->selectedItems();
 
     if (selected_items.size() == 1)
         slot_item_activated(selected_items.first());
