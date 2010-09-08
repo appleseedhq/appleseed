@@ -14,7 +14,7 @@
                 </matrix>
             </transform>
         </camera>
-        <texture name="texture" model="2d_texture">
+        <texture name="texture" model="disk_texture_2d">
             <parameter name="color_space" value="srgb" />
             <parameter name="filename" value="texture.exr" />
         </texture>

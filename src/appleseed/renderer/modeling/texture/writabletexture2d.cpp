@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "writabletexture.h"
+#include "writabletexture2d.h"
 
 // appleseed.renderer headers.
 #include "renderer/modeling/texture/texture.h"
@@ -50,14 +50,14 @@ namespace
 {
 
     //
-    // Writable texture.
+    // 2D writable texture.
     //
 
-    class WritableTexture
+    class WritableTexture2d
       : public Texture
     {
       public:
-        WritableTexture(
+        WritableTexture2d(
             const char*         name,
             const ParamArray&   params,
             const SearchPaths&  search_paths)
@@ -74,7 +74,7 @@ namespace
 
         virtual const char* get_model() const
         {
-            return WritableTextureFactory::get_model();
+            return WritableTexture2dFactory::get_model();
         }
 
         virtual const char* get_name() const
@@ -142,22 +142,22 @@ namespace
 
 
 //
-// WritableTextureFactory class implementation.
+// WritableTexture2dFactory class implementation.
 //
 
-const char* WritableTextureFactory::get_model()
+const char* WritableTexture2dFactory::get_model()
 {
-    return "2d_texture";
+    return "writable_texture_2d";
 }
 
-auto_release_ptr<Texture> WritableTextureFactory::create(
+auto_release_ptr<Texture> WritableTexture2dFactory::create(
     const char*         name,
     const ParamArray&   params,
     const SearchPaths&  search_paths) const
 {
     return
         auto_release_ptr<Texture>(
-            new WritableTexture(name, params, search_paths));
+            new WritableTexture2d(name, params, search_paths));
 }
 
 }   // namespace renderer

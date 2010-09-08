@@ -30,8 +30,8 @@
 #include "texturefactoryregistrar.h"
 
 // appleseed.renderer headers.
-#include "renderer/modeling/texture/disktexture.h"
-#include "renderer/modeling/texture/writabletexture.h"
+#include "renderer/modeling/texture/disktexture2d.h"
+#include "renderer/modeling/texture/writabletexture2d.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/registrar.h"
@@ -55,12 +55,12 @@ TextureFactoryRegistrar::TextureFactoryRegistrar()
   : impl(new Impl())
 {
     impl->m_registrar.insert(
-        DiskTextureFactory::get_model(),
-        auto_ptr<ITextureFactory>(new DiskTextureFactory()));
+        DiskTexture2dFactory::get_model(),
+        auto_ptr<ITextureFactory>(new DiskTexture2dFactory()));
 
     impl->m_registrar.insert(
-        WritableTextureFactory::get_model(),
-        auto_ptr<ITextureFactory>(new WritableTextureFactory()));
+        WritableTexture2dFactory::get_model(),
+        auto_ptr<ITextureFactory>(new WritableTexture2dFactory()));
 }
 
 const TextureFactoryRegistrar::FactoryType* TextureFactoryRegistrar::lookup(const char* name) const

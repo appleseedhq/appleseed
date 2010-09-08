@@ -11,7 +11,7 @@
             </transform>
         </camera>
 
-        <texture name="envmap" model="2d_texture">
+        <texture name="envmap" model="disk_texture_2d">
             <parameter name="color_space" value="linear_rgb" />
             <parameter name="filename" value="grace-new_2048.exr" />
         </texture>
@@ -61,11 +61,11 @@
             </color>
 
             <!-- Textures -->
-            <texture name="danger_bikinis_rect" model="2d_texture">
+            <texture name="danger_bikinis_rect" model="disk_texture_2d">
                 <parameter name="filename" value="danger bikinis rect.exr" />
                 <parameter name="color_space" value="srgb" />
             </texture>
-            <texture name="danger_bikinis_loz" model="2d_texture">
+            <texture name="danger_bikinis_loz" model="disk_texture_2d">
                 <parameter name="filename" value="danger bikinis loz.exr" />
                 <parameter name="color_space" value="srgb" />
             </texture>

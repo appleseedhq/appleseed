@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "disktexture.h"
+#include "disktexture2d.h"
 
 // appleseed.renderer headers.
 #include "renderer/modeling/texture/texture.h"
@@ -52,14 +52,14 @@ namespace
 {
 
     //
-    // Disk texture.
+    // 2D disk texture.
     //
 
-    class DiskTexture
+    class DiskTexture2d
       : public Texture
     {
       public:
-        DiskTexture(
+        DiskTexture2d(
             const char*         name,
             const ParamArray&   params,
             const SearchPaths&  search_paths)
@@ -77,7 +77,7 @@ namespace
 
         virtual const char* get_model() const
         {
-            return DiskTextureFactory::get_model();
+            return DiskTexture2dFactory::get_model();
         }
 
         virtual const char* get_name() const
@@ -165,22 +165,22 @@ namespace
 
 
 //
-// DiskTextureFactory class implementation.
+// DiskTexture2dFactory class implementation.
 //
 
-const char* DiskTextureFactory::get_model()
+const char* DiskTexture2dFactory::get_model()
 {
-    return "2d_texture";
+    return "disk_texture_2d";
 }
 
-auto_release_ptr<Texture> DiskTextureFactory::create(
+auto_release_ptr<Texture> DiskTexture2dFactory::create(
     const char*         name,
     const ParamArray&   params,
     const SearchPaths&  search_paths) const
 {
     return
         auto_release_ptr<Texture>(
-            new DiskTexture(name, params, search_paths));
+            new DiskTexture2d(name, params, search_paths));
 }
 
 }   // namespace renderer

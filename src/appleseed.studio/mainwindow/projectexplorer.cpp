@@ -549,7 +549,7 @@ void ProjectExplorer::import_textures(
 
     SearchPaths search_paths;
     auto_release_ptr<Texture> texture(
-        DiskTextureFactory().create(
+        DiskTexture2dFactory().create(
             texture_name.c_str(),
             texture_params,
             search_paths));

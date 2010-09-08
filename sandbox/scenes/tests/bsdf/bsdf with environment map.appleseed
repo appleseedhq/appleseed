@@ -15,7 +15,7 @@
                 </matrix>
             </transform>
         </camera>
-        <texture name="envmap" model="2d_texture">
+        <texture name="envmap" model="disk_texture_2d">
             <parameter name="color_space" value="linear_rgb" />
             <parameter name="filename" value="doge2_1024.exr" />
         </texture>

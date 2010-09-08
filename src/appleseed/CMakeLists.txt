@@ -1208,14 +1208,14 @@ source_group("renderer\\modeling\\surfaceshader" FILES
 )
 
 set(renderer_modeling_texture_sources
-    renderer/modeling/texture/disktexture.cpp
-    renderer/modeling/texture/disktexture.h
+    renderer/modeling/texture/disktexture2d.cpp
+    renderer/modeling/texture/disktexture2d.h
     renderer/modeling/texture/itexturefactory.h
     renderer/modeling/texture/texture.h
     renderer/modeling/texture/texturefactoryregistrar.cpp
     renderer/modeling/texture/texturefactoryregistrar.h
-    renderer/modeling/texture/writabletexture.cpp
-    renderer/modeling/texture/writabletexture.h
+    renderer/modeling/texture/writabletexture2d.cpp
+    renderer/modeling/texture/writabletexture2d.h
 )
 list(APPEND appleseed_sources
     ${renderer_modeling_texture_sources}

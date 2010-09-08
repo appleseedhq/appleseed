@@ -35,7 +35,7 @@
                     46.486511 47.270599 48.414104 48.974621 49.176392 47.672203 42.238750
                 </values>
             </color>
-            <texture name="checkerboard_texture" model="2d_texture">
+            <texture name="checkerboard_texture" model="disk_texture_2d">
                 <parameter name="color_space" value="srgb" />
                 <parameter name="filename" value="colored checkerboard 271x271 scanline.exr" />
             </texture>

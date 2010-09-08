@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_TEXTURE_WRITABLETEXTURE_H
-#define APPLESEED_RENDERER_MODELING_TEXTURE_WRITABLETEXTURE_H
+#ifndef APPLESEED_RENDERER_MODELING_TEXTURE_DISKTEXTURE2D_H
+#define APPLESEED_RENDERER_MODELING_TEXTURE_DISKTEXTURE2D_H
 
 // appleseed.renderer headers.
 #include "renderer/modeling/texture/itexturefactory.h"
@@ -40,10 +40,10 @@ namespace renderer
 {
 
 //
-// Writable texture factory.
+// 2D disk texture factory.
 //
 
-class RENDERERDLL WritableTextureFactory
+class RENDERERDLL DiskTexture2dFactory
   : public ITextureFactory
 {
   public:
@@ -59,4 +59,4 @@ class RENDERERDLL WritableTextureFactory
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_TEXTURE_WRITABLETEXTURE_H
+#endif  // !APPLESEED_RENDERER_MODELING_TEXTURE_DISKTEXTURE2D_H
