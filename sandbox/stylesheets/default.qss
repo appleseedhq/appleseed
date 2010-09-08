@@ -628,3 +628,8 @@ QListWidget
 {
     border: 1px solid rgb(40, 40, 40);
 }
+
+QTabWidget QListWidget
+{
+    border: 0px;
+}
