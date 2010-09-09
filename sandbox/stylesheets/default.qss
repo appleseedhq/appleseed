@@ -450,19 +450,8 @@ QPushButton:disabled
 
 
 /*
- * QTreeView.
  * QHeaderView.
  */
-
-QTreeView
-{
-    border: 1px solid rgb(40, 40, 40);
-}
-
-QTabWidget QTreeView
-{
-    border: 0px;
-}
 
 QHeaderView::section
 {
@@ -476,19 +465,40 @@ QHeaderView::section:disabled
     color: rgb(100, 100, 100);
 }
 
-QTreeView::item:hover
+
+/*
+ * QTreeView.
+ * QListView.
+ */
+
+QTreeView,
+QListView
+{
+    border: 1px solid rgb(40, 40, 40);
+}
+
+QTabWidget QTreeView,
+QTabWidget QListView
+{
+    border: 0px;
+}
+
+QTreeView::item:hover,
+QListView::item:hover
 {
     background-color: rgb(190, 140, 50);
     color: rgb(255, 255, 255);
 }
 
-QTreeView::item:selected
+QTreeView::item:selected,
+QListView::item:selected
 {
     background-color: rgb(80, 80, 80);
     color: rgb(255, 255, 255);
 }
 
-QTreeView::item:disabled
+QTreeView::item:disabled,
+QListView::item:disabled
 {
     color: rgb(100, 100, 100);
 }
@@ -617,19 +627,4 @@ QComboBox::down-arrow
 QComboBox::down-arrow:hover
 {
     image: url(":/widgets/combobox_arrow_down_selected.png");
-}
-
-
-/*
- * QListWidget.
- */
-
-QListWidget
-{
-    border: 1px solid rgb(40, 40, 40);
-}
-
-QTabWidget QListWidget
-{
-    border: 0px;
 }
