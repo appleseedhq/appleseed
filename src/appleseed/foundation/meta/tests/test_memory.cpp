@@ -53,6 +53,35 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Memory)
         FOUNDATION_EXPECT_EQ(16, align(16, 4));
     }
 
+    FOUNDATION_TEST_CASE(EnsureSize_GivenEmptyVector_ResizesVectorByInsertingDefaultValue)
+    {
+        vector<int> v;
+
+        ensure_size(v, 2);
+
+        FOUNDATION_EXPECT_EQ(2, v.size());
+    }
+
+    FOUNDATION_TEST_CASE(EnsureSize_GivenEmptyVector_ResizesVectorByInsertingProvidedValue)
+    {
+        vector<int> v;
+
+        ensure_size(v, 2, 42);
+
+        FOUNDATION_ASSERT_EQ(2, v.size());
+        FOUNDATION_EXPECT_EQ(42, v[0]);
+        FOUNDATION_EXPECT_EQ(42, v[1]);
+    }
+
+    FOUNDATION_TEST_CASE(EnsureSize_GivenMinimumSizeSmallerThanCurrentVectorSize_DoesNothing)
+    {
+        vector<int> v(12);
+
+        ensure_size(v, 3);
+
+        FOUNDATION_EXPECT_EQ(12, v.size());
+    }
+
     FOUNDATION_TEST_CASE(ClearReleaseMemory_GivenVectorWithThousandElements_ClearsVector)
     {
         vector<int> v(1000);

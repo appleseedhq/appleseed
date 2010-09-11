@@ -76,16 +76,27 @@ void aligned_free(void* aligned_ptr);
 
 
 //
-// Functions to clear containers.
+// STL containers related functions.
 //
 
+// Ensure that a container has a minimum given size.
+template <typename Vector>
+void ensure_size(
+    Vector&         vector,
+    const size_t    minimum_size);
+template <typename Vector, typename T>
+void ensure_size(
+    Vector&         vector,
+    const size_t    minimum_size,
+    const T&        value);
+
 // Clear a container and release the memory.
-template <typename T>
-void clear_release_memory(T& container);
+template <typename Container>
+void clear_release_memory(Container& container);
 
 // Clear a container but keep memory allocated.
-template <typename T>
-void clear_keep_memory(T& container);
+template <typename Container>
+void clear_keep_memory(Container& container);
 
 
 //
@@ -139,8 +150,27 @@ size_t alignment(const Pointer ptr, const size_t max_alignment)
 
 
 //
-// Container-clearing functions implementation.
+// STL containers related functions implementation.
 //
+
+template <typename Vector>
+inline void ensure_size(
+    Vector&         vector,
+    const size_t    minimum_size)
+{
+    if (vector.size() < minimum_size)
+        vector.resize(minimum_size);
+}
+
+template <typename Vector, typename T>
+inline void ensure_size(
+    Vector&         vector,
+    const size_t    minimum_size,
+    const T&        value)
+{
+    if (vector.size() < minimum_size)
+        vector.resize(minimum_size, value);
+}
 
 template <typename Container>
 inline void clear_release_memory(Container& container)

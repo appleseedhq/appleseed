@@ -32,6 +32,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/memory.h"
 #include "foundation/utility/numerictype.h"
 
 // Standard headers.
@@ -113,7 +114,6 @@ class AttributeSet
 // AttributeSet class implementation.
 //
 
-// Insert a new attribute at the end of a given attribute channel.
 template <typename T>
 inline size_t AttributeSet::push_attribute(
     const ChannelID         channel_id,
@@ -140,7 +140,6 @@ inline size_t AttributeSet::push_attribute(
     return index;
 }
 
-// Return the number of attributes in a given attribute channel.
 inline size_t AttributeSet::get_attribute_count(
     const ChannelID         channel_id) const
 {
@@ -151,7 +150,6 @@ inline size_t AttributeSet::get_attribute_count(
     return channel->m_storage.size() / channel->m_value_size;
 }
 
-// Set a given attribute.
 template <typename T>
 inline void AttributeSet::set_attribute(
     const ChannelID         channel_id,
@@ -165,17 +163,15 @@ inline void AttributeSet::set_attribute(
     // Check that the size of the attribute matches the size in the channel descriptor.
     assert(channel->m_value_size == sizeof(T));
 
-    // Resize the storage to accomodate the new attribute.
+    // Resize the storage to accommodate the new attribute.
     const size_t new_size = (index + 1) * sizeof(T);
-    if (channel->m_storage.size() < new_size)
-        channel->m_storage.resize(new_size);
+    ensure_size(channel->m_storage, new_size);
 
     // Store the new attribute.
     T* typed_storage = reinterpret_cast<T*>(&channel->m_storage.front());
     typed_storage[index] = value;
 }
 
-// Get a given attribute.
 template <typename T>
 inline void AttributeSet::get_attribute(
     const ChannelID         channel_id,

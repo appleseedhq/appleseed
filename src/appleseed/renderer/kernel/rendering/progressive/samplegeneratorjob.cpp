@@ -34,6 +34,9 @@
 #include "renderer/kernel/rendering/progressive/samplegenerator.h"
 #include "renderer/kernel/rendering/itilecallback.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/memory.h"
+
 // Standard headers.
 #include <algorithm>
 
@@ -126,8 +129,7 @@ void SampleGeneratorJob::render()
         sample_count);
 */
 
-    if (m_samples.size() < sample_count)
-        m_samples.resize(sample_count);
+    ensure_size(m_samples, sample_count);
 
     assert(!m_samples.empty());
 
