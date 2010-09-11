@@ -42,6 +42,7 @@
 #include "foundation/math/intersection.h"
 #include "foundation/math/permutation.h"
 #include "foundation/math/sah.h"
+#include "foundation/utility/memory.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -85,13 +86,6 @@ namespace
         const size_t            m_begin;
         const size_t            m_dim;
     };
-
-    template <typename Vec>
-    void ensure_size(Vec& v, const size_t size)
-    {
-        if (v.size() < size)
-            v.resize(size);
-    }
 }
 
 class AssemblyTreePartitioner
@@ -162,10 +156,10 @@ class AssemblyTreePartitioner
             }
         }
 
-        // Don't split if the cost of the best partition is too high.
+        // Just split in half if the cost of the best partition is too high.
         const GScalar leaf_cost = bbox.half_surface_area() * count;
         if (best_split_cost >= leaf_cost)
-            return end;
+            return (begin + end) / 2;
 
         // Sort the indices according to the item bounding boxes.
         BboxSortPredicate predicate(bboxes, begin, best_split_dim);
@@ -175,6 +169,7 @@ class AssemblyTreePartitioner
         small_item_reorder(&items[begin], &m_temp_items[0], &m_indices[0], count);
         small_item_reorder(&bboxes[begin], &m_temp_bboxes[0], &m_indices[0], count);
 
+        assert(begin + best_split_pivot < end);
         return begin + best_split_pivot;
     }
 
@@ -520,9 +515,8 @@ bool AssemblyLeafVisitor::visit(
     }
 
     // Keep track of the closest hit.
-    if (result.m_hit)
+    if (result.m_hit && result.m_ray.m_tmax < m_shading_point.m_ray.m_tmax)
     {
-        assert(result.m_ray.m_tmax < m_shading_point.m_ray.m_tmax);
         m_shading_point.m_ray.m_tmax = result.m_ray.m_tmax;
         m_shading_point.m_hit = true;
         m_shading_point.m_bary = result.m_bary;
