@@ -73,6 +73,12 @@ class RENDERERDLL ObjectInstance
     // Return the parent space bounding box of the instance.
     const GAABB3& get_parent_bbox() const;
 
+    // Assign a given material index to a given slot.
+    void set_material_index(const size_t slot, const size_t material_index);
+
+    // Set all material indices at once.
+    void set_material_indices(const MaterialIndexArray& material_indices);
+
     // Return the array of material indices.
     const MaterialIndexArray& get_material_indices() const;
 

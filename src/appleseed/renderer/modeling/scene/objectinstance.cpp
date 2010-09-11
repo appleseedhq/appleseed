@@ -32,6 +32,9 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/geometry/object.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/memory.h"
+
 using namespace foundation;
 using namespace std;
 
@@ -59,7 +62,6 @@ struct ObjectInstance::Impl
     MaterialIndexArray          m_material_indices;
 };
 
-// Constructor.
 ObjectInstance::ObjectInstance(
     const char*                 name,
     const Object&               object,
@@ -77,43 +79,47 @@ ObjectInstance::ObjectInstance(
     impl->m_material_indices = material_indices;
 }
 
-// Destructor.
 ObjectInstance::~ObjectInstance()
 {
     delete impl;
 }
 
-// Delete this instance.
 void ObjectInstance::release()
 {
     delete this;
 }
 
-// Return the name of this instance.
 const char* ObjectInstance::get_name() const
 {
     return impl->m_name.c_str();
 }
 
-// Return the index in the assembly of the instantiated object.
 size_t ObjectInstance::get_object_index() const
 {
     return impl->m_object_index;
 }
 
-// Return the transform of the instance.
 const Transformd& ObjectInstance::get_transform() const
 {
     return impl->m_transform;
 }
 
-// Return the parent space bounding box of the instance.
 const GAABB3& ObjectInstance::get_parent_bbox() const
 {
     return impl->m_parent_bbox;
 }
 
-// Return the array of material indices.
+void ObjectInstance::set_material_index(const size_t slot, const size_t material_index)
+{
+    ensure_size(impl->m_material_indices, slot + 1);
+    impl->m_material_indices[slot] = material_index;
+}
+
+void ObjectInstance::set_material_indices(const MaterialIndexArray& material_indices)
+{
+    impl->m_material_indices = material_indices;
+}
+
 const MaterialIndexArray& ObjectInstance::get_material_indices() const
 {
     return impl->m_material_indices;
@@ -124,7 +130,6 @@ const MaterialIndexArray& ObjectInstance::get_material_indices() const
 // ObjectInstanceFactory class implementation.
 //
 
-// Create a new object instance.
 auto_release_ptr<ObjectInstance> ObjectInstanceFactory::create(
     const char*                 name,
     const Object&               object,
