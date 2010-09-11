@@ -180,6 +180,8 @@ class MainWindow
     void slot_save_project();
     void slot_save_project_as();
 
+    void slot_project_modified();
+
     void slot_start_interactive_rendering();
     void slot_start_final_rendering();
     void slot_stop_rendering();

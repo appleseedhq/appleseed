@@ -104,6 +104,7 @@ MainWindow::MainWindow(QWidget* parent)
     print_library_information();
 
     update_workspace();
+    update_project_explorer();
 
     remove_render_widgets();
 
@@ -347,19 +348,20 @@ void MainWindow::update_workspace()
 {
     assert(!m_rendering_manager.is_rendering());
 
-    update_project_explorer();
     update_window_title();
     enable_disable_widgets(false);
 }
 
 void MainWindow::update_project_explorer()
 {
-    Project* project = m_project_manager.get_project();
-
     m_project_explorer.reset(
         new ProjectExplorer(
             m_ui->treewidget_project_explorer_scene,
-            project));
+            m_project_manager.get_project()));
+
+    QObject::connect(
+        m_project_explorer.get(), SIGNAL(project_modified()),
+        this, SLOT(slot_project_modified()));
 }
 
 void MainWindow::update_window_title()
@@ -593,6 +595,7 @@ void MainWindow::slot_new_project()
     }
 
     update_workspace();
+    update_project_explorer();
 }
 
 namespace
@@ -665,6 +668,7 @@ void MainWindow::slot_open_project()
     }
 
     update_workspace();
+    update_project_explorer();
 }
 
 void MainWindow::slot_open_cornellbox_builtin_project()
@@ -684,6 +688,7 @@ void MainWindow::slot_open_cornellbox_builtin_project()
     }
 
     update_workspace();
+    update_project_explorer();
 }
 
 void MainWindow::slot_reload_project()
@@ -708,6 +713,7 @@ void MainWindow::slot_reload_project()
     }
 
     update_workspace();
+    update_project_explorer();
 }
 
 void MainWindow::slot_save_project()
@@ -743,6 +749,15 @@ void MainWindow::slot_save_project_as()
         m_project_manager.save_project_as(filepath.toAscii().constData());
 
     update_workspace();
+}
+
+void MainWindow::slot_project_modified()
+{
+    assert(m_project_manager.is_project_open());
+
+    m_project_manager.set_project_dirty_flag();
+
+    update_window_title();
 }
 
 void MainWindow::slot_start_interactive_rendering()
