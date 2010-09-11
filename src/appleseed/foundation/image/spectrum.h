@@ -115,6 +115,9 @@ template <typename T, size_t N> RegularSpectrum<T, N>& operator/=(RegularSpectru
 // Return whether all components of a spectrum are in [0,1].
 template <typename T, size_t N> bool is_saturated(const RegularSpectrum<T, N>& s);
 
+// Clamp the argument to [0,1].
+template <typename T, size_t N> RegularSpectrum<T, N> saturate(const RegularSpectrum<T, N>& s);
+
 // Return the smallest or largest signed component of a spectrum.
 template <typename T, size_t N> T min_value(const RegularSpectrum<T, N>& s);
 template <typename T, size_t N> T max_value(const RegularSpectrum<T, N>& s);
@@ -400,7 +403,7 @@ inline RegularSpectrum<T, N>& operator-=(RegularSpectrum<T, N>& lhs, const Regul
 template <typename T, size_t N>
 inline RegularSpectrum<T, N>& operator*=(RegularSpectrum<T, N>& lhs, const T rhs)
 {
-    for (size_t i = 0; i < RegularSpectrum<T, N>::StoredSamples; ++i)
+    for (size_t i = 0; i < N; ++i)
         lhs[i] *= rhs;
 
     return lhs;
@@ -480,6 +483,17 @@ inline bool is_saturated(const RegularSpectrum<T, N>& s)
     }
 
     return true;
+}
+
+template <typename T, size_t N>
+inline RegularSpectrum<T, N> saturate(const RegularSpectrum<T, N>& s)
+{
+    RegularSpectrum<T, N> result;
+
+    for (size_t i = 0; i < N; ++i)
+        result[i] = saturate(s[i]);
+
+    return result;
 }
 
 template <typename T, size_t N>
