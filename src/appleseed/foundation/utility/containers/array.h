@@ -99,6 +99,9 @@ namespace foundation
         /* Reserves memory for a given number of elements. */           \
         void reserve(const size_type count);                            \
                                                                         \
+        /* Specifies a new size for a vector. */                        \
+        void resize(const size_type new_size);                          \
+                                                                        \
         /* Adds an element to the end of the vector. */                 \
         void push_back(const value_type& val);                          \
                                                                         \
@@ -177,6 +180,12 @@ namespace foundation
     void ArrayName::reserve(const size_type count)                      \
     {                                                                   \
         impl->reserve(count);                                           \
+    }                                                                   \
+                                                                        \
+    /* Specifies a new size for a vector. */                            \
+    void ArrayName::resize(const size_type new_size)                    \
+    {                                                                   \
+        impl->resize(new_size);                                         \
     }                                                                   \
                                                                         \
     /* Adds an element to the end of the vector. */                     \
