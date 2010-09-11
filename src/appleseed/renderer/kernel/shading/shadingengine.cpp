@@ -31,7 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingcontext.h"
-#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
@@ -52,88 +51,85 @@ namespace renderer
 // ShadingEngine class implementation.
 //
 
-// Constructor.
 ShadingEngine::ShadingEngine(const ParamArray& params)
 {
-    // Create the material used to shade surfaces without materials.
-    m_missing_material_sshader =
-        ConstantSurfaceShaderFactory().create(
-            "__missing_material_surface_shader",
-            ParamArray());
-    m_missing_material =
-        MaterialFactory().create(
-            "__missing_material",
-            m_missing_material_sshader.get());
-
-    // Create the diagnostic material, if requested.
     if (params.dictionaries().exist("override_shading"))
-    {
-        m_diagnostic_material_sshader =
-            DiagnosticSurfaceShaderFactory().create(
-                "__diagnostic_surface_shader",
-                params.child("override_shading"));
-        m_diagnostic_material =
-            MaterialFactory().create(
-                "__diagnostic_material",
-                m_diagnostic_material_sshader.get());
-    }
+        create_diagnostic_material(params.child("override_shading"));
 }
 
-// Shade a given intersection point.
-void ShadingEngine::shade(
+void ShadingEngine::create_diagnostic_material(const ParamArray& params)
+{
+    m_diagnostic_material_surface_shader =
+        DiagnosticSurfaceShaderFactory().create(
+            "__diagnostic_surface_shader",
+            params);
+
+    m_diagnostic_material =
+        MaterialFactory().create(
+            "__diagnostic_material",
+            m_diagnostic_material_surface_shader.get());
+}
+
+void ShadingEngine::shade_hit_point(
     SamplingContext&        sampling_context,
     const ShadingContext&   shading_context,
     const ShadingPoint&     shading_point,
     ShadingResult&          shading_result) const
 {
-    if (shading_point.hit())
+    // Retrieve the material at the intersection point.
+    const Material* material = m_diagnostic_material.get();
+    if (material == 0)
     {
-        // Retrieve the material at the intersection point.
-        const Material* material = m_diagnostic_material.get();
+        // No diagnostic material: use the material assigned to the triangle.
+        material = shading_point.get_material();
         if (material == 0)
         {
-            // No diagnostic material: use the material assigned to the triangle.
-            material = shading_point.get_material();
-
-            // The triangle has no material: use a substitute.
-            if (material == 0)
-                material = m_missing_material.get();
+            // The triangle has no material: return solid pink.
+            shading_result.set_to_solid_pink();
+            return;
         }
+    }
 
-        // Retrieve the surface shader of the material.
-        const SurfaceShader& surface_shader = material->get_surface_shader();
+    // Retrieve the surface shader of the material.
+    const SurfaceShader& surface_shader = material->get_surface_shader();
 
-        // Execute the surface shader.
-        surface_shader.evaluate(
-            sampling_context,
-            shading_context,
-            shading_point,
+    // Execute the surface shader.
+    surface_shader.evaluate(
+        sampling_context,
+        shading_context,
+        shading_point,
+        shading_result);
+}
+
+void ShadingEngine::shade_environment(
+    SamplingContext&        sampling_context,
+    const ShadingContext&   shading_context,
+    const ShadingPoint&     shading_point,
+    ShadingResult&          shading_result) const
+{
+    // Retrieve the environment shader of the scene.
+    const Scene& scene = shading_point.get_scene();
+    const Environment* environment = scene.get_environment();
+    const EnvironmentShader* environment_shader =
+        environment
+            ? environment->get_environment_shader()
+            : 0;
+
+    if (environment_shader)
+    {
+        // There is an environment shader: execute it.
+        InputEvaluator input_evaluator(shading_context.get_texture_cache());
+        const ShadingRay& ray = shading_point.get_ray();
+        const Vector3d direction = normalize(ray.m_dir);
+        environment_shader->evaluate(
+            input_evaluator,
+            direction,
             shading_result);
     }
     else
     {
-        // Retrieve the environment shader of the scene.
-        const Scene& scene = shading_point.get_scene();
-        const Environment* environment = scene.get_environment();
-        const EnvironmentShader* environment_shader =
-            environment ? environment->get_environment_shader() : 0;
-
-        if (environment_shader)
-        {
-            // There is an environment shader: execute it.
-            InputEvaluator input_evaluator(shading_context.get_texture_cache());
-            const ShadingRay& ray = shading_point.get_ray();
-            const Vector3d direction = normalize(ray.m_dir);
-            environment_shader->evaluate(
-                input_evaluator,
-                direction,
-                shading_result);
-        }
-        else
-        {
-            // No environment shader: return transparent black.
-            shading_result.clear();
-        }
+        // No environment shader: return transparent black.
+        shading_result.clear();
     }
 }
 

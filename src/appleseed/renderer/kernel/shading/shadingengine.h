@@ -31,12 +31,12 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
+#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 
 // Forward declarations.
 namespace renderer      { class ShadingContext; }
-namespace renderer      { class ShadingPoint; }
 namespace renderer      { class ShadingResult; }
 
 namespace renderer
@@ -61,11 +61,54 @@ class ShadingEngine
         ShadingResult&          shading_result) const;
 
   private:
-    foundation::auto_release_ptr<SurfaceShader>     m_missing_material_sshader;
-    foundation::auto_release_ptr<Material>          m_missing_material;
-    foundation::auto_release_ptr<SurfaceShader>     m_diagnostic_material_sshader;
+    foundation::auto_release_ptr<SurfaceShader>     m_diagnostic_material_surface_shader;
     foundation::auto_release_ptr<Material>          m_diagnostic_material;
+
+    void create_diagnostic_material(const ParamArray& params);
+
+    void shade_hit_point(
+        SamplingContext&        sampling_context,
+        const ShadingContext&   shading_context,
+        const ShadingPoint&     shading_point,
+        ShadingResult&          shading_result) const;
+
+    void shade_environment(
+        SamplingContext&        sampling_context,
+        const ShadingContext&   shading_context,
+        const ShadingPoint&     shading_point,
+        ShadingResult&          shading_result) const;
 };
+
+
+//
+// ShadingEngine class implementation.
+//
+
+inline void ShadingEngine::shade(
+    SamplingContext&            sampling_context,
+    const ShadingContext&       shading_context,
+    const ShadingPoint&         shading_point,
+    ShadingResult&              shading_result) const
+{
+    if (shading_point.hit())
+    {
+        return
+            shade_hit_point(
+                sampling_context,
+                shading_context,
+                shading_point,
+                shading_result);
+    }
+    else
+    {
+        return
+            shade_environment(
+                sampling_context,
+                shading_context,
+                shading_point,
+                shading_result);
+    }
+}
 
 }       // namespace renderer
 
