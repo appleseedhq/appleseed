@@ -447,10 +447,10 @@ namespace
         SVal            m_uniform_sval;
         bool            m_compute_rval_return_value;
 
-        static bool compute_rval(const Spectrum& rd, const Spectrum& rg, RVal& rval)
+        static bool compute_rval(const Spectrum& raw_rd, const Spectrum& raw_rg, RVal& rval)
         {
-            assert(is_saturated(rd));
-            assert(is_saturated(rg));
+            const Spectrum rd = saturate(raw_rd);
+            const Spectrum rg = saturate(raw_rg);
 
             // Precompute constant factor of diffuse component (equation 5).
             rval.m_kd = rd;
