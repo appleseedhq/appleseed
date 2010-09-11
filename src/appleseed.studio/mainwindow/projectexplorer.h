@@ -40,7 +40,9 @@
 #include "foundation/utility/uid.h"
 
 // Qt headers.
+#include <QList>
 #include <QObject>
+#include <QString>
 #include <QVariant>
 
 // Standard headers.
@@ -106,43 +108,41 @@ class ProjectExplorer
     renderer::SurfaceShaderFactoryRegistrar m_surface_shader_factory_registrar;
 
     void build_tree_widget();
-
-    void insert_assembly_items(const renderer::Assembly& assembly);
+    void build_assembly_branch(renderer::Assembly& assembly);
 
     QMenu* build_generic_context_menu() const;
-    QMenu* build_item_context_menu(const QTreeWidgetItem* item) const;
+    QMenu* build_context_menu(const QList<QTreeWidgetItem*>& items) const;
     QMenu* build_assembly_context_menu() const;
     QMenu* build_assembly_collection_context_menu() const;
-    QMenu* build_texture_collection_context_menu() const;
     QMenu* build_bsdf_collection_context_menu() const;
-    QMenu* build_surface_shader_collection_context_menu() const;
     QMenu* build_material_collection_context_menu() const;
+    QMenu* build_object_instance_context_menu() const;
+    QMenu* build_surface_shader_collection_context_menu() const;
+    QMenu* build_texture_collection_context_menu() const;
 
     void create_bsdf_entity(
-        const renderer::Assembly&           assembly,
+        renderer::Assembly&                 assembly,
         const AssemblyItems&                assembly_items,
         const foundation::Dictionary&       values);
 
     void create_surface_shader_entity(
-        const renderer::Assembly&           assembly,
+        renderer::Assembly&                 assembly,
         const AssemblyItems&                assembly_items,
         const foundation::Dictionary&       values);
 
     void create_material_entity(
-        const renderer::Assembly&           assembly,
+        renderer::Assembly&                 assembly,
         const AssemblyItems&                assembly_items,
         const foundation::Dictionary&       values);
 
     void import_objects(
-        renderer::ObjectContainer&          objects,
-        renderer::ObjectInstanceContainer&  object_instances,
+        renderer::Assembly&                 assembly,
         QTreeWidgetItem*                    object_items,
         QTreeWidgetItem*                    object_instance_items,
         const std::string&                  path) const;
 
     void import_textures(
-        renderer::TextureContainer&         textures,
-        renderer::TextureInstanceContainer& texture_instances,
+        renderer::Assembly&                 assembly,
         QTreeWidgetItem*                    texture_items,
         QTreeWidgetItem*                    texture_instance_items,
         const std::string&                  path) const;
@@ -152,12 +152,20 @@ class ProjectExplorer
 
     void slot_add_assembly();
     void slot_instantiate_assembly();
+
     void slot_import_objects_to_assembly();
     void slot_import_textures_to_assembly();
+
     void slot_add_bsdf_to_assembly();
     void slot_add_surface_shader_to_assembly();
     void slot_add_material_to_assembly();
     void slot_create_entity(QVariant payload, foundation::Dictionary values);
+
+    void slot_assign_material_to_object_instance();
+    void slot_do_assign_material_to_object_instance(
+        QList<QVariant>                     items_data,
+        QString                             page_name,
+        QString                             entity_name);
 };
 
 }       // namespace studio
