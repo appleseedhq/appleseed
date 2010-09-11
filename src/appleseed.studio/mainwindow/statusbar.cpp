@@ -68,7 +68,6 @@ void StatusBar::stop_rendering_time_display()
 
     killTimer(m_timer_id);
     m_timer_id = -1;
-    m_timer = 0;
 }
 
 void StatusBar::timerEvent(QTimerEvent* event)
