@@ -54,6 +54,9 @@ class ShadingResult
     // Set the shading result to transparent black.
     void clear();
 
+    // Set the shading result to solid pink (used for debugging).
+    void set_to_solid_pink();
+
     // Transform the shading result to a given color space.
     void transform_to_color_space(
         const foundation::ColorSpace            target,
@@ -73,7 +76,6 @@ class ShadingResult
 // ShadingResult class implementation.
 //
 
-// Set the shading result to transparent black.
 inline void ShadingResult::clear()
 {
     m_color_space = foundation::ColorSpaceLinearRGB;
@@ -83,6 +85,17 @@ inline void ShadingResult::clear()
     m_color[2] = 0.0f;
 
     m_alpha.set(0.0f);
+}
+
+inline void ShadingResult::set_to_solid_pink()
+{
+    m_color_space = foundation::ColorSpaceLinearRGB;
+
+    m_color[0] = 1.0f;
+    m_color[1] = 0.0f;
+    m_color[2] = 1.0f;
+
+    m_alpha.set(1.0f);
 }
 
 }       // namespace renderer
