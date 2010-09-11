@@ -77,8 +77,6 @@ class EntityEditorWindow
             WidgetDefinitionCollection&     definitions) const = 0;
 
       protected:
-        typedef EntityEditorWindow::WidgetDefinitionCollection WidgetDefinitionCollection;
-
         static std::string get_value(
             const foundation::Dictionary&   values,
             const std::string&              name,

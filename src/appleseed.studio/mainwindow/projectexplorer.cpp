@@ -1298,6 +1298,8 @@ namespace
       : public EntityEditorWindow::IFormFactory
     {
       public:
+        typedef EntityEditorWindow::WidgetDefinitionCollection WidgetDefinitionCollection;
+
         EntityEditorFormFactory(
             const FactoryRegistrar&     factory_registrar,
             const Assembly&             assembly,
@@ -1427,6 +1429,8 @@ namespace
       : public EntityEditorWindow::IFormFactory
     {
       public:
+        typedef EntityEditorWindow::WidgetDefinitionCollection WidgetDefinitionCollection;
+
         explicit MaterialEditorFormFactory(const Assembly& assembly)
           : m_assembly(assembly)
         {
