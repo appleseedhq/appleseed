@@ -281,7 +281,9 @@ namespace
                             outgoing,
                             emitted_radiance);
 
-                        if (bsdf_mode != BSDF::Specular)
+                        const double distance = shading_point.get_distance();
+
+                        if (bsdf_mode != BSDF::Specular && distance > 0.0)
                         {
                             // Compute the probability density with respect to surface area
                             // of choosing this point through sampling of the light sources.
@@ -292,7 +294,7 @@ namespace
                             // of the direction obtained through sampling of the BSDF.
                             double px = bsdf_prob;
                             px *= max(dot(outgoing, shading_normal), 0.0);
-                            px /= square(shading_point.get_distance());
+                            px /= square(distance);
 
                             // Multiply the emitted radiance by the MIS weight.
                             const double mis_weight = mis_power2(px, sample_probability);
