@@ -66,7 +66,12 @@ class ProjectExplorer
     Q_OBJECT
 
   public:
-    ProjectExplorer(QTreeWidget* tree_widget, renderer::Project* project);
+    ProjectExplorer(
+        QTreeWidget*        tree_widget,
+        renderer::Project*  project);
+
+  signals:
+    void project_modified();
 
   private:
     struct SceneItems
@@ -101,6 +106,7 @@ class ProjectExplorer
 
     QTreeWidget*                            m_tree_widget;
     renderer::Project*                      m_project;
+
     SceneItems                              m_scene_items;
     AssemblyItemsMap                        m_assembly_items;
 

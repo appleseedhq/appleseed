@@ -129,7 +129,9 @@ void ProjectExplorer::SceneItems::clear()
     m_assembly_instance_items = 0;
 }
 
-ProjectExplorer::ProjectExplorer(QTreeWidget* tree_widget, Project* project)
+ProjectExplorer::ProjectExplorer(
+    QTreeWidget*    tree_widget,
+    Project*        project)
   : m_tree_widget(tree_widget)
   , m_project(project)
 {
@@ -1036,6 +1038,8 @@ void ProjectExplorer::slot_add_assembly()
 
         assemblies.insert(assembly);
     }
+
+    emit project_modified();
 }
 
 void ProjectExplorer::slot_instantiate_assembly()
@@ -1072,6 +1076,8 @@ void ProjectExplorer::slot_instantiate_assembly()
 
         assembly_instances.insert(assembly_instance);
     }
+
+    emit project_modified();
 }
 
 void ProjectExplorer::slot_import_objects_to_assembly()
@@ -1099,6 +1105,8 @@ void ProjectExplorer::slot_import_objects_to_assembly()
             assembly_items.m_object_instance_items,
             filepaths[i].toStdString());
     }
+
+    emit project_modified();
 }
 
 void ProjectExplorer::slot_import_textures_to_assembly()
@@ -1126,6 +1134,8 @@ void ProjectExplorer::slot_import_textures_to_assembly()
             assembly_items.m_texture_instance_items,
             filepaths[i].toStdString());
     }
+
+    emit project_modified();
 }
 
 namespace
@@ -1562,6 +1572,8 @@ void ProjectExplorer::slot_create_entity(QVariant payload, Dictionary values)
 
         // Close the entity editor.
         qobject_cast<QWidget*>(sender()->parent())->close();
+
+        emit project_modified();
     }
     catch (const ExceptionDictionaryItemNotFound& e)
     {
@@ -1669,6 +1681,8 @@ void ProjectExplorer::slot_do_assign_material_to_object_instance(
 
     // Close the entity browser.
     qobject_cast<QWidget*>(sender()->parent())->close();
+
+    emit project_modified();
 }
 
 }   // namespace studio
