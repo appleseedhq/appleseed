@@ -32,6 +32,7 @@
 // appleseed.studio headers.
 #include "mainwindow/entitybrowserwindow.h"
 #include "mainwindow/entityeditorwindow.h"
+#include "mainwindow/projectitem.h"
 #include "utility/tweaks.h"
 
 // appleseed.renderer headers.
@@ -43,6 +44,7 @@
 #include "renderer/api/light.h"
 #include "renderer/api/material.h"
 #include "renderer/api/project.h"
+#include "renderer/api/scene.h"
 #include "renderer/api/texture.h"
 
 // appleseed.foundation headers.
@@ -72,6 +74,7 @@
 // Standard headers.
 #include <cassert>
 #include <memory>
+#include <string>
 
 using namespace boost;
 using namespace foundation;
@@ -80,101 +83,47 @@ using namespace std;
 
 namespace
 {
-    enum ItemType
-    {
-        ItemAssembly,
-        ItemAssemblyCollection,
-        ItemAssemblyInstance,
-        ItemBSDF,
-        ItemBSDFCollection,
-        ItemCamera,
-        ItemColor,
-        ItemEDF,
-        ItemEnvironment,
-        ItemEnvironmentEDF,
-        ItemEnvironmentShader,
-        ItemMaterial,
-        ItemMaterialCollection,
-        ItemLight,
-        ItemObject,
-        ItemObjectInstance,
-        ItemSurfaceShader,
-        ItemSurfaceShaderCollection,
-        ItemTexture,
-        ItemTextureCollection,
-        ItemTextureInstance,
-        ItemCollection
-    };
-
-    typedef QPair<ItemType, QVariant> ItemTypeQVariantPair;
+    typedef QPair<appleseed::studio::ProjectItem::Type, QVariant> ItemTypeQVariantPair;
     typedef QPair<QVariant, QVariant> QVariantPair;
 }
 
 Q_DECLARE_METATYPE(void*);
-Q_DECLARE_METATYPE(ItemType);
+Q_DECLARE_METATYPE(appleseed::studio::ProjectItem::Type);
 Q_DECLARE_METATYPE(ItemTypeQVariantPair);
 Q_DECLARE_METATYPE(QVariantPair);
 
 namespace appleseed {
 namespace studio {
 
-void ProjectExplorer::SceneItems::clear()
-{
-    m_color_items = 0;
-    m_texture_items = 0;
-    m_texture_instance_items = 0;
-    m_environment_edf_items = 0;
-    m_environment_shader_items = 0;
-    m_assembly_items = 0;
-    m_assembly_instance_items = 0;
-}
-
 ProjectExplorer::ProjectExplorer(
-    QTreeWidget*    tree_widget,
-    Project*        project)
-  : m_tree_widget(tree_widget)
-  , m_project(project)
+    Project&        project,
+    QTreeWidget*    tree_widget)
+  : m_project(project)
+  , m_project_builder(project)
+  , m_tree_widget(tree_widget)
+  , m_tree_widget_decorator(tree_widget)
 {
-    m_tree_widget->clear();
-
     m_tree_widget->setContextMenuPolicy(Qt::CustomContextMenu);
 
     connect(
         m_tree_widget, SIGNAL(customContextMenuRequested(const QPoint&)),
         this, SLOT(slot_context_menu(const QPoint&)));
 
-    build_tree_widget();
+    m_tree_widget_decorator.rebuild(*m_project.get_scene());
 }
 
 namespace
 {
-    void set_item_type(QTreeWidgetItem* item, const ItemType item_type)
+    ProjectItem::Type get_item_type(const QTreeWidgetItem* item)
     {
         assert(item);
-        item->setData(0, Qt::UserRole, item_type);
-    }
-
-    ItemType get_item_type(const QTreeWidgetItem* item)
-    {
-        assert(item);
-        return static_cast<ItemType>(item->data(0, Qt::UserRole).value<int>());
-    }
-
-    void set_item_data(QTreeWidgetItem* item, const QVariant& item_data)
-    {
-        assert(item);
-        item->setData(1, Qt::UserRole, item_data);
+        return static_cast<ProjectItem::Type>(item->data(0, Qt::UserRole).value<int>());
     }
 
     QVariant get_item_data(const QTreeWidgetItem* item)
     {
         assert(item);
         return item->data(1, Qt::UserRole);
-    }
-
-    QVariant qvariant_from_ptr(void* ptr)
-    {
-        return QVariant::fromValue(ptr);
     }
 
     template <typename T>
@@ -191,326 +140,6 @@ namespace
     {
         return *qvariant_to_ptr<T>(variant);
     }
-
-    template <typename ParentWidget>
-    QTreeWidgetItem* insert_item(
-        ParentWidget*               parent_widget,
-        const char*                 title,
-        const ItemType              item_type,
-        const QVariant&             item_data)
-    {
-        assert(parent_widget);
-        assert(title);
-
-        QTreeWidgetItem* item =
-            new QTreeWidgetItem(parent_widget, QStringList() << title);
-
-        set_item_type(item, item_type);
-        set_item_data(item, item_data);
-
-        return item;
-    }
-
-    template <typename ParentWidget>
-    QTreeWidgetItem* insert_collection_root_item(
-        ParentWidget*               parent_widget,
-        const char*                 title,
-        const ItemType              item_type,
-        const QVariant&             item_data)
-    {
-        QTreeWidgetItem* item =
-            insert_item(
-                parent_widget,
-                title,
-                item_type,
-                item_data);
-
-        QFont font;
-        font.setBold(true);
-        item->setFont(0, font);
-
-        return item;
-    }
-
-    QTreeWidgetItem* insert_scene_item(
-        QTreeWidgetItem*            root_item,
-        const ItemType              item_type,
-        Entity&                     entity)
-    {
-        const QVariant item_data = qvariant_from_ptr(&entity);
-
-        return
-            insert_item(
-                root_item,
-                entity.get_name(),
-                item_type,
-                item_data);
-    }
-
-    template <typename ParentWidget, typename EntityContainer>
-    QTreeWidgetItem* insert_scene_items(
-        ParentWidget*               parent_widget,
-        const char*                 root_title,
-        const ItemType              root_item_type,
-        const QVariant&             root_item_data,
-        const ItemType              item_type,
-        EntityContainer&            entities)
-    {
-        QTreeWidgetItem* root_item =
-            insert_collection_root_item(
-                parent_widget,
-                root_title,
-                root_item_type,
-                root_item_data);
-
-        for (each<EntityContainer> i = entities; i; ++i)
-        {
-            Entity& entity = *i;
-
-            insert_scene_item(
-                root_item,
-                item_type,
-                entity);
-        }
-
-        return root_item;
-    }
-
-    QTreeWidgetItem* insert_assembly_item(
-        QTreeWidgetItem*            root_item,
-        const ItemType              item_type,
-        Assembly&                   assembly,
-        Entity&                     entity)
-    {
-        const QVariant item_data =
-            QVariant::fromValue(
-                qMakePair(
-                    qvariant_from_ptr(&assembly),
-                    qvariant_from_ptr(&entity)));
-
-        return
-            insert_item(
-                root_item,
-                entity.get_name(),
-                item_type,
-                item_data);
-    }
-
-    template <typename ParentWidget, typename EntityContainer>
-    QTreeWidgetItem* insert_assembly_items(
-        ParentWidget*               parent_widget,
-        const char*                 root_title,
-        const ItemType              root_item_type,
-        const QVariant&             root_item_data,
-        const ItemType              item_type,
-        Assembly&                   assembly,
-        EntityContainer&            entities)
-    {
-        QTreeWidgetItem* root_item =
-            insert_collection_root_item(
-                parent_widget,
-                root_title,
-                root_item_type,
-                root_item_data);
-
-        for (each<EntityContainer> i = entities; i; ++i)
-        {
-            Entity& entity = *i;
-
-            insert_assembly_item(
-                root_item,
-                item_type,
-                assembly,
-                entity);
-        }
-
-        return root_item;
-    }
-}
-
-void ProjectExplorer::build_tree_widget()
-{
-    if (m_project)
-    {
-        const Scene& scene = *m_project->get_scene();
-
-        m_scene_items.m_color_items =
-            insert_scene_items(
-                m_tree_widget,
-                "Colors",
-                ItemCollection,
-                QVariant(),
-                ItemColor,
-                scene.colors());
-
-        m_scene_items.m_texture_items =
-            insert_scene_items(
-                m_tree_widget,
-                "Textures",
-                ItemCollection,
-                QVariant(),
-                ItemTexture,
-                scene.textures());
-
-        m_scene_items.m_texture_instance_items =
-            insert_scene_items(
-                m_tree_widget,
-                "Texture Instances",
-                ItemCollection,
-                QVariant(),
-                ItemTextureInstance,
-                scene.texture_instances());
-
-        m_scene_items.m_environment_edf_items =
-            insert_scene_items(
-                m_tree_widget,
-                "Environment EDFs",
-                ItemCollection,
-                QVariant(),
-                ItemEnvironmentEDF,
-                scene.environment_edfs());
-
-        m_scene_items.m_environment_shader_items =
-            insert_scene_items(
-                m_tree_widget,
-                "Environment Shaders",
-                ItemCollection,
-                QVariant(),
-                ItemEnvironmentShader,
-                scene.environment_shaders());
-
-        m_scene_items.m_assembly_items =
-            insert_collection_root_item(
-                m_tree_widget,
-                "Assemblies",
-                ItemAssemblyCollection,
-                QVariant());
-
-        for (each<AssemblyContainer> i = scene.assemblies(); i; ++i)
-            build_assembly_branch(*i);
-
-        m_scene_items.m_assembly_instance_items =
-            insert_scene_items(
-                m_tree_widget,
-                "Assembly Instances",
-                ItemCollection,
-                QVariant(),
-                ItemAssemblyInstance,
-                scene.assembly_instances());
-    }
-}
-
-void ProjectExplorer::build_assembly_branch(Assembly& assembly)
-{
-    AssemblyItems assembly_items;
-
-    assembly_items.m_assembly_item =
-        insert_scene_item(
-            m_scene_items.m_assembly_items,
-            ItemAssembly,
-            assembly);
-
-    assembly_items.m_color_items =
-        insert_assembly_items(
-            assembly_items.m_assembly_item,
-            "Colors",
-            ItemCollection,
-            QVariant(),
-            ItemColor,
-            assembly,
-            assembly.colors());
-
-    assembly_items.m_texture_items =
-        insert_assembly_items(
-            assembly_items.m_assembly_item,
-            "Textures",
-            ItemTextureCollection,
-            qvariant_from_ptr(&assembly),
-            ItemTexture,
-            assembly,
-            assembly.textures());
-
-    assembly_items.m_texture_instance_items =
-        insert_assembly_items(
-            assembly_items.m_assembly_item,
-            "Texture Instances",
-            ItemCollection,
-            QVariant(),
-            ItemTextureInstance,
-            assembly,
-            assembly.texture_instances());
-
-    assembly_items.m_bsdf_items =
-        insert_assembly_items(
-            assembly_items.m_assembly_item,
-            "BSDFs",
-            ItemBSDFCollection,
-            qvariant_from_ptr(&assembly),
-            ItemBSDF,
-            assembly,
-            assembly.bsdfs());
-
-    assembly_items.m_edf_items =
-        insert_assembly_items(
-            assembly_items.m_assembly_item,
-            "EDFs",
-            ItemCollection,
-            QVariant(),
-            ItemEDF,
-            assembly,
-            assembly.edfs());
-
-    assembly_items.m_surface_shader_items =
-        insert_assembly_items(
-            assembly_items.m_assembly_item,
-            "Surface Shaders",
-            ItemSurfaceShaderCollection,
-            qvariant_from_ptr(&assembly),
-            ItemSurfaceShader,
-            assembly,
-            assembly.surface_shaders());
-
-    assembly_items.m_material_items =
-        insert_assembly_items(
-            assembly_items.m_assembly_item,
-            "Materials",
-            ItemMaterialCollection,
-            qvariant_from_ptr(&assembly),
-            ItemMaterial,
-            assembly,
-            assembly.materials());
-
-    assembly_items.m_light_items =
-        insert_assembly_items(
-            assembly_items.m_assembly_item,
-            "Lights",
-            ItemCollection,
-            QVariant(),
-            ItemLight,
-            assembly,
-            assembly.lights());
-
-    assembly_items.m_object_items =
-        insert_assembly_items(
-            assembly_items.m_assembly_item,
-            "Objects",
-            ItemCollection,
-            QVariant(),
-            ItemObject,
-            assembly,
-            assembly.objects());
-
-    assembly_items.m_object_instance_items =
-        insert_assembly_items(
-            assembly_items.m_assembly_item,
-            "Object Instances",
-            ItemCollection,
-            QVariant(),
-            ItemObjectInstance,
-            assembly,
-            assembly.object_instances());
-
-    m_assembly_items[assembly.get_uid()] = assembly_items;
 }
 
 namespace
@@ -526,7 +155,7 @@ namespace
     {
         assert(!items.empty());
 
-        const ItemType first_item_type = get_item_type(items[0]);
+        const ProjectItem::Type first_item_type = get_item_type(items[0]);
 
         for (int i = 1; i < items.size(); ++i)
         {
@@ -545,7 +174,7 @@ namespace
 
         for (int i = 1; i < items.size(); ++i)
         {
-            const ItemType item_type = get_item_type(items[i]);
+            const ProjectItem::Type item_type = get_item_type(items[i]);
             if (get_assembly_from_item(items[i]) != first_item_assembly)
                 return false;
         }
@@ -564,31 +193,35 @@ QMenu* ProjectExplorer::build_context_menu(const QList<QTreeWidgetItem*>& items)
     {
         switch (get_item_type(items.first()))
         {
-          case ItemAssembly:
+          case ProjectItem::ItemAssembly:
             menu = build_assembly_context_menu();
             break;
 
-          case ItemAssemblyCollection:
+          case ProjectItem::ItemAssemblyCollection:
             menu = build_assembly_collection_context_menu();
             break;
 
-          case ItemBSDFCollection:
+          case ProjectItem::ItemBSDFCollection:
             menu = build_bsdf_collection_context_menu();
             break;
 
-          case ItemMaterialCollection:
+          case ProjectItem::ItemMaterialCollection:
             menu = build_material_collection_context_menu();
             break;
 
-          case ItemObjectInstance:
+          case ProjectItem::ItemObjectCollection:
+            menu = build_object_collection_context_menu();
+            break;
+
+          case ProjectItem::ItemObjectInstance:
             menu = build_object_instance_context_menu();
             break;
 
-          case ItemSurfaceShaderCollection:
+          case ProjectItem::ItemSurfaceShaderCollection:
             menu = build_surface_shader_collection_context_menu();
             break;
 
-          case ItemTextureCollection:
+          case ProjectItem::ItemTextureCollection:
             menu = build_texture_collection_context_menu();
             break;
         }
@@ -597,7 +230,7 @@ QMenu* ProjectExplorer::build_context_menu(const QList<QTreeWidgetItem*>& items)
     {
         switch (get_item_type(items.first()))
         {
-          case ItemObjectInstance:
+          case ProjectItem::ItemObjectInstance:
             if (are_items_from_same_assembly(items))
                 menu = build_object_instance_context_menu();
             break;
@@ -660,6 +293,13 @@ QMenu* ProjectExplorer::build_material_collection_context_menu() const
     return menu;
 }
 
+QMenu* ProjectExplorer::build_object_collection_context_menu() const
+{
+    QMenu* menu = new QMenu(m_tree_widget);
+    menu->addAction("Import Objects...", this, SLOT(slot_import_objects_to_assembly()));
+    return menu;
+}
+
 QMenu* ProjectExplorer::build_object_instance_context_menu() const
 {
     QMenu* menu = new QMenu(m_tree_widget);
@@ -679,172 +319,6 @@ QMenu* ProjectExplorer::build_texture_collection_context_menu() const
     QMenu* menu = new QMenu(m_tree_widget);
     menu->addAction("Import Textures...", this, SLOT(slot_import_textures_to_assembly()));
     return menu;
-}
-
-void ProjectExplorer::create_bsdf_entity(
-    Assembly&                   assembly,
-    const AssemblyItems&        assembly_items,
-    const Dictionary&           values)
-{
-    const string name = values.get<string>("name");
-    const string model = values.get<string>("model");
-
-    const IBSDFFactory* factory = m_bsdf_factory_registrar.lookup(model.c_str());
-    assert(factory);
-
-    auto_release_ptr<BSDF> bsdf(factory->create(name.c_str(), values));
-
-    insert_assembly_item(
-        assembly_items.m_bsdf_items,
-        ItemBSDF,
-        assembly,
-        *bsdf.get());
-
-    assembly.bsdfs().insert(bsdf);
-}
-
-void ProjectExplorer::create_surface_shader_entity(
-    Assembly&                   assembly,
-    const AssemblyItems&        assembly_items,
-    const Dictionary&           values)
-{
-    const string name = values.get<string>("name");
-    const string model = values.get<string>("model");
-
-    const ISurfaceShaderFactory* factory =
-        m_surface_shader_factory_registrar.lookup(model.c_str());
-    assert(factory);
-
-    auto_release_ptr<SurfaceShader> surface_shader(factory->create(name.c_str(), values));
-
-    insert_assembly_item(
-        assembly_items.m_surface_shader_items,
-        ItemSurfaceShader,
-        assembly,
-        *surface_shader.get());
-
-    assembly.surface_shaders().insert(surface_shader);
-}
-
-void ProjectExplorer::create_material_entity(
-    Assembly&                   assembly,
-    const AssemblyItems&        assembly_items,
-    const Dictionary&           values)
-{
-    const string name = values.get<string>("name");
-
-    auto_release_ptr<Material> material(
-        MaterialFactory::create(
-            name.c_str(),
-            values,
-            assembly.surface_shaders(),
-            assembly.bsdfs(),
-            assembly.edfs()));
-
-    insert_assembly_item(
-        assembly_items.m_material_items,
-        ItemMaterial,
-        assembly,
-        *material.get());
-
-    assembly.materials().insert(material);
-}
-
-void ProjectExplorer::import_objects(
-    Assembly&                   assembly,
-    QTreeWidgetItem*            object_items,
-    QTreeWidgetItem*            object_instance_items,
-    const string&               path) const
-{
-    const string base_object_name = filesystem::path(path).replace_extension().filename();
-
-    const MeshObjectArray mesh_objects =
-        MeshObjectReader().read(
-            path.c_str(),
-            base_object_name.c_str(),
-            ParamArray());
-
-    for (size_t i = 0; i < mesh_objects.size(); ++i)
-    {
-        MeshObject* object = mesh_objects[i];
-
-        object->get_parameters().insert("filename", filesystem::path(path).filename());
-        object->get_parameters().insert("__common_base_name", base_object_name);
-
-        insert_assembly_item(
-            object_items,
-            ItemObject,
-            assembly,
-            *object);
-
-        const size_t object_index =
-            assembly.objects().insert(auto_release_ptr<Object>(object));
-
-        const string object_instance_name = string(object->get_name()) + "_inst";
-        MaterialIndexArray material_indices;
-        auto_release_ptr<ObjectInstance> object_instance(
-            ObjectInstanceFactory::create(
-                object_instance_name.c_str(),
-                *object,
-                object_index,
-                Transformd(Matrix4d::identity()),
-                material_indices));
-
-        insert_assembly_item(
-            object_instance_items,
-            ItemObjectInstance,
-            assembly,
-            *object_instance.get());
-
-        assembly.object_instances().insert(object_instance);
-    }
-}
-
-void ProjectExplorer::import_textures(
-    Assembly&                   assembly,
-    QTreeWidgetItem*            texture_items,
-    QTreeWidgetItem*            texture_instance_items,
-    const string&               path) const
-{
-    const string texture_name = filesystem::path(path).replace_extension().filename();
-
-    ParamArray texture_params;
-    texture_params.insert("filename", path);
-    texture_params.insert("color_space", "srgb");
-
-    SearchPaths search_paths;
-    auto_release_ptr<Texture> texture(
-        DiskTexture2dFactory().create(
-            texture_name.c_str(),
-            texture_params,
-            search_paths));
-
-    insert_assembly_item(
-        texture_items,
-        ItemTexture,
-        assembly,
-        *texture.get());
-
-    const size_t texture_index = assembly.textures().insert(texture);
-
-    ParamArray texture_instance_params;
-    texture_instance_params.insert("addressing_mode", "clamp");
-    texture_instance_params.insert("filtering_mode", "bilinear");
-
-    const string texture_instance_name = texture_name + "_inst";
-    auto_release_ptr<TextureInstance> texture_instance(
-        TextureInstanceFactory::create(
-            texture_instance_name.c_str(),
-            texture_instance_params,
-            texture_index));
-
-    insert_assembly_item(
-        texture_instance_items,
-        ItemTextureInstance,
-        assembly,
-        *texture_instance.get());
-
-    assembly.texture_instances().insert(texture_instance);
 }
 
 void ProjectExplorer::slot_context_menu(const QPoint& point)
@@ -1015,7 +489,7 @@ namespace
 
 void ProjectExplorer::slot_add_assembly()
 {
-    AssemblyContainer& assemblies = m_project->get_scene()->assemblies();
+    AssemblyContainer& assemblies = m_project.get_scene()->assemblies();
 
     const string assembly_name_suggestion =
         get_name_suggestion("assembly", assemblies);
@@ -1034,7 +508,7 @@ void ProjectExplorer::slot_add_assembly()
                 assembly_name.c_str(),
                 ParamArray()));
 
-        build_assembly_branch(*assembly.get());
+        m_tree_widget_decorator.insert_assembly_items(*assembly.get());
 
         assemblies.insert(assembly);
     }
@@ -1045,7 +519,7 @@ void ProjectExplorer::slot_add_assembly()
 void ProjectExplorer::slot_instantiate_assembly()
 {
     AssemblyInstanceContainer& assembly_instances =
-        m_project->get_scene()->assembly_instances();
+        m_project.get_scene()->assembly_instances();
 
     const Assembly& assembly = get_assembly_from_action(sender());
 
@@ -1069,9 +543,8 @@ void ProjectExplorer::slot_instantiate_assembly()
                 assembly,
                 Transformd(Matrix4d::identity())));
 
-        insert_scene_item(
-            m_scene_items.m_assembly_instance_items,
-            ItemAssemblyInstance,
+        m_tree_widget_decorator.insert_scene_item(
+            ProjectItem::ItemAssemblyInstance,
             *assembly_instance.get());
 
         assembly_instances.insert(assembly_instance);
@@ -1095,15 +568,16 @@ void ProjectExplorer::slot_import_objects_to_assembly()
             options);
 
     Assembly& assembly = get_assembly_from_action(sender());
-    const AssemblyItems& assembly_items = m_assembly_items[assembly.get_uid()];
 
     for (int i = 0; i < filepaths.size(); ++i)
     {
-        import_objects(
-            assembly,
-            assembly_items.m_object_items,
-            assembly_items.m_object_instance_items,
-            filepaths[i].toStdString());
+        const ProjectItemCollection project_items =
+            m_project_builder.insert_objects(
+                assembly,
+                filepaths[i].toStdString());
+
+        for (const_each<ProjectItemCollection> i = project_items; i; ++i)
+            m_tree_widget_decorator.insert_assembly_item(assembly, *i);
     }
 
     emit project_modified();
@@ -1124,15 +598,16 @@ void ProjectExplorer::slot_import_textures_to_assembly()
             options);
 
     Assembly& assembly = get_assembly_from_action(sender());
-    const AssemblyItems& assembly_items = m_assembly_items[assembly.get_uid()];
 
     for (int i = 0; i < filepaths.size(); ++i)
     {
-        import_textures(
-            assembly,
-            assembly_items.m_texture_items,
-            assembly_items.m_texture_instance_items,
-            filepaths[i].toStdString());
+        const ProjectItemCollection project_items =
+            m_project_builder.insert_textures(
+                assembly,
+                filepaths[i].toStdString());
+
+        for (const_each<ProjectItemCollection> i = project_items; i; ++i)
+            m_tree_widget_decorator.insert_assembly_item(assembly, *i);
     }
 
     emit project_modified();
@@ -1386,7 +861,7 @@ void ProjectExplorer::slot_add_bsdf_to_assembly()
     const QVariant receiver_data(
         QVariant::fromValue(
             ItemTypeQVariantPair(
-                ItemBSDF,
+                ProjectItem::ItemBSDF,
                 get_action_data(sender()))));
 
     open_entity_editor(
@@ -1411,7 +886,7 @@ void ProjectExplorer::slot_add_surface_shader_to_assembly()
     const QVariant receiver_data(
         QVariant::fromValue(
             ItemTypeQVariantPair(
-                ItemSurfaceShader,
+                ProjectItem::ItemSurfaceShader,
                 get_action_data(sender()))));
 
     open_entity_editor(
@@ -1511,7 +986,7 @@ void ProjectExplorer::slot_add_material_to_assembly()
     const QVariant receiver_data(
         QVariant::fromValue(
             ItemTypeQVariantPair(
-                ItemMaterial,
+                ProjectItem::ItemMaterial,
                 get_action_data(sender()))));
 
     open_entity_editor(
@@ -1525,15 +1000,15 @@ void ProjectExplorer::slot_add_material_to_assembly()
 
 namespace
 {
-    const KeyValuePair<ItemType, const char*> EntityNames[] =
+    const KeyValuePair<ProjectItem::Type, const char*> EntityNames[] =
     {
-        { ItemBSDF, "BSDF" },
-        { ItemMaterial, "material" }
+        { ProjectItem::ItemBSDF, "BSDF" },
+        { ProjectItem::ItemMaterial, "material" }
     };
 
     void display_entity_creation_error(
-        const ItemType  item_type,
-        const QString&  message)
+        const ProjectItem::Type item_type,
+        const QString&          message)
     {
         QMessageBox msgbox;
         msgbox.setWindowTitle(
@@ -1551,24 +1026,29 @@ namespace
 void ProjectExplorer::slot_create_entity(QVariant payload, Dictionary values)
 {
     const ItemTypeQVariantPair item = payload.value<ItemTypeQVariantPair>();
-    const ItemType item_type = item.first;
+    const ProjectItem::Type item_type = item.first;
     Assembly& assembly = qvariant_to_ref<Assembly>(item.second.toList().first());
-    const AssemblyItems& assembly_items = m_assembly_items[assembly.get_uid()];
 
     try
     {
         switch (item_type)
         {
-          case ItemBSDF:
-            create_bsdf_entity(assembly, assembly_items, values);
+          case ProjectItem::ItemBSDF:
+            m_tree_widget_decorator.insert_assembly_item(
+                assembly,
+                m_project_builder.insert_bsdf(assembly, values));
             break;
 
-          case ItemMaterial:
-            create_material_entity(assembly, assembly_items, values);
+          case ProjectItem::ItemMaterial:
+            m_tree_widget_decorator.insert_assembly_item(
+                assembly,
+                m_project_builder.insert_material(assembly, values));
             break;
 
-          case ItemSurfaceShader:
-            create_surface_shader_entity(assembly, assembly_items, values);
+          case ProjectItem::ItemSurfaceShader:
+            m_tree_widget_decorator.insert_assembly_item(
+                assembly,
+                m_project_builder.insert_surface_shader(assembly, values));
             break;
 
           assert_otherwise;

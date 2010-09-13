@@ -101,10 +101,15 @@ set(mainwindow_sources
     mainwindow/mainwindow.cpp
     mainwindow/mainwindow.h
     mainwindow/mainwindow.ui
+    mainwindow/projectbuilder.cpp
+    mainwindow/projectbuilder.h
     mainwindow/projectexplorer.cpp
     mainwindow/projectexplorer.h
+    mainwindow/projectitem.h
     mainwindow/projectmanager.cpp
     mainwindow/projectmanager.h
+    mainwindow/projecttreewidgetdecorator.cpp
+    mainwindow/projecttreewidgetdecorator.h
     mainwindow/qtlogtarget.cpp
     mainwindow/qtlogtarget.h
     mainwindow/statusbar.cpp

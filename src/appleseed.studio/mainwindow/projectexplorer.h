@@ -29,15 +29,17 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECTEXPLORER_H
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECTEXPLORER_H
 
+// appleseed.studio headers.
+#include "mainwindow/projectbuilder.h"
+#include "mainwindow/projecttreewidgetdecorator.h"
+
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
-#include "renderer/api/scene.h"
 #include "renderer/api/surfaceshader.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/uid.h"
 
 // Qt headers.
 #include <QList>
@@ -47,9 +49,9 @@
 
 // Standard headers.
 #include <map>
-#include <string>
 
 // Forward declarations.
+namespace renderer  { class Assembly; }
 namespace renderer  { class Project; }
 class QMenu;
 class QPoint;
@@ -67,54 +69,21 @@ class ProjectExplorer
 
   public:
     ProjectExplorer(
-        QTreeWidget*        tree_widget,
-        renderer::Project*  project);
+        renderer::Project&  project,
+        QTreeWidget*        tree_widget);
 
   signals:
     void project_modified();
 
   private:
-    struct SceneItems
-    {
-        QTreeWidgetItem*    m_color_items;
-        QTreeWidgetItem*    m_texture_items;
-        QTreeWidgetItem*    m_texture_instance_items;
-        QTreeWidgetItem*    m_environment_edf_items;
-        QTreeWidgetItem*    m_environment_shader_items;
-        QTreeWidgetItem*    m_assembly_items;
-        QTreeWidgetItem*    m_assembly_instance_items;
+    renderer::Project&                          m_project;
+    ProjectBuilder                              m_project_builder;
 
-        void clear();
-    };
+    QTreeWidget*                                m_tree_widget;
+    ProjectTreeWigetDecorator                   m_tree_widget_decorator;
 
-    struct AssemblyItems
-    {
-        QTreeWidgetItem*    m_assembly_item;
-        QTreeWidgetItem*    m_color_items;
-        QTreeWidgetItem*    m_texture_items;
-        QTreeWidgetItem*    m_texture_instance_items;
-        QTreeWidgetItem*    m_bsdf_items;
-        QTreeWidgetItem*    m_edf_items;
-        QTreeWidgetItem*    m_surface_shader_items;
-        QTreeWidgetItem*    m_material_items;
-        QTreeWidgetItem*    m_light_items;
-        QTreeWidgetItem*    m_object_items;
-        QTreeWidgetItem*    m_object_instance_items;
-    };
-
-    typedef std::map<foundation::UniqueID, AssemblyItems> AssemblyItemsMap;
-
-    QTreeWidget*                            m_tree_widget;
-    renderer::Project*                      m_project;
-
-    SceneItems                              m_scene_items;
-    AssemblyItemsMap                        m_assembly_items;
-
-    renderer::BSDFFactoryRegistrar          m_bsdf_factory_registrar;
-    renderer::SurfaceShaderFactoryRegistrar m_surface_shader_factory_registrar;
-
-    void build_tree_widget();
-    void build_assembly_branch(renderer::Assembly& assembly);
+    renderer::BSDFFactoryRegistrar              m_bsdf_factory_registrar;
+    renderer::SurfaceShaderFactoryRegistrar     m_surface_shader_factory_registrar;
 
     QMenu* build_generic_context_menu() const;
     QMenu* build_context_menu(const QList<QTreeWidgetItem*>& items) const;
@@ -122,36 +91,10 @@ class ProjectExplorer
     QMenu* build_assembly_collection_context_menu() const;
     QMenu* build_bsdf_collection_context_menu() const;
     QMenu* build_material_collection_context_menu() const;
+    QMenu* build_object_collection_context_menu() const;
     QMenu* build_object_instance_context_menu() const;
     QMenu* build_surface_shader_collection_context_menu() const;
     QMenu* build_texture_collection_context_menu() const;
-
-    void create_bsdf_entity(
-        renderer::Assembly&                 assembly,
-        const AssemblyItems&                assembly_items,
-        const foundation::Dictionary&       values);
-
-    void create_surface_shader_entity(
-        renderer::Assembly&                 assembly,
-        const AssemblyItems&                assembly_items,
-        const foundation::Dictionary&       values);
-
-    void create_material_entity(
-        renderer::Assembly&                 assembly,
-        const AssemblyItems&                assembly_items,
-        const foundation::Dictionary&       values);
-
-    void import_objects(
-        renderer::Assembly&                 assembly,
-        QTreeWidgetItem*                    object_items,
-        QTreeWidgetItem*                    object_instance_items,
-        const std::string&                  path) const;
-
-    void import_textures(
-        renderer::Assembly&                 assembly,
-        QTreeWidgetItem*                    texture_items,
-        QTreeWidgetItem*                    texture_instance_items,
-        const std::string&                  path) const;
 
   private slots:
     void slot_context_menu(const QPoint& point);
@@ -169,9 +112,9 @@ class ProjectExplorer
 
     void slot_assign_material_to_object_instance();
     void slot_do_assign_material_to_object_instance(
-        QList<QVariant>                     items_data,
-        QString                             page_name,
-        QString                             entity_name);
+        QList<QVariant>     items_data,
+        QString             page_name,
+        QString             entity_name);
 };
 
 }       // namespace studio

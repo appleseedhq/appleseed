@@ -354,14 +354,23 @@ void MainWindow::update_workspace()
 
 void MainWindow::update_project_explorer()
 {
-    m_project_explorer.reset(
-        new ProjectExplorer(
-            m_ui->treewidget_project_explorer_scene,
-            m_project_manager.get_project()));
+    m_ui->treewidget_project_explorer_scene->clear();
 
-    QObject::connect(
-        m_project_explorer.get(), SIGNAL(project_modified()),
-        this, SLOT(slot_project_modified()));
+    if (m_project_manager.is_project_open())
+    {
+        m_project_explorer.reset(
+            new ProjectExplorer(
+                *m_project_manager.get_project(),
+                m_ui->treewidget_project_explorer_scene));
+
+        QObject::connect(
+            m_project_explorer.get(), SIGNAL(project_modified()),
+            this, SLOT(slot_project_modified()));
+    }
+    else
+    {
+        m_project_explorer.reset();
+    }
 }
 
 void MainWindow::update_window_title()
