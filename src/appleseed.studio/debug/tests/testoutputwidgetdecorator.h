@@ -40,7 +40,7 @@ namespace appleseed {
 namespace studio {
 
 class TestOutputWidgetDecorator
-  : public QObject          // todo: necessary?
+  : public QObject
 {
     Q_OBJECT
 
