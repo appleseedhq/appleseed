@@ -76,6 +76,9 @@ class ProjectBuilder
         renderer::Assembly&                 assembly,
         const std::string&                  path) const;
 
+    ProjectItemCollection insert_textures(
+        const std::string&                  path) const;
+
   private:
     renderer::Project&                      m_project;
 

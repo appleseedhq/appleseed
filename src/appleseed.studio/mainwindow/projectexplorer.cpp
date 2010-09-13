@@ -126,19 +126,24 @@ namespace
         return item->data(1, Qt::UserRole);
     }
 
+    QVariantPair get_assembly_item_data(const QTreeWidgetItem* item)
+    {
+        assert(item);
+        return get_item_data(item).value<QVariantPair>();
+    }
+
     template <typename T>
     T* qvariant_to_ptr(const QVariant& variant)
     {
-        T* ptr = static_cast<T*>(variant.value<void*>());
-        assert(ptr);
-
-        return ptr;
+        return static_cast<T*>(variant.value<void*>());
     }
 
     template <typename T>
     T& qvariant_to_ref(const QVariant& variant)
     {
-        return *qvariant_to_ptr<T>(variant);
+        T* ptr = qvariant_to_ptr<T>(variant);
+        assert(ptr);
+        return *ptr;
     }
 }
 
@@ -147,8 +152,8 @@ namespace
     // Get the assembly pointer stored in an *assembly* items.
     Assembly* get_assembly_from_item(const QTreeWidgetItem* item)
     {
-        const QVariantPair item_data = get_item_data(item).value<QVariantPair>();
-        return qvariant_to_ptr<Assembly>(item_data.first);
+        const QVariantPair assembly_item_data = get_assembly_item_data(item);
+        return qvariant_to_ptr<Assembly>(assembly_item_data.first);
     }
 
     bool are_items_same_type(const QList<QTreeWidgetItem*>& items)
@@ -174,7 +179,6 @@ namespace
 
         for (int i = 1; i < items.size(); ++i)
         {
-            const ProjectItem::Type item_type = get_item_type(items[i]);
             if (get_assembly_from_item(items[i]) != first_item_assembly)
                 return false;
         }
@@ -191,7 +195,9 @@ QMenu* ProjectExplorer::build_context_menu(const QList<QTreeWidgetItem*>& items)
 
     if (items.size() == 1)
     {
-        switch (get_item_type(items.first()))
+        const QTreeWidgetItem* item = items.first();
+
+        switch (get_item_type(item))
         {
           case ProjectItem::ItemAssembly:
             menu = build_assembly_context_menu();
@@ -222,7 +228,7 @@ QMenu* ProjectExplorer::build_context_menu(const QList<QTreeWidgetItem*>& items)
             break;
 
           case ProjectItem::ItemTextureCollection:
-            menu = build_texture_collection_context_menu();
+            menu = build_texture_collection_context_menu(item);
             break;
         }
     }
@@ -314,10 +320,15 @@ QMenu* ProjectExplorer::build_surface_shader_collection_context_menu() const
     return menu;
 }
 
-QMenu* ProjectExplorer::build_texture_collection_context_menu() const
+QMenu* ProjectExplorer::build_texture_collection_context_menu(const QTreeWidgetItem* item) const
 {
     QMenu* menu = new QMenu(m_tree_widget);
-    menu->addAction("Import Textures...", this, SLOT(slot_import_textures_to_assembly()));
+
+    if (qvariant_to_ptr<Assembly>(get_item_data(item)))
+        menu->addAction("Import Textures...", this, SLOT(slot_import_textures_to_assembly()));
+    else
+        menu->addAction("Import Textures...", this, SLOT(slot_import_textures_to_scene()));
+
     return menu;
 }
 
@@ -583,19 +594,27 @@ void ProjectExplorer::slot_import_objects_to_assembly()
     emit project_modified();
 }
 
+namespace
+{
+    QStringList get_texture_file_paths(QWidget* parent)
+    {
+        QFileDialog::Options options;
+        QString selected_filter;
+
+        return
+            QFileDialog::getOpenFileNames(
+                parent,
+                "Import Textures...",
+                "",
+                "Texture Files (*.exr);;All Files (*.*)",
+                &selected_filter,
+                options);
+    }
+}
+
 void ProjectExplorer::slot_import_textures_to_assembly()
 {
-    QFileDialog::Options options;
-    QString selected_filter;
-
-    const QStringList filepaths =
-        QFileDialog::getOpenFileNames(
-            m_tree_widget,
-            "Import Textures...",
-            "",
-            "Texture Files (*.exr);;All Files (*.*)",
-            &selected_filter,
-            options);
+    const QStringList filepaths = get_texture_file_paths(m_tree_widget);
 
     Assembly& assembly = get_assembly_from_action(sender());
 
@@ -608,6 +627,22 @@ void ProjectExplorer::slot_import_textures_to_assembly()
 
         for (const_each<ProjectItemCollection> i = project_items; i; ++i)
             m_tree_widget_decorator.insert_assembly_item(assembly, *i);
+    }
+
+    emit project_modified();
+}
+
+void ProjectExplorer::slot_import_textures_to_scene()
+{
+    const QStringList filepaths = get_texture_file_paths(m_tree_widget);
+
+    for (int i = 0; i < filepaths.size(); ++i)
+    {
+        const ProjectItemCollection project_items =
+            m_project_builder.insert_textures(filepaths[i].toStdString());
+
+        for (const_each<ProjectItemCollection> i = project_items; i; ++i)
+            m_tree_widget_decorator.insert_scene_item(*i);
     }
 
     emit project_modified();

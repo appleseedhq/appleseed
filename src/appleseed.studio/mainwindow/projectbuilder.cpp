@@ -165,46 +165,73 @@ ProjectItemCollection ProjectBuilder::insert_objects(
     return project_items;
 }
 
+namespace
+{
+    ProjectItemCollection insert_textures_impl(
+        TextureContainer&           textures,
+        TextureInstanceContainer&   texture_instances,
+        const string&               path)
+    {
+        ProjectItemCollection project_items;
+
+        const string texture_name = filesystem::path(path).replace_extension().filename();
+
+        ParamArray texture_params;
+        texture_params.insert("filename", path);
+        texture_params.insert("color_space", "srgb");
+
+        SearchPaths search_paths;
+        auto_release_ptr<Texture> texture(
+            DiskTexture2dFactory().create(
+                texture_name.c_str(),
+                texture_params,
+                search_paths));
+
+        project_items.push_back(ProjectItem(ProjectItem::ItemTexture, texture.get()));
+
+        const size_t texture_index = textures.insert(texture);
+
+        ParamArray texture_instance_params;
+        texture_instance_params.insert("addressing_mode", "clamp");
+        texture_instance_params.insert("filtering_mode", "bilinear");
+
+        const string texture_instance_name = texture_name + "_inst";
+        auto_release_ptr<TextureInstance> texture_instance(
+            TextureInstanceFactory::create(
+                texture_instance_name.c_str(),
+                texture_instance_params,
+                texture_index));
+
+        project_items.push_back(
+            ProjectItem(ProjectItem::ItemTextureInstance, texture_instance.get()));
+
+        texture_instances.insert(texture_instance);
+
+        return project_items;
+    }
+}
+
 ProjectItemCollection ProjectBuilder::insert_textures(
     Assembly&           assembly,
     const string&       path) const
 {
-    ProjectItemCollection project_items;
+    return
+        insert_textures_impl(
+            assembly.textures(),
+            assembly.texture_instances(),
+            path);
+}
 
-    const string texture_name = filesystem::path(path).replace_extension().filename();
+ProjectItemCollection ProjectBuilder::insert_textures(
+    const string&       path) const
+{
+    const Scene& scene = *m_project.get_scene();
 
-    ParamArray texture_params;
-    texture_params.insert("filename", path);
-    texture_params.insert("color_space", "srgb");
-
-    SearchPaths search_paths;
-    auto_release_ptr<Texture> texture(
-        DiskTexture2dFactory().create(
-            texture_name.c_str(),
-            texture_params,
-            search_paths));
-
-    project_items.push_back(ProjectItem(ProjectItem::ItemTexture, texture.get()));
-
-    const size_t texture_index = assembly.textures().insert(texture);
-
-    ParamArray texture_instance_params;
-    texture_instance_params.insert("addressing_mode", "clamp");
-    texture_instance_params.insert("filtering_mode", "bilinear");
-
-    const string texture_instance_name = texture_name + "_inst";
-    auto_release_ptr<TextureInstance> texture_instance(
-        TextureInstanceFactory::create(
-            texture_instance_name.c_str(),
-            texture_instance_params,
-            texture_index));
-
-    project_items.push_back(
-        ProjectItem(ProjectItem::ItemTextureInstance, texture_instance.get()));
-
-    assembly.texture_instances().insert(texture_instance);
-
-    return project_items;
+    return
+        insert_textures_impl(
+            scene.textures(),
+            scene.texture_instances(),
+            path);
 }
 
 }   // namespace studio

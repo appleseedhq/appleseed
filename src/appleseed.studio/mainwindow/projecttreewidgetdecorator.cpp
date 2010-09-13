@@ -118,30 +118,6 @@ namespace
         return QVariant::fromValue(ptr);
     }
 
-    void set_item_type(QTreeWidgetItem* item, const ProjectItem::Type item_type)
-    {
-        assert(item);
-        item->setData(0, Qt::UserRole, item_type);
-    }
-
-    ProjectItem::Type get_item_type(const QTreeWidgetItem* item)
-    {
-        assert(item);
-        return static_cast<ProjectItem::Type>(item->data(0, Qt::UserRole).value<int>());
-    }
-
-    void set_item_data(QTreeWidgetItem* item, const QVariant& item_data)
-    {
-        assert(item);
-        item->setData(1, Qt::UserRole, item_data);
-    }
-
-    QVariant get_item_data(const QTreeWidgetItem* item)
-    {
-        assert(item);
-        return item->data(1, Qt::UserRole);
-    }
-
     template <typename ParentWidget>
     QTreeWidgetItem* insert_item(
         ParentWidget*               parent_widget,
@@ -155,8 +131,8 @@ namespace
         QTreeWidgetItem* item =
             new QTreeWidgetItem(parent_widget, QStringList() << title);
 
-        set_item_type(item, item_type);
-        set_item_data(item, item_data);
+        item->setData(0, Qt::UserRole, item_type);
+        item->setData(1, Qt::UserRole, item_data);
 
         return item;
     }

@@ -94,7 +94,7 @@ class ProjectExplorer
     QMenu* build_object_collection_context_menu() const;
     QMenu* build_object_instance_context_menu() const;
     QMenu* build_surface_shader_collection_context_menu() const;
-    QMenu* build_texture_collection_context_menu() const;
+    QMenu* build_texture_collection_context_menu(const QTreeWidgetItem* item) const;
 
   private slots:
     void slot_context_menu(const QPoint& point);
@@ -104,6 +104,7 @@ class ProjectExplorer
 
     void slot_import_objects_to_assembly();
     void slot_import_textures_to_assembly();
+    void slot_import_textures_to_scene();
 
     void slot_add_bsdf_to_assembly();
     void slot_add_surface_shader_to_assembly();
