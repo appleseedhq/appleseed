@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_UTILITY_CAMERACONTROLLER_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"

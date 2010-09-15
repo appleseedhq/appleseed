@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_MATH_BVH_BVH_INTERSECTOR_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/bvh/bvh_statistics.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/intersection.h"

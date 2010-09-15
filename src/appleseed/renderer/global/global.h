@@ -40,7 +40,8 @@
 #include "renderer/global/paramarray.h"
 
 // Globally included appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/core/concepts/iunknown.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"

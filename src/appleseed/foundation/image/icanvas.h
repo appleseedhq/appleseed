@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_IMAGE_ICANVAS_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"

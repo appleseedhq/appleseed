@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_PLATFORM_CONSOLE_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/singleton.h"
 
 //
 // On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL

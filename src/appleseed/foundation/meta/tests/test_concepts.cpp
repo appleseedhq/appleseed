@@ -27,7 +27,7 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/singleton.h"
 #include "foundation/utility/test.h"
 
 FOUNDATION_TEST_SUITE(Foundation_Core_Concepts_Singleton)

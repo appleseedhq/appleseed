@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_MATH_VOXEL_VOXEL_BUILDER_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/split.h"
 #include "foundation/platform/timer.h"
 #include "foundation/utility/stopwatch.h"

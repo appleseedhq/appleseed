@@ -46,29 +46,42 @@ namespace foundation
 // SearchPaths class implementation.
 //
 
-// Insert a search path at the end of the collection.
 void SearchPaths::push_back(const string& path)
 {
     m_paths.push_back(path);
 }
 
-// Find a file in the search paths.
-string SearchPaths::qualify(const string& file_path) const
+bool SearchPaths::exist(const string& filepath) const
 {
-    const filesystem::path fp(file_path);
+    const filesystem::path fp(filepath);
+
+    if (fp.is_complete())
+        return filesystem::exists(fp);
+
+    for (const_each<PathCollection> i = m_paths; i; ++i)
+    {
+        const filesystem::path qualified_fp = filesystem::path(*i) / fp;
+
+        if (filesystem::exists(qualified_fp))
+            return true;
+    }
+
+    return false;
+}
+
+string SearchPaths::qualify(const string& filepath) const
+{
+    const filesystem::path fp(filepath);
 
     // Don't try to quality the file path if it's already a complete path.
     if (!fp.is_complete())
     {
-        // Iterate over all search paths, in order.
         for (const_each<PathCollection> i = m_paths; i; ++i)
         {
-            // Concatenate the file path and this search path.
-            const filesystem::path path = filesystem::path(*i) / fp;
+            const filesystem::path qualified_fp = filesystem::path(*i) / fp;
 
-            // Check if the resulting path points to an existing file.
-            if (filesystem::exists(path))
-                return path.file_string();
+            if (filesystem::exists(qualified_fp))
+                return qualified_fp.file_string();
         }
     }
 

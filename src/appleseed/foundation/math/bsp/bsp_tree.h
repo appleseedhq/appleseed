@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_MATH_BSP_BSP_TREE_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/bsp/bsp_node.h"
 #include "foundation/math/aabb.h"
 

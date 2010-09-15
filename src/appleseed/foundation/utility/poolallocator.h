@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_UTILITY_POOLALLOCATOR_H
 
 // appleseed headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/singleton.h"
 #include "foundation/platform/types.h"
 
 // Standard headers.

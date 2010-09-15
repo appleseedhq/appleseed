@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_IBENCHMARKLISTENER_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/iunknown.h"
 
 // Standard headers.
 #include <cstddef>

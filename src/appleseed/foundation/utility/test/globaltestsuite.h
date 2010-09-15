@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_UTILITY_TEST_GLOBALTESTSUITE_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/singleton.h"
 #include "foundation/utility/test/testsuite.h"
 #include "foundation/utility/test/testsuiterepository.h"
 

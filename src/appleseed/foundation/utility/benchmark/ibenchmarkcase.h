@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_IBENCHMARKCASE_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/noncopyable.h"
 
 //
 // On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL

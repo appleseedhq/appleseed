@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_PARSER_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/commandlineparser/flagoptionhandler.h"
 #include "foundation/utility/commandlineparser/messagelist.h"
 #include "foundation/utility/commandlineparser/optionhandler.h"

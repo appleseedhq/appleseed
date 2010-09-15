@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_UTILITY_CACHE_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/memory.h"

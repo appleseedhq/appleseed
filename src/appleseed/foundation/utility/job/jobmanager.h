@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_UTILITY_JOB_JOBMANAGER_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/noncopyable.h"
 
 // Standard headers.
 #include <cstddef>

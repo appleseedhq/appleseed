@@ -29,22 +29,23 @@
 // Interface header.
 #include "globallogger.h"
 
+// appleseed.foundation headers.
+#include "foundation/core/concepts/singleton.h"
+
+using namespace foundation;
+
 namespace renderer
 {
-
-//
-// A globally accessible logger.
-//
 
 namespace
 {
     class GlobalLogger
-      : public foundation::Singleton<foundation::Logger>
+      : public Singleton<Logger>
     {
     };
 }
 
-foundation::Logger& global_logger()
+Logger& global_logger()
 {
     return GlobalLogger::instance();
 }

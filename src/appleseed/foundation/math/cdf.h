@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_MATH_CDF_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/iterators.h"
 
 // Standard headers.

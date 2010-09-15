@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_UTILITY_LAZY_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/core/exception.h"
 #include "foundation/platform/thread.h"
 #include "foundation/platform/types.h"

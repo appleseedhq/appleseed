@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_MATH_BVH_BVH_STATISTICS_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/population.h"
 #include "foundation/utility/log.h"
 #include "foundation/utility/string.h"

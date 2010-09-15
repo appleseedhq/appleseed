@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_MATH_BSP_BSP_INTERSECTOR_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/bsp/bsp_statistics.h"
 #include "foundation/math/ray.h"
 

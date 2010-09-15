@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_MATH_SAH_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/aabb.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/memory.h"

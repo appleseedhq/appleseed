@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_MESSAGELIST_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/log.h"
 
 //

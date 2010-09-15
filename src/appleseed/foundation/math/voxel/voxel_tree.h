@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_MATH_VOXEL_VOXEL_TREE_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/voxel/voxel_node.h"
 #include "foundation/math/split.h"
 #include "foundation/math/aabb.h"

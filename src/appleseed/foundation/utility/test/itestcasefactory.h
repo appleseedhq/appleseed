@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_UTILITY_TEST_ITESTCASEFACTORY_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/noncopyable.h"
 
 // Forward declarations.
 namespace foundation    { class ITestCase; }

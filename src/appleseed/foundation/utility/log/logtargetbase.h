@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_UTILITY_LOG_LOGTARGETBASE_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/iunknown.h"
 #include "foundation/utility/log/logmessage.h"
 
 // Standard headers.

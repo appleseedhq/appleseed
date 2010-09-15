@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_UTILITY_SEARCHPATHS_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/noncopyable.h"
 
 // Standard headers.
 #include <string>
@@ -51,10 +51,16 @@ class SearchPaths
     // Insert a search path at the end of the collection.
     void push_back(const std::string& path);
 
+    // Return true if a given file exists, that is, if the
+    // argument is the absolute path to a file that exists,
+    // or it is the name of a file that exists in one of
+    // the search paths.
+    bool exist(const std::string& filepath) const;
+
     // Find a file in the search paths. If the file was found,
     // the qualified path to this file is returned. Otherwise
     // the input path is returned.
-    std::string qualify(const std::string& file_path) const;
+    std::string qualify(const std::string& filepath) const;
 
   private:
     typedef std::vector<std::string> PathCollection;

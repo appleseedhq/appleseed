@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_UTILITY_TEST_ITESTLISTENER_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/iunknown.h"
 #include "foundation/utility/test/testmessage.h"
 
 // Standard headers.

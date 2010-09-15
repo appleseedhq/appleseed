@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_PLATFORM_SYSTEM_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/platform/types.h"
 
 // Standard headers.

@@ -30,7 +30,7 @@
 #define APPLESEED_STUDIO_RENDERING_IRENDERWIDGET_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/color.h"
 
 // Standard headers.

@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_MATH_BVH_BVH_BUILDER_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"

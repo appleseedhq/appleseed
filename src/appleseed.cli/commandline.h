@@ -30,7 +30,7 @@
 #define APPLESEED_CLI_COMMANDLINE_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/commandlineparser.h"
 
 // Standard headers.

@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_MESH_IMESHWALKER_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/vector.h"
 
 // Standard headers.

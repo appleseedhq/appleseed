@@ -34,7 +34,7 @@
 #include "foundation/platform/x86timer.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/platform/types.h"
 
 //

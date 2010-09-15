@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_MATH_RNG_LCG_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/platform/types.h"
 
 namespace foundation

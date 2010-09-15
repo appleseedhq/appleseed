@@ -47,7 +47,6 @@ source_group("foundation\\core\\concepts" FILES
 set(foundation_core_sources
     foundation/core/appleseed.cpp
     foundation/core/appleseed.h
-    foundation/core/concepts.h
     foundation/core/exception.h
     foundation/core/exceptionnotimplemented.h
     foundation/core/stringexception.h

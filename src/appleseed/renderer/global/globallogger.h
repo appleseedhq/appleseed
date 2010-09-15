@@ -30,7 +30,6 @@
 #define APPLESEED_RENDERER_GLOBAL_GLOBALLOGGER_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
 #include "foundation/utility/log.h"
 
 //
