@@ -571,7 +571,6 @@ set(foundation_utility_sources
     foundation/utility/bufferedfile.cpp
     foundation/utility/bufferedfile.h
     foundation/utility/cache.h
-    foundation/utility/cachemanager.h
     foundation/utility/cameracontroller.h
     foundation/utility/casts.h
     foundation/utility/commandlineparser.h
