@@ -44,12 +44,21 @@ source_group("foundation\\core\\concepts" FILES
     ${foundation_core_concepts_sources}
 )
 
+set(foundation_core_exceptions_sources
+    foundation/core/exceptions/exception.h
+    foundation/core/exceptions/exceptionnotimplemented.h
+    foundation/core/exceptions/stringexception.h
+)
+list(APPEND appleseed_sources
+    ${foundation_core_exceptions_sources}
+)
+source_group("foundation\\core\\exceptions" FILES
+    ${foundation_core_exceptions_sources}
+)
+
 set(foundation_core_sources
     foundation/core/appleseed.cpp
     foundation/core/appleseed.h
-    foundation/core/exception.h
-    foundation/core/exceptionnotimplemented.h
-    foundation/core/stringexception.h
 )
 list(APPEND appleseed_sources
     ${foundation_core_sources}
