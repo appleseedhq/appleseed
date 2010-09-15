@@ -385,6 +385,55 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_String)
         FOUNDATION_EXPECT_EQ(make_vector(4, "", "", "hello", ""), split_wrapper("\n\nhello\n\n", "\n"));
     }
 
+    FOUNDATION_TEST_CASE(Replace_GivenEmptyString_ReturnsEmptyString)
+    {
+        const string result = replace("", "aa", "bbb");
+
+        FOUNDATION_EXPECT_EQ("", result);
+    }
+
+    FOUNDATION_TEST_CASE(Replace_GivenNonMatchingString_ReturnsInputString)
+    {
+        const string result = replace("xyz", "aa", "bbb");
+
+        FOUNDATION_EXPECT_EQ("xyz", result);
+    }
+
+    FOUNDATION_TEST_CASE(Replace_GivenPartiallyMatchingString_ReturnsInputString)
+    {
+        const string result = replace("axyz", "aa", "bbb");
+
+        FOUNDATION_EXPECT_EQ("axyz", result);
+    }
+
+    FOUNDATION_TEST_CASE(Replace_GivenStringWithSingleMatch_ReplacesMatch)
+    {
+        const string result = replace("xyaaz", "aa", "bbb");
+
+        FOUNDATION_EXPECT_EQ("xybbbz", result);
+    }
+
+    FOUNDATION_TEST_CASE(Replace_GivenStringWithMultipleMatches_ReplacesMatches)
+    {
+        const string result = replace("xaayaaz", "aa", "bbb");
+
+        FOUNDATION_EXPECT_EQ("xbbbybbbz", result);
+    }
+
+    FOUNDATION_TEST_CASE(Replace_GivenStringWithMatchAtTheBeginning_ReplacesMatch)
+    {
+        const string result = replace("aaxyz", "aa", "bbb");
+
+        FOUNDATION_EXPECT_EQ("bbbxyz", result);
+    }
+
+    FOUNDATION_TEST_CASE(Replace_GivenStringWithMatchAtTheEnd_ReplacesMatch)
+    {
+        const string result = replace("xyzaa", "aa", "bbb");
+
+        FOUNDATION_EXPECT_EQ("xyzbbb", result);
+    }
+
     FOUNDATION_TEST_CASE(Capitalize_GivenEmptyString_ReturnsEmptyString)
     {
         const string result = capitalize("");

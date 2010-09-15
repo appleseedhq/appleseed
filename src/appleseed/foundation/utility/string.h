@@ -157,6 +157,13 @@ void split(
     const std::string&          delimiters,
     Vec&                        tokens);
 
+// Return a copy of the input string 's' where all occurrences of 'old_string'
+// were replaced by 'new_string'.
+std::string replace(
+    const std::string&          s,
+    const std::string&          old_string,
+    const std::string&          new_string);
+
 
 //
 // Filename manipulation functions.
@@ -571,6 +578,23 @@ void split(
             ? std::string::npos
             : delimiter_pos + 1;
     }
+}
+
+inline std::string replace(
+    const std::string&          s,
+    const std::string&          old_string,
+    const std::string&          new_string)
+{
+    std::string::size_type pos = 0;
+    std::string result = s;
+
+    while ((pos = result.find(old_string, pos)) != std::string::npos)
+    {
+        result.replace(pos, old_string.size(), new_string);
+        pos += new_string.size();
+    }
+
+    return result;
 }
 
 
