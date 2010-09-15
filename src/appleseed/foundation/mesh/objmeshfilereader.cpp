@@ -30,7 +30,7 @@
 #include "objmeshfilereader.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptionnotimplemented.h"
+#include "foundation/core/exceptions/exceptionnotimplemented.h"
 #include "foundation/math/vector.h"
 #include "foundation/mesh/iobjmeshbuilder.h"
 #include "foundation/mesh/objmeshfilelexer.h"

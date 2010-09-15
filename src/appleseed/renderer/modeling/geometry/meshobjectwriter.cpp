@@ -34,7 +34,7 @@
 #include "renderer/modeling/geometry/triangle.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exception.h"
+#include "foundation/core/exceptions/exception.h"
 #include "foundation/mesh/imeshfilewriter.h"
 #include "foundation/mesh/imeshwalker.h"
 #include "foundation/mesh/objmeshfilewriter.h"

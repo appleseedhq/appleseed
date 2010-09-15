@@ -27,7 +27,7 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/core/exception.h"
+#include "foundation/core/exceptions/exception.h"
 #include "foundation/utility/poolallocator.h"
 #include "foundation/utility/test.h"
 

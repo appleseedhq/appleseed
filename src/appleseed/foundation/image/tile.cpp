@@ -30,7 +30,7 @@
 #include "tile.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptionnotimplemented.h"
+#include "foundation/core/exceptions/exceptionnotimplemented.h"
 
 namespace foundation
 {

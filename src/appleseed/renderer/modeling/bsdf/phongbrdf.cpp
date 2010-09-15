@@ -35,7 +35,7 @@
 #include "renderer/modeling/input/source.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptionnotimplemented.h"
+#include "foundation/core/exceptions/exceptionnotimplemented.h"
 #include "foundation/math/basis.h"
 
 using namespace foundation;

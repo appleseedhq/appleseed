@@ -30,7 +30,7 @@
 #include "pngimagefilereader.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptionnotimplemented.h"
+#include "foundation/core/exceptions/exceptionnotimplemented.h"
 
 using namespace std;
 

@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_MESH_OBJMESHFILEREADER_H
 
 // appleseed.foundation headers.
-#include "foundation/core/exception.h"
+#include "foundation/core/exceptions/exception.h"
 #include "foundation/mesh/imeshfilereader.h"
 
 // Standard headers.

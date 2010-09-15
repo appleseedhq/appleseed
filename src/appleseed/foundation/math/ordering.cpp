@@ -30,7 +30,7 @@
 #include "ordering.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptionnotimplemented.h"
+#include "foundation/core/exceptions/exceptionnotimplemented.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 

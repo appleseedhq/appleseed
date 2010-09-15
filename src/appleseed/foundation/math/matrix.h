@@ -30,8 +30,8 @@
 #define APPLESEED_FOUNDATION_MATH_MATRIX_H
 
 // appleseed.foundation headers.
-#include "foundation/core/exception.h"
-#include "foundation/core/exceptionnotimplemented.h"
+#include "foundation/core/exceptions/exception.h"
+#include "foundation/core/exceptions/exceptionnotimplemented.h"
 #include "foundation/math/quaternion.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"

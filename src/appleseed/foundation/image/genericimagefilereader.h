@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_IMAGE_GENERICIMAGEFILEREADER_H
 
 // appleseed.foundation headers.
-#include "foundation/core/exception.h"
+#include "foundation/core/exceptions/exception.h"
 #include "foundation/image/iimagefilereader.h"
 
 // Standard headers.

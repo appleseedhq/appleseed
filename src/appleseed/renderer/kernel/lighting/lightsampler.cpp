@@ -43,7 +43,7 @@
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptionnotimplemented.h"
+#include "foundation/core/exceptions/exceptionnotimplemented.h"
 #include "foundation/math/area.h"
 #include "foundation/math/sampling.h"
 #include "foundation/utility/foreach.h"

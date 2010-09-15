@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_UTILITY_CONTAINERS_DICTIONARY_H
 
 // appleseed.foundation headers.
-#include "foundation/core/stringexception.h"
+#include "foundation/core/exceptions/stringexception.h"
 #include "foundation/utility/implptr.h"
 #include "foundation/utility/string.h"
 

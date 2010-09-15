@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_CORE_STRINGEXCEPTION_H
 
 // appleseed.foundation headers.
-#include "foundation/core/exception.h"
+#include "foundation/core/exceptions/exception.h"
 
 namespace foundation
 {

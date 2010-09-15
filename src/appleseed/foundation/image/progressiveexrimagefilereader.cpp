@@ -30,7 +30,7 @@
 #include "progressiveexrimagefilereader.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptionnotimplemented.h"
+#include "foundation/core/exceptions/exceptionnotimplemented.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"

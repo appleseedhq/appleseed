@@ -35,7 +35,7 @@
 #include "renderer/modeling/entity/entityvector.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/stringexception.h"
+#include "foundation/core/exceptions/stringexception.h"
 
 // Forward declarations.
 namespace renderer  { class Assembly; }

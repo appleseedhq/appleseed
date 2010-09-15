@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_UTILITY_CONTAINERS_ANYARRAY_H
 
 // appleseed.foundation headers.
-#include "foundation/core/exception.h"
+#include "foundation/core/exceptions/exception.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/containers/pagedarray.h"
 #include "foundation/utility/numerictype.h"

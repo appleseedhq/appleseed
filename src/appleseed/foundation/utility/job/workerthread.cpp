@@ -30,7 +30,7 @@
 #include "workerthread.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exception.h"
+#include "foundation/core/exceptions/exception.h"
 #include "foundation/platform/thread.h"
 #include "foundation/utility/job/ijob.h"
 #include "foundation/utility/job/jobqueue.h"

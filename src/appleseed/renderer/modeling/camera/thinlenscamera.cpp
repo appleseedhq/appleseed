@@ -35,7 +35,7 @@
 #include "renderer/modeling/camera/camera.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptionnotimplemented.h"
+#include "foundation/core/exceptions/exceptionnotimplemented.h"
 #include "foundation/math/sampling.h"
 #include "foundation/utility/string.h"
 

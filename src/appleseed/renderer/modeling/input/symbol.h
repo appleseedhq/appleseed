@@ -33,7 +33,7 @@
 #include "renderer/global/global.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/stringexception.h"
+#include "foundation/core/exceptions/stringexception.h"
 #include "foundation/utility/kvpair.h"
 
 // Standard headers.

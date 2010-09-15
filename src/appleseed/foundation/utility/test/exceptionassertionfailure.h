@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_UTILITY_TEST_EXCEPTIONASSERTIONFAILURE_H
 
 // appleseed.foundation headers.
-#include "foundation/core/exception.h"
+#include "foundation/core/exceptions/exception.h"
 
 namespace foundation
 {
