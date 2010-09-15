@@ -41,7 +41,9 @@ namespace foundation
 
 //
 // An ordered collection of search paths.
-// The paths are sorted by ascending priorities.
+//
+// The paths are ordered by descending priority (paths
+// inserted earlier have precedence over those inserted later).
 //
 
 class SearchPaths

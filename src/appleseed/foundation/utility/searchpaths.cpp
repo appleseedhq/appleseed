@@ -73,20 +73,17 @@ string SearchPaths::qualify(const string& filepath) const
 {
     const filesystem::path fp(filepath);
 
-    // Don't try to quality the file path if it's already a complete path.
-    if (!fp.is_complete())
-    {
-        for (const_each<PathCollection> i = m_paths; i; ++i)
-        {
-            const filesystem::path qualified_fp = filesystem::path(*i) / fp;
+    if (fp.is_complete())
+        return fp.file_string();
 
-            if (filesystem::exists(qualified_fp))
-                return qualified_fp.file_string();
-        }
+    for (const_each<PathCollection> i = m_paths; i; ++i)
+    {
+        const filesystem::path qualified_fp = filesystem::path(*i) / fp;
+
+        if (filesystem::exists(qualified_fp))
+            return qualified_fp.file_string();
     }
 
-    // Either the file path is already complete, or the file
-    // couldn't be found in the search paths.
     return fp.file_string();
 }
 
