@@ -27,21 +27,23 @@
  *
  */
 
+
 /*
- * Color scheme:
- *
- *      borders                     40, 40, 40
- *
- *      dark background             50, 50, 50
- *      light background            60, 60, 60
- *      selected background         80, 80, 80
- *      highlighted background      190, 140, 50
- *
- *      dark text                   210, 210, 210
- *      light text                  255, 255, 255
- *      disabled text               100, 100, 100
- *
+ * Common styles.
  */
+
+#define BORDER_COLOR                    rgb(40, 40, 40)
+#define BORDER_STYLE                    1px solid BORDER_COLOR
+
+#define DEFAULT_BACKGROUND_COLOR        rgb(50, 50, 50)
+#define ACTIVE_BACKGROUND_COLOR         rgb(60, 60, 60)
+#define HOVER_BACKGROUND_COLOR          rgb(190, 140, 50)
+#define SELECTED_BACKGROUND_COLOR       rgb(80, 80, 80)
+
+#define DEFAULT_TEXT_COLOR              rgb(210, 210, 210)
+#define DISABLED_TEXT_COLOR             rgb(100, 100, 100)
+#define HOVER_TEXT_COLOR                rgb(255, 255, 255)
+#define SELECTED_TEXT_COLOR             rgb(255, 255, 255)
 
 
 /*
@@ -50,9 +52,11 @@
 
 QWidget
 {
-    background-color: rgb(50, 50, 50);
-    color: rgb(210, 210, 210);
+    background-color: DEFAULT_BACKGROUND_COLOR;
+    color: DEFAULT_TEXT_COLOR;
     border: 0px;
+    selection-color: SELECTED_TEXT_COLOR;
+    selection-background-color: SELECTED_BACKGROUND_COLOR;
 }
 
 
@@ -62,9 +66,8 @@ QWidget
 
 QMainWindow::separator
 {
-    background-color: rgb(40, 40, 40);
-    width: 1px;
-    height: 1px;
+    width: 5px;
+    height: 5px;
 }
 
 
@@ -74,7 +77,7 @@ QMainWindow::separator
 
 QStatusBar
 {
-    border: 1px solid rgb(40, 40, 40);
+    border: BORDER_STYLE;
 }
 
 QStatusBar::item
@@ -90,17 +93,17 @@ QStatusBar::item
 QScrollBar
 {
     background-color: transparent;
-    border: 1px solid rgb(40, 40, 40);
+    border: BORDER_STYLE;
 }
 
 QScrollBar::handle
 {
-    background-color: rgb(80, 80, 80);
+    background-color: SELECTED_BACKGROUND_COLOR;
 }
 
 QScrollBar::handle:hover
 {
-    background-color: rgb(190, 140, 50);
+    background-color: HOVER_BACKGROUND_COLOR;
 }
 
 QScrollBar::add-page,
@@ -112,7 +115,7 @@ QScrollBar::sub-page
 QScrollBar::add-line,
 QScrollBar::sub-line
 {
-    border: 1px solid rgb(40, 40, 40);
+    border: BORDER_STYLE;
     background-color: transparent;
     subcontrol-origin: margin;
 }
@@ -120,19 +123,19 @@ QScrollBar::sub-line
 QScrollBar::add-line:hover,
 QScrollBar::sub-line:hover
 {
-    background-color: rgb(190, 140, 50);
+    background-color: HOVER_BACKGROUND_COLOR;
 }
 
 QScrollBar:horizontal
 {
     height: 15px;
-    margin: 0px 15px 0 15px;
+    margin: 0px 15px 0px 15px;
 }
 
 QScrollBar:vertical
 {
     width: 15px;
-    margin: 15px 0 15px 0;
+    margin: 15px 0px 15px 0px;
 }
 
 QScrollBar::handle:horizontal
@@ -240,8 +243,8 @@ QAbstractScrollArea::corner
 
 QMenuBar
 {
-    background-color: rgb(60, 60, 60);
-    border: 1px solid rgb(40, 40, 40);
+    background-color: ACTIVE_BACKGROUND_COLOR;
+    border: BORDER_STYLE;
 }
 
 QMenuBar::item
@@ -251,13 +254,13 @@ QMenuBar::item
 
 QMenuBar::item:selected
 {
-    background-color: rgb(190, 140, 50);
-    color: rgb(255, 255, 255);
+    background-color: HOVER_BACKGROUND_COLOR;
+    color: HOVER_TEXT_COLOR;
 }
 
 QMenuBar::item:disabled
 {
-    color: rgb(100, 100, 100);
+    color: DISABLED_TEXT_COLOR;
 }
 
 
@@ -267,8 +270,8 @@ QMenuBar::item:disabled
 
 QMenu
 {
-    background-color: rgb(60, 60, 60);
-    border: 1px solid rgb(40, 40, 40);
+    background-color: ACTIVE_BACKGROUND_COLOR;
+    border: BORDER_STYLE;
 }
 
 QMenu::item
@@ -279,19 +282,19 @@ QMenu::item
 
 QMenu::item:selected
 {
-    background-color: rgb(190, 140, 50);
-    color: rgb(255, 255, 255);
+    background-color: HOVER_BACKGROUND_COLOR;
+    color: HOVER_TEXT_COLOR;
 }
 
 QMenu::item:disabled
 {
-    color: rgb(100, 100, 100);
+    color: DISABLED_TEXT_COLOR;
 }
 
 QMenu::separator
 {
     height: 1px;
-    background-color: rgb(40, 40, 40);
+    background-color: BORDER_COLOR;
     margin: 4px 4px 4px 4px;
 }
 
@@ -314,12 +317,12 @@ QMenu::right-arrow:selected
 QMenu::tearoff
 {
     height: 10px;
-    background-color: rgb(100, 100, 100);
+    background-color: SELECTED_BACKGROUND_COLOR;
 }
 
 QMenu::tearoff:selected
 {
-    background-color: rgb(190, 140, 50);
+    background-color: HOVER_BACKGROUND_COLOR;
 }
 
 
@@ -330,7 +333,7 @@ QMenu::tearoff:selected
 
 QToolBar
 {
-    border: 1px solid rgb(40, 40, 40);
+    border: BORDER_STYLE;
 }
 
 /* Does not work:
@@ -349,14 +352,14 @@ QToolButton
 
 QToolButton:hover
 {
-    background-color: rgb(190, 140, 50);
-    color: rgb(255, 255, 255);
+    background-color: HOVER_BACKGROUND_COLOR;
+    color: HOVER_TEXT_COLOR;
 }
 
 QToolButton:pressed
 {
-    background-color: rgb(80, 80, 80);
-    color: rgb(255, 255, 255);
+    background-color: SELECTED_BACKGROUND_COLOR;
+    color: SELECTED_TEXT_COLOR;
 }
 
 
@@ -366,7 +369,7 @@ QToolButton:pressed
 
 QDockWidget::title
 {
-    background-color: rgb(60, 60, 60);
+    background-color: ACTIVE_BACKGROUND_COLOR;
     padding-left: 10px;
     padding-top: 4px;
 }
@@ -382,7 +385,7 @@ QDockWidget::float-button
 QDockWidget::float-button:hover,
 QDockWidget::close-button:hover
 {
-    background-color: rgb(190, 140, 50);
+    background-color: HOVER_BACKGROUND_COLOR;
 }
 
 
@@ -393,13 +396,13 @@ QDockWidget::close-button:hover
 
 QTabWidget::pane
 {
-    border: 1px solid rgb(40, 40, 40);
+    border: BORDER_STYLE;
 }
 
 QTabBar::tab
 {
-    background-color: rgb(60, 60, 60);
-    border: 1px solid rgb(40, 40, 40);
+    background-color: ACTIVE_BACKGROUND_COLOR;
+    border: BORDER_STYLE;
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
     padding: 3px 11px 4px 11px;
@@ -407,14 +410,14 @@ QTabBar::tab
 
 QTabBar::tab:hover
 {
-    background-color: rgb(190, 140, 50);
-    color: rgb(255, 255, 255);
+    background-color: HOVER_BACKGROUND_COLOR;
+    color: HOVER_TEXT_COLOR;
 }
 
 QTabBar::tab:selected
 {
-    background-color: rgb(80, 80, 80);
-    color: rgb(255, 255, 255);
+    background-color: SELECTED_BACKGROUND_COLOR;
+    color: SELECTED_TEXT_COLOR;
 }
 
 
@@ -424,28 +427,33 @@ QTabBar::tab:selected
 
 QPushButton
 {
-    background-color: rgb(60, 60, 60);
-    border: 1px solid rgb(40, 40, 40);
+    background-color: ACTIVE_BACKGROUND_COLOR;
+    border: BORDER_STYLE;
     border-radius: 5px;
     padding: 3px 11px 3px 11px;
-    min-width: 50px;
+#ifdef __APPLE__
+    qproperty-flat: true;   /* prevent push buttons from overlapping on Mac OS X */
+#endif
+#ifdef _WIN32
+    min-width: 50px;        /* causes push buttons in QMessageBox to overlap on Mac OS X */
+#endif
 }
 
 QPushButton:hover
 {
-    background-color: rgb(190, 140, 50);
-    color: rgb(255, 255, 255);
+    background-color: HOVER_BACKGROUND_COLOR;
+    color: HOVER_TEXT_COLOR;
 }
 
 QPushButton:pressed
 {
-    background-color: rgb(80, 80, 80);
-    color: rgb(255, 255, 255);
+    background-color: SELECTED_BACKGROUND_COLOR;
+    color: SELECTED_TEXT_COLOR;
 }
 
 QPushButton:disabled
 {
-    color: rgb(100, 100, 100);
+    color: DISABLED_TEXT_COLOR;
 }
 
 
@@ -455,14 +463,14 @@ QPushButton:disabled
 
 QHeaderView::section
 {
-    background-color: rgb(60, 60, 60);
+    background-color: ACTIVE_BACKGROUND_COLOR;
     border: 0px;
     padding: 3px 11px 4px 11px;
 }
 
 QHeaderView::section:disabled
 {
-    color: rgb(100, 100, 100);
+    color: DISABLED_TEXT_COLOR;
 }
 
 
@@ -474,7 +482,7 @@ QHeaderView::section:disabled
 QTreeView,
 QListView
 {
-    border: 1px solid rgb(40, 40, 40);
+    border: BORDER_STYLE;
 }
 
 QTabWidget QTreeView,
@@ -486,21 +494,27 @@ QTabWidget QListView
 QTreeView::item:hover,
 QListView::item:hover
 {
-    background-color: rgb(190, 140, 50);
-    color: rgb(255, 255, 255);
+    background-color: HOVER_BACKGROUND_COLOR;
+    color: HOVER_TEXT_COLOR;
 }
 
 QTreeView::item:selected,
 QListView::item:selected
 {
-    background-color: rgb(80, 80, 80);
-    color: rgb(255, 255, 255);
+    background-color: SELECTED_BACKGROUND_COLOR;
+    color: SELECTED_TEXT_COLOR;
 }
 
 QTreeView::item:disabled,
 QListView::item:disabled
 {
-    color: rgb(100, 100, 100);
+    color: DISABLED_TEXT_COLOR;
+}
+
+/* Necessary to avoid a disgracious blue background on Mac OS X. */
+QTreeView::branch:selected
+{
+    background-color: DEFAULT_BACKGROUND_COLOR;     /* transparent is not enough */
 }
 
 QTreeView::branch:has-children:closed:enabled
@@ -532,14 +546,14 @@ QTreeView::branch:has-children:open:disabled
 QCheckBox::indicator,
 QAbstractItemView::indicator
 {
-    background-color: rgb(60, 60, 60);
+    background-color: ACTIVE_BACKGROUND_COLOR;
 }
 
 QCheckBox::indicator:hover,
 QAbstractItemView::indicator:hover
 {
-    background-color: rgb(190, 140, 50);
-    color: rgb(255, 255, 255);
+    background-color: HOVER_BACKGROUND_COLOR;
+    color: HOVER_TEXT_COLOR;
 }
 
 QCheckBox::indicator:checked:enabled,
@@ -585,7 +599,7 @@ QAbstractItemView::indicator:indeterminate:disabled
  
 QLineEdit
 {
-    border: 1px solid rgb(40, 40, 40);
+    border: BORDER_STYLE;
 }
 
 
@@ -595,7 +609,7 @@ QLineEdit
 
 QLabel[hasFrame="true"]
 {
-    border: 1px solid rgb(40, 40, 40);
+    border: BORDER_STYLE;
 }
 
 
@@ -603,20 +617,19 @@ QLabel[hasFrame="true"]
  * QComboBox.
  */
 
-QComboBox,
-QComboBox QAbstractItemView
+QComboBox
 {
-    border: 1px solid rgb(40, 40, 40);
+    border: BORDER_STYLE;
 }
 
 QComboBox::drop-down
 {
-    border-left: 1px solid rgb(40, 40, 40);
+    border-left: BORDER_STYLE;
 }
 
 QComboBox::drop-down:hover
 {
-    background-color: rgb(190, 140, 50);
+    background-color: HOVER_BACKGROUND_COLOR;
 }
 
 QComboBox::down-arrow
@@ -627,4 +640,10 @@ QComboBox::down-arrow
 QComboBox::down-arrow:hover
 {
     image: url(":/widgets/combobox_arrow_down_selected.png");
+}
+
+QComboBox QAbstractItemView
+{
+    border: BORDER_STYLE;
+    selection-background-color: HOVER_BACKGROUND_COLOR;
 }

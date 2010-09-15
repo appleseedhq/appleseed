@@ -34,6 +34,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/path.h"
+#include "foundation/utility/preprocessor.h"
 
 // Qt headers.
 #include <QtGui/QApplication>
@@ -106,18 +107,72 @@ namespace
         return true;
     }
 
-    void display_stylesheet_load_error(const filesystem::path& stylesheet_path)
+    void display_stylesheet_load_error(const string& stylesheet_path)
     {
         QMessageBox msgbox;
         msgbox.setWindowTitle("Failed to load default stylesheet");
         msgbox.setIcon(QMessageBox::Warning);
         msgbox.setText(
-            QString::fromStdString(
-                "The stylesheet " + stylesheet_path.file_string() + " could not be loaded; "
-                "the application will use the default style."));
+            QString(
+                "The stylesheet %1 could not be loaded.\n\n"
+                "The application will use the default style.")
+                .arg(QString::fromStdString(stylesheet_path)));
         msgbox.setStandardButtons(QMessageBox::Ok);
         msgbox.setDefaultButton(QMessageBox::Ok);
         msgbox.exec();
+    }
+
+    void display_stylesheet_process_error(
+        const string&   stylesheet_path,
+        const string&   error_message,
+        const size_t    error_location)
+    {
+        QMessageBox msgbox;
+        msgbox.setWindowTitle("Failed to process default stylesheet");
+        msgbox.setIcon(QMessageBox::Warning);
+        msgbox.setText(
+            QString("An error occurred while processing the stylesheet %1.\n\n"
+                    "The application will use the default style.")
+                .arg(QString::fromStdString(stylesheet_path)));
+        msgbox.setDetailedText(
+            QString("Line %1: %3.")
+                .arg(error_location)
+                .arg(QString::fromStdString(error_message)));
+        msgbox.setStandardButtons(QMessageBox::Ok);
+        msgbox.setDefaultButton(QMessageBox::Ok);
+        msgbox.exec();
+    }
+
+    bool load_stylesheet(const string& stylesheet_path, string& stylesheet)
+    {
+        if (!load_file(stylesheet_path, stylesheet))
+        {
+            display_stylesheet_load_error(stylesheet_path);
+            return false;
+        }
+
+        Preprocessor preprocessor;
+
+#if defined __APPLE__
+        preprocessor.define_symbol("__APPLE__");
+#elif defined _WIN32
+        preprocessor.define_symbol("_WIN32");
+#endif
+
+        preprocessor.process(stylesheet.c_str());
+
+        if (preprocessor.failed())
+        {
+            display_stylesheet_process_error(
+                stylesheet_path,
+                preprocessor.get_error_message(),
+                preprocessor.get_error_location());
+            return false;
+        }
+
+        stylesheet = preprocessor.get_processed_text();
+
+        return true;
     }
 
     void set_default_stylesheet(QApplication& application)
@@ -131,9 +186,8 @@ namespace
 
             // Load and apply the stylesheet.
             string stylesheet;
-            if (load_file(stylesheet_path.file_string(), stylesheet))
+            if (load_stylesheet(stylesheet_path.file_string(), stylesheet))
                 application.setStyleSheet(QString::fromStdString(stylesheet));
-            else display_stylesheet_load_error(stylesheet_path);
         }
     }
 
