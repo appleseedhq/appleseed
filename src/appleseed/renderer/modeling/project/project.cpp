@@ -36,6 +36,9 @@
 #include "renderer/modeling/project/configurationcontainer.h"
 #include "renderer/modeling/scene/scene.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/searchpaths.h"
+
 using namespace foundation;
 using namespace std;
 
@@ -51,12 +54,12 @@ struct Project::Impl
     string                  m_name;
     string                  m_path;
     auto_ptr<Scene>         m_scene;
-    ConfigurationContainer  m_configurations;
     auto_ptr<Frame>         m_frame;
+    ConfigurationContainer  m_configurations;
+    SearchPaths             m_search_paths;
     auto_ptr<TraceContext>  m_trace_context;
 };
 
-// Constructor.
 Project::Project(const char* name)
   : impl(new Impl())
 {
@@ -67,87 +70,87 @@ Project::Project(const char* name)
     add_base_configurations();
 }
 
-// Destructor.
 Project::~Project()
 {
     delete impl;
 }
 
-// Delete this instance.
 void Project::release()
 {
     delete this;
 }
 
-// Return the name of this project.
 const char* Project::get_name() const
 {
     return impl->m_name.c_str();
 }
 
-// Set or get the project path.
 bool Project::has_path() const
 {
     return impl->m_path.size() > 0;
 }
+
 void Project::set_path(const char* path)
 {
     assert(path);
     impl->m_path = path;
 }
+
 const char* Project::get_path() const
 {
     return impl->m_path.c_str();
 }
 
-// Set the scene, replacing the existing scene.
 void Project::set_scene(auto_ptr<Scene> scene)
 {
     impl->m_scene = scene;
 }
 
-// Access the scene.
 Scene* Project::get_scene() const
 {
     return impl->m_scene.get();
 }
 
-// Set the frame, replacing the existing frame.
 void Project::set_frame(auto_ptr<Frame> frame)
 {
     impl->m_frame = frame;
 }
 
-// Access the frame.
 Frame* Project::get_frame() const
 {
     return impl->m_frame.get();
 }
 
-// Access the configurations.
 ConfigurationContainer& Project::configurations()
 {
     return impl->m_configurations;
 }
+
 const ConfigurationContainer& Project::configurations() const
 {
     return impl->m_configurations;
 }
 
-// Add the default configurations to the project.
 void Project::add_default_configurations()
 {
     add_default_configuration("final", "base_final");
     add_default_configuration("interactive", "base_interactive");
 }
 
-// Get the trace context.
+SearchPaths& Project::get_search_paths()
+{
+    return impl->m_search_paths;
+}
+
+const SearchPaths& Project::get_search_paths() const
+{
+    return impl->m_search_paths;
+}
+
 const TraceContext& Project::get_trace_context()
 {
-    // Create the trace context if it doesn't exist yet.
     if (impl->m_trace_context.get() == 0)
     {
-        // Create a fresh trace context.
         assert(impl->m_scene.get());
         impl->m_trace_context.reset(new TraceContext(*impl->m_scene));
     }
@@ -177,7 +180,6 @@ void Project::add_default_configuration(const char* name, const char* base_name)
 // ProjectFactory class implementation.
 //
 
-// Create a new project.
 auto_release_ptr<Project> ProjectFactory::create(const char* name)
 {
     return auto_release_ptr<Project>(new Project(name));

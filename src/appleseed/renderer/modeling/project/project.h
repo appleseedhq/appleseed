@@ -35,9 +35,10 @@
 #include "renderer/modeling/project/configurationcontainer.h"
 
 // Forward declarations.
-namespace renderer  { class Frame; }
-namespace renderer  { class Scene; }
-namespace renderer  { class TraceContext; }
+namespace foundation    { class SearchPaths; }
+namespace renderer      { class Frame; }
+namespace renderer      { class Scene; }
+namespace renderer      { class TraceContext; }
 
 namespace renderer
 {
@@ -81,6 +82,10 @@ class RENDERERDLL Project
 
     // Add the default configurations to the project.
     void add_default_configurations();
+
+    // Get the search paths.
+    foundation::SearchPaths& get_search_paths();
+    const foundation::SearchPaths& get_search_paths() const;
 
     // Get the trace context.
     const TraceContext& get_trace_context();

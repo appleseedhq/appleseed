@@ -175,33 +175,32 @@ namespace
       public:
         // Constructor.
         ElementInfo(
-            EventCounters&  event_counters,
-            const string&   project_filename)
-          : m_event_counters(event_counters)
+            Project&        project,
+            EventCounters&  event_counters)
+          : m_project(project)
+          , m_event_counters(event_counters)
         {
             // Extract the root path of the project.
             const boost::filesystem::path project_root_path =
-                boost::filesystem::path(project_filename).branch_path();
+                boost::filesystem::path(project.get_path()).branch_path();
 
             // Add the root path of the project to the search path collection.
-            m_search_paths.push_back(project_root_path.directory_string());
+            m_project.get_search_paths().push_back(project_root_path.directory_string());
         }
 
-        // Return the event counters.
-        EventCounters& event_counters()
+        Project& get_project()
+        {
+            return m_project;
+        }
+
+        EventCounters& get_event_counters()
         {
             return m_event_counters;
         }
 
-        // Return the search paths.
-        const SearchPaths& search_paths() const
-        {
-            return m_search_paths;
-        }
-
       private:
+        Project&            m_project;
         EventCounters&      m_event_counters;
-        SearchPaths         m_search_paths;
     };
 
 
@@ -220,7 +219,7 @@ namespace
         catch (const ExceptionStringConversionError&)
         {
             RENDERER_LOG_ERROR("expected scalar value, got \"%s\"", text.c_str());
-            info.event_counters().signal_error();
+            info.get_event_counters().signal_error();
             return 0.0;
         }
     }
@@ -253,7 +252,7 @@ namespace
         if (!succeeded)
         {
             RENDERER_LOG_ERROR("invalid vector format");
-            info.event_counters().signal_error();
+            info.get_event_counters().signal_error();
             vec = Vector3d(0.0);
         }
 
@@ -273,7 +272,7 @@ namespace
         catch (const ExceptionStringConversionError&)
         {
             RENDERER_LOG_ERROR("invalid vector format");
-            info.event_counters().signal_error();
+            info.get_event_counters().signal_error();
             values.clear();
         }
     }
@@ -303,7 +302,7 @@ namespace
                     type.c_str(),
                     name.c_str(),
                     model.c_str());
-                info.event_counters().signal_error();
+                info.get_event_counters().signal_error();
             }
         }
         catch (const ExceptionDictionaryItemNotFound& e)
@@ -313,7 +312,7 @@ namespace
                 type.c_str(),
                 name.c_str(),
                 e.string());
-            info.event_counters().signal_error();
+            info.get_event_counters().signal_error();
         }
         catch (const ExceptionUnknownEntity& e)
         {
@@ -322,7 +321,7 @@ namespace
                 type.c_str(),
                 name.c_str(),
                 e.string());
-            info.event_counters().signal_error();
+            info.get_event_counters().signal_error();
         }
 
         return auto_release_ptr<Entity>(0);
@@ -612,7 +611,7 @@ namespace
                     origin[0], origin[1], origin[2],
                     target[0], target[1], target[2],
                     up[0], up[1], up[2]);
-                m_info.event_counters().signal_error();
+                m_info.get_event_counters().signal_error();
             }
         }
 
@@ -662,7 +661,7 @@ namespace
                 RENDERER_LOG_ERROR(
                     "while defining <matrix> element: expected 16 scalar coefficients, got " FMT_SIZE_T,
                     m_values.size());
-                m_info.event_counters().signal_error();
+                m_info.get_event_counters().signal_error();
             }
         }
 
@@ -716,7 +715,7 @@ namespace
             else
             {
                 RENDERER_LOG_ERROR("while defining <rotation> element: the rotation axis cannot be null");
-                m_info.event_counters().signal_error();
+                m_info.get_event_counters().signal_error();
             }
         }
 
@@ -828,7 +827,7 @@ namespace
             catch (const ExceptionSingularMatrix&)
             {
                 RENDERER_LOG_ERROR("while defining <transform> element: the transformation matrix is singular");
-                m_info.event_counters().signal_error();
+                m_info.get_event_counters().signal_error();
                 m_transform = Transformd(Matrix4d::identity());
             }
         }
@@ -984,7 +983,7 @@ namespace
                             "while defining color \"%s\": required parameter \"%s\" missing",
                             m_name.c_str(),
                             e.string());
-                        m_info.event_counters().signal_error();
+                        m_info.get_event_counters().signal_error();
                     }
                 }
                 break;
@@ -1045,7 +1044,7 @@ namespace
                         factory->create(
                             m_name.c_str(),
                             m_params,
-                            m_info.search_paths());
+                            m_info.get_project().get_search_paths());
                 }
                 else
                 {
@@ -1053,7 +1052,7 @@ namespace
                         "while defining texture \"%s\": invalid model \"%s\"",
                         m_name.c_str(),
                         m_model.c_str());
-                    m_info.event_counters().signal_error();
+                    m_info.get_event_counters().signal_error();
                 }
             }
             catch (const ExceptionDictionaryItemNotFound& e)
@@ -1062,7 +1061,7 @@ namespace
                     "while defining texture \"%s\": required parameter \"%s\" missing",
                     m_name.c_str(),
                     e.string());
-                m_info.event_counters().signal_error();
+                m_info.get_event_counters().signal_error();
             }
         }
 
@@ -1133,7 +1132,7 @@ namespace
                         "while defining texture instance \"%s\": required parameter \"%s\" missing",
                         m_name.c_str(),
                         e.string());
-                    m_info.event_counters().signal_error();
+                    m_info.get_event_counters().signal_error();
                 }
             }
             else
@@ -1142,7 +1141,7 @@ namespace
                     "while defining texture instance \"%s\": the texture \"%s\" does not exist",
                     m_name.c_str(),
                     m_texture.c_str());
-                m_info.event_counters().signal_error();
+                m_info.get_event_counters().signal_error();
             }
         }
 
@@ -1266,7 +1265,7 @@ namespace
                         "while defining environment \"%s\": invalid model \"%s\"",
                         m_name.c_str(),
                         m_model.c_str());
-                    m_info.event_counters().signal_error();
+                    m_info.get_event_counters().signal_error();
                 }
             }
             catch (const ExceptionUnknownEntity& e)
@@ -1275,7 +1274,7 @@ namespace
                     "while defining environment \"%s\": unknown entity \"%s\"",
                     m_name.c_str(),
                     e.string());
-                m_info.event_counters().signal_error();
+                m_info.get_event_counters().signal_error();
             }
         }
 
@@ -1380,7 +1379,7 @@ namespace
                         "while defining light \"%s\": invalid model \"%s\"",
                         m_name.c_str(),
                         m_model.c_str());
-                    m_info.event_counters().signal_error();
+                    m_info.get_event_counters().signal_error();
                 }
             }
             catch (const ExceptionDictionaryItemNotFound& e)
@@ -1389,7 +1388,7 @@ namespace
                     "while defining light \"%s\": required parameter \"%s\" missing",
                     m_name.c_str(),
                     e.string());
-                m_info.event_counters().signal_error();
+                m_info.get_event_counters().signal_error();
             }
             catch (const ExceptionUnknownEntity& e)
             {
@@ -1397,7 +1396,7 @@ namespace
                     "while defining light \"%s\": unknown entity \"%s\"",
                     m_name.c_str(),
                     e.string());
-                m_info.event_counters().signal_error();
+                m_info.get_event_counters().signal_error();
             }
         }
 
@@ -1500,7 +1499,7 @@ namespace
                         "while defining material \"%s\": invalid model \"%s\"",
                         m_name.c_str(),
                         m_model.c_str());
-                    m_info.event_counters().signal_error();
+                    m_info.get_event_counters().signal_error();
                 }
             }
             catch (const ExceptionDictionaryItemNotFound& e)
@@ -1509,7 +1508,7 @@ namespace
                     "while defining material \"%s\": required parameter \"%s\" missing",
                     m_name.c_str(),
                     e.string());
-                m_info.event_counters().signal_error();
+                m_info.get_event_counters().signal_error();
             }
             catch (const ExceptionUnknownEntity& e)
             {
@@ -1517,7 +1516,7 @@ namespace
                     "while defining material \"%s\": unknown entity \"%s\"",
                     m_name.c_str(),
                     e.string());
-                m_info.event_counters().signal_error();
+                m_info.get_event_counters().signal_error();
             }
         }
 
@@ -1580,7 +1579,7 @@ namespace
                         "while defining camera \"%s\": invalid model \"%s\"",
                         m_name.c_str(),
                         m_model.c_str());
-                    m_info.event_counters().signal_error();
+                    m_info.get_event_counters().signal_error();
                 }
             }
             catch (const ExceptionDictionaryItemNotFound& e)
@@ -1589,7 +1588,7 @@ namespace
                     "while defining camera \"%s\": required parameter \"%s\" missing",
                     m_name.c_str(),
                     e.string());
-                m_info.event_counters().signal_error();
+                m_info.get_event_counters().signal_error();
             }
         }
 
@@ -1664,7 +1663,8 @@ namespace
                 {
                     // Retrieve the name of the mesh file.
                     const string filename = m_params.get<string>("filename");
-                    const string qualified_filename = m_info.search_paths().qualify(filename);
+                    const string qualified_filename =
+                        m_info.get_project().get_search_paths().qualify(filename);
 
                     // Read the mesh file.
                     MeshObjectArray object_array =
@@ -1689,7 +1689,7 @@ namespace
                         "while defining object \"%s\": invalid model \"%s\"",
                         m_name.c_str(),
                         m_model.c_str());
-                    m_info.event_counters().signal_error();
+                    m_info.get_event_counters().signal_error();
                 }
             }
             catch (const ExceptionDictionaryItemNotFound& e)
@@ -1698,7 +1698,7 @@ namespace
                     "while defining object \"%s\": required parameter \"%s\" missing",
                     m_name.c_str(),
                     e.string());
-                m_info.event_counters().signal_error();
+                m_info.get_event_counters().signal_error();
             }
         }
 
@@ -1743,7 +1743,7 @@ namespace
                 RENDERER_LOG_ERROR(
                     "while assigning material: slot must be an integer >= 0, got \"%s\"",
                     slot_string.c_str());
-                m_info.event_counters().signal_error();
+                m_info.get_event_counters().signal_error();
                 m_slot = 0;
             }
             m_material = get_value(attrs, "material");
@@ -1826,7 +1826,7 @@ namespace
                     "while defining object instance \"%s\": the object \"%s\" does not exist",
                     m_name.c_str(),
                     m_object.c_str());
-                m_info.event_counters().signal_error();
+                m_info.get_event_counters().signal_error();
             }
         }
 
@@ -1865,7 +1865,7 @@ namespace
                                 "while defining object instance \"%s\": the material \"%s\" does not exist",
                                 m_name.c_str(),
                                 material_name.c_str());
-                            m_info.event_counters().signal_error();
+                            m_info.get_event_counters().signal_error();
                         }
                     }
                     else
@@ -1876,7 +1876,7 @@ namespace
                             m_name.c_str(),
                             MaxMaterialSlots - 1,
                             material_slot);
-                        m_info.event_counters().signal_error();
+                        m_info.get_event_counters().signal_error();
                     }
                 }
                 break;
@@ -2213,7 +2213,7 @@ namespace
                     "while defining assembly instance \"%s\": the assembly \"%s\" does not exist",
                     m_name.c_str(),
                     m_assembly.c_str());
-                m_info.event_counters().signal_error();
+                m_info.get_event_counters().signal_error();
             }
         }
 
@@ -2406,7 +2406,7 @@ namespace
                         if (m_scene->get_camera())
                         {
                             RENDERER_LOG_WARNING("support for multiple cameras is not implemented yet");
-                            m_info.event_counters().signal_warning();
+                            m_info.get_event_counters().signal_warning();
                         }
                         m_scene->set_camera(camera);
                     }
@@ -2423,7 +2423,7 @@ namespace
                         if (m_scene->get_environment())
                         {
                             RENDERER_LOG_ERROR("cannot define multiple environments");
-                            m_info.event_counters().signal_error();
+                            m_info.get_event_counters().signal_error();
                         }
                         m_scene->set_environment(environment);
                     }
@@ -2635,7 +2635,7 @@ namespace
                         "while defining configuration \"%s\": the configuration \"%s\" does not exist",
                         m_configuration->get_name(),
                         m_base_name.c_str());
-                    m_info.event_counters().signal_error();
+                    m_info.get_event_counters().signal_error();
                 }
             }
         }
@@ -2974,7 +2974,7 @@ auto_release_ptr<Project> ProjectFileReader::load_project_file(
             event_counters));
 
     // Create the content handler.
-    ElementInfo element_info(event_counters, project_filename);
+    ElementInfo element_info(*project.get(), event_counters);
     auto_ptr<ContentHandler> content_handler(
         new ContentHandler(
             project.get(),
