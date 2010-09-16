@@ -40,6 +40,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
+#include "foundation/utility/containers/dictionaryarray.h"
 
 using namespace foundation;
 using namespace std;

@@ -43,6 +43,7 @@
 #include "foundation/math/minmax.h"
 #include "foundation/math/noise.h"
 #include "foundation/math/scalar.h"
+#include "foundation/utility/containers/dictionaryarray.h"
 
 // Standard headers.
 #include <vector>

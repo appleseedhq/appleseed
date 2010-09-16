@@ -32,10 +32,8 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/surfaceshader/isurfaceshaderfactory.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/containers/dictionaryarray.h"
-
 // Forward declarations.
+namespace foundation    { class DictionaryArray; }
 namespace renderer      { class SurfaceShader; }
 
 namespace renderer
