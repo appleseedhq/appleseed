@@ -42,7 +42,7 @@ namespace renderer
 // The voxel grid used for rendering.
 //
 
-typedef foundation::VoxelGrid3<float, 14> VoxelGrid;
+typedef foundation::VoxelGrid3<float> VoxelGrid;
 
 
 //

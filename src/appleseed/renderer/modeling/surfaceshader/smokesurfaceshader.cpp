@@ -182,6 +182,8 @@ namespace
             QuadraticMode
         };
 
+        static const size_t MaxChannels = 14;
+
         const string            m_name;
 
         AABB3d                  m_bbox;
@@ -465,7 +467,7 @@ namespace
                   m_voxel_grid->trilinear_lookup(pointf, values);
                   return true;
               case QuadraticMode:
-                  m_voxel_grid->triquadratic_lookup(pointf, values);
+                  m_voxel_grid->triquadratic_lookup<MaxChannels>(pointf, values);
                   return true;
               default:
                   assert(false);
@@ -479,7 +481,7 @@ namespace
                 return 0.0f;
 
             // Get fluid values.
-            float values[VoxelGrid::MaxChannels];
+            float values[MaxChannels];
             if (!get_fluid_values(point, values))
                 return 0.0f;
 
@@ -664,7 +666,7 @@ namespace
                     const Vector3d sample_position = ray.point_at(t);
 
                     // Get the fluid values at this position.
-                    float values[VoxelGrid::MaxChannels];
+                    float values[MaxChannels];
                     if (get_fluid_values(sample_position, values))
                     {
                         // Compute the sample opacity.
@@ -719,7 +721,7 @@ namespace
                 const Vector3d sample_position = ray.point_at(t);
 
                 // Get the fluid values at this position.
-                float values[VoxelGrid::MaxChannels];
+                float values[MaxChannels];
                 if (get_fluid_values(sample_position, values))
                 {
                     // Compute the sample opacity.

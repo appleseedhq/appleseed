@@ -39,7 +39,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
-#include <cstdlib>
+#include <cstring>
 #include <vector>
 
 namespace foundation
@@ -49,7 +49,7 @@ namespace foundation
 // A regular 3D grid of voxel.
 //
 
-template <typename T, size_t MaxChannels_>
+template <typename T>
 class VoxelGrid3
   : public NonCopyable
 {
@@ -57,9 +57,6 @@ class VoxelGrid3
     // Types.
     typedef T ValueType;
     typedef Vector<T, 3> Vector3Type;
-
-    // Maximum number of data channels.
-    static const size_t MaxChannels = MaxChannels_;
 
     // Constructor.
     VoxelGrid3(
@@ -98,6 +95,7 @@ class VoxelGrid3
 
     // Perform a trilquadratically interpolated lookup of the voxel grid.
     // Numerical imprecisions on the input point are handled.
+    template <size_t MaxChannelCount>
     void triquadratic_lookup(
         const Vector3Type&  point,
         ValueType           values[]) const;
@@ -124,9 +122,8 @@ class VoxelGrid3
 // VoxelGrid3 class implementation.
 //
 
-// Constructor.
-template <typename T, size_t MaxChannels_>
-VoxelGrid3<T, MaxChannels_>::VoxelGrid3(
+template <typename T>
+VoxelGrid3<T>::VoxelGrid3(
     const size_t        xres,
     const size_t        yres,
     const size_t        zres,
@@ -158,31 +155,32 @@ VoxelGrid3<T, MaxChannels_>::VoxelGrid3(
         m_values.size() * sizeof(ValueType));
 }
 
-// Get the grid properties.
-template <typename T, size_t MaxChannels_>
-FOUNDATION_FORCE_INLINE size_t VoxelGrid3<T, MaxChannels_>::get_xres() const
+template <typename T>
+FOUNDATION_FORCE_INLINE size_t VoxelGrid3<T>::get_xres() const
 {
     return m_xres;
 }
-template <typename T, size_t MaxChannels_>
-FOUNDATION_FORCE_INLINE size_t VoxelGrid3<T, MaxChannels_>::get_yres() const
+
+template <typename T>
+FOUNDATION_FORCE_INLINE size_t VoxelGrid3<T>::get_yres() const
 {
     return m_yres;
 }
-template <typename T, size_t MaxChannels_>
-FOUNDATION_FORCE_INLINE size_t VoxelGrid3<T, MaxChannels_>::get_zres() const
+
+template <typename T>
+FOUNDATION_FORCE_INLINE size_t VoxelGrid3<T>::get_zres() const
 {
     return m_zres;
 }
-template <typename T, size_t MaxChannels_>
-FOUNDATION_FORCE_INLINE size_t VoxelGrid3<T, MaxChannels_>::get_channel_count() const
+
+template <typename T>
+FOUNDATION_FORCE_INLINE size_t VoxelGrid3<T>::get_channel_count() const
 {
     return m_channel_count;
 }
 
-// Direct access to a given voxel.
-template <typename T, size_t MaxChannels_>
-FOUNDATION_FORCE_INLINE T* VoxelGrid3<T, MaxChannels_>::voxel(
+template <typename T>
+FOUNDATION_FORCE_INLINE T* VoxelGrid3<T>::voxel(
     const size_t        x,
     const size_t        y,
     const size_t        z)
@@ -192,8 +190,9 @@ FOUNDATION_FORCE_INLINE T* VoxelGrid3<T, MaxChannels_>::voxel(
     assert(z < m_nz);
     return &m_values[((z * m_ny + y) * m_nx + x) * m_channel_count];
 }
-template <typename T, size_t MaxChannels_>
-FOUNDATION_FORCE_INLINE const T* VoxelGrid3<T, MaxChannels_>::voxel(
+
+template <typename T>
+FOUNDATION_FORCE_INLINE const T* VoxelGrid3<T>::voxel(
     const size_t        x,
     const size_t        y,
     const size_t        z) const
@@ -204,9 +203,8 @@ FOUNDATION_FORCE_INLINE const T* VoxelGrid3<T, MaxChannels_>::voxel(
     return &m_values[((z * m_ny + y) * m_nx + x) * m_channel_count];
 }
 
-// Perform an unfiltered lookup of the voxel grid.
-template <typename T, size_t MaxChannels_>
-void VoxelGrid3<T, MaxChannels_>::nearest_lookup(
+template <typename T>
+void VoxelGrid3<T>::nearest_lookup(
     const Vector3Type&  point,
     ValueType           values[]) const
 {
@@ -226,11 +224,10 @@ void VoxelGrid3<T, MaxChannels_>::nearest_lookup(
         values[i] = source[i];
 }
 
-// Perform a trilinearly interpolated lookup of the voxel grid.
-template <typename T, size_t MaxChannels_>
-void VoxelGrid3<T, MaxChannels_>::trilinear_lookup(
-    const Vector3Type&  point,
-    ValueType           values[]) const
+template <typename T>
+void VoxelGrid3<T>::trilinear_lookup(
+    const Vector3Type&      point,
+    ValueType* __restrict   values) const
 {
     // Clamp the lookup point coordinates.
     const ValueType x = clamp(point.x, ValueType(0.0), m_xbound);
@@ -250,68 +247,56 @@ void VoxelGrid3<T, MaxChannels_>::trilinear_lookup(
     const ValueType y0 = ValueType(1.0) - y1;
     const ValueType z0 = ValueType(1.0) - z1;
 
-    // Corner 000.
+    // Corners 000 and 100.
     {
-        const ValueType* source = voxel(ix + 0, iy + 0, iz + 0);
-        const ValueType weight = x0 * y0 * z0;
+        const ValueType* __restrict source0 = voxel(ix + 0, iy + 0, iz + 0);
+        const ValueType* __restrict source1 = source0 + m_channel_count;
+        const ValueType weight0 = x0 * y0 * z0;
+        const ValueType weight1 = x1 * y0 * z0;
         for (size_t i = 0; i < m_channel_count; ++i)
-            values[i] = source[i] * weight;
+        {
+            values[i] = source0[i] * weight0;
+            values[i] += source1[i] * weight1;
+        }
     }
 
-    // Corner 100.
+    // Corners 010 and 110.
     {
-        const ValueType* source = voxel(ix + 1, iy + 0, iz + 0);
-        const ValueType weight = x1 * y0 * z0;
+        const ValueType* __restrict source0 = voxel(ix + 0, iy + 1, iz + 0);
+        const ValueType* __restrict source1 = source0 + m_channel_count;
+        const ValueType weight0 = x0 * y1 * z0;
+        const ValueType weight1 = x1 * y1 * z0;
         for (size_t i = 0; i < m_channel_count; ++i)
-            values[i] += source[i] * weight;
+        {
+            values[i] += source0[i] * weight0;
+            values[i] += source1[i] * weight1;
+        }
     }
 
-    // Corner 010.
+    // Corners 001 and 101.
     {
-        const ValueType* source = voxel(ix + 0, iy + 1, iz + 0);
-        const ValueType weight = x0 * y1 * z0;
+        const ValueType* __restrict source0 = voxel(ix + 0, iy + 0, iz + 1);
+        const ValueType* __restrict source1 = source0 + m_channel_count;
+        const ValueType weight0 = x0 * y0 * z1;
+        const ValueType weight1 = x1 * y0 * z1;
         for (size_t i = 0; i < m_channel_count; ++i)
-            values[i] += source[i] * weight;
+        {
+            values[i] += source0[i] * weight0;
+            values[i] += source1[i] * weight1;
+        }
     }
 
-    // Corner 110.
+    // Corners 011 and 111.
     {
-        const ValueType* source = voxel(ix + 1, iy + 1, iz + 0);
-        const ValueType weight = x1 * y1 * z0;
+        const ValueType* __restrict source0 = voxel(ix + 0, iy + 1, iz + 1);
+        const ValueType* __restrict source1 = source0 + m_channel_count;
+        const ValueType weight0 = x0 * y1 * z1;
+        const ValueType weight1 = x1 * y1 * z1;
         for (size_t i = 0; i < m_channel_count; ++i)
-            values[i] += source[i] * weight;
-    }
-
-    // Corner 001.
-    {
-        const ValueType* source = voxel(ix + 0, iy + 0, iz + 1);
-        const ValueType weight = x0 * y0 * z1;
-        for (size_t i = 0; i < m_channel_count; ++i)
-            values[i] += source[i] * weight;
-    }
-
-    // Corner 101.
-    {
-        const ValueType* source = voxel(ix + 1, iy + 0, iz + 1);
-        const ValueType weight = x1 * y0 * z1;
-        for (size_t i = 0; i < m_channel_count; ++i)
-            values[i] += source[i] * weight;
-    }
-
-    // Corner 011.
-    {
-        const ValueType* source = voxel(ix + 0, iy + 1, iz + 1);
-        const ValueType weight = x0 * y1 * z1;
-        for (size_t i = 0; i < m_channel_count; ++i)
-            values[i] += source[i] * weight;
-    }
-
-    // Corner 111.
-    {
-        const ValueType* source = voxel(ix + 1, iy + 1, iz + 1);
-        const ValueType weight = x1 * y1 * z1;
-        for (size_t i = 0; i < m_channel_count; ++i)
-            values[i] += source[i] * weight;
+        {
+            values[i] += source0[i] * weight0;
+            values[i] += source1[i] * weight1;
+        }
     }
 }
 
@@ -365,9 +350,9 @@ namespace voxelgrid_impl
 
 }   // namespace voxelgrid_impl
 
-// Perform a trilquadratically interpolated lookup of the voxel grid.
-template <typename T, size_t MaxChannels_>
-void VoxelGrid3<T, MaxChannels_>::triquadratic_lookup(
+template <typename T>
+template <size_t MaxChannelCount>
+void VoxelGrid3<T>::triquadratic_lookup(
     const Vector3Type&  point,
     ValueType           values[]) const
 {
@@ -389,12 +374,12 @@ void VoxelGrid3<T, MaxChannels_>::triquadratic_lookup(
     const ValueType ty = y - iy;
     const ValueType tz = z - iz;
 
-    ValueType v0[MaxChannels * 3];
-    ValueType v1[MaxChannels * 3];
-    ValueType v2[MaxChannels * 3];
-    ValueType qz0[MaxChannels];
-    ValueType qz1[MaxChannels];
-    ValueType qz2[MaxChannels];
+    ValueType v0[MaxChannelCount * 3];
+    ValueType v1[MaxChannelCount * 3];
+    ValueType v2[MaxChannelCount * 3];
+    ValueType qz0[MaxChannelCount];
+    ValueType qz1[MaxChannelCount];
+    ValueType qz2[MaxChannelCount];
 
     typedef typename TypeConv<ValueType>::UInt UInt;
 
