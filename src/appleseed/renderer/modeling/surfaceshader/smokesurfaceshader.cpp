@@ -80,27 +80,9 @@ namespace
             const ParamArray&       params)
           : SurfaceShader(params)
           , m_name(name)
+          , m_first_frame(true)
         {
             extract_parameters();
-
-            create_voxel_grid();
-            print_channel_availability();
-
-            if (m_voxel_grid.get())
-            {
-                // Build the occupancy grid.
-                build_occupancy_grid(
-                    *m_voxel_grid.get(),
-                    m_channels.m_density_index,
-                    m_occupancy_grid,
-                    OccupancyThreshold);
-
-                // Compute the world space to grid space scale factor.
-                m_scale = Vector3d(1.0) / m_bbox.extent();
-                m_scale[0] *= m_voxel_grid->get_xres() - 1;
-                m_scale[1] *= m_voxel_grid->get_yres() - 1;
-                m_scale[2] *= m_voxel_grid->get_zres() - 1;
-            }
         }
 
         virtual void release()
@@ -116,6 +98,33 @@ namespace
         virtual const char* get_name() const
         {
             return m_name.c_str();
+        }
+
+        virtual void on_frame_begin(const Scene& scene)
+        {
+            if (m_first_frame)
+            {
+                create_voxel_grid();
+                print_channel_availability();
+
+                if (m_voxel_grid.get())
+                {
+                    // Build the occupancy grid.
+                    build_occupancy_grid(
+                        *m_voxel_grid.get(),
+                        m_channels.m_density_index,
+                        m_occupancy_grid,
+                        OccupancyThreshold);
+
+                    // Compute the world space to grid space scale factor.
+                    m_scale = Vector3d(1.0) / m_bbox.extent();
+                    m_scale[0] *= m_voxel_grid->get_xres() - 1;
+                    m_scale[1] *= m_voxel_grid->get_yres() - 1;
+                    m_scale[2] *= m_voxel_grid->get_zres() - 1;
+                }
+
+                m_first_frame = false;
+            }
         }
 
         virtual void evaluate(
@@ -168,14 +177,12 @@ namespace
         }
 
       private:
-        // Shading modes.
         enum ShadingMode
         {
             VolumeMode = 0,
             IsosurfaceMode
         };
 
-        // Interpolation modes.
         enum InterpolationMode
         {
             NearestMode = 0,
@@ -186,6 +193,8 @@ namespace
         static const size_t MaxChannels = 14;
 
         const string            m_name;
+
+        bool                    m_first_frame;
 
         AABB3d                  m_bbox;
         ShadingMode             m_shading_mode;
@@ -325,12 +334,15 @@ namespace
 
         void load_voxel_grid_from_disk()
         {
-            RENDERER_LOG_INFO("loading fluid file %s...", m_filename.c_str());
+            //const string filepath = search_paths.qualify(m_filename);
+            const string filepath = m_filename;
 
-            m_voxel_grid = read_fluid_file(m_filename.c_str(), m_channels);
+            RENDERER_LOG_INFO("loading fluid file %s...", filepath.c_str());
+
+            m_voxel_grid = read_fluid_file(filepath.c_str(), m_channels);
 
             if (m_voxel_grid.get() == 0)
-                RENDERER_LOG_ERROR("failed to load fluid file %s", m_filename.c_str());
+                RENDERER_LOG_ERROR("failed to load fluid file %s", filepath.c_str());
 
 /*
             write_voxel_grid(
@@ -339,7 +351,6 @@ namespace
 */
         }
 
-        // Print the availability of fluid channels.
         void print_channel_availability()
         {
             if (m_voxel_grid.get())
@@ -365,7 +376,6 @@ namespace
             }
         }
 
-        // Build an occupancy grid for a given voxel grid.
         static void build_occupancy_grid(
             const VoxelGrid&    voxel_grid,
             const size_t        density_index,
