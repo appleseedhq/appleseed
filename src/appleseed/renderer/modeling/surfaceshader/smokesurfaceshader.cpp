@@ -383,7 +383,7 @@ namespace
                 {
                     for (int x = 0; x < xres; ++x)
                     {
-                        // Compute the sum of the densities over the 2x2x2 neighboring of (x, y, z).
+                        // Compute the sum of the densities over the 3x3x3 neighboring of (x, y, z).
                         float density_sum = 0.0f;
                         for (int dx = -1; dx <= +1; ++dx)
                         {
@@ -463,12 +463,15 @@ namespace
               case NearestMode:
                   m_voxel_grid->nearest_lookup(pointf, values);
                   return true;
+
               case LinearMode:
                   m_voxel_grid->trilinear_lookup(pointf, values);
                   return true;
+
               case QuadraticMode:
                   m_voxel_grid->triquadratic_lookup<MaxChannels>(pointf, values);
                   return true;
+
               default:
                   assert(false);
                   return false;

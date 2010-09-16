@@ -42,7 +42,6 @@ namespace renderer
 // FluidChannels class implementation.
 //
 
-// Constructor.
 FluidChannels::FluidChannels()
   : m_color_index(NotPresent)
   , m_density_index(NotPresent)
@@ -110,15 +109,14 @@ namespace
     }
 }
 
-// Read a fluid file created by 3Delight for Maya.
 auto_ptr<VoxelGrid> read_fluid_file(
     const char*         filename,
     FluidChannels&      channels)
 {
     assert(filename);
 
-    // Open the fluid file.
     FILE* file = fopen(filename, "rb");
+
     if (file == 0)
         return auto_ptr<VoxelGrid>(0);
 
@@ -137,9 +135,7 @@ auto_ptr<VoxelGrid> read_fluid_file(
         return auto_ptr<VoxelGrid>(0);
     }
 
-    // Compute the number of voxels.
-    const size_t voxel_count =
-        header.m_xres * header.m_yres * header.m_zres;
+    const size_t voxel_count = header.m_xres * header.m_yres * header.m_zres;
 
     // Compute the number of channels, and set channel indices.
     size_t channel_count = 0;
@@ -184,7 +180,6 @@ auto_ptr<VoxelGrid> read_fluid_file(
         channel_count += 3;
     }
 
-    // Allocate the voxel grid.
     auto_ptr<VoxelGrid> grid(
         new VoxelGrid(
             header.m_xres,
@@ -273,19 +268,17 @@ auto_ptr<VoxelGrid> read_fluid_file(
 
     assert(channel_index == channel_count);
 
-    // Close the fluid file.
     fclose(file);
 
-    // Return the voxel grid, or 0 if an I/O error occurred.
     return read == needed ? grid : auto_ptr<VoxelGrid>(0);
 }
 
-// Write a voxel grid to disk in a human-readable format.
 void write_voxel_grid(
     const char*         filename,
     const VoxelGrid&    grid)
 {
     FILE* file = fopen(filename, "wt");
+
     if (file == 0)
         return;
 
@@ -297,22 +290,28 @@ void write_voxel_grid(
     for (size_t z = 0; z < zres; ++z)
     {
         fprintf(file, "z " FMT_SIZE_T "\n\n", z);
+
         for (size_t y = 0; y < yres; ++y)
         {
             for (size_t x = 0; x < xres; ++x)
             {
                 if (x > 0)
                     fprintf(file, "  ");
+
                 const float* voxel = grid.voxel(x, y, z);
+
                 for (size_t i = 0; i < channel_count; ++i)
                 {
                     if (i > 0)
                         fprintf(file, ",");
+
                     fprintf(file, "%f", voxel[i]);
                 }
             }
+
             fprintf(file, "\n");
         }
+
         fprintf(file, "\n");
     }
 
