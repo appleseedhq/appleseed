@@ -31,10 +31,29 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/utility/implptr.h"
 
 // Standard headers.
 #include <string>
-#include <vector>
+
+//
+// On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
+// and to __declspec(dllimport) when building an application using the DLL.
+// Other platforms don't use this export mechanism and the symbol FOUNDATIONDLL is
+// defined to evaluate to nothing.
+//
+
+#ifndef FOUNDATIONDLL
+#ifdef _WIN32
+#ifdef APPLESEED_FOUNDATION_EXPORTS
+#define FOUNDATIONDLL __declspec(dllexport)
+#else
+#define FOUNDATIONDLL __declspec(dllimport)
+#endif
+#else
+#define FOUNDATIONDLL
+#endif
+#endif
 
 namespace foundation
 {
@@ -42,33 +61,59 @@ namespace foundation
 //
 // An ordered collection of search paths.
 //
-// The paths are ordered by descending priority (paths
-// inserted earlier have precedence over those inserted later).
+// The paths are ordered by descending priority: paths inserted earlier have precedence
+// over those inserted later).
 //
 
-class SearchPaths
+class FOUNDATIONDLL SearchPaths
   : public NonCopyable
 {
   public:
+    // Constructor.
+    SearchPaths();
+
     // Insert a search path at the end of the collection.
+    void push_back(const char* path);
     void push_back(const std::string& path);
 
-    // Return true if a given file exists, that is, if the
-    // argument is the absolute path to a file that exists,
-    // or it is the name of a file that exists in one of
+    // Return true if a given file exists, that is, if the argument is the absolute
+    // path to a file that exists, or it is the name of a file that exists in one of
     // the search paths.
+    bool exist(const char* filepath) const;
     bool exist(const std::string& filepath) const;
 
-    // Find a file in the search paths. If the file was found,
-    // the qualified path to this file is returned. Otherwise
-    // the input path is returned.
+    // Find a file in the search paths. If the file was found, the qualified path to
+    // this file is returned. Otherwise the input path is returned.
     std::string qualify(const std::string& filepath) const;
 
   private:
-    typedef std::vector<std::string> PathCollection;
+    FOUNDATION_PIMPL(SearchPaths);
 
-    PathCollection  m_paths;
+    char* qualify(const char* filepath) const;
 };
+
+
+//
+// SearchPaths class implementation.
+//
+
+inline void SearchPaths::push_back(const std::string& path)
+{
+    return push_back(path.c_str());
+}
+
+inline bool SearchPaths::exist(const std::string& filepath) const
+{
+    return exist(filepath.c_str());
+}
+
+inline std::string SearchPaths::qualify(const std::string& filepath) const
+{
+    const char* tmp = qualify(filepath.c_str());
+    const std::string result = tmp;
+    delete [] tmp;
+    return result;
+}
 
 }       // namespace foundation
 

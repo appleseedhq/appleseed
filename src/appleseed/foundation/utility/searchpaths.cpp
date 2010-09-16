@@ -31,10 +31,15 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/string.h"
 
 // boost headers.
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
+
+// Standard headers.
+#include <cassert>
+#include <vector>
 
 using namespace boost;
 using namespace std;
@@ -46,19 +51,35 @@ namespace foundation
 // SearchPaths class implementation.
 //
 
-void SearchPaths::push_back(const string& path)
+struct SearchPaths::Impl
 {
-    m_paths.push_back(path);
+    typedef vector<string> PathCollection;
+
+    PathCollection m_paths;
+};
+
+SearchPaths::SearchPaths()
+  : impl(new Impl())
+{
 }
 
-bool SearchPaths::exist(const string& filepath) const
+void SearchPaths::push_back(const char* path)
 {
+    assert(path);
+
+    impl->m_paths.push_back(path);
+}
+
+bool SearchPaths::exist(const char* filepath) const
+{
+    assert(filepath);
+
     const filesystem::path fp(filepath);
 
     if (fp.is_complete())
         return filesystem::exists(fp);
 
-    for (const_each<PathCollection> i = m_paths; i; ++i)
+    for (const_each<Impl::PathCollection> i = impl->m_paths; i; ++i)
     {
         const filesystem::path qualified_fp = filesystem::path(*i) / fp;
 
@@ -69,22 +90,29 @@ bool SearchPaths::exist(const string& filepath) const
     return false;
 }
 
-string SearchPaths::qualify(const string& filepath) const
+char* SearchPaths::qualify(const char* filepath) const
 {
+    assert(filepath);
+
     const filesystem::path fp(filepath);
 
-    if (fp.is_complete())
-        return fp.file_string();
+    string result = fp.file_string();
 
-    for (const_each<PathCollection> i = m_paths; i; ++i)
+    if (!fp.is_complete())
     {
-        const filesystem::path qualified_fp = filesystem::path(*i) / fp;
+        for (const_each<Impl::PathCollection> i = impl->m_paths; i; ++i)
+        {
+            const filesystem::path qualified_fp = filesystem::path(*i) / fp;
 
-        if (filesystem::exists(qualified_fp))
-            return qualified_fp.file_string();
+            if (filesystem::exists(qualified_fp))
+            {
+                result = qualified_fp.file_string();
+                break;
+            }
+        }
     }
 
-    return fp.file_string();
+    return strdup(result.c_str());
 }
 
 }   // namespace foundation
