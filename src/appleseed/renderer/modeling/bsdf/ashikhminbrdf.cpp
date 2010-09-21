@@ -40,6 +40,9 @@
 #include "foundation/math/fresnel.h"
 #include "foundation/math/sampling.h"
 
+// Forward declarations.
+namespace renderer  { class Project; }
+
 using namespace foundation;
 using namespace std;
 
@@ -106,7 +109,7 @@ namespace
         }
 
         virtual void on_frame_begin(
-            const Scene&        scene,
+            const Project&      project,
             const void*         data)
         {
             const InputValues* values = static_cast<const InputValues*>(data);

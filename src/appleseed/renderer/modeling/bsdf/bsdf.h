@@ -37,7 +37,7 @@
 #include "foundation/math/basis.h"
 
 // Forward declarations.
-namespace renderer      { class Scene; }
+namespace renderer      { class Project; }
 
 namespace renderer
 {
@@ -62,12 +62,12 @@ class RENDERERDLL BSDF
 
     // This method is called once before rendering each frame.
     virtual void on_frame_begin(
-        const Scene&                scene,
+        const Project&              project,
         const void*                 data);                      // input values
 
     // This method is called once after rendering each frame.
     virtual void on_frame_end(
-        const Scene&                scene);
+        const Project&              project);
 
     // Scattering modes.
     enum Mode
@@ -130,13 +130,13 @@ inline BSDF::BSDF(const ParamArray& params)
 }
 
 inline void BSDF::on_frame_begin(
-    const Scene&                scene,
+    const Project&              project,
     const void*                 data)
 {
 }
 
 inline void BSDF::on_frame_end(
-    const Scene&                scene)
+    const Project&              project)
 {
 }
 

@@ -29,161 +29,35 @@
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 #include "renderer/kernel/texturing/texturecache.h"
-#include "renderer/modeling/color/colorentity.h"
 #include "renderer/modeling/environmentedf/constantenvironmentedf.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/environmentedf/gradientenvironmentedf.h"
 #include "renderer/modeling/environmentedf/latlongmapenvironmentedf.h"
 #include "renderer/modeling/environmentedf/mirrorballmapenvironmentedf.h"
-#include "renderer/modeling/input/colorsource.h"
 #include "renderer/modeling/input/inputevaluator.h"
-#include "renderer/modeling/input/texturesource.h"
+#include "renderer/modeling/project/project.h"
+#include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/scene.h"
-#include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/modeling/texture/texture.h"
+#include "renderer/utility/testutils.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/utility/test.h"
 
+using namespace foundation;
+using namespace renderer;
+using namespace std;
+
 FOUNDATION_TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
 {
-    using namespace foundation;
-    using namespace renderer;
-    using namespace std;
-
-    bool check_consistency(Scene& scene, auto_release_ptr<EnvironmentEDF>& env_edf)
-    {
-        env_edf->on_frame_begin(scene);
-
-        TextureCache texture_cache(scene, 64 * 1024);
-        InputEvaluator input_evaluator(texture_cache);
-
-        Vector3d outgoing;
-        Spectrum value1;
-        double probability1;
-
-        env_edf->sample(
-            input_evaluator,
-            Vector2d(0.3, 0.7),
-            outgoing,
-            value1,
-            probability1);
-
-        Spectrum value2;
-        
-        env_edf->evaluate(
-            input_evaluator,
-            outgoing,
-            value2);
-
-        const double probability2 =
-            env_edf->evaluate_pdf(
-                input_evaluator,
-                outgoing);
-
-        env_edf->on_frame_end(scene);
-
-        const bool consistent =
-            feq(probability1, probability2) &&
-            feq(value1, value2);
-
-        return consistent;
-    }
-
-    bool check_consistency(auto_release_ptr<EnvironmentEDF>& env_edf)
-    {
-        Scene scene;
-
-        return check_consistency(scene, env_edf);
-    }
-
-    auto_release_ptr<ColorEntity> create_linear_rgb_color_entity(const Color3f& linear_rgb)
-    {
-        const ColorValueArray color_values(3, &linear_rgb[0]);
-
-        ParamArray color_params;
-        color_params.insert("color_space", "linear_rgb");
-
-        return ColorEntityFactory::create("color", color_params, color_values);
-    }
-
-    void bind_color_to_input(
-        auto_release_ptr<EnvironmentEDF>&   entity,
-        const char*                         input_name,
-        const Color3f&                      linear_rgb)
-    {
-        auto_release_ptr<ColorEntity> color =
-            create_linear_rgb_color_entity(linear_rgb);
-
-        ColorSource* source = new ColorSource(*color.get());
-
-        entity->get_inputs().find(input_name).bind(source);
-    }
-
-    void bind_texture_to_input(
-        Scene&                              scene,
-        auto_release_ptr<EnvironmentEDF>&   entity,
-        const char*                         input_name,
-        Texture*                            texture)
-    {
-        const size_t texture_index =
-            scene.textures().insert(auto_release_ptr<Texture>(texture));
-
-        ParamArray texture_instance_params;
-        texture_instance_params.insert("addressing_mode", "clamp");
-        texture_instance_params.insert("filtering_mode", "bilinear");
-
-        TextureInstance* texture_instance =
-            TextureInstanceFactory::create(
-                "texture_instance",
-                texture_instance_params,
-                texture_index).release();
-
-        scene.texture_instances().insert(
-            auto_release_ptr<TextureInstance>(texture_instance));
-
-        TextureSource* source =
-            new TextureSource(
-                ~UniqueID(0),
-                *texture_instance,
-                texture->properties());
-
-        entity->get_inputs().find(input_name).bind(source);
-    }
-
-    FOUNDATION_TEST_CASE(CheckConstantEnvironmentEDFConsistency)
-    {
-        auto_release_ptr<EnvironmentEDF> env_edf(
-            ConstantEnvironmentEDFFactory().create("env_edf", ParamArray()));
-
-        bind_color_to_input(env_edf, "exitance", Color3f(0.2f, 0.5f, 0.9f));
-
-        const bool consistent = check_consistency(env_edf);
-
-        FOUNDATION_EXPECT_TRUE(consistent);
-    }
-
-    FOUNDATION_TEST_CASE(CheckGradientEnvironmentEDFConsistency)
-    {
-        auto_release_ptr<EnvironmentEDF> env_edf(
-            GradientEnvironmentEDFFactory().create("env_edf", ParamArray()));
-
-        bind_color_to_input(env_edf, "horizon_exitance", Color3f(1.0f, 0.2f, 0.2f));
-        bind_color_to_input(env_edf, "zenith_exitance", Color3f(0.2f, 1.0f, 0.2f));
-
-        const bool consistent = check_consistency(env_edf);
-
-        FOUNDATION_EXPECT_TRUE(consistent);
-    }
-
     class HorizontalGradientTexture
       : public Texture
     {
       public:
-        // Constructor.
-        HorizontalGradientTexture()
+        HorizontalGradientTexture(const char* name)
           : Texture(ParamArray())
+          , m_name(name)
           , m_props(
                 5, 5,
                 5, 5,
@@ -200,37 +74,31 @@ FOUNDATION_TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
             create_horizontal_gradient();
         }
 
-        // Delete this instance.
         virtual void release()
         {
             delete this;
         }
 
-        // Return the name of this instance.
         virtual const char* get_name() const
         {
-            return "horizontal_gradient_texture";
+            return m_name.c_str();
         }
 
-        // Return a string identifying the model of this entity.
         virtual const char* get_model() const
         {
             return "horizontal_gradient_texture";
         }
 
-        // Return the color space of the texture.
         virtual ColorSpace get_color_space() const
         {
             return ColorSpaceLinearRGB;
         }
 
-        // Access canvas properties.
         virtual const CanvasProperties& properties()
         {
             return m_props;
         }
 
-        // Load a given tile.
         virtual Tile* load_tile(
             const size_t    tile_x,
             const size_t    tile_y)
@@ -241,7 +109,6 @@ FOUNDATION_TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
             return m_tile.get();
         }
 
-        // Unload a given tile.
         virtual void unload_tile(
             const size_t    tile_x,
             const size_t    tile_y,
@@ -250,8 +117,9 @@ FOUNDATION_TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
         }
 
       private:
-        CanvasProperties    m_props;
-        auto_ptr<Tile>      m_tile;
+        const string            m_name;
+        const CanvasProperties  m_props;
+        auto_ptr<Tile>          m_tile;
 
         void create_horizontal_gradient()
         {
@@ -268,38 +136,127 @@ FOUNDATION_TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
         }
     };
 
-    FOUNDATION_TEST_CASE(CheckLatLongMapEnvironmentEDFConsistency)
+    struct Fixture
+      : public TestFixtureBase
     {
-        Scene scene;
+        size_t create_horizontal_gradient_texture(const char* name)
+        {
+            return
+                m_scene.textures().insert(
+                    auto_release_ptr<Texture>(
+                        new HorizontalGradientTexture(name)));
+        }
 
-        Texture* texture = new HorizontalGradientTexture();
+        bool check_consistency(EnvironmentEDF& env_edf)
+        {
+            bind_inputs();
+
+            env_edf.on_frame_begin(m_project);
+
+            TextureCache texture_cache(m_scene, 64 * 1024);
+            InputEvaluator input_evaluator(texture_cache);
+
+            Vector3d outgoing;
+            Spectrum value1;
+            double probability1;
+
+            env_edf.sample(
+                input_evaluator,
+                Vector2d(0.3, 0.7),
+                outgoing,
+                value1,
+                probability1);
+
+            Spectrum value2;
+            
+            env_edf.evaluate(
+                input_evaluator,
+                outgoing,
+                value2);
+
+            const double probability2 =
+                env_edf.evaluate_pdf(
+                    input_evaluator,
+                    outgoing);
+
+            env_edf.on_frame_end(m_project);
+
+            const bool consistent =
+                feq(probability1, probability2) &&
+                feq(value1, value2);
+
+            return consistent;
+        }
+    };
+
+    FOUNDATION_TEST_CASE_WITH_FIXTURE(CheckConstantEnvironmentEDFConsistency, Fixture)
+    {
+        create_color_entity("blue", Color3f(0.2f, 0.5f, 0.9f));
 
         ParamArray params;
-        params.insert("exitance", "texture_instance");
+        params.insert("exitance", "blue");
         auto_release_ptr<EnvironmentEDF> env_edf(
-            LatLongMapEnvironmentEDFFactory().create("env_edf", params));
+            ConstantEnvironmentEDFFactory().create("env_edf", params));
+        EnvironmentEDF& env_edf_ref = *env_edf.get();
+        m_scene.environment_edfs().insert(env_edf);
 
-        bind_texture_to_input(scene, env_edf, "exitance", texture);
-
-        const bool consistent = check_consistency(scene, env_edf);
+        const bool consistent = check_consistency(env_edf_ref);
 
         FOUNDATION_EXPECT_TRUE(consistent);
     }
 
-    FOUNDATION_TEST_CASE(CheckMirrorBallMapEnvironmentEDFConsistency)
+    FOUNDATION_TEST_CASE_WITH_FIXTURE(CheckGradientEnvironmentEDFConsistency, Fixture)
     {
-        Scene scene;
-
-        Texture* texture = new HorizontalGradientTexture();
+        create_color_entity("red", Color3f(1.0f, 0.2f, 0.2f));
+        create_color_entity("green", Color3f(0.2f, 1.0f, 0.2f));
 
         ParamArray params;
-        params.insert("exitance", "texture_instance");
+        params.insert("horizon_exitance", "red");
+        params.insert("zenith_exitance", "green");
+        auto_release_ptr<EnvironmentEDF> env_edf(
+            GradientEnvironmentEDFFactory().create("env_edf", params));
+        EnvironmentEDF& env_edf_ref = *env_edf.get();
+        m_scene.environment_edfs().insert(env_edf);
+
+        const bool consistent = check_consistency(env_edf_ref);
+
+        FOUNDATION_EXPECT_TRUE(consistent);
+    }
+
+    FOUNDATION_TEST_CASE_WITH_FIXTURE(CheckLatLongMapEnvironmentEDFConsistency, Fixture)
+    {
+        const size_t texture_index =
+            create_horizontal_gradient_texture("horiz_gradient_texture");
+
+        create_texture_instance("horiz_gradient_texture_inst", texture_index);
+
+        ParamArray params;
+        params.insert("exitance", "horiz_gradient_texture_inst");
+        auto_release_ptr<EnvironmentEDF> env_edf(
+            LatLongMapEnvironmentEDFFactory().create("env_edf", params));
+        EnvironmentEDF& env_edf_ref = *env_edf.get();
+        m_scene.environment_edfs().insert(env_edf);
+
+        const bool consistent = check_consistency(env_edf_ref);
+
+        FOUNDATION_EXPECT_TRUE(consistent);
+    }
+
+    FOUNDATION_TEST_CASE_WITH_FIXTURE(CheckMirrorBallMapEnvironmentEDFConsistency, Fixture)
+    {
+        const size_t texture_index =
+            create_horizontal_gradient_texture("horiz_gradient_texture");
+
+        create_texture_instance("horiz_gradient_texture_inst", texture_index);
+
+        ParamArray params;
+        params.insert("exitance", "horiz_gradient_texture_inst");
         auto_release_ptr<EnvironmentEDF> env_edf(
             MirrorBallMapEnvironmentEDFFactory().create("env_edf", params));
+        EnvironmentEDF& env_edf_ref = *env_edf.get();
+        m_scene.environment_edfs().insert(env_edf);
 
-        bind_texture_to_input(scene, env_edf, "exitance", texture);
-
-        const bool consistent = check_consistency(scene, env_edf);
+        const bool consistent = check_consistency(env_edf_ref);
 
         FOUNDATION_EXPECT_TRUE(consistent);
     }

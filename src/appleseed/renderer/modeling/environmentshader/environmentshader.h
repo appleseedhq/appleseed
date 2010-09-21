@@ -35,7 +35,7 @@
 
 // Forward declarations.
 namespace renderer      { class InputEvaluator; }
-namespace renderer      { class Scene; }
+namespace renderer      { class Project; }
 namespace renderer      { class ShadingResult; }
 
 namespace renderer
@@ -56,10 +56,10 @@ class RENDERERDLL EnvironmentShader
     virtual const char* get_model() const = 0;
 
     // This method is called once before rendering each frame.
-    virtual void on_frame_begin(const Scene& scene);
+    virtual void on_frame_begin(const Project& project);
 
     // This method is called once after rendering each frame.
-    virtual void on_frame_end(const Scene& scene);
+    virtual void on_frame_end(const Project& project);
 
     // Evaluate the environment for a given unit-length direction.
     virtual void evaluate(
@@ -73,19 +73,16 @@ class RENDERERDLL EnvironmentShader
 // EnvironmentShader class implementation.
 //
 
-// Constructor.
 inline EnvironmentShader::EnvironmentShader(const ParamArray& params)
   : ConnectableEntity(params)
 {
 }
 
-// This method is called once before rendering each frame.
-inline void EnvironmentShader::on_frame_begin(const Scene& scene)
+inline void EnvironmentShader::on_frame_begin(const Project& project)
 {
 }
 
-// This method is called once after rendering each frame.
-inline void EnvironmentShader::on_frame_end(const Scene& scene)
+inline void EnvironmentShader::on_frame_end(const Project& project)
 {
 }
 

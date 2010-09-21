@@ -37,6 +37,7 @@
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
+#include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 
@@ -93,8 +94,10 @@ namespace
             return m_name.c_str();
         }
 
-        virtual void on_frame_begin(const Scene& scene)
+        virtual void on_frame_begin(const Project& project)
         {
+            const Scene& scene = *project.get_scene();
+
             // Rebuild the voxel tree if either the scene geometry or the transformations
             // of the assembly instances have changed since the last frame.
             if (scene.get_geometry_version_id() != m_last_geometry_version_id ||

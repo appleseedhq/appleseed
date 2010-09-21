@@ -32,6 +32,9 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/camera/camera.h"
 
+// Forward declarations.
+namespace renderer  { class Project; }
+
 using namespace foundation;
 using namespace std;
 
@@ -90,7 +93,7 @@ namespace
         }
 
         virtual void on_frame_begin(
-            const Scene&            scene,
+            const Project&          project,
             const Intersector&      intersector)
         {
             // Precompute the origin of the rays.

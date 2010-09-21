@@ -33,6 +33,7 @@
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
+#include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
 
 using namespace foundation;
@@ -76,9 +77,11 @@ namespace
             return m_name.c_str();
         }
 
-        virtual void on_frame_begin(const Scene& scene)
+        virtual void on_frame_begin(const Project& project)
         {
             m_env_edf = 0;
+
+            const Scene& scene = *project.get_scene();
 
             if (!m_env_edf_name.empty())
             {

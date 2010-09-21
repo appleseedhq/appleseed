@@ -34,7 +34,7 @@
 #include "renderer/modeling/entity/connectableentity.h"
 
 // Forward declarations.
-namespace renderer      { class Scene; }
+namespace renderer      { class Project; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
 namespace renderer      { class ShadingResult; }
@@ -57,10 +57,10 @@ class RENDERERDLL SurfaceShader
     virtual const char* get_model() const = 0;
 
     // This method is called once before rendering each frame.
-    virtual void on_frame_begin(const Scene& scene);
+    virtual void on_frame_begin(const Project& project);
 
     // This method is called once after rendering each frame.
-    virtual void on_frame_end(const Scene& scene);
+    virtual void on_frame_end(const Project& project);
 
     // Evaluate the shading at a given point.
     virtual void evaluate(
@@ -82,23 +82,19 @@ class RENDERERDLL SurfaceShader
 // SurfaceShader class implementation.
 //
 
-// Constructor.
 inline SurfaceShader::SurfaceShader(const ParamArray& params)
   : ConnectableEntity(params)
 {
 }
 
-// This method is called once before rendering each frame.
-inline void SurfaceShader::on_frame_begin(const Scene& scene)
+inline void SurfaceShader::on_frame_begin(const Project& project)
 {
 }
 
-// This method is called once after rendering each frame.
-inline void SurfaceShader::on_frame_end(const Scene& scene)
+inline void SurfaceShader::on_frame_end(const Project& project)
 {
 }
 
-// Evaluate the alpha mask at a given point.
 inline void SurfaceShader::evaluate_alpha_mask(
     SamplingContext&        sampling_context,
     const ShadingContext&   shading_context,

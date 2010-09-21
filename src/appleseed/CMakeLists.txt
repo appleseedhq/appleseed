@@ -1236,6 +1236,17 @@ source_group("renderer\\modeling\\texture" FILES
     ${renderer_modeling_texture_sources}
 )
 
+set(renderer_utility_sources
+    renderer/utility/testutils.cpp
+    renderer/utility/testutils.h
+)
+list(APPEND appleseed_sources
+    ${renderer_utility_sources}
+)
+source_group("renderer\\utility" FILES
+    ${renderer_utility_sources}
+)
+
 # Collect all XML Schema files amongst the source files.
 filter_list(
     appleseed_schema_files

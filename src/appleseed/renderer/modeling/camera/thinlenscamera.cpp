@@ -33,6 +33,7 @@
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/camera/camera.h"
+#include "renderer/modeling/project/project.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionnotimplemented.h"
@@ -114,7 +115,7 @@ namespace
         }
 
         virtual void on_frame_begin(
-            const Scene&            scene,
+            const Project&          project,
             const Intersector&      intersector)
         {
             // Perform autofocus, if enabled.
@@ -229,10 +230,6 @@ namespace
 
             // Set the ray direction.
             ray.m_dir = m_transform.transform_vector_to_parent(target);
-
-            // Normalize the ray direction, since we're interested in the
-            // actual distance to the closest intersection, in meters.
-            ray.m_dir = normalize(ray.m_dir);
 
             // Trace the ray.
             ShadingPoint shading_point;

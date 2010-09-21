@@ -39,7 +39,7 @@
 
 // Forward declarations.
 namespace renderer      { class Intersector; }
-namespace renderer      { class Scene; }
+namespace renderer      { class Project; }
 
 namespace renderer
 {
@@ -66,12 +66,12 @@ class RENDERERDLL Camera
 
     // This method is called once before rendering each frame.
     virtual void on_frame_begin(
-        const Scene&                scene,
+        const Project&              project,
         const Intersector&          intersector);
 
     // This method is called once after rendering each frame.
     virtual void on_frame_end(
-        const Scene&                scene);
+        const Project&              project);
 
     // Generate a ray, originating from a given point on the lens surface of the camera,
     // and directed toward a given point on the film plane, at a given time.
@@ -122,22 +122,19 @@ class RENDERERDLL Camera
 // Camera class implementation.
 //
 
-// Constructor.
 inline Camera::Camera(const ParamArray& params)
   : Entity(params)
 {
 }
 
-// This method is called once before rendering each frame.
 inline void Camera::on_frame_begin(
-    const Scene&                    scene,
-    const Intersector&              intersector)
+    const Project&      project,
+    const Intersector&  intersector)
 {
 }
 
-// This method is called once after rendering each frame.
 inline void Camera::on_frame_end(
-    const Scene&                    scene)
+    const Project&      project)
 {
 }
 

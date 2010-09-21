@@ -38,6 +38,7 @@
 #include "renderer/modeling/input/inputparams.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/input/texturesource.h"
+#include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/texture/texture.h"
@@ -143,10 +144,10 @@ namespace
             return LatLongMapEnvironmentEDFFactory::get_model();
         }
 
-        virtual void on_frame_begin(const Scene& scene)
+        virtual void on_frame_begin(const Project& project)
         {
             if (m_importance_sampler.get() == 0)
-                build_importance_map(scene);
+                build_importance_map(*project.get_scene());
         }
 
         virtual void sample(

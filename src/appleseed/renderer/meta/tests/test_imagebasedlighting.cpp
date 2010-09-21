@@ -35,15 +35,16 @@
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/modeling/bsdf/bsdf.h"
-#include "renderer/modeling/bsdf/nullbsdf.h"
 #include "renderer/modeling/bsdf/specularbrdf.h"
 #include "renderer/modeling/environmentedf/constantenvironmentedf.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
-#include "renderer/modeling/color/colorentity.h"
-#include "renderer/modeling/input/colorsource.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/input/inputparams.h"
+#include "renderer/modeling/project/project.h"
+#include "renderer/modeling/scene/assembly.h"
+#include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/utility/testutils.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
@@ -55,9 +56,8 @@ using namespace renderer;
 FOUNDATION_TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
 {
     struct Fixture
+      : public TestFixtureBase
     {
-        Scene                       m_scene;
-        TraceContext                m_trace_context;
         const Intersector           m_intersector;
         MersenneTwister             m_rng;
         SamplingContext             m_sampling_context;
@@ -67,8 +67,7 @@ FOUNDATION_TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
         ShadingContext              m_shading_context;
 
         Fixture()
-          : m_trace_context(m_scene)
-          , m_intersector(m_trace_context, false)
+          : m_intersector(m_project.get_trace_context(), false)
           , m_sampling_context(m_rng)
           , m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
           , m_texture_cache(m_scene, 1)
@@ -79,89 +78,55 @@ FOUNDATION_TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
                 m_lighting_engine)
         {
         }
-
-        auto_release_ptr<ColorEntity> create_spectral_color_entity(
-            const char*             name,
-            const Spectrum&         spectrum)
-        {
-            ParamArray params;
-            params.insert("color_space", "spectral");
-
-            const ColorValueArray values(spectrum.Samples, &spectrum[0]);
-
-            return ColorEntityFactory::create(name, params, values);
-        }
-
-        auto_release_ptr<BSDF> create_specular_brdf(
-            const char*             name,
-            const ColorEntity&      reflectance)
-        {
-            ParamArray params;
-            params.insert("reflectance", "not used");
-
-            auto_release_ptr<BSDF> brdf(SpecularBRDFFactory().create(name, params));
-
-            brdf->get_inputs().find("reflectance").bind(new ColorSource(reflectance));
-
-            return brdf;
-        }
-
-        auto_release_ptr<EnvironmentEDF> create_constant_environment_edf(
-            const char*             name,
-            const ColorEntity&      exitance)
-        {
-            ParamArray params;
-            params.insert("exitance", "not used");
-
-            auto_release_ptr<EnvironmentEDF> env_edf(
-                ConstantEnvironmentEDFFactory().create(name, params));
-
-            env_edf->get_inputs().find("exitance").bind(new ColorSource(exitance));
-
-            return env_edf;
-        }
     };
 
     FOUNDATION_TEST_CASE_WITH_FIXTURE(ComputeImageBasedLighting_GivenSpecularBRDFAndUniformWhiteEnrironmentEDF_ReturnsOne, Fixture)
     {
-        auto_release_ptr<ColorEntity> gray(
-            create_spectral_color_entity("gray", Spectrum(0.5f)));
+        create_color_entity("gray", Spectrum(0.5f));
+        create_color_entity("white", Spectrum(1.0f));
 
-        auto_release_ptr<ColorEntity> white(
-            create_spectral_color_entity("white", Spectrum(1.0f)));
-
+        ParamArray bsdf_params;
+        bsdf_params.insert("reflectance", "gray");
         auto_release_ptr<BSDF> specular_brdf(
-            create_specular_brdf("specular_brdf", *gray.get()));
+            SpecularBRDFFactory().create("specular_brdf", bsdf_params));
+        BSDF& specular_brdf_ref = *specular_brdf.get();
+        m_assembly.bsdfs().insert(specular_brdf);
 
+        ParamArray env_edf_params;
+        env_edf_params.insert("exitance", "white");
         auto_release_ptr<EnvironmentEDF> env_edf(
-            create_constant_environment_edf("constant_environment_edf", *white.get()));
+            ConstantEnvironmentEDFFactory().create("env_edf", env_edf_params));
+        EnvironmentEDF& env_edf_ref = *env_edf.get();
+        m_scene.environment_edfs().insert(env_edf);
+
+        bind_inputs();
 
         InputEvaluator input_evaluator(m_texture_cache);
         const void* brdf_data =
             input_evaluator.evaluate(
-                specular_brdf->get_inputs(),
+                specular_brdf_ref.get_inputs(),
                 InputParams());
 
-        specular_brdf->on_frame_begin(m_scene, brdf_data);
-        env_edf->on_frame_begin(m_scene);
+        specular_brdf_ref.on_frame_begin(m_project, brdf_data);
+        env_edf_ref.on_frame_begin(m_project);
 
         Spectrum radiance;
         compute_image_based_lighting(
             m_sampling_context,
             m_shading_context,
-            *env_edf,
+            env_edf_ref,
             Vector3d(0.0),
             Vector3d(0.0, 1.0, 0.0),
             Basis3d(Vector3d(0.0, 1.0, 0.0)),
             Vector3d(0.0, 1.0, 0.0),
-            *specular_brdf.get(),
+            specular_brdf_ref,
             brdf_data,
             1,              // number of samples in BSDF sampling
             0,              // number of samples in environment sampling
             radiance);
 
-        env_edf->on_frame_end(m_scene);
-        specular_brdf->on_frame_end(m_scene);
+        env_edf_ref.on_frame_end(m_project);
+        specular_brdf_ref.on_frame_end(m_project);
 
         FOUNDATION_EXPECT_EQ(Spectrum(0.5f), radiance);
     }

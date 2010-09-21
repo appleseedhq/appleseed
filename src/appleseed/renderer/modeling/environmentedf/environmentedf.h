@@ -35,7 +35,7 @@
 
 // Forward declarations.
 namespace renderer      { class InputEvaluator; }
-namespace renderer      { class Scene; }
+namespace renderer      { class Project; }
 
 namespace renderer
 {
@@ -59,10 +59,10 @@ class RENDERERDLL EnvironmentEDF
     virtual const char* get_model() const = 0;
 
     // This method is called once before rendering each frame.
-    virtual void on_frame_begin(const Scene& scene);
+    virtual void on_frame_begin(const Project& project);
 
     // This method is called once after rendering each frame.
-    virtual void on_frame_end(const Scene& scene);
+    virtual void on_frame_end(const Project& project);
 
     // Sample the EDF and compute the emission direction, the probability
     // density with which it was chosen and the value of the EDF for this
@@ -96,19 +96,16 @@ class RENDERERDLL EnvironmentEDF
 // EnvironmentEDF class implementation.
 //
 
-// Constructor.
 inline EnvironmentEDF::EnvironmentEDF(const ParamArray& params)
   : ConnectableEntity(params)
 {
 }
 
-// This method is called once before rendering each frame.
-inline void EnvironmentEDF::on_frame_begin(const Scene& scene)
+inline void EnvironmentEDF::on_frame_begin(const Project& project)
 {
 }
 
-// This method is called once after rendering each frame.
-inline void EnvironmentEDF::on_frame_end(const Scene& scene)
+inline void EnvironmentEDF::on_frame_end(const Project& project)
 {
 }
 

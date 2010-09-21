@@ -37,6 +37,9 @@
 // appleseed.foundation headers.
 #include "foundation/math/sampling.h"
 
+// Forward declarations.
+namespace renderer  { class Project; }
+
 using namespace foundation;
 using namespace std;
 
@@ -78,7 +81,7 @@ namespace
             return m_name.c_str();
         }
 
-        virtual void on_frame_begin(const Scene& scene)
+        virtual void on_frame_begin(const Project& project)
         {
             assert(m_inputs.source("horizon_exitance"));
             assert(m_inputs.source("zenith_exitance"));
