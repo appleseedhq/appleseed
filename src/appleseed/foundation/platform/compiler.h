@@ -132,6 +132,13 @@ class FOUNDATIONDLL Compiler
 
 
 //
+// Platform-independent restrict qualifier.
+//
+
+#define FOUNDATION_RESTRICT __restrict
+
+
+//
 // Utility macros converting their argument to a string literal:
 // FOUNDATION_TO_STRING_EVAL first expands the argument definition.
 // FOUNDATION_TO_STRING_NOEVAL does not expand the argument definition.
