@@ -248,55 +248,46 @@ void VoxelGrid3<T>::trilinear_lookup(
     const ValueType z0 = ValueType(1.0) - z1;
 
     // Corners 000 and 100.
-    {
-        const ValueType* __restrict source0 = voxel(ix + 0, iy + 0, iz + 0);
-        const ValueType* __restrict source1 = source0 + m_channel_count;
-        const ValueType weight0 = x0 * y0 * z0;
-        const ValueType weight1 = x1 * y0 * z0;
-        for (size_t i = 0; i < m_channel_count; ++i)
-        {
-            values[i] = source0[i] * weight0;
-            values[i] += source1[i] * weight1;
-        }
-    }
+    const ValueType* FOUNDATION_RESTRICT source000 = voxel(ix + 0, iy + 0, iz + 0);
+    const ValueType* FOUNDATION_RESTRICT source100 = source000 + m_channel_count;
+    const ValueType y0z0 = y0 * z0;
+    const ValueType weight000 = x0 * y0z0;
+    const ValueType weight100 = x1 * y0z0;
 
-    // Corners 010 and 110.
-    {
-        const ValueType* __restrict source0 = voxel(ix + 0, iy + 1, iz + 0);
-        const ValueType* __restrict source1 = source0 + m_channel_count;
-        const ValueType weight0 = x0 * y1 * z0;
-        const ValueType weight1 = x1 * y1 * z0;
-        for (size_t i = 0; i < m_channel_count; ++i)
-        {
-            values[i] += source0[i] * weight0;
-            values[i] += source1[i] * weight1;
-        }
-    }
+    // Corner 010 and 110.
+    const ValueType* FOUNDATION_RESTRICT source010 = voxel(ix + 0, iy + 1, iz + 0);
+    const ValueType* FOUNDATION_RESTRICT source110 = source010 + m_channel_count;
+    const ValueType y1z0 = y1 * z0;
+    const ValueType weight010 = x0 * y1z0;
+    const ValueType weight110 = x1 * y1z0;
 
-    // Corners 001 and 101.
-    {
-        const ValueType* __restrict source0 = voxel(ix + 0, iy + 0, iz + 1);
-        const ValueType* __restrict source1 = source0 + m_channel_count;
-        const ValueType weight0 = x0 * y0 * z1;
-        const ValueType weight1 = x1 * y0 * z1;
-        for (size_t i = 0; i < m_channel_count; ++i)
-        {
-            values[i] += source0[i] * weight0;
-            values[i] += source1[i] * weight1;
-        }
-    }
+    // Corner 001 and 101.
+    const ValueType* FOUNDATION_RESTRICT source001 = voxel(ix + 0, iy + 0, iz + 1);
+    const ValueType* FOUNDATION_RESTRICT source101 = source001 + m_channel_count;
+    const ValueType y0z1 = y0 * z1;
+    const ValueType weight001 = x0 * y0z1;
+    const ValueType weight101 = x1 * y0z1;
 
-    // Corners 011 and 111.
+    // Corner 011 and 111.
+    const ValueType* FOUNDATION_RESTRICT source011 = voxel(ix + 0, iy + 1, iz + 1);
+    const ValueType* FOUNDATION_RESTRICT source111 = source011 + m_channel_count;
+    const ValueType y1z1 = y1 * z1;
+    const ValueType weight011 = x0 * y1z1;
+    const ValueType weight111 = x1 * y1z1;
+
+    ValueType* FOUNDATION_RESTRICT values_ptr = values;
+
+    for (size_t i = 0; i < m_channel_count; ++i)
     {
-        const ValueType* __restrict source0 = voxel(ix + 0, iy + 1, iz + 1);
-        const ValueType* __restrict source1 = source0 + m_channel_count;
-        const ValueType weight0 = x0 * y1 * z1;
-        const ValueType weight1 = x1 * y1 * z1;
-        for (size_t i = 0; i < m_channel_count; ++i)
-        {
-            values[i] += source0[i] * weight0;
-            values[i] += source1[i] * weight1;
-        }
+       *values_ptr++ =
+           *source000++ * weight000 +
+           *source100++ * weight100 +
+           *source010++ * weight010 +
+           *source110++ * weight110 +
+           *source001++ * weight001 +
+           *source101++ * weight101 +
+           *source011++ * weight011 +
+           *source111++ * weight111;
     }
 }
 
