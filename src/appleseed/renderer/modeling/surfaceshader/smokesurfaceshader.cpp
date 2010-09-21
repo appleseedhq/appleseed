@@ -36,6 +36,7 @@
 #include "renderer/kernel/volume/volume.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
+#include "renderer/modeling/project/project.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 
 // appleseed.foundation headers.
@@ -44,6 +45,7 @@
 #include "foundation/math/noise.h"
 #include "foundation/math/scalar.h"
 #include "foundation/utility/containers/dictionaryarray.h"
+#include "foundation/utility/searchpaths.h"
 
 // Standard headers.
 #include <vector>
@@ -107,7 +109,7 @@ namespace
         {
             if (m_first_frame)
             {
-                create_voxel_grid();
+                create_voxel_grid(project.get_search_paths());
                 print_channel_availability();
 
                 if (m_voxel_grid.get())
@@ -290,11 +292,16 @@ namespace
             m_shadow_opacity = m_params.get_optional<float>("shadow_opacity", 1.0f);
         }
 
-        void create_voxel_grid()
+        void create_voxel_grid(const SearchPaths& search_paths)
         {
             if (m_filename.empty())
+            {
                 create_sample_voxel_grid();
-            else load_voxel_grid_from_disk();
+            }
+            else
+            {
+                load_voxel_grid_from_disk(search_paths);
+            }
         }
 
         // Create a voxel grid procedurally.
@@ -335,10 +342,9 @@ namespace
             m_channels.m_density_index = 0;
         }
 
-        void load_voxel_grid_from_disk()
+        void load_voxel_grid_from_disk(const SearchPaths& search_paths)
         {
-            //const string filepath = search_paths.qualify(m_filename);
-            const string filepath = m_filename;
+            const string filepath = search_paths.qualify(m_filename);
 
             RENDERER_LOG_INFO("loading fluid file %s...", filepath.c_str());
 
