@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_UTILITY_UTILITY_H
-#define APPLESEED_RENDERER_UTILITY_UTILITY_H
+#ifndef APPLESEED_RENDERER_UTILITY_BBOX_H
+#define APPLESEED_RENDERER_UTILITY_BBOX_H
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
@@ -71,4 +71,4 @@ BBox compute_parent_bbox(const Iterator begin, const Iterator end)
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_UTILITY_UTILITY_H
+#endif  // !APPLESEED_RENDERER_UTILITY_BBOX_H

@@ -39,7 +39,7 @@
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
-#include "renderer/utility/utility.h"
+#include "renderer/utility/bbox.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/intersection.h"

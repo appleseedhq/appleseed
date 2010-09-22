@@ -1233,11 +1233,11 @@ source_group("renderer\\modeling\\texture" FILES
 )
 
 set(renderer_utility_sources
+    renderer/utility/bbox.h
     renderer/utility/paramarray.cpp
     renderer/utility/paramarray.h
     renderer/utility/testutils.cpp
     renderer/utility/testutils.h
-    renderer/utility/utility.h
 )
 list(APPEND appleseed_sources
     ${renderer_utility_sources}

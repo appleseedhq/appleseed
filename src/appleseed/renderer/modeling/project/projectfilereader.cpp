@@ -70,7 +70,7 @@
 #include "renderer/modeling/texture/itexturefactory.h"
 #include "renderer/modeling/texture/texture.h"
 #include "renderer/modeling/texture/texturefactoryregistrar.h"
-#include "renderer/utility/utility.h"
+#include "renderer/utility/bbox.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/matrix.h"

@@ -33,7 +33,7 @@
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
-#include "renderer/utility/utility.h"
+#include "renderer/utility/bbox.h"
 
 using namespace foundation;
 using namespace std;

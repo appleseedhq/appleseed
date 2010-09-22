@@ -36,7 +36,7 @@
 #include "renderer/modeling/geometry/regionkit.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
-#include "renderer/utility/utility.h"
+#include "renderer/utility/bbox.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/intersection.h"
