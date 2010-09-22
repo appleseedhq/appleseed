@@ -123,12 +123,14 @@ void StringDictionary::clear()
     impl->m_strings.clear();
 }
 
-void StringDictionary::insert(const char* key, const char* value)
+StringDictionary& StringDictionary::insert(const char* key, const char* value)
 {
     assert(key);
     assert(value);
 
     impl->m_strings[key] = value;
+
+    return *this;
 }
 
 bool StringDictionary::exist(const char* key) const
@@ -150,7 +152,7 @@ const char* StringDictionary::get(const char* key) const
     return i->second.c_str();
 }
 
-void StringDictionary::remove(const char* key)
+StringDictionary& StringDictionary::remove(const char* key)
 {
     assert(key);
 
@@ -158,6 +160,8 @@ void StringDictionary::remove(const char* key)
 
     if (i != impl->m_strings.end())
         impl->m_strings.erase(i);
+
+    return *this;
 }
 
 StringDictionary::const_iterator StringDictionary::begin() const
@@ -256,11 +260,13 @@ void DictionaryDictionary::clear()
     impl->m_dictionaries.clear();
 }
 
-void DictionaryDictionary::insert(const char* key, const Dictionary& value)
+DictionaryDictionary& DictionaryDictionary::insert(const char* key, const Dictionary& value)
 {
     assert(key);
 
     impl->m_dictionaries[key] = value;
+
+    return *this;
 }
 
 bool DictionaryDictionary::exist(const char* key) const
@@ -294,7 +300,7 @@ const Dictionary& DictionaryDictionary::get(const char* key) const
     return i->second;
 }
 
-void DictionaryDictionary::remove(const char* key)
+DictionaryDictionary& DictionaryDictionary::remove(const char* key)
 {
     assert(key);
 
@@ -302,6 +308,8 @@ void DictionaryDictionary::remove(const char* key)
 
     if (i != impl->m_dictionaries.end())
         impl->m_dictionaries.erase(i);
+
+    return *this;
 }
 
 DictionaryDictionary::const_iterator DictionaryDictionary::begin() const

@@ -38,6 +38,15 @@ using namespace std;
 
 FOUNDATION_TEST_SUITE(Foundation_Utility_StringDictionary)
 {
+    FOUNDATION_TEST_CASE(Insert_ReturnsThisPointer)
+    {
+        StringDictionary sd;
+
+        const StringDictionary* result = &sd.insert("key", "value");
+
+        FOUNDATION_EXPECT_EQ(&sd, result);
+    }
+
     FOUNDATION_TEST_CASE(Get_GivenCStringKeyOfNonExistingItem_ThrowsExceptionDictionaryItemNotFound)
     {
         StringDictionary sd;
@@ -94,15 +103,42 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_StringDictionary)
 
         sd.remove("key");
     }
+
+    FOUNDATION_TEST_CASE(Remove_ReturnsThisPointer)
+    {
+        StringDictionary sd;
+
+        const StringDictionary* result = &sd.remove("key");
+
+        FOUNDATION_EXPECT_EQ(&sd, result);
+    }
 }
 
 FOUNDATION_TEST_SUITE(Foundation_Utility_DictionaryDictionary)
 {
+    FOUNDATION_TEST_CASE(Insert_ReturnsThisPointer)
+    {
+        DictionaryDictionary dd;
+
+        const DictionaryDictionary* result = &dd.insert("key", Dictionary());
+
+        FOUNDATION_EXPECT_EQ(&dd, result);
+    }
+
     FOUNDATION_TEST_CASE(Remove_GivenCStringKeyOfNonExistingItem_DoesNothing)
     {
         DictionaryDictionary dd;
 
         dd.remove("key");
+    }
+
+    FOUNDATION_TEST_CASE(Remove_ReturnsThisPointer)
+    {
+        DictionaryDictionary dd;
+
+        const DictionaryDictionary* result = &dd.remove("key");
+
+        FOUNDATION_EXPECT_EQ(&dd, result);
     }
 }
 
@@ -239,6 +275,24 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Dictionary)
         FOUNDATION_EXPECT_EQ(1, dic.size());
         FOUNDATION_EXPECT_FALSE(dic.empty());
         FOUNDATION_EXPECT_EQ(42, dic.get<int>("key"));
+    }
+
+    FOUNDATION_TEST_CASE(Insert_GivenDictionary_ReturnsThisPointer)
+    {
+        Dictionary dic;
+
+        const Dictionary* result = &dic.insert("key", Dictionary());
+
+        FOUNDATION_EXPECT_EQ(&dic, result);
+    }
+
+    FOUNDATION_TEST_CASE(Insert_GivenCString_ReturnsThisPointer)
+    {
+        Dictionary dic;
+
+        const Dictionary* result = &dic.insert("key", "value");
+
+        FOUNDATION_EXPECT_EQ(&dic, result);
     }
 
     FOUNDATION_TEST_CASE(GetAsInt_GivenCStringKeyOfNonExistingItem_ThrowsExceptionDictionaryItemNotFound)

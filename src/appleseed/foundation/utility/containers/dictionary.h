@@ -130,9 +130,9 @@ class FOUNDATIONDLL StringDictionary
     void clear();
 
     // Insert an item into the dictionary.
-    void insert(const char* key, const char* value);
-    template <typename T> void insert(const char* key, const T& value);
-    template <typename T> void insert(const std::string& key, const T& value);
+    StringDictionary& insert(const char* key, const char* value);
+    template <typename T> StringDictionary& insert(const char* key, const T& value);
+    template <typename T> StringDictionary& insert(const std::string& key, const T& value);
 
     // Return true if an item with a given name exists in the dictionary.
     bool exist(const char* key) const;
@@ -145,8 +145,8 @@ class FOUNDATIONDLL StringDictionary
     template <typename T> T get(const std::string& key) const;
 
     // Remove an item from the dictionary, if it exists.
-    void remove(const char* key);
-    template <typename T> void remove(const std::basic_string<T>& key);
+    StringDictionary& remove(const char* key);
+    template <typename T> StringDictionary& remove(const std::basic_string<T>& key);
 
     const_iterator begin() const;
     const_iterator end() const;
@@ -208,8 +208,10 @@ class FOUNDATIONDLL DictionaryDictionary
     void clear();
 
     // Insert an item into the dictionary.
-    void insert(const char* key, const Dictionary& value);
-    template <typename T> void insert(const std::basic_string<T>& key, const Dictionary& value);
+    DictionaryDictionary& insert(const char* key, const Dictionary& value);
+    template <typename T> DictionaryDictionary& insert(
+        const std::basic_string<T>& key,
+        const Dictionary&           value);
 
     // Return true if an item with a given name exists in the dictionary.
     bool exist(const char* key) const;
@@ -223,8 +225,8 @@ class FOUNDATIONDLL DictionaryDictionary
     template <typename T> const Dictionary& get(const std::basic_string<T>& key) const;
 
     // Remove an item from the dictionary, if it exists.
-    void remove(const char* key);
-    template <typename T> void remove(const std::basic_string<T>& key);
+    DictionaryDictionary& remove(const char* key);
+    template <typename T> DictionaryDictionary& remove(const std::basic_string<T>& key);
 
     const_iterator begin() const;
     const_iterator end() const;
@@ -251,10 +253,10 @@ class FOUNDATIONDLL Dictionary
     void clear();
 
     // Insert an item into the dictionary.
-    void insert(const char* key, const char* value);
-    void insert(const char* key, const Dictionary& value);
-    template <typename T> void insert(const char* key, const T& value);
-    template <typename T> void insert(const std::string& key, const T& value);
+    Dictionary& insert(const char* key, const char* value);
+    Dictionary& insert(const char* key, const Dictionary& value);
+    template <typename T> Dictionary& insert(const char* key, const T& value);
+    template <typename T> Dictionary& insert(const std::string& key, const T& value);
 
     // Retrieve a string item from the dictionary.
     // Throws a ExceptionDictionaryItemNotFound exception if the item could not be found.
@@ -299,15 +301,15 @@ inline T StringDictionary::const_iterator::value() const
 //
 
 template <typename T>
-inline void StringDictionary::insert(const char* key, const T& value)
+inline StringDictionary& StringDictionary::insert(const char* key, const T& value)
 {
-    insert(key, to_string(value).c_str());
+    return insert(key, to_string(value).c_str());
 }
 
 template <typename T>
-inline void StringDictionary::insert(const std::string& key, const T& value)
+inline StringDictionary& StringDictionary::insert(const std::string& key, const T& value)
 {
-    insert(key.c_str(), value);
+    return insert(key.c_str(), value);
 }
 
 template <typename T>
@@ -329,9 +331,9 @@ inline T StringDictionary::get(const std::string& key) const
 }
 
 template <typename T>
-inline void StringDictionary::remove(const std::basic_string<T>& key)
+inline StringDictionary& StringDictionary::remove(const std::basic_string<T>& key)
 {
-    remove(key.c_str());
+    return remove(key.c_str());
 }
 
 
@@ -340,9 +342,11 @@ inline void StringDictionary::remove(const std::basic_string<T>& key)
 //
 
 template <typename T>
-inline void DictionaryDictionary::insert(const std::basic_string<T>& key, const Dictionary& value)
+inline DictionaryDictionary& DictionaryDictionary::insert(
+    const std::basic_string<T>& key,
+    const Dictionary&           value)
 {
-    insert(key.c_str(), value);
+    return insert(key.c_str(), value);
 }
 
 template <typename T>
@@ -364,9 +368,9 @@ inline const Dictionary& DictionaryDictionary::get(const std::basic_string<T>& k
 }
 
 template <typename T>
-inline void DictionaryDictionary::remove(const std::basic_string<T>& key)
+inline DictionaryDictionary& DictionaryDictionary::remove(const std::basic_string<T>& key)
 {
-    remove(key.c_str());
+    return remove(key.c_str());
 }
 
 
@@ -390,32 +394,34 @@ inline void Dictionary::clear()
     m_dictionaries.clear();
 }
 
-inline void Dictionary::insert(const char* key, const char* value)
+inline Dictionary& Dictionary::insert(const char* key, const char* value)
 {
     m_strings.insert(key, value);
+    return *this;
 }
 
-inline void Dictionary::insert(const char* key, const Dictionary& value)
+inline Dictionary& Dictionary::insert(const char* key, const Dictionary& value)
 {
     m_dictionaries.insert(key, value);
+    return *this;
 }
 
 template <typename T>
-inline void Dictionary::insert(const char* key, const T& value)
+inline Dictionary& Dictionary::insert(const char* key, const T& value)
 {
-    insert(key, to_string(value).c_str());
+    return insert(key, to_string(value).c_str());
 }
 
 template <>
-inline void Dictionary::insert(const char* key, const Dictionary& value)
+inline Dictionary& Dictionary::insert(const char* key, const Dictionary& value)
 {
-    insert(key, value);
+    return insert(key, value);
 }
 
 template <typename T>
-inline void Dictionary::insert(const std::string& key, const T& value)
+inline Dictionary& Dictionary::insert(const std::string& key, const T& value)
 {
-    insert(key.c_str(), value);
+    return insert(key.c_str(), value);
 }
 
 inline const char* Dictionary::get(const char* key) const

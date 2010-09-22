@@ -71,7 +71,7 @@ ParamArray& ParamArray::operator=(const ParamArray& rhs)
     return *this;
 }
 
-void ParamArray::insert_path(const char* path, const char* value)
+ParamArray& ParamArray::insert_path(const char* path, const char* value)
 {
     assert(path);
     assert(value);
@@ -95,6 +95,8 @@ void ParamArray::insert_path(const char* path, const char* value)
     }
 
     leaf->insert(parts.back(), value);
+
+    return *this;
 }
 
 ParamArray& ParamArray::push(const char* name)
@@ -139,9 +141,10 @@ namespace
     }
 }
 
-void ParamArray::merge(const ParamArray& rhs)
+ParamArray& ParamArray::merge(const ParamArray& rhs)
 {
     merge_dictionaries(*this, rhs);
+    return *this;
 }
 
 }   // namespace renderer

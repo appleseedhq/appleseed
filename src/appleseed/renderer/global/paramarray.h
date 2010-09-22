@@ -60,10 +60,10 @@ class RENDERERDLL ParamArray
     ParamArray& operator=(const ParamArray& rhs);
 
     // Insert an item into the dictionary.
-    template <typename T> void insert(const char* key, const T& value);
-    void insert_path(const char* path, const char* value);
-    template <typename T> void insert_path(const char* path, const T& value);
-    template <typename T> void insert_path(const std::string& path, const T& value);
+    template <typename T> ParamArray& insert(const char* key, const T& value);
+    ParamArray& insert_path(const char* path, const char* value);
+    template <typename T> ParamArray& insert_path(const char* path, const T& value);
+    template <typename T> ParamArray& insert_path(const std::string& path, const T& value);
 
     //
     // Retrieve the value of a required parameter.
@@ -98,7 +98,7 @@ class RENDERERDLL ParamArray
     const ParamArray& child(const char* name) const;
 
     // Merge another set of parameters into this one.
-    void merge(const ParamArray& rhs);
+    ParamArray& merge(const ParamArray& rhs);
 
   private:
     template <typename T>
@@ -114,27 +114,29 @@ class RENDERERDLL ParamArray
 //
 
 template <typename T>
-inline void ParamArray::insert(const char* key, const T& value)
+inline ParamArray& ParamArray::insert(const char* key, const T& value)
 {
     Dictionary::insert(key, value);
+    return *this;
 }
 
 template <>
-inline void ParamArray::insert(const char* key, const ParamArray& value)
+inline ParamArray& ParamArray::insert(const char* key, const ParamArray& value)
 {
     dictionaries().insert(key, value);
+    return *this;
 }
 
 template <typename T>
-inline void ParamArray::insert_path(const char* path, const T& value)
+inline ParamArray& ParamArray::insert_path(const char* path, const T& value)
 {
-    insert_path(path, foundation::to_string(value).c_str());
+    return insert_path(path, foundation::to_string(value).c_str());
 }
 
 template <typename T>
-inline void ParamArray::insert_path(const std::string& path, const T& value)
+inline ParamArray& ParamArray::insert_path(const std::string& path, const T& value)
 {
-    insert_path(path.c_str(), value);
+    return insert_path(path.c_str(), value);
 }
 
 template <typename T>
