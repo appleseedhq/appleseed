@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_AUTORELEASEPTR_H
 #define APPLESEED_FOUNDATION_UTILITY_AUTORELEASEPTR_H
 
+// Standard headers.
+#include <cassert>
+
 namespace foundation
 {
 
@@ -141,6 +144,12 @@ class auto_release_ptr
     T* get() const throw()
     {
         return m_ptr;
+    }
+
+    T& ref() const throw()
+    {
+        assert(m_ptr);
+        return *m_ptr;
     }
 
     // Return wrapped pointer and give up ownership.

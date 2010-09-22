@@ -2930,7 +2930,7 @@ auto_release_ptr<Project> ProjectFileReader::read(
             event_counters));
 
     if (project.get() && !event_counters.has_errors())
-        validate_project(*project.get(), event_counters);
+        validate_project(project.ref(), event_counters);
 
     print_loading_results(project_filename, false, event_counters);
 
@@ -2949,7 +2949,7 @@ auto_release_ptr<Project> ProjectFileReader::load_builtin(
         construct_builtin_project(project_name, event_counters));
 
     if (project.get() && !event_counters.has_errors())
-        validate_project(*project.get(), event_counters);
+        validate_project(project.ref(), event_counters);
 
     print_loading_results(project_name, true, event_counters);
 
@@ -2974,7 +2974,7 @@ auto_release_ptr<Project> ProjectFileReader::load_project_file(
             event_counters));
 
     // Create the content handler.
-    ElementInfo element_info(*project.get(), event_counters);
+    ElementInfo element_info(project.ref(), event_counters);
     auto_ptr<ContentHandler> content_handler(
         new ContentHandler(
             project.get(),

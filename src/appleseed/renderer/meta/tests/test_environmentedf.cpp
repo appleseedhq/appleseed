@@ -197,7 +197,7 @@ FOUNDATION_TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
             ConstantEnvironmentEDFFactory().create(
                 "env_edf",
                 ParamArray().insert("exitance", "blue")));
-        EnvironmentEDF& env_edf_ref = *env_edf.get();
+        EnvironmentEDF& env_edf_ref = env_edf.ref();
         m_scene.environment_edfs().insert(env_edf);
 
         const bool consistent = check_consistency(env_edf_ref);
@@ -216,7 +216,7 @@ FOUNDATION_TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
                 ParamArray()
                     .insert("horizon_exitance", "red")
                     .insert("zenith_exitance", "green")));
-        EnvironmentEDF& env_edf_ref = *env_edf.get();
+        EnvironmentEDF& env_edf_ref = env_edf.ref();
         m_scene.environment_edfs().insert(env_edf);
 
         const bool consistent = check_consistency(env_edf_ref);
@@ -235,7 +235,7 @@ FOUNDATION_TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
             LatLongMapEnvironmentEDFFactory().create(
                 "env_edf",
                 ParamArray().insert("exitance", "horiz_gradient_texture_inst")));
-        EnvironmentEDF& env_edf_ref = *env_edf.get();
+        EnvironmentEDF& env_edf_ref = env_edf.ref();
         m_scene.environment_edfs().insert(env_edf);
 
         const bool consistent = check_consistency(env_edf_ref);
@@ -254,7 +254,7 @@ FOUNDATION_TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
             MirrorBallMapEnvironmentEDFFactory().create(
                 "env_edf",
                 ParamArray().insert("exitance", "horiz_gradient_texture_inst")));
-        EnvironmentEDF& env_edf_ref = *env_edf.get();
+        EnvironmentEDF& env_edf_ref = env_edf.ref();
         m_scene.environment_edfs().insert(env_edf);
 
         const bool consistent = check_consistency(env_edf_ref);

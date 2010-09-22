@@ -73,7 +73,7 @@ void SuperLogger::restore_log_target_formatting_flags()
 
 LogTargetBase& SuperLogger::get_log_target() const
 {
-    return *m_log_target.get();
+    return m_log_target.ref();
 }
 
 }   // namespace cli

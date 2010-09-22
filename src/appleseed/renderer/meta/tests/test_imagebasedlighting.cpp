@@ -89,14 +89,14 @@ FOUNDATION_TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
         bsdf_params.insert("reflectance", "gray");
         auto_release_ptr<BSDF> specular_brdf(
             SpecularBRDFFactory().create("specular_brdf", bsdf_params));
-        BSDF& specular_brdf_ref = *specular_brdf.get();
+        BSDF& specular_brdf_ref = specular_brdf.ref();
         m_assembly.bsdfs().insert(specular_brdf);
 
         ParamArray env_edf_params;
         env_edf_params.insert("exitance", "white");
         auto_release_ptr<EnvironmentEDF> env_edf(
             ConstantEnvironmentEDFFactory().create("env_edf", env_edf_params));
-        EnvironmentEDF& env_edf_ref = *env_edf.get();
+        EnvironmentEDF& env_edf_ref = env_edf.ref();
         m_scene.environment_edfs().insert(env_edf);
 
         bind_inputs();

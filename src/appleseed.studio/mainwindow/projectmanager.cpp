@@ -92,7 +92,7 @@ bool ProjectManager::save_project()
 {
     assert(m_project.get());
 
-    if (!ProjectFileWriter::write(*m_project.get()))
+    if (!ProjectFileWriter::write(m_project.ref()))
         return false;
 
     m_dirty_flag = false;

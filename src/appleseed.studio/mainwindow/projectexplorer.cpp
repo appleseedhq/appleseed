@@ -519,7 +519,7 @@ void ProjectExplorer::slot_add_assembly()
                 assembly_name.c_str(),
                 ParamArray()));
 
-        m_tree_widget_decorator.insert_assembly_items(*assembly.get());
+        m_tree_widget_decorator.insert_assembly_items(assembly.ref());
 
         assemblies.insert(assembly);
     }
@@ -556,7 +556,7 @@ void ProjectExplorer::slot_instantiate_assembly()
 
         m_tree_widget_decorator.insert_scene_item(
             ProjectItem::ItemAssemblyInstance,
-            *assembly_instance.get());
+            assembly_instance.ref());
 
         assembly_instances.insert(assembly_instance);
     }

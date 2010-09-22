@@ -55,7 +55,7 @@ TestFixtureBaseProjectHolder::TestFixtureBaseProjectHolder()
 
 Project& TestFixtureBaseProjectHolder::get_project()
 {
-    return *m_project.get();
+    return m_project.ref();
 }
 
 TestFixtureBase::TestFixtureBase()

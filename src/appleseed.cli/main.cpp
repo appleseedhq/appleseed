@@ -146,21 +146,21 @@ namespace
 
         // Run test suites.
         if (g_cl.m_run_unit_tests.values().empty())
-            TestSuiteRepository::instance().run(*listener.get(), result);
+            TestSuiteRepository::instance().run(listener.ref(), result);
         else
         {
             const char* regex = g_cl.m_run_unit_tests.values().front().c_str();
             const RegExFilter filter(regex, RegExFilter::CaseInsensitive);
 
             if (filter.is_valid())
-                TestSuiteRepository::instance().run(filter, *listener.get(), result);
+                TestSuiteRepository::instance().run(filter, listener.ref(), result);
             else
             {
                 FOUNDATION_LOG_ERROR(
                     logger,
                     "malformed regular expression '%s', disabling test filtering",
                     regex);
-                TestSuiteRepository::instance().run(*listener.get(), result);
+                TestSuiteRepository::instance().run(listener.ref(), result);
             }
         }
 
