@@ -30,10 +30,10 @@
 #include "assemblyinstance.h"
 
 // appleseed.renderer headers.
-#include "renderer/global/utility.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
+#include "renderer/utility/utility.h"
 
 using namespace foundation;
 using namespace std;

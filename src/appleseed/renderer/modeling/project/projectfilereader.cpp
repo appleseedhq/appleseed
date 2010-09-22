@@ -30,7 +30,6 @@
 #include "projectfilereader.h"
 
 // appleseed.renderer headers.
-#include "renderer/global/utility.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
@@ -71,6 +70,7 @@
 #include "renderer/modeling/texture/itexturefactory.h"
 #include "renderer/modeling/texture/texture.h"
 #include "renderer/modeling/texture/texturefactoryregistrar.h"
+#include "renderer/utility/utility.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/matrix.h"

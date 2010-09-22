@@ -656,7 +656,6 @@ set(renderer_api_sources
     renderer/api/lighting.h
     renderer/api/log.h
     renderer/api/material.h
-    renderer/api/paramarray.h
     renderer/api/project.h
     renderer/api/rendering.h
     renderer/api/scene.h
@@ -679,9 +678,6 @@ set(renderer_global_sources
     renderer/global/globaltypes.h
     renderer/global/globaluidsource.cpp
     renderer/global/globaluidsource.h
-    renderer/global/paramarray.cpp
-    renderer/global/paramarray.h
-    renderer/global/utility.h
 )
 list(APPEND appleseed_sources
     ${renderer_global_sources}
@@ -1237,8 +1233,11 @@ source_group("renderer\\modeling\\texture" FILES
 )
 
 set(renderer_utility_sources
+    renderer/utility/paramarray.cpp
+    renderer/utility/paramarray.h
     renderer/utility/testutils.cpp
     renderer/utility/testutils.h
+    renderer/utility/utility.h
 )
 list(APPEND appleseed_sources
     ${renderer_utility_sources}

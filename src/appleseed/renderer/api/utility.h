@@ -30,6 +30,7 @@
 #define APPLESEED_RENDERER_API_UTILITY_H
 
 // API headers.
-#include "renderer/global/utility.h"
+#include "renderer/utility/paramarray.h"
+#include "renderer/utility/utility.h"
 
 #endif  // !APPLESEED_RENDERER_API_UTILITY_H

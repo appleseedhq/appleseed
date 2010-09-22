@@ -42,7 +42,7 @@
 #include "utility/widgetzoomhandler.h"
 
 // appleseed.renderer headers.
-#include "renderer/api/paramarray.h"
+#include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"

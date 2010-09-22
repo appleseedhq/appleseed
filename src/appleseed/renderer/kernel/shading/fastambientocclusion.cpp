@@ -30,7 +30,6 @@
 #include "fastambientocclusion.h"
 
 // appleseed.renderer headers.
-#include "renderer/global/utility.h"
 #include "renderer/kernel/tessellation/statictessellation.h"
 #include "renderer/modeling/geometry/iregion.h"
 #include "renderer/modeling/geometry/object.h"
@@ -40,6 +39,7 @@
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/utility/utility.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/intersection.h"

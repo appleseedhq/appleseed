@@ -37,7 +37,7 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/global/globaluidsource.h"
-#include "renderer/global/paramarray.h"
+#include "renderer/utility/paramarray.h"
 
 // Globally included appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"

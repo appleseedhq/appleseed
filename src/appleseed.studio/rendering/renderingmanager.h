@@ -36,8 +36,8 @@
 #include "rendering/renderingtimer.h"
 
 // appleseed.renderer headers.
-#include "renderer/api/paramarray.h"
 #include "renderer/api/rendering.h"
+#include "renderer/api/utility.h"
 
 // Qt headers.
 #include <QBasicTimer>

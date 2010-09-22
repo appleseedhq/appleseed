@@ -30,7 +30,6 @@
 #include "regiontree.h"
 
 // appleseed.renderer headers.
-#include "renderer/global/utility.h"
 #include "renderer/kernel/intersection/regioninfo.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/geometry/iregion.h"
@@ -39,6 +38,7 @@
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
+#include "renderer/utility/utility.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/intersection.h"

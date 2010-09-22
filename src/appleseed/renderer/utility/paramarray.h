@@ -26,11 +26,11 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_GLOBAL_PARAMARRAY_H
-#define APPLESEED_RENDERER_GLOBAL_PARAMARRAY_H
+#ifndef APPLESEED_RENDERER_UTILITY_PARAMARRAY_H
+#define APPLESEED_RENDERER_UTILITY_PARAMARRAY_H
 
 // appleseed.renderer headers.
-#include "renderer/global/globallogger.h"
+#include "renderer/global/global.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
@@ -187,4 +187,4 @@ T ParamArray::get_helper(
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_GLOBAL_PARAMARRAY_H
+#endif  // !APPLESEED_RENDERER_UTILITY_PARAMARRAY_H

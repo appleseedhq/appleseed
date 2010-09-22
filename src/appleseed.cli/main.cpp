@@ -35,9 +35,9 @@
 
 // appleseed.renderer headers.
 #include "renderer/api/frame.h"
-#include "renderer/api/paramarray.h"
 #include "renderer/api/project.h"
 #include "renderer/api/rendering.h"
+#include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/path.h"
