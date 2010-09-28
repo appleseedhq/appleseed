@@ -787,9 +787,9 @@ namespace
         }
 
       private:
-        const LightingConditions                    m_lighting_conditions;
-        FOUNDATION_ALIGN_VARIABLE(32) SpectrumType  m_spectrum;
-        FOUNDATION_ALIGN_VARIABLE(32) Color3Type    m_ciexyz;
+        const LightingConditions        m_lighting_conditions;
+        ALIGN_VARIABLE(32) SpectrumType m_spectrum;
+        ALIGN_VARIABLE(32) Color3Type   m_ciexyz;
     };
 }
 

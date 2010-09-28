@@ -156,31 +156,31 @@ VoxelGrid3<T>::VoxelGrid3(
 }
 
 template <typename T>
-FOUNDATION_FORCE_INLINE size_t VoxelGrid3<T>::get_xres() const
+FORCE_INLINE size_t VoxelGrid3<T>::get_xres() const
 {
     return m_xres;
 }
 
 template <typename T>
-FOUNDATION_FORCE_INLINE size_t VoxelGrid3<T>::get_yres() const
+FORCE_INLINE size_t VoxelGrid3<T>::get_yres() const
 {
     return m_yres;
 }
 
 template <typename T>
-FOUNDATION_FORCE_INLINE size_t VoxelGrid3<T>::get_zres() const
+FORCE_INLINE size_t VoxelGrid3<T>::get_zres() const
 {
     return m_zres;
 }
 
 template <typename T>
-FOUNDATION_FORCE_INLINE size_t VoxelGrid3<T>::get_channel_count() const
+FORCE_INLINE size_t VoxelGrid3<T>::get_channel_count() const
 {
     return m_channel_count;
 }
 
 template <typename T>
-FOUNDATION_FORCE_INLINE T* VoxelGrid3<T>::voxel(
+FORCE_INLINE T* VoxelGrid3<T>::voxel(
     const size_t        x,
     const size_t        y,
     const size_t        z)
@@ -192,7 +192,7 @@ FOUNDATION_FORCE_INLINE T* VoxelGrid3<T>::voxel(
 }
 
 template <typename T>
-FOUNDATION_FORCE_INLINE const T* VoxelGrid3<T>::voxel(
+FORCE_INLINE const T* VoxelGrid3<T>::voxel(
     const size_t        x,
     const size_t        y,
     const size_t        z) const
@@ -227,7 +227,7 @@ void VoxelGrid3<T>::nearest_lookup(
 template <typename T>
 void VoxelGrid3<T>::trilinear_lookup(
     const Vector3Type&      point,
-    ValueType* __restrict   values) const
+    ValueType* RESTRICT     values) const
 {
     // Clamp the lookup point coordinates.
     const ValueType x = clamp(point.x, ValueType(0.0), m_xbound);
@@ -248,34 +248,34 @@ void VoxelGrid3<T>::trilinear_lookup(
     const ValueType z0 = ValueType(1.0) - z1;
 
     // Corners 000 and 100.
-    const ValueType* FOUNDATION_RESTRICT source000 = voxel(ix + 0, iy + 0, iz + 0);
-    const ValueType* FOUNDATION_RESTRICT source100 = source000 + m_channel_count;
+    const ValueType* RESTRICT source000 = voxel(ix + 0, iy + 0, iz + 0);
+    const ValueType* RESTRICT source100 = source000 + m_channel_count;
     const ValueType y0z0 = y0 * z0;
     const ValueType weight000 = x0 * y0z0;
     const ValueType weight100 = x1 * y0z0;
 
     // Corner 010 and 110.
-    const ValueType* FOUNDATION_RESTRICT source010 = voxel(ix + 0, iy + 1, iz + 0);
-    const ValueType* FOUNDATION_RESTRICT source110 = source010 + m_channel_count;
+    const ValueType* RESTRICT source010 = voxel(ix + 0, iy + 1, iz + 0);
+    const ValueType* RESTRICT source110 = source010 + m_channel_count;
     const ValueType y1z0 = y1 * z0;
     const ValueType weight010 = x0 * y1z0;
     const ValueType weight110 = x1 * y1z0;
 
     // Corner 001 and 101.
-    const ValueType* FOUNDATION_RESTRICT source001 = voxel(ix + 0, iy + 0, iz + 1);
-    const ValueType* FOUNDATION_RESTRICT source101 = source001 + m_channel_count;
+    const ValueType* RESTRICT source001 = voxel(ix + 0, iy + 0, iz + 1);
+    const ValueType* RESTRICT source101 = source001 + m_channel_count;
     const ValueType y0z1 = y0 * z1;
     const ValueType weight001 = x0 * y0z1;
     const ValueType weight101 = x1 * y0z1;
 
     // Corner 011 and 111.
-    const ValueType* FOUNDATION_RESTRICT source011 = voxel(ix + 0, iy + 1, iz + 1);
-    const ValueType* FOUNDATION_RESTRICT source111 = source011 + m_channel_count;
+    const ValueType* RESTRICT source011 = voxel(ix + 0, iy + 1, iz + 1);
+    const ValueType* RESTRICT source111 = source011 + m_channel_count;
     const ValueType y1z1 = y1 * z1;
     const ValueType weight011 = x0 * y1z1;
     const ValueType weight111 = x1 * y1z1;
 
-    ValueType* FOUNDATION_RESTRICT values_ptr = values;
+    ValueType* RESTRICT values_ptr = values;
 
     for (size_t i = 0; i < m_channel_count; ++i)
     {
@@ -333,7 +333,7 @@ namespace voxelgrid_impl
     //
 
     template <typename T>
-    FOUNDATION_FORCE_INLINE T quadratic(const T t, const T v0, const T v1, const T v2)
+    FORCE_INLINE T quadratic(const T t, const T v0, const T v1, const T v2)
     {
         const T w = v0 - v1;
         return ((w - v1 + v2) * t - w - w) * t + v0 + v1;

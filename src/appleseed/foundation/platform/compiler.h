@@ -76,15 +76,15 @@ class FOUNDATIONDLL Compiler
 
 // Visual C++.
 #if defined _MSC_VER
-#define FOUNDATION_FORCE_INLINE __forceinline
+#define FORCE_INLINE __forceinline
 
 // gcc.
 #elif defined __GNUC__
-#define FOUNDATION_FORCE_INLINE inline __attribute__((always_inline))
+#define FORCE_INLINE inline __attribute__((always_inline))
 
 // Unsupported platform, fall back to standard inlining.
 #else
-#define FOUNDATION_FORCE_INLINE inline
+#define FORCE_INLINE inline
 #endif
 
 
@@ -94,15 +94,15 @@ class FOUNDATIONDLL Compiler
 
 // Visual C++.
 #if defined _MSC_VER
-#define FOUNDATION_NO_INLINE __declspec(noinline)
+#define NO_INLINE __declspec(noinline)
 
 // gcc.
 #elif defined __GNUC__
-#define FOUNDATION_NO_INLINE __attribute__((noinline))
+#define NO_INLINE __attribute__((noinline))
 
 // Unsupported platform.
 #else
-#define FOUNDATION_NO_INLINE
+#define NO_INLINE
 #endif
 
 
@@ -112,15 +112,15 @@ class FOUNDATIONDLL Compiler
 
 // Visual C++.
 #if defined _MSC_VER
-#define FOUNDATION_ALIGN_VARIABLE(n) __declspec(align(n))
+#define ALIGN_VARIABLE(n) __declspec(align(n))
 
 // gcc.
 #elif defined __GNUC__
-#define FOUNDATION_ALIGN_VARIABLE(n) __attribute__((aligned(n)))
+#define ALIGN_VARIABLE(n) __attribute__((aligned(n)))
 
 // Unsupported platform.
 #else
-#define FOUNDATION_ALIGN_VARIABLE(n)
+#define ALIGN_VARIABLE(n)
 #endif
 
 
@@ -128,14 +128,14 @@ class FOUNDATIONDLL Compiler
 // Macros for widely used alignments.
 //
 
-#define FOUNDATION_ALIGN_SSE_VARIABLE FOUNDATION_ALIGN_VARIABLE(16)
+#define ALIGN_SSE_VARIABLE ALIGN_VARIABLE(16)
 
 
 //
 // Platform-independent restrict qualifier.
 //
 
-#define FOUNDATION_RESTRICT __restrict
+#define RESTRICT __restrict
 
 
 //

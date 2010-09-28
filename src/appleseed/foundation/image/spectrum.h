@@ -80,7 +80,7 @@ class RegularSpectrum
     const ValueType& operator[](const size_t i) const;
 
   private:
-    FOUNDATION_ALIGN_SSE_VARIABLE
+    ALIGN_SSE_VARIABLE
     ValueType m_samples[StoredSamples];
 };
 
@@ -189,7 +189,7 @@ inline void RegularSpectrum<T, N>::set(const ValueType val)
 #ifdef APPLESEED_FOUNDATION_USE_SSE
 
 template <>
-FOUNDATION_FORCE_INLINE void RegularSpectrum<float, 31>::set(const float val)
+FORCE_INLINE void RegularSpectrum<float, 31>::set(const float val)
 {
     const sse4f mval = set1ps(val);
 
@@ -375,7 +375,7 @@ inline RegularSpectrum<T, N>& operator+=(RegularSpectrum<T, N>& lhs, const Regul
 #ifdef APPLESEED_FOUNDATION_USE_SSE
 
 template <>
-FOUNDATION_FORCE_INLINE RegularSpectrum<float, 31>& operator+=(RegularSpectrum<float, 31>& lhs, const RegularSpectrum<float, 31>& rhs)
+FORCE_INLINE RegularSpectrum<float, 31>& operator+=(RegularSpectrum<float, 31>& lhs, const RegularSpectrum<float, 31>& rhs)
 {
     storeps(&lhs[ 0], addps(loadps(&lhs[ 0]), loadps(&rhs[ 0])));
     storeps(&lhs[ 4], addps(loadps(&lhs[ 4]), loadps(&rhs[ 4])));
@@ -412,7 +412,7 @@ inline RegularSpectrum<T, N>& operator*=(RegularSpectrum<T, N>& lhs, const T rhs
 #ifdef APPLESEED_FOUNDATION_USE_SSE
 
 template <>
-FOUNDATION_FORCE_INLINE RegularSpectrum<float, 31>& operator*=(RegularSpectrum<float, 31>& lhs, const float rhs)
+FORCE_INLINE RegularSpectrum<float, 31>& operator*=(RegularSpectrum<float, 31>& lhs, const float rhs)
 {
     const sse4f mrhs = set1ps(rhs);
 
@@ -442,7 +442,7 @@ inline RegularSpectrum<T, N>& operator*=(RegularSpectrum<T, N>& lhs, const Regul
 #ifdef APPLESEED_FOUNDATION_USE_SSE
 
 template <>
-FOUNDATION_FORCE_INLINE RegularSpectrum<float, 31>& operator*=(RegularSpectrum<float, 31>& lhs, const RegularSpectrum<float, 31>& rhs)
+FORCE_INLINE RegularSpectrum<float, 31>& operator*=(RegularSpectrum<float, 31>& lhs, const RegularSpectrum<float, 31>& rhs)
 {
     storeps(&lhs[ 0], mulps(loadps(&lhs[ 0]), loadps(&rhs[ 0])));
     storeps(&lhs[ 4], mulps(loadps(&lhs[ 4]), loadps(&rhs[ 4])));

@@ -130,7 +130,7 @@ inline TriangleMT<T>::TriangleMT(
 // Construct a triangle from another triangle of a different type.
 template <typename T>
 template <typename U>
-FOUNDATION_FORCE_INLINE TriangleMT<T>::TriangleMT(const TriangleMT<U>& rhs)
+FORCE_INLINE TriangleMT<T>::TriangleMT(const TriangleMT<U>& rhs)
   : m_v0(VectorType(rhs.m_v0))
   , m_v1(VectorType(rhs.m_v1))
   , m_v2(VectorType(rhs.m_v2))
@@ -138,7 +138,7 @@ FOUNDATION_FORCE_INLINE TriangleMT<T>::TriangleMT(const TriangleMT<U>& rhs)
 }
 
 template <typename T>
-FOUNDATION_FORCE_INLINE bool TriangleMT<T>::intersect(
+FORCE_INLINE bool TriangleMT<T>::intersect(
     const RayType&          ray,
     ValueType&              t,
     ValueType&              u,
@@ -208,7 +208,7 @@ FOUNDATION_FORCE_INLINE bool TriangleMT<T>::intersect(
 }
 
 template <typename T>
-FOUNDATION_FORCE_INLINE bool TriangleMT<T>::intersect(const RayType& ray) const
+FORCE_INLINE bool TriangleMT<T>::intersect(const RayType& ray) const
 {
     // Find vectors for two edges sharing v0.
     const VectorType edge1 = m_v1 - m_v0;

@@ -320,7 +320,7 @@ inline float fast_srgb_to_linear_rgb(const float c)
 
 inline Color3f fast_linear_rgb_to_srgb(const Color3f& linear_rgb)
 {
-    FOUNDATION_ALIGN_SSE_VARIABLE float transfer[4] =
+    ALIGN_SSE_VARIABLE float transfer[4] =
     {
         linear_rgb[0],
         linear_rgb[1],

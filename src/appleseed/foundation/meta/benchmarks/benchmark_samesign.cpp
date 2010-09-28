@@ -56,12 +56,12 @@ FOUNDATION_BENCHMARK_SUITE(SameSign)
     // Empty function.
     //
 
-    FOUNDATION_NO_INLINE bool empty_function(const float a, const float b)
+    NO_INLINE bool empty_function(const float a, const float b)
     {
         return false;
     }
 
-    FOUNDATION_NO_INLINE bool empty_function(const float a, const float b, const float c)
+    NO_INLINE bool empty_function(const float a, const float b, const float c)
     {
         return false;
     }
@@ -70,7 +70,7 @@ FOUNDATION_BENCHMARK_SUITE(SameSign)
     // Naive variant.
     //
 
-    FOUNDATION_NO_INLINE bool same_sign_naive(const float a, const float b)
+    NO_INLINE bool same_sign_naive(const float a, const float b)
     {
         if (fabs(a) == 0.0f || fabs(b) == 0.0f)
             return true;
@@ -78,7 +78,7 @@ FOUNDATION_BENCHMARK_SUITE(SameSign)
         return (a >= 0.0f) == (b >= 0.0f);
     }
 
-    FOUNDATION_NO_INLINE bool same_sign_naive(const float a, const float b, const float c)
+    NO_INLINE bool same_sign_naive(const float a, const float b, const float c)
     {
         return same_sign_naive(a, b) && same_sign_naive(a, c) && same_sign_naive(b, c);
     }
@@ -87,7 +87,7 @@ FOUNDATION_BENCHMARK_SUITE(SameSign)
     // Integer arithmetic-based variant.
     //
 
-    FOUNDATION_NO_INLINE bool same_sign_integer(const float a, const float b)
+    NO_INLINE bool same_sign_integer(const float a, const float b)
     {
         const int ia = binary_cast<int>(a);
         const int ib = binary_cast<int>(b);
@@ -99,7 +99,7 @@ FOUNDATION_BENCHMARK_SUITE(SameSign)
         return (az | bz | ab) != 0;
     }
 
-    FOUNDATION_NO_INLINE bool same_sign_integer(const float a, const float b, const float c)
+    NO_INLINE bool same_sign_integer(const float a, const float b, const float c)
     {
         const int32 ia = binary_cast<int32>(a);
         const int32 ib = binary_cast<int32>(b);
@@ -124,12 +124,12 @@ FOUNDATION_BENCHMARK_SUITE(SameSign)
     // Multiplication-based variant.
     //
 
-    FOUNDATION_NO_INLINE bool same_sign_multiplication(const float a, const float b)
+    NO_INLINE bool same_sign_multiplication(const float a, const float b)
     {
         return a * b >= 0.0f;
     }
 
-    FOUNDATION_NO_INLINE bool same_sign_multiplication(const float a, const float b, const float c)
+    NO_INLINE bool same_sign_multiplication(const float a, const float b, const float c)
     {
         return a * b >= 0.0f && a * c >= 0.0f && b * c >= 0.0f;
     }
@@ -140,9 +140,9 @@ FOUNDATION_BENCHMARK_SUITE(SameSign)
     // SSE implementation of the 3-component multiplication-based variant.
     //
 
-    FOUNDATION_NO_INLINE bool same_sign_multiplication_sse(const float a, const float b, const float c)
+    NO_INLINE bool same_sign_multiplication_sse(const float a, const float b, const float c)
     {
-        FOUNDATION_ALIGN_SSE_VARIABLE float u[4] = { a, a, b, c };
+        ALIGN_SSE_VARIABLE float u[4] = { a, a, b, c };
 
         const sse4f mu = loadps(u);
         const sse4f mv = shuffleps(mu, mu, _MM_SHUFFLE(2, 3, 3, 2));

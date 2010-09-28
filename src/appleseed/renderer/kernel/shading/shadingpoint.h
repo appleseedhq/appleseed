@@ -208,12 +208,12 @@ class ShadingPoint
 // ShadingPoint class implementation.
 //
 
-FOUNDATION_FORCE_INLINE ShadingPoint::ShadingPoint()
+FORCE_INLINE ShadingPoint::ShadingPoint()
 {
     clear();
 }
 
-FOUNDATION_FORCE_INLINE void ShadingPoint::clear()
+FORCE_INLINE void ShadingPoint::clear()
 {
     m_region_kit_cache = 0;
     m_tess_cache = 0;

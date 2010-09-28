@@ -64,7 +64,7 @@ class InputEvaluator
 
     TextureCache&       m_texture_cache;
 
-    FOUNDATION_ALIGN_SSE_VARIABLE
+    ALIGN_SSE_VARIABLE
     foundation::uint8   m_scratch[ScratchSize];
 };
 

@@ -77,7 +77,7 @@ class PixelSampler
 // PixelSampler class implementation.
 //
 
-FOUNDATION_FORCE_INLINE void PixelSampler::sample(
+FORCE_INLINE void PixelSampler::sample(
     const size_t                sx,
     const size_t                sy,
     foundation::Vector2d&       sample_position,

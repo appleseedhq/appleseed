@@ -435,7 +435,7 @@ namespace
             }
         }
 
-        FOUNDATION_FORCE_INLINE static void intersect_tmax(
+        FORCE_INLINE static void intersect_tmax(
             const ShadingRay&               ray,
             const ShadingRay::RayInfoType&  ray_info,
             const AABB3d&                   bbox,
@@ -575,7 +575,7 @@ namespace
             return density;
         }
 
-        FOUNDATION_FORCE_INLINE float get_sample_opacity_fast(const float values[]) const
+        FORCE_INLINE float get_sample_opacity_fast(const float values[]) const
         {
             if (m_channels.m_density_index == FluidChannels::NotPresent)
                 return 0.0f;

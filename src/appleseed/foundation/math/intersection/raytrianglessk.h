@@ -177,7 +177,7 @@ inline TriangleSSK<T>::TriangleSSK(
 // Construct a triangle from another triangle of a different type.
 template <typename T>
 template <typename U>
-FOUNDATION_FORCE_INLINE TriangleSSK<T>::TriangleSSK(const TriangleSSK<U>& rhs)
+FORCE_INLINE TriangleSSK<T>::TriangleSSK(const TriangleSSK<U>& rhs)
   : m_nu (static_cast<ValueType>(rhs.m_nu))
   , m_nv (static_cast<ValueType>(rhs.m_nv))
   , m_np (static_cast<ValueType>(rhs.m_np))
@@ -193,7 +193,7 @@ FOUNDATION_FORCE_INLINE TriangleSSK<T>::TriangleSSK(const TriangleSSK<U>& rhs)
 }
 
 template <>
-FOUNDATION_FORCE_INLINE bool TriangleSSK<float>::intersect(
+FORCE_INLINE bool TriangleSSK<float>::intersect(
     const RayType&          ray,
     ValueType&              t,
     ValueType&              u,
@@ -223,7 +223,7 @@ FOUNDATION_FORCE_INLINE bool TriangleSSK<float>::intersect(
 
     // Check that the intersection point lies inside the triangle.
 #ifdef APPLESEED_FOUNDATION_USE_SSE
-    FOUNDATION_ALIGN_SSE_VARIABLE float detarray[4] = { detu, detu, detv, detw };
+    ALIGN_SSE_VARIABLE float detarray[4] = { detu, detu, detv, detw };
     const sse4f mu = loadps(detarray);
     const sse4f mv = shuffleps(mu, mu, _MM_SHUFFLE(2, 3, 3, 2));
     const sse4f product = mulps(mu, mv);
@@ -253,7 +253,7 @@ FOUNDATION_FORCE_INLINE bool TriangleSSK<float>::intersect(
 }
 
 template <>
-FOUNDATION_FORCE_INLINE bool TriangleSSK<double>::intersect(
+FORCE_INLINE bool TriangleSSK<double>::intersect(
     const RayType&          ray,
     ValueType&              t,
     ValueType&              u,
@@ -313,7 +313,7 @@ FOUNDATION_FORCE_INLINE bool TriangleSSK<double>::intersect(
 }
 
 template <>
-FOUNDATION_FORCE_INLINE bool TriangleSSK<float>::intersect(const RayType& ray) const
+FORCE_INLINE bool TriangleSSK<float>::intersect(const RayType& ray) const
 {
     // Retrieve indices.
     const size_t k = m_ci;
@@ -339,7 +339,7 @@ FOUNDATION_FORCE_INLINE bool TriangleSSK<float>::intersect(const RayType& ray) c
 
     // Check that the intersection point lies inside the triangle.
 #ifdef APPLESEED_FOUNDATION_USE_SSE
-    FOUNDATION_ALIGN_SSE_VARIABLE float detarray[4] = { detu, detu, detv, detw };
+    ALIGN_SSE_VARIABLE float detarray[4] = { detu, detu, detv, detw };
     const sse4f mu = loadps(detarray);
     const sse4f mv = shuffleps(mu, mu, _MM_SHUFFLE(2, 3, 3, 2));
     const sse4f product = mulps(mu, mv);
@@ -361,7 +361,7 @@ FOUNDATION_FORCE_INLINE bool TriangleSSK<float>::intersect(const RayType& ray) c
 }
 
 template <>
-FOUNDATION_FORCE_INLINE bool TriangleSSK<double>::intersect(const RayType& ray) const
+FORCE_INLINE bool TriangleSSK<double>::intersect(const RayType& ray) const
 {
     // Retrieve indices.
     const size_t k = m_ci;

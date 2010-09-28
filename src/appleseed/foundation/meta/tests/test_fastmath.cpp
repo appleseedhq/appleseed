@@ -149,7 +149,7 @@ FOUNDATION_TEST_SUITE(Foundation_Math_FastMath)
 
         for (size_t i = 0; i < step_count; i += 4)
         {
-            FOUNDATION_ALIGN_SSE_VARIABLE T x[4];
+            ALIGN_SSE_VARIABLE T x[4];
 
             for (size_t j = 0; j < 4; ++j)
             {

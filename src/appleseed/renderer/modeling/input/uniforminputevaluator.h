@@ -50,7 +50,7 @@ class UniformInputEvaluator
   private:
     static const size_t ScratchSize = 16 * 1024;    // bytes
 
-    FOUNDATION_ALIGN_SSE_VARIABLE
+    ALIGN_SSE_VARIABLE
     foundation::uint8   m_scratch[ScratchSize];
 };
 
