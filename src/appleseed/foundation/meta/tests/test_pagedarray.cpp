@@ -33,18 +33,18 @@
 // Standard headers.
 #include <cstddef>
 
-FOUNDATION_TEST_SUITE(Foundation_Utility_Containers_PagedArray)
+TEST_SUITE(Foundation_Utility_Containers_PagedArray)
 {
     using namespace foundation;
 
     typedef PagedArray<int, 2> PagedArrayType;
 
-    FOUNDATION_TEST_CASE(InitialStateIsCorrect)
+    TEST_CASE(InitialStateIsCorrect)
     {
         PagedArrayType array;
 
-        FOUNDATION_EXPECT_TRUE(array.empty());
-        FOUNDATION_EXPECT_EQ(0, array.size());
+        EXPECT_TRUE(array.empty());
+        EXPECT_EQ(0, array.size());
     }
 
     struct FixturePagedArrayWithThreeElements
@@ -59,13 +59,13 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Containers_PagedArray)
         }
     };
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(TestInsertion, FixturePagedArrayWithThreeElements)
+    TEST_CASE_WITH_FIXTURE(TestInsertion, FixturePagedArrayWithThreeElements)
     {
-        FOUNDATION_EXPECT_FALSE(array.empty());
-        FOUNDATION_EXPECT_EQ(3, array.size());
+        EXPECT_FALSE(array.empty());
+        EXPECT_EQ(3, array.size());
     }
 
-    FOUNDATION_TEST_CASE(TestStabilityUponInsertion)
+    TEST_CASE(TestStabilityUponInsertion)
     {
         PagedArrayType array;
         
@@ -76,26 +76,26 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Containers_PagedArray)
             address[i] = &array.push_back(static_cast<int>(i));
 
         for (size_t i = 0; i < Count; ++i)
-            FOUNDATION_EXPECT_EQ(address[i], &array[i]);
+            EXPECT_EQ(address[i], &array[i]);
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(TestArraySubscripting, FixturePagedArrayWithThreeElements)
+    TEST_CASE_WITH_FIXTURE(TestArraySubscripting, FixturePagedArrayWithThreeElements)
     {
-        FOUNDATION_EXPECT_EQ(10, array[0]);
-        FOUNDATION_EXPECT_EQ(20, array[1]);
-        FOUNDATION_EXPECT_EQ(30, array[2]);
+        EXPECT_EQ(10, array[0]);
+        EXPECT_EQ(20, array[1]);
+        EXPECT_EQ(30, array[2]);
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(TestExceptionCheckedAccessWithinBounds, FixturePagedArrayWithThreeElements)
+    TEST_CASE_WITH_FIXTURE(TestExceptionCheckedAccessWithinBounds, FixturePagedArrayWithThreeElements)
     {
-        FOUNDATION_EXPECT_EQ(10, array.at(0));
-        FOUNDATION_EXPECT_EQ(20, array.at(1));
-        FOUNDATION_EXPECT_EQ(30, array.at(2));
+        EXPECT_EQ(10, array.at(0));
+        EXPECT_EQ(20, array.at(1));
+        EXPECT_EQ(30, array.at(2));
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(TestExceptionCheckedAccessOutOfBounds, FixturePagedArrayWithThreeElements)
+    TEST_CASE_WITH_FIXTURE(TestExceptionCheckedAccessOutOfBounds, FixturePagedArrayWithThreeElements)
     {
-        FOUNDATION_EXPECT_EXCEPTION(
+        EXPECT_EXCEPTION(
             PagedArrayType::ExceptionOutOfRange,
             {
                 array.at(3);
@@ -103,19 +103,19 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Containers_PagedArray)
         );
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(TestResizeToSameSize, FixturePagedArrayWithThreeElements)
+    TEST_CASE_WITH_FIXTURE(TestResizeToSameSize, FixturePagedArrayWithThreeElements)
     {
         array.resize(3);
 
-        FOUNDATION_EXPECT_EQ(3, array.size());
+        EXPECT_EQ(3, array.size());
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(TestResizeToLargerSize, FixturePagedArrayWithThreeElements)
+    TEST_CASE_WITH_FIXTURE(TestResizeToLargerSize, FixturePagedArrayWithThreeElements)
     {
         array.resize(5, 555);
 
-        FOUNDATION_EXPECT_EQ(5, array.size());
-        FOUNDATION_EXPECT_EQ(555, array[3]);
-        FOUNDATION_EXPECT_EQ(555, array[4]);
+        EXPECT_EQ(5, array.size());
+        EXPECT_EQ(555, array[3]);
+        EXPECT_EQ(555, array[4]);
     }
 }

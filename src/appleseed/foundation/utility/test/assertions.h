@@ -81,10 +81,10 @@ namespace foundation
             FOUNDATION_ASSERTION_FAILURE("==", true, expr, stop);                       \
     } while (0)
 
-#define FOUNDATION_EXPECT_TRUE(expr)                                                    \
+#define EXPECT_TRUE(expr)                                                               \
     FOUNDATION_EXPECT_TRUE_IMPL(expr, false)
 
-#define FOUNDATION_ASSERT_TRUE(expr)                                                    \
+#define ASSERT_TRUE(expr)                                                               \
     FOUNDATION_EXPECT_TRUE_IMPL(expr, true)
 
 
@@ -99,10 +99,10 @@ namespace foundation
             FOUNDATION_ASSERTION_FAILURE("==", false, expr, stop);                      \
     } while (0)
 
-#define FOUNDATION_EXPECT_FALSE(expr)                                                   \
+#define EXPECT_FALSE(expr)                                                              \
     FOUNDATION_EXPECT_FALSE_IMPL(expr, false)
 
-#define FOUNDATION_ASSERT_FALSE(expr)                                                   \
+#define ASSERT_FALSE(expr)                                                              \
     FOUNDATION_EXPECT_FALSE_IMPL(expr, true)
 
 
@@ -117,10 +117,10 @@ namespace foundation
             FOUNDATION_ASSERTION_FAILURE("==", expected, expr, stop);                   \
     } while (0)
 
-#define FOUNDATION_EXPECT_EQ(expected, expr)                                            \
+#define EXPECT_EQ(expected, expr)                                                       \
     FOUNDATION_EXPECT_EQ_IMPL(expected, expr, false)
 
-#define FOUNDATION_ASSERT_EQ(expected, expr)                                            \
+#define ASSERT_EQ(expected, expr)                                                       \
     FOUNDATION_EXPECT_EQ_IMPL(expected, expr, true)
 
 
@@ -154,10 +154,10 @@ namespace foundation
         }                                                                               \
     } while (0)
 
-#define FOUNDATION_EXPECT_ARRAY_EQ(expected, expr)                                      \
+#define EXPECT_ARRAY_EQ(expected, expr)                                                 \
     FOUNDATION_EXPECT_ARRAY_EQ_IMPL(expected, expr, false)
 
-#define FOUNDATION_ASSERT_ARRAY_EQ(expected, expr)                                      \
+#define ASSERT_ARRAY_EQ(expected, expr)                                                 \
     FOUNDATION_EXPECT_ARRAY_EQ_IMPL(expected, expr, true)
 
 
@@ -190,10 +190,10 @@ namespace foundation
         }                                                                               \
     } while (0)
 
-#define FOUNDATION_EXPECT_SEQUENCE_EQ(count, expected, expr)                            \
+#define EXPECT_SEQUENCE_EQ(count, expected, expr)                                       \
     FOUNDATION_EXPECT_SEQUENCE_EQ_IMPL(count, expected, expr, false)
 
-#define FOUNDATION_ASSERT_SEQUENCE_EQ(count, expected, expr)                            \
+#define ASSERT_SEQUENCE_EQ(count, expected, expr)                                       \
     FOUNDATION_EXPECT_SEQUENCE_EQ_IMPL(count, expected, expr, true)
 
 
@@ -208,10 +208,10 @@ namespace foundation
             FOUNDATION_ASSERTION_FAILURE("!=", expected, expr, stop);                   \
     } while (0)
 
-#define FOUNDATION_EXPECT_NEQ(expected, expr)                                           \
+#define EXPECT_NEQ(expected, expr)                                                      \
     FOUNDATION_EXPECT_NEQ_IMPL(expected, expr, false)
 
-#define FOUNDATION_ASSERT_NEQ(expected, expr)                                           \
+#define ASSERT_NEQ(expected, expr)                                                      \
     FOUNDATION_EXPECT_NEQ_IMPL(expected, expr, true)
 
 
@@ -226,10 +226,10 @@ namespace foundation
             FOUNDATION_ASSERTION_FAILURE("<", expected, expr, stop);                    \
     } while (0)
 
-#define FOUNDATION_EXPECT_LT(expected, expr)                                            \
+#define EXPECT_LT(expected, expr)                                                       \
     FOUNDATION_EXPECT_LT_IMPL(expected, expr, false)
 
-#define FOUNDATION_ASSERT_LT(expected, expr)                                            \
+#define ASSERT_LT(expected, expr)                                                       \
     FOUNDATION_EXPECT_LT_IMPL(expected, expr, true)
 
 
@@ -244,10 +244,10 @@ namespace foundation
             FOUNDATION_ASSERTION_FAILURE(">", expected, expr, stop);                    \
     } while (0)
 
-#define FOUNDATION_EXPECT_GT(expected, expr)                                            \
+#define EXPECT_GT(expected, expr)                                                       \
     FOUNDATION_EXPECT_GT_IMPL(expected, expr, false)
 
-#define FOUNDATION_ASSERT_GT(expected, expr)                                            \
+#define ASSERT_GT(expected, expr)                                                       \
     FOUNDATION_EXPECT_GT_IMPL(expected, expr, true)
 
 
@@ -263,10 +263,10 @@ namespace foundation
             FOUNDATION_ASSERTION_FAILURE("==", expected, expr, stop);                   \
     } while (0)
 
-#define FOUNDATION_EXPECT_FEQ(expected, expr)                                           \
+#define EXPECT_FEQ(expected, expr)                                                      \
     FOUNDATION_EXPECT_FEQ_IMPL(expected, expr, false)
 
-#define FOUNDATION_ASSERT_FEQ(expected, expr)                                           \
+#define ASSERT_FEQ(expected, expr)                                                      \
     FOUNDATION_EXPECT_FEQ_IMPL(expected, expr, true)
 
 
@@ -282,10 +282,10 @@ namespace foundation
             FOUNDATION_ASSERTION_FAILURE("==", expected, expr, stop);                   \
     } while (0)
 
-#define FOUNDATION_EXPECT_FEQ_EPS(expected, expr, eps)                                  \
+#define EXPECT_FEQ_EPS(expected, expr, eps)                                             \
     FOUNDATION_EXPECT_FEQ_EPS_IMPL(expected, expr, eps, false)
 
-#define FOUNDATION_ASSERT_FEQ_EPS(expected, expr, eps)                                  \
+#define ASSERT_FEQ_EPS(expected, expr, eps)                                             \
     FOUNDATION_EXPECT_FEQ_EPS_IMPL(expected, expr, eps, true)
 
 
@@ -301,10 +301,10 @@ namespace foundation
             FOUNDATION_ASSERTION_FAILURE("!=", expected, expr, stop);                   \
     } while (0)
 
-#define FOUNDATION_EXPECT_FNEQ(expected, expr)                                          \
+#define EXPECT_FNEQ(expected, expr)                                                     \
     FOUNDATION_EXPECT_FNEQ_IMPL(expected, expr, false)
 
-#define FOUNDATION_ASSERT_FNEQ(expected, expr)                                          \
+#define ASSERT_FNEQ(expected, expr)                                                     \
     FOUNDATION_EXPECT_FNEQ_IMPL(expected, expr, true)
 
 
@@ -320,10 +320,10 @@ namespace foundation
             FOUNDATION_ASSERTION_FAILURE("!=", expected, expr, stop);                   \
     } while (0)
 
-#define FOUNDATION_EXPECT_FNEQ_EPS(expected, expr, eps)                                 \
+#define EXPECT_FNEQ_EPS(expected, expr, eps)                                            \
     FOUNDATION_EXPECT_FNEQ_EPS_IMPL(expected, expr, eps, false)
 
-#define FOUNDATION_ASSERT_FNEQ_EPS(expected, expr, eps)                                 \
+#define ASSERT_FNEQ_EPS(expected, expr, eps)                                            \
     FOUNDATION_EXPECT_FNEQ_EPS_IMPL(expected, expr, eps, true)
 
 
@@ -365,10 +365,10 @@ namespace foundation
         }                                                                               \
     } while (0)
 
-#define FOUNDATION_EXPECT_EXCEPTION(exception, expr)                                    \
+#define EXPECT_EXCEPTION(exception, expr)                                               \
     FOUNDATION_EXPECT_EXCEPTION_IMPL(exception, expr, false)
 
-#define FOUNDATION_ASSERT_EXCEPTION(exception, expr)                                    \
+#define ASSERT_EXCEPTION(exception, expr)                                               \
     FOUNDATION_EXPECT_EXCEPTION_IMPL(exception, expr, true)
 
 }       // namespace foundation

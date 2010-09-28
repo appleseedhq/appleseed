@@ -35,36 +35,36 @@
 #include <string>
 #include <vector>
 
-FOUNDATION_TEST_SUITE(Foundation_Utility_MakeVector)
+TEST_SUITE(Foundation_Utility_MakeVector)
 {
     using namespace foundation;
     using namespace std;
 
-    FOUNDATION_TEST_CASE(TestMakeVectorWithSingleIntegerValue)
+    TEST_CASE(TestMakeVectorWithSingleIntegerValue)
     {
         vector<int> expected_vector;
         expected_vector.push_back(10);
 
-        FOUNDATION_EXPECT_EQ(expected_vector, make_vector(1, 10));
+        EXPECT_EQ(expected_vector, make_vector(1, 10));
     }
 
-    FOUNDATION_TEST_CASE(TestMakeVectorWithMultipleIntegerValues)
+    TEST_CASE(TestMakeVectorWithMultipleIntegerValues)
     {
         vector<int> expected_vector;
         expected_vector.push_back(10);
         expected_vector.push_back(20);
         expected_vector.push_back(30);
 
-        FOUNDATION_EXPECT_EQ(expected_vector, make_vector(3, 10, 20, 30));
+        EXPECT_EQ(expected_vector, make_vector(3, 10, 20, 30));
     }
 
-    FOUNDATION_TEST_CASE(TestMakeVectorWithMultipleStringValues)
+    TEST_CASE(TestMakeVectorWithMultipleStringValues)
     {
         vector<string> expected_vector;
         expected_vector.push_back("hello");
         expected_vector.push_back("world");
         expected_vector.push_back("bunny");
 
-        FOUNDATION_EXPECT_EQ(expected_vector, make_vector(3, "hello", "world", "bunny"));
+        EXPECT_EQ(expected_vector, make_vector(3, "hello", "world", "bunny"));
     }
 }

@@ -36,62 +36,62 @@
 using namespace foundation;
 using namespace std;
 
-FOUNDATION_TEST_SUITE(Foundation_Utility_Memory)
+TEST_SUITE(Foundation_Utility_Memory)
 {
-    FOUNDATION_TEST_CASE(Align_GivenZero_ReturnsZero)
+    TEST_CASE(Align_GivenZero_ReturnsZero)
     {
-        FOUNDATION_EXPECT_EQ(0, align(0, 4));
+        EXPECT_EQ(0, align(0, 4));
     }
 
-    FOUNDATION_TEST_CASE(Align_GivenUnalignedValue_ReturnsAlignedValue)
+    TEST_CASE(Align_GivenUnalignedValue_ReturnsAlignedValue)
     {
-        FOUNDATION_EXPECT_EQ(16, align(13, 4));
+        EXPECT_EQ(16, align(13, 4));
     }
 
-    FOUNDATION_TEST_CASE(Align_GivenAlignedValue_ReturnsInputValue)
+    TEST_CASE(Align_GivenAlignedValue_ReturnsInputValue)
     {
-        FOUNDATION_EXPECT_EQ(16, align(16, 4));
+        EXPECT_EQ(16, align(16, 4));
     }
 
-    FOUNDATION_TEST_CASE(EnsureSize_GivenEmptyVector_ResizesVectorByInsertingDefaultValue)
+    TEST_CASE(EnsureSize_GivenEmptyVector_ResizesVectorByInsertingDefaultValue)
     {
         vector<int> v;
 
         ensure_size(v, 2);
 
-        FOUNDATION_EXPECT_EQ(2, v.size());
+        EXPECT_EQ(2, v.size());
     }
 
-    FOUNDATION_TEST_CASE(EnsureSize_GivenEmptyVector_ResizesVectorByInsertingProvidedValue)
+    TEST_CASE(EnsureSize_GivenEmptyVector_ResizesVectorByInsertingProvidedValue)
     {
         vector<int> v;
 
         ensure_size(v, 2, 42);
 
-        FOUNDATION_ASSERT_EQ(2, v.size());
-        FOUNDATION_EXPECT_EQ(42, v[0]);
-        FOUNDATION_EXPECT_EQ(42, v[1]);
+        ASSERT_EQ(2, v.size());
+        EXPECT_EQ(42, v[0]);
+        EXPECT_EQ(42, v[1]);
     }
 
-    FOUNDATION_TEST_CASE(EnsureSize_GivenMinimumSizeSmallerThanCurrentVectorSize_DoesNothing)
+    TEST_CASE(EnsureSize_GivenMinimumSizeSmallerThanCurrentVectorSize_DoesNothing)
     {
         vector<int> v(12);
 
         ensure_size(v, 3);
 
-        FOUNDATION_EXPECT_EQ(12, v.size());
+        EXPECT_EQ(12, v.size());
     }
 
-    FOUNDATION_TEST_CASE(ClearReleaseMemory_GivenVectorWithThousandElements_ClearsVector)
+    TEST_CASE(ClearReleaseMemory_GivenVectorWithThousandElements_ClearsVector)
     {
         vector<int> v(1000);
 
         clear_release_memory(v);
 
-        FOUNDATION_EXPECT_TRUE(v.empty());
+        EXPECT_TRUE(v.empty());
     }
 
-    FOUNDATION_TEST_CASE(ClearReleaseMemory_GivenVectorWithThousandElements_ResetsVectorCapacityToDefaultValue)
+    TEST_CASE(ClearReleaseMemory_GivenVectorWithThousandElements_ResetsVectorCapacityToDefaultValue)
     {
         vector<int> v;
         const size_t default_capacity = v.capacity();
@@ -100,19 +100,19 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Memory)
 
         clear_release_memory(v);
 
-        FOUNDATION_EXPECT_EQ(default_capacity, v.capacity());
+        EXPECT_EQ(default_capacity, v.capacity());
     }
 
-    FOUNDATION_TEST_CASE(ClearKeepMemory_GivenVectorWithThousandElements_ClearsVector)
+    TEST_CASE(ClearKeepMemory_GivenVectorWithThousandElements_ClearsVector)
     {
         vector<int> v(1000);
 
         clear_keep_memory(v);
 
-        FOUNDATION_EXPECT_TRUE(v.empty());
+        EXPECT_TRUE(v.empty());
     }
 
-    FOUNDATION_TEST_CASE(ClearReleaseMemory_GivenVectorWithThousandElements_RetainsVectorCapacity)
+    TEST_CASE(ClearReleaseMemory_GivenVectorWithThousandElements_RetainsVectorCapacity)
     {
         vector<int> v(1000);
 
@@ -120,6 +120,6 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Memory)
 
         clear_keep_memory(v);
 
-        FOUNDATION_EXPECT_EQ(old_capacity, v.capacity());
+        EXPECT_EQ(old_capacity, v.capacity());
     }
 }

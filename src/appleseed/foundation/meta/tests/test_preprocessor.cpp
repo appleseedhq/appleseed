@@ -36,31 +36,31 @@
 using namespace foundation;
 using namespace std;
 
-FOUNDATION_TEST_SUITE(Foundation_Utility_Preprocessor)
+TEST_SUITE(Foundation_Utility_Preprocessor)
 {
-    FOUNDATION_TEST_CASE(Process_GivenEmptyString_ReturnsEmptyString)
+    TEST_CASE(Process_GivenEmptyString_ReturnsEmptyString)
     {
         const string InputText = "";
 
         Preprocessor preprocessor;
         preprocessor.process(InputText.c_str());
 
-        FOUNDATION_ASSERT_TRUE(preprocessor.succeeded());
-        FOUNDATION_EXPECT_EQ(InputText, preprocessor.get_processed_text());
+        ASSERT_TRUE(preprocessor.succeeded());
+        EXPECT_EQ(InputText, preprocessor.get_processed_text());
     }
 
-    FOUNDATION_TEST_CASE(Process_GivenPlainString_ReturnsInputString)
+    TEST_CASE(Process_GivenPlainString_ReturnsInputString)
     {
         const string InputText = "hello world";
 
         Preprocessor preprocessor;
         preprocessor.process(InputText.c_str());
 
-        FOUNDATION_ASSERT_TRUE(preprocessor.succeeded());
-        FOUNDATION_EXPECT_EQ(InputText, preprocessor.get_processed_text());
+        ASSERT_TRUE(preprocessor.succeeded());
+        EXPECT_EQ(InputText, preprocessor.get_processed_text());
     }
 
-    FOUNDATION_TEST_CASE(Process_GivenPlainMultilineString_ReturnsInputString)
+    TEST_CASE(Process_GivenPlainMultilineString_ReturnsInputString)
     {
         const string InputText =
             "hello\n"
@@ -69,44 +69,44 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Preprocessor)
         Preprocessor preprocessor;
         preprocessor.process(InputText.c_str());
 
-        FOUNDATION_ASSERT_TRUE(preprocessor.succeeded());
-        FOUNDATION_EXPECT_EQ(InputText, preprocessor.get_processed_text());
+        ASSERT_TRUE(preprocessor.succeeded());
+        EXPECT_EQ(InputText, preprocessor.get_processed_text());
     }
 
-    FOUNDATION_TEST_CASE(Process_GivenPlainStringWithLeadingEOL_ReturnsInputString)
+    TEST_CASE(Process_GivenPlainStringWithLeadingEOL_ReturnsInputString)
     {
         const string InputText = "\nhello world";
 
         Preprocessor preprocessor;
         preprocessor.process(InputText.c_str());
 
-        FOUNDATION_ASSERT_TRUE(preprocessor.succeeded());
-        FOUNDATION_EXPECT_EQ(InputText, preprocessor.get_processed_text());
+        ASSERT_TRUE(preprocessor.succeeded());
+        EXPECT_EQ(InputText, preprocessor.get_processed_text());
     }
 
-    FOUNDATION_TEST_CASE(Process_GivenPlainStringWithTrailingEOL_ReturnsInputString)
+    TEST_CASE(Process_GivenPlainStringWithTrailingEOL_ReturnsInputString)
     {
         const string InputText = "hello world\n";
 
         Preprocessor preprocessor;
         preprocessor.process(InputText.c_str());
 
-        FOUNDATION_ASSERT_TRUE(preprocessor.succeeded());
-        FOUNDATION_EXPECT_EQ(InputText, preprocessor.get_processed_text());
+        ASSERT_TRUE(preprocessor.succeeded());
+        EXPECT_EQ(InputText, preprocessor.get_processed_text());
     }
 
-    FOUNDATION_TEST_CASE(Process_GivenStringWithEOLOnly_ReturnsInputString)
+    TEST_CASE(Process_GivenStringWithEOLOnly_ReturnsInputString)
     {
         const string InputText = "\n\n\n";
 
         Preprocessor preprocessor;
         preprocessor.process(InputText.c_str());
 
-        FOUNDATION_ASSERT_TRUE(preprocessor.succeeded());
-        FOUNDATION_EXPECT_EQ(InputText, preprocessor.get_processed_text());
+        ASSERT_TRUE(preprocessor.succeeded());
+        EXPECT_EQ(InputText, preprocessor.get_processed_text());
     }
 
-    FOUNDATION_TEST_CASE(Process_IfdefWithUndefinedSymbol_SkipsIfdefSection)
+    TEST_CASE(Process_IfdefWithUndefinedSymbol_SkipsIfdefSection)
     {
         const string InputText =
             "#ifdef X\n"
@@ -119,11 +119,11 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Preprocessor)
         Preprocessor preprocessor;
         preprocessor.process(InputText.c_str());
 
-        FOUNDATION_ASSERT_TRUE(preprocessor.succeeded());
-        FOUNDATION_EXPECT_EQ(ExpectedText, preprocessor.get_processed_text());
+        ASSERT_TRUE(preprocessor.succeeded());
+        EXPECT_EQ(ExpectedText, preprocessor.get_processed_text());
     }
 
-    FOUNDATION_TEST_CASE(Process_IfdefWithPredefinedSymbol_KeepsIfdefSection)
+    TEST_CASE(Process_IfdefWithPredefinedSymbol_KeepsIfdefSection)
     {
         const string InputText =
             "#ifdef X\n"
@@ -139,11 +139,11 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Preprocessor)
         preprocessor.define_symbol("X");
         preprocessor.process(InputText.c_str());
 
-        FOUNDATION_ASSERT_TRUE(preprocessor.succeeded());
-        FOUNDATION_EXPECT_EQ(ExpectedText, preprocessor.get_processed_text());
+        ASSERT_TRUE(preprocessor.succeeded());
+        EXPECT_EQ(ExpectedText, preprocessor.get_processed_text());
     }
 
-    FOUNDATION_TEST_CASE(Process_IfdefWithDefinedSymbol_KeepsIfdefSection)
+    TEST_CASE(Process_IfdefWithDefinedSymbol_KeepsIfdefSection)
     {
         const string InputText =
             "#define X\n"
@@ -159,11 +159,11 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Preprocessor)
         Preprocessor preprocessor;
         preprocessor.process(InputText.c_str());
 
-        FOUNDATION_ASSERT_TRUE(preprocessor.succeeded());
-        FOUNDATION_EXPECT_EQ(ExpectedText, preprocessor.get_processed_text());
+        ASSERT_TRUE(preprocessor.succeeded());
+        EXPECT_EQ(ExpectedText, preprocessor.get_processed_text());
     }
 
-    FOUNDATION_TEST_CASE(Process_IfdefWithValuedSymbol_KeepsIfdefSection)
+    TEST_CASE(Process_IfdefWithValuedSymbol_KeepsIfdefSection)
     {
         const string InputText =
             "#define X 42\n"
@@ -179,23 +179,23 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Preprocessor)
         Preprocessor preprocessor;
         preprocessor.process(InputText.c_str());
 
-        FOUNDATION_ASSERT_TRUE(preprocessor.succeeded());
-        FOUNDATION_EXPECT_EQ(ExpectedText, preprocessor.get_processed_text());
+        ASSERT_TRUE(preprocessor.succeeded());
+        EXPECT_EQ(ExpectedText, preprocessor.get_processed_text());
     }
 
-    FOUNDATION_TEST_CASE(Process_UnknownKeyword_GeneratesError)
+    TEST_CASE(Process_UnknownKeyword_GeneratesError)
     {
         const string InputText = "#stuff X Y";
 
         Preprocessor preprocessor;
         preprocessor.process(InputText.c_str());
 
-        FOUNDATION_ASSERT_FALSE(preprocessor.succeeded());
-        FOUNDATION_EXPECT_EQ(string("Unknown directive: #stuff"), preprocessor.get_error_message());
-        FOUNDATION_EXPECT_EQ(1, preprocessor.get_error_location());
+        ASSERT_FALSE(preprocessor.succeeded());
+        EXPECT_EQ(string("Unknown directive: #stuff"), preprocessor.get_error_message());
+        EXPECT_EQ(1, preprocessor.get_error_location());
     }
 
-    FOUNDATION_TEST_CASE(Process_MissingEndIf_GeneratesError)
+    TEST_CASE(Process_MissingEndIf_GeneratesError)
     {
         const string InputText =
             "#ifdef X\n"
@@ -204,12 +204,12 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Preprocessor)
         Preprocessor preprocessor;
         preprocessor.process(InputText.c_str());
 
-        FOUNDATION_ASSERT_FALSE(preprocessor.succeeded());
-        FOUNDATION_EXPECT_EQ(string("Expected directive: #endif"), preprocessor.get_error_message());
-        FOUNDATION_EXPECT_EQ(2, preprocessor.get_error_location());
+        ASSERT_FALSE(preprocessor.succeeded());
+        EXPECT_EQ(string("Expected directive: #endif"), preprocessor.get_error_message());
+        EXPECT_EQ(2, preprocessor.get_error_location());
     }
 
-    FOUNDATION_TEST_CASE(Process_GivenSymbolDefinition_SubstitutesSymbolWithValue)
+    TEST_CASE(Process_GivenSymbolDefinition_SubstitutesSymbolWithValue)
     {
         const string InputText =
             "#define X 42\n"
@@ -223,11 +223,11 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Preprocessor)
         Preprocessor preprocessor;
         preprocessor.process(InputText.c_str());
 
-        FOUNDATION_ASSERT_TRUE(preprocessor.succeeded());
-        FOUNDATION_EXPECT_EQ(ExpectedText, preprocessor.get_processed_text());
+        ASSERT_TRUE(preprocessor.succeeded());
+        EXPECT_EQ(ExpectedText, preprocessor.get_processed_text());
     }
 
-    FOUNDATION_TEST_CASE(Process_GivenSymbolDefinitionUsingAnotherSymbol_SubstitutesInChain)
+    TEST_CASE(Process_GivenSymbolDefinitionUsingAnotherSymbol_SubstitutesInChain)
     {
         const string InputText =
             "#define X 42\n"
@@ -240,7 +240,7 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Preprocessor)
         Preprocessor preprocessor;
         preprocessor.process(InputText.c_str());
 
-        FOUNDATION_ASSERT_TRUE(preprocessor.succeeded());
-        FOUNDATION_EXPECT_EQ(ExpectedText, preprocessor.get_processed_text());
+        ASSERT_TRUE(preprocessor.succeeded());
+        EXPECT_EQ(ExpectedText, preprocessor.get_processed_text());
     }
 }

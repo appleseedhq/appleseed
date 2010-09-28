@@ -42,7 +42,7 @@
 using namespace foundation;
 using namespace std;
 
-FOUNDATION_TEST_SUITE(Foundation_Math_FastMath)
+TEST_SUITE(Foundation_Math_FastMath)
 {
     template <typename T>
     T compute_error(const T ref_value, const T value)
@@ -98,7 +98,7 @@ FOUNDATION_TEST_SUITE(Foundation_Math_FastMath)
         return fast_pow_refined(x, y);
     }
 
-    FOUNDATION_TEST_CASE(ComputeMaxRelativeError_GivenStdPowFunction_ReturnsZero)
+    TEST_CASE(ComputeMaxRelativeError_GivenStdPowFunction_ReturnsZero)
     {
         const float error =
             compute_max_relative_error(
@@ -108,10 +108,10 @@ FOUNDATION_TEST_SUITE(Foundation_Math_FastMath)
                 1.0f,
                 1000);
 
-        FOUNDATION_EXPECT_EQ(0.0f, error);
+        EXPECT_EQ(0.0f, error);
     }
 
-    FOUNDATION_TEST_CASE(FastPow)
+    TEST_CASE(FastPow)
     {
         const float error =
             compute_max_relative_error(
@@ -121,10 +121,10 @@ FOUNDATION_TEST_SUITE(Foundation_Math_FastMath)
                 1.0f,
                 1000);
 
-        FOUNDATION_EXPECT_LT(0.14f, error);
+        EXPECT_LT(0.14f, error);
     }
 
-    FOUNDATION_TEST_CASE(FastPowRefined)
+    TEST_CASE(FastPowRefined)
     {
         const float error =
             compute_max_relative_error(
@@ -134,7 +134,7 @@ FOUNDATION_TEST_SUITE(Foundation_Math_FastMath)
                 1.0f,
                 1000);
 
-        FOUNDATION_EXPECT_LT(0.016f, error);
+        EXPECT_LT(0.016f, error);
     }
 
     template <typename T, typename Function>
@@ -189,7 +189,7 @@ FOUNDATION_TEST_SUITE(Foundation_Math_FastMath)
         fast_pow_refined(x, y);
     }
 
-    FOUNDATION_TEST_CASE(FastPowSSE)
+    TEST_CASE(FastPowSSE)
     {
         const float error =
             compute_max_relative_error_sse(
@@ -199,10 +199,10 @@ FOUNDATION_TEST_SUITE(Foundation_Math_FastMath)
                 1.0f,
                 1000);
 
-        FOUNDATION_EXPECT_LT(0.14f, error);
+        EXPECT_LT(0.14f, error);
     }
 
-    FOUNDATION_TEST_CASE(FastPowRefinedSSE)
+    TEST_CASE(FastPowRefinedSSE)
     {
         const float error =
             compute_max_relative_error_sse(
@@ -212,6 +212,6 @@ FOUNDATION_TEST_SUITE(Foundation_Math_FastMath)
                 1.0f,
                 1000);
 
-        FOUNDATION_EXPECT_LT(0.016f, error);
+        EXPECT_LT(0.016f, error);
     }
 }

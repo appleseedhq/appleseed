@@ -37,7 +37,7 @@
 #include <string>
 #include <vector>
 
-FOUNDATION_TEST_SUITE(Foundation_Mesh_OBJMeshFileReader)
+TEST_SUITE(Foundation_Mesh_OBJMeshFileReader)
 {
     using namespace foundation;
     using namespace std;
@@ -140,34 +140,34 @@ FOUNDATION_TEST_SUITE(Foundation_Mesh_OBJMeshFileReader)
         MeshBuilder         m_builder;
     };
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(ReadCubeMeshFile, Fixture)
+    TEST_CASE_WITH_FIXTURE(ReadCubeMeshFile, Fixture)
     {
         m_reader.read("data/cube.obj", m_builder);
 
-        FOUNDATION_EXPECT_EQ(1, m_builder.m_meshes.size());
+        EXPECT_EQ(1, m_builder.m_meshes.size());
 
         Mesh& mesh = m_builder.m_meshes.front();
 
-        FOUNDATION_EXPECT_EQ("", mesh.m_name);
-        FOUNDATION_EXPECT_EQ(20, mesh.m_vertices.size());
-        FOUNDATION_EXPECT_EQ(6, mesh.m_vertex_normals.size());
-        FOUNDATION_EXPECT_EQ(20, mesh.m_tex_coords.size());
-        FOUNDATION_EXPECT_EQ(12, mesh.m_faces.size());
+        EXPECT_EQ("", mesh.m_name);
+        EXPECT_EQ(20, mesh.m_vertices.size());
+        EXPECT_EQ(6, mesh.m_vertex_normals.size());
+        EXPECT_EQ(20, mesh.m_tex_coords.size());
+        EXPECT_EQ(12, mesh.m_faces.size());
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(ReadQuadMeshFile, Fixture)
+    TEST_CASE_WITH_FIXTURE(ReadQuadMeshFile, Fixture)
     {
         m_reader.read("data/quad.obj", m_builder);
 
-        FOUNDATION_EXPECT_EQ(1, m_builder.m_meshes.size());
+        EXPECT_EQ(1, m_builder.m_meshes.size());
 
         Mesh& mesh = m_builder.m_meshes.front();
 
-        FOUNDATION_EXPECT_EQ(1, m_builder.m_meshes.size());
-        FOUNDATION_EXPECT_EQ("quad", mesh.m_name);
-        FOUNDATION_EXPECT_EQ(4, mesh.m_vertices.size());
-        FOUNDATION_EXPECT_EQ(0, mesh.m_vertex_normals.size());
-        FOUNDATION_EXPECT_EQ(4, mesh.m_tex_coords.size());
-        FOUNDATION_EXPECT_EQ(1, mesh.m_faces.size());
+        EXPECT_EQ(1, m_builder.m_meshes.size());
+        EXPECT_EQ("quad", mesh.m_name);
+        EXPECT_EQ(4, mesh.m_vertices.size());
+        EXPECT_EQ(0, mesh.m_vertex_normals.size());
+        EXPECT_EQ(4, mesh.m_tex_coords.size());
+        EXPECT_EQ(1, mesh.m_faces.size());
     }
 }

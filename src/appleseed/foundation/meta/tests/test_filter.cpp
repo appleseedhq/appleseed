@@ -30,79 +30,79 @@
 #include "foundation/utility/filter.h"
 #include "foundation/utility/test.h"
 
-FOUNDATION_TEST_SUITE(Foundation_Utility_Filter_RegExFilter)
+TEST_SUITE(Foundation_Utility_Filter_RegExFilter)
 {
     using namespace foundation;
 
-    FOUNDATION_TEST_CASE(IsValid_GivenEmptyRegularExpression_ReturnsTrue)
+    TEST_CASE(IsValid_GivenEmptyRegularExpression_ReturnsTrue)
     {
         const RegExFilter filter("");
 
         const bool result = filter.is_valid();
 
-        FOUNDATION_EXPECT_TRUE(result);
+        EXPECT_TRUE(result);
     }
 
-    FOUNDATION_TEST_CASE(IsValid_GivenValidRegularExpression_ReturnsTrue)
+    TEST_CASE(IsValid_GivenValidRegularExpression_ReturnsTrue)
     {
         const RegExFilter filter(".*");
 
         const bool result = filter.is_valid();
 
-        FOUNDATION_EXPECT_TRUE(result);
+        EXPECT_TRUE(result);
     }
 
-    FOUNDATION_TEST_CASE(IsValid_GivenInvalidRegularExpression_ReturnsFalse)
+    TEST_CASE(IsValid_GivenInvalidRegularExpression_ReturnsFalse)
     {
         const RegExFilter filter("*");
 
         const bool result = filter.is_valid();
 
-        FOUNDATION_EXPECT_FALSE(result);
+        EXPECT_FALSE(result);
     }
 
-    FOUNDATION_TEST_CASE(Accepts_GivenCaseSensitiveRegExAndNameMatchingPattern_ReturnsTrue)
+    TEST_CASE(Accepts_GivenCaseSensitiveRegExAndNameMatchingPattern_ReturnsTrue)
     {
         const RegExFilter filter("hell", RegExFilter::CaseSensitive);
 
         const bool result = filter.accepts("hello");
 
-        FOUNDATION_EXPECT_TRUE(result);
+        EXPECT_TRUE(result);
     }
 
-    FOUNDATION_TEST_CASE(Accepts_GivenCaseSensitiveRegExAndNameNotMatchingPattern_ReturnsFalse)
+    TEST_CASE(Accepts_GivenCaseSensitiveRegExAndNameNotMatchingPattern_ReturnsFalse)
     {
         const RegExFilter filter("hell", RegExFilter::CaseSensitive);
 
         const bool result = filter.accepts("jell");
 
-        FOUNDATION_EXPECT_FALSE(result);
+        EXPECT_FALSE(result);
     }
 
-    FOUNDATION_TEST_CASE(Accepts_GivenCaseSensitiveRegExAndNameCaseNotMatchingPatternCase_ReturnsFalse)
+    TEST_CASE(Accepts_GivenCaseSensitiveRegExAndNameCaseNotMatchingPatternCase_ReturnsFalse)
     {
         const RegExFilter filter("hell", RegExFilter::CaseSensitive);
 
         const bool result = filter.accepts("HELLO");
 
-        FOUNDATION_EXPECT_FALSE(result);
+        EXPECT_FALSE(result);
     }
 
-    FOUNDATION_TEST_CASE(Accepts_GivenCaseInsensitiveRegExAndNameMatchingPattern_ReturnsTrue)
+    TEST_CASE(Accepts_GivenCaseInsensitiveRegExAndNameMatchingPattern_ReturnsTrue)
     {
         const RegExFilter filter("hell", RegExFilter::CaseInsensitive);
 
         const bool result = filter.accepts("HELLO");
 
-        FOUNDATION_EXPECT_TRUE(result);
+        EXPECT_TRUE(result);
     }
 
-    FOUNDATION_TEST_CASE(Accepts_GivenCaseInsensitiveRegExAndNameNotMatchingPattern_ReturnsFalse)
+    TEST_CASE(Accepts_GivenCaseInsensitiveRegExAndNameNotMatchingPattern_ReturnsFalse)
     {
         const RegExFilter filter("hell", RegExFilter::CaseInsensitive);
 
         const bool result = filter.accepts("jell");
 
-        FOUNDATION_EXPECT_FALSE(result);
+        EXPECT_FALSE(result);
     }
 }

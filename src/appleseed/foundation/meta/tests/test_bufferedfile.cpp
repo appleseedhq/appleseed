@@ -35,7 +35,7 @@
 #include <cstddef>
 #include <string>
 
-FOUNDATION_TEST_SUITE(Foundation_Utility_BufferedFile)
+TEST_SUITE(Foundation_Utility_BufferedFile)
 {
     using namespace foundation;
     using namespace std;
@@ -44,14 +44,14 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_BufferedFile)
     const size_t BufferSize = 4;
     const string DataString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-    FOUNDATION_TEST_CASE(InitialStateIsCorrect)
+    TEST_CASE(InitialStateIsCorrect)
     {
         BufferedFile file;
 
-        FOUNDATION_EXPECT_FALSE(file.is_open());
+        EXPECT_FALSE(file.is_open());
     }
 
-    FOUNDATION_TEST_CASE(TestFileOpeningAtConstruction)
+    TEST_CASE(TestFileOpeningAtConstruction)
     {
         BufferedFile file(
             Filename,
@@ -59,11 +59,11 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_BufferedFile)
             BufferedFile::WriteMode,
             BufferSize);
 
-        FOUNDATION_EXPECT_TRUE(file.is_open());
-        FOUNDATION_EXPECT_EQ(0, file.tell());
+        EXPECT_TRUE(file.is_open());
+        EXPECT_EQ(0, file.tell());
     }
 
-    FOUNDATION_TEST_CASE(TestFileOpeningWithOpenMethod)
+    TEST_CASE(TestFileOpeningWithOpenMethod)
     {
         BufferedFile file;
         const bool result =
@@ -73,12 +73,12 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_BufferedFile)
                 BufferedFile::WriteMode,
                 BufferSize);
 
-        FOUNDATION_EXPECT_TRUE(result);
-        FOUNDATION_EXPECT_TRUE(file.is_open());
-        FOUNDATION_EXPECT_EQ(0, file.tell());
+        EXPECT_TRUE(result);
+        EXPECT_TRUE(file.is_open());
+        EXPECT_EQ(0, file.tell());
     }
 
-    FOUNDATION_TEST_CASE(TestDoubleFileOpening)
+    TEST_CASE(TestDoubleFileOpening)
     {
         BufferedFile file(
             Filename,
@@ -93,12 +93,12 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_BufferedFile)
                 BufferedFile::WriteMode,
                 BufferSize);
 
-        FOUNDATION_EXPECT_FALSE(result);
-        FOUNDATION_EXPECT_TRUE(file.is_open());
-        FOUNDATION_EXPECT_EQ(0, file.tell());
+        EXPECT_FALSE(result);
+        EXPECT_TRUE(file.is_open());
+        EXPECT_EQ(0, file.tell());
     }
 
-    FOUNDATION_TEST_CASE(TestFileClosing)
+    TEST_CASE(TestFileClosing)
     {
         BufferedFile file(
             Filename,
@@ -108,10 +108,10 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_BufferedFile)
 
         file.close();
 
-        FOUNDATION_EXPECT_FALSE(file.is_open());
+        EXPECT_FALSE(file.is_open());
     }
 
-    FOUNDATION_TEST_CASE(TestFileOpeningThenClosingThenReopening)
+    TEST_CASE(TestFileOpeningThenClosingThenReopening)
     {
         BufferedFile file(
             Filename,
@@ -128,12 +128,12 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_BufferedFile)
                 BufferedFile::WriteMode,
                 BufferSize);
 
-        FOUNDATION_EXPECT_TRUE(result);
-        FOUNDATION_EXPECT_TRUE(file.is_open());
-        FOUNDATION_EXPECT_EQ(0, file.tell());
+        EXPECT_TRUE(result);
+        EXPECT_TRUE(file.is_open());
+        EXPECT_EQ(0, file.tell());
     }
 
-    FOUNDATION_TEST_CASE(TestBufferedWritingAndReadingOfStringAtFileBeginning)
+    TEST_CASE(TestBufferedWritingAndReadingOfStringAtFileBeginning)
     {
         BufferedFile file(
             Filename,
@@ -141,8 +141,8 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_BufferedFile)
             BufferedFile::WriteMode,
             BufferSize);
 
-        FOUNDATION_EXPECT_EQ(DataString.size(), file.write(DataString));
-        FOUNDATION_EXPECT_EQ(DataString.size(), file.tell());
+        EXPECT_EQ(DataString.size(), file.write(DataString));
+        EXPECT_EQ(DataString.size(), file.tell());
 
         file.close();
 
@@ -153,12 +153,12 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_BufferedFile)
             BufferSize);
 
         char buf[100];
-        FOUNDATION_EXPECT_EQ(DataString.size(), file.read(buf, DataString.size()));
-        FOUNDATION_EXPECT_EQ(DataString, string(buf, DataString.size()));
-        FOUNDATION_EXPECT_EQ(DataString.size(), file.tell());
+        EXPECT_EQ(DataString.size(), file.read(buf, DataString.size()));
+        EXPECT_EQ(DataString, string(buf, DataString.size()));
+        EXPECT_EQ(DataString.size(), file.tell());
     }
 
-    FOUNDATION_TEST_CASE(TestBufferedWritingAndReadingOf32BitIntegerAtFileBeginning)
+    TEST_CASE(TestBufferedWritingAndReadingOf32BitIntegerAtFileBeginning)
     {
         BufferedFile file(
             Filename,
@@ -167,8 +167,8 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_BufferedFile)
             BufferSize);
 
         const uint32 Value = 0xDEADBEEFUL;
-        FOUNDATION_EXPECT_EQ(4, file.write(Value));
-        FOUNDATION_EXPECT_EQ(4, file.tell());
+        EXPECT_EQ(4, file.write(Value));
+        EXPECT_EQ(4, file.tell());
         
         file.close();
 
@@ -179,12 +179,12 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_BufferedFile)
             BufferSize);
 
         uint32 value;
-        FOUNDATION_EXPECT_EQ(4, file.read(value));
-        FOUNDATION_EXPECT_EQ(Value, value);
-        FOUNDATION_EXPECT_EQ(4, file.tell());
+        EXPECT_EQ(4, file.read(value));
+        EXPECT_EQ(Value, value);
+        EXPECT_EQ(4, file.tell());
     }
 
-    FOUNDATION_TEST_CASE(TestUnbufferedWritingAndReadingOfBytesAtFileBeginning)
+    TEST_CASE(TestUnbufferedWritingAndReadingOfBytesAtFileBeginning)
     {
         BufferedFile file(
             Filename,
@@ -192,8 +192,8 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_BufferedFile)
             BufferedFile::WriteMode,
             BufferSize);
 
-        FOUNDATION_EXPECT_EQ(DataString.size(), file.write_unbuf(DataString));
-        FOUNDATION_EXPECT_EQ(DataString.size(), file.tell());
+        EXPECT_EQ(DataString.size(), file.write_unbuf(DataString));
+        EXPECT_EQ(DataString.size(), file.tell());
 
         file.close();
 
@@ -204,9 +204,9 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_BufferedFile)
             BufferSize);
 
         char buf[100];
-        FOUNDATION_EXPECT_EQ(DataString.size(), file.read(buf, DataString.size()));
-        FOUNDATION_EXPECT_EQ(DataString, string(buf, DataString.size()));
-        FOUNDATION_EXPECT_EQ(DataString.size(), file.tell());
+        EXPECT_EQ(DataString.size(), file.read(buf, DataString.size()));
+        EXPECT_EQ(DataString, string(buf, DataString.size()));
+        EXPECT_EQ(DataString.size(), file.tell());
     }
 
     struct FileReadingFixture
@@ -231,43 +231,43 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_BufferedFile)
         }
     };
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(TestSeekingForwardWhileReading, FileReadingFixture)
+    TEST_CASE_WITH_FIXTURE(TestSeekingForwardWhileReading, FileReadingFixture)
     {
         char buf[100];
         m_file.read(buf, 8);
-        FOUNDATION_EXPECT_TRUE(m_file.seek(4, BufferedFile::SeekFromCurrent));
-        FOUNDATION_EXPECT_EQ(8, m_file.read(buf, 8));
-        FOUNDATION_EXPECT_EQ("MNOPQRST", string(buf, 8));
+        EXPECT_TRUE(m_file.seek(4, BufferedFile::SeekFromCurrent));
+        EXPECT_EQ(8, m_file.read(buf, 8));
+        EXPECT_EQ("MNOPQRST", string(buf, 8));
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(TestSeekingBackwardWhileReading, FileReadingFixture)
+    TEST_CASE_WITH_FIXTURE(TestSeekingBackwardWhileReading, FileReadingFixture)
     {
         char buf[100];
         m_file.read(buf, 8);
-        FOUNDATION_EXPECT_TRUE(m_file.seek(-4, BufferedFile::SeekFromCurrent));
-        FOUNDATION_EXPECT_EQ(8, m_file.read(buf, 8));
-        FOUNDATION_EXPECT_EQ("EFGHIJKL", string(buf, 8));
+        EXPECT_TRUE(m_file.seek(-4, BufferedFile::SeekFromCurrent));
+        EXPECT_EQ(8, m_file.read(buf, 8));
+        EXPECT_EQ("EFGHIJKL", string(buf, 8));
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(TestSeekingFromBeginningWhileReading, FileReadingFixture)
+    TEST_CASE_WITH_FIXTURE(TestSeekingFromBeginningWhileReading, FileReadingFixture)
     {
         char buf[100];
         m_file.read(buf, 8);
-        FOUNDATION_EXPECT_TRUE(m_file.seek(2, BufferedFile::SeekFromBeginning));
-        FOUNDATION_EXPECT_EQ(8, m_file.read(buf, 8));
-        FOUNDATION_EXPECT_EQ("CDEFGHIJ", string(buf, 8));
+        EXPECT_TRUE(m_file.seek(2, BufferedFile::SeekFromBeginning));
+        EXPECT_EQ(8, m_file.read(buf, 8));
+        EXPECT_EQ("CDEFGHIJ", string(buf, 8));
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(TestSeekingFromEndWhileReading, FileReadingFixture)
+    TEST_CASE_WITH_FIXTURE(TestSeekingFromEndWhileReading, FileReadingFixture)
     {
         char buf[100];
         m_file.read(buf, 8);
-        FOUNDATION_EXPECT_TRUE(m_file.seek(-8, BufferedFile::SeekFromEnd));
-        FOUNDATION_EXPECT_EQ(8, m_file.read(buf, 8));
-        FOUNDATION_EXPECT_EQ("STUVWXYZ", string(buf, 8));
+        EXPECT_TRUE(m_file.seek(-8, BufferedFile::SeekFromEnd));
+        EXPECT_EQ(8, m_file.read(buf, 8));
+        EXPECT_EQ("STUVWXYZ", string(buf, 8));
     }
 
-    FOUNDATION_TEST_CASE(TestSeekingBackwardWhileWriting)
+    TEST_CASE(TestSeekingBackwardWhileWriting)
     {
         BufferedFile file(
             Filename,
@@ -278,7 +278,7 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_BufferedFile)
         const uint32 Value1 = 0xDEADBEEFUL;
         file.write(Value1);
 
-        FOUNDATION_EXPECT_TRUE(file.seek(-4, BufferedFile::SeekFromCurrent));
+        EXPECT_TRUE(file.seek(-4, BufferedFile::SeekFromCurrent));
 
         const uint32 Value2 = 0xFADEBABEUL;
         file.write(Value2);
@@ -291,7 +291,7 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_BufferedFile)
             BufferSize);
 
         uint32 value;
-        FOUNDATION_EXPECT_EQ(4, file.read(value));
-        FOUNDATION_EXPECT_EQ(Value2, value);
+        EXPECT_EQ(4, file.read(value));
+        EXPECT_EQ(Value2, value);
     }
 }

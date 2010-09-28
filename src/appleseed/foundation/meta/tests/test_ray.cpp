@@ -33,31 +33,31 @@
 
 using namespace foundation;
 
-FOUNDATION_TEST_SUITE(Foundation_Math_RayInfo)
+TEST_SUITE(Foundation_Math_RayInfo)
 {
 #pragma warning (push)
 #pragma warning (disable : 4723)    // potential divide by 0
 
-    FOUNDATION_TEST_CASE(Constructor_ComputesDirectionReciprocal)
+    TEST_CASE(Constructor_ComputesDirectionReciprocal)
     {
         const Ray3d ray(Vector3d(0.0), Vector3d(-2.0, 0.0, 2.0));
 
         const RayInfo3d ray_info(ray);
 
-        FOUNDATION_EXPECT_FEQ(-0.5, ray_info.m_rcp_dir[0]);
-        FOUNDATION_EXPECT_TRUE(FP<double>::is_pos_inf(ray_info.m_rcp_dir[1]));
-        FOUNDATION_EXPECT_FEQ(0.5, ray_info.m_rcp_dir[2]);
+        EXPECT_FEQ(-0.5, ray_info.m_rcp_dir[0]);
+        EXPECT_TRUE(FP<double>::is_pos_inf(ray_info.m_rcp_dir[1]));
+        EXPECT_FEQ(0.5, ray_info.m_rcp_dir[2]);
     }
 
-    FOUNDATION_TEST_CASE(Constructor_ComputesDirectionSign)
+    TEST_CASE(Constructor_ComputesDirectionSign)
     {
         const Ray3d ray(Vector3d(0.0), Vector3d(-2.0, 0.0, 2.0));
 
         const RayInfo3d ray_info(ray);
 
-        FOUNDATION_EXPECT_FEQ(0, ray_info.m_sgn_dir[0]);
-        FOUNDATION_EXPECT_FEQ(1, ray_info.m_sgn_dir[1]);
-        FOUNDATION_EXPECT_FEQ(1, ray_info.m_sgn_dir[2]);
+        EXPECT_FEQ(0, ray_info.m_sgn_dir[0]);
+        EXPECT_FEQ(1, ray_info.m_sgn_dir[1]);
+        EXPECT_FEQ(1, ray_info.m_sgn_dir[2]);
     }
 
 #pragma warning (pop)

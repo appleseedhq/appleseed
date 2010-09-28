@@ -38,7 +38,7 @@
 #include <cstddef>
 #include <exception>
 
-FOUNDATION_TEST_SUITE(Foundation_Utility_Job_JobQueue)
+TEST_SUITE(Foundation_Utility_Job_JobQueue)
 {
     using namespace foundation;
 
@@ -72,34 +72,34 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Job_JobQueue)
         size_t& m_destruction_count;
     };
 
-    FOUNDATION_TEST_CASE(InitialStateIsCorrect)
+    TEST_CASE(InitialStateIsCorrect)
     {
         JobQueue job_queue;
 
-        FOUNDATION_EXPECT_FALSE(job_queue.has_scheduled_jobs());
-        FOUNDATION_EXPECT_FALSE(job_queue.has_running_jobs());
-        FOUNDATION_EXPECT_FALSE(job_queue.has_scheduled_or_running_jobs());
+        EXPECT_FALSE(job_queue.has_scheduled_jobs());
+        EXPECT_FALSE(job_queue.has_running_jobs());
+        EXPECT_FALSE(job_queue.has_scheduled_or_running_jobs());
 
-        FOUNDATION_EXPECT_EQ(0, job_queue.get_scheduled_job_count());
-        FOUNDATION_EXPECT_EQ(0, job_queue.get_running_job_count());
-        FOUNDATION_EXPECT_EQ(0, job_queue.get_total_job_count());
+        EXPECT_EQ(0, job_queue.get_scheduled_job_count());
+        EXPECT_EQ(0, job_queue.get_running_job_count());
+        EXPECT_EQ(0, job_queue.get_total_job_count());
     }
 
-    FOUNDATION_TEST_CASE(SchedulingOfJobWorks)
+    TEST_CASE(SchedulingOfJobWorks)
     {
         JobQueue job_queue;
         job_queue.schedule(new EmptyJob());
 
-        FOUNDATION_EXPECT_TRUE(job_queue.has_scheduled_jobs());
-        FOUNDATION_EXPECT_FALSE(job_queue.has_running_jobs());
-        FOUNDATION_EXPECT_TRUE(job_queue.has_scheduled_or_running_jobs());
+        EXPECT_TRUE(job_queue.has_scheduled_jobs());
+        EXPECT_FALSE(job_queue.has_running_jobs());
+        EXPECT_TRUE(job_queue.has_scheduled_or_running_jobs());
 
-        FOUNDATION_EXPECT_EQ(1, job_queue.get_scheduled_job_count());
-        FOUNDATION_EXPECT_EQ(0, job_queue.get_running_job_count());
-        FOUNDATION_EXPECT_EQ(1, job_queue.get_total_job_count());
+        EXPECT_EQ(1, job_queue.get_scheduled_job_count());
+        EXPECT_EQ(0, job_queue.get_running_job_count());
+        EXPECT_EQ(1, job_queue.get_total_job_count());
     }
 
-    FOUNDATION_TEST_CASE(ScheduledJobIsDestructedWhenJobQueueIsDestructed)
+    TEST_CASE(ScheduledJobIsDestructedWhenJobQueueIsDestructed)
     {
         size_t destruction_count = 0;
 
@@ -108,25 +108,25 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Job_JobQueue)
             job_queue.schedule(new JobNotifyingAboutDestruction(destruction_count));
         }
 
-        FOUNDATION_EXPECT_EQ(1, destruction_count);
+        EXPECT_EQ(1, destruction_count);
     }
 
-    FOUNDATION_TEST_CASE(ClearingScheduledJobsWorks)
+    TEST_CASE(ClearingScheduledJobsWorks)
     {
         JobQueue job_queue;
         job_queue.schedule(new EmptyJob());
         job_queue.clear_scheduled_jobs();
 
-        FOUNDATION_EXPECT_FALSE(job_queue.has_scheduled_jobs());
-        FOUNDATION_EXPECT_FALSE(job_queue.has_running_jobs());
-        FOUNDATION_EXPECT_FALSE(job_queue.has_scheduled_or_running_jobs());
+        EXPECT_FALSE(job_queue.has_scheduled_jobs());
+        EXPECT_FALSE(job_queue.has_running_jobs());
+        EXPECT_FALSE(job_queue.has_scheduled_or_running_jobs());
 
-        FOUNDATION_EXPECT_EQ(0, job_queue.get_scheduled_job_count());
-        FOUNDATION_EXPECT_EQ(0, job_queue.get_running_job_count());
-        FOUNDATION_EXPECT_EQ(0, job_queue.get_total_job_count());
+        EXPECT_EQ(0, job_queue.get_scheduled_job_count());
+        EXPECT_EQ(0, job_queue.get_running_job_count());
+        EXPECT_EQ(0, job_queue.get_total_job_count());
     }
 
-    FOUNDATION_TEST_CASE(ScheduledJobIsDestructedWhenJobQueueIsCleared)
+    TEST_CASE(ScheduledJobIsDestructedWhenJobQueueIsCleared)
     {
         size_t destruction_count = 0;
 
@@ -134,17 +134,17 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Job_JobQueue)
         job_queue.schedule(new JobNotifyingAboutDestruction(destruction_count));
         job_queue.clear_scheduled_jobs();
 
-        FOUNDATION_EXPECT_EQ(1, destruction_count);
+        EXPECT_EQ(1, destruction_count);
     }
 
-    FOUNDATION_TEST_CASE(AcquireScheduledJobWorksOnEmptyJobQueue)
+    TEST_CASE(AcquireScheduledJobWorksOnEmptyJobQueue)
     {
         JobQueue job_queue;
 
-        FOUNDATION_EXPECT_EQ(0, job_queue.acquire_scheduled_job().first);
+        EXPECT_EQ(0, job_queue.acquire_scheduled_job().first);
     }
 
-    FOUNDATION_TEST_CASE(AcquireScheduledJobWorksOnNonEmptyJobQueue)
+    TEST_CASE(AcquireScheduledJobWorksOnNonEmptyJobQueue)
     {
         IJob* job = new EmptyJob();
 
@@ -153,20 +153,20 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Job_JobQueue)
 
         const JobQueue::JobInfo job_info = job_queue.acquire_scheduled_job();
 
-        FOUNDATION_EXPECT_EQ(job, job_info.first);
+        EXPECT_EQ(job, job_info.first);
 
-        FOUNDATION_EXPECT_FALSE(job_queue.has_scheduled_jobs());
-        FOUNDATION_EXPECT_TRUE(job_queue.has_running_jobs());
-        FOUNDATION_EXPECT_TRUE(job_queue.has_scheduled_or_running_jobs());
+        EXPECT_FALSE(job_queue.has_scheduled_jobs());
+        EXPECT_TRUE(job_queue.has_running_jobs());
+        EXPECT_TRUE(job_queue.has_scheduled_or_running_jobs());
 
-        FOUNDATION_EXPECT_EQ(0, job_queue.get_scheduled_job_count());
-        FOUNDATION_EXPECT_EQ(1, job_queue.get_running_job_count());
-        FOUNDATION_EXPECT_EQ(1, job_queue.get_total_job_count());
+        EXPECT_EQ(0, job_queue.get_scheduled_job_count());
+        EXPECT_EQ(1, job_queue.get_running_job_count());
+        EXPECT_EQ(1, job_queue.get_total_job_count());
 
         job_queue.retire_running_job(job_info);
     }
 
-    FOUNDATION_TEST_CASE(RetiringRunningJobWorks)
+    TEST_CASE(RetiringRunningJobWorks)
     {
         JobQueue job_queue;
         job_queue.schedule(new EmptyJob());
@@ -174,16 +174,16 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Job_JobQueue)
         const JobQueue::JobInfo job_info = job_queue.acquire_scheduled_job();
         job_queue.retire_running_job(job_info);
 
-        FOUNDATION_EXPECT_FALSE(job_queue.has_scheduled_jobs());
-        FOUNDATION_EXPECT_FALSE(job_queue.has_running_jobs());
-        FOUNDATION_EXPECT_FALSE(job_queue.has_scheduled_or_running_jobs());
+        EXPECT_FALSE(job_queue.has_scheduled_jobs());
+        EXPECT_FALSE(job_queue.has_running_jobs());
+        EXPECT_FALSE(job_queue.has_scheduled_or_running_jobs());
 
-        FOUNDATION_EXPECT_EQ(0, job_queue.get_scheduled_job_count());
-        FOUNDATION_EXPECT_EQ(0, job_queue.get_running_job_count());
-        FOUNDATION_EXPECT_EQ(0, job_queue.get_total_job_count());
+        EXPECT_EQ(0, job_queue.get_scheduled_job_count());
+        EXPECT_EQ(0, job_queue.get_running_job_count());
+        EXPECT_EQ(0, job_queue.get_total_job_count());
     }
 
-    FOUNDATION_TEST_CASE(RunningJobIsDestructedWhenRetired)
+    TEST_CASE(RunningJobIsDestructedWhenRetired)
     {
         size_t destruction_count = 0;
 
@@ -193,11 +193,11 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Job_JobQueue)
         const JobQueue::JobInfo job_info = job_queue.acquire_scheduled_job();
         job_queue.retire_running_job(job_info);
 
-        FOUNDATION_EXPECT_EQ(1, destruction_count);
+        EXPECT_EQ(1, destruction_count);
     }
 }
 
-FOUNDATION_TEST_SUITE(Foundation_Utility_Job_JobManager)
+TEST_SUITE(Foundation_Utility_Job_JobManager)
 {
     using namespace foundation;
 
@@ -262,22 +262,22 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Job_JobManager)
         volatile size_t&    m_execution_count;
     };
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(InitialStateIsCorrect, FixtureJobManager)
+    TEST_CASE_WITH_FIXTURE(InitialStateIsCorrect, FixtureJobManager)
     {
-        FOUNDATION_EXPECT_EQ(1, job_manager.get_thread_count());
+        EXPECT_EQ(1, job_manager.get_thread_count());
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(StateAfterJobExecutionIsCorrect, FixtureJobManager)
+    TEST_CASE_WITH_FIXTURE(StateAfterJobExecutionIsCorrect, FixtureJobManager)
     {
         job_queue.schedule(new EmptyJob());
 
         job_manager.start();
         job_queue.wait_until_completion();
 
-        FOUNDATION_EXPECT_FALSE(job_queue.has_scheduled_or_running_jobs());
+        EXPECT_FALSE(job_queue.has_scheduled_or_running_jobs());
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(JobManagerExecutesJobs, FixtureJobManager)
+    TEST_CASE_WITH_FIXTURE(JobManagerExecutesJobs, FixtureJobManager)
     {
         volatile size_t execution_count = 0;
 
@@ -287,10 +287,10 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Job_JobManager)
         job_manager.start();
         job_queue.wait_until_completion();
 
-        FOUNDATION_EXPECT_EQ(1, execution_count);
+        EXPECT_EQ(1, execution_count);
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(JobManagerExecutesSubJobs, FixtureJobManager)
+    TEST_CASE_WITH_FIXTURE(JobManagerExecutesSubJobs, FixtureJobManager)
     {
         volatile size_t execution_count = 0;
 
@@ -300,11 +300,11 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Job_JobManager)
         job_manager.start();
         job_queue.wait_until_completion();
 
-        FOUNDATION_EXPECT_EQ(1, execution_count);
+        EXPECT_EQ(1, execution_count);
     }
 }
 
-FOUNDATION_TEST_SUITE(Foundation_Utility_Job_WorkerThread)
+TEST_SUITE(Foundation_Utility_Job_WorkerThread)
 {
     using namespace foundation;
     using namespace std;
@@ -345,7 +345,7 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Job_WorkerThread)
         const uint64                    m_start_ticks;
     };
 
-    FOUNDATION_TEST_CASE(Run_MemoryFailureDuingJobExecution_RetiresJob)
+    TEST_CASE(Run_MemoryFailureDuingJobExecution_RetiresJob)
     {
         JobQueue job_queue;
         job_queue.schedule(new JobThrowingBadAllocException());
@@ -363,6 +363,6 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Job_WorkerThread)
                 break;
         }
 
-        FOUNDATION_EXPECT_FALSE(job_queue.has_scheduled_or_running_jobs());
+        EXPECT_FALSE(job_queue.has_scheduled_or_running_jobs());
     }
 }

@@ -36,11 +36,11 @@
 using namespace foundation;
 using namespace std;
 
-FOUNDATION_TEST_SUITE(Foundation_Utility_KVPair)
+TEST_SUITE(Foundation_Utility_KVPair)
 {
     enum Colors { Red, Green, Blue };
 
-    FOUNDATION_TEST_CASE(FoundationLookupKVPairArray_GivenKeyOfExistingEntry_ReturnsPointerToEntry)
+    TEST_CASE(FoundationLookupKVPairArray_GivenKeyOfExistingEntry_ReturnsPointerToEntry)
     {
         static const KeyValuePair<Colors, const char*> ColorNames[] =
         {
@@ -52,12 +52,12 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_KVPair)
         const KeyValuePair<Colors, const char*>* kvpair =
             FOUNDATION_LOOKUP_KVPAIR_ARRAY(ColorNames, Green);
 
-        FOUNDATION_ASSERT_NEQ(0, kvpair);
+        ASSERT_NEQ(0, kvpair);
 
-        FOUNDATION_EXPECT_EQ(string("Green"), kvpair->m_value);
+        EXPECT_EQ(string("Green"), kvpair->m_value);
     }
 
-    FOUNDATION_TEST_CASE(FoundationLookupKVPairArray_GivenKeyOfNonExistingEntry_ReturnsNullPointer)
+    TEST_CASE(FoundationLookupKVPairArray_GivenKeyOfNonExistingEntry_ReturnsNullPointer)
     {
         static const KeyValuePair<Colors, const char*> ColorNames[] =
         {
@@ -68,6 +68,6 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_KVPair)
         const KeyValuePair<Colors, const char*>* kvpair =
             FOUNDATION_LOOKUP_KVPAIR_ARRAY(ColorNames, Red);
 
-        FOUNDATION_EXPECT_EQ(0, kvpair);
+        EXPECT_EQ(0, kvpair);
     }
 }

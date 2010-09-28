@@ -31,49 +31,49 @@
 #include "foundation/platform/types.h"
 #include "foundation/utility/test.h"
 
-FOUNDATION_TEST_SUITE(Foundation_Platform_Timer)
+TEST_SUITE(Foundation_Platform_Timer)
 {
     using namespace foundation;
 
-    FOUNDATION_TEST_CASE(TestX86TimerFrequency)
+    TEST_CASE(TestX86TimerFrequency)
     {
         X86Timer timer;
-        FOUNDATION_EXPECT_TRUE(timer.frequency() > 0);
+        EXPECT_TRUE(timer.frequency() > 0);
     }
 
-    FOUNDATION_TEST_CASE(TestX86TimerValues)
+    TEST_CASE(TestX86TimerValues)
     {
         X86Timer timer;
         const uint64 val1 = timer.read();
         const uint64 val2 = timer.read();
-        FOUNDATION_EXPECT_TRUE(val1 <= val2);
+        EXPECT_TRUE(val1 <= val2);
     }
 
-    FOUNDATION_TEST_CASE(TestDefaultProcessorTimerFrequency)
+    TEST_CASE(TestDefaultProcessorTimerFrequency)
     {
         DefaultProcessorTimer timer;
-        FOUNDATION_EXPECT_TRUE(timer.frequency() > 0);
+        EXPECT_TRUE(timer.frequency() > 0);
     }
 
-    FOUNDATION_TEST_CASE(TestDefaultProcessorTimerValues)
+    TEST_CASE(TestDefaultProcessorTimerValues)
     {
         DefaultProcessorTimer timer;
         const uint64 val1 = timer.read();
         const uint64 val2 = timer.read();
-        FOUNDATION_EXPECT_TRUE(val1 <= val2);
+        EXPECT_TRUE(val1 <= val2);
     }
 
-    FOUNDATION_TEST_CASE(TestDefaultWallclockTimerFrequency)
+    TEST_CASE(TestDefaultWallclockTimerFrequency)
     {
         DefaultWallclockTimer timer;
-        FOUNDATION_EXPECT_TRUE(timer.frequency() > 0);
+        EXPECT_TRUE(timer.frequency() > 0);
     }
 
-    FOUNDATION_TEST_CASE(TestDefaultWallclockTimerValues)
+    TEST_CASE(TestDefaultWallclockTimerValues)
     {
         DefaultWallclockTimer timer;
         const uint64 val1 = timer.read();
         const uint64 val2 = timer.read();
-        FOUNDATION_EXPECT_TRUE(val1 <= val2);
+        EXPECT_TRUE(val1 <= val2);
     }
 }

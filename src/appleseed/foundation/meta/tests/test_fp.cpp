@@ -33,166 +33,166 @@
 
 using namespace foundation;
 
-FOUNDATION_TEST_SUITE(Foundation_Math_FP_Float)
+TEST_SUITE(Foundation_Math_FP_Float)
 {
     const volatile float Zero = 0.0f;
 
-    FOUNDATION_TEST_CASE(PosInf_ReturnsPositiveInfinite)
+    TEST_CASE(PosInf_ReturnsPositiveInfinite)
     {
         const float PositiveInfinity = 1.0f / Zero;
 
-        FOUNDATION_EXPECT_EQ(PositiveInfinity, FP<float>::pos_inf());
+        EXPECT_EQ(PositiveInfinity, FP<float>::pos_inf());
     }
 
-    FOUNDATION_TEST_CASE(NegInf_ReturnsNegativeInfinite)
+    TEST_CASE(NegInf_ReturnsNegativeInfinite)
     {
         const float NegativeInfinity = -1.0f / Zero;
 
-        FOUNDATION_EXPECT_EQ(NegativeInfinity, FP<float>::neg_inf());
+        EXPECT_EQ(NegativeInfinity, FP<float>::neg_inf());
     }
 
-    FOUNDATION_TEST_CASE(Sign_GivenPositiveZero_ReturnsZero)
+    TEST_CASE(Sign_GivenPositiveZero_ReturnsZero)
     {
-        FOUNDATION_EXPECT_EQ(0, FP<float>::sign(+0.0f));
+        EXPECT_EQ(0, FP<float>::sign(+0.0f));
     }
 
-    FOUNDATION_TEST_CASE(Sign_GivenNegativeZero_ReturnsOne)
+    TEST_CASE(Sign_GivenNegativeZero_ReturnsOne)
     {
-        FOUNDATION_EXPECT_EQ(1, FP<float>::sign(-0.0f));
+        EXPECT_EQ(1, FP<float>::sign(-0.0f));
     }
 
-    FOUNDATION_TEST_CASE(Sign_GivenStrictlyPositiveValue_ReturnsZero)
+    TEST_CASE(Sign_GivenStrictlyPositiveValue_ReturnsZero)
     {
-        FOUNDATION_EXPECT_EQ(0, FP<float>::sign(+42.0f));
+        EXPECT_EQ(0, FP<float>::sign(+42.0f));
     }
 
-    FOUNDATION_TEST_CASE(Sign_GivenStrictlyNegativeValue_ReturnsOne)
+    TEST_CASE(Sign_GivenStrictlyNegativeValue_ReturnsOne)
     {
-        FOUNDATION_EXPECT_EQ(1, FP<float>::sign(-42.0f));
+        EXPECT_EQ(1, FP<float>::sign(-42.0f));
     }
 
-    FOUNDATION_TEST_CASE(IsSNan_GivenSNan_ReturnsTrue)
+    TEST_CASE(IsSNan_GivenSNan_ReturnsTrue)
     {
-        FOUNDATION_EXPECT_TRUE(FP<float>::is_snan(FP<float>::snan()));
+        EXPECT_TRUE(FP<float>::is_snan(FP<float>::snan()));
     }
 
-    FOUNDATION_TEST_CASE(IsQNan_GivenQNan_ReturnsTrue)
+    TEST_CASE(IsQNan_GivenQNan_ReturnsTrue)
     {
-        FOUNDATION_EXPECT_TRUE(FP<float>::is_qnan(FP<float>::qnan()));
+        EXPECT_TRUE(FP<float>::is_qnan(FP<float>::qnan()));
     }
 
-    FOUNDATION_TEST_CASE(Shift_GivenZeroAndShiftOfZero_ReturnsZero)
+    TEST_CASE(Shift_GivenZeroAndShiftOfZero_ReturnsZero)
     {
-        FOUNDATION_EXPECT_EQ(+0.0f, shift(+0.0f, 0));
-        FOUNDATION_EXPECT_EQ(-0.0F, shift(-0.0f, 0));
+        EXPECT_EQ(+0.0f, shift(+0.0f, 0));
+        EXPECT_EQ(-0.0F, shift(-0.0f, 0));
     }
 
-    FOUNDATION_TEST_CASE(Shift_GivenZeroAndShiftOfPlusOne_ReturnsPosMin)
+    TEST_CASE(Shift_GivenZeroAndShiftOfPlusOne_ReturnsPosMin)
     {
-        FOUNDATION_EXPECT_EQ(FP<float>::pos_min(), shift(0.0f, +1));
+        EXPECT_EQ(FP<float>::pos_min(), shift(0.0f, +1));
     }
 
-    FOUNDATION_TEST_CASE(Shift_GivenZeroAndShiftOfMinusOne_ReturnsNegMin)
+    TEST_CASE(Shift_GivenZeroAndShiftOfMinusOne_ReturnsNegMin)
     {
-        FOUNDATION_EXPECT_EQ(FP<float>::neg_min(), shift(0.0f, -1));
+        EXPECT_EQ(FP<float>::neg_min(), shift(0.0f, -1));
     }
 
-    FOUNDATION_TEST_CASE(Shift_GivenOneAndShiftOfPlusOne_ReturnsValueSlightlyGreaterThanOne)
+    TEST_CASE(Shift_GivenOneAndShiftOfPlusOne_ReturnsValueSlightlyGreaterThanOne)
     {
         const float result = shift(1.0f, +1);
 
-        FOUNDATION_EXPECT_GT(1.0f, result);
-        FOUNDATION_EXPECT_FEQ(1.0f, result);
+        EXPECT_GT(1.0f, result);
+        EXPECT_FEQ(1.0f, result);
     }
 
-    FOUNDATION_TEST_CASE(Shift_GivenOneAndShiftOfMinusOne_ReturnsValueSlightlyLesserThanOne)
+    TEST_CASE(Shift_GivenOneAndShiftOfMinusOne_ReturnsValueSlightlyLesserThanOne)
     {
         const float result = shift(1.0f, -1);
 
-        FOUNDATION_EXPECT_LT(1.0f, result);
-        FOUNDATION_EXPECT_FEQ(1.0f, result);
+        EXPECT_LT(1.0f, result);
+        EXPECT_FEQ(1.0f, result);
     }
 
-    FOUNDATION_TEST_CASE(Shift_GivenPosMinAndShiftOfMinusOne_ReturnsNegMin)
+    TEST_CASE(Shift_GivenPosMinAndShiftOfMinusOne_ReturnsNegMin)
     {
-        FOUNDATION_EXPECT_EQ(FP<float>::neg_min(), shift(FP<float>::pos_min(), -1));
+        EXPECT_EQ(FP<float>::neg_min(), shift(FP<float>::pos_min(), -1));
     }
 
-    FOUNDATION_TEST_CASE(Shift_GivenPosMinSuccessorAndShiftOfMinusTwo_ReturnsNegMin)
+    TEST_CASE(Shift_GivenPosMinSuccessorAndShiftOfMinusTwo_ReturnsNegMin)
     {
         const float succ_pos_min = shift(FP<float>::pos_min(), 1);
 
-        FOUNDATION_EXPECT_EQ(FP<float>::neg_min(), shift(succ_pos_min, -2));
+        EXPECT_EQ(FP<float>::neg_min(), shift(succ_pos_min, -2));
     }
 
-    FOUNDATION_TEST_CASE(Shift_GivenNegMinAndShiftOfPlusOne_ReturnsPosMin)
+    TEST_CASE(Shift_GivenNegMinAndShiftOfPlusOne_ReturnsPosMin)
     {
-        FOUNDATION_EXPECT_EQ(FP<float>::pos_min(), shift(FP<float>::neg_min(), +1));
+        EXPECT_EQ(FP<float>::pos_min(), shift(FP<float>::neg_min(), +1));
     }
 
-    FOUNDATION_TEST_CASE(Shift_GivenNegMinPredecessorAndShiftOfPlusTwo_ReturnsPosMin)
+    TEST_CASE(Shift_GivenNegMinPredecessorAndShiftOfPlusTwo_ReturnsPosMin)
     {
         const float pred_neg_min = shift(FP<float>::neg_min(), -1);
 
-        FOUNDATION_EXPECT_EQ(FP<float>::pos_min(), shift(pred_neg_min, +2));
+        EXPECT_EQ(FP<float>::pos_min(), shift(pred_neg_min, +2));
     }
 
-    FOUNDATION_TEST_CASE(Shift_GivenPosInfAndShiftOnePlusOne_ReturnsPosInf)
+    TEST_CASE(Shift_GivenPosInfAndShiftOnePlusOne_ReturnsPosInf)
     {
-        FOUNDATION_EXPECT_EQ(FP<float>::pos_inf(), shift(FP<float>::pos_inf(), +1));
+        EXPECT_EQ(FP<float>::pos_inf(), shift(FP<float>::pos_inf(), +1));
     }
 
-    FOUNDATION_TEST_CASE(Shift_GivenNegInfAndShiftOneMinusOne_ReturnsNegInf)
+    TEST_CASE(Shift_GivenNegInfAndShiftOneMinusOne_ReturnsNegInf)
     {
-        FOUNDATION_EXPECT_EQ(FP<float>::neg_inf(), shift(FP<float>::neg_inf(), -1));
+        EXPECT_EQ(FP<float>::neg_inf(), shift(FP<float>::neg_inf(), -1));
     }
 }
 
-FOUNDATION_TEST_SUITE(Foundation_Math_FP_Double)
+TEST_SUITE(Foundation_Math_FP_Double)
 {
     const volatile double Zero = 0.0;
 
-    FOUNDATION_TEST_CASE(PosInf_ReturnsPositiveInfinite)
+    TEST_CASE(PosInf_ReturnsPositiveInfinite)
     {
         const double PositiveInfinity = 1.0 / Zero;
 
-        FOUNDATION_EXPECT_EQ(PositiveInfinity, FP<double>::pos_inf());
+        EXPECT_EQ(PositiveInfinity, FP<double>::pos_inf());
     }
 
-    FOUNDATION_TEST_CASE(NegInf_ReturnsNegativeInfinite)
+    TEST_CASE(NegInf_ReturnsNegativeInfinite)
     {
         const double NegativeInfinity = -1.0 / Zero;
 
-        FOUNDATION_EXPECT_EQ(NegativeInfinity, FP<double>::neg_inf());
+        EXPECT_EQ(NegativeInfinity, FP<double>::neg_inf());
     }
 
-    FOUNDATION_TEST_CASE(Sign_GivenPositiveZero_ReturnsZero)
+    TEST_CASE(Sign_GivenPositiveZero_ReturnsZero)
     {
-        FOUNDATION_EXPECT_EQ(0, FP<double>::sign(+0.0));
+        EXPECT_EQ(0, FP<double>::sign(+0.0));
     }
 
-    FOUNDATION_TEST_CASE(Sign_GivenNegativeZero_ReturnsOne)
+    TEST_CASE(Sign_GivenNegativeZero_ReturnsOne)
     {
-        FOUNDATION_EXPECT_EQ(1, FP<double>::sign(-0.0));
+        EXPECT_EQ(1, FP<double>::sign(-0.0));
     }
 
-    FOUNDATION_TEST_CASE(Sign_GivenStrictlyPositiveValue_ReturnsZero)
+    TEST_CASE(Sign_GivenStrictlyPositiveValue_ReturnsZero)
     {
-        FOUNDATION_EXPECT_EQ(0, FP<double>::sign(+42.0));
+        EXPECT_EQ(0, FP<double>::sign(+42.0));
     }
 
-    FOUNDATION_TEST_CASE(Sign_GivenStrictlyNegativeValue_ReturnsOne)
+    TEST_CASE(Sign_GivenStrictlyNegativeValue_ReturnsOne)
     {
-        FOUNDATION_EXPECT_EQ(1, FP<double>::sign(-42.0));
+        EXPECT_EQ(1, FP<double>::sign(-42.0));
     }
 
-    FOUNDATION_TEST_CASE(IsSNan_GivenSNan_ReturnsTrue)
+    TEST_CASE(IsSNan_GivenSNan_ReturnsTrue)
     {
-        FOUNDATION_EXPECT_TRUE(FP<double>::is_snan(FP<double>::snan()));
+        EXPECT_TRUE(FP<double>::is_snan(FP<double>::snan()));
     }
 
-    FOUNDATION_TEST_CASE(IsQNan_GivenQNan_ReturnsTrue)
+    TEST_CASE(IsQNan_GivenQNan_ReturnsTrue)
     {
-        FOUNDATION_EXPECT_TRUE(FP<double>::is_qnan(FP<double>::qnan()));
+        EXPECT_TRUE(FP<double>::is_qnan(FP<double>::qnan()));
     }
 }

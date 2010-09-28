@@ -505,43 +505,43 @@ namespace
         return average_luminance;
     }
 
-    FOUNDATION_TEST_SUITE(Renderer_Modeling_Frame_Details)
+    TEST_SUITE(Renderer_Modeling_Frame_Details)
     {
-        FOUNDATION_TEST_CASE(ClampToZero_GivenColorWithNegativeValues_ReplacesNegativeValuesWithZeroes)
+        TEST_CASE(ClampToZero_GivenColorWithNegativeValues_ReplacesNegativeValuesWithZeroes)
         {
             const Color4f result = clamp_to_zero(Color4f(-1.0f, 0.0f, 1.0f, -0.0f));
 
-            FOUNDATION_EXPECT_EQ(Color4f(0.0f, 0.0f, 1.0f, -0.0f), result);
+            EXPECT_EQ(Color4f(0.0f, 0.0f, 1.0f, -0.0f), result);
         }
 
-        FOUNDATION_TEST_CASE(AccumulateLuminance_Given2x2TileFilledWithZeroes_ReturnsZero)
+        TEST_CASE(AccumulateLuminance_Given2x2TileFilledWithZeroes_ReturnsZero)
         {
             Tile tile(2, 2, 4, PixelFormatFloat);
             tile.clear(Color4f(0.0f));
 
             const double accumulated_luminance = accumulate_luminance(tile);
 
-            FOUNDATION_EXPECT_EQ(0.0, accumulated_luminance);
+            EXPECT_EQ(0.0, accumulated_luminance);
         }
 
-        FOUNDATION_TEST_CASE(AccumulateLuminance_Given2x2TileFilledWithOnes_ReturnsFour)
+        TEST_CASE(AccumulateLuminance_Given2x2TileFilledWithOnes_ReturnsFour)
         {
             Tile tile(2, 2, 4, PixelFormatFloat);
             tile.clear(Color4f(1.0f));
 
             const double accumulated_luminance = accumulate_luminance(tile);
 
-            FOUNDATION_EXPECT_FEQ(4.0, accumulated_luminance);
+            EXPECT_FEQ(4.0, accumulated_luminance);
         }
 
-        FOUNDATION_TEST_CASE(AccumulateLuminance_Given2x2TileFilledWithMinusOnes_ReturnsZero)
+        TEST_CASE(AccumulateLuminance_Given2x2TileFilledWithMinusOnes_ReturnsZero)
         {
             Tile tile(2, 2, 4, PixelFormatFloat);
             tile.clear(Color4f(-1.0f));
 
             const double accumulated_luminance = accumulate_luminance(tile);
 
-            FOUNDATION_EXPECT_EQ(0.0, accumulated_luminance);
+            EXPECT_EQ(0.0, accumulated_luminance);
         }
 
         void clear_image(Image& image, const Color4f& color)
@@ -558,44 +558,44 @@ namespace
             }
         }
 
-        FOUNDATION_TEST_CASE(AccumulateLuminance_Given4x4ImageFilledWithZeroes_ReturnsZero)
+        TEST_CASE(AccumulateLuminance_Given4x4ImageFilledWithZeroes_ReturnsZero)
         {
             Image image(4, 4, 2, 2, 4, PixelFormatFloat);
             clear_image(image, Color4f(0.0f));
 
             const double accumulated_luminance = accumulate_luminance(image);
 
-            FOUNDATION_EXPECT_EQ(0.0, accumulated_luminance);
+            EXPECT_EQ(0.0, accumulated_luminance);
         }
 
-        FOUNDATION_TEST_CASE(AccumulateLuminance_Given4x4ImageFilledWithOnes_ReturnsSixteen)
+        TEST_CASE(AccumulateLuminance_Given4x4ImageFilledWithOnes_ReturnsSixteen)
         {
             Image image(4, 4, 2, 2, 4, PixelFormatFloat);
             clear_image(image, Color4f(1.0f));
 
             const double accumulated_luminance = accumulate_luminance(image);
 
-            FOUNDATION_EXPECT_FEQ(16.0, accumulated_luminance);
+            EXPECT_FEQ(16.0, accumulated_luminance);
         }
 
-        FOUNDATION_TEST_CASE(ComputeAvgLuminance_Given4x4ImageFilledWithZeroes_ReturnsZero)
+        TEST_CASE(ComputeAvgLuminance_Given4x4ImageFilledWithZeroes_ReturnsZero)
         {
             Image image(4, 4, 2, 2, 4, PixelFormatFloat);
             clear_image(image, Color4f(0.0f));
 
             const double average_luminance = compute_avg_luminance(image);
 
-            FOUNDATION_EXPECT_EQ(0.0, average_luminance);
+            EXPECT_EQ(0.0, average_luminance);
         }
 
-        FOUNDATION_TEST_CASE(ComputeAvgLuminance_Given4x4ImageFilledWithOnes_ReturnsOne)
+        TEST_CASE(ComputeAvgLuminance_Given4x4ImageFilledWithOnes_ReturnsOne)
         {
             Image image(4, 4, 2, 2, 4, PixelFormatFloat);
             clear_image(image, Color4f(1.0f));
 
             const double average_luminance = compute_avg_luminance(image);
 
-            FOUNDATION_EXPECT_FEQ(1.0, average_luminance);
+            EXPECT_FEQ(1.0, average_luminance);
         }
     }
 }

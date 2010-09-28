@@ -35,52 +35,52 @@
 #include <cstddef>
 #include <cstdlib>
 
-FOUNDATION_TEST_SUITE(Foundation_Math_Permutation)
+TEST_SUITE(Foundation_Math_Permutation)
 {
     using namespace foundation;
     using namespace std;
 
-    FOUNDATION_TEST_CASE(TestIsPermutationOnValidPermutation1)
+    TEST_CASE(TestIsPermutationOnValidPermutation1)
     {
         const size_t Size = 5;
         const size_t Permutation[Size] = { 0, 1, 2, 3, 4 };
 
-        FOUNDATION_EXPECT_TRUE(is_permutation(Size, Permutation));
+        EXPECT_TRUE(is_permutation(Size, Permutation));
     }
 
-    FOUNDATION_TEST_CASE(TestIsPermutationOnValidPermutation2)
+    TEST_CASE(TestIsPermutationOnValidPermutation2)
     {
         const size_t Size = 5;
         const size_t Permutation[Size] = { 3, 2, 4, 0, 1 };
 
-        FOUNDATION_EXPECT_TRUE(is_permutation(Size, Permutation));
+        EXPECT_TRUE(is_permutation(Size, Permutation));
     }
 
-    FOUNDATION_TEST_CASE(TestIsPermutationOnValidPermutation3)
+    TEST_CASE(TestIsPermutationOnValidPermutation3)
     {
         const size_t Size = 5;
         const size_t Permutation[Size] = { 4, 3, 2, 1, 0 };
 
-        FOUNDATION_EXPECT_TRUE(is_permutation(Size, Permutation));
+        EXPECT_TRUE(is_permutation(Size, Permutation));
     }
 
-    FOUNDATION_TEST_CASE(TestIsPermutationOnInvalidPermutation1)
+    TEST_CASE(TestIsPermutationOnInvalidPermutation1)
     {
         const size_t Size = 5;
         const size_t Permutation[Size] = { 0, 1, 2, 3, 3 };
 
-        FOUNDATION_EXPECT_FALSE(is_permutation(Size, Permutation));
+        EXPECT_FALSE(is_permutation(Size, Permutation));
     }
 
-    FOUNDATION_TEST_CASE(TestIsPermutationOnInvalidPermutation2)
+    TEST_CASE(TestIsPermutationOnInvalidPermutation2)
     {
         const size_t Size = 5;
         const size_t Permutation[Size] = { 0, 1, 2, 3, 5 };
 
-        FOUNDATION_EXPECT_FALSE(is_permutation(Size, Permutation));
+        EXPECT_FALSE(is_permutation(Size, Permutation));
     }
 
-    FOUNDATION_TEST_CASE(TestIdentityPermutation)
+    TEST_CASE(TestIdentityPermutation)
     {
         const size_t Size = 5;
         const size_t Expected[Size] = { 0, 1, 2, 3, 4 };
@@ -88,10 +88,10 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Permutation)
         size_t perm[Size];
         identity_permutation(Size, perm);
 
-        FOUNDATION_EXPECT_ARRAY_EQ(Expected, perm);
+        EXPECT_ARRAY_EQ(Expected, perm);
     }
 
-    FOUNDATION_TEST_CASE(TestRandomPermutation)
+    TEST_CASE(TestRandomPermutation)
     {
         const size_t Size = 5;
 
@@ -99,10 +99,10 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Permutation)
         MersenneTwister rng;
         random_permutation(Size, perm, rng);
 
-        FOUNDATION_EXPECT_TRUE(is_permutation(Size, perm));
+        EXPECT_TRUE(is_permutation(Size, perm));
     }
 
-    FOUNDATION_TEST_CASE(TestReverseQMCPermutationSize1)
+    TEST_CASE(TestReverseQMCPermutationSize1)
     {
         const size_t Size = 1;
         const size_t Expected[Size] = { 0 };
@@ -110,10 +110,10 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Permutation)
         size_t perm[Size];
         reverse_qmc_permutation(Size, perm);
 
-        FOUNDATION_EXPECT_ARRAY_EQ(Expected, perm);
+        EXPECT_ARRAY_EQ(Expected, perm);
     }
 
-    FOUNDATION_TEST_CASE(TestReverseQMCPermutationSize5)
+    TEST_CASE(TestReverseQMCPermutationSize5)
     {
         const size_t Size = 5;
         const size_t Expected[Size] = { 0, 4, 3, 2, 1 };
@@ -121,10 +121,10 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Permutation)
         size_t perm[Size];
         reverse_qmc_permutation(Size, perm);
 
-        FOUNDATION_EXPECT_ARRAY_EQ(Expected, perm);
+        EXPECT_ARRAY_EQ(Expected, perm);
     }
 
-    FOUNDATION_TEST_CASE(TestFaureQMCPermutationSize2)
+    TEST_CASE(TestFaureQMCPermutationSize2)
     {
         const size_t Size = 2;
         const size_t Expected[Size] = { 0, 1 };
@@ -132,10 +132,10 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Permutation)
         size_t perm[Size];
         faure_qmc_permutation(Size, perm);
 
-        FOUNDATION_EXPECT_ARRAY_EQ(Expected, perm);
+        EXPECT_ARRAY_EQ(Expected, perm);
     }
 
-    FOUNDATION_TEST_CASE(TestFaureQMCPermutationSize3)
+    TEST_CASE(TestFaureQMCPermutationSize3)
     {
         const size_t Size = 3;
         const size_t Expected[Size] = { 0, 1, 2 };
@@ -143,10 +143,10 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Permutation)
         size_t perm[Size];
         faure_qmc_permutation(Size, perm);
 
-        FOUNDATION_EXPECT_ARRAY_EQ(Expected, perm);
+        EXPECT_ARRAY_EQ(Expected, perm);
     }
 
-    FOUNDATION_TEST_CASE(TestFaureQMCPermutationSize4)
+    TEST_CASE(TestFaureQMCPermutationSize4)
     {
         const size_t Size = 4;
         const size_t Expected[Size] = { 0, 2, 1, 3 };
@@ -154,10 +154,10 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Permutation)
         size_t perm[Size];
         faure_qmc_permutation(Size, perm);
 
-        FOUNDATION_EXPECT_ARRAY_EQ(Expected, perm);
+        EXPECT_ARRAY_EQ(Expected, perm);
     }
 
-    FOUNDATION_TEST_CASE(TestFaureQMCPermutationSize5)
+    TEST_CASE(TestFaureQMCPermutationSize5)
     {
         const size_t Size = 5;
         const size_t Expected[Size] = { 0, 3, 2, 1, 4 };
@@ -165,10 +165,10 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Permutation)
         size_t perm[Size];
         faure_qmc_permutation(Size, perm);
 
-        FOUNDATION_EXPECT_ARRAY_EQ(Expected, perm);
+        EXPECT_ARRAY_EQ(Expected, perm);
     }
 
-    FOUNDATION_TEST_CASE(TestFaureQMCPermutationSize6)
+    TEST_CASE(TestFaureQMCPermutationSize6)
     {
         const size_t Size = 6;
         const size_t Expected[Size] = { 0, 2, 4, 1, 3, 5 };
@@ -176,10 +176,10 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Permutation)
         size_t perm[Size];
         faure_qmc_permutation(Size, perm);
 
-        FOUNDATION_EXPECT_ARRAY_EQ(Expected, perm);
+        EXPECT_ARRAY_EQ(Expected, perm);
     }
 
-    FOUNDATION_TEST_CASE(TestSmallItemReorder)
+    TEST_CASE(TestSmallItemReorder)
     {
         const size_t Size = 10;
         const size_t Order[Size] = { 1, 3, 5, 2, 7, 6, 0, 4, 9, 8 };
@@ -189,10 +189,10 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Permutation)
         size_t temp[Size];
         small_item_reorder(items, temp, Order, Size);
 
-        FOUNDATION_EXPECT_ARRAY_EQ(Order, items);
+        EXPECT_ARRAY_EQ(Order, items);
     }
 
-    FOUNDATION_TEST_CASE(TestLargeItemReorderFirstVariant)
+    TEST_CASE(TestLargeItemReorderFirstVariant)
     {
         const size_t Size = 10;
         const size_t Order[Size] = { 1, 3, 5, 2, 7, 6, 0, 4, 9, 8 };
@@ -202,10 +202,10 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Permutation)
         size_t temp[Size];
         large_item_reorder(items, temp, Order, Size);
 
-        FOUNDATION_EXPECT_ARRAY_EQ(Order, items);
+        EXPECT_ARRAY_EQ(Order, items);
     }
 
-    FOUNDATION_TEST_CASE(TestLargeItemReorderSecondVariant)
+    TEST_CASE(TestLargeItemReorderSecondVariant)
     {
         const size_t Size = 10;
         const size_t Order[Size] = { 1, 3, 5, 2, 7, 6, 0, 4, 9, 8 };
@@ -216,6 +216,6 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Permutation)
         memcpy(order, Order, sizeof(Order));
         large_item_reorder(items, order, Size);
 
-        FOUNDATION_EXPECT_ARRAY_EQ(Order, items);
+        EXPECT_ARRAY_EQ(Order, items);
     }
 }

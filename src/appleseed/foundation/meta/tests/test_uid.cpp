@@ -34,12 +34,12 @@
 #include <cstddef>
 #include <set>
 
-FOUNDATION_TEST_SUITE(Foundation_Utility_UId)
+TEST_SUITE(Foundation_Utility_UId)
 {
     using namespace foundation;
     using namespace std;
 
-    FOUNDATION_TEST_CASE(FirstSamplesAreUnique)
+    TEST_CASE(FirstSamplesAreUnique)
     {
         UIDSource uid_source;
         set<UniqueID> uids;
@@ -47,7 +47,7 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_UId)
         for (size_t i = 0; i < 10; ++i)
         {
             const UniqueID uid = uid_source.get();
-            FOUNDATION_EXPECT_TRUE(uids.insert(uid).second);
+            EXPECT_TRUE(uids.insert(uid).second);
         }
     }
 }

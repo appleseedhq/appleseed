@@ -33,22 +33,22 @@
 #include "foundation/utility/log.h"
 #include "foundation/utility/test.h"
 
-FOUNDATION_TEST_SUITE(Cli_SuperLogger)
+TEST_SUITE(Cli_SuperLogger)
 {
     using namespace appleseed::cli;
     using namespace foundation;
 
-    FOUNDATION_TEST_CASE(Constructor_SetsLogTargetFormattingFlagsToCategoryAndMessage)
+    TEST_CASE(Constructor_SetsLogTargetFormattingFlagsToCategoryAndMessage)
     {
         SuperLogger super_logger;
 
         const LogMessage::FormattingFlags flags =
             super_logger.get_log_target().get_formatting_flags(LogMessage::Info);
 
-        FOUNDATION_EXPECT_EQ(LogMessage::DisplayCategory | LogMessage::DisplayMessage, flags);
+        EXPECT_EQ(LogMessage::DisplayCategory | LogMessage::DisplayMessage, flags);
     }
 
-    FOUNDATION_TEST_CASE(EnableMessageColoring_PreservesLogTargetFlags)
+    TEST_CASE(EnableMessageColoring_PreservesLogTargetFlags)
     {
         SuperLogger super_logger;
 
@@ -62,6 +62,6 @@ FOUNDATION_TEST_SUITE(Cli_SuperLogger)
         const LogMessage::FormattingFlags flags =
             super_logger.get_log_target().get_formatting_flags(LogMessage::Info);
 
-        FOUNDATION_EXPECT_EQ(LogMessage::DisplayDate | LogMessage::DisplayTime, flags);
+        EXPECT_EQ(LogMessage::DisplayDate | LogMessage::DisplayTime, flags);
     }
 }

@@ -41,76 +41,76 @@
 #include <string>
 #include <vector>
 
-FOUNDATION_TEST_SUITE(Foundation_Math_QMC)
+TEST_SUITE(Foundation_Math_QMC)
 {
     using namespace foundation;
     using namespace std;
 
-    FOUNDATION_TEST_CASE(TestFastRadicalInverseBase2)
+    TEST_CASE(TestFastRadicalInverseBase2)
     {
-        FOUNDATION_EXPECT_FEQ(0.0,     radical_inverse_base2<double>(0));
-        FOUNDATION_EXPECT_FEQ(0.5,     radical_inverse_base2<double>(1));
-        FOUNDATION_EXPECT_FEQ(0.25,    radical_inverse_base2<double>(2));
-        FOUNDATION_EXPECT_FEQ(0.75,    radical_inverse_base2<double>(3));
-        FOUNDATION_EXPECT_FEQ(0.125,   radical_inverse_base2<double>(4));
-        FOUNDATION_EXPECT_FEQ(0.625,   radical_inverse_base2<double>(5));
-        FOUNDATION_EXPECT_FEQ(0.375,   radical_inverse_base2<double>(6));
-        FOUNDATION_EXPECT_FEQ(0.875,   radical_inverse_base2<double>(7));
+        EXPECT_FEQ(0.0,     radical_inverse_base2<double>(0));
+        EXPECT_FEQ(0.5,     radical_inverse_base2<double>(1));
+        EXPECT_FEQ(0.25,    radical_inverse_base2<double>(2));
+        EXPECT_FEQ(0.75,    radical_inverse_base2<double>(3));
+        EXPECT_FEQ(0.125,   radical_inverse_base2<double>(4));
+        EXPECT_FEQ(0.625,   radical_inverse_base2<double>(5));
+        EXPECT_FEQ(0.375,   radical_inverse_base2<double>(6));
+        EXPECT_FEQ(0.875,   radical_inverse_base2<double>(7));
     }
 
-    FOUNDATION_TEST_CASE(TestRadicalInverseInBase2)
+    TEST_CASE(TestRadicalInverseInBase2)
     {
-        FOUNDATION_EXPECT_FEQ(0.0,     radical_inverse<double>(2, 0));
-        FOUNDATION_EXPECT_FEQ(0.5,     radical_inverse<double>(2, 1));
-        FOUNDATION_EXPECT_FEQ(0.25,    radical_inverse<double>(2, 2));
-        FOUNDATION_EXPECT_FEQ(0.75,    radical_inverse<double>(2, 3));
-        FOUNDATION_EXPECT_FEQ(0.125,   radical_inverse<double>(2, 4));
-        FOUNDATION_EXPECT_FEQ(0.625,   radical_inverse<double>(2, 5));
-        FOUNDATION_EXPECT_FEQ(0.375,   radical_inverse<double>(2, 6));
-        FOUNDATION_EXPECT_FEQ(0.875,   radical_inverse<double>(2, 7));
+        EXPECT_FEQ(0.0,     radical_inverse<double>(2, 0));
+        EXPECT_FEQ(0.5,     radical_inverse<double>(2, 1));
+        EXPECT_FEQ(0.25,    radical_inverse<double>(2, 2));
+        EXPECT_FEQ(0.75,    radical_inverse<double>(2, 3));
+        EXPECT_FEQ(0.125,   radical_inverse<double>(2, 4));
+        EXPECT_FEQ(0.625,   radical_inverse<double>(2, 5));
+        EXPECT_FEQ(0.375,   radical_inverse<double>(2, 6));
+        EXPECT_FEQ(0.875,   radical_inverse<double>(2, 7));
     }
 
-    FOUNDATION_TEST_CASE(TestRadicalInverseInBase3)
+    TEST_CASE(TestRadicalInverseInBase3)
     {
-        FOUNDATION_EXPECT_FEQ(0.0,     radical_inverse<double>(3, 0));
-        FOUNDATION_EXPECT_FEQ(1.0 / 3, radical_inverse<double>(3, 1));
-        FOUNDATION_EXPECT_FEQ(2.0 / 3, radical_inverse<double>(3, 2));
-        FOUNDATION_EXPECT_FEQ(1.0 / 9, radical_inverse<double>(3, 3));
-        FOUNDATION_EXPECT_FEQ(4.0 / 9, radical_inverse<double>(3, 4));
-        FOUNDATION_EXPECT_FEQ(7.0 / 9, radical_inverse<double>(3, 5));
-        FOUNDATION_EXPECT_FEQ(2.0 / 9, radical_inverse<double>(3, 6));
-        FOUNDATION_EXPECT_FEQ(5.0 / 9, radical_inverse<double>(3, 7));
+        EXPECT_FEQ(0.0,     radical_inverse<double>(3, 0));
+        EXPECT_FEQ(1.0 / 3, radical_inverse<double>(3, 1));
+        EXPECT_FEQ(2.0 / 3, radical_inverse<double>(3, 2));
+        EXPECT_FEQ(1.0 / 9, radical_inverse<double>(3, 3));
+        EXPECT_FEQ(4.0 / 9, radical_inverse<double>(3, 4));
+        EXPECT_FEQ(7.0 / 9, radical_inverse<double>(3, 5));
+        EXPECT_FEQ(2.0 / 9, radical_inverse<double>(3, 6));
+        EXPECT_FEQ(5.0 / 9, radical_inverse<double>(3, 7));
     }
 
-    FOUNDATION_TEST_CASE(TestFastPermutedRadicalInverseBase3IdentityPermutation)
+    TEST_CASE(TestFastPermutedRadicalInverseBase3IdentityPermutation)
     {
         static const size_t Perm[] = { 0, 1, 2 };
-        FOUNDATION_EXPECT_FEQ(0.0,     permuted_radical_inverse<double>(3, Perm, 0));
-        FOUNDATION_EXPECT_FEQ(1.0 / 3, permuted_radical_inverse<double>(3, Perm, 1));
-        FOUNDATION_EXPECT_FEQ(2.0 / 3, permuted_radical_inverse<double>(3, Perm, 2));
-        FOUNDATION_EXPECT_FEQ(1.0 / 9, permuted_radical_inverse<double>(3, Perm, 3));
-        FOUNDATION_EXPECT_FEQ(4.0 / 9, permuted_radical_inverse<double>(3, Perm, 4));
-        FOUNDATION_EXPECT_FEQ(7.0 / 9, permuted_radical_inverse<double>(3, Perm, 5));
-        FOUNDATION_EXPECT_FEQ(2.0 / 9, permuted_radical_inverse<double>(3, Perm, 6));
-        FOUNDATION_EXPECT_FEQ(5.0 / 9, permuted_radical_inverse<double>(3, Perm, 7));
+        EXPECT_FEQ(0.0,     permuted_radical_inverse<double>(3, Perm, 0));
+        EXPECT_FEQ(1.0 / 3, permuted_radical_inverse<double>(3, Perm, 1));
+        EXPECT_FEQ(2.0 / 3, permuted_radical_inverse<double>(3, Perm, 2));
+        EXPECT_FEQ(1.0 / 9, permuted_radical_inverse<double>(3, Perm, 3));
+        EXPECT_FEQ(4.0 / 9, permuted_radical_inverse<double>(3, Perm, 4));
+        EXPECT_FEQ(7.0 / 9, permuted_radical_inverse<double>(3, Perm, 5));
+        EXPECT_FEQ(2.0 / 9, permuted_radical_inverse<double>(3, Perm, 6));
+        EXPECT_FEQ(5.0 / 9, permuted_radical_inverse<double>(3, Perm, 7));
     }
 
-    FOUNDATION_TEST_CASE(TestFastPermutedRadicalInverseBase3ReversePermutation)
+    TEST_CASE(TestFastPermutedRadicalInverseBase3ReversePermutation)
     {
         static const size_t Perm[] = { 0, 2, 1 };
-        FOUNDATION_EXPECT_FEQ(0.0,     permuted_radical_inverse<double>(3, Perm, 0));
-        FOUNDATION_EXPECT_FEQ(2.0 / 3, permuted_radical_inverse<double>(3, Perm, 1));
-        FOUNDATION_EXPECT_FEQ(1.0 / 3, permuted_radical_inverse<double>(3, Perm, 2));
-        FOUNDATION_EXPECT_FEQ(2.0 / 9, permuted_radical_inverse<double>(3, Perm, 3));
-        FOUNDATION_EXPECT_FEQ(8.0 / 9, permuted_radical_inverse<double>(3, Perm, 4));
-        FOUNDATION_EXPECT_FEQ(5.0 / 9, permuted_radical_inverse<double>(3, Perm, 5));
-        FOUNDATION_EXPECT_FEQ(1.0 / 9, permuted_radical_inverse<double>(3, Perm, 6));
-        FOUNDATION_EXPECT_FEQ(7.0 / 9, permuted_radical_inverse<double>(3, Perm, 7));
+        EXPECT_FEQ(0.0,     permuted_radical_inverse<double>(3, Perm, 0));
+        EXPECT_FEQ(2.0 / 3, permuted_radical_inverse<double>(3, Perm, 1));
+        EXPECT_FEQ(1.0 / 3, permuted_radical_inverse<double>(3, Perm, 2));
+        EXPECT_FEQ(2.0 / 9, permuted_radical_inverse<double>(3, Perm, 3));
+        EXPECT_FEQ(8.0 / 9, permuted_radical_inverse<double>(3, Perm, 4));
+        EXPECT_FEQ(5.0 / 9, permuted_radical_inverse<double>(3, Perm, 5));
+        EXPECT_FEQ(1.0 / 9, permuted_radical_inverse<double>(3, Perm, 6));
+        EXPECT_FEQ(7.0 / 9, permuted_radical_inverse<double>(3, Perm, 7));
     }
 
     static const size_t PointCount = 256;
 
-    FOUNDATION_TEST_CASE(Generate2DRandomSequenceImage)
+    TEST_CASE(Generate2DRandomSequenceImage)
     {
         vector<Vector2d> points;
         MersenneTwister rng;
@@ -166,7 +166,7 @@ FOUNDATION_TEST_SUITE(Foundation_Math_QMC)
         write_point_cloud_image(filename, points);
     }
 
-    FOUNDATION_TEST_CASE(Generate2DHaltonSequenceImages)
+    TEST_CASE(Generate2DHaltonSequenceImages)
     {
         generate_halton_sequence_image(2, 3, "identity");
         generate_halton_sequence_image(5, 7, "identity");
@@ -175,7 +175,7 @@ FOUNDATION_TEST_SUITE(Foundation_Math_QMC)
         generate_halton_sequence_image(23, 29, "identity");
     }
 
-    FOUNDATION_TEST_CASE(Generate2DFaureScrambledHaltonSequenceImages)
+    TEST_CASE(Generate2DFaureScrambledHaltonSequenceImages)
     {
         generate_halton_sequence_image(2, 3, "faure");
         generate_halton_sequence_image(5, 7, "faure");
@@ -186,7 +186,7 @@ FOUNDATION_TEST_SUITE(Foundation_Math_QMC)
         generate_halton_sequence_image(5, 7, "faure", 5000);
     }
 
-    FOUNDATION_TEST_CASE(Generate2DReverseScrambledHaltonSequenceImages)
+    TEST_CASE(Generate2DReverseScrambledHaltonSequenceImages)
     {
         generate_halton_sequence_image(2, 3, "reverse");
         generate_halton_sequence_image(5, 7, "reverse");
@@ -214,7 +214,7 @@ FOUNDATION_TEST_SUITE(Foundation_Math_QMC)
             points);
     }
 
-    FOUNDATION_TEST_CASE(Generate2DHammersleySequenceImages)
+    TEST_CASE(Generate2DHammersleySequenceImages)
     {
         generate_hammersley_sequence_image(2, "identity");
         generate_hammersley_sequence_image(3, "identity");
@@ -223,7 +223,7 @@ FOUNDATION_TEST_SUITE(Foundation_Math_QMC)
         generate_hammersley_sequence_image(11, "identity");
     }
 
-    FOUNDATION_TEST_CASE(Generate2DFaureScrambledHammersleySequenceImages)
+    TEST_CASE(Generate2DFaureScrambledHammersleySequenceImages)
     {
         generate_hammersley_sequence_image(3, "faure");
         generate_hammersley_sequence_image(5, "faure");
@@ -231,7 +231,7 @@ FOUNDATION_TEST_SUITE(Foundation_Math_QMC)
         generate_hammersley_sequence_image(11, "faure");
     }
 
-    FOUNDATION_TEST_CASE(Generate2DReverseScrambledHammersleySequenceImages)
+    TEST_CASE(Generate2DReverseScrambledHammersleySequenceImages)
     {
         generate_hammersley_sequence_image(3, "reverse");
         generate_hammersley_sequence_image(5, "reverse");
@@ -253,7 +253,7 @@ FOUNDATION_TEST_SUITE(Foundation_Math_QMC)
             points);
     }
 
-    FOUNDATION_TEST_CASE(Generate2DHammersleyZarembaSequenceImages)
+    TEST_CASE(Generate2DHammersleyZarembaSequenceImages)
     {
         generate_hammersley_zaremba_sequence_image(2);
         generate_hammersley_zaremba_sequence_image(3);

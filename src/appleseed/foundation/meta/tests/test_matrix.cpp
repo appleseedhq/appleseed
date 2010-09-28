@@ -35,7 +35,7 @@
 // Standard headers.
 #include <cstddef>
 
-FOUNDATION_TEST_SUITE(Foundation_Math_MatrixMN)
+TEST_SUITE(Foundation_Math_MatrixMN)
 {
     using namespace foundation;
 
@@ -47,87 +47,87 @@ FOUNDATION_TEST_SUITE(Foundation_Math_MatrixMN)
         4.0, 5.0, 6.0
     };
 
-    FOUNDATION_TEST_CASE(TestProperties)
+    TEST_CASE(TestProperties)
     {
-        FOUNDATION_EXPECT_EQ(2, Mat23::Rows);
-        FOUNDATION_EXPECT_EQ(3, Mat23::Columns);
-        FOUNDATION_EXPECT_EQ(6, Mat23::Components);
+        EXPECT_EQ(2, Mat23::Rows);
+        EXPECT_EQ(3, Mat23::Columns);
+        EXPECT_EQ(6, Mat23::Components);
     }
 
-    FOUNDATION_TEST_CASE(ConstructMatrixWithArrayOfValues)
+    TEST_CASE(ConstructMatrixWithArrayOfValues)
     {
         const Mat23 m(Values);
 
-        FOUNDATION_EXPECT_SEQUENCE_EQ(6, Values, &m[0]);
+        EXPECT_SEQUENCE_EQ(6, Values, &m[0]);
     }
 
-    FOUNDATION_TEST_CASE(ConstructMatrixWithSingleValue)
+    TEST_CASE(ConstructMatrixWithSingleValue)
     {
         const Mat23 m(42.0);
 
         for (size_t i = 0; i < 6; ++i)
-            FOUNDATION_EXPECT_EQ(42.0, m[i]);
+            EXPECT_EQ(42.0, m[i]);
     }
 
-    FOUNDATION_TEST_CASE(ConstructMatrixByTypeConversion)
+    TEST_CASE(ConstructMatrixByTypeConversion)
     {
         const Mat23 m(Values);
         const Matrix<float, 2, 3> mf(m);
 
         for (size_t i = 0; i < 6; ++i)
-            FOUNDATION_EXPECT_FEQ(static_cast<float>(Values[i]), mf[i]);
+            EXPECT_FEQ(static_cast<float>(Values[i]), mf[i]);
     }
 
-    FOUNDATION_TEST_CASE(TestFortranStyleSubscripting)
+    TEST_CASE(TestFortranStyleSubscripting)
     {
         const Mat23 m(Values);
 
-        FOUNDATION_EXPECT_EQ(1.0, m(0, 0));
-        FOUNDATION_EXPECT_EQ(2.0, m(0, 1));
-        FOUNDATION_EXPECT_EQ(3.0, m(0, 2));
-        FOUNDATION_EXPECT_EQ(6.0, m(1, 2));
+        EXPECT_EQ(1.0, m(0, 0));
+        EXPECT_EQ(2.0, m(0, 1));
+        EXPECT_EQ(3.0, m(0, 2));
+        EXPECT_EQ(6.0, m(1, 2));
     }
 
-    FOUNDATION_TEST_CASE(TestEquality)
+    TEST_CASE(TestEquality)
     {
         const Mat23 m1(Values);
         const Mat23 m2(Values);
         const Mat23 m3(42.0);
 
-        FOUNDATION_EXPECT_TRUE(m1 == m2);
-        FOUNDATION_EXPECT_FALSE(m1 == m3);
+        EXPECT_TRUE(m1 == m2);
+        EXPECT_FALSE(m1 == m3);
     }
 
-    FOUNDATION_TEST_CASE(TestInequality)
+    TEST_CASE(TestInequality)
     {
         const Mat23 m1(Values);
         const Mat23 m2(Values);
         const Mat23 m3(42.0);
 
-        FOUNDATION_EXPECT_FALSE(m1 != m2);
-        FOUNDATION_EXPECT_TRUE(m1 != m3);
+        EXPECT_FALSE(m1 != m2);
+        EXPECT_TRUE(m1 != m3);
     }
 
-    FOUNDATION_TEST_CASE(TestApproximateEquality)
+    TEST_CASE(TestApproximateEquality)
     {
         const Mat23 m1(Values);
         const Mat23 m2(Values);
         const Mat23 m3(42.0);
 
-        FOUNDATION_EXPECT_TRUE(feq(m1, m2));
-        FOUNDATION_EXPECT_FALSE(feq(m1, m3));
+        EXPECT_TRUE(feq(m1, m2));
+        EXPECT_FALSE(feq(m1, m3));
     }
 
-    FOUNDATION_TEST_CASE(TestComparisonToZero)
+    TEST_CASE(TestComparisonToZero)
     {
         const Mat23 m1(Values);
         const Mat23 m2(0.0);
 
-        FOUNDATION_EXPECT_FALSE(fz(m1));
-        FOUNDATION_EXPECT_TRUE(fz(m2));
+        EXPECT_FALSE(fz(m1));
+        EXPECT_TRUE(fz(m2));
     }
 
-    FOUNDATION_TEST_CASE(TestAddition)
+    TEST_CASE(TestAddition)
     {
         static const double OtherValues[] =
         {
@@ -141,10 +141,10 @@ FOUNDATION_TEST_SUITE(Foundation_Math_MatrixMN)
             44.0, 55.0, 66.0
         };
 
-        FOUNDATION_EXPECT_FEQ(Mat23(Expected), Mat23(Values) + Mat23(OtherValues));
+        EXPECT_FEQ(Mat23(Expected), Mat23(Values) + Mat23(OtherValues));
     }
 
-    FOUNDATION_TEST_CASE(TestSubstraction)
+    TEST_CASE(TestSubstraction)
     {
         static const double OtherValues[] =
         {
@@ -158,10 +158,10 @@ FOUNDATION_TEST_SUITE(Foundation_Math_MatrixMN)
             36.0, 45.0, 54.0
         };
 
-        FOUNDATION_EXPECT_FEQ(Mat23(Expected), Mat23(OtherValues) - Mat23(Values));
+        EXPECT_FEQ(Mat23(Expected), Mat23(OtherValues) - Mat23(Values));
     }
 
-    FOUNDATION_TEST_CASE(TestNegation)
+    TEST_CASE(TestNegation)
     {
         static const double Expected[] =
         {
@@ -169,10 +169,10 @@ FOUNDATION_TEST_SUITE(Foundation_Math_MatrixMN)
             -4.0, -5.0, -6.0
         };
 
-        FOUNDATION_EXPECT_EQ(Mat23(Expected), -Mat23(Values));
+        EXPECT_EQ(Mat23(Expected), -Mat23(Values));
     }
 
-    FOUNDATION_TEST_CASE(TestRightMultiplicationByScalar)
+    TEST_CASE(TestRightMultiplicationByScalar)
     {
         static const double Expected[] =
         {
@@ -180,10 +180,10 @@ FOUNDATION_TEST_SUITE(Foundation_Math_MatrixMN)
              8.0, 10.0, 12.0
         };
 
-        FOUNDATION_EXPECT_FEQ(Mat23(Expected), Mat23(Values) * 2.0);
+        EXPECT_FEQ(Mat23(Expected), Mat23(Values) * 2.0);
     }
 
-    FOUNDATION_TEST_CASE(TestLeftMultiplicationByScalar)
+    TEST_CASE(TestLeftMultiplicationByScalar)
     {
         static const double Expected[] =
         {
@@ -191,10 +191,10 @@ FOUNDATION_TEST_SUITE(Foundation_Math_MatrixMN)
              8.0, 10.0, 12.0
         };
 
-        FOUNDATION_EXPECT_FEQ(Mat23(Expected), 2.0 * Mat23(Values));
+        EXPECT_FEQ(Mat23(Expected), 2.0 * Mat23(Values));
     }
 
-    FOUNDATION_TEST_CASE(TestDivisionByScalar)
+    TEST_CASE(TestDivisionByScalar)
     {
         static const double Expected[] =
         {
@@ -202,10 +202,10 @@ FOUNDATION_TEST_SUITE(Foundation_Math_MatrixMN)
              2.0, 2.5, 3.0
         };
 
-        FOUNDATION_EXPECT_FEQ(Mat23(Expected), Mat23(Values) / 2.0);
+        EXPECT_FEQ(Mat23(Expected), Mat23(Values) / 2.0);
     }
 
-    FOUNDATION_TEST_CASE(TestInPlaceAddition)
+    TEST_CASE(TestInPlaceAddition)
     {
         static const double OtherValues[] =
         {
@@ -222,10 +222,10 @@ FOUNDATION_TEST_SUITE(Foundation_Math_MatrixMN)
         Mat23 m(Values);
         m += Mat23(OtherValues);
 
-        FOUNDATION_EXPECT_FEQ(Mat23(Expected), m);
+        EXPECT_FEQ(Mat23(Expected), m);
     }
 
-    FOUNDATION_TEST_CASE(TestInPlaceSubstraction)
+    TEST_CASE(TestInPlaceSubstraction)
     {
         static const double OtherValues[] =
         {
@@ -242,10 +242,10 @@ FOUNDATION_TEST_SUITE(Foundation_Math_MatrixMN)
         Mat23 m(OtherValues);
         m -= Mat23(Values);
 
-        FOUNDATION_EXPECT_FEQ(Mat23(Expected), m);
+        EXPECT_FEQ(Mat23(Expected), m);
     }
 
-    FOUNDATION_TEST_CASE(TestInPlaceMultiplicationByScalar)
+    TEST_CASE(TestInPlaceMultiplicationByScalar)
     {
         static const double Expected[] =
         {
@@ -256,10 +256,10 @@ FOUNDATION_TEST_SUITE(Foundation_Math_MatrixMN)
         Mat23 m(Values);
         m *= 2.0;
 
-        FOUNDATION_EXPECT_FEQ(Mat23(Expected), m);
+        EXPECT_FEQ(Mat23(Expected), m);
     }
 
-    FOUNDATION_TEST_CASE(TestInPlaceDivisionByScalar)
+    TEST_CASE(TestInPlaceDivisionByScalar)
     {
         static const double Expected[] =
         {
@@ -270,10 +270,10 @@ FOUNDATION_TEST_SUITE(Foundation_Math_MatrixMN)
         Mat23 m(Values);
         m /= 2.0;
 
-        FOUNDATION_EXPECT_FEQ(Mat23(Expected), m);
+        EXPECT_FEQ(Mat23(Expected), m);
     }
 
-    FOUNDATION_TEST_CASE(TestMatrixTransposition)
+    TEST_CASE(TestMatrixTransposition)
     {
         static const double Expected[] =
         {
@@ -286,11 +286,11 @@ FOUNDATION_TEST_SUITE(Foundation_Math_MatrixMN)
 
         typedef Matrix<double, 3, 2> Mat32d;
 
-        FOUNDATION_EXPECT_EQ(Mat32d(Expected), transpose(m));
+        EXPECT_EQ(Mat32d(Expected), transpose(m));
     }
 }
 
-FOUNDATION_TEST_SUITE(Foundation_Math_MatrixNN)
+TEST_SUITE(Foundation_Math_MatrixNN)
 {
     using namespace foundation;
 
@@ -305,38 +305,38 @@ FOUNDATION_TEST_SUITE(Foundation_Math_MatrixNN)
         21.0, 22.0, 23.0, 24.0, 25.0
     };
 
-    FOUNDATION_TEST_CASE(TestProperties)
+    TEST_CASE(TestProperties)
     {
-        FOUNDATION_EXPECT_EQ(5, Mat55::Rows);
-        FOUNDATION_EXPECT_EQ(5, Mat55::Columns);
-        FOUNDATION_EXPECT_EQ(25, Mat55::Components);
+        EXPECT_EQ(5, Mat55::Rows);
+        EXPECT_EQ(5, Mat55::Columns);
+        EXPECT_EQ(25, Mat55::Components);
     }
 
-    FOUNDATION_TEST_CASE(ConstructMatrixWithArrayOfValues)
+    TEST_CASE(ConstructMatrixWithArrayOfValues)
     {
         const Mat55 m(Values);
 
-        FOUNDATION_EXPECT_SEQUENCE_EQ(25, Values, &m[0]);
+        EXPECT_SEQUENCE_EQ(25, Values, &m[0]);
     }
 
-    FOUNDATION_TEST_CASE(ConstructMatrixWithSingleValue)
+    TEST_CASE(ConstructMatrixWithSingleValue)
     {
         const Mat55 m(42.0);
 
         for (size_t i = 0; i < 25; ++i)
-            FOUNDATION_EXPECT_EQ(42.0, m[i]);
+            EXPECT_EQ(42.0, m[i]);
     }
 
-    FOUNDATION_TEST_CASE(ConstructMatrixByTypeConversion)
+    TEST_CASE(ConstructMatrixByTypeConversion)
     {
         const Mat55 m(Values);
         const Matrix<float, 5, 5> mf(m);
 
         for (size_t i = 0; i < 25; ++i)
-            FOUNDATION_EXPECT_FEQ(static_cast<float>(Values[i]), mf[i]);
+            EXPECT_FEQ(static_cast<float>(Values[i]), mf[i]);
     }
 
-    FOUNDATION_TEST_CASE(ConstructIdentityMatrix)
+    TEST_CASE(ConstructIdentityMatrix)
     {
         static const double Values[] =
         {
@@ -349,20 +349,20 @@ FOUNDATION_TEST_SUITE(Foundation_Math_MatrixNN)
 
         const Mat55 m(Mat55::identity());
 
-        FOUNDATION_EXPECT_SEQUENCE_EQ(25, Values, &m[0]);
+        EXPECT_SEQUENCE_EQ(25, Values, &m[0]);
     }
 
-    FOUNDATION_TEST_CASE(TestFortranStyleSubscripting)
+    TEST_CASE(TestFortranStyleSubscripting)
     {
         const Mat55 m(Values);
 
-        FOUNDATION_EXPECT_EQ(1.0, m(0, 0));
-        FOUNDATION_EXPECT_EQ(2.0, m(0, 1));
-        FOUNDATION_EXPECT_EQ(3.0, m(0, 2));
-        FOUNDATION_EXPECT_EQ(25.0, m(4, 4));
+        EXPECT_EQ(1.0, m(0, 0));
+        EXPECT_EQ(2.0, m(0, 1));
+        EXPECT_EQ(3.0, m(0, 2));
+        EXPECT_EQ(25.0, m(4, 4));
     }
 
-    FOUNDATION_TEST_CASE(TestInversionOfInvertibleMatrix)
+    TEST_CASE(TestInversionOfInvertibleMatrix)
     {
         static const double Values[] =
         {
@@ -381,11 +381,11 @@ FOUNDATION_TEST_SUITE(Foundation_Math_MatrixNN)
         typedef Matrix<double, 3, 3> Mat33;
 
         // Note: Visual C++ 8.0 generates incorrect code if the epsilon parameter is omitted.
-//      FOUNDATION_EXPECT_FEQ(Matrix3d(Expected), inverse(Matrix3d(Values)), default_eps<T>());
-        FOUNDATION_EXPECT_FEQ(Matrix3d(Expected), inverse(Matrix3d(Values)));
+//      EXPECT_FEQ(Matrix3d(Expected), inverse(Matrix3d(Values)), default_eps<T>());
+        EXPECT_FEQ(Matrix3d(Expected), inverse(Matrix3d(Values)));
     }
 
-    FOUNDATION_TEST_CASE(TestInversionOfSingularMatrix)
+    TEST_CASE(TestInversionOfSingularMatrix)
     {
         static const double Values[] =
         {
@@ -394,7 +394,7 @@ FOUNDATION_TEST_SUITE(Foundation_Math_MatrixNN)
             7.0, 8.0, 9.0
         };
 
-        FOUNDATION_EXPECT_EXCEPTION(
+        EXPECT_EXCEPTION(
             ExceptionSingularMatrix,
             {
                 // Note: Visual C++ 8.0 generates incorrect code if the epsilon parameter is omitted.
@@ -405,7 +405,7 @@ FOUNDATION_TEST_SUITE(Foundation_Math_MatrixNN)
     }
 }
 
-FOUNDATION_TEST_SUITE(Foundation_Math_Matrix33)
+TEST_SUITE(Foundation_Math_Matrix33)
 {
     using namespace foundation;
 
@@ -416,38 +416,38 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Matrix33)
         7.0, 8.0, 9.0
     };
 
-    FOUNDATION_TEST_CASE(TestProperties)
+    TEST_CASE(TestProperties)
     {
-        FOUNDATION_EXPECT_EQ(3, Matrix3d::Rows);
-        FOUNDATION_EXPECT_EQ(3, Matrix3d::Columns);
-        FOUNDATION_EXPECT_EQ(9, Matrix3d::Components);
+        EXPECT_EQ(3, Matrix3d::Rows);
+        EXPECT_EQ(3, Matrix3d::Columns);
+        EXPECT_EQ(9, Matrix3d::Components);
     }
 
-    FOUNDATION_TEST_CASE(ConstructMatrixWithArrayOfValues)
+    TEST_CASE(ConstructMatrixWithArrayOfValues)
     {
         const Matrix3d m(Values);
 
-        FOUNDATION_EXPECT_SEQUENCE_EQ(9, Values, &m[0]);
+        EXPECT_SEQUENCE_EQ(9, Values, &m[0]);
     }
 
-    FOUNDATION_TEST_CASE(ConstructMatrixWithSingleValue)
+    TEST_CASE(ConstructMatrixWithSingleValue)
     {
         const Matrix3d m(42.0);
 
         for (size_t i = 0; i < 9; ++i)
-            FOUNDATION_EXPECT_EQ(42.0, m[i]);
+            EXPECT_EQ(42.0, m[i]);
     }
 
-    FOUNDATION_TEST_CASE(ConstructMatrixByTypeConversion)
+    TEST_CASE(ConstructMatrixByTypeConversion)
     {
         const Matrix3d m(Values);
         const Matrix<float, 3, 3> mf(m);
 
         for (size_t i = 0; i < 9; ++i)
-            FOUNDATION_EXPECT_FEQ(static_cast<float>(Values[i]), mf[i]);
+            EXPECT_FEQ(static_cast<float>(Values[i]), mf[i]);
     }
 
-    FOUNDATION_TEST_CASE(ConstructIdentityMatrix)
+    TEST_CASE(ConstructIdentityMatrix)
     {
         static const double Values[] =
         {
@@ -458,20 +458,20 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Matrix33)
 
         const Matrix3d m(Matrix3d::identity());
 
-        FOUNDATION_EXPECT_SEQUENCE_EQ(9, Values, &m[0]);
+        EXPECT_SEQUENCE_EQ(9, Values, &m[0]);
     }
 
-    FOUNDATION_TEST_CASE(TestFortranStyleSubscripting)
+    TEST_CASE(TestFortranStyleSubscripting)
     {
         const Matrix3d m(Values);
 
-        FOUNDATION_EXPECT_EQ(1.0, m(0, 0));
-        FOUNDATION_EXPECT_EQ(2.0, m(0, 1));
-        FOUNDATION_EXPECT_EQ(3.0, m(0, 2));
-        FOUNDATION_EXPECT_EQ(9.0, m(2, 2));
+        EXPECT_EQ(1.0, m(0, 0));
+        EXPECT_EQ(2.0, m(0, 1));
+        EXPECT_EQ(3.0, m(0, 2));
+        EXPECT_EQ(9.0, m(2, 2));
     }
 
-    FOUNDATION_TEST_CASE(TestMatrixMatrixMultiplication)
+    TEST_CASE(TestMatrixMatrixMultiplication)
     {
         static const double Values1[] =
         {
@@ -494,11 +494,11 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Matrix33)
             -5.0, -13.0,   67.0
         };
 
-        FOUNDATION_EXPECT_FEQ(Matrix3d(Expected), Matrix3d(Values1) * Matrix3d(Values2));
+        EXPECT_FEQ(Matrix3d(Expected), Matrix3d(Values1) * Matrix3d(Values2));
     }
 }
 
-FOUNDATION_TEST_SUITE(Foundation_Math_Matrix44)
+TEST_SUITE(Foundation_Math_Matrix44)
 {
     using namespace foundation;
 
@@ -510,38 +510,38 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Matrix44)
         13.0, 14.0, 15.0, 16.0
     };
 
-    FOUNDATION_TEST_CASE(TestProperties)
+    TEST_CASE(TestProperties)
     {
-        FOUNDATION_EXPECT_EQ(4, Matrix4d::Rows);
-        FOUNDATION_EXPECT_EQ(4, Matrix4d::Columns);
-        FOUNDATION_EXPECT_EQ(16, Matrix4d::Components);
+        EXPECT_EQ(4, Matrix4d::Rows);
+        EXPECT_EQ(4, Matrix4d::Columns);
+        EXPECT_EQ(16, Matrix4d::Components);
     }
 
-    FOUNDATION_TEST_CASE(ConstructMatrixWithArrayOfValues)
+    TEST_CASE(ConstructMatrixWithArrayOfValues)
     {
         const Matrix4d m(Values);
 
-        FOUNDATION_EXPECT_SEQUENCE_EQ(16, Values, &m[0]);
+        EXPECT_SEQUENCE_EQ(16, Values, &m[0]);
     }
 
-    FOUNDATION_TEST_CASE(ConstructMatrixWithSingleValue)
+    TEST_CASE(ConstructMatrixWithSingleValue)
     {
         const Matrix4d m(42.0);
 
         for (size_t i = 0; i < 16; ++i)
-            FOUNDATION_EXPECT_EQ(42.0, m[i]);
+            EXPECT_EQ(42.0, m[i]);
     }
 
-    FOUNDATION_TEST_CASE(ConstructMatrixByTypeConversion)
+    TEST_CASE(ConstructMatrixByTypeConversion)
     {
         const Matrix4d m(Values);
         const Matrix<float, 4, 4> mf(m);
 
         for (size_t i = 0; i < 16; ++i)
-            FOUNDATION_EXPECT_FEQ(static_cast<float>(Values[i]), mf[i]);
+            EXPECT_FEQ(static_cast<float>(Values[i]), mf[i]);
     }
 
-    FOUNDATION_TEST_CASE(ConstructIdentityMatrix)
+    TEST_CASE(ConstructIdentityMatrix)
     {
         static const double Values[] =
         {
@@ -553,20 +553,20 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Matrix44)
 
         const Matrix4d m(Matrix4d::identity());
 
-        FOUNDATION_EXPECT_SEQUENCE_EQ(16, Values, &m[0]);
+        EXPECT_SEQUENCE_EQ(16, Values, &m[0]);
     }
 
-    FOUNDATION_TEST_CASE(TestFortranStyleSubscripting)
+    TEST_CASE(TestFortranStyleSubscripting)
     {
         const Matrix4d m(Values);
 
-        FOUNDATION_EXPECT_EQ(1.0, m(0, 0));
-        FOUNDATION_EXPECT_EQ(2.0, m(0, 1));
-        FOUNDATION_EXPECT_EQ(3.0, m(0, 2));
-        FOUNDATION_EXPECT_EQ(16.0, m(3, 3));
+        EXPECT_EQ(1.0, m(0, 0));
+        EXPECT_EQ(2.0, m(0, 1));
+        EXPECT_EQ(3.0, m(0, 2));
+        EXPECT_EQ(16.0, m(3, 3));
     }
 
-    FOUNDATION_TEST_CASE(TestMatrixMatrixMultiplication)
+    TEST_CASE(TestMatrixMatrixMultiplication)
     {
         static const double Values1[] =
         {
@@ -592,10 +592,10 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Matrix44)
             -58.0, -69.0,  55.0, -89.0
         };
 
-        FOUNDATION_EXPECT_FEQ(Matrix4d(Expected), Matrix4d(Values1) * Matrix4d(Values2));
+        EXPECT_FEQ(Matrix4d(Expected), Matrix4d(Values1) * Matrix4d(Values2));
     }
 
-    FOUNDATION_TEST_CASE(TestMatrixVectorMultiplication)
+    TEST_CASE(TestMatrixVectorMultiplication)
     {
         static const double Values[] =
         {
@@ -608,10 +608,10 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Matrix44)
         const Vector<double, 4> Vec(73.0, 76.0, -68.0, 67.0);
         const Vector<double, 4> Expected(1908.0, -15802.0, 8382.0, -13928.0);
 
-        FOUNDATION_EXPECT_FEQ(Expected, Matrix4d(Values) * Vec);
+        EXPECT_FEQ(Expected, Matrix4d(Values) * Vec);
     }
 
-    FOUNDATION_TEST_CASE(TestVectorMatrixMultiplication)
+    TEST_CASE(TestVectorMatrixMultiplication)
     {
         static const double Values[] =
         {
@@ -624,6 +624,6 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Matrix44)
         const Vector<double, 4> Vec(11.0, 93.0, -14.0, 73.0);
         const Vector<double, 4> Expected(-4987.0, -1658.0, -12593.0, 5759.0);
 
-        FOUNDATION_EXPECT_FEQ(Expected, Vec * Matrix4d(Values));
+        EXPECT_FEQ(Expected, Vec * Matrix4d(Values));
     }
 }

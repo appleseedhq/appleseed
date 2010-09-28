@@ -34,7 +34,7 @@
 #include "foundation/utility/implptr.h"
 #include "foundation/utility/test.h"
 
-FOUNDATION_TEST_SUITE(Foundation_Utility_ImplPtr)
+TEST_SUITE(Foundation_Utility_ImplPtr)
 {
     using namespace foundation;
     using namespace std;
@@ -98,7 +98,7 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_ImplPtr)
     {
     }
 
-    FOUNDATION_TEST_CASE(ImplDefaultConstructorIsProperlyCalled)
+    TEST_CASE(ImplDefaultConstructorIsProperlyCalled)
     {
         Watchers watchers;
 
@@ -106,10 +106,10 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_ImplPtr)
             Foo foo(watchers);
         }
 
-        FOUNDATION_EXPECT_EQ(1, watchers.m_default_constructed);
+        EXPECT_EQ(1, watchers.m_default_constructed);
     }
 
-    FOUNDATION_TEST_CASE(ImplCopyConstructorIsProperlyCalled)
+    TEST_CASE(ImplCopyConstructorIsProperlyCalled)
     {
         Watchers watchers;
 
@@ -118,10 +118,10 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_ImplPtr)
             Foo copy(foo);
         }
 
-        FOUNDATION_EXPECT_EQ(1, watchers.m_copy_constructed);
+        EXPECT_EQ(1, watchers.m_copy_constructed);
     }
 
-    FOUNDATION_TEST_CASE(ImplAssignmentOperatorIsProperlyCalled)
+    TEST_CASE(ImplAssignmentOperatorIsProperlyCalled)
     {
         Watchers watchers;
 
@@ -131,10 +131,10 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_ImplPtr)
             foo1 = foo2;
         }
 
-        FOUNDATION_EXPECT_EQ(1, watchers.m_assigned);
+        EXPECT_EQ(1, watchers.m_assigned);
     }
 
-    FOUNDATION_TEST_CASE(ImplDestructorIsProperlyCalled)
+    TEST_CASE(ImplDestructorIsProperlyCalled)
     {
         Watchers watchers;
 
@@ -142,7 +142,7 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_ImplPtr)
             Foo foo(watchers);
         }
 
-        FOUNDATION_EXPECT_EQ(1, watchers.m_destructed);
+        EXPECT_EQ(1, watchers.m_destructed);
     }
 
     class CopyableFoo
@@ -173,30 +173,30 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_ImplPtr)
         return impl->x;
     }
 
-    FOUNDATION_TEST_CASE(ConstructionOfCopyableClass)
+    TEST_CASE(ConstructionOfCopyableClass)
     {
         CopyableFoo foo(42);
 
-        FOUNDATION_EXPECT_EQ(42, foo.get());
+        EXPECT_EQ(42, foo.get());
     }
 
-    FOUNDATION_TEST_CASE(CopyConstructionOfCopyableClass)
+    TEST_CASE(CopyConstructionOfCopyableClass)
     {
         CopyableFoo foo(42);
 
         CopyableFoo copy(foo);
 
-        FOUNDATION_EXPECT_EQ(42, copy.get());
+        EXPECT_EQ(42, copy.get());
     }
 
-    FOUNDATION_TEST_CASE(AssignmentOfCopyableClass)
+    TEST_CASE(AssignmentOfCopyableClass)
     {
         CopyableFoo foo(42);
         CopyableFoo copy(0);
 
         copy = foo;
 
-        FOUNDATION_EXPECT_EQ(42, copy.get());
+        EXPECT_EQ(42, copy.get());
     }
 
     class NonCopyableFoo
@@ -228,11 +228,11 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_ImplPtr)
         return impl->x;
     }
 
-    FOUNDATION_TEST_CASE(ConstructionOfNonCopyableClass)
+    TEST_CASE(ConstructionOfNonCopyableClass)
     {
         NonCopyableFoo foo(42);
 
-        FOUNDATION_EXPECT_EQ(42, foo.get());
+        EXPECT_EQ(42, foo.get());
     }
 
     class NonCopyableFoo2

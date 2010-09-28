@@ -31,70 +31,70 @@
 #include "foundation/math/fp.h"
 #include "foundation/utility/test.h"
 
-FOUNDATION_TEST_SUITE(Foundation_Math_CDF)
+TEST_SUITE(Foundation_Math_CDF)
 {
     using namespace foundation;
     using namespace std;
 
     typedef CDF<int, double> CDF;
 
-    FOUNDATION_TEST_CASE(Empty_GivenCDFInInitialState_ReturnsTrue)
+    TEST_CASE(Empty_GivenCDFInInitialState_ReturnsTrue)
     {
         CDF cdf;
 
-        FOUNDATION_EXPECT_TRUE(cdf.empty());
+        EXPECT_TRUE(cdf.empty());
     }
 
-    FOUNDATION_TEST_CASE(Valid_GivenCDFInInitialState_ReturnsFalse)
+    TEST_CASE(Valid_GivenCDFInInitialState_ReturnsFalse)
     {
         CDF cdf;
 
-        FOUNDATION_EXPECT_FALSE(cdf.valid());
+        EXPECT_FALSE(cdf.valid());
     }
 
-    FOUNDATION_TEST_CASE(Empty_GivenCDFWithOneItem_ReturnsFalse)
-    {
-        CDF cdf;
-        cdf.insert(1, 0.5);
-
-        FOUNDATION_EXPECT_FALSE(cdf.empty());
-    }
-
-    FOUNDATION_TEST_CASE(Valid_GivenCDFWithOneItemWithPositiveWeight_ReturnsTrue)
+    TEST_CASE(Empty_GivenCDFWithOneItem_ReturnsFalse)
     {
         CDF cdf;
         cdf.insert(1, 0.5);
 
-        FOUNDATION_EXPECT_TRUE(cdf.valid());
+        EXPECT_FALSE(cdf.empty());
     }
 
-    FOUNDATION_TEST_CASE(Valid_GivenCDFWithOneItemWithZeroWeight_ReturnsFalse)
+    TEST_CASE(Valid_GivenCDFWithOneItemWithPositiveWeight_ReturnsTrue)
+    {
+        CDF cdf;
+        cdf.insert(1, 0.5);
+
+        EXPECT_TRUE(cdf.valid());
+    }
+
+    TEST_CASE(Valid_GivenCDFWithOneItemWithZeroWeight_ReturnsFalse)
     {
         CDF cdf;
         cdf.insert(1, 0.0);
 
-        FOUNDATION_EXPECT_FALSE(cdf.valid());
+        EXPECT_FALSE(cdf.valid());
     }
 
-    FOUNDATION_TEST_CASE(Clear_GivenCDFWithOneItem_RemovesItem)
+    TEST_CASE(Clear_GivenCDFWithOneItem_RemovesItem)
     {
         CDF cdf;
         cdf.insert(1, 0.5);
         cdf.clear();
 
-        FOUNDATION_EXPECT_TRUE(cdf.empty());
+        EXPECT_TRUE(cdf.empty());
     }
 
-    FOUNDATION_TEST_CASE(Clear_GivenCDFWithOneItem_MakesCDFInvalid)
+    TEST_CASE(Clear_GivenCDFWithOneItem_MakesCDFInvalid)
     {
         CDF cdf;
         cdf.insert(1, 0.5);
         cdf.clear();
 
-        FOUNDATION_EXPECT_FALSE(cdf.valid());
+        EXPECT_FALSE(cdf.valid());
     }
 
-    FOUNDATION_TEST_CASE(Sample_GivenCDFWithOneItemWithPositiveWeight_ReturnsItem)
+    TEST_CASE(Sample_GivenCDFWithOneItemWithPositiveWeight_ReturnsItem)
     {
         CDF cdf;
         cdf.insert(1, 0.5);
@@ -102,8 +102,8 @@ FOUNDATION_TEST_SUITE(Foundation_Math_CDF)
 
         const CDF::ItemWeightPair result = cdf.sample(0.5);
 
-        FOUNDATION_EXPECT_EQ(1, result.first);
-        FOUNDATION_EXPECT_FEQ(1.0, result.second);
+        EXPECT_EQ(1, result.first);
+        EXPECT_FEQ(1.0, result.second);
     }
 
     struct Fixture
@@ -118,40 +118,40 @@ FOUNDATION_TEST_SUITE(Foundation_Math_CDF)
         }
     };
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(Sample_GivenInputEqualToZero_ReturnsItems1, Fixture)
+    TEST_CASE_WITH_FIXTURE(Sample_GivenInputEqualToZero_ReturnsItems1, Fixture)
     {
         const CDF::ItemWeightPair result = m_cdf.sample(0.0);
 
-        FOUNDATION_EXPECT_EQ(1, result.first);
-        FOUNDATION_EXPECT_FEQ(0.2, result.second);
+        EXPECT_EQ(1, result.first);
+        EXPECT_FEQ(0.2, result.second);
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(Sample_GivenInputEqualTo0_2_ReturnsItems2, Fixture)
+    TEST_CASE_WITH_FIXTURE(Sample_GivenInputEqualTo0_2_ReturnsItems2, Fixture)
     {
         const CDF::ItemWeightPair result = m_cdf.sample(0.2);
 
-        FOUNDATION_EXPECT_EQ(2, result.first);
-        FOUNDATION_EXPECT_FEQ(0.8, result.second);
+        EXPECT_EQ(2, result.first);
+        EXPECT_FEQ(0.8, result.second);
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(Sample_GivenInputNearOne_ReturnsItem2, Fixture)
+    TEST_CASE_WITH_FIXTURE(Sample_GivenInputNearOne_ReturnsItem2, Fixture)
     {
         const CDF::ItemWeightPair result = m_cdf.sample(0.99);
 
-        FOUNDATION_EXPECT_EQ(2, result.first);
-        FOUNDATION_EXPECT_FEQ(0.8, result.second);
+        EXPECT_EQ(2, result.first);
+        EXPECT_FEQ(0.8, result.second);
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(Sample_GivenInputOneUlpBeforeOne_ReturnsItem2, Fixture)
+    TEST_CASE_WITH_FIXTURE(Sample_GivenInputOneUlpBeforeOne_ReturnsItem2, Fixture)
     {
         const double almost_one = shift(1.0, -1);
         const CDF::ItemWeightPair result = m_cdf.sample(almost_one);
 
-        FOUNDATION_EXPECT_EQ(2, result.first);
-        FOUNDATION_EXPECT_FEQ(0.8, result.second);
+        EXPECT_EQ(2, result.first);
+        EXPECT_FEQ(0.8, result.second);
     }
 
-    FOUNDATION_TEST_CASE(2D_CDF_Exploration)
+    TEST_CASE(2D_CDF_Exploration)
     {
         CDF child[2];
 
@@ -177,7 +177,7 @@ FOUNDATION_TEST_SUITE(Foundation_Math_CDF)
         const int value = v.first;
         const double prob = u.second * v.second;
 
-        FOUNDATION_EXPECT_EQ(2, value);
-        FOUNDATION_EXPECT_FEQ(0.7 * (2.0 / 3), prob);
+        EXPECT_EQ(2, value);
+        EXPECT_FEQ(0.7 * (2.0 / 3), prob);
     }
 }

@@ -49,7 +49,7 @@ using namespace foundation;
 using namespace renderer;
 using namespace std;
 
-FOUNDATION_TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
+TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
 {
     class HorizontalGradientTexture
       : public Texture
@@ -189,7 +189,7 @@ FOUNDATION_TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
         }
     };
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(CheckConstantEnvironmentEDFConsistency, Fixture)
+    TEST_CASE_WITH_FIXTURE(CheckConstantEnvironmentEDFConsistency, Fixture)
     {
         create_color_entity("blue", Color3f(0.2f, 0.5f, 0.9f));
 
@@ -202,10 +202,10 @@ FOUNDATION_TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
 
         const bool consistent = check_consistency(env_edf_ref);
 
-        FOUNDATION_EXPECT_TRUE(consistent);
+        EXPECT_TRUE(consistent);
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(CheckGradientEnvironmentEDFConsistency, Fixture)
+    TEST_CASE_WITH_FIXTURE(CheckGradientEnvironmentEDFConsistency, Fixture)
     {
         create_color_entity("red", Color3f(1.0f, 0.2f, 0.2f));
         create_color_entity("green", Color3f(0.2f, 1.0f, 0.2f));
@@ -221,10 +221,10 @@ FOUNDATION_TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
 
         const bool consistent = check_consistency(env_edf_ref);
 
-        FOUNDATION_EXPECT_TRUE(consistent);
+        EXPECT_TRUE(consistent);
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(CheckLatLongMapEnvironmentEDFConsistency, Fixture)
+    TEST_CASE_WITH_FIXTURE(CheckLatLongMapEnvironmentEDFConsistency, Fixture)
     {
         const size_t texture_index =
             create_horizontal_gradient_texture("horiz_gradient_texture");
@@ -240,10 +240,10 @@ FOUNDATION_TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
 
         const bool consistent = check_consistency(env_edf_ref);
 
-        FOUNDATION_EXPECT_TRUE(consistent);
+        EXPECT_TRUE(consistent);
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(CheckMirrorBallMapEnvironmentEDFConsistency, Fixture)
+    TEST_CASE_WITH_FIXTURE(CheckMirrorBallMapEnvironmentEDFConsistency, Fixture)
     {
         const size_t texture_index =
             create_horizontal_gradient_texture("horiz_gradient_texture");
@@ -259,6 +259,6 @@ FOUNDATION_TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
 
         const bool consistent = check_consistency(env_edf_ref);
 
-        FOUNDATION_EXPECT_TRUE(consistent);
+        EXPECT_TRUE(consistent);
     }
 }

@@ -34,23 +34,23 @@
 
 using namespace foundation;
 
-FOUNDATION_TEST_SUITE(Foundation_Math_Fresnel)
+TEST_SUITE(Foundation_Math_Fresnel)
 {
-    FOUNDATION_TEST_CASE(SchlickFresnelReflection_GivenCosThetaIsZero_ReturnsOne)
+    TEST_CASE(SchlickFresnelReflection_GivenCosThetaIsZero_ReturnsOne)
     {
         const Spectrum31f NormalReflectance(42.0f);
 
         const Spectrum31f result = schlick_fresnel_reflection(NormalReflectance, 0.0);
 
-        FOUNDATION_EXPECT_EQ(Spectrum31f(1.0f), result);
+        EXPECT_EQ(Spectrum31f(1.0f), result);
     }
 
-    FOUNDATION_TEST_CASE(SchlickFresnelReflection_GivenCosThetaIsOne_ReturnsNormalReflectance)
+    TEST_CASE(SchlickFresnelReflection_GivenCosThetaIsOne_ReturnsNormalReflectance)
     {
         const Spectrum31f NormalReflectance(42.0f);
 
         const Spectrum31f result = schlick_fresnel_reflection(NormalReflectance, 1.0);
 
-        FOUNDATION_EXPECT_EQ(NormalReflectance, result);
+        EXPECT_EQ(NormalReflectance, result);
     }
 }

@@ -86,11 +86,11 @@ namespace
     };
 }
 
-FOUNDATION_TEST_SUITE(Foundation_Utility_Cache_DualStageCache)
+TEST_SUITE(Foundation_Utility_Cache_DualStageCache)
 {
     using namespace foundation;
 
-    FOUNDATION_TEST_CASE(StressTest)
+    TEST_CASE(StressTest)
     {
         MyKeyHasher key_hasher;
         MyElementSwapper element_swapper;
@@ -115,7 +115,7 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Cache_DualStageCache)
             const MyElement expected = key * 10;
 
             const MyElement* value = cache.get(key);
-            FOUNDATION_EXPECT_EQ(expected, *value);
+            EXPECT_EQ(expected, *value);
 
             cache.check_integrity(checker);
         }

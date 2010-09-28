@@ -41,25 +41,25 @@
 using namespace foundation;
 using namespace std;
 
-FOUNDATION_TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
+TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
 {
     typedef MersenneTwister RNG;
     typedef QMCSamplingContext<RNG> QMCSamplingContext;
     typedef QMCSamplingContext::VectorType VectorType;
 
-    FOUNDATION_TEST_CASE(InitialStateIsCorrect)
+    TEST_CASE(InitialStateIsCorrect)
     {
         RNG rng;
         QMCSamplingContext context(rng, 2, 64, 7);
 
-        FOUNDATION_EXPECT_EQ(0, context.m_base_dimension);
-        FOUNDATION_EXPECT_EQ(0, context.m_base_instance);
-        FOUNDATION_EXPECT_EQ(2, context.m_dimension);
-        FOUNDATION_EXPECT_EQ(7, context.m_instance);
-        FOUNDATION_EXPECT_EQ(VectorType(0.0), context.m_offset);
+        EXPECT_EQ(0, context.m_base_dimension);
+        EXPECT_EQ(0, context.m_base_instance);
+        EXPECT_EQ(2, context.m_dimension);
+        EXPECT_EQ(7, context.m_instance);
+        EXPECT_EQ(VectorType(0.0), context.m_offset);
     }
 
-    FOUNDATION_TEST_CASE(TestAssignmentOperator)
+    TEST_CASE(TestAssignmentOperator)
     {
         RNG rng;
         QMCSamplingContext original_parent(rng, 2, 64, 7);
@@ -69,39 +69,39 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
         QMCSamplingContext copy(rng, 5, 16, 9);
         copy = original;
 
-        FOUNDATION_EXPECT_EQ(2, copy.m_base_dimension);
-        FOUNDATION_EXPECT_EQ(7, copy.m_base_instance);
-        FOUNDATION_EXPECT_EQ(3, copy.m_dimension);
-        FOUNDATION_EXPECT_EQ(6, copy.m_instance);
+        EXPECT_EQ(2, copy.m_base_dimension);
+        EXPECT_EQ(7, copy.m_base_instance);
+        EXPECT_EQ(3, copy.m_dimension);
+        EXPECT_EQ(6, copy.m_instance);
     }
 
-    FOUNDATION_TEST_CASE(TestSplitting)
+    TEST_CASE(TestSplitting)
     {
         RNG rng;
         QMCSamplingContext context(rng, 2, 64, 7);
         QMCSamplingContext child_context = context.split(3, 16);
 
-        FOUNDATION_EXPECT_EQ(2, child_context.m_base_dimension);
-        FOUNDATION_EXPECT_EQ(7, child_context.m_base_instance);
-        FOUNDATION_EXPECT_EQ(3, child_context.m_dimension);
-        FOUNDATION_EXPECT_EQ(0, child_context.m_instance);
+        EXPECT_EQ(2, child_context.m_base_dimension);
+        EXPECT_EQ(7, child_context.m_base_instance);
+        EXPECT_EQ(3, child_context.m_dimension);
+        EXPECT_EQ(0, child_context.m_instance);
     }
 
-    FOUNDATION_TEST_CASE(TestDoubleSplitting)
+    TEST_CASE(TestDoubleSplitting)
     {
         RNG rng;
         QMCSamplingContext context(rng, 2, 64, 7);
         QMCSamplingContext child_context = context.split(3, 16);
         QMCSamplingContext child_child_context = child_context.split(4, 8);
 
-        FOUNDATION_EXPECT_EQ(5, child_child_context.m_base_dimension);
-        FOUNDATION_EXPECT_EQ(7, child_child_context.m_base_instance);
-        FOUNDATION_EXPECT_EQ(4, child_child_context.m_dimension);
-        FOUNDATION_EXPECT_EQ(0, child_child_context.m_instance);
+        EXPECT_EQ(5, child_child_context.m_base_dimension);
+        EXPECT_EQ(7, child_child_context.m_base_instance);
+        EXPECT_EQ(4, child_child_context.m_dimension);
+        EXPECT_EQ(0, child_child_context.m_instance);
     }
 }
 
-FOUNDATION_TEST_SUITE(Foundation_Math_Sampling_RQMCSamplingContext)
+TEST_SUITE(Foundation_Math_Sampling_RQMCSamplingContext)
 {
     using namespace foundation;
 
@@ -109,19 +109,19 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Sampling_RQMCSamplingContext)
     typedef RQMCSamplingContext<RNG> RQMCSamplingContext;
     typedef RQMCSamplingContext::VectorType VectorType;
 
-    FOUNDATION_TEST_CASE(InitialStateIsCorrect)
+    TEST_CASE(InitialStateIsCorrect)
     {
         RNG rng;
         RQMCSamplingContext context(rng, 2, 64, 7);
 
-        FOUNDATION_EXPECT_EQ(0, context.m_base_dimension);
-        FOUNDATION_EXPECT_EQ(0, context.m_base_instance);
-        FOUNDATION_EXPECT_EQ(2, context.m_dimension);
-        FOUNDATION_EXPECT_EQ(7, context.m_instance);
-        FOUNDATION_EXPECT_EQ(VectorType(0.0), context.m_offset);
+        EXPECT_EQ(0, context.m_base_dimension);
+        EXPECT_EQ(0, context.m_base_instance);
+        EXPECT_EQ(2, context.m_dimension);
+        EXPECT_EQ(7, context.m_instance);
+        EXPECT_EQ(VectorType(0.0), context.m_offset);
     }
 
-    FOUNDATION_TEST_CASE(TestAssignmentOperator)
+    TEST_CASE(TestAssignmentOperator)
     {
         RNG rng;
         RQMCSamplingContext original_parent(rng, 2, 64, 7);
@@ -131,39 +131,39 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Sampling_RQMCSamplingContext)
         RQMCSamplingContext copy(rng, 5, 16, 9);
         copy = original;
 
-        FOUNDATION_EXPECT_EQ(2, copy.m_base_dimension);
-        FOUNDATION_EXPECT_EQ(7, copy.m_base_instance);
-        FOUNDATION_EXPECT_EQ(3, copy.m_dimension);
-        FOUNDATION_EXPECT_EQ(6, copy.m_instance);
+        EXPECT_EQ(2, copy.m_base_dimension);
+        EXPECT_EQ(7, copy.m_base_instance);
+        EXPECT_EQ(3, copy.m_dimension);
+        EXPECT_EQ(6, copy.m_instance);
     }
 
-    FOUNDATION_TEST_CASE(TestSplitting)
+    TEST_CASE(TestSplitting)
     {
         RNG rng;
         RQMCSamplingContext context(rng, 2, 64, 7);
         RQMCSamplingContext child_context = context.split(3, 16);
 
-        FOUNDATION_EXPECT_EQ(2, child_context.m_base_dimension);
-        FOUNDATION_EXPECT_EQ(7, child_context.m_base_instance);
-        FOUNDATION_EXPECT_EQ(3, child_context.m_dimension);
-        FOUNDATION_EXPECT_EQ(0, child_context.m_instance);
+        EXPECT_EQ(2, child_context.m_base_dimension);
+        EXPECT_EQ(7, child_context.m_base_instance);
+        EXPECT_EQ(3, child_context.m_dimension);
+        EXPECT_EQ(0, child_context.m_instance);
     }
 
-    FOUNDATION_TEST_CASE(TestDoubleSplitting)
+    TEST_CASE(TestDoubleSplitting)
     {
         RNG rng;
         RQMCSamplingContext context(rng, 2, 64, 7);
         RQMCSamplingContext child_context = context.split(3, 16);
         RQMCSamplingContext child_child_context = child_context.split(4, 8);
 
-        FOUNDATION_EXPECT_EQ(5, child_child_context.m_base_dimension);
-        FOUNDATION_EXPECT_EQ(7, child_child_context.m_base_instance);
-        FOUNDATION_EXPECT_EQ(4, child_child_context.m_dimension);
-        FOUNDATION_EXPECT_EQ(0, child_child_context.m_instance);
+        EXPECT_EQ(5, child_child_context.m_base_dimension);
+        EXPECT_EQ(7, child_child_context.m_base_instance);
+        EXPECT_EQ(4, child_child_context.m_dimension);
+        EXPECT_EQ(0, child_child_context.m_instance);
     }
 }
 
-FOUNDATION_TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext_DirectIlluminationSimulation)
+TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext_DirectIlluminationSimulation)
 {
     typedef MersenneTwister RNG;
     typedef QMCSamplingContext<RNG> SamplingContext;
@@ -210,17 +210,17 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext_DirectIllumina
         write_point_cloud_image(title + "_light_samples.png", light_samples);
     }
 
-    FOUNDATION_TEST_CASE(TestWith1PixelSampleAnd256LightSamples)
+    TEST_CASE(TestWith1PixelSampleAnd256LightSamples)
     {
         render(1, 256);
     }
 
-    FOUNDATION_TEST_CASE(TestWith16PixelSamplesAnd16LightSamples)
+    TEST_CASE(TestWith16PixelSamplesAnd16LightSamples)
     {
         render(16, 16);
     }
 
-    FOUNDATION_TEST_CASE(TestWith256PixelSamplesAnd1LightSample)
+    TEST_CASE(TestWith256PixelSamplesAnd1LightSample)
     {
         render(256, 1);
     }

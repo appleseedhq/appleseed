@@ -39,9 +39,9 @@
 using namespace foundation;
 using namespace renderer;
 
-FOUNDATION_TEST_SUITE(Renderer_Modeling_Project_ProjectFileReader)
+TEST_SUITE(Renderer_Modeling_Project_ProjectFileReader)
 {
-    FOUNDATION_TEST_CASE(ParsingOfConfigurationBlocks)
+    TEST_CASE(ParsingOfConfigurationBlocks)
     {
         ProjectFileReader reader;
         auto_release_ptr<Project> project =
@@ -49,7 +49,7 @@ FOUNDATION_TEST_SUITE(Renderer_Modeling_Project_ProjectFileReader)
                 "data/test_projectfilereader_configurationblocks.appleseed",
                 "../../schemas/project.xsd");   // path relative to input file
 
-        FOUNDATION_ASSERT_NEQ(0, project.get());
+        ASSERT_NEQ(0, project.get());
 
         project->set_path("output/test_projectfilereader_configurationblocks.appleseed");
 
@@ -60,6 +60,6 @@ FOUNDATION_TEST_SUITE(Renderer_Modeling_Project_ProjectFileReader)
                 "data/test_projectfilereader_configurationblocks.appleseed",
                 "output/test_projectfilereader_configurationblocks.appleseed");
 
-        FOUNDATION_EXPECT_TRUE(identical);
+        EXPECT_TRUE(identical);
     }
 }

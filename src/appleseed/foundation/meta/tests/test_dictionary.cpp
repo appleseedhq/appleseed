@@ -36,133 +36,133 @@
 using namespace foundation;
 using namespace std;
 
-FOUNDATION_TEST_SUITE(Foundation_Utility_StringDictionary)
+TEST_SUITE(Foundation_Utility_StringDictionary)
 {
-    FOUNDATION_TEST_CASE(Insert_ReturnsThisPointer)
+    TEST_CASE(Insert_ReturnsThisPointer)
     {
         StringDictionary sd;
 
         const StringDictionary* result = &sd.insert("key", "value");
 
-        FOUNDATION_EXPECT_EQ(&sd, result);
+        EXPECT_EQ(&sd, result);
     }
 
-    FOUNDATION_TEST_CASE(Get_GivenCStringKeyOfNonExistingItem_ThrowsExceptionDictionaryItemNotFound)
+    TEST_CASE(Get_GivenCStringKeyOfNonExistingItem_ThrowsExceptionDictionaryItemNotFound)
     {
         StringDictionary sd;
 
-        FOUNDATION_EXPECT_EXCEPTION(ExceptionDictionaryItemNotFound,
+        EXPECT_EXCEPTION(ExceptionDictionaryItemNotFound,
         {
             const char* item = sd.get("key");
         });
     }
 
-    FOUNDATION_TEST_CASE(GetAsInt_GivenCStringKeyOfNonExistingItem_ThrowsExceptionDictionaryItemNotFound)
+    TEST_CASE(GetAsInt_GivenCStringKeyOfNonExistingItem_ThrowsExceptionDictionaryItemNotFound)
     {
         StringDictionary sd;
 
-        FOUNDATION_EXPECT_EXCEPTION(ExceptionDictionaryItemNotFound,
+        EXPECT_EXCEPTION(ExceptionDictionaryItemNotFound,
         {
             const int item = sd.get<int>("key");
         });
     }
 
-    FOUNDATION_TEST_CASE(GetAsInt_GivenStdStringKeyOfNonExistingItem_ThrowsExceptionDictionaryItemNotFound)
+    TEST_CASE(GetAsInt_GivenStdStringKeyOfNonExistingItem_ThrowsExceptionDictionaryItemNotFound)
     {
         StringDictionary sd;
 
-        FOUNDATION_EXPECT_EXCEPTION(ExceptionDictionaryItemNotFound,
+        EXPECT_EXCEPTION(ExceptionDictionaryItemNotFound,
         {
             const int item = sd.get<int>(string("key"));
         });
     }
 
-    FOUNDATION_TEST_CASE(Remove_GivenCStringKeyOfExistingItem_RemovesItem)
+    TEST_CASE(Remove_GivenCStringKeyOfExistingItem_RemovesItem)
     {
         StringDictionary sd;
         sd.insert("key", "value");
 
         sd.remove("key");
 
-        FOUNDATION_EXPECT_FALSE(sd.exist("key"));
+        EXPECT_FALSE(sd.exist("key"));
     }
 
-    FOUNDATION_TEST_CASE(Remove_GivenStdStringKeyOfExistingItem_RemovesItem)
+    TEST_CASE(Remove_GivenStdStringKeyOfExistingItem_RemovesItem)
     {
         StringDictionary sd;
         sd.insert("key", "value");
 
         sd.remove(string("key"));
 
-        FOUNDATION_EXPECT_FALSE(sd.exist("key"));
+        EXPECT_FALSE(sd.exist("key"));
     }
 
-    FOUNDATION_TEST_CASE(Remove_GivenCStringKeyOfNonExistingItem_DoesNothing)
+    TEST_CASE(Remove_GivenCStringKeyOfNonExistingItem_DoesNothing)
     {
         StringDictionary sd;
 
         sd.remove("key");
     }
 
-    FOUNDATION_TEST_CASE(Remove_ReturnsThisPointer)
+    TEST_CASE(Remove_ReturnsThisPointer)
     {
         StringDictionary sd;
 
         const StringDictionary* result = &sd.remove("key");
 
-        FOUNDATION_EXPECT_EQ(&sd, result);
+        EXPECT_EQ(&sd, result);
     }
 }
 
-FOUNDATION_TEST_SUITE(Foundation_Utility_DictionaryDictionary)
+TEST_SUITE(Foundation_Utility_DictionaryDictionary)
 {
-    FOUNDATION_TEST_CASE(Insert_ReturnsThisPointer)
+    TEST_CASE(Insert_ReturnsThisPointer)
     {
         DictionaryDictionary dd;
 
         const DictionaryDictionary* result = &dd.insert("key", Dictionary());
 
-        FOUNDATION_EXPECT_EQ(&dd, result);
+        EXPECT_EQ(&dd, result);
     }
 
-    FOUNDATION_TEST_CASE(Remove_GivenCStringKeyOfNonExistingItem_DoesNothing)
+    TEST_CASE(Remove_GivenCStringKeyOfNonExistingItem_DoesNothing)
     {
         DictionaryDictionary dd;
 
         dd.remove("key");
     }
 
-    FOUNDATION_TEST_CASE(Remove_ReturnsThisPointer)
+    TEST_CASE(Remove_ReturnsThisPointer)
     {
         DictionaryDictionary dd;
 
         const DictionaryDictionary* result = &dd.remove("key");
 
-        FOUNDATION_EXPECT_EQ(&dd, result);
+        EXPECT_EQ(&dd, result);
     }
 }
 
-FOUNDATION_TEST_SUITE(Foundation_Utility_Dictionary)
+TEST_SUITE(Foundation_Utility_Dictionary)
 {
-    FOUNDATION_TEST_CASE(Constructor_ConstructsEmptyDictionary)
+    TEST_CASE(Constructor_ConstructsEmptyDictionary)
     {
         Dictionary dic;
 
-        FOUNDATION_EXPECT_EQ(0, dic.size());
-        FOUNDATION_EXPECT_TRUE(dic.empty());
+        EXPECT_EQ(0, dic.size());
+        EXPECT_TRUE(dic.empty());
     }
 
-    FOUNDATION_TEST_CASE(CopyConstructor_GivenSourceDictionaryWithOneStringItem_CopiesStringItem)
+    TEST_CASE(CopyConstructor_GivenSourceDictionaryWithOneStringItem_CopiesStringItem)
     {
         Dictionary dic;
         dic.insert("key", "value");
 
         Dictionary copy(dic);
 
-        FOUNDATION_EXPECT_EQ("value", copy.get<string>("key"));
+        EXPECT_EQ("value", copy.get<string>("key"));
     }
 
-    FOUNDATION_TEST_CASE(CopyConstructor_GivenSourceDictionaryWithOneDictionaryItem_CopiesDictionaryItem)
+    TEST_CASE(CopyConstructor_GivenSourceDictionaryWithOneDictionaryItem_CopiesDictionaryItem)
     {
         Dictionary child;
         child.insert("key", "value");
@@ -172,10 +172,10 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Dictionary)
 
         Dictionary copy(dic);
 
-        FOUNDATION_EXPECT_EQ("value", copy.dictionary("child").get<string>("key"));
+        EXPECT_EQ("value", copy.dictionary("child").get<string>("key"));
     }
 
-    FOUNDATION_TEST_CASE(AssignmentOperator_GivenSourceDictionaryWithOneStringItem_CopiesStringItem)
+    TEST_CASE(AssignmentOperator_GivenSourceDictionaryWithOneStringItem_CopiesStringItem)
     {
         Dictionary dic;
         dic.insert("key", "value");
@@ -183,10 +183,10 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Dictionary)
         Dictionary other;
         other = dic;
 
-        FOUNDATION_EXPECT_EQ("value", other.get<string>("key"));
+        EXPECT_EQ("value", other.get<string>("key"));
     }
 
-    FOUNDATION_TEST_CASE(AssignmentOperator_GivenSourceDictionaryWithOneDictionaryItem_CopiesDictionaryItem)
+    TEST_CASE(AssignmentOperator_GivenSourceDictionaryWithOneDictionaryItem_CopiesDictionaryItem)
     {
         Dictionary child;
         child.insert("key", "value");
@@ -197,119 +197,119 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Dictionary)
         Dictionary other;
         other = dic;
 
-        FOUNDATION_EXPECT_EQ("value", other.dictionary("child").get<string>("key"));
+        EXPECT_EQ("value", other.dictionary("child").get<string>("key"));
     }
 
-    FOUNDATION_TEST_CASE(Clear_GivenDictionaryWithOneStringItem_RemovesItem)
+    TEST_CASE(Clear_GivenDictionaryWithOneStringItem_RemovesItem)
     {
         Dictionary dic;
         dic.insert("key", "value");
 
         dic.clear();
 
-        FOUNDATION_EXPECT_EQ(0, dic.size());
-        FOUNDATION_EXPECT_TRUE(dic.empty());
+        EXPECT_EQ(0, dic.size());
+        EXPECT_TRUE(dic.empty());
     }
 
-    FOUNDATION_TEST_CASE(Clear_GivenDictionaryWithOneDictionaryItem_RemovesItem)
+    TEST_CASE(Clear_GivenDictionaryWithOneDictionaryItem_RemovesItem)
     {
         Dictionary dic;
         dic.insert("key", Dictionary());
 
         dic.clear();
 
-        FOUNDATION_EXPECT_EQ(0, dic.size());
-        FOUNDATION_EXPECT_TRUE(dic.empty());
+        EXPECT_EQ(0, dic.size());
+        EXPECT_TRUE(dic.empty());
     }
 
-    FOUNDATION_TEST_CASE(Insert_GivenCStringKeyAndCStringValue_InsertsValue)
+    TEST_CASE(Insert_GivenCStringKeyAndCStringValue_InsertsValue)
     {
         Dictionary dic;
 
         dic.insert("key", "value");
 
-        FOUNDATION_EXPECT_EQ(1, dic.size());
-        FOUNDATION_EXPECT_FALSE(dic.empty());
-        FOUNDATION_EXPECT_EQ("value", dic.get<string>("key"));
+        EXPECT_EQ(1, dic.size());
+        EXPECT_FALSE(dic.empty());
+        EXPECT_EQ("value", dic.get<string>("key"));
     }
 
-    FOUNDATION_TEST_CASE(Insert_GivenCStringKeyAndStdStringValue_InsertsValue)
+    TEST_CASE(Insert_GivenCStringKeyAndStdStringValue_InsertsValue)
     {
         Dictionary dic;
 
         dic.insert("key", string("value"));
 
-        FOUNDATION_EXPECT_EQ(1, dic.size());
-        FOUNDATION_EXPECT_FALSE(dic.empty());
-        FOUNDATION_EXPECT_EQ("value", dic.get<string>("key"));
+        EXPECT_EQ(1, dic.size());
+        EXPECT_FALSE(dic.empty());
+        EXPECT_EQ("value", dic.get<string>("key"));
     }
 
-    FOUNDATION_TEST_CASE(Insert_GivenCStringKeyAndIntegerValue_InsertsValue)
+    TEST_CASE(Insert_GivenCStringKeyAndIntegerValue_InsertsValue)
     {
         Dictionary dic;
 
         dic.insert("key", 42);
 
-        FOUNDATION_EXPECT_EQ(1, dic.size());
-        FOUNDATION_EXPECT_FALSE(dic.empty());
-        FOUNDATION_EXPECT_EQ(42, dic.get<int>("key"));
+        EXPECT_EQ(1, dic.size());
+        EXPECT_FALSE(dic.empty());
+        EXPECT_EQ(42, dic.get<int>("key"));
     }
 
-    FOUNDATION_TEST_CASE(Insert_GivenStdStringKeyAndCStringValue_InsertsValue)
+    TEST_CASE(Insert_GivenStdStringKeyAndCStringValue_InsertsValue)
     {
         Dictionary dic;
 
         dic.insert(string("key"), "value");
 
-        FOUNDATION_EXPECT_EQ(1, dic.size());
-        FOUNDATION_EXPECT_FALSE(dic.empty());
-        FOUNDATION_EXPECT_EQ("value", dic.get<string>("key"));
+        EXPECT_EQ(1, dic.size());
+        EXPECT_FALSE(dic.empty());
+        EXPECT_EQ("value", dic.get<string>("key"));
     }
 
-    FOUNDATION_TEST_CASE(Insert_GivenStdStringKeyAndIntegerValue_InsertsValue)
+    TEST_CASE(Insert_GivenStdStringKeyAndIntegerValue_InsertsValue)
     {
         Dictionary dic;
 
         dic.insert(string("key"), 42);
 
-        FOUNDATION_EXPECT_EQ(1, dic.size());
-        FOUNDATION_EXPECT_FALSE(dic.empty());
-        FOUNDATION_EXPECT_EQ(42, dic.get<int>("key"));
+        EXPECT_EQ(1, dic.size());
+        EXPECT_FALSE(dic.empty());
+        EXPECT_EQ(42, dic.get<int>("key"));
     }
 
-    FOUNDATION_TEST_CASE(Insert_GivenDictionary_ReturnsThisPointer)
+    TEST_CASE(Insert_GivenDictionary_ReturnsThisPointer)
     {
         Dictionary dic;
 
         const Dictionary* result = &dic.insert("key", Dictionary());
 
-        FOUNDATION_EXPECT_EQ(&dic, result);
+        EXPECT_EQ(&dic, result);
     }
 
-    FOUNDATION_TEST_CASE(Insert_GivenCString_ReturnsThisPointer)
+    TEST_CASE(Insert_GivenCString_ReturnsThisPointer)
     {
         Dictionary dic;
 
         const Dictionary* result = &dic.insert("key", "value");
 
-        FOUNDATION_EXPECT_EQ(&dic, result);
+        EXPECT_EQ(&dic, result);
     }
 
-    FOUNDATION_TEST_CASE(GetAsInt_GivenCStringKeyOfNonExistingItem_ThrowsExceptionDictionaryItemNotFound)
+    TEST_CASE(GetAsInt_GivenCStringKeyOfNonExistingItem_ThrowsExceptionDictionaryItemNotFound)
     {
         Dictionary dic;
 
-        FOUNDATION_EXPECT_EXCEPTION(ExceptionDictionaryItemNotFound,
+        EXPECT_EXCEPTION(ExceptionDictionaryItemNotFound,
         {
             const int item = dic.get<int>("key");
         });
     }
 
-    FOUNDATION_TEST_CASE(GetAsInt_GivenStdStringKeyOfNonExistingItem_ThrowsExceptionDictionaryItemNotFound)
+    TEST_CASE(GetAsInt_GivenStdStringKeyOfNonExistingItem_ThrowsExceptionDictionaryItemNotFound)
     {
         Dictionary dic;
 
-        FOUNDATION_EXPECT_EXCEPTION(ExceptionDictionaryItemNotFound,
+        EXPECT_EXCEPTION(ExceptionDictionaryItemNotFound,
         {
             const int item = dic.get<int>(string("key"));
         });

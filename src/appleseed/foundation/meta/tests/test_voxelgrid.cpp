@@ -37,7 +37,7 @@
 using namespace foundation;
 using namespace std;
 
-FOUNDATION_TEST_SUITE(Foundation_Math_VoxelGrid3)
+TEST_SUITE(Foundation_Math_VoxelGrid3)
 {
     struct Fixture
     {
@@ -63,36 +63,36 @@ FOUNDATION_TEST_SUITE(Foundation_Math_VoxelGrid3)
         }
     };
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(TrilinearLookup_Corner, Fixture)
+    TEST_CASE_WITH_FIXTURE(TrilinearLookup_Corner, Fixture)
     {
         float values[4];
         m_grid.trilinear_lookup(Vector3f(0.0f, 0.0f, 0.0f), values);
 
-        FOUNDATION_EXPECT_FEQ(0.0f, values[0]);
-        FOUNDATION_EXPECT_FEQ(0.0f, values[1]);
-        FOUNDATION_EXPECT_FEQ(0.0f, values[2]);
-        FOUNDATION_EXPECT_FEQ(1.0f, values[3]);
+        EXPECT_FEQ(0.0f, values[0]);
+        EXPECT_FEQ(0.0f, values[1]);
+        EXPECT_FEQ(0.0f, values[2]);
+        EXPECT_FEQ(1.0f, values[3]);
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(TrilinearLookup_Middle, Fixture)
+    TEST_CASE_WITH_FIXTURE(TrilinearLookup_Middle, Fixture)
     {
         float values[4];
         m_grid.trilinear_lookup(Vector3f(0.5f, 0.5f, 0.5f), values);
 
-        FOUNDATION_EXPECT_FEQ(0.5f, values[0]);
-        FOUNDATION_EXPECT_FEQ(0.5f, values[1]);
-        FOUNDATION_EXPECT_FEQ(0.5f, values[2]);
-        FOUNDATION_EXPECT_FEQ(1.0f, values[3]);
+        EXPECT_FEQ(0.5f, values[0]);
+        EXPECT_FEQ(0.5f, values[1]);
+        EXPECT_FEQ(0.5f, values[2]);
+        EXPECT_FEQ(1.0f, values[3]);
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(TrilinearLookup_Center, Fixture)
+    TEST_CASE_WITH_FIXTURE(TrilinearLookup_Center, Fixture)
     {
         float values[4];
         m_grid.trilinear_lookup(Vector3f(1.5f, 1.5f, 1.5f), values);
 
-        FOUNDATION_EXPECT_FEQ(1.0f, values[0]);
-        FOUNDATION_EXPECT_FEQ(1.0f, values[1]);
-        FOUNDATION_EXPECT_FEQ(1.0f, values[2]);
-        FOUNDATION_EXPECT_FEQ(1.0f, values[3]);
+        EXPECT_FEQ(1.0f, values[0]);
+        EXPECT_FEQ(1.0f, values[1]);
+        EXPECT_FEQ(1.0f, values[2]);
+        EXPECT_FEQ(1.0f, values[3]);
     }
 }

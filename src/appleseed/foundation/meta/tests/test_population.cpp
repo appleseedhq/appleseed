@@ -30,21 +30,21 @@
 #include "foundation/math/population.h"
 #include "foundation/utility/test.h"
 
-FOUNDATION_TEST_SUITE(Foundation_Math_Population)
+TEST_SUITE(Foundation_Math_Population)
 {
     using namespace foundation;
 
-    FOUNDATION_TEST_CASE(TestEmptyPopulation)
+    TEST_CASE(TestEmptyPopulation)
     {
         Population<int> pop;
-        FOUNDATION_EXPECT_EQ(0, pop.get_size());
-        FOUNDATION_EXPECT_EQ(0, pop.get_min());
-        FOUNDATION_EXPECT_EQ(0, pop.get_max());
-        FOUNDATION_EXPECT_EQ(0.0, pop.get_avg());
-        FOUNDATION_EXPECT_EQ(0.0, pop.get_dev());
+        EXPECT_EQ(0, pop.get_size());
+        EXPECT_EQ(0, pop.get_min());
+        EXPECT_EQ(0, pop.get_max());
+        EXPECT_EQ(0.0, pop.get_avg());
+        EXPECT_EQ(0.0, pop.get_dev());
     }
 
-    FOUNDATION_TEST_CASE(TestNonEmptyPopulation)
+    TEST_CASE(TestNonEmptyPopulation)
     {
         Population<int> pop;
         pop.insert(2);
@@ -56,10 +56,10 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Population)
         pop.insert(7);
         pop.insert(9);
 
-        FOUNDATION_EXPECT_EQ(8, pop.get_size());
-        FOUNDATION_EXPECT_EQ(2, pop.get_min());
-        FOUNDATION_EXPECT_EQ(9, pop.get_max());
-        FOUNDATION_EXPECT_EQ(5.0, pop.get_avg());
-        FOUNDATION_EXPECT_EQ(2.0, pop.get_dev());
+        EXPECT_EQ(8, pop.get_size());
+        EXPECT_EQ(2, pop.get_min());
+        EXPECT_EQ(9, pop.get_max());
+        EXPECT_EQ(5.0, pop.get_avg());
+        EXPECT_EQ(2.0, pop.get_dev());
     }
 }

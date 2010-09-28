@@ -42,10 +42,10 @@
 #include <cstddef>
 
 // Unit test case declarations.
-FOUNDATION_DECLARE_TEST_CASE(Foundation_Math_Sampling_RQMCSamplingContext, InitialStateIsCorrect);
-FOUNDATION_DECLARE_TEST_CASE(Foundation_Math_Sampling_RQMCSamplingContext, TestAssignmentOperator);
-FOUNDATION_DECLARE_TEST_CASE(Foundation_Math_Sampling_RQMCSamplingContext, TestSplitting);
-FOUNDATION_DECLARE_TEST_CASE(Foundation_Math_Sampling_RQMCSamplingContext, TestDoubleSplitting);
+DECLARE_TEST_CASE(Foundation_Math_Sampling_RQMCSamplingContext, InitialStateIsCorrect);
+DECLARE_TEST_CASE(Foundation_Math_Sampling_RQMCSamplingContext, TestAssignmentOperator);
+DECLARE_TEST_CASE(Foundation_Math_Sampling_RQMCSamplingContext, TestSplitting);
+DECLARE_TEST_CASE(Foundation_Math_Sampling_RQMCSamplingContext, TestDoubleSplitting);
 
 namespace foundation
 {
@@ -108,10 +108,10 @@ class RQMCSamplingContext
     Vector<double, N> next_vector2();
 
   private:
-    FOUNDATION_GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Sampling_RQMCSamplingContext, InitialStateIsCorrect);
-    FOUNDATION_GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Sampling_RQMCSamplingContext, TestAssignmentOperator);
-    FOUNDATION_GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Sampling_RQMCSamplingContext, TestSplitting);
-    FOUNDATION_GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Sampling_RQMCSamplingContext, TestDoubleSplitting);
+    GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Sampling_RQMCSamplingContext, InitialStateIsCorrect);
+    GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Sampling_RQMCSamplingContext, TestAssignmentOperator);
+    GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Sampling_RQMCSamplingContext, TestSplitting);
+    GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Sampling_RQMCSamplingContext, TestDoubleSplitting);
 
     RNG&        m_rng;
 

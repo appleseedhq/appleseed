@@ -29,9 +29,9 @@
 // appleseed.foundation headers.
 #include "foundation/utility/test.h"
 
-FOUNDATION_TEST_SUITE( )
+TEST_SUITE( )
 {
-    FOUNDATION_TEST_CASE( )
+    TEST_CASE( )
     {
     }
 }

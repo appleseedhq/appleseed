@@ -33,7 +33,7 @@
 // appleseed.foundation headers.
 #include "foundation/utility/test.h"
 
-FOUNDATION_TEST_SUITE(Renderer_Modeling_Entity_EntityVector)
+TEST_SUITE(Renderer_Modeling_Entity_EntityVector)
 {
     using namespace foundation;
     using namespace renderer;
@@ -52,7 +52,7 @@ FOUNDATION_TEST_SUITE(Renderer_Modeling_Entity_EntityVector)
         }
     };
 
-    FOUNDATION_TEST_CASE(Swap_GivenEntityVectorWithOneItemAndAnotherEmptyEntityVector_MovesItemToOtherContainer)
+    TEST_CASE(Swap_GivenEntityVectorWithOneItemAndAnotherEmptyEntityVector_MovesItemToOtherContainer)
     {
         EntityVector v1;
         v1.insert(auto_release_ptr<Entity>(new DummyEntity()));
@@ -60,7 +60,7 @@ FOUNDATION_TEST_SUITE(Renderer_Modeling_Entity_EntityVector)
         EntityVector v2;
         v2.swap(v1);
 
-        FOUNDATION_EXPECT_TRUE(v1.empty());
-        FOUNDATION_EXPECT_FALSE(v2.empty());
+        EXPECT_TRUE(v1.empty());
+        EXPECT_FALSE(v2.empty());
     }
 }

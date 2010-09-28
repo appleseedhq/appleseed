@@ -33,7 +33,7 @@
 // appleseed.foundation headers.
 #include "foundation/utility/test.h"
 
-FOUNDATION_TEST_SUITE(Renderer_Modeling_Entity_EntityMap)
+TEST_SUITE(Renderer_Modeling_Entity_EntityMap)
 {
     using namespace foundation;
     using namespace renderer;
@@ -52,7 +52,7 @@ FOUNDATION_TEST_SUITE(Renderer_Modeling_Entity_EntityMap)
         }
     };
 
-    FOUNDATION_TEST_CASE(Swap_GivenEntityMapWithOneItemAndAnotherEmptyEntityMap_MovesItemToOtherContainer)
+    TEST_CASE(Swap_GivenEntityMapWithOneItemAndAnotherEmptyEntityMap_MovesItemToOtherContainer)
     {
         EntityMap m1;
         m1.insert(auto_release_ptr<Entity>(new DummyEntity()));
@@ -60,7 +60,7 @@ FOUNDATION_TEST_SUITE(Renderer_Modeling_Entity_EntityMap)
         EntityMap m2;
         m2.swap(m1);
 
-        FOUNDATION_EXPECT_TRUE(m1.empty());
-        FOUNDATION_EXPECT_FALSE(m2.empty());
+        EXPECT_TRUE(m1.empty());
+        EXPECT_FALSE(m2.empty());
     }
 }

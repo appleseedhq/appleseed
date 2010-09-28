@@ -43,7 +43,7 @@
 #include "foundation/utility/lazy.h"
 #include "foundation/utility/test.h"
 
-FOUNDATION_TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
+TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
 {
     using namespace foundation;
     using namespace renderer;
@@ -123,7 +123,7 @@ FOUNDATION_TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
         }
     };
 
-    FOUNDATION_TEST_CASE(Trace_GivenAssemblyContainingEmptyBoundingBoxAndRayWithTMaxInsideAssembly_ReturnsFalse)
+    TEST_CASE(Trace_GivenAssemblyContainingEmptyBoundingBoxAndRayWithTMaxInsideAssembly_ReturnsFalse)
     {
         const TestScene scene;
         const TraceContext trace_context(scene);
@@ -140,10 +140,10 @@ FOUNDATION_TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
         ShadingPoint shading_point;
         const bool hit = intersector.trace(ray, shading_point);
 
-        FOUNDATION_EXPECT_FALSE(hit);
+        EXPECT_FALSE(hit);
     }
 
-    FOUNDATION_TEST_CASE(TraceProbe_GivenAssemblyContainingEmptyBoundingBoxAndRayWithTMaxInsideAssembly_ReturnsFalse)
+    TEST_CASE(TraceProbe_GivenAssemblyContainingEmptyBoundingBoxAndRayWithTMaxInsideAssembly_ReturnsFalse)
     {
         const TestScene scene;
         const TraceContext trace_context(scene);
@@ -159,6 +159,6 @@ FOUNDATION_TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
 
         const bool hit = intersector.trace_probe(ray);
 
-        FOUNDATION_EXPECT_FALSE(hit);
+        EXPECT_FALSE(hit);
     }
 }

@@ -57,21 +57,21 @@ namespace
     };
 }
 
-FOUNDATION_TEST_SUITE(Foundation_Utility_Test_TestResult)
+TEST_SUITE(Foundation_Utility_Test_TestResult)
 {
-    FOUNDATION_TEST_CASE(TestResultInitializesTestSuiteMetricsCorrectly)
+    TEST_CASE(TestResultInitializesTestSuiteMetricsCorrectly)
     {
         TestResult result;
 
-        FOUNDATION_EXPECT_EQ(0, result.get_suite_execution_count());
-        FOUNDATION_EXPECT_EQ(0, result.get_suite_failure_count());
-        FOUNDATION_EXPECT_EQ(0, result.get_case_execution_count());
-        FOUNDATION_EXPECT_EQ(0, result.get_case_failure_count());
-        FOUNDATION_EXPECT_EQ(0, result.get_assertion_execution_count());
-        FOUNDATION_EXPECT_EQ(0, result.get_assertion_failure_count());
+        EXPECT_EQ(0, result.get_suite_execution_count());
+        EXPECT_EQ(0, result.get_suite_failure_count());
+        EXPECT_EQ(0, result.get_case_execution_count());
+        EXPECT_EQ(0, result.get_case_failure_count());
+        EXPECT_EQ(0, result.get_assertion_execution_count());
+        EXPECT_EQ(0, result.get_assertion_failure_count());
     }
 
-    FOUNDATION_TEST_CASE(TestResultTracksTestSuiteMetricsCorrectly)
+    TEST_CASE(TestResultTracksTestSuiteMetricsCorrectly)
     {
         TestResult result;
 
@@ -79,11 +79,11 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Test_TestResult)
         result.signal_suite_execution();
         result.signal_suite_failure();
 
-        FOUNDATION_EXPECT_EQ(2, result.get_suite_execution_count());
-        FOUNDATION_EXPECT_EQ(1, result.get_suite_failure_count());
+        EXPECT_EQ(2, result.get_suite_execution_count());
+        EXPECT_EQ(1, result.get_suite_failure_count());
     }
 
-    FOUNDATION_TEST_CASE(TestResultTracksTestCaseMetricsCorrectly)
+    TEST_CASE(TestResultTracksTestCaseMetricsCorrectly)
     {
         TestResult result;
 
@@ -91,11 +91,11 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Test_TestResult)
         result.signal_case_execution();
         result.signal_case_failure();
 
-        FOUNDATION_EXPECT_EQ(2, result.get_case_execution_count());
-        FOUNDATION_EXPECT_EQ(1, result.get_case_failure_count());
+        EXPECT_EQ(2, result.get_case_execution_count());
+        EXPECT_EQ(1, result.get_case_failure_count());
     }
 
-    FOUNDATION_TEST_CASE(TestResultTracksAssertionMetricsCorrectly)
+    TEST_CASE(TestResultTracksAssertionMetricsCorrectly)
     {
         TestResult result;
 
@@ -103,11 +103,11 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Test_TestResult)
         result.signal_assertion_execution();
         result.signal_assertion_failure();
 
-        FOUNDATION_EXPECT_EQ(2, result.get_assertion_execution_count());
-        FOUNDATION_EXPECT_EQ(1, result.get_assertion_failure_count());
+        EXPECT_EQ(2, result.get_assertion_execution_count());
+        EXPECT_EQ(1, result.get_assertion_failure_count());
     }
 
-    FOUNDATION_TEST_CASE(TestResultsGetMergedCorrectly)
+    TEST_CASE(TestResultsGetMergedCorrectly)
     {
         TestResult result1;
         result1.signal_suite_execution();
@@ -124,18 +124,18 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Test_TestResult)
 
         result2.merge(result1);
 
-        FOUNDATION_EXPECT_EQ(2, result2.get_suite_execution_count());
-        FOUNDATION_EXPECT_EQ(1, result2.get_suite_failure_count());
-        FOUNDATION_EXPECT_EQ(2, result2.get_case_execution_count());
-        FOUNDATION_EXPECT_EQ(1, result2.get_case_failure_count());
-        FOUNDATION_EXPECT_EQ(2, result2.get_assertion_execution_count());
-        FOUNDATION_EXPECT_EQ(1, result2.get_assertion_failure_count());
+        EXPECT_EQ(2, result2.get_suite_execution_count());
+        EXPECT_EQ(1, result2.get_suite_failure_count());
+        EXPECT_EQ(2, result2.get_case_execution_count());
+        EXPECT_EQ(1, result2.get_case_failure_count());
+        EXPECT_EQ(2, result2.get_assertion_execution_count());
+        EXPECT_EQ(1, result2.get_assertion_failure_count());
     }
 }
 
-FOUNDATION_TEST_SUITE(Foundation_Utility_Test_TestSuiteRepository)
+TEST_SUITE(Foundation_Utility_Test_TestSuiteRepository)
 {
-    FOUNDATION_TEST_CASE(GetSuiteCount_GivenTestSuiteRepositoryWithOneSuite_ReturnsOne)
+    TEST_CASE(GetSuiteCount_GivenTestSuiteRepositoryWithOneSuite_ReturnsOne)
     {
         TestSuiteRepository repository;
         FakeTestSuite suite;
@@ -143,10 +143,10 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Test_TestSuiteRepository)
 
         const size_t suite_count = repository.get_suite_count();
 
-        FOUNDATION_EXPECT_EQ(1, suite_count);
+        EXPECT_EQ(1, suite_count);
     }
 
-    FOUNDATION_TEST_CASE(GetSuite_GivenTestSuiteRepositoryWithOneSuite_ReturnsSuite)
+    TEST_CASE(GetSuite_GivenTestSuiteRepositoryWithOneSuite_ReturnsSuite)
     {
         TestSuiteRepository repository;
         FakeTestSuite expected_suite;
@@ -154,10 +154,10 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Test_TestSuiteRepository)
 
         const TestSuite* suite = repository.get_suite(0);
 
-        FOUNDATION_EXPECT_EQ(&expected_suite, suite);
+        EXPECT_EQ(&expected_suite, suite);
     }
 
-    FOUNDATION_TEST_CASE(Run_GivenTestSuiteRepositoryWithOneTestSuite_RunsTestSuite)
+    TEST_CASE(Run_GivenTestSuiteRepositoryWithOneTestSuite_RunsTestSuite)
     {
         TestSuiteRepository repository;
         FakeTestSuite suite;
@@ -167,12 +167,12 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Test_TestSuiteRepository)
         TestResult result;
         repository.run(listener, result);
 
-        FOUNDATION_EXPECT_EQ(1, result.get_suite_execution_count());
-        FOUNDATION_EXPECT_EQ(0, result.get_suite_failure_count());
+        EXPECT_EQ(1, result.get_suite_execution_count());
+        EXPECT_EQ(0, result.get_suite_failure_count());
     }
 }
 
-FOUNDATION_TEST_SUITE(Foundation_Utility_Test_TestSuite)
+TEST_SUITE(Foundation_Utility_Test_TestSuite)
 {
     struct FakeTestCase
       : public ITestCase
@@ -218,7 +218,7 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Test_TestSuite)
         }
     };
 
-    FOUNDATION_TEST_CASE(Run_GivenTestSuiteWithOneCase_RunsCase)
+    TEST_CASE(Run_GivenTestSuiteWithOneCase_RunsCase)
     {
         size_t run_count = 0;
         FakeTestCaseFactory test_case_factory(run_count);
@@ -230,135 +230,135 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Test_TestSuite)
         TestResult result;
         test_suite.run(listener, result);
 
-        FOUNDATION_EXPECT_EQ(1, run_count);
+        EXPECT_EQ(1, run_count);
     }
 }
 
 #ifdef FOUNDATION_ENABLE_ASSERTIONS_UNIT_TESTS
 
-FOUNDATION_TEST_SUITE(Foundation_Utility_Test_Assertions)
+TEST_SUITE(Foundation_Utility_Test_Assertions)
 {
-    FOUNDATION_TEST_CASE(FoundationExpectTrueSucceeds)
+    TEST_CASE(FoundationExpectTrueSucceeds)
     {
-        FOUNDATION_EXPECT_TRUE(true);
+        EXPECT_TRUE(true);
     }
 
-    FOUNDATION_TEST_CASE(FoundationExpectTrueFails)
+    TEST_CASE(FoundationExpectTrueFails)
     {
-        FOUNDATION_EXPECT_TRUE(false);
+        EXPECT_TRUE(false);
     }
 
-    FOUNDATION_TEST_CASE(FoundationExpectFalseSucceeds)
+    TEST_CASE(FoundationExpectFalseSucceeds)
     {
-        FOUNDATION_EXPECT_FALSE(false);
+        EXPECT_FALSE(false);
     }
 
-    FOUNDATION_TEST_CASE(FoundationExpectFalseFails)
+    TEST_CASE(FoundationExpectFalseFails)
     {
-        FOUNDATION_EXPECT_FALSE(true);
+        EXPECT_FALSE(true);
     }
 
-    FOUNDATION_TEST_CASE(FoundationExpectEqSucceeds)
+    TEST_CASE(FoundationExpectEqSucceeds)
     {
-        FOUNDATION_EXPECT_EQ(42, 42);
+        EXPECT_EQ(42, 42);
     }
 
-    FOUNDATION_TEST_CASE(FoundationExpectEqFails)
+    TEST_CASE(FoundationExpectEqFails)
     {
-        FOUNDATION_EXPECT_EQ(42, 0);
+        EXPECT_EQ(42, 0);
     }
 
-    FOUNDATION_TEST_CASE(FoundationExpectEq_ExpectingNonNullCStringButGivenNullCString_Fails)
+    TEST_CASE(FoundationExpectEq_ExpectingNonNullCStringButGivenNullCString_Fails)
     {
         const char* Expected = "bunny";
         const char* Obtained = 0;
 
-        FOUNDATION_EXPECT_EQ(Expected, Obtained);
+        EXPECT_EQ(Expected, Obtained);
     }
 
-    FOUNDATION_TEST_CASE(FoundationExpectEq_ExpectingNullCStringButGivenNonNullCString_Fails)
+    TEST_CASE(FoundationExpectEq_ExpectingNullCStringButGivenNonNullCString_Fails)
     {
         const char* Expected = 0;
         const char* Obtained = "bunny";
 
-        FOUNDATION_EXPECT_EQ(Expected, Obtained);
+        EXPECT_EQ(Expected, Obtained);
     }
 
-    FOUNDATION_TEST_CASE(FoundationExpectArrayEqSucceeds)
+    TEST_CASE(FoundationExpectArrayEqSucceeds)
     {
         const int Expected[] = { 1, 2, 3 };
         const int Array[] = { 1, 2, 3 };
 
-        FOUNDATION_EXPECT_ARRAY_EQ(Expected, Array);
+        EXPECT_ARRAY_EQ(Expected, Array);
     }
 
-    FOUNDATION_TEST_CASE(FoundationExpectArrayEq1Fails)
+    TEST_CASE(FoundationExpectArrayEq1Fails)
     {
         const int Expected[] = { 1, 2, 3 };
         const int Array[] = { 1, 2, 0 };
 
-        FOUNDATION_EXPECT_ARRAY_EQ(Expected, Array);
+        EXPECT_ARRAY_EQ(Expected, Array);
     }
 
-    FOUNDATION_TEST_CASE(FoundationExpectArrayEq2Fails)
+    TEST_CASE(FoundationExpectArrayEq2Fails)
     {
         const int Expected[] = { 1, 2, 3 };
         const int Array[] = { 1, 2 };
 
-        FOUNDATION_EXPECT_ARRAY_EQ(Expected, Array);
+        EXPECT_ARRAY_EQ(Expected, Array);
     }
 
-    FOUNDATION_TEST_CASE(FoundationExpectSequenceEqSucceeds)
+    TEST_CASE(FoundationExpectSequenceEqSucceeds)
     {
         const int Expected[] = { 1, 2, 3 };
         const int Array[] = { 1, 2, 3 };
 
-        FOUNDATION_EXPECT_SEQUENCE_EQ(3, Expected, Array);
+        EXPECT_SEQUENCE_EQ(3, Expected, Array);
     }
 
-    FOUNDATION_TEST_CASE(FoundationExpectSequenceEqFails)
+    TEST_CASE(FoundationExpectSequenceEqFails)
     {
         const int Expected[] = { 1, 2, 3 };
         const int Array[] = { 1, 2, 0 };
 
-        FOUNDATION_EXPECT_SEQUENCE_EQ(3, Expected, Array);
+        EXPECT_SEQUENCE_EQ(3, Expected, Array);
     }
 
-    FOUNDATION_TEST_CASE(FoundationExpectNeqSucceeds)
+    TEST_CASE(FoundationExpectNeqSucceeds)
     {
-        FOUNDATION_EXPECT_NEQ(42, 0);
+        EXPECT_NEQ(42, 0);
     }
 
-    FOUNDATION_TEST_CASE(FoundationExpectNeqFails)
+    TEST_CASE(FoundationExpectNeqFails)
     {
-        FOUNDATION_EXPECT_NEQ(42, 42);
+        EXPECT_NEQ(42, 42);
     }
 
-    FOUNDATION_TEST_CASE(FoundationExpectFeqSucceeds)
+    TEST_CASE(FoundationExpectFeqSucceeds)
     {
-        FOUNDATION_EXPECT_FEQ(42.0, 42.0);
+        EXPECT_FEQ(42.0, 42.0);
     }
 
-    FOUNDATION_TEST_CASE(FoundationExpectFeqFails)
+    TEST_CASE(FoundationExpectFeqFails)
     {
-        FOUNDATION_EXPECT_FEQ(42.0, 0.0);
+        EXPECT_FEQ(42.0, 0.0);
     }
 
-    FOUNDATION_TEST_CASE(FoundationExpectFneqSucceeds)
+    TEST_CASE(FoundationExpectFneqSucceeds)
     {
-        FOUNDATION_EXPECT_FNEQ(42.0, 0.0);
+        EXPECT_FNEQ(42.0, 0.0);
     }
 
-    FOUNDATION_TEST_CASE(FoundationExpectFneqFails)
+    TEST_CASE(FoundationExpectFneqFails)
     {
-        FOUNDATION_EXPECT_FNEQ(42.0, 42.0);
+        EXPECT_FNEQ(42.0, 42.0);
     }
 
     struct Exception {};
 
-    FOUNDATION_TEST_CASE(FoundationExpectExceptionSucceeds)
+    TEST_CASE(FoundationExpectExceptionSucceeds)
     {
-        FOUNDATION_EXPECT_EXCEPTION(
+        EXPECT_EXCEPTION(
             Exception,
             {
                 throw Exception();
@@ -366,16 +366,16 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Test_Assertions)
         );
     }
 
-    FOUNDATION_TEST_CASE(FoundationExpectExceptionFails)
+    TEST_CASE(FoundationExpectExceptionFails)
     {
-        FOUNDATION_EXPECT_EXCEPTION(
+        EXPECT_EXCEPTION(
             Exception,
             {
             }
         );
     }
 
-    FOUNDATION_TEST_CASE(TestThrowsUnexpectedException)
+    TEST_CASE(TestThrowsUnexpectedException)
     {
         throw Exception();
     }

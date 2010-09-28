@@ -39,182 +39,182 @@
 using namespace foundation;
 using namespace std;
 
-FOUNDATION_TEST_SUITE(Foundation_Math_Intersection_RayAABB)
+TEST_SUITE(Foundation_Math_Intersection_RayAABB)
 {
 #pragma warning (push)
 #pragma warning (disable : 4723)    // potential divide by 0
 
-    FOUNDATION_TEST_CASE(Intersect_GivenRayNotPiercingTheAABB_ReturnsFalse)
+    TEST_CASE(Intersect_GivenRayNotPiercingTheAABB_ReturnsFalse)
     {
         const AABB3d aabb(Vector3d(-1.0), Vector3d(1.0));
         const Ray3d ray(Vector3d(2.0, 0.0, 2.0), Vector3d(0.0, 0.0, -1.0));
 
         const bool hit = intersect(ray, RayInfo3d(ray), aabb);
 
-        FOUNDATION_EXPECT_FALSE(hit);
+        EXPECT_FALSE(hit);
     }
 
-    FOUNDATION_TEST_CASE(Intersect_GivenRayPiercingPosXFaceInTheMiddle_ReturnsTrue)
+    TEST_CASE(Intersect_GivenRayPiercingPosXFaceInTheMiddle_ReturnsTrue)
     {
         const AABB3d aabb(Vector3d(-1.0), Vector3d(1.0));
         const Ray3d ray(Vector3d(2.0, 0.0, 0.0), Vector3d(-1.0, 0.0, 0.0));
 
         const bool hit = intersect(ray, RayInfo3d(ray), aabb);
 
-        FOUNDATION_EXPECT_TRUE(hit);
+        EXPECT_TRUE(hit);
     }
 
-    FOUNDATION_TEST_CASE(Intersect_GivenRayPiercingNegXFaceInTheMiddle_ReturnsTrue)
+    TEST_CASE(Intersect_GivenRayPiercingNegXFaceInTheMiddle_ReturnsTrue)
     {
         const AABB3d aabb(Vector3d(-1.0), Vector3d(1.0));
         const Ray3d ray(Vector3d(-2.0, 0.0, 0.0), Vector3d(1.0, 0.0, 0.0));
 
         const bool hit = intersect(ray, RayInfo3d(ray), aabb);
 
-        FOUNDATION_EXPECT_TRUE(hit);
+        EXPECT_TRUE(hit);
     }
 
-    FOUNDATION_TEST_CASE(Intersect_GivenRayPiercingPosYFaceInTheMiddle_ReturnsTrue)
+    TEST_CASE(Intersect_GivenRayPiercingPosYFaceInTheMiddle_ReturnsTrue)
     {
         const AABB3d aabb(Vector3d(-1.0), Vector3d(1.0));
         const Ray3d ray(Vector3d(0.0, 2.0, 0.0), Vector3d(0.0, -1.0, 0.0));
 
         const bool hit = intersect(ray, RayInfo3d(ray), aabb);
 
-        FOUNDATION_EXPECT_TRUE(hit);
+        EXPECT_TRUE(hit);
     }
 
-    FOUNDATION_TEST_CASE(Intersect_GivenRayPiercingNegYFaceInTheMiddle_ReturnsTrue)
+    TEST_CASE(Intersect_GivenRayPiercingNegYFaceInTheMiddle_ReturnsTrue)
     {
         const AABB3d aabb(Vector3d(-1.0), Vector3d(1.0));
         const Ray3d ray(Vector3d(0.0, -2.0, 0.0), Vector3d(0.0, 1.0, 0.0));
 
         const bool hit = intersect(ray, RayInfo3d(ray), aabb);
 
-        FOUNDATION_EXPECT_TRUE(hit);
+        EXPECT_TRUE(hit);
     }
 
-    FOUNDATION_TEST_CASE(Intersect_GivenRayPiercingPosZFaceInTheMiddle_ReturnsTrue)
+    TEST_CASE(Intersect_GivenRayPiercingPosZFaceInTheMiddle_ReturnsTrue)
     {
         const AABB3d aabb(Vector3d(-1.0), Vector3d(1.0));
         const Ray3d ray(Vector3d(0.0, 0.0, 2.0), Vector3d(0.0, 0.0, -1.0));
 
         const bool hit = intersect(ray, RayInfo3d(ray), aabb);
 
-        FOUNDATION_EXPECT_TRUE(hit);
+        EXPECT_TRUE(hit);
     }
 
-    FOUNDATION_TEST_CASE(Intersect_GivenRayPiercingNegZFaceInTheMiddle_ReturnsTrue)
+    TEST_CASE(Intersect_GivenRayPiercingNegZFaceInTheMiddle_ReturnsTrue)
     {
         const AABB3d aabb(Vector3d(-1.0), Vector3d(1.0));
         const Ray3d ray(Vector3d(0.0, 0.0, -2.0), Vector3d(0.0, 0.0, 1.0));
 
         const bool hit = intersect(ray, RayInfo3d(ray), aabb);
 
-        FOUNDATION_EXPECT_TRUE(hit);
+        EXPECT_TRUE(hit);
     }
 
-    FOUNDATION_TEST_CASE(Intersect_GivenRayEmbeddedInPosXFace_ReturnsTrue)
+    TEST_CASE(Intersect_GivenRayEmbeddedInPosXFace_ReturnsTrue)
     {
         const AABB3d aabb(Vector3d(0.0), Vector3d(1.0));
         const Ray3d ray(Vector3d(1.0, 0.0, 2.0), Vector3d(0.0, 0.0, -1.0));
 
         const bool hit = intersect(ray, RayInfo3d(ray), aabb);
 
-        FOUNDATION_EXPECT_TRUE(hit);
+        EXPECT_TRUE(hit);
     }
 
-    FOUNDATION_TEST_CASE(Intersect_GivenRayEmbeddedInNegXFace_ReturnsTrue)
+    TEST_CASE(Intersect_GivenRayEmbeddedInNegXFace_ReturnsTrue)
     {
         const AABB3d aabb(Vector3d(0.0), Vector3d(1.0));
         const Ray3d ray(Vector3d(0.0, 0.0, 2.0), Vector3d(0.0, 0.0, -1.0));
 
         const bool hit = intersect(ray, RayInfo3d(ray), aabb);
 
-        FOUNDATION_EXPECT_TRUE(hit);
+        EXPECT_TRUE(hit);
     }
 
-    FOUNDATION_TEST_CASE(Intersect_GivenRayEmbeddedInPosYFace_ReturnsTrue)
+    TEST_CASE(Intersect_GivenRayEmbeddedInPosYFace_ReturnsTrue)
     {
         const AABB3d aabb(Vector3d(0.0), Vector3d(1.0));
         const Ray3d ray(Vector3d(2.0, 1.0, 0.0), Vector3d(-1.0, 0.0, 0.0));
 
         const bool hit = intersect(ray, RayInfo3d(ray), aabb);
 
-        FOUNDATION_EXPECT_TRUE(hit);
+        EXPECT_TRUE(hit);
     }
 
-    FOUNDATION_TEST_CASE(Intersect_GivenRayEmbeddedInNegYFace_ReturnsTrue)
+    TEST_CASE(Intersect_GivenRayEmbeddedInNegYFace_ReturnsTrue)
     {
         const AABB3d aabb(Vector3d(0.0), Vector3d(1.0));
         const Ray3d ray(Vector3d(2.0, 0.0, 0.0), Vector3d(-1.0, 0.0, 0.0));
 
         const bool hit = intersect(ray, RayInfo3d(ray), aabb);
 
-        FOUNDATION_EXPECT_TRUE(hit);
+        EXPECT_TRUE(hit);
     }
 
-    FOUNDATION_TEST_CASE(Intersect_GivenRayEmbeddedInPosZFace_ReturnsTrue)
+    TEST_CASE(Intersect_GivenRayEmbeddedInPosZFace_ReturnsTrue)
     {
         const AABB3d aabb(Vector3d(0.0), Vector3d(1.0));
         const Ray3d ray(Vector3d(0.0, 2.0, 1.0), Vector3d(0.0, -1.0, 0.0));
 
         const bool hit = intersect(ray, RayInfo3d(ray), aabb);
 
-        FOUNDATION_EXPECT_TRUE(hit);
+        EXPECT_TRUE(hit);
     }
 
-    FOUNDATION_TEST_CASE(Intersect_GivenRayEmbeddedInNegZFace_ReturnsTrue)
+    TEST_CASE(Intersect_GivenRayEmbeddedInNegZFace_ReturnsTrue)
     {
         const AABB3d aabb(Vector3d(0.0), Vector3d(1.0));
         const Ray3d ray(Vector3d(0.0, 2.0, 0.0), Vector3d(0.0, -1.0, 0.0));
 
         const bool hit = intersect(ray, RayInfo3d(ray), aabb);
 
-        FOUNDATION_EXPECT_TRUE(hit);
+        EXPECT_TRUE(hit);
     }
 
-    FOUNDATION_TEST_CASE(Intersect_GivenRayWithTMinEqualToHitDistance_ReturnsTrue)
+    TEST_CASE(Intersect_GivenRayWithTMinEqualToHitDistance_ReturnsTrue)
     {
         const AABB3d aabb(Vector3d(-1.0), Vector3d(1.0));
         const Ray3d ray(Vector3d(0.0, 0.0, 2.0), Vector3d(0.0, 0.0, -1.0), 3.0, 10.0);
 
         const bool hit = intersect(ray, RayInfo3d(ray), aabb);
 
-        FOUNDATION_EXPECT_TRUE(hit);
+        EXPECT_TRUE(hit);
     }
 
-    FOUNDATION_TEST_CASE(Intersect_GivenRayWithTMaxEqualToHitDistance_ReturnsFalse)
+    TEST_CASE(Intersect_GivenRayWithTMaxEqualToHitDistance_ReturnsFalse)
     {
         const AABB3d aabb(Vector3d(-1.0), Vector3d(1.0));
         const Ray3d ray(Vector3d(0.0, 0.0, 2.0), Vector3d(0.0, 0.0, -1.0), 0.0, 1.0);
 
         const bool hit = intersect(ray, RayInfo3d(ray), aabb);
 
-        FOUNDATION_EXPECT_FALSE(hit);
+        EXPECT_FALSE(hit);
     }
 
-    FOUNDATION_TEST_CASE(Intersect_GivenRayWithTMinLargerThanHitDistance_ReturnsFalse)
+    TEST_CASE(Intersect_GivenRayWithTMinLargerThanHitDistance_ReturnsFalse)
     {
         const AABB3d aabb(Vector3d(-1.0), Vector3d(1.0));
         const Ray3d ray(Vector3d(0.0, 0.0, 2.0), Vector3d(0.0, 0.0, -1.0), 3.1, 10.0);
 
         const bool hit = intersect(ray, RayInfo3d(ray), aabb);
 
-        FOUNDATION_EXPECT_FALSE(hit);
+        EXPECT_FALSE(hit);
     }
 
-    FOUNDATION_TEST_CASE(Intersect_GivenRayWithTMaxSmallerThanHitDistance_ReturnsFalse)
+    TEST_CASE(Intersect_GivenRayWithTMaxSmallerThanHitDistance_ReturnsFalse)
     {
         const AABB3d aabb(Vector3d(-1.0), Vector3d(1.0));
         const Ray3d ray(Vector3d(0.0, 0.0, 2.0), Vector3d(0.0, 0.0, -1.0), 0.0, 0.9);
 
         const bool hit = intersect(ray, RayInfo3d(ray), aabb);
 
-        FOUNDATION_EXPECT_FALSE(hit);
+        EXPECT_FALSE(hit);
     }
 
-    FOUNDATION_TEST_CASE(Intersect_GivenRayNotPiercingTheAABB_ReturnsFalseAndLeavesDistanceUnchanged)
+    TEST_CASE(Intersect_GivenRayNotPiercingTheAABB_ReturnsFalseAndLeavesDistanceUnchanged)
     {
         const AABB3d aabb(Vector3d(-1.0), Vector3d(1.0));
         const Ray3d ray(Vector3d(2.0, 0.0, 2.0), Vector3d(0.0, 0.0, -1.0));
@@ -222,11 +222,11 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Intersection_RayAABB)
         double distance = 42.0;
         const bool hit = intersect(ray, RayInfo3d(ray), aabb, distance);
 
-        FOUNDATION_EXPECT_FALSE(hit);
-        FOUNDATION_EXPECT_EQ(42.0, distance);
+        EXPECT_FALSE(hit);
+        EXPECT_EQ(42.0, distance);
     }
 
-    FOUNDATION_TEST_CASE(Intersect_GivenRayEmbeddedInPosXFace_ReturnsTrueAndDistanceToHit)
+    TEST_CASE(Intersect_GivenRayEmbeddedInPosXFace_ReturnsTrueAndDistanceToHit)
     {
         const AABB3d aabb(Vector3d(0.0), Vector3d(1.0));
         const Ray3d ray(Vector3d(1.0, 0.0, 2.0), Vector3d(0.0, 0.0, -1.0));
@@ -234,11 +234,11 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Intersection_RayAABB)
         double distance = 42.0;
         const bool hit = intersect(ray, RayInfo3d(ray), aabb, distance);
 
-        FOUNDATION_ASSERT_TRUE(hit);
-        FOUNDATION_EXPECT_FEQ(1.0, distance);
+        ASSERT_TRUE(hit);
+        EXPECT_FEQ(1.0, distance);
     }
 
-    FOUNDATION_TEST_CASE(Intersect_GivenRayEmbeddedInNegXFace_ReturnsTrueAndDistanceToHit)
+    TEST_CASE(Intersect_GivenRayEmbeddedInNegXFace_ReturnsTrueAndDistanceToHit)
     {
         const AABB3d aabb(Vector3d(0.0), Vector3d(1.0));
         const Ray3d ray(Vector3d(0.0, 0.0, 2.0), Vector3d(0.0, 0.0, -1.0));
@@ -246,11 +246,11 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Intersection_RayAABB)
         double distance = 42.0;
         const bool hit = intersect(ray, RayInfo3d(ray), aabb, distance);
 
-        FOUNDATION_ASSERT_TRUE(hit);
-        FOUNDATION_EXPECT_FEQ(1.0, distance);
+        ASSERT_TRUE(hit);
+        EXPECT_FEQ(1.0, distance);
     }
 
-    FOUNDATION_TEST_CASE(Intersect_GivenRayEmbeddedInPosYFace_ReturnsTrueAndDistanceToHit)
+    TEST_CASE(Intersect_GivenRayEmbeddedInPosYFace_ReturnsTrueAndDistanceToHit)
     {
         const AABB3d aabb(Vector3d(0.0), Vector3d(1.0));
         const Ray3d ray(Vector3d(2.0, 1.0, 0.0), Vector3d(-1.0, 0.0, 0.0));
@@ -258,11 +258,11 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Intersection_RayAABB)
         double distance = 42.0;
         const bool hit = intersect(ray, RayInfo3d(ray), aabb, distance);
 
-        FOUNDATION_ASSERT_TRUE(hit);
-        FOUNDATION_EXPECT_FEQ(1.0, distance);
+        ASSERT_TRUE(hit);
+        EXPECT_FEQ(1.0, distance);
     }
 
-    FOUNDATION_TEST_CASE(Intersect_GivenRayEmbeddedInNegYFace_ReturnsTrueAndDistanceToHit)
+    TEST_CASE(Intersect_GivenRayEmbeddedInNegYFace_ReturnsTrueAndDistanceToHit)
     {
         const AABB3d aabb(Vector3d(0.0), Vector3d(1.0));
         const Ray3d ray(Vector3d(2.0, 0.0, 0.0), Vector3d(-1.0, 0.0, 0.0));
@@ -270,11 +270,11 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Intersection_RayAABB)
         double distance = 42.0;
         const bool hit = intersect(ray, RayInfo3d(ray), aabb, distance);
 
-        FOUNDATION_ASSERT_TRUE(hit);
-        FOUNDATION_EXPECT_FEQ(1.0, distance);
+        ASSERT_TRUE(hit);
+        EXPECT_FEQ(1.0, distance);
     }
 
-    FOUNDATION_TEST_CASE(Intersect_GivenRayEmbeddedInPosZFace_ReturnsTrueAndDistanceToHit)
+    TEST_CASE(Intersect_GivenRayEmbeddedInPosZFace_ReturnsTrueAndDistanceToHit)
     {
         const AABB3d aabb(Vector3d(0.0), Vector3d(1.0));
         const Ray3d ray(Vector3d(0.0, 2.0, 1.0), Vector3d(0.0, -1.0, 0.0));
@@ -282,11 +282,11 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Intersection_RayAABB)
         double distance = 42.0;
         const bool hit = intersect(ray, RayInfo3d(ray), aabb, distance);
 
-        FOUNDATION_ASSERT_TRUE(hit);
-        FOUNDATION_EXPECT_FEQ(1.0, distance);
+        ASSERT_TRUE(hit);
+        EXPECT_FEQ(1.0, distance);
     }
 
-    FOUNDATION_TEST_CASE(Intersect_GivenRayEmbeddedInNegZFace_ReturnsTrueAndDistanceToHit)
+    TEST_CASE(Intersect_GivenRayEmbeddedInNegZFace_ReturnsTrueAndDistanceToHit)
     {
         const AABB3d aabb(Vector3d(0.0), Vector3d(1.0));
         const Ray3d ray(Vector3d(0.0, 2.0, 0.0), Vector3d(0.0, -1.0, 0.0));
@@ -294,11 +294,11 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Intersection_RayAABB)
         double distance = 42.0;
         const bool hit = intersect(ray, RayInfo3d(ray), aabb, distance);
 
-        FOUNDATION_ASSERT_TRUE(hit);
-        FOUNDATION_EXPECT_FEQ(1.0, distance);
+        ASSERT_TRUE(hit);
+        EXPECT_FEQ(1.0, distance);
     }
 
-    FOUNDATION_TEST_CASE(Intersect_GivenRayWithTMinEqualToHitDistance_ReturnsTrueAndDistanceToHit)
+    TEST_CASE(Intersect_GivenRayWithTMinEqualToHitDistance_ReturnsTrueAndDistanceToHit)
     {
         const AABB3d aabb(Vector3d(-1.0), Vector3d(1.0));
         const Ray3d ray(Vector3d(0.0, 0.0, 2.0), Vector3d(0.0, 0.0, -1.0), 3.0, 10.0);
@@ -306,11 +306,11 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Intersection_RayAABB)
         double distance = 42.0;
         const bool hit = intersect(ray, RayInfo3d(ray), aabb, distance);
 
-        FOUNDATION_EXPECT_TRUE(hit);
-        FOUNDATION_EXPECT_EQ(3.0, distance);
+        EXPECT_TRUE(hit);
+        EXPECT_EQ(3.0, distance);
     }
 
-    FOUNDATION_TEST_CASE(Intersect_GivenRayWithTMaxEqualToHitDistance_ReturnsFalseAndLeavesDistanceUnchanged)
+    TEST_CASE(Intersect_GivenRayWithTMaxEqualToHitDistance_ReturnsFalseAndLeavesDistanceUnchanged)
     {
         const AABB3d aabb(Vector3d(-1.0), Vector3d(1.0));
         const Ray3d ray(Vector3d(0.0, 0.0, 2.0), Vector3d(0.0, 0.0, -1.0), 0.0, 1.0);
@@ -318,11 +318,11 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Intersection_RayAABB)
         double distance = 42.0;
         const bool hit = intersect(ray, RayInfo3d(ray), aabb, distance);
 
-        FOUNDATION_EXPECT_FALSE(hit);
-        FOUNDATION_EXPECT_EQ(42.0, distance);
+        EXPECT_FALSE(hit);
+        EXPECT_EQ(42.0, distance);
     }
 
-    FOUNDATION_TEST_CASE(Intersect_GivenRayWithTMinLargerThanHitDistance_ReturnsFalseAndLeavesDistanceUnchanged)
+    TEST_CASE(Intersect_GivenRayWithTMinLargerThanHitDistance_ReturnsFalseAndLeavesDistanceUnchanged)
     {
         const AABB3d aabb(Vector3d(-1.0), Vector3d(1.0));
         const Ray3d ray(Vector3d(0.0, 0.0, 2.0), Vector3d(0.0, 0.0, -1.0), 3.1, 10.0);
@@ -330,11 +330,11 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Intersection_RayAABB)
         double distance = 42.0;
         const bool hit = intersect(ray, RayInfo3d(ray), aabb, distance);
 
-        FOUNDATION_EXPECT_FALSE(hit);
-        FOUNDATION_EXPECT_EQ(42.0, distance);
+        EXPECT_FALSE(hit);
+        EXPECT_EQ(42.0, distance);
     }
 
-    FOUNDATION_TEST_CASE(Intersect_GivenRayWithTMaxSmallerThanHitDistance_ReturnsFalseAndLeavesDistanceUnchanged)
+    TEST_CASE(Intersect_GivenRayWithTMaxSmallerThanHitDistance_ReturnsFalseAndLeavesDistanceUnchanged)
     {
         const AABB3d aabb(Vector3d(-1.0), Vector3d(1.0));
         const Ray3d ray(Vector3d(0.0, 0.0, 2.0), Vector3d(0.0, 0.0, -1.0), 0.0, 0.9);
@@ -342,80 +342,80 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Intersection_RayAABB)
         double distance = 42.0;
         const bool hit = intersect(ray, RayInfo3d(ray), aabb, distance);
 
-        FOUNDATION_EXPECT_FALSE(hit);
-        FOUNDATION_EXPECT_EQ(42.0, distance);
+        EXPECT_FALSE(hit);
+        EXPECT_EQ(42.0, distance);
     }
 
-    FOUNDATION_TEST_CASE(Clip_GivenRayNotPiercingTheAABB_ReturnsFalseAndLeavesTMinAndTMaxUnchanged)
+    TEST_CASE(Clip_GivenRayNotPiercingTheAABB_ReturnsFalseAndLeavesTMinAndTMaxUnchanged)
     {
         const AABB3d aabb(Vector3d(-1.0), Vector3d(1.0));
         Ray3d ray(Vector3d(2.0, 0.0, 2.0), Vector3d(0.0, 0.0, -1.0));
 
         const bool hit = clip(ray, RayInfo3d(ray), aabb);
 
-        FOUNDATION_EXPECT_FALSE(hit);
-        FOUNDATION_EXPECT_EQ(0.0, ray.m_tmin);
-        FOUNDATION_EXPECT_EQ(numeric_limits<double>::max(), ray.m_tmax);
+        EXPECT_FALSE(hit);
+        EXPECT_EQ(0.0, ray.m_tmin);
+        EXPECT_EQ(numeric_limits<double>::max(), ray.m_tmax);
     }
 
-    FOUNDATION_TEST_CASE(Clip_GivenRayPiercingPosZFaceInTheMiddle_ReturnsTrueAndUpdatesTMinAndTMax)
+    TEST_CASE(Clip_GivenRayPiercingPosZFaceInTheMiddle_ReturnsTrueAndUpdatesTMinAndTMax)
     {
         const AABB3d aabb(Vector3d(-1.0), Vector3d(1.0));
         Ray3d ray(Vector3d(0.0, 0.0, 2.0), Vector3d(0.0, 0.0, -1.0));
 
         const bool hit = clip(ray, RayInfo3d(ray), aabb);
 
-        FOUNDATION_EXPECT_TRUE(hit);
-        FOUNDATION_EXPECT_FEQ(1.0, ray.m_tmin);
-        FOUNDATION_EXPECT_FEQ(3.0, ray.m_tmax);
+        EXPECT_TRUE(hit);
+        EXPECT_FEQ(1.0, ray.m_tmin);
+        EXPECT_FEQ(3.0, ray.m_tmax);
     }
 
-    FOUNDATION_TEST_CASE(Clip_GivenRayWithTMinEqualToHitDistance_ReturnsTrueAndUpdatesTMinAndTMax)
+    TEST_CASE(Clip_GivenRayWithTMinEqualToHitDistance_ReturnsTrueAndUpdatesTMinAndTMax)
     {
         const AABB3d aabb(Vector3d(-1.0), Vector3d(1.0));
         Ray3d ray(Vector3d(0.0, 0.0, 2.0), Vector3d(0.0, 0.0, -1.0), 3.0, 10.0);
 
         const bool hit = clip(ray, RayInfo3d(ray), aabb);
 
-        FOUNDATION_EXPECT_TRUE(hit);
-        FOUNDATION_EXPECT_EQ(3.0, ray.m_tmin);
-        FOUNDATION_EXPECT_EQ(3.0, ray.m_tmax);
+        EXPECT_TRUE(hit);
+        EXPECT_EQ(3.0, ray.m_tmin);
+        EXPECT_EQ(3.0, ray.m_tmax);
     }
 
-    FOUNDATION_TEST_CASE(Clip_GivenRayWithTMaxEqualToHitDistance_ReturnsFalseAndLeavesTMinAndTMaxUnchanged)
+    TEST_CASE(Clip_GivenRayWithTMaxEqualToHitDistance_ReturnsFalseAndLeavesTMinAndTMaxUnchanged)
     {
         const AABB3d aabb(Vector3d(-1.0), Vector3d(1.0));
         Ray3d ray(Vector3d(0.0, 0.0, 2.0), Vector3d(0.0, 0.0, -1.0), 0.0, 1.0);
 
         const bool hit = clip(ray, RayInfo3d(ray), aabb);
 
-        FOUNDATION_EXPECT_FALSE(hit);
-        FOUNDATION_EXPECT_EQ(0.0, ray.m_tmin);
-        FOUNDATION_EXPECT_EQ(1.0, ray.m_tmax);
+        EXPECT_FALSE(hit);
+        EXPECT_EQ(0.0, ray.m_tmin);
+        EXPECT_EQ(1.0, ray.m_tmax);
     }
 
-    FOUNDATION_TEST_CASE(Clip_GivenRayWithTMinLargerThanHitDistance_ReturnsFalseAndLeavesTMinAndTMaxUnchanged)
+    TEST_CASE(Clip_GivenRayWithTMinLargerThanHitDistance_ReturnsFalseAndLeavesTMinAndTMaxUnchanged)
     {
         const AABB3d aabb(Vector3d(-1.0), Vector3d(1.0));
         Ray3d ray(Vector3d(0.0, 0.0, 2.0), Vector3d(0.0, 0.0, -1.0), 3.1, 10.0);
 
         const bool hit = clip(ray, RayInfo3d(ray), aabb);
 
-        FOUNDATION_EXPECT_FALSE(hit);
-        FOUNDATION_EXPECT_EQ(3.1, ray.m_tmin);
-        FOUNDATION_EXPECT_EQ(10.0, ray.m_tmax);
+        EXPECT_FALSE(hit);
+        EXPECT_EQ(3.1, ray.m_tmin);
+        EXPECT_EQ(10.0, ray.m_tmax);
     }
 
-    FOUNDATION_TEST_CASE(Clip_GivenRayWithTMaxSmallerThanHitDistance_ReturnsFalseAndLeavesTMinAndTMaxUnchanged)
+    TEST_CASE(Clip_GivenRayWithTMaxSmallerThanHitDistance_ReturnsFalseAndLeavesTMinAndTMaxUnchanged)
     {
         const AABB3d aabb(Vector3d(-1.0), Vector3d(1.0));
         Ray3d ray(Vector3d(0.0, 0.0, 2.0), Vector3d(0.0, 0.0, -1.0), 0.0, 0.9);
 
         const bool hit = clip(ray, RayInfo3d(ray), aabb);
 
-        FOUNDATION_EXPECT_FALSE(hit);
-        FOUNDATION_EXPECT_EQ(0.0, ray.m_tmin);
-        FOUNDATION_EXPECT_EQ(0.9, ray.m_tmax);
+        EXPECT_FALSE(hit);
+        EXPECT_EQ(0.0, ray.m_tmin);
+        EXPECT_EQ(0.9, ray.m_tmax);
     }
 
 #pragma warning (pop)
@@ -438,116 +438,116 @@ namespace
     };
 }
 
-FOUNDATION_TEST_SUITE(Foundation_Math_Intersection_RayTriangleMT)
+TEST_SUITE(Foundation_Math_Intersection_RayTriangleMT)
 {
     typedef RayTriangleFixture<TriangleMT<double> > Fixture;
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(Intersect_GivenRayWithTMinEqualToHitDistance_ReturnsTrue, Fixture)
+    TEST_CASE_WITH_FIXTURE(Intersect_GivenRayWithTMinEqualToHitDistance_ReturnsTrue, Fixture)
     {
         const Ray3d ray(Vector3d(-0.2, 1.0, 0.2), Vector3d(0.0, -1.0, 0.0), 1.0, 10.0);
 
         const bool hit = m_triangle.intersect(ray);
 
-        FOUNDATION_ASSERT_TRUE(hit);
+        ASSERT_TRUE(hit);
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(Intersect_GivenRayWithTMaxEqualToHitDistance_ReturnsFalse, Fixture)
+    TEST_CASE_WITH_FIXTURE(Intersect_GivenRayWithTMaxEqualToHitDistance_ReturnsFalse, Fixture)
     {
         const Ray3d ray(Vector3d(-0.2, 1.0, 0.2), Vector3d(0.0, -1.0, 0.0), 0.0, 1.0);
 
         const bool hit = m_triangle.intersect(ray);
 
-        FOUNDATION_ASSERT_FALSE(hit);
+        ASSERT_FALSE(hit);
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(Intersect_GivenRayWithTMinEqualToHitDistance_ReturnsHit, Fixture)
+    TEST_CASE_WITH_FIXTURE(Intersect_GivenRayWithTMinEqualToHitDistance_ReturnsHit, Fixture)
     {
         const Ray3d ray(Vector3d(-0.2, 1.0, 0.2), Vector3d(0.0, -1.0, 0.0), 1.0, 10.0);
 
         double t, u, v;
         const bool hit = m_triangle.intersect(ray, t, u, v);
 
-        FOUNDATION_ASSERT_TRUE(hit);
-        FOUNDATION_EXPECT_FEQ(1.0, t);
+        ASSERT_TRUE(hit);
+        EXPECT_FEQ(1.0, t);
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(Intersect_GivenRayWithTMaxEqualToHitDistance_ReturnsNoHit, Fixture)
+    TEST_CASE_WITH_FIXTURE(Intersect_GivenRayWithTMaxEqualToHitDistance_ReturnsNoHit, Fixture)
     {
         const Ray3d ray(Vector3d(-0.2, 1.0, 0.2), Vector3d(0.0, -1.0, 0.0), 0.0, 1.0);
 
         double t, u, v;
         const bool hit = m_triangle.intersect(ray, t, u, v);
 
-        FOUNDATION_ASSERT_FALSE(hit);
+        ASSERT_FALSE(hit);
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(Intersect_GivenRayHittingDiagonalOfQuad_ReturnsHit, Fixture)
+    TEST_CASE_WITH_FIXTURE(Intersect_GivenRayHittingDiagonalOfQuad_ReturnsHit, Fixture)
     {
         const Ray3d ray(Vector3d(0.0, 1.0, 0.0), Vector3d(0.0, -1.0, 0.0));
 
         double t, u, v;
         const bool hit = m_triangle.intersect(ray, t, u, v);
 
-        FOUNDATION_ASSERT_TRUE(hit);
-        FOUNDATION_EXPECT_FEQ(1.0, t);
-        FOUNDATION_EXPECT_FEQ(0.0, u);
-        FOUNDATION_EXPECT_FEQ(0.5, v);
+        ASSERT_TRUE(hit);
+        EXPECT_FEQ(1.0, t);
+        EXPECT_FEQ(0.0, u);
+        EXPECT_FEQ(0.5, v);
     }
 }
 
-FOUNDATION_TEST_SUITE(Foundation_Math_Intersection_RayTriangleSSK)
+TEST_SUITE(Foundation_Math_Intersection_RayTriangleSSK)
 {
     typedef RayTriangleFixture<TriangleSSK<double> > Fixture;
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(Intersect_GivenRayWithTMinEqualToHitDistance_ReturnsTrue, Fixture)
+    TEST_CASE_WITH_FIXTURE(Intersect_GivenRayWithTMinEqualToHitDistance_ReturnsTrue, Fixture)
     {
         const Ray3d ray(Vector3d(-0.2, 1.0, 0.2), Vector3d(0.0, -1.0, 0.0), 1.0, 10.0);
 
         const bool hit = m_triangle.intersect(ray);
 
-        FOUNDATION_ASSERT_TRUE(hit);
+        ASSERT_TRUE(hit);
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(Intersect_GivenRayWithTMaxEqualToHitDistance_ReturnsFalse, Fixture)
+    TEST_CASE_WITH_FIXTURE(Intersect_GivenRayWithTMaxEqualToHitDistance_ReturnsFalse, Fixture)
     {
         const Ray3d ray(Vector3d(-0.2, 1.0, 0.2), Vector3d(0.0, -1.0, 0.0), 0.0, 1.0);
 
         const bool hit = m_triangle.intersect(ray);
 
-        FOUNDATION_ASSERT_FALSE(hit);
+        ASSERT_FALSE(hit);
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(Intersect_GivenRayWithTMinEqualToHitDistance_ReturnsHit, Fixture)
+    TEST_CASE_WITH_FIXTURE(Intersect_GivenRayWithTMinEqualToHitDistance_ReturnsHit, Fixture)
     {
         const Ray3d ray(Vector3d(-0.2, 1.0, 0.2), Vector3d(0.0, -1.0, 0.0), 1.0, 10.0);
 
         double t, u, v;
         const bool hit = m_triangle.intersect(ray, t, u, v);
 
-        FOUNDATION_ASSERT_TRUE(hit);
-        FOUNDATION_EXPECT_FEQ(1.0, t);
+        ASSERT_TRUE(hit);
+        EXPECT_FEQ(1.0, t);
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(Intersect_GivenRayWithTMaxEqualToHitDistance_ReturnsNoHit, Fixture)
+    TEST_CASE_WITH_FIXTURE(Intersect_GivenRayWithTMaxEqualToHitDistance_ReturnsNoHit, Fixture)
     {
         const Ray3d ray(Vector3d(-0.2, 1.0, 0.2), Vector3d(0.0, -1.0, 0.0), 0.0, 1.0);
 
         double t, u, v;
         const bool hit = m_triangle.intersect(ray, t, u, v);
 
-        FOUNDATION_ASSERT_FALSE(hit);
+        ASSERT_FALSE(hit);
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(Intersect_GivenRayHittingDiagonalOfQuad_ReturnsHit, Fixture)
+    TEST_CASE_WITH_FIXTURE(Intersect_GivenRayHittingDiagonalOfQuad_ReturnsHit, Fixture)
     {
         const Ray3d ray(Vector3d(0.0, 1.0, 0.0), Vector3d(0.0, -1.0, 0.0));
 
         double t, u, v;
         const bool hit = m_triangle.intersect(ray, t, u, v);
 
-        FOUNDATION_ASSERT_TRUE(hit);
-        FOUNDATION_EXPECT_FEQ(1.0, t);
-        FOUNDATION_EXPECT_FEQ(0.0, u);
-        FOUNDATION_EXPECT_FEQ(0.5, v);
+        ASSERT_TRUE(hit);
+        EXPECT_FEQ(1.0, t);
+        EXPECT_FEQ(0.0, u);
+        EXPECT_FEQ(0.5, v);
     }
 }

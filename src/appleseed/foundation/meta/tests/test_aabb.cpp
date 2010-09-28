@@ -35,21 +35,21 @@
 // Standard headers.
 #include <cstddef>
 
-FOUNDATION_TEST_SUITE(Foundation_Math_AABB)
+TEST_SUITE(Foundation_Math_AABB)
 {
     using namespace foundation;
 
-    FOUNDATION_TEST_CASE(ConstructWithMinMax)
+    TEST_CASE(ConstructWithMinMax)
     {
         const AABB3d bbox(
             Vector3d(1.0, 2.0, 3.0),
             Vector3d(4.0, 5.0, 6.0));
 
-        FOUNDATION_EXPECT_EQ(Vector3d(1.0, 2.0, 3.0), bbox.min);
-        FOUNDATION_EXPECT_EQ(Vector3d(4.0, 5.0, 6.0), bbox.max);
+        EXPECT_EQ(Vector3d(1.0, 2.0, 3.0), bbox.min);
+        EXPECT_EQ(Vector3d(4.0, 5.0, 6.0), bbox.max);
     }
 
-    FOUNDATION_TEST_CASE(ConstructByTypeConversion)
+    TEST_CASE(ConstructByTypeConversion)
     {
         const AABB3d bbox(
             Vector3d(1.0, 2.0, 3.0),
@@ -57,28 +57,28 @@ FOUNDATION_TEST_SUITE(Foundation_Math_AABB)
 
         const AABB3f bboxf(bbox);
 
-        FOUNDATION_EXPECT_FEQ(Vector3f(1.0f, 2.0f, 3.0f), bboxf.min);
-        FOUNDATION_EXPECT_FEQ(Vector3f(4.0f, 5.0f, 6.0f), bboxf.max);
+        EXPECT_FEQ(Vector3f(1.0f, 2.0f, 3.0f), bboxf.min);
+        EXPECT_FEQ(Vector3f(4.0f, 5.0f, 6.0f), bboxf.max);
     }
 
-    FOUNDATION_TEST_CASE(ConstructInvalidAABB)
+    TEST_CASE(ConstructInvalidAABB)
     {
         const AABB3d bbox(AABB3d::invalid());
 
-        FOUNDATION_EXPECT_FALSE(bbox.is_valid());
+        EXPECT_FALSE(bbox.is_valid());
     }
 
-    FOUNDATION_TEST_CASE(TestArraySubscripting)
+    TEST_CASE(TestArraySubscripting)
     {
         const AABB3d bbox(
             Vector3d(1.0, 2.0, 3.0),
             Vector3d(4.0, 5.0, 6.0));
 
-        FOUNDATION_EXPECT_EQ(Vector3d(1.0, 2.0, 3.0), bbox[0]);
-        FOUNDATION_EXPECT_EQ(Vector3d(4.0, 5.0, 6.0), bbox[1]);
+        EXPECT_EQ(Vector3d(1.0, 2.0, 3.0), bbox[0]);
+        EXPECT_EQ(Vector3d(4.0, 5.0, 6.0), bbox[1]);
     }
 
-    FOUNDATION_TEST_CASE(TestInvalidate)
+    TEST_CASE(TestInvalidate)
     {
         AABB3d bbox(
             Vector3d(1.0, 2.0, 3.0),
@@ -86,58 +86,58 @@ FOUNDATION_TEST_SUITE(Foundation_Math_AABB)
 
         bbox.invalidate();
 
-        FOUNDATION_EXPECT_FALSE(bbox.is_valid());
+        EXPECT_FALSE(bbox.is_valid());
     }
 
-    FOUNDATION_TEST_CASE(TestExtentRatio)
+    TEST_CASE(TestExtentRatio)
     {
-        FOUNDATION_EXPECT_FEQ(1.0,
+        EXPECT_FEQ(1.0,
             AABB3d::extent_ratio(
                 AABB3d(Vector3d(0.0), Vector3d(0.0, 0.0, 0.0)),
                 AABB3d(Vector3d(0.0), Vector3d(0.0, 0.0, 0.0))));
 
-        FOUNDATION_EXPECT_FEQ(1.0,
+        EXPECT_FEQ(1.0,
             AABB3d::extent_ratio(
                 AABB3d(Vector3d(0.0), Vector3d(1.0, 1.0, 1.0)),
                 AABB3d(Vector3d(0.0), Vector3d(1.0, 1.0, 1.0))));
 
-        FOUNDATION_EXPECT_FEQ(1.0,
+        EXPECT_FEQ(1.0,
             AABB3d::extent_ratio(
                 AABB3d(Vector3d(0.0), Vector3d(0.0, 1.0, 1.0)),
                 AABB3d(Vector3d(0.0), Vector3d(0.0, 1.0, 1.0))));
 
-        FOUNDATION_EXPECT_FEQ(1.0,
+        EXPECT_FEQ(1.0,
             AABB3d::extent_ratio(
                 AABB3d(Vector3d(0.0), Vector3d(1.0, 0.0, 1.0)),
                 AABB3d(Vector3d(0.0), Vector3d(1.0, 0.0, 1.0))));
 
-        FOUNDATION_EXPECT_FEQ(1.0,
+        EXPECT_FEQ(1.0,
             AABB3d::extent_ratio(
                 AABB3d(Vector3d(0.0), Vector3d(1.0, 1.0, 0.0)),
                 AABB3d(Vector3d(0.0), Vector3d(1.0, 1.0, 0.0))));
 
-        FOUNDATION_EXPECT_FEQ(2.0,
+        EXPECT_FEQ(2.0,
             AABB3d::extent_ratio(
                 AABB3d(Vector3d(0.0), Vector3d(2.0, 1.0, 1.0)),
                 AABB3d(Vector3d(0.0), Vector3d(1.0, 1.0, 1.0))));
 
-        FOUNDATION_EXPECT_FEQ(8.0,
+        EXPECT_FEQ(8.0,
             AABB3d::extent_ratio(
                 AABB3d(Vector3d(0.0), Vector3d(2.0, 2.0, 2.0)),
                 AABB3d(Vector3d(0.0), Vector3d(1.0, 1.0, 1.0))));
     }
 
-    FOUNDATION_TEST_CASE(TestInsertPointIntoInvalidAABB)
+    TEST_CASE(TestInsertPointIntoInvalidAABB)
     {
         AABB3d bbox(AABB3d::invalid());
 
         bbox.insert(Vector3d(1.0, 2.0, 3.0));
 
-        FOUNDATION_EXPECT_EQ(Vector3d(1.0, 2.0, 3.0), bbox.min);
-        FOUNDATION_EXPECT_EQ(Vector3d(1.0, 2.0, 3.0), bbox.max);
+        EXPECT_EQ(Vector3d(1.0, 2.0, 3.0), bbox.min);
+        EXPECT_EQ(Vector3d(1.0, 2.0, 3.0), bbox.max);
     }
 
-    FOUNDATION_TEST_CASE(TestInsertPointIntoValidAABB)
+    TEST_CASE(TestInsertPointIntoValidAABB)
     {
         AABB3d bbox(
             Vector3d(1.0, 2.0, 3.0),
@@ -145,11 +145,11 @@ FOUNDATION_TEST_SUITE(Foundation_Math_AABB)
 
         bbox.insert(Vector3d(-1.0, 50.0, 60.0));
 
-        FOUNDATION_EXPECT_EQ(Vector3d(-1.0, 2.0, 3.0), bbox.min);
-        FOUNDATION_EXPECT_EQ(Vector3d(4.0, 50.0, 60.0), bbox.max);
+        EXPECT_EQ(Vector3d(-1.0, 2.0, 3.0), bbox.min);
+        EXPECT_EQ(Vector3d(4.0, 50.0, 60.0), bbox.max);
     }
 
-    FOUNDATION_TEST_CASE(TestInsertAABBIntoInvalidAABB)
+    TEST_CASE(TestInsertAABBIntoInvalidAABB)
     {
         AABB3d bbox(AABB3d::invalid());
 
@@ -158,11 +158,11 @@ FOUNDATION_TEST_SUITE(Foundation_Math_AABB)
                 Vector3d(1.0, 2.0, 3.0),
                 Vector3d(4.0, 5.0, 6.0)));
 
-        FOUNDATION_EXPECT_EQ(Vector3d(1.0, 2.0, 3.0), bbox.min);
-        FOUNDATION_EXPECT_EQ(Vector3d(4.0, 5.0, 6.0), bbox.max);
+        EXPECT_EQ(Vector3d(1.0, 2.0, 3.0), bbox.min);
+        EXPECT_EQ(Vector3d(4.0, 5.0, 6.0), bbox.max);
     }
 
-    FOUNDATION_TEST_CASE(TestInsertAABBIntoValidAABB)
+    TEST_CASE(TestInsertAABBIntoValidAABB)
     {
         AABB3d bbox(
             Vector3d(1.0, 2.0, 3.0),
@@ -173,11 +173,11 @@ FOUNDATION_TEST_SUITE(Foundation_Math_AABB)
                 Vector3d(7.0, 0.0, 2.0),
                 Vector3d(8.0, 3.0, 9.0)));
 
-        FOUNDATION_EXPECT_EQ(Vector3d(1.0, 0.0, 2.0), bbox.min);
-        FOUNDATION_EXPECT_EQ(Vector3d(8.0, 5.0, 9.0), bbox.max);
+        EXPECT_EQ(Vector3d(1.0, 0.0, 2.0), bbox.min);
+        EXPECT_EQ(Vector3d(8.0, 5.0, 9.0), bbox.max);
     }
 
-    FOUNDATION_TEST_CASE(TestGrow)
+    TEST_CASE(TestGrow)
     {
         AABB3d bbox(
             Vector3d(1.0, 2.0, 3.0),
@@ -185,11 +185,11 @@ FOUNDATION_TEST_SUITE(Foundation_Math_AABB)
 
         bbox.grow(Vector3d(2.0, 0.0, -1.0));
 
-        FOUNDATION_EXPECT_FEQ(Vector3d(-1.0, 2.0, 4.0), bbox.min);
-        FOUNDATION_EXPECT_FEQ(Vector3d(6.0, 5.0, 5.0), bbox.max);
+        EXPECT_FEQ(Vector3d(-1.0, 2.0, 4.0), bbox.min);
+        EXPECT_FEQ(Vector3d(6.0, 5.0, 5.0), bbox.max);
     }
 
-    FOUNDATION_TEST_CASE(TestRobustGrow)
+    TEST_CASE(TestRobustGrow)
     {
         const Vector3d a(1.0, 2.0, 3.0);
         const Vector3d b(4.0, 5.0, 6.0);
@@ -198,119 +198,119 @@ FOUNDATION_TEST_SUITE(Foundation_Math_AABB)
 
         bbox.robust_grow(1.0);
 
-        FOUNDATION_EXPECT_LT(a[0], bbox.min[0]);
-        FOUNDATION_EXPECT_LT(a[1], bbox.min[1]);
-        FOUNDATION_EXPECT_LT(a[2], bbox.min[2]);
+        EXPECT_LT(a[0], bbox.min[0]);
+        EXPECT_LT(a[1], bbox.min[1]);
+        EXPECT_LT(a[2], bbox.min[2]);
 
-        FOUNDATION_EXPECT_GT(b[0], bbox.max[0]);
-        FOUNDATION_EXPECT_GT(b[1], bbox.max[1]);
-        FOUNDATION_EXPECT_GT(b[2], bbox.max[2]);
+        EXPECT_GT(b[0], bbox.max[0]);
+        EXPECT_GT(b[1], bbox.max[1]);
+        EXPECT_GT(b[2], bbox.max[2]);
     }
 
-    FOUNDATION_TEST_CASE(TestIsValid)
+    TEST_CASE(TestIsValid)
     {
         const AABB3d bbox(
             Vector3d(1.0, 2.0, 3.0),
             Vector3d(4.0, 5.0, 6.0));
 
-        FOUNDATION_EXPECT_TRUE(bbox.is_valid());
+        EXPECT_TRUE(bbox.is_valid());
 
-        FOUNDATION_EXPECT_FALSE(AABB3d::invalid().is_valid());
+        EXPECT_FALSE(AABB3d::invalid().is_valid());
     }
 
-    FOUNDATION_TEST_CASE(TestRank1)
+    TEST_CASE(TestRank1)
     {
         const AABB3d bbox(
             Vector3d(1.0, 2.0, 3.0),
             Vector3d(1.0, 2.0, 3.0));
 
-        FOUNDATION_EXPECT_EQ(0, bbox.rank());
+        EXPECT_EQ(0, bbox.rank());
     }
 
-    FOUNDATION_TEST_CASE(TestRank2)
+    TEST_CASE(TestRank2)
     {
         const AABB3d bbox(
             Vector3d(1.0, 2.0, 3.0),
             Vector3d(10.0, 20.0, 30.0));
 
-        FOUNDATION_EXPECT_EQ(3, bbox.rank());
+        EXPECT_EQ(3, bbox.rank());
     }
 
-    FOUNDATION_TEST_CASE(TestCenter)
+    TEST_CASE(TestCenter)
     {
         const AABB3d bbox(
             Vector3d(1.0, 2.0, 3.0),
             Vector3d(5.0, 6.0, 7.0));
 
-        FOUNDATION_EXPECT_FEQ(Vector3d(3.0, 4.0, 5.0), bbox.center());
+        EXPECT_FEQ(Vector3d(3.0, 4.0, 5.0), bbox.center());
     }
 
-    FOUNDATION_TEST_CASE(TestExtent)
+    TEST_CASE(TestExtent)
     {
         const AABB3d bbox(
             Vector3d(-1.0, -2.0, -3.0),
             Vector3d(4.0, 5.0, 6.0));
 
-        FOUNDATION_EXPECT_FEQ(Vector3d(5.0, 7.0, 9.0), bbox.extent());
+        EXPECT_FEQ(Vector3d(5.0, 7.0, 9.0), bbox.extent());
     }
 
-    FOUNDATION_TEST_CASE(TestVolume)
+    TEST_CASE(TestVolume)
     {
         const AABB3d bbox(
             Vector3d(-1.0, -2.0, -3.0),
             Vector3d(4.0, 5.0, 6.0));
 
-        FOUNDATION_EXPECT_FEQ(5.0 * 7.0 * 9.0, bbox.volume());
+        EXPECT_FEQ(5.0 * 7.0 * 9.0, bbox.volume());
     }
 
-    FOUNDATION_TEST_CASE(TestHalfSurfaceArea)
+    TEST_CASE(TestHalfSurfaceArea)
     {
         const AABB3d bbox(
             Vector3d(-1.0, -2.0, -3.0),
             Vector3d(4.0, 5.0, 6.0));
 
-        FOUNDATION_EXPECT_FEQ(5.0 * 7.0 + 5.0 * 9.0 + 7.0 * 9.0, bbox.half_surface_area()); 
+        EXPECT_FEQ(5.0 * 7.0 + 5.0 * 9.0 + 7.0 * 9.0, bbox.half_surface_area()); 
     }
 
-    FOUNDATION_TEST_CASE(TestContainsOnRank0AABB)
+    TEST_CASE(TestContainsOnRank0AABB)
     {
         const AABB3d bbox(
             Vector3d(1.0, 2.0, 3.0),
             Vector3d(1.0, 2.0, 3.0));
 
-        FOUNDATION_EXPECT_TRUE(bbox.contains(Vector3d(1.0, 2.0, 3.0)));
-        FOUNDATION_EXPECT_FALSE(bbox.contains(Vector3d(1.0, 1.0, 3.0)));
+        EXPECT_TRUE(bbox.contains(Vector3d(1.0, 2.0, 3.0)));
+        EXPECT_FALSE(bbox.contains(Vector3d(1.0, 1.0, 3.0)));
     }
 
-    FOUNDATION_TEST_CASE(TestContainsOnRank3AABB)
+    TEST_CASE(TestContainsOnRank3AABB)
     {
         const AABB3d bbox(
             Vector3d(1.0, 2.0, 3.0),
             Vector3d(4.0, 5.0, 6.0));
 
-        FOUNDATION_EXPECT_TRUE(bbox.contains(Vector3d(2.0, 3.0, 4.0)));
-        FOUNDATION_EXPECT_FALSE(bbox.contains(Vector3d(2.0, 6.0, 4.0)));
+        EXPECT_TRUE(bbox.contains(Vector3d(2.0, 3.0, 4.0)));
+        EXPECT_FALSE(bbox.contains(Vector3d(2.0, 6.0, 4.0)));
     }
 
-    FOUNDATION_TEST_CASE(VerifyThatRank0AABBOverlapsWithItself)
+    TEST_CASE(VerifyThatRank0AABBOverlapsWithItself)
     {
         const AABB3d bbox(
             Vector3d(1.0, 2.0, 3.0),
             Vector3d(1.0, 2.0, 3.0));
 
-        FOUNDATION_EXPECT_TRUE(bbox.overlaps(bbox));
+        EXPECT_TRUE(bbox.overlaps(bbox));
     }
 
-    FOUNDATION_TEST_CASE(VerifyThatRank3AABBOverlapsWithItself)
+    TEST_CASE(VerifyThatRank3AABBOverlapsWithItself)
     {
         const AABB3d bbox(
             Vector3d(1.0, 2.0, 3.0),
             Vector3d(4.0, 5.0, 6.0));
 
-        FOUNDATION_EXPECT_TRUE(bbox.overlaps(bbox));
+        EXPECT_TRUE(bbox.overlaps(bbox));
     }
 
-    FOUNDATION_TEST_CASE(TestOverlapsWithOverlappingRank3AABB)
+    TEST_CASE(TestOverlapsWithOverlappingRank3AABB)
     {
         const AABB3d bbox1(
             Vector3d(1.0, 2.0, 3.0),
@@ -320,11 +320,11 @@ FOUNDATION_TEST_SUITE(Foundation_Math_AABB)
             Vector3d(0.0, 1.0, 5.0),
             Vector3d(5.0, 3.0, 7.0));
 
-        FOUNDATION_EXPECT_TRUE(bbox1.overlaps(bbox2));
-        FOUNDATION_EXPECT_TRUE(bbox2.overlaps(bbox1));
+        EXPECT_TRUE(bbox1.overlaps(bbox2));
+        EXPECT_TRUE(bbox2.overlaps(bbox1));
     }
 
-    FOUNDATION_TEST_CASE(TestOverlapsWithNonOverlappingRank3AABB)
+    TEST_CASE(TestOverlapsWithNonOverlappingRank3AABB)
     {
         const AABB3d bbox1(
             Vector3d(1.0, 2.0, 3.0),
@@ -334,11 +334,11 @@ FOUNDATION_TEST_SUITE(Foundation_Math_AABB)
             Vector3d(0.0, 1.0, 5.0),
             Vector3d(5.0, 3.0, 7.0));
 
-        FOUNDATION_EXPECT_TRUE(bbox1.overlaps(bbox2));
-        FOUNDATION_EXPECT_TRUE(bbox2.overlaps(bbox1));
+        EXPECT_TRUE(bbox1.overlaps(bbox2));
+        EXPECT_TRUE(bbox2.overlaps(bbox1));
     }
 
-    FOUNDATION_TEST_CASE(TestEquality)
+    TEST_CASE(TestEquality)
     {
         const AABB3d bbox1(
             Vector3d(1.0, 2.0, 3.0),
@@ -352,11 +352,11 @@ FOUNDATION_TEST_SUITE(Foundation_Math_AABB)
             Vector3d(0.0, 2.0, 3.0),
             Vector3d(4.0, 5.0, 6.0));
 
-        FOUNDATION_EXPECT_TRUE(bbox1 == bbox2);
-        FOUNDATION_EXPECT_FALSE(bbox1 == bbox3);
+        EXPECT_TRUE(bbox1 == bbox2);
+        EXPECT_FALSE(bbox1 == bbox3);
     }
 
-    FOUNDATION_TEST_CASE(TestInequality)
+    TEST_CASE(TestInequality)
     {
         const AABB3d bbox1(
             Vector3d(1.0, 2.0, 3.0),
@@ -370,7 +370,7 @@ FOUNDATION_TEST_SUITE(Foundation_Math_AABB)
             Vector3d(0.0, 2.0, 3.0),
             Vector3d(4.0, 5.0, 6.0));
 
-        FOUNDATION_EXPECT_FALSE(bbox1 != bbox2);
-        FOUNDATION_EXPECT_TRUE(bbox1 != bbox3);
+        EXPECT_FALSE(bbox1 != bbox2);
+        EXPECT_TRUE(bbox1 != bbox3);
     }
 }

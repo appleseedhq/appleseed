@@ -99,36 +99,36 @@ namespace
             color_float_to_int(color[3]));
     }
 
-    FOUNDATION_TEST_SUITE(Studio_Rendering_RenderWidget_Details)
+    TEST_SUITE(Studio_Rendering_RenderWidget_Details)
     {
-        FOUNDATION_TEST_CASE(ColorFloatToInt_GivenMinusOne_ReturnsZero)
+        TEST_CASE(ColorFloatToInt_GivenMinusOne_ReturnsZero)
         {
             const int result = color_float_to_int(-1.0f);
-            FOUNDATION_EXPECT_EQ(0, result);
+            EXPECT_EQ(0, result);
         }
 
-        FOUNDATION_TEST_CASE(ColorFloatToInt_GivenZero_ReturnsZero)
+        TEST_CASE(ColorFloatToInt_GivenZero_ReturnsZero)
         {
             const int result = color_float_to_int(0.0f);
-            FOUNDATION_EXPECT_EQ(0, result);
+            EXPECT_EQ(0, result);
         }
 
-        FOUNDATION_TEST_CASE(ColorFloatToInt_GivenOne_Returns255)
+        TEST_CASE(ColorFloatToInt_GivenOne_Returns255)
         {
             const int result = color_float_to_int(1.0f);
-            FOUNDATION_EXPECT_EQ(255, result);
+            EXPECT_EQ(255, result);
         }
 
-        FOUNDATION_TEST_CASE(ColorFloatToInt_GivenTwo_Returns255)
+        TEST_CASE(ColorFloatToInt_GivenTwo_Returns255)
         {
             const int result = color_float_to_int(2.0f);
-            FOUNDATION_EXPECT_EQ(255, result);
+            EXPECT_EQ(255, result);
         }
 
-        FOUNDATION_TEST_CASE(MakeQColor_GivenColor4f_ReturnsQColor)
+        TEST_CASE(MakeQColor_GivenColor4f_ReturnsQColor)
         {
             const QColor color = make_qcolor(Color4f(0.25f, 0.5f, 0.75f, 1.0f));
-            FOUNDATION_EXPECT_EQ(QColor(64, 128, 192, 255), color);
+            EXPECT_EQ(QColor(64, 128, 192, 255), color);
         }
     }
 }

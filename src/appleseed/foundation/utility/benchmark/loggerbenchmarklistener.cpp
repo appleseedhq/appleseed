@@ -90,7 +90,7 @@ namespace
         }
     }
 
-    FOUNDATION_TEST_SUITE(Foundation_Utility_Benchmark)
+    TEST_SUITE(Foundation_Utility_Benchmark)
     {
         string pretty_callrate_helper(const double rate)
         {
@@ -100,16 +100,16 @@ namespace
             return pretty_callrate(result);
         }
 
-        FOUNDATION_TEST_CASE(TestPrettyCallRate)
+        TEST_CASE(TestPrettyCallRate)
         {
-            FOUNDATION_EXPECT_EQ("1.0 call/s", pretty_callrate_helper(1.0));
-            FOUNDATION_EXPECT_EQ("10.0 calls/s", pretty_callrate_helper(10.0));
-            FOUNDATION_EXPECT_EQ("100.0 calls/s", pretty_callrate_helper(100.0));
-            FOUNDATION_EXPECT_EQ("1.0K calls/s", pretty_callrate_helper(1000.0));
-            FOUNDATION_EXPECT_EQ("10.0K calls/s", pretty_callrate_helper(10000.0));
-            FOUNDATION_EXPECT_EQ("10.0M calls/s", pretty_callrate_helper(10000000.0));
-            FOUNDATION_EXPECT_EQ("10.0G calls/s", pretty_callrate_helper(10000000000.0));
-            FOUNDATION_EXPECT_EQ("10.0T calls/s", pretty_callrate_helper(10000000000000.0));
+            EXPECT_EQ("1.0 call/s", pretty_callrate_helper(1.0));
+            EXPECT_EQ("10.0 calls/s", pretty_callrate_helper(10.0));
+            EXPECT_EQ("100.0 calls/s", pretty_callrate_helper(100.0));
+            EXPECT_EQ("1.0K calls/s", pretty_callrate_helper(1000.0));
+            EXPECT_EQ("10.0K calls/s", pretty_callrate_helper(10000.0));
+            EXPECT_EQ("10.0M calls/s", pretty_callrate_helper(10000000.0));
+            EXPECT_EQ("10.0G calls/s", pretty_callrate_helper(10000000000.0));
+            EXPECT_EQ("10.0T calls/s", pretty_callrate_helper(10000000000000.0));
         }
     }
 

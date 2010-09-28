@@ -32,11 +32,11 @@
 // appleseed.foundation headers.
 #include "foundation/utility/test.h"
 
-FOUNDATION_TEST_SUITE(Renderer_Global_ParamArray)
+TEST_SUITE(Renderer_Global_ParamArray)
 {
     using namespace renderer;
 
-    FOUNDATION_TEST_CASE(Merge_GivenOneIntInSourceAndOneIntInDestWithDifferentNames_InsertsDestIntIntoSource)
+    TEST_CASE(Merge_GivenOneIntInSourceAndOneIntInDestWithDifferentNames_InsertsDestIntIntoSource)
     {
         ParamArray dst;
         dst.insert("A", 1);
@@ -46,12 +46,12 @@ FOUNDATION_TEST_SUITE(Renderer_Global_ParamArray)
 
         dst.merge(src);
 
-        FOUNDATION_EXPECT_EQ(2, dst.size());
-        FOUNDATION_EXPECT_EQ(1, dst.get<int>("A"));
-        FOUNDATION_EXPECT_EQ(2, dst.get<int>("B"));
+        EXPECT_EQ(2, dst.size());
+        EXPECT_EQ(1, dst.get<int>("A"));
+        EXPECT_EQ(2, dst.get<int>("B"));
     }
 
-    FOUNDATION_TEST_CASE(Merge_GivenOneIntInSourceAndOneIntInDestWithSameNames_OverwritesDestValueWithSourceValue)
+    TEST_CASE(Merge_GivenOneIntInSourceAndOneIntInDestWithSameNames_OverwritesDestValueWithSourceValue)
     {
         ParamArray dst;
         dst.insert("A", 1);
@@ -61,11 +61,11 @@ FOUNDATION_TEST_SUITE(Renderer_Global_ParamArray)
 
         dst.merge(src);
 
-        FOUNDATION_EXPECT_EQ(1, dst.size());
-        FOUNDATION_EXPECT_EQ(2, dst.get<int>("A"));
+        EXPECT_EQ(1, dst.size());
+        EXPECT_EQ(2, dst.get<int>("A"));
     }
 
-    FOUNDATION_TEST_CASE(Merge_GivenOneDicInSourceAndOneDicInDestWithDifferentNames_MergesDestDicIntoSource)
+    TEST_CASE(Merge_GivenOneDicInSourceAndOneDicInDestWithDifferentNames_MergesDestDicIntoSource)
     {
         ParamArray dst_child;
         dst_child.insert("AA", 1);
@@ -81,12 +81,12 @@ FOUNDATION_TEST_SUITE(Renderer_Global_ParamArray)
 
         dst.merge(src);
 
-        FOUNDATION_EXPECT_EQ(2, dst.size());
-        FOUNDATION_EXPECT_EQ(1, dst.dictionary("A").get<int>("AA"));
-        FOUNDATION_EXPECT_EQ(2, dst.dictionary("B").get<int>("BB"));
+        EXPECT_EQ(2, dst.size());
+        EXPECT_EQ(1, dst.dictionary("A").get<int>("AA"));
+        EXPECT_EQ(2, dst.dictionary("B").get<int>("BB"));
     }
 
-    FOUNDATION_TEST_CASE(Merge_GivenOneDicInSourceAndOneDicInDestWithSameNames_MergesDicContents)
+    TEST_CASE(Merge_GivenOneDicInSourceAndOneDicInDestWithSameNames_MergesDicContents)
     {
         ParamArray dst_child;
         dst_child.insert("AA", 1);
@@ -102,8 +102,8 @@ FOUNDATION_TEST_SUITE(Renderer_Global_ParamArray)
 
         dst.merge(src);
 
-        FOUNDATION_EXPECT_EQ(1, dst.size());
-        FOUNDATION_EXPECT_EQ(1, dst.dictionary("A").get<int>("AA"));
-        FOUNDATION_EXPECT_EQ(2, dst.dictionary("A").get<int>("BB"));
+        EXPECT_EQ(1, dst.size());
+        EXPECT_EQ(1, dst.dictionary("A").get<int>("AA"));
+        EXPECT_EQ(2, dst.dictionary("A").get<int>("BB"));
     }
 }

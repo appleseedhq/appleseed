@@ -45,7 +45,7 @@
 #include <string>
 #include <vector>
 
-FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
+TEST_SUITE(Foundation_Utility_PoolAllocator)
 {
     using namespace foundation;
     using namespace std;
@@ -55,51 +55,51 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
         PoolAllocator<int, 2 * sizeof(int)> m_allocator;
     };
 
-    FOUNDATION_TEST_CASE(IdenticalAllocatorsAreEqual)
+    TEST_CASE(IdenticalAllocatorsAreEqual)
     {
         PoolAllocator<int, 512> a1, a2;
-        FOUNDATION_EXPECT_TRUE(a1 == a2);
-        FOUNDATION_EXPECT_FALSE(a1 != a2);
+        EXPECT_TRUE(a1 == a2);
+        EXPECT_FALSE(a1 != a2);
     }
 
-    FOUNDATION_TEST_CASE(AllocatorsWithDifferentDataTypesAreEqual)
+    TEST_CASE(AllocatorsWithDifferentDataTypesAreEqual)
     {
         PoolAllocator<int, 512, allocator<int> > a1;
         PoolAllocator<char, 512, allocator<int> > a2;
-        FOUNDATION_EXPECT_TRUE(a1 == a2);
-        FOUNDATION_EXPECT_FALSE(a1 != a2);
+        EXPECT_TRUE(a1 == a2);
+        EXPECT_FALSE(a1 != a2);
     }
 
-    FOUNDATION_TEST_CASE(AllocatorsWithDifferentPageSizesAreNotEqual)
+    TEST_CASE(AllocatorsWithDifferentPageSizesAreNotEqual)
     {
         PoolAllocator<int, 256> a1;
         PoolAllocator<int, 512> a2;
-        FOUNDATION_EXPECT_FALSE(a1 == a2);
-        FOUNDATION_EXPECT_TRUE(a1 != a2);
+        EXPECT_FALSE(a1 == a2);
+        EXPECT_TRUE(a1 != a2);
     }
 
-    FOUNDATION_TEST_CASE(AllocatorsWithDifferentFallbackAllocatorsAreNotEqual)
+    TEST_CASE(AllocatorsWithDifferentFallbackAllocatorsAreNotEqual)
     {
         PoolAllocator<int, 512, PoolAllocator<int> > a1;
         PoolAllocator<int, 512, allocator<int> > a2;
-        FOUNDATION_EXPECT_FALSE(a1 == a2);
-        FOUNDATION_EXPECT_TRUE(a1 != a2);
+        EXPECT_FALSE(a1 == a2);
+        EXPECT_TRUE(a1 != a2);
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(AllocateDeallocateSingleItem, Fixture)
+    TEST_CASE_WITH_FIXTURE(AllocateDeallocateSingleItem, Fixture)
     {
         int* p = m_allocator.allocate(1);
-        FOUNDATION_EXPECT_NEQ(0, p);
+        EXPECT_NEQ(0, p);
 
         m_allocator.deallocate(p, 1);
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(AllocateDeallocateArrayOfItems, Fixture)
+    TEST_CASE_WITH_FIXTURE(AllocateDeallocateArrayOfItems, Fixture)
     {
         const size_t N = 10;
 
         int* p = m_allocator.allocate(N);
-        FOUNDATION_EXPECT_NEQ(0, p);
+        EXPECT_NEQ(0, p);
 
         m_allocator.deallocate(p, N);
     }
@@ -1433,7 +1433,7 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_PoolAllocator)
 
     }   // namespace StlAllocatorTestbed
 
-    FOUNDATION_TEST_CASE(STLAllocatorTestbedByPeteInsee)
+    TEST_CASE(STLAllocatorTestbedByPeteInsee)
     {
         // Although some allocator type must be specified (like int), the
         // testing functions internally use allocator::rebind to test a wide

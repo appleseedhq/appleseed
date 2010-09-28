@@ -30,13 +30,13 @@
 #include "foundation/utility/otherwise.h"
 #include "foundation/utility/test.h"
 
-FOUNDATION_TEST_SUITE(Foundation_Utility_Otherwise)
+TEST_SUITE(Foundation_Utility_Otherwise)
 {
     using namespace foundation;
 
-    FOUNDATION_TEST_CASE(TestThrowOtherwiseMacro)
+    TEST_CASE(TestThrowOtherwiseMacro)
     {
-        FOUNDATION_EXPECT_EXCEPTION(
+        EXPECT_EXCEPTION(
             SwitchException,
             {
                 switch (1)

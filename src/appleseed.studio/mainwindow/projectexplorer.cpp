@@ -404,7 +404,7 @@ namespace
         return prefix + to_string(max_number + 1);
     }
 
-    FOUNDATION_TEST_SUITE(Studio_ProjectExplorer)
+    TEST_SUITE(Studio_ProjectExplorer)
     {
         class DummyEntity
           : public Entity
@@ -431,16 +431,16 @@ namespace
 
         typedef TypedEntityVector<DummyEntity> DummyEntityVector;
 
-        FOUNDATION_TEST_CASE(GetNameSuggestion_GivenZeroEntity_ReturnsNameWithFirstSuffix)
+        TEST_CASE(GetNameSuggestion_GivenZeroEntity_ReturnsNameWithFirstSuffix)
         {
             DummyEntityVector entities;
 
             const string result = get_name_suggestion("assembly", entities);
 
-            FOUNDATION_EXPECT_EQ("assembly1", result);
+            EXPECT_EQ("assembly1", result);
         }
 
-        FOUNDATION_TEST_CASE(GetNameSuggestion_GivenTwoEntitiesWithMatchingPrefixes_ReturnsNameWithNextSuffix)
+        TEST_CASE(GetNameSuggestion_GivenTwoEntitiesWithMatchingPrefixes_ReturnsNameWithNextSuffix)
         {
             DummyEntityVector entities;
             entities.insert(auto_release_ptr<DummyEntity>(new DummyEntity("assembly3")));
@@ -448,37 +448,37 @@ namespace
 
             const string result = get_name_suggestion("assembly", entities);
 
-            FOUNDATION_EXPECT_EQ("assembly4", result);
+            EXPECT_EQ("assembly4", result);
         }
 
-        FOUNDATION_TEST_CASE(GetNameSuggestion_GivenEntityWithNegativeSuffix_ReturnsNameWithFirstSuffix)
+        TEST_CASE(GetNameSuggestion_GivenEntityWithNegativeSuffix_ReturnsNameWithFirstSuffix)
         {
             DummyEntityVector entities;
             entities.insert(auto_release_ptr<DummyEntity>(new DummyEntity("assembly-5")));
 
             const string result = get_name_suggestion("assembly", entities);
 
-            FOUNDATION_EXPECT_EQ("assembly1", result);
+            EXPECT_EQ("assembly1", result);
         }
 
-        FOUNDATION_TEST_CASE(GetNameSuggestion_GivenOneEntityWithNonMatchingPrefix_ReturnsNameWithFirstSuffix)
+        TEST_CASE(GetNameSuggestion_GivenOneEntityWithNonMatchingPrefix_ReturnsNameWithFirstSuffix)
         {
             DummyEntityVector entities;
             entities.insert(auto_release_ptr<DummyEntity>(new DummyEntity("object")));
 
             const string result = get_name_suggestion("assembly", entities);
 
-            FOUNDATION_EXPECT_EQ("assembly1", result);
+            EXPECT_EQ("assembly1", result);
         }
 
-        FOUNDATION_TEST_CASE(GetNameSuggestion_GivenOneEntityWithNonNumericSuffix_ReturnsNameWithFirstSuffix)
+        TEST_CASE(GetNameSuggestion_GivenOneEntityWithNonNumericSuffix_ReturnsNameWithFirstSuffix)
         {
             DummyEntityVector entities;
             entities.insert(auto_release_ptr<DummyEntity>(new DummyEntity("assembly_instance")));
 
             const string result = get_name_suggestion("assembly", entities);
 
-            FOUNDATION_EXPECT_EQ("assembly1", result);
+            EXPECT_EQ("assembly1", result);
         }
     }
 

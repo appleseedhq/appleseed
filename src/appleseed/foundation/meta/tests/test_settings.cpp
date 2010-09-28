@@ -39,7 +39,7 @@
 using namespace foundation;
 using namespace std;
 
-FOUNDATION_TEST_SUITE(Foundation_Utility_SettingsFileReader)
+TEST_SUITE(Foundation_Utility_SettingsFileReader)
 {
     struct Fixture
     {
@@ -62,46 +62,46 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_SettingsFileReader)
         }
     };
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(Read_GivenEmptySettingsFile_ReturnsEmptyDictionary, Fixture)
+    TEST_CASE_WITH_FIXTURE(Read_GivenEmptySettingsFile_ReturnsEmptyDictionary, Fixture)
     {
         const bool succeeded = read("data/test_settings_emptysettingsfile.xml");
-        FOUNDATION_ASSERT_TRUE(succeeded);
+        ASSERT_TRUE(succeeded);
         
-        FOUNDATION_EXPECT_TRUE(m_dictionary.empty());
+        EXPECT_TRUE(m_dictionary.empty());
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(Read_GivenSettingsFileWithTwoScalarParameters_ReturnsDictionaryWithTwoScalarParameters, Fixture)
+    TEST_CASE_WITH_FIXTURE(Read_GivenSettingsFileWithTwoScalarParameters_ReturnsDictionaryWithTwoScalarParameters, Fixture)
     {
         const bool succeeded = read("data/test_settings_settingsfilewithtwoscalarparameters.xml");
-        FOUNDATION_ASSERT_TRUE(succeeded);
+        ASSERT_TRUE(succeeded);
         
-        FOUNDATION_ASSERT_EQ(2, m_dictionary.strings().size());
+        ASSERT_EQ(2, m_dictionary.strings().size());
 
-        FOUNDATION_EXPECT_EQ(42, m_dictionary.get<int>("x"));
-        FOUNDATION_EXPECT_EQ("foo", m_dictionary.get<string>("y"));
+        EXPECT_EQ(42, m_dictionary.get<int>("x"));
+        EXPECT_EQ("foo", m_dictionary.get<string>("y"));
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(Read_GivenSettingsFileWithTwoDictionaryParameters_ReturnsDictionaryWithTwoDictionaryParameters, Fixture)
+    TEST_CASE_WITH_FIXTURE(Read_GivenSettingsFileWithTwoDictionaryParameters_ReturnsDictionaryWithTwoDictionaryParameters, Fixture)
     {
         const bool succeeded = read("data/test_settings_settingsfilewithtwodictionaryparameters.xml");
-        FOUNDATION_ASSERT_TRUE(succeeded);
+        ASSERT_TRUE(succeeded);
 
-        FOUNDATION_ASSERT_EQ(0, m_dictionary.strings().size());
-        FOUNDATION_ASSERT_EQ(2, m_dictionary.dictionaries().size());
+        ASSERT_EQ(0, m_dictionary.strings().size());
+        ASSERT_EQ(2, m_dictionary.dictionaries().size());
 
         const Dictionary& sub1 = m_dictionary.dictionaries().get("sub1");
-        FOUNDATION_EXPECT_EQ(42, sub1.get<int>("x"));
-        FOUNDATION_EXPECT_EQ("foo", sub1.get<string>("y"));
+        EXPECT_EQ(42, sub1.get<int>("x"));
+        EXPECT_EQ("foo", sub1.get<string>("y"));
 
         const Dictionary& sub2 = m_dictionary.dictionaries().get("sub2");
-        FOUNDATION_EXPECT_EQ("aa", sub2.get<string>("a"));
-        FOUNDATION_EXPECT_EQ("bb", sub2.get<string>("b"));
+        EXPECT_EQ("aa", sub2.get<string>("a"));
+        EXPECT_EQ("bb", sub2.get<string>("b"));
     }
 }
 
-FOUNDATION_TEST_SUITE(Foundation_Utility_SettingsFileWriter)
+TEST_SUITE(Foundation_Utility_SettingsFileWriter)
 {
-    FOUNDATION_TEST_CASE(Write_GivenEmptyDictionary_WriteEmptySettingsFile)
+    TEST_CASE(Write_GivenEmptyDictionary_WriteEmptySettingsFile)
     {
         Dictionary dictionary;
 
@@ -113,10 +113,10 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_SettingsFileWriter)
                 "data/test_settings_emptysettingsfile.xml",
                 "output/test_settings_emptysettingsfile.xml");
 
-        FOUNDATION_EXPECT_TRUE(identical);
+        EXPECT_TRUE(identical);
     }
 
-    FOUNDATION_TEST_CASE(Write_GivenDictionaryWithTwoScalarParameters_WritesSettingsFileWithTwoScalarParameters)
+    TEST_CASE(Write_GivenDictionaryWithTwoScalarParameters_WritesSettingsFileWithTwoScalarParameters)
     {
         Dictionary dictionary;
         dictionary.insert("x", 42);
@@ -130,10 +130,10 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_SettingsFileWriter)
                 "data/test_settings_settingsfilewithtwoscalarparameters.xml",
                 "output/test_settings_settingsfilewithtwoscalarparameters.xml");
 
-        FOUNDATION_EXPECT_TRUE(identical);
+        EXPECT_TRUE(identical);
     }
 
-    FOUNDATION_TEST_CASE(Write_GivenDictionaryWithTwoDictionaryParameters_WritesSettingsFileWithTwoDictionaryParameters)
+    TEST_CASE(Write_GivenDictionaryWithTwoDictionaryParameters_WritesSettingsFileWithTwoDictionaryParameters)
     {
         Dictionary sub1;
         sub1.insert("x", 42);
@@ -155,6 +155,6 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_SettingsFileWriter)
                 "data/test_settings_settingsfilewithtwodictionaryparameters.xml",
                 "output/test_settings_settingsfilewithtwodictionaryparameters.xml");
 
-        FOUNDATION_EXPECT_TRUE(identical);
+        EXPECT_TRUE(identical);
     }
 }

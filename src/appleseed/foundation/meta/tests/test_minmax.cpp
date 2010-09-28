@@ -40,29 +40,29 @@
 // Standard headers.
 #include <utility>
 
-FOUNDATION_TEST_SUITE(Foundation_Math_MinMax)
+TEST_SUITE(Foundation_Math_MinMax)
 {
     using namespace foundation;
     using namespace std;
 
-    FOUNDATION_TEST_CASE(TestMin)
+    TEST_CASE(TestMin)
     {
-        FOUNDATION_EXPECT_EQ(0, min(0, 1, 2));
-        FOUNDATION_EXPECT_EQ(0, min(0, 2, 1));
-        FOUNDATION_EXPECT_EQ(0, min(1, 0, 2));
-        FOUNDATION_EXPECT_EQ(0, min(1, 2, 0));
-        FOUNDATION_EXPECT_EQ(0, min(2, 0, 1));
-        FOUNDATION_EXPECT_EQ(0, min(2, 1, 0));
+        EXPECT_EQ(0, min(0, 1, 2));
+        EXPECT_EQ(0, min(0, 2, 1));
+        EXPECT_EQ(0, min(1, 0, 2));
+        EXPECT_EQ(0, min(1, 2, 0));
+        EXPECT_EQ(0, min(2, 0, 1));
+        EXPECT_EQ(0, min(2, 1, 0));
     }
 
-    FOUNDATION_TEST_CASE(TestMax)
+    TEST_CASE(TestMax)
     {
-        FOUNDATION_EXPECT_EQ(2, max(0, 1, 2));
-        FOUNDATION_EXPECT_EQ(2, max(0, 2, 1));
-        FOUNDATION_EXPECT_EQ(2, max(1, 0, 2));
-        FOUNDATION_EXPECT_EQ(2, max(1, 2, 0));
-        FOUNDATION_EXPECT_EQ(2, max(2, 0, 1));
-        FOUNDATION_EXPECT_EQ(2, max(2, 1, 0));
+        EXPECT_EQ(2, max(0, 1, 2));
+        EXPECT_EQ(2, max(0, 2, 1));
+        EXPECT_EQ(2, max(1, 0, 2));
+        EXPECT_EQ(2, max(1, 2, 0));
+        EXPECT_EQ(2, max(2, 0, 1));
+        EXPECT_EQ(2, max(2, 1, 0));
     }
 
     pair<int, int> minmax_pair(const int a, const int b, const int c)
@@ -72,20 +72,20 @@ FOUNDATION_TEST_SUITE(Foundation_Math_MinMax)
         return make_pair(min, max);
     }
 
-    FOUNDATION_TEST_CASE(TestMinMax)
+    TEST_CASE(TestMinMax)
     {
-        FOUNDATION_EXPECT_EQ(0, minmax_pair(0, 1, 2).first);
-        FOUNDATION_EXPECT_EQ(2, minmax_pair(0, 1, 2).second);
-        FOUNDATION_EXPECT_EQ(0, minmax_pair(0, 2, 1).first);
-        FOUNDATION_EXPECT_EQ(2, minmax_pair(0, 2, 1).second);
-        FOUNDATION_EXPECT_EQ(0, minmax_pair(1, 0, 2).first);
-        FOUNDATION_EXPECT_EQ(2, minmax_pair(1, 0, 2).second);
-        FOUNDATION_EXPECT_EQ(0, minmax_pair(1, 2, 0).first);
-        FOUNDATION_EXPECT_EQ(2, minmax_pair(1, 2, 0).second);
-        FOUNDATION_EXPECT_EQ(0, minmax_pair(2, 0, 1).first);
-        FOUNDATION_EXPECT_EQ(2, minmax_pair(2, 0, 1).second);
-        FOUNDATION_EXPECT_EQ(0, minmax_pair(2, 1, 0).first);
-        FOUNDATION_EXPECT_EQ(2, minmax_pair(2, 1, 0).second);
+        EXPECT_EQ(0, minmax_pair(0, 1, 2).first);
+        EXPECT_EQ(2, minmax_pair(0, 1, 2).second);
+        EXPECT_EQ(0, minmax_pair(0, 2, 1).first);
+        EXPECT_EQ(2, minmax_pair(0, 2, 1).second);
+        EXPECT_EQ(0, minmax_pair(1, 0, 2).first);
+        EXPECT_EQ(2, minmax_pair(1, 0, 2).second);
+        EXPECT_EQ(0, minmax_pair(1, 2, 0).first);
+        EXPECT_EQ(2, minmax_pair(1, 2, 0).second);
+        EXPECT_EQ(0, minmax_pair(2, 0, 1).first);
+        EXPECT_EQ(2, minmax_pair(2, 0, 1).second);
+        EXPECT_EQ(0, minmax_pair(2, 1, 0).first);
+        EXPECT_EQ(2, minmax_pair(2, 1, 0).second);
     }
 
 #ifdef APPLESEED_FOUNDATION_USE_SSE
@@ -104,7 +104,7 @@ FOUNDATION_TEST_SUITE(Foundation_Math_MinMax)
         return ret;
     }
 
-    FOUNDATION_TEST_CASE(SSEMinAndSSEMax_GivenPermutationsOfSpecialFloatingPointNumbers_MatchMINSSAndMAXSS)
+    TEST_CASE(SSEMinAndSSEMax_GivenPermutationsOfSpecialFloatingPointNumbers_MatchMINSSAndMAXSS)
     {
         typedef TypeConv<float>::UInt UInt;
 
@@ -140,12 +140,12 @@ FOUNDATION_TEST_SUITE(Foundation_Math_MinMax)
             const UInt expected_min = binary_cast<UInt>(ssemin_reference(a, b));
             const UInt obtained_min = binary_cast<UInt>(ssemin(a, b));
             
-            FOUNDATION_EXPECT_EQ(expected_min, obtained_min);
+            EXPECT_EQ(expected_min, obtained_min);
 
             const UInt expected_max = binary_cast<UInt>(ssemax_reference(a, b));
             const UInt obtained_max = binary_cast<UInt>(ssemax(a, b));
 
-            FOUNDATION_EXPECT_EQ(expected_max, obtained_max);
+            EXPECT_EQ(expected_max, obtained_max);
 
             ++permutation_count;
         }
@@ -153,7 +153,7 @@ FOUNDATION_TEST_SUITE(Foundation_Math_MinMax)
 
         const size_t ExpectedPermutationCount = factorial(N) / factorial(N - 2);
 
-        FOUNDATION_EXPECT_EQ(ExpectedPermutationCount, permutation_count);
+        EXPECT_EQ(ExpectedPermutationCount, permutation_count);
     }
 
 #endif  // APPLESEED_FOUNDATION_USE_SSE

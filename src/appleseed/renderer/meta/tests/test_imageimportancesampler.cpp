@@ -41,7 +41,7 @@
 // Standard headers.
 #include <cstdio>
 
-FOUNDATION_TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
+TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
 {
     using namespace foundation;
     using namespace renderer;
@@ -66,7 +66,7 @@ FOUNDATION_TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
         const size_t m_height;
     };
 
-    FOUNDATION_TEST_CASE(GetPDF_GivenImageAndSample_ReturnsSameProbabilityAsSample)
+    TEST_CASE(GetPDF_GivenImageAndSample_ReturnsSameProbabilityAsSample)
     {
         const size_t Width = 5;
         const size_t Height = 5;
@@ -84,7 +84,7 @@ FOUNDATION_TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
 
         const double pdf = importance_sampler.get_pdf(x, y);
 
-        FOUNDATION_EXPECT_FEQ(prob_xy, pdf);
+        EXPECT_FEQ(prob_xy, pdf);
     }
 
     auto_ptr<Image> load_raw_image(
@@ -175,7 +175,7 @@ FOUNDATION_TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
         writer.write(output_image, *image.get());
     }
 
-    FOUNDATION_TEST_CASE(ImportanceSampleWhiteImage)
+    TEST_CASE(ImportanceSampleWhiteImage)
     {
         generate_image(
             "data/white.raw",
@@ -185,7 +185,7 @@ FOUNDATION_TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
             256);
     }
 
-    FOUNDATION_TEST_CASE(ImportanceSampleBlackImage)
+    TEST_CASE(ImportanceSampleBlackImage)
     {
         generate_image(
             "data/black.raw",
@@ -195,7 +195,7 @@ FOUNDATION_TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
             256);
     }
 
-    FOUNDATION_TEST_CASE(ImportanceSampleCheckerboardImage)
+    TEST_CASE(ImportanceSampleCheckerboardImage)
     {
         generate_image(
             "data/checkerboard.raw",
@@ -205,7 +205,7 @@ FOUNDATION_TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
             256);
     }
 
-    FOUNDATION_TEST_CASE(ImportanceSampleGradientImage)
+    TEST_CASE(ImportanceSampleGradientImage)
     {
         generate_image(
             "data/gradient.raw",
@@ -215,7 +215,7 @@ FOUNDATION_TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
             256);
     }
 
-    FOUNDATION_TEST_CASE(ImportanceSampleLightProbe)
+    TEST_CASE(ImportanceSampleLightProbe)
     {
         generate_image(
             "data/lightprobe.raw",
@@ -233,13 +233,13 @@ FOUNDATION_TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
         }
     };
 
-    FOUNDATION_TEST_CASE(GetPDF_GivenBlackImage_ReturnsZeroDotFive)
+    TEST_CASE(GetPDF_GivenBlackImage_ReturnsZeroDotFive)
     {
         UniformBlackSampler sampler;
         ImageImportanceSampler<double, UniformBlackSampler> importance_sampler(2, 2, sampler);
 
         const double pdf = importance_sampler.get_pdf(0, 1);
 
-        FOUNDATION_EXPECT_EQ(0.5, pdf);
+        EXPECT_EQ(0.5, pdf);
     }
 }

@@ -46,7 +46,7 @@ namespace foundation
 // Define a test suite.
 //
 
-#define FOUNDATION_TEST_SUITE(Name)                                                         \
+#define TEST_SUITE(Name)                                                                    \
     namespace TestSuite##Name                                                               \
     {                                                                                       \
         struct TestSuite##Name                                                              \
@@ -84,7 +84,7 @@ namespace foundation
 // Define a test case without fixture.
 //
 
-#define FOUNDATION_TEST_CASE(Name)                                                          \
+#define TEST_CASE(Name)                                                                     \
     struct TestCase##Name                                                                   \
       : public foundation::ITestCase                                                        \
     {                                                                                       \
@@ -133,7 +133,7 @@ namespace foundation
 // Define a test case with fixture.
 //
 
-#define FOUNDATION_TEST_CASE_WITH_FIXTURE(Name, FixtureName)                                \
+#define TEST_CASE_WITH_FIXTURE(Name, FixtureName)                                           \
     struct TestCase##Name                                                                   \
       : public foundation::ITestCase                                                        \
       , public FixtureName                                                                  \
@@ -183,7 +183,7 @@ namespace foundation
 // Forward-declare a test case.
 //
 
-#define FOUNDATION_DECLARE_TEST_CASE(SuiteName, CaseName)                                   \
+#define DECLARE_TEST_CASE(SuiteName, CaseName)                                              \
     namespace TestSuite##SuiteName { struct TestCase##CaseName; }
 
 
@@ -191,7 +191,7 @@ namespace foundation
 // Declare that a test case has access to the internals of a class.
 //
 
-#define FOUNDATION_GRANT_ACCESS_TO_TEST_CASE(SuiteName, CaseName)                           \
+#define GRANT_ACCESS_TO_TEST_CASE(SuiteName, CaseName)                                      \
     friend struct TestSuite##SuiteName::TestCase##CaseName
 
 }       // namespace foundation

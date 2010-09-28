@@ -35,12 +35,12 @@
 #include <string>
 #include <vector>
 
-FOUNDATION_TEST_SUITE(Foundation_Math_Spline)
+TEST_SUITE(Foundation_Math_Spline)
 {
     using namespace foundation;
     using namespace std;
 
-    FOUNDATION_TEST_CASE(GenerateMaplePlotFiles)
+    TEST_CASE(GenerateMaplePlotFiles)
     {
         // Define knots.
         vector<double> knot_x, knot_y;

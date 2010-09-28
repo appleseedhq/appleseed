@@ -37,29 +37,29 @@
 using namespace foundation;
 using namespace std;
 
-FOUNDATION_TEST_SUITE(Foundation_Utility_Registrar)
+TEST_SUITE(Foundation_Utility_Registrar)
 {
-    FOUNDATION_TEST_CASE(Lookup_GivenNameOfRegisteredItem_ReturnsItem)
+    TEST_CASE(Lookup_GivenNameOfRegisteredItem_ReturnsItem)
     {
         Registrar<int> registrar;
         registrar.insert("x", auto_ptr<int>(new int(42)));
 
         const int* x = registrar.lookup("x");
 
-        FOUNDATION_ASSERT_NEQ(0, x);
-        FOUNDATION_EXPECT_EQ(42, *x);
+        ASSERT_NEQ(0, x);
+        EXPECT_EQ(42, *x);
     }
 
-    FOUNDATION_TEST_CASE(Lookup_GivenNameOfNonRegisteredItem_ReturnsZero)
+    TEST_CASE(Lookup_GivenNameOfNonRegisteredItem_ReturnsZero)
     {
         Registrar<int> registrar;
 
         const int* x = registrar.lookup("x");
 
-        FOUNDATION_EXPECT_EQ(0, x);
+        EXPECT_EQ(0, x);
     }
 
-    FOUNDATION_TEST_CASE(Insert_GivenNameOfAlreadyRegisteredItem_ReplacesItem)
+    TEST_CASE(Insert_GivenNameOfAlreadyRegisteredItem_ReplacesItem)
     {
         Registrar<int> registrar;
         registrar.insert("x", auto_ptr<int>(new int(42)));
@@ -67,8 +67,8 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Registrar)
 
         const int* x = registrar.lookup("x");
 
-        FOUNDATION_ASSERT_NEQ(0, x);
-        FOUNDATION_EXPECT_EQ(66, *x);
+        ASSERT_NEQ(0, x);
+        EXPECT_EQ(66, *x);
     }
 
     struct Item
@@ -87,7 +87,7 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Registrar)
         }
     };
 
-    FOUNDATION_TEST_CASE(Insert_GivenNameOfAlreadyRegisteredItem_DestructsPreviousItem)
+    TEST_CASE(Insert_GivenNameOfAlreadyRegisteredItem_DestructsPreviousItem)
     {
         bool destructed = false;
 
@@ -95,10 +95,10 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Registrar)
         registrar.insert("x", auto_ptr<Item>(new Item(&destructed)));
         registrar.insert("x", auto_ptr<Item>(new Item()));
 
-        FOUNDATION_EXPECT_TRUE(destructed);
+        EXPECT_TRUE(destructed);
     }
 
-    FOUNDATION_TEST_CASE(Destructor_DestructsItems)
+    TEST_CASE(Destructor_DestructsItems)
     {
         bool destructed = false;
 
@@ -107,6 +107,6 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Registrar)
             registrar.insert("x", auto_ptr<Item>(new Item(&destructed)));
         }
 
-        FOUNDATION_EXPECT_TRUE(destructed);
+        EXPECT_TRUE(destructed);
     }
 }

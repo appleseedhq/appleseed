@@ -31,11 +31,11 @@
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 
-FOUNDATION_TEST_SUITE(Foundation_Image_Spectrum31f)
+TEST_SUITE(Foundation_Image_Spectrum31f)
 {
     using namespace foundation;
 
-    FOUNDATION_TEST_CASE(Set)
+    TEST_CASE(Set)
     {
         const float ExpectedValues[31] =
         {
@@ -50,10 +50,10 @@ FOUNDATION_TEST_SUITE(Foundation_Image_Spectrum31f)
 
         s.set(42.0f);
 
-        FOUNDATION_EXPECT_EQ(Expected, s);
+        EXPECT_EQ(Expected, s);
     }
 
-    FOUNDATION_TEST_CASE(InPlaceAddition)
+    TEST_CASE(InPlaceAddition)
     {
         const float InputValues[31] =
         {
@@ -77,10 +77,10 @@ FOUNDATION_TEST_SUITE(Foundation_Image_Spectrum31f)
 
         s += Rhs;
 
-        FOUNDATION_EXPECT_FEQ(Expected, s);
+        EXPECT_FEQ(Expected, s);
     }
 
-    FOUNDATION_TEST_CASE(InPlaceMultiplicationByScalar)
+    TEST_CASE(InPlaceMultiplicationByScalar)
     {
         const float InputValues[31] =
         {
@@ -103,10 +103,10 @@ FOUNDATION_TEST_SUITE(Foundation_Image_Spectrum31f)
 
         s *= 2.0f;
 
-        FOUNDATION_EXPECT_FEQ(Expected, s);
+        EXPECT_FEQ(Expected, s);
     }
 
-    FOUNDATION_TEST_CASE(InPlaceMultiplicationBySpectrum)
+    TEST_CASE(InPlaceMultiplicationBySpectrum)
     {
         const float InputValues[31] =
         {
@@ -138,28 +138,28 @@ FOUNDATION_TEST_SUITE(Foundation_Image_Spectrum31f)
 
         s *= Rhs;
 
-        FOUNDATION_EXPECT_FEQ(Expected, s);
+        EXPECT_FEQ(Expected, s);
     }
 
-    FOUNDATION_TEST_CASE(IsSaturated_GivenSpectrumWithAllComponentsSetToZero_ReturnsTrue)
+    TEST_CASE(IsSaturated_GivenSpectrumWithAllComponentsSetToZero_ReturnsTrue)
     {
         const Spectrum31f s(0.0f);
 
-        FOUNDATION_EXPECT_TRUE(is_saturated(s));
+        EXPECT_TRUE(is_saturated(s));
     }
 
-    FOUNDATION_TEST_CASE(IsSaturated_GivenSpectrumWithAllComponentsSetToOne_ReturnsTrue)
+    TEST_CASE(IsSaturated_GivenSpectrumWithAllComponentsSetToOne_ReturnsTrue)
     {
         const Spectrum31f s(1.0f);
 
-        FOUNDATION_EXPECT_TRUE(is_saturated(s));
+        EXPECT_TRUE(is_saturated(s));
     }
 
-    FOUNDATION_TEST_CASE(IsSaturated_GivenUnsaturatedSpectrum_ReturnsFalse)
+    TEST_CASE(IsSaturated_GivenUnsaturatedSpectrum_ReturnsFalse)
     {
         Spectrum31f s(0.5f);
         s[0] = 2.0f;
 
-        FOUNDATION_EXPECT_FALSE(is_saturated(s));
+        EXPECT_FALSE(is_saturated(s));
     }
 }

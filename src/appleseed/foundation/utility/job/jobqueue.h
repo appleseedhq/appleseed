@@ -42,10 +42,10 @@
 namespace foundation    { class IJob; }
 
 // Unit test case declarations.
-FOUNDATION_DECLARE_TEST_CASE(Foundation_Utility_Job_JobQueue, AcquireScheduledJobWorksOnEmptyJobQueue);
-FOUNDATION_DECLARE_TEST_CASE(Foundation_Utility_Job_JobQueue, AcquireScheduledJobWorksOnNonEmptyJobQueue);
-FOUNDATION_DECLARE_TEST_CASE(Foundation_Utility_Job_JobQueue, RetiringRunningJobWorks);
-FOUNDATION_DECLARE_TEST_CASE(Foundation_Utility_Job_JobQueue, RunningJobIsDestructedWhenRetired);
+DECLARE_TEST_CASE(Foundation_Utility_Job_JobQueue, AcquireScheduledJobWorksOnEmptyJobQueue);
+DECLARE_TEST_CASE(Foundation_Utility_Job_JobQueue, AcquireScheduledJobWorksOnNonEmptyJobQueue);
+DECLARE_TEST_CASE(Foundation_Utility_Job_JobQueue, RetiringRunningJobWorks);
+DECLARE_TEST_CASE(Foundation_Utility_Job_JobQueue, RunningJobIsDestructedWhenRetired);
 
 //
 // On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
@@ -124,10 +124,10 @@ class FOUNDATIONDLL JobQueue
 
     friend class WorkerThread;
 
-    FOUNDATION_GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_Job_JobQueue, AcquireScheduledJobWorksOnEmptyJobQueue);
-    FOUNDATION_GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_Job_JobQueue, AcquireScheduledJobWorksOnNonEmptyJobQueue);
-    FOUNDATION_GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_Job_JobQueue, RetiringRunningJobWorks);
-    FOUNDATION_GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_Job_JobQueue, RunningJobIsDestructedWhenRetired);
+    GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_Job_JobQueue, AcquireScheduledJobWorksOnEmptyJobQueue);
+    GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_Job_JobQueue, AcquireScheduledJobWorksOnNonEmptyJobQueue);
+    GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_Job_JobQueue, RetiringRunningJobWorks);
+    GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_Job_JobQueue, RunningJobIsDestructedWhenRetired);
 
     typedef std::list<IJob*, PoolAllocator<IJob*> > JobList;
     typedef std::pair<IJob*, JobList::iterator> JobInfo;

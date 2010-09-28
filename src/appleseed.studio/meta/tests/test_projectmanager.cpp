@@ -38,32 +38,32 @@
 // Standard headers.
 #include <string>
 
-FOUNDATION_TEST_SUITE(Studio_ProjectManager)
+TEST_SUITE(Studio_ProjectManager)
 {
     using namespace appleseed::studio;
     using namespace renderer;
     using namespace std;
 
-    FOUNDATION_TEST_CASE(GetProject_GivenProjectManagerInDefaultState_ReturnsNull)
+    TEST_CASE(GetProject_GivenProjectManagerInDefaultState_ReturnsNull)
     {
         ProjectManager manager;
 
         const Project* project = manager.get_project();
 
-        FOUNDATION_EXPECT_EQ(0, project);
+        EXPECT_EQ(0, project);
     }
 
-    FOUNDATION_TEST_CASE(CreateProject_GivenProjectManagerInDefaultState_CreatesNewProject)
+    TEST_CASE(CreateProject_GivenProjectManagerInDefaultState_CreatesNewProject)
     {
         ProjectManager manager;
 
         manager.create_project();
 
         const Project* project = manager.get_project();
-        FOUNDATION_EXPECT_NEQ(0, project);
+        EXPECT_NEQ(0, project);
     }
 
-    FOUNDATION_TEST_CASE(CloseProject_GivenProjectManagerWithOpenedProject_ClosesProject)
+    TEST_CASE(CloseProject_GivenProjectManagerWithOpenedProject_ClosesProject)
     {
         ProjectManager manager;
         manager.create_project();
@@ -71,29 +71,29 @@ FOUNDATION_TEST_SUITE(Studio_ProjectManager)
         manager.close_project();
 
         const Project* project = manager.get_project();
-        FOUNDATION_EXPECT_EQ(0, project);
+        EXPECT_EQ(0, project);
     }
 
-    FOUNDATION_TEST_CASE(IsProjectOpen_GivenProjectManagerInDefaultState_ReturnsFalse)
+    TEST_CASE(IsProjectOpen_GivenProjectManagerInDefaultState_ReturnsFalse)
     {
         ProjectManager manager;
 
         const bool is_open = manager.is_project_open();
 
-        FOUNDATION_EXPECT_FALSE(is_open);
+        EXPECT_FALSE(is_open);
     }
 
-    FOUNDATION_TEST_CASE(IsProjectOpen_AfterCreateProject_ReturnsTrue)
+    TEST_CASE(IsProjectOpen_AfterCreateProject_ReturnsTrue)
     {
         ProjectManager manager;
         manager.create_project();
 
         const bool is_open = manager.is_project_open();
 
-        FOUNDATION_EXPECT_TRUE(is_open);
+        EXPECT_TRUE(is_open);
     }
 
-    FOUNDATION_TEST_CASE(IsProjectOpen_AfterCloseProject_ReturnsFalse)
+    TEST_CASE(IsProjectOpen_AfterCloseProject_ReturnsFalse)
     {
         ProjectManager manager;
         manager.create_project();
@@ -101,29 +101,29 @@ FOUNDATION_TEST_SUITE(Studio_ProjectManager)
 
         const bool is_open = manager.is_project_open();
 
-        FOUNDATION_EXPECT_FALSE(is_open);
+        EXPECT_FALSE(is_open);
     }
 
-    FOUNDATION_TEST_CASE(IsProjectDirty_GivenProjectManagerInDefaultState_ReturnsFalse)
+    TEST_CASE(IsProjectDirty_GivenProjectManagerInDefaultState_ReturnsFalse)
     {
         ProjectManager manager;
 
         const bool is_dirty = manager.is_project_dirty();
 
-        FOUNDATION_EXPECT_FALSE(is_dirty);
+        EXPECT_FALSE(is_dirty);
     }
 
-    FOUNDATION_TEST_CASE(IsProjectDirty_AfterCreateProject_ReturnsFalse)
+    TEST_CASE(IsProjectDirty_AfterCreateProject_ReturnsFalse)
     {
         ProjectManager manager;
         manager.create_project();
 
         const bool is_dirty = manager.is_project_dirty();
 
-        FOUNDATION_EXPECT_FALSE(is_dirty);
+        EXPECT_FALSE(is_dirty);
     }
 
-    FOUNDATION_TEST_CASE(IsProjectDirty_AfterCloseProject_ReturnsFalse)
+    TEST_CASE(IsProjectDirty_AfterCloseProject_ReturnsFalse)
     {
         ProjectManager manager;
         manager.create_project();
@@ -131,20 +131,20 @@ FOUNDATION_TEST_SUITE(Studio_ProjectManager)
 
         const bool is_dirty = manager.is_project_dirty();
 
-        FOUNDATION_EXPECT_FALSE(is_dirty);
+        EXPECT_FALSE(is_dirty);
     }
 
-    FOUNDATION_TEST_CASE(GetProjectDisplayName_GivenProjectWithoutPath_ReturnsUntitled)
+    TEST_CASE(GetProjectDisplayName_GivenProjectWithoutPath_ReturnsUntitled)
     {
         ProjectManager manager;
         manager.create_project();
 
         const string name = manager.get_project_display_name();
 
-        FOUNDATION_EXPECT_EQ("Untitled", name);
+        EXPECT_EQ("Untitled", name);
     }
 
-    FOUNDATION_TEST_CASE(GetProjectDisplayName_GivenProjectWithPath_ReturnsProjectFilename)
+    TEST_CASE(GetProjectDisplayName_GivenProjectWithPath_ReturnsProjectFilename)
     {
         ProjectManager manager;
         manager.create_project();
@@ -152,6 +152,6 @@ FOUNDATION_TEST_SUITE(Studio_ProjectManager)
 
         const string name = manager.get_project_display_name();
 
-        FOUNDATION_EXPECT_EQ("filename.ext", name);
+        EXPECT_EQ("filename.ext", name);
     }
 }

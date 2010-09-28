@@ -30,7 +30,7 @@
 #include "foundation/utility/test.h"
 #include "foundation/utility/typetraits.h"
 
-FOUNDATION_TEST_SUITE(Foundation_Core_TypeTraits)
+TEST_SUITE(Foundation_Core_TypeTraits)
 {
     using namespace foundation;
 
@@ -42,59 +42,59 @@ FOUNDATION_TEST_SUITE(Foundation_Core_TypeTraits)
 
     struct IndirectlyDerived : public Derived {};
 
-    FOUNDATION_TEST_CASE(IsBase_GivenClassDerivingFromBase_ReturnsTrue)
+    TEST_CASE(IsBase_GivenClassDerivingFromBase_ReturnsTrue)
     {
         const bool result = IsBase<Base, Derived>::value;
 
-        FOUNDATION_EXPECT_TRUE(result);
+        EXPECT_TRUE(result);
     }
 
-    FOUNDATION_TEST_CASE(IsBase_GivenClassNotDerivingFromBase_ReturnsFalse)
+    TEST_CASE(IsBase_GivenClassNotDerivingFromBase_ReturnsFalse)
     {
         const bool result = IsBase<Base, NotDerived>::value;
 
-        FOUNDATION_EXPECT_FALSE(result);
+        EXPECT_FALSE(result);
     }
 
-    FOUNDATION_TEST_CASE(IsBase_GivenSameBaseAndDerivedClasses_ReturnsTrue)
+    TEST_CASE(IsBase_GivenSameBaseAndDerivedClasses_ReturnsTrue)
     {
         const bool result = IsBase<Base, Base>::value;
 
-        FOUNDATION_EXPECT_TRUE(result);
+        EXPECT_TRUE(result);
     }
 
-    FOUNDATION_TEST_CASE(IsBase_GivenClassIndirectlyDerivingFromBase_ReturnsTrue)
+    TEST_CASE(IsBase_GivenClassIndirectlyDerivingFromBase_ReturnsTrue)
     {
         const bool result = IsBase<Base, IndirectlyDerived>::value;
 
-        FOUNDATION_EXPECT_TRUE(result);
+        EXPECT_TRUE(result);
     }
 
-    FOUNDATION_TEST_CASE(IsNotBase_GivenClassDerivingFromBase_ReturnsFalse)
+    TEST_CASE(IsNotBase_GivenClassDerivingFromBase_ReturnsFalse)
     {
         const bool result = IsNotBase<Base, Derived>::value;
 
-        FOUNDATION_EXPECT_FALSE(result);
+        EXPECT_FALSE(result);
     }
 
-    FOUNDATION_TEST_CASE(IsNotBase_GivenClassNotDerivingFromBase_ReturnsTrue)
+    TEST_CASE(IsNotBase_GivenClassNotDerivingFromBase_ReturnsTrue)
     {
         const bool result = IsNotBase<Base, NotDerived>::value;
 
-        FOUNDATION_EXPECT_TRUE(result);
+        EXPECT_TRUE(result);
     }
 
-    FOUNDATION_TEST_CASE(IsNotBase_GivenSameBaseAndDerivedClasses_ReturnsFalse)
+    TEST_CASE(IsNotBase_GivenSameBaseAndDerivedClasses_ReturnsFalse)
     {
         const bool result = IsNotBase<Base, Base>::value;
 
-        FOUNDATION_EXPECT_FALSE(result);
+        EXPECT_FALSE(result);
     }
 
-    FOUNDATION_TEST_CASE(IsNotBase_GivenClassIndirectlyDerivingFromBase_ReturnsFalse)
+    TEST_CASE(IsNotBase_GivenClassIndirectlyDerivingFromBase_ReturnsFalse)
     {
         const bool result = IsNotBase<Base, IndirectlyDerived>::value;
 
-        FOUNDATION_EXPECT_FALSE(result);
+        EXPECT_FALSE(result);
     }
 }

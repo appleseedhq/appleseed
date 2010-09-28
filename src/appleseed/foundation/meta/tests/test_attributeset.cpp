@@ -33,7 +33,7 @@
 #include "foundation/utility/numerictype.h"
 #include "foundation/utility/test.h"
 
-FOUNDATION_TEST_SUITE(Foundation_Utility_AttributeSet)
+TEST_SUITE(Foundation_Utility_AttributeSet)
 {
     using namespace foundation;
 
@@ -48,28 +48,28 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_AttributeSet)
         }
     };
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(TestFindChannel, FixtureTestAttributeSet)
+    TEST_CASE_WITH_FIXTURE(TestFindChannel, FixtureTestAttributeSet)
     {
-        FOUNDATION_EXPECT_EQ(uv_id, attributes.find_channel("uv"));
+        EXPECT_EQ(uv_id, attributes.find_channel("uv"));
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(TestPushAttribute, FixtureTestAttributeSet)
+    TEST_CASE_WITH_FIXTURE(TestPushAttribute, FixtureTestAttributeSet)
     {
         const Vector2f UV(0.2f, 0.4f);
         const size_t index = attributes.push_attribute(uv_id, UV);
 
-        FOUNDATION_EXPECT_EQ(0, index);
+        EXPECT_EQ(0, index);
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(TestGetAttributeCount, FixtureTestAttributeSet)
+    TEST_CASE_WITH_FIXTURE(TestGetAttributeCount, FixtureTestAttributeSet)
     {
         const Vector2f UV(0.2f, 0.4f);
         attributes.push_attribute(uv_id, UV);
 
-        FOUNDATION_EXPECT_EQ(1, attributes.get_attribute_count(uv_id));
+        EXPECT_EQ(1, attributes.get_attribute_count(uv_id));
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(TestGetAttribute, FixtureTestAttributeSet)
+    TEST_CASE_WITH_FIXTURE(TestGetAttribute, FixtureTestAttributeSet)
     {
         const Vector2f RefUV(0.2f, 0.4f);
         const size_t index = attributes.push_attribute(uv_id, RefUV);
@@ -77,19 +77,19 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_AttributeSet)
         Vector2f uv;
         attributes.get_attribute<Vector2f>(uv_id, index, &uv);
 
-        FOUNDATION_EXPECT_EQ(RefUV, uv);
+        EXPECT_EQ(RefUV, uv);
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(TestSetAttribute, FixtureTestAttributeSet)
+    TEST_CASE_WITH_FIXTURE(TestSetAttribute, FixtureTestAttributeSet)
     {
         const Vector2f RefUV(0.2f, 0.4f);
         attributes.set_attribute(uv_id, 3, RefUV);
 
-        FOUNDATION_EXPECT_EQ(4, attributes.get_attribute_count(uv_id));
+        EXPECT_EQ(4, attributes.get_attribute_count(uv_id));
 
         Vector2f uv;
         attributes.get_attribute<Vector2f>(uv_id, 3, &uv);
 
-        FOUNDATION_EXPECT_EQ(RefUV, uv);
+        EXPECT_EQ(RefUV, uv);
     }
 }

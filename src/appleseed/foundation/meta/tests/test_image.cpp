@@ -33,22 +33,22 @@
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 
-FOUNDATION_TEST_SUITE(Foundation_Image_Image)
+TEST_SUITE(Foundation_Image_Image)
 {
     using namespace foundation;
 
-    FOUNDATION_TEST_CASE(Constructor_CreatesBlankImage)
+    TEST_CASE(Constructor_CreatesBlankImage)
     {
         Image image(2, 1, 1, 1, 3, PixelFormatFloat);
 
         Color3f c00; image.tile(0, 0).get_pixel(0, 0, c00);
         Color3f c10; image.tile(1, 0).get_pixel(0, 0, c10);
 
-        FOUNDATION_EXPECT_EQ(Color3f(0.0), c00);
-        FOUNDATION_EXPECT_EQ(Color3f(0.0), c10);
+        EXPECT_EQ(Color3f(0.0), c00);
+        EXPECT_EQ(Color3f(0.0), c10);
     }
 
-    FOUNDATION_TEST_CASE(CopyConstructor_GivenVirginSourceImage_CreatesBlankImage)
+    TEST_CASE(CopyConstructor_GivenVirginSourceImage_CreatesBlankImage)
     {
         Image source(2, 1, 1, 1, 3, PixelFormatFloat);
         Image copy(source);
@@ -56,7 +56,7 @@ FOUNDATION_TEST_SUITE(Foundation_Image_Image)
         Color3f c00; copy.tile(0, 0).get_pixel(0, 0, c00);
         Color3f c10; copy.tile(1, 0).get_pixel(0, 0, c10);
 
-        FOUNDATION_EXPECT_EQ(Color3f(0.0), c00);
-        FOUNDATION_EXPECT_EQ(Color3f(0.0), c10);
+        EXPECT_EQ(Color3f(0.0), c00);
+        EXPECT_EQ(Color3f(0.0), c10);
     }
 }

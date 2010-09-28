@@ -34,7 +34,7 @@
 
 using namespace foundation;
 
-FOUNDATION_TEST_SUITE(Foundation_Image_Tile)
+TEST_SUITE(Foundation_Image_Tile)
 {
     const PixelFormat TilePixelFormat = PixelFormatFloat;
     const size_t TileWidth = 32;
@@ -55,16 +55,16 @@ FOUNDATION_TEST_SUITE(Foundation_Image_Tile)
         }
     };
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(TestProperties, FixtureTile)
+    TEST_CASE_WITH_FIXTURE(TestProperties, FixtureTile)
     {
-        FOUNDATION_EXPECT_EQ(TilePixelFormat, tile.get_pixel_format());
-        FOUNDATION_EXPECT_EQ(TileWidth, tile.get_width());
-        FOUNDATION_EXPECT_EQ(TileHeight, tile.get_height());
-        FOUNDATION_EXPECT_EQ(TileChannels, tile.get_channel_count());
-        FOUNDATION_EXPECT_EQ(TileWidth * TileHeight, tile.get_pixel_count());
+        EXPECT_EQ(TilePixelFormat, tile.get_pixel_format());
+        EXPECT_EQ(TileWidth, tile.get_width());
+        EXPECT_EQ(TileHeight, tile.get_height());
+        EXPECT_EQ(TileChannels, tile.get_channel_count());
+        EXPECT_EQ(TileWidth * TileHeight, tile.get_pixel_count());
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(TestSetAndGetPixel, FixtureTile)
+    TEST_CASE_WITH_FIXTURE(TestSetAndGetPixel, FixtureTile)
     {
         const Color3f PixelColor(0.3f, 0.5f, 0.7f);
         tile.set_pixel(7, 9, PixelColor);
@@ -72,10 +72,10 @@ FOUNDATION_TEST_SUITE(Foundation_Image_Tile)
         Color3f c;
         tile.get_pixel(7, 9, c);
 
-        FOUNDATION_EXPECT_FEQ(PixelColor, c);
+        EXPECT_FEQ(PixelColor, c);
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(TestClear, FixtureTile)
+    TEST_CASE_WITH_FIXTURE(TestClear, FixtureTile)
     {
         const Color3f ClearColor(0.2f, 0.4f, 0.6f);
         tile.clear(ClearColor);
@@ -84,7 +84,7 @@ FOUNDATION_TEST_SUITE(Foundation_Image_Tile)
         tile.get_pixel(0, 0, c1);
         tile.get_pixel(TileWidth - 1, TileHeight - 1, c2);
 
-        FOUNDATION_EXPECT_FEQ(ClearColor, c1);
-        FOUNDATION_EXPECT_FEQ(ClearColor, c2);
+        EXPECT_FEQ(ClearColor, c1);
+        EXPECT_FEQ(ClearColor, c2);
     }
 }

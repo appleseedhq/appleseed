@@ -53,7 +53,7 @@
 using namespace foundation;
 using namespace renderer;
 
-FOUNDATION_TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
+TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
 {
     struct Fixture
       : public TestFixtureBase
@@ -80,7 +80,7 @@ FOUNDATION_TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
         }
     };
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(ComputeImageBasedLighting_GivenSpecularBRDFAndUniformWhiteEnrironmentEDF_ReturnsOne, Fixture)
+    TEST_CASE_WITH_FIXTURE(ComputeImageBasedLighting_GivenSpecularBRDFAndUniformWhiteEnrironmentEDF_ReturnsOne, Fixture)
     {
         create_color_entity("gray", Spectrum(0.5f));
         create_color_entity("white", Spectrum(1.0f));
@@ -128,6 +128,6 @@ FOUNDATION_TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
         env_edf_ref.on_frame_end(m_project);
         specular_brdf_ref.on_frame_end(m_project);
 
-        FOUNDATION_EXPECT_EQ(Spectrum(0.5f), radiance);
+        EXPECT_EQ(Spectrum(0.5f), radiance);
     }
 }

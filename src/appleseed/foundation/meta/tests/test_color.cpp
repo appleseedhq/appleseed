@@ -30,12 +30,12 @@
 #include "foundation/image/color.h"
 #include "foundation/utility/test.h"
 
-FOUNDATION_TEST_SUITE(Foundation_Image_Color)
+TEST_SUITE(Foundation_Image_Color)
 {
-    FOUNDATION_TEST_CASE(TestAverageValue)
+    TEST_CASE(TestAverageValue)
     {
-        FOUNDATION_EXPECT_FEQ(0.0, average_value(Color4d(0.0, 0.0, 0.0, 0.0)));
-        FOUNDATION_EXPECT_FEQ(0.0, average_value(Color4d(-2.0, -1.0, 1.0, 2.0)));
-        FOUNDATION_EXPECT_FEQ(2.5, average_value(Color4d(1.0, 2.0, 3.0, 4.0)));
+        EXPECT_FEQ(0.0, average_value(Color4d(0.0, 0.0, 0.0, 0.0)));
+        EXPECT_FEQ(0.0, average_value(Color4d(-2.0, -1.0, 1.0, 2.0)));
+        EXPECT_FEQ(2.5, average_value(Color4d(1.0, 2.0, 3.0, 4.0)));
     }
 }

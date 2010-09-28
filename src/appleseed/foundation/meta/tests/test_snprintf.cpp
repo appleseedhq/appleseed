@@ -30,52 +30,52 @@
 #include "foundation/platform/snprintf.h"
 #include "foundation/utility/test.h"
 
-FOUNDATION_TEST_SUITE(Foundation_Platform_Snprintf)
+TEST_SUITE(Foundation_Platform_Snprintf)
 {
     using namespace foundation;
 
-    FOUNDATION_TEST_CASE(PortableSnprintf_GivenResultSmallerThanBuffer_WritesTrailingZero_DoesNotWritePastBuffer_ReturnsNumberOfWrittenCharacters)
+    TEST_CASE(PortableSnprintf_GivenResultSmallerThanBuffer_WritesTrailingZero_DoesNotWritePastBuffer_ReturnsNumberOfWrittenCharacters)
     {
         const size_t BufferSize = 3;
         char buf[BufferSize + 1] = { '!', '!', '!', '!' };
 
         const int result = portable_snprintf(buf, BufferSize, "AB");
 
-        FOUNDATION_EXPECT_EQ('A',  buf[0]);
-        FOUNDATION_EXPECT_EQ('B',  buf[1]);
-        FOUNDATION_EXPECT_EQ('\0', buf[2]);
-        FOUNDATION_EXPECT_EQ('!',  buf[3]);
+        EXPECT_EQ('A',  buf[0]);
+        EXPECT_EQ('B',  buf[1]);
+        EXPECT_EQ('\0', buf[2]);
+        EXPECT_EQ('!',  buf[3]);
 
-        FOUNDATION_EXPECT_EQ(2, result);
+        EXPECT_EQ(2, result);
     }
 
-    FOUNDATION_TEST_CASE(PortableSnprintf_GivenResultSameLengthAsBuffer_WritesTrailingZero_DoesNotWritePastBuffer_ReturnsNumberOfCharactersThatWouldHaveBeenWritten)
+    TEST_CASE(PortableSnprintf_GivenResultSameLengthAsBuffer_WritesTrailingZero_DoesNotWritePastBuffer_ReturnsNumberOfCharactersThatWouldHaveBeenWritten)
     {
         const size_t BufferSize = 3;
         char buf[BufferSize + 1] = { '!', '!', '!', '!' };
 
         const int result = portable_snprintf(buf, BufferSize, "ABC");
 
-        FOUNDATION_EXPECT_EQ('A',  buf[0]);
-        FOUNDATION_EXPECT_EQ('B',  buf[1]);
-        FOUNDATION_EXPECT_EQ('\0',  buf[2]);
-        FOUNDATION_EXPECT_EQ('!',  buf[3]);
+        EXPECT_EQ('A',  buf[0]);
+        EXPECT_EQ('B',  buf[1]);
+        EXPECT_EQ('\0',  buf[2]);
+        EXPECT_EQ('!',  buf[3]);
 
-        FOUNDATION_EXPECT_EQ(3, result);
+        EXPECT_EQ(3, result);
     }
 
-    FOUNDATION_TEST_CASE(PortableSnprintf_GivenResultBiggerThanBuffer_WritesTrailingZero_DoesNotWritePastBuffer_ReturnsNumberOfCharactersThatWouldHaveBeenWritten)
+    TEST_CASE(PortableSnprintf_GivenResultBiggerThanBuffer_WritesTrailingZero_DoesNotWritePastBuffer_ReturnsNumberOfCharactersThatWouldHaveBeenWritten)
     {
         const size_t BufferSize = 3;
         char buf[BufferSize + 1] = { '!', '!', '!', '!' };
 
         const int result = portable_snprintf(buf, BufferSize, "ABCD");
 
-        FOUNDATION_EXPECT_EQ('A',  buf[0]);
-        FOUNDATION_EXPECT_EQ('B',  buf[1]);
-        FOUNDATION_EXPECT_EQ('\0',  buf[2]);
-        FOUNDATION_EXPECT_EQ('!',  buf[3]);
+        EXPECT_EQ('A',  buf[0]);
+        EXPECT_EQ('B',  buf[1]);
+        EXPECT_EQ('\0',  buf[2]);
+        EXPECT_EQ('!',  buf[3]);
 
-        FOUNDATION_EXPECT_EQ(4, result);
+        EXPECT_EQ(4, result);
     }
 }

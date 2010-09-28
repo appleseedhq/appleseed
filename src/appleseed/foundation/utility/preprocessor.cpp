@@ -97,70 +97,70 @@ namespace
         split_line(line.substr(i + 1), keyword, arguments);
     }
 
-    FOUNDATION_TEST_SUITE(Foundation_Utility_Preprocessor_Impl)
+    TEST_SUITE(Foundation_Utility_Preprocessor_Impl)
     {
-        FOUNDATION_TEST_CASE(SplitDirective_GivenKeyword_ReturnsKeyword)
+        TEST_CASE(SplitDirective_GivenKeyword_ReturnsKeyword)
         {
             string keyword, arguments;
             split_directive("#keyword", keyword, arguments);
 
-            FOUNDATION_EXPECT_EQ("keyword", keyword);
+            EXPECT_EQ("keyword", keyword);
         }
 
-        FOUNDATION_TEST_CASE(SplitDirective_GivenSpacesBeforeHashCharacter_ReturnsKeyword)
+        TEST_CASE(SplitDirective_GivenSpacesBeforeHashCharacter_ReturnsKeyword)
         {
             string keyword, arguments;
             split_directive("   #keyword", keyword, arguments);
 
-            FOUNDATION_EXPECT_EQ("keyword", keyword);
+            EXPECT_EQ("keyword", keyword);
         }
 
-        FOUNDATION_TEST_CASE(SplitDirective_GivenSpacesAfterHashCharacter_ReturnsKeyword)
+        TEST_CASE(SplitDirective_GivenSpacesAfterHashCharacter_ReturnsKeyword)
         {
             string keyword, arguments;
             split_directive("#   keyword", keyword, arguments);
 
-            FOUNDATION_EXPECT_EQ("keyword", keyword);
+            EXPECT_EQ("keyword", keyword);
         }
 
-        FOUNDATION_TEST_CASE(SplitDirective_GivenSpacesBeforeAndAfterHashCharacter_ReturnsKeyword)
+        TEST_CASE(SplitDirective_GivenSpacesBeforeAndAfterHashCharacter_ReturnsKeyword)
         {
             string keyword, arguments;
             split_directive("   #   keyword", keyword, arguments);
 
-            FOUNDATION_EXPECT_EQ("keyword", keyword);
+            EXPECT_EQ("keyword", keyword);
         }
 
-        FOUNDATION_TEST_CASE(SplitDirective_GivenSpacesAfterKeyword_ReturnsKeyword)
+        TEST_CASE(SplitDirective_GivenSpacesAfterKeyword_ReturnsKeyword)
         {
             string keyword, arguments;
             split_directive("#keyword   ", keyword, arguments);
 
-            FOUNDATION_EXPECT_EQ("keyword", keyword);
+            EXPECT_EQ("keyword", keyword);
         }
 
-        FOUNDATION_TEST_CASE(SplitDirective_GivenNoArgument_ReturnsEmptyArguments)
+        TEST_CASE(SplitDirective_GivenNoArgument_ReturnsEmptyArguments)
         {
             string keyword, arguments;
             split_directive("#keyword", keyword, arguments);
 
-            FOUNDATION_EXPECT_EQ("", arguments);
+            EXPECT_EQ("", arguments);
         }
 
-        FOUNDATION_TEST_CASE(SplitDirective_GivenArguments_ReturnsArguments)
+        TEST_CASE(SplitDirective_GivenArguments_ReturnsArguments)
         {
             string keyword, arguments;
             split_directive("#keyword arg1 arg2", keyword, arguments);
 
-            FOUNDATION_EXPECT_EQ("arg1 arg2", arguments);
+            EXPECT_EQ("arg1 arg2", arguments);
         }
 
-        FOUNDATION_TEST_CASE(SplitDirective_GivenSpacesAfterArguments_ReturnsArguments)
+        TEST_CASE(SplitDirective_GivenSpacesAfterArguments_ReturnsArguments)
         {
             string keyword, arguments;
             split_directive("#keyword arg1 arg2   ", keyword, arguments);
 
-            FOUNDATION_EXPECT_EQ("arg1 arg2", arguments);
+            EXPECT_EQ("arg1 arg2", arguments);
         }
     }
 }

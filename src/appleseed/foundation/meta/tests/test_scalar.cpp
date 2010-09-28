@@ -35,256 +35,256 @@
 #include <cstddef>
 #include <limits>
 
-FOUNDATION_TEST_SUITE(Foundation_Math_Scalar)
+TEST_SUITE(Foundation_Math_Scalar)
 {
     using namespace foundation;
     using namespace std;
 
-    FOUNDATION_TEST_CASE(TestDegToRad)
+    TEST_CASE(TestDegToRad)
     {
-        FOUNDATION_EXPECT_FEQ(0.0,      deg_to_rad(0.0));
-        FOUNDATION_EXPECT_FEQ(Pi / 4.0, deg_to_rad(45.0));
-        FOUNDATION_EXPECT_FEQ(Pi,       deg_to_rad(180.0));
-        FOUNDATION_EXPECT_FEQ(2.0 * Pi, deg_to_rad(360.0));
+        EXPECT_FEQ(0.0,      deg_to_rad(0.0));
+        EXPECT_FEQ(Pi / 4.0, deg_to_rad(45.0));
+        EXPECT_FEQ(Pi,       deg_to_rad(180.0));
+        EXPECT_FEQ(2.0 * Pi, deg_to_rad(360.0));
     }
 
-    FOUNDATION_TEST_CASE(TestRadToDeg)
+    TEST_CASE(TestRadToDeg)
     {
-        FOUNDATION_EXPECT_FEQ(0.0,      rad_to_deg(0.0));
-        FOUNDATION_EXPECT_FEQ(45.0,     rad_to_deg(Pi / 4.0));
-        FOUNDATION_EXPECT_FEQ(180.0,    rad_to_deg(Pi));
-        FOUNDATION_EXPECT_FEQ(360.0,    rad_to_deg(2.0 * Pi));
+        EXPECT_FEQ(0.0,      rad_to_deg(0.0));
+        EXPECT_FEQ(45.0,     rad_to_deg(Pi / 4.0));
+        EXPECT_FEQ(180.0,    rad_to_deg(Pi));
+        EXPECT_FEQ(360.0,    rad_to_deg(2.0 * Pi));
     }
 
-    FOUNDATION_TEST_CASE(TestNextPow2)
+    TEST_CASE(TestNextPow2)
     {
-        FOUNDATION_EXPECT_EQ(1,   next_pow2(1));
-        FOUNDATION_EXPECT_EQ(2,   next_pow2(2));
-        FOUNDATION_EXPECT_EQ(4,   next_pow2(3));
-        FOUNDATION_EXPECT_EQ(4,   next_pow2(4));
-        FOUNDATION_EXPECT_EQ(8,   next_pow2(5));
-        FOUNDATION_EXPECT_EQ(8,   next_pow2(6));
-        FOUNDATION_EXPECT_EQ(8,   next_pow2(7));
-        FOUNDATION_EXPECT_EQ(8,   next_pow2(8));
-        FOUNDATION_EXPECT_EQ(16,  next_pow2(9));
-        FOUNDATION_EXPECT_EQ(256, next_pow2(256));
+        EXPECT_EQ(1,   next_pow2(1));
+        EXPECT_EQ(2,   next_pow2(2));
+        EXPECT_EQ(4,   next_pow2(3));
+        EXPECT_EQ(4,   next_pow2(4));
+        EXPECT_EQ(8,   next_pow2(5));
+        EXPECT_EQ(8,   next_pow2(6));
+        EXPECT_EQ(8,   next_pow2(7));
+        EXPECT_EQ(8,   next_pow2(8));
+        EXPECT_EQ(16,  next_pow2(9));
+        EXPECT_EQ(256, next_pow2(256));
     }
 
-    FOUNDATION_TEST_CASE(TestNextPow2Large)
+    TEST_CASE(TestNextPow2Large)
     {
         const int32 TwoPower29 = 512 * 1024 * 1024;
         const int32 TwoPower30 = 512 * 1024 * 1024 * 2;
-        FOUNDATION_EXPECT_EQ(TwoPower30, next_pow2(TwoPower29 + 1));
+        EXPECT_EQ(TwoPower30, next_pow2(TwoPower29 + 1));
     }
 
-    FOUNDATION_TEST_CASE(TestNextPow2Int64)
+    TEST_CASE(TestNextPow2Int64)
     {
-        FOUNDATION_EXPECT_EQ(1,   next_pow2<int64>(1));
-        FOUNDATION_EXPECT_EQ(2,   next_pow2<int64>(2));
-        FOUNDATION_EXPECT_EQ(4,   next_pow2<int64>(3));
-        FOUNDATION_EXPECT_EQ(4,   next_pow2<int64>(4));
-        FOUNDATION_EXPECT_EQ(8,   next_pow2<int64>(5));
-        FOUNDATION_EXPECT_EQ(8,   next_pow2<int64>(6));
-        FOUNDATION_EXPECT_EQ(8,   next_pow2<int64>(7));
-        FOUNDATION_EXPECT_EQ(8,   next_pow2<int64>(8));
-        FOUNDATION_EXPECT_EQ(16,  next_pow2<int64>(9));
-        FOUNDATION_EXPECT_EQ(256, next_pow2<int64>(256));
+        EXPECT_EQ(1,   next_pow2<int64>(1));
+        EXPECT_EQ(2,   next_pow2<int64>(2));
+        EXPECT_EQ(4,   next_pow2<int64>(3));
+        EXPECT_EQ(4,   next_pow2<int64>(4));
+        EXPECT_EQ(8,   next_pow2<int64>(5));
+        EXPECT_EQ(8,   next_pow2<int64>(6));
+        EXPECT_EQ(8,   next_pow2<int64>(7));
+        EXPECT_EQ(8,   next_pow2<int64>(8));
+        EXPECT_EQ(16,  next_pow2<int64>(9));
+        EXPECT_EQ(256, next_pow2<int64>(256));
     }
 
-    FOUNDATION_TEST_CASE(TestNextPow2Int64Large)
+    TEST_CASE(TestNextPow2Int64Large)
     {
         const int64 TwoPower34 = 17179869184LL;
         const int64 TwoPower35 = 17179869184LL * 2;
-        FOUNDATION_EXPECT_EQ(TwoPower35, next_pow2(TwoPower34 + 1));
+        EXPECT_EQ(TwoPower35, next_pow2(TwoPower34 + 1));
     }
 
-    FOUNDATION_TEST_CASE(TestNextPow2UInt64)
+    TEST_CASE(TestNextPow2UInt64)
     {
-        FOUNDATION_EXPECT_EQ(1,   next_pow2<uint64>(1));
-        FOUNDATION_EXPECT_EQ(2,   next_pow2<uint64>(2));
-        FOUNDATION_EXPECT_EQ(4,   next_pow2<uint64>(3));
-        FOUNDATION_EXPECT_EQ(4,   next_pow2<uint64>(4));
-        FOUNDATION_EXPECT_EQ(8,   next_pow2<uint64>(5));
-        FOUNDATION_EXPECT_EQ(8,   next_pow2<uint64>(6));
-        FOUNDATION_EXPECT_EQ(8,   next_pow2<uint64>(7));
-        FOUNDATION_EXPECT_EQ(8,   next_pow2<uint64>(8));
-        FOUNDATION_EXPECT_EQ(16,  next_pow2<uint64>(9));
-        FOUNDATION_EXPECT_EQ(256, next_pow2<uint64>(256));
+        EXPECT_EQ(1,   next_pow2<uint64>(1));
+        EXPECT_EQ(2,   next_pow2<uint64>(2));
+        EXPECT_EQ(4,   next_pow2<uint64>(3));
+        EXPECT_EQ(4,   next_pow2<uint64>(4));
+        EXPECT_EQ(8,   next_pow2<uint64>(5));
+        EXPECT_EQ(8,   next_pow2<uint64>(6));
+        EXPECT_EQ(8,   next_pow2<uint64>(7));
+        EXPECT_EQ(8,   next_pow2<uint64>(8));
+        EXPECT_EQ(16,  next_pow2<uint64>(9));
+        EXPECT_EQ(256, next_pow2<uint64>(256));
     }
 
-    FOUNDATION_TEST_CASE(TestNextPow2UInt64Large)
+    TEST_CASE(TestNextPow2UInt64Large)
     {
         const uint64 TwoPower34 = 17179869184ULL;
         const uint64 TwoPower35 = 17179869184ULL * 2;
-        FOUNDATION_EXPECT_EQ(TwoPower35, next_pow2(TwoPower34 + 1));
+        EXPECT_EQ(TwoPower35, next_pow2(TwoPower34 + 1));
     }
 
-    FOUNDATION_TEST_CASE(TestIsPow2OnPowerOfTwoValues)
+    TEST_CASE(TestIsPow2OnPowerOfTwoValues)
     {
-        FOUNDATION_EXPECT_TRUE(is_pow2(0));
-        FOUNDATION_EXPECT_TRUE(is_pow2(1));
-        FOUNDATION_EXPECT_TRUE(is_pow2(2));
-        FOUNDATION_EXPECT_TRUE(is_pow2(4));
-        FOUNDATION_EXPECT_TRUE(is_pow2(8));
-        FOUNDATION_EXPECT_TRUE(is_pow2(256));
+        EXPECT_TRUE(is_pow2(0));
+        EXPECT_TRUE(is_pow2(1));
+        EXPECT_TRUE(is_pow2(2));
+        EXPECT_TRUE(is_pow2(4));
+        EXPECT_TRUE(is_pow2(8));
+        EXPECT_TRUE(is_pow2(256));
     }
 
-    FOUNDATION_TEST_CASE(TestIsPow2OnNonPowerOfTwoValues)
+    TEST_CASE(TestIsPow2OnNonPowerOfTwoValues)
     {
-        FOUNDATION_EXPECT_FALSE(is_pow2(3));
-        FOUNDATION_EXPECT_FALSE(is_pow2(5));
-        FOUNDATION_EXPECT_FALSE(is_pow2(6));
-        FOUNDATION_EXPECT_FALSE(is_pow2(7));
-        FOUNDATION_EXPECT_FALSE(is_pow2(9));
-        FOUNDATION_EXPECT_FALSE(is_pow2(255));
+        EXPECT_FALSE(is_pow2(3));
+        EXPECT_FALSE(is_pow2(5));
+        EXPECT_FALSE(is_pow2(6));
+        EXPECT_FALSE(is_pow2(7));
+        EXPECT_FALSE(is_pow2(9));
+        EXPECT_FALSE(is_pow2(255));
     }
 
-    FOUNDATION_TEST_CASE(TestLog2)
+    TEST_CASE(TestLog2)
     {
-        FOUNDATION_EXPECT_EQ(0,  log2(1));
-        FOUNDATION_EXPECT_EQ(1,  log2(2));
-        FOUNDATION_EXPECT_EQ(1,  log2(3));
-        FOUNDATION_EXPECT_EQ(2,  log2(4));
-        FOUNDATION_EXPECT_EQ(16, log2(1UL << 16));
-        FOUNDATION_EXPECT_EQ(31, log2(1UL << 31));
+        EXPECT_EQ(0,  log2(1));
+        EXPECT_EQ(1,  log2(2));
+        EXPECT_EQ(1,  log2(3));
+        EXPECT_EQ(2,  log2(4));
+        EXPECT_EQ(16, log2(1UL << 16));
+        EXPECT_EQ(31, log2(1UL << 31));
     }
 
-    FOUNDATION_TEST_CASE(TestFactorial)
+    TEST_CASE(TestFactorial)
     {
-        FOUNDATION_EXPECT_EQ(1, factorial(0));
-        FOUNDATION_EXPECT_EQ(1, factorial(1));
-        FOUNDATION_EXPECT_EQ(2, factorial(2));
-        FOUNDATION_EXPECT_EQ(6, factorial(3));
-        FOUNDATION_EXPECT_EQ(24, factorial(4));
-        FOUNDATION_EXPECT_EQ(120, factorial(5));
+        EXPECT_EQ(1, factorial(0));
+        EXPECT_EQ(1, factorial(1));
+        EXPECT_EQ(2, factorial(2));
+        EXPECT_EQ(6, factorial(3));
+        EXPECT_EQ(24, factorial(4));
+        EXPECT_EQ(120, factorial(5));
     }
 
-    FOUNDATION_TEST_CASE(TestTruncate)
+    TEST_CASE(TestTruncate)
     {
-        FOUNDATION_EXPECT_EQ(static_cast<int>(-1.5f), truncate<int>(-1.5f));
-        FOUNDATION_EXPECT_EQ(static_cast<int>(-1.0f), truncate<int>(-1.0f));
-        FOUNDATION_EXPECT_EQ(static_cast<int>(-0.5f), truncate<int>(-0.5f));
-        FOUNDATION_EXPECT_EQ(static_cast<int>( 0.0f), truncate<int>( 0.0f));
-        FOUNDATION_EXPECT_EQ(static_cast<int>(+0.5f), truncate<int>(+0.5f));
-        FOUNDATION_EXPECT_EQ(static_cast<int>(+1.0f), truncate<int>(+1.0f));
-        FOUNDATION_EXPECT_EQ(static_cast<int>(+1.5f), truncate<int>(+1.5f));
+        EXPECT_EQ(static_cast<int>(-1.5f), truncate<int>(-1.5f));
+        EXPECT_EQ(static_cast<int>(-1.0f), truncate<int>(-1.0f));
+        EXPECT_EQ(static_cast<int>(-0.5f), truncate<int>(-0.5f));
+        EXPECT_EQ(static_cast<int>( 0.0f), truncate<int>( 0.0f));
+        EXPECT_EQ(static_cast<int>(+0.5f), truncate<int>(+0.5f));
+        EXPECT_EQ(static_cast<int>(+1.0f), truncate<int>(+1.0f));
+        EXPECT_EQ(static_cast<int>(+1.5f), truncate<int>(+1.5f));
     }
 
-    FOUNDATION_TEST_CASE(TestSmoothStep)
+    TEST_CASE(TestSmoothStep)
     {
-        FOUNDATION_EXPECT_EQ(0.0, smoothstep(10.0, 20.0,  0.0));
-        FOUNDATION_EXPECT_EQ(0.0, smoothstep(10.0, 20.0, 10.0));
-        FOUNDATION_EXPECT_FEQ(0.5, smoothstep(10.0, 20.0, 15.0));
-        FOUNDATION_EXPECT_EQ(1.0, smoothstep(10.0, 20.0, 20.0));
-        FOUNDATION_EXPECT_EQ(1.0, smoothstep(10.0, 20.0, 30.0));
+        EXPECT_EQ(0.0, smoothstep(10.0, 20.0,  0.0));
+        EXPECT_EQ(0.0, smoothstep(10.0, 20.0, 10.0));
+        EXPECT_FEQ(0.5, smoothstep(10.0, 20.0, 15.0));
+        EXPECT_EQ(1.0, smoothstep(10.0, 20.0, 20.0));
+        EXPECT_EQ(1.0, smoothstep(10.0, 20.0, 30.0));
     }
 
-    FOUNDATION_TEST_CASE(TestFeqScalarScalarReturnsTrue)
+    TEST_CASE(TestFeqScalarScalarReturnsTrue)
     {
-        FOUNDATION_EXPECT_TRUE(feq(  0.0,   0.0));
-        FOUNDATION_EXPECT_TRUE(feq( 42.0,  42.0));
-        FOUNDATION_EXPECT_TRUE(feq(-42.0, -42.0));
+        EXPECT_TRUE(feq(  0.0,   0.0));
+        EXPECT_TRUE(feq( 42.0,  42.0));
+        EXPECT_TRUE(feq(-42.0, -42.0));
     }
 
-    FOUNDATION_TEST_CASE(TestFeqScalarScalarReturnsFalse)
+    TEST_CASE(TestFeqScalarScalarReturnsFalse)
     {
-        FOUNDATION_EXPECT_FALSE(feq(  0.0,  42.0));
-        FOUNDATION_EXPECT_FALSE(feq( 42.0,   0.0));
-        FOUNDATION_EXPECT_FALSE(feq( 42.0, -42.0));
-        FOUNDATION_EXPECT_FALSE(feq(-42.0,  42.0));
+        EXPECT_FALSE(feq(  0.0,  42.0));
+        EXPECT_FALSE(feq( 42.0,   0.0));
+        EXPECT_FALSE(feq( 42.0, -42.0));
+        EXPECT_FALSE(feq(-42.0,  42.0));
     }
 
-    FOUNDATION_TEST_CASE(TestFeqScalarScalarOverflows)
+    TEST_CASE(TestFeqScalarScalarOverflows)
     {
-        FOUNDATION_EXPECT_FALSE(feq(0.5 * numeric_limits<double>::max(), 0.1));
+        EXPECT_FALSE(feq(0.5 * numeric_limits<double>::max(), 0.1));
     }
 
-    FOUNDATION_TEST_CASE(TestFeqScalarScalarUnderflows)
+    TEST_CASE(TestFeqScalarScalarUnderflows)
     {
-        FOUNDATION_EXPECT_FALSE(feq(2.0 * numeric_limits<double>::min(), 10.0));
+        EXPECT_FALSE(feq(2.0 * numeric_limits<double>::min(), 10.0));
     }
 
-    FOUNDATION_TEST_CASE(TestFzScalarReturnsTrue)
+    TEST_CASE(TestFzScalarReturnsTrue)
     {
-        FOUNDATION_EXPECT_TRUE(fz(+0.0));
-        FOUNDATION_EXPECT_TRUE(fz(-0.0));
+        EXPECT_TRUE(fz(+0.0));
+        EXPECT_TRUE(fz(-0.0));
     }
 
-    FOUNDATION_TEST_CASE(TestFzScalarReturnsFalse)
+    TEST_CASE(TestFzScalarReturnsFalse)
     {
-        FOUNDATION_EXPECT_FALSE(fz( 42.0));
-        FOUNDATION_EXPECT_FALSE(fz(-42.0));
+        EXPECT_FALSE(fz( 42.0));
+        EXPECT_FALSE(fz(-42.0));
     }
 
-    FOUNDATION_TEST_CASE(Mix_GivenBlendParameterLessThan0_ReturnsFirstValue)
+    TEST_CASE(Mix_GivenBlendParameterLessThan0_ReturnsFirstValue)
     {
         const double result = mix(1.0, 5.0, -1.0);
-        FOUNDATION_EXPECT_EQ(1.0, result);          // note: EQ, not FEQ
+        EXPECT_EQ(1.0, result);          // note: EQ, not FEQ
     }
 
-    FOUNDATION_TEST_CASE(Mix_GivenBlendParameterEqualTo0_ReturnsFirstValue)
+    TEST_CASE(Mix_GivenBlendParameterEqualTo0_ReturnsFirstValue)
     {
         const double result = mix(1.0, 5.0, 0.0);
-        FOUNDATION_EXPECT_EQ(1.0, result);          // note: EQ, not FEQ
+        EXPECT_EQ(1.0, result);          // note: EQ, not FEQ
     }
 
-    FOUNDATION_TEST_CASE(Mix_GivenBlendParameterEqualTo1_ReturnsSecondValue)
+    TEST_CASE(Mix_GivenBlendParameterEqualTo1_ReturnsSecondValue)
     {
         const double result = mix(1.0, 5.0, 1.0);
-        FOUNDATION_EXPECT_EQ(5.0, result);          // note: EQ, not FEQ
+        EXPECT_EQ(5.0, result);          // note: EQ, not FEQ
     }
 
-    FOUNDATION_TEST_CASE(Mix_GivenBlendParameterGreatherThan1_ReturnsSecondValue)
+    TEST_CASE(Mix_GivenBlendParameterGreatherThan1_ReturnsSecondValue)
     {
         const double result = mix(1.0, 5.0, 2.0);
-        FOUNDATION_EXPECT_EQ(5.0, result);          // note: EQ, not FEQ
+        EXPECT_EQ(5.0, result);          // note: EQ, not FEQ
     }
 
-    FOUNDATION_TEST_CASE(Mix_GivenBlendParameterBetween0And1_ReturnsCorrectlyBlendedValue)
+    TEST_CASE(Mix_GivenBlendParameterBetween0And1_ReturnsCorrectlyBlendedValue)
     {
         const double result = mix(1.0, 5.0, 0.5);
-        FOUNDATION_EXPECT_FEQ(3.0, result);
+        EXPECT_FEQ(3.0, result);
     }
 
-    FOUNDATION_TEST_CASE(Mix_GivenBlendParameterOfDifferentTypeBetween0And1_ReturnsCorrectlyBlendedValue)
+    TEST_CASE(Mix_GivenBlendParameterOfDifferentTypeBetween0And1_ReturnsCorrectlyBlendedValue)
     {
         const double result = mix(1.0, 5.0, 0.5f);
-        FOUNDATION_EXPECT_FEQ(3.0, result);
+        EXPECT_FEQ(3.0, result);
     }
 
-    FOUNDATION_TEST_CASE(Lerp_GivenBlendParameterLessThan0_ReturnsCorrectlyExtrapoledValue)
+    TEST_CASE(Lerp_GivenBlendParameterLessThan0_ReturnsCorrectlyExtrapoledValue)
     {
         const double result = lerp(1.0, 5.0, -1.0);
-        FOUNDATION_EXPECT_FEQ(-3.0, result);
+        EXPECT_FEQ(-3.0, result);
     }
 
-    FOUNDATION_TEST_CASE(Lerp_GivenBlendParameterEqualTo0_ReturnsFirstValue)
+    TEST_CASE(Lerp_GivenBlendParameterEqualTo0_ReturnsFirstValue)
     {
         const double result = lerp(1.0, 5.0, 0.0);
-        FOUNDATION_EXPECT_FEQ(1.0, result);
+        EXPECT_FEQ(1.0, result);
     }
 
-    FOUNDATION_TEST_CASE(Lerp_GivenBlendParameterEqualTo1_ReturnsSecondValue)
+    TEST_CASE(Lerp_GivenBlendParameterEqualTo1_ReturnsSecondValue)
     {
         const double result = lerp(1.0, 5.0, 1.0);
-        FOUNDATION_EXPECT_FEQ(5.0, result);
+        EXPECT_FEQ(5.0, result);
     }
 
-    FOUNDATION_TEST_CASE(Lerp_GivenBlendParameterGreatherThan1_ReturnsCorrectlyExtrapoledValue)
+    TEST_CASE(Lerp_GivenBlendParameterGreatherThan1_ReturnsCorrectlyExtrapoledValue)
     {
         const double result = lerp(1.0, 5.0, 2.0);
-        FOUNDATION_EXPECT_FEQ(9.0, result);
+        EXPECT_FEQ(9.0, result);
     }
 
-    FOUNDATION_TEST_CASE(Lerp_GivenBlendParameterBetween0And1_ReturnsCorrectlyBlendedValue)
+    TEST_CASE(Lerp_GivenBlendParameterBetween0And1_ReturnsCorrectlyBlendedValue)
     {
         const double result = lerp(1.0, 5.0, 0.5);
-        FOUNDATION_EXPECT_FEQ(3.0, result);
+        EXPECT_FEQ(3.0, result);
     }
 
-    FOUNDATION_TEST_CASE(Lerp_GivenBlendParameterOfDifferentTypeBetween0And1_ReturnsCorrectlyBlendedValue)
+    TEST_CASE(Lerp_GivenBlendParameterOfDifferentTypeBetween0And1_ReturnsCorrectlyBlendedValue)
     {
         const double result = lerp(1.0, 5.0, 0.5f);
-        FOUNDATION_EXPECT_FEQ(3.0, result);
+        EXPECT_FEQ(3.0, result);
     }
 }

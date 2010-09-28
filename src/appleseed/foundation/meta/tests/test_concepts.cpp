@@ -30,17 +30,17 @@
 #include "foundation/core/concepts/singleton.h"
 #include "foundation/utility/test.h"
 
-FOUNDATION_TEST_SUITE(Foundation_Core_Concepts_Singleton)
+TEST_SUITE(Foundation_Core_Concepts_Singleton)
 {
     using namespace foundation;
 
     struct Foo : public Singleton<Foo> {};
 
-    FOUNDATION_TEST_CASE(Instance_WhenCalledTwice_ReturnsTheSameInstance)
+    TEST_CASE(Instance_WhenCalledTwice_ReturnsTheSameInstance)
     {
         Foo* p1 = &Foo::instance();
         Foo* p2 = &Foo::instance();
 
-        FOUNDATION_EXPECT_EQ(p1, p2);
+        EXPECT_EQ(p1, p2);
     }
 }

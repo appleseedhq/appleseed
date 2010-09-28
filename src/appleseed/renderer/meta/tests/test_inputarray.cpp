@@ -37,49 +37,49 @@
 using namespace renderer;
 using namespace std;
 
-FOUNDATION_TEST_SUITE(Renderer_Modeling_Input_InputArray)
+TEST_SUITE(Renderer_Modeling_Input_InputArray)
 {
-    FOUNDATION_TEST_CASE(Find_GivenNameOfExistingInput_ReturnsInputIterator)
+    TEST_CASE(Find_GivenNameOfExistingInput_ReturnsInputIterator)
     {
         InputArray inputs;
         inputs.declare("x", InputFormatScalar);
 
         const InputArray::const_iterator i = inputs.find("x");
 
-        FOUNDATION_EXPECT_EQ("x", string(i.name()));
+        EXPECT_EQ("x", string(i.name()));
     }
 
-    FOUNDATION_TEST_CASE(Find_GivenNameOfNonExistingInput_ReturnsEndIterator)
+    TEST_CASE(Find_GivenNameOfNonExistingInput_ReturnsEndIterator)
     {
         InputArray inputs;
         inputs.declare("x", InputFormatScalar);
 
         const InputArray::const_iterator i = inputs.find("y");
 
-        FOUNDATION_EXPECT_TRUE(i == inputs.end());
+        EXPECT_TRUE(i == inputs.end());
     }
 
-    FOUNDATION_TEST_CASE(Source_GivenNameOfNonExistingInput_ReturnsZero)
+    TEST_CASE(Source_GivenNameOfNonExistingInput_ReturnsZero)
     {
         InputArray inputs;
         inputs.declare("x", InputFormatScalar);
 
         const Source* source = inputs.source("y");
 
-        FOUNDATION_EXPECT_EQ(0, source);
+        EXPECT_EQ(0, source);
     }
 
-    FOUNDATION_TEST_CASE(Source_GivenNameOfUnboundExistingInput_ReturnsZero)
+    TEST_CASE(Source_GivenNameOfUnboundExistingInput_ReturnsZero)
     {
         InputArray inputs;
         inputs.declare("x", InputFormatScalar);
 
         const Source* source = inputs.source("x");
 
-        FOUNDATION_EXPECT_EQ(0, source);
+        EXPECT_EQ(0, source);
     }
 
-    FOUNDATION_TEST_CASE(Source_GivenNameOfBoundExistingInput_ReturnsBoundSource)
+    TEST_CASE(Source_GivenNameOfBoundExistingInput_ReturnsBoundSource)
     {
         InputArray inputs;
         inputs.declare("x", InputFormatScalar);
@@ -89,6 +89,6 @@ FOUNDATION_TEST_SUITE(Renderer_Modeling_Input_InputArray)
 
         const Source* source = inputs.source("x");
 
-        FOUNDATION_EXPECT_EQ(expected_source, source);
+        EXPECT_EQ(expected_source, source);
     }
 }

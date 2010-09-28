@@ -36,46 +36,46 @@
 // Standard headers.
 #include <string>
 
-FOUNDATION_TEST_SUITE(Foundation_Platform_Path)
+TEST_SUITE(Foundation_Platform_Path)
 {
     using namespace foundation;
     using namespace std;
 
-    FOUNDATION_TEST_CASE(GetExecutablePath_GivenRunningApplication_ReturnsNonEmptyString)
+    TEST_CASE(GetExecutablePath_GivenRunningApplication_ReturnsNonEmptyString)
     {
         const string executable_path = Path::get_executable_path();
 
-        FOUNDATION_EXPECT_FALSE(executable_path.empty());
+        EXPECT_FALSE(executable_path.empty());
     }
 
-    FOUNDATION_TEST_CASE(GetExecutableDirectory_GivenRunningApplication_ReturnsNonEmptyString)
+    TEST_CASE(GetExecutableDirectory_GivenRunningApplication_ReturnsNonEmptyString)
     {
         const string executable_dir = Path::get_executable_directory();
 
-        FOUNDATION_EXPECT_FALSE(executable_dir.empty());
+        EXPECT_FALSE(executable_dir.empty());
     }
 }
 
-FOUNDATION_TEST_SUITE(Boost_Filesystem_Path)
+TEST_SUITE(Boost_Filesystem_Path)
 {
     using namespace boost;
 
-    FOUNDATION_TEST_CASE(Constructor_GivenPathWithFilenameEndingWithDot_ConstructsValidPath)
+    TEST_CASE(Constructor_GivenPathWithFilenameEndingWithDot_ConstructsValidPath)
     {
         const filesystem::path path("/directory/filename.");
 
-        FOUNDATION_EXPECT_EQ("filename.", path.filename());
-        FOUNDATION_EXPECT_EQ("filename", path.stem());
-        FOUNDATION_EXPECT_EQ(".", path.extension());
+        EXPECT_EQ("filename.", path.filename());
+        EXPECT_EQ("filename", path.stem());
+        EXPECT_EQ(".", path.extension());
     }
 
-    FOUNDATION_TEST_CASE(Constructor_GivenPathWithDirectoryEndingWithDot_ConstructsValidPath)
+    TEST_CASE(Constructor_GivenPathWithDirectoryEndingWithDot_ConstructsValidPath)
     {
         const filesystem::path path("/directory./");
         const filesystem::path parent = path.parent_path();
 
-        FOUNDATION_EXPECT_EQ("directory.", parent.filename());
-        FOUNDATION_EXPECT_EQ("directory", parent.stem());
-        FOUNDATION_EXPECT_EQ(".", parent.extension());
+        EXPECT_EQ("directory.", parent.filename());
+        EXPECT_EQ("directory", parent.stem());
+        EXPECT_EQ(".", parent.extension());
     }
 }

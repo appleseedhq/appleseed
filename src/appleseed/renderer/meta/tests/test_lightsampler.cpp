@@ -35,12 +35,12 @@
 #include "foundation/math/rng.h"
 #include "foundation/utility/test.h"
 
-FOUNDATION_TEST_SUITE(Renderer_Kernel_Lighting_LightSampler)
+TEST_SUITE(Renderer_Kernel_Lighting_LightSampler)
 {
     using namespace foundation;
     using namespace renderer;
 
-    FOUNDATION_TEST_CASE(Sample_GivenSceneWithoutLights_ReturnsZeroSample)
+    TEST_CASE(Sample_GivenSceneWithoutLights_ReturnsZeroSample)
     {
         const Scene scene;
         LightSampler light_sampler(scene);
@@ -56,6 +56,6 @@ FOUNDATION_TEST_SUITE(Renderer_Kernel_Lighting_LightSampler)
             1,                          // number of samples
             samples);
 
-        FOUNDATION_EXPECT_EQ(0, samples.size());
+        EXPECT_EQ(0, samples.size());
     }
 }

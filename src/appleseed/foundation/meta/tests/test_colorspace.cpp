@@ -37,72 +37,72 @@
 // Standard headers.
 #include <cstddef>
 
-FOUNDATION_TEST_SUITE(Foundation_Image_ColorSpace)
+TEST_SUITE(Foundation_Image_ColorSpace)
 {
     using namespace foundation;
     using namespace std;
 
-    FOUNDATION_TEST_CASE(TestCIEXYZToLinearRGBConversion)
+    TEST_CASE(TestCIEXYZToLinearRGBConversion)
     {
         const Color3d cie_xyz(0.5, 0.7, 0.2);
         const Color3d linear_rgb = ciexyz_to_linear_rgb(cie_xyz);
 
-        FOUNDATION_EXPECT_FEQ_EPS(
+        EXPECT_FEQ_EPS(
             Color3d(0.44452747702598583, 0.83687689900398254, 0.096456110477447538),
             linear_rgb,
             1.0e-6);
     }
 
-    FOUNDATION_TEST_CASE(TestLinearRGBToCIEXYZConversion)
+    TEST_CASE(TestLinearRGBToCIEXYZConversion)
     {
         const Color3d linear_rgb(0.44452747702598583, 0.83687689900398254, 0.096456110477447538);
         const Color3d cie_xyz = linear_rgb_to_ciexyz(linear_rgb);
 
-        FOUNDATION_EXPECT_FEQ_EPS(
+        EXPECT_FEQ_EPS(
             Color3d(0.5, 0.7, 0.2),
             cie_xyz,
             1.0e-5);
     }
 
-    FOUNDATION_TEST_CASE(TestLinearRGBTosRGBConversion)
+    TEST_CASE(TestLinearRGBTosRGBConversion)
     {
         const Color3d linear_rgb(0.5, 0.7, 0.2);
         const Color3d srgb = linear_rgb_to_srgb(linear_rgb);
 
-        FOUNDATION_EXPECT_FEQ_EPS(
+        EXPECT_FEQ_EPS(
             Color3d(0.73535698305244945, 0.85430583154494000, 0.48452920448170694),
             srgb,
             1.0e-6);
     }
 
-    FOUNDATION_TEST_CASE(TestsRGBToLinearRGBConversion)
+    TEST_CASE(TestsRGBToLinearRGBConversion)
     {
         const Color3d srgb(0.73535698305244945, 0.85430583154494000, 0.48452920448170694);
         const Color3d linear_rgb = srgb_to_linear_rgb(srgb);
 
-        FOUNDATION_EXPECT_FEQ_EPS(
+        EXPECT_FEQ_EPS(
             Color3d(0.5, 0.7, 0.2),
             linear_rgb,
             1.0e-6);
     }
 
-    FOUNDATION_TEST_CASE(TestFastLinearRGBTosRGBConversion)
+    TEST_CASE(TestFastLinearRGBTosRGBConversion)
     {
         const Color3f linear_rgb(0.5f, 0.7f, 0.2f);
         const Color3f srgb = fast_linear_rgb_to_srgb(linear_rgb);
 
-        FOUNDATION_EXPECT_FEQ_EPS(
+        EXPECT_FEQ_EPS(
             Color3f(0.736652f, 0.856132f, 0.484787f),
             srgb,
             1.0e-5f);
     }
 
-    FOUNDATION_TEST_CASE(TestFastsRGBToLinearRGBConversion)
+    TEST_CASE(TestFastsRGBToLinearRGBConversion)
     {
         const Color3f srgb(0.73535698f, 0.85430583f, 0.48452920f);
         const Color3f linear_rgb = fast_srgb_to_linear_rgb(srgb);
 
-        FOUNDATION_EXPECT_FEQ_EPS(
+        EXPECT_FEQ_EPS(
             Color3f(0.501289f, 0.709248f, 0.199818f),
             linear_rgb,
             1.0e-5f);
@@ -121,19 +121,19 @@ FOUNDATION_TEST_SUITE(Foundation_Image_ColorSpace)
         return Spectrum31f(Values);
     }
 
-    FOUNDATION_TEST_CASE(TestSpectrumToCIEXYZConversion)
+    TEST_CASE(TestSpectrumToCIEXYZConversion)
     {
         const Spectrum31f spectrum = get_white_spectrum();
         const LightingConditions lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg);
         const Color3f cie_xyz = spectrum_to_ciexyz<float>(lighting_conditions, spectrum);
 
-        FOUNDATION_EXPECT_FEQ_EPS(
+        EXPECT_FEQ_EPS(
             Color3f(0.699385f, 0.738633f, 0.790319f),
             cie_xyz,
             1.0e-6f);
     }
 
-    FOUNDATION_TEST_CASE(TestCIEXYZToSpectrumConversion)
+    TEST_CASE(TestCIEXYZToSpectrumConversion)
     {
         const Color3f cie_xyz(0.699385f, 0.738633f, 0.790319f);
         const LightingConditions lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg);
@@ -149,13 +149,13 @@ FOUNDATION_TEST_SUITE(Foundation_Image_ColorSpace)
             0.736951f, 0.736951f, 0.736951f, 0.736951f, 0.736951f, 0.736951f, 0.736951f
         };
 
-        FOUNDATION_EXPECT_FEQ_EPS(
+        EXPECT_FEQ_EPS(
             Spectrum31f(ExpectedSpectrumValues),
             spectrum,
             1.0e-6f);
     }
 
-    FOUNDATION_TEST_CASE(TestSpectrumToSpectrumConversion)
+    TEST_CASE(TestSpectrumToSpectrumConversion)
     {
         static const float InputWavelength[Spectrum31f::Samples] =
         {
@@ -187,13 +187,13 @@ FOUNDATION_TEST_SUITE(Foundation_Image_ColorSpace)
             0.343f, 0.747f, 0.74f, 0.737f
         };
 
-        FOUNDATION_EXPECT_FEQ_EPS(
+        EXPECT_FEQ_EPS(
             Spectrum4f(ExpectedOutputSpectrumValues),
             output_spectrum,
             1.0e-6f);
     }
 
-    FOUNDATION_TEST_CASE(GenerateMaplePlotFilesToVisualizeSpectrumResampling)
+    TEST_CASE(GenerateMaplePlotFilesToVisualizeSpectrumResampling)
     {
         // Input wavelengths for white, green and red spectra.
         static const size_t InputSpectrumCount = 76;

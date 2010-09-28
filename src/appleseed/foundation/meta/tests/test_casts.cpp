@@ -31,28 +31,28 @@
 #include "foundation/utility/casts.h"
 #include "foundation/utility/test.h"
 
-FOUNDATION_TEST_SUITE(Foundation_Utility_Casts)
+TEST_SUITE(Foundation_Utility_Casts)
 {
     using namespace foundation;
 
     const uint32 OnePattern = 0x3F800000UL;
 
-    FOUNDATION_TEST_CASE(TestBinaryCastFloatToUInt32)
+    TEST_CASE(TestBinaryCastFloatToUInt32)
     {
         float f = 1.0f;
-        FOUNDATION_EXPECT_EQ(OnePattern, binary_cast<uint32>(f));
+        EXPECT_EQ(OnePattern, binary_cast<uint32>(f));
     }
 
-    FOUNDATION_TEST_CASE(TestBinaryCastConstFloatToUInt32)
+    TEST_CASE(TestBinaryCastConstFloatToUInt32)
     {
         const float f = 1.0f;
-        FOUNDATION_EXPECT_EQ(OnePattern, binary_cast<uint32>(f));
+        EXPECT_EQ(OnePattern, binary_cast<uint32>(f));
     }
 
-    FOUNDATION_TEST_CASE(TestBinaryCastConstFloatRefToUInt32)
+    TEST_CASE(TestBinaryCastConstFloatRefToUInt32)
     {
         float f = 1.0f;
         const float& ref = f;
-        FOUNDATION_EXPECT_EQ(OnePattern, binary_cast<uint32>(ref));
+        EXPECT_EQ(OnePattern, binary_cast<uint32>(ref));
     }
 }

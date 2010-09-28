@@ -30,7 +30,7 @@
 #include "foundation/utility/log.h"
 #include "foundation/utility/test.h"
 
-FOUNDATION_TEST_SUITE(Foundation_Utility_Log_LogTargetBase)
+TEST_SUITE(Foundation_Utility_Log_LogTargetBase)
 {
     using namespace foundation;
 
@@ -51,14 +51,14 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Log_LogTargetBase)
         }
     };
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(LogTargetBase_WhenConstructed_WarningCategoryHasDefaultFormattingFlags, FakeLogTarget)
+    TEST_CASE_WITH_FIXTURE(LogTargetBase_WhenConstructed_WarningCategoryHasDefaultFormattingFlags, FakeLogTarget)
     {
-        FOUNDATION_EXPECT_EQ(
+        EXPECT_EQ(
             LogMessage::DefaultFormattingFlags,
             get_formatting_flags(LogMessage::Warning));
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(GetFormattingFlags_GivenSetWarningCategoryFlags_ReturnsThoseFlags, FakeLogTarget)
+    TEST_CASE_WITH_FIXTURE(GetFormattingFlags_GivenSetWarningCategoryFlags_ReturnsThoseFlags, FakeLogTarget)
     {
         const LogMessage::FormattingFlags ExpectedFlags =
             static_cast<LogMessage::FormattingFlags>(
@@ -66,12 +66,12 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Log_LogTargetBase)
 
         set_formatting_flags(LogMessage::Warning, ExpectedFlags);
 
-        FOUNDATION_EXPECT_EQ(
+        EXPECT_EQ(
             ExpectedFlags,
             get_formatting_flags(LogMessage::Warning));
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(HasFormattingFlag_GivenSetWarningCategoryFlags_ReturnsTrueForSetFlags, FakeLogTarget)
+    TEST_CASE_WITH_FIXTURE(HasFormattingFlag_GivenSetWarningCategoryFlags_ReturnsTrueForSetFlags, FakeLogTarget)
     {
         const LogMessage::FormattingFlags ExpectedFlags =
             static_cast<LogMessage::FormattingFlags>(
@@ -79,11 +79,11 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Log_LogTargetBase)
 
         set_formatting_flags(LogMessage::Warning, ExpectedFlags);
 
-        FOUNDATION_EXPECT_TRUE(has_formatting_flag(LogMessage::Warning, LogMessage::DisplayDate));
-        FOUNDATION_EXPECT_TRUE(has_formatting_flag(LogMessage::Warning, LogMessage::DisplayLine));
+        EXPECT_TRUE(has_formatting_flag(LogMessage::Warning, LogMessage::DisplayDate));
+        EXPECT_TRUE(has_formatting_flag(LogMessage::Warning, LogMessage::DisplayLine));
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(HasFormattingFlag_GivenUnsetWarningCategoryFlags_ReturnsFalseForUnsetFlags, FakeLogTarget)
+    TEST_CASE_WITH_FIXTURE(HasFormattingFlag_GivenUnsetWarningCategoryFlags_ReturnsFalseForUnsetFlags, FakeLogTarget)
     {
         const LogMessage::FormattingFlags ExpectedFlags =
             static_cast<LogMessage::FormattingFlags>(
@@ -91,6 +91,6 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Log_LogTargetBase)
 
         set_formatting_flags(LogMessage::Warning, ExpectedFlags);
 
-        FOUNDATION_EXPECT_FALSE(has_formatting_flag(LogMessage::Warning, LogMessage::DisplayMessage));
+        EXPECT_FALSE(has_formatting_flag(LogMessage::Warning, LogMessage::DisplayMessage));
     }
 }

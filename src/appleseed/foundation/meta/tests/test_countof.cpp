@@ -30,12 +30,12 @@
 #include "foundation/utility/countof.h"
 #include "foundation/utility/test.h"
 
-FOUNDATION_TEST_SUITE(Foundation_Utility_CountOf)
+TEST_SUITE(Foundation_Utility_CountOf)
 {
-    FOUNDATION_TEST_CASE(CountOf_GivenArrayOfFourIntegers_ReturnsFour)
+    TEST_CASE(CountOf_GivenArrayOfFourIntegers_ReturnsFour)
     {
         const int array[4] = { 0, 1, 2, 3 };
 
-        FOUNDATION_EXPECT_EQ(4, countof(array));
+        EXPECT_EQ(4, countof(array));
     }
 }

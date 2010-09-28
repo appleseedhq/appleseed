@@ -38,7 +38,7 @@
 #include <cstddef>
 #include <string>
 
-FOUNDATION_TEST_SUITE(Foundation_Math_Noise)
+TEST_SUITE(Foundation_Math_Noise)
 {
     using namespace foundation;
     using namespace std;
@@ -105,7 +105,7 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Noise)
                 0.5f);      // gain
     }
 
-    FOUNDATION_TEST_CASE(GenerateNoise3Image)
+    TEST_CASE(GenerateNoise3Image)
     {
         generate_image(
             "output/test_noise_noise.png",
@@ -114,7 +114,7 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Noise)
             noise_function);
     }
 
-    FOUNDATION_TEST_CASE(GenerateFBM3Image)
+    TEST_CASE(GenerateFBM3Image)
     {
         generate_image(
             "output/test_noise_fbm.png",
@@ -123,7 +123,7 @@ FOUNDATION_TEST_SUITE(Foundation_Math_Noise)
             fbm_function);
     }
 
-    FOUNDATION_TEST_CASE(GenerateTurbulence3Image)
+    TEST_CASE(GenerateTurbulence3Image)
     {
         generate_image(
             "output/test_noise_turbulence.png",

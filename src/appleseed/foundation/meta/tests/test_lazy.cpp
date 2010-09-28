@@ -33,7 +33,7 @@
 // Standard headers.
 #include <memory>
 
-FOUNDATION_TEST_SUITE(Foundation_Utility_Lazy_Access)
+TEST_SUITE(Foundation_Utility_Lazy_Access)
 {
     using namespace foundation;
     using namespace std;
@@ -65,34 +65,34 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Lazy_Access)
         }
     };
 
-    FOUNDATION_TEST_CASE(Get_GivenAccessBoundToNonNullObject_ReturnsNonNullPointer)
+    TEST_CASE(Get_GivenAccessBoundToNonNullObject_ReturnsNonNullPointer)
     {
         auto_ptr<ObjectFactory> factory(new SimpleObjectFactory(42));
         Lazy<Object> object(factory);
 
         Access<Object> access(&object);
 
-        FOUNDATION_EXPECT_NEQ(0, access.get());
+        EXPECT_NEQ(0, access.get());
     }
 
-    FOUNDATION_TEST_CASE(OperatorArrow_GivenAccessBoundToNonNullObject_GivesAccessToObject)
+    TEST_CASE(OperatorArrow_GivenAccessBoundToNonNullObject_GivesAccessToObject)
     {
         auto_ptr<ObjectFactory> factory(new SimpleObjectFactory(42));
         Lazy<Object> object(factory);
 
         Access<Object> access(&object);
 
-        FOUNDATION_EXPECT_EQ(42, access->m_value);
+        EXPECT_EQ(42, access->m_value);
     }
 
-    FOUNDATION_TEST_CASE(OperatorStar_GivenAccessBoundToNonNullObject_GivesAccessToObject)
+    TEST_CASE(OperatorStar_GivenAccessBoundToNonNullObject_GivesAccessToObject)
     {
         auto_ptr<ObjectFactory> factory(new SimpleObjectFactory(42));
         Lazy<Object> object(factory);
 
         Access<Object> access(&object);
 
-        FOUNDATION_EXPECT_EQ(42, (*access).m_value);
+        EXPECT_EQ(42, (*access).m_value);
     }
 
     struct NullObjectFactory : public ObjectFactory
@@ -103,13 +103,13 @@ FOUNDATION_TEST_SUITE(Foundation_Utility_Lazy_Access)
         }
     };
 
-    FOUNDATION_TEST_CASE(Get_GivenAccessBoundToNullObject_ReturnsNullPointer)
+    TEST_CASE(Get_GivenAccessBoundToNullObject_ReturnsNullPointer)
     {
         auto_ptr<ObjectFactory> factory(new NullObjectFactory());
         Lazy<Object> object(factory);
 
         Access<Object> access(&object);
 
-        FOUNDATION_EXPECT_EQ(0, access.get());
+        EXPECT_EQ(0, access.get());
     }
 }

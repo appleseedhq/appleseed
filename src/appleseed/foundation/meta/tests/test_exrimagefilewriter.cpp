@@ -36,7 +36,7 @@
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 
-FOUNDATION_TEST_SUITE(Foundation_Image_EXRImageFileWriter)
+TEST_SUITE(Foundation_Image_EXRImageFileWriter)
 {
     using namespace foundation;
 
@@ -59,7 +59,7 @@ FOUNDATION_TEST_SUITE(Foundation_Image_EXRImageFileWriter)
         return reader.read_tile(0, 0);
     }
 
-    FOUNDATION_TEST_CASE(CorrectlyWriteTestImage)
+    TEST_CASE(CorrectlyWriteTestImage)
     {
         generate_test_openexr_file();
 
@@ -69,7 +69,7 @@ FOUNDATION_TEST_SUITE(Foundation_Image_EXRImageFileWriter)
         {
             Color4i c;
             tile->get_pixel(i, c);
-            FOUNDATION_EXPECT_EQ(Reference, c);
+            EXPECT_EQ(Reference, c);
         }
 
         delete tile;

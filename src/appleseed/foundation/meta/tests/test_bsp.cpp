@@ -41,67 +41,67 @@
 #include <memory>
 #include <vector>
 
-FOUNDATION_TEST_SUITE(Foundation_Math_BSP_Node)
+TEST_SUITE(Foundation_Math_BSP_Node)
 {
     using namespace foundation;
 
     typedef bsp::Node<double> NodeType;
 
-    FOUNDATION_TEST_CASE(TestLeafNode)
+    TEST_CASE(TestLeafNode)
     {
         NodeType node;
 
         node.set_type(NodeType::Leaf);
-        FOUNDATION_EXPECT_EQ(NodeType::Leaf, node.get_type());
-        FOUNDATION_EXPECT_TRUE(node.is_leaf());
+        EXPECT_EQ(NodeType::Leaf, node.get_type());
+        EXPECT_TRUE(node.is_leaf());
 
         node.set_leaf_index(42);
-        FOUNDATION_EXPECT_EQ(NodeType::Leaf, node.get_type());
-        FOUNDATION_EXPECT_EQ(42, node.get_leaf_index());
+        EXPECT_EQ(NodeType::Leaf, node.get_type());
+        EXPECT_EQ(42, node.get_leaf_index());
 
         const size_t LeafIndex = (size_t(1) << 31) - 1;
         node.set_leaf_index(LeafIndex);
-        FOUNDATION_EXPECT_EQ(NodeType::Leaf, node.get_type());
-        FOUNDATION_EXPECT_EQ(LeafIndex, node.get_leaf_index());
+        EXPECT_EQ(NodeType::Leaf, node.get_type());
+        EXPECT_EQ(LeafIndex, node.get_leaf_index());
     }
 
-    FOUNDATION_TEST_CASE(TestInteriorNode)
+    TEST_CASE(TestInteriorNode)
     {
         NodeType node;
 
         node.set_type(NodeType::Interior);
-        FOUNDATION_EXPECT_EQ(NodeType::Interior, node.get_type());
-        FOUNDATION_EXPECT_TRUE(node.is_interior());
+        EXPECT_EQ(NodeType::Interior, node.get_type());
+        EXPECT_TRUE(node.is_interior());
 
         node.set_child_node_index(42);
-        FOUNDATION_EXPECT_EQ(NodeType::Interior, node.get_type());
-        FOUNDATION_EXPECT_EQ(42, node.get_child_node_index());
+        EXPECT_EQ(NodeType::Interior, node.get_type());
+        EXPECT_EQ(42, node.get_child_node_index());
 
         const size_t ChildIndex = (size_t(1) << 29) - 1;
         node.set_child_node_index(ChildIndex);
-        FOUNDATION_EXPECT_EQ(NodeType::Interior, node.get_type());
-        FOUNDATION_EXPECT_EQ(ChildIndex, node.get_child_node_index());
+        EXPECT_EQ(NodeType::Interior, node.get_type());
+        EXPECT_EQ(ChildIndex, node.get_child_node_index());
 
         node.set_split_dim(1);
-        FOUNDATION_EXPECT_EQ(NodeType::Interior, node.get_type());
-        FOUNDATION_EXPECT_EQ(ChildIndex, node.get_child_node_index());
-        FOUNDATION_EXPECT_EQ(1, node.get_split_dim());
+        EXPECT_EQ(NodeType::Interior, node.get_type());
+        EXPECT_EQ(ChildIndex, node.get_child_node_index());
+        EXPECT_EQ(1, node.get_split_dim());
 
         node.set_split_abs(66.0);
-        FOUNDATION_EXPECT_EQ(NodeType::Interior, node.get_type());
-        FOUNDATION_EXPECT_EQ(ChildIndex, node.get_child_node_index());
-        FOUNDATION_EXPECT_EQ(1, node.get_split_dim());
-        FOUNDATION_EXPECT_EQ(66.0, node.get_split_abs());
+        EXPECT_EQ(NodeType::Interior, node.get_type());
+        EXPECT_EQ(ChildIndex, node.get_child_node_index());
+        EXPECT_EQ(1, node.get_split_dim());
+        EXPECT_EQ(66.0, node.get_split_abs());
 
         node.set_leaf_size(33);
-        FOUNDATION_EXPECT_EQ(NodeType::Interior, node.get_type());
-        FOUNDATION_EXPECT_EQ(ChildIndex, node.get_child_node_index());
-        FOUNDATION_EXPECT_EQ(1, node.get_split_dim());
-        FOUNDATION_EXPECT_EQ(33, node.get_leaf_size());
+        EXPECT_EQ(NodeType::Interior, node.get_type());
+        EXPECT_EQ(ChildIndex, node.get_child_node_index());
+        EXPECT_EQ(1, node.get_split_dim());
+        EXPECT_EQ(33, node.get_leaf_size());
     }
 }
 
-FOUNDATION_TEST_SUITE(Foundation_Math_BSP_Intersector)
+TEST_SUITE(Foundation_Math_BSP_Intersector)
 {
     using namespace foundation;
     using namespace std;
@@ -296,34 +296,34 @@ FOUNDATION_TEST_SUITE(Foundation_Math_BSP_Intersector)
 #define TRAVERSAL_STATISTICS
 #endif
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(Intersect_GivenRayEmbeddedInSplitPlane_VisitsBothLeaves, Fixture)
+    TEST_CASE_WITH_FIXTURE(Intersect_GivenRayEmbeddedInSplitPlane_VisitsBothLeaves, Fixture)
     {
         Ray3d ray(Vector3d(0.0, 0.0, 1.0), Vector3d(0.0, 0.0, -1.0));
 
         m_intersector.intersect(m_tree, ray, RayInfo3d(ray), m_leaf_visitor TRAVERSAL_STATISTICS);
 
-        FOUNDATION_EXPECT_EQ(2, m_leaf_visitor.get_visited_leaf_count());
-        FOUNDATION_EXPECT_FEQ(1.0 - 0.7, m_leaf_visitor.get_closest_hit());
+        EXPECT_EQ(2, m_leaf_visitor.get_visited_leaf_count());
+        EXPECT_FEQ(1.0 - 0.7, m_leaf_visitor.get_closest_hit());
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(Intersect_GivenRayPiercingLeftNode_VisitsLeftNode, Fixture)
+    TEST_CASE_WITH_FIXTURE(Intersect_GivenRayPiercingLeftNode_VisitsLeftNode, Fixture)
     {
         Ray3d ray(Vector3d(-0.5, 0.0, 1.0), Vector3d(0.0, 0.0, -1.0));
 
         m_intersector.intersect(m_tree, ray, RayInfo3d(ray), m_leaf_visitor TRAVERSAL_STATISTICS);
 
-        FOUNDATION_EXPECT_EQ(1, m_leaf_visitor.get_visited_leaf_count());
-        FOUNDATION_EXPECT_FEQ(1.0 - 0.2, m_leaf_visitor.get_closest_hit());
+        EXPECT_EQ(1, m_leaf_visitor.get_visited_leaf_count());
+        EXPECT_FEQ(1.0 - 0.2, m_leaf_visitor.get_closest_hit());
     }
 
-    FOUNDATION_TEST_CASE_WITH_FIXTURE(Intersect_GivenRayPiercingRightNode_VisitsRightNode, Fixture)
+    TEST_CASE_WITH_FIXTURE(Intersect_GivenRayPiercingRightNode_VisitsRightNode, Fixture)
     {
         Ray3d ray(Vector3d(0.5, 0.0, 1.0), Vector3d(0.0, 0.0, -1.0));
 
         m_intersector.intersect(m_tree, ray, RayInfo3d(ray), m_leaf_visitor TRAVERSAL_STATISTICS);
 
-        FOUNDATION_EXPECT_EQ(1, m_leaf_visitor.get_visited_leaf_count());
-        FOUNDATION_EXPECT_FEQ(1.0 - 0.7, m_leaf_visitor.get_closest_hit());
+        EXPECT_EQ(1, m_leaf_visitor.get_visited_leaf_count());
+        EXPECT_FEQ(1.0 - 0.7, m_leaf_visitor.get_closest_hit());
     }
 
 #undef TRAVERSAL_STATISTICS
