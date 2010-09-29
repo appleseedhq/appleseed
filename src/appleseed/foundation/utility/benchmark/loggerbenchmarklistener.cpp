@@ -135,7 +135,7 @@ namespace
         virtual void begin_suite(
             const BenchmarkSuite&   benchmark_suite)
         {
-            LOG_INFO(m_logger, "%s:\n\n", benchmark_suite.get_name());
+            m_suite_name_printed = false;
         }
 
         virtual void write(
@@ -145,6 +145,8 @@ namespace
             const size_t            line,
             const char*             message)
         {
+            print_suite_name(benchmark_suite);
+
             // Print the message header.
             LOG_ERROR(
                 m_logger,
@@ -180,6 +182,8 @@ namespace
                     " at " + pretty_scalar(freq_mhz, 3) + " MHz)";
             }
 
+            print_suite_name(benchmark_suite);
+
             LOG_INFO(
                 m_logger,
                 "  %s:\n"
@@ -196,7 +200,17 @@ namespace
         }
 
       private:
-        Logger& m_logger;
+        Logger&     m_logger;
+        bool        m_suite_name_printed;
+
+        void print_suite_name(const BenchmarkSuite& benchmark_suite)
+        {
+            if (!m_suite_name_printed)
+            {
+                LOG_INFO(m_logger, "%s:\n\n", benchmark_suite.get_name());
+                m_suite_name_printed = true;
+            }
+        }
     };
 }
 

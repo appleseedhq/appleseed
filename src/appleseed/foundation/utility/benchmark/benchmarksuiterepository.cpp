@@ -88,17 +88,15 @@ void BenchmarkSuiteRepository::run(
     {
         BenchmarkSuite& suite = *impl->m_suites[i];
 
-        // Skip benchmark suites that aren't let through by the filter.
-        if (!filter.accepts(suite.get_name()))
-            continue;
-
         // Create a benchmark result for this benchmark suite.
         BenchmarkResult suite_result;
         suite_result.add_listeners(result);
 
         // Run the benchmark suite.
         suite_result.signal_suite_execution();
-        impl->m_suites[i]->run(suite_result);
+        if (filter.accepts(suite.get_name()))
+            suite.run(suite_result);
+        else suite.run(filter, suite_result);
 
         // Report a benchmark suite failure if one or more benchmark cases failed.
         if (suite_result.get_case_failure_count() > 0)
