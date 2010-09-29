@@ -46,7 +46,7 @@ using namespace std;
 namespace renderer
 {
 
-FOUNDATION_DEFINE_ARRAY(SurfaceShaderFactoryArray);
+DEFINE_ARRAY(SurfaceShaderFactoryArray);
 
 struct SurfaceShaderFactoryRegistrar::Impl
 {

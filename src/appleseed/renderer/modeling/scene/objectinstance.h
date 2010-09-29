@@ -47,7 +47,7 @@ namespace renderer
 // An array of material indices.
 //
 
-FOUNDATION_DECLARE_ARRAY(MaterialIndexArray, size_t);
+DECLARE_ARRAY(MaterialIndexArray, size_t);
 
 
 //

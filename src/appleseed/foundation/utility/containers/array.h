@@ -64,7 +64,7 @@ namespace foundation
 //
 
 // Declare the array.
-#define FOUNDATION_DECLARE_ARRAY(ArrayName, ArrayType)                  \
+#define DECLARE_ARRAY(ArrayName, ArrayType)                             \
     class FOUNDATIONDLL ArrayName                                       \
     {                                                                   \
       public:                                                           \
@@ -116,7 +116,7 @@ namespace foundation
     }
 
 // Define the array.
-#define FOUNDATION_DEFINE_ARRAY(ArrayName)                              \
+#define DEFINE_ARRAY(ArrayName)                                         \
     struct ArrayName::Impl                                              \
       : public std::vector<value_type>                                  \
     {                                                                   \

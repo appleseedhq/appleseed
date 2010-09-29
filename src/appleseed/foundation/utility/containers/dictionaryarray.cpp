@@ -32,6 +32,6 @@
 namespace foundation
 {
 
-FOUNDATION_DEFINE_ARRAY(DictionaryArray);
+DEFINE_ARRAY(DictionaryArray);
 
 }   // namespace foundation

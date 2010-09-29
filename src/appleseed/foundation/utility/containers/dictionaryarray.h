@@ -40,7 +40,7 @@ namespace foundation
 // An array of dictionaries.
 //
 
-FOUNDATION_DECLARE_ARRAY(DictionaryArray, Dictionary);
+DECLARE_ARRAY(DictionaryArray, Dictionary);
 
 }       // namespace foundation
 

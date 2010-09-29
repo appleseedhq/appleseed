@@ -45,7 +45,7 @@ namespace renderer
 // An array of mesh objects.
 //
 
-FOUNDATION_DECLARE_ARRAY(MeshObjectArray, MeshObject*);
+DECLARE_ARRAY(MeshObjectArray, MeshObject*);
 
 
 //

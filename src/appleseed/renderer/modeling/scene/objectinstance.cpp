@@ -45,7 +45,7 @@ namespace renderer
 // MaterialIndexArray class implementation.
 //
 
-FOUNDATION_DEFINE_ARRAY(MaterialIndexArray);
+DEFINE_ARRAY(MaterialIndexArray);
 
 
 //

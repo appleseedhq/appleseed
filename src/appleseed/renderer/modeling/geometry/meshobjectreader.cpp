@@ -57,7 +57,7 @@ namespace renderer
 // MeshObjectArray class implementation.
 //
 
-FOUNDATION_DEFINE_ARRAY(MeshObjectArray);
+DEFINE_ARRAY(MeshObjectArray);
 
 
 //

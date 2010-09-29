@@ -46,7 +46,7 @@ namespace renderer
 // An array of surface shader factories.
 //
 
-FOUNDATION_DECLARE_ARRAY(SurfaceShaderFactoryArray, ISurfaceShaderFactory*);
+DECLARE_ARRAY(SurfaceShaderFactoryArray, ISurfaceShaderFactory*);
 
 
 //

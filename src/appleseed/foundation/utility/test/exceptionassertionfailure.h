@@ -36,7 +36,7 @@ namespace foundation
 {
 
 //
-// Exception thrown by the FOUNDATION_ASSERT_*() macros to interrupt
+// Exception thrown by the ASSERT_*() macros to interrupt
 // execution of a test case when an assertion is not true.
 //
 

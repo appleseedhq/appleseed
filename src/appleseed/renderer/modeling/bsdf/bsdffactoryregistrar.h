@@ -46,7 +46,7 @@ namespace renderer
 // An array of BSDF factories.
 //
 
-FOUNDATION_DECLARE_ARRAY(BSDFFactoryArray, IBSDFFactory*);
+DECLARE_ARRAY(BSDFFactoryArray, IBSDFFactory*);
 
 
 //

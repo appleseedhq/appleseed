@@ -45,7 +45,7 @@ using namespace std;
 namespace renderer
 {
 
-FOUNDATION_DEFINE_ARRAY(BSDFFactoryArray);
+DEFINE_ARRAY(BSDFFactoryArray);
 
 struct BSDFFactoryRegistrar::Impl
 {

@@ -44,7 +44,7 @@ namespace renderer
 // An array of color values.
 //
 
-FOUNDATION_DECLARE_ARRAY(ColorValueArray, float);
+DECLARE_ARRAY(ColorValueArray, float);
 
 
 //

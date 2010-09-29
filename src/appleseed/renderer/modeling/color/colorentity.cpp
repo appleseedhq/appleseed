@@ -42,7 +42,7 @@ namespace renderer
 // ColorValueArray class implementation.
 //
 
-FOUNDATION_DEFINE_ARRAY(ColorValueArray);
+DEFINE_ARRAY(ColorValueArray);
 
 
 //
