@@ -37,15 +37,15 @@ namespace foundation
 //
 
 // Visual C++.
-// See http://ccollomb.free.fr/blog/?p=30 for details.
 #if defined _MSC_VER
 
-#define FOUNDATION_BREAKPOINT() _asm __emit 0xF1
+// See http://ccollomb.free.fr/blog/?p=30 for details.
+#define BREAKPOINT() _asm __emit 0xF1
 
 // Unsupported platform.
 #else
 
-#define FOUNDATION_BREAKPOINT()
+#define BREAKPOINT()
 
 #endif
 

@@ -187,7 +187,7 @@ namespace
 
                 // Break in the debugger when this pixel is reached.
                 if (Vector<size_t, 2>(ix, iy) == RENDERER_PIXEL_BREAKPOINT)
-                    FOUNDATION_BREAKPOINT();
+                    BREAKPOINT();
 
 #endif  // RENDERER_PIXEL_BREAKPOINT
 
