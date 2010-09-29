@@ -45,7 +45,7 @@ TraversalStatistics::TraversalStatistics()
 // Print traversal statistics.
 void TraversalStatistics::print(Logger& logger)
 {
-    FOUNDATION_LOG_DEBUG(
+    LOG_DEBUG(
         logger,
         "  traversals       %s\n"
         "  visited interior avg %.1f  min %s  max %s  dev %.1f\n"

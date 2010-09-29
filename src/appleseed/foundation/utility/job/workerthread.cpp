@@ -141,7 +141,7 @@ void WorkerThread::execute_job(IJob& job)
     }
     catch (const Exception& e)
     {
-        FOUNDATION_LOG_ERROR(
+        LOG_ERROR(
             m_logger,
             "worker thread %u: job was terminated: %s",
             m_thread_index,
@@ -149,14 +149,14 @@ void WorkerThread::execute_job(IJob& job)
     }
     catch (const bad_alloc&)
     {
-        FOUNDATION_LOG_ERROR(
+        LOG_ERROR(
             m_logger,
             "worker thread %u: job was terminated: memory allocation failure",
             m_thread_index);
     }
     catch (...)
     {
-        FOUNDATION_LOG_ERROR(
+        LOG_ERROR(
             m_logger,
             "worker thread %u: job was terminated: unknown exception",
             m_thread_index);

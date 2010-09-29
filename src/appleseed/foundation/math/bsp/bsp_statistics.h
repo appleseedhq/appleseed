@@ -137,7 +137,7 @@ TreeStatistics<Tree, Builder>::TreeStatistics(
 template <typename Tree, typename Builder>
 void TreeStatistics<Tree, Builder>::print(Logger& logger)
 {
-    FOUNDATION_LOG_DEBUG(
+    LOG_DEBUG(
         logger,
         "  build time       %s\n"
         "  size             %s  %s %s\n"

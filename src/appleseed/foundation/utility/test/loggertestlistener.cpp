@@ -59,27 +59,23 @@ namespace
       : public TestListenerBase
     {
       public:
-        // Constructor.
         LoggerTestListener(Logger& logger, const bool verbose)
           : m_logger(logger)
           , m_verbose(verbose)
         {
         }
 
-        // Delete this instance.
         virtual void release()
         {
             delete this;
         }
 
-        // Called before each test suite is run.
         virtual void begin_suite(
             const TestSuite&        test_suite)
         {
             m_suite_name_printed = false;
         }
 
-        // Called before each test case is run.
         virtual void begin_case(
             const TestSuite&        test_suite,
             const ITestCase&        test_case)
@@ -87,7 +83,6 @@ namespace
             m_case_name_printed = false;
         }
 
-        // Called after each test case is run.
         virtual void end_case(
             const TestSuite&        test_suite,
             const ITestCase&        test_case,
@@ -101,17 +96,16 @@ namespace
                 {
                     if (!m_suite_name_printed)
                     {
-                        FOUNDATION_LOG_INFO(m_logger, "%s:", test_suite.get_name());
+                        LOG_INFO(m_logger, "%s:", test_suite.get_name());
                         m_suite_name_printed = true;
                     }
 
-                    FOUNDATION_LOG_INFO(m_logger, "  [passed] %s", test_case.get_name());
+                    LOG_INFO(m_logger, "  [passed] %s", test_case.get_name());
                     m_case_name_printed = true;
                 }
             }
         }
 
-        // Write a message.
         virtual void write(
             const TestSuite&        test_suite,
             const ITestCase&        test_case,
@@ -124,7 +118,7 @@ namespace
             {
                 if (!m_suite_name_printed)
                 {
-                    FOUNDATION_LOG(
+                    LOG(
                         m_logger,
                         m_verbose ? LogMessage::Info : LogMessage::Error,
                         "%s:",
@@ -132,14 +126,14 @@ namespace
                     m_suite_name_printed = true;
                 }
 
-                FOUNDATION_LOG_ERROR(m_logger, "  [failed] %s", test_case.get_name());
+                LOG_ERROR(m_logger, "  [failed] %s", test_case.get_name());
                 m_case_name_printed = true;
             }
 
             // Print the message type and the location in the source code of the failure.
             if (message_type == TestMessage::AssertionFailure)
             {
-                FOUNDATION_LOG_ERROR(
+                LOG_ERROR(
                     m_logger,
                     "    %s in %s, line " FMT_SIZE_T ":",
                     TestMessage::name(message_type),
@@ -148,10 +142,7 @@ namespace
             }
             else
             {
-                FOUNDATION_LOG_ERROR(
-                    m_logger,
-                    "    %s:",
-                    TestMessage::name(message_type));
+                LOG_ERROR(m_logger, "    %s:", TestMessage::name(message_type));
             }
 
             // Split the message into multiple components, one for each line.
@@ -160,12 +151,7 @@ namespace
 
             // Print the message.
             for (const_each<vector<string> > i = tokens; i; ++i)
-            {
-                FOUNDATION_LOG_ERROR(
-                    m_logger,
-                    "      %s",
-                    i->c_str());
-            }
+                LOG_ERROR(m_logger, "      %s", i->c_str());
         }
 
       private:
@@ -176,7 +162,6 @@ namespace
     };
 }
 
-// Factory function.
 ITestListener* create_logger_test_listener(Logger& logger, const bool verbose)
 {
     return new LoggerTestListener(logger, verbose);

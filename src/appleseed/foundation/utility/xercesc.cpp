@@ -52,7 +52,7 @@ bool XercesCManager::initialize(Logger& logger)
     }
     catch (const XMLException& e)
     {
-        FOUNDATION_LOG_ERROR(
+        LOG_ERROR(
             logger,
             "failed to initialize Xerces-C++ library: %s",
             transcode(e.getMessage()).c_str());
@@ -134,7 +134,7 @@ void ErrorLogger::fatalError(const SAXParseException& e)
       // Using our modified version of Xerces-C++, we can catch the case where
       // it failed to open the input file, and print a reasonable error message.
       case XMLExcepts::Scan_CouldNotOpenSource:
-        FOUNDATION_LOG_ERROR(
+        LOG_ERROR(
             m_logger,
             "failed to open %s for reading",
             m_input_filename.c_str());
@@ -166,7 +166,7 @@ void ErrorLogger::print(
     const LogMessage::Category  category,
     const SAXParseException&    e) const
 {
-    FOUNDATION_LOG(
+    LOG(
         m_logger,
         category,
         "while reading %s: %s",

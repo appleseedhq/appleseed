@@ -293,7 +293,7 @@ namespace
 
             void begin_exact_sah_split(const size_t triangle_count)
             {
-                FOUNDATION_LOG_INFO(
+                LOG_INFO(
                     m_logger,
                     "\nSplitting " FMT_SIZE_T " triangles using exact SAH:",
                     triangle_count);
@@ -301,7 +301,7 @@ namespace
 
             void begin_approximate_sah_split(const size_t triangle_count)
             {
-                FOUNDATION_LOG_INFO(
+                LOG_INFO(
                     m_logger,
                     "\nSplitting " FMT_SIZE_T " triangles using approximate SAH:",
                     triangle_count);
@@ -314,7 +314,7 @@ namespace
 
                 func.visit(bbox, dim, m_visitor);
 
-                FOUNDATION_LOG_INFO(
+                LOG_INFO(
                     m_logger,
                     "    %s: extent %f, function: plot([%s]):",
                     get_axis_name(dim),
@@ -330,7 +330,7 @@ namespace
                     strcpy(buf, "n/a");
                 else portable_snprintf(buf, sizeof(buf), "%f", min_cost);
 
-                FOUNDATION_LOG_INFO(
+                LOG_INFO(
                     m_logger,
                     "    Outcome: DON'T SPLIT (best split cost: %s > leaf cost: %f)",
                     buf,
@@ -341,7 +341,7 @@ namespace
             {
                 assert(min_cost < numeric_limits<GScalar>::max());
 
-                FOUNDATION_LOG_INFO(
+                LOG_INFO(
                     m_logger,
                     "    Outcome: SPLIT along %s at %f (best split cost: %f < leaf cost: %f)",
                     get_axis_name(split.m_dimension),
@@ -352,7 +352,7 @@ namespace
 
             void begin_sort(const size_t triangle_count)
             {
-                FOUNDATION_LOG_INFO(
+                LOG_INFO(
                     m_logger,
                     "\nSorting " FMT_SIZE_T " triangle%s:",
                     triangle_count,
@@ -381,7 +381,7 @@ namespace
                 const size_t left_count = left_leaf.get_size();
                 const size_t right_count = right_leaf.get_size();
 
-                FOUNDATION_LOG_INFO(
+                LOG_INFO(
                     m_logger,
                     "    Left leaf: " FMT_SIZE_T " triangle%s, extent %s, surface area %s\n"
                     "    Right leaf: " FMT_SIZE_T " triangle%s, extent %s, surface area %s",

@@ -61,19 +61,16 @@ struct MessageList::Impl
     Messages    m_messages;
 };
 
-// Constructor.
 MessageList::MessageList()
   : impl(new Impl())
 {
 }
 
-// Destructor.
 MessageList::~MessageList()
 {
     delete impl;
 }
 
-// Add a message to the list.
 void MessageList::add(
     const LogMessage::Category  category,
     const char*                 format, ...)
@@ -94,16 +91,10 @@ void MessageList::add(
     impl->m_messages.push_back(msg);
 }
 
-// Print the messages.
 void MessageList::print(Logger& logger) const
 {
     for (const_each<Impl::Messages> i = impl->m_messages; i; ++i)
-    {
-        FOUNDATION_LOG(
-            logger,
-            i->m_category,
-            "%s", i->m_text.c_str());
-    }
+        LOG(logger, i->m_category, "%s", i->m_text.c_str());
 }
 
 }   // namespace foundation

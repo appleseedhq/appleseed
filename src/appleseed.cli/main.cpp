@@ -96,7 +96,7 @@ namespace
         const size_t case_exec = result.get_case_execution_count();
         const size_t case_fail = result.get_case_failure_count();
   
-        FOUNDATION_LOG_INFO(
+        LOG_INFO(
             logger,
             "  suites      : %s executed, %s failed (%s)\n"
             "  cases       : %s executed, %s failed (%s)\n",
@@ -110,13 +110,13 @@ namespace
 
     void print_unit_test_result(Logger& logger, const TestResult& result)
     {
-        FOUNDATION_LOG_INFO(logger, "unit testing summary:\n");
+        LOG_INFO(logger, "unit testing summary:\n");
         print_suite_case_result(logger, result);
 
         const size_t assert_exec = result.get_assertion_execution_count();
         const size_t assert_fail = result.get_assertion_failure_count();
 
-        FOUNDATION_LOG_INFO(
+        LOG_INFO(
             logger,
             "  assertions  : %s executed, %s failed (%s)\n",
             pretty_uint(assert_exec).c_str(),
@@ -126,7 +126,7 @@ namespace
 
     void print_unit_benchmark_result(Logger& logger, const BenchmarkResult& result)
     {
-        FOUNDATION_LOG_INFO(logger, "unit benchmarking summary:\n");
+        LOG_INFO(logger, "unit benchmarking summary:\n");
         print_suite_case_result(logger, result);
     }
 
@@ -156,7 +156,7 @@ namespace
                 TestSuiteRepository::instance().run(filter, listener.ref(), result);
             else
             {
-                FOUNDATION_LOG_ERROR(
+                LOG_ERROR(
                     logger,
                     "malformed regular expression '%s', disabling test filtering",
                     regex);
@@ -251,7 +251,7 @@ namespace
                 BenchmarkSuiteRepository::instance().run(filter, result);
             else
             {
-                FOUNDATION_LOG_ERROR(
+                LOG_ERROR(
                     logger,
                     "malformed regular expression '%s', disabling benchmark filtering",
                     regex);

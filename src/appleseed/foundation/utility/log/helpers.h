@@ -40,7 +40,7 @@ namespace foundation
 // Write a message to a logger.
 //
 
-#define FOUNDATION_LOG(logger, category, ...)           \
+#define LOG(logger, category, ...)                      \
     do {                                                \
         (logger).write(                                 \
             category,                                   \
@@ -54,7 +54,7 @@ namespace foundation
 // Write an info message to a logger.
 //
 
-#define FOUNDATION_LOG_INFO(logger, ...)                \
+#define LOG_INFO(logger, ...)                           \
     do {                                                \
         (logger).write(                                 \
             foundation::LogMessage::Info,               \
@@ -68,7 +68,7 @@ namespace foundation
 // Write a debug message to a logger.
 //
 
-#define FOUNDATION_LOG_DEBUG(logger, ...)               \
+#define LOG_DEBUG(logger, ...)                          \
     do {                                                \
         (logger).write(                                 \
             foundation::LogMessage::Debug,              \
@@ -82,7 +82,7 @@ namespace foundation
 // Write a warning message to a logger.
 //
 
-#define FOUNDATION_LOG_WARNING(logger, ...)             \
+#define LOG_WARNING(logger, ...)                        \
     do {                                                \
         (logger).write(                                 \
             foundation::LogMessage::Warning,            \
@@ -96,7 +96,7 @@ namespace foundation
 // Write an error message to a logger.
 //
 
-#define FOUNDATION_LOG_ERROR(logger, ...)               \
+#define LOG_ERROR(logger, ...)                          \
     do {                                                \
         (logger).write(                                 \
             foundation::LogMessage::Error,              \
@@ -110,7 +110,7 @@ namespace foundation
 // Write a fatal error message to a logger.
 //
 
-#define FOUNDATION_LOG_FATAL(logger, ...)               \
+#define LOG_FATAL(logger, ...)                          \
     do {                                                \
         (logger).write(                                 \
             foundation::LogMessage::Fatal,              \

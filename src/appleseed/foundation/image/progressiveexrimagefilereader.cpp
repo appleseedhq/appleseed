@@ -145,7 +145,7 @@ void ProgressiveEXRImageFileReader::open(const char* filename)
             // Print a warning message if a logger was provided.
             if (impl->m_logger)
             {
-                FOUNDATION_LOG_WARNING(
+                LOG_WARNING(
                     *impl->m_logger,
                     "the texture file %s is not tiled, performances might suffer.",
                     filename);

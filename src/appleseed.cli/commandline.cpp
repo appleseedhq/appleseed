@@ -216,7 +216,7 @@ void CommandLine::parse(
     // Display the command line options that were recognized.
     if (m_display_options.found())
     {
-        FOUNDATION_LOG_INFO(logger, "recognized options:");
+        LOG_INFO(logger, "recognized options:");
         m_parser.print_recognized_options(logger);
     }
 
@@ -226,7 +226,7 @@ void CommandLine::parse(
 
 void CommandLine::print_version_information(SuperLogger& logger) const
 {
-    FOUNDATION_LOG_INFO(
+    LOG_INFO(
         logger,
         "appleseed.cli version %s %s, build " FMT_SIZE_T ", %s configuration\n"
         "compiled on %s at %s using %s version %s\n"
@@ -249,8 +249,8 @@ void CommandLine::print_program_usage(
 {
     const string program_file = filesystem::path(program_name).filename();
 
-    FOUNDATION_LOG_INFO(logger, "usage: %s [options] project.appleseed", program_file.c_str());
-    FOUNDATION_LOG_INFO(logger, "options:");
+    LOG_INFO(logger, "usage: %s [options] project.appleseed", program_file.c_str());
+    LOG_INFO(logger, "options:");
 
     m_parser.print_usage(logger);
 }

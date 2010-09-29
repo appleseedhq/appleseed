@@ -122,26 +122,22 @@ namespace
       : public BenchmarkListenerBase
     {
       public:
-        // Constructor.
         explicit LoggerBenchmarkListener(Logger& logger)
           : m_logger(logger)
         {
         }
 
-        // Delete this instance.
         virtual void release()
         {
             delete this;
         }
 
-        // Called before each benchmark suite is run.
         virtual void begin_suite(
             const BenchmarkSuite&   benchmark_suite)
         {
-            FOUNDATION_LOG_INFO(m_logger, "%s:\n\n", benchmark_suite.get_name());
+            LOG_INFO(m_logger, "%s:\n\n", benchmark_suite.get_name());
         }
 
-        // Write a message.
         virtual void write(
             const BenchmarkSuite&   benchmark_suite,
             const IBenchmarkCase&   benchmark_case,
@@ -150,7 +146,7 @@ namespace
             const char*             message)
         {
             // Print the message header.
-            FOUNDATION_LOG_ERROR(
+            LOG_ERROR(
                 m_logger,
                 "while benchmarking %s::%s: error in %s at line " FMT_SIZE_T ":\n",
                 benchmark_suite.get_name(),
@@ -164,15 +160,9 @@ namespace
 
             // Print the message.
             for (const_each<vector<string> > i = tokens; i; ++i)
-            {
-                FOUNDATION_LOG_ERROR(
-                    m_logger,
-                    "    %s\n",
-                    i->c_str());
-            }
+                LOG_ERROR(m_logger, "    %s\n", i->c_str());
         }
 
-        // Write a timing result.
         virtual void write(
             const BenchmarkSuite&   benchmark_suite,
             const IBenchmarkCase&   benchmark_case,
@@ -190,7 +180,7 @@ namespace
                     " at " + pretty_scalar(freq_mhz, 3) + " MHz)";
             }
 
-            FOUNDATION_LOG_INFO(
+            LOG_INFO(
                 m_logger,
                 "  %s:\n"
                 "    parameters  : %s %s, %s %s\n"
@@ -210,7 +200,6 @@ namespace
     };
 }
 
-// Factory function.
 IBenchmarkListener* create_logger_benchmark_listener(Logger& logger)
 {
     return new LoggerBenchmarkListener(logger);

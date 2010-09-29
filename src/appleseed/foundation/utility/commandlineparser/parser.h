@@ -114,28 +114,24 @@ class Parser
 // Parser class implementation.
 //
 
-// Constructor.
 inline Parser::Parser()
 {
     // No default option handler.
     m_default_option.m_handler = 0;
 }
 
-// Add an option handler.
 inline void Parser::add_option_handler(OptionHandler* handler)
 {
     assert(handler);
     m_handlers.push_back(handler);
 }
 
-// Set a default option handler.
 inline void Parser::set_default_option_handler(OptionHandler* handler)
 {
     assert(handler);
     m_default_option.m_handler = handler;
 }
 
-// Print the program usage.
 inline void Parser::print_usage(Logger& logger) const
 {
     const size_t max_header_length = get_max_header_length();
@@ -164,7 +160,7 @@ inline void Parser::print_usage(Logger& logger) const
             header += std::string(max_header_length - header.size(), ' ');
 
         // Emit the line.
-        FOUNDATION_LOG_INFO(
+        LOG_INFO(
             logger,
             "  %s  %s",
             header.c_str(),
@@ -172,7 +168,6 @@ inline void Parser::print_usage(Logger& logger) const
     }
 }
 
-// Parse a command line.
 inline void Parser::parse(
     const int       argc,
     const char*     argv[])
@@ -184,13 +179,11 @@ inline void Parser::parse(
     process_options();
 }
 
-// Print the messages that were generated during parsing.
 inline void Parser::print_messages(Logger& logger)
 {
     m_messages.print(logger);
 }
 
-// Print the options that were recognized during parsing.
 inline void Parser::print_recognized_options(Logger& logger)
 {
     size_t found_options = 0;
@@ -209,7 +202,7 @@ inline void Parser::print_recognized_options(Logger& logger)
         // Print this option.
         std::string s;
         handler->print(s);
-        FOUNDATION_LOG_INFO(logger, "  %s", s.c_str());
+        LOG_INFO(logger, "  %s", s.c_str());
     }
 
     if (m_default_option.m_handler)
@@ -217,15 +210,14 @@ inline void Parser::print_recognized_options(Logger& logger)
         for (const_each<StringVector> i = m_default_option.m_values; i; ++i)
         {
             ++found_options;
-            FOUNDATION_LOG_INFO(logger, "  default option: %s", i->c_str());
+            LOG_INFO(logger, "  default option: %s", i->c_str());
         }
     }
 
     if (found_options == 0)
-        FOUNDATION_LOG_INFO(logger, "  (none)");
+        LOG_INFO(logger, "  (none)");
 }
 
-// Return the length of the longest header string.
 inline size_t Parser::get_max_header_length() const
 {
     size_t max_header_length = 0;
@@ -257,7 +249,6 @@ inline size_t Parser::get_max_header_length() const
     return max_header_length;
 }
 
-// Find an option handler that accepts a given argument.
 inline OptionHandler* Parser::find_option_handler(const std::string& arg) const
 {
     for (const_each<OptionHandlerVector> i = m_handlers; i; ++i)
@@ -274,7 +265,6 @@ inline OptionHandler* Parser::find_option_handler(const std::string& arg) const
     return 0;
 }
 
-// Collect the options from a command line.
 inline void Parser::collect_options(
     const int       argc,
     const char*     argv[])
@@ -323,7 +313,6 @@ inline void Parser::collect_options(
     }
 }
 
-// Process the collected options.
 inline void Parser::process_options()
 {
     for (const_each<OptionVector> i = m_options; i; ++i)

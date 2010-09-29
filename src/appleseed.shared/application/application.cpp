@@ -63,7 +63,7 @@ void Application::check_installation(Logger& logger)
         const filesystem::path executable_path(Path::get_executable_path());
 
         // Issue a fatal error message.
-        FOUNDATION_LOG_FATAL(
+        LOG_FATAL(
             logger,
             "The application failed to start because it is not properly installed. "
             "Please reinstall the application.\n\n"
