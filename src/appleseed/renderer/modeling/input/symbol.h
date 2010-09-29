@@ -126,7 +126,7 @@ inline const char* SymbolTable::symbol_name(const SymbolID symbol_id)
         { SymbolTextureInstance,    "texture instance" }
     };
 
-    const SymbolNameEntry* symbol = FOUNDATION_LOOKUP_KVPAIR_ARRAY(SymbolNames, symbol_id);
+    const SymbolNameEntry* symbol = LOOKUP_KVPAIR_ARRAY(SymbolNames, symbol_id);
 
     assert(symbol);
 

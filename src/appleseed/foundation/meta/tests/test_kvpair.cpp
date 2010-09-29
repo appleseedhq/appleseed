@@ -50,7 +50,7 @@ TEST_SUITE(Foundation_Utility_KVPair)
         };
 
         const KeyValuePair<Colors, const char*>* kvpair =
-            FOUNDATION_LOOKUP_KVPAIR_ARRAY(ColorNames, Green);
+            LOOKUP_KVPAIR_ARRAY(ColorNames, Green);
 
         ASSERT_NEQ(0, kvpair);
 
@@ -66,7 +66,7 @@ TEST_SUITE(Foundation_Utility_KVPair)
         };
 
         const KeyValuePair<Colors, const char*>* kvpair =
-            FOUNDATION_LOOKUP_KVPAIR_ARRAY(ColorNames, Red);
+            LOOKUP_KVPAIR_ARRAY(ColorNames, Red);
 
         EXPECT_EQ(0, kvpair);
     }

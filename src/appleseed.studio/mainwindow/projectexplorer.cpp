@@ -1048,7 +1048,7 @@ namespace
         QMessageBox msgbox;
         msgbox.setWindowTitle(
             QString("Failed to create %1").arg(
-                FOUNDATION_LOOKUP_KVPAIR_ARRAY(EntityNames, item_type)->m_value));
+                LOOKUP_KVPAIR_ARRAY(EntityNames, item_type)->m_value));
         msgbox.setIcon(QMessageBox::Warning);
         msgbox.setText(message);
         msgbox.setStandardButtons(QMessageBox::Ok);
