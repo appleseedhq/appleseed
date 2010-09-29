@@ -30,7 +30,7 @@
 #include "foundation/image/spectrum.h"
 #include "foundation/utility/benchmark.h"
 
-FOUNDATION_BENCHMARK_SUITE(Foundation_Image_Spectrum31f)
+BENCHMARK_SUITE(Foundation_Image_Spectrum31f)
 {
     using namespace foundation;
 
@@ -46,22 +46,22 @@ FOUNDATION_BENCHMARK_SUITE(Foundation_Image_Spectrum31f)
         }
     };
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(Set, Fixture)
+    BENCHMARK_CASE_WITH_FIXTURE(Set, Fixture)
     {
         m_spectrum1.set(0.0f);
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(InPlaceAddition, Fixture)
+    BENCHMARK_CASE_WITH_FIXTURE(InPlaceAddition, Fixture)
     {
         m_spectrum1 += m_spectrum2;
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(InPlaceMultiplicationByScalar, Fixture)
+    BENCHMARK_CASE_WITH_FIXTURE(InPlaceMultiplicationByScalar, Fixture)
     {
         m_spectrum1 *= 1.1f;
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(InPlaceMultiplicationBySpectrum, Fixture)
+    BENCHMARK_CASE_WITH_FIXTURE(InPlaceMultiplicationBySpectrum, Fixture)
     {
         m_spectrum1 *= m_spectrum2;
     }

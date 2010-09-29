@@ -37,7 +37,7 @@
 
 using namespace foundation;
 
-FOUNDATION_BENCHMARK_SUITE(Foundation_Math_VoxelGrid3)
+BENCHMARK_SUITE(Foundation_Math_VoxelGrid3)
 {
     struct Fixture
     {
@@ -80,7 +80,7 @@ FOUNDATION_BENCHMARK_SUITE(Foundation_Math_VoxelGrid3)
         }
     };
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(TrilinearLookup, Fixture)
+    BENCHMARK_CASE_WITH_FIXTURE(TrilinearLookup, Fixture)
     {
         for (size_t i = 0; i < LookupPointCount; ++i)
         {

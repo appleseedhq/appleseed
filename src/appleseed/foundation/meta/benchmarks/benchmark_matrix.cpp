@@ -31,7 +31,7 @@
 #include "foundation/math/vector.h"
 #include "foundation/utility/benchmark.h"
 
-FOUNDATION_BENCHMARK_SUITE(Foundation_Math_Matrix44)
+BENCHMARK_SUITE(Foundation_Math_Matrix44)
 {
     using namespace foundation;
 
@@ -60,42 +60,42 @@ FOUNDATION_BENCHMARK_SUITE(Foundation_Math_Matrix44)
         }
     };
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(SinglePrecisionMatrixMatrixMultiplication, Fixture<float>)
+    BENCHMARK_CASE_WITH_FIXTURE(SinglePrecisionMatrixMatrixMultiplication, Fixture<float>)
     {
         m_result_mat = m_lhs * m_rhs;
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(DoublePrecisionMatrixMatrixMultiplication, Fixture<double>)
+    BENCHMARK_CASE_WITH_FIXTURE(DoublePrecisionMatrixMatrixMultiplication, Fixture<double>)
     {
         m_result_mat = m_lhs * m_rhs;
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(SinglePrecisionMatrixVectorMultiplication, Fixture<float>)
+    BENCHMARK_CASE_WITH_FIXTURE(SinglePrecisionMatrixVectorMultiplication, Fixture<float>)
     {
         m_result_vec = m_lhs * m_vec;
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(DoublePrecisionMatrixVectorMultiplication, Fixture<double>)
+    BENCHMARK_CASE_WITH_FIXTURE(DoublePrecisionMatrixVectorMultiplication, Fixture<double>)
     {
         m_result_vec = m_lhs * m_vec;
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(SinglePrecisionVectorMatrixMultiplication, Fixture<float>)
+    BENCHMARK_CASE_WITH_FIXTURE(SinglePrecisionVectorMatrixMultiplication, Fixture<float>)
     {
         m_result_vec = m_vec * m_rhs;
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(DoublePrecisionVectorMatrixMultiplication, Fixture<double>)
+    BENCHMARK_CASE_WITH_FIXTURE(DoublePrecisionVectorMatrixMultiplication, Fixture<double>)
     {
         m_result_vec = m_vec * m_rhs;
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(SinglePrecisionMatrixInversion, Fixture<float>)
+    BENCHMARK_CASE_WITH_FIXTURE(SinglePrecisionMatrixInversion, Fixture<float>)
     {
         m_result_mat = inverse(m_lhs);
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(DoublePrecisionMatrixInversion, Fixture<double>)
+    BENCHMARK_CASE_WITH_FIXTURE(DoublePrecisionMatrixInversion, Fixture<double>)
     {
         m_result_mat = inverse(m_lhs);
     }

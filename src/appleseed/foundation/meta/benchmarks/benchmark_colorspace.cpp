@@ -33,7 +33,7 @@
 
 using namespace foundation;
 
-FOUNDATION_BENCHMARK_SUITE(Foundation_Image_ColorSpace)
+BENCHMARK_SUITE(Foundation_Image_ColorSpace)
 {
     struct Fixture
     {
@@ -46,12 +46,12 @@ FOUNDATION_BENCHMARK_SUITE(Foundation_Image_ColorSpace)
         }
     };
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(LinearRGBTosRGBConversion, Fixture)
+    BENCHMARK_CASE_WITH_FIXTURE(LinearRGBTosRGBConversion, Fixture)
     {
         m_output = linear_rgb_to_srgb(m_input);
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(FastLinearRGBTosRGBConversion, Fixture)
+    BENCHMARK_CASE_WITH_FIXTURE(FastLinearRGBTosRGBConversion, Fixture)
     {
         m_output = fast_linear_rgb_to_srgb(m_input);
     }

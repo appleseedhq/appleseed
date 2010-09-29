@@ -34,7 +34,7 @@
 // Standard headers.
 #include <cassert>
 
-FOUNDATION_BENCHMARK_SUITE(Foundation_Math_CDF)
+BENCHMARK_SUITE(Foundation_Math_CDF)
 {
     using namespace foundation;
     using namespace std;
@@ -60,7 +60,7 @@ FOUNDATION_BENCHMARK_SUITE(Foundation_Math_CDF)
         }
     };
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(DoublePrecisionSampling, Fixture)
+    BENCHMARK_CASE_WITH_FIXTURE(DoublePrecisionSampling, Fixture)
     {
         m_x += m_cdf.sample(0.5).second;
     }

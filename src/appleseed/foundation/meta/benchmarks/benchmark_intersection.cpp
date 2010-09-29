@@ -93,7 +93,7 @@ namespace
     };
 }
 
-FOUNDATION_BENCHMARK_SUITE(Foundation_Math_Intersection_RayAABB)
+BENCHMARK_SUITE(Foundation_Math_Intersection_RayAABB)
 {
     template <typename T>
     struct Fixture
@@ -123,19 +123,19 @@ FOUNDATION_BENCHMARK_SUITE(Foundation_Math_Intersection_RayAABB)
         }
     };
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(Intersect_SinglePrecision, Fixture<float>)
+    BENCHMARK_CASE_WITH_FIXTURE(Intersect_SinglePrecision, Fixture<float>)
     {
         for (size_t i = 0; i < RayCount; ++i)
             m_hit ^= intersect(m_ray[i], m_ray_info[i], m_aabb);
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(Intersect_DoublePrecision, Fixture<double>)
+    BENCHMARK_CASE_WITH_FIXTURE(Intersect_DoublePrecision, Fixture<double>)
     {
         for (size_t i = 0; i < RayCount; ++i)
             m_hit ^= intersect(m_ray[i], m_ray_info[i], m_aabb);
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(Clip_SinglePrecision, Fixture<float>)
+    BENCHMARK_CASE_WITH_FIXTURE(Clip_SinglePrecision, Fixture<float>)
     {
         for (size_t i = 0; i < RayCount; ++i)
         {
@@ -146,7 +146,7 @@ FOUNDATION_BENCHMARK_SUITE(Foundation_Math_Intersection_RayAABB)
         }
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(Clip_DoublePrecision, Fixture<double>)
+    BENCHMARK_CASE_WITH_FIXTURE(Clip_DoublePrecision, Fixture<double>)
     {
         for (size_t i = 0; i < RayCount; ++i)
         {
@@ -244,7 +244,7 @@ namespace
     };
 }
 
-FOUNDATION_BENCHMARK_SUITE(Foundation_Math_Intersection_RayTriangleMT)
+BENCHMARK_SUITE(Foundation_Math_Intersection_RayTriangleMT)
 {
     template <typename T, int TargetHitRate>
     struct Fixture
@@ -262,17 +262,17 @@ FOUNDATION_BENCHMARK_SUITE(Foundation_Math_Intersection_RayTriangleMT)
     typedef Fixture<double, 66>     FixtureDouble66;
     typedef Fixture<double, 100>    FixtureDouble100;
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(Intersect_SinglePrecision_HitRateIs0Percent, FixtureFloat0) { payload(); }
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(Intersect_SinglePrecision_HitRateIs33Percents, FixtureFloat33) { payload(); }
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(Intersect_SinglePrecision_HitRateIs66Percents, FixtureFloat66) { payload(); }
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(Intersect_SinglePrecision_HitRateIs100Percents, FixtureFloat100) { payload(); }
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(Intersect_DoublePrecision_HitRateIs0Percent, FixtureDouble0) { payload(); }
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(Intersect_DoublePrecision_HitRateIs33Percents, FixtureDouble33) { payload(); }
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(Intersect_DoublePrecision_HitRateIs66Percents, FixtureDouble66) { payload(); }
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(Intersect_DoublePrecision_HitRateIs100Percents, FixtureDouble100) { payload(); }
+    BENCHMARK_CASE_WITH_FIXTURE(Intersect_SinglePrecision_HitRateIs0Percent, FixtureFloat0) { payload(); }
+    BENCHMARK_CASE_WITH_FIXTURE(Intersect_SinglePrecision_HitRateIs33Percents, FixtureFloat33) { payload(); }
+    BENCHMARK_CASE_WITH_FIXTURE(Intersect_SinglePrecision_HitRateIs66Percents, FixtureFloat66) { payload(); }
+    BENCHMARK_CASE_WITH_FIXTURE(Intersect_SinglePrecision_HitRateIs100Percents, FixtureFloat100) { payload(); }
+    BENCHMARK_CASE_WITH_FIXTURE(Intersect_DoublePrecision_HitRateIs0Percent, FixtureDouble0) { payload(); }
+    BENCHMARK_CASE_WITH_FIXTURE(Intersect_DoublePrecision_HitRateIs33Percents, FixtureDouble33) { payload(); }
+    BENCHMARK_CASE_WITH_FIXTURE(Intersect_DoublePrecision_HitRateIs66Percents, FixtureDouble66) { payload(); }
+    BENCHMARK_CASE_WITH_FIXTURE(Intersect_DoublePrecision_HitRateIs100Percents, FixtureDouble100) { payload(); }
 }
 
-FOUNDATION_BENCHMARK_SUITE(Foundation_Math_Intersection_RayTriangleSSK)
+BENCHMARK_SUITE(Foundation_Math_Intersection_RayTriangleSSK)
 {
     template <typename T, int TargetHitRate>
     struct Fixture
@@ -290,12 +290,12 @@ FOUNDATION_BENCHMARK_SUITE(Foundation_Math_Intersection_RayTriangleSSK)
     typedef Fixture<double, 66>     FixtureDouble66;
     typedef Fixture<double, 100>    FixtureDouble100;
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(Intersect_SinglePrecision_HitRateIs0Percent, FixtureFloat0) { payload(); }
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(Intersect_SinglePrecision_HitRateIs33Percents, FixtureFloat33) { payload(); }
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(Intersect_SinglePrecision_HitRateIs66Percents, FixtureFloat66) { payload(); }
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(Intersect_SinglePrecision_HitRateIs100Percents, FixtureFloat100) { payload(); }
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(Intersect_DoublePrecision_HitRateIs0Percent, FixtureDouble0) { payload(); }
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(Intersect_DoublePrecision_HitRateIs33Percents, FixtureDouble33) { payload(); }
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(Intersect_DoublePrecision_HitRateIs66Percents, FixtureDouble66) { payload(); }
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(Intersect_DoublePrecision_HitRateIs100Percents, FixtureDouble100) { payload(); }
+    BENCHMARK_CASE_WITH_FIXTURE(Intersect_SinglePrecision_HitRateIs0Percent, FixtureFloat0) { payload(); }
+    BENCHMARK_CASE_WITH_FIXTURE(Intersect_SinglePrecision_HitRateIs33Percents, FixtureFloat33) { payload(); }
+    BENCHMARK_CASE_WITH_FIXTURE(Intersect_SinglePrecision_HitRateIs66Percents, FixtureFloat66) { payload(); }
+    BENCHMARK_CASE_WITH_FIXTURE(Intersect_SinglePrecision_HitRateIs100Percents, FixtureFloat100) { payload(); }
+    BENCHMARK_CASE_WITH_FIXTURE(Intersect_DoublePrecision_HitRateIs0Percent, FixtureDouble0) { payload(); }
+    BENCHMARK_CASE_WITH_FIXTURE(Intersect_DoublePrecision_HitRateIs33Percents, FixtureDouble33) { payload(); }
+    BENCHMARK_CASE_WITH_FIXTURE(Intersect_DoublePrecision_HitRateIs66Percents, FixtureDouble66) { payload(); }
+    BENCHMARK_CASE_WITH_FIXTURE(Intersect_DoublePrecision_HitRateIs100Percents, FixtureDouble100) { payload(); }
 };

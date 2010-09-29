@@ -34,7 +34,7 @@
 // Standard headers.
 #include <cstddef>
 
-FOUNDATION_BENCHMARK_SUITE(Foundation_Utility_Job)
+BENCHMARK_SUITE(Foundation_Utility_Job)
 {
     using namespace foundation;
     using namespace std;
@@ -77,12 +77,12 @@ FOUNDATION_BENCHMARK_SUITE(Foundation_Utility_Job)
         }
     };
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(SingleThreadedJobExecution, Fixture<1>)
+    BENCHMARK_CASE_WITH_FIXTURE(SingleThreadedJobExecution, Fixture<1>)
     {
         payload();
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(DoubleThreadedJobExecution, Fixture<2>)
+    BENCHMARK_CASE_WITH_FIXTURE(DoubleThreadedJobExecution, Fixture<2>)
     {
         payload();
     }

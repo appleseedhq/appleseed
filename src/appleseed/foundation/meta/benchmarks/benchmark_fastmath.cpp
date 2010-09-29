@@ -40,7 +40,7 @@
 using namespace foundation;
 using namespace std;
 
-FOUNDATION_BENCHMARK_SUITE(Foundation_Math_FastMath)
+BENCHMARK_SUITE(Foundation_Math_FastMath)
 {
     const float Exponent = 2.4f;
     const size_t N = 100;
@@ -59,7 +59,7 @@ FOUNDATION_BENCHMARK_SUITE(Foundation_Math_FastMath)
         }
     };
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(StdPow, Fixture)
+    BENCHMARK_CASE_WITH_FIXTURE(StdPow, Fixture)
     {
         memcpy(m_output, m_values, N * sizeof(float));
 
@@ -67,7 +67,7 @@ FOUNDATION_BENCHMARK_SUITE(Foundation_Math_FastMath)
             m_output[i] = pow(m_output[i], Exponent);
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(ScalarFastPow, Fixture)
+    BENCHMARK_CASE_WITH_FIXTURE(ScalarFastPow, Fixture)
     {
         memcpy(m_output, m_values, N * sizeof(float));
 
@@ -75,7 +75,7 @@ FOUNDATION_BENCHMARK_SUITE(Foundation_Math_FastMath)
             m_output[i] = fast_pow(m_output[i], Exponent);
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(VectorFastPow, Fixture)
+    BENCHMARK_CASE_WITH_FIXTURE(VectorFastPow, Fixture)
     {
         memcpy(m_output, m_values, N * sizeof(float));
 
@@ -83,7 +83,7 @@ FOUNDATION_BENCHMARK_SUITE(Foundation_Math_FastMath)
             fast_pow(&m_output[i], Exponent);
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(ScalarFastPowRefined, Fixture)
+    BENCHMARK_CASE_WITH_FIXTURE(ScalarFastPowRefined, Fixture)
     {
         memcpy(m_output, m_values, N * sizeof(float));
 
@@ -91,7 +91,7 @@ FOUNDATION_BENCHMARK_SUITE(Foundation_Math_FastMath)
             m_output[i] = fast_pow_refined(m_output[i], Exponent);
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(VectorFastPowRefined, Fixture)
+    BENCHMARK_CASE_WITH_FIXTURE(VectorFastPowRefined, Fixture)
     {
         memcpy(m_output, m_values, N * sizeof(float));
 

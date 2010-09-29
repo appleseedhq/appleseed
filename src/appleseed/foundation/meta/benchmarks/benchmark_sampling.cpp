@@ -32,7 +32,7 @@
 #include "foundation/math/vector.h"
 #include "foundation/utility/benchmark.h"
 
-FOUNDATION_BENCHMARK_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
+BENCHMARK_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
 {
     using namespace foundation;
 
@@ -53,7 +53,7 @@ FOUNDATION_BENCHMARK_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
         }
     };
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(BenchmarkNextVector2, Fixture)
+    BENCHMARK_CASE_WITH_FIXTURE(BenchmarkNextVector2, Fixture)
     {
         m_context.set_instance(0);
         m_v += m_context.next_vector2<2>();

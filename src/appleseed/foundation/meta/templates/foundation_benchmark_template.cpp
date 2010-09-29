@@ -29,9 +29,9 @@
 // appleseed.foundation headers.
 #include "foundation/utility/benchmark.h"
 
-FOUNDATION_BENCHMARK_SUITE( )
+BENCHMARK_SUITE( )
 {
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE( )
+    BENCHMARK_CASE_WITH_FIXTURE( )
     {
     }
 }

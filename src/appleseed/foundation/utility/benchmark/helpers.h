@@ -42,7 +42,7 @@ namespace foundation
 // Define a benchmark suite.
 //
 
-#define FOUNDATION_BENCHMARK_SUITE(Name)                                                    \
+#define BENCHMARK_SUITE(Name)                                                               \
     namespace BenchmarkSuite##Name                                                          \
     {                                                                                       \
         struct BenchmarkSuite##Name                                                         \
@@ -80,7 +80,7 @@ namespace foundation
 // Define a benchmark case without fixture.
 //
 
-#define FOUNDATION_BENCHMARK_CASE(Name)                                                     \
+#define BENCHMARK_CASE(Name)                                                                \
     struct BenchmarkCase##Name                                                              \
       : public foundation::IBenchmarkCase                                                   \
     {                                                                                       \
@@ -125,7 +125,7 @@ namespace foundation
 // Define a benchmark case with fixture.
 //
 
-#define FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(Name, FixtureName)                           \
+#define BENCHMARK_CASE_WITH_FIXTURE(Name, FixtureName)                                      \
     struct BenchmarkCase##Name                                                              \
       : public foundation::IBenchmarkCase                                                   \
       , public FixtureName                                                                  \

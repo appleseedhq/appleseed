@@ -47,7 +47,7 @@
 // http://stackoverflow.com/questions/2922619/how-to-efficiently-compare-the-sign-of-two-floating-point-values-while-handling-n
 //
 
-FOUNDATION_BENCHMARK_SUITE(SameSign)
+BENCHMARK_SUITE(SameSign)
 {
     using namespace foundation;
     using namespace std;
@@ -183,49 +183,49 @@ FOUNDATION_BENCHMARK_SUITE(SameSign)
         }
     };
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(EmptyFunction2, Fixture)
+    BENCHMARK_CASE_WITH_FIXTURE(EmptyFunction2, Fixture)
     {
         for (size_t i = 0; i < InvocationCount; ++i)
             m_result ^= empty_function(m_values[i], m_values[i + 1]);
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(EmptyFunction3, Fixture)
+    BENCHMARK_CASE_WITH_FIXTURE(EmptyFunction3, Fixture)
     {
         for (size_t i = 0; i < InvocationCount; ++i)
             m_result ^= empty_function(m_values[i], m_values[i + 1], m_values[i + 2]);
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(SameSignNaive2, Fixture)
+    BENCHMARK_CASE_WITH_FIXTURE(SameSignNaive2, Fixture)
     {
         for (size_t i = 0; i < InvocationCount; ++i)
             m_result ^= same_sign_naive(m_values[i], m_values[i + 1]);
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(SameSignNaive3, Fixture)
+    BENCHMARK_CASE_WITH_FIXTURE(SameSignNaive3, Fixture)
     {
         for (size_t i = 0; i < InvocationCount; ++i)
             m_result ^= same_sign_naive(m_values[i], m_values[i + 1], m_values[i + 2]);
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(SameSignInteger2, Fixture)
+    BENCHMARK_CASE_WITH_FIXTURE(SameSignInteger2, Fixture)
     {
         for (size_t i = 0; i < InvocationCount; ++i)
             m_result ^= same_sign_integer(m_values[i], m_values[i + 1]);
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(SameSignInteger3, Fixture)
+    BENCHMARK_CASE_WITH_FIXTURE(SameSignInteger3, Fixture)
     {
         for (size_t i = 0; i < InvocationCount; ++i)
             m_result ^= same_sign_integer(m_values[i], m_values[i + 1], m_values[i + 2]);
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(SameSignMultiplication2, Fixture)
+    BENCHMARK_CASE_WITH_FIXTURE(SameSignMultiplication2, Fixture)
     {
         for (size_t i = 0; i < InvocationCount; ++i)
             m_result ^= same_sign_multiplication(m_values[i], m_values[i + 1]);
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(SameSignMultiplication3, Fixture)
+    BENCHMARK_CASE_WITH_FIXTURE(SameSignMultiplication3, Fixture)
     {
         for (size_t i = 0; i < InvocationCount; ++i)
             m_result ^= same_sign_multiplication(m_values[i], m_values[i + 1], m_values[i + 2]);
@@ -233,7 +233,7 @@ FOUNDATION_BENCHMARK_SUITE(SameSign)
 
 #ifdef APPLESEED_FOUNDATION_USE_SSE
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(SameSignMultiplicationSSE3, Fixture)
+    BENCHMARK_CASE_WITH_FIXTURE(SameSignMultiplicationSSE3, Fixture)
     {
         for (size_t i = 0; i < InvocationCount; ++i)
             m_result ^= same_sign_multiplication_sse(m_values[i], m_values[i + 1], m_values[i + 2]);

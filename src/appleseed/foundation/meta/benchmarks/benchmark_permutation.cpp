@@ -39,7 +39,7 @@
 using namespace foundation;
 using namespace std;
 
-FOUNDATION_BENCHMARK_SUITE(Foundation_Math_Permutation)
+BENCHMARK_SUITE(Foundation_Math_Permutation)
 {
     template <size_t ItemSize>      // in 4-byte words
     struct FixtureBase
@@ -97,52 +97,52 @@ FOUNDATION_BENCHMARK_SUITE(Foundation_Math_Permutation)
         }
     };
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(BenchmarkSmallItemReorder4Bytes, SmallItemFixture<1>)
+    BENCHMARK_CASE_WITH_FIXTURE(BenchmarkSmallItemReorder4Bytes, SmallItemFixture<1>)
     {
         payload();
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(BenchmarkLargeItemReorder4Bytes, LargeItemFixture<1>)
+    BENCHMARK_CASE_WITH_FIXTURE(BenchmarkLargeItemReorder4Bytes, LargeItemFixture<1>)
     {
         payload();
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(BenchmarkSmallItemReorder8Bytes, SmallItemFixture<2>)
+    BENCHMARK_CASE_WITH_FIXTURE(BenchmarkSmallItemReorder8Bytes, SmallItemFixture<2>)
     {
         payload();
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(BenchmarkLargeItemReorder8Bytes, LargeItemFixture<2>)
+    BENCHMARK_CASE_WITH_FIXTURE(BenchmarkLargeItemReorder8Bytes, LargeItemFixture<2>)
     {
         payload();
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(BenchmarkSmallItemReorder16Bytes, SmallItemFixture<4>)
+    BENCHMARK_CASE_WITH_FIXTURE(BenchmarkSmallItemReorder16Bytes, SmallItemFixture<4>)
     {
         payload();
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(BenchmarkLargeItemReorder16Bytes, LargeItemFixture<4>)
+    BENCHMARK_CASE_WITH_FIXTURE(BenchmarkLargeItemReorder16Bytes, LargeItemFixture<4>)
     {
         payload();
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(BenchmarkSmallItemReorder32Bytes, SmallItemFixture<8>)
+    BENCHMARK_CASE_WITH_FIXTURE(BenchmarkSmallItemReorder32Bytes, SmallItemFixture<8>)
     {
         payload();
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(BenchmarkLargeItemReorder32Bytes, LargeItemFixture<8>)
+    BENCHMARK_CASE_WITH_FIXTURE(BenchmarkLargeItemReorder32Bytes, LargeItemFixture<8>)
     {
         payload();
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(BenchmarkSmallItemReorder64Bytes, SmallItemFixture<16>)
+    BENCHMARK_CASE_WITH_FIXTURE(BenchmarkSmallItemReorder64Bytes, SmallItemFixture<16>)
     {
         payload();
     }
 
-    FOUNDATION_BENCHMARK_CASE_WITH_FIXTURE(BenchmarkLargeItemReorder64Bytes, LargeItemFixture<16>)
+    BENCHMARK_CASE_WITH_FIXTURE(BenchmarkLargeItemReorder64Bytes, LargeItemFixture<16>)
     {
         payload();
     }
