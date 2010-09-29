@@ -120,10 +120,10 @@ typedef __m128d sse2d;
 //   http://www.masm32.com/board/index.php?topic=9515.msg78719#msg78719
 //
 
-#define FOUNDATION_FLOOR_SSE(x)                             \
-    _mm_cvtepi32_ps(                                        \
-        _mm_sub_epi32(                                      \
-            _mm_cvttps_epi32(x),                            \
+#define FLOOR_SSE(x)                                    \
+    _mm_cvtepi32_ps(                                    \
+        _mm_sub_epi32(                                  \
+            _mm_cvttps_epi32(x),                        \
             _mm_srli_epi32(_mm_castps_si128(x), 31)))
 
 }       // namespace foundation
