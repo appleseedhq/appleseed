@@ -51,11 +51,11 @@ char (&count_of_helper(T (&array)[N]))[N];
 
 // The number of elements in an array is equal to the size of the array returned
 // by the helper function declared above, when applied to the input array.
-#define FOUNDATION_COUNT_OF(array) (sizeof(foundation::count_of_helper(array)))
+#define COUNT_OF(array) (sizeof(foundation::count_of_helper(array)))
 
-// Introduce countof() as a synonym to FOUNDATION_COUNT_OF(), for convenience
-// and symmetry with the sizeof() operator.
-#define countof FOUNDATION_COUNT_OF
+// Introduce countof() as a synonym to COUNT_OF(), for convenience and symmetry
+// with the sizeof() operator.
+#define countof COUNT_OF
 
 }       // namespace foundation
 

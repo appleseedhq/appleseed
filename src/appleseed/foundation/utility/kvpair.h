@@ -84,7 +84,7 @@ const KeyValuePairType* lookup_kvpair_array(
 }
 
 #define FOUNDATION_LOOKUP_KVPAIR_ARRAY(kvpairs, key) \
-    foundation::lookup_kvpair_array(kvpairs, FOUNDATION_COUNT_OF(kvpairs), key)
+    foundation::lookup_kvpair_array(kvpairs, COUNT_OF(kvpairs), key)
 
 }       // namespace foundation
 
