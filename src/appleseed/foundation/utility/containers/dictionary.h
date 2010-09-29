@@ -114,7 +114,7 @@ class FOUNDATIONDLL StringDictionary
       private:
         friend class StringDictionary;
 
-        FOUNDATION_PIMPL(const_iterator);
+        PIMPL(const_iterator);
     };
 
     // Constructor.
@@ -152,7 +152,7 @@ class FOUNDATIONDLL StringDictionary
     const_iterator end() const;
 
   private:
-    FOUNDATION_PIMPL(StringDictionary);
+    PIMPL(StringDictionary);
 };
 
 
@@ -192,7 +192,7 @@ class FOUNDATIONDLL DictionaryDictionary
       private:
         friend class DictionaryDictionary;
 
-        FOUNDATION_PIMPL(const_iterator);
+        PIMPL(const_iterator);
     };
 
     // Constructor.
@@ -232,7 +232,7 @@ class FOUNDATIONDLL DictionaryDictionary
     const_iterator end() const;
 
   private:
-    FOUNDATION_PIMPL(DictionaryDictionary);
+    PIMPL(DictionaryDictionary);
 };
 
 

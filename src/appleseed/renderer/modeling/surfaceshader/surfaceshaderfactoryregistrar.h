@@ -73,7 +73,7 @@ class RENDERERDLL SurfaceShaderFactoryRegistrar
     const FactoryType* lookup(const char* name) const;
 
   private:
-    FOUNDATION_PIMPL(SurfaceShaderFactoryRegistrar);
+    PIMPL(SurfaceShaderFactoryRegistrar);
 };
 
 }       // namespace renderer

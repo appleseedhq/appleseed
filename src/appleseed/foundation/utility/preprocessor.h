@@ -89,7 +89,7 @@ class FOUNDATIONDLL Preprocessor
     size_t get_error_location() const;
 
   private:
-    FOUNDATION_PIMPL(Preprocessor);
+    PIMPL(Preprocessor);
 };
 
 }       // namespace foundation

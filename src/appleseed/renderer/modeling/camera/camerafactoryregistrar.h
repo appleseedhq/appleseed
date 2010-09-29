@@ -59,7 +59,7 @@ class RENDERERDLL CameraFactoryRegistrar
     const FactoryType* lookup(const char* name) const;
 
   private:
-    FOUNDATION_PIMPL(CameraFactoryRegistrar);
+    PIMPL(CameraFactoryRegistrar);
 };
 
 }       // namespace renderer

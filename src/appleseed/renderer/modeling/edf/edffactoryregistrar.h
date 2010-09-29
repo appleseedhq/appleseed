@@ -58,7 +58,7 @@ class RENDERERDLL EDFFactoryRegistrar
     const FactoryType* lookup(const char* name) const;
 
   private:
-    FOUNDATION_PIMPL(EDFFactoryRegistrar);
+    PIMPL(EDFFactoryRegistrar);
 };
 
 }       // namespace renderer

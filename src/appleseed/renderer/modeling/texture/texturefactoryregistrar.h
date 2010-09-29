@@ -58,7 +58,7 @@ class RENDERERDLL TextureFactoryRegistrar
     const FactoryType* lookup(const char* name) const;
 
   private:
-    FOUNDATION_PIMPL(TextureFactoryRegistrar);
+    PIMPL(TextureFactoryRegistrar);
 };
 
 }       // namespace renderer

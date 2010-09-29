@@ -125,8 +125,8 @@ namespace foundation
 //           ...                                          public:
 //                                                          ...
 //         private:
-//           FOUNDATION_PIMPL(CopyableFoo);               private:
-//       };                                                 FOUNDATION_PIMPL(NonCopyableFoo);
+//           PIMPL(CopyableFoo);                          private:
+//       };                                                 PIMPL(NonCopyableFoo);
 //                                                      };
 //
 
@@ -243,12 +243,9 @@ class FOUNDATIONDLL impl_ptr<Impl, false>
     }
 };
 
-#define FOUNDATION_IMPL_PTR(T, Impl)                                        \
+#define PIMPL(T)                                                        \
+    struct Impl;                                                        \
     foundation::impl_ptr<Impl, foundation::IsCopyable<T>::value> impl
-
-#define FOUNDATION_PIMPL(T)                                                 \
-    struct Impl;                                                            \
-    FOUNDATION_IMPL_PTR(T, Impl)
 
 }       // namespace foundation
 

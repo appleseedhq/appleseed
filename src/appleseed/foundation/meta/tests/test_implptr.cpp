@@ -243,7 +243,7 @@ TEST_SUITE(Foundation_Utility_ImplPtr)
         int get() const;
 
       private:
-        FOUNDATION_PIMPL(NonCopyableFoo2);
+        PIMPL(NonCopyableFoo2);
     };
 
     struct NonCopyableFoo2::Impl

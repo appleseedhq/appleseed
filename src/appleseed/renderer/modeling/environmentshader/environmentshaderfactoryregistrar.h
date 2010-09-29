@@ -58,7 +58,7 @@ class RENDERERDLL EnvironmentShaderFactoryRegistrar
     const FactoryType* lookup(const char* name) const;
 
   private:
-    FOUNDATION_PIMPL(EnvironmentShaderFactoryRegistrar);
+    PIMPL(EnvironmentShaderFactoryRegistrar);
 };
 
 }       // namespace renderer

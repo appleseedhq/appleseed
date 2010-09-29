@@ -78,7 +78,7 @@ class FOUNDATIONDLL RegExFilter
     virtual bool accepts(const char* name) const;
 
   private:
-    FOUNDATION_PIMPL(RegExFilter);
+    PIMPL(RegExFilter);
 };
 
 }       // namespace foundation

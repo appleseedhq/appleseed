@@ -73,7 +73,7 @@ class RENDERERDLL BSDFFactoryRegistrar
     const FactoryType* lookup(const char* name) const;
 
   private:
-    FOUNDATION_PIMPL(BSDFFactoryRegistrar);
+    PIMPL(BSDFFactoryRegistrar);
 };
 
 }       // namespace renderer

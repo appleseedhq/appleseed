@@ -87,7 +87,7 @@ class FOUNDATIONDLL SearchPaths
     std::string qualify(const std::string& filepath) const;
 
   private:
-    FOUNDATION_PIMPL(SearchPaths);
+    PIMPL(SearchPaths);
 
     char* qualify(const char* filepath) const;
 };

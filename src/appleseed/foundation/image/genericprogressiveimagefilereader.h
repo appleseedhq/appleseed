@@ -106,7 +106,7 @@ class FOUNDATIONDLL GenericProgressiveImageFileReader
         const size_t        tile_y);
 
   private:
-    FOUNDATION_PIMPL(GenericProgressiveImageFileReader);
+    PIMPL(GenericProgressiveImageFileReader);
 };
 
 }       // namespace foundation
