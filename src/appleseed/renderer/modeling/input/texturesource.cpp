@@ -38,9 +38,6 @@
 #include "foundation/math/hash.h"
 #include "foundation/math/scalar.h"
 
-// Standard headers.
-#include <algorithm>
-
 using namespace foundation;
 using namespace std;
 
@@ -85,10 +82,12 @@ namespace
             p.x = saturate(p.x);
             p.y = saturate(p.y);
             break;
+
           case TextureAddressingWrap:
             p.x = wrap(p.x);
             p.y = wrap(p.y);
             break;
+
           default:
             assert(!"Wrong texture addressing mode.");
         }
@@ -113,12 +112,14 @@ namespace
             if (ix > max_x) ix = max_x;
             if (iy > max_y) iy = max_y;
             break;
+
           case TextureAddressingWrap:
             if (ix < 0) ix = max_x;
             if (iy < 0) iy = max_y;
             if (ix > max_x) ix = 0;
             if (iy > max_y) iy = 0;
             break;
+
           default:
             assert(!"Wrong texture addressing mode.");
         }
@@ -131,14 +132,14 @@ namespace
 
     // Utility function to sample a tile.
     inline void sample_tile(
-        TextureCache&   texture_cache,
-        const UniqueID  assembly_uid,
-        const size_t    texture_index,
-        const size_t    tile_x,
-        const size_t    tile_y,
-        const size_t    pixel_x,
-        const size_t    pixel_y,
-        Color4f&        sample)
+        TextureCache&           texture_cache,
+        const UniqueID          assembly_uid,
+        const size_t            texture_index,
+        const size_t            tile_x,
+        const size_t            tile_y,
+        const size_t            pixel_x,
+        const size_t            pixel_y,
+        Color4f&                sample)
     {
         // Retrieve the tile.
         const Tile& tile =
@@ -162,7 +163,6 @@ namespace
     }
 }
 
-// Constructor.
 TextureSource::TextureSource(
     const UniqueID              assembly_uid,
     const TextureInstance&      texture_instance,
@@ -173,35 +173,30 @@ TextureSource::TextureSource(
   , m_addressing_mode(texture_instance.get_addressing_mode())
   , m_filtering_mode(texture_instance.get_filtering_mode())
   , m_multiplier(texture_instance.get_multiplier())
-  , m_lighting_conditions(          // todo: this should be user-settable
+  , m_lighting_conditions(      // todo: this should be user-settable
         IlluminantCIED65,
         XYZCMFCIE196410Deg)
   , m_texture_props(texture_props)
+  , m_scalar_canvas_width(static_cast<double>(texture_props.m_canvas_width))
+  , m_scalar_canvas_height(static_cast<double>(texture_props.m_canvas_height))
+  , m_max_x(static_cast<double>(texture_props.m_canvas_width - 1))
+  , m_max_y(static_cast<double>(texture_props.m_canvas_height - 1))
 {
 }
 
-// Retrieve a given texel. Return a color in the linear RGB color space.
 Color4f TextureSource::get_texel(
     TextureCache&               texture_cache,
-    const int                   ix,
-    const int                   iy) const
+    const size_t                ix,
+    const size_t                iy) const
 {
-    const Vector<size_t, 2> p =
-        constrain_to_canvas(
-            m_addressing_mode,
-            m_texture_props.m_canvas_width,
-            m_texture_props.m_canvas_height,
-            ix,
-            iy);
-
-    assert(p.x >= 0);
-    assert(p.y >= 0);
-    assert(p.x < m_texture_props.m_canvas_width);
-    assert(p.y < m_texture_props.m_canvas_height);
+    assert(ix >= 0);
+    assert(iy >= 0);
+    assert(ix < m_texture_props.m_canvas_width);
+    assert(iy < m_texture_props.m_canvas_height);
 
     // Compute the coordinates of the tile containing the texel (x, y).
-    const size_t tile_x = truncate<size_t>(p.x * m_texture_props.m_rcp_tile_width);
-    const size_t tile_y = truncate<size_t>(p.y * m_texture_props.m_rcp_tile_height);
+    const size_t tile_x = truncate<size_t>(ix * m_texture_props.m_rcp_tile_width);
+    const size_t tile_y = truncate<size_t>(iy * m_texture_props.m_rcp_tile_height);
     assert(tile_x < m_texture_props.m_tile_count_x);
     assert(tile_y < m_texture_props.m_tile_count_y);
 
@@ -218,8 +213,8 @@ Color4f TextureSource::get_texel(
 #endif
 
     // Compute the tile space coordinates of the texel (x, y).
-    const size_t pixel_x = p.x - tile_x * m_texture_props.m_tile_width;
-    const size_t pixel_y = p.y - tile_y * m_texture_props.m_tile_height;
+    const size_t pixel_x = ix - tile_x * m_texture_props.m_tile_width;
+    const size_t pixel_y = iy - tile_y * m_texture_props.m_tile_height;
     assert(pixel_x < m_texture_props.m_tile_width);
     assert(pixel_y < m_texture_props.m_tile_height);
 
@@ -238,15 +233,14 @@ Color4f TextureSource::get_texel(
     return sample;
 }
 
-// Retrieve a 2x2 block of texels. Texels are expressed in the linear RGB color space.
 void TextureSource::get_texels_2x2(
     TextureCache&               texture_cache,
     const int                   ix,
     const int                   iy,
-    Color4f&                    sample_00,
-    Color4f&                    sample_10,
-    Color4f&                    sample_01,
-    Color4f&                    sample_11) const
+    Color4f&                    t00,
+    Color4f&                    t10,
+    Color4f&                    t01,
+    Color4f&                    t11) const
 {
     const Vector<size_t, 2> p00 =
         constrain_to_canvas(
@@ -255,6 +249,7 @@ void TextureSource::get_texels_2x2(
             m_texture_props.m_canvas_height,
             ix + 0,
             iy + 0);
+
     const Vector<size_t, 2> p11 =
         constrain_to_canvas(
             m_addressing_mode,
@@ -262,6 +257,7 @@ void TextureSource::get_texels_2x2(
             m_texture_props.m_canvas_height,
             ix + 1,
             iy + 1);
+
     const Vector<size_t, 2> p10(p11.x, p00.y);
     const Vector<size_t, 2> p01(p00.x, p11.y);
 
@@ -292,7 +288,7 @@ void TextureSource::get_texels_2x2(
             tile_y_00,
             pixel_x_00,
             pixel_y_00,
-            sample_00);
+            t00);
         sample_tile(
             texture_cache,
             m_assembly_uid,
@@ -301,7 +297,7 @@ void TextureSource::get_texels_2x2(
             tile_y_00,
             pixel_x_11,
             pixel_y_00,
-            sample_10);
+            t10);
         sample_tile(
             texture_cache,
             m_assembly_uid,
@@ -310,7 +306,7 @@ void TextureSource::get_texels_2x2(
             tile_y_11,
             pixel_x_00,
             pixel_y_11,
-            sample_01);
+            t01);
         sample_tile(
             texture_cache,
             m_assembly_uid,
@@ -319,7 +315,7 @@ void TextureSource::get_texels_2x2(
             tile_y_11,
             pixel_x_11,
             pixel_y_11,
-            sample_11);
+            t11);
     }
     else
     {
@@ -343,70 +339,72 @@ void TextureSource::get_texels_2x2(
         if (tile.get_channel_count() == 3)
         {
             Color3f rgb;
+
             tile.get_pixel(pixel_x_00, pixel_y_00, rgb);
-            sample_00[0] = rgb[0];
-            sample_00[1] = rgb[1];
-            sample_00[2] = rgb[2];
-            sample_00[3] = 1.0f;
+            t00[0] = rgb[0];
+            t00[1] = rgb[1];
+            t00[2] = rgb[2];
+            t00[3] = 1.0f;
+
             tile.get_pixel(pixel_x_11, pixel_y_00, rgb);
-            sample_10[0] = rgb[0];
-            sample_10[1] = rgb[1];
-            sample_10[2] = rgb[2];
-            sample_10[3] = 1.0f;
+            t10[0] = rgb[0];
+            t10[1] = rgb[1];
+            t10[2] = rgb[2];
+            t10[3] = 1.0f;
+
             tile.get_pixel(pixel_x_00, pixel_y_11, rgb);
-            sample_01[0] = rgb[0];
-            sample_01[1] = rgb[1];
-            sample_01[2] = rgb[2];
-            sample_01[3] = 1.0f;
+            t01[0] = rgb[0];
+            t01[1] = rgb[1];
+            t01[2] = rgb[2];
+            t01[3] = 1.0f;
+
             tile.get_pixel(pixel_x_11, pixel_y_11, rgb);
-            sample_11[0] = rgb[0];
-            sample_11[1] = rgb[1];
-            sample_11[2] = rgb[2];
-            sample_11[3] = 1.0f;
+            t11[0] = rgb[0];
+            t11[1] = rgb[1];
+            t11[2] = rgb[2];
+            t11[3] = 1.0f;
         }
         else
         {
-            tile.get_pixel(pixel_x_00, pixel_y_00, sample_00);
-            tile.get_pixel(pixel_x_11, pixel_y_00, sample_10);
-            tile.get_pixel(pixel_x_00, pixel_y_11, sample_01);
-            tile.get_pixel(pixel_x_11, pixel_y_11, sample_11);
+            tile.get_pixel(pixel_x_00, pixel_y_00, t00);
+            tile.get_pixel(pixel_x_11, pixel_y_00, t10);
+            tile.get_pixel(pixel_x_00, pixel_y_11, t01);
+            tile.get_pixel(pixel_x_11, pixel_y_11, t11);
         }
     }
 }
 
-// Sample the texture. Return a color in the linear RGB color space.
 Color4f TextureSource::sample_texture(
     TextureCache&               texture_cache,
     const InputParams&          params) const
 {
     // Fetch the texture coordinates.
     Vector2d p = params.m_uv;
+    p.y = 1.0 - p.y;
 
     // Apply the texture addressing mode.
     apply_addressing_mode(m_addressing_mode, p);
-
-    // Transform the texture coordinates to image coordinates.
-    p.y = 1.0 - p.y;
-    p.x *= m_texture_props.m_canvas_width;
-    p.y *= m_texture_props.m_canvas_height;
 
     switch (m_filtering_mode)
     {
       case TextureFilteringNearest:
         {
-            const int ix = truncate<int>(p.x);
-            const int iy = truncate<int>(p.y);
+            p.x = clamp(p.x * m_scalar_canvas_width, 0.0, m_max_x);
+            p.y = clamp(p.y * m_scalar_canvas_height, 0.0, m_max_y);
+
+            const size_t ix = truncate<size_t>(p.x);
+            const size_t iy = truncate<size_t>(p.y);
 
             return get_texel(texture_cache, ix, iy);
         }
 
       case TextureFilteringBilinear:
         {
-            p.x -= 0.5;
-            p.y -= 0.5;
+            p.x *= m_max_x;
+            p.y *= m_max_y;
 
-            const int ix = truncate<int>(floor(p.x));
-            const int iy = truncate<int>(floor(p.y));
+            const int ix = truncate<int>(p.x);
+            const int iy = truncate<int>(p.y);
 
             // Retrieve the four surrounding texels.
             Color4f t00, t10, t01, t11;
@@ -416,10 +414,10 @@ Color4f TextureSource::sample_texture(
                 t00, t10, t01, t11);
 
             // Compute weights.
-            float wx1 = static_cast<float>(p.x - ix);
-            float wy1 = static_cast<float>(p.y - iy);
-            float wx0 = 1.0f - wx1;
-            float wy0 = 1.0f - wy1;
+            const float wx1 = static_cast<float>(p.x - ix);
+            const float wy1 = static_cast<float>(p.y - iy);
+            const float wx0 = 1.0f - wx1;
+            const float wy0 = 1.0f - wy1;
 
             // Apply weights.
             t00 *= wx0 * wy0;

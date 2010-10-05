@@ -84,22 +84,26 @@ class TextureSource
     const float                             m_multiplier;
     const foundation::LightingConditions    m_lighting_conditions;
     const foundation::CanvasProperties      m_texture_props;
+    const double                            m_scalar_canvas_width;
+    const double                            m_scalar_canvas_height;
+    const double                            m_max_x;
+    const double                            m_max_y;
 
     // Retrieve a given texel. Return a color in the linear RGB color space.
     foundation::Color4f get_texel(
         TextureCache&                       texture_cache,
-        const int                           ix,
-        const int                           iy) const;
+        const size_t                        ix,
+        const size_t                        iy) const;
 
     // Retrieve a 2x2 block of texels. Texels are expressed in the linear RGB color space.
     void get_texels_2x2(
         TextureCache&                       texture_cache,
         const int                           ix,
         const int                           iy,
-        foundation::Color4f&                sample_00,
-        foundation::Color4f&                sample_10,
-        foundation::Color4f&                sample_01,
-        foundation::Color4f&                sample_11) const;
+        foundation::Color4f&                t00,
+        foundation::Color4f&                t10,
+        foundation::Color4f&                t01,
+        foundation::Color4f&                t11) const;
 
     // Sample the texture. Return a color in the linear RGB color space.
     foundation::Color4f sample_texture(
@@ -112,7 +116,6 @@ class TextureSource
 // TextureSource class implementation.
 //
 
-// Evaluate the source at a given shading point.
 inline void TextureSource::evaluate(
     TextureCache&                           texture_cache,
     const InputParams&                      params,
@@ -125,6 +128,7 @@ inline void TextureSource::evaluate(
 
     scalar = static_cast<double>(color[0]);
 }
+
 inline void TextureSource::evaluate(
     TextureCache&                           texture_cache,
     const InputParams&                      params,
@@ -139,6 +143,7 @@ inline void TextureSource::evaluate(
 
     alpha.set(color.a);
 }
+
 inline void TextureSource::evaluate(
     TextureCache&                           texture_cache,
     const InputParams&                      params,
