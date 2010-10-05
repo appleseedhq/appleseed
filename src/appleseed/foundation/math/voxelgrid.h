@@ -284,24 +284,25 @@ void VoxelGrid3<ValueType, CoordType>::triquadratic_lookup(
     //
     //   P(t) = a.t^2 + b.t + c         P'(t) = 2.a.t + b
     //
-    // The parameter t extends from t = -0.5 (halfway between v0 and v1)
-    // to t = +0.5 (halfway between v1 and v2).
+    // The parameter t extends from t = -1/2 (halfway between v0 and v1)
+    // to t = +1/2 (halfway between v1 and v2). To simplify the expression
+    // of the polynomial, we let s = t + 1/2 and define the polynomial over s.
     //
     // We compute a, b and c so that the following conditions are met:
     //
-    //   C0 continuity at t = -0.5:     P (-0.5) = (v0 + v1) / 2
-    //   C0 continuity at t = +0.5:     P (+0.5) = (v1 + v2) / 2
-    //   C1 continuity at t = -0.5:     P'(-0.5) = v1 - v0
-    //   C1 continuity at t = +0.5:     P'(+0.5) = v2 - v1
+    //   C0 continuity at s = 0.0:      P (0.0) = (v0 + v1) / 2
+    //   C0 continuity at s = 1.0:      P (1.0) = (v1 + v2) / 2
+    //   C1 continuity at s = 0.0:      P'(0.0) = v1 - v0
+    //   C1 continuity at s = 1.0:      P'(1.0) = v2 - v1
     //
-    // One of the condition is redundant, as only three are necessary to
-    // completely define the polynomial.
+    // One of the condition is redundant, as only three conditions are
+    // required to completely define the polynomial.
     //
-    // Given the above conditions, we find the following coefficients:
+    // Given the above conditions, we find the following coefficients for P(s):
     //
-    //   a = (v0 - 2.v1 + v2) / 2
-    //   b = v2 - v0
-    //   c = (v0 + v2) / 8 + (3.v1) / 4
+    //   a = 1/2 * (v0 - 2.v1 + v2)
+    //   b = v1 - v0
+    //   c = 1/2 * (v0 + v1)
     //
 
     // Compute the coordinates of the voxel containing the lookup point.
@@ -313,21 +314,21 @@ void VoxelGrid3<ValueType, CoordType>::triquadratic_lookup(
     const size_t iz = truncate<size_t>(z + CoordType(0.5));
 
     // Compute interpolation weights.
-    const ValueType tx = static_cast<ValueType>(x - ix);
-    const ValueType ty = static_cast<ValueType>(y - iy);
-    const ValueType tz = static_cast<ValueType>(z - iz);
+    const ValueType tx = static_cast<ValueType>(x - ix) + ValueType(0.5);
+    const ValueType ty = static_cast<ValueType>(y - iy) + ValueType(0.5);
+    const ValueType tz = static_cast<ValueType>(z - iz) + ValueType(0.5);
     const ValueType tx2 = tx * tx;
+    const ValueType wx2 = ValueType(0.5) * tx2;
+    const ValueType wx1 = tx - tx2 + ValueType(0.5);
+    const ValueType wx0 = wx2 - tx + ValueType(0.5);
     const ValueType ty2 = ty * ty;
+    const ValueType wy2 = ValueType(0.5) * ty2;
+    const ValueType wy1 = ty - ty2 + ValueType(0.5);
+    const ValueType wy0 = wy2 - ty + ValueType(0.5);
     const ValueType tz2 = tz * tz;
-    const ValueType wx0 = ValueType(0.5) * (tx2 - tx) + ValueType(0.125);
-    const ValueType wx1 = ValueType(0.75) - tx2;
-    const ValueType wx2 = ValueType(0.5) * (tx2 + tx) + ValueType(0.125);
-    const ValueType wy0 = ValueType(0.5) * (ty2 - ty) + ValueType(0.125);
-    const ValueType wy1 = ValueType(0.75) - ty2;
-    const ValueType wy2 = ValueType(0.5) * (ty2 + ty) + ValueType(0.125);
-    const ValueType wz0 = ValueType(0.5) * (tz2 - tz) + ValueType(0.125);
-    const ValueType wz1 = ValueType(0.75) - tz2;
-    const ValueType wz2 = ValueType(0.5) * (tz2 + tz) + ValueType(0.125);
+    const ValueType wz2 = ValueType(0.5) * tz2;
+    const ValueType wz1 = tz - tz2 + ValueType(0.5);
+    const ValueType wz0 = wz2 - tz + ValueType(0.5);
 
     // Compute source pointers.
     const size_t dxn = ix == 0 ? 0 : m_channel_count;
