@@ -81,16 +81,19 @@ class VoxelGrid3
         const size_t        z) const;
 
     // Perform an unfiltered lookup of the voxel grid.
+    // 'point' must be expressed in the unit cube [0,1]^3.
     void nearest_lookup(
         const PointType&    point,
         ValueType           values[]) const;
 
     // Perform a trilinearly interpolated lookup of the voxel grid.
+    // 'point' must be expressed in the unit cube [0,1]^3.
     void trilinear_lookup(
         const PointType&    point,
         ValueType           values[]) const;
 
     // Perform a triquadratically interpolated lookup of the voxel grid.
+    // 'point' must be expressed in the unit cube [0,1]^3.
     void triquadratic_lookup(
         const PointType&    point,
         ValueType           values[]) const;
