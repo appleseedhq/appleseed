@@ -26,11 +26,11 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_VOLUME_VOLUME_H
-#define APPLESEED_RENDERER_KERNEL_VOLUME_VOLUME_H
+#ifndef APPLESEED_RENDERER_KERNEL_VOLUME_OCCUPANCYGRID_H
+#define APPLESEED_RENDERER_KERNEL_VOLUME_OCCUPANCYGRID_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/kernel/volume/volume.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/voxelgrid.h"
@@ -38,49 +38,45 @@
 namespace renderer
 {
 
-//
-// The voxel grid used for rendering.
-//
-
-typedef foundation::VoxelGrid3<float, double> VoxelGrid;
-
-
-//
-// A structure to keep track of the channels in a voxel grid.
-//
-
-struct FluidChannels
+class OccupancyGrid
+  : public foundation::NonCopyable
 {
-    static const size_t NotPresent = ~size_t(0);
+  public:
+    OccupancyGrid(
+        const VoxelGrid&    voxel_grid,
+        const size_t        density_channel_index,
+        const float         occupancy_threshold);
 
-    size_t  m_color_index;
-    size_t  m_density_index;
-    size_t  m_temperature_index;
-    size_t  m_fuel_index;
-    size_t  m_falloff_index;
-    size_t  m_pressure_index;
-    size_t  m_coordinates_index;
-    size_t  m_velocity_index;
+    bool has_fluid(const foundation::Vector3d& point) const;
 
-    // Constructor, initializes all channel indices to NotPresent.
-    FluidChannels();
+  private:
+    foundation::VoxelGrid3<unsigned char, double> m_grid;
+
+    void initialize(
+        const VoxelGrid&    voxel_grid,
+        const size_t        density_channel_index,
+        const float         occupancy_threshold);
+
+    float get_density_sum(
+        const VoxelGrid&    voxel_grid,
+        const size_t        density_channel_index,
+        const size_t        x,
+        const size_t        y,
+        const size_t        z) const;
 };
 
 
 //
-// Voxel grid I/O.
+// OccupancyGrid class implementation.
 //
 
-// Read a fluid file created by 3Delight for Maya.
-std::auto_ptr<VoxelGrid> read_fluid_file(
-    const char*         filename,
-    FluidChannels&      channels);
-
-// Write a voxel grid to disk in a human-readable format.
-void write_voxel_grid(
-    const char*         filename,
-    const VoxelGrid&    grid);
+inline bool OccupancyGrid::has_fluid(const foundation::Vector3d& point) const
+{
+    unsigned char result;
+    m_grid.nearest_lookup(point, &result);
+    return result == 1;
+}
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_VOLUME_VOLUME_H
+#endif  // !APPLESEED_RENDERER_KERNEL_VOLUME_OCCUPANCYGRID_H

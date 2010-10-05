@@ -31,6 +31,7 @@
 #include "foundation/math/vector.h"
 #include "foundation/math/voxelgrid.h"
 #include "foundation/utility/benchmark.h"
+#include "foundation/utility/memory.h"
 
 // Standard headers.
 #include <cstddef>
@@ -44,9 +45,9 @@ BENCHMARK_SUITE(Foundation_Math_VoxelGrid3)
         static const size_t ChannelCount = 4;
         static const size_t LookupPointCount = 64;
 
-        VoxelGrid3<float>   m_grid;
-        Vector3f            m_lookup_points[LookupPointCount];
-        float               m_accumulated_values[ChannelCount];
+        VoxelGrid3<float, double>   m_grid;
+        Vector3d                    m_lookup_points[LookupPointCount];
+        float                       m_accumulated_values[ChannelCount];
 
         Fixture()
           : m_grid(32, 32, 32, ChannelCount)
@@ -69,10 +70,10 @@ BENCHMARK_SUITE(Foundation_Math_VoxelGrid3)
 
             for (size_t i = 0; i < LookupPointCount; ++i)
             {
-                Vector3f& p = m_lookup_points[i];
-                p[0] = static_cast<float>(rand_double1(rng, 0.0, m_grid.get_xres()));
-                p[1] = static_cast<float>(rand_double1(rng, 0.0, m_grid.get_yres()));
-                p[2] = static_cast<float>(rand_double1(rng, 0.0, m_grid.get_zres()));
+                Vector3d& p = m_lookup_points[i];
+                p[0] = rand_double1(rng, 0.0, m_grid.get_xres());
+                p[1] = rand_double1(rng, 0.0, m_grid.get_yres());
+                p[2] = rand_double1(rng, 0.0, m_grid.get_zres());
             }
 
             for (size_t i = 0; i < ChannelCount; ++i)
@@ -80,12 +81,36 @@ BENCHMARK_SUITE(Foundation_Math_VoxelGrid3)
         }
     };
 
+    BENCHMARK_CASE_WITH_FIXTURE(NearestLookup, Fixture)
+    {
+        for (size_t i = 0; i < LookupPointCount; ++i)
+        { 
+            ALIGN_SSE_VARIABLE float values[ChannelCount];
+            m_grid.nearest_lookup(m_lookup_points[i], values);
+
+            for (size_t j = 0; j < ChannelCount; ++j)
+                m_accumulated_values[j] += values[j];
+        }
+    }
+
     BENCHMARK_CASE_WITH_FIXTURE(TrilinearLookup, Fixture)
     {
         for (size_t i = 0; i < LookupPointCount; ++i)
-        {
-            __declspec(align(16)) float values[ChannelCount];
+        { 
+            ALIGN_SSE_VARIABLE float values[ChannelCount];
             m_grid.trilinear_lookup(m_lookup_points[i], values);
+
+            for (size_t j = 0; j < ChannelCount; ++j)
+                m_accumulated_values[j] += values[j];
+        }
+    }
+
+    BENCHMARK_CASE_WITH_FIXTURE(TriquadraticLookup, Fixture)
+    {
+        for (size_t i = 0; i < LookupPointCount; ++i)
+        { 
+            ALIGN_SSE_VARIABLE float values[ChannelCount];
+            m_grid.triquadratic_lookup(m_lookup_points[i], values);
 
             for (size_t j = 0; j < ChannelCount; ++j)
                 m_accumulated_values[j] += values[j];

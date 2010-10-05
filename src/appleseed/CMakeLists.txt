@@ -883,6 +883,8 @@ source_group("renderer\\kernel\\texturing" FILES
 )
 
 set(renderer_kernel_volume_sources
+    renderer/kernel/volume/occupancygrid.cpp
+    renderer/kernel/volume/occupancygrid.h
     renderer/kernel/volume/volume.cpp
     renderer/kernel/volume/volume.h
 )

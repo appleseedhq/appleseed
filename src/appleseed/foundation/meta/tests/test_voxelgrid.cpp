@@ -27,24 +27,31 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/image/canvasproperties.h"
+#include "foundation/image/color.h"
+#include "foundation/image/genericimagefilewriter.h"
+#include "foundation/image/image.h"
+#include "foundation/math/scalar.h"
 #include "foundation/math/voxelgrid.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cmath>
-#include <cstdlib>
 
 using namespace foundation;
 using namespace std;
 
 TEST_SUITE(Foundation_Math_VoxelGrid3)
 {
+    const size_t ChannelCount = 4;
+
     struct Fixture
     {
-        VoxelGrid3<float> m_grid;
+        VoxelGrid3<float, double> m_grid;
 
         Fixture()
-          : m_grid(3, 3, 3, 4)
+          : m_grid(3, 3, 3, ChannelCount)
         {
             for (int z = 0; z < 3; ++z)
             {
@@ -61,12 +68,73 @@ TEST_SUITE(Foundation_Math_VoxelGrid3)
                 }
             }
         }
+
+        enum Interpolator
+        {
+            Nearest,
+            Trilinear,
+            Triquadratic
+        };
+
+        void dump_constant_z_slice(
+            const string&       filename,
+            const Interpolator  interpolator,
+            const double        z) const
+        {
+            const size_t ImageWidth = 512;
+            const size_t ImageHeight = 512;
+
+            Image image(
+                ImageWidth,
+                ImageHeight,
+                ImageWidth,
+                ImageHeight,
+                3,
+                PixelFormatFloat);
+
+            for (size_t y = 0; y < ImageHeight; ++y)
+            {
+                for (size_t x = 0; x < ImageWidth; ++x)
+                {
+                    const Vector3d point(
+                        static_cast<double>(x) / (ImageWidth - 1),
+                        static_cast<double>(y) / (ImageHeight - 1),
+                        z);
+
+                    float values[ChannelCount];
+
+                    switch (interpolator)
+                    {
+                      case Nearest:
+                        m_grid.nearest_lookup(point, values);
+                        break;
+
+                      case Trilinear:
+                        m_grid.trilinear_lookup(point, values);
+                        break;
+
+                      case Triquadratic:
+                        m_grid.triquadratic_lookup(point, values);
+                        break;
+                    }
+
+                    image.set_pixel(x, y, saturate(Color3f(values)));
+                }
+            }
+
+            GenericImageFileWriter writer;
+            writer.write(filename, image);
+        }
     };
 
-    TEST_CASE_WITH_FIXTURE(TrilinearLookup_Corner, Fixture)
+    //
+    // Unfiltered lookup.
+    //
+
+    TEST_CASE_WITH_FIXTURE(NearestLookup_AtOrigin, Fixture)
     {
-        float values[4];
-        m_grid.trilinear_lookup(Vector3f(0.0f, 0.0f, 0.0f), values);
+        float values[ChannelCount];
+        m_grid.nearest_lookup(Vector3d(0.0), values);
 
         EXPECT_FEQ(0.0f, values[0]);
         EXPECT_FEQ(0.0f, values[1]);
@@ -74,10 +142,77 @@ TEST_SUITE(Foundation_Math_VoxelGrid3)
         EXPECT_FEQ(1.0f, values[3]);
     }
 
-    TEST_CASE_WITH_FIXTURE(TrilinearLookup_Middle, Fixture)
+    TEST_CASE_WITH_FIXTURE(NearestLookup_AtCenter, Fixture)
     {
-        float values[4];
-        m_grid.trilinear_lookup(Vector3f(0.5f, 0.5f, 0.5f), values);
+        float values[ChannelCount];
+        m_grid.nearest_lookup(Vector3d(0.5), values);
+
+        EXPECT_FEQ(1.0f, values[0]);
+        EXPECT_FEQ(1.0f, values[1]);
+        EXPECT_FEQ(1.0f, values[2]);
+        EXPECT_FEQ(1.0f, values[3]);
+    }
+
+    TEST_CASE_WITH_FIXTURE(NearestLookup_AtExtremity, Fixture)
+    {
+        float values[ChannelCount];
+        m_grid.nearest_lookup(Vector3d(1.0), values);
+
+        EXPECT_FEQ(0.0f, values[0]);
+        EXPECT_FEQ(0.0f, values[1]);
+        EXPECT_FEQ(0.0f, values[2]);
+        EXPECT_FEQ(1.0f, values[3]);
+    }
+
+    TEST_CASE_WITH_FIXTURE(NearestLookup_BeyondOrigin, Fixture)
+    {
+        float values[ChannelCount];
+        m_grid.nearest_lookup(Vector3d(-1.0), values);
+
+        EXPECT_FEQ(0.0f, values[0]);
+        EXPECT_FEQ(0.0f, values[1]);
+        EXPECT_FEQ(0.0f, values[2]);
+        EXPECT_FEQ(1.0f, values[3]);
+    }
+
+    TEST_CASE_WITH_FIXTURE(NearestLookup_BeyondExtremity, Fixture)
+    {
+        float values[ChannelCount];
+        m_grid.nearest_lookup(Vector3d(2.0), values);
+
+        EXPECT_FEQ(0.0f, values[0]);
+        EXPECT_FEQ(0.0f, values[1]);
+        EXPECT_FEQ(0.0f, values[2]);
+        EXPECT_FEQ(1.0f, values[3]);
+    }
+
+    TEST_CASE_WITH_FIXTURE(NearestLookup_Slice, Fixture)
+    {
+        dump_constant_z_slice(
+            "output/test_voxelgrid_nearest_lookup_slice.png",
+            Nearest,
+            0.5);
+    }
+
+    //
+    // Trilinear lookup.
+    //
+
+    TEST_CASE_WITH_FIXTURE(TrilinearLookup_AtOrigin, Fixture)
+    {
+        float values[ChannelCount];
+        m_grid.trilinear_lookup(Vector3d(0.0), values);
+
+        EXPECT_FEQ(0.0f, values[0]);
+        EXPECT_FEQ(0.0f, values[1]);
+        EXPECT_FEQ(0.0f, values[2]);
+        EXPECT_FEQ(1.0f, values[3]);
+    }
+
+    TEST_CASE_WITH_FIXTURE(TrilinearLookup_HalfwayToCenter, Fixture)
+    {
+        float values[ChannelCount];
+        m_grid.trilinear_lookup(Vector3d(0.25), values);
 
         EXPECT_FEQ(0.5f, values[0]);
         EXPECT_FEQ(0.5f, values[1]);
@@ -85,14 +220,211 @@ TEST_SUITE(Foundation_Math_VoxelGrid3)
         EXPECT_FEQ(1.0f, values[3]);
     }
 
-    TEST_CASE_WITH_FIXTURE(TrilinearLookup_Center, Fixture)
+    TEST_CASE_WITH_FIXTURE(TrilinearLookup_AtCenter, Fixture)
     {
-        float values[4];
-        m_grid.trilinear_lookup(Vector3f(1.5f, 1.5f, 1.5f), values);
+        float values[ChannelCount];
+        m_grid.trilinear_lookup(Vector3d(0.5), values);
 
         EXPECT_FEQ(1.0f, values[0]);
         EXPECT_FEQ(1.0f, values[1]);
         EXPECT_FEQ(1.0f, values[2]);
         EXPECT_FEQ(1.0f, values[3]);
+    }
+
+    TEST_CASE_WITH_FIXTURE(TrilinearLookup_AtExtremity, Fixture)
+    {
+        float values[ChannelCount];
+        m_grid.trilinear_lookup(Vector3d(1.0), values);
+
+        EXPECT_FEQ(0.0f, values[0]);
+        EXPECT_FEQ(0.0f, values[1]);
+        EXPECT_FEQ(0.0f, values[2]);
+        EXPECT_FEQ(1.0f, values[3]);
+    }
+
+    TEST_CASE_WITH_FIXTURE(TrilinearLookup_BeyondOrigin, Fixture)
+    {
+        float values[ChannelCount];
+        m_grid.trilinear_lookup(Vector3d(-1.0), values);
+
+        EXPECT_FEQ(0.0f, values[0]);
+        EXPECT_FEQ(0.0f, values[1]);
+        EXPECT_FEQ(0.0f, values[2]);
+        EXPECT_FEQ(1.0f, values[3]);
+    }
+
+    TEST_CASE_WITH_FIXTURE(TrilinearLookup_BeyondExtremity, Fixture)
+    {
+        float values[ChannelCount];
+        m_grid.trilinear_lookup(Vector3d(2.0), values);
+
+        EXPECT_FEQ(0.0f, values[0]);
+        EXPECT_FEQ(0.0f, values[1]);
+        EXPECT_FEQ(0.0f, values[2]);
+        EXPECT_FEQ(1.0f, values[3]);
+    }
+
+    TEST_CASE_WITH_FIXTURE(TrilinearLookup_Slice, Fixture)
+    {
+        dump_constant_z_slice(
+            "output/test_voxelgrid_trilinear_lookup_slice.png",
+            Trilinear,
+            0.5);
+    }
+
+    //
+    // Triquadratic lookup.
+    //
+
+    TEST_CASE_WITH_FIXTURE(TriquadraticLookup_AtOrigin, Fixture)
+    {
+        float values[ChannelCount];
+        m_grid.triquadratic_lookup(Vector3d(0.0), values);
+
+        EXPECT_FEQ(0.125f, values[0]);
+        EXPECT_FEQ(0.125f, values[1]);
+        EXPECT_FEQ(0.125f, values[2]);
+        EXPECT_FEQ(1.0f, values[3]);
+    }
+
+    TEST_CASE_WITH_FIXTURE(TriquadraticLookup_HalfwayToCenter, Fixture)
+    {
+        float values[ChannelCount];
+        m_grid.triquadratic_lookup(Vector3d(0.25), values);
+
+        EXPECT_FEQ(0.5f, values[0]);
+        EXPECT_FEQ(0.5f, values[1]);
+        EXPECT_FEQ(0.5f, values[2]);
+        EXPECT_FEQ(1.0f, values[3]);
+    }
+
+    TEST_CASE_WITH_FIXTURE(TriquadraticLookup_AtCenter, Fixture)
+    {
+        float values[ChannelCount];
+        m_grid.triquadratic_lookup(Vector3d(0.5), values);
+
+        EXPECT_FEQ(0.75f, values[0]);
+        EXPECT_FEQ(0.75f, values[1]);
+        EXPECT_FEQ(0.75f, values[2]);
+        EXPECT_FEQ(1.0f, values[3]);
+    }
+
+    TEST_CASE_WITH_FIXTURE(TriquadraticLookup_AtExtremity, Fixture)
+    {
+        float values[ChannelCount];
+        m_grid.triquadratic_lookup(Vector3d(1.0), values);
+
+        EXPECT_FEQ(0.125f, values[0]);
+        EXPECT_FEQ(0.125f, values[1]);
+        EXPECT_FEQ(0.125f, values[2]);
+        EXPECT_FEQ(1.0f, values[3]);
+    }
+
+    TEST_CASE_WITH_FIXTURE(TriquadraticLookup_BeyondOrigin, Fixture)
+    {
+        float values[ChannelCount];
+        m_grid.triquadratic_lookup(Vector3d(-1.0), values);
+
+        EXPECT_FEQ(0.125f, values[0]);
+        EXPECT_FEQ(0.125f, values[1]);
+        EXPECT_FEQ(0.125f, values[2]);
+        EXPECT_FEQ(1.0f, values[3]);
+    }
+
+    TEST_CASE_WITH_FIXTURE(TriquadraticLookup_BeyondExtremity, Fixture)
+    {
+        float values[ChannelCount];
+        m_grid.triquadratic_lookup(Vector3d(2.0), values);
+
+        EXPECT_FEQ(0.125f, values[0]);
+        EXPECT_FEQ(0.125f, values[1]);
+        EXPECT_FEQ(0.125f, values[2]);
+        EXPECT_FEQ(1.0f, values[3]);
+    }
+
+    TEST_CASE_WITH_FIXTURE(TriquadraticLookup_Slice, Fixture)
+    {
+        dump_constant_z_slice(
+            "output/test_voxelgrid_triquadratic_lookup_slice.png",
+            Triquadratic,
+            0.5);
+    }
+
+    //
+    // Reference code for bilinear filtering.
+    //
+
+    Image create_test_image(const size_t w, const size_t h)
+    {
+        Image source(w, h, w, h, 3, PixelFormatFloat);
+
+        for (size_t y = 0; y < h; ++y)
+        {
+            for (size_t x = 0; x < w; ++x)
+            {
+                const float intensity = static_cast<float>(~(x ^ y) & 1);
+                source.set_pixel(x, y, Color3f(intensity));
+            }
+        }
+
+        return source;
+    }
+
+    TEST_CASE(BilinearFiltering_Exploration)
+    {
+        const size_t SourceWidth = 3;
+        const size_t SourceHeight = 2;
+
+        const size_t TargetWidth = 96;
+        const size_t TargetHeight = 64;
+
+        const Image source = create_test_image(SourceWidth, SourceHeight);
+
+        Image target(
+            TargetWidth,
+            TargetHeight,
+            TargetWidth,
+            TargetHeight,
+            3,
+            PixelFormatFloat);
+
+        for (size_t y = 0; y < TargetHeight; ++y)
+        {
+            for (size_t x = 0; x < TargetWidth; ++x)
+            {
+                float fx = static_cast<float>(x) / (TargetWidth - 1);
+                float fy = static_cast<float>(y) / (TargetHeight - 1);
+
+                fx *= SourceWidth - 1;
+                fy *= SourceHeight - 1;
+
+                const size_t tx0 = truncate<size_t>(fx);
+                const size_t ty0 = truncate<size_t>(fy);
+                const size_t tx1 = min<size_t>(tx0 + 1, SourceWidth - 1);
+                const size_t ty1 = min<size_t>(ty0 + 1, SourceHeight - 1);
+
+                const float wx1 = fx - tx0;
+                const float wy1 = fy - ty0;
+                const float wx0 = 1.0f - wx1;
+                const float wy0 = 1.0f - wy1;
+
+                Color3f c00; source.get_pixel(tx0, ty0, c00);
+                Color3f c10; source.get_pixel(tx1, ty0, c10);
+                Color3f c01; source.get_pixel(tx0, ty1, c01);
+                Color3f c11; source.get_pixel(tx1, ty1, c11);
+
+                const Color3f result =
+                    c00 * wx0 * wy0 +
+                    c10 * wx1 * wy0 +
+                    c01 * wx0 * wy1 +
+                    c11 * wx1 * wy1;
+
+                target.set_pixel(x, y, result);
+            }
+        }
+
+        GenericImageFileWriter writer;
+        writer.write("output/test_voxelgrid_bilinear_filtering_exploration_source.png", source);
+        writer.write("output/test_voxelgrid_bilinear_filtering_exploration_target.png", target);
     }
 }

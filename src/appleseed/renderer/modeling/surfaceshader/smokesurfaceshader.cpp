@@ -33,6 +33,7 @@
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingresult.h"
+#include "renderer/kernel/volume/occupancygrid.h"
 #include "renderer/kernel/volume/volume.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
@@ -114,18 +115,13 @@ namespace
 
                 if (m_voxel_grid.get())
                 {
-                    // Build the occupancy grid.
-                    build_occupancy_grid(
-                        *m_voxel_grid.get(),
-                        m_channels.m_density_index,
-                        m_occupancy_grid,
-                        OccupancyThreshold);
+                    m_occupancy_grid.reset(
+                        new OccupancyGrid(
+                            *m_voxel_grid.get(),
+                            m_channels.m_density_index,
+                            OccupancyThreshold));
 
-                    // Compute the world space to grid space scale factor.
-                    m_scale = Vector3d(1.0) / m_bbox.extent();
-                    m_scale[0] *= m_voxel_grid->get_xres() - 1;
-                    m_scale[1] *= m_voxel_grid->get_yres() - 1;
-                    m_scale[2] *= m_voxel_grid->get_zres() - 1;
+                    m_rcp_bbox_extent = Vector3d(1.0) / m_bbox.extent();
                 }
 
                 m_first_frame = false;
@@ -219,9 +215,10 @@ namespace
         float                   m_shadow_opacity;
 
         auto_ptr<VoxelGrid>     m_voxel_grid;
-        vector<int>             m_occupancy_grid;
         FluidChannels           m_channels;
-        Vector3d                m_scale;
+
+        auto_ptr<OccupancyGrid> m_occupancy_grid;
+        Vector3d                m_rcp_bbox_extent;
 
         void extract_parameters()
         {
@@ -452,44 +449,32 @@ namespace
 
         // Retrieve the fluid values at a given point, in world space.
         // Return true if the fluid is present at that point, false otherwise.
-        bool get_fluid_values(Vector3d point, float values[]) const
+        bool get_fluid_values(const Vector3d& point, float values[]) const
         {
             // No fluid is defined.
             if (m_voxel_grid.get() == 0)
                 return false;
 
-            // Transform the lookup point to grid coordinates.
-            point -= m_bbox.min;
-            point *= m_scale;
-
-            // Convert the lookup point to single precision.
-            const Vector3f pointf(point);
+            // Normalize the lookup point coordinates.
+            const Vector3d normalized_point((point - m_bbox.min) * m_rcp_bbox_extent);
 
             // Quickly find out whether the fluid is present at this position.
-            const float x = pointf.x - 0.5f;
-            const float y = pointf.y - 0.5f;
-            const float z = pointf.z - 0.5f;
-            const size_t ix = truncate<size_t>(x) + 1;
-            const size_t iy = truncate<size_t>(y) + 1;
-            const size_t iz = truncate<size_t>(z) + 1;
-            const size_t xres = m_voxel_grid->get_xres();
-            const size_t yres = m_voxel_grid->get_yres();
-            if (m_occupancy_grid[(iz * yres + iy) * xres + ix] == 0)
+            if (!m_occupancy_grid->has_fluid(normalized_point))
                 return false;
 
             // Lookup the grid.
             switch (m_interpolation_mode)
             {
               case NearestMode:
-                  m_voxel_grid->nearest_lookup(pointf, values);
+                  m_voxel_grid->nearest_lookup(normalized_point, values);
                   return true;
 
               case LinearMode:
-                  m_voxel_grid->trilinear_lookup(pointf, values);
+                  m_voxel_grid->trilinear_lookup(normalized_point, values);
                   return true;
 
               case QuadraticMode:
-                  m_voxel_grid->triquadratic_lookup<MaxChannels>(pointf, values);
+                  m_voxel_grid->triquadratic_lookup(normalized_point, values);
                   return true;
 
               default:
