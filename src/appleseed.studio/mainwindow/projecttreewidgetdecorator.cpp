@@ -43,6 +43,7 @@
 #include "renderer/api/texture.h"
 
 // Qt headers.
+#include <QColor>
 #include <QFont>
 #include <QMetaType>
 #include <QPair>
@@ -108,7 +109,7 @@ void ProjectTreeWigetDecorator::insert_assembly_items(Assembly& assembly)
     insert_assembly_items(assembly, ProjectItem::ItemMaterial, assembly.materials());
     insert_assembly_items(assembly, ProjectItem::ItemLight, assembly.lights());
     insert_assembly_items(assembly, ProjectItem::ItemObject, assembly.objects());
-    insert_assembly_items(assembly, ProjectItem::ItemObjectInstance, assembly.object_instances());
+    insert_object_instance_items(assembly);
 }
 
 namespace
@@ -157,6 +158,66 @@ namespace
 
         return item;
     }
+}
+
+QTreeWidgetItem* ProjectTreeWigetDecorator::insert_scene_item(
+    const ProjectItem::Type     item_type,
+    Entity&                     entity)
+{
+    QTreeWidgetItem* root_item = m_scene_root_items[item_type];
+
+    const QVariant item_data = qvariant_from_ptr(&entity);
+
+    return
+        insert_item(
+            root_item,
+            entity.get_name(),
+            item_type,
+            item_data);
+}
+
+QTreeWidgetItem* ProjectTreeWigetDecorator::insert_scene_item(
+    const ProjectItem&          item)
+{
+    return
+        insert_scene_item(
+            item.get_type(),
+            *item.get_entity());
+}
+
+QTreeWidgetItem* ProjectTreeWigetDecorator::insert_assembly_item(
+    Assembly&                   assembly,
+    const ProjectItem::Type     item_type,
+    Entity&                     entity)
+{
+    RootItemCollection& assembly_root_items =
+        m_assemblies_root_items[assembly.get_uid()];
+
+    QTreeWidgetItem* root_item = assembly_root_items[item_type];
+
+    const QVariant item_data =
+        QVariant::fromValue(
+            qMakePair(
+                qvariant_from_ptr(&assembly),
+                qvariant_from_ptr(&entity)));
+
+    return
+        insert_item(
+            root_item,
+            entity.get_name(),
+            item_type,
+            item_data);
+}
+
+QTreeWidgetItem* ProjectTreeWigetDecorator::insert_assembly_item(
+    Assembly&                   assembly,
+    const ProjectItem&          item)
+{
+    return
+        insert_assembly_item(
+            assembly,
+            item.get_type(),
+            *item.get_entity());
 }
 
 void ProjectTreeWigetDecorator::create_scene_root_items()
@@ -282,64 +343,22 @@ void ProjectTreeWigetDecorator::create_assembly_root_items(QTreeWidgetItem* asse
             item_data);
 }
 
-QTreeWidgetItem* ProjectTreeWigetDecorator::insert_scene_item(
-    const ProjectItem::Type     item_type,
-    Entity&                     entity)
+void ProjectTreeWigetDecorator::insert_object_instance_items(
+    renderer::Assembly&         assembly)
 {
-    QTreeWidgetItem* root_item = m_scene_root_items[item_type];
+    for (each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
+    {
+        QTreeWidgetItem* item =
+            insert_assembly_item(assembly, ProjectItem::ItemObjectInstance, *i);
 
-    const QVariant item_data = qvariant_from_ptr(&entity);
+        const MaterialIndexArray& material_indices = i->get_material_indices();
 
-    return
-        insert_item(
-            root_item,
-            entity.get_name(),
-            item_type,
-            item_data);
-}
-
-QTreeWidgetItem* ProjectTreeWigetDecorator::insert_scene_item(
-    const ProjectItem&          item)
-{
-    return
-        insert_scene_item(
-            item.get_type(),
-            *item.get_entity());
-}
-
-QTreeWidgetItem* ProjectTreeWigetDecorator::insert_assembly_item(
-    Assembly&                   assembly,
-    const ProjectItem::Type     item_type,
-    Entity&                     entity)
-{
-    RootItemCollection& assembly_root_items =
-        m_assemblies_root_items[assembly.get_uid()];
-
-    QTreeWidgetItem* root_item = assembly_root_items[item_type];
-
-    const QVariant item_data =
-        QVariant::fromValue(
-            qMakePair(
-                qvariant_from_ptr(&assembly),
-                qvariant_from_ptr(&entity)));
-
-    return
-        insert_item(
-            root_item,
-            entity.get_name(),
-            item_type,
-            item_data);
-}
-
-QTreeWidgetItem* ProjectTreeWigetDecorator::insert_assembly_item(
-    Assembly&                   assembly,
-    const ProjectItem&          item)
-{
-    return
-        insert_assembly_item(
-            assembly,
-            item.get_type(),
-            *item.get_entity());
+        if (material_indices.empty())
+        {
+            const QColor SolidPink(255, 0, 255, 255);
+            item->setTextColor(0, SolidPink);
+        }
+    }
 }
 
 }   // namespace studio

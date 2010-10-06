@@ -101,6 +101,9 @@ class ProjectTreeWigetDecorator
     void create_assembly_root_items(
         QTreeWidgetItem*            assembly_item,
         renderer::Assembly&         assembly);
+
+    void insert_object_instance_items(
+        renderer::Assembly&         assembly);
 };
 
 
