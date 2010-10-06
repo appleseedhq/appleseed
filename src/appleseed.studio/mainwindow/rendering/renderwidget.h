@@ -26,67 +26,85 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_RENDERING_GLRENDERWIDGET_H
-#define APPLESEED_STUDIO_RENDERING_GLRENDERWIDGET_H
+#ifndef APPLESEED_STUDIO_RENDERING_RENDERWIDGET_H
+#define APPLESEED_STUDIO_RENDERING_RENDERWIDGET_H
+
+// appleseed.studio headers.
+#include "mainwindow/rendering/irenderwidget.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
-
-// appleseed.studio headers.
-#include "rendering/irenderwidget.h"
+#include "foundation/platform/types.h"
 
 // Qt headers.
-#include <QGLWidget>
+#include <QImage>
+#include <QMutex>
+#include <QPainter>
+#include <QWidget>
 
 // Standard headers.
 #include <cstddef>
 
 // Forward declarations.
 namespace renderer      { class Frame; }
+class QPaintEvent;
 class QWidget;
 
 namespace appleseed {
 namespace studio {
 
 //
-// An OpenGL-based render widget.
+// A render widget based on QImage.
 //
 
-class GLRenderWidget
-  : public QGLWidget
+class RenderWidget
+  : public QWidget
   , public IRenderWidget
 {
   public:
     // Constructor.
-    GLRenderWidget(
+    RenderWidget(
         const int                   width,
         const int                   height,
         QWidget*                    parent = 0);
 
+    // Thread-safe.
     virtual void clear(
         const foundation::Color4f&  color);
 
+    // Thread-safe.
     virtual void highlight_region(
         const size_t                x,
         const size_t                y,
         const size_t                width,
         const size_t                height);
 
+    // Thread-safe.
     virtual void blit_tile(
         const renderer::Frame&      frame,
         const size_t                tile_x,
         const size_t                tile_y);
 
+    // Thread-safe.
     virtual void blit_frame(
         const renderer::Frame&      frame);
 
   private:
-    virtual void initializeGL();
-    virtual void resizeGL(int width, int height);
-    virtual void paintGL();
+    QImage      m_image;
+    QMutex      m_image_mutex;
+    QPainter    m_painter;
+
+    void blit_tile_no_lock(
+        const renderer::Frame&      frame,
+        const size_t                tile_x,
+        const size_t                tile_y,
+        foundation::uint8*          float_tile_storage = 0,
+        foundation::uint8*          uint8_tile_storage = 0);
+
+    virtual void paintEvent(QPaintEvent* event);
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_RENDERING_GLRENDERWIDGET_H
+#endif  // !APPLESEED_STUDIO_RENDERING_RENDERWIDGET_H

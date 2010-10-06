@@ -89,6 +89,29 @@ source_group("main" FILES
     ${main_sources}
 )
 
+set(mainwindow_rendering_sources
+    mainwindow/rendering/cameracontroller.cpp
+    mainwindow/rendering/cameracontroller.h
+    mainwindow/rendering/glrenderwidget.cpp
+    mainwindow/rendering/glrenderwidget.h
+    mainwindow/rendering/irenderwidget.h
+    mainwindow/rendering/qtrenderercontroller.cpp
+    mainwindow/rendering/qtrenderercontroller.h
+    mainwindow/rendering/qttilecallbackfactory.cpp
+    mainwindow/rendering/qttilecallbackfactory.h
+    mainwindow/rendering/renderingmanager.cpp
+    mainwindow/rendering/renderingmanager.h
+    mainwindow/rendering/renderingtimer.h
+    mainwindow/rendering/renderwidget.cpp
+    mainwindow/rendering/renderwidget.h
+)
+list(APPEND appleseed.studio_sources
+    ${mainwindow_rendering_sources}
+)
+source_group("mainwindow\\rendering" FILES
+    ${mainwindow_rendering_sources}
+)
+
 set(mainwindow_sources
     mainwindow/entitybrowserwindow.cpp
     mainwindow/entitybrowserwindow.h
@@ -146,29 +169,6 @@ list(APPEND appleseed.studio_sources
 )
 source_group("meta\\tests" FILES
     ${meta_tests_sources}
-)
-
-set(rendering_sources
-    rendering/cameracontroller.cpp
-    rendering/cameracontroller.h
-    rendering/glrenderwidget.cpp
-    rendering/glrenderwidget.h
-    rendering/irenderwidget.h
-    rendering/qtrenderercontroller.cpp
-    rendering/qtrenderercontroller.h
-    rendering/qttilecallbackfactory.cpp
-    rendering/qttilecallbackfactory.h
-    rendering/renderingmanager.cpp
-    rendering/renderingmanager.h
-    rendering/renderingtimer.h
-    rendering/renderwidget.cpp
-    rendering/renderwidget.h
-)
-list(APPEND appleseed.studio_sources
-    ${rendering_sources}
-)
-source_group("rendering" FILES
-    ${rendering_sources}
 )
 
 set(utility_sources

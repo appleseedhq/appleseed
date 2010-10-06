@@ -30,7 +30,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_STATUSBAR_H
 
 // appleseed.studio headers.
-#include "rendering/renderingtimer.h"
+#include "mainwindow/rendering/renderingtimer.h"
 
 // Qt headers.
 #include <QLabel>

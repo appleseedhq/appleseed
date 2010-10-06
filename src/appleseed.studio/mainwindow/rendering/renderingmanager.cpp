@@ -30,8 +30,8 @@
 #include "renderingmanager.h"
 
 // appleseed.studio headers.
+#include "mainwindow/rendering/renderwidget.h"
 #include "mainwindow/statusbar.h"
-#include "rendering/renderwidget.h"
 
 // appleseed.shared headers.
 #include "application/application.h"

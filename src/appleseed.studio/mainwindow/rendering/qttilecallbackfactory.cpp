@@ -30,7 +30,7 @@
 #include "qttilecallbackfactory.h"
 
 // appleseed.studio headers.
-#include "rendering/irenderwidget.h"
+#include "mainwindow/rendering/irenderwidget.h"
 
 // Standard headers.
 #include <cassert>

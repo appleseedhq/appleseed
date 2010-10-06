@@ -30,10 +30,10 @@
 #define APPLESEED_STUDIO_RENDERING_RENDERINGMANAGER_H
 
 // appleseed.studio headers.
-#include "rendering/cameracontroller.h"
-#include "rendering/qtrenderercontroller.h"
-#include "rendering/qttilecallbackfactory.h"
-#include "rendering/renderingtimer.h"
+#include "mainwindow/rendering/cameracontroller.h"
+#include "mainwindow/rendering/qtrenderercontroller.h"
+#include "mainwindow/rendering/qttilecallbackfactory.h"
+#include "mainwindow/rendering/renderingtimer.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/rendering.h"
