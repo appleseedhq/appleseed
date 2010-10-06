@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_RENDERING_IRENDERWIDGET_H
-#define APPLESEED_STUDIO_RENDERING_IRENDERWIDGET_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_IRENDERWIDGET_H
+#define APPLESEED_STUDIO_MAINWINDOW_RENDERING_IRENDERWIDGET_H
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -67,4 +67,4 @@ class IRenderWidget
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_RENDERING_IRENDERWIDGET_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_RENDERING_IRENDERWIDGET_H

@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_RENDERING_RENDERWIDGET_H
-#define APPLESEED_STUDIO_RENDERING_RENDERWIDGET_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERWIDGET_H
+#define APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERWIDGET_H
 
 // appleseed.studio headers.
 #include "mainwindow/rendering/irenderwidget.h"
@@ -107,4 +107,4 @@ class RenderWidget
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_RENDERING_RENDERWIDGET_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERWIDGET_H

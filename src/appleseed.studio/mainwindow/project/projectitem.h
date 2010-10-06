@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECTITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECTITEM_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTITEM_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTITEM_H
 
 // Standard headers.
 #include <vector>
@@ -107,4 +107,4 @@ inline renderer::Entity* ProjectItem::get_entity() const
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECTITEM_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTITEM_H

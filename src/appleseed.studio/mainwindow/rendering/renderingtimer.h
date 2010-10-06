@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_RENDERING_RENDERINGTIMER_H
-#define APPLESEED_STUDIO_RENDERING_RENDERINGTIMER_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERINGTIMER_H
+#define APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERINGTIMER_H
 
 // appleseed.foundation headers.
 #include "foundation/platform/timer.h"
@@ -41,4 +41,4 @@ typedef foundation::Stopwatch<foundation::DefaultWallclockTimer> RenderingTimer;
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_RENDERING_RENDERINGTIMER_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERINGTIMER_H

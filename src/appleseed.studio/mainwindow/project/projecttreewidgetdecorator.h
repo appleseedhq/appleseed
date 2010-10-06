@@ -26,11 +26,11 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECTTREEWIDGETDECORATOR_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECTTREEWIDGETDECORATOR_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTTREEWIDGETDECORATOR_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTTREEWIDGETDECORATOR_H
 
 // appleseed.studio headers.
-#include "mainwindow/projectitem.h"
+#include "mainwindow/project/projectitem.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/uid.h"
@@ -133,4 +133,4 @@ void ProjectTreeWigetDecorator::insert_assembly_items(
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECTTREEWIDGETDECORATOR_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTTREEWIDGETDECORATOR_H

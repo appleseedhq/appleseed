@@ -32,10 +32,10 @@
 // appleseed.studio headers.
 #include "debug/tests/testwindow.h"
 #include "help/about/aboutwindow.h"
+#include "mainwindow/project/projectexplorer.h"
+#include "mainwindow/project/projectmanager.h"
 #include "mainwindow/rendering/renderingmanager.h"
 #include "mainwindow/rendering/renderwidget.h"
-#include "mainwindow/projectexplorer.h"
-#include "mainwindow/projectmanager.h"
 #include "mainwindow/qtlogtarget.h"
 #include "mainwindow/statusbar.h"
 #include "utility/scrollareapanhandler.h"

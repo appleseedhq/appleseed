@@ -89,6 +89,28 @@ source_group("main" FILES
     ${main_sources}
 )
 
+set(mainwindow_project_sources
+    mainwindow/project/entitybrowserwindow.cpp
+    mainwindow/project/entitybrowserwindow.h
+    mainwindow/project/entityeditorwindow.cpp
+    mainwindow/project/entityeditorwindow.h
+    mainwindow/project/projectbuilder.cpp
+    mainwindow/project/projectbuilder.h
+    mainwindow/project/projectexplorer.cpp
+    mainwindow/project/projectexplorer.h
+    mainwindow/project/projectitem.h
+    mainwindow/project/projectmanager.cpp
+    mainwindow/project/projectmanager.h
+    mainwindow/project/projecttreewidgetdecorator.cpp
+    mainwindow/project/projecttreewidgetdecorator.h
+)
+list(APPEND appleseed.studio_sources
+    ${mainwindow_project_sources}
+)
+source_group("mainwindow\\project" FILES
+    ${mainwindow_project_sources}
+)
+
 set(mainwindow_rendering_sources
     mainwindow/rendering/cameracontroller.cpp
     mainwindow/rendering/cameracontroller.h
@@ -113,26 +135,10 @@ source_group("mainwindow\\rendering" FILES
 )
 
 set(mainwindow_sources
-    mainwindow/entitybrowserwindow.cpp
-    mainwindow/entitybrowserwindow.h
-    mainwindow/entitybrowserwindow.ui
-    mainwindow/entityeditorwindow.cpp
-    mainwindow/entityeditorwindow.h
-    mainwindow/entityeditorwindow.ui
     mainwindow/logwidget.cpp
     mainwindow/logwidget.h
     mainwindow/mainwindow.cpp
     mainwindow/mainwindow.h
-    mainwindow/mainwindow.ui
-    mainwindow/projectbuilder.cpp
-    mainwindow/projectbuilder.h
-    mainwindow/projectexplorer.cpp
-    mainwindow/projectexplorer.h
-    mainwindow/projectitem.h
-    mainwindow/projectmanager.cpp
-    mainwindow/projectmanager.h
-    mainwindow/projecttreewidgetdecorator.cpp
-    mainwindow/projecttreewidgetdecorator.h
     mainwindow/qtlogtarget.cpp
     mainwindow/qtlogtarget.h
     mainwindow/statusbar.cpp

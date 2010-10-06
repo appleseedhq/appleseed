@@ -26,12 +26,12 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECTEXPLORER_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECTEXPLORER_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTEXPLORER_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTEXPLORER_H
 
 // appleseed.studio headers.
-#include "mainwindow/projectbuilder.h"
-#include "mainwindow/projecttreewidgetdecorator.h"
+#include "mainwindow/project/projectbuilder.h"
+#include "mainwindow/project/projecttreewidgetdecorator.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
@@ -121,4 +121,4 @@ class ProjectExplorer
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECTEXPLORER_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTEXPLORER_H

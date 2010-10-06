@@ -26,11 +26,11 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECTBUILDER_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECTBUILDER_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTBUILDER_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTBUILDER_H
 
 // appleseed.studio headers.
-#include "mainwindow/projectitem.h"
+#include "mainwindow/project/projectitem.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
@@ -89,4 +89,4 @@ class ProjectBuilder
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECTBUILDER_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTBUILDER_H
