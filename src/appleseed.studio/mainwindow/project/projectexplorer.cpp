@@ -30,9 +30,9 @@
 #include "projectexplorer.h"
 
 // appleseed.studio headers.
-#include "mainwindow/entitybrowserwindow.h"
-#include "mainwindow/entityeditorwindow.h"
-#include "mainwindow/projectitem.h"
+#include "mainwindow/project/entitybrowserwindow.h"
+#include "mainwindow/project/entityeditorwindow.h"
+#include "mainwindow/project/projectitembase.h"
 #include "utility/tweaks.h"
 
 // appleseed.renderer headers.
@@ -81,6 +81,7 @@ using namespace foundation;
 using namespace renderer;
 using namespace std;
 
+/*
 namespace
 {
     typedef QPair<appleseed::studio::ProjectItem::Type, QVariant> ItemTypeQVariantPair;
@@ -91,6 +92,7 @@ Q_DECLARE_METATYPE(void*);
 Q_DECLARE_METATYPE(appleseed::studio::ProjectItem::Type);
 Q_DECLARE_METATYPE(ItemTypeQVariantPair);
 Q_DECLARE_METATYPE(QVariantPair);
+*/
 
 namespace appleseed {
 namespace studio {
@@ -98,19 +100,18 @@ namespace studio {
 ProjectExplorer::ProjectExplorer(
     Project&        project,
     QTreeWidget*    tree_widget)
-  : m_project(project)
-  , m_project_builder(project)
-  , m_tree_widget(tree_widget)
-  , m_tree_widget_decorator(tree_widget)
+  : m_tree_widget(tree_widget)
+  , m_project_tree(project, tree_widget)
 {
     m_tree_widget->setContextMenuPolicy(Qt::CustomContextMenu);
 
     connect(
         m_tree_widget, SIGNAL(customContextMenuRequested(const QPoint&)),
         this, SLOT(slot_context_menu(const QPoint&)));
-
-    m_tree_widget_decorator.rebuild(*m_project.get_scene());
 }
+/*
+
+#if 0
 
 namespace
 {
@@ -146,20 +147,14 @@ namespace
         return *ptr;
     }
 }
-
+*/
 namespace
 {
-    // Get the assembly pointer stored in an *assembly* items.
-    Assembly* get_assembly_from_item(const QTreeWidgetItem* item)
-    {
-        const QVariantPair assembly_item_data = get_assembly_item_data(item);
-        return qvariant_to_ptr<Assembly>(assembly_item_data.first);
-    }
-
     bool are_items_same_type(const QList<QTreeWidgetItem*>& items)
     {
         assert(!items.empty());
 
+/*
         const ProjectItem::Type first_item_type = get_item_type(items[0]);
 
         for (int i = 1; i < items.size(); ++i)
@@ -167,8 +162,17 @@ namespace
             if (get_item_type(items[i]) != first_item_type)
                 return false;
         }
+*/
 
         return true;
+    }
+
+/*
+    // Get the assembly pointer stored in an *assembly* items.
+    Assembly* get_assembly_from_item(const QTreeWidgetItem* item)
+    {
+        const QVariantPair assembly_item_data = get_assembly_item_data(item);
+        return qvariant_to_ptr<Assembly>(assembly_item_data.first);
     }
 
     bool are_items_from_same_assembly(const QList<QTreeWidgetItem*>& items)
@@ -185,55 +189,21 @@ namespace
 
         return true;
     }
+*/
 }
 
 QMenu* ProjectExplorer::build_context_menu(const QList<QTreeWidgetItem*>& items) const
 {
     assert(!items.isEmpty());
 
-    QMenu* menu = 0;
-
     if (items.size() == 1)
     {
-        const QTreeWidgetItem* item = items.first();
-
-        switch (get_item_type(item))
-        {
-          case ProjectItem::ItemAssembly:
-            menu = build_assembly_context_menu();
-            break;
-
-          case ProjectItem::ItemAssemblyCollection:
-            menu = build_assembly_collection_context_menu();
-            break;
-
-          case ProjectItem::ItemBSDFCollection:
-            menu = build_bsdf_collection_context_menu();
-            break;
-
-          case ProjectItem::ItemMaterialCollection:
-            menu = build_material_collection_context_menu();
-            break;
-
-          case ProjectItem::ItemObjectCollection:
-            menu = build_object_collection_context_menu();
-            break;
-
-          case ProjectItem::ItemObjectInstance:
-            menu = build_object_instance_context_menu();
-            break;
-
-          case ProjectItem::ItemSurfaceShaderCollection:
-            menu = build_surface_shader_collection_context_menu();
-            break;
-
-          case ProjectItem::ItemTextureCollection:
-            menu = build_texture_collection_context_menu(item);
-            break;
-        }
+        const ProjectItemBase* item = static_cast<ProjectItemBase*>(items.first());
+        return item->get_context_menu();
     }
     else if (are_items_same_type(items))
     {
+/*
         switch (get_item_type(items.first()))
         {
           case ProjectItem::ItemObjectInstance:
@@ -241,20 +211,10 @@ QMenu* ProjectExplorer::build_context_menu(const QList<QTreeWidgetItem*>& items)
                 menu = build_object_instance_context_menu();
             break;
         }
+*/
     }
 
-    if (menu)
-    {
-        QList<QVariant> items_data;
-
-        for (int i = 0; i < items.size(); ++i)
-            items_data.push_back(get_item_data(items[i]));
-
-        for (const_each<QList<QAction*> > i = menu->actions(); i; ++i)
-            (*i)->setData(items_data);
-    }
-
-    return menu;
+    return 0;
 }
 
 QMenu* ProjectExplorer::build_generic_context_menu() const
@@ -264,6 +224,7 @@ QMenu* ProjectExplorer::build_generic_context_menu() const
     return menu;
 }
 
+/*
 QMenu* ProjectExplorer::build_assembly_context_menu() const
 {
     QMenu* menu = new QMenu(m_tree_widget);
@@ -331,6 +292,7 @@ QMenu* ProjectExplorer::build_texture_collection_context_menu(const QTreeWidgetI
 
     return menu;
 }
+*/
 
 void ProjectExplorer::slot_context_menu(const QPoint& point)
 {
@@ -345,6 +307,7 @@ void ProjectExplorer::slot_context_menu(const QPoint& point)
         menu->exec(m_tree_widget->mapToGlobal(point));
 }
 
+/*
 namespace
 {
     string get_entity_name(
@@ -592,24 +555,6 @@ void ProjectExplorer::slot_import_objects_to_assembly()
     }
 
     emit project_modified();
-}
-
-namespace
-{
-    QStringList get_texture_file_paths(QWidget* parent)
-    {
-        QFileDialog::Options options;
-        QString selected_filter;
-
-        return
-            QFileDialog::getOpenFileNames(
-                parent,
-                "Import Textures...",
-                "",
-                "Texture Files (*.exr);;All Files (*.*)",
-                &selected_filter,
-                options);
-    }
 }
 
 void ProjectExplorer::slot_import_textures_to_assembly()
@@ -1204,7 +1149,10 @@ void ProjectExplorer::slot_do_assign_material_to_object_instance(
     emit project_modified();
 }
 
+#endif
+*/
+
 }   // namespace studio
 }   // namespace appleseed
 
-#include "mainwindow/moc_cpp_projectexplorer.cxx"
+//#include "mainwindow/moc_cpp_projectexplorer.cxx"

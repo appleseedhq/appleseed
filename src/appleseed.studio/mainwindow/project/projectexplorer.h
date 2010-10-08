@@ -30,8 +30,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTEXPLORER_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/projectbuilder.h"
-#include "mainwindow/project/projecttreewidgetdecorator.h"
+#include "mainwindow/project/projecttree.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
@@ -76,29 +75,19 @@ class ProjectExplorer
     void project_modified();
 
   private:
-    renderer::Project&                          m_project;
-    ProjectBuilder                              m_project_builder;
-
     QTreeWidget*                                m_tree_widget;
-    ProjectTreeWigetDecorator                   m_tree_widget_decorator;
+
+    ProjectTree                                 m_project_tree;
 
     renderer::BSDFFactoryRegistrar              m_bsdf_factory_registrar;
     renderer::SurfaceShaderFactoryRegistrar     m_surface_shader_factory_registrar;
 
     QMenu* build_generic_context_menu() const;
     QMenu* build_context_menu(const QList<QTreeWidgetItem*>& items) const;
-    QMenu* build_assembly_context_menu() const;
-    QMenu* build_assembly_collection_context_menu() const;
-    QMenu* build_bsdf_collection_context_menu() const;
-    QMenu* build_material_collection_context_menu() const;
-    QMenu* build_object_collection_context_menu() const;
-    QMenu* build_object_instance_context_menu() const;
-    QMenu* build_surface_shader_collection_context_menu() const;
-    QMenu* build_texture_collection_context_menu(const QTreeWidgetItem* item) const;
 
   private slots:
     void slot_context_menu(const QPoint& point);
-
+/*
     void slot_add_assembly();
     void slot_instantiate_assembly();
 
@@ -116,6 +105,7 @@ class ProjectExplorer
         QList<QVariant>     items_data,
         QString             page_name,
         QString             entity_name);
+*/
 };
 
 }       // namespace studio

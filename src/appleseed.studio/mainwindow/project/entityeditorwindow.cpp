@@ -33,7 +33,7 @@
 #include "ui_entityeditorwindow.h"
 
 // appleseed.studio headers.
-#include "mainwindow/entitybrowserwindow.h"
+#include "mainwindow/project/entitybrowserwindow.h"
 #include "utility/interop.h"
 #include "utility/tweaks.h"
 
@@ -378,4 +378,4 @@ void EntityEditorWindow::slot_accept()
 }   // namespace studio
 }   // namespace appleseed
 
-#include "mainwindow/moc_cpp_entityeditorwindow.cxx"
+#include "mainwindow/project/moc_cpp_entityeditorwindow.cxx"

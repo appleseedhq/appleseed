@@ -29,9 +29,6 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTBUILDER_H
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTBUILDER_H
 
-// appleseed.studio headers.
-#include "mainwindow/project/projectitem.h"
-
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
 #include "renderer/api/surfaceshader.h"
@@ -46,6 +43,7 @@
 // Forward declarations.
 namespace renderer  { class Assembly; }
 namespace renderer  { class Project; }
+namespace appleseed { namespace studio { class ProjectTree; }}
 
 namespace appleseed {
 namespace studio {
@@ -54,33 +52,36 @@ class ProjectBuilder
   : foundation::NonCopyable
 {
   public:
-    explicit ProjectBuilder(renderer::Project& project);
+    ProjectBuilder(
+        renderer::Project&                  project,
+        ProjectTree&                        project_tree);
 
-    ProjectItem insert_bsdf(
+    void insert_bsdf(
         renderer::Assembly&                 assembly,
         const foundation::Dictionary&       values) const;
 
-    ProjectItem insert_surface_shader(
+    void insert_surface_shader(
         renderer::Assembly&                 assembly,
         const foundation::Dictionary&       values) const;
 
-    ProjectItem insert_material(
+    void insert_material(
         renderer::Assembly&                 assembly,
         const foundation::Dictionary&       values) const;
 
-    ProjectItemCollection insert_objects(
+    void insert_objects(
         renderer::Assembly&                 assembly,
         const std::string&                  path) const;
 
-    ProjectItemCollection insert_textures(
+    void insert_textures(
         renderer::Assembly&                 assembly,
         const std::string&                  path) const;
 
-    ProjectItemCollection insert_textures(
+    void insert_textures(
         const std::string&                  path) const;
 
   private:
     renderer::Project&                      m_project;
+    ProjectTree&                            m_project_tree;
 
     renderer::BSDFFactoryRegistrar          m_bsdf_factory_registrar;
     renderer::SurfaceShaderFactoryRegistrar m_surface_shader_factory_registrar;

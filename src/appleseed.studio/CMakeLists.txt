@@ -90,19 +90,55 @@ source_group("main" FILES
 )
 
 set(mainwindow_project_sources
+    mainwindow/project/assemblycollectionprojectitem.cpp
+    mainwindow/project/assemblycollectionprojectitem.h
+    mainwindow/project/assemblyinstancecollectionprojectitem.cpp
+    mainwindow/project/assemblyinstancecollectionprojectitem.h
+    mainwindow/project/assemblyinstanceprojectitem.cpp
+    mainwindow/project/assemblyinstanceprojectitem.h
+    mainwindow/project/assemblyprojectitem.cpp
+    mainwindow/project/assemblyprojectitem.h
+    mainwindow/project/collectionprojectitembase.cpp
+    mainwindow/project/collectionprojectitembase.h
+    mainwindow/project/colorcollectionprojectitem.cpp
+    mainwindow/project/colorcollectionprojectitem.h
+    mainwindow/project/colorprojectitem.cpp
+    mainwindow/project/colorprojectitem.h
     mainwindow/project/entitybrowserwindow.cpp
     mainwindow/project/entitybrowserwindow.h
+    mainwindow/project/entitybrowserwindow.ui
     mainwindow/project/entityeditorwindow.cpp
     mainwindow/project/entityeditorwindow.h
+    mainwindow/project/entityeditorwindow.ui
+    mainwindow/project/entityprojectitem.cpp
+    mainwindow/project/entityprojectitem.h
+    mainwindow/project/environmentedfcollectionprojectitem.cpp
+    mainwindow/project/environmentedfcollectionprojectitem.h
+    mainwindow/project/environmentedfprojectitem.cpp
+    mainwindow/project/environmentedfprojectitem.h
+    mainwindow/project/environmentshadercollectionprojectitem.cpp
+    mainwindow/project/environmentshadercollectionprojectitem.h
+    mainwindow/project/environmentshaderprojectitem.cpp
+    mainwindow/project/environmentshaderprojectitem.h
     mainwindow/project/projectbuilder.cpp
     mainwindow/project/projectbuilder.h
     mainwindow/project/projectexplorer.cpp
     mainwindow/project/projectexplorer.h
-    mainwindow/project/projectitem.h
+    mainwindow/project/projectitembase.cpp
+    mainwindow/project/projectitembase.h
+    mainwindow/project/projectitemtypemap.h
     mainwindow/project/projectmanager.cpp
     mainwindow/project/projectmanager.h
-    mainwindow/project/projecttreewidgetdecorator.cpp
-    mainwindow/project/projecttreewidgetdecorator.h
+    mainwindow/project/projecttree.cpp
+    mainwindow/project/projecttree.h
+    mainwindow/project/texturecollectionprojectitem.cpp
+    mainwindow/project/texturecollectionprojectitem.h
+    mainwindow/project/textureinstancecollectionprojectitem.cpp
+    mainwindow/project/textureinstancecollectionprojectitem.h
+    mainwindow/project/textureinstanceprojectitem.cpp
+    mainwindow/project/textureinstanceprojectitem.h
+    mainwindow/project/textureprojectitem.cpp
+    mainwindow/project/textureprojectitem.h
 )
 list(APPEND appleseed.studio_sources
     ${mainwindow_project_sources}
@@ -139,6 +175,7 @@ set(mainwindow_sources
     mainwindow/logwidget.h
     mainwindow/mainwindow.cpp
     mainwindow/mainwindow.h
+    mainwindow/mainwindow.ui
     mainwindow/qtlogtarget.cpp
     mainwindow/qtlogtarget.h
     mainwindow/statusbar.cpp

@@ -27,7 +27,7 @@
 //
 
 // appleseed.studio headers.
-#include "mainwindow/projectmanager.h"
+#include "mainwindow/project/projectmanager.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/project.h"

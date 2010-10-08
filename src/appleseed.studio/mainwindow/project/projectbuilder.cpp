@@ -29,6 +29,13 @@
 // Interface header.
 #include "projectbuilder.h"
 
+// appleseed.studio headers.
+#include "mainwindow/project/assemblycollectionprojectitem.h"
+#include "mainwindow/project/assemblyprojectitem.h"
+#include "mainwindow/project/projecttree.h"
+#include "mainwindow/project/texturecollectionprojectitem.h"
+#include "mainwindow/project/textureinstancecollectionprojectitem.h"
+
 // appleseed.renderer headers.
 #include "renderer/api/geometry.h"
 #include "renderer/api/material.h"
@@ -55,12 +62,15 @@ using namespace std;
 namespace appleseed {
 namespace studio {
 
-ProjectBuilder::ProjectBuilder(Project& project)
+ProjectBuilder::ProjectBuilder(
+    Project&            project,
+    ProjectTree&        project_tree)
   : m_project(project)
+  , m_project_tree(project_tree)
 {
 }
 
-ProjectItem ProjectBuilder::insert_bsdf(
+void ProjectBuilder::insert_bsdf(
     Assembly&           assembly,
     const Dictionary&   values) const
 {
@@ -72,14 +82,12 @@ ProjectItem ProjectBuilder::insert_bsdf(
 
     auto_release_ptr<BSDF> bsdf(factory->create(name.c_str(), values));
 
-    const ProjectItem project_item(ProjectItem::ItemBSDF, bsdf.get());
+    m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(bsdf.ref());
 
     assembly.bsdfs().insert(bsdf);
-
-    return project_item;
 }
 
-ProjectItem ProjectBuilder::insert_surface_shader(
+void ProjectBuilder::insert_surface_shader(
     Assembly&           assembly,
     const Dictionary&   values) const
 {
@@ -92,14 +100,12 @@ ProjectItem ProjectBuilder::insert_surface_shader(
 
     auto_release_ptr<SurfaceShader> surface_shader(factory->create(name.c_str(), values));
 
-    const ProjectItem project_item(ProjectItem::ItemSurfaceShader, surface_shader.get());
+    m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(surface_shader.ref());
 
     assembly.surface_shaders().insert(surface_shader);
-
-    return project_item;
 }
 
-ProjectItem ProjectBuilder::insert_material(
+void ProjectBuilder::insert_material(
     Assembly&           assembly,
     const Dictionary&   values) const
 {
@@ -113,19 +119,15 @@ ProjectItem ProjectBuilder::insert_material(
             assembly.bsdfs(),
             assembly.edfs()));
 
-    const ProjectItem project_item(ProjectItem::ItemMaterial, material.get());
+    m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(material.ref());
 
     assembly.materials().insert(material);
-
-    return project_item;
 }
 
-ProjectItemCollection ProjectBuilder::insert_objects(
+void ProjectBuilder::insert_objects(
     Assembly&           assembly,
     const string&       path) const
 {
-    ProjectItemCollection project_items;
-
     const string base_object_name = filesystem::path(path).replace_extension().filename();
 
     const MeshObjectArray mesh_objects =
@@ -141,7 +143,7 @@ ProjectItemCollection ProjectBuilder::insert_objects(
         object->get_parameters().insert("filename", filesystem::path(path).filename());
         object->get_parameters().insert("__common_base_name", base_object_name);
 
-        project_items.push_back(ProjectItem(ProjectItem::ItemObject, object));
+        m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(*object);
 
         const size_t object_index =
             assembly.objects().insert(auto_release_ptr<Object>(object));
@@ -156,24 +158,17 @@ ProjectItemCollection ProjectBuilder::insert_objects(
                 Transformd(Matrix4d::identity()),
                 material_indices));
 
-        project_items.push_back(
-            ProjectItem(ProjectItem::ItemObjectInstance, object_instance.get()));
+        m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(object_instance.ref());
 
         assembly.object_instances().insert(object_instance);
     }
-
-    return project_items;
 }
 
 namespace
 {
-    ProjectItemCollection insert_textures_impl(
-        TextureContainer&           textures,
-        TextureInstanceContainer&   texture_instances,
-        const string&               path)
+    auto_release_ptr<Texture> create_texture(
+        const string&   path)
     {
-        ProjectItemCollection project_items;
-
         const string texture_name = filesystem::path(path).replace_extension().filename();
 
         ParamArray texture_params;
@@ -181,57 +176,68 @@ namespace
         texture_params.insert("color_space", "srgb");
 
         SearchPaths search_paths;
-        auto_release_ptr<Texture> texture(
+        return auto_release_ptr<Texture>(
             DiskTexture2dFactory().create(
                 texture_name.c_str(),
                 texture_params,
                 search_paths));
+    }
 
-        project_items.push_back(ProjectItem(ProjectItem::ItemTexture, texture.get()));
-
-        const size_t texture_index = textures.insert(texture);
+    auto_release_ptr<TextureInstance> create_texture_instance(
+        const string&   texture_name,
+        const size_t    texture_index)
+    {
+        const string texture_instance_name = texture_name + "_inst";
 
         ParamArray texture_instance_params;
         texture_instance_params.insert("addressing_mode", "clamp");
         texture_instance_params.insert("filtering_mode", "bilinear");
 
-        const string texture_instance_name = texture_name + "_inst";
-        auto_release_ptr<TextureInstance> texture_instance(
+        return auto_release_ptr<TextureInstance>(
             TextureInstanceFactory::create(
                 texture_instance_name.c_str(),
                 texture_instance_params,
                 texture_index));
-
-        project_items.push_back(
-            ProjectItem(ProjectItem::ItemTextureInstance, texture_instance.get()));
-
-        texture_instances.insert(texture_instance);
-
-        return project_items;
     }
 }
 
-ProjectItemCollection ProjectBuilder::insert_textures(
+void ProjectBuilder::insert_textures(
     Assembly&           assembly,
     const string&       path) const
 {
-    return
-        insert_textures_impl(
-            assembly.textures(),
-            assembly.texture_instances(),
-            path);
+    auto_release_ptr<Texture> texture = create_texture(path);
+    const string texture_name = texture->get_name();
+
+    m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(texture.ref());
+
+    const size_t texture_index = assembly.textures().insert(texture);
+
+    auto_release_ptr<TextureInstance> texture_instance =
+        create_texture_instance(texture_name, texture_index);
+
+    m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(texture_instance.ref());
+
+    assembly.texture_instances().insert(texture_instance);
 }
 
-ProjectItemCollection ProjectBuilder::insert_textures(
+void ProjectBuilder::insert_textures(
     const string&       path) const
 {
     const Scene& scene = *m_project.get_scene();
 
-    return
-        insert_textures_impl(
-            scene.textures(),
-            scene.texture_instances(),
-            path);
+    auto_release_ptr<Texture> texture = create_texture(path);
+    const string texture_name = texture->get_name();
+
+    m_project_tree.get_texture_collection_item().add_item(texture.ref());
+
+    const size_t texture_index = scene.textures().insert(texture);
+
+    auto_release_ptr<TextureInstance> texture_instance =
+        create_texture_instance(texture_name, texture_index);
+
+    m_project_tree.get_texture_instance_collection_item().add_item(texture_instance.ref());
+
+    scene.texture_instances().insert(texture_instance);
 }
 
 }   // namespace studio

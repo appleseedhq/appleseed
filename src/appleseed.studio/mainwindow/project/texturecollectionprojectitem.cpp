@@ -1,0 +1,114 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2010 Francois Beaune
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Interface header.
+#include "texturecollectionprojectitem.h"
+
+// appleseed.studio headers.
+#include "mainwindow/project/projectbuilder.h"
+#include "mainwindow/project/textureprojectitem.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/foreach.h"
+
+// Qt headers.
+#include <QFileDialog>
+#include <QMenu>
+#include <QString>
+#include <QStringList>
+
+// Forward declarations.
+class QWidget;
+
+using namespace foundation;
+using namespace renderer;
+using namespace std;
+
+namespace appleseed {
+namespace studio {
+
+TextureCollectionProjectItem::TextureCollectionProjectItem(
+    ProjectBuilder&         project_builder,
+    const TextureContainer& textures,
+    Assembly*               assembly)
+  : CollectionProjectItemBase("Textures")
+  , m_project_builder(project_builder)
+  , m_assembly(assembly)
+{
+    for (const_each<TextureContainer> i = textures; i; ++i)
+        add_item(*i);
+}
+
+QMenu* TextureCollectionProjectItem::get_context_menu() const
+{
+    QMenu* menu = new QMenu(treeWidget());
+    menu->addAction("Import Textures...", this, SLOT(slot_import_textures()));
+    return menu;
+}
+
+void TextureCollectionProjectItem::add_item(const Texture& texture)
+{
+    addChild(new TextureProjectItem(texture));
+}
+
+namespace
+{
+    QStringList get_texture_file_paths(QWidget* parent)
+    {
+        QFileDialog::Options options;
+        QString selected_filter;
+
+        return
+            QFileDialog::getOpenFileNames(
+                parent,
+                "Import Textures...",
+                "",
+                "Texture Files (*.exr);;All Files (*.*)",
+                &selected_filter,
+                options);
+    }
+}
+
+void TextureCollectionProjectItem::slot_import_textures()
+{
+    const QStringList filepaths = get_texture_file_paths(treeWidget());
+
+    for (int i = 0; i < filepaths.size(); ++i)
+    {
+        const string filepath = filepaths[i].toStdString();
+
+        if (m_assembly)
+            m_project_builder.insert_textures(*m_assembly, filepath);
+        else m_project_builder.insert_textures(filepath);
+    }
+
+    //emit project_modified();
+}
+
+}   // namespace studio
+}   // namespace appleseed
