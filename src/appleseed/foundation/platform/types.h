@@ -35,7 +35,7 @@
 
 #if defined _MSC_VER
 
-// Define std::uintptr_t.
+// Define uintptr_t.
 #include <cstddef>
 
 namespace foundation
@@ -60,8 +60,8 @@ namespace foundation
 
 #elif defined __GNUC__
 
-// Define std::uintptr_t.
-#include <cstddef>
+// Define uintptr_t.
+#include <stdint.h>
 
 namespace foundation
 {
