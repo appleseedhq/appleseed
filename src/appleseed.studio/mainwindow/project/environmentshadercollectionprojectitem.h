@@ -30,7 +30,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENVIRONMENTSHADERCOLLECTIONPROJECTITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/collectionprojectitembase.h"
+#include "mainwindow/project/collectionprojectitem.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/scene.h"
@@ -40,14 +40,12 @@
 
 // Forward declarations.
 namespace appleseed { namespace studio { class ProjectBuilder; }}
-namespace renderer  { class EnvironmentShader; }
-class QMenu;
 
 namespace appleseed {
 namespace studio {
 
 class EnvironmentShaderCollectionProjectItem
-  : public CollectionProjectItemBase
+  : public CollectionProjectItem
 {
     Q_OBJECT
 
@@ -55,10 +53,6 @@ class EnvironmentShaderCollectionProjectItem
     EnvironmentShaderCollectionProjectItem(
         ProjectBuilder&                             project_builder,
         const renderer::EnvironmentShaderContainer& environment_shaders);
-
-    virtual QMenu* get_context_menu() const;
-
-    void add_item(const renderer::EnvironmentShader& environment_shader);
 
   private:
     ProjectBuilder& m_project_builder;

@@ -27,24 +27,14 @@
 //
 
 // Interface header.
-#include "colorprojectitem.h"
-
-// appleseed.renderer headers.
-#include "renderer/api/color.h"
-
-using namespace renderer;
+#include "collectionprojectitem.h"
 
 namespace appleseed {
 namespace studio {
 
-ColorProjectItem::ColorProjectItem(const ColorEntity& color)
-  : EntityProjectItem(color)
+CollectionProjectItem::CollectionProjectItem(const QString& title)
+  : CollectionProjectItemBase(title)
 {
-}
-
-QMenu* ColorProjectItem::get_context_menu() const
-{
-    return 0;
 }
 
 }   // namespace studio

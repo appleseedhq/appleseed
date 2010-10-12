@@ -31,10 +31,9 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/projectbuilder.h"
-#include "mainwindow/project/textureprojectitem.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
+// appleseed.renderer headers.
+#include "renderer/api/texture.h"
 
 // Qt headers.
 #include <QFileDialog>
@@ -42,10 +41,12 @@
 #include <QString>
 #include <QStringList>
 
+// Standard headers.
+#include <string>
+
 // Forward declarations.
 class QWidget;
 
-using namespace foundation;
 using namespace renderer;
 using namespace std;
 
@@ -56,12 +57,10 @@ TextureCollectionProjectItem::TextureCollectionProjectItem(
     ProjectBuilder&         project_builder,
     const TextureContainer& textures,
     Assembly*               assembly)
-  : CollectionProjectItemBase("Textures")
+  : CollectionProjectItem("Textures", textures)
   , m_project_builder(project_builder)
   , m_assembly(assembly)
 {
-    for (const_each<TextureContainer> i = textures; i; ++i)
-        add_item(*i);
 }
 
 QMenu* TextureCollectionProjectItem::get_context_menu() const
@@ -69,11 +68,6 @@ QMenu* TextureCollectionProjectItem::get_context_menu() const
     QMenu* menu = new QMenu(treeWidget());
     menu->addAction("Import Textures...", this, SLOT(slot_import_textures()));
     return menu;
-}
-
-void TextureCollectionProjectItem::add_item(const Texture& texture)
-{
-    addChild(new TextureProjectItem(texture));
 }
 
 namespace

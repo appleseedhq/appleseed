@@ -30,13 +30,11 @@
 #include "assemblyinstancecollectionprojectitem.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/assemblyinstanceprojectitem.h"
 #include "mainwindow/project/projectbuilder.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
+// appleseed.renderer headers.
+#include "renderer/api/scene.h"
 
-using namespace foundation;
 using namespace renderer;
 
 namespace appleseed {
@@ -45,21 +43,9 @@ namespace studio {
 AssemblyInstanceCollectionProjectItem::AssemblyInstanceCollectionProjectItem(
     ProjectBuilder&                     project_builder,
     const AssemblyInstanceContainer&    assembly_instances)
-  : CollectionProjectItemBase("Assembly Instances")
+  : CollectionProjectItem("Assembly Instances", assembly_instances)
   , m_project_builder(project_builder)
 {
-    for (const_each<AssemblyInstanceContainer> i = assembly_instances; i; ++i)
-        add_item(*i);
-}
-
-QMenu* AssemblyInstanceCollectionProjectItem::get_context_menu() const
-{
-    return 0;
-}
-
-void AssemblyInstanceCollectionProjectItem::add_item(const AssemblyInstance& assembly_instance)
-{
-    addChild(new AssemblyInstanceProjectItem(m_project_builder, assembly_instance));
 }
 
 }   // namespace studio

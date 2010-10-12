@@ -31,14 +31,13 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/colorcollectionprojectitem.h"
-#include "mainwindow/project/colorprojectitem.h"
 #include "mainwindow/project/texturecollectionprojectitem.h"
 #include "mainwindow/project/textureinstancecollectionprojectitem.h"
-#include "mainwindow/project/textureinstanceprojectitem.h"
-#include "mainwindow/project/textureprojectitem.h"
 
 // appleseed.renderer headers.
+#include "renderer/api/color.h"
 #include "renderer/api/scene.h"
+#include "renderer/api/texture.h"
 
 using namespace renderer;
 
@@ -64,18 +63,18 @@ QMenu* AssemblyProjectItem::get_context_menu() const
 
 void AssemblyProjectItem::add_item(const ColorEntity& color)
 {
-    m_color_collection_item->addChild(new ColorProjectItem(color));
+    m_color_collection_item->addChild(new EntityProjectItem(color));
 }
 
 void AssemblyProjectItem::add_item(const Texture& texture)
 {
-    m_texture_collection_project_item->addChild(new TextureProjectItem(texture));
+    m_texture_collection_project_item->addChild(new EntityProjectItem(texture));
 }
 
 void AssemblyProjectItem::add_item(const TextureInstance& texture_instance)
 {
     m_texture_instance_collection_project_item->addChild(
-        new TextureInstanceProjectItem(texture_instance));
+        new EntityProjectItem(texture_instance));
 }
 
 void AssemblyProjectItem::add_item(const BSDF& bsdf)

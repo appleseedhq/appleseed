@@ -48,7 +48,6 @@
 namespace appleseed { namespace studio { class AssemblyProjectItem; }}
 namespace appleseed { namespace studio { class ProjectBuilder; }}
 namespace renderer  { class Assembly; }
-class QMenu;
 
 namespace appleseed {
 namespace studio {
@@ -62,8 +61,6 @@ class AssemblyCollectionProjectItem
     AssemblyCollectionProjectItem(
         ProjectBuilder&                 project_builder,
         renderer::AssemblyContainer&    assemblies);
-
-    virtual QMenu* get_context_menu() const;
 
     void add_item(renderer::Assembly& assembly);
 

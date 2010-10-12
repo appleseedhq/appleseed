@@ -30,13 +30,11 @@
 #include "environmentedfcollectionprojectitem.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/environmentedfprojectitem.h"
 #include "mainwindow/project/projectbuilder.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
+// appleseed.renderer headers.
+#include "renderer/api/environmentedf.h"
 
-using namespace foundation;
 using namespace renderer;
 
 namespace appleseed {
@@ -45,21 +43,9 @@ namespace studio {
 EnvironmentEDFCollectionProjectItem::EnvironmentEDFCollectionProjectItem(
     ProjectBuilder&                 project_builder,
     const EnvironmentEDFContainer&  environment_edfs)
-  : CollectionProjectItemBase("Environment EDFs")
+  : CollectionProjectItem("Environment EDFs", environment_edfs)
   , m_project_builder(project_builder)
 {
-    for (const_each<EnvironmentEDFContainer> i = environment_edfs; i; ++i)
-        add_item(*i);
-}
-
-QMenu* EnvironmentEDFCollectionProjectItem::get_context_menu() const
-{
-    return 0;
-}
-
-void EnvironmentEDFCollectionProjectItem::add_item(const EnvironmentEDF& environment_edf)
-{
-    addChild(new EnvironmentEDFProjectItem(environment_edf));
 }
 
 }   // namespace studio

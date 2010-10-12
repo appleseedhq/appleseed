@@ -94,16 +94,14 @@ set(mainwindow_project_sources
     mainwindow/project/assemblycollectionprojectitem.h
     mainwindow/project/assemblyinstancecollectionprojectitem.cpp
     mainwindow/project/assemblyinstancecollectionprojectitem.h
-    mainwindow/project/assemblyinstanceprojectitem.cpp
-    mainwindow/project/assemblyinstanceprojectitem.h
     mainwindow/project/assemblyprojectitem.cpp
     mainwindow/project/assemblyprojectitem.h
+    mainwindow/project/collectionprojectitem.cpp
+    mainwindow/project/collectionprojectitem.h
     mainwindow/project/collectionprojectitembase.cpp
     mainwindow/project/collectionprojectitembase.h
     mainwindow/project/colorcollectionprojectitem.cpp
     mainwindow/project/colorcollectionprojectitem.h
-    mainwindow/project/colorprojectitem.cpp
-    mainwindow/project/colorprojectitem.h
     mainwindow/project/entitybrowserwindow.cpp
     mainwindow/project/entitybrowserwindow.h
     mainwindow/project/entitybrowserwindow.ui
@@ -114,12 +112,8 @@ set(mainwindow_project_sources
     mainwindow/project/entityprojectitem.h
     mainwindow/project/environmentedfcollectionprojectitem.cpp
     mainwindow/project/environmentedfcollectionprojectitem.h
-    mainwindow/project/environmentedfprojectitem.cpp
-    mainwindow/project/environmentedfprojectitem.h
     mainwindow/project/environmentshadercollectionprojectitem.cpp
     mainwindow/project/environmentshadercollectionprojectitem.h
-    mainwindow/project/environmentshaderprojectitem.cpp
-    mainwindow/project/environmentshaderprojectitem.h
     mainwindow/project/projectbuilder.cpp
     mainwindow/project/projectbuilder.h
     mainwindow/project/projectexplorer.cpp
@@ -135,10 +129,6 @@ set(mainwindow_project_sources
     mainwindow/project/texturecollectionprojectitem.h
     mainwindow/project/textureinstancecollectionprojectitem.cpp
     mainwindow/project/textureinstancecollectionprojectitem.h
-    mainwindow/project/textureinstanceprojectitem.cpp
-    mainwindow/project/textureinstanceprojectitem.h
-    mainwindow/project/textureprojectitem.cpp
-    mainwindow/project/textureprojectitem.h
 )
 list(APPEND appleseed.studio_sources
     ${mainwindow_project_sources}

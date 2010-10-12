@@ -30,13 +30,11 @@
 #include "colorcollectionprojectitem.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/colorprojectitem.h"
 #include "mainwindow/project/projectbuilder.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
+// appleseed.renderer headers.
+#include "renderer/api/color.h"
 
-using namespace foundation;
 using namespace renderer;
 
 namespace appleseed {
@@ -46,22 +44,10 @@ ColorCollectionProjectItem::ColorCollectionProjectItem(
     ProjectBuilder&         project_builder,
     const ColorContainer&   colors,
     Assembly*               assembly)
-  : CollectionProjectItemBase("Colors")
+  : CollectionProjectItem("Colors", colors)
   , m_project_builder(project_builder)
   , m_assembly(assembly)
 {
-    for (const_each<ColorContainer> i = colors; i; ++i)
-        add_item(*i);
-}
-
-QMenu* ColorCollectionProjectItem::get_context_menu() const
-{
-    return 0;
-}
-
-void ColorCollectionProjectItem::add_item(const ColorEntity& color)
-{
-    addChild(new ColorProjectItem(color));
 }
 
 }   // namespace studio

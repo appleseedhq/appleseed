@@ -55,8 +55,6 @@ template <> struct ProjectItemTypeMap<renderer::EnvironmentShaderContainer>  { t
 template <> struct ProjectItemTypeMap<renderer::TextureContainer>            { typedef TextureCollectionProjectItem T; };
 template <> struct ProjectItemTypeMap<renderer::TextureInstanceContainer>    { typedef TextureInstanceCollectionProjectItem T; };
 
-// Entities.
-
 }       // namespace studio
 }       // namespace appleseed
 

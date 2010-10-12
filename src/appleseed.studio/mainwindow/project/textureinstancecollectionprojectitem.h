@@ -30,7 +30,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTUREINSTANCECOLLECTIONPROJECTITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/collectionprojectitembase.h"
+#include "mainwindow/project/collectionprojectitem.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/scene.h"
@@ -40,14 +40,12 @@
 
 // Forward declarations.
 namespace appleseed { namespace studio { class ProjectBuilder; }}
-namespace renderer  { class TextureInstance; }
-class QMenu;
 
 namespace appleseed {
 namespace studio {
 
 class TextureInstanceCollectionProjectItem
-  : public CollectionProjectItemBase
+  : public CollectionProjectItem
 {
     Q_OBJECT
 
@@ -56,10 +54,6 @@ class TextureInstanceCollectionProjectItem
         ProjectBuilder&                             project_builder,
         const renderer::TextureInstanceContainer&   texture_instances,
         renderer::Assembly*                         assembly = 0);
-
-    virtual QMenu* get_context_menu() const;
-
-    void add_item(const renderer::TextureInstance& texture_instance);
 
   private:
     ProjectBuilder&     m_project_builder;

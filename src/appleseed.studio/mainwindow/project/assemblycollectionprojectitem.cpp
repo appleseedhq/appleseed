@@ -57,11 +57,6 @@ AssemblyCollectionProjectItem::AssemblyCollectionProjectItem(
         add_item(*i);
 }
 
-QMenu* AssemblyCollectionProjectItem::get_context_menu() const
-{
-    return 0;
-}
-
 void AssemblyCollectionProjectItem::add_item(Assembly& assembly)
 {
     AssemblyProjectItem* item = new AssemblyProjectItem(m_project_builder, assembly);

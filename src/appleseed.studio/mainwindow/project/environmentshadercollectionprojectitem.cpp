@@ -30,13 +30,11 @@
 #include "environmentshadercollectionprojectitem.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/environmentshaderprojectitem.h"
 #include "mainwindow/project/projectbuilder.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
+// appleseed.renderer headers.
+#include "renderer/api/environmentshader.h"
 
-using namespace foundation;
 using namespace renderer;
 
 namespace appleseed {
@@ -45,21 +43,9 @@ namespace studio {
 EnvironmentShaderCollectionProjectItem::EnvironmentShaderCollectionProjectItem(
     ProjectBuilder&                     project_builder,
     const EnvironmentShaderContainer&   environment_shaders)
-  : CollectionProjectItemBase("Environment Shaders")
+  : CollectionProjectItem("Environment Shaders", environment_shaders)
   , m_project_builder(project_builder)
 {
-    for (const_each<EnvironmentShaderContainer> i = environment_shaders; i; ++i)
-        add_item(*i);
-}
-
-QMenu* EnvironmentShaderCollectionProjectItem::get_context_menu() const
-{
-    return 0;
-}
-
-void EnvironmentShaderCollectionProjectItem::add_item(const EnvironmentShader& environment_shader)
-{
-    addChild(new EnvironmentShaderProjectItem(environment_shader));
 }
 
 }   // namespace studio

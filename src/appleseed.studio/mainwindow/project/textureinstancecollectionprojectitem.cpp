@@ -31,12 +31,10 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/projectbuilder.h"
-#include "mainwindow/project/textureinstanceprojectitem.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
+// appleseed.renderer headers.
+#include "renderer/api/scene.h"
 
-using namespace foundation;
 using namespace renderer;
 
 namespace appleseed {
@@ -46,22 +44,10 @@ TextureInstanceCollectionProjectItem::TextureInstanceCollectionProjectItem(
     ProjectBuilder&                 project_builder,
     const TextureInstanceContainer& texture_instances,
     Assembly*                       assembly)
-  : CollectionProjectItemBase("Texture Instances")
+  : CollectionProjectItem("Texture Instances", texture_instances)
   , m_project_builder(project_builder)
   , m_assembly(assembly)
 {
-    for (const_each<TextureInstanceContainer> i = texture_instances; i; ++i)
-        add_item(*i);
-}
-
-QMenu* TextureInstanceCollectionProjectItem::get_context_menu() const
-{
-    return 0;
-}
-
-void TextureInstanceCollectionProjectItem::add_item(const TextureInstance& texture_instance)
-{
-    addChild(new TextureInstanceProjectItem(texture_instance));
 }
 
 }   // namespace studio
