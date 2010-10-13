@@ -72,7 +72,7 @@ QMenu* AssemblyCollectionItem::get_context_menu() const
 
 void AssemblyCollectionItem::add_item(Assembly& assembly)
 {
-    AssemblyItem* item = new AssemblyItem(m_project_builder, assembly);
+    AssemblyItem* item = new AssemblyItem(m_scene, assembly, m_project_builder);
     m_assembly_items[assembly.get_uid()] = item;
     addChild(item);
 }

@@ -37,9 +37,11 @@
 #include "mainwindow/project/materialcollectionitem.h"
 #include "mainwindow/project/objectcollectionitem.h"
 #include "mainwindow/project/objectinstancecollectionitem.h"
+#include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/surfaceshadercollectionitem.h"
 #include "mainwindow/project/texturecollectionitem.h"
 #include "mainwindow/project/textureinstancecollectionitem.h"
+#include "mainwindow/project/tools.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
@@ -55,17 +57,23 @@
 // Qt headers.
 #include <QMenu>
 
+// Standard headers.
+#include <string>
+
 using namespace renderer;
+using namespace std;
 
 namespace appleseed {
 namespace studio {
 
 AssemblyItem::AssemblyItem(
-    ProjectBuilder& project_builder,
-    Assembly&       assembly)
+    Scene&          scene,
+    Assembly&       assembly,
+    ProjectBuilder& project_builder)
   : EntityItem(assembly)
-  , m_project_builder(project_builder)
+  , m_scene(scene)
   , m_assembly(assembly)
+  , m_project_builder(project_builder)
 {
     m_color_collection_item = add_collection_item(assembly.colors());
     m_texture_collection_item = add_collection_item(assembly.textures());
@@ -147,9 +155,33 @@ template <typename EntityContainer>
 typename ItemTypeMap<EntityContainer>::T* AssemblyItem::add_collection_item(EntityContainer& entities)
 {
     typedef ItemTypeMap<EntityContainer>::T ItemType;
+
     ItemType* item = new ItemType(m_assembly, entities, m_project_builder);
     addChild(item);
+
     return item;
+}
+
+void AssemblyItem::slot_instantiate()
+{
+    const string instance_name_suggestion =
+        get_name_suggestion(
+            string(m_assembly.get_name()) + "_inst",
+            m_scene.assembly_instances());
+
+    const string instance_name =
+        get_entity_name_dialog(
+            treeWidget(),
+            "Instantiate Assembly",
+            "Assembly Instance Name:",
+            instance_name_suggestion);
+
+    if (!instance_name.empty())
+    {
+        m_project_builder.insert_assembly_instance(instance_name, m_assembly);
+
+        //emit project_modified();
+    }
 }
 
 }   // namespace studio

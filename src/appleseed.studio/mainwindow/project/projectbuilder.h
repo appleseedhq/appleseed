@@ -59,6 +59,10 @@ class ProjectBuilder
     void insert_assembly(
         const std::string&                  name) const;
 
+    void insert_assembly_instance(
+        const std::string&                  name,
+        renderer::Assembly&                 assembly) const;
+
     void insert_bsdf(
         renderer::Assembly&                 assembly,
         const foundation::Dictionary&       values) const;

@@ -31,6 +31,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/assemblycollectionitem.h"
+#include "mainwindow/project/assemblyinstancecollectionitem.h"
 #include "mainwindow/project/assemblyitem.h"
 #include "mainwindow/project/projecttree.h"
 #include "mainwindow/project/texturecollectionitem.h"
@@ -44,6 +45,8 @@
 #include "renderer/api/texture.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/matrix.h"
+#include "foundation/math/transform.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/string.h"
 
@@ -79,6 +82,21 @@ void ProjectBuilder::insert_assembly(
     m_project_tree.get_assembly_collection_item().add_item(assembly.ref());
 
     m_project.get_scene()->assemblies().insert(assembly);
+}
+
+void ProjectBuilder::insert_assembly_instance(
+    const string&       name,
+    Assembly&           assembly) const
+{
+    auto_release_ptr<AssemblyInstance> assembly_instance(
+        AssemblyInstanceFactory::create(
+            name.c_str(),
+            assembly,
+            Transformd(Matrix4d::identity())));
+
+    m_project_tree.get_assembly_instance_collection_item().add_item(assembly_instance.ref());
+
+    m_project.get_scene()->assembly_instances().insert(assembly_instance);
 }
 
 void ProjectBuilder::insert_bsdf(

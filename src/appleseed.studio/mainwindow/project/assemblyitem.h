@@ -47,6 +47,7 @@ namespace renderer  { class Light; }
 namespace renderer  { class Material; }
 namespace renderer  { class Object; }
 namespace renderer  { class ObjectInstance; }
+namespace renderer  { class Scene; }
 namespace renderer  { class SurfaceShader; }
 namespace renderer  { class Texture; }
 namespace renderer  { class TextureInstance; }
@@ -62,8 +63,9 @@ class AssemblyItem
 
   public:
     AssemblyItem(
-        ProjectBuilder&     project_builder,
-        renderer::Assembly& assembly);
+        renderer::Scene&    scene,
+        renderer::Assembly& assembly,
+        ProjectBuilder&     project_builder);
 
     virtual QMenu* get_context_menu() const;
 
@@ -79,6 +81,7 @@ class AssemblyItem
     void add_item(const renderer::ObjectInstance& object_instance);
 
   private:
+    renderer::Scene&    m_scene;
     ProjectBuilder&     m_project_builder;
     renderer::Assembly& m_assembly;
 
@@ -95,6 +98,9 @@ class AssemblyItem
 
     template <typename EntityContainer>
     typename ItemTypeMap<EntityContainer>::T* add_collection_item(EntityContainer& entities);
+
+  private slots:
+    void slot_instantiate();
 };
 
 }       // namespace studio
