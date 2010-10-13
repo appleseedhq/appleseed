@@ -30,6 +30,7 @@
 #include "objectcollectionitem.h"
 
 // appleseed.studio headers.
+#include "mainwindow/project/entityitem.h"
 #include "mainwindow/project/projectbuilder.h"
 
 // appleseed.renderer headers.

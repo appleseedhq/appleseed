@@ -26,60 +26,26 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_COLLECTIONITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_COLLECTIONITEM_H
+// Interface header.
+#include "objectinstanceitem.h"
 
-// appleseed.studio headers.
-#include "mainwindow/project/collectionitembase.h"
-#include "mainwindow/project/itemtypemap.h"
-
-// appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
+// appleseed.renderer headers.
+#include "renderer/api/scene.h"
 
 // Qt headers.
-#include <QObject>
+#include <QColor>
 
-// Forward declarations.
-namespace renderer  { class Entity; }
-class QString;
+using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
-class CollectionItem
-  : public CollectionItemBase
+ObjectInstanceItem::ObjectInstanceItem(const ObjectInstance& object_instance)
+  : EntityItem(object_instance)
 {
-    Q_OBJECT
-
-  public:
-    explicit CollectionItem(const QString& title);
-
-    template <typename EntityContainer>
-    CollectionItem(
-        const QString&          title,
-        const EntityContainer&  entities);
-
-    template <typename Entity>
-    void add_item(const Entity& entity);
-};
-
-template <typename EntityContainer>
-CollectionItem::CollectionItem(
-    const QString&          title,
-    const EntityContainer&  entities)
-  : CollectionItemBase(title)
-{
-    for (foundation::const_each<EntityContainer> i = entities; i; ++i)
-        add_item(*i);
+    if (object_instance.get_material_indices().empty())
+        setTextColor(0, QColor(255, 0, 255, 255));
 }
 
-template <typename Entity>
-void CollectionItem::add_item(const Entity& entity)
-{
-    addChild(new ItemTypeMap<Entity>::T(entity));
-}
-
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_COLLECTIONITEM_H
+}   // namespace studio
+}   // namespace appleseed

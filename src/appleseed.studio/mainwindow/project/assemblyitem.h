@@ -94,7 +94,7 @@ class AssemblyItem
     ItemBase*           m_object_instance_collection_item;
 
     template <typename EntityContainer>
-    typename ItemTypeMap<EntityContainer>::T* add_item(EntityContainer& entities);
+    typename ItemTypeMap<EntityContainer>::T* add_collection_item(EntityContainer& entities);
 };
 
 }       // namespace studio

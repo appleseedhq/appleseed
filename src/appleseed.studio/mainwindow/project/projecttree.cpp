@@ -60,13 +60,13 @@ ProjectTree::ProjectTree(
 {
     const Scene& scene = *m_project.get_scene();
 
-    m_color_collection_item = add_item(scene.colors());
-    m_texture_collection_item = add_item(scene.textures());
-    m_texture_instance_collection_item = add_item(scene.texture_instances());
-    m_environment_edf_collection_item = add_item(scene.environment_edfs());
-    m_environment_shader_collection_item = add_item(scene.environment_shaders());
-    m_assembly_collection_item = add_item(scene.assemblies());
-    m_assembly_instance_collection_item = add_item(scene.assembly_instances());
+    m_color_collection_item = add_collection_item(scene.colors());
+    m_texture_collection_item = add_collection_item(scene.textures());
+    m_texture_instance_collection_item = add_collection_item(scene.texture_instances());
+    m_environment_edf_collection_item = add_collection_item(scene.environment_edfs());
+    m_environment_shader_collection_item = add_collection_item(scene.environment_shaders());
+    m_assembly_collection_item = add_collection_item(scene.assemblies());
+    m_assembly_instance_collection_item = add_collection_item(scene.assembly_instances());
 }
 
 ColorCollectionItem& ProjectTree::get_color_collection_item() const
@@ -95,33 +95,13 @@ AssemblyInstanceCollectionItem& ProjectTree::get_assembly_instance_collection_it
 }
 
 template <typename EntityContainer>
-typename ItemTypeMap<EntityContainer>::T* ProjectTree::add_item(EntityContainer& entities)
+typename ItemTypeMap<EntityContainer>::T* ProjectTree::add_collection_item(EntityContainer& entities)
 {
     typedef ItemTypeMap<EntityContainer>::T ItemType;
     ItemType* item = new ItemType(m_project_builder, entities);
     m_tree_widget->addTopLevelItem(item);
     return item;
 }
-
-/*
-void ProjectTree::insert_object_instance_items(
-    Assembly&         assembly)
-{
-    for (each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
-    {
-        QTreeWidgetItem* item =
-            insert_assembly_item(assembly, Item::ItemObjectInstance, *i);
-
-        const MaterialIndexArray& material_indices = i->get_material_indices();
-
-        if (material_indices.empty())
-        {
-            const QColor SolidPink(255, 0, 255, 255);
-            item->setTextColor(0, SolidPink);
-        }
-    }
-}
-*/
 
 }   // namespace studio
 }   // namespace appleseed

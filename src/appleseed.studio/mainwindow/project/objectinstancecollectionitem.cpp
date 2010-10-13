@@ -30,6 +30,7 @@
 #include "objectinstancecollectionitem.h"
 
 // appleseed.studio headers.
+#include "mainwindow/project/objectinstanceitem.h"
 #include "mainwindow/project/projectbuilder.h"
 
 using namespace renderer;

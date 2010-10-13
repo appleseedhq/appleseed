@@ -64,16 +64,16 @@ AssemblyItem::AssemblyItem(
   , m_project_builder(project_builder)
   , m_assembly(assembly)
 {
-    m_color_collection_item = add_item(assembly.colors());
-    m_texture_collection_item = add_item(assembly.textures());
-    m_texture_instance_collection_item = add_item(assembly.texture_instances());
-    m_bsdf_collection_item = add_item(assembly.bsdfs());
-    m_edf_collection_item = add_item(assembly.edfs());
-    m_surface_shader_collection_item = add_item(assembly.surface_shaders());
-    m_material_collection_item = add_item(assembly.materials());
-    m_light_collection_item = add_item(assembly.lights());
-    m_object_collection_item = add_item(assembly.objects());
-    m_object_instance_collection_item = add_item(assembly.object_instances());
+    m_color_collection_item = add_collection_item(assembly.colors());
+    m_texture_collection_item = add_collection_item(assembly.textures());
+    m_texture_instance_collection_item = add_collection_item(assembly.texture_instances());
+    m_bsdf_collection_item = add_collection_item(assembly.bsdfs());
+    m_edf_collection_item = add_collection_item(assembly.edfs());
+    m_surface_shader_collection_item = add_collection_item(assembly.surface_shaders());
+    m_material_collection_item = add_collection_item(assembly.materials());
+    m_light_collection_item = add_collection_item(assembly.lights());
+    m_object_collection_item = add_collection_item(assembly.objects());
+    m_object_instance_collection_item = add_collection_item(assembly.object_instances());
 }
 
 QMenu* AssemblyItem::get_context_menu() const
@@ -132,7 +132,7 @@ void AssemblyItem::add_item(const ObjectInstance& object_instance)
 }
 
 template <typename EntityContainer>
-typename ItemTypeMap<EntityContainer>::T* AssemblyItem::add_item(EntityContainer& entities)
+typename ItemTypeMap<EntityContainer>::T* AssemblyItem::add_collection_item(EntityContainer& entities)
 {
     typedef ItemTypeMap<EntityContainer>::T ItemType;
     ItemType* item = new ItemType(m_project_builder, entities, &m_assembly);
