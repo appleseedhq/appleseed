@@ -26,39 +26,29 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENVIRONMENTEDFCOLLECTIONPROJECTITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENVIRONMENTEDFCOLLECTIONPROJECTITEM_H
+// Interface header.
+#include "surfaceshadercollectionitem.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/collectionprojectitem.h"
+#include "mainwindow/project/projectbuilder.h"
 
 // appleseed.renderer headers.
-#include "renderer/api/scene.h"
+#include "renderer/api/surfaceshader.h"
 
-// Qt headers.
-#include <QObject>
-
-// Forward declarations.
-namespace appleseed { namespace studio { class ProjectBuilder; }}
+using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
-class EnvironmentEDFCollectionProjectItem
-  : public CollectionProjectItem
+SurfaceShaderCollectionItem::SurfaceShaderCollectionItem(
+    ProjectBuilder&                 project_builder,
+    const SurfaceShaderContainer&   surface_shaders,
+    Assembly*                       assembly)
+  : CollectionItem("Surface Shaders", surface_shaders)
+  , m_project_builder(project_builder)
+  , m_assembly(assembly)
 {
-    Q_OBJECT
+}
 
-  public:
-    EnvironmentEDFCollectionProjectItem(
-        ProjectBuilder&                             project_builder,
-        const renderer::EnvironmentEDFContainer&    environment_edfs);
-
-  private:
-    ProjectBuilder& m_project_builder;
-};
-
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENVIRONMENTEDFCOLLECTIONPROJECTITEM_H
+}   // namespace studio
+}   // namespace appleseed

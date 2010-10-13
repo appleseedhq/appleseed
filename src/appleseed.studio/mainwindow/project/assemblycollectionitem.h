@@ -26,53 +26,54 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "assemblycollectionprojectitem.h"
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYCOLLECTIONITEM_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYCOLLECTIONITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/assemblyprojectitem.h"
+#include "mainwindow/project/collectionitembase.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/scene.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
+#include "foundation/utility/uid.h"
+
+// Qt headers.
+#include <QObject>
 
 // Standard headers.
-#include <cassert>
+#include <map>
 
-using namespace foundation;
-using namespace renderer;
+// Forward declarations.
+namespace appleseed { namespace studio { class AssemblyItem; }}
+namespace appleseed { namespace studio { class ProjectBuilder; }}
+namespace renderer  { class Assembly; }
 
 namespace appleseed {
 namespace studio {
 
-AssemblyCollectionProjectItem::AssemblyCollectionProjectItem(
-    ProjectBuilder&     project_builder,
-    AssemblyContainer&  assemblies)
-  : CollectionProjectItemBase("Assemblies")
-  , m_project_builder(project_builder)
+class AssemblyCollectionItem
+  : public CollectionItemBase
 {
-    for (each<AssemblyContainer> i = assemblies; i; ++i)
-        add_item(*i);
-}
+    Q_OBJECT
 
-void AssemblyCollectionProjectItem::add_item(Assembly& assembly)
-{
-    AssemblyProjectItem* item = new AssemblyProjectItem(m_project_builder, assembly);
-    m_assembly_project_items[assembly.get_uid()] = item;
-    addChild(item);
-}
+  public:
+    AssemblyCollectionItem(
+        ProjectBuilder&                 project_builder,
+        renderer::AssemblyContainer&    assemblies);
 
-AssemblyProjectItem& AssemblyCollectionProjectItem::get_item(const Assembly& assembly) const
-{
-    const AssemblyProjectItemMap::const_iterator i =
-        m_assembly_project_items.find(assembly.get_uid());
+    void add_item(renderer::Assembly& assembly);
 
-    assert(i != m_assembly_project_items.end());
+    AssemblyItem& get_item(const renderer::Assembly& assembly) const;
 
-    return *(i->second);
-}
+  private:
+    typedef std::map<foundation::UniqueID, AssemblyItem*> AssemblyItemMap;
 
-}   // namespace studio
-}   // namespace appleseed
+    ProjectBuilder& m_project_builder;
+    AssemblyItemMap m_assembly_items;
+};
+
+}       // namespace studio
+}       // namespace appleseed
+
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYCOLLECTIONITEM_H

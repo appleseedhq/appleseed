@@ -26,11 +26,11 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENVIRONMENTSHADERCOLLECTIONPROJECTITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENVIRONMENTSHADERCOLLECTIONPROJECTITEM_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENVIRONMENTEDFCOLLECTIONITEM_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENVIRONMENTEDFCOLLECTIONITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/collectionprojectitem.h"
+#include "mainwindow/project/collectionitem.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/scene.h"
@@ -44,15 +44,15 @@ namespace appleseed { namespace studio { class ProjectBuilder; }}
 namespace appleseed {
 namespace studio {
 
-class EnvironmentShaderCollectionProjectItem
-  : public CollectionProjectItem
+class EnvironmentEDFCollectionItem
+  : public CollectionItem
 {
     Q_OBJECT
 
   public:
-    EnvironmentShaderCollectionProjectItem(
+    EnvironmentEDFCollectionItem(
         ProjectBuilder&                             project_builder,
-        const renderer::EnvironmentShaderContainer& environment_shaders);
+        const renderer::EnvironmentEDFContainer&    environment_edfs);
 
   private:
     ProjectBuilder& m_project_builder;
@@ -61,4 +61,4 @@ class EnvironmentShaderCollectionProjectItem
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENVIRONMENTSHADERCOLLECTIONPROJECTITEM_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENVIRONMENTEDFCOLLECTIONITEM_H

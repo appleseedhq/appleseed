@@ -27,23 +27,20 @@
 //
 
 // Interface header.
-#include "assemblyinstancecollectionprojectitem.h"
+#include "assemblyinstancecollectionitem.h"
 
 // appleseed.studio headers.
 #include "mainwindow/project/projectbuilder.h"
-
-// appleseed.renderer headers.
-#include "renderer/api/scene.h"
 
 using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
-AssemblyInstanceCollectionProjectItem::AssemblyInstanceCollectionProjectItem(
+AssemblyInstanceCollectionItem::AssemblyInstanceCollectionItem(
     ProjectBuilder&                     project_builder,
     const AssemblyInstanceContainer&    assembly_instances)
-  : CollectionProjectItem("Assembly Instances", assembly_instances)
+  : CollectionItem("Assembly Instances", assembly_instances)
   , m_project_builder(project_builder)
 {
 }

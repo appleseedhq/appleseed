@@ -27,24 +27,24 @@
 //
 
 // Interface header.
-#include "textureinstancecollectionprojectitem.h"
+#include "lightcollectionitem.h"
 
 // appleseed.studio headers.
 #include "mainwindow/project/projectbuilder.h"
 
 // appleseed.renderer headers.
-#include "renderer/api/scene.h"
+#include "renderer/api/light.h"
 
 using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
-TextureInstanceCollectionProjectItem::TextureInstanceCollectionProjectItem(
-    ProjectBuilder&                 project_builder,
-    const TextureInstanceContainer& texture_instances,
-    Assembly*                       assembly)
-  : CollectionProjectItem("Texture Instances", texture_instances)
+LightCollectionItem::LightCollectionItem(
+    ProjectBuilder&         project_builder,
+    const LightContainer&   lights,
+    Assembly*               assembly)
+  : CollectionItem("Lights", lights)
   , m_project_builder(project_builder)
   , m_assembly(assembly)
 {

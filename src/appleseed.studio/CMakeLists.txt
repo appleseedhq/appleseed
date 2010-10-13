@@ -90,45 +90,59 @@ source_group("main" FILES
 )
 
 set(mainwindow_project_sources
-    mainwindow/project/assemblycollectionprojectitem.cpp
-    mainwindow/project/assemblycollectionprojectitem.h
-    mainwindow/project/assemblyinstancecollectionprojectitem.cpp
-    mainwindow/project/assemblyinstancecollectionprojectitem.h
-    mainwindow/project/assemblyprojectitem.cpp
-    mainwindow/project/assemblyprojectitem.h
-    mainwindow/project/collectionprojectitem.cpp
-    mainwindow/project/collectionprojectitem.h
-    mainwindow/project/collectionprojectitembase.cpp
-    mainwindow/project/collectionprojectitembase.h
-    mainwindow/project/colorcollectionprojectitem.cpp
-    mainwindow/project/colorcollectionprojectitem.h
+    mainwindow/project/assemblycollectionitem.cpp
+    mainwindow/project/assemblycollectionitem.h
+    mainwindow/project/assemblyinstancecollectionitem.cpp
+    mainwindow/project/assemblyinstancecollectionitem.h
+    mainwindow/project/assemblyitem.cpp
+    mainwindow/project/assemblyitem.h
+    mainwindow/project/bsdfcollectionitem.cpp
+    mainwindow/project/bsdfcollectionitem.h
+    mainwindow/project/collectionitem.cpp
+    mainwindow/project/collectionitem.h
+    mainwindow/project/collectionitembase.cpp
+    mainwindow/project/collectionitembase.h
+    mainwindow/project/colorcollectionitem.cpp
+    mainwindow/project/colorcollectionitem.h
+    mainwindow/project/edfcollectionitem.cpp
+    mainwindow/project/edfcollectionitem.h
     mainwindow/project/entitybrowserwindow.cpp
     mainwindow/project/entitybrowserwindow.h
     mainwindow/project/entitybrowserwindow.ui
     mainwindow/project/entityeditorwindow.cpp
     mainwindow/project/entityeditorwindow.h
     mainwindow/project/entityeditorwindow.ui
-    mainwindow/project/entityprojectitem.cpp
-    mainwindow/project/entityprojectitem.h
-    mainwindow/project/environmentedfcollectionprojectitem.cpp
-    mainwindow/project/environmentedfcollectionprojectitem.h
-    mainwindow/project/environmentshadercollectionprojectitem.cpp
-    mainwindow/project/environmentshadercollectionprojectitem.h
+    mainwindow/project/entityitem.cpp
+    mainwindow/project/entityitem.h
+    mainwindow/project/environmentedfcollectionitem.cpp
+    mainwindow/project/environmentedfcollectionitem.h
+    mainwindow/project/environmentshadercollectionitem.cpp
+    mainwindow/project/environmentshadercollectionitem.h
+    mainwindow/project/itembase.cpp
+    mainwindow/project/itembase.h
+    mainwindow/project/itemtypemap.h
+    mainwindow/project/lightcollectionitem.cpp
+    mainwindow/project/lightcollectionitem.h
+    mainwindow/project/materialcollectionitem.cpp
+    mainwindow/project/materialcollectionitem.h
+    mainwindow/project/objectcollectionitem.cpp
+    mainwindow/project/objectcollectionitem.h
+    mainwindow/project/objectinstancecollectionitem.cpp
+    mainwindow/project/objectinstancecollectionitem.h
     mainwindow/project/projectbuilder.cpp
     mainwindow/project/projectbuilder.h
     mainwindow/project/projectexplorer.cpp
     mainwindow/project/projectexplorer.h
-    mainwindow/project/projectitembase.cpp
-    mainwindow/project/projectitembase.h
-    mainwindow/project/projectitemtypemap.h
     mainwindow/project/projectmanager.cpp
     mainwindow/project/projectmanager.h
     mainwindow/project/projecttree.cpp
     mainwindow/project/projecttree.h
-    mainwindow/project/texturecollectionprojectitem.cpp
-    mainwindow/project/texturecollectionprojectitem.h
-    mainwindow/project/textureinstancecollectionprojectitem.cpp
-    mainwindow/project/textureinstancecollectionprojectitem.h
+    mainwindow/project/surfaceshadercollectionitem.cpp
+    mainwindow/project/surfaceshadercollectionitem.h
+    mainwindow/project/texturecollectionitem.cpp
+    mainwindow/project/texturecollectionitem.h
+    mainwindow/project/textureinstancecollectionitem.cpp
+    mainwindow/project/textureinstancecollectionitem.h
 )
 list(APPEND appleseed.studio_sources
     ${mainwindow_project_sources}

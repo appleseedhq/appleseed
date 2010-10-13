@@ -26,39 +26,35 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYINSTANCECOLLECTIONPROJECTITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYINSTANCECOLLECTIONPROJECTITEM_H
-
-// appleseed.studio headers.
-#include "mainwindow/project/collectionprojectitem.h"
-
-// appleseed.renderer headers.
-#include "renderer/api/scene.h"
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ITEMBASE_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ITEMBASE_H
 
 // Qt headers.
 #include <QObject>
+#include <QTreeWidgetItem>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class ProjectBuilder; }}
+class QMenu;
+class QString;
 
 namespace appleseed {
 namespace studio {
 
-class AssemblyInstanceCollectionProjectItem
-  : public CollectionProjectItem
+class ItemBase
+  : public QObject
+  , public QTreeWidgetItem
 {
     Q_OBJECT
 
   public:
-    AssemblyInstanceCollectionProjectItem(
-        ProjectBuilder&                             project_builder,
-        const renderer::AssemblyInstanceContainer&  assembly_instances);
+    explicit ItemBase(const QString& title);
 
-  private:
-    ProjectBuilder& m_project_builder;
+    virtual ~ItemBase() {}
+
+    virtual QMenu* get_context_menu() const;
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYINSTANCECOLLECTIONPROJECTITEM_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ITEMBASE_H

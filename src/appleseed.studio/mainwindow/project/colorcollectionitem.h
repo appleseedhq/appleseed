@@ -26,54 +26,41 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYCOLLECTIONPROJECTITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYCOLLECTIONPROJECTITEM_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_COLORCOLLECTIONITEM_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_COLORCOLLECTIONITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/collectionprojectitembase.h"
+#include "mainwindow/project/collectionitem.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/scene.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/uid.h"
-
 // Qt headers.
 #include <QObject>
 
-// Standard headers.
-#include <map>
-
 // Forward declarations.
-namespace appleseed { namespace studio { class AssemblyProjectItem; }}
 namespace appleseed { namespace studio { class ProjectBuilder; }}
-namespace renderer  { class Assembly; }
 
 namespace appleseed {
 namespace studio {
 
-class AssemblyCollectionProjectItem
-  : public CollectionProjectItemBase
+class ColorCollectionItem
+  : public CollectionItem
 {
     Q_OBJECT
 
   public:
-    AssemblyCollectionProjectItem(
-        ProjectBuilder&                 project_builder,
-        renderer::AssemblyContainer&    assemblies);
-
-    void add_item(renderer::Assembly& assembly);
-
-    AssemblyProjectItem& get_item(const renderer::Assembly& assembly) const;
+    ColorCollectionItem(
+        ProjectBuilder&                     project_builder,
+        const renderer::ColorContainer&     colors,
+        renderer::Assembly*                 assembly = 0);
 
   private:
-    typedef std::map<foundation::UniqueID, AssemblyProjectItem*> AssemblyProjectItemMap;
-
-    ProjectBuilder&         m_project_builder;
-    AssemblyProjectItemMap  m_assembly_project_items;
+    ProjectBuilder&     m_project_builder;
+    renderer::Assembly* m_assembly;
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYCOLLECTIONPROJECTITEM_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_COLORCOLLECTIONITEM_H

@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "texturecollectionprojectitem.h"
+#include "texturecollectionitem.h"
 
 // appleseed.studio headers.
 #include "mainwindow/project/projectbuilder.h"
@@ -53,17 +53,17 @@ using namespace std;
 namespace appleseed {
 namespace studio {
 
-TextureCollectionProjectItem::TextureCollectionProjectItem(
+TextureCollectionItem::TextureCollectionItem(
     ProjectBuilder&         project_builder,
     const TextureContainer& textures,
     Assembly*               assembly)
-  : CollectionProjectItem("Textures", textures)
+  : CollectionItem("Textures", textures)
   , m_project_builder(project_builder)
   , m_assembly(assembly)
 {
 }
 
-QMenu* TextureCollectionProjectItem::get_context_menu() const
+QMenu* TextureCollectionItem::get_context_menu() const
 {
     QMenu* menu = new QMenu(treeWidget());
     menu->addAction("Import Textures...", this, SLOT(slot_import_textures()));
@@ -88,7 +88,7 @@ namespace
     }
 }
 
-void TextureCollectionProjectItem::slot_import_textures()
+void TextureCollectionItem::slot_import_textures()
 {
     const QStringList filepaths = get_texture_file_paths(treeWidget());
 

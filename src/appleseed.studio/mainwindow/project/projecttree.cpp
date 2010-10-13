@@ -30,13 +30,13 @@
 #include "projecttree.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/assemblycollectionprojectitem.h"
-#include "mainwindow/project/assemblyinstancecollectionprojectitem.h"
-#include "mainwindow/project/colorcollectionprojectitem.h"
-#include "mainwindow/project/environmentedfcollectionprojectitem.h"
-#include "mainwindow/project/environmentshadercollectionprojectitem.h"
-#include "mainwindow/project/texturecollectionprojectitem.h"
-#include "mainwindow/project/textureinstancecollectionprojectitem.h"
+#include "mainwindow/project/assemblycollectionitem.h"
+#include "mainwindow/project/assemblyinstancecollectionitem.h"
+#include "mainwindow/project/colorcollectionitem.h"
+#include "mainwindow/project/environmentedfcollectionitem.h"
+#include "mainwindow/project/environmentshadercollectionitem.h"
+#include "mainwindow/project/texturecollectionitem.h"
+#include "mainwindow/project/textureinstancecollectionitem.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/project.h"
@@ -69,35 +69,35 @@ ProjectTree::ProjectTree(
     m_assembly_instance_collection_item = add_item(scene.assembly_instances());
 }
 
-ColorCollectionProjectItem& ProjectTree::get_color_collection_item() const
+ColorCollectionItem& ProjectTree::get_color_collection_item() const
 {
     return *m_color_collection_item;
 }
 
-TextureCollectionProjectItem& ProjectTree::get_texture_collection_item() const
+TextureCollectionItem& ProjectTree::get_texture_collection_item() const
 {
     return *m_texture_collection_item;
 }
 
-TextureInstanceCollectionProjectItem& ProjectTree::get_texture_instance_collection_item() const
+TextureInstanceCollectionItem& ProjectTree::get_texture_instance_collection_item() const
 {
     return *m_texture_instance_collection_item;
 }
 
-AssemblyCollectionProjectItem& ProjectTree::get_assembly_collection_item() const
+AssemblyCollectionItem& ProjectTree::get_assembly_collection_item() const
 {
     return *m_assembly_collection_item;
 }
 
-AssemblyInstanceCollectionProjectItem& ProjectTree::get_assembly_instance_collection_item() const
+AssemblyInstanceCollectionItem& ProjectTree::get_assembly_instance_collection_item() const
 {
     return *m_assembly_instance_collection_item;
 }
 
 template <typename EntityContainer>
-typename ProjectItemTypeMap<EntityContainer>::T* ProjectTree::add_item(EntityContainer& entities)
+typename ItemTypeMap<EntityContainer>::T* ProjectTree::add_item(EntityContainer& entities)
 {
-    typedef ProjectItemTypeMap<EntityContainer>::T ItemType;
+    typedef ItemTypeMap<EntityContainer>::T ItemType;
     ItemType* item = new ItemType(m_project_builder, entities);
     m_tree_widget->addTopLevelItem(item);
     return item;
@@ -110,7 +110,7 @@ void ProjectTree::insert_object_instance_items(
     for (each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
     {
         QTreeWidgetItem* item =
-            insert_assembly_item(assembly, ProjectItem::ItemObjectInstance, *i);
+            insert_assembly_item(assembly, Item::ItemObjectInstance, *i);
 
         const MaterialIndexArray& material_indices = i->get_material_indices();
 

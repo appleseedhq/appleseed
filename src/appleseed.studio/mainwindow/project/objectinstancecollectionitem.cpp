@@ -27,24 +27,23 @@
 //
 
 // Interface header.
-#include "environmentshadercollectionprojectitem.h"
+#include "objectinstancecollectionitem.h"
 
 // appleseed.studio headers.
 #include "mainwindow/project/projectbuilder.h"
-
-// appleseed.renderer headers.
-#include "renderer/api/environmentshader.h"
 
 using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
-EnvironmentShaderCollectionProjectItem::EnvironmentShaderCollectionProjectItem(
-    ProjectBuilder&                     project_builder,
-    const EnvironmentShaderContainer&   environment_shaders)
-  : CollectionProjectItem("Environment Shaders", environment_shaders)
+ObjectInstanceCollectionItem::ObjectInstanceCollectionItem(
+    ProjectBuilder&                 project_builder,
+    const ObjectInstanceContainer&  object_instances,
+    Assembly*                       assembly)
+  : CollectionItem("Object Instances", object_instances)
   , m_project_builder(project_builder)
+  , m_assembly(assembly)
 {
 }
 

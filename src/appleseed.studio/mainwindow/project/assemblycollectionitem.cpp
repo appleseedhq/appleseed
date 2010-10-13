@@ -26,31 +26,47 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_COLLECTIONPROJECTITEMBASE_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_COLLECTIONPROJECTITEMBASE_H
+// Interface header.
+#include "assemblycollectionitem.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/projectitembase.h"
+#include "mainwindow/project/assemblyitem.h"
 
-// Qt headers.
-#include <QObject>
+// appleseed.foundation headers.
+#include "foundation/utility/foreach.h"
 
-// Forward declarations.
-class QString;
+// Standard headers.
+#include <cassert>
+
+using namespace foundation;
+using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
-class CollectionProjectItemBase
-  : public ProjectItemBase
+AssemblyCollectionItem::AssemblyCollectionItem(
+    ProjectBuilder&     project_builder,
+    AssemblyContainer&  assemblies)
+  : CollectionItemBase("Assemblies")
+  , m_project_builder(project_builder)
 {
-    Q_OBJECT
+    for (each<AssemblyContainer> i = assemblies; i; ++i)
+        add_item(*i);
+}
 
-  public:
-    explicit CollectionProjectItemBase(const QString& title);
-};
+void AssemblyCollectionItem::add_item(Assembly& assembly)
+{
+    AssemblyItem* item = new AssemblyItem(m_project_builder, assembly);
+    m_assembly_items[assembly.get_uid()] = item;
+    addChild(item);
+}
 
-}       // namespace studio
-}       // namespace appleseed
+AssemblyItem& AssemblyCollectionItem::get_item(const Assembly& assembly) const
+{
+    const AssemblyItemMap::const_iterator i = m_assembly_items.find(assembly.get_uid());
+    assert(i != m_assembly_items.end());
+    return *(i->second);
+}
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_COLLECTIONPROJECTITEMBASE_H
+}   // namespace studio
+}   // namespace appleseed

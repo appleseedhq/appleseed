@@ -27,13 +27,24 @@
 //
 
 // Interface header.
-#include "collectionprojectitem.h"
+#include "environmentedfcollectionitem.h"
+
+// appleseed.studio headers.
+#include "mainwindow/project/projectbuilder.h"
+
+// appleseed.renderer headers.
+#include "renderer/api/environmentedf.h"
+
+using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
-CollectionProjectItem::CollectionProjectItem(const QString& title)
-  : CollectionProjectItemBase(title)
+EnvironmentEDFCollectionItem::EnvironmentEDFCollectionItem(
+    ProjectBuilder&                 project_builder,
+    const EnvironmentEDFContainer&  environment_edfs)
+  : CollectionItem("Environment EDFs", environment_edfs)
+  , m_project_builder(project_builder)
 {
 }
 

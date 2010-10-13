@@ -26,11 +26,11 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_COLORCOLLECTIONPROJECTITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_COLORCOLLECTIONPROJECTITEM_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYINSTANCECOLLECTIONITEM_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYINSTANCECOLLECTIONITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/collectionprojectitem.h"
+#include "mainwindow/project/collectionitem.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/scene.h"
@@ -44,23 +44,21 @@ namespace appleseed { namespace studio { class ProjectBuilder; }}
 namespace appleseed {
 namespace studio {
 
-class ColorCollectionProjectItem
-  : public CollectionProjectItem
+class AssemblyInstanceCollectionItem
+  : public CollectionItem
 {
     Q_OBJECT
 
   public:
-    ColorCollectionProjectItem(
-        ProjectBuilder&                     project_builder,
-        const renderer::ColorContainer&     colors,
-        renderer::Assembly*                 assembly = 0);
+    AssemblyInstanceCollectionItem(
+        ProjectBuilder&                             project_builder,
+        const renderer::AssemblyInstanceContainer&  assembly_instances);
 
   private:
-    ProjectBuilder&     m_project_builder;
-    renderer::Assembly* m_assembly;
+    ProjectBuilder& m_project_builder;
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_COLORCOLLECTIONPROJECTITEM_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYINSTANCECOLLECTIONITEM_H

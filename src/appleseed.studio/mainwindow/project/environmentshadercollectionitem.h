@@ -26,11 +26,11 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTUREINSTANCECOLLECTIONPROJECTITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTUREINSTANCECOLLECTIONPROJECTITEM_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENVIRONMENTSHADERCOLLECTIONITEM_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENVIRONMENTSHADERCOLLECTIONITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/collectionprojectitem.h"
+#include "mainwindow/project/collectionitem.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/scene.h"
@@ -44,23 +44,21 @@ namespace appleseed { namespace studio { class ProjectBuilder; }}
 namespace appleseed {
 namespace studio {
 
-class TextureInstanceCollectionProjectItem
-  : public CollectionProjectItem
+class EnvironmentShaderCollectionItem
+  : public CollectionItem
 {
     Q_OBJECT
 
   public:
-    TextureInstanceCollectionProjectItem(
+    EnvironmentShaderCollectionItem(
         ProjectBuilder&                             project_builder,
-        const renderer::TextureInstanceContainer&   texture_instances,
-        renderer::Assembly*                         assembly = 0);
+        const renderer::EnvironmentShaderContainer& environment_shaders);
 
   private:
-    ProjectBuilder&     m_project_builder;
-    renderer::Assembly* m_assembly;
+    ProjectBuilder& m_project_builder;
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTUREINSTANCECOLLECTIONPROJECTITEM_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENVIRONMENTSHADERCOLLECTIONITEM_H

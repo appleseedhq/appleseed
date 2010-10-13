@@ -27,21 +27,26 @@
 //
 
 // Interface header.
-#include "entityprojectitem.h"
+#include "bsdfcollectionitem.h"
+
+// appleseed.studio headers.
+#include "mainwindow/project/projectbuilder.h"
 
 // appleseed.renderer headers.
-#include "renderer/api/entity.h"
-
-// Qt headers.
-#include <QString>
+#include "renderer/api/bsdf.h"
 
 using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
-EntityProjectItem::EntityProjectItem(const Entity& entity)
-  : ProjectItemBase(QString::fromAscii(entity.get_name()))
+BSDFCollectionItem::BSDFCollectionItem(
+    ProjectBuilder&         project_builder,
+    const BSDFContainer&    bsdfs,
+    Assembly*               assembly)
+  : CollectionItem("BSDFs", bsdfs)
+  , m_project_builder(project_builder)
+  , m_assembly(assembly)
 {
 }
 

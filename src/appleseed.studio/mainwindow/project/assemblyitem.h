@@ -26,19 +26,19 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYPROJECTITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYPROJECTITEM_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYITEM_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/entityprojectitem.h"
-#include "mainwindow/project/projectitemtypemap.h"
+#include "mainwindow/project/entityitem.h"
+#include "mainwindow/project/itemtypemap.h"
 
 // Qt headers.
 #include <QObject>
 
 // Forward declarations.
 namespace appleseed { namespace studio { class ProjectBuilder; }}
-namespace appleseed { namespace studio { class ProjectItemBase; }}
+namespace appleseed { namespace studio { class ItemBase; }}
 namespace renderer  { class Assembly; }
 namespace renderer  { class ColorEntity; }
 namespace renderer  { class BSDF; }
@@ -55,13 +55,13 @@ class QMenu;
 namespace appleseed {
 namespace studio {
 
-class AssemblyProjectItem
-  : public EntityProjectItem
+class AssemblyItem
+  : public EntityItem
 {
     Q_OBJECT
 
   public:
-    AssemblyProjectItem(
+    AssemblyItem(
         ProjectBuilder&     project_builder,
         renderer::Assembly& assembly);
 
@@ -82,15 +82,22 @@ class AssemblyProjectItem
     ProjectBuilder&     m_project_builder;
     renderer::Assembly& m_assembly;
 
-    ProjectItemBase*    m_color_collection_item;
-    ProjectItemBase*    m_texture_collection_project_item;
-    ProjectItemBase*    m_texture_instance_collection_project_item;
+    ItemBase*           m_color_collection_item;
+    ItemBase*           m_texture_collection_item;
+    ItemBase*           m_texture_instance_collection_item;
+    ItemBase*           m_bsdf_collection_item;
+    ItemBase*           m_edf_collection_item;
+    ItemBase*           m_surface_shader_collection_item;
+    ItemBase*           m_material_collection_item;
+    ItemBase*           m_light_collection_item;
+    ItemBase*           m_object_collection_item;
+    ItemBase*           m_object_instance_collection_item;
 
     template <typename EntityContainer>
-    typename ProjectItemTypeMap<EntityContainer>::T* add_item(EntityContainer& entities);
+    typename ItemTypeMap<EntityContainer>::T* add_item(EntityContainer& entities);
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYPROJECTITEM_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYITEM_H

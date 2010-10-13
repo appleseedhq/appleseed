@@ -32,7 +32,7 @@
 // appleseed.studio headers.
 #include "mainwindow/project/entitybrowserwindow.h"
 #include "mainwindow/project/entityeditorwindow.h"
-#include "mainwindow/project/projectitembase.h"
+#include "mainwindow/project/itembase.h"
 #include "utility/tweaks.h"
 
 // appleseed.renderer headers.
@@ -198,7 +198,7 @@ QMenu* ProjectExplorer::build_context_menu(const QList<QTreeWidgetItem*>& items)
 
     if (items.size() == 1)
     {
-        const ProjectItemBase* item = static_cast<ProjectItemBase*>(items.first());
+        const ItemBase* item = static_cast<ItemBase*>(items.first());
         return item->get_context_menu();
     }
     else if (are_items_same_type(items))

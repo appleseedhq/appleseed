@@ -26,29 +26,41 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "colorcollectionprojectitem.h"
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_OBJECTCOLLECTIONITEM_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_OBJECTCOLLECTIONITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/projectbuilder.h"
+#include "mainwindow/project/collectionitem.h"
 
 // appleseed.renderer headers.
-#include "renderer/api/color.h"
+#include "renderer/api/scene.h"
 
-using namespace renderer;
+// Qt headers.
+#include <QObject>
+
+// Forward declarations.
+namespace appleseed { namespace studio { class ProjectBuilder; }}
 
 namespace appleseed {
 namespace studio {
 
-ColorCollectionProjectItem::ColorCollectionProjectItem(
-    ProjectBuilder&         project_builder,
-    const ColorContainer&   colors,
-    Assembly*               assembly)
-  : CollectionProjectItem("Colors", colors)
-  , m_project_builder(project_builder)
-  , m_assembly(assembly)
+class ObjectCollectionItem
+  : public CollectionItem
 {
-}
+    Q_OBJECT
 
-}   // namespace studio
-}   // namespace appleseed
+  public:
+    ObjectCollectionItem(
+        ProjectBuilder&                     project_builder,
+        const renderer::ObjectContainer&    objects,
+        renderer::Assembly*                 assembly);
+
+  private:
+    ProjectBuilder&     m_project_builder;
+    renderer::Assembly* m_assembly;
+};
+
+}       // namespace studio
+}       // namespace appleseed
+
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_OBJECTCOLLECTIONITEM_H

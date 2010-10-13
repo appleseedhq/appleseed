@@ -30,11 +30,11 @@
 #include "projectbuilder.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/assemblycollectionprojectitem.h"
-#include "mainwindow/project/assemblyprojectitem.h"
+#include "mainwindow/project/assemblycollectionitem.h"
+#include "mainwindow/project/assemblyitem.h"
 #include "mainwindow/project/projecttree.h"
-#include "mainwindow/project/texturecollectionprojectitem.h"
-#include "mainwindow/project/textureinstancecollectionprojectitem.h"
+#include "mainwindow/project/texturecollectionitem.h"
+#include "mainwindow/project/textureinstancecollectionitem.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/geometry.h"

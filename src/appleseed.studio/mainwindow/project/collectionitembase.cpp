@@ -27,25 +27,20 @@
 //
 
 // Interface header.
-#include "environmentedfcollectionprojectitem.h"
+#include "collectionitembase.h"
 
-// appleseed.studio headers.
-#include "mainwindow/project/projectbuilder.h"
-
-// appleseed.renderer headers.
-#include "renderer/api/environmentedf.h"
-
-using namespace renderer;
+// Qt headers.
+#include <QFont>
 
 namespace appleseed {
 namespace studio {
 
-EnvironmentEDFCollectionProjectItem::EnvironmentEDFCollectionProjectItem(
-    ProjectBuilder&                 project_builder,
-    const EnvironmentEDFContainer&  environment_edfs)
-  : CollectionProjectItem("Environment EDFs", environment_edfs)
-  , m_project_builder(project_builder)
+CollectionItemBase::CollectionItemBase(const QString& title)
+  : ItemBase(title)
 {
+    QFont font;
+    font.setBold(true);
+    setFont(0, font);
 }
 
 }   // namespace studio

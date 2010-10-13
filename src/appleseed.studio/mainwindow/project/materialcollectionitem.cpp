@@ -26,31 +26,29 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYPROJECTITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYPROJECTITEM_H
+// Interface header.
+#include "materialcollectionitem.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/projectitembase.h"
+#include "mainwindow/project/projectbuilder.h"
 
-// Qt headers.
-#include <QObject>
+// appleseed.renderer headers.
+#include "renderer/api/material.h"
 
-// Forward declarations.
-namespace renderer  { class Entity; }
+using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
-class EntityProjectItem
-  : public ProjectItemBase
+MaterialCollectionItem::MaterialCollectionItem(
+    ProjectBuilder&             project_builder,
+    const MaterialContainer&    materials,
+    Assembly*                   assembly)
+  : CollectionItem("Materials", materials)
+  , m_project_builder(project_builder)
+  , m_assembly(assembly)
 {
-    Q_OBJECT
+}
 
-  public:
-    explicit EntityProjectItem(const renderer::Entity& entity);
-};
-
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYPROJECTITEM_H
+}   // namespace studio
+}   // namespace appleseed

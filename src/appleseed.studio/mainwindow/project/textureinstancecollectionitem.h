@@ -26,11 +26,11 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTURECOLLECTIONPROJECTITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTURECOLLECTIONPROJECTITEM_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTUREINSTANCECOLLECTIONITEM_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTUREINSTANCECOLLECTIONITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/collectionprojectitem.h"
+#include "mainwindow/project/collectionitem.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/scene.h"
@@ -40,26 +40,20 @@
 
 // Forward declarations.
 namespace appleseed { namespace studio { class ProjectBuilder; }}
-class QMenu;
 
 namespace appleseed {
 namespace studio {
 
-class TextureCollectionProjectItem
-  : public CollectionProjectItem
+class TextureInstanceCollectionItem
+  : public CollectionItem
 {
     Q_OBJECT
 
   public:
-    TextureCollectionProjectItem(
-        ProjectBuilder&                     project_builder,
-        const renderer::TextureContainer&   textures,
-        renderer::Assembly*                 assembly = 0);
-
-    virtual QMenu* get_context_menu() const;
-
-  private slots:
-    void slot_import_textures();
+    TextureInstanceCollectionItem(
+        ProjectBuilder&                             project_builder,
+        const renderer::TextureInstanceContainer&   texture_instances,
+        renderer::Assembly*                         assembly = 0);
 
   private:
     ProjectBuilder&     m_project_builder;
@@ -69,4 +63,4 @@ class TextureCollectionProjectItem
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTURECOLLECTIONPROJECTITEM_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTUREINSTANCECOLLECTIONITEM_H

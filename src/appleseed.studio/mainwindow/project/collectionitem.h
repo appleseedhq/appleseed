@@ -26,22 +26,60 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "collectionprojectitembase.h"
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_COLLECTIONITEM_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_COLLECTIONITEM_H
+
+// appleseed.studio headers.
+#include "mainwindow/project/collectionitembase.h"
+#include "mainwindow/project/entityitem.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/foreach.h"
 
 // Qt headers.
-#include <QFont>
+#include <QObject>
+
+// Forward declarations.
+namespace renderer  { class Entity; }
+class QString;
 
 namespace appleseed {
 namespace studio {
 
-CollectionProjectItemBase::CollectionProjectItemBase(const QString& title)
-  : ProjectItemBase(title)
+class CollectionItem
+  : public CollectionItemBase
 {
-    QFont font;
-    font.setBold(true);
-    setFont(0, font);
+    Q_OBJECT
+
+  public:
+    explicit CollectionItem(const QString& title);
+
+    template <typename EntityContainer>
+    CollectionItem(
+        const QString&          title,
+        const EntityContainer&  entities);
+
+    template <typename Entity>
+    void add_item(const Entity& entity);
+};
+
+template <typename EntityContainer>
+CollectionItem::CollectionItem(
+    const QString&          title,
+    const EntityContainer&  entities)
+  : CollectionItemBase(title)
+{
+    for (foundation::const_each<EntityContainer> i = entities; i; ++i)
+        add_item(*i);
 }
 
-}   // namespace studio
-}   // namespace appleseed
+template <typename Entity>
+void CollectionItem::add_item(const Entity& entity)
+{
+    addChild(new EntityItem(entity));
+}
+
+}       // namespace studio
+}       // namespace appleseed
+
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_COLLECTIONITEM_H

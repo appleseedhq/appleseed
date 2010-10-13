@@ -26,25 +26,41 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "projectitembase.h"
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_EDFCOLLECTIONITEM_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_EDFCOLLECTIONITEM_H
+
+// appleseed.studio headers.
+#include "mainwindow/project/collectionitem.h"
+
+// appleseed.renderer headers.
+#include "renderer/api/scene.h"
 
 // Qt headers.
-#include <QString>
-#include <QStringList>
+#include <QObject>
+
+// Forward declarations.
+namespace appleseed { namespace studio { class ProjectBuilder; }}
 
 namespace appleseed {
 namespace studio {
 
-ProjectItemBase::ProjectItemBase(const QString& title)
-  : QTreeWidgetItem(QStringList() << title)
+class EDFCollectionItem
+  : public CollectionItem
 {
-}
+    Q_OBJECT
 
-QMenu* ProjectItemBase::get_context_menu() const
-{
-    return 0;
-}
+  public:
+    EDFCollectionItem(
+        ProjectBuilder&                 project_builder,
+        const renderer::EDFContainer&   edfs,
+        renderer::Assembly*             assembly);
 
-}   // namespace studio
-}   // namespace appleseed
+  private:
+    ProjectBuilder&     m_project_builder;
+    renderer::Assembly* m_assembly;
+};
+
+}       // namespace studio
+}       // namespace appleseed
+
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_EDFCOLLECTIONITEM_H

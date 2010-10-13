@@ -26,35 +26,29 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTITEMBASE_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTITEMBASE_H
+// Interface header.
+#include "colorcollectionitem.h"
 
-// Qt headers.
-#include <QObject>
-#include <QTreeWidgetItem>
+// appleseed.studio headers.
+#include "mainwindow/project/projectbuilder.h"
 
-// Forward declarations.
-class QMenu;
-class QString;
+// appleseed.renderer headers.
+#include "renderer/api/color.h"
+
+using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
-class ProjectItemBase
-  : public QObject
-  , public QTreeWidgetItem
+ColorCollectionItem::ColorCollectionItem(
+    ProjectBuilder&         project_builder,
+    const ColorContainer&   colors,
+    Assembly*               assembly)
+  : CollectionItem("Colors", colors)
+  , m_project_builder(project_builder)
+  , m_assembly(assembly)
 {
-    Q_OBJECT
+}
 
-  public:
-    explicit ProjectItemBase(const QString& title);
-
-    virtual ~ProjectItemBase() {}
-
-    virtual QMenu* get_context_menu() const;
-};
-
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTITEMBASE_H
+}   // namespace studio
+}   // namespace appleseed
