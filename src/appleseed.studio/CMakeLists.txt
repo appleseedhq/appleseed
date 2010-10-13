@@ -145,6 +145,8 @@ set(mainwindow_project_sources
     mainwindow/project/texturecollectionitem.h
     mainwindow/project/textureinstancecollectionitem.cpp
     mainwindow/project/textureinstancecollectionitem.h
+    mainwindow/project/tools.cpp
+    mainwindow/project/tools.h
 )
 list(APPEND appleseed.studio_sources
     ${mainwindow_project_sources}
@@ -212,6 +214,7 @@ set_source_files_properties(
 
 set(meta_tests_sources
     meta/tests/test_projectmanager.cpp
+    meta/tests/test_tools.cpp
 )
 list(APPEND appleseed.studio_sources
     ${meta_tests_sources}

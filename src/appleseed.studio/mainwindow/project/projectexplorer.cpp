@@ -30,9 +30,11 @@
 #include "projectexplorer.h"
 
 // appleseed.studio headers.
+#include "mainwindow/project/assemblycollectionitem.h"
 #include "mainwindow/project/entitybrowserwindow.h"
 #include "mainwindow/project/entityeditorwindow.h"
 #include "mainwindow/project/itembase.h"
+#include "mainwindow/project/tools.h"
 #include "utility/tweaks.h"
 
 // appleseed.renderer headers.
@@ -100,7 +102,8 @@ namespace studio {
 ProjectExplorer::ProjectExplorer(
     Project&        project,
     QTreeWidget*    tree_widget)
-  : m_tree_widget(tree_widget)
+  : m_project(project)
+  , m_tree_widget(tree_widget)
   , m_project_tree(project, tree_widget)
 {
     m_tree_widget->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -460,6 +463,7 @@ namespace
         return qvariant_to_ref<Assembly>(action_data.first());
     }
 }
+*/
 
 void ProjectExplorer::slot_add_assembly()
 {
@@ -469,7 +473,7 @@ void ProjectExplorer::slot_add_assembly()
         get_name_suggestion("assembly", assemblies);
 
     const string assembly_name =
-        get_entity_name(
+        get_entity_name_dialog(
             m_tree_widget,
             "Create Assembly",
             "Assembly Name:",
@@ -482,7 +486,7 @@ void ProjectExplorer::slot_add_assembly()
                 assembly_name.c_str(),
                 ParamArray()));
 
-        m_tree_widget_decorator.insert_assembly_items(assembly.ref());
+        m_project_tree.get_assembly_collection_item().add_item(assembly.ref());
 
         assemblies.insert(assembly);
     }
@@ -490,6 +494,7 @@ void ProjectExplorer::slot_add_assembly()
     emit project_modified();
 }
 
+/*
 void ProjectExplorer::slot_instantiate_assembly()
 {
     AssemblyInstanceContainer& assembly_instances =

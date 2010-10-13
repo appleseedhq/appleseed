@@ -75,6 +75,7 @@ class ProjectExplorer
     void project_modified();
 
   private:
+    renderer::Project&                          m_project;
     QTreeWidget*                                m_tree_widget;
 
     ProjectTree                                 m_project_tree;
@@ -87,8 +88,9 @@ class ProjectExplorer
 
   private slots:
     void slot_context_menu(const QPoint& point);
-/*
+
     void slot_add_assembly();
+/*
     void slot_instantiate_assembly();
 
     void slot_import_objects_to_assembly();
