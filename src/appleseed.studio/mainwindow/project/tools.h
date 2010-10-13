@@ -29,6 +29,9 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_TOOLS_H
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_TOOLS_H
 
+// appleseed.studio headers.
+#include "mainwindow/project/entityeditorwindow.h"
+
 // appleseed.renderer headers.
 #include "renderer/api/entity.h"
 
@@ -37,9 +40,11 @@
 #include "foundation/utility/string.h"
 
 // Standard headers.
+#include <memory>
 #include <string>
 
 // Forward declarations.
+class QObject;
 class QWidget;
 
 namespace appleseed {
@@ -55,6 +60,14 @@ std::string get_entity_name_dialog(
     const std::string&      title,
     const std::string&      label,
     const std::string&      text);
+
+void open_entity_editor(
+    QWidget*                                            parent,
+    const std::string&                                  window_title,
+    std::auto_ptr<EntityEditorWindow::IFormFactory>     form_factory,
+    std::auto_ptr<EntityEditorWindow::IEntityBrowser>   entity_browser,
+    QObject*                                            receiver,
+    const char*                                         member);
 
 
 //

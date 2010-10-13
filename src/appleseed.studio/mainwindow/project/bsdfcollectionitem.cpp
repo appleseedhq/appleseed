@@ -30,16 +30,22 @@
 #include "bsdfcollectionitem.h"
 
 // appleseed.studio headers.
+#include "mainwindow/project/assemblyentitybrowser.h"
+#include "mainwindow/project/entityeditorformfactory.h"
+#include "mainwindow/project/entityeditorwindow.h"
 #include "mainwindow/project/entityitem.h"
 #include "mainwindow/project/projectbuilder.h"
-
-// appleseed.renderer headers.
-#include "renderer/api/bsdf.h"
+#include "mainwindow/project/tools.h"
 
 // Qt headers.
 #include <QMenu>
 
+// Standard headers.
+#include <memory>
+
+using namespace foundation;
 using namespace renderer;
+using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -59,6 +65,32 @@ QMenu* BSDFCollectionItem::get_context_menu() const
     QMenu* menu = new QMenu(treeWidget());
     menu->addAction("Create BSDF...", this, SLOT(slot_create_bsdf()));
     return menu;
+}
+
+void BSDFCollectionItem::slot_create_bsdf()
+{
+    auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
+        new EntityEditorFormFactory<BSDFFactoryRegistrar>(
+            m_bsdf_factory_registrar,
+            get_name_suggestion("bsdf", m_assembly.bsdfs())));
+
+    auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
+        new AssemblyEntityBrowser(m_assembly));
+
+    open_entity_editor(
+        treeWidget(),
+        "Create BSDF",
+        form_factory,
+        entity_browser,
+        this,
+        SLOT(slot_create_bsdf_accepted(foundation::Dictionary)));
+}
+
+void BSDFCollectionItem::slot_create_bsdf_accepted(Dictionary values)
+{
+    m_project_builder.insert_bsdf(m_assembly, values);
+
+    qobject_cast<QWidget*>(sender())->close();
 }
 
 }   // namespace studio

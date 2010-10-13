@@ -183,22 +183,6 @@ void ProjectExplorer::slot_context_menu(const QPoint& point)
 }
 
 /*
-void ProjectExplorer::slot_import_textures_to_scene()
-{
-    const QStringList filepaths = get_texture_file_paths(m_tree_widget);
-
-    for (int i = 0; i < filepaths.size(); ++i)
-    {
-        const ProjectItemCollection project_items =
-            m_project_builder.insert_textures(filepaths[i].toStdString());
-
-        for (const_each<ProjectItemCollection> i = project_items; i; ++i)
-            m_tree_widget_decorator.insert_scene_item(*i);
-    }
-
-    emit project_modified();
-}
-
 namespace
 {
     class ForwardEntityEditorAcceptedSignal
@@ -350,88 +334,6 @@ namespace
             receiver,
             receiver_data);
     }
-}
-
-namespace
-{
-    template <typename FactoryRegistrar>
-    class EntityEditorFormFactory
-      : public EntityEditorWindow::IFormFactory
-    {
-      public:
-        typedef EntityEditorWindow::WidgetDefinitionCollection WidgetDefinitionCollection;
-
-        EntityEditorFormFactory(
-            const FactoryRegistrar&     factory_registrar,
-            const Assembly&             assembly,
-            const string&               name_suggestion)
-          : m_factory_registrar(factory_registrar)
-          , m_assembly(assembly)
-          , m_name_suggestion(name_suggestion)
-        {
-        }
-
-        virtual void update(
-            const Dictionary&           values,
-            WidgetDefinitionCollection& definitions) const
-        {
-            definitions.clear();
-
-            const string name = get_value(values, "name", m_name_suggestion);
-
-            Dictionary name_widget;
-            name_widget.insert("name", "name");
-            name_widget.insert("label", "Name");
-            name_widget.insert("widget", "text_box");
-            name_widget.insert("use", "required");
-            name_widget.insert("default", name);
-            name_widget.insert("focus", "true");
-            definitions.push_back(name_widget);
-
-            const typename FactoryRegistrar::FactoryArrayType factories =
-                m_factory_registrar.get_factories();
-            Dictionary model_items;
-
-            for (size_t i = 0; i < factories.size(); ++i)
-            {
-                model_items.insert(
-                    factories[i]->get_human_readable_model(),
-                    factories[i]->get_model());
-            }
-
-            const string model =
-                get_value(
-                    values,
-                    "model",
-                    factories.empty() ? "" : factories[0]->get_model());
-
-            Dictionary model_widget;
-            model_widget.insert("name", "model");
-            model_widget.insert("label", "Model");
-            model_widget.insert("widget", "dropdown_list");
-            model_widget.insert("dropdown_items", model_items);
-            model_widget.insert("use", "required");
-            model_widget.insert("default", model);
-            model_widget.insert("on_change", "rebuild_form");
-            definitions.push_back(model_widget);
-
-            if (!model.empty())
-            {
-                const typename FactoryRegistrar::FactoryType* factory =
-                    m_factory_registrar.lookup(model.c_str());
-
-                const DictionaryArray properties = factory->get_widget_definitions();
-
-                for (size_t i = 0; i < properties.size(); ++i)
-                    definitions.push_back(properties[i]);
-            }
-        }
-
-      private:
-        const FactoryRegistrar&     m_factory_registrar;
-        const Assembly&             m_assembly;
-        const string                m_name_suggestion;
-    };
 }
 
 void ProjectExplorer::slot_add_bsdf_to_assembly()

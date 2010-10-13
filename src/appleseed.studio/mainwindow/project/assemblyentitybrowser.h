@@ -26,53 +26,35 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_BSDFCOLLECTIONITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_BSDFCOLLECTIONITEM_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYENTITYBROWSER_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYENTITYBROWSER_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/collectionitem.h"
+#include "mainwindow/project/entityeditorwindow.h"
 
-// appleseed.renderer headers.
-#include "renderer/api/bsdf.h"
-#include "renderer/api/scene.h"
-
-// Qt headers.
-#include <QObject>
+// Standard headers.
+#include <string>
 
 // Forward declarations.
-namespace appleseed     { namespace studio { class ProjectBuilder; }}
-namespace foundation    { class Dictionary; }
-class QMenu;
+namespace foundation    { class StringDictionary; }
+namespace renderer      { class Assembly; }
 
 namespace appleseed {
 namespace studio {
 
-class BSDFCollectionItem
-  : public CollectionItem
+class AssemblyEntityBrowser
+  : public EntityEditorWindow::IEntityBrowser
 {
-    Q_OBJECT
-
   public:
-    BSDFCollectionItem(
-        renderer::Assembly&             assembly,
-        const renderer::BSDFContainer&  bsdfs,
-        ProjectBuilder&                 project_builder);
+    explicit AssemblyEntityBrowser(const renderer::Assembly& assembly);
 
-    virtual QMenu* get_context_menu() const;
-
-  public slots:
-    void slot_create_bsdf();
+    virtual foundation::StringDictionary get_entities(const std::string& type) const;
 
   private:
-    renderer::Assembly&             m_assembly;
-    ProjectBuilder&                 m_project_builder;
-    renderer::BSDFFactoryRegistrar  m_bsdf_factory_registrar;
-
-  private slots:
-    void slot_create_bsdf_accepted(foundation::Dictionary values);
+    const renderer::Assembly& m_assembly;
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_BSDFCOLLECTIONITEM_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYENTITYBROWSER_H

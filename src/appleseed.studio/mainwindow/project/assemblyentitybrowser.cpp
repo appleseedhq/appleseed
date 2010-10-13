@@ -27,68 +27,76 @@
 //
 
 // Interface header.
-#include "tools.h"
+#include "assemblyentitybrowser.h"
+
+// appleseed.renderer headers.
+#include "renderer/api/bsdf.h"
+#include "renderer/api/color.h"
+#include "renderer/api/edf.h"
+#include "renderer/api/material.h"
+#include "renderer/api/scene.h"
+#include "renderer/api/surfaceshader.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/foreach.h"
 
-// Qt headers.
-#include <QInputDialog>
-#include <QLineEdit>
-#include <QObject>
-#include <QString>
-
+using namespace foundation;
 using namespace renderer;
 using namespace std;
 
 namespace appleseed {
 namespace studio {
 
-string get_entity_name_dialog(
-    QWidget*        parent,
-    const string&   title,
-    const string&   label,
-    const string&   text)
+AssemblyEntityBrowser::AssemblyEntityBrowser(const Assembly& assembly)
+  : m_assembly(assembly)
 {
-    QString result;
-    bool ok;
-
-    do
-    {
-        result =
-            QInputDialog::getText(
-                parent,
-                QString::fromStdString(title),
-                QString::fromStdString(label),
-                QLineEdit::Normal,
-                QString::fromStdString(text),
-                &ok);
-    } while (ok && result.isEmpty());
-
-    return ok ? result.toStdString() : string();
 }
 
-void open_entity_editor(
-    QWidget*                                        parent,
-    const string&                                   window_title,
-    auto_ptr<EntityEditorWindow::IFormFactory>      form_factory,
-    auto_ptr<EntityEditorWindow::IEntityBrowser>    entity_browser,
-    QObject*                                        receiver,
-    const char*                                     member)
+namespace
 {
-    EntityEditorWindow* editor_window =
-        new EntityEditorWindow(
-            parent,
-            window_title,
-            form_factory,
-            entity_browser);
+    template <typename EntityContainer>
+    StringDictionary build_entity_dictionary(const EntityContainer& entities)
+    {
+        StringDictionary result;
 
-    QObject::connect(
-        editor_window, SIGNAL(accepted(foundation::Dictionary)),
-        receiver, member);
+        for (const_each<EntityContainer> i = entities; i; ++i)
+            result.insert(i->get_name(), i->get_name());
 
-    editor_window->showNormal();
-    editor_window->activateWindow();
+        return result;
+    }
+}
+
+StringDictionary AssemblyEntityBrowser::get_entities(const string& type) const
+{
+    if (type == "bsdf")
+    {
+        return build_entity_dictionary(m_assembly.bsdfs());
+    }
+    else if (type == "color")
+    {
+        return build_entity_dictionary(m_assembly.colors());
+    }
+    else if (type == "edf")
+    {
+        return build_entity_dictionary(m_assembly.edfs());
+    }
+    else if (type == "material")
+    {
+        return build_entity_dictionary(m_assembly.materials());
+    }
+    else if (type == "surface_shader")
+    {
+        return build_entity_dictionary(m_assembly.surface_shaders());
+    }
+    else if (type == "texture_instance")
+    {
+        return build_entity_dictionary(m_assembly.texture_instances());
+    }
+    else
+    {
+        return StringDictionary();
+    }
 }
 
 }   // namespace studio

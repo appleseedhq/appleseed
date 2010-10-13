@@ -92,6 +92,8 @@ source_group("main" FILES
 set(mainwindow_project_sources
     mainwindow/project/assemblycollectionitem.cpp
     mainwindow/project/assemblycollectionitem.h
+    mainwindow/project/assemblyentitybrowser.cpp
+    mainwindow/project/assemblyentitybrowser.h
     mainwindow/project/assemblyinstancecollectionitem.cpp
     mainwindow/project/assemblyinstancecollectionitem.h
     mainwindow/project/assemblyitem.cpp
@@ -109,6 +111,7 @@ set(mainwindow_project_sources
     mainwindow/project/entitybrowserwindow.cpp
     mainwindow/project/entitybrowserwindow.h
     mainwindow/project/entitybrowserwindow.ui
+    mainwindow/project/entityeditorformfactory.h
     mainwindow/project/entityeditorwindow.cpp
     mainwindow/project/entityeditorwindow.h
     mainwindow/project/entityeditorwindow.ui
