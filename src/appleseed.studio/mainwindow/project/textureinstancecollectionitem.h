@@ -51,13 +51,18 @@ class TextureInstanceCollectionItem
 
   public:
     TextureInstanceCollectionItem(
-        ProjectBuilder&                             project_builder,
+        renderer::Scene&                            scene,
         const renderer::TextureInstanceContainer&   texture_instances,
-        renderer::Assembly*                         assembly = 0);
+        ProjectBuilder&                             project_builder);
+
+    TextureInstanceCollectionItem(
+        renderer::Assembly&                         assembly,
+        const renderer::TextureInstanceContainer&   texture_instances,
+        ProjectBuilder&                             project_builder);
 
   private:
-    ProjectBuilder&     m_project_builder;
     renderer::Assembly* m_assembly;
+    ProjectBuilder&     m_project_builder;
 };
 
 }       // namespace studio

@@ -39,12 +39,12 @@ namespace appleseed {
 namespace studio {
 
 ObjectInstanceCollectionItem::ObjectInstanceCollectionItem(
-    ProjectBuilder&                 project_builder,
+    Assembly&                       assembly,
     const ObjectInstanceContainer&  object_instances,
-    Assembly*                       assembly)
+    ProjectBuilder&                 project_builder)
   : CollectionItem("Object Instances", object_instances)
-  , m_project_builder(project_builder)
   , m_assembly(assembly)
+  , m_project_builder(project_builder)
 {
 }
 

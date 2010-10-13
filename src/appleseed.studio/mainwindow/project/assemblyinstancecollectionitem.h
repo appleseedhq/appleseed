@@ -51,8 +51,9 @@ class AssemblyInstanceCollectionItem
 
   public:
     AssemblyInstanceCollectionItem(
-        ProjectBuilder&                             project_builder,
-        const renderer::AssemblyInstanceContainer&  assembly_instances);
+        renderer::Scene&                            scene,
+        const renderer::AssemblyInstanceContainer&  assembly_instances,
+        ProjectBuilder&                             project_builder);
 
   private:
     ProjectBuilder& m_project_builder;

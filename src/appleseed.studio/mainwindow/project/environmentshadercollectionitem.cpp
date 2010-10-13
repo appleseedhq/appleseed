@@ -42,8 +42,9 @@ namespace appleseed {
 namespace studio {
 
 EnvironmentShaderCollectionItem::EnvironmentShaderCollectionItem(
-    ProjectBuilder&                     project_builder,
-    const EnvironmentShaderContainer&   environment_shaders)
+    Scene&                              scene,
+    const EnvironmentShaderContainer&   environment_shaders,
+    ProjectBuilder&                     project_builder)
   : CollectionItem("Environment Shaders", environment_shaders)
   , m_project_builder(project_builder)
 {

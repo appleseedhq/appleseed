@@ -36,19 +36,29 @@
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
 
+// Qt headers.
+#include <QMenu>
+
 using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
 BSDFCollectionItem::BSDFCollectionItem(
-    ProjectBuilder&         project_builder,
+    Assembly&               assembly,
     const BSDFContainer&    bsdfs,
-    Assembly*               assembly)
+    ProjectBuilder&         project_builder)
   : CollectionItem("BSDFs", bsdfs)
-  , m_project_builder(project_builder)
   , m_assembly(assembly)
+  , m_project_builder(project_builder)
 {
+}
+
+QMenu* BSDFCollectionItem::get_context_menu() const
+{
+    QMenu* menu = new QMenu(treeWidget());
+    menu->addAction("Create BSDF...", this, SLOT(slot_create_bsdf()));
+    return menu;
 }
 
 }   // namespace studio

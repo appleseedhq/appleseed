@@ -34,6 +34,7 @@
 
 // Qt headers.
 #include <QColor>
+#include <QMenu>
 
 using namespace renderer;
 
@@ -45,6 +46,13 @@ ObjectInstanceItem::ObjectInstanceItem(const ObjectInstance& object_instance)
 {
     if (object_instance.get_material_indices().empty())
         setTextColor(0, QColor(255, 0, 255, 255));
+}
+
+QMenu* ObjectInstanceItem::get_context_menu() const
+{
+    QMenu* menu = new QMenu(treeWidget());
+    menu->addAction("Assign Material...", this, SLOT(slot_assign_material()));
+    return menu;
 }
 
 }   // namespace studio

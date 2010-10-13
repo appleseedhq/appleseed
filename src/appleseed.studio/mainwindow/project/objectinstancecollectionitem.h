@@ -51,13 +51,13 @@ class ObjectInstanceCollectionItem
 
   public:
     ObjectInstanceCollectionItem(
-        ProjectBuilder&                             project_builder,
+        renderer::Assembly&                         assembly,
         const renderer::ObjectInstanceContainer&    object_instances,
-        renderer::Assembly*                         assembly);
+        ProjectBuilder&                             project_builder);
 
   private:
+    renderer::Assembly& m_assembly;
     ProjectBuilder&     m_project_builder;
-    renderer::Assembly* m_assembly;
 };
 
 }       // namespace studio

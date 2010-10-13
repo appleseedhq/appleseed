@@ -36,19 +36,29 @@
 // appleseed.renderer headers.
 #include "renderer/api/material.h"
 
+// Qt headers.
+#include <QMenu>
+
 using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
 MaterialCollectionItem::MaterialCollectionItem(
-    ProjectBuilder&             project_builder,
+    Assembly&                   assembly,
     const MaterialContainer&    materials,
-    Assembly*                   assembly)
+    ProjectBuilder&             project_builder)
   : CollectionItem("Materials", materials)
-  , m_project_builder(project_builder)
   , m_assembly(assembly)
+  , m_project_builder(project_builder)
 {
+}
+
+QMenu* MaterialCollectionItem::get_context_menu() const
+{
+    QMenu* menu = new QMenu(treeWidget());
+    menu->addAction("Create Material...", this, SLOT(slot_create_material()));
+    return menu;
 }
 
 }   // namespace studio

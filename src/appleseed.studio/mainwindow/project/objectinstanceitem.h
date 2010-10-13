@@ -37,6 +37,7 @@
 
 // Forward declarations.
 namespace renderer  { class ObjectInstance; }
+class QMenu;
 
 namespace appleseed {
 namespace studio {
@@ -45,6 +46,8 @@ class ObjectInstanceItem
   : public EntityItem
 {
     Q_OBJECT
+
+    virtual QMenu* get_context_menu() const;
 
   public:
     explicit ObjectInstanceItem(const renderer::ObjectInstance& object_instance);

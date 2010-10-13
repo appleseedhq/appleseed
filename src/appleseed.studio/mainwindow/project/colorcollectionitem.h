@@ -51,13 +51,18 @@ class ColorCollectionItem
 
   public:
     ColorCollectionItem(
-        ProjectBuilder&                     project_builder,
+        renderer::Scene&                    scene,
         const renderer::ColorContainer&     colors,
-        renderer::Assembly*                 assembly = 0);
+        ProjectBuilder&                     project_builder);
+
+    ColorCollectionItem(
+        renderer::Assembly&                 assembly,
+        const renderer::ColorContainer&     colors,
+        ProjectBuilder&                     project_builder);
 
   private:
-    ProjectBuilder&     m_project_builder;
     renderer::Assembly* m_assembly;
+    ProjectBuilder&     m_project_builder;
 };
 
 }       // namespace studio

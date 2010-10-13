@@ -40,6 +40,7 @@
 
 // Forward declarations.
 namespace appleseed { namespace studio { class ProjectBuilder; }}
+class QMenu;
 
 namespace appleseed {
 namespace studio {
@@ -51,13 +52,15 @@ class SurfaceShaderCollectionItem
 
   public:
     SurfaceShaderCollectionItem(
-        ProjectBuilder&                         project_builder,
+        renderer::Assembly&                     assembly,
         const renderer::SurfaceShaderContainer& surface_shaders,
-        renderer::Assembly*                     assembly);
+        ProjectBuilder&                         project_builder);
+
+    virtual QMenu* get_context_menu() const;
 
   private:
+    renderer::Assembly& m_assembly;
     ProjectBuilder&     m_project_builder;
-    renderer::Assembly* m_assembly;
 };
 
 }       // namespace studio

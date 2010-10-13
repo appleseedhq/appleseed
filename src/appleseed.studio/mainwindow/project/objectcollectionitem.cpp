@@ -36,19 +36,29 @@
 // appleseed.renderer headers.
 #include "renderer/api/geometry.h"
 
+// Qt headers.
+#include <QMenu>
+
 using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
 ObjectCollectionItem::ObjectCollectionItem(
-    ProjectBuilder&         project_builder,
+    Assembly&               assembly,
     const ObjectContainer&  objects,
-    Assembly*               assembly)
+    ProjectBuilder&         project_builder)
   : CollectionItem("Objects", objects)
-  , m_project_builder(project_builder)
   , m_assembly(assembly)
+  , m_project_builder(project_builder)
 {
+}
+
+QMenu* ObjectCollectionItem::get_context_menu() const
+{
+    QMenu* menu = new QMenu(treeWidget());
+    menu->addAction("Import Objects...", this, SLOT(slot_import_objects()));
+    return menu;
 }
 
 }   // namespace studio

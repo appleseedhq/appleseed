@@ -56,15 +56,12 @@
 #include "foundation/utility/otherwise.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/string.h"
-#include "foundation/utility/test.h"
 
 // Qt headers.
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QMenu>
 #include <QMessageBox>
-#include <QMetaType>
-#include <QPair>
 #include <QPoint>
 #include <QStringList>
 #include <Qt>
@@ -83,19 +80,6 @@ using namespace foundation;
 using namespace renderer;
 using namespace std;
 
-/*
-namespace
-{
-    typedef QPair<appleseed::studio::ProjectItem::Type, QVariant> ItemTypeQVariantPair;
-    typedef QPair<QVariant, QVariant> QVariantPair;
-}
-
-Q_DECLARE_METATYPE(void*);
-Q_DECLARE_METATYPE(appleseed::studio::ProjectItem::Type);
-Q_DECLARE_METATYPE(ItemTypeQVariantPair);
-Q_DECLARE_METATYPE(QVariantPair);
-*/
-
 namespace appleseed {
 namespace studio {
 
@@ -112,45 +96,7 @@ ProjectExplorer::ProjectExplorer(
         m_tree_widget, SIGNAL(customContextMenuRequested(const QPoint&)),
         this, SLOT(slot_context_menu(const QPoint&)));
 }
-/*
 
-#if 0
-
-namespace
-{
-    ProjectItem::Type get_item_type(const QTreeWidgetItem* item)
-    {
-        assert(item);
-        return static_cast<ProjectItem::Type>(item->data(0, Qt::UserRole).value<int>());
-    }
-
-    QVariant get_item_data(const QTreeWidgetItem* item)
-    {
-        assert(item);
-        return item->data(1, Qt::UserRole);
-    }
-
-    QVariantPair get_assembly_item_data(const QTreeWidgetItem* item)
-    {
-        assert(item);
-        return get_item_data(item).value<QVariantPair>();
-    }
-
-    template <typename T>
-    T* qvariant_to_ptr(const QVariant& variant)
-    {
-        return static_cast<T*>(variant.value<void*>());
-    }
-
-    template <typename T>
-    T& qvariant_to_ref(const QVariant& variant)
-    {
-        T* ptr = qvariant_to_ptr<T>(variant);
-        assert(ptr);
-        return *ptr;
-    }
-}
-*/
 namespace
 {
     bool are_items_same_type(const QList<QTreeWidgetItem*>& items)
@@ -223,79 +169,12 @@ QMenu* ProjectExplorer::build_context_menu(const QList<QTreeWidgetItem*>& items)
 QMenu* ProjectExplorer::build_generic_context_menu() const
 {
     QMenu* menu = new QMenu(m_tree_widget);
-    menu->addAction("Create Assembly...", this, SLOT(slot_add_assembly()));
+    menu->addAction(
+        "Create Assembly...",
+        &m_project_tree.get_assembly_collection_item(),
+        SLOT(slot_create_assembly()));
     return menu;
 }
-
-/*
-QMenu* ProjectExplorer::build_assembly_context_menu() const
-{
-    QMenu* menu = new QMenu(m_tree_widget);
-    menu->addAction("Instantiate...", this, SLOT(slot_instantiate_assembly()));
-    menu->addSeparator();
-    menu->addAction("Import Objects...", this, SLOT(slot_import_objects_to_assembly()));
-    menu->addAction("Import Textures...", this, SLOT(slot_import_textures_to_assembly()));
-    menu->addSeparator();
-    menu->addAction("Create BSDF...", this, SLOT(slot_add_bsdf_to_assembly()));
-    menu->addAction("Create Surface Shader...", this, SLOT(slot_add_surface_shader_to_assembly()));
-    menu->addAction("Create Material...", this, SLOT(slot_add_material_to_assembly()));
-    return menu;
-}
-
-QMenu* ProjectExplorer::build_assembly_collection_context_menu() const
-{
-    QMenu* menu = new QMenu(m_tree_widget);
-    menu->addAction("Create Assembly...", this, SLOT(slot_add_assembly()));
-    return menu;
-}
-
-QMenu* ProjectExplorer::build_bsdf_collection_context_menu() const
-{
-    QMenu* menu = new QMenu(m_tree_widget);
-    menu->addAction("Create BSDF...", this, SLOT(slot_add_bsdf_to_assembly()));
-    return menu;
-}
-
-QMenu* ProjectExplorer::build_material_collection_context_menu() const
-{
-    QMenu* menu = new QMenu(m_tree_widget);
-    menu->addAction("Create Material...", this, SLOT(slot_add_material_to_assembly()));
-    return menu;
-}
-
-QMenu* ProjectExplorer::build_object_collection_context_menu() const
-{
-    QMenu* menu = new QMenu(m_tree_widget);
-    menu->addAction("Import Objects...", this, SLOT(slot_import_objects_to_assembly()));
-    return menu;
-}
-
-QMenu* ProjectExplorer::build_object_instance_context_menu() const
-{
-    QMenu* menu = new QMenu(m_tree_widget);
-    menu->addAction("Assign Material...", this, SLOT(slot_assign_material_to_object_instance()));
-    return menu;
-}
-
-QMenu* ProjectExplorer::build_surface_shader_collection_context_menu() const
-{
-    QMenu* menu = new QMenu(m_tree_widget);
-    menu->addAction("Create Surface Shader...", this, SLOT(slot_add_surface_shader_to_assembly()));
-    return menu;
-}
-
-QMenu* ProjectExplorer::build_texture_collection_context_menu(const QTreeWidgetItem* item) const
-{
-    QMenu* menu = new QMenu(m_tree_widget);
-
-    if (qvariant_to_ptr<Assembly>(get_item_data(item)))
-        menu->addAction("Import Textures...", this, SLOT(slot_import_textures_to_assembly()));
-    else
-        menu->addAction("Import Textures...", this, SLOT(slot_import_textures_to_scene()));
-
-    return menu;
-}
-*/
 
 void ProjectExplorer::slot_context_menu(const QPoint& point)
 {
@@ -311,227 +190,6 @@ void ProjectExplorer::slot_context_menu(const QPoint& point)
 }
 
 /*
-namespace
-{
-    string get_entity_name(
-        QWidget*            parent,
-        const string&       title,
-        const string&       label,
-        const string&       text)
-    {
-        QString result;
-        bool ok;
-
-        do
-        {
-            result =
-                QInputDialog::getText(
-                    parent,
-                    QString::fromStdString(title),
-                    QString::fromStdString(label),
-                    QLineEdit::Normal,
-                    QString::fromStdString(text),
-                    &ok);
-        } while (ok && result.isEmpty());
-
-        return ok ? result.toStdString() : string();
-    }
-
-    template <typename EntityContainer>
-    string get_name_suggestion(
-        const string&           prefix,
-        const EntityContainer&  entities)
-    {
-        int max_number = 0;
-
-        for (const_each<EntityContainer> i = entities; i; ++i)
-        {
-            const Entity& entity = *i;
-
-            const string entity_name = entity.get_name();
-            const string entity_name_prefix = entity_name.substr(0, prefix.size());
-
-            if (entity_name_prefix == prefix)
-            {
-                try
-                {
-                    const string entity_name_suffix = entity_name.substr(prefix.size());
-                    const int number = from_string<int>(entity_name_suffix);
-
-                    if (max_number < number)
-                        max_number = number;
-                }
-                catch (const ExceptionStringConversionError&)
-                {
-                }
-            }
-        }
-
-        return prefix + to_string(max_number + 1);
-    }
-
-    TEST_SUITE(Studio_ProjectExplorer)
-    {
-        class DummyEntity
-          : public Entity
-        {
-          public:
-            explicit DummyEntity(const string& name)
-              : m_name(name)
-            {
-            }
-
-            virtual void release()
-            {
-                delete this;
-            }
-
-            virtual const char* get_name() const
-            {
-                return m_name.c_str();
-            }
-
-          private:
-            const string m_name;
-        };
-
-        typedef TypedEntityVector<DummyEntity> DummyEntityVector;
-
-        TEST_CASE(GetNameSuggestion_GivenZeroEntity_ReturnsNameWithFirstSuffix)
-        {
-            DummyEntityVector entities;
-
-            const string result = get_name_suggestion("assembly", entities);
-
-            EXPECT_EQ("assembly1", result);
-        }
-
-        TEST_CASE(GetNameSuggestion_GivenTwoEntitiesWithMatchingPrefixes_ReturnsNameWithNextSuffix)
-        {
-            DummyEntityVector entities;
-            entities.insert(auto_release_ptr<DummyEntity>(new DummyEntity("assembly3")));
-            entities.insert(auto_release_ptr<DummyEntity>(new DummyEntity("assembly1")));
-
-            const string result = get_name_suggestion("assembly", entities);
-
-            EXPECT_EQ("assembly4", result);
-        }
-
-        TEST_CASE(GetNameSuggestion_GivenEntityWithNegativeSuffix_ReturnsNameWithFirstSuffix)
-        {
-            DummyEntityVector entities;
-            entities.insert(auto_release_ptr<DummyEntity>(new DummyEntity("assembly-5")));
-
-            const string result = get_name_suggestion("assembly", entities);
-
-            EXPECT_EQ("assembly1", result);
-        }
-
-        TEST_CASE(GetNameSuggestion_GivenOneEntityWithNonMatchingPrefix_ReturnsNameWithFirstSuffix)
-        {
-            DummyEntityVector entities;
-            entities.insert(auto_release_ptr<DummyEntity>(new DummyEntity("object")));
-
-            const string result = get_name_suggestion("assembly", entities);
-
-            EXPECT_EQ("assembly1", result);
-        }
-
-        TEST_CASE(GetNameSuggestion_GivenOneEntityWithNonNumericSuffix_ReturnsNameWithFirstSuffix)
-        {
-            DummyEntityVector entities;
-            entities.insert(auto_release_ptr<DummyEntity>(new DummyEntity("assembly_instance")));
-
-            const string result = get_name_suggestion("assembly", entities);
-
-            EXPECT_EQ("assembly1", result);
-        }
-    }
-
-    QList<QVariant> get_action_data(const QObject* object)
-    {
-        const QAction* action = qobject_cast<const QAction*>(object);
-        assert(action);
-
-        return action->data().toList();
-    }
-
-    // Get the assembly pointer stored in the data of an *assembly* action.
-    Assembly& get_assembly_from_action(const QObject* object)
-    {
-        const QList<QVariant> action_data = get_action_data(object);
-        return qvariant_to_ref<Assembly>(action_data.first());
-    }
-}
-*/
-
-void ProjectExplorer::slot_add_assembly()
-{
-    AssemblyContainer& assemblies = m_project.get_scene()->assemblies();
-
-    const string assembly_name_suggestion =
-        get_name_suggestion("assembly", assemblies);
-
-    const string assembly_name =
-        get_entity_name_dialog(
-            m_tree_widget,
-            "Create Assembly",
-            "Assembly Name:",
-            assembly_name_suggestion);
-
-    if (!assembly_name.empty())
-    {
-        auto_release_ptr<Assembly> assembly(
-            AssemblyFactory::create(
-                assembly_name.c_str(),
-                ParamArray()));
-
-        m_project_tree.get_assembly_collection_item().add_item(assembly.ref());
-
-        assemblies.insert(assembly);
-    }
-
-    emit project_modified();
-}
-
-/*
-void ProjectExplorer::slot_instantiate_assembly()
-{
-    AssemblyInstanceContainer& assembly_instances =
-        m_project.get_scene()->assembly_instances();
-
-    const Assembly& assembly = get_assembly_from_action(sender());
-
-    const string instance_name_suggestion =
-        get_name_suggestion(
-            string(assembly.get_name()) + "_inst",
-            assembly_instances);
-
-    const string instance_name =
-        get_entity_name(
-            m_tree_widget,
-            "Instantiate Assembly",
-            "Assembly Instance Name:",
-            instance_name_suggestion);
-
-    if (!instance_name.empty())
-    {
-        auto_release_ptr<AssemblyInstance> assembly_instance(
-            AssemblyInstanceFactory::create(
-                instance_name.c_str(),
-                assembly,
-                Transformd(Matrix4d::identity())));
-
-        m_tree_widget_decorator.insert_scene_item(
-            ProjectItem::ItemAssemblyInstance,
-            assembly_instance.ref());
-
-        assembly_instances.insert(assembly_instance);
-    }
-
-    emit project_modified();
-}
-
 void ProjectExplorer::slot_import_objects_to_assembly()
 {
     QFileDialog::Options options;
@@ -1153,8 +811,6 @@ void ProjectExplorer::slot_do_assign_material_to_object_instance(
 
     emit project_modified();
 }
-
-#endif
 */
 
 }   // namespace studio

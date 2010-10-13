@@ -31,27 +31,43 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/assemblyitem.h"
+#include "mainwindow/project/projectbuilder.h"
+#include "mainwindow/project/tools.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
 
+// Qt headers.
+#include <QMenu>
+
 // Standard headers.
 #include <cassert>
+#include <string>
 
 using namespace foundation;
 using namespace renderer;
+using namespace std;
 
 namespace appleseed {
 namespace studio {
 
 AssemblyCollectionItem::AssemblyCollectionItem(
-    ProjectBuilder&     project_builder,
-    AssemblyContainer&  assemblies)
+    Scene&              scene,
+    AssemblyContainer&  assemblies,
+    ProjectBuilder&     project_builder)
   : CollectionItemBase("Assemblies")
+  , m_scene(scene)
   , m_project_builder(project_builder)
 {
     for (each<AssemblyContainer> i = assemblies; i; ++i)
         add_item(*i);
+}
+
+QMenu* AssemblyCollectionItem::get_context_menu() const
+{
+    QMenu* menu = new QMenu(treeWidget());
+    menu->addAction("Create Assembly...", this, SLOT(slot_create_assembly()));
+    return menu;
 }
 
 void AssemblyCollectionItem::add_item(Assembly& assembly)
@@ -66,6 +82,26 @@ AssemblyItem& AssemblyCollectionItem::get_item(const Assembly& assembly) const
     const AssemblyItemMap::const_iterator i = m_assembly_items.find(assembly.get_uid());
     assert(i != m_assembly_items.end());
     return *(i->second);
+}
+
+void AssemblyCollectionItem::slot_create_assembly()
+{
+    const string assembly_name_suggestion =
+        get_name_suggestion("assembly", m_scene.assemblies());
+
+    const string assembly_name =
+        get_entity_name_dialog(
+            treeWidget(),
+            "Create Assembly",
+            "Assembly Name:",
+            assembly_name_suggestion);
+
+    if (!assembly_name.empty())
+    {
+        m_project_builder.insert_assembly(assembly_name);
+
+        //emit project_modified();
+    }
 }
 
 }   // namespace studio

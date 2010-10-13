@@ -47,7 +47,7 @@
 // Forward declarations.
 namespace appleseed { namespace studio { class AssemblyItem; }}
 namespace appleseed { namespace studio { class ProjectBuilder; }}
-namespace renderer  { class Assembly; }
+class QMenu;
 
 namespace appleseed {
 namespace studio {
@@ -59,18 +59,25 @@ class AssemblyCollectionItem
 
   public:
     AssemblyCollectionItem(
-        ProjectBuilder&                 project_builder,
-        renderer::AssemblyContainer&    assemblies);
+        renderer::Scene&                scene,
+        renderer::AssemblyContainer&    assemblies,
+        ProjectBuilder&                 project_builder);
+
+    virtual QMenu* get_context_menu() const;
 
     void add_item(renderer::Assembly& assembly);
 
     AssemblyItem& get_item(const renderer::Assembly& assembly) const;
 
+  public slots:
+    void slot_create_assembly();
+
   private:
     typedef std::map<foundation::UniqueID, AssemblyItem*> AssemblyItemMap;
 
-    ProjectBuilder& m_project_builder;
-    AssemblyItemMap m_assembly_items;
+    renderer::Scene&    m_scene;
+    ProjectBuilder&     m_project_builder;
+    AssemblyItemMap     m_assembly_items;
 };
 
 }       // namespace studio

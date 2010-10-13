@@ -70,6 +70,17 @@ ProjectBuilder::ProjectBuilder(
 {
 }
 
+void ProjectBuilder::insert_assembly(
+    const string&       name) const
+{
+    auto_release_ptr<Assembly> assembly(
+        AssemblyFactory::create(name.c_str(), ParamArray()));
+
+    m_project_tree.get_assembly_collection_item().add_item(assembly.ref());
+
+    m_project.get_scene()->assemblies().insert(assembly);
+}
+
 void ProjectBuilder::insert_bsdf(
     Assembly&           assembly,
     const Dictionary&   values) const

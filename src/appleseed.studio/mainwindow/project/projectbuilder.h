@@ -56,6 +56,9 @@ class ProjectBuilder
         renderer::Project&                  project,
         ProjectTree&                        project_tree);
 
+    void insert_assembly(
+        const std::string&                  name) const;
+
     void insert_bsdf(
         renderer::Assembly&                 assembly,
         const foundation::Dictionary&       values) const;

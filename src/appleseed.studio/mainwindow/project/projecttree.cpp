@@ -97,9 +97,13 @@ AssemblyInstanceCollectionItem& ProjectTree::get_assembly_instance_collection_it
 template <typename EntityContainer>
 typename ItemTypeMap<EntityContainer>::T* ProjectTree::add_collection_item(EntityContainer& entities)
 {
+    Scene& scene = *m_project.get_scene();
+
     typedef ItemTypeMap<EntityContainer>::T ItemType;
-    ItemType* item = new ItemType(m_project_builder, entities);
+    ItemType* item = new ItemType(scene, entities, m_project_builder);
+
     m_tree_widget->addTopLevelItem(item);
+
     return item;
 }
 

@@ -42,8 +42,9 @@ namespace appleseed {
 namespace studio {
 
 EnvironmentEDFCollectionItem::EnvironmentEDFCollectionItem(
-    ProjectBuilder&                 project_builder,
-    const EnvironmentEDFContainer&  environment_edfs)
+    Scene&                          scene,
+    const EnvironmentEDFContainer&  environment_edfs,
+    ProjectBuilder&                 project_builder)
   : CollectionItem("Environment EDFs", environment_edfs)
   , m_project_builder(project_builder)
 {

@@ -51,13 +51,13 @@ class LightCollectionItem
 
   public:
     LightCollectionItem(
-        ProjectBuilder&                 project_builder,
+        renderer::Assembly&             assembly,
         const renderer::LightContainer& lights,
-        renderer::Assembly*             assembly);
+        ProjectBuilder&                 project_builder);
 
   private:
+    renderer::Assembly& m_assembly;
     ProjectBuilder&     m_project_builder;
-    renderer::Assembly* m_assembly;
 };
 
 }       // namespace studio

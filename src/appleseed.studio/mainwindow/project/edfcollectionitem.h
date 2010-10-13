@@ -51,13 +51,13 @@ class EDFCollectionItem
 
   public:
     EDFCollectionItem(
-        ProjectBuilder&                 project_builder,
+        renderer::Assembly&             assembly,
         const renderer::EDFContainer&   edfs,
-        renderer::Assembly*             assembly);
+        ProjectBuilder&                 project_builder);
 
   private:
+    renderer::Assembly& m_assembly;
     ProjectBuilder&     m_project_builder;
-    renderer::Assembly* m_assembly;
 };
 
 }       // namespace studio

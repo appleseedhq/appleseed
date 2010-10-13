@@ -36,19 +36,29 @@
 // appleseed.renderer headers.
 #include "renderer/api/surfaceshader.h"
 
+// Qt headers.
+#include <QMenu>
+
 using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
 SurfaceShaderCollectionItem::SurfaceShaderCollectionItem(
-    ProjectBuilder&                 project_builder,
+    Assembly&                       assembly,
     const SurfaceShaderContainer&   surface_shaders,
-    Assembly*                       assembly)
+    ProjectBuilder&                 project_builder)
   : CollectionItem("Surface Shaders", surface_shaders)
-  , m_project_builder(project_builder)
   , m_assembly(assembly)
+  , m_project_builder(project_builder)
 {
+}
+
+QMenu* SurfaceShaderCollectionItem::get_context_menu() const
+{
+    QMenu* menu = new QMenu(treeWidget());
+    menu->addAction("Create Surface Shader...", this, SLOT(slot_create_surface_shader()));
+    return menu;
 }
 
 }   // namespace studio

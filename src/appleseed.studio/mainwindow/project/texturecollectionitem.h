@@ -52,9 +52,14 @@ class TextureCollectionItem
 
   public:
     TextureCollectionItem(
-        ProjectBuilder&                     project_builder,
+        renderer::Scene&                    scene,
         const renderer::TextureContainer&   textures,
-        renderer::Assembly*                 assembly = 0);
+        ProjectBuilder&                     project_builder);
+
+    TextureCollectionItem(
+        renderer::Assembly&                 assembly,
+        const renderer::TextureContainer&   textures,
+        ProjectBuilder&                     project_builder);
 
     virtual QMenu* get_context_menu() const;
 
@@ -62,8 +67,8 @@ class TextureCollectionItem
     void slot_import_textures();
 
   private:
-    ProjectBuilder&     m_project_builder;
     renderer::Assembly* m_assembly;
+    ProjectBuilder&     m_project_builder;
 };
 
 }       // namespace studio
