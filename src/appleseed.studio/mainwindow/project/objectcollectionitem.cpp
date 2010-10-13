@@ -37,7 +37,10 @@
 #include "renderer/api/geometry.h"
 
 // Qt headers.
+#include <QFileDialog>
 #include <QMenu>
+#include <QString>
+#include <QStringList>
 
 using namespace renderer;
 
@@ -59,6 +62,33 @@ QMenu* ObjectCollectionItem::get_context_menu() const
     QMenu* menu = new QMenu(treeWidget());
     menu->addAction("Import Objects...", this, SLOT(slot_import_objects()));
     return menu;
+}
+
+void ObjectCollectionItem::slot_import_objects()
+{
+    QFileDialog::Options options;
+    QString selected_filter;
+
+    const QStringList filepaths =
+        QFileDialog::getOpenFileNames(
+            treeWidget(),
+            "Import Objects...",
+            "",
+            "Geometry Files (*.obj);;All Files (*.*)",
+            &selected_filter,
+            options);
+
+    for (int i = 0; i < filepaths.size(); ++i)
+    {
+        m_project_builder.insert_objects(
+            m_assembly,
+            filepaths[i].toStdString());
+    }
+
+/*
+    if (!filepaths.empty())
+        emit project_modified();
+*/
 }
 
 }   // namespace studio

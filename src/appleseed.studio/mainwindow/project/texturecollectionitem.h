@@ -63,7 +63,7 @@ class TextureCollectionItem
 
     virtual QMenu* get_context_menu() const;
 
-  private slots:
+  public slots:
     void slot_import_textures();
 
   private:

@@ -58,6 +58,9 @@ class ObjectCollectionItem
 
     virtual QMenu* get_context_menu() const;
 
+  public slots:
+    void slot_import_objects();
+
   private:
     renderer::Assembly& m_assembly;
     ProjectBuilder&     m_project_builder;

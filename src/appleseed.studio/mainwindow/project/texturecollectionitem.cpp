@@ -81,27 +81,19 @@ QMenu* TextureCollectionItem::get_context_menu() const
     return menu;
 }
 
-namespace
-{
-    QStringList get_texture_file_paths(QWidget* parent)
-    {
-        QFileDialog::Options options;
-        QString selected_filter;
-
-        return
-            QFileDialog::getOpenFileNames(
-                parent,
-                "Import Textures...",
-                "",
-                "Texture Files (*.exr);;All Files (*.*)",
-                &selected_filter,
-                options);
-    }
-}
-
 void TextureCollectionItem::slot_import_textures()
 {
-    const QStringList filepaths = get_texture_file_paths(treeWidget());
+    QFileDialog::Options options;
+    QString selected_filter;
+
+    const QStringList filepaths =
+        QFileDialog::getOpenFileNames(
+            treeWidget(),
+            "Import Textures...",
+            "",
+            "Texture Files (*.exr);;All Files (*.*)",
+            &selected_filter,
+            options);
 
     for (int i = 0; i < filepaths.size(); ++i)
     {
@@ -112,7 +104,10 @@ void TextureCollectionItem::slot_import_textures()
         else m_project_builder.insert_textures(filepath);
     }
 
-    //emit project_modified();
+/*
+    if (!filepaths.empty())
+        emit project_modified();
+*/
 }
 
 }   // namespace studio

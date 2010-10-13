@@ -117,13 +117,6 @@ namespace
     }
 
 /*
-    // Get the assembly pointer stored in an *assembly* items.
-    Assembly* get_assembly_from_item(const QTreeWidgetItem* item)
-    {
-        const QVariantPair assembly_item_data = get_assembly_item_data(item);
-        return qvariant_to_ptr<Assembly>(assembly_item_data.first);
-    }
-
     bool are_items_from_same_assembly(const QList<QTreeWidgetItem*>& items)
     {
         assert(!items.empty());
@@ -190,56 +183,6 @@ void ProjectExplorer::slot_context_menu(const QPoint& point)
 }
 
 /*
-void ProjectExplorer::slot_import_objects_to_assembly()
-{
-    QFileDialog::Options options;
-    QString selected_filter;
-
-    const QStringList filepaths =
-        QFileDialog::getOpenFileNames(
-            m_tree_widget,
-            "Import Objects...",
-            "",
-            "Geometry Files (*.obj);;All Files (*.*)",
-            &selected_filter,
-            options);
-
-    Assembly& assembly = get_assembly_from_action(sender());
-
-    for (int i = 0; i < filepaths.size(); ++i)
-    {
-        const ProjectItemCollection project_items =
-            m_project_builder.insert_objects(
-                assembly,
-                filepaths[i].toStdString());
-
-        for (const_each<ProjectItemCollection> i = project_items; i; ++i)
-            m_tree_widget_decorator.insert_assembly_item(assembly, *i);
-    }
-
-    emit project_modified();
-}
-
-void ProjectExplorer::slot_import_textures_to_assembly()
-{
-    const QStringList filepaths = get_texture_file_paths(m_tree_widget);
-
-    Assembly& assembly = get_assembly_from_action(sender());
-
-    for (int i = 0; i < filepaths.size(); ++i)
-    {
-        const ProjectItemCollection project_items =
-            m_project_builder.insert_textures(
-                assembly,
-                filepaths[i].toStdString());
-
-        for (const_each<ProjectItemCollection> i = project_items; i; ++i)
-            m_tree_widget_decorator.insert_assembly_item(assembly, *i);
-    }
-
-    emit project_modified();
-}
-
 void ProjectExplorer::slot_import_textures_to_scene()
 {
     const QStringList filepaths = get_texture_file_paths(m_tree_widget);

@@ -55,7 +55,10 @@
 #include "renderer/api/texture.h"
 
 // Qt headers.
+#include <QFileDialog>
 #include <QMenu>
+#include <QString>
+#include <QStringList>
 
 // Standard headers.
 #include <string>
@@ -92,12 +95,12 @@ QMenu* AssemblyItem::get_context_menu() const
     QMenu* menu = new QMenu(treeWidget());
     menu->addAction("Instantiate...", this, SLOT(slot_instantiate()));
     menu->addSeparator();
-    menu->addAction("Import Objects...", this, SLOT(slot_import_objects()));
-    menu->addAction("Import Textures...", this, SLOT(slot_import_textures()));
+    menu->addAction("Import Objects...", m_object_collection_item, SLOT(slot_import_objects()));
+    menu->addAction("Import Textures...", m_texture_collection_item, SLOT(slot_import_textures()));
     menu->addSeparator();
-    menu->addAction("Create BSDF...", this, SLOT(slot_create_bsdf()));
-    menu->addAction("Create Surface Shader...", this, SLOT(slot_craete_surface_shader()));
-    menu->addAction("Create Material...", this, SLOT(slot_create_material()));
+    menu->addAction("Create BSDF...", m_bsdf_collection_item, SLOT(slot_create_bsdf()));
+    menu->addAction("Create Surface Shader...", m_surface_shader_collection_item, SLOT(slot_create_surface_shader()));
+    menu->addAction("Create Material...", m_material_collection_item, SLOT(slot_create_material()));
     return menu;
 }
 
