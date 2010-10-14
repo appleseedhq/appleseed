@@ -54,9 +54,9 @@ class BSDFCollectionItem
 
   public:
     BSDFCollectionItem(
-        renderer::Assembly&             assembly,
-        const renderer::BSDFContainer&  bsdfs,
-        ProjectBuilder&                 project_builder);
+        renderer::Assembly&         assembly,
+        renderer::BSDFContainer&    bsdfs,
+        ProjectBuilder&             project_builder);
 
     virtual QMenu* get_context_menu() const;
 
@@ -66,7 +66,7 @@ class BSDFCollectionItem
   private:
     renderer::Assembly&             m_assembly;
     ProjectBuilder&                 m_project_builder;
-    renderer::BSDFFactoryRegistrar  m_bsdf_factory_registrar;
+    renderer::BSDFFactoryRegistrar  m_registrar;
 
   private slots:
     void slot_create_bsdf_accepted(foundation::Dictionary values);

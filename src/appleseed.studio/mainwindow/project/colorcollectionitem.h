@@ -51,14 +51,14 @@ class ColorCollectionItem
 
   public:
     ColorCollectionItem(
-        renderer::Scene&                    scene,
-        const renderer::ColorContainer&     colors,
-        ProjectBuilder&                     project_builder);
+        renderer::Scene&            scene,
+        renderer::ColorContainer&   colors,
+        ProjectBuilder&             project_builder);
 
     ColorCollectionItem(
-        renderer::Assembly&                 assembly,
-        const renderer::ColorContainer&     colors,
-        ProjectBuilder&                     project_builder);
+        renderer::Assembly&         assembly,
+        renderer::ColorContainer&   colors,
+        ProjectBuilder&             project_builder);
 
   private:
     renderer::Assembly* m_assembly;

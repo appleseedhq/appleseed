@@ -51,9 +51,9 @@ class EnvironmentShaderCollectionItem
 
   public:
     EnvironmentShaderCollectionItem(
-        renderer::Scene&                            scene,
-        const renderer::EnvironmentShaderContainer& environment_shaders,
-        ProjectBuilder&                             project_builder);
+        renderer::Scene&                        scene,
+        renderer::EnvironmentShaderContainer&   environment_shaders,
+        ProjectBuilder&                         project_builder);
 
   private:
     ProjectBuilder& m_project_builder;

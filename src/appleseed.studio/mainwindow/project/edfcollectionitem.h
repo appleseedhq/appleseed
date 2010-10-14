@@ -51,9 +51,9 @@ class EDFCollectionItem
 
   public:
     EDFCollectionItem(
-        renderer::Assembly&             assembly,
-        const renderer::EDFContainer&   edfs,
-        ProjectBuilder&                 project_builder);
+        renderer::Assembly&     assembly,
+        renderer::EDFContainer& edfs,
+        ProjectBuilder&         project_builder);
 
   private:
     renderer::Assembly& m_assembly;

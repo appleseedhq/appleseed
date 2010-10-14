@@ -36,8 +36,10 @@
 #include <QObject>
 
 // Forward declarations.
+namespace renderer  { class Assembly; }
 namespace renderer  { class ObjectInstance; }
 class QMenu;
+class QString;
 
 namespace appleseed {
 namespace studio {
@@ -47,10 +49,20 @@ class ObjectInstanceItem
 {
     Q_OBJECT
 
+  public:
+    ObjectInstanceItem(
+        renderer::Assembly&         assembly,
+        renderer::ObjectInstance&   object_instance);
+
     virtual QMenu* get_context_menu() const;
 
-  public:
-    explicit ObjectInstanceItem(const renderer::ObjectInstance& object_instance);
+  private:
+    renderer::Assembly&             m_assembly;
+    renderer::ObjectInstance&       m_object_instance;
+
+  private slots:
+    void slot_assign_material();
+    void slot_assign_material_accepted(QString page_name, QString entity_name);
 };
 
 }       // namespace studio

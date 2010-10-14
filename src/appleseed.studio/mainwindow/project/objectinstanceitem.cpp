@@ -29,20 +29,29 @@
 // Interface header.
 #include "objectinstanceitem.h"
 
+// appleseed.studio headers.
+#include "mainwindow/project/assemblyentitybrowser.h"
+#include "mainwindow/project/entitybrowserwindow.h"
+
 // appleseed.renderer headers.
 #include "renderer/api/scene.h"
 
 // Qt headers.
 #include <QColor>
 #include <QMenu>
+#include <QString>
 
 using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
-ObjectInstanceItem::ObjectInstanceItem(const ObjectInstance& object_instance)
+ObjectInstanceItem::ObjectInstanceItem(
+    Assembly&       assembly,
+    ObjectInstance& object_instance)
   : EntityItem(object_instance)
+  , m_assembly(assembly)
+  , m_object_instance(object_instance)
 {
     if (object_instance.get_material_indices().empty())
         setTextColor(0, QColor(255, 0, 255, 255));
@@ -53,6 +62,50 @@ QMenu* ObjectInstanceItem::get_context_menu() const
     QMenu* menu = new QMenu(treeWidget());
     menu->addAction("Assign Material...", this, SLOT(slot_assign_material()));
     return menu;
+}
+
+void ObjectInstanceItem::slot_assign_material()
+{
+/*
+    const QString window_title =
+        items_data.size() == 1
+            ? QString("Assign Material to %1").arg(first_object_instance.get_name())
+            : QString("Assign Material to Multiple Object Instances");
+*/
+
+    const QString window_title =
+        QString("Assign Material to %1").arg(m_object_instance.get_name());
+
+    EntityBrowserWindow* browser_window =
+        new EntityBrowserWindow(
+            treeWidget(),
+            window_title.toStdString());
+
+    AssemblyEntityBrowser entity_browser(m_assembly);
+
+    browser_window->add_items_page(
+        "material",
+        "Materials",
+        entity_browser.get_entities("material"));
+
+    QObject::connect(
+        browser_window, SIGNAL(accepted(QString, QString)),
+        this, SLOT(slot_assign_material_accepted(QString, QString)));
+
+    browser_window->showNormal();
+    browser_window->activateWindow();
+}
+
+void ObjectInstanceItem::slot_assign_material_accepted(QString page_name, QString entity_name)
+{
+    const size_t material_index = m_assembly.materials().get_index(entity_name.toAscii());
+    assert(material_index != ~size_t(0));
+
+    m_object_instance.set_material_index(0, material_index);
+
+    //emit project_modified();
+
+    qobject_cast<QWidget*>(sender())->close();
 }
 
 }   // namespace studio

@@ -104,54 +104,54 @@ QMenu* AssemblyItem::get_context_menu() const
     return menu;
 }
 
-void AssemblyItem::add_item(const ColorEntity& color)
+void AssemblyItem::add_item(ColorEntity& color)
 {
-    m_color_collection_item->addChild(new EntityItem(color));
+    m_color_collection_item->add_item(color);
 }
 
-void AssemblyItem::add_item(const Texture& texture)
+void AssemblyItem::add_item(Texture& texture)
 {
-    m_texture_collection_item->addChild(new EntityItem(texture));
+    m_texture_collection_item->add_item(texture);
 }
 
-void AssemblyItem::add_item(const TextureInstance& texture_instance)
+void AssemblyItem::add_item(TextureInstance& texture_instance)
 {
-    m_texture_instance_collection_item->addChild(new EntityItem(texture_instance));
+    m_texture_instance_collection_item->add_item(texture_instance);
 }
 
-void AssemblyItem::add_item(const BSDF& bsdf)
+void AssemblyItem::add_item(BSDF& bsdf)
 {
-    m_bsdf_collection_item->addChild(new EntityItem(bsdf));
+    m_bsdf_collection_item->add_item(bsdf);
 }
 
-void AssemblyItem::add_item(const EDF& edf)
+void AssemblyItem::add_item(EDF& edf)
 {
-    m_edf_collection_item->addChild(new EntityItem(edf));
+    m_edf_collection_item->add_item(edf);
 }
 
-void AssemblyItem::add_item(const SurfaceShader& surface_shader)
+void AssemblyItem::add_item(SurfaceShader& surface_shader)
 {
-    m_surface_shader_collection_item->addChild(new EntityItem(surface_shader));
+    m_surface_shader_collection_item->add_item(surface_shader);
 }
 
-void AssemblyItem::add_item(const Material& material)
+void AssemblyItem::add_item(Material& material)
 {
-    m_material_collection_item->addChild(new EntityItem(material));
+    m_material_collection_item->add_item(material);
 }
 
-void AssemblyItem::add_item(const Light& light)
+void AssemblyItem::add_item(Light& light)
 {
-    m_light_collection_item->addChild(new EntityItem(light));
+    m_light_collection_item->add_item(light);
 }
 
-void AssemblyItem::add_item(const Object& object)
+void AssemblyItem::add_item(Object& object)
 {
-    m_object_collection_item->addChild(new EntityItem(object));
+    m_object_collection_item->add_item(object);
 }
 
-void AssemblyItem::add_item(const ObjectInstance& object_instance)
+void AssemblyItem::add_item(ObjectInstance& object_instance)
 {
-    m_object_instance_collection_item->addChild(new EntityItem(object_instance));
+    m_object_instance_collection_item->add_item(object_instance);
 }
 
 template <typename EntityContainer>

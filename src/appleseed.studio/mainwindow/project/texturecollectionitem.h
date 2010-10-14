@@ -52,14 +52,14 @@ class TextureCollectionItem
 
   public:
     TextureCollectionItem(
-        renderer::Scene&                    scene,
-        const renderer::TextureContainer&   textures,
-        ProjectBuilder&                     project_builder);
+        renderer::Scene&            scene,
+        renderer::TextureContainer& textures,
+        ProjectBuilder&             project_builder);
 
     TextureCollectionItem(
-        renderer::Assembly&                 assembly,
-        const renderer::TextureContainer&   textures,
-        ProjectBuilder&                     project_builder);
+        renderer::Assembly&         assembly,
+        renderer::TextureContainer& textures,
+        ProjectBuilder&             project_builder);
 
     virtual QMenu* get_context_menu() const;
 

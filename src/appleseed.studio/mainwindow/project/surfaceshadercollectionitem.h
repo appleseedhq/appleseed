@@ -34,12 +34,14 @@
 
 // appleseed.renderer headers.
 #include "renderer/api/scene.h"
+#include "renderer/api/surfaceshader.h"
 
 // Qt headers.
 #include <QObject>
 
 // Forward declarations.
 namespace appleseed { namespace studio { class ProjectBuilder; }}
+namespace foundation    { class Dictionary; }
 class QMenu;
 
 namespace appleseed {
@@ -53,14 +55,21 @@ class SurfaceShaderCollectionItem
   public:
     SurfaceShaderCollectionItem(
         renderer::Assembly&                     assembly,
-        const renderer::SurfaceShaderContainer& surface_shaders,
+        renderer::SurfaceShaderContainer&       surface_shaders,
         ProjectBuilder&                         project_builder);
 
     virtual QMenu* get_context_menu() const;
 
+  public slots:
+    void slot_create_surface_shader();
+
   private:
-    renderer::Assembly& m_assembly;
-    ProjectBuilder&     m_project_builder;
+    renderer::Assembly&                         m_assembly;
+    ProjectBuilder&                             m_project_builder;
+    renderer::SurfaceShaderFactoryRegistrar     m_registrar;
+
+  private slots:
+    void slot_create_surface_shader_accepted(foundation::Dictionary values);
 };
 
 }       // namespace studio

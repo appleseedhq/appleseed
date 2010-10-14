@@ -51,9 +51,9 @@ class EnvironmentEDFCollectionItem
 
   public:
     EnvironmentEDFCollectionItem(
-        renderer::Scene&                            scene,
-        const renderer::EnvironmentEDFContainer&    environment_edfs,
-        ProjectBuilder&                             project_builder);
+        renderer::Scene&                    scene,
+        renderer::EnvironmentEDFContainer&  environment_edfs,
+        ProjectBuilder&                     project_builder);
 
   private:
     ProjectBuilder& m_project_builder;

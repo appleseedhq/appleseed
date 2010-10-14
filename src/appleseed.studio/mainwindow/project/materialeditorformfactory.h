@@ -26,29 +26,36 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "environmentshadercollectionitem.h"
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALEDITORFORMFACTORY_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALEDITORFORMFACTORY_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/entityitem.h"
-#include "mainwindow/project/projectbuilder.h"
+#include "mainwindow/project/entityeditorwindow.h"
 
-// appleseed.renderer headers.
-#include "renderer/api/environmentshader.h"
-
-using namespace renderer;
+// Forward declarations.
+namespace foundation    { class Dictionary; }
+namespace renderer      { class Assembly; }
 
 namespace appleseed {
 namespace studio {
 
-EnvironmentShaderCollectionItem::EnvironmentShaderCollectionItem(
-    Scene&                      scene,
-    EnvironmentShaderContainer& environment_shaders,
-    ProjectBuilder&             project_builder)
-  : CollectionItem("Environment Shaders", environment_shaders)
-  , m_project_builder(project_builder)
+class MaterialEditorFormFactory
+  : public EntityEditorWindow::IFormFactory
 {
-}
+  public:
+    typedef EntityEditorWindow::WidgetDefinitionCollection WidgetDefinitionCollection;
 
-}   // namespace studio
-}   // namespace appleseed
+    explicit MaterialEditorFormFactory(const renderer::Assembly& assembly);
+
+    virtual void update(
+        const foundation::Dictionary&   values,
+        WidgetDefinitionCollection&     definitions) const;
+
+  private:
+    const renderer::Assembly& m_assembly;
+};
+
+}       // namespace studio
+}       // namespace appleseed
+
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALEDITORFORMFACTORY_H

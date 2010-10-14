@@ -48,9 +48,9 @@ namespace appleseed {
 namespace studio {
 
 ObjectCollectionItem::ObjectCollectionItem(
-    Assembly&               assembly,
-    const ObjectContainer&  objects,
-    ProjectBuilder&         project_builder)
+    Assembly&           assembly,
+    ObjectContainer&    objects,
+    ProjectBuilder&     project_builder)
   : CollectionItem("Objects", objects)
   , m_assembly(assembly)
   , m_project_builder(project_builder)

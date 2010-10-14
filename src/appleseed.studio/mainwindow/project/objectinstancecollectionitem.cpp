@@ -33,19 +33,30 @@
 #include "mainwindow/project/objectinstanceitem.h"
 #include "mainwindow/project/projectbuilder.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/foreach.h"
+
+using namespace foundation;
 using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
 ObjectInstanceCollectionItem::ObjectInstanceCollectionItem(
-    Assembly&                       assembly,
-    const ObjectInstanceContainer&  object_instances,
-    ProjectBuilder&                 project_builder)
-  : CollectionItem("Object Instances", object_instances)
+    Assembly&                   assembly,
+    ObjectInstanceContainer&    object_instances,
+    ProjectBuilder&             project_builder)
+  : CollectionItemBase("Object Instances")
   , m_assembly(assembly)
   , m_project_builder(project_builder)
 {
+    for (each<ObjectInstanceContainer> i = object_instances; i; ++i)
+        add_item(*i);
+}
+
+void ObjectInstanceCollectionItem::add_item(ObjectInstance& object_instance)
+{
+    addChild(new ObjectInstanceItem(m_assembly, object_instance));
 }
 
 }   // namespace studio

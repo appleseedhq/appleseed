@@ -52,9 +52,9 @@ class ObjectCollectionItem
 
   public:
     ObjectCollectionItem(
-        renderer::Assembly&                 assembly,
-        const renderer::ObjectContainer&    objects,
-        ProjectBuilder&                     project_builder);
+        renderer::Assembly&         assembly,
+        renderer::ObjectContainer&  objects,
+        ProjectBuilder&             project_builder);
 
     virtual QMenu* get_context_menu() const;
 

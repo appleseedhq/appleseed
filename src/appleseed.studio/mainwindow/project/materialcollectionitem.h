@@ -39,7 +39,8 @@
 #include <QObject>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class ProjectBuilder; }}
+namespace appleseed     { namespace studio { class ProjectBuilder; }}
+namespace foundation    { class Dictionary; }
 class QMenu;
 
 namespace appleseed {
@@ -52,15 +53,21 @@ class MaterialCollectionItem
 
   public:
     MaterialCollectionItem(
-        renderer::Assembly&                 assembly,
-        const renderer::MaterialContainer&  materials,
-        ProjectBuilder&                     project_builder);
+        renderer::Assembly&             assembly,
+        renderer::MaterialContainer&    materials,
+        ProjectBuilder&                 project_builder);
 
     virtual QMenu* get_context_menu() const;
+
+  public slots:
+    void slot_create_material();
 
   private:
     renderer::Assembly& m_assembly;
     ProjectBuilder&     m_project_builder;
+
+  private slots:
+    void slot_create_material_accept(foundation::Dictionary values);
 };
 
 }       // namespace studio

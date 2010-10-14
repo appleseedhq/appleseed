@@ -55,9 +55,9 @@ namespace appleseed {
 namespace studio {
 
 TextureCollectionItem::TextureCollectionItem(
-    Scene&                  scene,
-    const TextureContainer& textures,
-    ProjectBuilder&         project_builder)
+    Scene&              scene,
+    TextureContainer&   textures,
+    ProjectBuilder&     project_builder)
   : CollectionItem("Textures", textures)
   , m_assembly(0)
   , m_project_builder(project_builder)
@@ -65,9 +65,9 @@ TextureCollectionItem::TextureCollectionItem(
 }
 
 TextureCollectionItem::TextureCollectionItem(
-    Assembly&               assembly,
-    const TextureContainer& textures,
-    ProjectBuilder&         project_builder)
+    Assembly&           assembly,
+    TextureContainer&   textures,
+    ProjectBuilder&     project_builder)
   : CollectionItem("Textures", textures)
   , m_assembly(&assembly)
   , m_project_builder(project_builder)

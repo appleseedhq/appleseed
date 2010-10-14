@@ -37,8 +37,17 @@
 #include <QObject>
 
 // Forward declarations.
+namespace appleseed { namespace studio { class BSDFCollectionItem; }}
+namespace appleseed { namespace studio { class ColorCollectionItem; }}
+namespace appleseed { namespace studio { class EDFCollectionItem; }}
+namespace appleseed { namespace studio { class LightCollectionItem; }}
+namespace appleseed { namespace studio { class MaterialCollectionItem; }}
+namespace appleseed { namespace studio { class ObjectCollectionItem; }}
+namespace appleseed { namespace studio { class ObjectInstanceCollectionItem; }}
 namespace appleseed { namespace studio { class ProjectBuilder; }}
-namespace appleseed { namespace studio { class ItemBase; }}
+namespace appleseed { namespace studio { class SurfaceShaderCollectionItem; }}
+namespace appleseed { namespace studio { class TextureCollectionItem; }}
+namespace appleseed { namespace studio { class TextureInstanceCollectionItem; }}
 namespace renderer  { class Assembly; }
 namespace renderer  { class ColorEntity; }
 namespace renderer  { class BSDF; }
@@ -63,38 +72,38 @@ class AssemblyItem
 
   public:
     AssemblyItem(
-        renderer::Scene&    scene,
-        renderer::Assembly& assembly,
-        ProjectBuilder&     project_builder);
+        renderer::Scene&            scene,
+        renderer::Assembly&         assembly,
+        ProjectBuilder&             project_builder);
 
     virtual QMenu* get_context_menu() const;
 
-    void add_item(const renderer::ColorEntity& color);
-    void add_item(const renderer::Texture& texture);
-    void add_item(const renderer::TextureInstance& texture_instance);
-    void add_item(const renderer::BSDF& bsdf);
-    void add_item(const renderer::EDF& edf);
-    void add_item(const renderer::SurfaceShader& surface_shader);
-    void add_item(const renderer::Material& material);
-    void add_item(const renderer::Light& light);
-    void add_item(const renderer::Object& object);
-    void add_item(const renderer::ObjectInstance& object_instance);
+    void add_item(renderer::ColorEntity& color);
+    void add_item(renderer::Texture& texture);
+    void add_item(renderer::TextureInstance& texture_instance);
+    void add_item(renderer::BSDF& bsdf);
+    void add_item(renderer::EDF& edf);
+    void add_item(renderer::SurfaceShader& surface_shader);
+    void add_item(renderer::Material& material);
+    void add_item(renderer::Light& light);
+    void add_item(renderer::Object& object);
+    void add_item(renderer::ObjectInstance& object_instance);
 
   private:
-    renderer::Scene&    m_scene;
-    ProjectBuilder&     m_project_builder;
-    renderer::Assembly& m_assembly;
+    renderer::Scene&                m_scene;
+    ProjectBuilder&                 m_project_builder;
+    renderer::Assembly&             m_assembly;
 
-    ItemBase*           m_color_collection_item;
-    ItemBase*           m_texture_collection_item;
-    ItemBase*           m_texture_instance_collection_item;
-    ItemBase*           m_bsdf_collection_item;
-    ItemBase*           m_edf_collection_item;
-    ItemBase*           m_surface_shader_collection_item;
-    ItemBase*           m_material_collection_item;
-    ItemBase*           m_light_collection_item;
-    ItemBase*           m_object_collection_item;
-    ItemBase*           m_object_instance_collection_item;
+    ColorCollectionItem*            m_color_collection_item;
+    TextureCollectionItem*          m_texture_collection_item;
+    TextureInstanceCollectionItem*  m_texture_instance_collection_item;
+    BSDFCollectionItem*             m_bsdf_collection_item;
+    EDFCollectionItem*              m_edf_collection_item;
+    SurfaceShaderCollectionItem*    m_surface_shader_collection_item;
+    MaterialCollectionItem*         m_material_collection_item;
+    LightCollectionItem*            m_light_collection_item;
+    ObjectCollectionItem*           m_object_collection_item;
+    ObjectInstanceCollectionItem*   m_object_instance_collection_item;
 
     template <typename EntityContainer>
     typename ItemTypeMap<EntityContainer>::T* add_collection_item(EntityContainer& entities);

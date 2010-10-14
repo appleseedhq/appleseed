@@ -51,9 +51,9 @@ namespace appleseed {
 namespace studio {
 
 BSDFCollectionItem::BSDFCollectionItem(
-    Assembly&               assembly,
-    const BSDFContainer&    bsdfs,
-    ProjectBuilder&         project_builder)
+    Assembly&           assembly,
+    BSDFContainer&      bsdfs,
+    ProjectBuilder&     project_builder)
   : CollectionItem("BSDFs", bsdfs)
   , m_assembly(assembly)
   , m_project_builder(project_builder)
@@ -71,7 +71,7 @@ void BSDFCollectionItem::slot_create_bsdf()
 {
     auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
         new EntityEditorFormFactory<BSDFFactoryRegistrar>(
-            m_bsdf_factory_registrar,
+            m_registrar,
             get_name_suggestion("bsdf", m_assembly.bsdfs())));
 
     auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(

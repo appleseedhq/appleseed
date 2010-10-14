@@ -51,9 +51,9 @@ class LightCollectionItem
 
   public:
     LightCollectionItem(
-        renderer::Assembly&             assembly,
-        const renderer::LightContainer& lights,
-        ProjectBuilder&                 project_builder);
+        renderer::Assembly&         assembly,
+        renderer::LightContainer&   lights,
+        ProjectBuilder&             project_builder);
 
   private:
     renderer::Assembly& m_assembly;

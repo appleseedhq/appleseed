@@ -42,9 +42,9 @@ namespace appleseed {
 namespace studio {
 
 EDFCollectionItem::EDFCollectionItem(
-    Assembly&               assembly,
-    const EDFContainer&     edfs,
-    ProjectBuilder&         project_builder)
+    Assembly&           assembly,
+    EDFContainer&       edfs,
+    ProjectBuilder&     project_builder)
   : CollectionItem("EDFs", edfs)
   , m_assembly(assembly)
   , m_project_builder(project_builder)

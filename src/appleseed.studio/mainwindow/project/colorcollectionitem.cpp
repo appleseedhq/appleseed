@@ -42,9 +42,9 @@ namespace appleseed {
 namespace studio {
 
 ColorCollectionItem::ColorCollectionItem(
-    Scene&                  scene,
-    const ColorContainer&   colors,
-    ProjectBuilder&         project_builder)
+    Scene&              scene,
+    ColorContainer&     colors,
+    ProjectBuilder&     project_builder)
   : CollectionItem("Colors", colors)
   , m_assembly(0)
   , m_project_builder(project_builder)
@@ -52,9 +52,9 @@ ColorCollectionItem::ColorCollectionItem(
 }
 
 ColorCollectionItem::ColorCollectionItem(
-    Assembly&               assembly,
-    const ColorContainer&   colors,
-    ProjectBuilder&         project_builder)
+    Assembly&           assembly,
+    ColorContainer&     colors,
+    ProjectBuilder&     project_builder)
   : CollectionItem("Colors", colors)
   , m_assembly(&assembly)
   , m_project_builder(project_builder)

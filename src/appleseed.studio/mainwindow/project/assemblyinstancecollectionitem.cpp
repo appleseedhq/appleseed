@@ -39,9 +39,9 @@ namespace appleseed {
 namespace studio {
 
 AssemblyInstanceCollectionItem::AssemblyInstanceCollectionItem(
-    Scene&                              scene,
-    const AssemblyInstanceContainer&    assembly_instances,
-    ProjectBuilder&                     project_builder)
+    Scene&                      scene,
+    AssemblyInstanceContainer&  assembly_instances,
+    ProjectBuilder&             project_builder)
   : CollectionItem("Assembly Instances", assembly_instances)
   , m_project_builder(project_builder)
 {

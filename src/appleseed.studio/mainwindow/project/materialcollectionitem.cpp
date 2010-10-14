@@ -30,8 +30,12 @@
 #include "materialcollectionitem.h"
 
 // appleseed.studio headers.
+#include "mainwindow/project/assemblyentitybrowser.h"
+#include "mainwindow/project/entityeditorwindow.h"
 #include "mainwindow/project/entityitem.h"
+#include "mainwindow/project/materialeditorformfactory.h"
 #include "mainwindow/project/projectbuilder.h"
+#include "mainwindow/project/tools.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/material.h"
@@ -39,15 +43,20 @@
 // Qt headers.
 #include <QMenu>
 
+// Standard headers.
+#include <memory>
+
+using namespace foundation;
 using namespace renderer;
+using namespace std;
 
 namespace appleseed {
 namespace studio {
 
 MaterialCollectionItem::MaterialCollectionItem(
-    Assembly&                   assembly,
-    const MaterialContainer&    materials,
-    ProjectBuilder&             project_builder)
+    Assembly&           assembly,
+    MaterialContainer&  materials,
+    ProjectBuilder&     project_builder)
   : CollectionItem("Materials", materials)
   , m_assembly(assembly)
   , m_project_builder(project_builder)
@@ -59,6 +68,30 @@ QMenu* MaterialCollectionItem::get_context_menu() const
     QMenu* menu = new QMenu(treeWidget());
     menu->addAction("Create Material...", this, SLOT(slot_create_material()));
     return menu;
+}
+
+void MaterialCollectionItem::slot_create_material()
+{
+    auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
+        new MaterialEditorFormFactory(m_assembly));
+
+    auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
+        new AssemblyEntityBrowser(m_assembly));
+
+    open_entity_editor(
+        treeWidget(),
+        "Create Material",
+        form_factory,
+        entity_browser,
+        this,
+        SLOT(slot_create_material_accept(foundation::Dictionary)));
+}
+
+void MaterialCollectionItem::slot_create_material_accept(Dictionary values)
+{
+    m_project_builder.insert_material(m_assembly, values);
+
+    qobject_cast<QWidget*>(sender())->close();
 }
 
 }   // namespace studio

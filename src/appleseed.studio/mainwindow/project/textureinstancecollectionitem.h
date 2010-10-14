@@ -51,14 +51,14 @@ class TextureInstanceCollectionItem
 
   public:
     TextureInstanceCollectionItem(
-        renderer::Scene&                            scene,
-        const renderer::TextureInstanceContainer&   texture_instances,
-        ProjectBuilder&                             project_builder);
+        renderer::Scene&                        scene,
+        renderer::TextureInstanceContainer&     texture_instances,
+        ProjectBuilder&                         project_builder);
 
     TextureInstanceCollectionItem(
-        renderer::Assembly&                         assembly,
-        const renderer::TextureInstanceContainer&   texture_instances,
-        ProjectBuilder&                             project_builder);
+        renderer::Assembly&                     assembly,
+        renderer::TextureInstanceContainer&     texture_instances,
+        ProjectBuilder&                         project_builder);
 
   private:
     renderer::Assembly* m_assembly;

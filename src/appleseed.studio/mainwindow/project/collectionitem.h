@@ -56,25 +56,25 @@ class CollectionItem
 
     template <typename EntityContainer>
     CollectionItem(
-        const QString&          title,
-        const EntityContainer&  entities);
+        const QString&      title,
+        EntityContainer&    entities);
 
     template <typename Entity>
-    void add_item(const Entity& entity);
+    void add_item(Entity& entity);
 };
 
 template <typename EntityContainer>
 CollectionItem::CollectionItem(
     const QString&          title,
-    const EntityContainer&  entities)
+    EntityContainer&        entities)
   : CollectionItemBase(title)
 {
-    for (foundation::const_each<EntityContainer> i = entities; i; ++i)
+    for (foundation::each<EntityContainer> i = entities; i; ++i)
         add_item(*i);
 }
 
 template <typename Entity>
-void CollectionItem::add_item(const Entity& entity)
+void CollectionItem::add_item(Entity& entity)
 {
     addChild(new ItemTypeMap<Entity>::T(entity));
 }

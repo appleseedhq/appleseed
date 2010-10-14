@@ -42,9 +42,9 @@ namespace appleseed {
 namespace studio {
 
 LightCollectionItem::LightCollectionItem(
-    Assembly&               assembly,
-    const LightContainer&   lights,
-    ProjectBuilder&         project_builder)
+    Assembly&           assembly,
+    LightContainer&     lights,
+    ProjectBuilder&     project_builder)
   : CollectionItem("Lights", lights)
   , m_assembly(assembly)
   , m_project_builder(project_builder)
