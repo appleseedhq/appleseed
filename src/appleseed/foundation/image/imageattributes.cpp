@@ -32,11 +32,6 @@
 // appleseed.foundation headers.
 #include "foundation/core/appleseed.h"
 
-// Standard headers.
-#include <sstream>
-
-using namespace std;
-
 namespace foundation
 {
 
@@ -44,24 +39,11 @@ namespace foundation
 // ImageAttributes class implementation.
 //
 
-// Create a default set of image attributes.
 ImageAttributes ImageAttributes::create_default_attributes()
 {
     ImageAttributes attributes;
-
-    // "software" attribute.
-    stringstream software;
-    software << Appleseed::get_lib_name();
-    software << " version ";
-    software << Appleseed::get_lib_version();
-    software << " (build ";
-    software << Appleseed::get_lib_build_number();
-    software << ")";
-    attributes.insert("software", software.str());
-
-    // "dpi" attribute.
+    attributes.insert("software", Appleseed::get_synthetic_version_string());
     attributes.insert("dpi", 72);
-
     return attributes;
 }
 

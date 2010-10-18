@@ -29,6 +29,11 @@
 // Interface header.
 #include "appleseed.h"
 
+// Standard headers.
+#include <cstdio>
+
+using namespace std;
+
 namespace foundation
 {
 
@@ -91,6 +96,33 @@ const char* Appleseed::get_lib_compilation_date()
 const char* Appleseed::get_lib_compilation_time()
 {
     return __TIME__;
+}
+
+namespace
+{
+    struct SyntheticVersionString
+    {
+        char m_value[1024];
+
+        SyntheticVersionString()
+        {
+            sprintf(
+                m_value, 
+                "%s version %s %s (build " FMT_SIZE_T ")",
+                Appleseed::get_lib_name(),
+                Appleseed::get_lib_version(),
+                Appleseed::get_lib_maturity_level(),
+                Appleseed::get_lib_build_number());
+        }
+
+    };
+
+    SyntheticVersionString s_synthetic_version_string;
+}
+
+const char* Appleseed::get_synthetic_version_string()
+{
+    return s_synthetic_version_string.m_value;
 }
 
 }   // namespace foundation

@@ -95,6 +95,9 @@ class FOUNDATIONDLL Appleseed
 
     // Return the compilation time of the library.
     static const char* get_lib_compilation_time();
+
+    // Return a synthetic version string.
+    static const char* get_synthetic_version_string();
 };
 
 }       // namespace foundation

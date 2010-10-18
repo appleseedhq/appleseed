@@ -282,11 +282,9 @@ void MainWindow::load_settings()
 void MainWindow::print_library_information()
 {
     RENDERER_LOG_INFO(
-        "%s version %s (build " FMT_SIZE_T "), %s configuration\n"
+        "%s, %s configuration\n"
         "compiled on %s at %s using %s version %s",
-        Appleseed::get_lib_name(),
-        Appleseed::get_lib_version(),
-        Appleseed::get_lib_build_number(),
+        Appleseed::get_synthetic_version_string(),
         Appleseed::get_lib_configuration(),
         Appleseed::get_lib_compilation_date(),
         Appleseed::get_lib_compilation_time(),
