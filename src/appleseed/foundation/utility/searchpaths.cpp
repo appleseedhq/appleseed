@@ -31,7 +31,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
-#include "foundation/utility/string.h"
 
 // boost headers.
 #include "boost/filesystem/operations.hpp"
@@ -112,7 +111,7 @@ char* SearchPaths::qualify(const char* filepath) const
         }
     }
 
-    return strdup(result.c_str());
+    return duplicate_string(result.c_str());
 }
 
 }   // namespace foundation

@@ -29,6 +29,11 @@
 // Interface header.
 #include "string.h"
 
+// Standard headers.
+#include <cstring>
+
+using namespace std;
+
 namespace foundation
 {
 
@@ -36,7 +41,28 @@ namespace foundation
 // Constants.
 //
 
-// All blank characters in one string.
 const char* Blanks = " \t\n\v\f\r";
+
+
+//
+// String manipulation functions implementation.
+//
+
+char* duplicate_string(const char* s)
+{
+    assert(s);
+
+    char* result = new char[strlen(s) + 1];
+
+    if (result)
+        strcpy(result, s);
+
+    return result;
+}
+
+void free_string(const char* s)
+{
+    delete [] s;
+}
 
 }   // namespace foundation

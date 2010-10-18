@@ -425,7 +425,7 @@ namespace
 #endif
 
         // Deallocate the memory used by the path to the archived image.
-        delete [] archive_path;
+        free_string(archive_path);
     }
 
     // Render a given project.

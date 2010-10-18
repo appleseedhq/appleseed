@@ -107,11 +107,10 @@ class RENDERERDLL Frame
     // Return true if successful, false otherwise.
     bool write(const char* filename) const;
 
-    // Archive the frame to disk, in a given directory.
-    // If output_path is provided, the full path to the output
-    // file will be returned via a newly allocated C string,
-    // which will have to be deallocated by the caller using
-    // delete []. Return true if successful, false otherwise.
+    // Archive the frame to a given directory on disk. If output_path is provided,
+    // the full path to the output file will be returned. The returned string must
+    // be freed using foundation::free_string().
+    // Return true if successful, false otherwise.
     bool archive(
         const char*         directory,
         char**              output_path = 0) const;

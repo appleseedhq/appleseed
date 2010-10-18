@@ -84,8 +84,8 @@ namespace
         const string&               text)
     {
         png_text text_chunk;
-        text_chunk.key = strdup(key.c_str());
-        text_chunk.text = strdup(text.c_str());
+        text_chunk.key = duplicate_string(key.c_str());
+        text_chunk.text = duplicate_string(text.c_str());
         text_chunk.compression = PNG_TEXT_COMPRESSION_NONE;
         text_chunks.push_back(text_chunk);
     }
@@ -155,8 +155,8 @@ namespace
     {
         for (size_t i = 0; i < text_chunks.size(); ++i)
         {
-            delete [] text_chunks[i].key;
-            delete [] text_chunks[i].text;
+            free_string(text_chunks[i].key);
+            free_string(text_chunks[i].text);
         }
 
         text_chunks.clear();

@@ -397,11 +397,7 @@ bool Frame::archive(
 
     // Return the path to the image file.
     if (output_path)
-    {
-        const string& path = image_path.file_string();
-        *output_path = new char[path.size() + 1];
-        strncpy(*output_path, path.c_str(), path.size() + 1);
-    }
+        *output_path = duplicate_string(image_path.file_string().c_str());
 
     try
     {

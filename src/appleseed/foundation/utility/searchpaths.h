@@ -32,6 +32,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/implptr.h"
+#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <string>
@@ -111,7 +112,7 @@ inline std::string SearchPaths::qualify(const std::string& filepath) const
 {
     const char* tmp = qualify(filepath.c_str());
     const std::string result = tmp;
-    delete [] tmp;
+    free_string(tmp);
     return result;
 }
 

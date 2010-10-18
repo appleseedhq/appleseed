@@ -40,13 +40,31 @@
 #include <cassert>
 #include <cctype>
 #include <cstddef>
-#include <cstring>
 #include <ctime>
 #include <iomanip>
 #include <ios>
 #include <iterator>
 #include <sstream>
 #include <string>
+
+//
+// On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
+// and to __declspec(dllimport) when building an application using the DLL.
+// Other platforms don't use this export mechanism and the symbol FOUNDATIONDLL is
+// defined to evaluate to nothing.
+//
+
+#ifndef FOUNDATIONDLL
+#ifdef _WIN32
+#ifdef APPLESEED_FOUNDATION_EXPORTS
+#define FOUNDATIONDLL __declspec(dllexport)
+#else
+#define FOUNDATIONDLL __declspec(dllimport)
+#endif
+#else
+#define FOUNDATIONDLL
+#endif
+#endif
 
 namespace foundation
 {
@@ -91,10 +109,11 @@ T from_string(const std::string& s);
 // String manipulation functions.
 //
 
-// Duplicate a string. Return a pointer to the new string,
-// allocated with new []. The returned string must be freed
-// with delete [].
-char* strdup(const char* s);
+// Duplicate a string. The returned string must be freed using free_string().
+FOUNDATIONDLL char* duplicate_string(const char* s);
+
+// Deallocate a string returned by duplicate_string().
+FOUNDATIONDLL void free_string(const char* s);
 
 // Convert all characters of a string to lower case.
 std::string lower_case(const std::string& s);
@@ -393,15 +412,6 @@ inline uint8 from_string(const std::string& s)
 //
 // String manipulation functions implementation.
 //
-
-inline char* strdup(const char* s)
-{
-    assert(s);
-    char* result = new char[std::strlen(s) + 1];
-    if (result)
-        std::strcpy(result, s);
-    return result;
-}
 
 inline std::string lower_case(const std::string& s)
 {
