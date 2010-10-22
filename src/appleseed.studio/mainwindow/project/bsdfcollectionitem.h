@@ -31,6 +31,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/collectionitem.h"
+#include "mainwindow/project/entitycreatorbase.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
@@ -49,6 +50,7 @@ namespace studio {
 
 class BSDFCollectionItem
   : public CollectionItem
+  , private EntityCreatorBase
 {
     Q_OBJECT
 
@@ -63,13 +65,15 @@ class BSDFCollectionItem
   public slots:
     void slot_create_bsdf();
 
+  private slots:
+    void slot_create_bsdf_accepted(foundation::Dictionary values);
+
   private:
     renderer::Assembly&             m_assembly;
     ProjectBuilder&                 m_project_builder;
     renderer::BSDFFactoryRegistrar  m_registrar;
 
-  private slots:
-    void slot_create_bsdf_accepted(foundation::Dictionary values);
+    void create_bsdf(const foundation::Dictionary& values);
 };
 
 }       // namespace studio

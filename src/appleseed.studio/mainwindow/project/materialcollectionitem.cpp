@@ -89,7 +89,14 @@ void MaterialCollectionItem::slot_create_material()
 
 void MaterialCollectionItem::slot_create_material_accept(Dictionary values)
 {
+    catch_entity_creation_errors(&MaterialCollectionItem::create_material, values, "Material");
+}
+
+void MaterialCollectionItem::create_material(const Dictionary& values)
+{
     m_project_builder.insert_material(m_assembly, values);
+
+    //emit project_modified();
 
     qobject_cast<QWidget*>(sender())->close();
 }

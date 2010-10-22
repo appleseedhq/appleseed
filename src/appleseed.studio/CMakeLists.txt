@@ -111,6 +111,8 @@ set(mainwindow_project_sources
     mainwindow/project/entitybrowserwindow.cpp
     mainwindow/project/entitybrowserwindow.h
     mainwindow/project/entitybrowserwindow.ui
+    mainwindow/project/entitycreatorbase.cpp
+    mainwindow/project/entitycreatorbase.h
     mainwindow/project/entityeditorformfactory.h
     mainwindow/project/entityeditorwindow.cpp
     mainwindow/project/entityeditorwindow.h
@@ -128,6 +130,8 @@ set(mainwindow_project_sources
     mainwindow/project/lightcollectionitem.h
     mainwindow/project/materialcollectionitem.cpp
     mainwindow/project/materialcollectionitem.h
+    mainwindow/project/materialeditorformfactory.cpp
+    mainwindow/project/materialeditorformfactory.h
     mainwindow/project/objectcollectionitem.cpp
     mainwindow/project/objectcollectionitem.h
     mainwindow/project/objectinstancecollectionitem.cpp

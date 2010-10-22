@@ -31,6 +31,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/collectionitem.h"
+#include "mainwindow/project/entitycreatorbase.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/scene.h"
@@ -49,6 +50,7 @@ namespace studio {
 
 class SurfaceShaderCollectionItem
   : public CollectionItem
+  , private EntityCreatorBase
 {
     Q_OBJECT
 
@@ -63,13 +65,15 @@ class SurfaceShaderCollectionItem
   public slots:
     void slot_create_surface_shader();
 
+  private slots:
+    void slot_create_surface_shader_accepted(foundation::Dictionary values);
+
   private:
     renderer::Assembly&                         m_assembly;
     ProjectBuilder&                             m_project_builder;
     renderer::SurfaceShaderFactoryRegistrar     m_registrar;
 
-  private slots:
-    void slot_create_surface_shader_accepted(foundation::Dictionary values);
+    void create_surface_shader(const foundation::Dictionary& values);
 };
 
 }       // namespace studio

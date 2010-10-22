@@ -31,54 +31,17 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/assemblycollectionitem.h"
-#include "mainwindow/project/entitybrowserwindow.h"
-#include "mainwindow/project/entityeditorwindow.h"
 #include "mainwindow/project/itembase.h"
-#include "mainwindow/project/tools.h"
-#include "utility/tweaks.h"
-
-// appleseed.renderer headers.
-#include "renderer/api/color.h"
-#include "renderer/api/edf.h"
-#include "renderer/api/environmentedf.h"
-#include "renderer/api/environmentshader.h"
-#include "renderer/api/geometry.h"
-#include "renderer/api/light.h"
-#include "renderer/api/material.h"
-#include "renderer/api/project.h"
-#include "renderer/api/scene.h"
-#include "renderer/api/texture.h"
-
-// appleseed.foundation headers.
-#include "foundation/utility/containers/dictionaryarray.h"
-#include "foundation/utility/foreach.h"
-#include "foundation/utility/kvpair.h"
-#include "foundation/utility/otherwise.h"
-#include "foundation/utility/searchpaths.h"
-#include "foundation/utility/string.h"
 
 // Qt headers.
-#include <QFileDialog>
-#include <QInputDialog>
 #include <QMenu>
-#include <QMessageBox>
 #include <QPoint>
-#include <QStringList>
-#include <Qt>
 #include <QTreeWidget>
-
-// boost headers.
-#include "boost/filesystem/path.hpp"
 
 // Standard headers.
 #include <cassert>
-#include <memory>
-#include <string>
 
-using namespace boost;
-using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -181,83 +144,6 @@ void ProjectExplorer::slot_context_menu(const QPoint& point)
     if (menu)
         menu->exec(m_tree_widget->mapToGlobal(point));
 }
-
-/*
-namespace
-{
-    const KeyValuePair<ProjectItem::Type, const char*> EntityNames[] =
-    {
-        { ProjectItem::ItemBSDF, "BSDF" },
-        { ProjectItem::ItemMaterial, "material" }
-    };
-
-    void display_entity_creation_error(
-        const ProjectItem::Type item_type,
-        const QString&          message)
-    {
-        QMessageBox msgbox;
-        msgbox.setWindowTitle(
-            QString("Failed to create %1").arg(
-                LOOKUP_KVPAIR_ARRAY(EntityNames, item_type)->m_value));
-        msgbox.setIcon(QMessageBox::Warning);
-        msgbox.setText(message);
-        msgbox.setStandardButtons(QMessageBox::Ok);
-        msgbox.setDefaultButton(QMessageBox::Ok);
-        set_minimum_width(msgbox, 300);
-        msgbox.exec();
-    }
-}
-
-void ProjectExplorer::slot_create_entity(QVariant payload, Dictionary values)
-{
-    const ItemTypeQVariantPair item = payload.value<ItemTypeQVariantPair>();
-    const ProjectItem::Type item_type = item.first;
-    Assembly& assembly = qvariant_to_ref<Assembly>(item.second.toList().first());
-
-    try
-    {
-        switch (item_type)
-        {
-          case ProjectItem::ItemBSDF:
-            m_tree_widget_decorator.insert_assembly_item(
-                assembly,
-                m_project_builder.insert_bsdf(assembly, values));
-            break;
-
-          case ProjectItem::ItemMaterial:
-            m_tree_widget_decorator.insert_assembly_item(
-                assembly,
-                m_project_builder.insert_material(assembly, values));
-            break;
-
-          case ProjectItem::ItemSurfaceShader:
-            m_tree_widget_decorator.insert_assembly_item(
-                assembly,
-                m_project_builder.insert_surface_shader(assembly, values));
-            break;
-
-          assert_otherwise;
-        }
-
-        // Close the entity editor.
-        qobject_cast<QWidget*>(sender()->parent())->close();
-
-        emit project_modified();
-    }
-    catch (const ExceptionDictionaryItemNotFound& e)
-    {
-        display_entity_creation_error(
-            item_type,
-            QString("Required parameter \"%0\" missing.").arg(e.string()));
-    }
-    catch (const ExceptionUnknownEntity& e)
-    {
-        display_entity_creation_error(
-            item_type,
-            QString("Unknown entity \"%0\".").arg(e.string()));
-    }
-}
-*/
 
 }   // namespace studio
 }   // namespace appleseed

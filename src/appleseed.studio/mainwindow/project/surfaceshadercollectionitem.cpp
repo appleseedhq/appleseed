@@ -91,7 +91,17 @@ void SurfaceShaderCollectionItem::slot_create_surface_shader()
 
 void SurfaceShaderCollectionItem::slot_create_surface_shader_accepted(Dictionary values)
 {
+    catch_entity_creation_errors(
+        &SurfaceShaderCollectionItem::create_surface_shader,
+        values,
+        "Surface Shader");
+}
+
+void SurfaceShaderCollectionItem::create_surface_shader(const Dictionary& values)
+{
     m_project_builder.insert_surface_shader(m_assembly, values);
+
+    //emit project_modified();
 
     qobject_cast<QWidget*>(sender())->close();
 }

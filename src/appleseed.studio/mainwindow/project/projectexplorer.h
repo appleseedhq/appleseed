@@ -32,25 +32,14 @@
 // appleseed.studio headers.
 #include "mainwindow/project/projecttree.h"
 
-// appleseed.renderer headers.
-#include "renderer/api/bsdf.h"
-#include "renderer/api/surfaceshader.h"
-
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/utility/containers/dictionary.h"
 
 // Qt headers.
 #include <QList>
 #include <QObject>
-#include <QString>
-#include <QVariant>
-
-// Standard headers.
-#include <map>
 
 // Forward declarations.
-namespace renderer  { class Assembly; }
 namespace renderer  { class Project; }
 class QMenu;
 class QPoint;
@@ -75,38 +64,15 @@ class ProjectExplorer
     void project_modified();
 
   private:
-    renderer::Project&                          m_project;
-    QTreeWidget*                                m_tree_widget;
-
-    ProjectTree                                 m_project_tree;
-
-    renderer::BSDFFactoryRegistrar              m_bsdf_factory_registrar;
-    renderer::SurfaceShaderFactoryRegistrar     m_surface_shader_factory_registrar;
+    renderer::Project&      m_project;
+    QTreeWidget*            m_tree_widget;
+    ProjectTree             m_project_tree;
 
     QMenu* build_generic_context_menu() const;
     QMenu* build_context_menu(const QList<QTreeWidgetItem*>& items) const;
 
   private slots:
     void slot_context_menu(const QPoint& point);
-
-/*
-    void slot_instantiate_assembly();
-
-    void slot_import_objects_to_assembly();
-    void slot_import_textures_to_assembly();
-    void slot_import_textures_to_scene();
-
-    void slot_add_bsdf_to_assembly();
-    void slot_add_surface_shader_to_assembly();
-    void slot_add_material_to_assembly();
-    void slot_create_entity(QVariant payload, foundation::Dictionary values);
-
-    void slot_assign_material_to_object_instance();
-    void slot_do_assign_material_to_object_instance(
-        QList<QVariant>     items_data,
-        QString             page_name,
-        QString             entity_name);
-*/
 };
 
 }       // namespace studio

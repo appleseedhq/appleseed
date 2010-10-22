@@ -53,8 +53,6 @@ namespace Ui { class EntityEditorWindow; }
 class QFormLayout;
 class QSignalMapper;
 
-using namespace foundation;
-
 namespace appleseed {
 namespace studio {
 
@@ -155,7 +153,7 @@ class EntityEditorWindow
 
         virtual void set(const std::string& value)
         {
-            throw ExceptionNotImplemented();
+            throw foundation::ExceptionNotImplemented();
         }
 
         virtual std::string get() const

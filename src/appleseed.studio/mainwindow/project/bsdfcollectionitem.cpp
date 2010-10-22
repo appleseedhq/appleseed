@@ -88,7 +88,14 @@ void BSDFCollectionItem::slot_create_bsdf()
 
 void BSDFCollectionItem::slot_create_bsdf_accepted(Dictionary values)
 {
+    catch_entity_creation_errors(&BSDFCollectionItem::create_bsdf, values, "BSDF");
+}
+
+void BSDFCollectionItem::create_bsdf(const Dictionary& values)
+{
     m_project_builder.insert_bsdf(m_assembly, values);
+
+    //emit project_modified();
 
     qobject_cast<QWidget*>(sender())->close();
 }

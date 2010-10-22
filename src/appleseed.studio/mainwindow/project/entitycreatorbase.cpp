@@ -26,56 +26,32 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALCOLLECTIONITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALCOLLECTIONITEM_H
+// Interface header.
+#include "entitycreatorbase.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/collectionitem.h"
-#include "mainwindow/project/entitycreatorbase.h"
-
-// appleseed.renderer headers.
-#include "renderer/api/scene.h"
+#include "utility/tweaks.h"
 
 // Qt headers.
-#include <QObject>
-
-// Forward declarations.
-namespace appleseed     { namespace studio { class ProjectBuilder; }}
-namespace foundation    { class Dictionary; }
-class QMenu;
+#include <QMessageBox>
+#include <QString>
 
 namespace appleseed {
 namespace studio {
 
-class MaterialCollectionItem
-  : public CollectionItem
-  , private EntityCreatorBase
+void EntityCreatorBase::display_entity_creation_error(
+    const QString&  entity_name,
+    const QString&  message)
 {
-    Q_OBJECT
+    QMessageBox msgbox;
+    msgbox.setWindowTitle(QString("Failed to create %1").arg(entity_name));
+    msgbox.setIcon(QMessageBox::Warning);
+    msgbox.setText(message);
+    msgbox.setStandardButtons(QMessageBox::Ok);
+    msgbox.setDefaultButton(QMessageBox::Ok);
+    set_minimum_width(msgbox, 300);
+    msgbox.exec();
+}
 
-  public:
-    MaterialCollectionItem(
-        renderer::Assembly&             assembly,
-        renderer::MaterialContainer&    materials,
-        ProjectBuilder&                 project_builder);
-
-    virtual QMenu* get_context_menu() const;
-
-  public slots:
-    void slot_create_material();
-
-  private slots:
-    void slot_create_material_accept(foundation::Dictionary values);
-
-  private:
-    renderer::Assembly& m_assembly;
-    ProjectBuilder&     m_project_builder;
-
-    void create_material(const foundation::Dictionary& values);
-
-};
-
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALCOLLECTIONITEM_H
+}   // namespace studio
+}   // namespace appleseed
