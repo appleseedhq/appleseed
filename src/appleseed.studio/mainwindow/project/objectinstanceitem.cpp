@@ -103,8 +103,6 @@ void ObjectInstanceItem::slot_assign_material_accepted(QString page_name, QStrin
 
     m_object_instance.set_material_index(0, material_index);
 
-    //emit project_modified();
-
     qobject_cast<QWidget*>(sender())->close();
 }
 

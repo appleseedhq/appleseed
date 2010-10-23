@@ -103,11 +103,6 @@ void TextureCollectionItem::slot_import_textures()
             m_project_builder.insert_textures(*m_assembly, filepath);
         else m_project_builder.insert_textures(filepath);
     }
-
-/*
-    if (!filepaths.empty())
-        emit project_modified();
-*/
 }
 
 }   // namespace studio

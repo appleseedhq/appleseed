@@ -84,11 +84,6 @@ void ObjectCollectionItem::slot_import_objects()
             m_assembly,
             filepaths[i].toStdString());
     }
-
-/*
-    if (!filepaths.empty())
-        emit project_modified();
-*/
 }
 
 }   // namespace studio

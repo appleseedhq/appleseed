@@ -180,11 +180,7 @@ void AssemblyItem::slot_instantiate()
             instance_name_suggestion);
 
     if (!instance_name.empty())
-    {
         m_project_builder.insert_assembly_instance(instance_name, m_assembly);
-
-        //emit project_modified();
-    }
 }
 
 }   // namespace studio

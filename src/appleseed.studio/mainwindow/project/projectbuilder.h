@@ -37,6 +37,9 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/containers/dictionary.h"
 
+// Qt headers.
+#include <QObject>
+
 // Standard headers.
 #include <string>
 
@@ -49,8 +52,11 @@ namespace appleseed {
 namespace studio {
 
 class ProjectBuilder
-  : foundation::NonCopyable
+  : public QObject
+  , foundation::NonCopyable
 {
+    Q_OBJECT
+
   public:
     ProjectBuilder(
         renderer::Project&                  project,
@@ -85,6 +91,9 @@ class ProjectBuilder
 
     void insert_textures(
         const std::string&                  path) const;
+
+  signals:
+    void project_modified() const;
 
   private:
     renderer::Project&                      m_project;

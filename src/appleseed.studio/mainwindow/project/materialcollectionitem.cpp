@@ -96,8 +96,6 @@ void MaterialCollectionItem::create_material(const Dictionary& values)
 {
     m_project_builder.insert_material(m_assembly, values);
 
-    //emit project_modified();
-
     qobject_cast<QWidget*>(sender())->close();
 }
 

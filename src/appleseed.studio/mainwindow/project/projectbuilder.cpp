@@ -82,6 +82,8 @@ void ProjectBuilder::insert_assembly(
     m_project_tree.get_assembly_collection_item().add_item(assembly.ref());
 
     m_project.get_scene()->assemblies().insert(assembly);
+
+    emit project_modified();
 }
 
 void ProjectBuilder::insert_assembly_instance(
@@ -97,6 +99,8 @@ void ProjectBuilder::insert_assembly_instance(
     m_project_tree.get_assembly_instance_collection_item().add_item(assembly_instance.ref());
 
     m_project.get_scene()->assembly_instances().insert(assembly_instance);
+
+    emit project_modified();
 }
 
 void ProjectBuilder::insert_bsdf(
@@ -114,6 +118,8 @@ void ProjectBuilder::insert_bsdf(
     m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(bsdf.ref());
 
     assembly.bsdfs().insert(bsdf);
+
+    emit project_modified();
 }
 
 void ProjectBuilder::insert_surface_shader(
@@ -132,6 +138,8 @@ void ProjectBuilder::insert_surface_shader(
     m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(surface_shader.ref());
 
     assembly.surface_shaders().insert(surface_shader);
+
+    emit project_modified();
 }
 
 void ProjectBuilder::insert_material(
@@ -151,6 +159,8 @@ void ProjectBuilder::insert_material(
     m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(material.ref());
 
     assembly.materials().insert(material);
+
+    emit project_modified();
 }
 
 void ProjectBuilder::insert_objects(
@@ -191,6 +201,9 @@ void ProjectBuilder::insert_objects(
 
         assembly.object_instances().insert(object_instance);
     }
+
+    if (!mesh_objects.empty())
+        emit project_modified();
 }
 
 namespace
@@ -247,6 +260,8 @@ void ProjectBuilder::insert_textures(
     m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(texture_instance.ref());
 
     assembly.texture_instances().insert(texture_instance);
+
+    emit project_modified();
 }
 
 void ProjectBuilder::insert_textures(
@@ -267,6 +282,8 @@ void ProjectBuilder::insert_textures(
     m_project_tree.get_texture_instance_collection_item().add_item(texture_instance.ref());
 
     scene.texture_instances().insert(texture_instance);
+
+    emit project_modified();
 }
 
 }   // namespace studio

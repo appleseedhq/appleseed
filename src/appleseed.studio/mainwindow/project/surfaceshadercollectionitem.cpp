@@ -101,8 +101,6 @@ void SurfaceShaderCollectionItem::create_surface_shader(const Dictionary& values
 {
     m_project_builder.insert_surface_shader(m_assembly, values);
 
-    //emit project_modified();
-
     qobject_cast<QWidget*>(sender())->close();
 }
 

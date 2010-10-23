@@ -97,11 +97,7 @@ void AssemblyCollectionItem::slot_create_assembly()
             assembly_name_suggestion);
 
     if (!assembly_name.empty())
-    {
         m_project_builder.insert_assembly(assembly_name);
-
-        //emit project_modified();
-    }
 }
 
 }   // namespace studio

@@ -58,6 +58,10 @@ ProjectExplorer::ProjectExplorer(
     connect(
         m_tree_widget, SIGNAL(customContextMenuRequested(const QPoint&)),
         this, SLOT(slot_context_menu(const QPoint&)));
+
+    connect(
+        &m_project_tree, SIGNAL(project_modified()),
+        this, SIGNAL(project_modified()));
 }
 
 namespace

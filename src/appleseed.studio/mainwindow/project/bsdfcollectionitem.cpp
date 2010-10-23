@@ -95,8 +95,6 @@ void BSDFCollectionItem::create_bsdf(const Dictionary& values)
 {
     m_project_builder.insert_bsdf(m_assembly, values);
 
-    //emit project_modified();
-
     qobject_cast<QWidget*>(sender())->close();
 }
 

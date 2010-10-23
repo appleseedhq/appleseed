@@ -58,6 +58,10 @@ ProjectTree::ProjectTree(
   , m_tree_widget(tree_widget)
   , m_project_builder(project, *this)
 {
+    connect(
+        &m_project_builder, SIGNAL(project_modified()),
+        this, SIGNAL(project_modified()));
+
     const Scene& scene = *m_project.get_scene();
 
     m_color_collection_item = add_collection_item(scene.colors());

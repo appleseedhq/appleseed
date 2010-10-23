@@ -33,6 +33,12 @@
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/itemtypemap.h"
 
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
+
+// Qt headers.
+#include <QObject>
+
 // Forward declarations.
 namespace appleseed { namespace studio { class AssemblyCollectionItem; }}
 namespace appleseed { namespace studio { class AssemblyInstanceCollectionItem; }}
@@ -48,7 +54,11 @@ namespace appleseed {
 namespace studio {
 
 class ProjectTree
+  : public QObject
+  , foundation::NonCopyable
 {
+    Q_OBJECT
+
   public:
     ProjectTree(
         renderer::Project&  project,
@@ -59,6 +69,9 @@ class ProjectTree
     TextureInstanceCollectionItem& get_texture_instance_collection_item() const;
     AssemblyCollectionItem& get_assembly_collection_item() const;
     AssemblyInstanceCollectionItem& get_assembly_instance_collection_item() const;
+
+  signals:
+    void project_modified() const;
 
   private:
     renderer::Project&                  m_project;
