@@ -36,7 +36,6 @@
 // Globally included appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
-#include "renderer/global/globaluidsource.h"
 #include "renderer/utility/paramarray.h"
 
 // Globally included appleseed.foundation headers.
@@ -48,6 +47,7 @@
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/log.h"
 #include "foundation/utility/otherwise.h"
+#include "foundation/utility/uid.h"
 
 // Globally included standard headers.
 #include <cassert>
