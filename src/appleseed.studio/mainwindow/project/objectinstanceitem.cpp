@@ -44,6 +44,8 @@
 #include <QMenu>
 #include <QMetaType>
 #include <QString>
+#include <Qt>
+#include <QVariant>
 
 Q_DECLARE_METATYPE(QList<appleseed::studio::ItemBase*>);
 
@@ -60,14 +62,14 @@ ObjectInstanceItem::ObjectInstanceItem(
   , m_assembly(assembly)
   , m_object_instance(object_instance)
 {
-    if (object_instance.get_material_indices().empty())
-        setTextColor(0, QColor(255, 0, 255, 255));
+    update_style();
 }
 
 QMenu* ObjectInstanceItem::get_single_item_context_menu() const
 {
     QMenu* menu = new QMenu(treeWidget());
     menu->addAction("Assign Material...", this, SLOT(slot_assign_material()));
+    menu->addAction("Unassign Material", this, SLOT(slot_unassign_material()));
     return menu;
 }
 
@@ -104,6 +106,8 @@ QMenu* ObjectInstanceItem::get_multiple_items_context_menu(const QList<ItemBase*
 
     QMenu* menu = new QMenu(treeWidget());
     menu->addAction("Assign Material...", this, SLOT(slot_assign_material()))
+        ->setData(QVariant::fromValue(items));
+    menu->addAction("Unassign Material", this, SLOT(slot_unassign_material()))
         ->setData(QVariant::fromValue(items));
     return menu;
 }
@@ -183,13 +187,10 @@ void ObjectInstanceItem::slot_assign_material_accepted(QString page_name, QStrin
     assert(material_index != ~size_t(0));
 
     if (data.isNull())
-    {
         assign_material(material_index);
-    }
     else
     {
         const QList<ItemBase*> items = data.value<QList<ItemBase*> >();
-
         for (int i = 0; i < items.size(); ++i)
             static_cast<ObjectInstanceItem*>(items[i])->assign_material(material_index);
     }
@@ -197,9 +198,43 @@ void ObjectInstanceItem::slot_assign_material_accepted(QString page_name, QStrin
     qobject_cast<QWidget*>(sender()->parent())->close();
 }
 
-void ObjectInstanceItem::assign_material(const size_t material_index) const
+void ObjectInstanceItem::slot_unassign_material()
+{
+    QAction* action = static_cast<QAction*>(sender());
+
+    if (action->data().isNull())
+        unassign_material();
+    else
+    {
+        const QList<ItemBase*> items = action->data().value<QList<ItemBase*> >();
+        for (int i = 0; i < items.size(); ++i)
+            static_cast<ObjectInstanceItem*>(items[i])->unassign_material();
+    }
+}
+
+void ObjectInstanceItem::update_style()
+{
+    if (m_object_instance.get_material_indices().empty())
+        setTextColor(0, QColor(255, 0, 255, 255));
+    else
+    {
+        // Remove the color overload. Not sure this is the easiest way to do it.
+        setData(0, Qt::TextColorRole, QVariant());
+    }
+}
+
+void ObjectInstanceItem::assign_material(const size_t material_index)
 {
     m_object_instance.set_material_index(0, material_index);
+
+    update_style();
+}
+
+void ObjectInstanceItem::unassign_material()
+{
+    m_object_instance.set_material_indices(MaterialIndexArray());
+
+    update_style();
 }
 
 }   // namespace studio

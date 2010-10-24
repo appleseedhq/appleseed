@@ -66,12 +66,16 @@ class ObjectInstanceItem
   private slots:
     void slot_assign_material();
     void slot_assign_material_accepted(QString page_name, QString entity_name, QVariant data);
+    void slot_unassign_material();
 
   private:
     renderer::Assembly&             m_assembly;
     renderer::ObjectInstance&       m_object_instance;
 
-    void assign_material(const size_t material_index) const;
+    void update_style();
+
+    void assign_material(const size_t material_index);
+    void unassign_material();
 };
 
 }       // namespace studio
