@@ -36,16 +36,25 @@
 // appleseed.renderer headers.
 #include "renderer/api/scene.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/uid.h"
+
+using namespace foundation;
 using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
+}
+
 TextureInstanceCollectionItem::TextureInstanceCollectionItem(
     Scene&                      scene,
     TextureInstanceContainer&   texture_instances,
     ProjectBuilder&             project_builder)
-  : CollectionItem("Texture Instances", texture_instances)
+  : CollectionItem(g_class_uid, "Texture Instances", texture_instances)
   , m_assembly(0)
   , m_project_builder(project_builder)
 {
@@ -55,7 +64,7 @@ TextureInstanceCollectionItem::TextureInstanceCollectionItem(
     Assembly&                   assembly,
     TextureInstanceContainer&   texture_instances,
     ProjectBuilder&             project_builder)
-  : CollectionItem("Texture Instances", texture_instances)
+  : CollectionItem(g_class_uid, "Texture Instances", texture_instances)
   , m_assembly(&assembly)
   , m_project_builder(project_builder)
 {

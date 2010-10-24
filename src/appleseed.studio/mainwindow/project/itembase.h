@@ -29,7 +29,11 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ITEMBASE_H
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ITEMBASE_H
 
+// appleseed.foundation headers.
+#include "foundation/utility/uid.h"
+
 // Qt headers.
+#include <QList>
 #include <QObject>
 #include <QTreeWidgetItem>
 
@@ -47,11 +51,18 @@ class ItemBase
     Q_OBJECT
 
   public:
-    explicit ItemBase(const QString& title);
+    ItemBase(const foundation::UniqueID class_uid, const QString& title);
 
     virtual ~ItemBase() {}
 
-    virtual QMenu* get_context_menu() const;
+    foundation::UniqueID get_class_uid() const;
+
+    virtual QMenu* get_single_item_context_menu() const;
+
+    virtual QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const;
+
+  private:
+    const foundation::UniqueID m_class_uid;
 };
 
 }       // namespace studio

@@ -60,7 +60,7 @@ class BSDFCollectionItem
         renderer::BSDFContainer&    bsdfs,
         ProjectBuilder&             project_builder);
 
-    virtual QMenu* get_context_menu() const;
+    virtual QMenu* get_single_item_context_menu() const;
 
   public slots:
     void slot_create_bsdf();

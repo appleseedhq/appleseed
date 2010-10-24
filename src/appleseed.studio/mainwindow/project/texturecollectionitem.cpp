@@ -36,6 +36,9 @@
 // appleseed.renderer headers.
 #include "renderer/api/texture.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/uid.h"
+
 // Qt headers.
 #include <QFileDialog>
 #include <QMenu>
@@ -48,17 +51,23 @@
 // Forward declarations.
 class QWidget;
 
+using namespace foundation;
 using namespace renderer;
 using namespace std;
 
 namespace appleseed {
 namespace studio {
 
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
+}
+
 TextureCollectionItem::TextureCollectionItem(
     Scene&              scene,
     TextureContainer&   textures,
     ProjectBuilder&     project_builder)
-  : CollectionItem("Textures", textures)
+  : CollectionItem(g_class_uid, "Textures", textures)
   , m_assembly(0)
   , m_project_builder(project_builder)
 {
@@ -68,13 +77,13 @@ TextureCollectionItem::TextureCollectionItem(
     Assembly&           assembly,
     TextureContainer&   textures,
     ProjectBuilder&     project_builder)
-  : CollectionItem("Textures", textures)
+  : CollectionItem(g_class_uid, "Textures", textures)
   , m_assembly(&assembly)
   , m_project_builder(project_builder)
 {
 }
 
-QMenu* TextureCollectionItem::get_context_menu() const
+QMenu* TextureCollectionItem::get_single_item_context_menu() const
 {
     QMenu* menu = new QMenu(treeWidget());
     menu->addAction("Import Textures...", this, SLOT(slot_import_textures()));

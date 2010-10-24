@@ -36,16 +36,25 @@
 // appleseed.renderer headers.
 #include "renderer/api/environmentshader.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/uid.h"
+
+using namespace foundation;
 using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
+}
+
 EnvironmentShaderCollectionItem::EnvironmentShaderCollectionItem(
     Scene&                      scene,
     EnvironmentShaderContainer& environment_shaders,
     ProjectBuilder&             project_builder)
-  : CollectionItem("Environment Shaders", environment_shaders)
+  : CollectionItem(g_class_uid, "Environment Shaders", environment_shaders)
   , m_project_builder(project_builder)
 {
 }

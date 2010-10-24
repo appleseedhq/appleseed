@@ -68,8 +68,9 @@ class ProjectExplorer
     QTreeWidget*            m_tree_widget;
     ProjectTree             m_project_tree;
 
-    QMenu* build_generic_context_menu() const;
-    QMenu* build_context_menu(const QList<QTreeWidgetItem*>& items) const;
+    QMenu* build_no_item_context_menu() const;
+    QMenu* build_single_item_context_menu(QTreeWidgetItem* item) const;
+    QMenu* build_multiple_items_context_menu(const QList<QTreeWidgetItem*>& items) const;
 
   private slots:
     void slot_context_menu(const QPoint& point);

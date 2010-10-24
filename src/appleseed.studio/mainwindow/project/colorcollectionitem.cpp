@@ -36,16 +36,25 @@
 // appleseed.renderer headers.
 #include "renderer/api/color.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/uid.h"
+
+using namespace foundation;
 using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
+}
+
 ColorCollectionItem::ColorCollectionItem(
     Scene&              scene,
     ColorContainer&     colors,
     ProjectBuilder&     project_builder)
-  : CollectionItem("Colors", colors)
+  : CollectionItem(g_class_uid, "Colors", colors)
   , m_assembly(0)
   , m_project_builder(project_builder)
 {
@@ -55,7 +64,7 @@ ColorCollectionItem::ColorCollectionItem(
     Assembly&           assembly,
     ColorContainer&     colors,
     ProjectBuilder&     project_builder)
-  : CollectionItem("Colors", colors)
+  : CollectionItem(g_class_uid, "Colors", colors)
   , m_assembly(&assembly)
   , m_project_builder(project_builder)
 {

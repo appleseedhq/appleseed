@@ -90,7 +90,7 @@ AssemblyItem::AssemblyItem(
     m_object_instance_collection_item = add_collection_item(assembly.object_instances());
 }
 
-QMenu* AssemblyItem::get_context_menu() const
+QMenu* AssemblyItem::get_single_item_context_menu() const
 {
     QMenu* menu = new QMenu(treeWidget());
     menu->addAction("Instantiate...", this, SLOT(slot_instantiate()));

@@ -60,7 +60,7 @@ class SurfaceShaderCollectionItem
         renderer::SurfaceShaderContainer&       surface_shaders,
         ProjectBuilder&                         project_builder);
 
-    virtual QMenu* get_context_menu() const;
+    virtual QMenu* get_single_item_context_menu() const;
 
   public slots:
     void slot_create_surface_shader();

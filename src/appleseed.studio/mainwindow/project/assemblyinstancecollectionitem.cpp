@@ -33,16 +33,25 @@
 #include "mainwindow/project/entityitem.h"
 #include "mainwindow/project/projectbuilder.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/uid.h"
+
+using namespace foundation;
 using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
+}
+
 AssemblyInstanceCollectionItem::AssemblyInstanceCollectionItem(
     Scene&                      scene,
     AssemblyInstanceContainer&  assembly_instances,
     ProjectBuilder&             project_builder)
-  : CollectionItem("Assembly Instances", assembly_instances)
+  : CollectionItem(g_class_uid, "Assembly Instances", assembly_instances)
   , m_project_builder(project_builder)
 {
 }

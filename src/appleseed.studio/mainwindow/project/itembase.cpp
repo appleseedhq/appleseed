@@ -33,15 +33,28 @@
 #include <QString>
 #include <QStringList>
 
+using namespace foundation;
+
 namespace appleseed {
 namespace studio {
 
-ItemBase::ItemBase(const QString& title)
+ItemBase::ItemBase(const UniqueID class_uid, const QString& title)
   : QTreeWidgetItem(QStringList() << title)
+  , m_class_uid(class_uid)
 {
 }
 
-QMenu* ItemBase::get_context_menu() const
+UniqueID ItemBase::get_class_uid() const
+{
+    return m_class_uid;
+}
+
+QMenu* ItemBase::get_single_item_context_menu() const
+{
+    return 0;
+}
+
+QMenu* ItemBase::get_multiple_items_context_menu(const QList<ItemBase*>& items) const
 {
     return 0;
 }

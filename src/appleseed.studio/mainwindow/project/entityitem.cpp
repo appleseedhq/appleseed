@@ -41,7 +41,7 @@ namespace appleseed {
 namespace studio {
 
 EntityItem::EntityItem(const Entity& entity)
-  : ItemBase(QString::fromAscii(entity.get_name()))
+  : ItemBase(entity.get_class_uid(), QString::fromAscii(entity.get_name()))
 {
 }
 

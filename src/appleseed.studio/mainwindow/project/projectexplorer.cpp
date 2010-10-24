@@ -33,6 +33,9 @@
 #include "mainwindow/project/assemblycollectionitem.h"
 #include "mainwindow/project/itembase.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/uid.h"
+
 // Qt headers.
 #include <QMenu>
 #include <QPoint>
@@ -41,6 +44,7 @@
 // Standard headers.
 #include <cassert>
 
+using namespace foundation;
 using namespace renderer;
 
 namespace appleseed {
@@ -64,69 +68,7 @@ ProjectExplorer::ProjectExplorer(
         this, SIGNAL(project_modified()));
 }
 
-namespace
-{
-    bool are_items_same_type(const QList<QTreeWidgetItem*>& items)
-    {
-        assert(!items.empty());
-
-/*
-        const ProjectItem::Type first_item_type = get_item_type(items[0]);
-
-        for (int i = 1; i < items.size(); ++i)
-        {
-            if (get_item_type(items[i]) != first_item_type)
-                return false;
-        }
-*/
-
-        return true;
-    }
-
-/*
-    bool are_items_from_same_assembly(const QList<QTreeWidgetItem*>& items)
-    {
-        assert(!items.empty());
-
-        const Assembly* first_item_assembly = get_assembly_from_item(items[0]);
-
-        for (int i = 1; i < items.size(); ++i)
-        {
-            if (get_assembly_from_item(items[i]) != first_item_assembly)
-                return false;
-        }
-
-        return true;
-    }
-*/
-}
-
-QMenu* ProjectExplorer::build_context_menu(const QList<QTreeWidgetItem*>& items) const
-{
-    assert(!items.isEmpty());
-
-    if (items.size() == 1)
-    {
-        const ItemBase* item = static_cast<ItemBase*>(items.first());
-        return item->get_context_menu();
-    }
-    else if (are_items_same_type(items))
-    {
-/*
-        switch (get_item_type(items.first()))
-        {
-          case ProjectItem::ItemObjectInstance:
-            if (are_items_from_same_assembly(items))
-                menu = build_object_instance_context_menu();
-            break;
-        }
-*/
-    }
-
-    return 0;
-}
-
-QMenu* ProjectExplorer::build_generic_context_menu() const
+QMenu* ProjectExplorer::build_no_item_context_menu() const
 {
     QMenu* menu = new QMenu(m_tree_widget);
     menu->addAction(
@@ -136,14 +78,52 @@ QMenu* ProjectExplorer::build_generic_context_menu() const
     return menu;
 }
 
+QMenu* ProjectExplorer::build_single_item_context_menu(QTreeWidgetItem* item) const
+{
+    return static_cast<ItemBase*>(item)->get_single_item_context_menu();
+}
+
+namespace
+{
+    bool are_same_class_uid(const QList<ItemBase*>& items)
+    {
+        assert(!items.empty());
+
+        const UniqueID first_item_class_uid = items.first()->get_class_uid();
+
+        for (int i = 1; i < items.size(); ++i)
+        {
+            if (items[i]->get_class_uid() != first_item_class_uid)
+                return false;
+        }
+
+        return true;
+    }
+}
+
+QMenu* ProjectExplorer::build_multiple_items_context_menu(const QList<QTreeWidgetItem*>& tree_items) const
+{
+    assert(tree_items.size() > 1);
+
+    QList<ItemBase*> items;
+
+    for (int i = 0; i < tree_items.size(); ++i)
+        items.append(static_cast<ItemBase*>(tree_items[i]));
+
+    return
+        are_same_class_uid(items)
+            ? items.first()->get_multiple_items_context_menu(items)
+            : 0;
+}
+
 void ProjectExplorer::slot_context_menu(const QPoint& point)
 {
     const QList<QTreeWidgetItem*> selected_items = m_tree_widget->selectedItems();
 
     QMenu* menu =
-        selected_items.isEmpty()
-            ? build_generic_context_menu()
-            : build_context_menu(selected_items);
+        selected_items.size() == 0 ? build_no_item_context_menu() :
+        selected_items.size() == 1 ? build_single_item_context_menu(selected_items.first()) :
+                                     build_multiple_items_context_menu(selected_items);
 
     if (menu)
         menu->exec(m_tree_widget->mapToGlobal(point));

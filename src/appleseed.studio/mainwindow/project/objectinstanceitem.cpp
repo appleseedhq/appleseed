@@ -57,7 +57,7 @@ ObjectInstanceItem::ObjectInstanceItem(
         setTextColor(0, QColor(255, 0, 255, 255));
 }
 
-QMenu* ObjectInstanceItem::get_context_menu() const
+QMenu* ObjectInstanceItem::get_single_item_context_menu() const
 {
     QMenu* menu = new QMenu(treeWidget());
     menu->addAction("Assign Material...", this, SLOT(slot_assign_material()));

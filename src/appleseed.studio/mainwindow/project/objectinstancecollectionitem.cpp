@@ -35,6 +35,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/uid.h"
 
 using namespace foundation;
 using namespace renderer;
@@ -42,11 +43,16 @@ using namespace renderer;
 namespace appleseed {
 namespace studio {
 
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
+}
+
 ObjectInstanceCollectionItem::ObjectInstanceCollectionItem(
     Assembly&                   assembly,
     ObjectInstanceContainer&    object_instances,
     ProjectBuilder&             project_builder)
-  : CollectionItemBase("Object Instances")
+  : CollectionItemBase(g_class_uid, "Object Instances")
   , m_assembly(assembly)
   , m_project_builder(project_builder)
 {

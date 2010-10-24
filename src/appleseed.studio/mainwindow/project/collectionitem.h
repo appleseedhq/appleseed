@@ -35,6 +35,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/uid.h"
 
 // Qt headers.
 #include <QObject>
@@ -52,12 +53,15 @@ class CollectionItem
     Q_OBJECT
 
   public:
-    explicit CollectionItem(const QString& title);
+    CollectionItem(
+        const foundation::UniqueID  class_uid,
+        const QString&              title);
 
     template <typename EntityContainer>
     CollectionItem(
-        const QString&      title,
-        EntityContainer&    entities);
+        const foundation::UniqueID  class_uid,
+        const QString&              title,
+        EntityContainer&            entities);
 
     template <typename Entity>
     void add_item(Entity& entity);
@@ -65,9 +69,10 @@ class CollectionItem
 
 template <typename EntityContainer>
 CollectionItem::CollectionItem(
-    const QString&          title,
-    EntityContainer&        entities)
-  : CollectionItemBase(title)
+    const foundation::UniqueID      class_uid,
+    const QString&                  title,
+    EntityContainer&                entities)
+  : CollectionItemBase(class_uid, title)
 {
     for (foundation::each<EntityContainer> i = entities; i; ++i)
         add_item(*i);

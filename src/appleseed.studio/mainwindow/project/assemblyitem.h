@@ -76,7 +76,7 @@ class AssemblyItem
         renderer::Assembly&         assembly,
         ProjectBuilder&             project_builder);
 
-    virtual QMenu* get_context_menu() const;
+    virtual QMenu* get_single_item_context_menu() const;
 
     void add_item(renderer::ColorEntity& color);
     void add_item(renderer::Texture& texture);

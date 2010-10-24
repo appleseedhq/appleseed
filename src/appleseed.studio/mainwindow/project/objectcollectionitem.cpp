@@ -36,28 +36,37 @@
 // appleseed.renderer headers.
 #include "renderer/api/geometry.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/uid.h"
+
 // Qt headers.
 #include <QFileDialog>
 #include <QMenu>
 #include <QString>
 #include <QStringList>
 
+using namespace foundation;
 using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
+}
+
 ObjectCollectionItem::ObjectCollectionItem(
     Assembly&           assembly,
     ObjectContainer&    objects,
     ProjectBuilder&     project_builder)
-  : CollectionItem("Objects", objects)
+  : CollectionItem(g_class_uid, "Objects", objects)
   , m_assembly(assembly)
   , m_project_builder(project_builder)
 {
 }
 
-QMenu* ObjectCollectionItem::get_context_menu() const
+QMenu* ObjectCollectionItem::get_single_item_context_menu() const
 {
     QMenu* menu = new QMenu(treeWidget());
     menu->addAction("Import Objects...", this, SLOT(slot_import_objects()));

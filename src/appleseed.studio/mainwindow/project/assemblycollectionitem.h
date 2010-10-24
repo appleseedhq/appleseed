@@ -63,7 +63,7 @@ class AssemblyCollectionItem
         renderer::AssemblyContainer&    assemblies,
         ProjectBuilder&                 project_builder);
 
-    virtual QMenu* get_context_menu() const;
+    virtual QMenu* get_single_item_context_menu() const;
 
     void add_item(renderer::Assembly& assembly);
 

@@ -36,16 +36,25 @@
 // appleseed.renderer headers.
 #include "renderer/api/light.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/uid.h"
+
+using namespace foundation;
 using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
+}
+
 LightCollectionItem::LightCollectionItem(
     Assembly&           assembly,
     LightContainer&     lights,
     ProjectBuilder&     project_builder)
-  : CollectionItem("Lights", lights)
+  : CollectionItem(g_class_uid, "Lights", lights)
   , m_assembly(assembly)
   , m_project_builder(project_builder)
 {

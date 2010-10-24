@@ -29,11 +29,13 @@
 // Interface header.
 #include "collectionitem.h"
 
+using namespace foundation;
+
 namespace appleseed {
 namespace studio {
 
-CollectionItem::CollectionItem(const QString& title)
-  : CollectionItemBase(title)
+CollectionItem::CollectionItem(const UniqueID class_uid, const QString& title)
+  : CollectionItemBase(class_uid, title)
 {
 }
 

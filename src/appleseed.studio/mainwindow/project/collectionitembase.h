@@ -32,6 +32,9 @@
 // appleseed.studio headers.
 #include "mainwindow/project/itembase.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/uid.h"
+
 // Qt headers.
 #include <QObject>
 
@@ -47,7 +50,7 @@ class CollectionItemBase
     Q_OBJECT
 
   public:
-    explicit CollectionItemBase(const QString& title);
+    CollectionItemBase(const foundation::UniqueID class_uid, const QString& title);
 };
 
 }       // namespace studio

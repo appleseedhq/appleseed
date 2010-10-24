@@ -36,6 +36,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/uid.h"
 
 // Qt headers.
 #include <QMenu>
@@ -51,11 +52,16 @@ using namespace std;
 namespace appleseed {
 namespace studio {
 
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
+}
+
 AssemblyCollectionItem::AssemblyCollectionItem(
     Scene&              scene,
     AssemblyContainer&  assemblies,
     ProjectBuilder&     project_builder)
-  : CollectionItemBase("Assemblies")
+  : CollectionItemBase(g_class_uid, "Assemblies")
   , m_scene(scene)
   , m_project_builder(project_builder)
 {
@@ -63,7 +69,7 @@ AssemblyCollectionItem::AssemblyCollectionItem(
         add_item(*i);
 }
 
-QMenu* AssemblyCollectionItem::get_context_menu() const
+QMenu* AssemblyCollectionItem::get_single_item_context_menu() const
 {
     QMenu* menu = new QMenu(treeWidget());
     menu->addAction("Create Assembly...", this, SLOT(slot_create_assembly()));

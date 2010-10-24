@@ -37,6 +37,9 @@
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/tools.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/uid.h"
+
 // Qt headers.
 #include <QMenu>
 
@@ -50,17 +53,22 @@ using namespace std;
 namespace appleseed {
 namespace studio {
 
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
+}
+
 BSDFCollectionItem::BSDFCollectionItem(
     Assembly&           assembly,
     BSDFContainer&      bsdfs,
     ProjectBuilder&     project_builder)
-  : CollectionItem("BSDFs", bsdfs)
+  : CollectionItem(g_class_uid, "BSDFs", bsdfs)
   , m_assembly(assembly)
   , m_project_builder(project_builder)
 {
 }
 
-QMenu* BSDFCollectionItem::get_context_menu() const
+QMenu* BSDFCollectionItem::get_single_item_context_menu() const
 {
     QMenu* menu = new QMenu(treeWidget());
     menu->addAction("Create BSDF...", this, SLOT(slot_create_bsdf()));

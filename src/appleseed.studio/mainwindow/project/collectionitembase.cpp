@@ -32,11 +32,13 @@
 // Qt headers.
 #include <QFont>
 
+using namespace foundation;
+
 namespace appleseed {
 namespace studio {
 
-CollectionItemBase::CollectionItemBase(const QString& title)
-  : ItemBase(title)
+CollectionItemBase::CollectionItemBase(const UniqueID class_uid, const QString& title)
+  : ItemBase(class_uid, title)
 {
     QFont font;
     font.setBold(true);

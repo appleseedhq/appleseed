@@ -36,16 +36,25 @@
 // appleseed.renderer headers.
 #include "renderer/api/environmentedf.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/uid.h"
+
+using namespace foundation;
 using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
+}
+
 EnvironmentEDFCollectionItem::EnvironmentEDFCollectionItem(
     Scene&                      scene,
     EnvironmentEDFContainer&    environment_edfs,
     ProjectBuilder&             project_builder)
-  : CollectionItem("Environment EDFs", environment_edfs)
+  : CollectionItem(g_class_uid, "Environment EDFs", environment_edfs)
   , m_project_builder(project_builder)
 {
 }

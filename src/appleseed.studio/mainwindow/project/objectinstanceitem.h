@@ -54,7 +54,7 @@ class ObjectInstanceItem
         renderer::Assembly&         assembly,
         renderer::ObjectInstance&   object_instance);
 
-    virtual QMenu* get_context_menu() const;
+    virtual QMenu* get_single_item_context_menu() const;
 
   private:
     renderer::Assembly&             m_assembly;
