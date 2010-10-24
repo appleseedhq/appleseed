@@ -438,7 +438,7 @@ RegionTree::RegionTree(const Arguments& arguments)
         const IntermRegionLeaf* interm_leaf = interm_tree.m_leaves[i];
 
         // Get a new unique ID for this triangle tree.
-        const UniqueID triangle_tree_uid = g_uid_source.get();
+        const UniqueID triangle_tree_uid = new_guid();
 
         // Create the triangle tree factory.
         auto_ptr<ILazyFactory<TriangleTree> > triangle_tree_factory(

@@ -203,7 +203,7 @@ Frame::Frame(
 {
     assert(name);
 
-    impl->m_uid = g_uid_source.get();
+    impl->m_uid = new_guid();
     impl->m_name = name;
 
     // Create the underlying image.

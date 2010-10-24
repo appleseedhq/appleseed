@@ -63,7 +63,7 @@ struct Scene::Impl
 Scene::Scene()
   : impl(new Impl())
 {
-    impl->m_uid = g_uid_source.get();
+    impl->m_uid = new_guid();
     impl->m_asm_inst_version_id = 0;
     impl->m_geometry_version_id = 0;
 }

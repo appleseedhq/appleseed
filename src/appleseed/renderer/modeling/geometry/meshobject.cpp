@@ -61,7 +61,7 @@ namespace
         MeshRegion(
             const GAABB3*               local_bbox,
             const StaticTriangleTess*   tess)
-          : m_uid(g_uid_source.get())
+          : m_uid(new_guid())
           , m_local_bbox(local_bbox)
           , m_lazy_tess(tess)
         {
