@@ -36,6 +36,9 @@
 // appleseed.renderer headers.
 #include "renderer/api/scene.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/uid.h"
+
 // Qt headers.
 #include <QColor>
 #include <QMenu>
@@ -44,6 +47,7 @@
 
 Q_DECLARE_METATYPE(QList<appleseed::studio::ItemBase*>);
 
+using namespace foundation;
 using namespace renderer;
 
 namespace appleseed {
@@ -67,12 +71,46 @@ QMenu* ObjectInstanceItem::get_single_item_context_menu() const
     return menu;
 }
 
+namespace
+{
+    QList<ObjectInstanceItem*> items_to_object_instance_items(const QList<ItemBase*>& items)
+    {
+        QList<ObjectInstanceItem*> object_instance_items;
+
+        for (int i = 0; i < items.size(); ++i)
+            object_instance_items.append(static_cast<ObjectInstanceItem*>(items[i]));
+
+        return object_instance_items;
+    }
+
+    bool are_in_assembly(
+        const QList<ObjectInstanceItem*>&   object_instance_items,
+        const UniqueID                      assembly_uid)
+    {
+        for (int i = 0; i < object_instance_items.size(); ++i)
+        {
+            if (object_instance_items[i]->get_assembly().get_uid() != assembly_uid)
+                return false;
+        }
+
+        return true;
+    }
+}
+
 QMenu* ObjectInstanceItem::get_multiple_items_context_menu(const QList<ItemBase*>& items) const
 {
+    if (!are_in_assembly(items_to_object_instance_items(items), m_assembly.get_uid()))
+        return 0;
+
     QMenu* menu = new QMenu(treeWidget());
     menu->addAction("Assign Material...", this, SLOT(slot_assign_material()))
         ->setData(QVariant::fromValue(items));
     return menu;
+}
+
+const Assembly& ObjectInstanceItem::get_assembly() const
+{
+    return m_assembly;
 }
 
 namespace

@@ -61,11 +61,13 @@ class ObjectInstanceItem
 
     virtual QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const;
 
+    const renderer::Assembly& get_assembly() const;
+
   private slots:
     void slot_assign_material();
     void slot_assign_material_accepted(QString page_name, QString entity_name, QVariant data);
 
-private:
+  private:
     renderer::Assembly&             m_assembly;
     renderer::ObjectInstance&       m_object_instance;
 

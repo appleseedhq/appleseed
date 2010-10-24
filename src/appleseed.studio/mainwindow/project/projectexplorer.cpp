@@ -85,6 +85,16 @@ QMenu* ProjectExplorer::build_single_item_context_menu(QTreeWidgetItem* item) co
 
 namespace
 {
+    QList<ItemBase*> item_widgets_to_items(const QList<QTreeWidgetItem*>& item_widgets)
+    {
+        QList<ItemBase*> items;
+
+        for (int i = 0; i < item_widgets.size(); ++i)
+            items.append(static_cast<ItemBase*>(item_widgets[i]));
+
+        return items;
+    }
+
     bool are_same_class_uid(const QList<ItemBase*>& items)
     {
         assert(!items.empty());
@@ -101,14 +111,11 @@ namespace
     }
 }
 
-QMenu* ProjectExplorer::build_multiple_items_context_menu(const QList<QTreeWidgetItem*>& tree_items) const
+QMenu* ProjectExplorer::build_multiple_items_context_menu(const QList<QTreeWidgetItem*>& item_widgets) const
 {
-    assert(tree_items.size() > 1);
+    assert(item_widgets.size() > 1);
 
-    QList<ItemBase*> items;
-
-    for (int i = 0; i < tree_items.size(); ++i)
-        items.append(static_cast<ItemBase*>(tree_items[i]));
+    const QList<ItemBase*> items = item_widgets_to_items(item_widgets);
 
     return
         are_same_class_uid(items)
