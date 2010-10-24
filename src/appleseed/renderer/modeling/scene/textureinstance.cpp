@@ -48,12 +48,16 @@ struct TextureInstance::Impl
     float                   m_multiplier;
 };
 
-// Constructor.
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
+}
+
 TextureInstance::TextureInstance(
     const char*             name,
     const ParamArray&       params,
     const size_t            texture_index)
-  : Entity(params)
+  : Entity(g_class_uid, params)
   , impl(new Impl())
 {
     assert(name);
@@ -95,41 +99,36 @@ TextureInstance::TextureInstance(
     impl->m_multiplier = m_params.get_optional<float>("multiplier", 1.0f);
 }
 
-// Destructor.
 TextureInstance::~TextureInstance()
 {
     delete impl;
 }
 
-// Delete this instance.
 void TextureInstance::release()
 {
     delete this;
 }
 
-// Return the name of this instance.
 const char* TextureInstance::get_name() const
 {
     return impl->m_name.c_str();
 }
 
-// Return the index in the assembly of the instantiated texture.
 size_t TextureInstance::get_texture_index() const
 {
     return impl->m_texture_index;
 }
 
-// Return the texture mapping modes.
 TextureAddressingMode TextureInstance::get_addressing_mode() const
 {
     return impl->m_addressing_mode;
 }
+
 TextureFilteringMode TextureInstance::get_filtering_mode() const
 {
     return impl->m_filtering_mode;
 }
 
-// Retrieve the multiplier value.
 float TextureInstance::get_multiplier() const
 {
     return impl->m_multiplier;
@@ -140,7 +139,6 @@ float TextureInstance::get_multiplier() const
 // TextureInstanceFactory class implementation.
 //
 
-// Create a new texture instance.
 auto_release_ptr<TextureInstance> TextureInstanceFactory::create(
     const char*             name,
     const ParamArray&       params,

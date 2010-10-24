@@ -82,19 +82,6 @@ class RENDERERDLL SurfaceShader
 // SurfaceShader class implementation.
 //
 
-inline SurfaceShader::SurfaceShader(const ParamArray& params)
-  : ConnectableEntity(params)
-{
-}
-
-inline void SurfaceShader::on_frame_begin(const Project& project)
-{
-}
-
-inline void SurfaceShader::on_frame_end(const Project& project)
-{
-}
-
 inline void SurfaceShader::evaluate_alpha_mask(
     SamplingContext&        sampling_context,
     const ShadingContext&   shading_context,

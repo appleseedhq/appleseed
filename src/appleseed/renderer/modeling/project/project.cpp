@@ -60,8 +60,14 @@ struct Project::Impl
     auto_ptr<TraceContext>  m_trace_context;
 };
 
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
+}
+
 Project::Project(const char* name)
-  : impl(new Impl())
+  : Entity(g_class_uid)
+  , impl(new Impl())
 {
     assert(name);
 

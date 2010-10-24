@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "bsdf.h"
+#include "environmentedf.h"
 
 using namespace foundation;
 
@@ -35,30 +35,24 @@ namespace renderer
 {
 
 //
-// BSDF class implementation.
+// EnvironmentEDF class implementation.
 //
-
-// Set the Dirac Delta probability density to a negative value to detect incorrect usages.
-const double BSDF::DiracDelta = -1.0;
 
 namespace
 {
     const UniqueID g_class_uid = new_guid();
 }
 
-BSDF::BSDF(const ParamArray& params)
+EnvironmentEDF::EnvironmentEDF(const ParamArray& params)
   : ConnectableEntity(g_class_uid, params)
 {
 }
 
-void BSDF::on_frame_begin(
-    const Project&  project,
-    const void*     data)
+void EnvironmentEDF::on_frame_begin(const Project& project)
 {
 }
 
-void BSDF::on_frame_end(
-    const Project&  project)
+void EnvironmentEDF::on_frame_end(const Project& project)
 {
 }
 

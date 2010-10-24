@@ -42,6 +42,27 @@ namespace renderer
 // Camera class implementation.
 //
 
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
+}
+
+Camera::Camera(const ParamArray& params)
+  : Entity(g_class_uid, params)
+{
+}
+
+void Camera::on_frame_begin(
+    const Project&      project,
+    const Intersector&  intersector)
+{
+}
+
+void Camera::on_frame_end(
+    const Project&      project)
+{
+}
+
 Vector2d Camera::get_film_dimensions() const
 {
     const Vector2d DefaultFilmDimensions(0.025, 0.025);     // in meters
@@ -149,9 +170,9 @@ double Camera::get_f_stop() const
 }
 
 void Camera::get_focal_distance(
-    bool&           autofocus_enabled,
-    Vector2d&       autofocus_target,
-    double&         focal_distance) const
+    bool&               autofocus_enabled,
+    Vector2d&           autofocus_target,
+    double&             focal_distance) const
 {
     const Vector2d DefaultAFTarget(0.0);        // in NDC
     const double DefaultFocalDistance = 1.0;    // in meters

@@ -46,8 +46,11 @@ class RENDERERDLL ConnectableEntity
 {
   public:
     // Constructors.
-    ConnectableEntity();
-    explicit ConnectableEntity(const ParamArray& params);
+    explicit ConnectableEntity(
+        const foundation::UniqueID  class_uid);
+    ConnectableEntity(
+        const foundation::UniqueID  class_uid,
+        const ParamArray&           params);
 
     // Return the inputs of this instance.
     InputArray& get_inputs();
@@ -62,20 +65,24 @@ class RENDERERDLL ConnectableEntity
 // ConnectableEntity class implementation.
 //
 
-// Constructors.
-inline ConnectableEntity::ConnectableEntity()
-{
-}
-inline ConnectableEntity::ConnectableEntity(const ParamArray& params)
-  : Entity(params)
+inline ConnectableEntity::ConnectableEntity(
+    const foundation::UniqueID      class_uid)
+  : Entity(class_uid)
 {
 }
 
-// Return the inputs of this instance.
+inline ConnectableEntity::ConnectableEntity(
+    const foundation::UniqueID      class_uid,
+    const ParamArray&               params)
+  : Entity(class_uid, params)
+{
+}
+
 inline InputArray& ConnectableEntity::get_inputs()
 {
     return m_inputs;
 }
+
 inline const InputArray& ConnectableEntity::get_inputs() const
 {
     return m_inputs;

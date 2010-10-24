@@ -52,12 +52,17 @@ struct AssemblyInstance::Impl
     string      m_name;
 };
 
-// Constructor.
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
+}
+
 AssemblyInstance::AssemblyInstance(
     const char*         name,
     const Assembly&     assembly,
     const Transformd&   transform)
-  : impl(new Impl())
+  : Entity(g_class_uid)
+  , impl(new Impl())
   , m_assembly(assembly)
   , m_assembly_uid(assembly.get_uid())
 {
@@ -67,31 +72,26 @@ AssemblyInstance::AssemblyInstance(
     impl->m_name = name;
 }
 
-// Destructor.
 AssemblyInstance::~AssemblyInstance()
 {
     delete impl;
 }
 
-// Delete this instance.
 void AssemblyInstance::release()
 {
     delete this;
 }
 
-// Return the name of this instance.
 const char* AssemblyInstance::get_name() const
 {
     return impl->m_name.c_str();
 }
 
-// Return the transform of the instance.
 const Transformd& AssemblyInstance::get_transform() const
 {
     return impl->m_transform;
 }
 
-// Return the parent space bounding box of the instance.
 GAABB3 AssemblyInstance::compute_parent_bbox() const
 {
     return
@@ -106,7 +106,6 @@ GAABB3 AssemblyInstance::compute_parent_bbox() const
 // AssemblyInstanceFactory class implementation.
 //
 
-// Create a new assembly instance.
 auto_release_ptr<AssemblyInstance> AssemblyInstanceFactory::create(
     const char*         name,
     const Assembly&     assembly,

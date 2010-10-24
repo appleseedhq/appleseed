@@ -61,17 +61,6 @@ class RENDERERDLL Object
     virtual foundation::Lazy<RegionKit>& get_region_kit() = 0;
 };
 
-
-//
-// Object class implementation.
-//
-
-// Constructor.
-inline Object::Object(const ParamArray& params)
-  : Entity(params)
-{
-}
-
 }       // namespace renderer
 
 #endif  // !APPLESEED_RENDERER_MODELING_GEOMETRY_OBJECT_H

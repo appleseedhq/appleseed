@@ -124,22 +124,6 @@ class RENDERERDLL BSDF
 // BSDF class implementation.
 //
 
-inline BSDF::BSDF(const ParamArray& params)
-  : ConnectableEntity(params)
-{
-}
-
-inline void BSDF::on_frame_begin(
-    const Project&              project,
-    const void*                 data)
-{
-}
-
-inline void BSDF::on_frame_end(
-    const Project&              project)
-{
-}
-
 inline foundation::Vector3d BSDF::force_above_surface(
     const foundation::Vector3d& direction,
     const foundation::Vector3d& normal)

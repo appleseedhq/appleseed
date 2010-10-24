@@ -48,47 +48,45 @@ struct Configuration::Impl
     const Configuration*    m_base;
 };
 
-// Constructor.
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
+}
+
 Configuration::Configuration(const char* name)
-  : impl(new Impl())
+  : Entity(g_class_uid)
+  , impl(new Impl())
 {
     assert(name);
     impl->m_name = name;
     impl->m_base = 0;
 }
 
-// Destructor.
 Configuration::~Configuration()
 {
     delete impl;
 }
 
-// Delete this instance.
 void Configuration::release()
 {
     delete this;
 }
 
-// Return the name of this configuration.
 const char* Configuration::get_name() const
 {
     return impl->m_name.c_str();
 }
 
-// Set the base configuration.
 void Configuration::set_base(const Configuration* base)
 {
     impl->m_base = base;
 }
 
-// Get the base configuration.
 const Configuration* Configuration::get_base() const
 {
     return impl->m_base;
 }
 
-// Construct a set of parameters from the parameters inherited
-// from the base configuration and the ones of this configuration.
 ParamArray Configuration::get_inherited_parameters() const
 {
     if (impl->m_base)
@@ -108,7 +106,6 @@ ParamArray Configuration::get_inherited_parameters() const
 // ConfigurationFactory class implementation.
 //
 
-// Create a new empty configuration.
 auto_release_ptr<Configuration> ConfigurationFactory::create(const char* name)
 {
     assert(name);
@@ -134,7 +131,6 @@ auto_release_ptr<Configuration> ConfigurationFactory::create(
 // BaseConfigurationFactory class implementation.
 //
 
-// Create a new "base_final" configuration.
 auto_release_ptr<Configuration> BaseConfigurationFactory::create_base_final()
 {
     auto_release_ptr<Configuration> configuration(new Configuration("base_final"));
@@ -156,7 +152,6 @@ auto_release_ptr<Configuration> BaseConfigurationFactory::create_base_final()
     return configuration;
 }
 
-// Create a new "base_interactive" configuration.
 auto_release_ptr<Configuration> BaseConfigurationFactory::create_base_interactive()
 {
     auto_release_ptr<Configuration> configuration(new Configuration("base_interactive"));
@@ -183,7 +178,6 @@ auto_release_ptr<Configuration> BaseConfigurationFactory::create_base_interactiv
     return configuration;
 }
 
-// Return true if the string passed in argument is the name of a base configuration.
 bool BaseConfigurationFactory::is_base_configuration(const char* name)
 {
     assert(name);

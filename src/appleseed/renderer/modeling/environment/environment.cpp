@@ -44,37 +44,49 @@ struct Environment::Impl
     string  m_name;
 };
 
-// Constructors.
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
+}
+
 Environment::Environment(
     const char*                         name)
+  : Entity(g_class_uid)
 {
     construct(name, 0, 0);
 }
+
 Environment::Environment(
     const char*                         name,
     const EnvironmentEDF*               environment_edf)
+  : Entity(g_class_uid)
 {
     construct(name, environment_edf, 0);
 }
+
 Environment::Environment(
     const char*                         name,
     const EnvironmentShader*            environment_shader)
+  : Entity(g_class_uid)
 {
     construct(name, 0, environment_shader);
 }
+
 Environment::Environment(
     const char*                         name,
     const EnvironmentEDF*               environment_edf,
     const EnvironmentShader*            environment_shader)
+  : Entity(g_class_uid)
 {
     construct(name, environment_edf, environment_shader);
 }
+
 Environment::Environment(
     const char*                         name,
     const ParamArray&                   params,
     const EnvironmentEDFContainer&      environment_edfs,
     const EnvironmentShaderContainer&   environment_shaders)
-  : Entity(params)
+  : Entity(g_class_uid, params)
 {
     const EnvironmentEDF* environment_edf =
         get_optional_entity<EnvironmentEDF>(
@@ -105,25 +117,21 @@ void Environment::construct(
     m_environment_shader = environment_shader;
 }
 
-// Destructor.
 Environment::~Environment()
 {
     delete impl;
 }
 
-// Delete this instance.
 void Environment::release()
 {
     delete this;
 }
 
-// Return the name of this environment.
 const char* Environment::get_name() const
 {
     return impl->m_name.c_str();
 }
 
-// Return a string identifying the model of this environment.
 const char* Environment::get_model() const
 {
     return EnvironmentFactory::get_model();
@@ -134,18 +142,17 @@ const char* Environment::get_model() const
 // EnvironmentFactory class implementation.
 //
 
-// Return a string identifying this environment model.
 const char* EnvironmentFactory::get_model()
 {
     return "generic_environment";
 }
 
-// Create a new environment.
 auto_release_ptr<Environment> EnvironmentFactory::create(
     const char*                         name)
 {
     return auto_release_ptr<Environment>(new Environment(name));
 }
+
 auto_release_ptr<Environment> EnvironmentFactory::create(
     const char*                         name,
     const EnvironmentEDF*               environment_edf)
@@ -156,6 +163,7 @@ auto_release_ptr<Environment> EnvironmentFactory::create(
                 name,
                 environment_edf));
 }
+
 auto_release_ptr<Environment> EnvironmentFactory::create(
     const char*                         name,
     const EnvironmentShader*            environment_shader)
@@ -166,6 +174,7 @@ auto_release_ptr<Environment> EnvironmentFactory::create(
                 name,
                 environment_shader));
 }
+
 auto_release_ptr<Environment> EnvironmentFactory::create(
     const char*                         name,
     const EnvironmentEDF*               environment_edf,
@@ -178,6 +187,7 @@ auto_release_ptr<Environment> EnvironmentFactory::create(
                 environment_edf,
                 environment_shader));
 }
+
 auto_release_ptr<Environment> EnvironmentFactory::create(
     const char*                         name,
     const ParamArray&                   params,

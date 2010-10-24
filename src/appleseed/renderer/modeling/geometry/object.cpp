@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "bsdf.h"
+#include "object.h"
 
 using namespace foundation;
 
@@ -35,30 +35,16 @@ namespace renderer
 {
 
 //
-// BSDF class implementation.
+// Object class implementation.
 //
-
-// Set the Dirac Delta probability density to a negative value to detect incorrect usages.
-const double BSDF::DiracDelta = -1.0;
 
 namespace
 {
     const UniqueID g_class_uid = new_guid();
 }
 
-BSDF::BSDF(const ParamArray& params)
-  : ConnectableEntity(g_class_uid, params)
-{
-}
-
-void BSDF::on_frame_begin(
-    const Project&  project,
-    const void*     data)
-{
-}
-
-void BSDF::on_frame_end(
-    const Project&  project)
+Object::Object(const ParamArray& params)
+  : Entity(g_class_uid, params)
 {
 }
 

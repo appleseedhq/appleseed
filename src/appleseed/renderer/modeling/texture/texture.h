@@ -75,17 +75,6 @@ class RENDERERDLL Texture
         foundation::Tile*   tile) = 0;
 };
 
-
-//
-// Texture class implementation.
-//
-
-// Constructor.
-inline Texture::Texture(const ParamArray& params)
-  : Entity(params)
-{
-}
-
 }       // namespace renderer
 
 #endif  // !APPLESEED_RENDERER_MODELING_TEXTURE_TEXTURE_H

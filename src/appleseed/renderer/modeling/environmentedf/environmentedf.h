@@ -91,24 +91,6 @@ class RENDERERDLL EnvironmentEDF
         const foundation::Vector3d& outgoing) const = 0;        // world space emission direction, unit-length
 };
 
-
-//
-// EnvironmentEDF class implementation.
-//
-
-inline EnvironmentEDF::EnvironmentEDF(const ParamArray& params)
-  : ConnectableEntity(params)
-{
-}
-
-inline void EnvironmentEDF::on_frame_begin(const Project& project)
-{
-}
-
-inline void EnvironmentEDF::on_frame_end(const Project& project)
-{
-}
-
 }       // namespace renderer
 
 #endif  // !APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_ENVIRONMENTEDF_H

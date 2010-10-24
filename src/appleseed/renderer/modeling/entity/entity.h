@@ -49,8 +49,14 @@ class RENDERERDLL Entity
 {
   public:
     // Constructors.
-    Entity();
-    explicit Entity(const ParamArray& params);
+    explicit Entity(
+        const foundation::UniqueID  class_uid);
+    Entity(
+        const foundation::UniqueID  class_uid,
+        const ParamArray&           params);
+
+    // Return the unique ID of this class of entities.
+    foundation::UniqueID get_class_uid() const;
 
     // Return the unique ID of this instance.
     virtual foundation::UniqueID get_uid() const;
@@ -66,9 +72,10 @@ class RENDERERDLL Entity
     const ParamArray& get_parameters() const;
 
   protected:
-    const foundation::UniqueID  m_uid;
-    foundation::VersionID       m_version_id;
-    ParamArray                  m_params;
+    const foundation::UniqueID      m_class_uid;
+    const foundation::UniqueID      m_uid;
+    foundation::VersionID           m_version_id;
+    ParamArray                      m_params;
 };
 
 
@@ -76,36 +83,44 @@ class RENDERERDLL Entity
 // Entity class implementation.
 //
 
-// Constructors.
-inline Entity::Entity()
-  : m_uid(g_uid_source.get())
+inline Entity::Entity(
+    const foundation::UniqueID      class_uid)
+  : m_class_uid(class_uid)
+  , m_uid(foundation::new_guid())
   , m_version_id(0)
 {
 }
-inline Entity::Entity(const ParamArray& params)
-  : m_uid(g_uid_source.get())
+
+inline Entity::Entity(
+    const foundation::UniqueID      class_uid,
+    const ParamArray&               params)
+  : m_class_uid(class_uid)
+  , m_uid(foundation::new_guid())
   , m_version_id(0)
   , m_params(params)
 {
 }
 
-// Return the unique ID of this instance.
+inline foundation::UniqueID Entity::get_class_uid() const
+{
+    return m_class_uid;
+}
+
 inline foundation::UniqueID Entity::get_uid() const
 {
     return m_uid;
 }
 
-// Return the version ID of this instance.
 inline foundation::VersionID Entity::get_version_id() const
 {
     return m_version_id;
 }
 
-// Return the parameters of this instance.
 inline ParamArray& Entity::get_parameters()
 {
     return m_params;
 }
+
 inline const ParamArray& Entity::get_parameters() const
 {
     return m_params;

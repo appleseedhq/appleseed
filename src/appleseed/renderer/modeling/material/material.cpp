@@ -44,11 +44,16 @@ struct Material::Impl
     string  m_name;
 };
 
-// Constructors.
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
+}
+
 Material::Material(
     const char*                     name,
     const SurfaceShader*            surface_shader)
-  : impl(new Impl())
+  : Entity(g_class_uid)
+  , impl(new Impl())
 {
     assert(name);
     assert(surface_shader);
@@ -59,11 +64,13 @@ Material::Material(
     m_bsdf = 0;
     m_edf = 0;
 }
+
 Material::Material(
     const char*                     name,
     const SurfaceShader*            surface_shader,
     const BSDF*                     bsdf)
-  : impl(new Impl())
+  : Entity(g_class_uid)
+  , impl(new Impl())
 {
     assert(name);
     assert(surface_shader);
@@ -74,12 +81,14 @@ Material::Material(
     m_bsdf = bsdf;
     m_edf = 0;
 }
+
 Material::Material(
     const char*                     name,
     const SurfaceShader*            surface_shader,
     const BSDF*                     bsdf,
     const EDF*                      edf)
-  : impl(new Impl())
+  : Entity(g_class_uid)
+  , impl(new Impl())
 {
     assert(name);
     assert(surface_shader);
@@ -90,13 +99,14 @@ Material::Material(
     m_bsdf = bsdf;
     m_edf = edf;
 }
+
 Material::Material(
     const char*                     name,
     const ParamArray&               params,
     const SurfaceShaderContainer&   surface_shaders,
     const BSDFContainer&            bsdfs,
     const EDFContainer&             edfs)
-  : Entity(params)
+  : Entity(g_class_uid, params)
   , impl(new Impl())
 {
     assert(name);
@@ -113,25 +123,21 @@ Material::Material(
     m_edf = get_optional_entity<EDF>(edfs, params, "edf");
 }
 
-// Destructor.
 Material::~Material()
 {
     delete impl;
 }
 
-// Delete this instance.
 void Material::release()
 {
     delete this;
 }
 
-// Return the name of this material.
 const char* Material::get_name() const
 {
     return impl->m_name.c_str();
 }
 
-// Return a string identifying the model of this material.
 const char* Material::get_model() const
 {
     return MaterialFactory::get_model();
@@ -142,13 +148,11 @@ const char* Material::get_model() const
 // MaterialFactory class implementation.
 //
 
-// Return a string identifying this material model.
 const char* MaterialFactory::get_model()
 {
     return "generic_material";
 }
 
-// Create a new material.
 auto_release_ptr<Material> MaterialFactory::create(
     const char*                     name,
     const SurfaceShader*            surface_shader)
@@ -159,6 +163,7 @@ auto_release_ptr<Material> MaterialFactory::create(
                 name,
                 surface_shader));
 }
+
 auto_release_ptr<Material> MaterialFactory::create(
     const char*                     name,
     const SurfaceShader*            surface_shader,
@@ -171,6 +176,7 @@ auto_release_ptr<Material> MaterialFactory::create(
                 surface_shader,
                 bsdf));
 }
+
 auto_release_ptr<Material> MaterialFactory::create(
     const char*                     name,
     const SurfaceShader*            surface_shader,
@@ -185,6 +191,7 @@ auto_release_ptr<Material> MaterialFactory::create(
                 bsdf,
                 edf));
 }
+
 auto_release_ptr<Material> MaterialFactory::create(
     const char*                     name,
     const ParamArray&               params,

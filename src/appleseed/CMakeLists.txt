@@ -372,7 +372,6 @@ set(foundation_meta_tests_sources
     foundation/meta/tests/test_timer.cpp
     foundation/meta/tests/test_transform.cpp
     foundation/meta/tests/test_typetraits.cpp
-    foundation/meta/tests/test_uid.cpp
     foundation/meta/tests/test_vector.cpp
     foundation/meta/tests/test_voxelgrid.cpp
 )
@@ -678,8 +677,6 @@ set(renderer_global_sources
     renderer/global/globallogger.cpp
     renderer/global/globallogger.h
     renderer/global/globaltypes.h
-    renderer/global/globaluidsource.cpp
-    renderer/global/globaluidsource.h
 )
 list(APPEND appleseed_sources
     ${renderer_global_sources}
@@ -992,6 +989,7 @@ source_group("renderer\\modeling\\color" FILES
 set(renderer_modeling_edf_sources
     renderer/modeling/edf/diffuseedf.cpp
     renderer/modeling/edf/diffuseedf.h
+    renderer/modeling/edf/edf.cpp
     renderer/modeling/edf/edf.h
     renderer/modeling/edf/edffactoryregistrar.cpp
     renderer/modeling/edf/edffactoryregistrar.h
@@ -1033,6 +1031,7 @@ source_group("renderer\\modeling\\environment" FILES
 set(renderer_modeling_environmentedf_sources
     renderer/modeling/environmentedf/constantenvironmentedf.cpp
     renderer/modeling/environmentedf/constantenvironmentedf.h
+    renderer/modeling/environmentedf/environmentedf.cpp
     renderer/modeling/environmentedf/environmentedf.h
     renderer/modeling/environmentedf/environmentedffactoryregistrar.cpp
     renderer/modeling/environmentedf/environmentedffactoryregistrar.h
@@ -1054,6 +1053,7 @@ source_group("renderer\\modeling\\environmentedf" FILES
 set(renderer_modeling_environmentshader_sources
     renderer/modeling/environmentshader/edfenvironmentshader.cpp
     renderer/modeling/environmentshader/edfenvironmentshader.h
+    renderer/modeling/environmentshader/environmentshader.cpp
     renderer/modeling/environmentshader/environmentshader.h
     renderer/modeling/environmentshader/environmentshaderfactoryregistrar.cpp
     renderer/modeling/environmentshader/environmentshaderfactoryregistrar.h
@@ -1085,6 +1085,7 @@ set(renderer_modeling_geometry_sources
     renderer/modeling/geometry/meshobjectreader.h
     renderer/modeling/geometry/meshobjectwriter.cpp
     renderer/modeling/geometry/meshobjectwriter.h
+    renderer/modeling/geometry/object.cpp
     renderer/modeling/geometry/object.h
     renderer/modeling/geometry/regionkit.h
     renderer/modeling/geometry/triangle.h
@@ -1206,6 +1207,7 @@ set(renderer_modeling_surfaceshader_sources
     renderer/modeling/surfaceshader/physicalsurfaceshader.h
     renderer/modeling/surfaceshader/smokesurfaceshader.cpp
     renderer/modeling/surfaceshader/smokesurfaceshader.h
+    renderer/modeling/surfaceshader/surfaceshader.cpp
     renderer/modeling/surfaceshader/surfaceshader.h
     renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.cpp
     renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.h
@@ -1223,6 +1225,7 @@ set(renderer_modeling_texture_sources
     renderer/modeling/texture/disktexture2d.cpp
     renderer/modeling/texture/disktexture2d.h
     renderer/modeling/texture/itexturefactory.h
+    renderer/modeling/texture/texture.cpp
     renderer/modeling/texture/texture.h
     renderer/modeling/texture/texturefactoryregistrar.cpp
     renderer/modeling/texture/texturefactoryregistrar.h

@@ -62,13 +62,19 @@ struct ObjectInstance::Impl
     MaterialIndexArray          m_material_indices;
 };
 
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
+}
+
 ObjectInstance::ObjectInstance(
     const char*                 name,
     const Object&               object,
     const size_t                object_index,
     const Transformd&           transform,
     const MaterialIndexArray&   material_indices)
-  : impl(new Impl())
+  : Entity(g_class_uid)
+  , impl(new Impl())
 {
     assert(name);
 

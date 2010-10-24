@@ -97,27 +97,6 @@ class RENDERERDLL EDF
         const foundation::Vector3d& outgoing) const = 0;        // world space emission direction, unit-length
 };
 
-
-//
-// EDF class implementation.
-//
-
-inline EDF::EDF(const ParamArray& params)
-  : ConnectableEntity(params)
-{
-}
-
-inline void EDF::on_frame_begin(
-    const Project&  project,
-    const void*     data)
-{
-}
-
-inline void EDF::on_frame_end(
-    const Project&  project)
-{
-}
-
 }       // namespace renderer
 
 #endif  // !APPLESEED_RENDERER_MODELING_EDF_EDF_H

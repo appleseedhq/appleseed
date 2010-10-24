@@ -68,24 +68,6 @@ class RENDERERDLL EnvironmentShader
         ShadingResult&              shading_result) const = 0;
 };
 
-
-//
-// EnvironmentShader class implementation.
-//
-
-inline EnvironmentShader::EnvironmentShader(const ParamArray& params)
-  : ConnectableEntity(params)
-{
-}
-
-inline void EnvironmentShader::on_frame_begin(const Project& project)
-{
-}
-
-inline void EnvironmentShader::on_frame_end(const Project& project)
-{
-}
-
 }       // namespace renderer
 
 #endif  // !APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_ENVIRONMENTSHADER_H

@@ -47,12 +47,17 @@ struct Light::Impl
     const EDF*              m_edf;
 };
 
-// Constructors.
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
+}
+
 Light::Light(
     const char*             name,
     const Transformd&       transform,
     const EDF*              edf)
-  : impl(new Impl())
+  : Entity(g_class_uid)
+  , impl(new Impl())
 {
     assert(name);
     assert(edf);
@@ -61,12 +66,13 @@ Light::Light(
     impl->m_name = name;
     impl->m_edf = edf;
 }
+
 Light::Light(
     const char*             name,
     const ParamArray&       params,
     const Transformd&       transform,
     const EDFContainer&     edfs)
-  : Entity(params)
+  : Entity(g_class_uid, params)
   , impl(new Impl())
 {
     assert(name);
@@ -76,37 +82,31 @@ Light::Light(
     impl->m_edf = get_required_entity<EDF>(edfs, params, "edf");
 }
 
-// Destructor.
 Light::~Light()
 {
     delete impl;
 }
 
-// Delete this instance.
 void Light::release()
 {
     delete this;
 }
 
-// Return a string identifying the model of this light.
 const char* Light::get_model() const
 {
     return LightFactory::get_model();
 }
 
-// Return the name of this light.
 const char* Light::get_name() const
 {
     return impl->m_name.c_str();
 }
 
-// Return the transform of this light.
 const Transformd& Light::get_transform() const
 {
     return impl->m_transform;
 }
 
-// Return the EDF of this light.
 const EDF* Light::get_edf() const
 {
     return impl->m_edf;
@@ -117,13 +117,11 @@ const EDF* Light::get_edf() const
 // LightFactory class implementation.
 //
 
-// Return a string identifying this light model.
 const char* LightFactory::get_model()
 {
     return "generic_light";
 }
 
-// Create a new light.
 auto_release_ptr<Light> LightFactory::create(
     const char*             name,
     const Transformd&       transform,
@@ -136,6 +134,7 @@ auto_release_ptr<Light> LightFactory::create(
                 transform,
                 edf));
 }
+
 auto_release_ptr<Light> LightFactory::create(
     const char*             name,
     const ParamArray&       params,

@@ -49,9 +49,19 @@ DEFINE_ARRAY(ColorValueArray);
 // ColorEntity class implementation.
 //
 
+struct ColorEntity::Impl
+{
+    string              m_name;
+    ColorValueArray     m_values;
+    ColorSpace          m_color_space;
+    Vector2f            m_wavelength_range;
+    float               m_multiplier;
+};
+
 namespace
 {
-    // Return the name of a color space.
+    const UniqueID g_class_uid = new_guid();
+
     const char* color_space_name(const ColorSpace color_space)
     {
         switch (color_space)
@@ -65,21 +75,11 @@ namespace
     }
 }
 
-struct ColorEntity::Impl
-{
-    string                  m_name;
-    ColorValueArray         m_values;
-    ColorSpace              m_color_space;
-    Vector2f                m_wavelength_range;
-    float                   m_multiplier;
-};
-
-// Constructor.
 ColorEntity::ColorEntity(
     const char*             name,
     const ParamArray&       params,
     const ColorValueArray&  values)
-  : Entity(params)
+  : Entity(g_class_uid, params)
   , impl(new Impl())
 {
     assert(name);
@@ -160,44 +160,37 @@ ColorEntity::ColorEntity(
     }
 }
 
-// Destructor.
 ColorEntity::~ColorEntity()
 {
     delete impl;
 }
 
-// Delete this instance.
 void ColorEntity::release()
 {
     delete this;
 }
 
-// Return the name of this color.
 const char* ColorEntity::get_name() const
 {
     return impl->m_name.c_str();
 }
 
-// Return the color values.
 const ColorValueArray& ColorEntity::get_values() const
 {
     return impl->m_values;
 }
 
-// Return the color space of this color.
 ColorSpace ColorEntity::get_color_space() const
 {
     return impl->m_color_space;
 }
 
-// Return the range of wavelength of this color (spectral color space only).
 const Vector2f& ColorEntity::get_wavelength_range() const
 {
     assert(impl->m_color_space == ColorSpaceSpectral);
     return impl->m_wavelength_range;
 }
 
-// Retrieve the multiplier value.
 float ColorEntity::get_multiplier() const
 {
     return impl->m_multiplier;
@@ -208,7 +201,6 @@ float ColorEntity::get_multiplier() const
 // ColorEntityFactory class implementation.
 //
 
-// Create a new color entity.
 auto_release_ptr<ColorEntity> ColorEntityFactory::create(
     const char*             name,
     const ParamArray&       params,

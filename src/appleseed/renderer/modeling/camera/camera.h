@@ -117,27 +117,6 @@ class RENDERERDLL Camera
         const double                default_value) const;
 };
 
-
-//
-// Camera class implementation.
-//
-
-inline Camera::Camera(const ParamArray& params)
-  : Entity(params)
-{
-}
-
-inline void Camera::on_frame_begin(
-    const Project&      project,
-    const Intersector&  intersector)
-{
-}
-
-inline void Camera::on_frame_end(
-    const Project&      project)
-{
-}
-
 }       // namespace renderer
 
 #endif  // !APPLESEED_RENDERER_MODELING_CAMERA_CAMERA_H

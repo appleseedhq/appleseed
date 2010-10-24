@@ -54,11 +54,15 @@ struct Assembly::Impl
     ObjectInstanceContainer     m_object_instances;
 };
 
-// Constructor.
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
+}
+
 Assembly::Assembly(
     const char*         name,
     const ParamArray&   params)
-  : Entity(params)
+  : Entity(g_class_uid, params)
   , impl(new Impl())
 {
     assert(name);
@@ -68,79 +72,66 @@ Assembly::Assembly(
     m_flushable = m_params.get_optional<bool>("flushable", false);
 }
 
-// Destructor.
 Assembly::~Assembly()
 {
     delete impl;
 }
 
-// Delete this instance.
 void Assembly::release()
 {
     delete this;
 }
 
-// Return the name of this assembly.
 const char* Assembly::get_name() const
 {
     return impl->m_name.c_str();
 }
 
-// Access the colors.
 ColorContainer& Assembly::colors() const
 {
     return impl->m_colors;
 }
 
-// Access the textures.
 TextureContainer& Assembly::textures() const
 {
     return impl->m_textures;
 }
 
-// Access the texture instances.
 TextureInstanceContainer& Assembly::texture_instances() const
 {
     return impl->m_texture_instances;
 }
 
-// Access the BSDFs.
 BSDFContainer& Assembly::bsdfs() const
 {
     return impl->m_bsdfs;
 }
 
-// Access the EDFs.
 EDFContainer& Assembly::edfs() const
 {
     return impl->m_edfs;
 }
 
-// Access the surface shaders.
 SurfaceShaderContainer& Assembly::surface_shaders() const
 {
     return impl->m_surface_shaders;
 }
 
-// Access the materials.
 MaterialContainer& Assembly::materials() const
 {
     return impl->m_materials;
 }
 
-// Access the lights.
 LightContainer& Assembly::lights() const
 {
     return impl->m_lights;
 }
 
-// Access the objects.
 ObjectContainer& Assembly::objects() const
 {
     return impl->m_objects;
 }
 
-// Access the object instances.
 ObjectInstanceContainer& Assembly::object_instances() const
 {
     return impl->m_object_instances;
@@ -151,7 +142,6 @@ ObjectInstanceContainer& Assembly::object_instances() const
 // AssemblyFactory class implementation.
 //
 
-// Create a new assembly.
 auto_release_ptr<Assembly> AssemblyFactory::create(
     const char*         name,
     const ParamArray&   params)
