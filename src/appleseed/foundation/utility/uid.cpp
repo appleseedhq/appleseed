@@ -37,35 +37,14 @@ using namespace boost;
 namespace foundation
 {
 
-//
-// UIDSource class implementation.
-//
-
-// Private implementation.
-struct UIDSource::Impl
+UniqueID new_guid()
 {
-    mutex       m_mutex;
-    UniqueID    m_next_uid;
-};
+    static mutex mutex;
+    mutex::scoped_lock lock(mutex);
 
-// Constructor.
-UIDSource::UIDSource()
-{
-    impl = new Impl();
-    impl->m_next_uid = 0;
-}
+    static UniqueID next_uid = 0;
 
-// Destructor.
-UIDSource::~UIDSource()
-{
-    delete impl;
-}
-
-// Return a new unique identifier.
-UniqueID UIDSource::get()
-{
-    mutex::scoped_lock lock(impl->m_mutex);
-    return impl->m_next_uid++;
+    return next_uid++;
 }
 
 }   // namespace foundation

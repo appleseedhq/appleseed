@@ -86,30 +86,12 @@ class FOUNDATIONDLL IIdentifiable
 
 
 //
-// A source of locally unique identifiers.
+// This function generates identifiers that are unique within the process.
 //
-// A single source will generate unique, distinct identifiers.
-// Multiple sources will generate overlapping identifiers.
+// Thread-safe.
 //
 
-class FOUNDATIONDLL UIDSource
-  : public NonCopyable
-{
-  public:
-    // Constructor.
-    UIDSource();
-
-    // Destructor.
-    ~UIDSource();
-
-    // Return a new unique identifier. Thread-safe.
-    UniqueID get();
-
-  private:
-    // Private implementation.
-    struct Impl;
-    Impl* impl;
-};
+FOUNDATIONDLL UniqueID new_guid();
 
 }       // namespace foundation
 
