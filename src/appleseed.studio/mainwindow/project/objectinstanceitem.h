@@ -33,13 +33,16 @@
 #include "mainwindow/project/entityitem.h"
 
 // Qt headers.
+#include <QList>
 #include <QObject>
 
 // Forward declarations.
+namespace appleseed { namespace studio { class ItemBase; }}
 namespace renderer  { class Assembly; }
 namespace renderer  { class ObjectInstance; }
 class QMenu;
 class QString;
+class QVariant;
 
 namespace appleseed {
 namespace studio {
@@ -56,13 +59,17 @@ class ObjectInstanceItem
 
     virtual QMenu* get_single_item_context_menu() const;
 
-  private:
-    renderer::Assembly&             m_assembly;
-    renderer::ObjectInstance&       m_object_instance;
+    virtual QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const;
 
   private slots:
     void slot_assign_material();
-    void slot_assign_material_accepted(QString page_name, QString entity_name);
+    void slot_assign_material_accepted(QString page_name, QString entity_name, QVariant data);
+
+private:
+    renderer::Assembly&             m_assembly;
+    renderer::ObjectInstance&       m_object_instance;
+
+    void assign_material(const size_t material_index) const;
 };
 
 }       // namespace studio

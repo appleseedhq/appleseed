@@ -39,7 +39,10 @@
 // Qt headers.
 #include <QColor>
 #include <QMenu>
+#include <QMetaType>
 #include <QString>
+
+Q_DECLARE_METATYPE(QList<appleseed::studio::ItemBase*>);
 
 using namespace renderer;
 
@@ -64,17 +67,50 @@ QMenu* ObjectInstanceItem::get_single_item_context_menu() const
     return menu;
 }
 
+QMenu* ObjectInstanceItem::get_multiple_items_context_menu(const QList<ItemBase*>& items) const
+{
+    QMenu* menu = new QMenu(treeWidget());
+    menu->addAction("Assign Material...", this, SLOT(slot_assign_material()))
+        ->setData(QVariant::fromValue(items));
+    return menu;
+}
+
+namespace
+{
+    class EnrichAndForwardAcceptedSignal
+      : public QObject
+    {
+        Q_OBJECT
+
+      public:
+        EnrichAndForwardAcceptedSignal(QObject* parent, const QVariant& data)
+          : QObject(parent)
+          , m_data(data)
+        {
+        }
+
+      public slots:
+        void slot_accepted(QString page_name, QString item_value)
+        {
+            emit accepted(page_name, item_value, m_data);
+        }
+
+      signals:
+        void accepted(QString page_name, QString item_value, QVariant data);
+
+      private:
+        const QVariant m_data;
+    };
+}
+
 void ObjectInstanceItem::slot_assign_material()
 {
-/*
-    const QString window_title =
-        items_data.size() == 1
-            ? QString("Assign Material to %1").arg(first_object_instance.get_name())
-            : QString("Assign Material to Multiple Object Instances");
-*/
+    QAction* action = static_cast<QAction*>(sender());
 
     const QString window_title =
-        QString("Assign Material to %1").arg(m_object_instance.get_name());
+        action->data().isNull()
+            ? QString("Assign Material to %1").arg(m_object_instance.get_name())
+            : QString("Assign Material to Multiple Object Instances");
 
     EntityBrowserWindow* browser_window =
         new EntityBrowserWindow(
@@ -88,23 +124,47 @@ void ObjectInstanceItem::slot_assign_material()
         "Materials",
         entity_browser.get_entities("material"));
 
+    EnrichAndForwardAcceptedSignal* forwarder =
+        new EnrichAndForwardAcceptedSignal(browser_window, action->data());
+
     QObject::connect(
         browser_window, SIGNAL(accepted(QString, QString)),
-        this, SLOT(slot_assign_material_accepted(QString, QString)));
+        forwarder, SLOT(slot_accepted(QString, QString)));
+
+    QObject::connect(
+        forwarder, SIGNAL(accepted(QString, QString, QVariant)),
+        this, SLOT(slot_assign_material_accepted(QString, QString, QVariant)));
 
     browser_window->showNormal();
     browser_window->activateWindow();
 }
 
-void ObjectInstanceItem::slot_assign_material_accepted(QString page_name, QString entity_name)
+void ObjectInstanceItem::slot_assign_material_accepted(QString page_name, QString entity_name, QVariant data)
 {
     const size_t material_index = m_assembly.materials().get_index(entity_name.toAscii());
     assert(material_index != ~size_t(0));
 
-    m_object_instance.set_material_index(0, material_index);
+    if (data.isNull())
+    {
+        assign_material(material_index);
+    }
+    else
+    {
+        const QList<ItemBase*> items = data.value<QList<ItemBase*> >();
 
-    qobject_cast<QWidget*>(sender())->close();
+        for (int i = 0; i < items.size(); ++i)
+            static_cast<ObjectInstanceItem*>(items[i])->assign_material(material_index);
+    }
+
+    qobject_cast<QWidget*>(sender()->parent())->close();
+}
+
+void ObjectInstanceItem::assign_material(const size_t material_index) const
+{
+    m_object_instance.set_material_index(0, material_index);
 }
 
 }   // namespace studio
 }   // namespace appleseed
+
+#include "mainwindow/project/moc_cpp_objectinstanceitem.cxx"
