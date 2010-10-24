@@ -44,6 +44,10 @@ using namespace std;
 namespace renderer
 {
 
+//
+// TestFixtureBaseProjectHolder class implementation.
+//
+
 TestFixtureBaseProjectHolder::TestFixtureBaseProjectHolder()
   : m_project(ProjectFactory::create("project"))
 {
@@ -57,6 +61,11 @@ Project& TestFixtureBaseProjectHolder::get_project()
 {
     return m_project.ref();
 }
+
+
+//
+// TestFixtureBase class implementation.
+//
 
 TestFixtureBase::TestFixtureBase()
   : m_project(get_project())
@@ -101,6 +110,34 @@ void TestFixtureBase::bind_inputs()
 {
     InputBinder input_binder;
     input_binder.bind(m_scene);
+}
+
+
+//
+// DummyEntity class implementation.
+//
+
+struct DummyEntity::Impl
+{
+    string m_name;
+};
+
+DummyEntity::DummyEntity(const char* name)
+  : Entity(0)
+  , impl(new Impl())
+{
+    assert(name);
+    impl->m_name = name;
+}
+
+void DummyEntity::release()
+{
+    delete this;
+}
+
+const char* DummyEntity::get_name() const
+{
+    return impl->m_name.c_str();
 }
 
 }   // namespace renderer

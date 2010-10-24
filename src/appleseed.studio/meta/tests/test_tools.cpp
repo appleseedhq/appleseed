@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/api/entity.h"
+#include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"
@@ -46,29 +47,6 @@ using namespace std;
 
 TEST_SUITE(Studio_MainWindow_Project_Tools)
 {
-    class DummyEntity
-      : public Entity
-    {
-      public:
-        explicit DummyEntity(const string& name)
-          : m_name(name)
-        {
-        }
-
-        virtual void release()
-        {
-            delete this;
-        }
-
-        virtual const char* get_name() const
-        {
-            return m_name.c_str();
-        }
-
-      private:
-        const string m_name;
-    };
-
     typedef TypedEntityVector<DummyEntity> DummyEntityVector;
 
     TEST_CASE(GetNameSuggestion_GivenZeroEntity_ReturnsNameWithFirstSuffix)

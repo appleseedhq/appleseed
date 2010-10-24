@@ -32,5 +32,6 @@
 // API headers.
 #include "renderer/utility/bbox.h"
 #include "renderer/utility/paramarray.h"
+#include "renderer/utility/testutils.h"
 
 #endif  // !APPLESEED_RENDERER_API_UTILITY_H

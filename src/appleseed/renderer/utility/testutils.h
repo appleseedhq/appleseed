@@ -31,6 +31,10 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
+#include "renderer/modeling/entity/entity.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/implptr.h"
 
 // Forward declarations.
 namespace renderer  { class Assembly; }
@@ -75,6 +79,21 @@ class TestFixtureBase
         const size_t                texture_index);
 
     void bind_inputs();
+};
+
+class RENDERERDLL DummyEntity
+  : public Entity
+{
+  public:
+    explicit DummyEntity(const char* name);
+
+    virtual void release();
+
+    virtual const char* get_name() const;
+
+  private:
+    struct Impl;
+    foundation::impl_ptr<Impl, false> impl;
 };
 
 }       // namespace renderer

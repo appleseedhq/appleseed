@@ -29,6 +29,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 #include "renderer/modeling/entity/entityvector.h"
+#include "renderer/utility/testutils.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/test.h"
@@ -38,24 +39,10 @@ TEST_SUITE(Renderer_Modeling_Entity_EntityVector)
     using namespace foundation;
     using namespace renderer;
 
-    struct DummyEntity
-      : public Entity
-    {
-        virtual void release()
-        {
-            delete this;
-        }
-
-        virtual const char* get_name() const
-        {
-            return "DummyEntity";
-        }
-    };
-
     TEST_CASE(Swap_GivenEntityVectorWithOneItemAndAnotherEmptyEntityVector_MovesItemToOtherContainer)
     {
         EntityVector v1;
-        v1.insert(auto_release_ptr<Entity>(new DummyEntity()));
+        v1.insert(auto_release_ptr<Entity>(new DummyEntity("dummy")));
 
         EntityVector v2;
         v2.swap(v1);
