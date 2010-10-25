@@ -32,9 +32,9 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/intersection/regioninfo.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/geometry/iregion.h"
-#include "renderer/modeling/geometry/object.h"
-#include "renderer/modeling/geometry/regionkit.h"
+#include "renderer/modeling/object/iregion.h"
+#include "renderer/modeling/object/object.h"
+#include "renderer/modeling/object/regionkit.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"

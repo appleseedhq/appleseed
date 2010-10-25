@@ -30,8 +30,8 @@
 #include "meshobjectreader.h"
 
 // appleseed.renderer headers.
-#include "renderer/modeling/geometry/meshobject.h"
-#include "renderer/modeling/geometry/triangle.h"
+#include "renderer/modeling/object/meshobject.h"
+#include "renderer/modeling/object/triangle.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"

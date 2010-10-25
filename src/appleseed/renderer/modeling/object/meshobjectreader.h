@@ -26,11 +26,14 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_GEOMETRY_MESHOBJECTWRITER_H
-#define APPLESEED_RENDERER_MODELING_GEOMETRY_MESHOBJECTWRITER_H
+#ifndef APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTREADER_H
+#define APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTREADER_H
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/containers/array.h"
 
 // Forward declarations.
 namespace renderer      { class MeshObject; }
@@ -39,19 +42,26 @@ namespace renderer
 {
 
 //
-// Mesh object writer.
+// An array of mesh objects.
 //
 
-class RENDERERDLL MeshObjectWriter
+DECLARE_ARRAY(MeshObjectArray, MeshObject*);
+
+
+//
+// Mesh object reader.
+//
+
+class RENDERERDLL MeshObjectReader
 {
   public:
-    // Write a mesh object to disk.
-    // Return true on success, false otherwise.
-    static bool write(
-        const MeshObject&   object,
-        const char*         filename);
+    // Read mesh objects from disk.
+    static MeshObjectArray read(
+        const char*         filename,
+        const char*         base_object_name,
+        const ParamArray&   params);
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_GEOMETRY_MESHOBJECTWRITER_H
+#endif  // !APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTREADER_H

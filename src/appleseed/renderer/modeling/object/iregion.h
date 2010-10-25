@@ -26,40 +26,37 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_GEOMETRY_REGIONKIT_H
-#define APPLESEED_RENDERER_MODELING_GEOMETRY_REGIONKIT_H
+#ifndef APPLESEED_RENDERER_MODELING_OBJECT_IREGION_H
+#define APPLESEED_RENDERER_MODELING_OBJECT_IREGION_H
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
+#include "renderer/kernel/tessellation/statictessellation.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/lazy.h"
-
-// Standard headers.
-#include <vector>
-
-// Forward declarations.
-namespace renderer  { class IRegion; }
 
 namespace renderer
 {
 
 //
-// Region kit.
+// Region interface.
 //
 
-typedef std::vector<const IRegion*> RegionKit;
+class IRegion
+  : public foundation::IIdentifiable
+{
+  public:
+    // Destructor.
+    virtual ~IRegion() {}
 
+    // Return the local space bounding box of the region.
+    virtual const GAABB3& get_local_bbox() const = 0;
 
-//
-// Region kit access cache.
-//
-
-typedef foundation::AccessCache<
-        RegionKit,
-        16
-    > RegionKitAccessCache;
+    // Return the static triangle tessellation of the region.
+    virtual foundation::Lazy<StaticTriangleTess>& get_static_triangle_tess() const = 0;
+};
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_GEOMETRY_REGIONKIT_H
+#endif  // !APPLESEED_RENDERER_MODELING_OBJECT_IREGION_H

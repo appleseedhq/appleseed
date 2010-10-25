@@ -26,13 +26,13 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_GEOMETRY_OBJECT_H
-#define APPLESEED_RENDERER_MODELING_GEOMETRY_OBJECT_H
+#ifndef APPLESEED_RENDERER_MODELING_OBJECT_OBJECT_H
+#define APPLESEED_RENDERER_MODELING_OBJECT_OBJECT_H
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 #include "renderer/modeling/entity/entity.h"
-#include "renderer/modeling/geometry/regionkit.h"
+#include "renderer/modeling/object/regionkit.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/lazy.h"
@@ -63,4 +63,4 @@ class RENDERERDLL Object
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_GEOMETRY_OBJECT_H
+#endif  // !APPLESEED_RENDERER_MODELING_OBJECT_OBJECT_H

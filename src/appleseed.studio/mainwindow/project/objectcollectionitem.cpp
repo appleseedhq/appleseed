@@ -34,7 +34,7 @@
 #include "mainwindow/project/projectbuilder.h"
 
 // appleseed.renderer headers.
-#include "renderer/api/geometry.h"
+#include "renderer/api/object.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/uid.h"

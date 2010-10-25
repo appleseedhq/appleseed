@@ -31,9 +31,9 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/tessellation/statictessellation.h"
-#include "renderer/modeling/geometry/iregion.h"
-#include "renderer/modeling/geometry/object.h"
-#include "renderer/modeling/geometry/regionkit.h"
+#include "renderer/modeling/object/iregion.h"
+#include "renderer/modeling/object/object.h"
+#include "renderer/modeling/object/regionkit.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/containers.h"

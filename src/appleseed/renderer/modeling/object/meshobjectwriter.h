@@ -26,37 +26,32 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_GEOMETRY_IREGION_H
-#define APPLESEED_RENDERER_MODELING_GEOMETRY_IREGION_H
+#ifndef APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTWRITER_H
+#define APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTWRITER_H
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
-#include "renderer/kernel/tessellation/statictessellation.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/lazy.h"
+// Forward declarations.
+namespace renderer      { class MeshObject; }
 
 namespace renderer
 {
 
 //
-// Region interface.
+// Mesh object writer.
 //
 
-class IRegion
-  : public foundation::IIdentifiable
+class RENDERERDLL MeshObjectWriter
 {
   public:
-    // Destructor.
-    virtual ~IRegion() {}
-
-    // Return the local space bounding box of the region.
-    virtual const GAABB3& get_local_bbox() const = 0;
-
-    // Return the static triangle tessellation of the region.
-    virtual foundation::Lazy<StaticTriangleTess>& get_static_triangle_tess() const = 0;
+    // Write a mesh object to disk.
+    // Return true on success, false otherwise.
+    static bool write(
+        const MeshObject&   object,
+        const char*         filename);
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_GEOMETRY_IREGION_H
+#endif  // !APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTWRITER_H

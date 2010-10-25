@@ -26,13 +26,40 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_GEOMETRY_H
-#define APPLESEED_RENDERER_API_GEOMETRY_H
+#ifndef APPLESEED_RENDERER_MODELING_OBJECT_REGIONKIT_H
+#define APPLESEED_RENDERER_MODELING_OBJECT_REGIONKIT_H
 
-// API headers.
-#include "renderer/modeling/geometry/meshobject.h"
-#include "renderer/modeling/geometry/meshobjectreader.h"
-#include "renderer/modeling/geometry/meshobjectwriter.h"
-#include "renderer/modeling/geometry/triangle.h"
+// appleseed.renderer headers.
+#include "renderer/global/global.h"
 
-#endif  // !APPLESEED_RENDERER_API_GEOMETRY_H
+// appleseed.foundation headers.
+#include "foundation/utility/lazy.h"
+
+// Standard headers.
+#include <vector>
+
+// Forward declarations.
+namespace renderer  { class IRegion; }
+
+namespace renderer
+{
+
+//
+// Region kit.
+//
+
+typedef std::vector<const IRegion*> RegionKit;
+
+
+//
+// Region kit access cache.
+//
+
+typedef foundation::AccessCache<
+        RegionKit,
+        16
+    > RegionKitAccessCache;
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_OBJECT_REGIONKIT_H

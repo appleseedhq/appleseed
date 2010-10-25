@@ -36,7 +36,7 @@
 #include "renderer/kernel/intersection/triangletree.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/tessellation/statictessellation.h"
-#include "renderer/modeling/geometry/regionkit.h"
+#include "renderer/modeling/object/regionkit.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/bvh.h"

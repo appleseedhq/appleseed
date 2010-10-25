@@ -652,11 +652,11 @@ set(renderer_api_sources
     renderer/api/environmentedf.h
     renderer/api/environmentshader.h
     renderer/api/frame.h
-    renderer/api/geometry.h
     renderer/api/light.h
     renderer/api/lighting.h
     renderer/api/log.h
     renderer/api/material.h
+    renderer/api/object.h
     renderer/api/project.h
     renderer/api/rendering.h
     renderer/api/scene.h
@@ -1077,24 +1077,24 @@ source_group("renderer\\modeling\\frame" FILES
     ${renderer_modeling_frame_sources}
 )
 
-set(renderer_modeling_geometry_sources
-    renderer/modeling/geometry/iregion.h
-    renderer/modeling/geometry/meshobject.cpp
-    renderer/modeling/geometry/meshobject.h
-    renderer/modeling/geometry/meshobjectreader.cpp
-    renderer/modeling/geometry/meshobjectreader.h
-    renderer/modeling/geometry/meshobjectwriter.cpp
-    renderer/modeling/geometry/meshobjectwriter.h
-    renderer/modeling/geometry/object.cpp
-    renderer/modeling/geometry/object.h
-    renderer/modeling/geometry/regionkit.h
-    renderer/modeling/geometry/triangle.h
+set(renderer_modeling_object_sources
+    renderer/modeling/object/iregion.h
+    renderer/modeling/object/meshobject.cpp
+    renderer/modeling/object/meshobject.h
+    renderer/modeling/object/meshobjectreader.cpp
+    renderer/modeling/object/meshobjectreader.h
+    renderer/modeling/object/meshobjectwriter.cpp
+    renderer/modeling/object/meshobjectwriter.h
+    renderer/modeling/object/object.cpp
+    renderer/modeling/object/object.h
+    renderer/modeling/object/regionkit.h
+    renderer/modeling/object/triangle.h
 )
 list(APPEND appleseed_sources
-    ${renderer_modeling_geometry_sources}
+    ${renderer_modeling_object_sources}
 )
-source_group("renderer\\modeling\\geometry" FILES
-    ${renderer_modeling_geometry_sources}
+source_group("renderer\\modeling\\object" FILES
+    ${renderer_modeling_object_sources}
 )
 
 set(renderer_modeling_input_sources

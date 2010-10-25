@@ -30,7 +30,7 @@
 #include "objectinstance.h"
 
 // appleseed.renderer headers.
-#include "renderer/modeling/geometry/object.h"
+#include "renderer/modeling/object/object.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/memory.h"

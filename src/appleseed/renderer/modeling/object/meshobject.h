@@ -26,12 +26,12 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_GEOMETRY_MESHOBJECT_H
-#define APPLESEED_RENDERER_MODELING_GEOMETRY_MESHOBJECT_H
+#ifndef APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECT_H
+#define APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECT_H
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
-#include "renderer/modeling/geometry/object.h"
+#include "renderer/modeling/object/object.h"
 
 // Forward declarations.
 namespace renderer      { class Triangle; }
@@ -123,4 +123,4 @@ class RENDERERDLL MeshObjectFactory
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_GEOMETRY_MESHOBJECT_H
+#endif  // !APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECT_H

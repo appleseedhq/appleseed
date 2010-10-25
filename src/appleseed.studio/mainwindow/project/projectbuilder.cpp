@@ -38,8 +38,8 @@
 #include "mainwindow/project/textureinstancecollectionitem.h"
 
 // appleseed.renderer headers.
-#include "renderer/api/geometry.h"
 #include "renderer/api/material.h"
+#include "renderer/api/object.h"
 #include "renderer/api/project.h"
 #include "renderer/api/scene.h"
 #include "renderer/api/texture.h"

@@ -31,7 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
-#include "renderer/modeling/geometry/triangle.h"
+#include "renderer/modeling/object/triangle.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/attributeset.h"

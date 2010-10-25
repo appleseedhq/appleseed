@@ -30,8 +30,8 @@
 #include "shadingpoint.h"
 
 // appleseed.renderer headers.
-#include "renderer/modeling/geometry/iregion.h"
-#include "renderer/modeling/geometry/object.h"
+#include "renderer/modeling/object/iregion.h"
+#include "renderer/modeling/object/object.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/intersection.h"
