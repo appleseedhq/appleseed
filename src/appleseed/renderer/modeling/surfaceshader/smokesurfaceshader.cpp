@@ -470,11 +470,11 @@ namespace
                   return true;
 
               case LinearMode:
-                  m_voxel_grid->trilinear_lookup(normalized_point, values);
+                  m_voxel_grid->linear_lookup(normalized_point, values);
                   return true;
 
               case QuadraticMode:
-                  m_voxel_grid->triquadratic_lookup(normalized_point, values);
+                  m_voxel_grid->quadratic_lookup(normalized_point, values);
                   return true;
 
               default:

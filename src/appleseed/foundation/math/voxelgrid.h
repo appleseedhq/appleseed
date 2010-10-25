@@ -88,13 +88,13 @@ class VoxelGrid3
 
     // Perform a trilinearly interpolated lookup of the voxel grid.
     // 'point' must be expressed in the unit cube [0,1]^3.
-    void trilinear_lookup(
+    void linear_lookup(
         const PointType&    point,
         ValueType           values[]) const;
 
     // Perform a triquadratically interpolated lookup of the voxel grid.
     // 'point' must be expressed in the unit cube [0,1]^3.
-    void triquadratic_lookup(
+    void quadratic_lookup(
         const PointType&    point,
         ValueType           values[]) const;
 
@@ -213,7 +213,7 @@ void VoxelGrid3<ValueType, CoordType>::nearest_lookup(
 }
 
 template <typename ValueType, typename CoordType>
-void VoxelGrid3<ValueType, CoordType>::trilinear_lookup(
+void VoxelGrid3<ValueType, CoordType>::linear_lookup(
     const PointType&        point,
     ValueType* RESTRICT     values) const
 {
@@ -276,7 +276,7 @@ void VoxelGrid3<ValueType, CoordType>::trilinear_lookup(
 }
 
 template <typename ValueType, typename CoordType>
-void VoxelGrid3<ValueType, CoordType>::triquadratic_lookup(
+void VoxelGrid3<ValueType, CoordType>::quadratic_lookup(
     const PointType&        point,
     ValueType               values[]) const
 {

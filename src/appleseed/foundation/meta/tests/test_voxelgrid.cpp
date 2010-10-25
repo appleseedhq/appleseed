@@ -72,8 +72,8 @@ TEST_SUITE(Foundation_Math_VoxelGrid3)
         enum Interpolator
         {
             Nearest,
-            Trilinear,
-            Triquadratic
+            Linear,
+            Quadratic
         };
 
         void dump_constant_z_slice(
@@ -109,12 +109,12 @@ TEST_SUITE(Foundation_Math_VoxelGrid3)
                         m_grid.nearest_lookup(point, values);
                         break;
 
-                      case Trilinear:
-                        m_grid.trilinear_lookup(point, values);
+                      case Linear:
+                        m_grid.linear_lookup(point, values);
                         break;
 
-                      case Triquadratic:
-                        m_grid.triquadratic_lookup(point, values);
+                      case Quadratic:
+                        m_grid.quadratic_lookup(point, values);
                         break;
                     }
 
@@ -195,13 +195,13 @@ TEST_SUITE(Foundation_Math_VoxelGrid3)
     }
 
     //
-    // Trilinear lookup.
+    // Linear lookup.
     //
 
-    TEST_CASE_WITH_FIXTURE(TrilinearLookup_AtOrigin, Fixture)
+    TEST_CASE_WITH_FIXTURE(LinearLookup_AtOrigin, Fixture)
     {
         float values[ChannelCount];
-        m_grid.trilinear_lookup(Vector3d(0.0), values);
+        m_grid.linear_lookup(Vector3d(0.0), values);
 
         EXPECT_FEQ(0.0f, values[0]);
         EXPECT_FEQ(0.0f, values[1]);
@@ -209,10 +209,10 @@ TEST_SUITE(Foundation_Math_VoxelGrid3)
         EXPECT_FEQ(1.0f, values[3]);
     }
 
-    TEST_CASE_WITH_FIXTURE(TrilinearLookup_HalfwayToCenter, Fixture)
+    TEST_CASE_WITH_FIXTURE(LinearLookup_HalfwayToCenter, Fixture)
     {
         float values[ChannelCount];
-        m_grid.trilinear_lookup(Vector3d(0.25), values);
+        m_grid.linear_lookup(Vector3d(0.25), values);
 
         EXPECT_FEQ(0.5f, values[0]);
         EXPECT_FEQ(0.5f, values[1]);
@@ -220,10 +220,10 @@ TEST_SUITE(Foundation_Math_VoxelGrid3)
         EXPECT_FEQ(1.0f, values[3]);
     }
 
-    TEST_CASE_WITH_FIXTURE(TrilinearLookup_AtCenter, Fixture)
+    TEST_CASE_WITH_FIXTURE(LinearLookup_AtCenter, Fixture)
     {
         float values[ChannelCount];
-        m_grid.trilinear_lookup(Vector3d(0.5), values);
+        m_grid.linear_lookup(Vector3d(0.5), values);
 
         EXPECT_FEQ(1.0f, values[0]);
         EXPECT_FEQ(1.0f, values[1]);
@@ -231,10 +231,10 @@ TEST_SUITE(Foundation_Math_VoxelGrid3)
         EXPECT_FEQ(1.0f, values[3]);
     }
 
-    TEST_CASE_WITH_FIXTURE(TrilinearLookup_AtExtremity, Fixture)
+    TEST_CASE_WITH_FIXTURE(LinearLookup_AtExtremity, Fixture)
     {
         float values[ChannelCount];
-        m_grid.trilinear_lookup(Vector3d(1.0), values);
+        m_grid.linear_lookup(Vector3d(1.0), values);
 
         EXPECT_FEQ(0.0f, values[0]);
         EXPECT_FEQ(0.0f, values[1]);
@@ -242,10 +242,10 @@ TEST_SUITE(Foundation_Math_VoxelGrid3)
         EXPECT_FEQ(1.0f, values[3]);
     }
 
-    TEST_CASE_WITH_FIXTURE(TrilinearLookup_BeyondOrigin, Fixture)
+    TEST_CASE_WITH_FIXTURE(LinearLookup_BeyondOrigin, Fixture)
     {
         float values[ChannelCount];
-        m_grid.trilinear_lookup(Vector3d(-1.0), values);
+        m_grid.linear_lookup(Vector3d(-1.0), values);
 
         EXPECT_FEQ(0.0f, values[0]);
         EXPECT_FEQ(0.0f, values[1]);
@@ -253,10 +253,10 @@ TEST_SUITE(Foundation_Math_VoxelGrid3)
         EXPECT_FEQ(1.0f, values[3]);
     }
 
-    TEST_CASE_WITH_FIXTURE(TrilinearLookup_BeyondExtremity, Fixture)
+    TEST_CASE_WITH_FIXTURE(LinearLookup_BeyondExtremity, Fixture)
     {
         float values[ChannelCount];
-        m_grid.trilinear_lookup(Vector3d(2.0), values);
+        m_grid.linear_lookup(Vector3d(2.0), values);
 
         EXPECT_FEQ(0.0f, values[0]);
         EXPECT_FEQ(0.0f, values[1]);
@@ -264,22 +264,22 @@ TEST_SUITE(Foundation_Math_VoxelGrid3)
         EXPECT_FEQ(1.0f, values[3]);
     }
 
-    TEST_CASE_WITH_FIXTURE(TrilinearLookup_Slice, Fixture)
+    TEST_CASE_WITH_FIXTURE(LinearLookup_Slice, Fixture)
     {
         dump_constant_z_slice(
-            "output/test_voxelgrid_trilinear_lookup_slice.png",
-            Trilinear,
+            "output/test_voxelgrid_linear_lookup_slice.png",
+            Linear,
             0.5);
     }
 
     //
-    // Triquadratic lookup.
+    // Quadratic lookup.
     //
 
-    TEST_CASE_WITH_FIXTURE(TriquadraticLookup_AtOrigin, Fixture)
+    TEST_CASE_WITH_FIXTURE(QuadraticLookup_AtOrigin, Fixture)
     {
         float values[ChannelCount];
-        m_grid.triquadratic_lookup(Vector3d(0.0), values);
+        m_grid.quadratic_lookup(Vector3d(0.0), values);
 
         EXPECT_FEQ(0.125f, values[0]);
         EXPECT_FEQ(0.125f, values[1]);
@@ -287,10 +287,10 @@ TEST_SUITE(Foundation_Math_VoxelGrid3)
         EXPECT_FEQ(1.0f, values[3]);
     }
 
-    TEST_CASE_WITH_FIXTURE(TriquadraticLookup_HalfwayToCenter, Fixture)
+    TEST_CASE_WITH_FIXTURE(QuadraticLookup_HalfwayToCenter, Fixture)
     {
         float values[ChannelCount];
-        m_grid.triquadratic_lookup(Vector3d(0.25), values);
+        m_grid.quadratic_lookup(Vector3d(0.25), values);
 
         EXPECT_FEQ(0.5f, values[0]);
         EXPECT_FEQ(0.5f, values[1]);
@@ -298,10 +298,10 @@ TEST_SUITE(Foundation_Math_VoxelGrid3)
         EXPECT_FEQ(1.0f, values[3]);
     }
 
-    TEST_CASE_WITH_FIXTURE(TriquadraticLookup_AtCenter, Fixture)
+    TEST_CASE_WITH_FIXTURE(QuadraticLookup_AtCenter, Fixture)
     {
         float values[ChannelCount];
-        m_grid.triquadratic_lookup(Vector3d(0.5), values);
+        m_grid.quadratic_lookup(Vector3d(0.5), values);
 
         EXPECT_FEQ(0.75f, values[0]);
         EXPECT_FEQ(0.75f, values[1]);
@@ -309,10 +309,10 @@ TEST_SUITE(Foundation_Math_VoxelGrid3)
         EXPECT_FEQ(1.0f, values[3]);
     }
 
-    TEST_CASE_WITH_FIXTURE(TriquadraticLookup_AtExtremity, Fixture)
+    TEST_CASE_WITH_FIXTURE(QuadraticLookup_AtExtremity, Fixture)
     {
         float values[ChannelCount];
-        m_grid.triquadratic_lookup(Vector3d(1.0), values);
+        m_grid.quadratic_lookup(Vector3d(1.0), values);
 
         EXPECT_FEQ(0.125f, values[0]);
         EXPECT_FEQ(0.125f, values[1]);
@@ -320,10 +320,10 @@ TEST_SUITE(Foundation_Math_VoxelGrid3)
         EXPECT_FEQ(1.0f, values[3]);
     }
 
-    TEST_CASE_WITH_FIXTURE(TriquadraticLookup_BeyondOrigin, Fixture)
+    TEST_CASE_WITH_FIXTURE(QuadraticLookup_BeyondOrigin, Fixture)
     {
         float values[ChannelCount];
-        m_grid.triquadratic_lookup(Vector3d(-1.0), values);
+        m_grid.quadratic_lookup(Vector3d(-1.0), values);
 
         EXPECT_FEQ(0.125f, values[0]);
         EXPECT_FEQ(0.125f, values[1]);
@@ -331,10 +331,10 @@ TEST_SUITE(Foundation_Math_VoxelGrid3)
         EXPECT_FEQ(1.0f, values[3]);
     }
 
-    TEST_CASE_WITH_FIXTURE(TriquadraticLookup_BeyondExtremity, Fixture)
+    TEST_CASE_WITH_FIXTURE(QuadraticLookup_BeyondExtremity, Fixture)
     {
         float values[ChannelCount];
-        m_grid.triquadratic_lookup(Vector3d(2.0), values);
+        m_grid.quadratic_lookup(Vector3d(2.0), values);
 
         EXPECT_FEQ(0.125f, values[0]);
         EXPECT_FEQ(0.125f, values[1]);
@@ -342,11 +342,11 @@ TEST_SUITE(Foundation_Math_VoxelGrid3)
         EXPECT_FEQ(1.0f, values[3]);
     }
 
-    TEST_CASE_WITH_FIXTURE(TriquadraticLookup_Slice, Fixture)
+    TEST_CASE_WITH_FIXTURE(QuadraticLookup_Slice, Fixture)
     {
         dump_constant_z_slice(
-            "output/test_voxelgrid_triquadratic_lookup_slice.png",
-            Triquadratic,
+            "output/test_voxelgrid_quadratic_lookup_slice.png",
+            Quadratic,
             0.5);
     }
 

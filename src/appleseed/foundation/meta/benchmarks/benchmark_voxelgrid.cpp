@@ -93,24 +93,24 @@ BENCHMARK_SUITE(Foundation_Math_VoxelGrid3)
         }
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(TrilinearLookup, Fixture)
+    BENCHMARK_CASE_WITH_FIXTURE(LinearLookup, Fixture)
     {
         for (size_t i = 0; i < LookupPointCount; ++i)
         { 
             ALIGN_SSE_VARIABLE float values[ChannelCount];
-            m_grid.trilinear_lookup(m_lookup_points[i], values);
+            m_grid.linear_lookup(m_lookup_points[i], values);
 
             for (size_t j = 0; j < ChannelCount; ++j)
                 m_accumulated_values[j] += values[j];
         }
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(TriquadraticLookup, Fixture)
+    BENCHMARK_CASE_WITH_FIXTURE(QuadraticLookup, Fixture)
     {
         for (size_t i = 0; i < LookupPointCount; ++i)
         { 
             ALIGN_SSE_VARIABLE float values[ChannelCount];
-            m_grid.triquadratic_lookup(m_lookup_points[i], values);
+            m_grid.quadratic_lookup(m_lookup_points[i], values);
 
             for (size_t j = 0; j < ChannelCount; ++j)
                 m_accumulated_values[j] += values[j];
