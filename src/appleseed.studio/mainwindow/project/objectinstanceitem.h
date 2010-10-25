@@ -38,6 +38,7 @@
 
 // Forward declarations.
 namespace appleseed { namespace studio { class ItemBase; }}
+namespace appleseed { namespace studio { class ProjectBuilder; }}
 namespace renderer  { class Assembly; }
 namespace renderer  { class ObjectInstance; }
 class QMenu;
@@ -55,7 +56,8 @@ class ObjectInstanceItem
   public:
     ObjectInstanceItem(
         renderer::Assembly&         assembly,
-        renderer::ObjectInstance&   object_instance);
+        renderer::ObjectInstance&   object_instance,
+        ProjectBuilder&             project_builder);
 
     virtual QMenu* get_single_item_context_menu() const;
 
@@ -71,6 +73,7 @@ class ObjectInstanceItem
   private:
     renderer::Assembly&             m_assembly;
     renderer::ObjectInstance&       m_object_instance;
+    ProjectBuilder&                 m_project_builder;
 
     void update_style();
 

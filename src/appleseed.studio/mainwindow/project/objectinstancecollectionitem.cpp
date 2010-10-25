@@ -62,7 +62,7 @@ ObjectInstanceCollectionItem::ObjectInstanceCollectionItem(
 
 void ObjectInstanceCollectionItem::add_item(ObjectInstance& object_instance)
 {
-    addChild(new ObjectInstanceItem(m_assembly, object_instance));
+    addChild(new ObjectInstanceItem(m_assembly, object_instance, m_project_builder));
 }
 
 }   // namespace studio

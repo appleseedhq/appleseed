@@ -83,7 +83,7 @@ void ProjectBuilder::insert_assembly(
 
     m_project.get_scene()->assemblies().insert(assembly);
 
-    emit project_modified();
+    notify_project_modification();
 }
 
 void ProjectBuilder::insert_assembly_instance(
@@ -100,7 +100,7 @@ void ProjectBuilder::insert_assembly_instance(
 
     m_project.get_scene()->assembly_instances().insert(assembly_instance);
 
-    emit project_modified();
+    notify_project_modification();
 }
 
 void ProjectBuilder::insert_bsdf(
@@ -119,7 +119,7 @@ void ProjectBuilder::insert_bsdf(
 
     assembly.bsdfs().insert(bsdf);
 
-    emit project_modified();
+    notify_project_modification();
 }
 
 void ProjectBuilder::insert_surface_shader(
@@ -139,7 +139,7 @@ void ProjectBuilder::insert_surface_shader(
 
     assembly.surface_shaders().insert(surface_shader);
 
-    emit project_modified();
+    notify_project_modification();
 }
 
 void ProjectBuilder::insert_material(
@@ -160,7 +160,7 @@ void ProjectBuilder::insert_material(
 
     assembly.materials().insert(material);
 
-    emit project_modified();
+    notify_project_modification();
 }
 
 void ProjectBuilder::insert_objects(
@@ -203,7 +203,7 @@ void ProjectBuilder::insert_objects(
     }
 
     if (!mesh_objects.empty())
-        emit project_modified();
+        notify_project_modification();
 }
 
 namespace
@@ -261,7 +261,7 @@ void ProjectBuilder::insert_textures(
 
     assembly.texture_instances().insert(texture_instance);
 
-    emit project_modified();
+    notify_project_modification();
 }
 
 void ProjectBuilder::insert_textures(
@@ -283,6 +283,11 @@ void ProjectBuilder::insert_textures(
 
     scene.texture_instances().insert(texture_instance);
 
+    notify_project_modification();
+}
+
+void ProjectBuilder::notify_project_modification() const
+{
     emit project_modified();
 }
 

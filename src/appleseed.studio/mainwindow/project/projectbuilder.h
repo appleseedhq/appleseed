@@ -92,6 +92,8 @@ class ProjectBuilder
     void insert_textures(
         const std::string&                  path) const;
 
+    void notify_project_modification() const;
+
   signals:
     void project_modified() const;
 

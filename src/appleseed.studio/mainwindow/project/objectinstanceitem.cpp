@@ -32,6 +32,7 @@
 // appleseed.studio headers.
 #include "mainwindow/project/assemblyentitybrowser.h"
 #include "mainwindow/project/entitybrowserwindow.h"
+#include "mainwindow/project/projectbuilder.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/scene.h"
@@ -56,11 +57,13 @@ namespace appleseed {
 namespace studio {
 
 ObjectInstanceItem::ObjectInstanceItem(
-    Assembly&       assembly,
-    ObjectInstance& object_instance)
+    Assembly&           assembly,
+    ObjectInstance&     object_instance,
+    ProjectBuilder&     project_builder)
   : EntityItem(object_instance)
   , m_assembly(assembly)
   , m_object_instance(object_instance)
+  , m_project_builder(project_builder)
 {
     update_style();
 }
@@ -228,6 +231,8 @@ void ObjectInstanceItem::assign_material(const size_t material_index)
     m_object_instance.set_material_index(0, material_index);
 
     update_style();
+
+    m_project_builder.notify_project_modification();
 }
 
 void ObjectInstanceItem::unassign_material()
@@ -235,6 +240,8 @@ void ObjectInstanceItem::unassign_material()
     m_object_instance.set_material_indices(MaterialIndexArray());
 
     update_style();
+
+    m_project_builder.notify_project_modification();
 }
 
 }   // namespace studio
