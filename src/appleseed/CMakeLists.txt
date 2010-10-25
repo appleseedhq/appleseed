@@ -162,6 +162,18 @@ source_group("foundation\\math\\intersection" FILES
     ${foundation_math_intersection_sources}
 )
 
+set(foundation_math_knn_sources
+    foundation/math/knn/knn_builder.h
+    foundation/math/knn/knn_data.h
+    foundation/math/knn/knn_query.h
+)
+list(APPEND appleseed_sources
+    ${foundation_math_knn_sources}
+)
+source_group("foundation\\math\\knn" FILES
+    ${foundation_math_knn_sources}
+)
+
 set(foundation_math_rng_sources
     foundation/math/rng/distribution.h
     foundation/math/rng/lcg.h
@@ -219,6 +231,7 @@ set(foundation_math_sources
     foundation/math/fresnel.h
     foundation/math/hash.h
     foundation/math/intersection.h
+    foundation/math/knn.h
     foundation/math/matrix.h
     foundation/math/minmax.h
     foundation/math/mis.h
@@ -282,6 +295,7 @@ set(foundation_meta_benchmarks_sources
     foundation/meta/benchmarks/benchmark_integerdivision.cpp
     foundation/meta/benchmarks/benchmark_intersection.cpp
     foundation/meta/benchmarks/benchmark_job.cpp
+    foundation/meta/benchmarks/benchmark_knn.cpp
     foundation/meta/benchmarks/benchmark_matrix.cpp
     foundation/meta/benchmarks/benchmark_permutation.cpp
     foundation/meta/benchmarks/benchmark_poolallocator.cpp
@@ -341,6 +355,7 @@ set(foundation_meta_tests_sources
     foundation/meta/tests/test_implptr.cpp
     foundation/meta/tests/test_intersection.cpp
     foundation/meta/tests/test_job.cpp
+    foundation/meta/tests/test_knn.cpp
     foundation/meta/tests/test_kvpair.cpp
     foundation/meta/tests/test_lazy.cpp
     foundation/meta/tests/test_log.cpp
