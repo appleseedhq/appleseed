@@ -34,18 +34,11 @@
 #include "foundation/utility/benchmark.h"
 #include "foundation/utility/bufferedfile.h"
 
-// STANN headers.
-#pragma warning (push)
-#pragma warning (disable : 4800)
-#include "sfcnn.hpp"
-#pragma warning (pop)
-
 // Standard headers.
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <cstdio>
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -127,34 +120,8 @@ BENCHMARK_SUITE(Foundation_Math_Knn)
         }
     };
 
-    class FixtureBaseSTANN
-      : public FixtureBase
-    {
-      protected:
-        void prepare()
-        {
-            FixtureBase::prepare();
-
-            if (!m_points.empty())
-                m_stann_tree.reset(new STANNTree(&m_points[0], m_points.size()));
-        }
-
-        void run_queries()
-        {
-            for (size_t i = 0; i < QueryCount; ++i)
-                m_stann_tree->ksearch(m_query_points[i], AnswerSize, m_answer);
-        }
-
-      private:
-        typedef sfcnn<foundation::Vector3f, 3, float> STANNTree;
-
-        auto_ptr<STANNTree>         m_stann_tree;
-        vector<unsigned long int>   m_answer;
-    };
-
-    template <typename FixtureBaseType>
     struct ParticlesFixture
-      : public FixtureBaseType
+      : public FixtureBase
     {
         ParticlesFixture()
         {
@@ -184,9 +151,8 @@ BENCHMARK_SUITE(Foundation_Math_Knn)
         }
     };
 
-    template <typename FixtureBaseType>
     struct PhotonMapFixture
-      : public FixtureBaseType
+      : public FixtureBase
     {
         PhotonMapFixture()
         {
@@ -248,22 +214,12 @@ BENCHMARK_SUITE(Foundation_Math_Knn)
         }
     };
 
-    BENCHMARK_CASE_WITH_FIXTURE(QueryParticles, ParticlesFixture<FixtureBase>)
+    BENCHMARK_CASE_WITH_FIXTURE(QueryParticles, ParticlesFixture)
     {
         run_queries();
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(QueryParticles_STANN, ParticlesFixture<FixtureBaseSTANN>)
-    {
-        run_queries();
-    }
-
-    BENCHMARK_CASE_WITH_FIXTURE(QueryPhotonMap, PhotonMapFixture<FixtureBase>)
-    {
-        run_queries();
-    }
-
-    BENCHMARK_CASE_WITH_FIXTURE(QueryPhotonMap_STANN, PhotonMapFixture<FixtureBaseSTANN>)
+    BENCHMARK_CASE_WITH_FIXTURE(QueryPhotonMap, PhotonMapFixture)
     {
         run_queries();
     }
