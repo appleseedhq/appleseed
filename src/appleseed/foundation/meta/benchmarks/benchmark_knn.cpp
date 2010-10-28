@@ -48,8 +48,8 @@ using namespace std;
 BENCHMARK_SUITE(Foundation_Math_Knn)
 {
     const size_t QueryCount = 10;
-    const size_t AnswerSize = 5;
 
+    template <size_t AnswerSize>
     class FixtureBase
     {
       protected:
@@ -94,9 +94,9 @@ BENCHMARK_SUITE(Foundation_Math_Knn)
             const int32 point_count = static_cast<int32>(m_points.size());
             MersenneTwister rng;
 
-            const size_t AnswerSize = 4;
-            size_t answer[AnswerSize];
-            knn::Query3f query(m_tree, answer, AnswerSize);
+            const size_t K = 4;
+            size_t answer[K];
+            knn::Query3f query(m_tree, answer, K);
 
             m_query_points.reserve(QueryCount);
 
@@ -108,7 +108,7 @@ BENCHMARK_SUITE(Foundation_Math_Knn)
 
                 // Find its neighboring points.
                 const size_t found = query.run(seed_point);
-                assert(found == AnswerSize);
+                assert(found == K);
 
                 // Let the barycenter of these points be a query point.
                 Vector3f query_point(0.0f);
@@ -120,8 +120,9 @@ BENCHMARK_SUITE(Foundation_Math_Knn)
         }
     };
 
+    template <size_t AnswerSize>
     struct ParticlesFixture
-      : public FixtureBase
+      : public FixtureBase<AnswerSize>
     {
         ParticlesFixture()
         {
@@ -151,8 +152,9 @@ BENCHMARK_SUITE(Foundation_Math_Knn)
         }
     };
 
+    template <size_t AnswerSize>
     struct PhotonMapFixture
-      : public FixtureBase
+      : public FixtureBase<AnswerSize>
     {
         PhotonMapFixture()
         {
@@ -214,13 +216,15 @@ BENCHMARK_SUITE(Foundation_Math_Knn)
         }
     };
 
-    BENCHMARK_CASE_WITH_FIXTURE(QueryParticles, ParticlesFixture)
-    {
-        run_queries();
-    }
+    BENCHMARK_CASE_WITH_FIXTURE(QueryParticlesK1, ParticlesFixture<1>)      { run_queries(); }
+    BENCHMARK_CASE_WITH_FIXTURE(QueryParticlesK5, ParticlesFixture<5>)      { run_queries(); }
+    BENCHMARK_CASE_WITH_FIXTURE(QueryParticlesK20, ParticlesFixture<20>)    { run_queries(); }
+    BENCHMARK_CASE_WITH_FIXTURE(QueryParticlesK100, ParticlesFixture<100>)  { run_queries(); }
+    BENCHMARK_CASE_WITH_FIXTURE(QueryParticlesK500, ParticlesFixture<500>)  { run_queries(); }
 
-    BENCHMARK_CASE_WITH_FIXTURE(QueryPhotonMap, PhotonMapFixture)
-    {
-        run_queries();
-    }
+    BENCHMARK_CASE_WITH_FIXTURE(QueryPhotonMapK1, PhotonMapFixture<1>)      { run_queries(); }
+    BENCHMARK_CASE_WITH_FIXTURE(QueryPhotonMapK5, PhotonMapFixture<5>)      { run_queries(); }
+    BENCHMARK_CASE_WITH_FIXTURE(QueryPhotonMapK20, PhotonMapFixture<20>)    { run_queries(); }
+    BENCHMARK_CASE_WITH_FIXTURE(QueryPhotonMapK100, PhotonMapFixture<100>)  { run_queries(); }
+    BENCHMARK_CASE_WITH_FIXTURE(QueryPhotonMapK500, PhotonMapFixture<500>)  { run_queries(); }
 }
