@@ -81,7 +81,6 @@ T square_distance(
 // Distance functions implementation.
 //
 
-// Compute the square distance between two points.
 template <typename T, size_t N>
 inline T square_distance(
     const Vector<T, N>& a,
@@ -90,42 +89,43 @@ inline T square_distance(
     return square_norm(b - a);
 }
 
-// Compute the square distance between a point and a line.
 template <typename T, size_t N>
 inline T square_distance_point_line(
     const Vector<T, N>& point,
-    const Vector<T, N>& a,          // a point on the line
-    const Vector<T, N>& v)          // direction of the line, unit-length
+    const Vector<T, N>& a,
+    const Vector<T, N>& v)
 {
     assert(is_normalized(v));
+
     const Vector<T, N> u = point - a;
     const Vector<T, N> d = u - dot(u, v) * v;
+
     return square_norm(d);
 }
 
-// Compute the square distance between a point and a line segment.
 template <typename T, size_t N>
 inline T square_distance_point_segment(
     const Vector<T, N>& point,
-    const Vector<T, N>& a,          // one end of the segment
-    const Vector<T, N>& b)          // the other end
+    const Vector<T, N>& a,
+    const Vector<T, N>& b)
 {
     assert(square_norm(b - a) > T(0.0));
+
     const Vector<T, N> u = point - a;
     const Vector<T, N> v = b - a;
     const T s = saturate(dot(u, v) / square_norm(v));
     const Vector<T, N> d = u - s * v;
+
     return square_norm(d);
 }
 
-// Compute the square distance between a point and an AABB.
-// Return 0 if the point is inside the AABB.
 template <typename T, size_t N>
 inline T square_distance(
     const Vector<T, N>& p,
     const AABB<T, N>&   bbox)
 {
     T d = T(0.0);
+
     for (size_t i = 0; i < N; ++i)
     {
         // todo: reimplement without branches, measure performances.
@@ -134,8 +134,10 @@ inline T square_distance(
         else if (p[i] > bbox.max[i])
             d += square(bbox.max[i] - p[i]);
     }
+
     return d;
 }
+
 template <typename T, size_t N>
 inline T square_distance(
     const AABB<T, N>&   bbox,

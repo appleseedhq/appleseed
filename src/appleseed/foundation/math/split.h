@@ -78,11 +78,11 @@ void split_bbox(
 // Split class implementation.
 //
 
-// Constructors.
 template <typename T>
 inline Split<T>::Split()
 {
 }
+
 template <typename T>
 inline Split<T>::Split(
     const size_t            dimension,
@@ -92,7 +92,6 @@ inline Split<T>::Split(
 {
 }
 
-// Create a middle split for a given bounding box.
 template <typename T>
 template <size_t N>
 inline Split<T> Split<T>::middle(const AABB<T, N>& bbox)
@@ -103,7 +102,6 @@ inline Split<T> Split<T>::middle(const AABB<T, N>& bbox)
     return split;
 }
 
-// Utility function to split a bounding box.
 template <typename T, size_t N>
 inline void split_bbox(
     const AABB<T, N>&       bbox,
@@ -111,12 +109,10 @@ inline void split_bbox(
     AABB<T, N>&             left,
     AABB<T, N>&             right)
 {
-    // Initialize left and right to bbox.
     left = bbox;
-    right = bbox;
-
-    // Cut left and right at the split abscissa.
     left.max[split.m_dimension] = split.m_abscissa;
+
+    right = bbox;
     right.min[split.m_dimension] = split.m_abscissa;
 }
 
