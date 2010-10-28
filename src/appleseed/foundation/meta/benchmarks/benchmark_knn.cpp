@@ -28,12 +28,25 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/knn.h"
+#include "foundation/math/rng.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/benchmark.h"
+#include "foundation/utility/bufferedfile.h"
+
+// STANN headers.
+#pragma warning (push)
+#pragma warning (disable : 4800)
+#include "sfcnn.hpp"
+#pragma warning (pop)
 
 // Standard headers.
+#include <algorithm>
+#include <cassert>
 #include <cstddef>
 #include <cstdio>
+#include <memory>
+#include <string>
 #include <vector>
 
 using namespace foundation;
@@ -41,25 +54,117 @@ using namespace std;
 
 BENCHMARK_SUITE(Foundation_Math_Knn)
 {
-    struct Fixture
+    const size_t QueryCount = 10;
+    const size_t AnswerSize = 5;
+
+    class FixtureBase
     {
+      protected:
         vector<Vector3f>    m_points;
-        KnnData3f           m_knn_data;
+        vector<Vector3f>    m_query_points;
+        size_t              m_accumulator;
 
-        Fixture()
+        FixtureBase()
+          : m_accumulator(0)
         {
-            load_points();
+        }
 
+        void prepare()
+        {
             if (!m_points.empty())
             {
-                KnnBuilder3f builder;
-                builder.build(&m_points[0], m_points.size(), m_knn_data);
+                build_tree();
+                find_query_points();
             }
         }
 
-        void load_points()
+        void run_queries()
         {
-            FILE* file = fopen("data/test_knn_points.txt", "rt");
+            size_t answer[AnswerSize];
+            knn::Query3f query(m_tree, answer, AnswerSize);
+
+            for (size_t i = 0; i < QueryCount; ++i)
+                m_accumulator += query.run(m_query_points[i]);
+        }
+
+      private:
+        knn::Tree3f         m_tree;
+
+        void build_tree()
+        {
+            knn::Builder3f builder(m_tree, AnswerSize);
+            builder.build(&m_points[0], m_points.size());
+        }
+
+        void find_query_points()
+        {
+            const int32 point_count = static_cast<int32>(m_points.size());
+            MersenneTwister rng;
+
+            const size_t AnswerSize = 4;
+            size_t answer[AnswerSize];
+            knn::Query3f query(m_tree, answer, AnswerSize);
+
+            m_query_points.reserve(QueryCount);
+
+            for (size_t i = 0; i < QueryCount; ++i)
+            {
+                // Choose a random point from the original point cloud.
+                const size_t seed_point_index = rand_int1(rng, 0, point_count - 1);
+                const Vector3f& seed_point = m_points[seed_point_index];
+
+                // Find its neighboring points.
+                const size_t found = query.run(seed_point);
+                assert(found == AnswerSize);
+
+                // Let the barycenter of these points be a query point.
+                Vector3f query_point(0.0f);
+                for (size_t j = 0; j < found; ++j)
+                    query_point += m_points[answer[j]];
+                query_point /= static_cast<float>(found);
+                m_query_points.push_back(query_point);
+            }
+        }
+    };
+
+    class FixtureBaseSTANN
+      : public FixtureBase
+    {
+      protected:
+        void prepare()
+        {
+            FixtureBase::prepare();
+
+            if (!m_points.empty())
+                m_stann_tree.reset(new STANNTree(&m_points[0], m_points.size()));
+        }
+
+        void run_queries()
+        {
+            for (size_t i = 0; i < QueryCount; ++i)
+                m_stann_tree->ksearch(m_query_points[i], AnswerSize, m_answer);
+        }
+
+      private:
+        typedef sfcnn<foundation::Vector3f, 3, float> STANNTree;
+
+        auto_ptr<STANNTree>         m_stann_tree;
+        vector<unsigned long int>   m_answer;
+    };
+
+    template <typename FixtureBaseType>
+    struct ParticlesFixture
+      : public FixtureBaseType
+    {
+        ParticlesFixture()
+        {
+            load_points("data/test_knn_points.txt");
+            prepare();
+        }
+
+        void load_points(const char* filename)
+        {
+            FILE* file = fopen(filename, "rt");
 
             if (file == 0)
                 return;
@@ -79,15 +184,87 @@ BENCHMARK_SUITE(Foundation_Math_Knn)
         }
     };
 
-    BENCHMARK_CASE_WITH_FIXTURE(Test, Fixture)
+    template <typename FixtureBaseType>
+    struct PhotonMapFixture
+      : public FixtureBaseType
     {
-        const size_t point_count = m_points.size();
-        const size_t K = 3;
-
-        for (size_t i = 0; i < point_count; ++i)
+        PhotonMapFixture()
         {
-            KnnQuery3f knn_query(m_knn_data, K);
-            knn_query.run(m_points[i]);
+            load_toxic_photon_map_v1("data/test_knn_gally_gpm.bin");
+            prepare();
         }
+
+        void load_toxic_photon_map_v1(const char* filename)
+        {
+            BufferedFile file(filename, BufferedFile::BinaryType, BufferedFile::ReadMode);
+
+            if (!file.is_open())
+                return;
+
+            const string FileSignature = "toxic photon map file version 1";
+            const size_t FileSignatureLength = FileSignature.size();
+
+            string sig(FileSignatureLength, 0);
+
+            if (file.read(&sig[0], FileSignatureLength) != FileSignatureLength)
+                return;
+
+            if (sig != FileSignature)
+                return;
+
+            uint32 stored_photon_count;
+
+            if (file.read(stored_photon_count) != sizeof(uint32))
+                return;
+
+            swap_bytes(&stored_photon_count);
+
+            m_points.resize(stored_photon_count);
+
+            for (uint32 i = 0; i < stored_photon_count; ++i)
+            {
+                Vector3f& p = m_points[i];
+
+                if (file.read(p) != sizeof(Vector3f))
+                    return;
+
+                swap_bytes(&p.x);
+                swap_bytes(&p.y);
+                swap_bytes(&p.z);
+
+                file.seek(29, BufferedFile::SeekFromCurrent);
+            }
+        }
+
+        template <typename T>
+        static void swap_bytes(T* ptr)
+        {
+            assert(ptr);
+            assert(sizeof(T) % 2 == 0);
+
+            uint8* bytes = reinterpret_cast<uint8*>(ptr);
+
+            reverse(bytes, bytes + sizeof(T));
+        }
+    };
+
+    BENCHMARK_CASE_WITH_FIXTURE(QueryParticles, ParticlesFixture<FixtureBase>)
+    {
+        run_queries();
+    }
+
+    BENCHMARK_CASE_WITH_FIXTURE(QueryParticles_STANN, ParticlesFixture<FixtureBaseSTANN>)
+    {
+        run_queries();
+    }
+
+    BENCHMARK_CASE_WITH_FIXTURE(QueryPhotonMap, PhotonMapFixture<FixtureBase>)
+    {
+        run_queries();
+    }
+
+    BENCHMARK_CASE_WITH_FIXTURE(QueryPhotonMap_STANN, PhotonMapFixture<FixtureBaseSTANN>)
+    {
+        run_queries();
     }
 }

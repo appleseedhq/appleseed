@@ -31,7 +31,7 @@
 
 // Interface headers.
 #include "foundation/math/knn/knn_builder.h"
-#include "foundation/math/knn/knn_data.h"
 #include "foundation/math/knn/knn_query.h"
+#include "foundation/math/knn/knn_tree.h"
 
 #endif  // !APPLESEED_FOUNDATION_MATH_KNN_H
