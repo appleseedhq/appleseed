@@ -169,7 +169,7 @@ namespace foundation
     do {                                                                                \
         case_result.signal_assertion_execution();                                       \
                                                                                         \
-        if (std::memcmp((expected), (expr), count * sizeof(expected[0])))               \
+        if (std::memcmp((expected), (expr), count * sizeof((expected)[0])))             \
         {                                                                               \
             case_result.signal_assertion_failure();                                     \
                                                                                         \
