@@ -50,6 +50,7 @@ include_directories(
     libpng
     openexr/vc/vc9/include                  # change to openexr/include
     openexr/vc/vc9/include/openexr          # change to openexr/include/openexr
+    STANN/include
     xerces-c/src
     zlib
 )

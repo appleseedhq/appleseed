@@ -1,0 +1,5 @@
+
+
+test: ./include/* test.cpp
+	@cl.exe  /Ox /nologo /openmp /EHsc test.cpp /I ./include
+	@test.exe
