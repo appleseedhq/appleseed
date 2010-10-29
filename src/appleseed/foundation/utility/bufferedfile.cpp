@@ -436,7 +436,8 @@ bool BufferedFile::seek(
         }
 
         // Handle the case where the target index is within the bounds of the I/O buffer.
-        if (target_index >= m_file_index && target_index < m_buffer_end)
+        if (target_index >= m_file_index &&
+            target_index < m_file_index + static_cast<int64>(m_buffer_end))
         {
             // Compute the new index into the I/O buffer.
             m_buffer_index = static_cast<size_t>(target_index - m_file_index);
