@@ -55,10 +55,10 @@ BENCHMARK_SUITE(Foundation_Math_Knn)
       protected:
         vector<Vector3f>    m_points;
         vector<Vector3f>    m_query_points;
-        size_t              m_accumulator;
 
         FixtureBase()
           : m_accumulator(0)
+          , m_answer(AnswerSize)
         {
         }
 
@@ -73,15 +73,19 @@ BENCHMARK_SUITE(Foundation_Math_Knn)
 
         void run_queries()
         {
-            size_t answer[AnswerSize];
-            knn::Query3f query(m_tree, answer, AnswerSize);
+            knn::Query3f query(m_tree, m_answer);
 
             for (size_t i = 0; i < QueryCount; ++i)
-                m_accumulator += query.run(m_query_points[i]);
+            {
+                query.run(m_query_points[i]);
+                m_accumulator += m_answer.size();
+            }
         }
 
       private:
         knn::Tree3f         m_tree;
+        knn::Answer<float>  m_answer;
+        size_t              m_accumulator;
 
         void build_tree()
         {
@@ -94,9 +98,8 @@ BENCHMARK_SUITE(Foundation_Math_Knn)
             const int32 point_count = static_cast<int32>(m_points.size());
             MersenneTwister rng;
 
-            const size_t K = 4;
-            size_t answer[K];
-            knn::Query3f query(m_tree, answer, K);
+            knn::Answer<float> answer(4);
+            knn::Query3f query(m_tree, answer);
 
             m_query_points.reserve(QueryCount);
 
@@ -107,14 +110,13 @@ BENCHMARK_SUITE(Foundation_Math_Knn)
                 const Vector3f& seed_point = m_points[seed_point_index];
 
                 // Find its neighboring points.
-                const size_t found = query.run(seed_point);
-                assert(found == K);
+                query.run(seed_point);
 
                 // Let the barycenter of these points be a query point.
                 Vector3f query_point(0.0f);
-                for (size_t j = 0; j < found; ++j)
-                    query_point += m_points[answer[j]];
-                query_point /= static_cast<float>(found);
+                for (size_t j = 0; j < answer.size(); ++j)
+                    query_point += m_points[answer.get(j).m_index];
+                query_point /= static_cast<float>(answer.size());
                 m_query_points.push_back(query_point);
             }
         }

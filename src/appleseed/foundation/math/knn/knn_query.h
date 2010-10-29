@@ -31,14 +31,15 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/math/knn/knn_answer.h"
 #include "foundation/math/knn/knn_tree.h"
 #include "foundation/math/distance.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 
 // Standard headers.
+#include <cassert>
 #include <cstddef>
-#include <queue>
 
 namespace foundation {
 namespace knn {
@@ -53,50 +54,19 @@ class Query
 
     typedef Vector<T, N> VectorType;
     typedef Tree<T, N> TreeType;
+    typedef Answer<T> AnswerType;
 
     Query(
         const TreeType&     tree,
-        size_t              answer[],
-        const size_t        answer_size);
+        AnswerType&         answer);
 
-    Query(
-        const TreeType&     tree,
-        size_t              answer[],
-        ValueType           distances[],
-        const size_t        answer_size);
-
-    size_t run(
-        const VectorType&   query_point);
+    void run(const VectorType& query_point);
 
   private:
     typedef typename TreeType::NodeType NodeType;
 
-    struct PriorityQueueEntry
-    {
-        size_t              m_index;
-        ValueType           m_distance;
-
-        PriorityQueueEntry() {}
-        
-        PriorityQueueEntry(const size_t index, const ValueType distance)
-          : m_index(index)
-          , m_distance(distance)
-        {
-        }
-
-        bool operator<(const PriorityQueueEntry& rhs) const
-        {
-            return m_distance < rhs.m_distance;
-        }
-    };
-
-    typedef std::priority_queue<PriorityQueueEntry> Queue;
-
     const TreeType&         m_tree;
-    size_t*                 m_answer;
-    ValueType*              m_distances;
-    const size_t            m_answer_size;
-    Queue                   m_queue;
+    AnswerType&             m_answer;
 };
 
 typedef Query<float, 2>  Query2f;
@@ -112,75 +82,58 @@ typedef Query<double, 3> Query3d;
 template <typename T, size_t N>
 inline Query<T, N>::Query(
     const TreeType&         tree,
-    size_t                  answer[],
-    const size_t            answer_size)
+    AnswerType&             answer)
   : m_tree(tree)
   , m_answer(answer)
-  , m_distances(0)
-  , m_answer_size(answer_size)
 {
 }
 
 template <typename T, size_t N>
-inline Query<T, N>::Query(
-    const TreeType&         tree,
-    size_t                  answer[],
-    ValueType               distances[],
-    const size_t            answer_size)
-  : m_tree(tree)
-  , m_answer(answer)
-  , m_distances(distances)
-  , m_answer_size(answer_size)
+inline void Query<T, N>::run(const VectorType& query_point)
 {
-}
+    assert(!m_tree.empty());
 
-template <typename T, size_t N>
-inline size_t Query<T, N>::run(
-    const VectorType&       query_point)
-{
-    assert(m_queue.empty());
+    m_answer.clear();
 
-    if (m_tree.m_indices.empty())
-        return 0;
+    const VectorType* RESTRICT points = &m_tree.m_points.front();
+    const size_t* RESTRICT indices = &m_tree.m_indices.front();
+    const NodeType* RESTRICT nodes = &m_tree.m_nodes.front();
 
     //
-    // Find the leaf node containing the query point.
+    // 1. Find the leaf node containing the query point.
     //
 
-    const NodeType* RESTRICT parent_node = &m_tree.m_nodes.front();
+    const NodeType* RESTRICT parent_node = nodes;
 
-    // Traverse the tree until a leaf is reached.
     while (parent_node->is_interior())
     {
         const size_t split_dim = parent_node->get_split_dim();
         const ValueType split_abs = parent_node->get_split_abs();
 
-        parent_node = &m_tree.m_nodes[parent_node->get_child_node_index()];
+        parent_node = nodes + parent_node->get_child_node_index();
 
         if (query_point[split_dim] >= split_abs)
             ++parent_node;
     }
 
     //
-    // Collect the points from this leaf node, and compute an upper bound on distance.
+    // 2. Collect the points from this leaf node, and compute an upper bound on distance.
     //
 
     ValueType max_distance(0.0);
 
-    const size_t* RESTRICT index_ptr = &m_tree.m_indices[parent_node->get_point_index()];
+    const size_t* RESTRICT index_ptr = indices + parent_node->get_point_index();
     const size_t* RESTRICT index_end = index_ptr + parent_node->get_point_count();
 
     while (index_ptr < index_end)
     {
         // Fetch the point and compute its distance to the query point.
         const size_t point_index = *index_ptr++;
-        const VectorType& point = m_tree.m_points[point_index];
+        const VectorType& point = points[point_index];
         const ValueType distance = square_distance(point, query_point);
 
         // Add this point to the answer.
-        m_queue.push(PriorityQueueEntry(point_index, distance));
-        if (m_queue.size() > m_answer_size)
-            m_queue.pop();
+        m_answer.insert(point_index, distance);
 
         // Update the upper bound on distance.
         if (max_distance < distance)
@@ -188,16 +141,14 @@ inline size_t Query<T, N>::run(
     }
 
     //
-    // Traverse again the tree and update the set of neighbors.
+    // 3. Traverse again the tree and update the set of neighbors.
     //
 
-    // Initialize the node stack.
     const size_t StackSize = 64;
     const NodeType* stack[StackSize];
     const NodeType** stack_ptr = stack;
 
-    // Start at the root node.
-    const NodeType* RESTRICT node = &m_tree.m_nodes.front();
+    const NodeType* RESTRICT node = nodes;
 
     while (true)
     {
@@ -209,7 +160,7 @@ inline size_t Query<T, N>::run(
             const ValueType query_abs = query_point[split_dim];
             const ValueType distance = square(split_abs - query_abs);
 
-            node = &m_tree.m_nodes[node->get_child_node_index()];
+            node = nodes + node->get_child_node_index();
 
             if (query_abs < split_abs)
             {
@@ -228,19 +179,21 @@ inline size_t Query<T, N>::run(
 
         if (node != parent_node)
         {
-            const size_t* RESTRICT index_ptr = &m_tree.m_indices[node->get_point_index()];
+            const size_t* RESTRICT index_ptr = indices + node->get_point_index();
             const size_t* RESTRICT index_end = index_ptr + node->get_point_count();
 
             while (index_ptr < index_end)
             {
                 // Fetch the point and compute its distance to the query point.
                 const size_t point_index = *index_ptr++;
-                const VectorType& point = m_tree.m_points[point_index];
+                const VectorType& point = points[point_index];
                 const ValueType distance = square_distance(point, query_point);
 
-                // Add this point to the answer.
-                m_queue.push(PriorityQueueEntry(point_index, distance));
-                m_queue.pop();
+                // Insert this point to the answer.
+                m_answer.insert(point_index, distance);
+
+                // Update the upper bound on distance.
+                max_distance = m_answer.farthest().m_distance;
             }
         }
 
@@ -252,34 +205,11 @@ inline size_t Query<T, N>::run(
         node = *--stack_ptr;
     }
 
-    size_t answer_count = m_queue.size();
-    assert(answer_count <= m_answer_size);
+    //
+    // 4. Transform the heap into a sorted array.
+    //
 
-    // Save the answer.
-    size_t i = answer_count;
-    if (m_distances)
-    {
-        while (!m_queue.empty())
-        {
-            const PriorityQueueEntry& entry = m_queue.top();
-            --i;
-            m_answer[i] = entry.m_index;
-            m_distances[i] = entry.m_distance;
-            m_queue.pop();
-        }
-    }
-    else
-    {
-        while (!m_queue.empty())
-        {
-            const PriorityQueueEntry& entry = m_queue.top();
-            --i;
-            m_answer[i] = entry.m_index;
-            m_queue.pop();
-        }
-    }
-
-    return answer_count;
+    m_answer.sort();
 }
 
 }       // namespace knn

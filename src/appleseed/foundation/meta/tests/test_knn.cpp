@@ -46,6 +46,100 @@
 using namespace foundation;
 using namespace std;
 
+TEST_SUITE(Foundation_Math_Knn_Answer)
+{
+    TEST_CASE(Size_AfterZeroInsertion_ReturnsZero)
+    {
+        knn::Answer<double> answer(3);
+
+        EXPECT_EQ(0, answer.size());
+    }
+
+    TEST_CASE(Size_AfterOneInsertion_ReturnsOne)
+    {
+        knn::Answer<double> answer(3);
+        answer.insert(42, 12.0);
+
+        EXPECT_EQ(1, answer.size());
+    }
+
+    TEST_CASE(Empty_AfterZeroInsertion_ReturnsTrue)
+    {
+        knn::Answer<double> answer(3);
+
+        EXPECT_TRUE(answer.empty());
+    }
+
+    TEST_CASE(Empty_AfterOneInsertion_ReturnsFalse)
+    {
+        knn::Answer<double> answer(3);
+        answer.insert(42, 12.0);
+
+        EXPECT_FALSE(answer.empty());
+    }
+
+    TEST_CASE(Clear_GivenOneItem_EmptiesAnswer)
+    {
+        knn::Answer<double> answer(3);
+        answer.insert(42, 12.0);
+
+        answer.clear();
+
+        EXPECT_TRUE(answer.empty());
+    }
+
+    TEST_CASE(Sort_GivenFourItemsInSizeFiveAnswer_SortsItems)
+    {
+        knn::Answer<double> answer(5);
+        answer.insert(4, 4.0);
+        answer.insert(3, 3.0);
+        answer.insert(1, 1.0);
+        answer.insert(2, 2.0);
+
+        answer.sort();
+
+        EXPECT_EQ(1, answer.get(0).m_index);
+        EXPECT_EQ(2, answer.get(1).m_index);
+        EXPECT_EQ(3, answer.get(2).m_index);
+        EXPECT_EQ(4, answer.get(3).m_index);
+    }
+
+    TEST_CASE(BuildHeap_GivenVector_TransformsVectorToHeap)
+    {
+        knn::Answer<double> answer(5);
+        answer.insert(5, 5.0);
+        answer.insert(1, 1.0);
+        answer.insert(4, 4.0);
+        answer.insert(3, 3.0);
+        answer.insert(2, 2.0);
+
+        answer.build_heap();
+
+        for (size_t i = 0; i < answer.size() / 2; ++i)
+        {
+            const size_t left = 2 * i + 1;
+            const size_t right = left + 1;
+            EXPECT_LT(answer.get(i).m_distance, answer.get(left).m_distance);
+            EXPECT_LT(answer.get(i).m_distance, answer.get(right).m_distance);
+        }
+    }
+
+    TEST_CASE(Insert_GivenCloserItem_KeepsItem)
+    {
+        knn::Answer<double> answer(3);
+        answer.insert(1, 1.0);
+        answer.insert(3, 3.0);
+        answer.insert(4, 4.0);
+
+        answer.insert(2, 2.0);
+
+        answer.sort();
+        EXPECT_EQ(1, answer.get(0).m_index);
+        EXPECT_EQ(2, answer.get(1).m_index);
+        EXPECT_EQ(3, answer.get(2).m_index);
+    }
+}
+
 TEST_SUITE(Foundation_Math_Knn_Builder)
 {
     TEST_CASE(Build_GivenZeroPoint_BuildsValidTree)
@@ -137,22 +231,7 @@ TEST_SUITE(Foundation_Math_Knn_Builder)
 
 TEST_SUITE(Foundation_Math_Knn_Query)
 {
-    TEST_CASE(Answer_GivenEmptyTree_ReturnsEmptyResult)
-    {
-        const size_t AnswerSize = 5;
-
-        knn::Tree3d tree;
-        knn::Builder3d builder(tree, AnswerSize);
-        builder.build(0, 0);
-
-        size_t indices[AnswerSize];
-        knn::Query3d query(tree, indices, AnswerSize);
-        const size_t found = query.run(Vector3d(0.0));
-
-        EXPECT_EQ(0, found);
-    }
-
-    TEST_CASE(Answer_GivenEightPointsAndQuerySize4_Returns4NearestNeighbors)
+    TEST_CASE(Run_GivenEightPointsAndQuerySize4_Returns4NearestNeighbors)
     {
         const size_t PointCount = 8;
         const size_t AnswerSize = 4;
@@ -165,17 +244,17 @@ TEST_SUITE(Foundation_Math_Knn_Query)
         knn::Builder3d builder(tree, AnswerSize);
         builder.build(points, PointCount);
 
-        size_t answer[AnswerSize];
-        knn::Query3d query(tree, answer, AnswerSize);
-        const size_t found = query.run(Vector3d(4.5, 0.0, 0.0));
+        knn::Answer<double> answer(AnswerSize);
+        knn::Query3d query(tree, answer);
+        query.run(Vector3d(4.5, 0.0, 0.0));
 
-        EXPECT_EQ(4, found);
+        EXPECT_EQ(4, answer.size());
     }
 
-    TEST_CASE(Answer_ReturnsSameResultsAsSTANN)
+    TEST_CASE(Run_ReturnsSameResultsAsSTANN)
     {
         const size_t PointCount = 100;
-        const size_t QueryCount = 100;
+        const size_t QueryCount = 1000;
         const size_t AnswerSize = 10;
 
         vector<Vector3d> points;
@@ -197,9 +276,8 @@ TEST_SUITE(Foundation_Math_Knn_Query)
 
         sfcnn<foundation::Vector3d, 3, double> stann_tree(&points[0], PointCount);
 
-        size_t answer[AnswerSize];
-        double distances[AnswerSize];
-        knn::Query3d query(tree, answer, distances, AnswerSize);
+        knn::Answer<double> answer(AnswerSize);
+        knn::Query3d query(tree, answer);
 
         vector<long unsigned int> stann_answer(AnswerSize);
         vector<double> stann_distances(AnswerSize);
@@ -213,10 +291,15 @@ TEST_SUITE(Foundation_Math_Knn_Query)
 
             stann_tree.ksearch(q, AnswerSize, stann_answer, stann_distances);
 
-            const size_t found = query.run(q);
+            query.run(q);
 
-            EXPECT_EQ(AnswerSize, found);
-            EXPECT_SEQUENCE_EQ(AnswerSize, &stann_answer[0], answer);
+            ASSERT_EQ(AnswerSize, answer.size());
+
+            size_t our_answer[AnswerSize];
+            for (size_t j = 0; j < AnswerSize; ++j)
+                our_answer[j] = answer.get(j).m_index;
+
+            EXPECT_SEQUENCE_EQ(AnswerSize, &stann_answer[0], &our_answer[0]);
         }
     }
 }

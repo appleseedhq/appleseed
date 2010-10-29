@@ -214,18 +214,7 @@ void Builder<T, N>::partition(
     else
     {
         const BboxType bbox = compute_bbox(begin, end);
-        const SplitType split = SplitType::middle(bbox);
-
-        const size_t left_node_index = m_tree.m_nodes.size();
-        const size_t right_node_index = left_node_index + 1;
-        m_tree.m_nodes.push_back(NodeType());
-        m_tree.m_nodes.push_back(NodeType());
-
-        NodeType& parent_node = m_tree.m_nodes[parent_node_index];
-        parent_node.set_type(NodeType::Interior);
-        parent_node.set_split_dim(split.m_dimension);
-        parent_node.set_split_abs(split.m_abscissa);
-        parent_node.set_child_node_index(left_node_index);
+        SplitType split = SplitType::middle(bbox);
 
         std::sort(
             &m_tree.m_indices[0] + begin,
@@ -247,10 +236,21 @@ void Builder<T, N>::partition(
 
         // Switch to median split if one of the two leaf doesn't contain enough points.
         if (pivot - begin < m_answer_size_hint || end - pivot < m_answer_size_hint)
+        {
             pivot = (begin + end) / 2;
+            split.m_abscissa = m_tree.m_points[m_tree.m_indices[pivot]][split.m_dimension];
+        }
 
-        assert(pivot - begin >= m_answer_size_hint);
-        assert(end - pivot >= m_answer_size_hint);
+        const size_t left_node_index = m_tree.m_nodes.size();
+        const size_t right_node_index = left_node_index + 1;
+        m_tree.m_nodes.push_back(NodeType());
+        m_tree.m_nodes.push_back(NodeType());
+
+        NodeType& parent_node = m_tree.m_nodes[parent_node_index];
+        parent_node.set_type(NodeType::Interior);
+        parent_node.set_split_dim(split.m_dimension);
+        parent_node.set_split_abs(split.m_abscissa);
+        parent_node.set_child_node_index(left_node_index);
 
         partition(left_node_index, begin, pivot);
         partition(right_node_index, pivot, end);

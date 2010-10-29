@@ -57,6 +57,8 @@ class Tree
 
     typedef Vector<T, N> VectorType;
 
+    bool empty() const;
+
   private:
     template <typename, size_t N> friend class Builder;
     template <typename, size_t N> friend class Query;
@@ -82,6 +84,12 @@ typedef Tree<double, 3> Tree3d;
 //
 // Implementation.
 //
+
+template <typename T, size_t N>
+inline bool Tree<T, N>::empty() const
+{
+    return m_points.empty();
+}
 
 }       // namespace knn
 }       // namespace foundation

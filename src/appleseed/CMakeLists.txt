@@ -163,6 +163,7 @@ source_group("foundation\\math\\intersection" FILES
 )
 
 set(foundation_math_knn_sources
+    foundation/math/knn/knn_answer.h
     foundation/math/knn/knn_builder.h
     foundation/math/knn/knn_node.h
     foundation/math/knn/knn_query.h

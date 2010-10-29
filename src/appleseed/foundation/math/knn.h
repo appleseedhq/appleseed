@@ -30,6 +30,7 @@
 #define APPLESEED_FOUNDATION_MATH_KNN_H
 
 // Interface headers.
+#include "foundation/math/knn/knn_answer.h"
 #include "foundation/math/knn/knn_builder.h"
 #include "foundation/math/knn/knn_query.h"
 #include "foundation/math/knn/knn_tree.h"
