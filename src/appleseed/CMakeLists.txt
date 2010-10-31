@@ -167,6 +167,8 @@ set(foundation_math_knn_sources
     foundation/math/knn/knn_builder.h
     foundation/math/knn/knn_node.h
     foundation/math/knn/knn_query.h
+    foundation/math/knn/knn_statistics.cpp
+    foundation/math/knn/knn_statistics.h
     foundation/math/knn/knn_tree.h
 )
 list(APPEND appleseed_sources

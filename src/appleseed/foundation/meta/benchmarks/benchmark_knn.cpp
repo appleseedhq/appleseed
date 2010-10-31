@@ -31,14 +31,18 @@
 #include "foundation/math/rng.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/benchmark.h"
 #include "foundation/utility/bufferedfile.h"
+#include "foundation/utility/log.h"
+#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <cstdio>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -204,11 +208,11 @@ BENCHMARK_SUITE(Foundation_Math_Knn)
         {
         }
 
-        void prepare()
+        void prepare(const string& name)
         {
             if (!m_points.empty())
             {
-                build_tree();
+                build_tree(name);
                 find_query_points();
             }
         }
@@ -229,10 +233,20 @@ BENCHMARK_SUITE(Foundation_Math_Knn)
         knn::Answer<float>  m_answer;
         size_t              m_accumulator;
 
-        void build_tree()
+        void build_tree(const string& name)
         {
             knn::Builder3f builder(m_tree, AnswerSize);
             builder.build(&m_points[0], m_points.size());
+
+            knn::TreeStatistics<knn::Tree3f, knn::Builder3f> stats(m_tree, builder);
+
+            Logger logger;
+
+            auto_release_ptr<FileLogTarget> log_target(create_file_log_target());
+            log_target->open(("output/test_knn_" + name + "_tree_stats.txt").c_str());
+            logger.add_target(log_target.get());
+
+            stats.print(logger);
         }
 
         void find_query_points()
@@ -275,7 +289,7 @@ BENCHMARK_SUITE(Foundation_Math_Knn)
             write_points_to_binary_file("data/test_knn_particles.bin", m_points);
 */
             load_points_from_binary_file("data/test_knn_particles.bin", m_points);
-            prepare();
+            prepare("particles_k" + to_string(AnswerSize));
         }
     };
 
@@ -290,7 +304,7 @@ BENCHMARK_SUITE(Foundation_Math_Knn)
             write_points_to_binary_file("data/test_knn_photons.bin", m_points);
 */
             load_points_from_binary_file("data/test_knn_photons.bin", m_points);
-            prepare();
+            prepare("photons_k" + to_string(AnswerSize));
         }
     };
 

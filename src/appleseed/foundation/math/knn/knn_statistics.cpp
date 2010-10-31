@@ -26,14 +26,38 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_KNN_H
-#define APPLESEED_FOUNDATION_MATH_KNN_H
+// Interface header.
+#include "knn_statistics.h"
 
-// Interface headers.
-#include "foundation/math/knn/knn_answer.h"
-#include "foundation/math/knn/knn_builder.h"
-#include "foundation/math/knn/knn_query.h"
-#include "foundation/math/knn/knn_statistics.h"
-#include "foundation/math/knn/knn_tree.h"
+namespace foundation {
+namespace knn {
 
-#endif  // !APPLESEED_FOUNDATION_MATH_KNN_H
+//
+// TraversalStatistics class implementation.
+//
+
+TraversalStatistics::TraversalStatistics()
+  : m_traversal_count(0)
+{
+}
+
+void TraversalStatistics::print(Logger& logger)
+{
+    LOG_DEBUG(
+        logger,
+        "  traversals       %s\n"
+        "  fetched nodes    avg %.1f  min %s  max %s  dev %.1f\n"
+        "  visited leaves   avg %.1f  min %s  max %s  dev %.1f\n",
+        pretty_uint(m_traversal_count).c_str(),
+        m_fetched_nodes.get_avg(),
+        pretty_uint(m_fetched_nodes.get_min()).c_str(),
+        pretty_uint(m_fetched_nodes.get_max()).c_str(),
+        m_fetched_nodes.get_dev(),
+        m_visited_leaves.get_avg(),
+        pretty_uint(m_visited_leaves.get_min()).c_str(),
+        pretty_uint(m_visited_leaves.get_max()).c_str(),
+        m_visited_leaves.get_dev());
+}
+
+}   // namespace knn
+}   // namespace foundation

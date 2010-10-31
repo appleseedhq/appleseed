@@ -36,6 +36,8 @@
 #include "foundation/math/aabb.h"
 #include "foundation/math/split.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/timer.h"
+#include "foundation/utility/stopwatch.h"
 
 // Standard headers.
 #include <algorithm>
@@ -57,13 +59,22 @@ class Builder
     typedef Vector<T, N> VectorType;
     typedef Tree<T, N> TreeType;
 
-    explicit Builder(
+    // Constructor.
+    Builder(
         TreeType&               tree,
         const size_t            answer_size_hint);
 
+    // Build a tree for a given set of points.
+    template <typename Timer>
     void build(
         const VectorType        points[],
-        const size_t            count) const;
+        const size_t            count);
+    void build(
+        const VectorType        points[],
+        const size_t            count);
+
+    // Return the construction time.
+    double get_build_time() const;
 
   private:
     typedef AABB<T, N> BboxType;
@@ -100,6 +111,7 @@ class Builder
 
     TreeType&                   m_tree;
     const size_t                m_answer_size_hint;
+    double                      m_build_time;
 
     void partition(
         const size_t            parent_node_index,
@@ -132,14 +144,19 @@ inline Builder<T, N>::Builder(
     const size_t                answer_size_hint)
   : m_tree(tree)
   , m_answer_size_hint(answer_size_hint)
+  , m_build_time(0.0)
 {
 }
 
 template <typename T, size_t N>
+template <typename Timer>
 void Builder<T, N>::build(
     const VectorType            points[],
-    const size_t                count) const
+    const size_t                count)
 {
+    Stopwatch<Timer> stopwatch;
+    stopwatch.start();
+
     if (count > 0)
     {
         assert(points);
@@ -155,6 +172,23 @@ void Builder<T, N>::build(
     m_tree.m_nodes.push_back(NodeType());
 
     partition(0, 0, count);
+
+    stopwatch.measure();
+    m_build_time = stopwatch.get_seconds();
+}
+
+template <typename T, size_t N>
+void Builder<T, N>::build(
+    const VectorType            points[],
+    const size_t                count)
+{
+    build<DefaultWallclockTimer>(points, count);
+}
+
+template <typename T, size_t N>
+inline double Builder<T, N>::get_build_time() const
+{
+    return m_build_time;
 }
 
 template <typename T, size_t N>
@@ -204,8 +238,6 @@ void Builder<T, N>::partition(
 
     if (count < 2 * m_answer_size_hint)
     {
-        // todo: split into one leaf with m_answer_size_hint points
-        // and one leaf with the remaining points.
         NodeType& parent_node = m_tree.m_nodes[parent_node_index];
         parent_node.set_type(NodeType::Leaf);
         parent_node.set_point_index(begin);
@@ -243,6 +275,7 @@ void Builder<T, N>::partition(
 
         const size_t left_node_index = m_tree.m_nodes.size();
         const size_t right_node_index = left_node_index + 1;
+
         m_tree.m_nodes.push_back(NodeType());
         m_tree.m_nodes.push_back(NodeType());
 

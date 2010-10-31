@@ -59,9 +59,13 @@ class Tree
 
     bool empty() const;
 
+    // Return the size (in bytes) of this object in memory.
+    size_t get_memory_size() const;
+
   private:
     template <typename, size_t N> friend class Builder;
     template <typename, size_t N> friend class Query;
+    template <typename Tree, typename Builder> friend class TreeStatistics;
 
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Knn_Builder, Build_GivenZeroPoint_BuildsValidTree);
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Knn_Builder, Build_GivenOnePoint_BuildsValidTree);
@@ -89,6 +93,16 @@ template <typename T, size_t N>
 inline bool Tree<T, N>::empty() const
 {
     return m_points.empty();
+}
+
+template <typename T, size_t N>
+inline size_t Tree<T, N>::get_memory_size() const
+{
+    size_t mem_size = sizeof(*this);
+    mem_size += m_points.capacity() * sizeof(VectorType);
+    mem_size += m_indices.capacity() * sizeof(size_t);
+    mem_size += m_nodes.capacity() * sizeof(NodeType);
+    return mem_size;
 }
 
 }       // namespace knn
