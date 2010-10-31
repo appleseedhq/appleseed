@@ -47,6 +47,148 @@ using namespace std;
 
 BENCHMARK_SUITE(Foundation_Math_Knn)
 {
+    namespace
+    {
+        bool load_points_from_text_file(const char* filename, vector<Vector3f>& points)
+        {
+            assert(filename);
+            assert(points.empty());
+
+            FILE* file = fopen(filename, "rt");
+
+            if (file == 0)
+                return false;
+
+            size_t point_count;
+            fscanf(file, FMT_SIZE_T, &point_count);
+
+            points.resize(point_count);
+
+            for (size_t i = 0; i < point_count; ++i)
+            {
+                Vector3f& p = points[i];
+
+                if (fscanf(file, "%f %f %f", &p.x, &p.y, &p.z) != 3)
+                {
+                    fclose(file);
+                    return false;
+                }
+            }
+
+            fclose(file);
+
+            return true;
+        }
+
+        template <typename T>
+        static void swap_bytes(T* ptr)
+        {
+            assert(ptr);
+            assert(sizeof(T) % 2 == 0);
+
+            uint8* bytes = reinterpret_cast<uint8*>(ptr);
+
+            reverse(bytes, bytes + sizeof(T));
+        }
+
+        bool load_points_from_toxic_photon_map(const char* filename, vector<Vector3f>& points)
+        {
+            assert(filename);
+            assert(points.empty());
+
+            BufferedFile file(filename, BufferedFile::BinaryType, BufferedFile::ReadMode);
+
+            if (!file.is_open())
+                return false;
+
+            const string FileSignature = "toxic photon map file version 1";
+            const size_t FileSignatureLength = FileSignature.size();
+
+            string sig(FileSignatureLength, 0);
+
+            if (file.read(&sig[0], FileSignatureLength) != FileSignatureLength)
+                return false;
+
+            if (sig != FileSignature)
+                return false;
+
+            uint32 stored_photon_count;
+
+            if (file.read(stored_photon_count) != sizeof(uint32))
+                return false;
+
+            swap_bytes(&stored_photon_count);
+
+            points.resize(stored_photon_count);
+
+            for (uint32 i = 0; i < stored_photon_count; ++i)
+            {
+                Vector3f& p = points[i];
+
+                if (file.read(p) != sizeof(Vector3f))
+                    return false;
+
+                swap_bytes(&p.x);
+                swap_bytes(&p.y);
+                swap_bytes(&p.z);
+
+                file.seek(29, BufferedFile::SeekFromCurrent);
+            }
+
+            return true;
+        }
+
+        bool write_points_to_binary_file(const char* filename, const vector<Vector3f>& points)
+        {
+            assert(filename);
+
+            BufferedFile file(filename, BufferedFile::BinaryType, BufferedFile::WriteMode);
+
+            if (!file.is_open())
+                return false;
+
+            if (file.write(static_cast<uint32>(points.size())) != sizeof(uint32))
+                return false;
+
+            if (!points.empty())
+            {
+                const size_t bytes = points.size() * sizeof(Vector3f);
+
+                if (file.write(&points[0], bytes) != bytes)
+                    return false;
+            }
+
+            return true;
+        }
+
+        bool load_points_from_binary_file(const char* filename, vector<Vector3f>& points)
+        {
+            assert(filename);
+            assert(points.empty());
+
+            BufferedFile file(filename, BufferedFile::BinaryType, BufferedFile::ReadMode);
+
+            if (!file.is_open())
+                return false;
+
+            uint32 point_count;
+            if (file.read(point_count) != sizeof(uint32))
+                return false;
+
+            if (point_count > 0)
+            {
+                points.resize(point_count);
+
+                const size_t bytes = point_count * sizeof(Vector3f);
+
+                if (file.read(&points[0], bytes) != bytes)
+                    return false;
+            }
+
+            return true;
+        }
+    }
+
     const size_t QueryCount = 10;
 
     template <size_t AnswerSize>
@@ -128,29 +270,12 @@ BENCHMARK_SUITE(Foundation_Math_Knn)
     {
         ParticlesFixture()
         {
-            load_points("data/test_knn_points.txt");
+/*
+            load_points_from_text_file("data/test_knn_points.txt", m_points);
+            write_points_to_binary_file("data/test_knn_particles.bin", m_points);
+*/
+            load_points_from_binary_file("data/test_knn_particles.bin", m_points);
             prepare();
-        }
-
-        void load_points(const char* filename)
-        {
-            FILE* file = fopen(filename, "rt");
-
-            if (file == 0)
-                return;
-
-            size_t point_count;
-            fscanf(file, FMT_SIZE_T, &point_count);
-
-            m_points.resize(point_count);
-
-            for (size_t i = 0; i < point_count; ++i)
-            {
-                Vector3f& p = m_points[i];
-                fscanf(file, "%f %f %f", &p.x, &p.y, &p.z);
-            }
-
-            fclose(file);
         }
     };
 
@@ -160,61 +285,12 @@ BENCHMARK_SUITE(Foundation_Math_Knn)
     {
         PhotonMapFixture()
         {
-            load_toxic_photon_map_v1("data/test_knn_gally_gpm.bin");
+/*
+            load_points_from_toxic_photon_map("data/test_knn_gally_gpm.bin", m_points);
+            write_points_to_binary_file("data/test_knn_photons.bin", m_points);
+*/
+            load_points_from_binary_file("data/test_knn_photons.bin", m_points);
             prepare();
-        }
-
-        void load_toxic_photon_map_v1(const char* filename)
-        {
-            BufferedFile file(filename, BufferedFile::BinaryType, BufferedFile::ReadMode);
-
-            if (!file.is_open())
-                return;
-
-            const string FileSignature = "toxic photon map file version 1";
-            const size_t FileSignatureLength = FileSignature.size();
-
-            string sig(FileSignatureLength, 0);
-
-            if (file.read(&sig[0], FileSignatureLength) != FileSignatureLength)
-                return;
-
-            if (sig != FileSignature)
-                return;
-
-            uint32 stored_photon_count;
-
-            if (file.read(stored_photon_count) != sizeof(uint32))
-                return;
-
-            swap_bytes(&stored_photon_count);
-
-            m_points.resize(stored_photon_count);
-
-            for (uint32 i = 0; i < stored_photon_count; ++i)
-            {
-                Vector3f& p = m_points[i];
-
-                if (file.read(p) != sizeof(Vector3f))
-                    return;
-
-                swap_bytes(&p.x);
-                swap_bytes(&p.y);
-                swap_bytes(&p.z);
-
-                file.seek(29, BufferedFile::SeekFromCurrent);
-            }
-        }
-
-        template <typename T>
-        static void swap_bytes(T* ptr)
-        {
-            assert(ptr);
-            assert(sizeof(T) % 2 == 0);
-
-            uint8* bytes = reinterpret_cast<uint8*>(ptr);
-
-            reverse(bytes, bytes + sizeof(T));
         }
     };
 

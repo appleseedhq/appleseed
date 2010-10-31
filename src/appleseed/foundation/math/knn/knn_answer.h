@@ -37,7 +37,6 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
-#include <limits>
 
 DECLARE_TEST_CASE(Foundation_Math_Knn_Answer, Size_AfterOneInsertion_ReturnsOne);
 DECLARE_TEST_CASE(Foundation_Math_Knn_Answer, Empty_AfterOneInsertion_ReturnsFalse);
@@ -84,6 +83,8 @@ class Answer
 
     const Entry& get(const size_t i) const;
 
+    void sort();
+
   private:
     template <typename, size_t> friend class Query;
 
@@ -105,11 +106,9 @@ class Answer
 
     void build_heap();
 
-    void heapify(const size_t i);
+    void heapify(const size_t i, const size_t end);
 
-    const Entry& farthest() const;
-
-    void sort();
+    const Entry& top() const;
 };
 
 
@@ -165,6 +164,25 @@ inline const typename Answer<T>::Entry& Answer<T>::get(const size_t i) const
 }
 
 template <typename T>
+inline void Answer<T>::sort()
+{
+/*
+    if (m_heap)
+    {
+        size_t i = m_size;
+
+        while (i-- > 1)
+        {
+            m_entries[0].swap(m_entries[i]);
+            heapify(0, i);
+        }
+    }
+    else std::sort(m_entries, m_entries + m_size);
+*/
+    std::sort(m_entries, m_entries + m_size);
+}
+
+template <typename T>
 inline void Answer<T>::clear()
 {
     m_size = 0;
@@ -189,7 +207,7 @@ inline void Answer<T>::insert(const size_t index, const ValueType distance)
         {
             m_entries->m_index = index;
             m_entries->m_distance = distance;
-            heapify(0);
+            heapify(0, m_size);
         }
     }
 }
@@ -203,44 +221,39 @@ inline void Answer<T>::build_heap()
     size_t i = m_size / 2;
 
     while (i--)
-        heapify(i);
+        heapify(i, m_size);
 
     m_heap = true;
 }
 
 template <typename T>
-inline void Answer<T>::heapify(const size_t i)
+inline void Answer<T>::heapify(const size_t i, const size_t end)
 {
     const size_t left = 2 * i + 1;
     const size_t right = left + 1;
 
     size_t largest = i;
 
-    if (left < m_size && m_entries[i] < m_entries[left])
+    if (left < end && m_entries[i] < m_entries[left])
         largest = left;
 
-    if (right < m_size && m_entries[largest] < m_entries[right])
+    if (right < end && m_entries[largest] < m_entries[right])
         largest = right;
 
     if (largest != i)
     {
         m_entries[i].swap(m_entries[largest]);
-        heapify(largest);
+        heapify(largest, end);
     }
 }
 
 template <typename T>
-inline const typename Answer<T>::Entry& Answer<T>::farthest() const
+inline const typename Answer<T>::Entry& Answer<T>::top() const
 {
     assert(!empty());
     assert(m_heap);
-    return m_entries[0];
-}
 
-template <typename T>
-inline void Answer<T>::sort()
-{
-    std::sort(m_entries, m_entries + m_size);
+    return m_entries[0];
 }
 
 }       // namespace knn

@@ -292,6 +292,7 @@ TEST_SUITE(Foundation_Math_Knn_Query)
             stann_tree.ksearch(q, AnswerSize, stann_answer, stann_distances);
 
             query.run(q);
+            answer.sort();
 
             ASSERT_EQ(AnswerSize, answer.size());
 

@@ -38,6 +38,7 @@
 #include "foundation/platform/compiler.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
 
@@ -64,6 +65,25 @@ class Query
 
   private:
     typedef typename TreeType::NodeType NodeType;
+
+    struct NodeEntry
+    {
+        const NodeType*     m_node;
+        ValueType           m_distance;
+
+        NodeEntry() {}
+
+        NodeEntry(const NodeType* node, const ValueType distance)
+          : m_node(node)
+          , m_distance(distance)
+        {
+        }
+
+        bool operator<(const NodeEntry& rhs) const
+        {
+            return m_distance > rhs.m_distance;
+        }
+    };
 
     const TreeType&         m_tree;
     AnswerType&             m_answer;
@@ -144,14 +164,26 @@ inline void Query<T, N>::run(const VectorType& query_point)
     // 3. Traverse again the tree and update the set of neighbors.
     //
 
-    const size_t StackSize = 64;
-    const NodeType* stack[StackSize];
-    const NodeType** stack_ptr = stack;
+    const size_t NodeQueueSize = 64;
 
-    const NodeType* RESTRICT node = nodes;
+    NodeEntry node_queue[NodeQueueSize];
+    node_queue->m_node = nodes;
+    node_queue->m_distance = ValueType(0.0);
 
-    while (true)
+    size_t node_queue_size = 1;
+
+    while (node_queue_size > 0)
     {
+        // If the closest node is farther than our farthest point, bail out.
+        if (node_queue->m_distance >= max_distance)
+            break;
+
+        const NodeType* RESTRICT node = node_queue->m_node;
+
+        // Remove the closest node from the queue.
+        std::pop_heap(node_queue, node_queue + node_queue_size);
+        --node_queue_size;
+
         // Traverse the tree until a leaf is reached.
         while (node->is_interior())
         {
@@ -164,52 +196,46 @@ inline void Query<T, N>::run(const VectorType& query_point)
 
             if (query_abs < split_abs)
             {
-                // Follow the left node.
+                // Push the right node, follow the left node.
                 if (distance < max_distance)
-                    *stack_ptr++ = node + 1;
+                {
+                    node_queue[node_queue_size++] = NodeEntry(node + 1, distance);
+                    std::push_heap(node_queue, node_queue + node_queue_size);
+                }
             }
             else
             {
-                // Follow the right node.
+                // Push the left node, follow the right node.
                 if (distance < max_distance)
-                    *stack_ptr++ = node;
+                {
+                    node_queue[node_queue_size++] = NodeEntry(node, distance);
+                    std::push_heap(node_queue, node_queue + node_queue_size);
+                }
                 ++node;
             }
         }
 
-        if (node != parent_node)
+        // Don't visit again the leaf node containing the query point.
+        if (node == parent_node)
+            continue;
+
+        const size_t* RESTRICT index_ptr = indices + node->get_point_index();
+        const size_t* RESTRICT index_end = index_ptr + node->get_point_count();
+
+        while (index_ptr < index_end)
         {
-            const size_t* RESTRICT index_ptr = indices + node->get_point_index();
-            const size_t* RESTRICT index_end = index_ptr + node->get_point_count();
+            // Fetch the point and compute its distance to the query point.
+            const size_t point_index = *index_ptr++;
+            const VectorType& point = points[point_index];
+            const ValueType distance = square_distance(point, query_point);
 
-            while (index_ptr < index_end)
-            {
-                // Fetch the point and compute its distance to the query point.
-                const size_t point_index = *index_ptr++;
-                const VectorType& point = points[point_index];
-                const ValueType distance = square_distance(point, query_point);
+            // Insert this point to the answer.
+            m_answer.insert(point_index, distance);
 
-                // Insert this point to the answer.
-                m_answer.insert(point_index, distance);
-
-                // Update the upper bound on distance.
-                max_distance = m_answer.farthest().m_distance;
-            }
+            // Update the upper bound on distance.
+            max_distance = m_answer.top().m_distance;
         }
-
-        // Terminate traversal if there is no more nodes to visit.
-        if (stack_ptr == stack)
-            break;
-
-        // Pop the next node from the stack.
-        node = *--stack_ptr;
     }
-
-    //
-    // 4. Transform the heap into a sorted array.
-    //
-
-    m_answer.sort();
 }
 
 }       // namespace knn
