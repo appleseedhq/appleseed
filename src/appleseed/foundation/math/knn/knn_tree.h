@@ -39,10 +39,10 @@
 #include <cstddef>
 #include <vector>
 
-DECLARE_TEST_CASE(Foundation_Math_Knn_Builder, Build_GivenZeroPoint_BuildsValidTree);
-DECLARE_TEST_CASE(Foundation_Math_Knn_Builder, Build_GivenOnePoint_BuildsValidTree);
-DECLARE_TEST_CASE(Foundation_Math_Knn_Builder, Build_GivenTwoPoints_BuildsValidTree);
-DECLARE_TEST_CASE(Foundation_Math_Knn_Builder, Build_GivenEightPoints_GeneratesFifteenNodes);
+DECLARE_TEST_CASE(Foundation_Math_Knn_Builder_MaxAnswerSizeIsTwo, Build_GivenZeroPoint_BuildsValidTree);
+DECLARE_TEST_CASE(Foundation_Math_Knn_Builder_MaxAnswerSizeIsTwo, Build_GivenTwoPoints_BuildsValidTree);
+DECLARE_TEST_CASE(Foundation_Math_Knn_Builder_MaxAnswerSizeIsTwo, Build_GivenFourPoints_BuildsValidTree);
+DECLARE_TEST_CASE(Foundation_Math_Knn_Builder_MaxAnswerSizeIsTwo, Build_GivenEightPoints_GeneratesSevenNodes);
 
 namespace foundation {
 namespace knn {
@@ -57,6 +57,8 @@ class Tree
 
     typedef Vector<T, N> VectorType;
 
+    Tree();
+
     bool empty() const;
 
     // Return the size (in bytes) of this object in memory.
@@ -67,16 +69,18 @@ class Tree
     template <typename, size_t N> friend class Query;
     template <typename Tree, typename Builder> friend class TreeStatistics;
 
-    GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Knn_Builder, Build_GivenZeroPoint_BuildsValidTree);
-    GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Knn_Builder, Build_GivenOnePoint_BuildsValidTree);
-    GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Knn_Builder, Build_GivenTwoPoints_BuildsValidTree);
-    GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Knn_Builder, Build_GivenEightPoints_GeneratesFifteenNodes);
+    GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Knn_Builder_MaxAnswerSizeIsTwo, Build_GivenZeroPoint_BuildsValidTree);
+    GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Knn_Builder_MaxAnswerSizeIsTwo, Build_GivenTwoPoints_BuildsValidTree);
+    GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Knn_Builder_MaxAnswerSizeIsTwo, Build_GivenFourPoints_BuildsValidTree);
+    GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Knn_Builder_MaxAnswerSizeIsTwo, Build_GivenEightPoints_GeneratesSevenNodes);
 
     typedef Node<T> NodeType;
 
-    std::vector<VectorType> m_points;
-    std::vector<size_t>     m_indices;
-    std::vector<NodeType>   m_nodes;
+    size_t                      m_max_answer_size;
+
+    std::vector<VectorType>     m_points;
+    std::vector<size_t>         m_indices;
+    std::vector<NodeType>       m_nodes;
 };
 
 typedef Tree<float, 2>  Tree2f;
@@ -88,6 +92,12 @@ typedef Tree<double, 3> Tree3d;
 //
 // Implementation.
 //
+
+template <typename T, size_t N>
+inline Tree<T, N>::Tree()
+  : m_max_answer_size(0)
+{
+}
 
 template <typename T, size_t N>
 inline bool Tree<T, N>::empty() const

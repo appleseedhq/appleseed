@@ -59,10 +59,9 @@ class Builder
     typedef Vector<T, N> VectorType;
     typedef Tree<T, N> TreeType;
 
-    // Constructor.
     Builder(
         TreeType&               tree,
-        const size_t            answer_size_hint);
+        const size_t            max_answer_size);
 
     // Build a tree for a given set of points.
     template <typename Timer>
@@ -110,10 +109,15 @@ class Builder
     };
 
     TreeType&                   m_tree;
-    const size_t                m_answer_size_hint;
+    const size_t                m_max_answer_size;
     double                      m_build_time;
 
-    void partition(
+    void partition_median(
+        const size_t            parent_node_index,
+        const size_t            begin,
+        const size_t            end) const;
+
+    void partition_middle(
         const size_t            parent_node_index,
         const size_t            begin,
         const size_t            end) const;
@@ -121,11 +125,6 @@ class Builder
     BboxType compute_bbox(
         const size_t            begin,
         const size_t            end) const;
-
-    void inspect_values(
-        const size_t            begin,
-        const size_t            end,
-        const size_t            dimension) const;
 };
 
 typedef Builder<float, 2>  Builder2f;
@@ -141,9 +140,9 @@ typedef Builder<double, 3> Builder3d;
 template <typename T, size_t N>
 inline Builder<T, N>::Builder(
     TreeType&                   tree,
-    const size_t                answer_size_hint)
+    const size_t                max_answer_size)
   : m_tree(tree)
-  , m_answer_size_hint(answer_size_hint)
+  , m_max_answer_size(max_answer_size)
   , m_build_time(0.0)
 {
 }
@@ -156,6 +155,8 @@ void Builder<T, N>::build(
 {
     Stopwatch<Timer> stopwatch;
     stopwatch.start();
+
+    m_tree.m_max_answer_size = m_max_answer_size;
 
     if (count > 0)
     {
@@ -171,7 +172,9 @@ void Builder<T, N>::build(
 
     m_tree.m_nodes.push_back(NodeType());
 
-    partition(0, 0, count);
+    if (m_max_answer_size == 1)
+        partition_median(0, 0, count);
+    else partition_middle(0, 0, count);
 
     stopwatch.measure();
     m_build_time = stopwatch.get_seconds();
@@ -229,14 +232,60 @@ inline bool Builder<T, N>::UpperBoundPredicate::operator()(
 }
 
 template <typename T, size_t N>
-void Builder<T, N>::partition(
+void Builder<T, N>::partition_median(
     const size_t                parent_node_index,
     const size_t                begin,
     const size_t                end) const
 {
     const size_t count = end - begin;
 
-    if (count < 2 * m_answer_size_hint)
+    if (count < 2 * m_max_answer_size)
+    {
+        NodeType& parent_node = m_tree.m_nodes[parent_node_index];
+        parent_node.set_type(NodeType::Leaf);
+        parent_node.set_point_index(begin);
+        parent_node.set_point_count(count);
+    }
+    else
+    {
+        const BboxType bbox = compute_bbox(begin, end);
+        const size_t split_dimension = max_index(bbox.extent());
+
+        std::sort(
+            &m_tree.m_indices[0] + begin,
+            &m_tree.m_indices[0] + end,
+            SortPredicate(m_tree, split_dimension));
+
+        const size_t median = (begin + end) / 2;
+        const VectorType& median_point = m_tree.m_points[m_tree.m_indices[median]];
+        const ValueType split_abscissa = median_point[split_dimension];
+
+        const size_t left_node_index = m_tree.m_nodes.size();
+        const size_t right_node_index = left_node_index + 1;
+
+        m_tree.m_nodes.push_back(NodeType());
+        m_tree.m_nodes.push_back(NodeType());
+
+        NodeType& parent_node = m_tree.m_nodes[parent_node_index];
+        parent_node.set_type(NodeType::Interior);
+        parent_node.set_split_dim(split_dimension);
+        parent_node.set_split_abs(split_abscissa);
+        parent_node.set_child_node_index(left_node_index);
+
+        partition_median(left_node_index, begin, median);
+        partition_median(right_node_index, median, end);
+    }
+}
+
+template <typename T, size_t N>
+void Builder<T, N>::partition_middle(
+    const size_t                parent_node_index,
+    const size_t                begin,
+    const size_t                end) const
+{
+    const size_t count = end - begin;
+
+    if (count < 2 * m_max_answer_size)
     {
         NodeType& parent_node = m_tree.m_nodes[parent_node_index];
         parent_node.set_type(NodeType::Leaf);
@@ -253,8 +302,6 @@ void Builder<T, N>::partition(
             &m_tree.m_indices[0] + end,
             SortPredicate(m_tree, split.m_dimension));
 
-//      inspect_values(begin, end, split.m_dimension);
-
         const size_t* bound =
             std::upper_bound(
                 &m_tree.m_indices[0] + begin,
@@ -267,10 +314,11 @@ void Builder<T, N>::partition(
         assert(pivot <= end);
 
         // Switch to median split if one of the two leaf doesn't contain enough points.
-        if (pivot - begin < m_answer_size_hint || end - pivot < m_answer_size_hint)
+        if (pivot - begin < m_max_answer_size || end - pivot < m_max_answer_size)
         {
             pivot = (begin + end) / 2;
-            split.m_abscissa = m_tree.m_points[m_tree.m_indices[pivot]][split.m_dimension];
+            const VectorType& median_point = m_tree.m_points[m_tree.m_indices[pivot]];
+            split.m_abscissa = median_point[split.m_dimension];
         }
 
         const size_t left_node_index = m_tree.m_nodes.size();
@@ -285,8 +333,8 @@ void Builder<T, N>::partition(
         parent_node.set_split_abs(split.m_abscissa);
         parent_node.set_child_node_index(left_node_index);
 
-        partition(left_node_index, begin, pivot);
-        partition(right_node_index, pivot, end);
+        partition_middle(left_node_index, begin, pivot);
+        partition_middle(right_node_index, pivot, end);
     }
 }
 
@@ -305,23 +353,6 @@ inline typename Builder<T, N>::BboxType Builder<T, N>::compute_bbox(
     }
 
     return bbox;
-}
-
-template <typename T, size_t N>
-void Builder<T, N>::inspect_values(
-    const size_t                begin,
-    const size_t                end,
-    const size_t                dimension) const
-{
-    ValueType* values = new ValueType[end - begin];
-
-    for (size_t i = begin; i < end; ++i)
-    {
-        const size_t index = m_tree.m_indices[i];
-        values[i - begin] = m_tree.m_points[index][dimension];
-    }
-
-    delete [] values;
 }
 
 }       // namespace knn

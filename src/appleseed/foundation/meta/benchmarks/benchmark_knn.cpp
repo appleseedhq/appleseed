@@ -251,11 +251,16 @@ BENCHMARK_SUITE(Foundation_Math_Knn)
 
         void find_query_points()
         {
-            const int32 point_count = static_cast<int32>(m_points.size());
-            MersenneTwister rng;
+            knn::Tree3f tree;
+
+            knn::Builder3f builder(tree, 4);
+            builder.build(&m_points[0], m_points.size());
 
             knn::Answer<float> answer(4);
-            knn::Query3f query(m_tree, answer);
+            knn::Query3f query(tree, answer);
+
+            const int32 point_count = static_cast<int32>(m_points.size());
+            MersenneTwister rng;
 
             m_query_points.reserve(QueryCount);
 

@@ -87,6 +87,10 @@ class Query
 
     const TreeType&         m_tree;
     AnswerType&             m_answer;
+
+    void find_single_nearest_neighbor(const VectorType& query_point);
+
+    void find_multiple_nearest_neighbors(const VectorType& query_point);
 };
 
 typedef Query<float, 2>  Query2f;
@@ -112,9 +116,68 @@ template <typename T, size_t N>
 inline void Query<T, N>::run(const VectorType& query_point)
 {
     assert(!m_tree.empty());
+    assert(m_answer.m_max_size <= m_tree.m_max_answer_size);
 
     m_answer.clear();
 
+    if (m_answer.m_max_size == 1)
+        find_single_nearest_neighbor(query_point);
+    else find_multiple_nearest_neighbors(query_point);
+}
+
+template <typename T, size_t N>
+inline void Query<T, N>::find_single_nearest_neighbor(const VectorType& query_point)
+{
+    //
+    // 1. Find the leaf node containing the query point.
+    //
+
+    const NodeType* RESTRICT nodes = &m_tree.m_nodes.front();
+    const NodeType* RESTRICT node = nodes;
+
+    while (node->is_interior())
+    {
+        const size_t split_dim = node->get_split_dim();
+        const ValueType split_abs = node->get_split_abs();
+
+        node = nodes + node->get_child_node_index();
+
+        if (query_point[split_dim] >= split_abs)
+            ++node;
+    }
+
+    //
+    // 2. Find the closest point.
+    //
+
+    ValueType min_distance = std::numeric_limits<ValueType>::max();
+    size_t min_index = 0;
+
+    const size_t* RESTRICT index_ptr = &m_tree.m_indices[node->get_point_index()];
+    const size_t* RESTRICT index_end = index_ptr + node->get_point_count();
+    const VectorType* RESTRICT points = &m_tree.m_points.front();
+
+    while (index_ptr < index_end)
+    {
+        // Fetch the point and compute its distance to the query point.
+        const size_t point_index = *index_ptr++;
+        const VectorType& point = points[point_index];
+        const ValueType distance = square_distance(point, query_point);
+
+        // Keep track of the closest point.
+        if (min_distance > distance)
+        {
+            min_distance = distance;
+            min_index = point_index;
+        }
+    }
+
+    m_answer.insert(min_index, min_distance);
+}
+
+template <typename T, size_t N>
+inline void Query<T, N>::find_multiple_nearest_neighbors(const VectorType& query_point)
+{
     const VectorType* RESTRICT points = &m_tree.m_points.front();
     const size_t* RESTRICT indices = &m_tree.m_indices.front();
     const NodeType* RESTRICT nodes = &m_tree.m_nodes.front();

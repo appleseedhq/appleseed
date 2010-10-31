@@ -46,12 +46,12 @@
 using namespace foundation;
 using namespace std;
 
-TEST_SUITE(Foundation_Math_Knn_Builder)
+TEST_SUITE(Foundation_Math_Knn_Builder_MaxAnswerSizeIsTwo)
 {
     TEST_CASE(Build_GivenZeroPoint_BuildsValidTree)
     {
         knn::Tree3d tree;
-        knn::Builder3d builder(tree, 1);
+        knn::Builder3d builder(tree, 2);
         builder.build(0, 0);
 
         EXPECT_EQ(0, tree.m_points.size());
@@ -60,26 +60,6 @@ TEST_SUITE(Foundation_Math_Knn_Builder)
         EXPECT_EQ(1, tree.m_nodes.size());
         EXPECT_EQ(knn::Node<double>::Leaf, tree.m_nodes[0].get_type());
         EXPECT_EQ(0, tree.m_nodes[0].get_point_count());
-        EXPECT_EQ(0, tree.m_nodes[0].get_point_index());
-    }
-
-    TEST_CASE(Build_GivenOnePoint_BuildsValidTree)
-    {
-        const Vector3d Points[] = { Vector3d(0.0) };
-
-        knn::Tree3d tree;
-        knn::Builder3d builder(tree, 1);
-        builder.build(Points, 1);
-
-        ASSERT_EQ(1, tree.m_points.size());
-        EXPECT_EQ(Points[0], tree.m_points[0]);
-
-        ASSERT_EQ(1, tree.m_indices.size());
-        EXPECT_EQ(0, tree.m_indices[0]);
-
-        ASSERT_EQ(1, tree.m_nodes.size());
-        ASSERT_EQ(knn::Node<double>::Leaf, tree.m_nodes[0].get_type());
-        EXPECT_EQ(1, tree.m_nodes[0].get_point_count());
         EXPECT_EQ(0, tree.m_nodes[0].get_point_index());
     }
 
@@ -92,7 +72,7 @@ TEST_SUITE(Foundation_Math_Knn_Builder)
         };
 
         knn::Tree3d tree;
-        knn::Builder3d builder(tree, 1);
+        knn::Builder3d builder(tree, 2);
         builder.build(Points, 2);
 
         ASSERT_EQ(2, tree.m_points.size());
@@ -103,35 +83,67 @@ TEST_SUITE(Foundation_Math_Knn_Builder)
         EXPECT_EQ(0, tree.m_indices[0]);
         EXPECT_EQ(1, tree.m_indices[1]);
 
+        ASSERT_EQ(1, tree.m_nodes.size());
+        ASSERT_EQ(knn::Node<double>::Leaf, tree.m_nodes[0].get_type());
+        EXPECT_EQ(2, tree.m_nodes[0].get_point_count());
+        EXPECT_EQ(0, tree.m_nodes[0].get_point_index());
+    }
+
+    TEST_CASE(Build_GivenFourPoints_BuildsValidTree)
+    {
+        const Vector3d Points[] =
+        {
+            Vector3d(0.0, 0.0, 0.0),
+            Vector3d(1.0, 0.0, 0.0),
+            Vector3d(2.0, 0.0, 0.0),
+            Vector3d(3.0, 0.0, 0.0)
+        };
+
+        knn::Tree3d tree;
+        knn::Builder3d builder(tree, 2);
+        builder.build(Points, 4);
+
+        ASSERT_EQ(4, tree.m_points.size());
+        EXPECT_EQ(Points[0], tree.m_points[0]);
+        EXPECT_EQ(Points[1], tree.m_points[1]);
+        EXPECT_EQ(Points[2], tree.m_points[2]);
+        EXPECT_EQ(Points[3], tree.m_points[3]);
+
+        ASSERT_EQ(4, tree.m_indices.size());
+        EXPECT_EQ(0, tree.m_indices[0]);
+        EXPECT_EQ(1, tree.m_indices[1]);
+        EXPECT_EQ(2, tree.m_indices[2]);
+        EXPECT_EQ(3, tree.m_indices[3]);
+
         ASSERT_EQ(3, tree.m_nodes.size());
 
         ASSERT_EQ(knn::Node<double>::Interior, tree.m_nodes[0].get_type());
         EXPECT_EQ(1, tree.m_nodes[0].get_child_node_index());
         EXPECT_EQ(0, tree.m_nodes[0].get_split_dim());
-        EXPECT_FEQ(0.5, tree.m_nodes[0].get_split_abs());
+        EXPECT_FEQ(1.5, tree.m_nodes[0].get_split_abs());
 
         ASSERT_EQ(knn::Node<double>::Leaf, tree.m_nodes[1].get_type());
-        EXPECT_EQ(1, tree.m_nodes[1].get_point_count());
+        EXPECT_EQ(2, tree.m_nodes[1].get_point_count());
         EXPECT_EQ(0, tree.m_nodes[1].get_point_index());
 
         ASSERT_EQ(knn::Node<double>::Leaf, tree.m_nodes[2].get_type());
-        EXPECT_EQ(1, tree.m_nodes[2].get_point_count());
-        EXPECT_EQ(1, tree.m_nodes[2].get_point_index());
+        EXPECT_EQ(2, tree.m_nodes[2].get_point_count());
+        EXPECT_EQ(2, tree.m_nodes[2].get_point_index());
     }
 
-    TEST_CASE(Build_GivenEightPoints_GeneratesFifteenNodes)
+    TEST_CASE(Build_GivenEightPoints_GeneratesSevenNodes)
     {
         const size_t PointCount = 8;
 
         Vector3d points[PointCount];
         for (size_t i = 0; i < PointCount; ++i)
-            points[i] = Vector3d(PointCount - i, 0.0, 0.0);
+            points[i] = Vector3d(PointCount - i - 1, 0.0, 0.0);
 
         knn::Tree3d tree;
-        knn::Builder3d builder(tree, 1);
+        knn::Builder3d builder(tree, 2);
         builder.build(points, PointCount);
 
-        EXPECT_EQ(8 + 4 + 2 + 1, tree.m_nodes.size());
+        EXPECT_EQ(4 + 2 + 1, tree.m_nodes.size());
     }
 }
 
