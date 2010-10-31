@@ -203,6 +203,12 @@ class FOUNDATIONDLL BufferedFile
     size_t      m_buffer_end;       // one past the index of the last byte in the I/O buffer
     size_t      m_buffer_index;     // index of the next byte in the I/O buffer
 
+    // Reset the internal state of the object.
+    void reset();
+
+    // Invalidate the I/O buffer (read mode only).
+    void invalidate_buffer();
+
     // Fill the I/O buffer (read mode only).
     void fill_buffer();
 
@@ -216,7 +222,6 @@ class FOUNDATIONDLL BufferedFile
 // BufferedFile class implementation.
 //
 
-// Read one byte from the file.
 inline size_t BufferedFile::read(
     void*               outbuf)
 {
@@ -243,21 +248,18 @@ inline size_t BufferedFile::read(
     return 1;
 }
 
-// Read an object from the file.
 template <typename T>
 inline size_t BufferedFile::read(T& object)
 {
     return read(&object, sizeof(T));
 }
 
-// Same as read(), but without buffering.
 template <typename T>
 inline size_t BufferedFile::read_unbuf(T& object)
 {
     return read_unbuf(&object, sizeof(T));
 }
 
-// Write one byte to the file.
 inline size_t BufferedFile::write(
     const void*         inbuf)
 {
@@ -281,37 +283,44 @@ inline size_t BufferedFile::write(
     return 1;
 }
 
-// Write an object to the file.
 template <typename T>
 inline size_t BufferedFile::write(const T& object)
 {
     return write(&object, sizeof(T));
 }
+
 template <>
 inline size_t BufferedFile::write(const std::string& s)
 {
     return write(s.c_str(), s.size());
 }
 
-// Same as write(), but without buffering.
 template <typename T>
 inline size_t BufferedFile::write_unbuf(const T& object)
 {
     return write_unbuf(&object, sizeof(T));
 }
+
 template <>
 inline size_t BufferedFile::write_unbuf(const std::string& s)
 {
     return write_unbuf(s.c_str(), s.size());
 }
 
-// Return the current position of the file pointer.
 inline int64 BufferedFile::tell() const
 {
     assert(m_file);
     assert(m_buffer);
 
     return m_file_index + static_cast<int64>(m_buffer_index);
+}
+
+inline void BufferedFile::invalidate_buffer()
+{
+    assert(m_file_mode == ReadMode);
+
+    m_buffer_end = 0;
+    m_buffer_index = 0;
 }
 
 }       // namespace foundation

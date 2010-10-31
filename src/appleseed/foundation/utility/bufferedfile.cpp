@@ -29,6 +29,9 @@
 // Interface header.
 #include "bufferedfile.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/otherwise.h"
+
 // Standard headers.
 #include <algorithm>
 #include <cstring>
@@ -42,187 +45,159 @@ namespace foundation
 // BufferedFile class implementation.
 //
 
-// Constructors.
 BufferedFile::BufferedFile()
-  : m_file(0)
-  , m_file_mode(ReadMode)
-  , m_file_index(0)
-  , m_buffer(0)
-  , m_buffer_size(0)
-  , m_buffer_end(0)
-  , m_buffer_index(0)
 {
+    reset();
 }
+
 BufferedFile::BufferedFile(
     const char*         path,
     const FileType      type,
     const FileMode      mode,
     const size_t        buffer_size)
-  : m_file(0)
-  , m_file_mode(ReadMode)
-  , m_file_index(0)
-  , m_buffer(0)
-  , m_buffer_size(0)
-  , m_buffer_end(0)
-  , m_buffer_index(0)
 {
+    reset();
     open(path, type, mode, buffer_size);
 }
 
-// Destructor, closes the file if it is still open.
 BufferedFile::~BufferedFile()
 {
     close();
 }
 
-// Open a file.
+namespace
+{
+    string build_mode_string(
+        const BufferedFile::FileType    type,
+        const BufferedFile::FileMode    mode)
+    {
+        string s;
+
+        switch (mode)
+        {
+          case BufferedFile::ReadMode:
+            s += 'r';
+            break;
+
+          case BufferedFile::WriteMode:
+            s += 'w';
+            break;
+
+          assert_otherwise;
+        }
+
+        switch (type)
+        {
+          case BufferedFile::TextType:
+            s += 't';
+            break;
+
+          case BufferedFile::BinaryType:
+            s += 'b';
+            break;
+
+          assert_otherwise;
+        }
+
+        return s;
+    }
+}
+
 bool BufferedFile::open(
     const char*         path,
     const FileType      type,
     const FileMode      mode,
     const size_t        buffer_size)
 {
+    assert(m_file == 0);
     assert(path);
     assert(buffer_size > 0);
 
-    // Error: a file is already open.
-    if (m_file)
-        return false;
+    const string mode_string = build_mode_string(type, mode);
 
-    // Build the file mode string.
-    char mode_str[3] = { 0, 0, 0 };
-    switch (mode)
-    {
-      case ReadMode:   mode_str[0] = 'r'; break;
-      case WriteMode:  mode_str[0] = 'w'; break;
-      default: assert(!"Invalid file mode.");
-    };
-    switch (type)
-    {
-      case TextType:   mode_str[1] = 't'; break;
-      case BinaryType: mode_str[1] = 'b'; break;
-      default: assert(!"Invalid file type.");
-    };
+    m_file = fopen(path, mode_string.c_str());
 
-    // Open the file.
-    m_file = fopen(path, mode_str);
-
-    // Error: the file could not be open or created.
     if (m_file == 0)
         return false;
 
-    // Allocate the I/O buffer.
-    m_buffer = new uint8[buffer_size];
-
-    // Error: the I/O buffer could not be allocated.
-    if (m_buffer == 0)
-    {
-        fclose(m_file);
-        m_file = 0;
-        return false;
-    }
-
-    // Store the file mode.
     m_file_mode = mode;
-
-    // Reset the file index.
     m_file_index = 0;
-
-    // Store the I/O buffer size.
+    m_buffer = new uint8[buffer_size];
     m_buffer_size = buffer_size;
+    m_buffer_end = mode == ReadMode ? 0 : m_buffer_size;
+    m_buffer_index = 0;
 
-    if (mode == ReadMode)
-    {
-        // Invalidate the I/O buffer.
-        m_buffer_end = 0;
-        m_buffer_index = 0;
-    }
-    else
-    {
-        // Clear the I/O buffer.
-        m_buffer_end = buffer_size;
-        m_buffer_index = 0;
-    }
-
-    // Success.
     return true;
 }
 
-// Close the file.
 bool BufferedFile::close()
 {
     bool success = true;
 
-    // In write mode, if the I/O buffer is not empty, flush it to disk.
-    if (m_file_mode == WriteMode && m_buffer_index > 0)
-    {
-        // Write the contents of the I/O buffer to disk.
-        if (fwrite(m_buffer, 1, m_buffer_index, m_file) < m_buffer_index)
-            success = false;
-    }
+    if (m_file_mode == WriteMode)
+        success = flush_buffer();
 
-    // Invalidate the I/O buffer.
-    m_buffer_end = 0;
-    m_buffer_index = 0;
-
-    // Reset the I/O buffer size.
-    m_buffer_size = 0;
-
-    // Deallocate the I/O buffer.
-    delete [] m_buffer;
-    m_buffer = 0;
-
-    // Reset the file index.
-    m_file_index = 0;
-
-    // Reset the file mode.
-    m_file_mode = ReadMode;
-
-    // Close the file.
     if (m_file)
     {
         if (fclose(m_file))
             success = false;
-        m_file = 0;
     }
+
+    delete [] m_buffer;
+
+    reset();
 
     return success;
 }
 
-// Return true if the file is open, false otherwise.
 bool BufferedFile::is_open() const
 {
     return m_file != 0;
 }
 
-// Fill the I/O buffer (read mode only).
-void BufferedFile::fill_buffer()
+void BufferedFile::reset()
 {
-    // Update the file index.
-    m_file_index += static_cast<int64>(m_buffer_index);
-
-    // Read data from disk into the I/O buffer.
+    m_file = 0;
+    m_file_mode = ReadMode;
+    m_file_index = 0;
+    m_buffer = 0;
+    m_buffer_size = 0;
+    m_buffer_end = 0;
     m_buffer_index = 0;
-    m_buffer_end = fread(m_buffer, 1, m_buffer_size, m_file);
 }
 
-// Flush the I/O buffer to disk (write mode only).
+void BufferedFile::fill_buffer()
+{
+    assert(m_file);
+    assert(m_file_mode == ReadMode);
+    assert(m_buffer);
+
+    m_file_index += static_cast<int64>(m_buffer_index);
+
+    m_buffer_end = fread(m_buffer, 1, m_buffer_size, m_file);
+    m_buffer_index = 0;
+}
+
 bool BufferedFile::flush_buffer()
 {
-    // Write the contents of the I/O buffer to disk.
-    const size_t written = fwrite(m_buffer, 1, m_buffer_index, m_file);
-    const bool success = (written == m_buffer_index);
+    assert(m_file);
+    assert(m_file_mode == WriteMode);
+    assert(m_buffer);
 
-    // Update the file index.
+    if (m_buffer_index == 0)
+        return true;
+
+    const size_t written = fwrite(m_buffer, 1, m_buffer_index, m_file);
+
     m_file_index += static_cast<int64>(written);
 
-    // Clear the I/O buffer.
+    const bool success = written == m_buffer_index;
+
     m_buffer_index = 0;
 
     return success;
 }
 
-// Read a contiguous sequence of bytes from the file.
 size_t BufferedFile::read(
     void*               outbuf,
     const size_t        size)
@@ -239,7 +214,6 @@ size_t BufferedFile::read(
         // If the I/O buffer is exhausted, refill it.
         if (m_buffer_index == m_buffer_end)
         {
-            // Fill the I/O buffer.
             fill_buffer();
 
             // Stop if the end of the file has been reached.
@@ -263,7 +237,6 @@ size_t BufferedFile::read(
     return bytes;
 }
 
-// Same as read(), but without buffering.
 size_t BufferedFile::read_unbuf(
     void*               outbuf,
     const size_t        size)
@@ -280,12 +253,9 @@ size_t BufferedFile::read_unbuf(
         // As soon as the I/O buffer is exhausted, switch to unbuffered reading.
         if (m_buffer_index == m_buffer_end)
         {
-            // Update the file index.
             m_file_index += static_cast<int64>(m_buffer_index);
 
-            // Invalidate the I/O buffer.
-            m_buffer_end = 0;
-            m_buffer_index = 0;
+            invalidate_buffer();
 
             // Read all remaining data from disk directly into the output buffer.
             const size_t read =
@@ -296,10 +266,8 @@ size_t BufferedFile::read_unbuf(
                     m_file);
             bytes += read;
 
-            // Update the file index.
             m_file_index += static_cast<int64>(read);
 
-            // And we're done.
             break;
         }
 
@@ -315,11 +283,9 @@ size_t BufferedFile::read_unbuf(
         bytes += count;
     }
 
-    // Return the number of bytes successfully read.
     return bytes;
 }
 
-// Write a contiguous sequence of bytes to the file.
 size_t BufferedFile::write(
     const void*         inbuf,
     const size_t        size)
@@ -336,7 +302,6 @@ size_t BufferedFile::write(
         // If the I/O buffer is full, flush it to disk.
         if (m_buffer_index == m_buffer_end)
         {
-            // Flush the I/O buffer to disk.
             if (!flush_buffer())
                 break;
         }
@@ -353,11 +318,9 @@ size_t BufferedFile::write(
         bytes += count;
     }
 
-    // Return the number of bytes successfully written.
     return bytes;
 }
 
-// Same as write(), but without buffering.
 size_t BufferedFile::write_unbuf(
     const void*         inbuf,
     const size_t        size)
@@ -374,7 +337,6 @@ size_t BufferedFile::write_unbuf(
         // As soon as the I/O buffer is full, switch to unbuffered writing.
         if (m_buffer_index == m_buffer_end)
         {
-            // Flush the I/O buffer to disk.
             if (!flush_buffer())
                 break;
 
@@ -387,10 +349,8 @@ size_t BufferedFile::write_unbuf(
                     m_file);
             bytes += written;
 
-            // Update the file index.
             m_file_index += static_cast<int64>(written);
 
-            // And we're done.
             break;
         }
 
@@ -406,11 +366,30 @@ size_t BufferedFile::write_unbuf(
         bytes += count;
     }
 
-    // Return the number of bytes successfully written.
     return bytes;
 }
 
-// Move the file pointer to a specified location.
+namespace
+{
+    int64 portable_fseek(FILE* file, const int64 offset, const int mode)
+    {
+#ifdef _WIN32
+        return _fseeki64(file, offset, mode);
+#else
+        return fseek(file, offset, mode);
+#endif
+    }
+
+    int64 portable_ftell(FILE* file)
+    {
+#ifdef _WIN32
+        return _ftelli64(file);
+#else
+        return ftell(file);
+#endif
+    }
+}
+
 bool BufferedFile::seek(
     const int64         offset,
     const SeekOrigin    origin)
@@ -418,87 +397,59 @@ bool BufferedFile::seek(
     assert(m_file);
     assert(m_buffer);
 
-    // Attempt to seek into the buffer.
-    if (m_file_mode == ReadMode && origin != SeekFromEnd)
+    // Seeking from the end is handled separately, since we don't know the size of the file.
+    if (origin == SeekFromEnd)
     {
-        // Compute the target index in the file.
-        int64 target_index;
-        if (origin == SeekFromBeginning)
-        {
-            assert(offset >= 0);
-            target_index = offset;
-        }
-        else
-        {
-            const int64 current = m_file_index + static_cast<int64>(m_buffer_index);
-            assert(offset >= -current);
-            target_index = current + offset;
-        }
+        if (m_file_mode == ReadMode)
+            invalidate_buffer();
+        else flush_buffer();
 
-        // Handle the case where the target index is within the bounds of the I/O buffer.
-        if (target_index >= m_file_index &&
-            target_index < m_file_index + static_cast<int64>(m_buffer_end))
-        {
-            // Compute the new index into the I/O buffer.
-            m_buffer_index = static_cast<size_t>(target_index - m_file_index);
+        if (portable_fseek(m_file, offset, SEEK_END))
+            return false;
 
-            // And we're done with seeking.
-            return true;
-        }
-    }
-
-    // Deal with the I/O buffer.
-    if (m_file_mode == ReadMode)
-    {
-        // In read mode, invalidate the I/O buffer.
-        m_buffer_end = 0;
-        m_buffer_index = 0;
+        m_file_index = portable_ftell(m_file);
     }
     else
     {
-        // In write mode, flush the I/O buffer to disk.
-        if (m_buffer_index > 0)
+        int64 target_index;
+
+        if (origin == SeekFromBeginning)
+            target_index = offset;
+        else
         {
-            // Write the contents of the I/O buffer to disk.
-            const size_t written = fwrite(m_buffer, 1, m_buffer_index, m_file);
-            if (written < m_buffer_index)
+            assert(origin == SeekFromCurrent);
+            const int64 current_index = m_file_index + static_cast<int64>(m_buffer_index);
+            target_index = max<int64>(current_index + offset, 0);
+        }
+
+        if (target_index >= m_file_index &&
+            target_index <  m_file_index + static_cast<int64>(m_buffer_end))
+        {
+            // Seek within the I/O buffer.
+            m_buffer_index = static_cast<size_t>(target_index - m_file_index);
+        }
+        else
+        {
+            int64 current_file_index;
+
+            if (m_file_mode == ReadMode)
+            {
+                current_file_index = m_file_index + static_cast<int64>(m_buffer_end);
+                invalidate_buffer();
+            }
+            else
+            {
+                current_file_index = m_file_index;
+                flush_buffer();
+            }
+
+            if (portable_fseek(m_file, target_index - current_file_index, SEEK_CUR))
                 return false;
 
-            // Clear the I/O buffer.
-            m_buffer_index = 0;
+            m_file_index = portable_ftell(m_file);
         }
     }
 
-    // Figure out the seek mode for fseek().
-    int seek_mode;
-    switch (origin)
-    {
-      case SeekFromBeginning: seek_mode = SEEK_SET; break;
-      case SeekFromCurrent:   seek_mode = SEEK_CUR; break;
-      case SeekFromEnd:       seek_mode = SEEK_END; break;
-      default:
-        assert("Invalid seek origin.");
-        seek_mode = SEEK_SET;
-        break;
-    }
-
-    // Seek into the file.
-#ifdef _WIN32
-    if (_fseeki64(m_file, offset, seek_mode))
-        return false;
-#else
-    if (fseek(m_file, offset, seek_mode))
-        return false;
-#endif
-
-    // Recover the position of the file pointer.
-#ifdef _WIN32
-    m_file_index = _ftelli64(m_file);
-#else
-    m_file_index = ftell(m_file);
-#endif
-
-    // Success.
     return true;
 }
 

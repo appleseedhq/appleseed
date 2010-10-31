@@ -78,26 +78,6 @@ TEST_SUITE(Foundation_Utility_BufferedFile)
         EXPECT_EQ(0, file.tell());
     }
 
-    TEST_CASE(TestDoubleFileOpening)
-    {
-        BufferedFile file(
-            Filename,
-            BufferedFile::BinaryType,
-            BufferedFile::WriteMode,
-            BufferSize);
-
-        const bool result =
-            file.open(
-                Filename,
-                BufferedFile::BinaryType,
-                BufferedFile::WriteMode,
-                BufferSize);
-
-        EXPECT_FALSE(result);
-        EXPECT_TRUE(file.is_open());
-        EXPECT_EQ(0, file.tell());
-    }
-
     TEST_CASE(TestFileClosing)
     {
         BufferedFile file(
@@ -234,19 +214,19 @@ TEST_SUITE(Foundation_Utility_BufferedFile)
     TEST_CASE_WITH_FIXTURE(TestSeekingForwardWhileReading, FileReadingFixture)
     {
         char buf[100];
-        m_file.read(buf, 8);
+        m_file.read(buf, 6);
         EXPECT_TRUE(m_file.seek(4, BufferedFile::SeekFromCurrent));
         EXPECT_EQ(8, m_file.read(buf, 8));
-        EXPECT_EQ("MNOPQRST", string(buf, 8));
+        EXPECT_EQ("KLMNOPQR", string(buf, 8));
     }
 
     TEST_CASE_WITH_FIXTURE(TestSeekingBackwardWhileReading, FileReadingFixture)
     {
         char buf[100];
-        m_file.read(buf, 8);
+        m_file.read(buf, 6);
         EXPECT_TRUE(m_file.seek(-4, BufferedFile::SeekFromCurrent));
         EXPECT_EQ(8, m_file.read(buf, 8));
-        EXPECT_EQ("EFGHIJKL", string(buf, 8));
+        EXPECT_EQ("CDEFGHIJ", string(buf, 8));
     }
 
     TEST_CASE_WITH_FIXTURE(TestSeekingFromBeginningWhileReading, FileReadingFixture)
