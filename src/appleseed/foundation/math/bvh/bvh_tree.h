@@ -58,7 +58,6 @@ class Tree
     // Item, AABB, node and tree types.
     typedef Item ItemType;
     typedef AABB<T, N> AABBType;
-    typedef Node<T, N> NodeType;
     typedef Tree<T, N, Item> TreeType;
 
     // Constructor.
@@ -100,6 +99,8 @@ class Tree
 
     template <typename Tree, typename Builder>
     friend class TreeStatistics;
+
+    typedef Node<T, N> NodeType;
 
     typedef std::vector<NodeType> NodeVector;
     typedef std::vector<ItemType> ItemVector;
