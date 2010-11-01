@@ -34,6 +34,7 @@
 #include "foundation/math/knn/knn_answer.h"
 #include "foundation/math/knn/knn_tree.h"
 #include "foundation/math/distance.h"
+#include "foundation/math/fp.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 
@@ -61,7 +62,7 @@ class Query
         const TreeType&     tree,
         AnswerType&         answer);
 
-    void run(const VectorType& query_point);
+    void run(const VectorType& query_point) const;
 
   private:
     typedef typename TreeType::NodeType NodeType;
@@ -88,9 +89,9 @@ class Query
     const TreeType&         m_tree;
     AnswerType&             m_answer;
 
-    void find_single_nearest_neighbor(const VectorType& query_point);
+    void find_single_nearest_neighbor(const VectorType& query_point) const;
 
-    void find_multiple_nearest_neighbors(const VectorType& query_point);
+    void find_multiple_nearest_neighbors(const VectorType& query_point) const;
 };
 
 typedef Query<float, 2>  Query2f;
@@ -113,10 +114,9 @@ inline Query<T, N>::Query(
 }
 
 template <typename T, size_t N>
-inline void Query<T, N>::run(const VectorType& query_point)
+inline void Query<T, N>::run(const VectorType& query_point) const
 {
     assert(!m_tree.empty());
-    assert(m_answer.m_max_size <= m_tree.m_max_answer_size);
 
     m_answer.clear();
 
@@ -126,12 +126,8 @@ inline void Query<T, N>::run(const VectorType& query_point)
 }
 
 template <typename T, size_t N>
-inline void Query<T, N>::find_single_nearest_neighbor(const VectorType& query_point)
+inline void Query<T, N>::find_single_nearest_neighbor(const VectorType& query_point) const
 {
-    //
-    // 1. Find the leaf node containing the query point.
-    //
-
     const NodeType* RESTRICT nodes = &m_tree.m_nodes.front();
     const NodeType* RESTRICT node = nodes;
 
@@ -146,67 +142,51 @@ inline void Query<T, N>::find_single_nearest_neighbor(const VectorType& query_po
             ++node;
     }
 
-    //
-    // 2. Find the closest point.
-    //
+    const size_t point_index = m_tree.m_indices[node->get_point_index()];
+    const VectorType& point = m_tree.m_points[point_index];
+    const ValueType distance = square_distance(point, query_point);
 
-    ValueType min_distance = std::numeric_limits<ValueType>::max();
-    size_t min_index = 0;
-
-    const size_t* RESTRICT index_ptr = &m_tree.m_indices[node->get_point_index()];
-    const size_t* RESTRICT index_end = index_ptr + node->get_point_count();
-    const VectorType* RESTRICT points = &m_tree.m_points.front();
-
-    while (index_ptr < index_end)
-    {
-        // Fetch the point and compute its distance to the query point.
-        const size_t point_index = *index_ptr++;
-        const VectorType& point = points[point_index];
-        const ValueType distance = square_distance(point, query_point);
-
-        // Keep track of the closest point.
-        if (min_distance > distance)
-        {
-            min_distance = distance;
-            min_index = point_index;
-        }
-    }
-
-    m_answer.insert(min_index, min_distance);
+    m_answer.insert(point_index, distance);
 }
 
 template <typename T, size_t N>
-inline void Query<T, N>::find_multiple_nearest_neighbors(const VectorType& query_point)
+inline void Query<T, N>::find_multiple_nearest_neighbors(const VectorType& query_point) const
 {
     const VectorType* RESTRICT points = &m_tree.m_points.front();
     const size_t* RESTRICT indices = &m_tree.m_indices.front();
     const NodeType* RESTRICT nodes = &m_tree.m_nodes.front();
 
     //
-    // 1. Find the leaf node containing the query point.
+    // 1. Find the deepest node that contains the query point and enough other points
+    //    to compute a maximum search distance.
     //
 
-    const NodeType* RESTRICT parent_node = nodes;
+    const NodeType* RESTRICT start_node = nodes;
 
-    while (parent_node->is_interior())
+    while (start_node->is_interior())
     {
-        const size_t split_dim = parent_node->get_split_dim();
-        const ValueType split_abs = parent_node->get_split_abs();
+        const size_t split_dim = start_node->get_split_dim();
+        const ValueType split_abs = start_node->get_split_abs();
 
-        parent_node = nodes + parent_node->get_child_node_index();
+        const NodeType* RESTRICT child_node = nodes + start_node->get_child_node_index();
 
         if (query_point[split_dim] >= split_abs)
-            ++parent_node;
+            ++child_node;
+
+        if (child_node->get_point_count() < m_answer.m_max_size)
+            break;
+
+        start_node = child_node;
     }
 
     //
-    // 2. Collect the points from this leaf node, and compute an upper bound on distance.
+    // 2. Collect the points in or below this node and compute a maximum search distance.
     //
 
     ValueType max_distance(0.0);
 
-    const size_t* RESTRICT index_ptr = indices + parent_node->get_point_index();
-    const size_t* RESTRICT index_end = index_ptr + parent_node->get_point_count();
+    const size_t* RESTRICT index_ptr = indices + start_node->get_point_index();
+    const size_t* RESTRICT index_end = index_ptr + start_node->get_point_count();
 
     while (index_ptr < index_end)
     {
@@ -218,7 +198,7 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(const VectorType& query
         // Add this point to the answer.
         m_answer.insert(point_index, distance);
 
-        // Update the upper bound on distance.
+        // Update the maximum search distance.
         if (max_distance < distance)
             max_distance = distance;
     }
@@ -227,7 +207,7 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(const VectorType& query
     // 3. Traverse again the tree and update the set of neighbors.
     //
 
-    const size_t NodeQueueSize = 64;
+    const size_t NodeQueueSize = 256;
 
     NodeEntry node_queue[NodeQueueSize];
     node_queue->m_node = nodes;
@@ -247,39 +227,32 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(const VectorType& query
         std::pop_heap(node_queue, node_queue + node_queue_size);
         --node_queue_size;
 
-        // Traverse the tree until a leaf is reached.
         while (node->is_interior())
         {
             const size_t split_dim = node->get_split_dim();
             const ValueType split_abs = node->get_split_abs();
-            const ValueType query_abs = query_point[split_dim];
-            const ValueType distance = square(split_abs - query_abs);
+            ValueType distance = query_point[split_dim] - split_abs;
 
-            node = nodes + node->get_child_node_index();
+            const int select = static_cast<int>(FP<ValueType>::sign(distance));
+            const NodeType* RESTRICT left_child_node = nodes + node->get_child_node_index();
+            const NodeType* RESTRICT follow_node = left_child_node + 1 - select;
+            const NodeType* RESTRICT queue_node = left_child_node + select;
 
-            if (query_abs < split_abs)
+            if (follow_node->get_point_count() < m_answer.m_max_size)
+                break;
+
+            distance *= distance;
+
+            if (distance < max_distance)
             {
-                // Push the right node, follow the left node.
-                if (distance < max_distance)
-                {
-                    node_queue[node_queue_size++] = NodeEntry(node + 1, distance);
-                    std::push_heap(node_queue, node_queue + node_queue_size);
-                }
+                node_queue[node_queue_size++] = NodeEntry(queue_node, distance);
+                std::push_heap(node_queue, node_queue + node_queue_size);
             }
-            else
-            {
-                // Push the left node, follow the right node.
-                if (distance < max_distance)
-                {
-                    node_queue[node_queue_size++] = NodeEntry(node, distance);
-                    std::push_heap(node_queue, node_queue + node_queue_size);
-                }
-                ++node;
-            }
+
+            node = follow_node;
         }
 
-        // Don't visit again the leaf node containing the query point.
-        if (node == parent_node)
+        if (node == start_node)
             continue;
 
         const size_t* RESTRICT index_ptr = indices + node->get_point_index();
@@ -295,7 +268,7 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(const VectorType& query
             // Insert this point to the answer.
             m_answer.insert(point_index, distance);
 
-            // Update the upper bound on distance.
+            // Update the maximum search distance.
             max_distance = m_answer.top().m_distance;
         }
     }

@@ -31,8 +31,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
-#include "foundation/utility/casts.h"
-#include "foundation/utility/typetraits.h"
 
 // Standard headers.
 #include <cassert>
@@ -71,11 +69,11 @@ class Node
     void set_split_abs(const ValueType abscissa);
     ValueType get_split_abs() const;
 
-    // Set/get the index of the first point (leaf nodes only).
+    // Set/get the index of the first point.
     void set_point_index(const size_t index);
     size_t get_point_index() const;
 
-    // Set/get the number of points (leaf nodes only).
+    // Set/get the number of points.
     void set_point_count(const size_t size);
     size_t get_point_count() const;
 
@@ -92,12 +90,14 @@ class Node
     //
     //   leaf node:
     //
-    //     bits 0-30    leaf index
+    //     bits 0-30    point index
     //     bit  31      node type (0 for leaf node)
     //
 
     ValueType   m_abscissa;
     uint32      m_info;
+    uint32      m_point_index;
+    uint32      m_point_count;
 };
 
 
@@ -180,29 +180,25 @@ inline T Node<T>::get_split_abs() const
 template <typename T>
 inline void Node<T>::set_point_index(const size_t index)
 {
-    assert(index < (1UL << 31));
-    m_info &= 0x80000000UL;
-    m_info |= static_cast<uint32>(index);
+    m_point_index = static_cast<uint32>(index);
 }
 
 template <typename T>
 inline size_t Node<T>::get_point_index() const
 {
-    return static_cast<size_t>(m_info & 0x7FFFFFFFUL);
+    return static_cast<size_t>(m_point_index);
 }
 
 template <typename T>
 inline void Node<T>::set_point_count(const size_t size)
 {
-    typedef typename TypeConv<T>::UInt UInt;
-    m_abscissa = binary_cast<T>(static_cast<UInt>(size));
+    m_point_count = static_cast<uint32>(size);
 }
 
 template <typename T>
 inline size_t Node<T>::get_point_count() const
 {
-    typedef typename TypeConv<T>::UInt UInt;
-    return static_cast<size_t>(binary_cast<UInt>(m_abscissa));
+    return static_cast<size_t>(m_point_count);
 }
 
 }       // namespace knn
