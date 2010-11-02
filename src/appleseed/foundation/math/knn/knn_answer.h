@@ -38,12 +38,7 @@
 #include <cassert>
 #include <cstddef>
 
-DECLARE_TEST_CASE(Foundation_Math_Knn_Answer, Size_AfterOneInsertion_ReturnsOne);
-DECLARE_TEST_CASE(Foundation_Math_Knn_Answer, Empty_AfterOneInsertion_ReturnsFalse);
-DECLARE_TEST_CASE(Foundation_Math_Knn_Answer, Clear_GivenOneItem_EmptiesAnswer);
-DECLARE_TEST_CASE(Foundation_Math_Knn_Answer, Sort_GivenFourItemsInSizeFiveAnswer_SortsItems);
 DECLARE_TEST_CASE(Foundation_Math_Knn_Answer, BuildHeap_GivenVector_TransformsVectorToHeap);
-DECLARE_TEST_CASE(Foundation_Math_Knn_Answer, Insert_GivenCloserItem_KeepsItem);
 
 namespace foundation {
 namespace knn {
@@ -81,6 +76,10 @@ class Answer
 
     size_t size() const;
 
+    void clear();
+
+    void insert(const size_t index, const ValueType distance);
+
     const Entry& get(const size_t i) const;
 
     void sort();
@@ -88,25 +87,16 @@ class Answer
   private:
     template <typename, size_t> friend class Query;
 
-    GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Knn_Answer, Size_AfterOneInsertion_ReturnsOne);
-    GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Knn_Answer, Empty_AfterOneInsertion_ReturnsFalse);
-    GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Knn_Answer, Clear_GivenOneItem_EmptiesAnswer);
-    GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Knn_Answer, Sort_GivenFourItemsInSizeFiveAnswer_SortsItems);
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Knn_Answer, BuildHeap_GivenVector_TransformsVectorToHeap);
-    GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Knn_Answer, Insert_GivenCloserItem_KeepsItem);
 
     const size_t    m_max_size;
     Entry*          m_entries;
     size_t          m_size;
     bool            m_heap;
 
-    void clear();
-
-    void insert(const size_t index, const ValueType distance);
-
     void build_heap();
 
-    void heapify(const size_t i, const size_t end);
+    void heapify(const size_t index);
 
     const Entry& top() const;
 };
@@ -157,32 +147,6 @@ inline size_t Answer<T>::size() const
 }
 
 template <typename T>
-inline const typename Answer<T>::Entry& Answer<T>::get(const size_t i) const
-{
-    assert(i < m_size);
-    return m_entries[i];
-}
-
-template <typename T>
-inline void Answer<T>::sort()
-{
-/*
-    if (m_heap)
-    {
-        size_t i = m_size;
-
-        while (i-- > 1)
-        {
-            m_entries[0].swap(m_entries[i]);
-            heapify(0, i);
-        }
-    }
-    else std::sort(m_entries, m_entries + m_size);
-*/
-    std::sort(m_entries, m_entries + m_size);
-}
-
-template <typename T>
 inline void Answer<T>::clear()
 {
     m_size = 0;
@@ -207,9 +171,22 @@ inline void Answer<T>::insert(const size_t index, const ValueType distance)
         {
             m_entries->m_index = index;
             m_entries->m_distance = distance;
-            heapify(0, m_size);
+            heapify(0);
         }
     }
+}
+
+template <typename T>
+inline const typename Answer<T>::Entry& Answer<T>::get(const size_t i) const
+{
+    assert(i < m_size);
+    return m_entries[i];
+}
+
+template <typename T>
+inline void Answer<T>::sort()
+{
+    std::sort(m_entries, m_entries + m_size);
 }
 
 template <typename T>
@@ -221,29 +198,35 @@ inline void Answer<T>::build_heap()
     size_t i = m_size / 2;
 
     while (i--)
-        heapify(i, m_size);
+        heapify(i);
 
     m_heap = true;
 }
 
 template <typename T>
-inline void Answer<T>::heapify(const size_t i, const size_t end)
+inline void Answer<T>::heapify(const size_t index)
 {
-    const size_t left = 2 * i + 1;
-    const size_t right = left + 1;
+    size_t i = index;
 
-    size_t largest = i;
-
-    if (left < end && m_entries[i] < m_entries[left])
-        largest = left;
-
-    if (right < end && m_entries[largest] < m_entries[right])
-        largest = right;
-
-    if (largest != i)
+    while (true)
     {
-        m_entries[i].swap(m_entries[largest]);
-        heapify(largest, end);
+        const size_t left = 2 * i + 1;
+        const size_t right = left + 1;
+
+        size_t largest = i;
+
+        if (left < m_size && m_entries[i] < m_entries[left])
+           largest = left;
+
+        if (right < m_size && m_entries[largest] < m_entries[right])
+           largest = right;
+
+        if (largest == i)
+            return;
+
+       m_entries[i].swap(m_entries[largest]);
+
+       i = largest;
     }
 }
 

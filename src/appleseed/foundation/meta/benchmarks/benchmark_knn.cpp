@@ -49,7 +49,51 @@
 using namespace foundation;
 using namespace std;
 
-BENCHMARK_SUITE(Foundation_Math_Knn)
+BENCHMARK_SUITE(Foundation_Math_Knn_Answer)
+{
+    template <size_t EntryCount>
+    struct Fixture
+    {
+        Xorshift            m_rng;
+        knn::Answer<float>  m_answer;
+
+        Fixture()
+          : m_answer(EntryCount)
+        {
+        }
+
+        void insert_random_entries()
+        {
+            for (size_t i = 0; i < 2 * EntryCount; ++i)
+            {
+                const float distance = static_cast<float>(rand_double1(m_rng));
+                m_answer.insert(0, distance);
+            }
+        }
+    };
+
+    BENCHMARK_CASE_WITH_FIXTURE(InsertIntoHeap_K5, Fixture<5>)          { insert_random_entries(); }
+    BENCHMARK_CASE_WITH_FIXTURE(InsertIntoHeap_K20, Fixture<20>)        { insert_random_entries(); }
+    BENCHMARK_CASE_WITH_FIXTURE(InsertIntoHeap_K100, Fixture<100>)      { insert_random_entries(); }
+    BENCHMARK_CASE_WITH_FIXTURE(InsertIntoHeap_K500, Fixture<500>)      { insert_random_entries(); }
+
+    template <size_t EntryCount>
+    struct SortFixture
+      : public Fixture<EntryCount>
+    {
+        SortFixture()
+        {
+            insert_random_entries();
+        }
+    };
+
+    BENCHMARK_CASE_WITH_FIXTURE(Sort_K5, SortFixture<5>)                { m_answer.sort(); }
+    BENCHMARK_CASE_WITH_FIXTURE(Sort_K20, SortFixture<20>)              { m_answer.sort(); }
+    BENCHMARK_CASE_WITH_FIXTURE(Sort_K100, SortFixture<100>)            { m_answer.sort(); }
+    BENCHMARK_CASE_WITH_FIXTURE(Sort_K500, SortFixture<500>)            { m_answer.sort(); }
+}
+
+BENCHMARK_SUITE(Foundation_Math_Knn_Query)
 {
     namespace
     {
@@ -308,15 +352,15 @@ BENCHMARK_SUITE(Foundation_Math_Knn)
         }
     };
 
-    BENCHMARK_CASE_WITH_FIXTURE(QueryParticlesK1, ParticlesFixture<1>)      { run_queries(); }
-    BENCHMARK_CASE_WITH_FIXTURE(QueryParticlesK5, ParticlesFixture<5>)      { run_queries(); }
-    BENCHMARK_CASE_WITH_FIXTURE(QueryParticlesK20, ParticlesFixture<20>)    { run_queries(); }
-    BENCHMARK_CASE_WITH_FIXTURE(QueryParticlesK100, ParticlesFixture<100>)  { run_queries(); }
-    BENCHMARK_CASE_WITH_FIXTURE(QueryParticlesK500, ParticlesFixture<500>)  { run_queries(); }
+    BENCHMARK_CASE_WITH_FIXTURE(Particles_K1, ParticlesFixture<1>)      { run_queries(); }
+    BENCHMARK_CASE_WITH_FIXTURE(Particles_K5, ParticlesFixture<5>)      { run_queries(); }
+    BENCHMARK_CASE_WITH_FIXTURE(Particles_K20, ParticlesFixture<20>)    { run_queries(); }
+    BENCHMARK_CASE_WITH_FIXTURE(Particles_K100, ParticlesFixture<100>)  { run_queries(); }
+    BENCHMARK_CASE_WITH_FIXTURE(Particles_K500, ParticlesFixture<500>)  { run_queries(); }
 
-    BENCHMARK_CASE_WITH_FIXTURE(QueryPhotonMapK1, PhotonMapFixture<1>)      { run_queries(); }
-    BENCHMARK_CASE_WITH_FIXTURE(QueryPhotonMapK5, PhotonMapFixture<5>)      { run_queries(); }
-    BENCHMARK_CASE_WITH_FIXTURE(QueryPhotonMapK20, PhotonMapFixture<20>)    { run_queries(); }
-    BENCHMARK_CASE_WITH_FIXTURE(QueryPhotonMapK100, PhotonMapFixture<100>)  { run_queries(); }
-    BENCHMARK_CASE_WITH_FIXTURE(QueryPhotonMapK500, PhotonMapFixture<500>)  { run_queries(); }
+    BENCHMARK_CASE_WITH_FIXTURE(PhotonMap_K1, PhotonMapFixture<1>)      { run_queries(); }
+    BENCHMARK_CASE_WITH_FIXTURE(PhotonMap_K5, PhotonMapFixture<5>)      { run_queries(); }
+    BENCHMARK_CASE_WITH_FIXTURE(PhotonMap_K20, PhotonMapFixture<20>)    { run_queries(); }
+    BENCHMARK_CASE_WITH_FIXTURE(PhotonMap_K100, PhotonMapFixture<100>)  { run_queries(); }
+    BENCHMARK_CASE_WITH_FIXTURE(PhotonMap_K500, PhotonMapFixture<500>)  { run_queries(); }
 }
