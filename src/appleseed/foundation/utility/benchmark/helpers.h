@@ -166,6 +166,22 @@ namespace foundation
                                                                                             \
     void BenchmarkCase##Name::run()
 
+
+//
+// Forward-declare a benchmark case.
+//
+
+#define DECLARE_BENCHMARK_CASE(SuiteName, CaseName)                                         \
+    namespace BenchmarkSuite##SuiteName { struct BenchmarkCase##CaseName; }
+
+
+//
+// Declare that a benchmark case has access to the internals of a class.
+//
+
+#define GRANT_ACCESS_TO_BENCHMARK_CASE(SuiteName, CaseName)                                 \
+    friend struct BenchmarkSuite##SuiteName::BenchmarkCase##CaseName
+
 }       // namespace foundation
 
 #endif  // !APPLESEED_FOUNDATION_UTILITY_BENCHMARK_HELPERS_H
