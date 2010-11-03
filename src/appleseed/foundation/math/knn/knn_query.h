@@ -32,6 +32,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/knn/knn_answer.h"
+#include "foundation/math/knn/knn_statistics.h"
 #include "foundation/math/knn/knn_tree.h"
 #include "foundation/math/distance.h"
 #include "foundation/math/fp.h"
@@ -42,6 +43,9 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+
+// Enable or disable k-nn query statistics.
+#undef FOUNDATION_KNN_ENABLE_QUERY_STATS
 
 namespace foundation {
 namespace knn {
@@ -62,7 +66,16 @@ class Query
         const TreeType&     tree,
         AnswerType&         answer);
 
+    void run(
+        const VectorType&   query_point
+#ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
+        , QueryStatistics&  stats
+#endif
+        ) const;
+
+#ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
     void run(const VectorType& query_point) const;
+#endif
 
   private:
     typedef typename TreeType::NodeType NodeType;
@@ -89,9 +102,19 @@ class Query
     const TreeType&         m_tree;
     AnswerType&             m_answer;
 
-    void find_single_nearest_neighbor(const VectorType& query_point) const;
+    void find_single_nearest_neighbor(
+        const VectorType&   query_point
+#ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
+        , QueryStatistics&  stats
+#endif
+        ) const;
 
-    void find_multiple_nearest_neighbors(const VectorType& query_point) const;
+    void find_multiple_nearest_neighbors(
+        const VectorType&   query_point
+#ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
+        , QueryStatistics&  stats
+#endif
+        ) const;
 };
 
 typedef Query<float, 2>  Query2f;
@@ -104,6 +127,12 @@ typedef Query<double, 3> Query3d;
 // Implementation.
 //
 
+#ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
+#define FOUNDATION_KNN_QUERY_STATS(x) x
+#else
+#define FOUNDATION_KNN_QUERY_STATS(x)
+#endif
+
 template <typename T, size_t N>
 inline Query<T, N>::Query(
     const TreeType&         tree,
@@ -114,22 +143,61 @@ inline Query<T, N>::Query(
 }
 
 template <typename T, size_t N>
-inline void Query<T, N>::run(const VectorType& query_point) const
+inline void Query<T, N>::run(
+    const VectorType&       query_point
+#ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
+    , QueryStatistics&      stats
+#endif
+    ) const
 {
     assert(!m_tree.empty());
 
     m_answer.clear();
 
     if (m_answer.m_max_size == 1)
+    {
+#ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
+        find_single_nearest_neighbor(query_point, stats);
+#else
         find_single_nearest_neighbor(query_point);
-    else find_multiple_nearest_neighbors(query_point);
+#endif
+    }
+    else
+    {
+#ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
+        find_multiple_nearest_neighbors(query_point, stats);
+#else
+        find_multiple_nearest_neighbors(query_point);
+#endif
+    }
 }
 
+#ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
+
 template <typename T, size_t N>
-inline void Query<T, N>::find_single_nearest_neighbor(const VectorType& query_point) const
+inline void Query<T, N>::run(const VectorType& query_point) const
 {
+    QueryStatistics stats;
+    run(query_point, stats);
+}
+
+#endif
+
+template <typename T, size_t N>
+inline void Query<T, N>::find_single_nearest_neighbor(
+    const VectorType&       query_point
+#ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
+    , QueryStatistics&      stats
+#endif
+    ) const
+{
+    FOUNDATION_KNN_QUERY_STATS(++stats.m_query_count);
+    FOUNDATION_KNN_QUERY_STATS(size_t fetched_node_count = 0);
+
     const NodeType* RESTRICT nodes = &m_tree.m_nodes.front();
     const NodeType* RESTRICT node = nodes;
+
+    FOUNDATION_KNN_QUERY_STATS(++fetched_node_count);
 
     while (node->is_interior())
     {
@@ -140,18 +208,32 @@ inline void Query<T, N>::find_single_nearest_neighbor(const VectorType& query_po
 
         if (query_point[split_dim] >= split_abs)
             ++node;
+
+        FOUNDATION_KNN_QUERY_STATS(++fetched_node_count);
     }
 
     const size_t point_index = m_tree.m_indices[node->get_point_index()];
     const VectorType& point = m_tree.m_points[point_index];
     const ValueType distance = square_distance(point, query_point);
 
-    m_answer.insert(point_index, distance);
+    m_answer.array_insert(point_index, distance);
+
+    FOUNDATION_KNN_QUERY_STATS(stats.m_fetched_nodes.insert(fetched_node_count));
+    FOUNDATION_KNN_QUERY_STATS(stats.m_visited_leaves.insert(1));
 }
 
 template <typename T, size_t N>
-inline void Query<T, N>::find_multiple_nearest_neighbors(const VectorType& query_point) const
+inline void Query<T, N>::find_multiple_nearest_neighbors(
+    const VectorType&       query_point
+#ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
+    , QueryStatistics&      stats
+#endif
+    ) const
 {
+    FOUNDATION_KNN_QUERY_STATS(++stats.m_query_count);
+    FOUNDATION_KNN_QUERY_STATS(size_t fetched_node_count = 0);
+    FOUNDATION_KNN_QUERY_STATS(size_t visited_leaf_count = 0);
+
     const VectorType* RESTRICT points = &m_tree.m_points.front();
     const size_t* RESTRICT indices = &m_tree.m_indices.front();
     const NodeType* RESTRICT nodes = &m_tree.m_nodes.front();
@@ -163,6 +245,8 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(const VectorType& query
 
     const NodeType* RESTRICT start_node = nodes;
 
+    FOUNDATION_KNN_QUERY_STATS(++fetched_node_count);
+
     while (start_node->is_interior())
     {
         const size_t split_dim = start_node->get_split_dim();
@@ -172,6 +256,8 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(const VectorType& query
 
         if (query_point[split_dim] >= split_abs)
             ++child_node;
+
+        FOUNDATION_KNN_QUERY_STATS(++fetched_node_count);
 
         if (child_node->get_point_count() < m_answer.m_max_size)
             break;
@@ -183,10 +269,30 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(const VectorType& query
     // 2. Collect the points in or below this node and compute a maximum search distance.
     //
 
+    FOUNDATION_KNN_QUERY_STATS(++visited_leaf_count);
+
     ValueType max_distance(0.0);
 
     const size_t* RESTRICT index_ptr = indices + start_node->get_point_index();
     const size_t* RESTRICT index_end = index_ptr + start_node->get_point_count();
+    const size_t* RESTRICT array_end = std::min(index_ptr + m_answer.m_max_size, index_end);
+
+    while (index_ptr < array_end)
+    {
+        // Fetch the point and compute its distance to the query point.
+        const size_t point_index = *index_ptr++;
+        const VectorType& point = points[point_index];
+        const ValueType distance = square_distance(point, query_point);
+
+        // Add this point to the answer.
+        m_answer.array_insert(point_index, distance);
+
+        // Update the maximum search distance.
+        if (max_distance < distance)
+            max_distance = distance;
+    }
+
+    m_answer.make_heap();
 
     while (index_ptr < index_end)
     {
@@ -195,12 +301,12 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(const VectorType& query
         const VectorType& point = points[point_index];
         const ValueType distance = square_distance(point, query_point);
 
-        // Add this point to the answer.
-        m_answer.insert(point_index, distance);
-
-        // Update the maximum search distance.
-        if (max_distance < distance)
-            max_distance = distance;
+        // Insert this point to the answer.
+        if (distance < max_distance)
+        {
+            m_answer.heap_insert(point_index, distance);
+            max_distance = m_answer.top().m_distance;
+        }
     }
 
     //
@@ -227,6 +333,8 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(const VectorType& query
         std::pop_heap(node_queue, node_queue + node_queue_size);
         --node_queue_size;
 
+        FOUNDATION_KNN_QUERY_STATS(++fetched_node_count);
+
         while (node->is_interior())
         {
             const size_t split_dim = node->get_split_dim();
@@ -237,6 +345,8 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(const VectorType& query
             const NodeType* RESTRICT left_child_node = nodes + node->get_child_node_index();
             const NodeType* RESTRICT follow_node = left_child_node + 1 - select;
             const NodeType* RESTRICT queue_node = left_child_node + select;
+
+            FOUNDATION_KNN_QUERY_STATS(++fetched_node_count);
 
             if (follow_node->get_point_count() < m_answer.m_max_size)
                 break;
@@ -255,6 +365,8 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(const VectorType& query
         if (node == start_node)
             continue;
 
+        FOUNDATION_KNN_QUERY_STATS(++visited_leaf_count);
+
         const size_t* RESTRICT index_ptr = indices + node->get_point_index();
         const size_t* RESTRICT index_end = index_ptr + node->get_point_count();
 
@@ -266,12 +378,16 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(const VectorType& query
             const ValueType distance = square_distance(point, query_point);
 
             // Insert this point to the answer.
-            m_answer.insert(point_index, distance);
-
-            // Update the maximum search distance.
-            max_distance = m_answer.top().m_distance;
+            if (distance < max_distance)
+            {
+                m_answer.heap_insert(point_index, distance);
+                max_distance = m_answer.top().m_distance;
+            }
         }
     }
+
+    FOUNDATION_KNN_QUERY_STATS(stats.m_fetched_nodes.insert(fetched_node_count));
+    FOUNDATION_KNN_QUERY_STATS(stats.m_visited_leaves.insert(visited_leaf_count));
 }
 
 }       // namespace knn

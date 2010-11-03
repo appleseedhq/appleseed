@@ -60,37 +60,34 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Answer)
         Fixture()
           : m_answer(EntryCount)
         {
-        }
-
-        void insert_random_entries()
-        {
-            for (size_t i = 0; i < 2 * EntryCount; ++i)
+            for (size_t i = 0; i < EntryCount; ++i)
             {
                 const float distance = static_cast<float>(rand_double1(m_rng));
-                m_answer.insert(0, distance);
+                m_answer.array_insert(0, distance);
+            }
+
+            m_answer.make_heap();
+        }
+
+        void insert_into_heap()
+        {
+            for (size_t i = 0; i < EntryCount; ++i)
+            {
+                const float distance = static_cast<float>(rand_double1(m_rng));
+                m_answer.heap_insert(0, distance);
             }
         }
     };
 
-    BENCHMARK_CASE_WITH_FIXTURE(InsertIntoHeap_K5, Fixture<5>)          { insert_random_entries(); }
-    BENCHMARK_CASE_WITH_FIXTURE(InsertIntoHeap_K20, Fixture<20>)        { insert_random_entries(); }
-    BENCHMARK_CASE_WITH_FIXTURE(InsertIntoHeap_K100, Fixture<100>)      { insert_random_entries(); }
-    BENCHMARK_CASE_WITH_FIXTURE(InsertIntoHeap_K500, Fixture<500>)      { insert_random_entries(); }
+    BENCHMARK_CASE_WITH_FIXTURE(InsertIntoHeap_K5, Fixture<5>)          { insert_into_heap(); }
+    BENCHMARK_CASE_WITH_FIXTURE(InsertIntoHeap_K20, Fixture<20>)        { insert_into_heap(); }
+    BENCHMARK_CASE_WITH_FIXTURE(InsertIntoHeap_K100, Fixture<100>)      { insert_into_heap(); }
+    BENCHMARK_CASE_WITH_FIXTURE(InsertIntoHeap_K500, Fixture<500>)      { insert_into_heap(); }
 
-    template <size_t EntryCount>
-    struct SortFixture
-      : public Fixture<EntryCount>
-    {
-        SortFixture()
-        {
-            insert_random_entries();
-        }
-    };
-
-    BENCHMARK_CASE_WITH_FIXTURE(Sort_K5, SortFixture<5>)                { m_answer.sort(); }
-    BENCHMARK_CASE_WITH_FIXTURE(Sort_K20, SortFixture<20>)              { m_answer.sort(); }
-    BENCHMARK_CASE_WITH_FIXTURE(Sort_K100, SortFixture<100>)            { m_answer.sort(); }
-    BENCHMARK_CASE_WITH_FIXTURE(Sort_K500, SortFixture<500>)            { m_answer.sort(); }
+    BENCHMARK_CASE_WITH_FIXTURE(Sort_K5, Fixture<5>)        { m_answer.make_heap(); m_answer.sort(); }
+    BENCHMARK_CASE_WITH_FIXTURE(Sort_K20, Fixture<20>)      { m_answer.make_heap(); m_answer.sort(); }
+    BENCHMARK_CASE_WITH_FIXTURE(Sort_K100, Fixture<100>)    { m_answer.make_heap(); m_answer.sort(); }
+    BENCHMARK_CASE_WITH_FIXTURE(Sort_K500, Fixture<500>)    { m_answer.make_heap(); m_answer.sort(); }
 }
 
 BENCHMARK_SUITE(Foundation_Math_Knn_Query)
@@ -237,7 +234,7 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Query)
         }
     }
 
-    const size_t QueryCount = 10;
+    const size_t QueryCount = 100;
 
     template <size_t AnswerSize>
     class FixtureBase
@@ -246,17 +243,26 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Query)
         vector<Vector3f>    m_points;
         vector<Vector3f>    m_query_points;
 
-        FixtureBase()
+        FixtureBase(const string& name)
           : m_accumulator(0)
           , m_answer(AnswerSize)
         {
+            configure_logger(name);
         }
 
-        void prepare(const string& name)
+        ~FixtureBase()
+        {
+#ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
+            LOG_DEBUG(m_logger, "query statistics:");
+            m_query_stats.print(m_logger);
+#endif
+        }
+
+        void prepare()
         {
             if (!m_points.empty())
             {
-                build_tree(name);
+                build_tree();
                 find_query_points();
             }
         }
@@ -267,30 +273,45 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Query)
 
             for (size_t i = 0; i < QueryCount; ++i)
             {
-                query.run(m_query_points[i]);
+                query.run(
+                    m_query_points[i]
+#ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
+                    , m_query_stats
+#endif
+                    );
+
                 m_accumulator += m_answer.size();
             }
         }
 
       private:
-        knn::Tree3f         m_tree;
-        knn::Answer<float>  m_answer;
-        size_t              m_accumulator;
+        Logger                              m_logger;
+        auto_release_ptr<FileLogTarget>     m_log_target;
 
-        void build_tree(const string& name)
+        knn::Tree3f                         m_tree;
+        knn::Answer<float>                  m_answer;
+        size_t                              m_accumulator;
+
+#ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
+        knn::QueryStatistics                m_query_stats;
+#endif
+
+        void configure_logger(const string& name)
+        {
+            m_log_target.reset(create_file_log_target());
+            m_log_target->open(("output/test_knn_" + name + "_tree_stats.txt").c_str());
+            m_logger.add_target(m_log_target.get());
+        }
+
+        void build_tree()
         {
             knn::Builder3f builder(m_tree);
             builder.build(&m_points[0], m_points.size());
 
-            knn::TreeStatistics<knn::Tree3f, knn::Builder3f> stats(m_tree, builder);
+            knn::TreeStatistics<knn::Tree3f, knn::Builder3f> tree_stats(m_tree, builder);
 
-            Logger logger;
-
-            auto_release_ptr<FileLogTarget> log_target(create_file_log_target());
-            log_target->open(("output/test_knn_" + name + "_tree_stats.txt").c_str());
-            logger.add_target(log_target.get());
-
-            stats.print(logger);
+            LOG_DEBUG(m_logger, "tree statistics:");
+            tree_stats.print(m_logger);
         }
 
         void find_query_points()
@@ -327,13 +348,14 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Query)
       : public FixtureBase<AnswerSize>
     {
         ParticlesFixture()
+          : FixtureBase<AnswerSize>("particles_k" + to_string(AnswerSize))
         {
 /*
             load_points_from_text_file("data/test_knn_points.txt", m_points);
             write_points_to_binary_file("data/test_knn_particles.bin", m_points);
 */
             load_points_from_binary_file("data/test_knn_particles.bin", m_points);
-            prepare("particles_k" + to_string(AnswerSize));
+            prepare();
         }
     };
 
@@ -342,13 +364,14 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Query)
       : public FixtureBase<AnswerSize>
     {
         PhotonMapFixture()
+          : FixtureBase<AnswerSize>("photons_k" + to_string(AnswerSize))
         {
 /*
             load_points_from_toxic_photon_map("data/test_knn_gally_gpm.bin", m_points);
             write_points_to_binary_file("data/test_knn_photons.bin", m_points);
 */
             load_points_from_binary_file("data/test_knn_photons.bin", m_points);
-            prepare("photons_k" + to_string(AnswerSize));
+            prepare();
         }
     };
 

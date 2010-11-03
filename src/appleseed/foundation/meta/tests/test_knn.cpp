@@ -159,7 +159,7 @@ TEST_SUITE(Foundation_Math_Knn_Answer)
     TEST_CASE(Size_AfterOneInsertion_ReturnsOne)
     {
         knn::Answer<double> answer(3);
-        answer.insert(42, 12.0);
+        answer.array_insert(42, 12.0);
 
         EXPECT_EQ(1, answer.size());
     }
@@ -174,7 +174,7 @@ TEST_SUITE(Foundation_Math_Knn_Answer)
     TEST_CASE(Empty_AfterOneInsertion_ReturnsFalse)
     {
         knn::Answer<double> answer(3);
-        answer.insert(42, 12.0);
+        answer.array_insert(42, 12.0);
 
         EXPECT_FALSE(answer.empty());
     }
@@ -182,7 +182,7 @@ TEST_SUITE(Foundation_Math_Knn_Answer)
     TEST_CASE(Clear_GivenOneItem_EmptiesAnswer)
     {
         knn::Answer<double> answer(3);
-        answer.insert(42, 12.0);
+        answer.array_insert(42, 12.0);
 
         answer.clear();
 
@@ -192,10 +192,10 @@ TEST_SUITE(Foundation_Math_Knn_Answer)
     TEST_CASE(Sort_GivenFourItemsInSizeFiveAnswer_SortsItems)
     {
         knn::Answer<double> answer(5);
-        answer.insert(4, 4.0);
-        answer.insert(3, 3.0);
-        answer.insert(1, 1.0);
-        answer.insert(2, 2.0);
+        answer.array_insert(4, 4.0);
+        answer.array_insert(3, 3.0);
+        answer.array_insert(1, 1.0);
+        answer.array_insert(2, 2.0);
 
         answer.sort();
 
@@ -205,16 +205,16 @@ TEST_SUITE(Foundation_Math_Knn_Answer)
         EXPECT_EQ(4, answer.get(3).m_index);
     }
 
-    TEST_CASE(BuildHeap_GivenVector_TransformsVectorToHeap)
+    TEST_CASE(MakeHeap_GivenVector_TransformsVectorToHeap)
     {
         knn::Answer<double> answer(5);
-        answer.insert(5, 5.0);
-        answer.insert(1, 1.0);
-        answer.insert(4, 4.0);
-        answer.insert(3, 3.0);
-        answer.insert(2, 2.0);
+        answer.array_insert(5, 5.0);
+        answer.array_insert(1, 1.0);
+        answer.array_insert(4, 4.0);
+        answer.array_insert(3, 3.0);
+        answer.array_insert(2, 2.0);
 
-        answer.build_heap();
+        answer.make_heap();
 
         for (size_t i = 0; i < answer.size() / 2; ++i)
         {
@@ -228,11 +228,12 @@ TEST_SUITE(Foundation_Math_Knn_Answer)
     TEST_CASE(Insert_GivenCloserItem_KeepsItem)
     {
         knn::Answer<double> answer(3);
-        answer.insert(1, 1.0);
-        answer.insert(3, 3.0);
-        answer.insert(4, 4.0);
+        answer.array_insert(1, 1.0);
+        answer.array_insert(3, 3.0);
+        answer.array_insert(4, 4.0);
+        answer.make_heap();
 
-        answer.insert(2, 2.0);
+        answer.heap_insert(2, 2.0);
 
         answer.sort();
         EXPECT_EQ(1, answer.get(0).m_index);

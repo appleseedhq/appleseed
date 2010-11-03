@@ -31,14 +31,11 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/utility/test.h"
 
 // Standard headers.
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
-
-DECLARE_TEST_CASE(Foundation_Math_Knn_Answer, BuildHeap_GivenVector_TransformsVectorToHeap);
 
 namespace foundation {
 namespace knn {
@@ -78,27 +75,30 @@ class Answer
 
     void clear();
 
-    void insert(const size_t index, const ValueType distance);
+    void array_insert(const size_t index, const ValueType distance);
+
+    void make_heap();
+
+    void heap_insert(const size_t index, const ValueType distance);
+
+    void sort();
 
     const Entry& get(const size_t i) const;
 
-    void sort();
+    const Entry& top() const;
 
   private:
     template <typename, size_t> friend class Query;
 
-    GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Knn_Answer, BuildHeap_GivenVector_TransformsVectorToHeap);
-
     const size_t    m_max_size;
     Entry*          m_entries;
     size_t          m_size;
-    bool            m_heap;
 
-    void build_heap();
+#ifndef NDEBUG
+    bool            m_heap;
+#endif
 
     void heapify(const size_t index);
-
-    const Entry& top() const;
 };
 
 
@@ -150,37 +150,46 @@ template <typename T>
 inline void Answer<T>::clear()
 {
     m_size = 0;
+
+#ifndef NDEBUG
     m_heap = false;
+#endif
 }
 
 template <typename T>
-inline void Answer<T>::insert(const size_t index, const ValueType distance)
+inline void Answer<T>::array_insert(const size_t index, const ValueType distance)
 {
-    if (m_size < m_max_size)
-    {
-        Entry& entry = m_entries[m_size++];
-        entry.m_index = index;
-        entry.m_distance = distance;
-    }
-    else
-    {
-        if (!m_heap)
-            build_heap();
+    assert(m_size < m_max_size);
 
-        if (distance < m_entries->m_distance)
-        {
-            m_entries->m_index = index;
-            m_entries->m_distance = distance;
-            heapify(0);
-        }
-    }
+    Entry& entry = m_entries[m_size++];
+    entry.m_index = index;
+    entry.m_distance = distance;
 }
 
 template <typename T>
-inline const typename Answer<T>::Entry& Answer<T>::get(const size_t i) const
+inline void Answer<T>::make_heap()
 {
-    assert(i < m_size);
-    return m_entries[i];
+    assert(!empty());
+
+    size_t i = m_size / 2;
+
+    while (i--)
+        heapify(i);
+
+#ifndef NDEBUG
+    m_heap = true;
+#endif
+}
+
+template <typename T>
+inline void Answer<T>::heap_insert(const size_t index, const ValueType distance)
+{
+    assert(m_heap);
+
+    m_entries->m_index = index;
+    m_entries->m_distance = distance;
+
+    heapify(0);
 }
 
 template <typename T>
@@ -190,17 +199,19 @@ inline void Answer<T>::sort()
 }
 
 template <typename T>
-inline void Answer<T>::build_heap()
+inline const typename Answer<T>::Entry& Answer<T>::get(const size_t i) const
 {
-    assert(!empty());
-    assert(!m_heap);
+    assert(i < m_size);
 
-    size_t i = m_size / 2;
+    return m_entries[i];
+}
 
-    while (i--)
-        heapify(i);
+template <typename T>
+inline const typename Answer<T>::Entry& Answer<T>::top() const
+{
+    assert(m_heap);
 
-    m_heap = true;
+    return m_entries[0];
 }
 
 template <typename T>
@@ -228,15 +239,6 @@ inline void Answer<T>::heapify(const size_t index)
 
        i = largest;
     }
-}
-
-template <typename T>
-inline const typename Answer<T>::Entry& Answer<T>::top() const
-{
-    assert(!empty());
-    assert(m_heap);
-
-    return m_entries[0];
 }
 
 }       // namespace knn

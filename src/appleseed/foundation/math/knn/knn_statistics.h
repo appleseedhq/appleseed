@@ -78,18 +78,18 @@ class TreeStatistics
 
 
 //
-// Traversal statistics.
+// Query statistics.
 //
 
-class TraversalStatistics
+class QueryStatistics
   : public NonCopyable
 {
   public:
-    size_t                  m_traversal_count;      // number of times the tree was traversed
+    size_t                  m_query_count;          // number of executed queries
     Population<size_t>      m_fetched_nodes;        // number of nodes fetched from memory
     Population<size_t>      m_visited_leaves;       // number of leaves actually visited
 
-    TraversalStatistics();
+    QueryStatistics();
 
     void print(Logger& logger);
 };
