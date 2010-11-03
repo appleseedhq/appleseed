@@ -79,32 +79,17 @@ class Builder
     typedef AABB<T, N> BboxType;
     typedef Split<T> SplitType;
 
-    struct SortPredicate
-    {
-        TreeType&               m_tree;
-        const size_t            m_dimension;
-
-        SortPredicate(
-            TreeType&           tree,
-            const size_t        dimension);
-
-        bool operator()(
-            const size_t        lhs_index,
-            const size_t        rhs_index) const;
-    };
-
-    struct UpperBoundPredicate
+    struct PartitionPredicate
     {
         TreeType&               m_tree;
         const SplitType         m_split;
 
-        UpperBoundPredicate(
+        PartitionPredicate(
             TreeType&           tree,
             const SplitType&    split);
 
         bool operator()(
-            const size_t        lhs_index,
-            const size_t        rhs_index) const;
+            const size_t        index) const;
     };
 
     TreeType&                   m_tree;
@@ -158,6 +143,7 @@ void Builder<T, N>::build(
             m_tree.m_indices[i] = i;
     }
 
+    m_tree.m_nodes.reserve(count * 2 + 1);
     m_tree.m_nodes.push_back(NodeType());
 
     partition(0, 0, count);
@@ -192,26 +178,7 @@ inline double Builder<T, N>::get_build_time() const
 }
 
 template <typename T, size_t N>
-inline Builder<T, N>::SortPredicate::SortPredicate(
-    TreeType&                   tree,
-    const size_t                dimension)
-  : m_tree(tree)
-  , m_dimension(dimension)
-{
-}
-
-template <typename T, size_t N>
-inline bool Builder<T, N>::SortPredicate::operator()(
-    const size_t                lhs_index,
-    const size_t                rhs_index) const
-{
-    const ValueType lhs_value = m_tree.m_points[lhs_index][m_dimension];
-    const ValueType rhs_value = m_tree.m_points[rhs_index][m_dimension];
-    return lhs_value < rhs_value;
-}
-
-template <typename T, size_t N>
-inline Builder<T, N>::UpperBoundPredicate::UpperBoundPredicate(
+inline Builder<T, N>::PartitionPredicate::PartitionPredicate(
     TreeType&                   tree,
     const SplitType&            split)
   : m_tree(tree)
@@ -220,12 +187,10 @@ inline Builder<T, N>::UpperBoundPredicate::UpperBoundPredicate(
 }
 
 template <typename T, size_t N>
-inline bool Builder<T, N>::UpperBoundPredicate::operator()(
-    const size_t                lhs_index,  // not used
-    const size_t                rhs_index) const
+inline bool Builder<T, N>::PartitionPredicate::operator()(
+    const size_t                index) const
 {
-    const ValueType rhs_value = m_tree.m_points[rhs_index][m_split.m_dimension];
-    return m_split.m_abscissa < rhs_value;
+    return m_tree.m_points[index][m_split.m_dimension] < m_split.m_abscissa;
 }
 
 template <typename T, size_t N>
@@ -248,17 +213,11 @@ void Builder<T, N>::partition(
         const BboxType bbox = compute_bbox(begin, end);
         SplitType split = SplitType::middle(bbox);
 
-        std::sort(
-            &m_tree.m_indices[0] + begin,
-            &m_tree.m_indices[0] + end,
-            SortPredicate(m_tree, split.m_dimension));
-
         const size_t* bound =
-            std::upper_bound(
+            std::partition(
                 &m_tree.m_indices[0] + begin,
                 &m_tree.m_indices[0] + end,
-                0,  // not used
-                UpperBoundPredicate(m_tree, split));
+                PartitionPredicate(m_tree, split));
 
         size_t pivot = bound - &m_tree.m_indices[0];
         assert(pivot > begin);

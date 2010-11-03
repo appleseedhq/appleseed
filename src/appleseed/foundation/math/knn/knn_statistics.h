@@ -63,6 +63,7 @@ class TreeStatistics
 
   private:
     const double            m_build_time;           // construction time in seconds
+    const size_t            m_point_count;          // number of points in the tree
     const size_t            m_memory_size;          // size of the tree in memory
     const size_t            m_node_count;           // total number of nodes (leaf and interior nodes)
     size_t                  m_leaf_count;           // number of leaf nodes
@@ -105,6 +106,7 @@ TreeStatistics<Tree, Builder>::TreeStatistics(
     const Tree&         tree,
     const Builder&      builder)
   : m_build_time(builder.get_build_time())
+  , m_point_count(tree.m_points.size())
   , m_memory_size(tree.get_memory_size())
   , m_node_count(tree.m_nodes.size())
   , m_leaf_count(0)
@@ -120,11 +122,13 @@ void TreeStatistics<Tree, Builder>::print(Logger& logger)
     LOG_DEBUG(
         logger,
         "  build time       %s\n"
+        "  points           %s\n"
         "  size             %s\n"
         "  nodes            total %s  interior %s  leaves %s\n"
         "  leaf depth       avg %.1f  min %s  max %s  dev %.1f\n"
         "  leaf size        avg %.1f  min %s  max %s  dev %.1f",
         pretty_time(m_build_time).c_str(),
+        pretty_uint(m_point_count).c_str(),
         pretty_size(m_memory_size).c_str(),
         pretty_uint(m_node_count).c_str(),
         pretty_uint(m_node_count - m_leaf_count).c_str(),
