@@ -33,16 +33,23 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/platform/types.h"
 
+// Standard headers.
+#include <cassert>
+
 namespace foundation
 {
 
 //
-// Xorshift sequence of period 2^32 - 1.
+// Xorshift RNG of period 2^32 - 1.
 //
-// For testing only!
+// Very fast and reasonably high quality despite a relatively short period.
+// Can be extended to much higher periods if necessary (see the paper).
 //
-// Reference:
+// WARNING: will never generate zeros!
 //
+// References:
+//
+//   http://www.jstatsoft.org/v08/i14/paper
 //   http://tbf.coe.wayne.edu/jmasm/vol2_no1.pdf
 //
 
@@ -51,7 +58,7 @@ class Xorshift
 {
   public:
     // Constructor, seeds the generator.
-    explicit Xorshift(const uint32 seed = 0);
+    explicit Xorshift(const uint32 seed = 2463534242UL);
 
     // Generates a 32-bit random number.
     uint32 rand_uint32();
@@ -65,18 +72,17 @@ class Xorshift
 // Xorshift class implementation.
 //
 
-// Constructor, seed the generator.
 inline Xorshift::Xorshift(const uint32 seed)
   : m_x(seed)
 {
+    assert(seed != 0);  // if the seed is 0, all output values will be 0
 }
 
-// Generates a 32-bit random number.
 inline uint32 Xorshift::rand_uint32()
 {
-    m_x ^= m_x + m_x;
-    m_x ^= m_x >> 3;
-    m_x ^= m_x << 10;
+    m_x ^= m_x << 13;
+    m_x ^= m_x >> 17;
+    m_x ^= m_x << 5;
     return m_x;
 }
 
