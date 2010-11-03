@@ -88,6 +88,7 @@ class QueryStatistics
     size_t                  m_query_count;          // number of executed queries
     Population<size_t>      m_fetched_nodes;        // number of nodes fetched from memory
     Population<size_t>      m_visited_leaves;       // number of leaves actually visited
+    Population<size_t>      m_tested_points;        // number of points tested for inclusion
 
     QueryStatistics();
 

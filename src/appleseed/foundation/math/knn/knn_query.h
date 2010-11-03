@@ -219,6 +219,7 @@ inline void Query<T, N>::find_single_nearest_neighbor(
 
     FOUNDATION_KNN_QUERY_STATS(stats.m_fetched_nodes.insert(fetched_node_count));
     FOUNDATION_KNN_QUERY_STATS(stats.m_visited_leaves.insert(1));
+    FOUNDATION_KNN_QUERY_STATS(stats.m_tested_points.insert(1));
 }
 
 template <typename T, size_t N>
@@ -232,6 +233,7 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
     FOUNDATION_KNN_QUERY_STATS(++stats.m_query_count);
     FOUNDATION_KNN_QUERY_STATS(size_t fetched_node_count = 0);
     FOUNDATION_KNN_QUERY_STATS(size_t visited_leaf_count = 0);
+    FOUNDATION_KNN_QUERY_STATS(size_t tested_point_count = 0);
 
     const VectorType* RESTRICT points = &m_tree.m_points.front();
     const NodeType* RESTRICT nodes = &m_tree.m_nodes.front();
@@ -279,6 +281,8 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
 
         while (point_ptr < array_end)
         {
+            FOUNDATION_KNN_QUERY_STATS(++tested_point_count);
+
             const ValueType distance = square_distance(*point_ptr, query_point);
 
             m_answer.array_insert(point_index, distance);
@@ -294,6 +298,8 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
 
         while (point_ptr < point_end)
         {
+            FOUNDATION_KNN_QUERY_STATS(++tested_point_count);
+
             const ValueType distance = square_distance(*point_ptr, query_point);
 
             if (distance < max_distance)
@@ -319,6 +325,9 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
 
     size_t node_queue_size = 1;
 
+    const size_t MaxLeafSize = 25;
+    bool first_leaf = true;
+
     while (node_queue_size > 0 && node_queue->m_distance < max_distance)
     {
         const NodeType* RESTRICT node = node_queue->m_node;
@@ -341,8 +350,16 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
 
             FOUNDATION_KNN_QUERY_STATS(++fetched_node_count);
 
-            if (follow_node->get_point_count() < m_answer.m_max_size)
-                break;
+            if (first_leaf)
+            {
+                if (follow_node->get_point_count() < m_answer.m_max_size)
+                    break;
+            }
+            else
+            {
+                if (follow_node->get_point_count() < MaxLeafSize)
+                    break;
+            }
 
             distance *= distance;
 
@@ -355,6 +372,8 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
             node = follow_node;
         }
 
+        first_leaf = false;
+
         if (node == start_node)
             continue;
 
@@ -366,6 +385,8 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
 
         while (point_ptr < point_end)
         {
+            FOUNDATION_KNN_QUERY_STATS(++tested_point_count);
+
             const ValueType distance = square_distance(*point_ptr, query_point);
 
             if (distance < max_distance)
@@ -391,6 +412,7 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
 
     FOUNDATION_KNN_QUERY_STATS(stats.m_fetched_nodes.insert(fetched_node_count));
     FOUNDATION_KNN_QUERY_STATS(stats.m_visited_leaves.insert(visited_leaf_count));
+    FOUNDATION_KNN_QUERY_STATS(stats.m_tested_points.insert(tested_point_count));
 }
 
 }       // namespace knn
