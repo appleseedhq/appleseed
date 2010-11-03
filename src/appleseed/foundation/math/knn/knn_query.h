@@ -237,70 +237,82 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
 
     const VectorType* RESTRICT points = &m_tree.m_points.front();
     const NodeType* RESTRICT nodes = &m_tree.m_nodes.front();
+    const size_t max_answer_size = m_answer.m_max_size;
 
     //
-    // 1. Find the deepest node that contains the query point and enough other points
-    //    to compute a maximum search distance.
+    // Step 1:
+    //
+    //   Find the deepest node of the tree (leaf node or interior node) that contains
+    //   the query point and enough other points to compute a maximum search distance.
+    //   This descent is very fast, since no nodes are pushed to a stack, and it will
+    //   allow us to compute an initial maximum search distance, which will speed up
+    //   the "real" search later on.
     //
 
-    const NodeType* RESTRICT start_node = nodes;
+    const NodeType* RESTRICT node = nodes;
 
     FOUNDATION_KNN_QUERY_STATS(++fetched_node_count);
 
-    while (start_node->is_interior())
+    // In any case, we must stop when we reach a leaf node.
+    while (node->is_interior())
     {
-        const size_t split_dim = start_node->get_split_dim();
-        const ValueType split_abs = start_node->get_split_abs();
+        const size_t split_dim = node->get_split_dim();
+        const ValueType split_abs = node->get_split_abs();
 
-        const NodeType* RESTRICT child_node = nodes + start_node->get_child_node_index();
+        const NodeType* RESTRICT child_node = nodes + node->get_child_node_index();
 
         if (query_point[split_dim] >= split_abs)
             ++child_node;
 
         FOUNDATION_KNN_QUERY_STATS(++fetched_node_count);
 
-        if (child_node->get_point_count() < m_answer.m_max_size)
+        // The child node contains too few points, keep the current node.
+        if (child_node->get_point_count() < max_answer_size)
             break;
 
-        start_node = child_node;
+        // The child node contains enough points.
+        node = child_node;
     }
 
     //
-    // 2. Collect the points in or below this node and compute a maximum search distance.
+    // Step 2:
     //
-
-    FOUNDATION_KNN_QUERY_STATS(++visited_leaf_count);
+    //   Collect all the points in this node (if it's a leaf node) or below this node
+    //   (if it's an interior node), and compute an initial maximum search distance.
+    //
 
     ValueType max_distance(0.0);
 
     {
-        size_t point_index = start_node->get_point_index();
-        const VectorType* RESTRICT point_ptr = points + point_index;
-        const VectorType* RESTRICT point_end = point_ptr + start_node->get_point_count();
-        const VectorType* RESTRICT array_end = std::min(point_ptr + m_answer.m_max_size, point_end);
+        FOUNDATION_KNN_QUERY_STATS(++visited_leaf_count);
 
+        size_t point_index = node->get_point_index();
+        const VectorType* RESTRICT point_ptr = points + point_index;
+        const VectorType* RESTRICT point_end = point_ptr + node->get_point_count();
+        const VectorType* RESTRICT array_end = std::min(point_ptr + max_answer_size, point_end);
+
+        // First, we fill up the answer like an array.
         while (point_ptr < array_end)
         {
             FOUNDATION_KNN_QUERY_STATS(++tested_point_count);
 
-            const ValueType distance = square_distance(*point_ptr, query_point);
+            const ValueType distance = square_distance(*point_ptr++, query_point);
 
-            m_answer.array_insert(point_index, distance);
+            m_answer.array_insert(point_index++, distance);
 
             if (max_distance < distance)
                 max_distance = distance;
-
-            ++point_index;
-            ++point_ptr;
         }
 
+        // At this point the answer is full, so we transform it into a heap.
         m_answer.make_heap();
 
+        // Then, we insert the remaining points into the answer.
         while (point_ptr < point_end)
         {
             FOUNDATION_KNN_QUERY_STATS(++tested_point_count);
 
-            const ValueType distance = square_distance(*point_ptr, query_point);
+            const ValueType distance = square_distance(*point_ptr++, query_point);
 
             if (distance < max_distance)
             {
@@ -309,28 +321,67 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
             }
 
             ++point_index;
-            ++point_ptr;
         }
     }
 
     //
-    // 3. Traverse again the tree and update the set of neighbors.
+    // Step 3:
+    //
+    //   Traverse again the tree, starting at the top, but this time we will push
+    //   nodes that we don't visit (but that contains candidate points) to a priority
+    //   queue.
     //
 
     const size_t NodeQueueSize = 256;
-
     NodeEntry node_queue[NodeQueueSize];
-    node_queue->m_node = nodes;
-    node_queue->m_distance = ValueType(0.0);
 
-    size_t node_queue_size = 1;
+    size_t node_queue_size = 0;
 
-    const size_t MaxLeafSize = 25;
-    bool first_leaf = true;
+    node = nodes;
+
+    while (node->is_interior())
+    {
+        const size_t split_dim = node->get_split_dim();
+        const ValueType split_abs = node->get_split_abs();
+        ValueType distance = query_point[split_dim] - split_abs;
+
+        // Figure out which node to follow and which node to push.
+        const int select = static_cast<int>(FP<ValueType>::sign(distance));
+        const NodeType* RESTRICT left_child_node = nodes + node->get_child_node_index();
+        const NodeType* RESTRICT follow_node = left_child_node + 1 - select;
+        const NodeType* RESTRICT queue_node = left_child_node + select;
+
+        FOUNDATION_KNN_QUERY_STATS(++fetched_node_count);
+
+        // Like in the initial step, we stop as soon as we reached a node with enough points.
+        if (follow_node->get_point_count() < max_answer_size)
+            break;
+
+        distance *= distance;
+
+        if (distance < max_distance)
+        {
+            node_queue[node_queue_size++] = NodeEntry(queue_node, distance);
+            std::push_heap(node_queue, node_queue + node_queue_size);
+        }
+
+        node = follow_node;
+    }
+
+    //
+    // Step 4:
+    //
+    //   Visit the nodes in the priority queue, from the closest to the farthest,
+    //   updating the priority queue with new nodes to visit later. We terminate
+    //   as soon as the closest node is farther than our current maximum search
+    //   distance.
+    //
+
+    const size_t BestLeafSize = 25;
 
     while (node_queue_size > 0 && node_queue->m_distance < max_distance)
     {
-        const NodeType* RESTRICT node = node_queue->m_node;
+        node = node_queue->m_node;
 
         std::pop_heap(node_queue, node_queue + node_queue_size);
         --node_queue_size;
@@ -343,6 +394,7 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
             const ValueType split_abs = node->get_split_abs();
             ValueType distance = query_point[split_dim] - split_abs;
 
+            // Figure out which node to follow and which node to push.
             const int select = static_cast<int>(FP<ValueType>::sign(distance));
             const NodeType* RESTRICT left_child_node = nodes + node->get_child_node_index();
             const NodeType* RESTRICT follow_node = left_child_node + 1 - select;
@@ -350,16 +402,9 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
 
             FOUNDATION_KNN_QUERY_STATS(++fetched_node_count);
 
-            if (first_leaf)
-            {
-                if (follow_node->get_point_count() < m_answer.m_max_size)
-                    break;
-            }
-            else
-            {
-                if (follow_node->get_point_count() < MaxLeafSize)
-                    break;
-            }
+            // Try to target nodes with a "right" number of points.
+            if (follow_node->get_point_count() < BestLeafSize)
+                break;
 
             distance *= distance;
 
@@ -372,11 +417,6 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
             node = follow_node;
         }
 
-        first_leaf = false;
-
-        if (node == start_node)
-            continue;
-
         FOUNDATION_KNN_QUERY_STATS(++visited_leaf_count);
 
         size_t point_index = node->get_point_index();
@@ -387,7 +427,7 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
         {
             FOUNDATION_KNN_QUERY_STATS(++tested_point_count);
 
-            const ValueType distance = square_distance(*point_ptr, query_point);
+            const ValueType distance = square_distance(*point_ptr++, query_point);
 
             if (distance < max_distance)
             {
@@ -396,9 +436,15 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
             }
 
             ++point_index;
-            ++point_ptr;
         }
     }
+
+    //
+    // Step 5:
+    //
+    //   Transform the indices of the k nearest neighbors so they match the
+    //   ordering of the points as they were supplied by the user.
+    //
 
     AnswerType::Entry* RESTRICT entry_ptr = m_answer.m_entries;
     const AnswerType::Entry* RESTRICT entry_end = entry_ptr + m_answer.m_size;
