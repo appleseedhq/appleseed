@@ -34,6 +34,7 @@
 #include "foundation/math/knn/knn_node.h"
 #include "foundation/math/knn/knn_tree.h"
 #include "foundation/math/aabb.h"
+#include "foundation/math/permutation.h"
 #include "foundation/math/split.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/timer.h"
@@ -160,6 +161,17 @@ void Builder<T, N>::build(
     m_tree.m_nodes.push_back(NodeType());
 
     partition(0, 0, count);
+
+    if (count > 0)
+    {
+        std::vector<VectorType> temp(count);
+
+        small_item_reorder(
+            &m_tree.m_points[0],
+            &temp[0],
+            &m_tree.m_indices[0],
+            count);
+    }
 
     stopwatch.measure();
     m_build_time = stopwatch.get_seconds();

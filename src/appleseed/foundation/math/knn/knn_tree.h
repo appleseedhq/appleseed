@@ -39,10 +39,9 @@
 #include <cstddef>
 #include <vector>
 
-DECLARE_TEST_CASE(Foundation_Math_Knn_Builder, Build_GivenZeroPoint_BuildsValidTree);
-DECLARE_TEST_CASE(Foundation_Math_Knn_Builder, Build_GivenTwoPoints_BuildsValidTree);
-DECLARE_TEST_CASE(Foundation_Math_Knn_Builder, Build_GivenFourPoints_BuildsValidTree);
-DECLARE_TEST_CASE(Foundation_Math_Knn_Builder, Build_GivenEightPoints_GeneratesSevenNodes);
+DECLARE_TEST_CASE(Foundation_Math_Knn_Builder, Build_GivenZeroPoint_BuildsEmptyTree);
+DECLARE_TEST_CASE(Foundation_Math_Knn_Builder, Build_GivenTwoPoints_BuildsCorrectTree);
+DECLARE_TEST_CASE(Foundation_Math_Knn_Builder, Build_GivenEightPoints_GeneratesFifteenNodes);
 
 namespace foundation {
 namespace knn {
@@ -67,10 +66,9 @@ class Tree
     template <typename, size_t N> friend class Query;
     template <typename Tree, typename Builder> friend class TreeStatistics;
 
-    GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Knn_Builder, Build_GivenZeroPoint_BuildsValidTree);
-    GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Knn_Builder, Build_GivenTwoPoints_BuildsValidTree);
-    GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Knn_Builder, Build_GivenFourPoints_BuildsValidTree);
-    GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Knn_Builder, Build_GivenEightPoints_GeneratesSevenNodes);
+    GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Knn_Builder, Build_GivenZeroPoint_BuildsEmptyTree);
+    GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Knn_Builder, Build_GivenTwoPoints_BuildsCorrectTree);
+    GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Knn_Builder, Build_GivenEightPoints_GeneratesFifteenNodes);
 
     typedef Node<T> NodeType;
 

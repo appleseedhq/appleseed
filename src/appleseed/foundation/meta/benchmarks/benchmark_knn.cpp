@@ -234,7 +234,7 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Query)
         }
     }
 
-    const size_t QueryCount = 100;
+    const size_t QueryCount = 10;
 
     template <size_t AnswerSize>
     class FixtureBase

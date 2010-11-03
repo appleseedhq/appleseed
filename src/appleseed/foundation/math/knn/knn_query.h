@@ -212,11 +212,10 @@ inline void Query<T, N>::find_single_nearest_neighbor(
         FOUNDATION_KNN_QUERY_STATS(++fetched_node_count);
     }
 
-    const size_t point_index = m_tree.m_indices[node->get_point_index()];
-    const VectorType& point = m_tree.m_points[point_index];
-    const ValueType distance = square_distance(point, query_point);
+    const size_t point_index = node->get_point_index();
+    const ValueType distance = square_distance(m_tree.m_points[point_index], query_point);
 
-    m_answer.array_insert(point_index, distance);
+    m_answer.array_insert(m_tree.m_indices[point_index], distance);
 
     FOUNDATION_KNN_QUERY_STATS(stats.m_fetched_nodes.insert(fetched_node_count));
     FOUNDATION_KNN_QUERY_STATS(stats.m_visited_leaves.insert(1));
@@ -235,7 +234,6 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
     FOUNDATION_KNN_QUERY_STATS(size_t visited_leaf_count = 0);
 
     const VectorType* RESTRICT points = &m_tree.m_points.front();
-    const size_t* RESTRICT indices = &m_tree.m_indices.front();
     const NodeType* RESTRICT nodes = &m_tree.m_nodes.front();
 
     //
@@ -273,39 +271,39 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
 
     ValueType max_distance(0.0);
 
-    const size_t* RESTRICT index_ptr = indices + start_node->get_point_index();
-    const size_t* RESTRICT index_end = index_ptr + start_node->get_point_count();
-    const size_t* RESTRICT array_end = std::min(index_ptr + m_answer.m_max_size, index_end);
-
-    while (index_ptr < array_end)
     {
-        // Fetch the point and compute its distance to the query point.
-        const size_t point_index = *index_ptr++;
-        const VectorType& point = points[point_index];
-        const ValueType distance = square_distance(point, query_point);
+        size_t point_index = start_node->get_point_index();
+        const VectorType* RESTRICT point_ptr = points + point_index;
+        const VectorType* RESTRICT point_end = point_ptr + start_node->get_point_count();
+        const VectorType* RESTRICT array_end = std::min(point_ptr + m_answer.m_max_size, point_end);
 
-        // Add this point to the answer.
-        m_answer.array_insert(point_index, distance);
-
-        // Update the maximum search distance.
-        if (max_distance < distance)
-            max_distance = distance;
-    }
-
-    m_answer.make_heap();
-
-    while (index_ptr < index_end)
-    {
-        // Fetch the point and compute its distance to the query point.
-        const size_t point_index = *index_ptr++;
-        const VectorType& point = points[point_index];
-        const ValueType distance = square_distance(point, query_point);
-
-        // Insert this point to the answer.
-        if (distance < max_distance)
+        while (point_ptr < array_end)
         {
-            m_answer.heap_insert(point_index, distance);
-            max_distance = m_answer.top().m_distance;
+            const ValueType distance = square_distance(*point_ptr, query_point);
+
+            m_answer.array_insert(point_index, distance);
+
+            if (max_distance < distance)
+                max_distance = distance;
+
+            ++point_index;
+            ++point_ptr;
+        }
+
+        m_answer.make_heap();
+
+        while (point_ptr < point_end)
+        {
+            const ValueType distance = square_distance(*point_ptr, query_point);
+
+            if (distance < max_distance)
+            {
+                m_answer.heap_insert(point_index, distance);
+                max_distance = m_answer.top().m_distance;
+            }
+
+            ++point_index;
+            ++point_ptr;
         }
     }
 
@@ -321,15 +319,10 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
 
     size_t node_queue_size = 1;
 
-    while (node_queue_size > 0)
+    while (node_queue_size > 0 && node_queue->m_distance < max_distance)
     {
-        // If the closest node is farther than our farthest point, bail out.
-        if (node_queue->m_distance >= max_distance)
-            break;
-
         const NodeType* RESTRICT node = node_queue->m_node;
 
-        // Remove the closest node from the queue.
         std::pop_heap(node_queue, node_queue + node_queue_size);
         --node_queue_size;
 
@@ -367,23 +360,33 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
 
         FOUNDATION_KNN_QUERY_STATS(++visited_leaf_count);
 
-        const size_t* RESTRICT index_ptr = indices + node->get_point_index();
-        const size_t* RESTRICT index_end = index_ptr + node->get_point_count();
+        size_t point_index = node->get_point_index();
+        const VectorType* RESTRICT point_ptr = points + point_index;
+        const VectorType* RESTRICT point_end = point_ptr + node->get_point_count();
 
-        while (index_ptr < index_end)
+        while (point_ptr < point_end)
         {
-            // Fetch the point and compute its distance to the query point.
-            const size_t point_index = *index_ptr++;
-            const VectorType& point = points[point_index];
-            const ValueType distance = square_distance(point, query_point);
+            const ValueType distance = square_distance(*point_ptr, query_point);
 
-            // Insert this point to the answer.
             if (distance < max_distance)
             {
                 m_answer.heap_insert(point_index, distance);
                 max_distance = m_answer.top().m_distance;
             }
+
+            ++point_index;
+            ++point_ptr;
         }
+    }
+
+    AnswerType::Entry* RESTRICT entry_ptr = m_answer.m_entries;
+    const AnswerType::Entry* RESTRICT entry_end = entry_ptr + m_answer.m_size;
+    const size_t* RESTRICT indices = &m_tree.m_indices.front();
+
+    while (entry_ptr < entry_end)
+    {
+        entry_ptr->m_index = indices[entry_ptr->m_index];
+        ++entry_ptr;
     }
 
     FOUNDATION_KNN_QUERY_STATS(stats.m_fetched_nodes.insert(fetched_node_count));
