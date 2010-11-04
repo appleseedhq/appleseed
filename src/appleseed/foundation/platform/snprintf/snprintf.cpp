@@ -889,19 +889,19 @@ portable_vsnprintf(char *str, size_t size, const char *format, va_list args)
 				switch (cflags) {
 				case PRINT_C_CHAR:
 					charptr = va_arg(args, signed char *);
-					*charptr = len;
+					*charptr = static_cast<signed char>(len);
 					break;
 				case PRINT_C_SHORT:
 					shortptr = va_arg(args, short int *);
-					*shortptr = len;
+					*shortptr = static_cast<short int>(len);
 					break;
 				case PRINT_C_LONG:
 					longptr = va_arg(args, long int *);
-					*longptr = len;
+					*longptr = static_cast<long int>(len);
 					break;
 				case PRINT_C_LLONG:
 					llongptr = va_arg(args, LLONG *);
-					*llongptr = len;
+					*llongptr = static_cast<LLONG>(len);
 					break;
 				case PRINT_C_SIZE:
 					/*
@@ -912,19 +912,19 @@ portable_vsnprintf(char *str, size_t size, const char *format, va_list args)
 					 * size_t argument." (7.19.6.1, 7)
 					 */
 					sizeptr = va_arg(args, SSIZE_T *);
-					*sizeptr = len;
+					*sizeptr = static_cast<SSIZE_T>(len);
 					break;
 				case PRINT_C_INTMAX:
 					intmaxptr = va_arg(args, INTMAX_T *);
-					*intmaxptr = len;
+					*intmaxptr = static_cast<INTMAX_T>(len);
 					break;
 				case PRINT_C_PTRDIFF:
 					ptrdiffptr = va_arg(args, PTRDIFF_T *);
-					*ptrdiffptr = len;
+					*ptrdiffptr = static_cast<PTRDIFF_T>(len);
 					break;
 				default:
 					intptr = va_arg(args, int *);
-					*intptr = len;
+					*intptr = static_cast<int>(len);
 					break;
 				}
 				break;
