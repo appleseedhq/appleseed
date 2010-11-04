@@ -289,7 +289,8 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
         size_t point_index = node->get_point_index();
         const VectorType* RESTRICT point_ptr = points + point_index;
         const VectorType* RESTRICT point_end = point_ptr + node->get_point_count();
-        const VectorType* RESTRICT array_end = std::min(point_ptr + max_answer_size, point_end);
+        const VectorType* RESTRICT array_max = point_ptr + max_answer_size;
+        const VectorType* RESTRICT array_end = array_max < point_end ? array_max : point_end;
 
         // First, we fill up the answer like an array.
         while (point_ptr < array_end)
@@ -446,8 +447,8 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
     //   ordering of the points as they were supplied by the user.
     //
 
-    AnswerType::Entry* RESTRICT entry_ptr = m_answer.m_entries;
-    const AnswerType::Entry* RESTRICT entry_end = entry_ptr + m_answer.m_size;
+    typename AnswerType::Entry* RESTRICT entry_ptr = m_answer.m_entries;
+    const typename AnswerType::Entry* RESTRICT entry_end = entry_ptr + m_answer.m_size;
     const size_t* RESTRICT indices = &m_tree.m_indices.front();
 
     while (entry_ptr < entry_end)
