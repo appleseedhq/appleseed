@@ -379,6 +379,7 @@ set(foundation_meta_tests_sources
     foundation/meta/tests/test_qmc.cpp
     foundation/meta/tests/test_ray.cpp
     foundation/meta/tests/test_registrar.cpp
+    foundation/meta/tests/test_rng.cpp
     foundation/meta/tests/test_sampling.cpp
     foundation/meta/tests/test_scalar.cpp
     foundation/meta/tests/test_settings.cpp
