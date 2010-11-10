@@ -62,7 +62,7 @@ BENCHMARK_SUITE(Foundation_Math_VoxelGrid3)
                     {
                         for (size_t c = 0; c < m_grid.get_channel_count(); ++c)
                         {
-                            m_grid.voxel(x, y, z)[c] = static_cast<float>(rand_double1(rng));
+                            m_grid.voxel(x, y, z)[c] = rand_float1(rng);
                         }
                     }
                 }

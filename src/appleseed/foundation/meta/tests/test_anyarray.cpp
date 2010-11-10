@@ -356,8 +356,7 @@ FOUNDATION_IMPLEMENT_TEST(UnitTestAnyArray, UnitTest, "foundation::AnyArray")
                     }
                   case 8:
                     {
-                        const float val =
-                            static_cast<float>(rand_double1(rng, -1000.0f, 1000.0f));
+                        const float val = rand_float1(rng, -1000.0f, 1000.0f);
                         array.insert<float>(prefix + to_string(val), val);
                         break;
                     }

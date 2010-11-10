@@ -774,7 +774,7 @@ namespace
             // Create a random spectrum.
             MersenneTwister rng;
             for (size_t w = 0; w < SpectrumType::Samples; ++w)
-                m_spectrum[w] = static_cast<float>(rand_double1(rng));
+                m_spectrum[w] = rand_float1(rng);
         }
 
         virtual void run(bool do_run)

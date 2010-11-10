@@ -55,7 +55,7 @@ BENCHMARK_SUITE(Foundation_Math_FastMath)
             MersenneTwister rng;
 
             for (size_t i = 0; i < N; ++i)
-                m_values[i] = static_cast<float>(rand_double1(rng));
+                m_values[i] = rand_float1(rng);
         }
     };
 

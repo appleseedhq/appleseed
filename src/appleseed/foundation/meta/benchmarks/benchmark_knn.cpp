@@ -62,7 +62,7 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Answer)
         {
             for (size_t i = 0; i < EntryCount; ++i)
             {
-                const float distance = static_cast<float>(rand_double1(m_rng));
+                const float distance = rand_float1(m_rng);
                 m_answer.array_insert(0, distance);
             }
 
@@ -73,7 +73,7 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Answer)
         {
             for (size_t i = 0; i < EntryCount; ++i)
             {
-                const float distance = static_cast<float>(rand_double1(m_rng));
+                const float distance = rand_float1(m_rng);
                 m_answer.heap_insert(0, distance);
             }
         }
