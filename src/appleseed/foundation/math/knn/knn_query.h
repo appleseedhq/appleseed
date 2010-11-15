@@ -40,7 +40,6 @@
 #include "foundation/platform/compiler.h"
 
 // Standard headers.
-#include <algorithm>
 #include <cassert>
 #include <cstddef>
 
@@ -335,10 +334,19 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
     //
     //   Traverse again the tree, starting at the top, but this time we will push
     //   nodes that we don't visit (but that potentially contain candidate points)
-    //   to a priority queue.
+    //   to a partially-ordered stack.
     //
 
-    const size_t NodeQueueSize = 256;
+#define ORDER_NODE_ENTRIES(LhsIndex, RhsIndex)                                                  \
+    if (node_queue[node_queue_size - (LhsIndex)].m_dvec_square_norm <                           \
+        node_queue[node_queue_size - (RhsIndex)].m_dvec_square_norm)                            \
+    {                                                                                           \
+        const NodeEntry tmp = node_queue[node_queue_size - (LhsIndex)];                         \
+        node_queue[node_queue_size - (LhsIndex)] = node_queue[node_queue_size - (RhsIndex)];    \
+        node_queue[node_queue_size - (RhsIndex)] = tmp;                                         \
+    }
+
+    const size_t NodeQueueSize = 128;
     NodeEntry node_queue[NodeQueueSize];
     size_t node_queue_size = 0;
 
@@ -362,17 +370,26 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
         if (follow_node->get_point_count() < max_answer_size)
             break;
 
-        // Push the node that we don't visit now to the priority queue.
+        // Push the node that we don't visit now to the node stack.
         const ValueType square_distance = distance * distance;
         if (square_distance < max_square_distance)
         {
             VectorType dvec(0.0);
             dvec[split_dim] = distance;
 
+            // Push the node to the node stack.
             assert(node_queue_size < NodeQueueSize);
             node_queue[node_queue_size++] = NodeEntry(queue_node, dvec, square_distance);
 
-            std::push_heap(node_queue, node_queue + node_queue_size);
+            // Order the top levels of the node stack.
+            if (node_queue_size >= 4)
+            {
+                ORDER_NODE_ENTRIES(4, 3);
+                ORDER_NODE_ENTRIES(2, 1);
+                ORDER_NODE_ENTRIES(4, 2);
+                ORDER_NODE_ENTRIES(3, 1);
+                ORDER_NODE_ENTRIES(3, 2);
+            }
         }
 
         node = follow_node;
@@ -381,21 +398,23 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
     //
     // Step 4:
     //
-    //   Visit the nodes in the priority queue, from the closest to the farthest,
-    //   updating the priority queue with new nodes to visit later. We terminate
-    //   as soon as the closest node is farther than our current maximum search
-    //   distance.
+    //   Visit the nodes in the node stack, from the closest to the farthest,
+    //   updating the stack with new nodes to visit later. We terminate as soon
+    //   as the closest node is farther than our current maximum search distance.
     //
 
-    const size_t IdealLeafSize = 25;
+    const size_t IdealLeafSize = 20;
 
-    while (node_queue_size > 0 && node_queue->m_dvec_square_norm < max_square_distance)
+    while (node_queue_size-- > 0)
     {
-        node = node_queue->m_node;
-        const VectorType parent_dvec = node_queue->m_dvec;
+        const NodeEntry* top_entry = node_queue + node_queue_size;
 
-        std::pop_heap(node_queue, node_queue + node_queue_size);
-        --node_queue_size;
+        if (top_entry->m_dvec_square_norm >= max_square_distance)
+            continue;
+
+        node = top_entry->m_node;
+
+        const VectorType parent_dvec = top_entry->m_dvec;
 
         FOUNDATION_KNN_QUERY_STATS(++fetched_node_count);
 
@@ -417,16 +436,25 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
             if (follow_node->get_point_count() < IdealLeafSize)
                 break;
 
-            // Push the node that we don't visit now to the priority queue.
+            // Push the node that we don't visit now to the node stack.
             if (distance * distance < max_square_distance)
             {
                 VectorType dvec = parent_dvec;
                 dvec[split_dim] = distance;
 
+                // Push the node to the node stack.
                 assert(node_queue_size < NodeQueueSize);
                 node_queue[node_queue_size++] = NodeEntry(queue_node, dvec, square_norm(dvec));
 
-                std::push_heap(node_queue, node_queue + node_queue_size);
+                // Order the top levels of the node stack.
+                if (node_queue_size >= 4)
+                {
+                    ORDER_NODE_ENTRIES(4, 3);
+                    ORDER_NODE_ENTRIES(2, 1);
+                    ORDER_NODE_ENTRIES(4, 2);
+                    ORDER_NODE_ENTRIES(3, 1);
+                    ORDER_NODE_ENTRIES(3, 2);
+                }
             }
 
             node = follow_node;
@@ -453,6 +481,8 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
             ++point_index;
         }
     }
+
+#undef ORDER_NODE_ENTRIES
 
     //
     // Step 5:
