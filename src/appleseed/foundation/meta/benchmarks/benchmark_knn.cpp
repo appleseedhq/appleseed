@@ -299,7 +299,7 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Query)
         void configure_logger(const string& name)
         {
             m_log_target.reset(create_file_log_target());
-            m_log_target->open(("output/test_knn_" + name + "_tree_stats.txt").c_str());
+            m_log_target->open(("output/test_knn_" + name + "_stats.txt").c_str());
             m_logger.add_target(m_log_target.get());
         }
 

@@ -82,20 +82,25 @@ class Query
 
     struct NodeEntry
     {
+        ValueType           m_dvec_square_norm;
         const NodeType*     m_node;
-        ValueType           m_distance;
+        VectorType          m_dvec;
 
         NodeEntry() {}
 
-        NodeEntry(const NodeType* node, const ValueType distance)
-          : m_node(node)
-          , m_distance(distance)
+        NodeEntry(
+            const NodeType*     node,
+            const VectorType&   dvec,
+            const ValueType     dvec_square_norm)
+          : m_dvec_square_norm(dvec_square_norm)
+          , m_node(node)
+          , m_dvec(dvec)
         {
         }
 
         bool operator<(const NodeEntry& rhs) const
         {
-            return m_distance > rhs.m_distance;
+            return m_dvec_square_norm > rhs.m_dvec_square_norm;
         }
     };
 
@@ -281,7 +286,7 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
     //   (if it's an interior node), and compute an initial maximum search distance.
     //
 
-    ValueType max_distance(0.0);
+    ValueType max_square_distance(0.0);
 
     {
         FOUNDATION_KNN_QUERY_STATS(++visited_leaf_count);
@@ -301,8 +306,8 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
 
             m_answer.array_insert(point_index++, distance);
 
-            if (max_distance < distance)
-                max_distance = distance;
+            if (max_square_distance < distance)
+                max_square_distance = distance;
         }
 
         // At this point the answer is full, so we transform it into a heap.
@@ -315,10 +320,10 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
 
             const ValueType distance = square_distance(*point_ptr++, query_point);
 
-            if (distance < max_distance)
+            if (distance < max_square_distance)
             {
                 m_answer.heap_insert(point_index, distance);
-                max_distance = m_answer.top().m_distance;
+                max_square_distance = m_answer.top().m_distance;
             }
 
             ++point_index;
@@ -329,13 +334,12 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
     // Step 3:
     //
     //   Traverse again the tree, starting at the top, but this time we will push
-    //   nodes that we don't visit (but that contains candidate points) to a priority
-    //   queue.
+    //   nodes that we don't visit (but that potentially contain candidate points)
+    //   to a priority queue.
     //
 
     const size_t NodeQueueSize = 256;
     NodeEntry node_queue[NodeQueueSize];
-
     size_t node_queue_size = 0;
 
     node = nodes;
@@ -344,7 +348,7 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
     {
         const size_t split_dim = node->get_split_dim();
         const ValueType split_abs = node->get_split_abs();
-        ValueType distance = query_point[split_dim] - split_abs;
+        const ValueType distance = query_point[split_dim] - split_abs;
 
         // Figure out which node to follow and which node to push.
         const int select = static_cast<int>(FP<ValueType>::sign(distance));
@@ -358,11 +362,16 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
         if (follow_node->get_point_count() < max_answer_size)
             break;
 
-        distance *= distance;
-
-        if (distance < max_distance)
+        // Push the node that we don't visit now to the priority queue.
+        const ValueType square_distance = distance * distance;
+        if (square_distance < max_square_distance)
         {
-            node_queue[node_queue_size++] = NodeEntry(queue_node, distance);
+            VectorType dvec(0.0);
+            dvec[split_dim] = distance;
+
+            assert(node_queue_size < NodeQueueSize);
+            node_queue[node_queue_size++] = NodeEntry(queue_node, dvec, square_distance);
+
             std::push_heap(node_queue, node_queue + node_queue_size);
         }
 
@@ -378,11 +387,12 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
     //   distance.
     //
 
-    const size_t BestLeafSize = 25;
+    const size_t IdealLeafSize = 25;
 
-    while (node_queue_size > 0 && node_queue->m_distance < max_distance)
+    while (node_queue_size > 0 && node_queue->m_dvec_square_norm < max_square_distance)
     {
         node = node_queue->m_node;
+        const VectorType parent_dvec = node_queue->m_dvec;
 
         std::pop_heap(node_queue, node_queue + node_queue_size);
         --node_queue_size;
@@ -393,7 +403,7 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
         {
             const size_t split_dim = node->get_split_dim();
             const ValueType split_abs = node->get_split_abs();
-            ValueType distance = query_point[split_dim] - split_abs;
+            const ValueType distance = query_point[split_dim] - split_abs;
 
             // Figure out which node to follow and which node to push.
             const int select = static_cast<int>(FP<ValueType>::sign(distance));
@@ -403,15 +413,19 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
 
             FOUNDATION_KNN_QUERY_STATS(++fetched_node_count);
 
-            // Try to target nodes with a "right" number of points.
-            if (follow_node->get_point_count() < BestLeafSize)
+            // Try to target nodes with an "ideal" number of points.
+            if (follow_node->get_point_count() < IdealLeafSize)
                 break;
 
-            distance *= distance;
-
-            if (distance < max_distance)
+            // Push the node that we don't visit now to the priority queue.
+            if (distance * distance < max_square_distance)
             {
-                node_queue[node_queue_size++] = NodeEntry(queue_node, distance);
+                VectorType dvec = parent_dvec;
+                dvec[split_dim] = distance;
+
+                assert(node_queue_size < NodeQueueSize);
+                node_queue[node_queue_size++] = NodeEntry(queue_node, dvec, square_norm(dvec));
+
                 std::push_heap(node_queue, node_queue + node_queue_size);
             }
 
@@ -430,10 +444,10 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
 
             const ValueType distance = square_distance(*point_ptr++, query_point);
 
-            if (distance < max_distance)
+            if (distance < max_square_distance)
             {
                 m_answer.heap_insert(point_index, distance);
-                max_distance = m_answer.top().m_distance;
+                max_square_distance = m_answer.top().m_distance;
             }
 
             ++point_index;

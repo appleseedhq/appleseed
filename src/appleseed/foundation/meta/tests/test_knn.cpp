@@ -249,9 +249,9 @@ TEST_SUITE(Foundation_Math_Knn_Query)
 
     TEST_CASE(Run_ReturnsSameResultsAsSTANN)
     {
-        const size_t PointCount = 100;
+        const size_t PointCount = 1000;
         const size_t QueryCount = 1000;
-        const size_t AnswerSize = 10;
+        const size_t AnswerSize = 100;
 
         vector<Vector3d> points;
         points.reserve(PointCount);
