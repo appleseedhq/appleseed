@@ -42,6 +42,22 @@ namespace foundation
 
 mutex XercesCManager::s_mutex;
 
+bool XercesCManager::initialize()
+{
+    mutex::scoped_lock lock(s_mutex);
+
+    try
+    {
+        XMLPlatformUtils::Initialize();
+    }
+    catch (const XMLException&)
+    {
+        return false;
+    }
+
+    return true;
+}
+
 bool XercesCManager::initialize(Logger& logger)
 {
     mutex::scoped_lock lock(s_mutex);
@@ -74,6 +90,11 @@ void XercesCManager::terminate()
 //
 // XercesCContext class implementation.
 //
+
+XercesCContext::XercesCContext()
+{
+    m_initialized = XercesCManager::initialize();
+}
 
 XercesCContext::XercesCContext(Logger& logger)
 {

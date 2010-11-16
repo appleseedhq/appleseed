@@ -65,11 +65,15 @@ class XercesCManager
   : public NonCopyable
 {
   public:
-    // Initialize Xerces-C++.  This method is thread-safe.
+    // Initialize Xerces-C++. This method is thread-safe.
     // Returns true if Xerces-C++ is properly initialized.
+    static bool initialize();
+
+    // Initialize Xerces-C++ and issue an error message if
+    // the initialization failed. This method is thread-safe.
     static bool initialize(Logger& logger);
 
-    // Terminate Xerces-C++.  This method is thread-safe.
+    // Terminate Xerces-C++. This method is thread-safe.
     static void terminate();
 
   private:
@@ -86,6 +90,10 @@ class XercesCContext
 {
   public:
     // Constructor, initializes Xerces-C++.
+    XercesCContext();
+
+    // Constructor, initializes Xerces-C++ and issue an
+    // error message if the initialization failed.
     explicit XercesCContext(Logger& logger);
 
     // Destructor, terminates Xerces-C++.
