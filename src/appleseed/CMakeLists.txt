@@ -443,6 +443,8 @@ source_group("foundation\\platform" FILES
 )
 
 set(foundation_utility_benchmark_sources
+    foundation/utility/benchmark/benchmarkaggregator.cpp
+    foundation/utility/benchmark/benchmarkaggregator.h
     foundation/utility/benchmark/benchmarklistenerbase.h
     foundation/utility/benchmark/benchmarkresult.cpp
     foundation/utility/benchmark/benchmarkresult.h
