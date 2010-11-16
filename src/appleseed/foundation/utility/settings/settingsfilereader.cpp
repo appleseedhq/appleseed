@@ -78,8 +78,8 @@ namespace
 
                 if (element_name == "parameters")
                 {
-                    DOMNamedNodeMap* attributes = node->getAttributes();
-                    DOMNode* name_attribute = attributes->getNamedItem(name_attribute_name.c_str());
+                    const DOMNamedNodeMap* attributes = node->getAttributes();
+                    const DOMNode* name_attribute = attributes->getNamedItem(name_attribute_name.c_str());
 
                     Dictionary child_dictionary;
                     build_dictionary(node, child_dictionary);
@@ -90,9 +90,9 @@ namespace
                 }
                 else if (element_name == "parameter")
                 {
-                    DOMNamedNodeMap* attributes = node->getAttributes();
-                    DOMNode* name_attribute = attributes->getNamedItem(name_attribute_name.c_str());
-                    DOMNode* value_attribute = attributes->getNamedItem(value_attribute_name.c_str());
+                    const DOMNamedNodeMap* attributes = node->getAttributes();
+                    const DOMNode* name_attribute = attributes->getNamedItem(name_attribute_name.c_str());
+                    const DOMNode* value_attribute = attributes->getNamedItem(value_attribute_name.c_str());
 
                     dictionary.insert(
                         transcode(name_attribute->getNodeValue()),
