@@ -45,9 +45,6 @@
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
 
-// Standard headers.
-#include <cassert>
-
 using namespace appleseed::shared;
 using namespace boost;
 using namespace foundation;
@@ -60,7 +57,6 @@ namespace studio {
 // TestRunnerThread class implementation.
 //
 
-// Constructor.
 TestRunnerThread::TestRunnerThread(
     const TestSuiteRepository&  repository,
     TestOutputWidgetDecorator*  output_widget,
@@ -71,16 +67,15 @@ TestRunnerThread::TestRunnerThread(
 {
 }
 
-// The starting point for the thread.
 void TestRunnerThread::run()
 {
+    QtTestListener listener(m_output_widget, m_result_widget);
+    TestResult result;
+
     global_logger().set_enabled(false);
 
     const filesystem::path old_current_path =
         Application::change_current_directory_to_tests_root_path();
-
-    QtTestListener listener(m_output_widget, m_result_widget);
-    TestResult result;
 
     m_repository.run(listener, result);
 

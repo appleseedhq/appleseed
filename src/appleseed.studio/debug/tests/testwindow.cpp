@@ -82,6 +82,24 @@ TestWindow::TestWindow(QWidget* parent)
     m_output_widget.reset(new TestOutputWidgetDecorator(m_ui->treewidget_output));
     m_result_widget.reset(new TestResultWidgetDecorator(m_ui->label_tests_results));
 
+    build_connections();
+
+    configure_tests_treeview();
+    configure_output_treeview();
+
+    populate_tests_treeview();
+    slot_check_all_tests();
+
+    create_test_runner_thread();
+}
+
+TestWindow::~TestWindow()
+{
+    delete m_ui;
+}
+
+void TestWindow::create_test_runner_thread()
+{
     m_test_runner_thread.reset(
         new TestRunnerThread(
             m_test_suite_repository,
@@ -91,16 +109,6 @@ TestWindow::TestWindow(QWidget* parent)
     connect(
         m_test_runner_thread.get(), SIGNAL(signal_finished(const int, const int)),
         this, SLOT(slot_on_tests_execution_complete(const int, const int)));
-
-    build_connections();
-
-    configure_tests_treeview();
-    configure_output_treeview();
-}
-
-TestWindow::~TestWindow()
-{
-    delete m_ui;
 }
 
 void TestWindow::build_connections()
@@ -142,10 +150,6 @@ void TestWindow::configure_tests_treeview()
 {
     m_ui->treewidget_tests->setHeaderLabels(QStringList() << "Test");
     m_ui->treewidget_tests->sortItems(0, Qt::AscendingOrder);
-
-    populate_tests_treeview();
-
-    slot_check_all_tests();
 }
 
 namespace
@@ -424,7 +428,7 @@ void TestWindow::slot_run_tests()
 {
     if (!m_test_runner_thread->isRunning())
     {
-        set_enabled(false);
+        enable_widgets(false);
 
         m_test_suite_repository.clear();
 
@@ -441,10 +445,10 @@ void TestWindow::slot_on_tests_execution_complete(const int passed_count, const 
     if (failed_count == 0)
         m_result_widget->set_all_passed();
 
-    set_enabled(true);
+    enable_widgets(true);
 }
 
-void TestWindow::set_enabled(const bool enabled)
+void TestWindow::enable_widgets(const bool enabled)
 {
     m_ui->treewidget_tests->setEnabled(enabled);
     m_ui->pushbutton_check_all->setEnabled(enabled);

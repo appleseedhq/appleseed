@@ -75,6 +75,8 @@ class TestWindow
     AutoDeleteTestSuiteRepository               m_test_suite_repository;
     std::auto_ptr<TestRunnerThread>             m_test_runner_thread;
 
+    void create_test_runner_thread();
+
     void build_connections();
 
     void configure_tests_treeview();
@@ -83,7 +85,7 @@ class TestWindow
 
     void configure_output_treeview();
 
-    void set_enabled(const bool enabled);
+    void enable_widgets(const bool enabled);
 
   private slots:
     void slot_on_test_item_check_state_changed(QTreeWidgetItem* item, int column);
