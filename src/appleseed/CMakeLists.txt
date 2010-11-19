@@ -338,6 +338,7 @@ set(foundation_meta_tests_sources
     foundation/meta/tests/test_aabb.cpp
     foundation/meta/tests/test_anyarray.cpp
     foundation/meta/tests/test_attributeset.cpp
+    foundation/meta/tests/test_benchmarkaggregator.cpp
     foundation/meta/tests/test_boost_datetime.cpp
     foundation/meta/tests/test_boost_regex.cpp
     foundation/meta/tests/test_bsp.cpp

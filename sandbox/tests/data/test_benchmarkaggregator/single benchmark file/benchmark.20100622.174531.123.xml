@@ -1,0 +1,20 @@
+<benchmarkexecution configuration="Release">
+    <benchmarksuite name="Suite">
+        <benchmarkcase name="Case1">
+            <results>
+                <iterations>12</iterations>
+                <measurements>2000</measurements>
+                <frequency>2228890500.0</frequency>
+                <ticks>779.34</ticks>
+            </results>
+        </benchmarkcase>
+        <benchmarkcase name="Case2">
+            <results>
+                <iterations>36</iterations>
+                <measurements>1000</measurements>
+                <frequency>2117789499.9</frequency>
+                <ticks>877.22</ticks>
+            </results>
+        </benchmarkcase>
+    </benchmarksuite>
+</benchmarkexecution>
