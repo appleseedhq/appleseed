@@ -26,20 +26,16 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKAGGREGATOR_H
-#define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKAGGREGATOR_H
+#ifndef APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKDATAPOINT_H
+#define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKDATAPOINT_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
-#include "foundation/utility/implptr.h"
-#include "foundation/utility/uid.h"
+#include "foundation/platform/datetime.h"
+#include "foundation/platform/types.h"
 
-// Standard headers.
-#include <cstddef>
-
-// Forward declarations.
-namespace foundation    { class BenchmarkSerie; }
-namespace foundation    { class Dictionary; }
+// boost headers.
+#include "boost/date_time/gregorian/gregorian.hpp"
+#include "boost/date_time/posix_time/posix_time.hpp"
 
 //
 // On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
@@ -63,24 +59,66 @@ namespace foundation    { class Dictionary; }
 namespace foundation
 {
 
-class FOUNDATIONDLL BenchmarkAggregator
-  : public NonCopyable
+class FOUNDATIONDLL BenchmarkDataPoint
 {
   public:
-    BenchmarkAggregator();
+    BenchmarkDataPoint();
 
-    bool scan_file(const char* path);
+    BenchmarkDataPoint(
+        const boost::posix_time::ptime& date,
+        const double                    ticks);
 
-    void scan_directory(const char* path);
+    boost::posix_time::ptime get_date() const;
 
-    const Dictionary& get_benchmarks() const;
-
-    const BenchmarkSerie& get_serie(const UniqueID case_uid) const;
+    double get_ticks() const;
 
   private:
-    PIMPL(BenchmarkAggregator);
+    uint64  m_date_microseconds;
+    double  m_ticks;
 };
+
+
+//
+// Implementation.
+//
+
+namespace benchmark_impl
+{
+    const boost::posix_time::ptime Epoch(boost::gregorian::date(1970, 1, 1));
+
+    inline uint64 ptime_to_microseconds(const boost::posix_time::ptime& time)
+    {
+        return (time - Epoch).total_microseconds();
+    }
+
+    inline boost::posix_time::ptime microseconds_to_ptime(const uint64 microseconds)
+    {
+        return Epoch + microseconds_to_time_duration(microseconds);
+    }
+}
+
+inline BenchmarkDataPoint::BenchmarkDataPoint()
+{
+}
+
+inline BenchmarkDataPoint::BenchmarkDataPoint(
+    const boost::posix_time::ptime&     date,
+    const double                        ticks)
+  : m_date_microseconds(benchmark_impl::ptime_to_microseconds(date))
+  , m_ticks(ticks)
+{
+}
+
+inline boost::posix_time::ptime BenchmarkDataPoint::get_date() const
+{
+    return benchmark_impl::microseconds_to_ptime(m_date_microseconds);
+}
+
+inline double BenchmarkDataPoint::get_ticks() const
+{
+    return m_ticks;
+}
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKAGGREGATOR_H
+#endif  // !APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKDATAPOINT_H

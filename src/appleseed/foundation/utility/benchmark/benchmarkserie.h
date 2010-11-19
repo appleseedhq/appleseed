@@ -26,61 +26,18 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKAGGREGATOR_H
-#define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKAGGREGATOR_H
+#ifndef APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKSERIE_H
+#define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKSERIE_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
-#include "foundation/utility/implptr.h"
-#include "foundation/utility/uid.h"
-
-// Standard headers.
-#include <cstddef>
-
-// Forward declarations.
-namespace foundation    { class BenchmarkSerie; }
-namespace foundation    { class Dictionary; }
-
-//
-// On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
-// and to __declspec(dllimport) when building an application using the DLL.
-// Other platforms don't use this export mechanism and the symbol FOUNDATIONDLL is
-// defined to evaluate to nothing.
-//
-
-#ifndef FOUNDATIONDLL
-#ifdef _WIN32
-#ifdef APPLESEED_FOUNDATION_EXPORTS
-#define FOUNDATIONDLL __declspec(dllexport)
-#else
-#define FOUNDATIONDLL __declspec(dllimport)
-#endif
-#else
-#define FOUNDATIONDLL
-#endif
-#endif
+#include "foundation/utility/benchmark/benchmarkdatapoint.h"
+#include "foundation/utility/containers/array.h"
 
 namespace foundation
 {
 
-class FOUNDATIONDLL BenchmarkAggregator
-  : public NonCopyable
-{
-  public:
-    BenchmarkAggregator();
-
-    bool scan_file(const char* path);
-
-    void scan_directory(const char* path);
-
-    const Dictionary& get_benchmarks() const;
-
-    const BenchmarkSerie& get_serie(const UniqueID case_uid) const;
-
-  private:
-    PIMPL(BenchmarkAggregator);
-};
+DECLARE_ARRAY(BenchmarkSerie, BenchmarkDataPoint);
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKAGGREGATOR_H
+#endif  // !APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKSERIE_H

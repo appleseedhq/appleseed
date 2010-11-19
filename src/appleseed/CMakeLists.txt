@@ -449,9 +449,12 @@ source_group("foundation\\platform" FILES
 set(foundation_utility_benchmark_sources
     foundation/utility/benchmark/benchmarkaggregator.cpp
     foundation/utility/benchmark/benchmarkaggregator.h
+    foundation/utility/benchmark/benchmarkdatapoint.h
     foundation/utility/benchmark/benchmarklistenerbase.h
     foundation/utility/benchmark/benchmarkresult.cpp
     foundation/utility/benchmark/benchmarkresult.h
+    foundation/utility/benchmark/benchmarkserie.cpp
+    foundation/utility/benchmark/benchmarkserie.h
     foundation/utility/benchmark/benchmarksuite.cpp
     foundation/utility/benchmark/benchmarksuite.h
     foundation/utility/benchmark/benchmarksuiterepository.cpp

@@ -27,7 +27,10 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/platform/datetime.h"
 #include "foundation/utility/benchmark/benchmarkaggregator.h"
+#include "foundation/utility/benchmark/benchmarkdatapoint.h"
+#include "foundation/utility/benchmark/benchmarkserie.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/uid.h"
 #include "foundation/utility/test.h"
@@ -38,7 +41,37 @@
 
 using namespace boost;
 using namespace foundation;
-using namespace std;
+
+TEST_SUITE(Foundation_Utility_Benchmark_BenchmarkDataPoint)
+{
+    TEST_CASE(GetDate_ReturnsDatePassedToConstructor)
+    {
+        using namespace gregorian;
+        using namespace posix_time;
+
+        const ptime ExpectedDate(date(2010, 6, 22), time_duration(17, 45, 31));
+        const double ExpectedTicks = 1234.5678;
+        const BenchmarkDataPoint data_point(ExpectedDate, ExpectedTicks);
+
+        const ptime date = data_point.get_date();
+
+        EXPECT_EQ(ExpectedDate, date);
+    }
+
+    TEST_CASE(GetTicks_ReturnsTicksPassedToConstructor)
+    {
+        using namespace gregorian;
+        using namespace posix_time;
+
+        const ptime ExpectedDate(date(2010, 6, 22), time_duration(17, 45, 31));
+        const double ExpectedTicks = 1234.5678;
+        const BenchmarkDataPoint data_point(ExpectedDate, ExpectedTicks);
+
+        const double ticks = data_point.get_ticks();
+
+        EXPECT_EQ(ExpectedTicks, ticks);
+    }
+}
 
 TEST_SUITE(Foundation_Utility_Benchmark_BenchmarkAggregator)
 {
@@ -83,7 +116,7 @@ TEST_SUITE(Foundation_Utility_Benchmark_BenchmarkAggregator)
         BenchmarkAggregator aggregator;
         aggregator.scan_directory("data/test_benchmarkaggregator/single benchmark file/");
 
-        const ptime date(date(2010, Jun, 22), time_duration(17, 45, 31));
+        const ptime date(date(2010, 6, 22), time_duration(17, 45, 31));
 
         const Dictionary& benchmarks = aggregator.get_benchmarks();
 
@@ -95,8 +128,8 @@ TEST_SUITE(Foundation_Utility_Benchmark_BenchmarkAggregator)
                     .get<UniqueID>("Case1"));
 
         ASSERT_EQ(1, serie1.size());
-        EXPECT_EQ(date, serie1[0].m_date);
-        EXPECT_EQ(779.34, serie1[0].m_ticks);
+        EXPECT_EQ(date, serie1[0].get_date());
+        EXPECT_EQ(779.34, serie1[0].get_ticks());
 
         const BenchmarkSerie& serie2 =
             aggregator.get_serie(
@@ -106,8 +139,8 @@ TEST_SUITE(Foundation_Utility_Benchmark_BenchmarkAggregator)
                     .get<UniqueID>("Case2"));
 
         ASSERT_EQ(1, serie2.size());
-        EXPECT_EQ(date, serie2[0].m_date);
-        EXPECT_EQ(877.22, serie2[0].m_ticks);
+        EXPECT_EQ(date, serie2[0].get_date());
+        EXPECT_EQ(877.22, serie2[0].get_ticks());
     }
 
     TEST_CASE(MultipleBenchmarkFiles)
@@ -129,10 +162,10 @@ TEST_SUITE(Foundation_Utility_Benchmark_BenchmarkAggregator)
 
         ASSERT_EQ(2, serie.size());
 
-        EXPECT_EQ(ptime(date(2009, May, 21), time_duration(16, 44, 30)), serie[0].m_date);
-        EXPECT_EQ(779.34, serie[0].m_ticks);
+        EXPECT_EQ(ptime(date(2009, 5, 21), time_duration(16, 44, 30)), serie[0].get_date());
+        EXPECT_EQ(779.34, serie[0].get_ticks());
 
-        EXPECT_EQ(ptime(date(2010, Jun, 22), time_duration(17, 45, 31)), serie[1].m_date);
-        EXPECT_EQ(877.22, serie[1].m_ticks);
+        EXPECT_EQ(ptime(date(2010, 6, 22), time_duration(17, 45, 31)), serie[1].get_date());
+        EXPECT_EQ(877.22, serie[1].get_ticks());
     }
 }

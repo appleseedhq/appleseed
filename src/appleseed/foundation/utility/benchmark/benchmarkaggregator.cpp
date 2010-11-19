@@ -30,11 +30,14 @@
 #include "benchmarkaggregator.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/benchmark/benchmarkdatapoint.h"
+#include "foundation/utility/benchmark/benchmarkserie.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/xercesc.h"
 
 // boost headers.
+#include "boost/date_time/posix_time/posix_time.hpp"
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
 #include "boost/regex.hpp"
@@ -56,8 +59,6 @@ using namespace xercesc;
 
 namespace foundation
 {
-
-DEFINE_ARRAY(BenchmarkSerie);
 
 namespace
 {
