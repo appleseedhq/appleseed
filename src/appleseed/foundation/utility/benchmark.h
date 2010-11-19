@@ -30,8 +30,11 @@
 #define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_H
 
 // Interface headers.
+#include "foundation/utility/benchmark/benchmarkaggregator.h"
+#include "foundation/utility/benchmark/benchmarkdatapoint.h"
 #include "foundation/utility/benchmark/benchmarklistenerbase.h"
 #include "foundation/utility/benchmark/benchmarkresult.h"
+#include "foundation/utility/benchmark/benchmarkserie.h"
 #include "foundation/utility/benchmark/benchmarksuiterepository.h"
 #include "foundation/utility/benchmark/helpers.h"
 #include "foundation/utility/benchmark/ibenchmarkcase.h"
