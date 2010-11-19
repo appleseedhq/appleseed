@@ -76,7 +76,6 @@ class TestWindow
     std::auto_ptr<TestRunnerThread>             m_test_runner_thread;
 
     void build_connections();
-    void build_shortcuts();
 
     void configure_tests_treeview();
     void populate_tests_treeview();

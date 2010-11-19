@@ -19,16 +19,6 @@
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="0" column="0">
     <layout class="QGridLayout" name="test_window_contents">
-     <item row="4" column="0">
-      <widget class="QDialogButtonBox" name="buttonbox">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="standardButtons">
-        <set>QDialogButtonBox::Close</set>
-       </property>
-      </widget>
-     </item>
      <item row="0" column="0">
       <widget class="QSplitter" name="splitter">
        <property name="orientation">
@@ -39,7 +29,7 @@
          <item>
           <widget class="QLabel" name="label_tests">
            <property name="text">
-            <string>All Tests</string>
+            <string>Tests</string>
            </property>
           </widget>
          </item>
@@ -140,9 +130,9 @@
        <widget class="QWidget" name="layoutWidget">
         <layout class="QVBoxLayout" name="output_contents">
          <item>
-          <widget class="QLabel" name="label_output">
+          <widget class="QLabel" name="label_results">
            <property name="text">
-            <string>Output</string>
+            <string>Results</string>
            </property>
           </widget>
          </item>
@@ -269,6 +259,16 @@
          </item>
         </layout>
        </widget>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QDialogButtonBox" name="buttonbox">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="standardButtons">
+        <set>QDialogButtonBox::Close</set>
+       </property>
       </widget>
      </item>
     </layout>

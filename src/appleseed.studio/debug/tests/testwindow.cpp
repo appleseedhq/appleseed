@@ -46,6 +46,7 @@
 #include <QPushButton>
 #include <QShortCut>
 #include <QStringList>
+#include <Qt>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
 
@@ -65,7 +66,6 @@ namespace studio {
 // TestWindow class implementation.
 //
 
-// Constructor.
 TestWindow::TestWindow(QWidget* parent)
   : QWidget(parent)
   , m_ui(new Ui::TestWindow())
@@ -98,7 +98,6 @@ TestWindow::TestWindow(QWidget* parent)
     configure_output_treeview();
 }
 
-// Destructor.
 TestWindow::~TestWindow()
 {
     delete m_ui;
