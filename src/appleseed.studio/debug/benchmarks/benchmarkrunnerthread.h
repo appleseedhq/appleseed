@@ -26,57 +26,33 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_DEBUG_BENCHMARKS_BENCHMARKWINDOW_H
-#define APPLESEED_STUDIO_DEBUG_BENCHMARKS_BENCHMARKWINDOW_H
-
-// appleseed.studio headers.
-#include "debug/benchmarks/benchmarkrunnerthread.h"
-
-// appleseed.foundation headers.
-#include "foundation/utility/benchmark.h"
+#ifndef APPLESEED_STUDIO_DEBUG_BENCHMARKS_BENCHMARKRUNNERTHREAD_H
+#define APPLESEED_STUDIO_DEBUG_BENCHMARKS_BENCHMARKRUNNERTHREAD_H
 
 // Qt headers.
 #include <QObject>
-#include <QWidget>
-
-// Forward declarations.
-namespace Ui    { class BenchmarkWindow; }
+#include <QThread>
 
 namespace appleseed {
 namespace studio {
 
-class BenchmarkWindow
-  : public QWidget
+class BenchmarkRunnerThread
+  : public QThread
 {
     Q_OBJECT
 
   public:
-    // Constructor.
-    explicit BenchmarkWindow(QWidget* parent = 0);
 
-    // Destructor.
-    ~BenchmarkWindow();
+  signals:
+    void signal_cannot_create_benchmark_file();
+    void signal_finished();
 
   private:
-    // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
-    Ui::BenchmarkWindow*                m_ui;
-
-    BenchmarkRunnerThread               m_benchmark_runner_thread;
-    foundation::BenchmarkAggregator     m_benchmark_aggregator;
-
-    void build_connections();
-
-    void configure_benchmarks_treeview();
-    void reload_benchmarks();
-
-    void enable_widgets(const bool enabled);
-
-  private slots:
-    void slot_run_benchmarks();
-    void slot_on_benchmarks_execution_complete();
+    // The starting point for the thread.
+    virtual void run();
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_DEBUG_BENCHMARKS_BENCHMARKWINDOW_H
+#endif  // !APPLESEED_STUDIO_DEBUG_BENCHMARKS_BENCHMARKRUNNERTHREAD_H

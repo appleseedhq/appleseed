@@ -45,6 +45,8 @@ include(${QT_USE_FILE})
 #
 
 set(debug_benchmarks_sources
+    debug/benchmarks/benchmarkrunnerthread.cpp
+    debug/benchmarks/benchmarkrunnerthread.h
     debug/benchmarks/benchmarkwindow.cpp
     debug/benchmarks/benchmarkwindow.h
     debug/benchmarks/benchmarkwindow.ui

@@ -26,57 +26,62 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_DEBUG_BENCHMARKS_BENCHMARKWINDOW_H
-#define APPLESEED_STUDIO_DEBUG_BENCHMARKS_BENCHMARKWINDOW_H
+// Interface header.
+#include "benchmarkrunnerthread.h"
 
-// appleseed.studio headers.
-#include "debug/benchmarks/benchmarkrunnerthread.h"
+// appleseed.shared headers.
+#include "application/application.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/benchmark.h"
 
-// Qt headers.
-#include <QObject>
-#include <QWidget>
+// boost headers.
+#include "boost/filesystem/operations.hpp"
+#include "boost/filesystem/path.hpp"
 
-// Forward declarations.
-namespace Ui    { class BenchmarkWindow; }
+// Standard headers.
+#include <cassert>
+
+using namespace appleseed::shared;
+using namespace boost;
+using namespace foundation;
 
 namespace appleseed {
 namespace studio {
 
-class BenchmarkWindow
-  : public QWidget
+//
+// BenchmarkRunnerThread class implementation.
+//
+
+void BenchmarkRunnerThread::run()
 {
-    Q_OBJECT
+    auto_release_ptr<XMLFileBenchmarkListener> xmlfile_listener(
+        create_xmlfile_benchmark_listener());
 
-  public:
-    // Constructor.
-    explicit BenchmarkWindow(QWidget* parent = 0);
+    const filesystem::path xmlfile_path =
+          filesystem::path(Application::get_tests_root_path())
+        / "benchmarks/"
+        / XMLFileBenchmarkListener::generate_file_name();
 
-    // Destructor.
-    ~BenchmarkWindow();
+    if (!xmlfile_listener->open(xmlfile_path.string().c_str()))
+    {
+        emit signal_cannot_create_benchmark_file();
+        return;
+    }
 
-  private:
-    // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
-    Ui::BenchmarkWindow*                m_ui;
+    BenchmarkResult result;
+    result.add_listener(xmlfile_listener.get());
 
-    BenchmarkRunnerThread               m_benchmark_runner_thread;
-    foundation::BenchmarkAggregator     m_benchmark_aggregator;
+    const filesystem::path old_current_path =
+        Application::change_current_directory_to_tests_root_path();
 
-    void build_connections();
+    BenchmarkSuiteRepository::instance().run(result);
 
-    void configure_benchmarks_treeview();
-    void reload_benchmarks();
+    filesystem::current_path(old_current_path);
 
-    void enable_widgets(const bool enabled);
+    emit signal_finished();
+}
 
-  private slots:
-    void slot_run_benchmarks();
-    void slot_on_benchmarks_execution_complete();
-};
-
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_DEBUG_BENCHMARKS_BENCHMARKWINDOW_H
+}   // namespace studio
+}   // namespace appleseed

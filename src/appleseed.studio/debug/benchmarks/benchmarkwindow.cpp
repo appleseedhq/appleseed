@@ -32,11 +32,20 @@
 // UI definition header.
 #include "ui_benchmarkwindow.h"
 
+// appleseed.shared headers.
+#include "application/application.h"
+
+// boost headers.
+#include "boost/filesystem/path.hpp"
+
 // Qt headers.
 #include <QKeySequence>
 #include <QPushButton>
 #include <QShortCut>
 #include <Qt>
+
+using namespace appleseed::shared;
+using namespace boost;
 
 namespace appleseed {
 namespace studio {
@@ -56,6 +65,14 @@ BenchmarkWindow::BenchmarkWindow(QWidget* parent)
     m_ui->splitter->setSizes(QList<int>() << 600 << 300);
 
     build_connections();
+
+    configure_benchmarks_treeview();
+
+    reload_benchmarks();
+
+    connect(
+        &m_benchmark_runner_thread, SIGNAL(signal_finished()),
+        this, SLOT(slot_on_benchmarks_execution_complete()));
 }
 
 BenchmarkWindow::~BenchmarkWindow()
@@ -72,6 +89,48 @@ void BenchmarkWindow::build_connections()
     connect(
         new QShortcut(QKeySequence(Qt::Key_Escape), this), SIGNAL(activated()),
         this, SLOT(close()));
+
+    connect(
+        m_ui->pushbutton_run, SIGNAL(clicked()),
+        this, SLOT(slot_run_benchmarks()));
+}
+
+void BenchmarkWindow::configure_benchmarks_treeview()
+{
+    m_ui->treewidget_benchmarks->setHeaderLabels(QStringList() << "Benchmark");
+    m_ui->treewidget_benchmarks->sortItems(0, Qt::AscendingOrder);
+}
+
+void BenchmarkWindow::reload_benchmarks()
+{
+    const filesystem::path benchmarks_path =
+          filesystem::path(Application::get_tests_root_path())
+        / "benchmarks/";
+
+    m_benchmark_aggregator.clear();
+    m_benchmark_aggregator.scan_directory(benchmarks_path.string().c_str());
+}
+
+void BenchmarkWindow::enable_widgets(const bool enabled)
+{
+    m_ui->pushbutton_run->setEnabled(enabled);
+}
+
+void BenchmarkWindow::slot_run_benchmarks()
+{
+    if (!m_benchmark_runner_thread.isRunning())
+    {
+        enable_widgets(false);
+
+        m_benchmark_runner_thread.start();
+    }
+}
+
+void BenchmarkWindow::slot_on_benchmarks_execution_complete()
+{
+    reload_benchmarks();
+
+    enable_widgets(true);
 }
 
 }   // namespace studio
