@@ -27,11 +27,11 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/platform/datetime.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
 
 // boost headers.
-#include "boost/date_time/gregorian/gregorian.hpp"
 #include "boost/date_time/posix_time/posix_time.hpp"
 
 // Standard headers.
@@ -41,52 +41,28 @@ using namespace boost;
 using namespace foundation;
 using namespace std;
 
-TEST_SUITE(Boost_DateTime)
+TEST_SUITE(Foundation_Platform_DateTime)
 {
-    TEST_CASE(DateToString)
-    {
-        using namespace gregorian;
-
-        const string result = to_string(date(2010, Jun, 22));
-
-        EXPECT_EQ("2010-Jun-22", result);
-    }
-
-    TEST_CASE(TimeDurationToString)
+    TEST_CASE(MicrosecondsToTimeDuration)
     {
         using namespace posix_time;
 
-        const string result = to_string(time_duration(17, 45, 31));
+        const time_duration Expected(17, 29, 43, 1234);
 
-        EXPECT_EQ("17:45:31", result);
+        const time_duration result(
+            microseconds_to_time_duration(Expected.total_microseconds()));
+
+        EXPECT_EQ(Expected, result);
     }
-
-#if 0
-
-    //
-    // The following test will crash or hang because of a bug in Visual C++ 2008
-    // when _HAS_ITERATOR_DEBUGGING is set to 0 (iterator debugging is disabled).
-    // This should be fixed in Visual C++ 2010.
-    //
-    // To work around this bug, include foundation/platform/datetime.h which
-    // provides an overload of foundation::to_string() for boost::posix_time::ptime.
-    //
-    // References:
-    //
-    //   http://stackoverflow.com/questions/787288/problem-when-disabling-checked-iterators-in-vs2008-sp1-has-iterator-debugging0
-    //   http://connect.microsoft.com/VisualStudio/feedback/details/435483/disabling-has-iterator-debugging-causes-memory-corruption-in-debug-mode-with-ostringstream
-    //
 
     TEST_CASE(PTimeToString)
     {
-        using namespace gregorian;
         using namespace posix_time;
 
-        const ptime time(date(2010, Jun, 22), time_duration(17, 45, 31));
-        const string result = to_string(time);
+        const string Expected = "20100622T174531";
 
-        EXPECT_EQ("2010-Jun-22", result);
+        const string result = to_string(from_iso_string(Expected));
+
+        EXPECT_EQ(Expected, result);
     }
-
-#endif
 }

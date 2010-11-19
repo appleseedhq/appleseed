@@ -350,6 +350,7 @@ set(foundation_meta_tests_sources
     foundation/meta/tests/test_colorspace.cpp
     foundation/meta/tests/test_concepts.cpp
     foundation/meta/tests/test_countof.cpp
+    foundation/meta/tests/test_datetime.cpp
     foundation/meta/tests/test_dictionary.cpp
     foundation/meta/tests/test_distance.cpp
     foundation/meta/tests/test_exrimagefilewriter.cpp
@@ -420,6 +421,7 @@ set(foundation_platform_sources
     foundation/platform/compiler.h
     foundation/platform/console.cpp
     foundation/platform/console.h
+    foundation/platform/datetime.h
     foundation/platform/defaulttimers.cpp
     foundation/platform/defaulttimers.h
     foundation/platform/opengl.h
