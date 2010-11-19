@@ -67,6 +67,8 @@ class BenchmarkWindow
     void build_connections();
 
     void configure_benchmarks_treeview();
+    void populate_benchmarks_treeview();
+
     void reload_benchmarks();
 
     void enable_widgets(const bool enabled);

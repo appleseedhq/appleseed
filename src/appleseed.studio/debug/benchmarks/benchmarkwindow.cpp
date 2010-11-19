@@ -35,6 +35,11 @@
 // appleseed.shared headers.
 #include "application/application.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/foreach.h"
+#include "foundation/utility/uid.h"
+
 // boost headers.
 #include "boost/filesystem/path.hpp"
 
@@ -42,10 +47,15 @@
 #include <QKeySequence>
 #include <QPushButton>
 #include <QShortCut>
+#include <QStringList>
 #include <Qt>
+#include <QTreeWidget>
+#include <QTreeWidgetItem>
+#include <QVariant>
 
 using namespace appleseed::shared;
 using namespace boost;
+using namespace foundation;
 
 namespace appleseed {
 namespace studio {
@@ -101,6 +111,44 @@ void BenchmarkWindow::configure_benchmarks_treeview()
     m_ui->treewidget_benchmarks->sortItems(0, Qt::AscendingOrder);
 }
 
+namespace
+{
+    template <typename ParentWidget>
+    void add_benchmarks(
+        const Dictionary&   benchmarks,
+        ParentWidget*       parent)
+    {
+        for (const_each<DictionaryDictionary> i = benchmarks.dictionaries(); i; ++i)
+        {
+            QTreeWidgetItem* item =
+                new QTreeWidgetItem(
+                    parent,
+                    QStringList(i->name()));
+
+            add_benchmarks(i->value(), item);
+        }
+
+        for (const_each<StringDictionary> i = benchmarks.strings(); i; ++i)
+        {
+            QTreeWidgetItem* item =
+                new QTreeWidgetItem(
+                    parent,
+                    QStringList(i->name()));
+
+            item->setData(0, Qt::UserRole, QVariant::fromValue(i->value<UniqueID>()));
+        }
+    }
+}
+
+void BenchmarkWindow::populate_benchmarks_treeview()
+{
+    m_ui->treewidget_benchmarks->clear();
+
+    const Dictionary& benchmarks = m_benchmark_aggregator.get_benchmarks();
+
+    add_benchmarks(benchmarks, m_ui->treewidget_benchmarks);
+}
+
 void BenchmarkWindow::reload_benchmarks()
 {
     const filesystem::path benchmarks_path =
@@ -109,6 +157,8 @@ void BenchmarkWindow::reload_benchmarks()
 
     m_benchmark_aggregator.clear();
     m_benchmark_aggregator.scan_directory(benchmarks_path.string().c_str());
+
+    populate_benchmarks_treeview();
 }
 
 void BenchmarkWindow::enable_widgets(const bool enabled)
