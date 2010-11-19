@@ -30,6 +30,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_MAINWINDOW_H
 
 // appleseed.studio headers.
+#include "debug/benchmarks/benchmarkwindow.h"
 #include "debug/tests/testwindow.h"
 #include "help/about/aboutwindow.h"
 #include "mainwindow/project/projectexplorer.h"
@@ -97,6 +98,7 @@ class MainWindow
     std::auto_ptr<QtLogTarget>          m_log_target;
 
     std::auto_ptr<TestWindow>           m_test_window;
+    std::auto_ptr<BenchmarkWindow>      m_benchmark_window;
 
     renderer::ParamArray                m_settings;
 
@@ -190,6 +192,7 @@ class MainWindow
     void slot_camera_changed();
 
     void slot_show_test_window();
+    void slot_show_benchmark_window();
     void slot_show_about_window();
 };
 

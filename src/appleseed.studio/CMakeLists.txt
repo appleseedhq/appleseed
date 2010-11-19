@@ -44,6 +44,18 @@ include(${QT_USE_FILE})
 # Source Files.
 #
 
+set(debug_benchmarks_sources
+    debug/benchmarks/benchmarkwindow.cpp
+    debug/benchmarks/benchmarkwindow.h
+    debug/benchmarks/benchmarkwindow.ui
+)
+list(APPEND appleseed.studio_sources
+    ${debug_benchmarks_sources}
+)
+source_group("debug\\benchmarks" FILES
+    ${debug_benchmarks_sources}
+)
+
 set(debug_tests_sources
     debug/tests/autodeletetestsuiterepository.h
     debug/tests/qttestlistener.cpp

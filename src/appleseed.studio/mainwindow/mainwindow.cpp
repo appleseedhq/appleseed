@@ -261,6 +261,7 @@ void MainWindow::build_menu_items_connections()
 
     // Debug menu.
     connect(m_ui->action_debug_tests, SIGNAL(triggered()), this, SLOT(slot_show_test_window()));
+    connect(m_ui->action_debug_benchmarks, SIGNAL(triggered()), this, SLOT(slot_show_benchmark_window()));
 
     // Help menu.
     connect(m_ui->action_help_about, SIGNAL(triggered()), this, SLOT(slot_show_about_window()));
@@ -799,6 +800,15 @@ void MainWindow::slot_show_test_window()
 
     m_test_window->showNormal();
     m_test_window->activateWindow();
+}
+
+void MainWindow::slot_show_benchmark_window()
+{
+    if (m_benchmark_window.get() == 0)
+        m_benchmark_window.reset(new BenchmarkWindow(this));
+
+    m_benchmark_window->showNormal();
+    m_benchmark_window->activateWindow();
 }
 
 void MainWindow::slot_show_about_window()
