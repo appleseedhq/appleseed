@@ -69,6 +69,8 @@ class FOUNDATIONDLL BenchmarkAggregator
   public:
     BenchmarkAggregator();
 
+    void clear();
+
     bool scan_file(const char* path);
 
     void scan_directory(const char* path);

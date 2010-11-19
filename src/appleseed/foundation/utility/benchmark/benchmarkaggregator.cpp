@@ -84,7 +84,7 @@ struct BenchmarkAggregator::Impl
     XercesCContext      m_xerces_context;
     XercesDOMParser     m_xerces_parser;
 
-    regex               m_filename_regex;
+    const regex         m_filename_regex;
 
     typedef map<UniqueID, BenchmarkSerie> SerieMap;
 
@@ -232,6 +232,12 @@ struct BenchmarkAggregator::Impl
 BenchmarkAggregator::BenchmarkAggregator()
   : impl(new Impl())
 {
+}
+
+void BenchmarkAggregator::clear()
+{
+    impl->m_benchmarks.clear();
+    impl->m_series.clear();
 }
 
 bool BenchmarkAggregator::scan_file(const char* path)

@@ -168,4 +168,14 @@ TEST_SUITE(Foundation_Utility_Benchmark_BenchmarkAggregator)
         EXPECT_EQ(ptime(date(2010, 6, 22), time_duration(17, 45, 31)), serie[1].get_date());
         EXPECT_EQ(877.22, serie[1].get_ticks());
     }
+
+    TEST_CASE(Clear_GivenOneBenchmark_RemovesBenchmark)
+    {
+        BenchmarkAggregator aggregator;
+        aggregator.scan_directory("data/test_benchmarkaggregator/single benchmark file/");
+
+        aggregator.clear();
+
+        ASSERT_TRUE(aggregator.get_benchmarks().empty());
+    }
 }
