@@ -85,10 +85,10 @@ TestWindow::TestWindow(QWidget* parent)
     build_connections();
 
     configure_tests_treeview();
-    configure_output_treeview();
-
     populate_tests_treeview();
     slot_check_all_tests();
+
+    configure_output_treeview();
 
     create_test_runner_thread();
 }
