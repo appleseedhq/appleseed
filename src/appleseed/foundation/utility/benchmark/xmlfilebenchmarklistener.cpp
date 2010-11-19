@@ -32,7 +32,6 @@
 // appleseed.foundation headers.
 #include "foundation/core/appleseed.h"
 #include "foundation/platform/types.h"
-#include "foundation/utility/benchmark/benchmarklistenerbase.h"
 #include "foundation/utility/benchmark/benchmarksuite.h"
 #include "foundation/utility/benchmark/ibenchmarkcase.h"
 #include "foundation/utility/benchmark/timingresult.h"
@@ -40,185 +39,209 @@
 
 // Standard headers.
 #include <cassert>
-#include <cstddef>
+#include <cstdio>
 
 using namespace std;
 
 namespace foundation
 {
 
-namespace
+//
+// XMLFileBenchmarkListener class implementation.
+//
+
+struct XMLFileBenchmarkListener::Impl
 {
-    //
-    // XMLFileBenchmarkListener class implementation.
-    //
+    FILE*       m_file;
+    Indenter    m_indenter;
+    bool        m_has_header;
 
-    class XMLFileBenchmarkListener
-      : public BenchmarkListenerBase
+    Impl()
+      : m_file(0)
+      , m_indenter(4)
+      , m_has_header(false)
     {
-      public:
-        // Constructor.
-        explicit XMLFileBenchmarkListener(FILE* file)
-          : m_file(file)
-          , m_indenter(4)
-          , m_has_header(false)
-        {
-            assert(m_file);
-        }
+    }
+};
 
-        // Destructor.
-        ~XMLFileBenchmarkListener()
-        {
-            if (m_has_header)
-                write_file_footer();
-        }
-
-        // Delete this instance.
-        virtual void release()
-        {
-            delete this;
-        }
-
-        // Called before each benchmark suite is run.
-        virtual void begin_suite(
-            const BenchmarkSuite&   benchmark_suite)
-        {
-            if (!m_has_header)
-            {
-                write_file_header();
-                m_has_header = true;
-            }
-
-            fprintf(
-                m_file,
-                "%s<benchmarksuite name=\"%s\">\n",
-                m_indenter.c_str(),
-                benchmark_suite.get_name());
-            ++m_indenter;
-        }
-
-        // Called after each benchmark suite is run.
-        virtual void end_suite(
-            const BenchmarkSuite&   benchmark_suite)
-        {
-            --m_indenter;
-            fprintf(
-                m_file,
-                "%s</benchmarksuite>\n",
-                m_indenter.c_str());
-        }
-
-        // Called before each benchmark case is run.
-        virtual void begin_case(
-            const BenchmarkSuite&   benchmark_suite,
-            const IBenchmarkCase&   benchmark_case)
-        {
-            fprintf(
-                m_file,
-                "%s<benchmarkcase name=\"%s\">\n",
-                m_indenter.c_str(),
-                benchmark_case.get_name());
-            ++m_indenter;
-        }
-
-        // Called after each benchmark case is run.
-        virtual void end_case(
-            const BenchmarkSuite&   benchmark_suite,
-            const IBenchmarkCase&   benchmark_case)
-        {
-            --m_indenter;
-            fprintf(
-                m_file,
-                "%s</benchmarkcase>\n",
-                m_indenter.c_str());
-        }
-
-        // Write a message.
-        virtual void write(
-            const BenchmarkSuite&   benchmark_suite,
-            const IBenchmarkCase&   benchmark_case,
-            const char*             file,
-            const size_t            line,
-            const char*             message)
-        {
-            // todo: properly escape the string.
-            fprintf(
-                m_file,
-                "%s<message>%s</message>\n",
-                m_indenter.c_str());
-        }
-
-        // Write a timing result.
-        virtual void write(
-            const BenchmarkSuite&   benchmark_suite,
-            const IBenchmarkCase&   benchmark_case,
-            const char*             file,
-            const size_t            line,
-            const TimingResult&     timing_result)
-        {
-            fprintf(m_file, "%s<results>\n", m_indenter.c_str());
-            ++m_indenter;
-
-            fprintf(m_file,
-                "%s<iterations>" FMT_SIZE_T "</iterations>\n",
-                m_indenter.c_str(),
-                timing_result.m_iteration_count);
-
-            fprintf(m_file,
-                "%s<measurements>" FMT_SIZE_T "</measurements>\n",
-                m_indenter.c_str(),
-                timing_result.m_measurement_count);
-
-            fprintf(m_file,
-                "%s<frequency>%f</frequency>\n",
-                m_indenter.c_str(),
-                timing_result.m_frequency);
-
-            fprintf(m_file,
-                "%s<ticks>%f</ticks>\n",
-                m_indenter.c_str(),
-                timing_result.m_ticks);
-
-            --m_indenter;
-            fprintf(m_file, "%s</results>\n", m_indenter.c_str());
-        }
-
-      private:
-        FILE*       m_file;
-        Indenter    m_indenter;
-        bool        m_has_header;
-
-        void write_file_header()
-        {
-            fprintf(
-                m_file,
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                "<!-- File generated by %s. -->\n",
-                Appleseed::get_synthetic_version_string());
-
-            fprintf(
-                m_file,
-                "%s<benchmarkexecution configuration=\"%s\">\n",
-                m_indenter.c_str(),
-                Appleseed::get_lib_configuration());
-            ++m_indenter;
-        }
-
-        void write_file_footer()
-        {
-            --m_indenter;
-            fprintf(
-                m_file,
-                "%s</benchmarkexecution>\n",
-                m_indenter.c_str());
-        }
-    };
+XMLFileBenchmarkListener::XMLFileBenchmarkListener()
+  : impl(new Impl())
+{
 }
 
-// Factory function.
-IBenchmarkListener* create_xmlfile_benchmark_listener(FILE* file)
+XMLFileBenchmarkListener::~XMLFileBenchmarkListener()
 {
-    return new XMLFileBenchmarkListener(file);
+    close();
+}
+
+void XMLFileBenchmarkListener::release()
+{
+    delete this;
+}
+
+void XMLFileBenchmarkListener::begin_suite(
+    const BenchmarkSuite&   benchmark_suite)
+{
+    if (!impl->m_has_header)
+    {
+        write_file_header();
+        impl->m_has_header = true;
+    }
+
+    fprintf(
+        impl->m_file,
+        "%s<benchmarksuite name=\"%s\">\n",
+        impl->m_indenter.c_str(),
+        benchmark_suite.get_name());
+
+    ++impl->m_indenter;
+}
+
+void XMLFileBenchmarkListener::end_suite(
+    const BenchmarkSuite&   benchmark_suite)
+{
+    --impl->m_indenter;
+
+    fprintf(
+        impl->m_file,
+        "%s</benchmarksuite>\n",
+        impl->m_indenter.c_str());
+}
+
+void XMLFileBenchmarkListener::begin_case(
+    const BenchmarkSuite&   benchmark_suite,
+    const IBenchmarkCase&   benchmark_case)
+{
+    fprintf(
+        impl->m_file,
+        "%s<benchmarkcase name=\"%s\">\n",
+        impl->m_indenter.c_str(),
+        benchmark_case.get_name());
+
+    ++impl->m_indenter;
+}
+
+void XMLFileBenchmarkListener::end_case(
+    const BenchmarkSuite&   benchmark_suite,
+    const IBenchmarkCase&   benchmark_case)
+{
+    --impl->m_indenter;
+
+    fprintf(
+        impl->m_file,
+        "%s</benchmarkcase>\n",
+        impl->m_indenter.c_str());
+}
+
+void XMLFileBenchmarkListener::write(
+    const BenchmarkSuite&   benchmark_suite,
+    const IBenchmarkCase&   benchmark_case,
+    const char*             file,
+    const size_t            line,
+    const char*             message)
+{
+    // todo: properly escape the string.
+    fprintf(
+        impl->m_file,
+        "%s<message>%s</message>\n",
+        impl->m_indenter.c_str());
+}
+
+void XMLFileBenchmarkListener::write(
+    const BenchmarkSuite&   benchmark_suite,
+    const IBenchmarkCase&   benchmark_case,
+    const char*             file,
+    const size_t            line,
+    const TimingResult&     timing_result)
+{
+    fprintf(impl->m_file, "%s<results>\n", impl->m_indenter.c_str());
+
+    ++impl->m_indenter;
+
+    fprintf(impl->m_file,
+        "%s<iterations>" FMT_SIZE_T "</iterations>\n",
+        impl->m_indenter.c_str(),
+        timing_result.m_iteration_count);
+
+    fprintf(impl->m_file,
+        "%s<measurements>" FMT_SIZE_T "</measurements>\n",
+        impl->m_indenter.c_str(),
+        timing_result.m_measurement_count);
+
+    fprintf(impl->m_file,
+        "%s<frequency>%f</frequency>\n",
+        impl->m_indenter.c_str(),
+        timing_result.m_frequency);
+
+    fprintf(impl->m_file,
+        "%s<ticks>%f</ticks>\n",
+        impl->m_indenter.c_str(),
+        timing_result.m_ticks);
+
+    --impl->m_indenter;
+
+    fprintf(impl->m_file, "%s</results>\n", impl->m_indenter.c_str());
+}
+
+bool XMLFileBenchmarkListener::open(const char* filename)
+{
+    assert(filename);
+
+    close();
+
+    impl->m_file = fopen(filename, "wt");
+
+    return impl->m_file != 0;
+}
+
+void XMLFileBenchmarkListener::close()
+{
+    if (impl->m_file)
+    {
+        if (impl->m_has_header)
+            write_file_footer();
+
+        fclose(impl->m_file);
+
+        impl->m_file = 0;
+    }
+}
+
+bool XMLFileBenchmarkListener::is_open() const
+{
+    return impl->m_file != 0;
+}
+
+void XMLFileBenchmarkListener::write_file_header()
+{
+    fprintf(
+        impl->m_file,
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        "<!-- File generated by %s. -->\n",
+        Appleseed::get_synthetic_version_string());
+
+    fprintf(
+        impl->m_file,
+        "%s<benchmarkexecution configuration=\"%s\">\n",
+        impl->m_indenter.c_str(),
+        Appleseed::get_lib_configuration());
+
+    ++impl->m_indenter;
+}
+
+void XMLFileBenchmarkListener::write_file_footer()
+{
+    --impl->m_indenter;
+
+    fprintf(
+        impl->m_file,
+        "%s</benchmarkexecution>\n",
+        impl->m_indenter.c_str());
+}
+
+XMLFileBenchmarkListener* create_xmlfile_benchmark_listener()
+{
+    return new XMLFileBenchmarkListener();
 }
 
 }   // namespace foundation

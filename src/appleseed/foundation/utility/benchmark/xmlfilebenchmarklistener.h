@@ -29,11 +29,19 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_BENCHMARK_XMLFILEBENCHMARKLISTENER_H
 #define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_XMLFILEBENCHMARKLISTENER_H
 
+// appleseed.foundation headers.
+#include "foundation/utility/benchmark/benchmarklistenerbase.h"
+#include "foundation/utility/implptr.h"
+#include "foundation/utility/string.h"
+
 // Standard headers.
-#include <cstdio>
+#include <cstddef>
+#include <string>
 
 // Forward declarations.
-namespace foundation    { class IBenchmarkListener; }
+namespace foundation    { class IBenchmarkCase; }
+namespace foundation    { class BenchmarkSuite; }
+namespace foundation    { class TimingResult; }
 
 //
 // On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
@@ -58,11 +66,85 @@ namespace foundation
 {
 
 //
-// A benchmark listener that writes results to a XML file.
+// A benchmark listener that outputs to a XML file.
 //
 
-// Factory function.
-FOUNDATIONDLL IBenchmarkListener* create_xmlfile_benchmark_listener(std::FILE* file);
+class FOUNDATIONDLL XMLFileBenchmarkListener
+  : public BenchmarkListenerBase
+{
+  public:
+    // Delete this instance.
+    virtual void release();
+
+    // Called before each benchmark suite is run.
+    virtual void begin_suite(
+        const BenchmarkSuite&   benchmark_suite);
+
+    // Called after each benchmark suite is run.
+    virtual void end_suite(
+        const BenchmarkSuite&   benchmark_suite);
+
+    // Called before each benchmark case is run.
+    virtual void begin_case(
+        const BenchmarkSuite&   benchmark_suite,
+        const IBenchmarkCase&   benchmark_case);
+
+    // Called after each benchmark case is run.
+    virtual void end_case(
+        const BenchmarkSuite&   benchmark_suite,
+        const IBenchmarkCase&   benchmark_case);
+
+    // Write a message.
+    virtual void write(
+        const BenchmarkSuite&   benchmark_suite,
+        const IBenchmarkCase&   benchmark_case,
+        const char*             file,
+        const size_t            line,
+        const char*             message);
+
+    // Write a timing result.
+    virtual void write(
+        const BenchmarkSuite&   benchmark_suite,
+        const IBenchmarkCase&   benchmark_case,
+        const char*             file,
+        const size_t            line,
+        const TimingResult&     timing_result);
+
+    static std::string generate_file_name();
+
+    bool open(const char* filename);
+
+    void close();
+
+    bool is_open() const;
+
+  private:
+    friend FOUNDATIONDLL XMLFileBenchmarkListener* create_xmlfile_benchmark_listener();
+
+    PIMPL(XMLFileBenchmarkListener);
+
+    // Constructor.
+    XMLFileBenchmarkListener();
+
+    // Destructor.
+    ~XMLFileBenchmarkListener();
+
+    void write_file_header();
+    void write_file_footer();
+};
+
+// Create an instance of a benchmark listener that outputs to a XML file.
+FOUNDATIONDLL XMLFileBenchmarkListener* create_xmlfile_benchmark_listener();
+
+
+//
+// Implementation.
+//
+
+inline std::string XMLFileBenchmarkListener::generate_file_name()
+{
+    return "benchmark." + get_time_stamp_string() + ".xml";
+}
 
 }       // namespace foundation
 

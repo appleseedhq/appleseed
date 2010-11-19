@@ -57,7 +57,6 @@
 
 // Standard headers.
 #include <cstddef>
-#include <cstdio>
 #include <cstdlib>
 #include <memory>
 #include <string>
@@ -170,71 +169,31 @@ namespace
         print_unit_test_result(logger, result);
     }
 
-    class XMLBenchmarkFileProvider
-    {
-      public:
-        XMLBenchmarkFileProvider()
-        {
-            m_file = fopen(get_file_path().c_str(), "wt");
-        }
-
-        ~XMLBenchmarkFileProvider()
-        {
-            if (m_file)
-                fclose(m_file);
-        }
-
-        string get_file_path() const
-        {
-            const string filename =
-                "benchmark." + get_time_stamp_string() + ".xml";
-
-            const filesystem::path path =
-                  filesystem::path(Application::get_tests_root_path())
-                / "benchmarks/"
-                / filename;
-
-            return path.file_string();
-        }
-
-        FILE* get_file()
-        {
-            return m_file;
-        }
-
-      private:
-        FILE*   m_file;
-    };
-
     // Run unit benchmarks.
     void run_unit_benchmarks(Logger& logger)
     {
-        // Create a benchmark listener that outputs to the logger.
+        BenchmarkResult result;
+
+        // Add a benchmark listener that outputs to the logger.
         auto_release_ptr<IBenchmarkListener>
             logger_listener(create_logger_benchmark_listener(logger));
+        result.add_listener(logger_listener.get());
 
-        // Create a benchmark listener that outputs to a XML benchmark file.
-        XMLBenchmarkFileProvider benchmark_file_provider;
-        IBenchmarkListener* xmlfile_listener;
-        if (benchmark_file_provider.get_file())
-        {
-            xmlfile_listener =
-                create_xmlfile_benchmark_listener(
-                    benchmark_file_provider.get_file());
-        }
+        // Try to add a benchmark listener that outputs to a XML file.
+        auto_release_ptr<XMLFileBenchmarkListener> xmlfile_listener(
+            create_xmlfile_benchmark_listener());
+        const filesystem::path xmlfile_path =
+              filesystem::path(Application::get_tests_root_path())
+            / "benchmarks/"
+            / XMLFileBenchmarkListener::generate_file_name();
+        if (xmlfile_listener->open(xmlfile_path.string().c_str()))
+            result.add_listener(xmlfile_listener.get());
         else
         {
             RENDERER_LOG_WARNING(
                 "automatic benchmark results archiving to %s failed: i/o error",
-                benchmark_file_provider.get_file_path().c_str());
-            xmlfile_listener = 0;
+                xmlfile_path.string().c_str());
         }
-
-        // Create a benchmark result.
-        BenchmarkResult result;
-        result.add_listener(logger_listener.get());
-        if (xmlfile_listener)
-            result.add_listener(xmlfile_listener);
 
         const filesystem::path old_current_path =
             Application::change_current_directory_to_tests_root_path();
@@ -264,10 +223,6 @@ namespace
 
         // Print results.
         print_unit_benchmark_result(logger, result);
-
-        // Destruct the XMLFileBenchmarkListener before the file gets closed.
-        if (xmlfile_listener)
-            xmlfile_listener->release();
     }
 
     // Apply command line options to a given project.
