@@ -184,7 +184,10 @@ void BenchmarkWindow::enable_widgets(const bool enabled)
 
 auto_ptr<ChartBase> BenchmarkWindow::create_chart(const UniqueID case_uid) const
 {
-    auto_ptr<ChartBase> chart(new LineChart());
+    auto_ptr<LineChart> chart(new LineChart());
+
+    chart->set_grid_brush(QBrush(QColor(60, 60, 60, 255)));
+    chart->set_curve_brush(QBrush(QColor(190, 140, 50, 255)));
 
     const BenchmarkSerie& serie = m_benchmark_aggregator.get_serie(case_uid);
 

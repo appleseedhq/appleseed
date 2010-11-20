@@ -35,6 +35,7 @@
 #include "foundation/math/vector.h"
 
 // Qt headers.
+#include <QBrush>
 #include <QFrame>
 #include <QImage>
 #include <QObject>
@@ -64,12 +65,27 @@ class ChartBase
     void add_point(const foundation::Vector2d& p);
     void add_point(const double x, const double y);
 
-    virtual void render(QPainter& painter) const = 0;
+    virtual void render(QPainter& painter) = 0;
 
   protected:
-    std::vector<foundation::Vector2d> m_points;
+    std::vector<foundation::Vector2d>   m_points;
 
-    foundation::AABB2d get_bbox() const;
+    foundation::AABB2d                  m_points_bbox;
+    foundation::Vector2d                m_rcp_points_bbox_extent;
+    foundation::Vector2d                m_window_origin;
+    foundation::Vector2d                m_window_size;
+
+    foundation::AABB2d compute_points_bbox() const;
+
+    void prepare_rendering(QPainter& painter);
+
+    foundation::Vector2d convert_to_frame(
+        const foundation::Vector2d&     point) const;
+
+    foundation::Vector2d convert_to_frame(
+        const foundation::Vector2d&     point,
+        const double                    margin_x,
+        const double                    margin_y) const;
 };
 
 
@@ -81,9 +97,22 @@ class LineChart
   : public ChartBase
 {
   public:
-    virtual void render(QPainter& painter) const;
+    LineChart();
+
+    void set_grid_brush(const QBrush& brush);
+    void set_curve_brush(const QBrush& brush);
+
+    virtual void render(QPainter& painter);
 
   private:
+    QBrush  m_grid_brush;
+    QBrush  m_curve_brush;
+    double  m_curve_margin_x;
+    double  m_curve_margin_y;
+
+    void render_grids(QPainter& painter) const;
+    void render_horizontal_grid(QPainter& painter) const;
+    void render_vertical_grid(QPainter& painter) const;
     void render_curve(QPainter& painter) const;
 };
 
