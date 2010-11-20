@@ -68,6 +68,10 @@ class FOUNDATIONDLL BenchmarkDataPoint
         const boost::posix_time::ptime& date,
         const double                    ticks);
 
+    static uint64 ptime_to_microseconds(const boost::posix_time::ptime& time);
+
+    static boost::posix_time::ptime microseconds_to_ptime(const uint64 microseconds);
+
     boost::posix_time::ptime get_date() const;
 
     double get_ticks() const;
@@ -85,16 +89,6 @@ class FOUNDATIONDLL BenchmarkDataPoint
 namespace benchmark_impl
 {
     const boost::posix_time::ptime Epoch(boost::gregorian::date(1970, 1, 1));
-
-    inline uint64 ptime_to_microseconds(const boost::posix_time::ptime& time)
-    {
-        return (time - Epoch).total_microseconds();
-    }
-
-    inline boost::posix_time::ptime microseconds_to_ptime(const uint64 microseconds)
-    {
-        return Epoch + microseconds_to_time_duration(microseconds);
-    }
 }
 
 inline BenchmarkDataPoint::BenchmarkDataPoint()
@@ -104,14 +98,24 @@ inline BenchmarkDataPoint::BenchmarkDataPoint()
 inline BenchmarkDataPoint::BenchmarkDataPoint(
     const boost::posix_time::ptime&     date,
     const double                        ticks)
-  : m_date_microseconds(benchmark_impl::ptime_to_microseconds(date))
+  : m_date_microseconds(ptime_to_microseconds(date))
   , m_ticks(ticks)
 {
 }
 
+inline uint64 BenchmarkDataPoint::ptime_to_microseconds(const boost::posix_time::ptime& time)
+{
+    return (time - benchmark_impl::Epoch).total_microseconds();
+}
+
+inline boost::posix_time::ptime BenchmarkDataPoint::microseconds_to_ptime(const uint64 microseconds)
+{
+    return benchmark_impl::Epoch + microseconds_to_time_duration(microseconds);
+}
+
 inline boost::posix_time::ptime BenchmarkDataPoint::get_date() const
 {
-    return benchmark_impl::microseconds_to_ptime(m_date_microseconds);
+    return microseconds_to_ptime(m_date_microseconds);
 }
 
 inline double BenchmarkDataPoint::get_ticks() const

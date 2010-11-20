@@ -41,6 +41,9 @@
 #include <QObject>
 #include <QWidget>
 
+// Standard headers.
+#include <memory>
+
 // Forward declarations.
 namespace Ui    { class BenchmarkWindow; }
 class QTreeWidgetItem;
@@ -69,8 +72,6 @@ class BenchmarkWindow
     BenchmarkRunnerThread               m_benchmark_runner_thread;
     foundation::BenchmarkAggregator     m_benchmark_aggregator;
 
-    foundation::UniqueID                m_current_serie_uid;
-
     void build_connections();
 
     void configure_chart_widget();
@@ -82,12 +83,15 @@ class BenchmarkWindow
 
     void enable_widgets(const bool enabled);
 
+    std::auto_ptr<ChartBase> create_chart(
+        const foundation::UniqueID      case_uid) const;
+
   private slots:
     void slot_run_benchmarks();
     void slot_on_benchmarks_execution_complete();
     void slot_on_current_benchmark_changed(
-        QTreeWidgetItem*    current,
-        QTreeWidgetItem*    previous);
+        QTreeWidgetItem*                current,
+        QTreeWidgetItem*                previous);
 };
 
 }       // namespace studio

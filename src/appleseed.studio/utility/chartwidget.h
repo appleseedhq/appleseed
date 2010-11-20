@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/math/aabb.h"
 #include "foundation/math/vector.h"
 
 // Qt headers.
@@ -50,6 +51,10 @@ class QWidget;
 namespace appleseed {
 namespace studio {
 
+//
+// Base class for charts.
+//
+
 class ChartBase
   : public foundation::NonCopyable
 {
@@ -59,18 +64,33 @@ class ChartBase
     void add_point(const foundation::Vector2d& p);
     void add_point(const double x, const double y);
 
-    virtual void paint(QPainter& painter) const = 0;
+    virtual void render(QPainter& painter) const = 0;
 
-  private:
+  protected:
     std::vector<foundation::Vector2d> m_points;
+
+    foundation::AABB2d get_bbox() const;
 };
+
+
+//
+// A line chart.
+//
 
 class LineChart
   : public ChartBase
 {
   public:
-    virtual void paint(QPainter& painter) const;
+    virtual void render(QPainter& painter) const;
+
+  private:
+    void render_curve(QPainter& painter) const;
 };
+
+
+//
+// A widget to display charts.
+//
 
 class ChartWidget
   : public QFrame
@@ -82,7 +102,9 @@ class ChartWidget
 
     ~ChartWidget();
 
-    void add(std::auto_ptr<ChartBase> chart);
+    void clear();
+
+    void add_chart(std::auto_ptr<ChartBase> chart);
 
   private:
     typedef std::vector<ChartBase*> ChartCollection;
@@ -91,7 +113,7 @@ class ChartWidget
 
     virtual void paintEvent(QPaintEvent* event);
 
-    void paint(QImage& image) const;
+    void render(QImage& image) const;
 };
 
 }       // namespace studio

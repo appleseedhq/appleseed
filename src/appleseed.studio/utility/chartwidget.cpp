@@ -33,10 +33,18 @@
 #include "foundation/utility/foreach.h"
 
 // Qt headers.
+#include <QBrush>
+#include <QColor>
 #include <QImage>
 #include <QPainter>
+#include <QPen>
 #include <QStyle>
 #include <QStyleOptionFrame>
+#include <Qt>
+
+// Standard headers.
+#include <cassert>
+#include <cstddef>
 
 using namespace foundation;
 using namespace std;
@@ -58,13 +66,52 @@ void ChartBase::add_point(const double x, const double y)
     m_points.push_back(Vector2d(x, y));
 }
 
+AABB2d ChartBase::get_bbox() const
+{
+    AABB2d bbox;
+    bbox.invalidate();
+
+    for (size_t i = 0; i < m_points.size(); ++i)
+        bbox.insert(m_points[i]);
+
+    return bbox;
+}
+
 
 //
 // LineChart class implementation.
 //
 
-void LineChart::paint(QPainter& painter) const
+void LineChart::render(QPainter& painter) const
 {
+    render_curve(painter);
+}
+
+void LineChart::render_curve(QPainter& painter) const
+{
+    if (m_points.size() < 2)
+        return;
+
+    const AABB2d bbox = get_bbox();
+    const Vector2d rcp_bbox_extent = Vector2d(1.0) / bbox.extent();
+
+    const QRect window = painter.window();
+    const Vector2d window_origin(window.x(), window.y());
+    const Vector2d window_size(window.width(), window.height());
+
+    QPen pen;
+    pen.setBrush(QBrush(QColor(255, 0, 0)));
+    pen.setWidth(2);
+    pen.setCapStyle(Qt::RoundCap);
+    painter.setPen(pen);
+
+    for (size_t i = 0; i < m_points.size() - 1; ++i)
+    {
+        const Vector2d from = (m_points[i] - bbox.min) * rcp_bbox_extent * window_size + window_origin;
+        const Vector2d to = (m_points[i + 1] - bbox.min) * rcp_bbox_extent * window_size + window_origin;
+
+        painter.drawLine(from.x, from.y, to.x, to.y);
+    }
 }
 
 
@@ -79,20 +126,30 @@ ChartWidget::ChartWidget(QWidget* parent)
 
 ChartWidget::~ChartWidget()
 {
-    for (const_each<ChartCollection> i = m_charts; i; ++i)
-        delete *i;
+    clear();
 }
 
-void ChartWidget::add(auto_ptr<ChartBase> chart)
+void ChartWidget::clear()
 {
+    for (const_each<ChartCollection> i = m_charts; i; ++i)
+        delete *i;
+
+    m_charts.clear();
+}
+
+void ChartWidget::add_chart(auto_ptr<ChartBase> chart)
+{
+    assert(chart.get());
+
     m_charts.push_back(chart.release());
 }
 
 void ChartWidget::paintEvent(QPaintEvent* event)
 {
     // Render the charts into a QImage.
-    QImage image(size(), QImage::Format_RGB32);
-    paint(image);
+    QImage image(size(), QImage::Format_ARGB32);
+    image.fill(QColor(0, 0, 0, 0).rgba());
+    render(image);
 
     QPainter painter(this);
 
@@ -105,17 +162,14 @@ void ChartWidget::paintEvent(QPaintEvent* event)
     style()->drawPrimitive(QStyle::PE_Frame, &option, &painter, this);
 }
 
-void ChartWidget::paint(QImage& image) const
+void ChartWidget::render(QImage& image) const
 {
     QPainter painter(&image);
     painter.initFrom(this);
     painter.setRenderHint(QPainter::Antialiasing, true);
 
-    painter.setBackground(QBrush(QColor(255, 0, 0)));
-    painter.eraseRect(rect());
-
     for (const_each<ChartCollection> i = m_charts; i; ++i)
-        (*i)->paint(painter);
+        (*i)->render(painter);
 }
 
 }   // namespace studio

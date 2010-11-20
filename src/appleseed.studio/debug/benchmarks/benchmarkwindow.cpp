@@ -52,9 +52,13 @@
 #include <QTreeWidgetItem>
 #include <QVariant>
 
+// Standard headers.
+#include <cstddef>
+
 using namespace appleseed::shared;
 using namespace boost;
 using namespace foundation;
+using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -63,16 +67,10 @@ namespace studio {
 // BenchmarkWindow class implementation.
 //
 
-namespace
-{
-    const UniqueID InvalidUniqueID = ~UniqueID(0);
-}
-
 BenchmarkWindow::BenchmarkWindow(QWidget* parent)
   : QWidget(parent)
   , m_ui(new Ui::BenchmarkWindow())
   , m_chart_widget(this)
-  , m_current_serie_uid(InvalidUniqueID)
 {
     m_ui->setupUi(this);
 
@@ -184,6 +182,30 @@ void BenchmarkWindow::enable_widgets(const bool enabled)
     m_ui->pushbutton_run->setEnabled(enabled);
 }
 
+auto_ptr<ChartBase> BenchmarkWindow::create_chart(const UniqueID case_uid) const
+{
+    auto_ptr<ChartBase> chart(new LineChart());
+
+    const BenchmarkSerie& serie = m_benchmark_aggregator.get_serie(case_uid);
+
+    for (size_t i = 0; i < serie.size(); ++i)
+    {
+        const BenchmarkDataPoint& point = serie[i];
+
+/*
+        const double x =
+            static_cast<double>(
+                BenchmarkDataPoint::ptime_to_microseconds(point.get_date()));
+*/
+
+        const double x = static_cast<double>(i);
+
+        chart->add_point(x, point.get_ticks());
+    }
+
+    return chart;
+}
+
 void BenchmarkWindow::slot_run_benchmarks()
 {
     if (!m_benchmark_runner_thread.isRunning())
@@ -205,11 +227,15 @@ void BenchmarkWindow::slot_on_current_benchmark_changed(
     QTreeWidgetItem*    current,
     QTreeWidgetItem*    previous)
 {
+    m_chart_widget.clear();
+
     const QVariant data = current->data(0, Qt::UserRole);
 
-    m_current_serie_uid = data.isNull()
-        ? data.value<UniqueID>()
-        : InvalidUniqueID;
+    if (!data.isNull())
+    {
+        const UniqueID case_uid = data.value<UniqueID>();
+        m_chart_widget.add_chart(create_chart(case_uid));
+    }
 
     m_chart_widget.update();
 }
