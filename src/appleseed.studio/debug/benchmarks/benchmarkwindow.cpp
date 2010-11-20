@@ -38,7 +38,6 @@
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
-#include "foundation/utility/uid.h"
 
 // boost headers.
 #include "boost/filesystem/path.hpp"
@@ -64,9 +63,16 @@ namespace studio {
 // BenchmarkWindow class implementation.
 //
 
+namespace
+{
+    const UniqueID InvalidUniqueID = ~UniqueID(0);
+}
+
 BenchmarkWindow::BenchmarkWindow(QWidget* parent)
   : QWidget(parent)
   , m_ui(new Ui::BenchmarkWindow())
+  , m_chart_widget(this)
+  , m_current_serie_uid(InvalidUniqueID)
 {
     m_ui->setupUi(this);
 
@@ -76,8 +82,9 @@ BenchmarkWindow::BenchmarkWindow(QWidget* parent)
 
     build_connections();
 
-    configure_benchmarks_treeview();
+    configure_chart_widget();
 
+    configure_benchmarks_treeview();
     reload_benchmarks();
 
     connect(
@@ -103,6 +110,17 @@ void BenchmarkWindow::build_connections()
     connect(
         m_ui->pushbutton_run, SIGNAL(clicked()),
         this, SLOT(slot_run_benchmarks()));
+
+    connect(
+        m_ui->treewidget_benchmarks, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)),
+        this, SLOT(slot_on_current_benchmark_changed(QTreeWidgetItem*, QTreeWidgetItem*)));
+}
+
+void BenchmarkWindow::configure_chart_widget()
+{
+    m_chart_widget.setProperty("hasFrame", true);
+
+    m_ui->graphs_contents->addWidget(&m_chart_widget);
 }
 
 void BenchmarkWindow::configure_benchmarks_treeview()
@@ -181,6 +199,19 @@ void BenchmarkWindow::slot_on_benchmarks_execution_complete()
     reload_benchmarks();
 
     enable_widgets(true);
+}
+
+void BenchmarkWindow::slot_on_current_benchmark_changed(
+    QTreeWidgetItem*    current,
+    QTreeWidgetItem*    previous)
+{
+    const QVariant data = current->data(0, Qt::UserRole);
+
+    m_current_serie_uid = data.isNull()
+        ? data.value<UniqueID>()
+        : InvalidUniqueID;
+
+    m_chart_widget.update();
 }
 
 }   // namespace studio

@@ -614,6 +614,15 @@ QLabel[hasFrame="true"]
 
 
 /*
+ * QFrame.
+ */
+QFrame[hasFrame="true"]
+{
+    border: BORDER_STYLE;
+}
+
+
+/*
  * QComboBox.
  */
 

@@ -245,6 +245,8 @@ source_group("meta\\tests" FILES
 )
 
 set(utility_sources
+    utility/chartwidget.cpp
+    utility/chartwidget.h
     utility/interop.h
     utility/scrollareapanhandler.cpp
     utility/scrollareapanhandler.h

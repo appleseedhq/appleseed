@@ -26,71 +26,75 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_DEBUG_BENCHMARKS_BENCHMARKWINDOW_H
-#define APPLESEED_STUDIO_DEBUG_BENCHMARKS_BENCHMARKWINDOW_H
-
-// appleseed.studio headers.
-#include "debug/benchmarks/benchmarkrunnerthread.h"
-#include "utility/chartwidget.h"
+#ifndef APPLESEED_STUDIO_UTILITY_CHARTWIDGET_H
+#define APPLESEED_STUDIO_UTILITY_CHARTWIDGET_H
 
 // appleseed.foundation headers.
-#include "foundation/utility/benchmark.h"
-#include "foundation/utility/uid.h"
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/math/vector.h"
 
 // Qt headers.
+#include <QFrame>
+#include <QImage>
 #include <QObject>
-#include <QWidget>
+
+// Standard headers.
+#include <memory>
+#include <vector>
 
 // Forward declarations.
-namespace Ui    { class BenchmarkWindow; }
-class QTreeWidgetItem;
+class QPainter;
+class QPaintEvent;
+class QWidget;
 
 namespace appleseed {
 namespace studio {
 
-class BenchmarkWindow
-  : public QWidget
+class ChartBase
+  : public foundation::NonCopyable
+{
+  public:
+    virtual ~ChartBase() {}
+
+    void add_point(const foundation::Vector2d& p);
+    void add_point(const double x, const double y);
+
+    virtual void paint(QPainter& painter) const = 0;
+
+  private:
+    std::vector<foundation::Vector2d> m_points;
+};
+
+class LineChart
+  : public ChartBase
+{
+  public:
+    virtual void paint(QPainter& painter) const;
+};
+
+class ChartWidget
+  : public QFrame
 {
     Q_OBJECT
 
   public:
-    // Constructor.
-    explicit BenchmarkWindow(QWidget* parent = 0);
+    explicit ChartWidget(QWidget* parent);
 
-    // Destructor.
-    ~BenchmarkWindow();
+    ~ChartWidget();
+
+    void add(std::auto_ptr<ChartBase> chart);
 
   private:
-    // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
-    Ui::BenchmarkWindow*                m_ui;
+    typedef std::vector<ChartBase*> ChartCollection;
 
-    ChartWidget                         m_chart_widget;
+    ChartCollection m_charts;
 
-    BenchmarkRunnerThread               m_benchmark_runner_thread;
-    foundation::BenchmarkAggregator     m_benchmark_aggregator;
+    virtual void paintEvent(QPaintEvent* event);
 
-    foundation::UniqueID                m_current_serie_uid;
-
-    void build_connections();
-
-    void configure_chart_widget();
-
-    void configure_benchmarks_treeview();
-    void populate_benchmarks_treeview();
-
-    void reload_benchmarks();
-
-    void enable_widgets(const bool enabled);
-
-  private slots:
-    void slot_run_benchmarks();
-    void slot_on_benchmarks_execution_complete();
-    void slot_on_current_benchmark_changed(
-        QTreeWidgetItem*    current,
-        QTreeWidgetItem*    previous);
+    void paint(QImage& image) const;
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_DEBUG_BENCHMARKS_BENCHMARKWINDOW_H
+#endif  // !APPLESEED_STUDIO_UTILITY_CHARTWIDGET_H
