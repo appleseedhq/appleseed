@@ -53,6 +53,7 @@
 #include <QVariant>
 
 // Standard headers.
+#include <algorithm>
 #include <cstddef>
 
 using namespace appleseed::shared;
@@ -189,7 +190,10 @@ auto_ptr<ChartBase> BenchmarkWindow::create_chart(const UniqueID case_uid) const
     chart->set_grid_brush(QBrush(QColor(60, 60, 60, 255)));
     chart->set_curve_brush(QBrush(QColor(190, 140, 50, 255)));
 
-    const BenchmarkSerie& serie = m_benchmark_aggregator.get_serie(case_uid);
+    BenchmarkSerie serie = m_benchmark_aggregator.get_serie(case_uid);
+
+    if (!serie.empty())
+        sort(&serie[0], &serie[0] + serie.size());
 
     for (size_t i = 0; i < serie.size(); ++i)
     {

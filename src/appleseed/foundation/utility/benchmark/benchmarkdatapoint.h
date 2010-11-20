@@ -76,6 +76,8 @@ class FOUNDATIONDLL BenchmarkDataPoint
 
     double get_ticks() const;
 
+    bool operator<(const BenchmarkDataPoint& rhs) const;
+
   private:
     uint64  m_date_microseconds;
     double  m_ticks;
@@ -121,6 +123,11 @@ inline boost::posix_time::ptime BenchmarkDataPoint::get_date() const
 inline double BenchmarkDataPoint::get_ticks() const
 {
     return m_ticks;
+}
+
+inline bool BenchmarkDataPoint::operator<(const BenchmarkDataPoint& rhs) const
+{
+    return m_date_microseconds < rhs.m_date_microseconds;
 }
 
 }       // namespace foundation

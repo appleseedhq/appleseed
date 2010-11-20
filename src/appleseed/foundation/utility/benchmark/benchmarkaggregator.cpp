@@ -180,7 +180,7 @@ struct BenchmarkAggregator::Impl
                         cases_dic.insert(name, serie_uid);
                     }
 
-                    scan_serie(node, date, m_series[serie_uid]);
+                    scan_results(node, date, m_series[serie_uid]);
                 }
             }
 
@@ -188,7 +188,7 @@ struct BenchmarkAggregator::Impl
         }
     }
 
-    void scan_serie(
+    void scan_results(
         const DOMNode*              node,
         const posix_time::ptime&    date,
         BenchmarkSerie&             serie)

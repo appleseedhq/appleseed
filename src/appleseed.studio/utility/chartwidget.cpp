@@ -98,7 +98,9 @@ Vector2d ChartBase::convert_to_frame(
     const double        margin_x,
     const double        margin_y) const
 {
-    const Vector2d u = (point - m_points_bbox.min) * m_rcp_points_bbox_extent;
+    Vector2d u = (point - m_points_bbox.min) * m_rcp_points_bbox_extent;
+
+    u.y = 1.0 - u.y;
 
     const Vector2d window_size(
         m_window_size.x - 2.0 * margin_x,
@@ -119,7 +121,7 @@ Vector2d ChartBase::convert_to_frame(
 LineChart::LineChart()
   : m_grid_brush(QBrush(QColor(50, 50, 50, 255)))
   , m_curve_brush(QBrush(QColor(255, 255, 255, 255)))
-  , m_curve_margin_x(0.0)
+  , m_curve_margin_x(5.0)
   , m_curve_margin_y(15.0)
 {
 }
