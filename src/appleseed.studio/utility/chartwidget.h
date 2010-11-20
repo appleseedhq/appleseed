@@ -39,12 +39,15 @@
 #include <QFrame>
 #include <QImage>
 #include <QObject>
+#include <QPoint>
 
 // Standard headers.
 #include <memory>
 #include <vector>
 
 // Forward declarations.
+class QEvent;
+class QMouseEvent;
 class QPainter;
 class QPaintEvent;
 class QWidget;
@@ -138,11 +141,19 @@ class ChartWidget
   private:
     typedef std::vector<ChartBase*> ChartCollection;
 
-    ChartCollection m_charts;
+    ChartCollection     m_charts;
+    bool                m_show_coordinates;
+    QPoint              m_mouse_position;
+
+    virtual void mouseMoveEvent(QMouseEvent* event);
+    virtual void leaveEvent(QEvent* event);
 
     virtual void paintEvent(QPaintEvent* event);
 
-    void render(QImage& image) const;
+    void render_charts(QImage& image) const;
+
+    void draw_tooltip(QPainter& painter) const;
+    void draw_frame(QPainter& painter) const;
 };
 
 }       // namespace studio

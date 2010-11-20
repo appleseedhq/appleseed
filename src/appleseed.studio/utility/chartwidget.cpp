@@ -36,8 +36,11 @@
 // Qt headers.
 #include <QColor>
 #include <QImage>
+#include <QMouseEvent>
 #include <QPainter>
 #include <QPen>
+#include <QRect>
+#include <QString>
 #include <QStyle>
 #include <QStyleOptionFrame>
 #include <Qt>
@@ -225,7 +228,9 @@ void LineChart::render_curve(QPainter& painter) const
 
 ChartWidget::ChartWidget(QWidget* parent)
   : QFrame(parent)
+  , m_show_coordinates(false)
 {
+    setMouseTracking(true);
 }
 
 ChartWidget::~ChartWidget()
@@ -248,25 +253,40 @@ void ChartWidget::add_chart(auto_ptr<ChartBase> chart)
     m_charts.push_back(chart.release());
 }
 
+void ChartWidget::mouseMoveEvent(QMouseEvent* event)
+{
+    m_show_coordinates = true;
+    m_mouse_position = event->pos();
+
+    update();
+}
+
+void ChartWidget::leaveEvent(QEvent* event)
+{
+    m_show_coordinates = false;
+
+    update();
+}
+
 void ChartWidget::paintEvent(QPaintEvent* event)
 {
     // Render the charts into a QImage.
     QImage image(size(), QImage::Format_ARGB32);
     image.fill(QColor(0, 0, 0, 0).rgba());
-    render(image);
+    render_charts(image);
 
     QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing, true);
 
-    // Draw the QImage.
     painter.drawImage(0, 0, image);
 
-    // Draw the frame using the current style.
-    QStyleOptionFrame option;
-    option.initFrom(this);
-    style()->drawPrimitive(QStyle::PE_Frame, &option, &painter, this);
+    if (m_show_coordinates)
+        draw_tooltip(painter);
+
+    draw_frame(painter);
 }
 
-void ChartWidget::render(QImage& image) const
+void ChartWidget::render_charts(QImage& image) const
 {
     QPainter painter(&image);
     painter.initFrom(this);
@@ -274,6 +294,53 @@ void ChartWidget::render(QImage& image) const
 
     for (const_each<ChartCollection> i = m_charts; i; ++i)
         (*i)->render(painter);
+}
+
+void ChartWidget::draw_tooltip(QPainter& painter) const
+{
+    const int ShiftX = 2;
+    const int ShiftY = 2;
+    const int MarginX = 8;
+    const int MarginY = 5;
+    const int FrameMargin = 3;
+    const qreal CornerRadius = 2.0;
+
+    const QString date = "date";
+    const QString ticks = "ticks";
+    const QString text = QString("%1\n%2").arg(date).arg(ticks);
+    const QRect text_rect = painter.fontMetrics().boundingRect(QRect(), Qt::AlignCenter, text);
+
+    QRect tooltip_rect(
+        m_mouse_position.x() + ShiftX,
+        m_mouse_position.y() - text_rect.height() - 2 * MarginY - ShiftY,
+        text_rect.width() + 2 * MarginX,
+        text_rect.height() + 2 * MarginY);
+
+    if (tooltip_rect.left() < FrameMargin)
+        tooltip_rect.moveLeft(FrameMargin);
+
+    if (tooltip_rect.top() < FrameMargin)
+        tooltip_rect.moveTop(FrameMargin);
+
+    const int MaxRight = painter.window().right() - FrameMargin;
+    if (tooltip_rect.right() > MaxRight)
+        tooltip_rect.moveRight(MaxRight);
+
+    const int MaxBottom = painter.window().bottom() - FrameMargin;
+    if (tooltip_rect.bottom() > MaxBottom)
+        tooltip_rect.moveBottom(MaxBottom);
+
+    painter.setBrush(QBrush(QColor(128, 128, 128, 180)));
+    painter.setPen(QColor(20, 20, 20, 180));
+    painter.drawRoundedRect(tooltip_rect, CornerRadius, CornerRadius);
+    painter.drawText(tooltip_rect, Qt::AlignCenter, text);
+}
+
+void ChartWidget::draw_frame(QPainter& painter) const
+{
+    QStyleOptionFrame option;
+    option.initFrom(this);
+    style()->drawPrimitive(QStyle::PE_Frame, &option, &painter, this);
 }
 
 }   // namespace studio
