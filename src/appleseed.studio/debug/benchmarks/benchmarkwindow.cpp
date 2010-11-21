@@ -36,11 +36,14 @@
 #include "application/application.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/types.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/countof.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/string.h"
 
 // boost headers.
+#include "boost/date_time/posix_time/posix_time.hpp"
 #include "boost/filesystem/path.hpp"
 
 // Qt headers.
@@ -188,6 +191,31 @@ void BenchmarkWindow::enable_widgets(const bool enabled)
     m_ui->pushbutton_run->setEnabled(enabled);
 }
 
+namespace
+{
+    struct ToolTipFormatter
+      : public IToolTipFormatter
+    {
+        virtual QString format(const Vector2d& point) const
+        {
+            const uint64 date_microseconds = static_cast<uint64>(point.x);
+            const posix_time::ptime date =
+                BenchmarkDataPoint::microseconds_to_ptime(date_microseconds);
+            const string date_string = posix_time::to_simple_string(date);
+
+            const string ticks_string =
+                pretty_scalar(point.y) + " " +
+                plural(point.y, "clock tick");
+
+            return
+                QString("%1\n%2")
+                    .arg(QString::fromStdString(date_string))
+                    .arg(QString::fromStdString(ticks_string));
+
+        }
+    };
+}
+
 auto_ptr<ChartBase> BenchmarkWindow::create_chart(
     const UniqueID      case_uid,
     const size_t        chart_index) const
@@ -208,6 +236,9 @@ auto_ptr<ChartBase> BenchmarkWindow::create_chart(
 
     chart->set_grid_brush(QBrush(QColor(60, 60, 60, 255)));
     chart->set_curve_brush(QBrush(CurveColors[chart_index % COUNT_OF(CurveColors)]));
+
+    auto_ptr<IToolTipFormatter> formatter(new ToolTipFormatter());
+    chart->set_tooltip_formatter(formatter);
 
     BenchmarkSerie serie = m_benchmark_aggregator.get_serie(case_uid);
 

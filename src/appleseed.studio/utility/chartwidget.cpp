@@ -40,7 +40,6 @@
 #include <QPainter>
 #include <QPen>
 #include <QRect>
-#include <QString>
 #include <QStyle>
 #include <QStyleOptionFrame>
 #include <Qt>
@@ -60,7 +59,7 @@ namespace studio {
 //
 
 ChartBase::ChartBase()
-  : m_margin(5.0, 15.0)
+  : m_margin(15.0, 15.0)
   , m_grid_brush(QBrush(QColor(50, 50, 50, 255)))
 {
 }
@@ -68,6 +67,11 @@ ChartBase::ChartBase()
 void ChartBase::set_grid_brush(const QBrush& brush)
 {
     m_grid_brush = brush;
+}
+
+void ChartBase::set_tooltip_formatter(auto_ptr<IToolTipFormatter> formatter)
+{
+    m_tooltip_formatter = formatter;
 }
 
 void ChartBase::add_point(const Vector2d& p)
@@ -113,9 +117,16 @@ void ChartBase::draw_tooltip(
     const int MarginY = 5;
     const int FrameMargin = 3;
     const qreal CornerRadius = 2.0;
+    const int Opacity = 180;
+    const QColor TextColor(210, 210, 210, Opacity);
+    const QColor BorderColor(40, 40, 40, Opacity);
+    const QColor BackgroundColor(80, 80, 80, Opacity);
+
+    if (m_tooltip_formatter.get() == 0)
+        return;
 
     const Vector2d& point = m_points[point_index];
-    const QString text = QString("%1\n%2").arg(point.x).arg(point.y);
+    const QString text = m_tooltip_formatter->format(point);
     const QRect text_rect = painter.fontMetrics().boundingRect(QRect(), Qt::AlignCenter, text);
 
     QRect tooltip_rect(
@@ -138,9 +149,11 @@ void ChartBase::draw_tooltip(
     if (tooltip_rect.bottom() > MaxBottom)
         tooltip_rect.moveBottom(MaxBottom);
 
-    painter.setBrush(QBrush(QColor(128, 128, 128, 180)));
-    painter.setPen(QColor(20, 20, 20, 180));
+    painter.setPen(BorderColor);
+    painter.setBrush(QBrush(BackgroundColor));
     painter.drawRoundedRect(tooltip_rect, CornerRadius, CornerRadius);
+
+    painter.setPen(TextColor);
     painter.drawText(tooltip_rect, Qt::AlignCenter, text);
 }
 
@@ -302,7 +315,7 @@ bool LineChart::on_chart(const QPoint& mouse_position, size_t& point_index) cons
 
 ChartWidget::ChartWidget(QWidget* parent)
   : QFrame(parent)
-  , m_show_coordinates(false)
+  , m_mouse_inside_widget(false)
 {
     setMouseTracking(true);
 }
@@ -329,7 +342,7 @@ void ChartWidget::add_chart(auto_ptr<ChartBase> chart)
 
 void ChartWidget::mouseMoveEvent(QMouseEvent* event)
 {
-    m_show_coordinates = true;
+    m_mouse_inside_widget = true;
     m_mouse_position = event->pos();
 
     update();
@@ -337,7 +350,7 @@ void ChartWidget::mouseMoveEvent(QMouseEvent* event)
 
 void ChartWidget::leaveEvent(QEvent* event)
 {
-    m_show_coordinates = false;
+    m_mouse_inside_widget = false;
 
     update();
 }
@@ -349,7 +362,7 @@ void ChartWidget::paintEvent(QPaintEvent* event)
 
     draw_charts(painter);
 
-    if (m_show_coordinates)
+    if (m_mouse_inside_widget)
         draw_tooltip(painter);
 
     draw_frame(painter);

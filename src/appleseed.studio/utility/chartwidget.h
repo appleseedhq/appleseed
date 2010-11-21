@@ -39,6 +39,7 @@
 #include <QFrame>
 #include <QObject>
 #include <QPoint>
+#include <QString>
 
 // Standard headers.
 #include <cstddef>
@@ -56,6 +57,19 @@ namespace appleseed {
 namespace studio {
 
 //
+// Interface for tooltip formatters.
+//
+
+class IToolTipFormatter
+{
+  public:
+    virtual ~IToolTipFormatter() {}
+
+    virtual QString format(const foundation::Vector2d& point) const = 0;
+};
+
+
+//
 // Base class for charts.
 //
 
@@ -68,6 +82,8 @@ class ChartBase
     virtual ~ChartBase() {}
 
     void set_grid_brush(const QBrush& brush);
+
+    void set_tooltip_formatter(std::auto_ptr<IToolTipFormatter> formatter);
 
     void add_point(const foundation::Vector2d& p);
     void add_point(const double x, const double y);
@@ -90,6 +106,7 @@ class ChartBase
   protected:
     foundation::Vector2d                m_margin;
     QBrush                              m_grid_brush;
+    std::auto_ptr<IToolTipFormatter>    m_tooltip_formatter;
 
     std::vector<foundation::Vector2d>   m_points;
 
@@ -159,7 +176,7 @@ class ChartWidget
     typedef std::vector<ChartBase*> ChartCollection;
 
     ChartCollection     m_charts;
-    bool                m_show_coordinates;
+    bool                m_mouse_inside_widget;
     QPoint              m_mouse_position;
 
     virtual void mouseMoveEvent(QMouseEvent* event);
