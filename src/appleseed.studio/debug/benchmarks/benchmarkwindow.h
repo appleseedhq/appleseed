@@ -42,11 +42,11 @@
 #include <QWidget>
 
 // Standard headers.
+#include <cstddef>
 #include <memory>
 
 // Forward declarations.
 namespace Ui    { class BenchmarkWindow; }
-class QTreeWidgetItem;
 
 namespace appleseed {
 namespace studio {
@@ -84,14 +84,14 @@ class BenchmarkWindow
     void enable_widgets(const bool enabled);
 
     std::auto_ptr<ChartBase> create_chart(
-        const foundation::UniqueID      case_uid) const;
+        const foundation::UniqueID      case_uid,
+        const size_t                    chart_index) const;
 
   private slots:
     void slot_run_benchmarks();
     void slot_on_benchmarks_execution_complete();
-    void slot_on_current_benchmark_changed(
-        QTreeWidgetItem*                current,
-        QTreeWidgetItem*                previous);
+    void slot_rebuild_charts();
+    void slot_on_equidistant_checkbox_state_changed(int state);
 };
 
 }       // namespace studio

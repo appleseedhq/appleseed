@@ -37,6 +37,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/countof.h"
 #include "foundation/utility/foreach.h"
 
 // boost headers.
@@ -44,6 +45,7 @@
 
 // Qt headers.
 #include <QKeySequence>
+#include <QList>
 #include <QPushButton>
 #include <QShortCut>
 #include <QStringList>
@@ -54,7 +56,6 @@
 
 // Standard headers.
 #include <algorithm>
-#include <cstddef>
 
 using namespace appleseed::shared;
 using namespace boost;
@@ -111,8 +112,12 @@ void BenchmarkWindow::build_connections()
         this, SLOT(slot_run_benchmarks()));
 
     connect(
-        m_ui->treewidget_benchmarks, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)),
-        this, SLOT(slot_on_current_benchmark_changed(QTreeWidgetItem*, QTreeWidgetItem*)));
+        m_ui->treewidget_benchmarks, SIGNAL(itemSelectionChanged()),
+        this, SLOT(slot_rebuild_charts()));
+
+    connect(
+        m_ui->checkbox_equidistant, SIGNAL(stateChanged(int)),
+        this, SLOT(slot_on_equidistant_checkbox_state_changed(int)));
 }
 
 void BenchmarkWindow::configure_chart_widget()
@@ -183,29 +188,43 @@ void BenchmarkWindow::enable_widgets(const bool enabled)
     m_ui->pushbutton_run->setEnabled(enabled);
 }
 
-auto_ptr<ChartBase> BenchmarkWindow::create_chart(const UniqueID case_uid) const
+auto_ptr<ChartBase> BenchmarkWindow::create_chart(
+    const UniqueID      case_uid,
+    const size_t        chart_index) const
 {
     auto_ptr<LineChart> chart(new LineChart());
 
+    static QColor CurveColors[] =
+    {
+        QColor(190, 140,  50, 255),
+        QColor(160,  30,  30, 255),
+        QColor( 30, 160,  30, 255),
+        QColor( 30,  30, 160, 255),
+        QColor(160, 160,  30, 255),
+        QColor(160,  30, 160, 255),
+        QColor( 30, 160, 160, 255),
+        QColor(160, 160, 160, 255)
+    };
+
     chart->set_grid_brush(QBrush(QColor(60, 60, 60, 255)));
-    chart->set_curve_brush(QBrush(QColor(190, 140, 50, 255)));
+    chart->set_curve_brush(QBrush(CurveColors[chart_index % COUNT_OF(CurveColors)]));
 
     BenchmarkSerie serie = m_benchmark_aggregator.get_serie(case_uid);
 
     if (!serie.empty())
         sort(&serie[0], &serie[0] + serie.size());
 
+    const bool equidistant = m_ui->checkbox_equidistant->isChecked();
+
     for (size_t i = 0; i < serie.size(); ++i)
     {
         const BenchmarkDataPoint& point = serie[i];
 
-/*
         const double x =
             static_cast<double>(
-                BenchmarkDataPoint::ptime_to_microseconds(point.get_date()));
-*/
-
-        const double x = static_cast<double>(i);
+                equidistant
+                    ? i
+                    : BenchmarkDataPoint::ptime_to_microseconds(point.get_date()));
 
         chart->add_point(x, point.get_ticks());
     }
@@ -230,21 +249,29 @@ void BenchmarkWindow::slot_on_benchmarks_execution_complete()
     enable_widgets(true);
 }
 
-void BenchmarkWindow::slot_on_current_benchmark_changed(
-    QTreeWidgetItem*    current,
-    QTreeWidgetItem*    previous)
+void BenchmarkWindow::slot_rebuild_charts()
 {
     m_chart_widget.clear();
 
-    const QVariant data = current->data(0, Qt::UserRole);
+    const QList<QTreeWidgetItem*> items = m_ui->treewidget_benchmarks->selectedItems();
 
-    if (!data.isNull())
+    for (int i = 0; i < items.size(); ++i)
     {
-        const UniqueID case_uid = data.value<UniqueID>();
-        m_chart_widget.add_chart(create_chart(case_uid));
+        const QVariant data = items[i]->data(0, Qt::UserRole);
+
+        if (!data.isNull())
+        {
+            const UniqueID case_uid = data.value<UniqueID>();
+            m_chart_widget.add_chart(create_chart(case_uid, i));
+        }
     }
 
     m_chart_widget.update();
+}
+
+void BenchmarkWindow::slot_on_equidistant_checkbox_state_changed(int state)
+{
+    slot_rebuild_charts();
 }
 
 }   // namespace studio

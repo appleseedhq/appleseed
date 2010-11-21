@@ -37,11 +37,11 @@
 // Qt headers.
 #include <QBrush>
 #include <QFrame>
-#include <QImage>
 #include <QObject>
 #include <QPoint>
 
 // Standard headers.
+#include <cstddef>
 #include <memory>
 #include <vector>
 
@@ -63,14 +63,34 @@ class ChartBase
   : public foundation::NonCopyable
 {
   public:
+    ChartBase();
+
     virtual ~ChartBase() {}
+
+    void set_grid_brush(const QBrush& brush);
 
     void add_point(const foundation::Vector2d& p);
     void add_point(const double x, const double y);
 
-    virtual void render(QPainter& painter) = 0;
+    void prepare_drawing(QPainter& painter);
+
+    virtual void draw_grid(QPainter& painter) const;
+
+    virtual void draw_curve(QPainter& painter) const = 0;
+
+    virtual void draw_tooltip(
+        QPainter&       painter,
+        const QPoint&   mouse_position,
+        const size_t    point_index) const;
+
+    virtual bool on_chart(
+        const QPoint&   mouse_position,
+        size_t&         point_index) const = 0;
 
   protected:
+    foundation::Vector2d                m_margin;
+    QBrush                              m_grid_brush;
+
     std::vector<foundation::Vector2d>   m_points;
 
     foundation::AABB2d                  m_points_bbox;
@@ -80,15 +100,17 @@ class ChartBase
 
     foundation::AABB2d compute_points_bbox() const;
 
-    void prepare_rendering(QPainter& painter);
-
     foundation::Vector2d convert_to_frame(
         const foundation::Vector2d&     point) const;
 
-    foundation::Vector2d convert_to_frame(
-        const foundation::Vector2d&     point,
-        const double                    margin_x,
-        const double                    margin_y) const;
+    foundation::Vector2d convert_to_inner_frame(
+        const foundation::Vector2d&     point) const;
+
+    foundation::Vector2d convert_to_data(
+        const foundation::Vector2d&     point) const;
+
+    void draw_horizontal_grid(QPainter& painter) const;
+    void draw_vertical_grid(QPainter& painter) const;
 };
 
 
@@ -102,21 +124,16 @@ class LineChart
   public:
     LineChart();
 
-    void set_grid_brush(const QBrush& brush);
     void set_curve_brush(const QBrush& brush);
 
-    virtual void render(QPainter& painter);
+    virtual void draw_curve(QPainter& painter) const;
+
+    virtual bool on_chart(
+        const QPoint&   mouse_position,
+        size_t&         point_index) const;
 
   private:
-    QBrush  m_grid_brush;
     QBrush  m_curve_brush;
-    double  m_curve_margin_x;
-    double  m_curve_margin_y;
-
-    void render_grids(QPainter& painter) const;
-    void render_horizontal_grid(QPainter& painter) const;
-    void render_vertical_grid(QPainter& painter) const;
-    void render_curve(QPainter& painter) const;
 };
 
 
@@ -150,8 +167,7 @@ class ChartWidget
 
     virtual void paintEvent(QPaintEvent* event);
 
-    void render_charts(QImage& image) const;
-
+    void draw_charts(QPainter& painter) const;
     void draw_tooltip(QPainter& painter) const;
     void draw_frame(QPainter& painter) const;
 };

@@ -30,12 +30,12 @@
 #include "chartwidget.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/distance.h"
 #include "foundation/math/scalar.h"
 #include "foundation/utility/foreach.h"
 
 // Qt headers.
 #include <QColor>
-#include <QImage>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPen>
@@ -47,7 +47,7 @@
 
 // Standard headers.
 #include <cassert>
-#include <cstddef>
+#include <limits>
 
 using namespace foundation;
 using namespace std;
@@ -59,6 +59,17 @@ namespace studio {
 // ChartBase class implementation.
 //
 
+ChartBase::ChartBase()
+  : m_margin(5.0, 15.0)
+  , m_grid_brush(QBrush(QColor(50, 50, 50, 255)))
+{
+}
+
+void ChartBase::set_grid_brush(const QBrush& brush)
+{
+    m_grid_brush = brush;
+}
+
 void ChartBase::add_point(const Vector2d& p)
 {
     m_points.push_back(p);
@@ -67,6 +78,70 @@ void ChartBase::add_point(const Vector2d& p)
 void ChartBase::add_point(const double x, const double y)
 {
     m_points.push_back(Vector2d(x, y));
+}
+
+void ChartBase::prepare_drawing(QPainter& painter)
+{
+    m_points_bbox = compute_points_bbox();
+    m_rcp_points_bbox_extent = Vector2d(1.0) / m_points_bbox.extent();
+
+    const QRect window = painter.window();
+
+    m_window_origin = Vector2d(window.x(), window.y());
+    m_window_size = Vector2d(window.width(), window.height());
+}
+
+void ChartBase::draw_grid(QPainter& painter) const
+{
+    QPen pen;
+    pen.setBrush(m_grid_brush);
+    pen.setWidthF(1.0);
+    painter.setPen(pen);
+
+    draw_horizontal_grid(painter);
+    draw_vertical_grid(painter);
+}
+
+void ChartBase::draw_tooltip(
+    QPainter&       painter,
+    const QPoint&   mouse_position,
+    const size_t    point_index) const
+{
+    const int ShiftX = 2;
+    const int ShiftY = 2;
+    const int MarginX = 8;
+    const int MarginY = 5;
+    const int FrameMargin = 3;
+    const qreal CornerRadius = 2.0;
+
+    const Vector2d& point = m_points[point_index];
+    const QString text = QString("%1\n%2").arg(point.x).arg(point.y);
+    const QRect text_rect = painter.fontMetrics().boundingRect(QRect(), Qt::AlignCenter, text);
+
+    QRect tooltip_rect(
+        mouse_position.x() + ShiftX,
+        mouse_position.y() - text_rect.height() - 2 * MarginY - ShiftY,
+        text_rect.width() + 2 * MarginX,
+        text_rect.height() + 2 * MarginY);
+
+    if (tooltip_rect.left() < FrameMargin)
+        tooltip_rect.moveLeft(FrameMargin);
+
+    if (tooltip_rect.top() < FrameMargin)
+        tooltip_rect.moveTop(FrameMargin);
+
+    const int MaxRight = painter.window().right() - FrameMargin;
+    if (tooltip_rect.right() > MaxRight)
+        tooltip_rect.moveRight(MaxRight);
+
+    const int MaxBottom = painter.window().bottom() - FrameMargin;
+    if (tooltip_rect.bottom() > MaxBottom)
+        tooltip_rect.moveBottom(MaxBottom);
+
+    painter.setBrush(QBrush(QColor(128, 128, 128, 180)));
+    painter.setPen(QColor(20, 20, 20, 180));
+    painter.drawRoundedRect(tooltip_rect, CornerRadius, CornerRadius);
+    painter.drawText(tooltip_rect, Qt::AlignCenter, text);
 }
 
 AABB2d ChartBase::compute_points_bbox() const
@@ -80,84 +155,52 @@ AABB2d ChartBase::compute_points_bbox() const
     return bbox;
 }
 
-void ChartBase::prepare_rendering(QPainter& painter)
-{
-    m_points_bbox = compute_points_bbox();
-    m_rcp_points_bbox_extent = Vector2d(1.0) / m_points_bbox.extent();
-
-    const QRect window = painter.window();
-
-    m_window_origin = Vector2d(window.x(), window.y());
-    m_window_size = Vector2d(window.width(), window.height());
-}
-
 Vector2d ChartBase::convert_to_frame(const Vector2d& point) const
 {
-    return convert_to_frame(point, 0.0, 0.0);
+    Vector2d u = (point - m_points_bbox.min) * m_rcp_points_bbox_extent;
+
+    u.y = 1.0 - u.y;
+
+    return u * m_window_size + m_window_origin;
 }
 
-Vector2d ChartBase::convert_to_frame(
-    const Vector2d&     point,
-    const double        margin_x,
-    const double        margin_y) const
+Vector2d ChartBase::convert_to_inner_frame(const Vector2d& point) const
 {
     Vector2d u = (point - m_points_bbox.min) * m_rcp_points_bbox_extent;
 
     u.y = 1.0 - u.y;
 
     const Vector2d window_size(
-        m_window_size.x - 2.0 * margin_x,
-        m_window_size.y - 2.0 * margin_y);
+        m_window_size.x - 2.0 * m_margin.x,
+        m_window_size.y - 2.0 * m_margin.y);
 
     const Vector2d window_origin(
-        m_window_origin.x + margin_x,
-        m_window_origin.y + margin_y);
+        m_window_origin.x + m_margin.x,
+        m_window_origin.y + m_margin.y);
 
     return u * window_size + window_origin;
 }
 
-
-//
-// LineChart class implementation.
-//
-
-LineChart::LineChart()
-  : m_grid_brush(QBrush(QColor(50, 50, 50, 255)))
-  , m_curve_brush(QBrush(QColor(255, 255, 255, 255)))
-  , m_curve_margin_x(5.0)
-  , m_curve_margin_y(15.0)
+Vector2d ChartBase::convert_to_data(const Vector2d& point) const
 {
+    const Vector2d min = m_window_origin + m_margin;
+    const Vector2d max = m_window_origin + m_window_size - m_margin - Vector2d(1.0);
+
+    Vector2d p = point;
+
+    if (p.x < min.x) p.x = min.x;
+    if (p.x > max.x) p.x = max.x;
+    if (p.y < min.y) p.y = min.y;
+    if (p.y > max.y) p.y = max.y;
+
+    Vector2d u = (p - min) / (max - min);
+
+    u.y = 1.0 - u.y;
+
+    return u * m_points_bbox.extent() + m_points_bbox.min;
 }
 
-void LineChart::set_grid_brush(const QBrush& brush)
-{
-    m_grid_brush = brush;
-}
-
-void LineChart::set_curve_brush(const QBrush& brush)
-{
-    m_curve_brush = brush;
-}
-
-void LineChart::render(QPainter& painter)
-{
-    prepare_rendering(painter);
-    render_grids(painter);
-    render_curve(painter);
-}
-
-void LineChart::render_grids(QPainter& painter) const
-{
-    QPen pen;
-    pen.setBrush(m_grid_brush);
-    pen.setWidthF(1.0);
-    painter.setPen(pen);
-
-    render_horizontal_grid(painter);
-    render_vertical_grid(painter);
-}
-
-void LineChart::render_horizontal_grid(QPainter& painter) const
+void ChartBase::draw_horizontal_grid(QPainter& painter) const
 {
     const size_t Subdivisions = 10;
 
@@ -166,11 +209,7 @@ void LineChart::render_horizontal_grid(QPainter& painter) const
         const double k = static_cast<double>(i) / (Subdivisions - 1);
         const double y = mix(m_points_bbox.min.y, m_points_bbox.max.y, k);
 
-        const Vector2d p =
-            convert_to_frame(
-                Vector2d(0.0, y),
-                m_curve_margin_x,
-                m_curve_margin_y);
+        const Vector2d p = convert_to_inner_frame(Vector2d(0.0, y));
 
         painter.drawLine(
             m_window_origin.x, p.y,
@@ -178,13 +217,13 @@ void LineChart::render_horizontal_grid(QPainter& painter) const
     }
 }
 
-void LineChart::render_vertical_grid(QPainter& painter) const
+void ChartBase::draw_vertical_grid(QPainter& painter) const
 {
     if (m_points.size() > 2)
     {
-        for (size_t i = 1; i < m_points.size() - 1; ++i)
+        for (size_t i = 0; i < m_points.size(); ++i)
         {
-            const Vector2d p = convert_to_frame(m_points[i]);
+            const Vector2d p = convert_to_inner_frame(m_points[i]);
 
             painter.drawLine(
                 p.x, m_window_origin.y,
@@ -193,7 +232,22 @@ void LineChart::render_vertical_grid(QPainter& painter) const
     }
 }
 
-void LineChart::render_curve(QPainter& painter) const
+
+//
+// LineChart class implementation.
+//
+
+LineChart::LineChart()
+  : m_curve_brush(QBrush(QColor(255, 255, 255, 255)))
+{
+}
+
+void LineChart::set_curve_brush(const QBrush& brush)
+{
+    m_curve_brush = brush;
+}
+
+void LineChart::draw_curve(QPainter& painter) const
 {
     if (m_points.size() > 1)
     {
@@ -204,21 +258,41 @@ void LineChart::render_curve(QPainter& painter) const
 
         for (size_t i = 0; i < m_points.size() - 1; ++i)
         {
-            const Vector2d from =
-                convert_to_frame(
-                    m_points[i],
-                    m_curve_margin_x,
-                    m_curve_margin_y);
-
-            const Vector2d to =
-                convert_to_frame(
-                    m_points[i + 1],
-                    m_curve_margin_x,
-                    m_curve_margin_y);
-
+            const Vector2d from = convert_to_inner_frame(m_points[i]);
+            const Vector2d to = convert_to_inner_frame(m_points[i + 1]);
             painter.drawLine(from.x, from.y, to.x, to.y);
         }
     }
+}
+
+bool LineChart::on_chart(const QPoint& mouse_position, size_t& point_index) const
+{
+    const double MinSquareDistance = 10 * 10;
+
+    const Vector2d mp(mouse_position.x(), mouse_position.y());
+
+    double closest_square_distance = numeric_limits<double>::max();
+    size_t closest_index = 0;
+
+    for (size_t i = 0; i < m_points.size(); ++i)
+    {
+        const Vector2d p = convert_to_inner_frame(m_points[i]);
+        const double d = square_distance(mp, p);
+
+        if (closest_square_distance > d)
+        {
+            closest_square_distance = d;
+            closest_index = i;
+        }
+    }
+
+    if (closest_square_distance < MinSquareDistance)
+    {
+        point_index = closest_index;
+        return true;
+    }
+
+    return false;
 }
 
 
@@ -270,15 +344,10 @@ void ChartWidget::leaveEvent(QEvent* event)
 
 void ChartWidget::paintEvent(QPaintEvent* event)
 {
-    // Render the charts into a QImage.
-    QImage image(size(), QImage::Format_ARGB32);
-    image.fill(QColor(0, 0, 0, 0).rgba());
-    render_charts(image);
-
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing, true);
 
-    painter.drawImage(0, 0, image);
+    draw_charts(painter);
 
     if (m_show_coordinates)
         draw_tooltip(painter);
@@ -286,54 +355,36 @@ void ChartWidget::paintEvent(QPaintEvent* event)
     draw_frame(painter);
 }
 
-void ChartWidget::render_charts(QImage& image) const
+void ChartWidget::draw_charts(QPainter& painter) const
 {
-    QPainter painter(&image);
-    painter.initFrom(this);
-    painter.setRenderHint(QPainter::Antialiasing, true);
+    for (const_each<ChartCollection> i = m_charts; i; ++i)
+    {
+        ChartBase* chart = *i;
+        chart->prepare_drawing(painter);
+        chart->draw_grid(painter);
+    }
 
     for (const_each<ChartCollection> i = m_charts; i; ++i)
-        (*i)->render(painter);
+    {
+        const ChartBase* chart = *i;
+        chart->draw_curve(painter);
+    }
 }
 
 void ChartWidget::draw_tooltip(QPainter& painter) const
 {
-    const int ShiftX = 2;
-    const int ShiftY = 2;
-    const int MarginX = 8;
-    const int MarginY = 5;
-    const int FrameMargin = 3;
-    const qreal CornerRadius = 2.0;
+    for (const_each<ChartCollection> i = m_charts; i; ++i)
+    {
+        const ChartBase* chart = *i;
 
-    const QString date = "date";
-    const QString ticks = "ticks";
-    const QString text = QString("%1\n%2").arg(date).arg(ticks);
-    const QRect text_rect = painter.fontMetrics().boundingRect(QRect(), Qt::AlignCenter, text);
+        size_t point_index;
 
-    QRect tooltip_rect(
-        m_mouse_position.x() + ShiftX,
-        m_mouse_position.y() - text_rect.height() - 2 * MarginY - ShiftY,
-        text_rect.width() + 2 * MarginX,
-        text_rect.height() + 2 * MarginY);
-
-    if (tooltip_rect.left() < FrameMargin)
-        tooltip_rect.moveLeft(FrameMargin);
-
-    if (tooltip_rect.top() < FrameMargin)
-        tooltip_rect.moveTop(FrameMargin);
-
-    const int MaxRight = painter.window().right() - FrameMargin;
-    if (tooltip_rect.right() > MaxRight)
-        tooltip_rect.moveRight(MaxRight);
-
-    const int MaxBottom = painter.window().bottom() - FrameMargin;
-    if (tooltip_rect.bottom() > MaxBottom)
-        tooltip_rect.moveBottom(MaxBottom);
-
-    painter.setBrush(QBrush(QColor(128, 128, 128, 180)));
-    painter.setPen(QColor(20, 20, 20, 180));
-    painter.drawRoundedRect(tooltip_rect, CornerRadius, CornerRadius);
-    painter.drawText(tooltip_rect, Qt::AlignCenter, text);
+        if (chart->on_chart(m_mouse_position, point_index))
+        {
+            chart->draw_tooltip(painter, m_mouse_position, point_index);
+            break;
+        }
+    }
 }
 
 void ChartWidget::draw_frame(QPainter& painter) const

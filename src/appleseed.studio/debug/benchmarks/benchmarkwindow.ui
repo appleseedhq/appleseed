@@ -39,6 +39,9 @@
       <layout class="QVBoxLayout" name="benchmarks_contents">
        <item>
         <widget class="QTreeWidget" name="treewidget_benchmarks">
+         <property name="selectionMode">
+          <enum>QAbstractItemView::ExtendedSelection</enum>
+         </property>
          <column>
           <property name="text">
            <string notr="true">1</string>
@@ -52,6 +55,16 @@
           <widget class="QPushButton" name="pushbutton_run">
            <property name="text">
             <string>&amp;Run</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="checkbox_equidistant">
+           <property name="text">
+            <string>&amp;Equidistant</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
