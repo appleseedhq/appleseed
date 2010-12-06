@@ -81,22 +81,29 @@ class ChartBase
 
     virtual ~ChartBase() {}
 
+    void set_equidistant(const bool equidistant);
+
     void set_grid_brush(const QBrush& brush);
 
     void set_tooltip_formatter(std::auto_ptr<IToolTipFormatter> formatter);
 
     void add_point(const foundation::Vector2d& p);
+
     void add_point(const double x, const double y);
 
     void prepare_drawing(QPainter& painter);
 
     virtual void draw_grid(QPainter& painter) const;
 
-    virtual void draw_curve(QPainter& painter) const = 0;
+    virtual void draw_chart(QPainter& painter) const = 0;
 
     virtual void draw_tooltip(
         QPainter&       painter,
         const QPoint&   mouse_position,
+        const size_t    point_index) const;
+
+    virtual void highlight(
+        QPainter&       painter,
         const size_t    point_index) const;
 
     virtual bool on_chart(
@@ -104,10 +111,12 @@ class ChartBase
         size_t&         point_index) const = 0;
 
   protected:
+    bool                                m_equidistant;
     foundation::Vector2d                m_margin;
     QBrush                              m_grid_brush;
     std::auto_ptr<IToolTipFormatter>    m_tooltip_formatter;
 
+    std::vector<foundation::Vector2d>   m_original_points;
     std::vector<foundation::Vector2d>   m_points;
 
     foundation::AABB2d                  m_points_bbox;
@@ -143,7 +152,11 @@ class LineChart
 
     void set_curve_brush(const QBrush& brush);
 
-    virtual void draw_curve(QPainter& painter) const;
+    virtual void draw_chart(QPainter& painter) const;
+
+    virtual void highlight(
+        QPainter&       painter,
+        const size_t    point_index) const;
 
     virtual bool on_chart(
         const QPoint&   mouse_position,

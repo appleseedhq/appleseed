@@ -222,6 +222,10 @@ auto_ptr<ChartBase> BenchmarkWindow::create_chart(
 {
     auto_ptr<LineChart> chart(new LineChart());
 
+    chart->set_equidistant(m_ui->checkbox_equidistant->isChecked());
+
+    chart->set_grid_brush(QBrush(QColor(60, 60, 60, 255)));
+
     static QColor CurveColors[] =
     {
         QColor(190, 140,  50, 255),
@@ -234,7 +238,6 @@ auto_ptr<ChartBase> BenchmarkWindow::create_chart(
         QColor(160, 160, 160, 255)
     };
 
-    chart->set_grid_brush(QBrush(QColor(60, 60, 60, 255)));
     chart->set_curve_brush(QBrush(CurveColors[chart_index % COUNT_OF(CurveColors)]));
 
     auto_ptr<IToolTipFormatter> formatter(new ToolTipFormatter());
@@ -245,17 +248,13 @@ auto_ptr<ChartBase> BenchmarkWindow::create_chart(
     if (!serie.empty())
         sort(&serie[0], &serie[0] + serie.size());
 
-    const bool equidistant = m_ui->checkbox_equidistant->isChecked();
-
     for (size_t i = 0; i < serie.size(); ++i)
     {
         const BenchmarkDataPoint& point = serie[i];
 
         const double x =
             static_cast<double>(
-                equidistant
-                    ? i
-                    : BenchmarkDataPoint::ptime_to_microseconds(point.get_date()));
+                BenchmarkDataPoint::ptime_to_microseconds(point.get_date()));
 
         chart->add_point(x, point.get_ticks());
     }

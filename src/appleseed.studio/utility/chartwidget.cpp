@@ -59,9 +59,15 @@ namespace studio {
 //
 
 ChartBase::ChartBase()
-  : m_margin(15.0, 15.0)
+  : m_equidistant(false)
+  , m_margin(15.0, 15.0)
   , m_grid_brush(QBrush(QColor(50, 50, 50, 255)))
 {
+}
+
+void ChartBase::set_equidistant(const bool equidistant)
+{
+    m_equidistant = equidistant;
 }
 
 void ChartBase::set_grid_brush(const QBrush& brush)
@@ -76,16 +82,25 @@ void ChartBase::set_tooltip_formatter(auto_ptr<IToolTipFormatter> formatter)
 
 void ChartBase::add_point(const Vector2d& p)
 {
-    m_points.push_back(p);
+    m_original_points.push_back(p);
 }
 
 void ChartBase::add_point(const double x, const double y)
 {
-    m_points.push_back(Vector2d(x, y));
+    m_original_points.push_back(Vector2d(x, y));
 }
 
 void ChartBase::prepare_drawing(QPainter& painter)
 {
+    m_points = m_original_points;
+
+    if (m_equidistant)
+    {
+        for (size_t i = 0; i < m_points.size(); ++i)
+            m_points[i].x = static_cast<double>(i);
+
+    }
+
     m_points_bbox = compute_points_bbox();
     m_rcp_points_bbox_extent = Vector2d(1.0) / m_points_bbox.extent();
 
@@ -125,7 +140,7 @@ void ChartBase::draw_tooltip(
     if (m_tooltip_formatter.get() == 0)
         return;
 
-    const Vector2d& point = m_points[point_index];
+    const Vector2d& point = m_original_points[point_index];
     const QString text = m_tooltip_formatter->format(point);
     const QRect text_rect = painter.fontMetrics().boundingRect(QRect(), Qt::AlignCenter, text);
 
@@ -155,6 +170,10 @@ void ChartBase::draw_tooltip(
 
     painter.setPen(TextColor);
     painter.drawText(tooltip_rect, Qt::AlignCenter, text);
+}
+
+void ChartBase::highlight(QPainter& painter, const size_t point_index) const
+{
 }
 
 AABB2d ChartBase::compute_points_bbox() const
@@ -260,7 +279,7 @@ void LineChart::set_curve_brush(const QBrush& brush)
     m_curve_brush = brush;
 }
 
-void LineChart::draw_curve(QPainter& painter) const
+void LineChart::draw_chart(QPainter& painter) const
 {
     if (m_points.size() > 1)
     {
@@ -280,7 +299,7 @@ void LineChart::draw_curve(QPainter& painter) const
 
 bool LineChart::on_chart(const QPoint& mouse_position, size_t& point_index) const
 {
-    const double MinSquareDistance = 10 * 10;
+    const double MinDistance = 8.0;
 
     const Vector2d mp(mouse_position.x(), mouse_position.y());
 
@@ -299,13 +318,25 @@ bool LineChart::on_chart(const QPoint& mouse_position, size_t& point_index) cons
         }
     }
 
-    if (closest_square_distance < MinSquareDistance)
+    if (closest_square_distance < MinDistance * MinDistance)
     {
         point_index = closest_index;
         return true;
     }
 
     return false;
+}
+
+void LineChart::highlight(QPainter& painter, const size_t point_index) const
+{
+    const QColor DiskColor(140, 200, 255); 
+    const qreal DiskRadius = 3.0;
+
+    const Vector2d p = convert_to_inner_frame(m_points[point_index]);
+
+    painter.setPen(DiskColor);
+    painter.setBrush(QBrush(DiskColor));
+    painter.drawEllipse(QPointF(p.x, p.y), DiskRadius, DiskRadius);
 }
 
 
@@ -380,7 +411,7 @@ void ChartWidget::draw_charts(QPainter& painter) const
     for (const_each<ChartCollection> i = m_charts; i; ++i)
     {
         const ChartBase* chart = *i;
-        chart->draw_curve(painter);
+        chart->draw_chart(painter);
     }
 }
 
@@ -394,6 +425,7 @@ void ChartWidget::draw_tooltip(QPainter& painter) const
 
         if (chart->on_chart(m_mouse_position, point_index))
         {
+            chart->highlight(painter, point_index);
             chart->draw_tooltip(painter, m_mouse_position, point_index);
             break;
         }
