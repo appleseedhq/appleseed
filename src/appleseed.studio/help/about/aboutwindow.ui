@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>500</width>
-    <height>300</height>
+    <height>320</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -22,13 +22,13 @@
   <property name="minimumSize">
    <size>
     <width>500</width>
-    <height>300</height>
+    <height>320</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>500</width>
-    <height>300</height>
+    <height>320</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -38,19 +38,28 @@
    <property name="margin">
     <number>0</number>
    </property>
-   <item row="1" column="0">
+   <item row="2" column="0">
     <layout class="QGridLayout" name="layout_details">
-     <property name="margin">
+     <property name="leftMargin">
       <number>20</number>
      </property>
-     <item row="2" column="0">
+     <property name="topMargin">
+      <number>15</number>
+     </property>
+     <property name="rightMargin">
+      <number>20</number>
+     </property>
+     <property name="bottomMargin">
+      <number>20</number>
+     </property>
+     <item row="5" column="0">
       <widget class="QDialogButtonBox" name="dialogbuttonbox">
        <property name="standardButtons">
         <set>QDialogButtonBox::Ok</set>
        </property>
       </widget>
      </item>
-     <item row="1" column="0">
+     <item row="0" column="0">
       <widget class="QLabel" name="label_details">
        <property name="text">
         <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -79,22 +88,10 @@ p, li { white-space: pre-wrap; }
    <item row="0" column="0">
     <widget class="QFrame" name="frame_banner">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>140</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>140</height>
-      </size>
      </property>
      <property name="styleSheet">
       <string>QFrame
@@ -116,7 +113,7 @@ p, li { white-space: pre-wrap; }
       <property name="margin">
        <number>20</number>
       </property>
-      <item row="1" column="0">
+      <item row="2" column="0">
        <widget class="QLabel" name="label_version_string">
         <property name="font">
          <font>
@@ -131,13 +128,19 @@ p, li { white-space: pre-wrap; }
         </property>
        </widget>
       </item>
-      <item row="0" column="0">
+      <item row="1" column="0">
        <widget class="QLabel" name="label_product_image">
+        <property name="styleSheet">
+         <string notr="true">QLabel
+{
+    margin-bottom: 15px;
+}</string>
+        </property>
         <property name="text">
          <string/>
         </property>
         <property name="pixmap">
-         <pixmap resource="../../resources/resources.qrc">:/images/aboutwindow.png</pixmap>
+         <pixmap resource="../../resources/resources.qrc">:/images/appleseed-logo-gray-256.png</pixmap>
         </property>
        </widget>
       </item>
@@ -148,6 +151,7 @@ p, li { white-space: pre-wrap; }
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
+  <include location="../../resources/resources.qrc"/>
   <include location="../../resources/resources.qrc"/>
   <include location="../../resources/resources.qrc"/>
  </resources>
