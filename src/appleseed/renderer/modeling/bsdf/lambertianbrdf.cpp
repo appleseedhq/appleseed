@@ -229,17 +229,14 @@ DictionaryArray LambertianBRDFFactory::get_widget_definitions() const
     entity_types.insert("texture_instance", "Textures");
 
     DictionaryArray definitions;
-
-    {
-        Dictionary widget;
-        widget.insert("name", "reflectance");
-        widget.insert("label", "Reflectance");
-        widget.insert("widget", "entity_picker");
-        widget.insert("entity_types", entity_types);
-        widget.insert("use", "required");
-        widget.insert("default", "");
-        definitions.push_back(widget);
-    }
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "reflectance")
+            .insert("label", "Reflectance")
+            .insert("widget", "entity_picker")
+            .insert("entity_types", entity_types)
+            .insert("use", "required")
+            .insert("default", ""));
 
     return definitions;
 }
