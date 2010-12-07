@@ -122,6 +122,25 @@ void ProjectBuilder::insert_bsdf(
     notify_project_modification();
 }
 
+void ProjectBuilder::insert_edf(
+    Assembly&           assembly,
+    const Dictionary&   values) const
+{
+    const string name = values.get<string>("name");
+    const string model = values.get<string>("model");
+
+    const IEDFFactory* factory = m_edf_factory_registrar.lookup(model.c_str());
+    assert(factory);
+
+    auto_release_ptr<EDF> edf(factory->create(name.c_str(), values));
+
+    m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(edf.ref());
+
+    assembly.edfs().insert(edf);
+
+    notify_project_modification();
+}
+
 void ProjectBuilder::insert_surface_shader(
     Assembly&           assembly,
     const Dictionary&   values) const
