@@ -88,8 +88,8 @@ void AboutWindow::set_version_string()
 {
     const QString version_string =
         QString(
-            "<b>Version %1 %2</b>, build %3, %4 Configuration<br>"
-            "Compiled on %5 at %6 using %7 version %8")
+            "<p><b>Version %1 %2</b>, build %3, %4 Configuration</p>"
+            "<p>Compiled on %5 at %6 using %7 version %8</p>")
             .arg(Appleseed::get_lib_version())
             .arg(Appleseed::get_lib_maturity_level())
             .arg(Appleseed::get_lib_build_number())

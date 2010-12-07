@@ -52,14 +52,14 @@
      <property name="bottomMargin">
       <number>20</number>
      </property>
-     <item row="5" column="0">
+     <item row="2" column="0">
       <widget class="QDialogButtonBox" name="dialogbuttonbox">
        <property name="standardButtons">
         <set>QDialogButtonBox::Ok</set>
        </property>
       </widget>
      </item>
-     <item row="0" column="0">
+     <item row="1" column="0">
       <widget class="QLabel" name="label_details">
        <property name="text">
         <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -113,21 +113,6 @@ p, li { white-space: pre-wrap; }
       <property name="margin">
        <number>20</number>
       </property>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_version_string">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Version String</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_product_image">
         <property name="styleSheet">
@@ -144,6 +129,24 @@ p, li { white-space: pre-wrap; }
         </property>
        </widget>
       </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_version_string">
+        <property name="font">
+         <font>
+          <pointsize>8</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Version String</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
@@ -151,8 +154,6 @@ p, li { white-space: pre-wrap; }
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
-  <include location="../../resources/resources.qrc"/>
-  <include location="../../resources/resources.qrc"/>
   <include location="../../resources/resources.qrc"/>
  </resources>
  <connections/>
