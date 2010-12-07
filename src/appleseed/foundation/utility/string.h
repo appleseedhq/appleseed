@@ -78,7 +78,7 @@ namespace foundation
 //
 
 // All blank characters in one string.
-extern const char* Blanks;
+extern FOUNDATIONDLL const char* Blanks;
 
 
 //
