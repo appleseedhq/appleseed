@@ -30,17 +30,25 @@
 #include "edfcollectionitem.h"
 
 // appleseed.studio headers.
+#include "mainwindow/project/assemblyentitybrowser.h"
+#include "mainwindow/project/entityeditorformfactory.h"
+#include "mainwindow/project/entityeditorwindow.h"
 #include "mainwindow/project/entityitem.h"
 #include "mainwindow/project/projectbuilder.h"
-
-// appleseed.renderer headers.
-#include "renderer/api/edf.h"
+#include "mainwindow/project/tools.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/uid.h"
 
+// Qt headers.
+#include <QMenu>
+
+// Standard headers.
+#include <memory>
+
 using namespace foundation;
 using namespace renderer;
+using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -58,6 +66,44 @@ EDFCollectionItem::EDFCollectionItem(
   , m_assembly(assembly)
   , m_project_builder(project_builder)
 {
+}
+
+QMenu* EDFCollectionItem::get_single_item_context_menu() const
+{
+    QMenu* menu = new QMenu(treeWidget());
+    menu->addAction("Create EDF...", this, SLOT(slot_create_edf()));
+    return menu;
+}
+
+void EDFCollectionItem::slot_create_edf()
+{
+    auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
+        new EntityEditorFormFactory<EDFFactoryRegistrar>(
+            m_registrar,
+            get_name_suggestion("edf", m_assembly.edfs())));
+
+    auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
+        new AssemblyEntityBrowser(m_assembly));
+
+    open_entity_editor(
+        treeWidget(),
+        "Create EDF",
+        form_factory,
+        entity_browser,
+        this,
+        SLOT(slot_create_edf_accepted(foundation::Dictionary)));
+}
+
+void EDFCollectionItem::slot_create_edf_accepted(Dictionary values)
+{
+    catch_entity_creation_errors(&EDFCollectionItem::create_edf, values, "EDF");
+}
+
+void EDFCollectionItem::create_edf(const Dictionary& values)
+{
+    m_project_builder.insert_edf(m_assembly, values);
+
+    qobject_cast<QWidget*>(sender())->close();
 }
 
 }   // namespace studio

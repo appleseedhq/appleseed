@@ -50,6 +50,8 @@ namespace
     // Diffuse EDF.
     //
 
+    const char* Model = "diffuse_edf";
+
     class DiffuseEDF
       : public EDF
     {
@@ -70,7 +72,7 @@ namespace
 
         virtual const char* get_model() const
         {
-            return DiffuseEDFFactory::get_model();
+            return Model;
         }
 
         virtual const char* get_name() const
@@ -144,9 +146,33 @@ namespace
 // DiffuseEDFFactory class implementation.
 //
 
-const char* DiffuseEDFFactory::get_model()
+const char* DiffuseEDFFactory::get_model() const
 {
-    return "diffuse_edf";
+    return Model;
+}
+
+const char* DiffuseEDFFactory::get_human_readable_model() const
+{
+    return "Diffuse EDF";
+}
+
+DictionaryArray DiffuseEDFFactory::get_widget_definitions() const
+{
+    Dictionary entity_types;
+    entity_types.insert("color", "Colors");
+    entity_types.insert("texture_instance", "Textures");
+
+    DictionaryArray definitions;
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "exitance")
+            .insert("label", "Exitance")
+            .insert("widget", "entity_picker")
+            .insert("entity_types", entity_types)
+            .insert("use", "required")
+            .insert("default", ""));
+
+    return definitions;
 }
 
 auto_release_ptr<EDF> DiffuseEDFFactory::create(

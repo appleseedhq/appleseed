@@ -33,6 +33,7 @@
 #include "renderer/global/global.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/containers/array.h"
 #include "foundation/utility/implptr.h"
 
 // Forward declarations.
@@ -40,6 +41,13 @@ namespace renderer      { class IEDFFactory; }
 
 namespace renderer
 {
+
+//
+// An array of EDF factories.
+//
+
+DECLARE_ARRAY(EDFFactoryArray, IEDFFactory*);
+
 
 //
 // EDF factory registrar.
@@ -50,9 +58,16 @@ class RENDERERDLL EDFFactoryRegistrar
 {
   public:
     typedef IEDFFactory FactoryType;
+    typedef EDFFactoryArray FactoryArrayType;
 
     // Constructor.
     EDFFactoryRegistrar();
+
+    // Register an EDF factory.
+    void register_factory(FactoryType* factory);
+
+    // Retrieve the registered factories.
+    FactoryArrayType get_factories() const;
 
     // Lookup a factory by name.
     const FactoryType* lookup(const char* name) const;

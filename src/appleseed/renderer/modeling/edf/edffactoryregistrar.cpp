@@ -41,9 +41,7 @@ using namespace std;
 namespace renderer
 {
 
-//
-// EDFFactoryRegistrar class implementation.
-//
+DEFINE_ARRAY(EDFFactoryArray);
 
 struct EDFFactoryRegistrar::Impl
 {
@@ -53,9 +51,22 @@ struct EDFFactoryRegistrar::Impl
 EDFFactoryRegistrar::EDFFactoryRegistrar()
   : impl(new Impl())
 {
-    impl->m_registrar.insert(
-        DiffuseEDFFactory::get_model(),
-        auto_ptr<IEDFFactory>(new DiffuseEDFFactory()));
+    register_factory(new DiffuseEDFFactory());
+}
+
+void EDFFactoryRegistrar::register_factory(FactoryType* factory)
+{
+    impl->m_registrar.insert(factory->get_model(), auto_ptr<FactoryType>(factory));
+}
+
+EDFFactoryArray EDFFactoryRegistrar::get_factories() const
+{
+    FactoryArrayType factories;
+
+    for (const_each<Registrar<FactoryType>::Items> i = impl->m_registrar.items(); i; ++i)
+        factories.push_back(i->second);
+
+    return factories;
 }
 
 const EDFFactoryRegistrar::FactoryType* EDFFactoryRegistrar::lookup(const char* name) const

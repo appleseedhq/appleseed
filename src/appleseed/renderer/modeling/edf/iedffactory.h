@@ -32,6 +32,9 @@
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/containers/dictionaryarray.h"
+
 // Forward declarations.
 namespace renderer      { class EDF; }
 
@@ -48,6 +51,15 @@ class RENDERERDLL IEDFFactory
   public:
     // Destructor.
     virtual ~IEDFFactory() {}
+
+    // Return a string identifying this EDF model.
+    virtual const char* get_model() const = 0;
+
+    // Return a human-readable string identifying this EDF model.
+    virtual const char* get_human_readable_model() const = 0;
+
+    // Return a set of widget definitions for this EDF model.
+    virtual foundation::DictionaryArray get_widget_definitions() const = 0;
 
     // Create a new EDF instance.
     virtual foundation::auto_release_ptr<EDF> create(

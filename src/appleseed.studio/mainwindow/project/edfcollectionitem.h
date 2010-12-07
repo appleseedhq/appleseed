@@ -31,33 +31,49 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/collectionitem.h"
+#include "mainwindow/project/entitycreatorbase.h"
 
 // appleseed.renderer headers.
+#include "renderer/api/edf.h"
 #include "renderer/api/scene.h"
 
 // Qt headers.
 #include <QObject>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class ProjectBuilder; }}
+namespace appleseed     { namespace studio { class ProjectBuilder; }}
+namespace foundation    { class Dictionary; }
+class QMenu;
 
 namespace appleseed {
 namespace studio {
 
 class EDFCollectionItem
   : public CollectionItem
+  , private EntityCreatorBase
 {
     Q_OBJECT
 
   public:
     EDFCollectionItem(
-        renderer::Assembly&     assembly,
-        renderer::EDFContainer& edfs,
-        ProjectBuilder&         project_builder);
+        renderer::Assembly&         assembly,
+        renderer::EDFContainer&     edfs,
+        ProjectBuilder&             project_builder);
+
+    virtual QMenu* get_single_item_context_menu() const;
+
+  public slots:
+    void slot_create_edf();
+
+  private slots:
+    void slot_create_edf_accepted(foundation::Dictionary values);
 
   private:
-    renderer::Assembly& m_assembly;
-    ProjectBuilder&     m_project_builder;
+    renderer::Assembly&             m_assembly;
+    ProjectBuilder&                 m_project_builder;
+    renderer::EDFFactoryRegistrar   m_registrar;
+
+    void create_edf(const foundation::Dictionary& values);
 };
 
 }       // namespace studio
