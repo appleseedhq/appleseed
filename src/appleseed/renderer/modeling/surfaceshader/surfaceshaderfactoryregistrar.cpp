@@ -56,17 +56,17 @@ struct SurfaceShaderFactoryRegistrar::Impl
 SurfaceShaderFactoryRegistrar::SurfaceShaderFactoryRegistrar()
   : impl(new Impl())
 {
-    register_factory(new AOSurfaceShaderFactory());
-    register_factory(new ConstantSurfaceShaderFactory());
-    register_factory(new DiagnosticSurfaceShaderFactory());
-    register_factory(new PhysicalSurfaceShaderFactory());
-    register_factory(new SmokeSurfaceShaderFactory());
-    register_factory(new VoxelAOSurfaceShaderFactory());
+    register_factory(auto_ptr<FactoryType>(new AOSurfaceShaderFactory()));
+    register_factory(auto_ptr<FactoryType>(new ConstantSurfaceShaderFactory()));
+    register_factory(auto_ptr<FactoryType>(new DiagnosticSurfaceShaderFactory()));
+    register_factory(auto_ptr<FactoryType>(new PhysicalSurfaceShaderFactory()));
+    register_factory(auto_ptr<FactoryType>(new SmokeSurfaceShaderFactory()));
+    register_factory(auto_ptr<FactoryType>(new VoxelAOSurfaceShaderFactory()));
 }
 
-void SurfaceShaderFactoryRegistrar::register_factory(FactoryType* factory)
+void SurfaceShaderFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
 {
-    impl->m_registrar.insert(factory->get_model(), auto_ptr<FactoryType>(factory));
+    impl->m_registrar.insert(factory->get_model(), factory);
 }
 
 SurfaceShaderFactoryArray SurfaceShaderFactoryRegistrar::get_factories() const

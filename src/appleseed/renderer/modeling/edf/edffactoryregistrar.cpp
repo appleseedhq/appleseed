@@ -51,12 +51,12 @@ struct EDFFactoryRegistrar::Impl
 EDFFactoryRegistrar::EDFFactoryRegistrar()
   : impl(new Impl())
 {
-    register_factory(new DiffuseEDFFactory());
+    register_factory(auto_ptr<FactoryType>(new DiffuseEDFFactory()));
 }
 
-void EDFFactoryRegistrar::register_factory(FactoryType* factory)
+void EDFFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
 {
-    impl->m_registrar.insert(factory->get_model(), auto_ptr<FactoryType>(factory));
+    impl->m_registrar.insert(factory->get_model(), factory);
 }
 
 EDFFactoryArray EDFFactoryRegistrar::get_factories() const

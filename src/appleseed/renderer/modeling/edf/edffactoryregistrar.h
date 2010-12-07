@@ -64,7 +64,7 @@ class RENDERERDLL EDFFactoryRegistrar
     EDFFactoryRegistrar();
 
     // Register an EDF factory.
-    void register_factory(FactoryType* factory);
+    void register_factory(std::auto_ptr<FactoryType> factory);
 
     // Retrieve the registered factories.
     FactoryArrayType get_factories() const;

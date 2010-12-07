@@ -55,16 +55,16 @@ struct BSDFFactoryRegistrar::Impl
 BSDFFactoryRegistrar::BSDFFactoryRegistrar()
   : impl(new Impl())
 {
-    register_factory(new AshikhminBRDFFactory());
-    register_factory(new LambertianBRDFFactory());
-    register_factory(new PhongBRDFFactory());
-    register_factory(new SpecularBRDFFactory());
-    register_factory(new SpecularBTDFFactory());
+    register_factory(auto_ptr<FactoryType>(new AshikhminBRDFFactory()));
+    register_factory(auto_ptr<FactoryType>(new LambertianBRDFFactory()));
+    register_factory(auto_ptr<FactoryType>(new PhongBRDFFactory()));
+    register_factory(auto_ptr<FactoryType>(new SpecularBRDFFactory()));
+    register_factory(auto_ptr<FactoryType>(new SpecularBTDFFactory()));
 }
 
-void BSDFFactoryRegistrar::register_factory(FactoryType* factory)
+void BSDFFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
 {
-    impl->m_registrar.insert(factory->get_model(), auto_ptr<FactoryType>(factory));
+    impl->m_registrar.insert(factory->get_model(), factory);
 }
 
 BSDFFactoryArray BSDFFactoryRegistrar::get_factories() const
