@@ -70,7 +70,8 @@ ObjectInstanceItem::ObjectInstanceItem(
 
 QMenu* ObjectInstanceItem::get_single_item_context_menu() const
 {
-    QMenu* menu = new QMenu(treeWidget());
+    QMenu* menu = EntityItem::get_single_item_context_menu();
+    menu->addSeparator();
     menu->addAction("Assign Material...", this, SLOT(slot_assign_material()));
     menu->addAction("Unassign Material", this, SLOT(slot_unassign_material()));
     return menu;

@@ -37,6 +37,7 @@
 
 // Forward declarations.
 namespace renderer  { class Entity; }
+class QMenu;
 
 namespace appleseed {
 namespace studio {
@@ -48,6 +49,12 @@ class EntityItem
 
   public:
     explicit EntityItem(const renderer::Entity& entity);
+
+    virtual QMenu* get_single_item_context_menu() const;
+
+  protected slots:
+    virtual void slot_edit();
+    virtual void slot_delete();
 };
 
 }       // namespace studio

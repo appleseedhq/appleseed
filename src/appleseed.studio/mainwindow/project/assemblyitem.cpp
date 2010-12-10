@@ -92,7 +92,8 @@ AssemblyItem::AssemblyItem(
 
 QMenu* AssemblyItem::get_single_item_context_menu() const
 {
-    QMenu* menu = new QMenu(treeWidget());
+    QMenu* menu = EntityItem::get_single_item_context_menu();
+    menu->addSeparator();
     menu->addAction("Instantiate...", this, SLOT(slot_instantiate()));
     menu->addSeparator();
     menu->addAction("Import Objects...", m_object_collection_item, SLOT(slot_import_objects()));

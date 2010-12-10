@@ -33,6 +33,7 @@
 #include "renderer/api/entity.h"
 
 // Qt headers.
+#include <QMenu>
 #include <QString>
 
 using namespace renderer;
@@ -42,6 +43,22 @@ namespace studio {
 
 EntityItem::EntityItem(const Entity& entity)
   : ItemBase(entity.get_class_uid(), QString::fromAscii(entity.get_name()))
+{
+}
+
+QMenu* EntityItem::get_single_item_context_menu() const
+{
+    QMenu* menu = new QMenu(treeWidget());
+    menu->addAction("Edit...", this, SLOT(slot_edit()));
+    menu->addAction("Delete", this, SLOT(slot_delete()));
+    return menu;
+}
+
+void EntityItem::slot_edit()
+{
+}
+
+void EntityItem::slot_delete()
 {
 }
 
