@@ -55,7 +55,7 @@ namespace foundation
 // Constants.
 //
 
-// Pi and Pi/2 to 16 digits, in double precision.
+// Various constants in double precision.
 static const double Pi = 3.1415926535897932;
 static const double TwoPi = 6.2831853071795865;
 static const double HalfPi = 1.5707963267948966;
