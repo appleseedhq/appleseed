@@ -99,12 +99,11 @@ class ChartBase
 
     virtual void draw_tooltip(
         QPainter&       painter,
-        const QPoint&   mouse_position,
-        const size_t    point_index) const;
+        const QPoint&   mouse_position) const;
 
-    virtual void highlight(
+    virtual void draw_highlight(
         QPainter&       painter,
-        const size_t    point_index) const;
+        const QPoint&   mouse_position) const;
 
     virtual bool on_chart(
         const QPoint&   mouse_position,
@@ -154,9 +153,9 @@ class LineChart
 
     virtual void draw_chart(QPainter& painter) const;
 
-    virtual void highlight(
+    virtual void draw_highlight(
         QPainter&       painter,
-        const size_t    point_index) const;
+        const QPoint&   mouse_position) const;
 
     virtual bool on_chart(
         const QPoint&   mouse_position,
@@ -164,6 +163,14 @@ class LineChart
 
   private:
     QBrush  m_curve_brush;
+
+    void draw_point_highlight(
+        QPainter&       painter,
+        const QPoint&   mouse_position) const;
+
+    void draw_cross(
+        QPainter&       painter,
+        const QPoint&   mouse_position) const;
 };
 
 
@@ -198,7 +205,8 @@ class ChartWidget
     virtual void paintEvent(QPaintEvent* event);
 
     void draw_charts(QPainter& painter) const;
-    void draw_tooltip(QPainter& painter) const;
+    void draw_highlights(QPainter& painter) const;
+    void draw_tooltips(QPainter& painter) const;
     void draw_frame(QPainter& painter) const;
 };
 

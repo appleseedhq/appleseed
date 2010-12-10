@@ -121,11 +121,13 @@ void ChartBase::draw_grid(QPainter& painter) const
     draw_vertical_grid(painter);
 }
 
-void ChartBase::draw_tooltip(
-    QPainter&       painter,
-    const QPoint&   mouse_position,
-    const size_t    point_index) const
+void ChartBase::draw_tooltip(QPainter& painter, const QPoint& mouse_position) const
 {
+    size_t point_index;
+
+    if (!on_chart(mouse_position, point_index))
+        return;
+
     const int ShiftX = 2;
     const int ShiftY = 2;
     const int MarginX = 8;
@@ -172,7 +174,7 @@ void ChartBase::draw_tooltip(
     painter.drawText(tooltip_rect, Qt::AlignCenter, text);
 }
 
-void ChartBase::highlight(QPainter& painter, const size_t point_index) const
+void ChartBase::draw_highlight(QPainter& painter, const QPoint& mouse_position) const
 {
 }
 
@@ -327,16 +329,46 @@ bool LineChart::on_chart(const QPoint& mouse_position, size_t& point_index) cons
     return false;
 }
 
-void LineChart::highlight(QPainter& painter, const size_t point_index) const
+void LineChart::draw_highlight(QPainter& painter, const QPoint& mouse_position) const
 {
-    const QColor DiskColor(140, 200, 255); 
-    const qreal DiskRadius = 3.0;
+    draw_point_highlight(painter, mouse_position);
+    draw_cross(painter, mouse_position);
+}
 
-    const Vector2d p = convert_to_inner_frame(m_points[point_index]);
+void LineChart::draw_point_highlight(QPainter& painter, const QPoint& mouse_position) const
+{
+    size_t point_index;
 
-    painter.setPen(DiskColor);
-    painter.setBrush(QBrush(DiskColor));
-    painter.drawEllipse(QPointF(p.x, p.y), DiskRadius, DiskRadius);
+    if (on_chart(mouse_position, point_index))
+    {
+        const QColor DiskColor(140, 200, 255); 
+        const qreal DiskRadius = 3.0;
+
+        const Vector2d p = convert_to_inner_frame(m_points[point_index]);
+
+        painter.setPen(DiskColor);
+        painter.setBrush(QBrush(DiskColor));
+        painter.drawEllipse(QPointF(p.x, p.y), DiskRadius, DiskRadius);
+    }
+}
+
+void LineChart::draw_cross(QPainter& painter, const QPoint& mouse_position) const
+{
+    const QColor CrossColor(100, 100, 100);
+
+    QPen pen;
+    pen.setStyle(Qt::DotLine);
+    pen.setColor(CrossColor);
+    pen.setWidthF(0.5);
+    painter.setPen(pen);
+
+    painter.drawLine(
+        m_window_origin.x, mouse_position.y(),
+        m_window_origin.x + m_window_size.x, mouse_position.y());
+
+    painter.drawLine(
+        mouse_position.x(), m_window_origin.y,
+        mouse_position.x(), m_window_origin.y + m_window_size.y);
 }
 
 
@@ -394,7 +426,10 @@ void ChartWidget::paintEvent(QPaintEvent* event)
     draw_charts(painter);
 
     if (m_mouse_inside_widget)
-        draw_tooltip(painter);
+    {
+        draw_highlights(painter);
+        draw_tooltips(painter);
+    }
 
     draw_frame(painter);
 }
@@ -415,20 +450,21 @@ void ChartWidget::draw_charts(QPainter& painter) const
     }
 }
 
-void ChartWidget::draw_tooltip(QPainter& painter) const
+void ChartWidget::draw_highlights(QPainter& painter) const
 {
     for (const_each<ChartCollection> i = m_charts; i; ++i)
     {
         const ChartBase* chart = *i;
+        chart->draw_highlight(painter, m_mouse_position);
+    }
+}
 
-        size_t point_index;
-
-        if (chart->on_chart(m_mouse_position, point_index))
-        {
-            chart->highlight(painter, point_index);
-            chart->draw_tooltip(painter, m_mouse_position, point_index);
-            break;
-        }
+void ChartWidget::draw_tooltips(QPainter& painter) const
+{
+    for (const_each<ChartCollection> i = m_charts; i; ++i)
+    {
+        const ChartBase* chart = *i;
+        chart->draw_tooltip(painter, m_mouse_position);
     }
 }
 
