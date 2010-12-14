@@ -64,7 +64,8 @@ EntityEditorWindow::EntityEditorWindow(
     QWidget*                    parent,
     const string&               window_title,
     auto_ptr<IFormFactory>      form_factory,
-    auto_ptr<IEntityBrowser>    entity_browser)
+    auto_ptr<IEntityBrowser>    entity_browser,
+    const Dictionary&           values)
   : QWidget(parent)
   , m_ui(new Ui::EntityEditorWindow())
   , m_form_factory(form_factory)
@@ -81,7 +82,7 @@ EntityEditorWindow::EntityEditorWindow(
     resize(400, 300);
 
     create_form_layout();
-    rebuild_form(Dictionary());
+    rebuild_form(values);
 
     connect(
         m_signal_mapper, SIGNAL(mapped(const QString&)),
@@ -112,15 +113,6 @@ EntityEditorWindow::~EntityEditorWindow()
     delete m_ui;
 }
 
-void EntityEditorWindow::create_form_layout()
-{
-    m_form_layout = new QFormLayout(m_ui->scrollarea_contents);
-
-    int left, top, right, bottom;
-    m_form_layout->getContentsMargins(&left, &top, &right, &bottom);
-    m_form_layout->setContentsMargins(0, top, 0, bottom);
-}
-
 namespace
 {
     void delete_layout_items(QLayout* layout)
@@ -146,6 +138,15 @@ void EntityEditorWindow::rebuild_form(const Dictionary& values)
 
     for (const_each<WidgetDefinitionCollection> i = m_widget_definitions; i; ++i)
         create_input_widget(*i);
+}
+
+void EntityEditorWindow::create_form_layout()
+{
+    m_form_layout = new QFormLayout(m_ui->scrollarea_contents);
+
+    int left, top, right, bottom;
+    m_form_layout->getContentsMargins(&left, &top, &right, &bottom);
+    m_form_layout->setContentsMargins(0, top, 0, bottom);
 }
 
 Dictionary EntityEditorWindow::get_widget_definition(const string& name) const

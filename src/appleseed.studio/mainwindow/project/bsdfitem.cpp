@@ -27,22 +27,19 @@
 //
 
 // Interface header.
-#include "bsdfcollectionitem.h"
+#include "bsdfitem.h"
 
 // appleseed.studio headers.
 #include "mainwindow/project/assemblyentitybrowser.h"
-#include "mainwindow/project/bsdfitem.h"
 #include "mainwindow/project/entityeditorformfactory.h"
 #include "mainwindow/project/entityeditorwindow.h"
-#include "mainwindow/project/entityitem.h"
-#include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/tools.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/uid.h"
+// appleseed.renderer headers.
+#include "renderer/api/bsdf.h"
 
-// Qt headers.
-#include <QMenu>
+// appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
 #include <memory>
@@ -54,41 +51,26 @@ using namespace std;
 namespace appleseed {
 namespace studio {
 
-namespace
-{
-    const UniqueID g_class_uid = new_guid();
-}
-
-BSDFCollectionItem::BSDFCollectionItem(
-    Assembly&           assembly,
-    BSDFContainer&      bsdfs,
-    ProjectBuilder&     project_builder)
-  : CollectionItemBase(g_class_uid, "BSDFs")
+BSDFItem::BSDFItem(
+    Assembly&               assembly,
+    BSDFFactoryRegistrar&   registrar,
+    BSDF&                   bsdf)
+  : EntityItem(bsdf)
   , m_assembly(assembly)
-  , m_project_builder(project_builder)
+  , m_registrar(registrar)
+  , m_bsdf(bsdf)
 {
-    for (each<BSDFContainer> i = bsdfs; i; ++i)
-        add_item(*i);
 }
 
-void BSDFCollectionItem::add_item(BSDF& bsdf)
+void BSDFItem::slot_edit()
 {
-    addChild(new BSDFItem(m_assembly, m_registrar, bsdf));
-}
+    Dictionary values = m_bsdf.get_parameters();
+    values.insert("model", m_bsdf.get_model());
 
-QMenu* BSDFCollectionItem::get_single_item_context_menu() const
-{
-    QMenu* menu = new QMenu(treeWidget());
-    menu->addAction("Create BSDF...", this, SLOT(slot_create_bsdf()));
-    return menu;
-}
-
-void BSDFCollectionItem::slot_create_bsdf()
-{
     auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
         new EntityEditorFormFactory<BSDFFactoryRegistrar>(
             m_registrar,
-            get_name_suggestion("bsdf", m_assembly.bsdfs())));
+            m_bsdf.get_name()));
 
     auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
         new AssemblyEntityBrowser(m_assembly));
@@ -98,20 +80,33 @@ void BSDFCollectionItem::slot_create_bsdf()
         "Create BSDF",
         form_factory,
         entity_browser,
+        values,
         this,
-        SLOT(slot_create_bsdf_accepted(foundation::Dictionary)));
+        SLOT(slot_edit_bsdf_accepted(foundation::Dictionary)));
 }
 
-void BSDFCollectionItem::slot_create_bsdf_accepted(Dictionary values)
+void BSDFItem::slot_edit_bsdf_accepted(Dictionary values)
 {
-    catch_entity_creation_errors(&BSDFCollectionItem::create_bsdf, values, "BSDF");
+    catch_entity_creation_errors(&BSDFItem::edit_bsdf, values, "BSDF");
 }
 
-void BSDFCollectionItem::create_bsdf(const Dictionary& values)
+void BSDFItem::edit_bsdf(const Dictionary& values)
 {
-    m_project_builder.insert_bsdf(m_assembly, values);
+    ParamArray& params = m_bsdf.get_parameters();
+
+    for (const_each<StringDictionary> i = values.strings(); i; ++i)
+    {
+        if (params.strings().exist(i->name()))
+        {
+            params.insert(i->name(), i->value());
+        }
+    }
 
     qobject_cast<QWidget*>(sender())->close();
+}
+
+void BSDFItem::slot_delete()
+{
 }
 
 }   // namespace studio

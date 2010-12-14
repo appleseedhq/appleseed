@@ -31,6 +31,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/bsdfcollectionitem.h"
+#include "mainwindow/project/bsdfitem.h"
 #include "mainwindow/project/colorcollectionitem.h"
 #include "mainwindow/project/edfcollectionitem.h"
 #include "mainwindow/project/lightcollectionitem.h"

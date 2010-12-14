@@ -114,6 +114,8 @@ set(mainwindow_project_sources
     mainwindow/project/assemblyitem.h
     mainwindow/project/bsdfcollectionitem.cpp
     mainwindow/project/bsdfcollectionitem.h
+    mainwindow/project/bsdfitem.cpp
+    mainwindow/project/bsdfitem.h
     mainwindow/project/collectionitem.cpp
     mainwindow/project/collectionitem.h
     mainwindow/project/collectionitembase.cpp

@@ -37,6 +37,7 @@ namespace appleseed { namespace studio { class AssemblyCollectionItem; }}
 namespace appleseed { namespace studio { class AssemblyInstanceCollectionItem; }}
 namespace appleseed { namespace studio { class AssemblyItem; }}
 namespace appleseed { namespace studio { class BSDFCollectionItem; }}
+namespace appleseed { namespace studio { class BSDFItem; }}
 namespace appleseed { namespace studio { class ColorCollectionItem; }}
 namespace appleseed { namespace studio { class EDFCollectionItem; }}
 namespace appleseed { namespace studio { class EntityItem; }}
@@ -87,7 +88,7 @@ template <> struct ItemTypeMap<renderer::TextureInstanceContainer>      { typede
 
 template <> struct ItemTypeMap<renderer::Assembly>                      { typedef AssemblyItem T; };
 template <> struct ItemTypeMap<renderer::AssemblyInstance>              { typedef EntityItem T; };
-template <> struct ItemTypeMap<renderer::BSDF>                          { typedef EntityItem T; };
+template <> struct ItemTypeMap<renderer::BSDF>                          { typedef BSDFItem T; };
 template <> struct ItemTypeMap<renderer::ColorEntity>                   { typedef EntityItem T; };
 template <> struct ItemTypeMap<renderer::EDF>                           { typedef EntityItem T; };
 template <> struct ItemTypeMap<renderer::EnvironmentEDF>                { typedef EntityItem T; };

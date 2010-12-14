@@ -30,12 +30,14 @@
 #include "renderer/global/global.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/test.h"
+
+using namespace foundation;
+using namespace renderer;
 
 TEST_SUITE(Renderer_Global_ParamArray)
 {
-    using namespace renderer;
-
     TEST_CASE(Merge_GivenOneIntInSourceAndOneIntInDestWithDifferentNames_InsertsDestIntIntoSource)
     {
         ParamArray dst;
@@ -105,5 +107,16 @@ TEST_SUITE(Renderer_Global_ParamArray)
         EXPECT_EQ(1, dst.size());
         EXPECT_EQ(1, dst.dictionary("A").get<int>("AA"));
         EXPECT_EQ(2, dst.dictionary("A").get<int>("BB"));
+    }
+
+    TEST_CASE(TestConstructionOfDictionaryFromParamArray)
+    {
+        ParamArray params;
+        params.insert("x", 42);
+
+        const Dictionary dic = params;
+
+        ASSERT_EQ(1, dic.strings().size());
+        EXPECT_EQ(42, dic.get<int>("x"));
     }
 }

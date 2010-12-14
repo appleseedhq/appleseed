@@ -51,7 +51,7 @@ class EntityEditorFormFactory
 
     EntityEditorFormFactory(
         const FactoryRegistrar&         factory_registrar,
-        const std::string&              name_suggestion);
+        const std::string&              entity_name);
 
     virtual void update(
         const foundation::Dictionary&   values,
@@ -59,7 +59,7 @@ class EntityEditorFormFactory
 
   private:
     const FactoryRegistrar&     m_factory_registrar;
-    const std::string           m_name_suggestion;
+    const std::string           m_entity_name;
 };
 
 
@@ -70,9 +70,9 @@ class EntityEditorFormFactory
 template <typename FactoryRegistrar>
 EntityEditorFormFactory<FactoryRegistrar>::EntityEditorFormFactory(
     const FactoryRegistrar&         factory_registrar,
-    const std::string&              name_suggestion)
+    const std::string&              entity_name)
   : m_factory_registrar(factory_registrar)
-  , m_name_suggestion(name_suggestion)
+  , m_entity_name(entity_name)
 {
 }
 
@@ -83,7 +83,7 @@ void EntityEditorFormFactory<FactoryRegistrar>::update(
 {
     definitions.clear();
 
-    const std::string name = get_value(values, "name", m_name_suggestion);
+    const std::string name = get_value(values, "name", m_entity_name);
 
     definitions.push_back(
         foundation::Dictionary()
@@ -126,10 +126,21 @@ void EntityEditorFormFactory<FactoryRegistrar>::update(
         const typename FactoryRegistrar::FactoryType* factory =
             m_factory_registrar.lookup(model.c_str());
 
-        const DictionaryArray properties = factory->get_widget_definitions();
+        DictionaryArray widget_definitions = factory->get_widget_definitions();
 
-        for (size_t i = 0; i < properties.size(); ++i)
-            definitions.push_back(properties[i]);
+        for (size_t i = 0; i < widget_definitions.size(); ++i)
+        {
+            Dictionary& widget_definition = widget_definitions[i];
+            const std::string widget_name = widget_definition.get<std::string>("name");
+
+            if (values.strings().exist(widget_name))
+            {
+                widget_definition.insert("default",
+                    values.get<std::string>(widget_name));
+            }
+
+            definitions.push_back(widget_definition);
+        }
     }
 }
 

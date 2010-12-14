@@ -38,6 +38,7 @@
 #include <QObject>
 #include <QString>
 
+using namespace foundation;
 using namespace renderer;
 using namespace std;
 
@@ -73,6 +74,7 @@ void open_entity_editor(
     const string&                                   window_title,
     auto_ptr<EntityEditorWindow::IFormFactory>      form_factory,
     auto_ptr<EntityEditorWindow::IEntityBrowser>    entity_browser,
+    const Dictionary&                               values,
     QObject*                                        receiver,
     const char*                                     member)
 {
@@ -81,7 +83,8 @@ void open_entity_editor(
             parent,
             window_title,
             form_factory,
-            entity_browser);
+            entity_browser,
+            values);
 
     QObject::connect(
         editor_window, SIGNAL(accepted(foundation::Dictionary)),
@@ -89,6 +92,24 @@ void open_entity_editor(
 
     editor_window->showNormal();
     editor_window->activateWindow();
+}
+
+void open_entity_editor(
+    QWidget*                                        parent,
+    const string&                                   window_title,
+    auto_ptr<EntityEditorWindow::IFormFactory>      form_factory,
+    auto_ptr<EntityEditorWindow::IEntityBrowser>    entity_browser,
+    QObject*                                        receiver,
+    const char*                                     member)
+{
+    open_entity_editor(
+        parent,
+        window_title,
+        form_factory,
+        entity_browser,
+        Dictionary(),
+        receiver,
+        member);
 }
 
 }   // namespace studio

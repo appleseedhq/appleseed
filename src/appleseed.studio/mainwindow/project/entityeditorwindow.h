@@ -100,9 +100,12 @@ class EntityEditorWindow
         QWidget*                            parent,
         const std::string&                  window_title,
         std::auto_ptr<IFormFactory>         form_factory,
-        std::auto_ptr<IEntityBrowser>       entity_browser);
+        std::auto_ptr<IEntityBrowser>       entity_browser,
+        const foundation::Dictionary&       values = foundation::Dictionary());
 
     ~EntityEditorWindow();
+
+    void rebuild_form(const foundation::Dictionary& values);
 
   signals:
     void accepted(foundation::Dictionary values);
@@ -181,7 +184,6 @@ class EntityEditorWindow
     QSignalMapper*                      m_signal_mapper;
 
     void create_form_layout();
-    void rebuild_form(const foundation::Dictionary& values);
 
     foundation::Dictionary get_widget_definition(const std::string& name) const;
 
