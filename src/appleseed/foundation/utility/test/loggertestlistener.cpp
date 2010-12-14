@@ -62,6 +62,8 @@ namespace
         LoggerTestListener(Logger& logger, const bool verbose)
           : m_logger(logger)
           , m_verbose(verbose)
+          , m_suite_name_printed(false)
+          , m_case_name_printed(false)
         {
         }
 

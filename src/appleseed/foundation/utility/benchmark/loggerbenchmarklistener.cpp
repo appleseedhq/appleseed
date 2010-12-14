@@ -124,6 +124,7 @@ namespace
       public:
         explicit LoggerBenchmarkListener(Logger& logger)
           : m_logger(logger)
+          , m_suite_name_printed(false)
         {
         }
 

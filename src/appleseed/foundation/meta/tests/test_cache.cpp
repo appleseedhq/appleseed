@@ -44,7 +44,7 @@ namespace
 
     struct MyKeyHasher
     {
-        size_t operator()(const MyKey key)
+        size_t operator()(const MyKey key) const
         {
             return static_cast<size_t>(key);
         }
@@ -52,12 +52,12 @@ namespace
 
     struct MyElementSwapper
     {
-        void load(const MyKey key, MyElement*& element)
+        void load(const MyKey key, MyElement*& element) const
         {
             element = new MyElement(key * 10);
         }
 
-        void unload(const MyKey key, MyElement*& element)
+        void unload(const MyKey key, MyElement*& element) const
         {
             delete element;
             element = 0;

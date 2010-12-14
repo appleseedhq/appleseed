@@ -56,7 +56,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
         {
         }
 
-        double operator()(const size_t x, const size_t y)
+        double operator()(const size_t x, const size_t y) const
         {
             return static_cast<double>(x) / (m_width - 1);
         }
@@ -120,7 +120,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
         {
         }
 
-        float operator()(const size_t x, const size_t y)
+        float operator()(const size_t x, const size_t y) const
         {
             Color3f color;
             m_image.get_pixel(x, y, color);
@@ -227,7 +227,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
 
     struct UniformBlackSampler
     {
-        double operator()(const size_t x, const size_t y)
+        double operator()(const size_t x, const size_t y) const
         {
             return y == 0 ? 0.0 : 1.0;
         }
