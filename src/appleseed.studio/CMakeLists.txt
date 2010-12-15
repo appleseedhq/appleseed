@@ -131,9 +131,9 @@ set(mainwindow_project_sources
     mainwindow/project/entityeditorwindow.cpp
     mainwindow/project/entityeditorwindow.h
     mainwindow/project/entityeditorwindow.ui
-    mainwindow/project/entityitem.cpp
+    mainwindow/project/entityitembase.cpp
+    mainwindow/project/entityitembase.h
     mainwindow/project/entityitem.h
-    mainwindow/project/entityitem2.h
     mainwindow/project/environmentedfcollectionitem.cpp
     mainwindow/project/environmentedfcollectionitem.h
     mainwindow/project/environmentshadercollectionitem.cpp

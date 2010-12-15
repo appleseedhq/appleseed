@@ -34,7 +34,7 @@
 #include "mainwindow/project/entityeditorformfactory.h"
 #include "mainwindow/project/entityeditorwindow.h"
 #include "mainwindow/project/entityitem.h"
-#include "mainwindow/project/entityitem2.h"
+#include "mainwindow/project/entityitembase.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/tools.h"
 
@@ -75,7 +75,7 @@ BSDFCollectionItem::BSDFCollectionItem(
 void BSDFCollectionItem::add_item(BSDF& bsdf)
 {
     addChild(
-        new EntityItem2<BSDF, BSDFFactoryRegistrar>(
+        new EntityItem<BSDF, BSDFFactoryRegistrar>(
             m_assembly,
             m_registrar,
             bsdf));

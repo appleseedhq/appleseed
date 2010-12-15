@@ -73,7 +73,7 @@ AssemblyItem::AssemblyItem(
     Scene&          scene,
     Assembly&       assembly,
     ProjectBuilder& project_builder)
-  : EntityItem(assembly)
+  : EntityItemBase(assembly)
   , m_scene(scene)
   , m_assembly(assembly)
   , m_project_builder(project_builder)
@@ -92,7 +92,7 @@ AssemblyItem::AssemblyItem(
 
 QMenu* AssemblyItem::get_single_item_context_menu() const
 {
-    QMenu* menu = EntityItem::get_single_item_context_menu();
+    QMenu* menu = EntityItemBase::get_single_item_context_menu();
     menu->addSeparator();
     menu->addAction("Instantiate...", this, SLOT(slot_instantiate()));
     menu->addSeparator();

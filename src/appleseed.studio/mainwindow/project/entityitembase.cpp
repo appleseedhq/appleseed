@@ -27,17 +27,14 @@
 //
 
 // Interface header.
-#include "environmentshadercollectionitem.h"
-
-// appleseed.studio headers.
-#include "mainwindow/project/entityitembase.h"
-#include "mainwindow/project/projectbuilder.h"
+#include "entityitembase.h"
 
 // appleseed.renderer headers.
-#include "renderer/api/environmentshader.h"
+#include "renderer/api/entity.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/uid.h"
+// Qt headers.
+#include <QMenu>
+#include <QString>
 
 using namespace foundation;
 using namespace renderer;
@@ -45,17 +42,28 @@ using namespace renderer;
 namespace appleseed {
 namespace studio {
 
-namespace
+EntityItemBase::EntityItemBase(const Entity& entity)
+  : ItemBase(entity.get_class_uid(), QString::fromAscii(entity.get_name()))
 {
-    const UniqueID g_class_uid = new_guid();
 }
 
-EnvironmentShaderCollectionItem::EnvironmentShaderCollectionItem(
-    Scene&                      scene,
-    EnvironmentShaderContainer& environment_shaders,
-    ProjectBuilder&             project_builder)
-  : CollectionItem(g_class_uid, "Environment Shaders", environment_shaders)
-  , m_project_builder(project_builder)
+QMenu* EntityItemBase::get_single_item_context_menu() const
+{
+    QMenu* menu = new QMenu(treeWidget());
+    menu->addAction("Edit...", this, SLOT(slot_edit()));
+    menu->addAction("Delete", this, SLOT(slot_delete()));
+    return menu;
+}
+
+void EntityItemBase::slot_edit()
+{
+}
+
+void EntityItemBase::slot_edit_accepted(Dictionary values)
+{
+}
+
+void EntityItemBase::slot_delete()
 {
 }
 

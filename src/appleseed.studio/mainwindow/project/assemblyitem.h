@@ -30,7 +30,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/entityitem.h"
+#include "mainwindow/project/entityitembase.h"
 #include "mainwindow/project/itemtypemap.h"
 
 // Qt headers.
@@ -66,7 +66,7 @@ namespace appleseed {
 namespace studio {
 
 class AssemblyItem
-  : public EntityItem
+  : public EntityItemBase
 {
     Q_OBJECT
 

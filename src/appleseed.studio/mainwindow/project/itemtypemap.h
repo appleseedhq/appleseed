@@ -39,7 +39,7 @@ namespace appleseed { namespace studio { class AssemblyItem; }}
 namespace appleseed { namespace studio { class BSDFCollectionItem; }}
 namespace appleseed { namespace studio { class ColorCollectionItem; }}
 namespace appleseed { namespace studio { class EDFCollectionItem; }}
-namespace appleseed { namespace studio { class EntityItem; }}
+namespace appleseed { namespace studio { class EntityItemBase; }}
 namespace appleseed { namespace studio { class EnvironmentEDFCollectionItem; }}
 namespace appleseed { namespace studio { class EnvironmentShaderCollectionItem; }}
 namespace appleseed { namespace studio { class LightCollectionItem; }}
@@ -84,17 +84,17 @@ template <> struct ItemTypeMap<renderer::TextureContainer>              { typede
 template <> struct ItemTypeMap<renderer::TextureInstanceContainer>      { typedef TextureInstanceCollectionItem T; };
 
 template <> struct ItemTypeMap<renderer::Assembly>                      { typedef AssemblyItem T; };
-template <> struct ItemTypeMap<renderer::AssemblyInstance>              { typedef EntityItem T; };
-template <> struct ItemTypeMap<renderer::ColorEntity>                   { typedef EntityItem T; };
-template <> struct ItemTypeMap<renderer::EnvironmentEDF>                { typedef EntityItem T; };
-template <> struct ItemTypeMap<renderer::EnvironmentShader>             { typedef EntityItem T; };
-template <> struct ItemTypeMap<renderer::Light>                         { typedef EntityItem T; };
-template <> struct ItemTypeMap<renderer::Material>                      { typedef EntityItem T; };
-template <> struct ItemTypeMap<renderer::Object>                        { typedef EntityItem T; };
+template <> struct ItemTypeMap<renderer::AssemblyInstance>              { typedef EntityItemBase T; };
+template <> struct ItemTypeMap<renderer::ColorEntity>                   { typedef EntityItemBase T; };
+template <> struct ItemTypeMap<renderer::EnvironmentEDF>                { typedef EntityItemBase T; };
+template <> struct ItemTypeMap<renderer::EnvironmentShader>             { typedef EntityItemBase T; };
+template <> struct ItemTypeMap<renderer::Light>                         { typedef EntityItemBase T; };
+template <> struct ItemTypeMap<renderer::Material>                      { typedef EntityItemBase T; };
+template <> struct ItemTypeMap<renderer::Object>                        { typedef EntityItemBase T; };
 template <> struct ItemTypeMap<renderer::ObjectInstance>                { typedef ObjectInstanceItem T; };
-template <> struct ItemTypeMap<renderer::SurfaceShader>                 { typedef EntityItem T; };
-template <> struct ItemTypeMap<renderer::Texture>                       { typedef EntityItem T; };
-template <> struct ItemTypeMap<renderer::TextureInstance>               { typedef EntityItem T; };
+template <> struct ItemTypeMap<renderer::SurfaceShader>                 { typedef EntityItemBase T; };
+template <> struct ItemTypeMap<renderer::Texture>                       { typedef EntityItemBase T; };
+template <> struct ItemTypeMap<renderer::TextureInstance>               { typedef EntityItemBase T; };
 
 }       // namespace studio
 }       // namespace appleseed

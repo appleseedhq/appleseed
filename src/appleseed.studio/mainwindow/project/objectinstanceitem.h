@@ -30,7 +30,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_OBJECTINSTANCEITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/entityitem.h"
+#include "mainwindow/project/entityitembase.h"
 
 // Qt headers.
 #include <QList>
@@ -49,7 +49,7 @@ namespace appleseed {
 namespace studio {
 
 class ObjectInstanceItem
-  : public EntityItem
+  : public EntityItemBase
 {
     Q_OBJECT
 

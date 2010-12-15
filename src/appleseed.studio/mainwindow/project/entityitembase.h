@@ -26,46 +26,43 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "entityitem.h"
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYITEMBASE_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYITEMBASE_H
 
-// appleseed.renderer headers.
-#include "renderer/api/entity.h"
+// appleseed.studio headers.
+#include "mainwindow/project/itembase.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
 
 // Qt headers.
-#include <QMenu>
-#include <QString>
+#include <QObject>
 
-using namespace foundation;
-using namespace renderer;
+// Forward declarations.
+namespace renderer  { class Entity; }
+class QMenu;
 
 namespace appleseed {
 namespace studio {
 
-EntityItem::EntityItem(const Entity& entity)
-  : ItemBase(entity.get_class_uid(), QString::fromAscii(entity.get_name()))
+class EntityItemBase
+  : public ItemBase
 {
-}
+    Q_OBJECT
 
-QMenu* EntityItem::get_single_item_context_menu() const
-{
-    QMenu* menu = new QMenu(treeWidget());
-    menu->addAction("Edit...", this, SLOT(slot_edit()));
-    menu->addAction("Delete", this, SLOT(slot_delete()));
-    return menu;
-}
+  public:
+    explicit EntityItemBase(const renderer::Entity& entity);
 
-void EntityItem::slot_edit()
-{
-}
+    virtual QMenu* get_single_item_context_menu() const;
 
-void EntityItem::slot_edit_accepted(Dictionary values)
-{
-}
+  protected slots:
+    virtual void slot_edit();
+    virtual void slot_edit_accepted(foundation::Dictionary values);
 
-void EntityItem::slot_delete()
-{
-}
+    virtual void slot_delete();
+};
 
-}   // namespace studio
-}   // namespace appleseed
+}       // namespace studio
+}       // namespace appleseed
+
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYITEMBASE_H

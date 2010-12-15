@@ -30,37 +30,115 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/itembase.h"
+#include "mainwindow/project/entitycreatorbase.h"
+#include "mainwindow/project/entityitembase.h"
+
+// appleseed.renderer headers.
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/foreach.h"
 
 // Qt headers.
 #include <QObject>
 
 // Forward declarations.
-namespace renderer  { class Entity; }
-class QMenu;
+namespace renderer      { class Assembly; }
 
 namespace appleseed {
 namespace studio {
 
+template <typename Entity, typename FactoryRegistrar>
 class EntityItem
-  : public ItemBase
+  : public EntityItemBase
+  , private EntityCreatorBase
 {
-    Q_OBJECT
-
   public:
-    explicit EntityItem(const renderer::Entity& entity);
+    explicit EntityItem(
+        renderer::Assembly& assembly,
+        FactoryRegistrar&   registrar,
+        Entity&             entity);
 
-    virtual QMenu* get_single_item_context_menu() const;
-
-  protected slots:
+  protected:
     virtual void slot_edit();
     virtual void slot_edit_accepted(foundation::Dictionary values);
 
     virtual void slot_delete();
+
+  private:
+    renderer::Assembly&     m_assembly;
+    FactoryRegistrar&       m_registrar;
+    Entity&                 m_entity;
+
+    void edit(const foundation::Dictionary& values);
 };
+
+
+//
+// Implementation.
+//
+
+template <typename Entity, typename FactoryRegistrar>
+EntityItem<Entity, FactoryRegistrar>::EntityItem(
+    renderer::Assembly&     assembly,
+    FactoryRegistrar&       registrar,
+    Entity&                 entity)
+  : EntityItemBase(entity)
+  , m_assembly(assembly)
+  , m_registrar(registrar)
+  , m_entity(entity)
+{
+}
+
+template <typename Entity, typename FactoryRegistrar>
+void EntityItem<Entity, FactoryRegistrar>::slot_edit()
+{
+    foundation::Dictionary values = m_entity.get_parameters();
+    values.insert("model", m_entity.get_model());
+
+    auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
+        new EntityEditorFormFactory<FactoryRegistrar>(
+            m_registrar,
+            m_entity.get_name()));
+
+    auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
+        new AssemblyEntityBrowser(m_assembly));
+
+    open_entity_editor(
+        treeWidget(),
+        "Create BSDF",
+        form_factory,
+        entity_browser,
+        values,
+        this,
+        SLOT(slot_edit_accepted(foundation::Dictionary)));
+}
+
+template <typename Entity, typename FactoryRegistrar>
+void EntityItem<Entity, FactoryRegistrar>::slot_edit_accepted(foundation::Dictionary values)
+{
+    catch_entity_creation_errors(&EntityItem::edit, values, "BSDF");
+}
+
+template <typename Entity, typename FactoryRegistrar>
+void EntityItem<Entity, FactoryRegistrar>::edit(const foundation::Dictionary& values)
+{
+    renderer::ParamArray& params = m_entity.get_parameters();
+
+    for (foundation::const_each<foundation::StringDictionary> i = values.strings(); i; ++i)
+    {
+        if (params.strings().exist(i->name()))
+            params.insert(i->name(), i->value());
+    }
+
+    qobject_cast<QWidget*>(sender())->close();
+}
+
+template <typename Entity, typename FactoryRegistrar>
+void EntityItem<Entity, FactoryRegistrar>::slot_delete()
+{
+}
 
 }       // namespace studio
 }       // namespace appleseed
