@@ -31,14 +31,15 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/assemblyentitybrowser.h"
-#include "mainwindow/project/bsdfitem.h"
 #include "mainwindow/project/entityeditorformfactory.h"
 #include "mainwindow/project/entityeditorwindow.h"
 #include "mainwindow/project/entityitem.h"
+#include "mainwindow/project/entityitem2.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/tools.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
 
 // Qt headers.
@@ -73,7 +74,11 @@ BSDFCollectionItem::BSDFCollectionItem(
 
 void BSDFCollectionItem::add_item(BSDF& bsdf)
 {
-    addChild(new BSDFItem(m_assembly, m_registrar, bsdf));
+    addChild(
+        new EntityItem2<BSDF, BSDFFactoryRegistrar>(
+            m_assembly,
+            m_registrar,
+            bsdf));
 }
 
 QMenu* BSDFCollectionItem::get_single_item_context_menu() const

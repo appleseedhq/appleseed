@@ -37,7 +37,6 @@ namespace appleseed { namespace studio { class AssemblyCollectionItem; }}
 namespace appleseed { namespace studio { class AssemblyInstanceCollectionItem; }}
 namespace appleseed { namespace studio { class AssemblyItem; }}
 namespace appleseed { namespace studio { class BSDFCollectionItem; }}
-namespace appleseed { namespace studio { class BSDFItem; }}
 namespace appleseed { namespace studio { class ColorCollectionItem; }}
 namespace appleseed { namespace studio { class EDFCollectionItem; }}
 namespace appleseed { namespace studio { class EntityItem; }}
@@ -51,9 +50,7 @@ namespace appleseed { namespace studio { class ObjectInstanceItem; }}
 namespace appleseed { namespace studio { class SurfaceShaderCollectionItem; }}
 namespace appleseed { namespace studio { class TextureCollectionItem; }}
 namespace appleseed { namespace studio { class TextureInstanceCollectionItem; }}
-namespace renderer  { class BSDF; }
 namespace renderer  { class ColorEntity; }
-namespace renderer  { class EDF; }
 namespace renderer  { class EnvironmentEDF; }
 namespace renderer  { class EnvironmentShader; }
 namespace renderer  { class Light; }
@@ -88,9 +85,7 @@ template <> struct ItemTypeMap<renderer::TextureInstanceContainer>      { typede
 
 template <> struct ItemTypeMap<renderer::Assembly>                      { typedef AssemblyItem T; };
 template <> struct ItemTypeMap<renderer::AssemblyInstance>              { typedef EntityItem T; };
-template <> struct ItemTypeMap<renderer::BSDF>                          { typedef BSDFItem T; };
 template <> struct ItemTypeMap<renderer::ColorEntity>                   { typedef EntityItem T; };
-template <> struct ItemTypeMap<renderer::EDF>                           { typedef EntityItem T; };
 template <> struct ItemTypeMap<renderer::EnvironmentEDF>                { typedef EntityItem T; };
 template <> struct ItemTypeMap<renderer::EnvironmentShader>             { typedef EntityItem T; };
 template <> struct ItemTypeMap<renderer::Light>                         { typedef EntityItem T; };

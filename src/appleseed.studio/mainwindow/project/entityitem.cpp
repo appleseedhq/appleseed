@@ -36,6 +36,7 @@
 #include <QMenu>
 #include <QString>
 
+using namespace foundation;
 using namespace renderer;
 
 namespace appleseed {
@@ -55,6 +56,10 @@ QMenu* EntityItem::get_single_item_context_menu() const
 }
 
 void EntityItem::slot_edit()
+{
+}
+
+void EntityItem::slot_edit_accepted(Dictionary values)
 {
 }
 

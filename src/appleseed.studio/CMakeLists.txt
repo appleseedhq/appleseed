@@ -114,8 +114,6 @@ set(mainwindow_project_sources
     mainwindow/project/assemblyitem.h
     mainwindow/project/bsdfcollectionitem.cpp
     mainwindow/project/bsdfcollectionitem.h
-    mainwindow/project/bsdfitem.cpp
-    mainwindow/project/bsdfitem.h
     mainwindow/project/collectionitem.cpp
     mainwindow/project/collectionitem.h
     mainwindow/project/collectionitembase.cpp
@@ -135,6 +133,7 @@ set(mainwindow_project_sources
     mainwindow/project/entityeditorwindow.ui
     mainwindow/project/entityitem.cpp
     mainwindow/project/entityitem.h
+    mainwindow/project/entityitem2.h
     mainwindow/project/environmentedfcollectionitem.cpp
     mainwindow/project/environmentedfcollectionitem.h
     mainwindow/project/environmentshadercollectionitem.cpp

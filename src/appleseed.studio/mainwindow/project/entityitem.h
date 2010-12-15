@@ -32,6 +32,9 @@
 // appleseed.studio headers.
 #include "mainwindow/project/itembase.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
+
 // Qt headers.
 #include <QObject>
 
@@ -54,6 +57,8 @@ class EntityItem
 
   protected slots:
     virtual void slot_edit();
+    virtual void slot_edit_accepted(foundation::Dictionary values);
+
     virtual void slot_delete();
 };
 

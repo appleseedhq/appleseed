@@ -34,10 +34,12 @@
 #include "mainwindow/project/entityeditorformfactory.h"
 #include "mainwindow/project/entityeditorwindow.h"
 #include "mainwindow/project/entityitem.h"
+#include "mainwindow/project/entityitem2.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/tools.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
 
 // Qt headers.
@@ -62,10 +64,21 @@ EDFCollectionItem::EDFCollectionItem(
     Assembly&           assembly,
     EDFContainer&       edfs,
     ProjectBuilder&     project_builder)
-  : CollectionItem(g_class_uid, "EDFs", edfs)
+  : CollectionItemBase(g_class_uid, "EDFs")
   , m_assembly(assembly)
   , m_project_builder(project_builder)
 {
+    for (each<EDFContainer> i = edfs; i; ++i)
+        add_item(*i);
+}
+
+void EDFCollectionItem::add_item(EDF& edf)
+{
+    addChild(
+        new EntityItem2<EDF, EDFFactoryRegistrar>(
+            m_assembly,
+            m_registrar,
+            edf));
 }
 
 QMenu* EDFCollectionItem::get_single_item_context_menu() const
