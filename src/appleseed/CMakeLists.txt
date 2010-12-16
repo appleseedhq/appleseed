@@ -376,6 +376,7 @@ set(foundation_meta_tests_sources
     foundation/meta/tests/test_pagedarray.cpp
     foundation/meta/tests/test_path.cpp
     foundation/meta/tests/test_permutation.cpp
+    foundation/meta/tests/test_pointcloudsampling.cpp
     foundation/meta/tests/test_poolallocator.cpp
     foundation/meta/tests/test_population.cpp
     foundation/meta/tests/test_preprocessor.cpp
