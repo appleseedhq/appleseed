@@ -92,7 +92,11 @@ Vector<T, 2> sample_circle_uniform(const T s);
 template <typename T>
 Vector<T, 2> sample_disk_uniform(const Vector<T, 2>& s);
 
-// An alternate implementation of foundation::sample_disk_uniform().
+// An alternate implementation of foundation::sample_disk_uniform() based on
+// a polar parameterization of the unit disk. This implementation is about
+// twice as fast as foundation::sample_disk_uniform() but has high distortion
+// around the center of the disk. In practice it is fine for random or even
+// QMC sampling.
 template <typename T>
 Vector<T, 2> sample_disk_uniform_alt(const Vector<T, 2>& s);
 
