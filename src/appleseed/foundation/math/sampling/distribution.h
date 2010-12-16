@@ -92,6 +92,10 @@ Vector<T, 2> sample_circle_uniform(const T s);
 template <typename T>
 Vector<T, 2> sample_disk_uniform(const Vector<T, 2>& s);
 
+// An alternate implementation of foundation::sample_disk_uniform().
+template <typename T>
+Vector<T, 2> sample_disk_uniform_alt(const Vector<T, 2>& s);
+
 // Map a uniform sample in [0,1)^2 to a point on the surface of a triangle
 // with a uniform probability density p(x) = 1/A. Return the barycentric
 // coordinates of the point inside the triangle.
@@ -239,6 +243,13 @@ inline Vector<T, 2> sample_disk_uniform(const Vector<T, 2>& s)
     }
 
     return Vector<T, 2>(r * std::cos(phi), r * std::sin(phi));
+}
+
+template <typename T>
+inline Vector<T, 2> sample_disk_uniform_alt(const Vector<T, 2>& s)
+{
+    const T x = s[0] * TwoPi;
+    return std::sqrt(T(1.0) - s[1]) * Vector<T, 2>(std::cos(x), std::sin(x));
 }
 
 template <typename T>

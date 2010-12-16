@@ -27,6 +27,7 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/math/qmc.h"
 #include "foundation/math/rng.h"
 #include "foundation/math/sampling.h"
 #include "foundation/math/vector.h"
@@ -36,6 +37,7 @@
 #include "foundation/utility/testutils.h"
 
 // Standard headers.
+#include <cstddef>
 #include <vector>
 
 using namespace foundation;
@@ -223,5 +225,37 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext_DirectIlluminationSimulat
     TEST_CASE(TestWith256PixelSamplesAnd1LightSample)
     {
         render(256, 1);
+    }
+}
+
+TEST_SUITE(Foundation_Math_Sampling_Distribution)
+{
+    template <typename SamplingFunction>
+    void draw_sampling_function(const string& filename, SamplingFunction& sampling_function)
+    {
+        const Vector2d Center(0.5, 0.5);
+        const double Radius = 0.3;
+        const size_t N = 256;
+
+        vector<Vector2d> points;
+
+        for (size_t i = 0; i < N; ++i)
+        {
+            const size_t Bases[] = { 2 };
+            const Vector2d s = hammersley_sequence<double, 2>(Bases, i, N);
+            points.push_back(Center + Radius * sampling_function(s));
+        }
+
+        write_point_cloud_image(filename, points);
+    }
+
+    TEST_CASE(Test_SampleDiskUniform)
+    {
+        draw_sampling_function("output/test_sampling_sample_disk_uniform.png", sample_disk_uniform<double>);
+    }
+
+    TEST_CASE(Test_SampleDiskUniformAlt)
+    {
+        draw_sampling_function("output/test_sampling_sample_disk_uniform_alt.png", sample_disk_uniform_alt<double>);
     }
 }

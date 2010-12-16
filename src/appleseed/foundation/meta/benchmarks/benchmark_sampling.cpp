@@ -32,17 +32,22 @@
 #include "foundation/math/vector.h"
 #include "foundation/utility/benchmark.h"
 
+// Standard headers.
+#include <cmath>
+#include <cstddef>
+
+using namespace foundation;
+using namespace std;
+
 BENCHMARK_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
 {
-    using namespace foundation;
-
-    typedef MersenneTwister RNG;
-    typedef QMCSamplingContext<RNG> QMCSamplingContext;
-
     const size_t SampleCount = 64;
 
     struct Fixture
     {
+        typedef MersenneTwister RNG;
+        typedef QMCSamplingContext<RNG> QMCSamplingContext;
+
         RNG                 m_rng;
         QMCSamplingContext  m_context;
         Vector2d            m_v;
@@ -60,5 +65,40 @@ BENCHMARK_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
         m_v += m_context.next_vector2<2>();
         m_v += m_context.next_vector2<2>();
         m_v += m_context.next_vector2<2>();
+    }
+}
+
+BENCHMARK_SUITE(Foundation_Math_Sampling_Distribution)
+{
+    const size_t SampleCount = 16;
+
+    struct Fixture
+    {
+        Vector2d    m_samples[SampleCount];
+        Vector2d    m_dummy;
+
+        Fixture()
+          : m_dummy(0.0)
+        {
+            MersenneTwister rng;
+
+            for (size_t i = 0; i < SampleCount; ++i)
+            {
+                m_samples[i].x = rand_double2(rng);
+                m_samples[i].y = rand_double2(rng);
+            }
+        }
+    };
+
+    BENCHMARK_CASE_WITH_FIXTURE(Benchmark_SampleDiskUniform, Fixture)
+    {
+        for (size_t i = 0; i < SampleCount; ++i)
+            m_dummy += sample_disk_uniform(m_samples[i]);
+    }
+
+    BENCHMARK_CASE_WITH_FIXTURE(Benchmark_SampleDiskUniformAlt, Fixture)
+    {
+        for (size_t i = 0; i < SampleCount; ++i)
+            m_dummy += sample_disk_uniform_alt(m_samples[i]);
     }
 }

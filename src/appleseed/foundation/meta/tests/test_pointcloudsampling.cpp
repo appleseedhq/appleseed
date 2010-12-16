@@ -52,11 +52,6 @@ using namespace std;
 
 TEST_SUITE(Exploration_PointCloudSampling)
 {
-    Vector2d sample_disk_uniform(const Vector2d& s)
-    {
-        return sqrt(1.0 - s[0]) * sample_circle_uniform(s[1]);
-    }
-
     Vector2d sample_disk_non_uniform(const Vector2d& s)
     {
         return (1.0 - s[0]) * sample_circle_uniform(s[1]);
@@ -67,7 +62,7 @@ TEST_SUITE(Exploration_PointCloudSampling)
         const double                radius,
         const Vector2d&             s)
     {
-        return center + radius * sample_disk_uniform(s);
+        return center + radius * sample_disk_uniform_alt(s);
     }
 
     Vector2d sample_disk_non_uniform(
