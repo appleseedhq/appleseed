@@ -82,6 +82,11 @@ Vector<T, 3> sample_hemisphere_cosine(const Vector<T, 2>& s, const T n);
 // Other sampling functions.
 //
 
+// Map a uniform sample in [0,1) to a point on the unit circle with a uniform
+// probability density p(x) = 1/(2*Pi).
+template <typename T>
+Vector<T, 2> sample_circle_uniform(const T s);
+
 // Map a uniform sample in [0,1)^2 to a point on the surface of the unit disk
 // with a uniform probability density p(x) = 1/Pi.
 template <typename T>
@@ -103,8 +108,6 @@ Vector<T, 3> sample_triangle_uniform(const Vector<T, 2>& s);
     assert(s[0] >= T(0.0) && s[0] < T(1.0));    \
     assert(s[1] >= T(0.0) && s[1] < T(1.0))
 
-// Map a uniform sample in [0,1)^2 to a direction over the unit sphere
-// with a uniform probability density p(theta) = 1/(4*Pi).
 template <typename T>
 inline Vector<T, 3> sample_sphere_uniform(const Vector<T, 2>& s)
 {
@@ -128,8 +131,6 @@ inline Vector<T, 3> sample_sphere_uniform(const Vector<T, 2>& s)
 // Hemisphere sampling functions implementation.
 //
 
-// Map a uniform sample in [0,1)^2 to a direction over the unit hemisphere
-// with a uniform probability density p(theta) = 1/(2*Pi).
 template <typename T>
 inline Vector<T, 3> sample_hemisphere_uniform(const Vector<T, 2>& s)
 {
@@ -148,8 +149,6 @@ inline Vector<T, 3> sample_hemisphere_uniform(const Vector<T, 2>& s)
     return d;
 }
 
-// Map a uniform sample in [0,1)^2 to a direction over the unit hemisphere
-// with a cosine-weighted probability density p(theta) = cos(theta)/Pi.
 template <typename T>
 inline Vector<T, 3> sample_hemisphere_cosine(const Vector<T, 2>& s)
 {
@@ -168,8 +167,6 @@ inline Vector<T, 3> sample_hemisphere_cosine(const Vector<T, 2>& s)
     return d;
 }
 
-// Map a uniform sample in [0,1)^2 to a direction over the unit hemisphere
-// with a cosine-weighted probability density p(theta) = cos(theta)/Pi.
 template <typename T>
 inline Vector<T, 3> sample_hemisphere_cosine(const Vector<T, 2>& s, const T n)
 {
@@ -195,8 +192,13 @@ inline Vector<T, 3> sample_hemisphere_cosine(const Vector<T, 2>& s, const T n)
 // Other sampling functions implementation.
 //
 
-// Map a uniform sample in [0,1)^2 to a point on the surface of the unit disk
-// with a uniform probability density p(x) = 1/Pi.
+template <typename T>
+inline Vector<T, 2> sample_circle_uniform(const T s)
+{
+    const T x = s * TwoPi;
+    return Vector<T, 2>(std::cos(x), std::sin(x));
+}
+
 template <typename T>
 inline Vector<T, 2> sample_disk_uniform(const Vector<T, 2>& s)
 {
@@ -239,9 +241,6 @@ inline Vector<T, 2> sample_disk_uniform(const Vector<T, 2>& s)
     return Vector<T, 2>(r * std::cos(phi), r * std::sin(phi));
 }
 
-// Map a uniform sample in [0,1)^2 to a point on the surface of a triangle
-// with a uniform probability density p(x) = 1/A. Return the barycentric
-// coordinates of the point inside the triangle.
 template <typename T>
 inline Vector<T, 3> sample_triangle_uniform(const Vector<T, 2>& s)
 {
