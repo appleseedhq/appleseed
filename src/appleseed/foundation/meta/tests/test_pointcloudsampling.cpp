@@ -277,8 +277,9 @@ TEST_SUITE(Exploration_PointCloudSampling)
                             avg_dist += answer.get(w).m_distance;
                         avg_dist /= NeighborCount;
 
-                        const double Tension = 800.0;
-                        const double acceptance_prob = exp(-avg_dist * Tension);
+                        const double Tension = 80.0;
+                        const double k = avg_dist / SamplingRadius;
+                        const double acceptance_prob = exp(-k * Tension);
 
                         if (pass_rr(acceptance_prob, rand_double2(rng)))
                         {
