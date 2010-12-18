@@ -30,7 +30,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_SURFACESHADERCOLLECTIONITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/collectionitem.h"
+#include "mainwindow/project/collectionitembase.h"
 #include "mainwindow/project/entitycreatorbase.h"
 
 // appleseed.renderer headers.
@@ -49,7 +49,7 @@ namespace appleseed {
 namespace studio {
 
 class SurfaceShaderCollectionItem
-  : public CollectionItem
+  : public CollectionItemBase
   , private EntityCreatorBase
 {
     Q_OBJECT
@@ -61,6 +61,8 @@ class SurfaceShaderCollectionItem
         ProjectBuilder&                         project_builder);
 
     virtual QMenu* get_single_item_context_menu() const;
+
+    void add_item(renderer::SurfaceShader& surface_shader);
 
   public slots:
     void slot_create_surface_shader();

@@ -33,7 +33,7 @@
 #include "mainwindow/project/assemblyentitybrowser.h"
 #include "mainwindow/project/entityeditorformfactory.h"
 #include "mainwindow/project/entityeditorwindow.h"
-#include "mainwindow/project/entityitembase.h"
+#include "mainwindow/project/entityitem.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/tools.h"
 
@@ -41,6 +41,7 @@
 #include "renderer/api/surfaceshader.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
 
 // Qt headers.
@@ -65,10 +66,12 @@ SurfaceShaderCollectionItem::SurfaceShaderCollectionItem(
     Assembly&               assembly,
     SurfaceShaderContainer& surface_shaders,
     ProjectBuilder&         project_builder)
-  : CollectionItem(g_class_uid, "Surface Shaders", surface_shaders)
+  : CollectionItemBase(g_class_uid, "Surface Shaders")
   , m_assembly(assembly)
   , m_project_builder(project_builder)
 {
+    for (each<SurfaceShaderContainer> i = surface_shaders; i; ++i)
+        add_item(*i);
 }
 
 QMenu* SurfaceShaderCollectionItem::get_single_item_context_menu() const
@@ -76,6 +79,15 @@ QMenu* SurfaceShaderCollectionItem::get_single_item_context_menu() const
     QMenu* menu = new QMenu(treeWidget());
     menu->addAction("Create Surface Shader...", this, SLOT(slot_create_surface_shader()));
     return menu;
+}
+
+void SurfaceShaderCollectionItem::add_item(SurfaceShader& surface_shader)
+{
+    addChild(
+        new EntityItem<SurfaceShader, SurfaceShaderFactoryRegistrar>(
+            m_assembly,
+            m_registrar,
+            surface_shader));
 }
 
 void SurfaceShaderCollectionItem::slot_create_surface_shader()
