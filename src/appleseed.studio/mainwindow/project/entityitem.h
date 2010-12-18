@@ -110,7 +110,7 @@ void EntityItem<Entity, FactoryRegistrar>::slot_edit()
         new AssemblyEntityBrowser(m_assembly));
 
     const std::string window_title =
-        std::string("Create ") + get_entity_name<Entity>();
+        std::string("Edit ") + get_entity_name<Entity>();
 
     open_entity_editor(
         treeWidget(),
