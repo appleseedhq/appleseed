@@ -26,57 +26,32 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_COLLECTIONITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_COLLECTIONITEM_H
-
-// appleseed.studio headers.
-#include "mainwindow/project/collectionitembase.h"
-
-// appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
-#include "foundation/utility/uid.h"
-
-// Qt headers.
-#include <QObject>
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYNAMES_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYNAMES_H
 
 // Forward declarations.
-namespace renderer  { class Entity; }
-class QString;
+namespace renderer  { class BSDF; }
+namespace renderer  { class Camera; }
+namespace renderer  { class EDF; }
+namespace renderer  { class EnvironmentEDF; }
+namespace renderer  { class EnvironmentShader; }
+namespace renderer  { class Light; }
+namespace renderer  { class SurfaceShader; }
 
 namespace appleseed {
 namespace studio {
 
-class CollectionItem
-  : public CollectionItemBase
-{
-    Q_OBJECT
+template <typename T> const char* get_entity_name();
 
-  public:
-    CollectionItem(
-        const foundation::UniqueID  class_uid,
-        const QString&              title);
-
-    template <typename EntityContainer>
-    CollectionItem(
-        const foundation::UniqueID  class_uid,
-        const QString&              title,
-        EntityContainer&            entities);
-
-    void add_item(const renderer::Entity& entity);
-};
-
-template <typename EntityContainer>
-CollectionItem::CollectionItem(
-    const foundation::UniqueID      class_uid,
-    const QString&                  title,
-    EntityContainer&                entities)
-  : CollectionItemBase(class_uid, title)
-{
-    for (foundation::each<EntityContainer> i = entities; i; ++i)
-        add_item(*i);
-}
+template <> inline const char* get_entity_name<renderer::BSDF>()                { return "BSDF"; }
+template <> inline const char* get_entity_name<renderer::Camera>()              { return "Camera"; }
+template <> inline const char* get_entity_name<renderer::EDF>()                 { return "EDF"; }
+template <> inline const char* get_entity_name<renderer::EnvironmentEDF>()      { return "Environment EDF"; }
+template <> inline const char* get_entity_name<renderer::EnvironmentShader>()   { return "Environment Shader"; }
+template <> inline const char* get_entity_name<renderer::Light>()               { return "Light"; }
+template <> inline const char* get_entity_name<renderer::SurfaceShader>()       { return "Surface Shader"; }
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_COLLECTIONITEM_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYNAMES_H

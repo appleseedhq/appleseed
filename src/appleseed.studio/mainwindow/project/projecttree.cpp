@@ -104,8 +104,8 @@ typename ItemTypeMap<EntityContainer>::T* ProjectTree::add_collection_item(Entit
     Scene& scene = *m_project.get_scene();
 
     typedef ItemTypeMap<EntityContainer>::T ItemType;
-    ItemType* item = new ItemType(scene, entities, m_project_builder);
 
+    ItemType* item = new ItemType(scene, entities, m_project_builder);
     m_tree_widget->addTopLevelItem(item);
 
     return item;

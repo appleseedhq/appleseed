@@ -29,7 +29,11 @@
 // Interface header.
 #include "collectionitem.h"
 
+// appleseed.studio headers.
+#include "mainwindow/project/entityitembase.h"
+
 using namespace foundation;
+using namespace renderer;
 
 namespace appleseed {
 namespace studio {
@@ -37,6 +41,11 @@ namespace studio {
 CollectionItem::CollectionItem(const UniqueID class_uid, const QString& title)
   : CollectionItemBase(class_uid, title)
 {
+}
+
+void CollectionItem::add_item(const Entity& entity)
+{
+    addChild(new EntityItemBase(entity));
 }
 
 }   // namespace studio

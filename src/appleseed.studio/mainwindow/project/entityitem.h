@@ -32,6 +32,7 @@
 // appleseed.studio headers.
 #include "mainwindow/project/entitycreatorbase.h"
 #include "mainwindow/project/entityitembase.h"
+#include "mainwindow/project/entitynames.h"
 
 // appleseed.renderer headers.
 #include "renderer/utility/paramarray.h"
@@ -42,6 +43,9 @@
 
 // Qt headers.
 #include <QObject>
+
+// Standard headers.
+#include <string>
 
 // Forward declarations.
 namespace renderer      { class Assembly; }
@@ -105,9 +109,12 @@ void EntityItem<Entity, FactoryRegistrar>::slot_edit()
     auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
         new AssemblyEntityBrowser(m_assembly));
 
+    const std::string window_title =
+        std::string("Create ") + get_entity_name<Entity>();
+
     open_entity_editor(
         treeWidget(),
-        "Create BSDF",
+        window_title,
         form_factory,
         entity_browser,
         values,
@@ -118,7 +125,7 @@ void EntityItem<Entity, FactoryRegistrar>::slot_edit()
 template <typename Entity, typename FactoryRegistrar>
 void EntityItem<Entity, FactoryRegistrar>::slot_edit_accepted(foundation::Dictionary values)
 {
-    catch_entity_creation_errors(&EntityItem::edit, values, "BSDF");
+    catch_entity_creation_errors(&EntityItem::edit, values, get_entity_name<Entity>());
 }
 
 template <typename Entity, typename FactoryRegistrar>
