@@ -34,7 +34,6 @@
 #include "mainwindow/project/entityeditorformfactory.h"
 #include "mainwindow/project/entityeditorwindow.h"
 #include "mainwindow/project/entityitem.h"
-#include "mainwindow/project/entityitembase.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/tools.h"
 
@@ -72,6 +71,13 @@ BSDFCollectionItem::BSDFCollectionItem(
         add_item(*i);
 }
 
+QMenu* BSDFCollectionItem::get_single_item_context_menu() const
+{
+    QMenu* menu = new QMenu(treeWidget());
+    menu->addAction("Create BSDF...", this, SLOT(slot_create_bsdf()));
+    return menu;
+}
+
 void BSDFCollectionItem::add_item(BSDF& bsdf)
 {
     addChild(
@@ -79,13 +85,6 @@ void BSDFCollectionItem::add_item(BSDF& bsdf)
             m_assembly,
             m_registrar,
             bsdf));
-}
-
-QMenu* BSDFCollectionItem::get_single_item_context_menu() const
-{
-    QMenu* menu = new QMenu(treeWidget());
-    menu->addAction("Create BSDF...", this, SLOT(slot_create_bsdf()));
-    return menu;
 }
 
 void BSDFCollectionItem::slot_create_bsdf()

@@ -34,7 +34,6 @@
 #include "mainwindow/project/entityeditorformfactory.h"
 #include "mainwindow/project/entityeditorwindow.h"
 #include "mainwindow/project/entityitem.h"
-#include "mainwindow/project/entityitembase.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/tools.h"
 
@@ -72,6 +71,13 @@ EDFCollectionItem::EDFCollectionItem(
         add_item(*i);
 }
 
+QMenu* EDFCollectionItem::get_single_item_context_menu() const
+{
+    QMenu* menu = new QMenu(treeWidget());
+    menu->addAction("Create EDF...", this, SLOT(slot_create_edf()));
+    return menu;
+}
+
 void EDFCollectionItem::add_item(EDF& edf)
 {
     addChild(
@@ -79,13 +85,6 @@ void EDFCollectionItem::add_item(EDF& edf)
             m_assembly,
             m_registrar,
             edf));
-}
-
-QMenu* EDFCollectionItem::get_single_item_context_menu() const
-{
-    QMenu* menu = new QMenu(treeWidget());
-    menu->addAction("Create EDF...", this, SLOT(slot_create_edf()));
-    return menu;
 }
 
 void EDFCollectionItem::slot_create_edf()
