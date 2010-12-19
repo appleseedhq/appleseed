@@ -43,8 +43,8 @@ namespace renderer
 //
 
 class RENDERERDLL Entity
-  : public foundation::IUnknown
-  , public foundation::IIdentifiable
+  : public foundation::Identifiable
+  , public foundation::IUnknown
   , public foundation::IVersionable
 {
   public:
@@ -58,9 +58,6 @@ class RENDERERDLL Entity
     // Return the unique ID of this class of entities.
     foundation::UniqueID get_class_uid() const;
 
-    // Return the unique ID of this instance.
-    virtual foundation::UniqueID get_uid() const;
-
     // Return the version ID of this instance.
     virtual foundation::VersionID get_version_id() const;
 
@@ -73,7 +70,6 @@ class RENDERERDLL Entity
 
   protected:
     const foundation::UniqueID      m_class_uid;
-    const foundation::UniqueID      m_uid;
     foundation::VersionID           m_version_id;
     ParamArray                      m_params;
 };
@@ -86,7 +82,6 @@ class RENDERERDLL Entity
 inline Entity::Entity(
     const foundation::UniqueID      class_uid)
   : m_class_uid(class_uid)
-  , m_uid(foundation::new_guid())
   , m_version_id(0)
 {
 }
@@ -95,7 +90,6 @@ inline Entity::Entity(
     const foundation::UniqueID      class_uid,
     const ParamArray&               params)
   : m_class_uid(class_uid)
-  , m_uid(foundation::new_guid())
   , m_version_id(0)
   , m_params(params)
 {
@@ -104,11 +98,6 @@ inline Entity::Entity(
 inline foundation::UniqueID Entity::get_class_uid() const
 {
     return m_class_uid;
-}
-
-inline foundation::UniqueID Entity::get_uid() const
-{
-    return m_uid;
 }
 
 inline foundation::VersionID Entity::get_version_id() const

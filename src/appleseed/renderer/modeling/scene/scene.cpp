@@ -39,10 +39,6 @@ using namespace std;
 namespace renderer
 {
 
-//
-// Scene class implementation.
-//
-
 struct Scene::Impl
 {
     UniqueID                                m_uid;
@@ -59,108 +55,88 @@ struct Scene::Impl
     AssemblyInstanceContainer               m_assembly_instances;
 };
 
-// Constructor.
 Scene::Scene()
   : impl(new Impl())
 {
-    impl->m_uid = new_guid();
     impl->m_asm_inst_version_id = 0;
     impl->m_geometry_version_id = 0;
 }
 
-// Destructor.
 Scene::~Scene()
 {
     delete impl;
 }
 
-// Return the unique ID of this object.
-UniqueID Scene::get_uid() const
-{
-    return impl->m_uid;
-}
-
-// Return/increase the version ID of the assembly instances.
 VersionID Scene::get_assembly_instances_version_id() const
 {
     return impl->m_asm_inst_version_id;
 }
+
 void Scene::increase_assembly_instances_version_id()
 {
     ++impl->m_asm_inst_version_id;
 }
 
-// Return/increase the version ID of the scene geometry.
 VersionID Scene::get_geometry_version_id() const
 {
     return impl->m_geometry_version_id;
 }
+
 void Scene::increase_geometry_version_id()
 {
     ++impl->m_geometry_version_id;
 }
 
-// Set the camera.
 void Scene::set_camera(auto_release_ptr<Camera> camera)
 {
     impl->m_camera = camera;
 }
 
-// Access the camera.
 Camera* Scene::get_camera() const
 {
     return impl->m_camera.get();
 }
 
-// Set the environment.
 void Scene::set_environment(auto_release_ptr<Environment> environment)
 {
     impl->m_environment = environment;
 }
 
-// Access the environment.
 Environment* Scene::get_environment() const
 {
     return impl->m_environment.get();
 }
 
-// Access the colors.
 ColorContainer& Scene::colors() const
 {
     return impl->m_colors;
 }
 
-// Access the textures.
 TextureContainer& Scene::textures() const
 {
     return impl->m_textures;
 }
 
-// Access the texture instances.
 TextureInstanceContainer& Scene::texture_instances() const
 {
     return impl->m_texture_instances;
 }
 
-// Access the environment EDFs.
 EnvironmentEDFContainer& Scene::environment_edfs() const
 {
     return impl->m_environment_edfs;
 }
 
-// Access the environment shaders.
 EnvironmentShaderContainer& Scene::environment_shaders() const
 {
     return impl->m_environment_shaders;
 }
 
-// Access the assemblies.
 AssemblyContainer& Scene::assemblies() const
 {
     return impl->m_assemblies;
 }
 
-// Access the assembly instances.
 AssemblyInstanceContainer& Scene::assembly_instances() const
 {
     return impl->m_assembly_instances;

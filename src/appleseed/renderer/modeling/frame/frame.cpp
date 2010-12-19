@@ -56,13 +56,8 @@ using namespace std;
 namespace renderer
 {
 
-//
-// Frame class implementation.
-//
-
 struct Frame::Impl
 {
-    // Parameters.
     struct Parameters
     {
         ParamArray      m_params;
@@ -187,7 +182,6 @@ struct Frame::Impl
     auto_ptr<Image>     m_image;
     LightingConditions  m_lighting_conditions;
 
-    // Constructor.
     Impl(const ParamArray& params)
       : m_params(params)
       , m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
@@ -195,7 +189,6 @@ struct Frame::Impl
     }
 };
 
-// Constructor.
 Frame::Frame(
     const char*         name,
     const ParamArray&   params)
@@ -203,7 +196,6 @@ Frame::Frame(
 {
     assert(name);
 
-    impl->m_uid = new_guid();
     impl->m_name = name;
 
     // Create the underlying image.
@@ -220,47 +212,36 @@ Frame::Frame(
     m_props = impl->m_image->properties();
 }
 
-// Destructor.
 Frame::~Frame()
 {
     delete impl;
 }
 
-// Return the unique ID of this object.
-UniqueID Frame::get_uid() const
-{
-    return impl->m_uid;
-}
-
-// Return the name of this entity.
 const char* Frame::get_name() const
 {
     return impl->m_name.c_str();
 }
 
-// Return the parameters of this object.
 ParamArray& Frame::get_parameters()
 {
     return impl->m_params.m_params;
 }
+
 const ParamArray& Frame::get_parameters() const
 {
     return impl->m_params.m_params;
 }
 
-// Access canvas properties.
 const CanvasProperties& Frame::properties() const
 {
     return m_props;
 }
 
-// Return the lighting conditions for spectral to RGB conversion.
 const LightingConditions& Frame::get_lighting_conditions() const
 {
     return impl->m_lighting_conditions;
 }
 
-// Direct access to a given tile.
 Tile& Frame::tile(
     const size_t        tile_x,
     const size_t        tile_y) const
@@ -268,7 +249,6 @@ Tile& Frame::tile(
     return impl->m_image->tile(tile_x, tile_y);
 }
 
-// Convert an RGBA tile from linear RGB to the color space of the frame.
 void Frame::transform_tile_to_frame_color_space(Tile& tile) const
 {
     assert(tile.get_channel_count() == 4);
@@ -287,7 +267,6 @@ void Frame::transform_tile_to_frame_color_space(Tile& tile) const
     }
 }
 
-// Convert an RGBA image from linear RGB to the color space of the frame.
 void Frame::transform_image_to_frame_color_space(Image& image) const
 {
     const CanvasProperties& image_props = image.properties();
@@ -341,7 +320,6 @@ namespace
     }
 }
 
-// Write the frame to disk.
 bool Frame::write(const char* filename) const
 {
     assert(filename);
@@ -381,7 +359,6 @@ bool Frame::write(const char* filename) const
     return true;
 }
 
-// Archive the frame to disk, in a given directory.
 bool Frame::archive(
     const char*     directory,
     char**          output_path) const
@@ -596,13 +573,11 @@ namespace
     }
 }
 
-// Compute and return the average luminance of the frame.
 double Frame::compute_average_luminance() const
 {
     return compute_avg_luminance(*impl->m_image.get());
 }
 
-// Transform a linear RGB color to the color space of the frame.
 Color4f Frame::linear_rgb_to_frame(const Color4f& linear_rgb) const
 {
     Color4f result;

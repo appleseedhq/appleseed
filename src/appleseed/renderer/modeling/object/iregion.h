@@ -44,7 +44,7 @@ namespace renderer
 //
 
 class IRegion
-  : public foundation::IIdentifiable
+  : public foundation::Identifiable
 {
   public:
     // Destructor.

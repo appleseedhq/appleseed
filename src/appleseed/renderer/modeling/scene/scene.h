@@ -48,7 +48,7 @@ namespace renderer
 //
 
 class RENDERERDLL Scene
-  : public foundation::IIdentifiable
+  : public foundation::Identifiable
 {
   public:
     // Constructor. Initially, the scene is empty.
@@ -56,9 +56,6 @@ class RENDERERDLL Scene
 
     // Destructor.
     ~Scene();
-
-    // Return the unique ID of this object.
-    virtual foundation::UniqueID get_uid() const;
 
     // Return/increase the version ID of the assembly instances.
     foundation::VersionID get_assembly_instances_version_id() const;

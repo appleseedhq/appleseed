@@ -48,7 +48,7 @@ namespace renderer
 //
 
 class RENDERERDLL Frame
-  : public foundation::IIdentifiable
+  : public foundation::Identifiable
 {
   public:
     // Constructor.
@@ -58,9 +58,6 @@ class RENDERERDLL Frame
 
     // Destructor.
     ~Frame();
-
-    // Return the unique ID of this object.
-    virtual foundation::UniqueID get_uid() const;
 
     // Return the name of this entity.
     const char* get_name() const;

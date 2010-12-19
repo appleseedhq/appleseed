@@ -70,18 +70,21 @@ typedef uint64 UniqueID;
 
 
 //
-// Interface of an uniquely identifiable object.
+// Base class for uniquely identifiable objects.
 //
 
-class FOUNDATIONDLL IIdentifiable
+class FOUNDATIONDLL Identifiable
   : public NonCopyable
 {
   public:
-    // Destructor.
-    virtual ~IIdentifiable() {}
+    // Constructor, assigns a unique ID to this instance.
+    Identifiable();
 
     // Return the unique ID of this object.
-    virtual UniqueID get_uid() const = 0;
+    UniqueID get_uid() const;
+
+  private:
+    const UniqueID  m_unique_id;
 };
 
 
@@ -92,6 +95,21 @@ class FOUNDATIONDLL IIdentifiable
 //
 
 FOUNDATIONDLL UniqueID new_guid();
+
+
+//
+// Identifiable class implementation.
+//
+
+inline Identifiable::Identifiable()
+  : m_unique_id(new_guid())
+{
+}
+
+inline UniqueID Identifiable::get_uid() const
+{
+    return m_unique_id;
+}
 
 }       // namespace foundation
 

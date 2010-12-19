@@ -67,12 +67,6 @@ namespace
         {
         }
 
-        // Return the unique ID of this object.
-        virtual UniqueID get_uid() const
-        {
-            return m_uid;
-        }
-
         // Return the local space bounding box of the region.
         virtual const GAABB3& get_local_bbox() const
         {
@@ -103,7 +97,6 @@ struct MeshObject::Impl
 
     AttributeSet::ChannelID     m_uv0_channel_id;
 
-    // Constructor.
     explicit Impl(const char* name)
       : m_name(name)
       , m_region(&m_bbox, &m_tess)
@@ -115,7 +108,6 @@ struct MeshObject::Impl
     }
 };
 
-// Constructor.
 MeshObject::MeshObject(
     const char*         name,
     const ParamArray&   params)
@@ -124,47 +116,41 @@ MeshObject::MeshObject(
 {
 }
 
-// Destructor.
 MeshObject::~MeshObject()
 {
     delete impl;
 }
 
-// Delete this instance.
 void MeshObject::release()
 {
     delete this;
 }
 
-// Return a string identifying the model of this object.
 const char* MeshObject::get_model() const
 {
     return MeshObjectFactory::get_model();
 }
 
-// Return the name of this object.
 const char* MeshObject::get_name() const
 {
     return impl->m_name.c_str();
 }
 
-// Return the local space bounding box of the object.
 const GAABB3& MeshObject::get_local_bbox() const
 {
     return impl->m_bbox;
 }
 
-// Return the region kit of the object.
 Lazy<RegionKit>& MeshObject::get_region_kit()
 {
     return impl->m_lazy_region_kit;
 }
 
-// Insert and access vertices.
 void MeshObject::reserve_vertices(const size_t count)
 {
     impl->m_tess.m_vertices.reserve(count);
 }
+
 size_t MeshObject::push_vertex(const GVector3& vertex)
 {
     const size_t index = impl->m_tess.m_vertices.size();
@@ -172,39 +158,43 @@ size_t MeshObject::push_vertex(const GVector3& vertex)
     impl->m_bbox.insert(vertex);
     return index;
 }
+
 size_t MeshObject::get_vertex_count() const
 {
     return impl->m_tess.m_vertices.size();
 }
+
 const GVector3& MeshObject::get_vertex(const size_t index) const
 {
     return impl->m_tess.m_vertices[index];
 }
 
-// Insert and access vertex normals.
 void MeshObject::reserve_vertex_normals(const size_t count)
 {
     impl->m_tess.m_vertex_normals.reserve(count);
 }
+
 size_t MeshObject::push_vertex_normal(const GVector3& normal)
 {
     const size_t index = impl->m_tess.m_vertex_normals.size();
     impl->m_tess.m_vertex_normals.push_back(normal);
     return index;
 }
+
 size_t MeshObject::get_vertex_normal_count() const
 {
     return impl->m_tess.m_vertex_normals.size();
 }
+
 const GVector3& MeshObject::get_vertex_normal(const size_t index) const
 {
     return impl->m_tess.m_vertex_normals[index];
 }
 
-// Insert and access texture coordinates.
 void MeshObject::reserve_tex_coords(const size_t count)
 {
 }
+
 size_t MeshObject::push_tex_coords(const GVector2& tex_coords)
 {
     if (impl->m_uv0_channel_id == AttributeSet::InvalidChannelID)
@@ -221,6 +211,7 @@ size_t MeshObject::push_tex_coords(const GVector2& tex_coords)
             impl->m_uv0_channel_id,
             tex_coords);
 }
+
 size_t MeshObject::get_tex_coords_count() const
 {
     if (impl->m_uv0_channel_id == AttributeSet::InvalidChannelID)
@@ -231,6 +222,7 @@ size_t MeshObject::get_tex_coords_count() const
             impl->m_uv0_channel_id);
     }
 }
+
 GVector2 MeshObject::get_tex_coords(const size_t index) const
 {
     if (impl->m_uv0_channel_id == AttributeSet::InvalidChannelID)
@@ -246,21 +238,23 @@ GVector2 MeshObject::get_tex_coords(const size_t index) const
     }
 }
 
-// Insert and access triangles.
 void MeshObject::reserve_triangles(const size_t count)
 {
     impl->m_tess.m_primitives.reserve(count);
 }
+
 size_t MeshObject::push_triangle(const Triangle& triangle)
 {
     const size_t index = impl->m_tess.m_primitives.size();
     impl->m_tess.m_primitives.push_back(triangle);
     return index;
 }
+
 size_t MeshObject::get_triangle_count() const
 {
     return impl->m_tess.m_primitives.size();
 }
+
 const Triangle& MeshObject::get_triangle(const size_t index) const
 {
     return impl->m_tess.m_primitives[index];
@@ -271,13 +265,11 @@ const Triangle& MeshObject::get_triangle(const size_t index) const
 // MeshObjectFactory class implementation.
 //
 
-// Return a string identifying this object model.
 const char* MeshObjectFactory::get_model()
 {
     return "mesh_object";
 }
 
-// Create a new mesh object.
 auto_release_ptr<MeshObject> MeshObjectFactory::create(
     const char*         name,
     const ParamArray&   params)
