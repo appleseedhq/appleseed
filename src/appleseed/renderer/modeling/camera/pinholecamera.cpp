@@ -84,7 +84,7 @@ namespace
         virtual void set_transform(const Transformd& transform)
         {
             m_transform = transform;
-            ++m_version_id;
+            bump_version_id();
         }
 
         virtual const Transformd& get_transform() const

@@ -77,19 +77,45 @@ const VersionID InvalidVersionID = ~static_cast<VersionID>(0);
 
 
 //
-// Interface of a versionable object.
+// Base class for versionable objects.
 //
 
-class FOUNDATIONDLL IVersionable
+class FOUNDATIONDLL Versionable
   : public NonCopyable
 {
   public:
-    // Destructor.
-    virtual ~IVersionable() {}
+    // Constructor.
+    Versionable();
 
     // Return the version ID of this object.
-    virtual VersionID get_version_id() const = 0;
+    VersionID get_version_id() const;
+
+    // Increase the version ID by 1.
+    void bump_version_id();
+
+  protected:
+    VersionID m_version_id;
 };
+
+
+//
+// Versionable class implementation.
+//
+
+inline Versionable::Versionable()
+  : m_version_id(0)
+{
+}
+
+inline VersionID Versionable::get_version_id() const
+{
+    return m_version_id;
+}
+
+inline void Versionable::bump_version_id()
+{
+    ++m_version_id;
+}
 
 }       // namespace foundation
 

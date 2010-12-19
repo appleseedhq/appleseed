@@ -44,8 +44,8 @@ namespace renderer
 
 class RENDERERDLL Entity
   : public foundation::Identifiable
+  , public foundation::Versionable
   , public foundation::IUnknown
-  , public foundation::IVersionable
 {
   public:
     // Constructors.
@@ -58,9 +58,6 @@ class RENDERERDLL Entity
     // Return the unique ID of this class of entities.
     foundation::UniqueID get_class_uid() const;
 
-    // Return the version ID of this instance.
-    virtual foundation::VersionID get_version_id() const;
-
     // Return the name of this instance.
     virtual const char* get_name() const = 0;
 
@@ -70,7 +67,6 @@ class RENDERERDLL Entity
 
   protected:
     const foundation::UniqueID      m_class_uid;
-    foundation::VersionID           m_version_id;
     ParamArray                      m_params;
 };
 
@@ -82,7 +78,6 @@ class RENDERERDLL Entity
 inline Entity::Entity(
     const foundation::UniqueID      class_uid)
   : m_class_uid(class_uid)
-  , m_version_id(0)
 {
 }
 
@@ -90,7 +85,6 @@ inline Entity::Entity(
     const foundation::UniqueID      class_uid,
     const ParamArray&               params)
   : m_class_uid(class_uid)
-  , m_version_id(0)
   , m_params(params)
 {
 }
@@ -98,11 +92,6 @@ inline Entity::Entity(
 inline foundation::UniqueID Entity::get_class_uid() const
 {
     return m_class_uid;
-}
-
-inline foundation::VersionID Entity::get_version_id() const
-{
-    return m_version_id;
 }
 
 inline ParamArray& Entity::get_parameters()
