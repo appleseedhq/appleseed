@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
+#include "renderer/modeling/entity/entity.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
@@ -48,7 +49,7 @@ namespace renderer
 //
 
 class RENDERERDLL Frame
-  : public foundation::Identifiable
+  : public Entity
 {
   public:
     // Constructor.
@@ -59,12 +60,8 @@ class RENDERERDLL Frame
     // Destructor.
     ~Frame();
 
-    // Return the name of this entity.
-    const char* get_name() const;
-
-    // Return the parameters of this object.
-    ParamArray& get_parameters();
-    const ParamArray& get_parameters() const;
+    // Delete this instance.
+    virtual void release();
 
     // Access canvas properties.
     const foundation::CanvasProperties& properties() const;
@@ -124,6 +121,8 @@ class RENDERERDLL Frame
     // to be inline, for performance reasons -- but it needs the canvas properties.
     foundation::CanvasProperties m_props;
 
+    void extract_parameters();
+
     // Transform a linear RGB color to the color space of the frame.
     foundation::Color4f linear_rgb_to_frame(
         const foundation::Color4f&  linear_rgb) const;
@@ -134,7 +133,6 @@ class RENDERERDLL Frame
 // Frame class implementation.
 //
 
-// Return the coordinates of a given sample.
 inline foundation::Vector2d Frame::get_sample_position(
     const double    sample_x,
     const double    sample_y) const
@@ -149,6 +147,7 @@ inline foundation::Vector2d Frame::get_sample_position(
 
     return p;
 }
+
 inline foundation::Vector2d Frame::get_sample_position(
     const size_t    pixel_x,
     const size_t    pixel_y,
@@ -175,6 +174,7 @@ inline foundation::Vector2d Frame::get_sample_position(
 
     return p;
 }
+
 inline foundation::Vector2d Frame::get_sample_position(
     const size_t    tile_x,
     const size_t    tile_y,

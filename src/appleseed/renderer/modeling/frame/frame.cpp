@@ -58,155 +58,48 @@ namespace renderer
 
 struct Frame::Impl
 {
-    struct Parameters
-    {
-        ParamArray      m_params;
-        size_t          m_frame_width;
-        size_t          m_frame_height;
-        size_t          m_tile_width;
-        size_t          m_tile_height;
-        PixelFormat     m_pixel_format;
-        ColorSpace      m_color_space;
-        bool            m_gamma_correct;
-        float           m_target_gamma;
-        float           m_rcp_target_gamma;
+    size_t              m_frame_width;
+    size_t              m_frame_height;
+    size_t              m_tile_width;
+    size_t              m_tile_height;
+    PixelFormat         m_pixel_format;
+    ColorSpace          m_color_space;
+    bool                m_gamma_correct;
+    float               m_target_gamma;
+    float               m_rcp_target_gamma;
 
-        // Constructor, extract parameters.
-        explicit Parameters(const ParamArray& params)
-          : m_params(params)
-        {
-            // Retrieve frame resolution parameter.
-            const Vector2i DefaultResolution(512, 512);
-            Vector2i resolution = params.get_required<Vector2i>("resolution", DefaultResolution);
-            if (resolution[0] < 1 || resolution[1] < 1)
-            {
-                // Invalid value for resolution parameter, use default.
-                RENDERER_LOG_ERROR(
-                    "invalid value \"%d %d\" for parameter \"%s\", using default value \"%d %d\"",
-                    resolution[0],
-                    resolution[1],
-                    "resolution",
-                    DefaultResolution[0],
-                    DefaultResolution[1]);
-                resolution = DefaultResolution;
-            }
-            m_frame_width = static_cast<size_t>(resolution[0]);
-            m_frame_height = static_cast<size_t>(resolution[1]);
-
-            // Retrieve tile size parameter.
-            const Vector2i DefaultTileSize(32, 32);
-            Vector2i tile_size = params.get_optional<Vector2i>("tile_size", DefaultTileSize);
-            if (tile_size[0] < 1 || tile_size[1] < 1)
-            {
-                // Invalid value for tile_size parameter, use default.
-                RENDERER_LOG_ERROR(
-                    "invalid value \"%d %d\" for parameter \"%s\", using default value \"%d %d\"",
-                    tile_size[0],
-                    tile_size[1],
-                    "tile_size",
-                    DefaultTileSize[0],
-                    DefaultTileSize[1]);
-                tile_size = DefaultTileSize;
-            }
-            m_tile_width = static_cast<size_t>(tile_size[0]);
-            m_tile_height = static_cast<size_t>(tile_size[1]);
-
-            // Retrieve pixel format parameter.
-            const PixelFormat DefaultPixelFormat = PixelFormatFloat;
-            const char* DefaultPixelFormatString = "float";
-            const string pixel_format =
-                params.get_optional<string>("pixel_format", DefaultPixelFormatString);
-            if (pixel_format == "uint8")
-                m_pixel_format = PixelFormatUInt8;
-            else if (pixel_format == "uint16")
-                m_pixel_format = PixelFormatUInt16;
-            else if (pixel_format == "uint32")
-                m_pixel_format = PixelFormatUInt32;
-            else if (pixel_format == "half")
-                m_pixel_format = PixelFormatHalf;
-            else if (pixel_format == "float")
-                m_pixel_format = PixelFormatFloat;
-            else if (pixel_format == "double")
-                m_pixel_format = PixelFormatDouble;
-            else
-            {
-                // Invalid value for pixel_format parameter, use default.
-                RENDERER_LOG_ERROR(
-                    "invalid value \"%s\" for parameter \"%s\", using default value \"%s\"",
-                    pixel_format.c_str(),
-                    "pixel_format",
-                    DefaultPixelFormatString);
-                m_pixel_format = DefaultPixelFormat;
-            }
-
-            // Retrieve color space parameter.
-            const ColorSpace DefaultColorSpace = ColorSpaceLinearRGB;
-            const char* DefaultColorSpaceString = "linear_rgb";
-            const string color_space =
-                params.get_optional<string>("color_space", DefaultColorSpaceString);
-            if (color_space == "linear_rgb")
-                m_color_space = ColorSpaceLinearRGB;
-            else if (color_space == "srgb")
-                m_color_space = ColorSpaceSRGB;
-            else if (color_space == "ciexyz")
-                m_color_space = ColorSpaceCIEXYZ;
-            else
-            {
-                // Invalid value for color_space parameter, use default.
-                RENDERER_LOG_ERROR(
-                    "invalid value \"%s\" for parameter \"%s\", using default value \"%s\"",
-                    color_space.c_str(),
-                    "color_space",
-                    DefaultColorSpaceString);
-                m_color_space = DefaultColorSpace;
-            }
-
-            // Retrieve gamma correction parameter.
-            m_gamma_correct = params.strings().exist("gamma_correction");
-            if (m_gamma_correct)
-            {
-                m_target_gamma = params.get_required<float>("gamma_correction", 2.2f);
-                m_rcp_target_gamma = 1.0f / m_target_gamma;
-            }
-            else
-            {
-                m_target_gamma = 1.0f;
-                m_rcp_target_gamma = 1.0f;
-            }
-        }
-    };
-
-    UniqueID            m_uid;
-    string              m_name;
-    Parameters          m_params;
     auto_ptr<Image>     m_image;
     LightingConditions  m_lighting_conditions;
 
-    Impl(const ParamArray& params)
-      : m_params(params)
-      , m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
+    Impl()
+      : m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
     {
     }
 };
 
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
+}
+
 Frame::Frame(
     const char*         name,
     const ParamArray&   params)
-  : impl(new Impl(params))
+  : Entity(g_class_uid, params)
+  , impl(new Impl())
 {
-    assert(name);
-
-    impl->m_name = name;
+    set_name(name);
+    extract_parameters();
 
     // Create the underlying image.
     impl->m_image.reset(
         new Image(
-            impl->m_params.m_frame_width,
-            impl->m_params.m_frame_height,
-            impl->m_params.m_tile_width,
-            impl->m_params.m_tile_height,
+            impl->m_frame_width,
+            impl->m_frame_height,
+            impl->m_tile_width,
+            impl->m_tile_height,
             4,
-            impl->m_params.m_pixel_format));
+            impl->m_pixel_format));
 
     // Retrieve the image properties.
     m_props = impl->m_image->properties();
@@ -217,19 +110,9 @@ Frame::~Frame()
     delete impl;
 }
 
-const char* Frame::get_name() const
+void Frame::release()
 {
-    return impl->m_name.c_str();
-}
-
-ParamArray& Frame::get_parameters()
-{
-    return impl->m_params.m_params;
-}
-
-const ParamArray& Frame::get_parameters() const
-{
-    return impl->m_params.m_params;
+    delete this;
 }
 
 const CanvasProperties& Frame::properties() const
@@ -578,12 +461,109 @@ double Frame::compute_average_luminance() const
     return compute_avg_luminance(*impl->m_image.get());
 }
 
+void Frame::extract_parameters()
+{
+    // Retrieve frame resolution parameter.
+    const Vector2i DefaultResolution(512, 512);
+    Vector2i resolution = m_params.get_required<Vector2i>("resolution", DefaultResolution);
+    if (resolution[0] < 1 || resolution[1] < 1)
+    {
+        // Invalid value for resolution parameter, use default.
+        RENDERER_LOG_ERROR(
+            "invalid value \"%d %d\" for parameter \"%s\", using default value \"%d %d\"",
+            resolution[0],
+            resolution[1],
+            "resolution",
+            DefaultResolution[0],
+            DefaultResolution[1]);
+        resolution = DefaultResolution;
+    }
+    impl->m_frame_width = static_cast<size_t>(resolution[0]);
+    impl->m_frame_height = static_cast<size_t>(resolution[1]);
+
+    // Retrieve tile size parameter.
+    const Vector2i DefaultTileSize(32, 32);
+    Vector2i tile_size = m_params.get_optional<Vector2i>("tile_size", DefaultTileSize);
+    if (tile_size[0] < 1 || tile_size[1] < 1)
+    {
+        // Invalid value for tile_size parameter, use default.
+        RENDERER_LOG_ERROR(
+            "invalid value \"%d %d\" for parameter \"%s\", using default value \"%d %d\"",
+            tile_size[0],
+            tile_size[1],
+            "tile_size",
+            DefaultTileSize[0],
+            DefaultTileSize[1]);
+        tile_size = DefaultTileSize;
+    }
+    impl->m_tile_width = static_cast<size_t>(tile_size[0]);
+    impl->m_tile_height = static_cast<size_t>(tile_size[1]);
+
+    // Retrieve pixel format parameter.
+    const PixelFormat DefaultPixelFormat = PixelFormatFloat;
+    const char* DefaultPixelFormatString = "float";
+    const string pixel_format =
+        m_params.get_optional<string>("pixel_format", DefaultPixelFormatString);
+    if (pixel_format == "uint8")
+        impl->m_pixel_format = PixelFormatUInt8;
+    else if (pixel_format == "uint16")
+        impl->m_pixel_format = PixelFormatUInt16;
+    else if (pixel_format == "uint32")
+        impl->m_pixel_format = PixelFormatUInt32;
+    else if (pixel_format == "half")
+        impl->m_pixel_format = PixelFormatHalf;
+    else if (pixel_format == "float")
+        impl->m_pixel_format = PixelFormatFloat;
+    else if (pixel_format == "double")
+        impl->m_pixel_format = PixelFormatDouble;
+    else
+    {
+        // Invalid value for pixel_format parameter, use default.
+        RENDERER_LOG_ERROR(
+            "invalid value \"%s\" for parameter \"%s\", using default value \"%s\"",
+            pixel_format.c_str(),
+            "pixel_format",
+            DefaultPixelFormatString);
+        impl->m_pixel_format = DefaultPixelFormat;
+    }
+
+    // Retrieve color space parameter.
+    const ColorSpace DefaultColorSpace = ColorSpaceLinearRGB;
+    const char* DefaultColorSpaceString = "linear_rgb";
+    const string color_space =
+        m_params.get_optional<string>("color_space", DefaultColorSpaceString);
+    if (color_space == "linear_rgb")
+        impl->m_color_space = ColorSpaceLinearRGB;
+    else if (color_space == "srgb")
+        impl->m_color_space = ColorSpaceSRGB;
+    else if (color_space == "ciexyz")
+        impl->m_color_space = ColorSpaceCIEXYZ;
+    else
+    {
+        // Invalid value for color_space parameter, use default.
+        RENDERER_LOG_ERROR(
+            "invalid value \"%s\" for parameter \"%s\", using default value \"%s\"",
+            color_space.c_str(),
+            "color_space",
+            DefaultColorSpaceString);
+        impl->m_color_space = DefaultColorSpace;
+    }
+
+    // Retrieve gamma correction parameter.
+    impl->m_gamma_correct = m_params.strings().exist("gamma_correction");
+    impl->m_target_gamma =
+        impl->m_gamma_correct
+            ? m_params.get_required<float>("gamma_correction", 2.2f)
+            : 1.0f;
+    impl->m_rcp_target_gamma = 1.0f / impl->m_target_gamma;
+}
+
 Color4f Frame::linear_rgb_to_frame(const Color4f& linear_rgb) const
 {
     Color4f result;
 
     // Transform the input color to the color space of the frame.
-    switch (impl->m_params.m_color_space)
+    switch (impl->m_color_space)
     {
       case ColorSpaceLinearRGB:
         result = linear_rgb;
@@ -610,10 +590,10 @@ Color4f Frame::linear_rgb_to_frame(const Color4f& linear_rgb) const
     result = saturate(result);
 
     // Gamma-correct the pixel color if gamma correction is enabled.
-    if (impl->m_params.m_gamma_correct)
+    if (impl->m_gamma_correct)
     {
         // todo: investigate the usage of fast_pow() for gamma correction.
-        const float rcp_target_gamma = impl->m_params.m_rcp_target_gamma;
+        const float rcp_target_gamma = impl->m_rcp_target_gamma;
         result[0] = pow(result[0], rcp_target_gamma);
         result[1] = pow(result[1], rcp_target_gamma);
         result[2] = pow(result[2], rcp_target_gamma);
