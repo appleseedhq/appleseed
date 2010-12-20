@@ -47,6 +47,7 @@ class NullBSDF
     NullBSDF()
       : BSDF(ParamArray())
     {
+        set_name("null_bsdf");
     }
 
     virtual void release()
@@ -55,11 +56,6 @@ class NullBSDF
     }
 
     virtual const char* get_model() const
-    {
-        return "null_bsdf";
-    }
-
-    virtual const char* get_name() const
     {
         return "null_bsdf";
     }

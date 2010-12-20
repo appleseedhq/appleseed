@@ -56,10 +56,10 @@ namespace
             const char*             name,
             const ParamArray&       params)
           : EnvironmentShader(params)
-          , m_name(name)
           , m_env_edf_name(m_params.get_required<string>("environment_edf", ""))
           , m_env_edf(0)
         {
+            set_name(name);
         }
 
         virtual void release()
@@ -70,11 +70,6 @@ namespace
         virtual const char* get_model() const
         {
             return EDFEnvironmentShaderFactory::get_model();
-        }
-
-        virtual const char* get_name() const
-        {
-            return m_name.c_str();
         }
 
         virtual void on_frame_begin(const Project& project)
@@ -94,7 +89,7 @@ namespace
                         "while preparing environment shader \"%s\": "
                         "cannot find environment EDF \"%s\", "
                         "the environment will be transparent black",
-                        m_name.c_str(),
+                        get_name(),
                         m_env_edf_name.c_str());
                 }
                 else
@@ -127,7 +122,6 @@ namespace
         }
 
       private:
-        const string        m_name;
         const string        m_env_edf_name;
         EnvironmentEDF*     m_env_edf;
     };

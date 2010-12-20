@@ -62,8 +62,9 @@ namespace
             const char*         name,
             const ParamArray&   params)
           : BSDF(params)
-          , m_name(name)
         {
+            set_name(name);
+
             m_inputs.declare("reflectance", InputFormatSpectrum);
             m_inputs.declare("ior", InputFormatScalar);
         }
@@ -76,11 +77,6 @@ namespace
         virtual const char* get_model() const
         {
             return Model;
-        }
-
-        virtual const char* get_name() const
-        {
-            return m_name.c_str();
         }
 
         virtual void sample(
@@ -203,15 +199,12 @@ namespace
         }
 
       private:
-        // Input values.
         struct InputValues
         {
             Spectrum    m_reflectance;          // specular transmittance
             Alpha       m_reflectance_alpha;    // alpha channel of specular transmittance
             double      m_ior;                  // index of refraction
         };
-
-        const string    m_name;
     };
 
     typedef BTDFWrapper<SpecularBTDFImpl> SpecularBTDF;

@@ -92,7 +92,6 @@ const char* Model = "diagnostic_surface_shader";
 
 struct DiagnosticSurfaceShader::Impl
 {
-    string                      m_name;
     ShadingMode                 m_shading_mode;
     double                      m_ao_max_distance;
     size_t                      m_ao_samples;
@@ -137,8 +136,7 @@ DiagnosticSurfaceShader::DiagnosticSurfaceShader(
   : SurfaceShader(params)
   , impl(new Impl())
 {
-    impl->m_name = name;
-
+    set_name(name);
     extract_parameters();
 }
 
@@ -150,11 +148,6 @@ void DiagnosticSurfaceShader::release()
 const char* DiagnosticSurfaceShader::get_model() const
 {
     return Model;
-}
-
-const char* DiagnosticSurfaceShader::get_name() const
-{
-    return impl->m_name.c_str();
 }
 
 void DiagnosticSurfaceShader::evaluate(

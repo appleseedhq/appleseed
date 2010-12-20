@@ -83,10 +83,11 @@ namespace
             const char*         name,
             const ParamArray&   params)
           : BSDF(params)
-          , m_name(name)
           , m_uniform_reflectance(false)
           , m_uniform_shininess(false)
         {
+            set_name(name);
+
             m_inputs.declare("diffuse_reflectance", InputFormatSpectrum);
             m_inputs.declare("glossy_reflectance", InputFormatSpectrum);
             m_inputs.declare("shininess_u", InputFormatScalar);
@@ -101,11 +102,6 @@ namespace
         virtual const char* get_model() const
         {
             return Model;
-        }
-
-        virtual const char* get_name() const
-        {
-            return m_name.c_str();
         }
 
         virtual void on_frame_begin(
@@ -416,7 +412,6 @@ namespace
         }
 
       private:
-        // Input values.
         struct InputValues
         {
             Spectrum    m_rd;           // diffuse reflectance of the substrate
@@ -443,7 +438,6 @@ namespace
             double      m_k;
         };
 
-        const string    m_name;
         bool            m_uniform_reflectance;
         bool            m_uniform_shininess;
         RVal            m_uniform_rval;

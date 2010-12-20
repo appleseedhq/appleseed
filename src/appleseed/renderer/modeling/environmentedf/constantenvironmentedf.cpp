@@ -60,8 +60,9 @@ namespace
             const char*         name,
             const ParamArray&   params)
           : EnvironmentEDF(params)
-          , m_name(name)
         {
+            set_name(name);
+
             m_inputs.declare("exitance", InputFormatSpectrum);
         }
 
@@ -73,11 +74,6 @@ namespace
         virtual const char* get_model() const
         {
             return ConstantEnvironmentEDFFactory::get_model();
-        }
-
-        virtual const char* get_name() const
-        {
-            return m_name.c_str();
         }
 
         virtual void on_frame_begin(const Project& project)
@@ -136,7 +132,6 @@ namespace
             Alpha       m_exitance_alpha;   // unused
         };
 
-        const string    m_name;
         InputValues     m_values;
 
         void check_uniform(const char* input_name) const

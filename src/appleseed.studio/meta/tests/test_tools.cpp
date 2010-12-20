@@ -61,8 +61,8 @@ TEST_SUITE(Studio_MainWindow_Project_Tools)
     TEST_CASE(GetNameSuggestion_GivenTwoEntitiesWithMatchingPrefixes_ReturnsNameWithNextSuffix)
     {
         DummyEntityVector entities;
-        entities.insert(auto_release_ptr<DummyEntity>(new DummyEntity("assembly3")));
-        entities.insert(auto_release_ptr<DummyEntity>(new DummyEntity("assembly1")));
+        entities.insert(DummyEntityFactory::create("assembly3"));
+        entities.insert(DummyEntityFactory::create("assembly1"));
 
         const string result = get_name_suggestion("assembly", entities);
 
@@ -72,7 +72,7 @@ TEST_SUITE(Studio_MainWindow_Project_Tools)
     TEST_CASE(GetNameSuggestion_GivenEntityWithNegativeSuffix_ReturnsNameWithFirstSuffix)
     {
         DummyEntityVector entities;
-        entities.insert(auto_release_ptr<DummyEntity>(new DummyEntity("assembly-5")));
+        entities.insert(DummyEntityFactory::create("assembly-5"));
 
         const string result = get_name_suggestion("assembly", entities);
 
@@ -82,7 +82,7 @@ TEST_SUITE(Studio_MainWindow_Project_Tools)
     TEST_CASE(GetNameSuggestion_GivenOneEntityWithNonMatchingPrefix_ReturnsNameWithFirstSuffix)
     {
         DummyEntityVector entities;
-        entities.insert(auto_release_ptr<DummyEntity>(new DummyEntity("object")));
+        entities.insert(DummyEntityFactory::create("object"));
 
         const string result = get_name_suggestion("assembly", entities);
 
@@ -92,7 +92,7 @@ TEST_SUITE(Studio_MainWindow_Project_Tools)
     TEST_CASE(GetNameSuggestion_GivenOneEntityWithNonNumericSuffix_ReturnsNameWithFirstSuffix)
     {
         DummyEntityVector entities;
-        entities.insert(auto_release_ptr<DummyEntity>(new DummyEntity("assembly_instance")));
+        entities.insert(DummyEntityFactory::create("assembly_instance"));
 
         const string result = get_name_suggestion("assembly", entities);
 

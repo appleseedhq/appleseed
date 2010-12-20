@@ -48,9 +48,6 @@ class RENDERERDLL Configuration
     // Delete this instance.
     virtual void release();
 
-    // Return the name of this configuration.
-    virtual const char* get_name() const;
-
     // Set the base configuration.
     // A null pointer is a valid value.
     void set_base(const Configuration* base);
@@ -67,15 +64,10 @@ class RENDERERDLL Configuration
     friend class ConfigurationFactory;
     friend class BaseConfigurationFactory;
 
-    // Private implementation.
-    struct Impl;
-    Impl* impl;
+    const Configuration* m_base;
 
     // Constructor.
     explicit Configuration(const char* name);
-
-    // Destructor.
-    ~Configuration();
 };
 
 

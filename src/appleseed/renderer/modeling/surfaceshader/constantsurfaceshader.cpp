@@ -63,8 +63,9 @@ namespace
             const char*             name,
             const ParamArray&       params)
           : SurfaceShader(params)
-          , m_name(name)
         {
+            set_name(name);
+
             m_inputs.declare("color", InputFormatSpectrum);
         }
 
@@ -76,11 +77,6 @@ namespace
         virtual const char* get_model() const
         {
             return Model;
-        }
-
-        virtual const char* get_name() const
-        {
-            return m_name.c_str();
         }
 
         virtual void evaluate(
@@ -124,14 +120,11 @@ namespace
         }
 
       private:
-        // Input values.
         struct InputValues
         {
             Spectrum    m_color;
             Alpha       m_alpha;
         };
-
-        const string    m_name;
     };
 }
 

@@ -33,9 +33,6 @@
 #include "renderer/global/global.h"
 #include "renderer/modeling/entity/entity.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/implptr.h"
-
 // Forward declarations.
 namespace renderer  { class Assembly; }
 namespace renderer  { class Project; }
@@ -85,15 +82,18 @@ class RENDERERDLL DummyEntity
   : public Entity
 {
   public:
-    explicit DummyEntity(const char* name);
-
     virtual void release();
 
-    virtual const char* get_name() const;
-
   private:
-    struct Impl;
-    foundation::impl_ptr<Impl, false> impl;
+    friend class DummyEntityFactory;
+
+    explicit DummyEntity(const char* name);
+};
+
+class RENDERERDLL DummyEntityFactory
+{
+  public:
+    static foundation::auto_release_ptr<DummyEntity> create(const char* name);
 };
 
 }       // namespace renderer

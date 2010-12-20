@@ -39,11 +39,6 @@ namespace renderer
 // Material class implementation.
 //
 
-struct Material::Impl
-{
-    string  m_name;
-};
-
 namespace
 {
     const UniqueID g_class_uid = new_guid();
@@ -53,12 +48,10 @@ Material::Material(
     const char*                     name,
     const SurfaceShader*            surface_shader)
   : Entity(g_class_uid)
-  , impl(new Impl())
 {
-    assert(name);
     assert(surface_shader);
 
-    impl->m_name = name;
+    set_name(name);
 
     m_surface_shader = surface_shader;
     m_bsdf = 0;
@@ -70,12 +63,10 @@ Material::Material(
     const SurfaceShader*            surface_shader,
     const BSDF*                     bsdf)
   : Entity(g_class_uid)
-  , impl(new Impl())
 {
-    assert(name);
     assert(surface_shader);
 
-    impl->m_name = name;
+    set_name(name);
 
     m_surface_shader = surface_shader;
     m_bsdf = bsdf;
@@ -88,12 +79,10 @@ Material::Material(
     const BSDF*                     bsdf,
     const EDF*                      edf)
   : Entity(g_class_uid)
-  , impl(new Impl())
 {
-    assert(name);
     assert(surface_shader);
 
-    impl->m_name = name;
+    set_name(name);
 
     m_surface_shader = surface_shader;
     m_bsdf = bsdf;
@@ -107,11 +96,8 @@ Material::Material(
     const BSDFContainer&            bsdfs,
     const EDFContainer&             edfs)
   : Entity(g_class_uid, params)
-  , impl(new Impl())
 {
-    assert(name);
-
-    impl->m_name = name;
+    set_name(name);
 
     m_surface_shader =
         get_required_entity<SurfaceShader>(
@@ -123,19 +109,9 @@ Material::Material(
     m_edf = get_optional_entity<EDF>(edfs, params, "edf");
 }
 
-Material::~Material()
-{
-    delete impl;
-}
-
 void Material::release()
 {
     delete this;
-}
-
-const char* Material::get_name() const
-{
-    return impl->m_name.c_str();
 }
 
 const char* Material::get_model() const

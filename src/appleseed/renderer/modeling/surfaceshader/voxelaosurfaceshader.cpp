@@ -72,10 +72,10 @@ namespace
             const char*             name,
             const ParamArray&       params)
           : SurfaceShader(params)
-          , m_name(name)
           , m_last_geometry_version_id(InvalidVersionID)
           , m_last_asm_inst_version_id(InvalidVersionID)
         {
+            set_name(name);
             extract_parameters();
         }
 
@@ -87,11 +87,6 @@ namespace
         virtual const char* get_model() const
         {
             return Model;
-        }
-
-        virtual const char* get_name() const
-        {
-            return m_name.c_str();
         }
 
         virtual void on_frame_begin(const Project& project)
@@ -296,8 +291,6 @@ namespace
         }
 
       private:
-        const string                        m_name;
-
         size_t                              m_samples;
         double                              m_max_distance;
         GScalar                             m_max_voxel_extent;

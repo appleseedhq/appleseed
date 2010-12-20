@@ -41,7 +41,6 @@ namespace renderer
 
 struct TextureInstance::Impl
 {
-    string                  m_name;
     size_t                  m_texture_index;
     TextureAddressingMode   m_addressing_mode;
     TextureFilteringMode    m_filtering_mode;
@@ -60,9 +59,8 @@ TextureInstance::TextureInstance(
   : Entity(g_class_uid, params)
   , impl(new Impl())
 {
-    assert(name);
+    set_name(name);
 
-    impl->m_name = name;
     impl->m_texture_index = texture_index;
 
     // Retrieve the texture addressing mode.
@@ -107,11 +105,6 @@ TextureInstance::~TextureInstance()
 void TextureInstance::release()
 {
     delete this;
-}
-
-const char* TextureInstance::get_name() const
-{
-    return impl->m_name.c_str();
 }
 
 size_t TextureInstance::get_texture_index() const

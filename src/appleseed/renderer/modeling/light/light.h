@@ -57,9 +57,6 @@ class RENDERERDLL Light
     // Return a string identifying the model of this light.
     virtual const char* get_model() const;
 
-    // Return the name of this light.
-    virtual const char* get_name() const;
-
     // Return the transform of this light.
     const foundation::Transformd& get_transform() const;
 

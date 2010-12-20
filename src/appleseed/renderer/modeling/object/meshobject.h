@@ -55,9 +55,6 @@ class RENDERERDLL MeshObject
     // Return a string identifying the model of this object.
     virtual const char* get_model() const;
 
-    // Return the name of this object.
-    virtual const char* get_name() const;
-
     // Return the local space bounding box of the object.
     virtual const GAABB3& get_local_bbox() const;
 

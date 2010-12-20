@@ -64,19 +64,15 @@ namespace
             const char*         name,
             const ParamArray&   params)
           : EnvironmentEDF(params)
-          , m_name(name)
         {
+            set_name(name);
+
             m_inputs.declare("exitance", InputFormatSpectrum);
         }
 
         virtual void release()
         {
             delete this;
-        }
-
-        virtual const char* get_name() const
-        {
-            return m_name.c_str();
         }
 
         virtual const char* get_model() const
@@ -130,8 +126,6 @@ namespace
             Spectrum    m_exitance;
             Alpha       m_exitance_alpha;       // unused
         };
-
-        const string    m_name;
 
         void lookup_envmap(
             InputEvaluator&     input_evaluator,

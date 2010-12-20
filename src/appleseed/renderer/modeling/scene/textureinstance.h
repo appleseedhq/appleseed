@@ -71,9 +71,6 @@ class RENDERERDLL TextureInstance
     // Delete this instance.
     virtual void release();
 
-    // Return the name of this instance.
-    virtual const char* get_name() const;
-
     // Return the index in the assembly of the instantiated texture.
     size_t get_texture_index() const;
 

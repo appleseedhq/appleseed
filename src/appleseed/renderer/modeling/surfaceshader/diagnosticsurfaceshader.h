@@ -86,9 +86,6 @@ class RENDERERDLL DiagnosticSurfaceShader
     // Return a string identifying the model of this surface shader.
     virtual const char* get_model() const;
 
-    // Return the name of this surface shader.
-    virtual const char* get_name() const;
-
     // Evaluate the shading at a given point.
     virtual void evaluate(
         SamplingContext&        sampling_context,

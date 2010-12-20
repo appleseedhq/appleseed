@@ -121,22 +121,18 @@ namespace
             const char*         name,
             const ParamArray&   params)
           : EnvironmentEDF(params)
-          , m_name(name)
           , m_importance_map_width(0)
           , m_importance_map_height(0)
           , m_probability_scale(0.0)
         {
+            set_name(name);
+
             m_inputs.declare("exitance", InputFormatSpectrum);
         }
 
         virtual void release()
         {
             delete this;
-        }
-
-        virtual const char* get_name() const
-        {
-            return m_name.c_str();
         }
 
         virtual const char* get_model() const
@@ -236,7 +232,6 @@ namespace
 
         typedef ImageImportanceSampler<double, ImageSampler> ImageImportanceSampler;
 
-        const string                        m_name;
         size_t                              m_importance_map_width;
         size_t                              m_importance_map_height;
         double                              m_probability_scale;
@@ -300,7 +295,7 @@ namespace
                     "while building importance map for environment edf \"%s\": "
                     "the input \"%s\" is not bound to a texture, using default "
                     "importance map resolution " FMT_SIZE_T "x" FMT_SIZE_T,
-                    m_name.c_str(),
+                    get_name(),
                     "exitance",
                     m_importance_map_width,
                     m_importance_map_height);
@@ -337,7 +332,7 @@ namespace
                 "for environment edf \"%s\"...",
                 m_importance_map_width,
                 m_importance_map_height,
-                m_name.c_str());
+                get_name());
 
             m_importance_sampler.reset(
                 new ImageImportanceSampler(
@@ -347,7 +342,7 @@ namespace
 
             RENDERER_LOG_INFO(
                 "built importance map for environment edf \"%s\"",
-                m_name.c_str());
+                get_name());
         }
 
         void lookup_environment_map(

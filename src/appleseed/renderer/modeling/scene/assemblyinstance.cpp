@@ -49,7 +49,6 @@ struct AssemblyInstance::Impl
 {
     // Order of data members impacts performance, preserve it.
     Transformd  m_transform;
-    string      m_name;
 };
 
 namespace
@@ -66,10 +65,9 @@ AssemblyInstance::AssemblyInstance(
   , m_assembly(assembly)
   , m_assembly_uid(assembly.get_uid())
 {
-    assert(name);
+    set_name(name);
 
     impl->m_transform = transform;
-    impl->m_name = name;
 }
 
 AssemblyInstance::~AssemblyInstance()
@@ -80,11 +78,6 @@ AssemblyInstance::~AssemblyInstance()
 void AssemblyInstance::release()
 {
     delete this;
-}
-
-const char* AssemblyInstance::get_name() const
-{
-    return impl->m_name.c_str();
 }
 
 const Transformd& AssemblyInstance::get_transform() const

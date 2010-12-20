@@ -64,11 +64,6 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
             delete this;
         }
 
-        virtual const char* get_name() const
-        {
-            return "BoundingBoxObject";
-        }
-
         virtual const char* get_model() const
         {
             return "BoundingBoxObject";

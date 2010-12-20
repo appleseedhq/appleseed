@@ -64,9 +64,10 @@ namespace
             const char*         name,
             const ParamArray&   params)
           : BSDF(params)
-          , m_name(name)
           , m_uniform_reflectance(false)
         {
+            set_name(name);
+
             m_inputs.declare("reflectance", InputFormatSpectrum);
         }
 
@@ -78,11 +79,6 @@ namespace
         virtual const char* get_model() const
         {
             return Model;
-        }
-
-        virtual const char* get_name() const
-        {
-            return m_name.c_str();
         }
 
         virtual void on_frame_begin(
@@ -192,14 +188,12 @@ namespace
         }
 
       private:
-        // Input values.
         struct InputValues
         {
             Spectrum    m_reflectance;          // diffuse reflectance
             Alpha       m_reflectance_alpha;    // alpha channel of diffuse reflectance
         };
 
-        const string    m_name;
         bool            m_uniform_reflectance;
         Spectrum        m_brdf_value;           // precomputed value of the BRDF
     };

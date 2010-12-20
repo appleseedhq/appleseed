@@ -57,7 +57,6 @@ struct ObjectInstance::Impl
     // Order of data members impacts performance, preserve it.
     Transformd                  m_transform;
     GAABB3                      m_parent_bbox;
-    string                      m_name;
     size_t                      m_object_index;
     MaterialIndexArray          m_material_indices;
 };
@@ -76,11 +75,10 @@ ObjectInstance::ObjectInstance(
   : Entity(g_class_uid)
   , impl(new Impl())
 {
-    assert(name);
+    set_name(name);
 
     impl->m_transform = transform;
     impl->m_parent_bbox = transform.transform_to_parent(object.get_local_bbox());
-    impl->m_name = name;
     impl->m_object_index = object_index;
     impl->m_material_indices = material_indices;
 }
@@ -93,11 +91,6 @@ ObjectInstance::~ObjectInstance()
 void ObjectInstance::release()
 {
     delete this;
-}
-
-const char* ObjectInstance::get_name() const
-{
-    return impl->m_name.c_str();
 }
 
 size_t ObjectInstance::get_object_index() const

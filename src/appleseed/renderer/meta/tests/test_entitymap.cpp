@@ -42,7 +42,7 @@ TEST_SUITE(Renderer_Modeling_Entity_EntityMap)
     TEST_CASE(Swap_GivenEntityMapWithOneItemAndAnotherEmptyEntityMap_MovesItemToOtherContainer)
     {
         EntityMap m1;
-        m1.insert(auto_release_ptr<Entity>(new DummyEntity("dummy")));
+        m1.insert(DummyEntityFactory::create("dummy"));
 
         EntityMap m2;
         m2.swap(m1);

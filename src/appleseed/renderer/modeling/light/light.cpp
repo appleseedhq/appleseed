@@ -43,7 +43,6 @@ struct Light::Impl
 {
     // Order of data members impacts performance, preserve it.
     Transformd              m_transform;
-    string                  m_name;
     const EDF*              m_edf;
 };
 
@@ -59,11 +58,11 @@ Light::Light(
   : Entity(g_class_uid)
   , impl(new Impl())
 {
-    assert(name);
     assert(edf);
-    
+
+    set_name(name);
+
     impl->m_transform = transform;
-    impl->m_name = name;
     impl->m_edf = edf;
 }
 
@@ -75,9 +74,8 @@ Light::Light(
   : Entity(g_class_uid, params)
   , impl(new Impl())
 {
-    assert(name);
-    
-    impl->m_name = name;
+    set_name(name);
+
     impl->m_transform = transform;
     impl->m_edf = get_required_entity<EDF>(edfs, params, "edf");
 }
@@ -95,11 +93,6 @@ void Light::release()
 const char* Light::get_model() const
 {
     return LightFactory::get_model();
-}
-
-const char* Light::get_name() const
-{
-    return impl->m_name.c_str();
 }
 
 const Transformd& Light::get_transform() const

@@ -51,7 +51,6 @@ DEFINE_ARRAY(ColorValueArray);
 
 struct ColorEntity::Impl
 {
-    string              m_name;
     ColorValueArray     m_values;
     ColorSpace          m_color_space;
     Vector2f            m_wavelength_range;
@@ -82,9 +81,8 @@ ColorEntity::ColorEntity(
   : Entity(g_class_uid, params)
   , impl(new Impl())
 {
-    assert(name);
+    set_name(name);
 
-    impl->m_name = name;
     impl->m_values = values;
 
     // Retrieve the color space.
@@ -168,11 +166,6 @@ ColorEntity::~ColorEntity()
 void ColorEntity::release()
 {
     delete this;
-}
-
-const char* ColorEntity::get_name() const
-{
-    return impl->m_name.c_str();
 }
 
 const ColorValueArray& ColorEntity::get_values() const

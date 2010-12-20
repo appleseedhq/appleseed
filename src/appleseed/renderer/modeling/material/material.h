@@ -53,9 +53,6 @@ class RENDERERDLL Material
     // Delete this instance.
     virtual void release();
 
-    // Return the name of this material.
-    virtual const char* get_name() const;
-
     // Return a string identifying the model of this material.
     const char* get_model() const;
 
@@ -71,11 +68,6 @@ class RENDERERDLL Material
   private:
     friend class MaterialFactory;
 
-    // Private implementation.
-    struct Impl;
-    Impl* impl;
-
-    // Derogate to the private implementation rule, for performance reasons.
     const SurfaceShader*    m_surface_shader;
     const BSDF*             m_bsdf;
     const EDF*              m_edf;
@@ -99,9 +91,6 @@ class RENDERERDLL Material
         const SurfaceShaderContainer&   surface_shaders,
         const BSDFContainer&            bsdfs,
         const EDFContainer&             edfs);
-
-    // Destructor.
-    ~Material();
 };
 
 

@@ -42,12 +42,6 @@ namespace renderer
 // Configuration class implementation.
 //
 
-struct Configuration::Impl
-{
-    string                  m_name;
-    const Configuration*    m_base;
-};
-
 namespace
 {
     const UniqueID g_class_uid = new_guid();
@@ -55,16 +49,9 @@ namespace
 
 Configuration::Configuration(const char* name)
   : Entity(g_class_uid)
-  , impl(new Impl())
+  , m_base(0)
 {
-    assert(name);
-    impl->m_name = name;
-    impl->m_base = 0;
-}
-
-Configuration::~Configuration()
-{
-    delete impl;
+    set_name(name);
 }
 
 void Configuration::release()
@@ -72,26 +59,21 @@ void Configuration::release()
     delete this;
 }
 
-const char* Configuration::get_name() const
-{
-    return impl->m_name.c_str();
-}
-
 void Configuration::set_base(const Configuration* base)
 {
-    impl->m_base = base;
+    m_base = base;
 }
 
 const Configuration* Configuration::get_base() const
 {
-    return impl->m_base;
+    return m_base;
 }
 
 ParamArray Configuration::get_inherited_parameters() const
 {
-    if (impl->m_base)
+    if (m_base)
     {
-        ParamArray params = impl->m_base->m_params;
+        ParamArray params = m_base->m_params;
         params.merge(m_params);
         return params;
     }

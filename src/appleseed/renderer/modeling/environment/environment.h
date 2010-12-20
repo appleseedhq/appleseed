@@ -52,9 +52,6 @@ class RENDERERDLL Environment
     // Delete this instance.
     virtual void release();
 
-    // Return the name of this environment.
-    virtual const char* get_name() const;
-
     // Return a string identifying the model of this environment.
     const char* get_model() const;
 
@@ -67,11 +64,6 @@ class RENDERERDLL Environment
   private:
     friend class EnvironmentFactory;
 
-    // Private implementation.
-    struct Impl;
-    Impl* impl;
-
-    // Derogate to the private implementation rule, for performance reasons.
     const EnvironmentEDF*       m_environment_edf;
     const EnvironmentShader*    m_environment_shader;
 
@@ -93,14 +85,6 @@ class RENDERERDLL Environment
         const ParamArray&                   params,
         const EnvironmentEDFContainer&      environment_edfs,
         const EnvironmentShaderContainer&   environment_shaders);
-
-    // Destructor.
-    ~Environment();
-
-    void construct(
-        const char*                         name,
-        const EnvironmentEDF*               environment_edf,
-        const EnvironmentShader*            environment_shader);
 };
 
 

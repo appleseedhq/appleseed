@@ -41,7 +41,6 @@ namespace renderer
 
 struct Assembly::Impl
 {
-    string                      m_name;
     ColorContainer              m_colors;
     TextureContainer            m_textures;
     TextureInstanceContainer    m_texture_instances;
@@ -65,9 +64,7 @@ Assembly::Assembly(
   : Entity(g_class_uid, params)
   , impl(new Impl())
 {
-    assert(name);
-
-    impl->m_name = name;
+    set_name(name);
 
     m_flushable = m_params.get_optional<bool>("flushable", false);
 }
@@ -80,11 +77,6 @@ Assembly::~Assembly()
 void Assembly::release()
 {
     delete this;
-}
-
-const char* Assembly::get_name() const
-{
-    return impl->m_name.c_str();
 }
 
 ColorContainer& Assembly::colors() const

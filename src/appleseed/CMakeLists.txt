@@ -1034,6 +1034,7 @@ source_group("renderer\\modeling\\edf" FILES
 
 set(renderer_modeling_entity_sources
     renderer/modeling/entity/connectableentity.h
+    renderer/modeling/entity/entity.cpp
     renderer/modeling/entity/entity.h
     renderer/modeling/entity/entitymap.cpp
     renderer/modeling/entity/entitymap.h

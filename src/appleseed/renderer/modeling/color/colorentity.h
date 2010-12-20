@@ -60,9 +60,6 @@ class RENDERERDLL ColorEntity
     // Delete this instance.
     virtual void release();
 
-    // Return the name of this color.
-    virtual const char* get_name() const;
-
     // Return the color values.
     const ColorValueArray& get_values() const;
 

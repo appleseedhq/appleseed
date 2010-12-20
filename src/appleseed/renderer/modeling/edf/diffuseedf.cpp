@@ -60,8 +60,9 @@ namespace
             const char*         name,
             const ParamArray&   params)
           : EDF(params)
-          , m_name(name)
         {
+            set_name(name);
+
             m_inputs.declare("exitance", InputFormatSpectrum);
         }
 
@@ -73,11 +74,6 @@ namespace
         virtual const char* get_model() const
         {
             return Model;
-        }
-
-        virtual const char* get_name() const
-        {
-            return m_name.c_str();
         }
 
         virtual void sample(
@@ -130,14 +126,11 @@ namespace
         }
 
       private:
-        // Input values.
         struct InputValues
         {
             Spectrum    m_exitance;         // radiant exitance, in W.m^-2
             Alpha       m_exitance_alpha;   // alpha channel of radiant exitance
         };
-
-        const string    m_name;
     };
 }
 

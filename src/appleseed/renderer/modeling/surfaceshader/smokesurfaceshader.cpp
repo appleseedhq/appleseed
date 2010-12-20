@@ -85,9 +85,9 @@ namespace
             const char*             name,
             const ParamArray&       params)
           : SurfaceShader(params)
-          , m_name(name)
           , m_first_frame(true)
         {
+            set_name(name);
             extract_parameters();
         }
 
@@ -99,11 +99,6 @@ namespace
         virtual const char* get_model() const
         {
             return Model;
-        }
-
-        virtual const char* get_name() const
-        {
-            return m_name.c_str();
         }
 
         virtual void on_frame_begin(const Project& project)
@@ -192,8 +187,6 @@ namespace
         };
 
         static const size_t MaxChannels = 14;
-
-        const string            m_name;
 
         bool                    m_first_frame;
 

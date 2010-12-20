@@ -39,11 +39,6 @@ namespace renderer
 // Environment class implementation.
 //
 
-struct Environment::Impl
-{
-    string  m_name;
-};
-
 namespace
 {
     const UniqueID g_class_uid = new_guid();
@@ -53,7 +48,10 @@ Environment::Environment(
     const char*                         name)
   : Entity(g_class_uid)
 {
-    construct(name, 0, 0);
+    set_name(name);
+
+    m_environment_edf = 0;
+    m_environment_shader = 0;
 }
 
 Environment::Environment(
@@ -61,7 +59,10 @@ Environment::Environment(
     const EnvironmentEDF*               environment_edf)
   : Entity(g_class_uid)
 {
-    construct(name, environment_edf, 0);
+    set_name(name);
+
+    m_environment_edf = environment_edf;
+    m_environment_shader = 0;
 }
 
 Environment::Environment(
@@ -69,7 +70,10 @@ Environment::Environment(
     const EnvironmentShader*            environment_shader)
   : Entity(g_class_uid)
 {
-    construct(name, 0, environment_shader);
+    set_name(name);
+
+    m_environment_edf = 0;
+    m_environment_shader = environment_shader;
 }
 
 Environment::Environment(
@@ -78,7 +82,10 @@ Environment::Environment(
     const EnvironmentShader*            environment_shader)
   : Entity(g_class_uid)
 {
-    construct(name, environment_edf, environment_shader);
+    set_name(name);
+
+    m_environment_edf = environment_edf;
+    m_environment_shader = environment_shader;
 }
 
 Environment::Environment(
@@ -88,48 +95,24 @@ Environment::Environment(
     const EnvironmentShaderContainer&   environment_shaders)
   : Entity(g_class_uid, params)
 {
-    const EnvironmentEDF* environment_edf =
+    set_name(name);
+
+    m_environment_edf =
         get_optional_entity<EnvironmentEDF>(
             environment_edfs,
             params,
             "environment_edf");
 
-    const EnvironmentShader* environment_shader =
+    m_environment_shader =
         get_optional_entity<EnvironmentShader>(
             environment_shaders,
             params,
             "environment_shader");
-
-    construct(name, environment_edf, environment_shader);
-}
-
-void Environment::construct(
-    const char*                         name,
-    const EnvironmentEDF*               environment_edf,
-    const EnvironmentShader*            environment_shader)
-{
-    impl = new Impl();
-
-    assert(name);
-    impl->m_name = name;
-
-    m_environment_edf = environment_edf;
-    m_environment_shader = environment_shader;
-}
-
-Environment::~Environment()
-{
-    delete impl;
 }
 
 void Environment::release()
 {
     delete this;
-}
-
-const char* Environment::get_name() const
-{
-    return impl->m_name.c_str();
 }
 
 const char* Environment::get_model() const

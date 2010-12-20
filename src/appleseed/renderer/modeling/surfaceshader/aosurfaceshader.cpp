@@ -64,10 +64,10 @@ namespace
             const char*             name,
             const ParamArray&       params)
           : SurfaceShader(params)
-          , m_name(name)
           , m_samples(m_params.get_required<size_t>("samples", 16))
           , m_max_distance(m_params.get_required<double>("max_distance", 1.0))
         {
+            set_name(name);
         }
 
         virtual void release()
@@ -78,11 +78,6 @@ namespace
         virtual const char* get_model() const
         {
             return Model;
-        }
-
-        virtual const char* get_name() const
-        {
-            return m_name.c_str();
         }
 
         virtual void evaluate(
@@ -117,7 +112,6 @@ namespace
         }
 
       private:
-        const string    m_name;
         const size_t    m_samples;
         const double    m_max_distance;
     };

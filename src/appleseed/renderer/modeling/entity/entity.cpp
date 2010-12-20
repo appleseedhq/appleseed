@@ -26,28 +26,44 @@
 // THE SOFTWARE.
 //
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
-#include "renderer/modeling/entity/entityvector.h"
-#include "renderer/utility/testutils.h"
+// Interface header.
+#include "entity.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/test.h"
+using namespace foundation;
+using namespace std;
 
-TEST_SUITE(Renderer_Modeling_Entity_EntityVector)
+namespace renderer
 {
-    using namespace foundation;
-    using namespace renderer;
 
-    TEST_CASE(Swap_GivenEntityVectorWithOneItemAndAnotherEmptyEntityVector_MovesItemToOtherContainer)
-    {
-        EntityVector v1;
-        v1.insert(DummyEntityFactory::create("dummy"));
+struct Entity::Impl
+{
+    string m_name;
+};
 
-        EntityVector v2;
-        v2.swap(v1);
-
-        EXPECT_TRUE(v1.empty());
-        EXPECT_FALSE(v2.empty());
-    }
+Entity::Entity(const UniqueID class_uid)
+  : m_class_uid(class_uid)
+  , impl(new Impl())
+{
 }
+
+Entity::Entity(
+    const UniqueID      class_uid,
+    const ParamArray&   params)
+  : m_class_uid(class_uid)
+  , m_params(params)
+  , impl(new Impl())
+{
+}
+
+void Entity::set_name(const char* name)
+{
+    assert(name);
+    impl->m_name = name;
+}
+
+const char* Entity::get_name() const
+{
+    return impl->m_name.c_str();
+}
+
+}   // namespace renderer

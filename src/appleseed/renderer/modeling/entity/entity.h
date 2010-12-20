@@ -33,6 +33,7 @@
 #include "renderer/global/global.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/implptr.h"
 #include "foundation/utility/version.h"
 
 namespace renderer
@@ -58,36 +59,26 @@ class RENDERERDLL Entity
     // Return the unique ID of this class of entities.
     foundation::UniqueID get_class_uid() const;
 
-    // Return the name of this instance.
-    virtual const char* get_name() const = 0;
-
     // Return the parameters of this instance.
     ParamArray& get_parameters();
     const ParamArray& get_parameters() const;
 
+    // Set/get the name of this instance.
+    void set_name(const char* name);
+    const char* get_name() const;
+
   protected:
-    const foundation::UniqueID      m_class_uid;
-    ParamArray                      m_params;
+    const foundation::UniqueID          m_class_uid;
+    ParamArray                          m_params;
+
+    struct Impl;
+    foundation::impl_ptr<Impl, false>   impl;
 };
 
 
 //
 // Entity class implementation.
 //
-
-inline Entity::Entity(
-    const foundation::UniqueID      class_uid)
-  : m_class_uid(class_uid)
-{
-}
-
-inline Entity::Entity(
-    const foundation::UniqueID      class_uid,
-    const ParamArray&               params)
-  : m_class_uid(class_uid)
-  , m_params(params)
-{
-}
 
 inline foundation::UniqueID Entity::get_class_uid() const
 {

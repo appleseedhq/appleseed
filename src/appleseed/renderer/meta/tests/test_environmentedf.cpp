@@ -57,13 +57,14 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
       public:
         HorizontalGradientTexture(const char* name)
           : Texture(ParamArray())
-          , m_name(name)
           , m_props(
                 5, 5,
                 5, 5,
                 3,
                 PixelFormatFloat)
         {
+            set_name(name);
+
             m_tile.reset(
                 new Tile(
                     m_props.m_canvas_width,
@@ -77,11 +78,6 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
         virtual void release()
         {
             delete this;
-        }
-
-        virtual const char* get_name() const
-        {
-            return m_name.c_str();
         }
 
         virtual const char* get_model() const
@@ -117,7 +113,6 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
         }
 
       private:
-        const string            m_name;
         const CanvasProperties  m_props;
         auto_ptr<Tile>          m_tile;
 

@@ -56,9 +56,10 @@ namespace
             const ParamArray&       params,
             const Transformd&       transform)
           : Camera(params)
-          , m_name(name)
           , m_transform(transform)
         {
+            set_name(name);
+
             m_film_dimensions = get_film_dimensions();
             m_focal_length = get_focal_length(m_film_dimensions[0]);
 
@@ -74,11 +75,6 @@ namespace
         virtual const char* get_model() const
         {
             return PinholeCameraFactory::get_model();
-        }
-
-        virtual const char* get_name() const
-        {
-            return m_name.c_str();
         }
 
         virtual void set_transform(const Transformd& transform)
@@ -144,7 +140,6 @@ namespace
         // Order of data members impacts performance, preserve it.
         uint32          m_pad;                  // for alignment -- todo: omit in 64-bit builds?
         Transformd      m_transform;
-        const string    m_name;
 
         // Parameters.
         Vector2d        m_film_dimensions;      // film dimensions, in meters

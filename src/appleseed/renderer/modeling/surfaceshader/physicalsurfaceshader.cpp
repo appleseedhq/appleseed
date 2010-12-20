@@ -67,9 +67,10 @@ namespace
             const char*             name,
             const ParamArray&       params)
           : SurfaceShader(params)
-          , m_name(name)
           , m_has_alpha_mask(false)
         {
+            set_name(name);
+
             m_inputs.declare("alpha_mask", InputFormatSpectrum, true);
         }
 
@@ -81,11 +82,6 @@ namespace
         virtual const char* get_model() const
         {
             return Model;
-        }
-
-        virtual const char* get_name() const
-        {
-            return m_name.c_str();
         }
 
         virtual void on_frame_begin(const Project& project)
@@ -143,14 +139,12 @@ namespace
         }
 
       private:
-        // Input values.
         struct InputValues
         {
             Spectrum        m_alpha_mask_color;             // unused
             Alpha           m_alpha_mask_alpha;
         };
 
-        const string        m_name;
         bool                m_has_alpha_mask;
     };
 }

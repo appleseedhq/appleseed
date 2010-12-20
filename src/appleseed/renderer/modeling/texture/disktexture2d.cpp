@@ -63,9 +63,9 @@ namespace
             const ParamArray&   params,
             const SearchPaths&  search_paths)
           : Texture(params)
-          , m_name(name)
           , m_reader(&global_logger())
         {
+            set_name(name);
             extract_parameters(search_paths);
         }
 
@@ -77,11 +77,6 @@ namespace
         virtual const char* get_model() const
         {
             return DiskTexture2dFactory::get_model();
-        }
-
-        virtual const char* get_name() const
-        {
-            return m_name.c_str();
         }
 
         virtual ColorSpace get_color_space() const
@@ -114,7 +109,6 @@ namespace
         }
 
       private:
-        const string                        m_name;
         string                              m_filename;
         ColorSpace                          m_color_space;
 

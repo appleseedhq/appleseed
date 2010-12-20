@@ -51,7 +51,6 @@ namespace renderer
 
 struct Project::Impl
 {
-    string                  m_name;
     string                  m_path;
     auto_ptr<Scene>         m_scene;
     auto_ptr<Frame>         m_frame;
@@ -69,10 +68,7 @@ Project::Project(const char* name)
   : Entity(g_class_uid)
   , impl(new Impl())
 {
-    assert(name);
-
-    impl->m_name = name;
-
+    set_name(name);
     add_base_configurations();
 }
 
@@ -84,11 +80,6 @@ Project::~Project()
 void Project::release()
 {
     delete this;
-}
-
-const char* Project::get_name() const
-{
-    return impl->m_name.c_str();
 }
 
 bool Project::has_path() const

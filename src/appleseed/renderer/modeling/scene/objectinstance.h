@@ -61,9 +61,6 @@ class RENDERERDLL ObjectInstance
     // Delete this instance.
     virtual void release();
 
-    // Return the name of this instance.
-    virtual const char* get_name() const;
-
     // Return the index in the assembly of the instantiated object.
     size_t get_object_index() const;
 

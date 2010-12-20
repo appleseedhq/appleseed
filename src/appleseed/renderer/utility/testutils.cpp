@@ -117,17 +117,10 @@ void TestFixtureBase::bind_inputs()
 // DummyEntity class implementation.
 //
 
-struct DummyEntity::Impl
-{
-    string m_name;
-};
-
 DummyEntity::DummyEntity(const char* name)
   : Entity(0)
-  , impl(new Impl())
 {
-    assert(name);
-    impl->m_name = name;
+    set_name(name);
 }
 
 void DummyEntity::release()
@@ -135,9 +128,14 @@ void DummyEntity::release()
     delete this;
 }
 
-const char* DummyEntity::get_name() const
+
+//
+// DummyEntityFactory class implementation.
+//
+
+auto_release_ptr<DummyEntity> DummyEntityFactory::create(const char* name)
 {
-    return impl->m_name.c_str();
+    return auto_release_ptr<DummyEntity>(new DummyEntity(name));
 }
 
 }   // namespace renderer

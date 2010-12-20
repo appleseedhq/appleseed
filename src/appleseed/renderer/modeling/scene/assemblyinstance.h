@@ -53,9 +53,6 @@ class RENDERERDLL AssemblyInstance
     // Delete this instance.
     virtual void release();
 
-    // Return the name of this instance.
-    virtual const char* get_name() const;
-
     // Return the instantiated assembly.
     const Assembly& get_assembly() const;
 

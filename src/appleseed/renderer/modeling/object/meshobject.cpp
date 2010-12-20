@@ -88,7 +88,6 @@ namespace
 
 struct MeshObject::Impl
 {
-    const string                m_name;
     GAABB3                      m_bbox;
     StaticTriangleTess          m_tess;
     MeshRegion                  m_region;
@@ -97,9 +96,8 @@ struct MeshObject::Impl
 
     AttributeSet::ChannelID     m_uv0_channel_id;
 
-    explicit Impl(const char* name)
-      : m_name(name)
-      , m_region(&m_bbox, &m_tess)
+    Impl()
+      : m_region(&m_bbox, &m_tess)
       , m_lazy_region_kit(&m_region_kit)
       , m_uv0_channel_id(AttributeSet::InvalidChannelID)
     {
@@ -112,8 +110,9 @@ MeshObject::MeshObject(
     const char*         name,
     const ParamArray&   params)
   : Object(params)
-  , impl(new Impl(name))
+  , impl(new Impl())
 {
+    set_name(name);
 }
 
 MeshObject::~MeshObject()
@@ -129,11 +128,6 @@ void MeshObject::release()
 const char* MeshObject::get_model() const
 {
     return MeshObjectFactory::get_model();
-}
-
-const char* MeshObject::get_name() const
-{
-    return impl->m_name.c_str();
 }
 
 const GAABB3& MeshObject::get_local_bbox() const

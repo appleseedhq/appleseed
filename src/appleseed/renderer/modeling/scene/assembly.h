@@ -49,9 +49,6 @@ class RENDERERDLL Assembly
     // Delete this instance.
     virtual void release();
 
-    // Return the name of this assembly.
-    virtual const char* get_name() const;
-
     // Access the colors.
     ColorContainer& colors() const;
 
