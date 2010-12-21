@@ -36,6 +36,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/core/exceptions/exception.h"
 #include "foundation/utility/containers/dictionary.h"
 
 // Qt headers.
@@ -59,6 +60,11 @@ class ProjectBuilder
     Q_OBJECT
 
   public:
+    struct ExceptionInvalidEntityName
+      : public foundation::Exception
+    {
+    };
+
     ProjectBuilder(
         renderer::Project&                  project,
         ProjectTree&                        project_tree);
@@ -97,6 +103,10 @@ class ProjectBuilder
     void insert_textures(
         const std::string&                  path) const;
 
+    void edit_entity(
+        renderer::Entity&                   entity,
+        const foundation::Dictionary&       values) const;
+
     void notify_project_modification() const;
 
   signals:
@@ -109,6 +119,10 @@ class ProjectBuilder
     renderer::BSDFFactoryRegistrar          m_bsdf_factory_registrar;
     renderer::EDFFactoryRegistrar           m_edf_factory_registrar;
     renderer::SurfaceShaderFactoryRegistrar m_surface_shader_factory_registrar;
+
+    static std::string get_entity_name(const foundation::Dictionary& values);
+
+    static bool is_valid_entity_name(const std::string& name);
 };
 
 }       // namespace studio

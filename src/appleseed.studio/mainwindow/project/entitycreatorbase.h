@@ -35,10 +35,8 @@
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
 
-// Standard headers.
-#include <string>
-
 // Forward declarations.
+namespace appleseed { namespace studio { struct ExceptionInvalidEntityName; }}
 class QString;
 
 namespace appleseed {
@@ -54,10 +52,6 @@ class EntityCreatorBase
         const QString&                  entity_name);
 
   private:
-    static bool contains_valid_name(const foundation::Dictionary& values);
-
-    static bool is_valid_name(const std::string& name);
-
     static void display_entity_creation_error(
         const QString&                  entity_name,
         const QString&                  message);
@@ -74,17 +68,15 @@ void EntityCreatorBase::catch_entity_creation_errors(
     const foundation::Dictionary&       values,
     const QString&                      entity_name)
 {
-    if (!contains_valid_name(values))
+    try
+    {
+        (static_cast<T*>(this)->*method)(values);
+    }
+    catch (const ProjectBuilder::ExceptionInvalidEntityName&)
     {
         display_entity_creation_error(
             entity_name,
             "A valid name is required.");
-        return;
-    }
-
-    try
-    {
-        (static_cast<T*>(this)->*method)(values);
     }
     catch (const foundation::ExceptionDictionaryItemNotFound& e)
     {

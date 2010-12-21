@@ -33,6 +33,7 @@
 #include "mainwindow/project/entitycreatorbase.h"
 #include "mainwindow/project/entityitembase.h"
 #include "mainwindow/project/entitynames.h"
+#include "mainwindow/project/projectbuilder.h"
 
 // appleseed.renderer headers.
 #include "renderer/utility/paramarray.h"
@@ -62,7 +63,8 @@ class EntityItem
     explicit EntityItem(
         renderer::Assembly& assembly,
         FactoryRegistrar&   registrar,
-        Entity&             entity);
+        Entity&             entity,
+        ProjectBuilder&     project_builder);
 
   protected:
     virtual void slot_edit();
@@ -74,6 +76,7 @@ class EntityItem
     renderer::Assembly&     m_assembly;
     FactoryRegistrar&       m_registrar;
     Entity&                 m_entity;
+    ProjectBuilder&         m_project_builder;
 
     void edit(const foundation::Dictionary& values);
 };
@@ -87,11 +90,13 @@ template <typename Entity, typename FactoryRegistrar>
 EntityItem<Entity, FactoryRegistrar>::EntityItem(
     renderer::Assembly&     assembly,
     FactoryRegistrar&       registrar,
-    Entity&                 entity)
+    Entity&                 entity,
+    ProjectBuilder&         project_builder)
   : EntityItemBase(entity)
   , m_assembly(assembly)
   , m_registrar(registrar)
   , m_entity(entity)
+  , m_project_builder(project_builder)
 {
 }
 
@@ -131,13 +136,9 @@ void EntityItem<Entity, FactoryRegistrar>::slot_edit_accepted(foundation::Dictio
 template <typename Entity, typename FactoryRegistrar>
 void EntityItem<Entity, FactoryRegistrar>::edit(const foundation::Dictionary& values)
 {
-    renderer::ParamArray& params = m_entity.get_parameters();
+    m_project_builder.edit_entity(m_entity, values);
 
-    for (foundation::const_each<foundation::StringDictionary> i = values.strings(); i; ++i)
-    {
-        if (params.strings().exist(i->name()))
-            params.insert(i->name(), i->value());
-    }
+    update_title();
 
     qobject_cast<QWidget*>(sender())->close();
 }

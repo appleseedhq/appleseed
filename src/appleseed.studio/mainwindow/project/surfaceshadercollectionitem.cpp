@@ -87,7 +87,8 @@ void SurfaceShaderCollectionItem::add_item(SurfaceShader& surface_shader)
         new EntityItem<SurfaceShader, SurfaceShaderFactoryRegistrar>(
             m_assembly,
             m_registrar,
-            surface_shader));
+            surface_shader,
+            m_project_builder));
 }
 
 void SurfaceShaderCollectionItem::slot_create_surface_shader()

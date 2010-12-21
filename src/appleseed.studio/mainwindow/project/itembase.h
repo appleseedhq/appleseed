@@ -51,15 +51,20 @@ class ItemBase
     Q_OBJECT
 
   public:
+    ItemBase(const foundation::UniqueID class_uid);
     ItemBase(const foundation::UniqueID class_uid, const QString& title);
 
     virtual ~ItemBase() {}
 
     foundation::UniqueID get_class_uid() const;
 
+    void set_title(const QString& title);
+
     virtual QMenu* get_single_item_context_menu() const;
 
     virtual QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const;
+
+    virtual void activate();
 
   private:
     const foundation::UniqueID m_class_uid;

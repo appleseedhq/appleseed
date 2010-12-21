@@ -38,15 +38,25 @@ using namespace foundation;
 namespace appleseed {
 namespace studio {
 
-ItemBase::ItemBase(const UniqueID class_uid, const QString& title)
-  : QTreeWidgetItem(QStringList() << title)
-  , m_class_uid(class_uid)
+ItemBase::ItemBase(const UniqueID class_uid)
+  : m_class_uid(class_uid)
 {
+}
+
+ItemBase::ItemBase(const UniqueID class_uid, const QString& title)
+  : m_class_uid(class_uid)
+{
+    set_title(title);
 }
 
 UniqueID ItemBase::get_class_uid() const
 {
     return m_class_uid;
+}
+
+void ItemBase::set_title(const QString& title)
+{
+    setText(0, title);
 }
 
 QMenu* ItemBase::get_single_item_context_menu() const
@@ -57,6 +67,10 @@ QMenu* ItemBase::get_single_item_context_menu() const
 QMenu* ItemBase::get_multiple_items_context_menu(const QList<ItemBase*>& items) const
 {
     return 0;
+}
+
+void ItemBase::activate()
+{
 }
 
 }   // namespace studio

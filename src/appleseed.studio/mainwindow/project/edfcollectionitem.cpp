@@ -84,7 +84,8 @@ void EDFCollectionItem::add_item(EDF& edf)
         new EntityItem<EDF, EDFFactoryRegistrar>(
             m_assembly,
             m_registrar,
-            edf));
+            edf,
+            m_project_builder));
 }
 
 void EDFCollectionItem::slot_create_edf()

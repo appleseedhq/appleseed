@@ -59,13 +59,13 @@ class RENDERERDLL Entity
     // Return the unique ID of this class of entities.
     foundation::UniqueID get_class_uid() const;
 
+    // Set/get the name of this entity.
+    void set_name(const char* name);
+    const char* get_name() const;
+
     // Return the parameters of this instance.
     ParamArray& get_parameters();
     const ParamArray& get_parameters() const;
-
-    // Set/get the name of this instance.
-    void set_name(const char* name);
-    const char* get_name() const;
 
   protected:
     const foundation::UniqueID          m_class_uid;

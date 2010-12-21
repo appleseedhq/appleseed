@@ -53,13 +53,20 @@ class EntityItemBase
   public:
     explicit EntityItemBase(const renderer::Entity& entity);
 
+    void update_title();
+
     virtual QMenu* get_single_item_context_menu() const;
+
+    virtual void activate();
 
   protected slots:
     virtual void slot_edit();
     virtual void slot_edit_accepted(foundation::Dictionary values);
 
     virtual void slot_delete();
+
+  private:
+    const renderer::Entity& m_entity;
 };
 
 }       // namespace studio

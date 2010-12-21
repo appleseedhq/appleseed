@@ -32,31 +32,12 @@
 // appleseed.studio headers.
 #include "utility/tweaks.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/string.h"
-
 // Qt headers.
 #include <QMessageBox>
 #include <QString>
 
-using namespace foundation;
-using namespace std;
-
 namespace appleseed {
 namespace studio {
-
-bool EntityCreatorBase::contains_valid_name(const Dictionary& values)
-{
-    return
-        values.strings().exist("name") &&
-        is_valid_name(values.get<string>("name"));
-}
-
-bool EntityCreatorBase::is_valid_name(const string& name)
-{
-    const string trimmed_name = trim_both(name);
-    return !trimmed_name.empty();
-}
 
 void EntityCreatorBase::display_entity_creation_error(
     const QString&  entity_name,

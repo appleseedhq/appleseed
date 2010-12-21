@@ -64,6 +64,10 @@ ProjectExplorer::ProjectExplorer(
         this, SLOT(slot_context_menu(const QPoint&)));
 
     connect(
+        m_tree_widget, SIGNAL(itemActivated(QTreeWidgetItem*, int)),
+        this, SLOT(slot_item_activated(QTreeWidgetItem*, int)));
+
+    connect(
         &m_project_tree, SIGNAL(project_modified()),
         this, SIGNAL(project_modified()));
 }
@@ -134,6 +138,11 @@ void ProjectExplorer::slot_context_menu(const QPoint& point)
 
     if (menu)
         menu->exec(m_tree_widget->mapToGlobal(point));
+}
+
+void ProjectExplorer::slot_item_activated(QTreeWidgetItem* item, int column)
+{
+    static_cast<ItemBase*>(item)->activate();
 }
 
 }   // namespace studio

@@ -48,6 +48,7 @@
 #include "foundation/math/matrix.h"
 #include "foundation/math/transform.h"
 #include "foundation/utility/searchpaths.h"
+#include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
 
 // boost headers.
@@ -107,7 +108,7 @@ void ProjectBuilder::insert_bsdf(
     Assembly&           assembly,
     const Dictionary&   values) const
 {
-    const string name = values.get<string>("name");
+    const string name = get_entity_name(values);
     const string model = values.get<string>("model");
 
     const IBSDFFactory* factory = m_bsdf_factory_registrar.lookup(model.c_str());
@@ -126,7 +127,7 @@ void ProjectBuilder::insert_edf(
     Assembly&           assembly,
     const Dictionary&   values) const
 {
-    const string name = values.get<string>("name");
+    const string name = get_entity_name(values);
     const string model = values.get<string>("model");
 
     const IEDFFactory* factory = m_edf_factory_registrar.lookup(model.c_str());
@@ -145,7 +146,7 @@ void ProjectBuilder::insert_surface_shader(
     Assembly&           assembly,
     const Dictionary&   values) const
 {
-    const string name = values.get<string>("name");
+    const string name = get_entity_name(values);
     const string model = values.get<string>("model");
 
     const ISurfaceShaderFactory* factory =
@@ -165,7 +166,7 @@ void ProjectBuilder::insert_material(
     Assembly&           assembly,
     const Dictionary&   values) const
 {
-    const string name = values.get<string>("name");
+    const string name = get_entity_name(values);
 
     auto_release_ptr<Material> material(
         MaterialFactory::create(
@@ -305,9 +306,46 @@ void ProjectBuilder::insert_textures(
     notify_project_modification();
 }
 
+void ProjectBuilder::edit_entity(
+    Entity&             entity,
+    const Dictionary&   values) const
+{
+    // Update the entity name as a special case.
+    const string name = get_entity_name(values);
+    entity.set_name(name.c_str());
+
+    // Update the other entity parameters.
+    ParamArray& params = entity.get_parameters();
+    for (const_each<StringDictionary> i = values.strings(); i; ++i)
+    {
+        if (params.strings().exist(i->name()))
+            params.insert(i->name(), i->value());
+    }
+
+    notify_project_modification();
+}
+
 void ProjectBuilder::notify_project_modification() const
 {
     emit project_modified();
+}
+
+string ProjectBuilder::get_entity_name(const Dictionary& values)
+{
+    if (!values.strings().exist("name"))
+        throw ExceptionInvalidEntityName();
+
+    const string name = trim_both(values.get<string>("name"));
+
+    if (!is_valid_entity_name(name))
+        throw ExceptionInvalidEntityName();
+
+    return name;
+}
+
+bool ProjectBuilder::is_valid_entity_name(const string& name)
+{
+    return !name.empty();
 }
 
 }   // namespace studio

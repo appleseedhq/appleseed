@@ -84,7 +84,8 @@ void BSDFCollectionItem::add_item(BSDF& bsdf)
         new EntityItem<BSDF, BSDFFactoryRegistrar>(
             m_assembly,
             m_registrar,
-            bsdf));
+            bsdf,
+            m_project_builder));
 }
 
 void BSDFCollectionItem::slot_create_bsdf()

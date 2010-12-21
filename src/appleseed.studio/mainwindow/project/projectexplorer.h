@@ -74,6 +74,7 @@ class ProjectExplorer
 
   private slots:
     void slot_context_menu(const QPoint& point);
+    void slot_item_activated(QTreeWidgetItem* item, int column);
 };
 
 }       // namespace studio

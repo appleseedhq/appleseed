@@ -43,8 +43,15 @@ namespace appleseed {
 namespace studio {
 
 EntityItemBase::EntityItemBase(const Entity& entity)
-  : ItemBase(entity.get_class_uid(), QString::fromAscii(entity.get_name()))
+  : ItemBase(entity.get_class_uid())
+  , m_entity(entity)
 {
+    update_title();
+}
+
+void EntityItemBase::update_title()
+{
+    set_title(QString::fromAscii(m_entity.get_name()));
 }
 
 QMenu* EntityItemBase::get_single_item_context_menu() const
@@ -53,6 +60,11 @@ QMenu* EntityItemBase::get_single_item_context_menu() const
     menu->addAction("Edit...", this, SLOT(slot_edit()));
     menu->addAction("Delete", this, SLOT(slot_delete()));
     return menu;
+}
+
+void EntityItemBase::activate()
+{
+    slot_edit();
 }
 
 void EntityItemBase::slot_edit()
