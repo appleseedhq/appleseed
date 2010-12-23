@@ -27,41 +27,31 @@
 //
 
 // Interface header.
-#include "materialeditorformfactory.h"
-
-// appleseed.studio headers.
-#include "mainwindow/project/tools.h"
-
-// appleseed.renderer headers.
-#include "renderer/api/material.h"
-#include "renderer/api/scene.h"
+#include "entityeditorformfactorybase.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/containers/dictionaryarray.h"
 
 // Standard headers.
-#include <string>
+#include <cstddef>
 
 using namespace foundation;
-using namespace renderer;
 using namespace std;
 
 namespace appleseed {
 namespace studio {
 
-MaterialEditorFormFactory::MaterialEditorFormFactory(const Assembly& assembly)
-  : m_assembly(assembly)
+EntityEditorFormFactoryBase::EntityEditorFormFactoryBase(const string& entity_name)
+  : m_entity_name(entity_name)
 {
 }
 
-void MaterialEditorFormFactory::update(
-    const Dictionary&           values,
-    WidgetDefinitionCollection& definitions) const
+void EntityEditorFormFactoryBase::add_name_widget_definition(
+    const Dictionary&                   values,
+    WidgetDefinitionCollection&         definitions) const
 {
-    definitions.clear();
-
-    const string material_name_suggestion =
-        get_name_suggestion("material", m_assembly.materials());
+    const string name = get_value(values, "name", m_entity_name);
 
     definitions.push_back(
         Dictionary()
@@ -69,34 +59,25 @@ void MaterialEditorFormFactory::update(
             .insert("label", "Name")
             .insert("widget", "text_box")
             .insert("use", "required")
-            .insert("default", material_name_suggestion)
+            .insert("default", name)
             .insert("focus", "true"));
+}
 
-    definitions.push_back(
-        Dictionary()
-            .insert("name", "bsdf")
-            .insert("label", "BSDF")
-            .insert("widget", "entity_picker")
-            .insert("entity_types", Dictionary().insert("bsdf", "BSDF"))
-            .insert("use", "optional"));
+void EntityEditorFormFactoryBase::add_widget_definitions(
+    const DictionaryArray&              widgets,
+    const Dictionary&                   values,
+    WidgetDefinitionCollection&         definitions) const
+{
+    for (size_t i = 0; i < widgets.size(); ++i)
+    {
+        Dictionary widget = widgets[i];
+        const string widget_name = widget.get<string>("name");
 
-    definitions.push_back(
-        Dictionary()
-            .insert("name", "edf")
-            .insert("label", "EDF")
-            .insert("widget", "entity_picker")
-            .insert("entity_types", Dictionary().insert("edf", "EDF"))
-            .insert("use", "optional"));
+        if (values.strings().exist(widget_name))
+            widget.insert("default", values.get<string>(widget_name));
 
-    definitions.push_back(
-        Dictionary()
-            .insert("name", "surface_shader")
-            .insert("label", "Surface Shader")
-            .insert("widget", "entity_picker")
-            .insert(
-                "entity_types",
-                Dictionary().insert("surface_shader", "Surface Shaders"))
-            .insert("use", "required"));
+        definitions.push_back(widget);
+    }
 }
 
 }   // namespace studio

@@ -26,48 +26,43 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYITEM_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_SINGLEMODELENTITYITEM_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_SINGLEMODELENTITYITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/entitycreatorbase.h"
-#include "mainwindow/project/entityitembase.h"
+#include "mainwindow/project/assemblyentitybrowser.h"
+#include "mainwindow/project/entityitem.h"
 #include "mainwindow/project/entitynames.h"
-#include "mainwindow/project/projectbuilder.h"
+#include "mainwindow/project/singlemodelentityeditorformfactory.h"
+
+// appleseed.renderer headers.
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
 
-// Qt headers.
-#include <QObject>
+// Standard headers.
+#include <string>
 
 // Forward declarations.
-namespace renderer      { class Assembly; }
-class QWidget;
+namespace appleseed { namespace studio { class ProjectBuilder; } }
+namespace renderer  { class Assembly; }
 
 namespace appleseed {
 namespace studio {
 
-template <typename Entity>
-class EntityItem
-  : public EntityItemBase<Entity>
-  , private EntityCreatorBase
+template <typename Entity, typename Factory>
+class SingleModelEntityItem
+  : public EntityItem<Entity>
 {
   public:
-    EntityItem(
+    SingleModelEntityItem(
         renderer::Assembly& assembly,
         Entity&             entity,
         ProjectBuilder&     project_builder);
 
   protected:
-    renderer::Assembly&     m_assembly;
-    ProjectBuilder&         m_project_builder;
-
-    virtual void slot_edit_accepted(foundation::Dictionary values);
-    virtual void slot_delete();
-
-  private:
-    void edit(const foundation::Dictionary& values);
+    virtual void slot_edit();
 };
 
 
@@ -75,39 +70,42 @@ class EntityItem
 // Implementation.
 //
 
-template <typename Entity>
-EntityItem<Entity>::EntityItem(
+template <typename Entity, typename Factory>
+SingleModelEntityItem<Entity, Factory>::SingleModelEntityItem(
     renderer::Assembly&     assembly,
     Entity&                 entity,
     ProjectBuilder&         project_builder)
-  : EntityItemBase(entity)
-  , m_assembly(assembly)
-  , m_project_builder(project_builder)
+  : EntityItem(assembly, entity, project_builder)
 {
 }
 
-template <typename Entity>
-void EntityItem<Entity>::slot_edit_accepted(foundation::Dictionary values)
+template <typename Entity, typename Factory>
+void SingleModelEntityItem<Entity, Factory>::slot_edit()
 {
-    catch_entity_creation_errors(&EntityItem::edit, values, get_entity_name<Entity>());
-}
+    const std::string window_title =
+        std::string("Edit ") + get_entity_name<Entity>();
 
-template <typename Entity>
-void EntityItem<Entity>::edit(const foundation::Dictionary& values)
-{
-    m_project_builder.edit_entity(m_entity, values);
+    auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
+        new SingleModelEntityEditorFormFactory(
+            m_entity.get_name(),
+            Factory::get_widget_definitions()));
 
-    update_title();
+    auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
+        new AssemblyEntityBrowser(m_assembly));
 
-    qobject_cast<QWidget*>(sender())->close();
-}
+    foundation::Dictionary values = m_entity.get_parameters();
 
-template <typename Entity>
-void EntityItem<Entity>::slot_delete()
-{
+    open_entity_editor(
+        treeWidget(),
+        window_title,
+        form_factory,
+        entity_browser,
+        values,
+        this,
+        SLOT(slot_edit_accepted(foundation::Dictionary)));
 }
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYITEM_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_SINGLEMODELENTITYITEM_H

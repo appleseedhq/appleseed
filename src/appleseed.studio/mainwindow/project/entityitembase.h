@@ -34,24 +34,38 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/uid.h"
 
 // Qt headers.
+#include <QMenu>
 #include <QObject>
-
-// Forward declarations.
-namespace renderer  { class Entity; }
-class QMenu;
+#include <QString>
 
 namespace appleseed {
 namespace studio {
 
-class EntityItemBase
+// Work around a limitation in Qt: a template class cannot have slots.
+class EntityItemBaseSlots
   : public ItemBase
 {
     Q_OBJECT
 
   public:
-    explicit EntityItemBase(const renderer::Entity& entity);
+    EntityItemBaseSlots(const foundation::UniqueID class_uid);
+    EntityItemBaseSlots(const foundation::UniqueID class_uid, const QString& title);
+
+  protected slots:
+    virtual void slot_edit();
+    virtual void slot_edit_accepted(foundation::Dictionary values);
+    virtual void slot_delete();
+};
+
+template <typename Entity>
+class EntityItemBase
+  : public EntityItemBaseSlots
+{
+  public:
+    explicit EntityItemBase(Entity& entity);
 
     void update_title();
 
@@ -59,15 +73,43 @@ class EntityItemBase
 
     virtual void activate();
 
-  protected slots:
-    virtual void slot_edit();
-    virtual void slot_edit_accepted(foundation::Dictionary values);
-
-    virtual void slot_delete();
-
-  private:
-    const renderer::Entity& m_entity;
+  protected:
+    Entity& m_entity;
 };
+
+
+//
+// EntityItemBase class implementation.
+//
+
+template <typename Entity>
+EntityItemBase<Entity>::EntityItemBase(Entity& entity)
+  : EntityItemBaseSlots(entity.get_class_uid())
+  , m_entity(entity)
+{
+    update_title();
+}
+
+template <typename Entity>
+void EntityItemBase<Entity>::update_title()
+{
+    set_title(QString::fromAscii(m_entity.get_name()));
+}
+
+template <typename Entity>
+QMenu* EntityItemBase<Entity>::get_single_item_context_menu() const
+{
+    QMenu* menu = new QMenu(treeWidget());
+    menu->addAction("Edit...", this, SLOT(slot_edit()));
+    menu->addAction("Delete", this, SLOT(slot_delete()));
+    return menu;
+}
+
+template <typename Entity>
+void EntityItemBase<Entity>::activate()
+{
+    slot_edit();
+}
 
 }       // namespace studio
 }       // namespace appleseed

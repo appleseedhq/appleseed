@@ -49,7 +49,7 @@ namespace appleseed {
 namespace studio {
 
 class ObjectInstanceItem
-  : public EntityItemBase
+  : public EntityItemBase<renderer::ObjectInstance>
 {
     Q_OBJECT
 

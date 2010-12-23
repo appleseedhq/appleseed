@@ -66,7 +66,7 @@ namespace appleseed {
 namespace studio {
 
 class AssemblyItem
-  : public EntityItemBase
+  : public EntityItemBase<renderer::Assembly>
 {
     Q_OBJECT
 

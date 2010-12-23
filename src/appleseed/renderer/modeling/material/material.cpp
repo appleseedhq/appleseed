@@ -29,6 +29,10 @@
 // Interface header.
 #include "material.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/containers/dictionaryarray.h"
+
 using namespace foundation;
 using namespace std;
 
@@ -127,6 +131,38 @@ const char* Material::get_model() const
 const char* MaterialFactory::get_model()
 {
     return "generic_material";
+}
+
+DictionaryArray MaterialFactory::get_widget_definitions()
+{
+    DictionaryArray definitions;
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "bsdf")
+            .insert("label", "BSDF")
+            .insert("widget", "entity_picker")
+            .insert("entity_types", Dictionary().insert("bsdf", "BSDF"))
+            .insert("use", "optional"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "edf")
+            .insert("label", "EDF")
+            .insert("widget", "entity_picker")
+            .insert("entity_types", Dictionary().insert("edf", "EDF"))
+            .insert("use", "optional"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "surface_shader")
+            .insert("label", "Surface Shader")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary().insert("surface_shader", "Surface Shaders"))
+            .insert("use", "required"));
+
+    return definitions;
 }
 
 auto_release_ptr<Material> MaterialFactory::create(

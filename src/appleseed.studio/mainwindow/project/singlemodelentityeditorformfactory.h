@@ -26,58 +26,41 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALCOLLECTIONITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALCOLLECTIONITEM_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_SINGLEMODELENTITYEDITORFORMFACTORY_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_SINGLEMODELENTITYEDITORFORMFACTORY_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/collectionitembase.h"
-#include "mainwindow/project/entitycreatorbase.h"
+#include "mainwindow/project/entityeditorformfactorybase.h"
 
-// appleseed.renderer headers.
-#include "renderer/api/scene.h"
+// appleseed.foundation headers.
+#include "foundation/utility/containers/dictionaryarray.h"
 
-// Qt headers.
-#include <QObject>
+// Standard headers.
+#include <string>
 
 // Forward declarations.
-namespace appleseed     { namespace studio { class ProjectBuilder; }}
 namespace foundation    { class Dictionary; }
-namespace renderer      { class Material; }
-class QMenu;
 
 namespace appleseed {
 namespace studio {
 
-class MaterialCollectionItem
-  : public CollectionItemBase
-  , private EntityCreatorBase
+class SingleModelEntityEditorFormFactory
+  : public EntityEditorFormFactoryBase
 {
-    Q_OBJECT
-
   public:
-    MaterialCollectionItem(
-        renderer::Assembly&             assembly,
-        renderer::MaterialContainer&    materials,
-        ProjectBuilder&                 project_builder);
+    SingleModelEntityEditorFormFactory(
+        const std::string&                  entity_name,
+        const foundation::DictionaryArray&  entity_widgets);
 
-    virtual QMenu* get_single_item_context_menu() const;
-
-    void add_item(renderer::Material& material);
-
-  public slots:
-    void slot_create_material();
-
-  private slots:
-    void slot_create_material_accept(foundation::Dictionary values);
+    virtual void update(
+        const foundation::Dictionary&       values,
+        WidgetDefinitionCollection&         definitions) const;
 
   private:
-    renderer::Assembly& m_assembly;
-    ProjectBuilder&     m_project_builder;
-
-    void create_material(const foundation::Dictionary& values);
+    const foundation::DictionaryArray       m_entity_widgets;
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALCOLLECTIONITEM_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_SINGLEMODELENTITYEDITORFORMFACTORY_H

@@ -36,6 +36,7 @@ namespace renderer  { class EDF; }
 namespace renderer  { class EnvironmentEDF; }
 namespace renderer  { class EnvironmentShader; }
 namespace renderer  { class Light; }
+namespace renderer  { class Material; }
 namespace renderer  { class SurfaceShader; }
 
 namespace appleseed {
@@ -49,6 +50,7 @@ template <> inline const char* get_entity_name<renderer::EDF>()                 
 template <> inline const char* get_entity_name<renderer::EnvironmentEDF>()      { return "Environment EDF"; }
 template <> inline const char* get_entity_name<renderer::EnvironmentShader>()   { return "Environment Shader"; }
 template <> inline const char* get_entity_name<renderer::Light>()               { return "Light"; }
+template <> inline const char* get_entity_name<renderer::Material>()            { return "Material"; }
 template <> inline const char* get_entity_name<renderer::SurfaceShader>()       { return "Surface Shader"; }
 
 }       // namespace studio

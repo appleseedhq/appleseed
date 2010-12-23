@@ -32,15 +32,16 @@
 // appleseed.studio headers.
 #include "mainwindow/project/assemblyentitybrowser.h"
 #include "mainwindow/project/entityeditorwindow.h"
-#include "mainwindow/project/entityitembase.h"
-#include "mainwindow/project/materialeditorformfactory.h"
 #include "mainwindow/project/projectbuilder.h"
+#include "mainwindow/project/singlemodelentityeditorformfactory.h"
+#include "mainwindow/project/singlemodelentityitem.h"
 #include "mainwindow/project/tools.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/material.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
 
 // Qt headers.
@@ -65,10 +66,12 @@ MaterialCollectionItem::MaterialCollectionItem(
     Assembly&           assembly,
     MaterialContainer&  materials,
     ProjectBuilder&     project_builder)
-  : CollectionItem(g_class_uid, "Materials", materials)
+  : CollectionItemBase(g_class_uid, "Materials")
   , m_assembly(assembly)
   , m_project_builder(project_builder)
 {
+    for (each<MaterialContainer> i = materials; i; ++i)
+        add_item(*i);
 }
 
 QMenu* MaterialCollectionItem::get_single_item_context_menu() const
@@ -78,10 +81,21 @@ QMenu* MaterialCollectionItem::get_single_item_context_menu() const
     return menu;
 }
 
+void MaterialCollectionItem::add_item(Material& material)
+{
+    addChild(
+        new SingleModelEntityItem<Material, MaterialFactory>(
+            m_assembly,
+            material,
+            m_project_builder));
+}
+
 void MaterialCollectionItem::slot_create_material()
 {
     auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
-        new MaterialEditorFormFactory(m_assembly));
+        new SingleModelEntityEditorFormFactory(
+            get_name_suggestion("material", m_assembly.materials()),
+            MaterialFactory::get_widget_definitions()));
 
     auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
         new AssemblyEntityBrowser(m_assembly));

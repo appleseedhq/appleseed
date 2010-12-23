@@ -26,36 +26,44 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALEDITORFORMFACTORY_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALEDITORFORMFACTORY_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYEDITORFORMFACTORYBASE_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYEDITORFORMFACTORYBASE_H
 
 // appleseed.studio headers.
 #include "mainwindow/project/entityeditorwindow.h"
 
+// Standard headers.
+#include <string>
+
 // Forward declarations.
 namespace foundation    { class Dictionary; }
-namespace renderer      { class Assembly; }
+namespace foundation    { class DictionaryArray; }
 
 namespace appleseed {
 namespace studio {
 
-class MaterialEditorFormFactory
+class EntityEditorFormFactoryBase
   : public EntityEditorWindow::IFormFactory
 {
-  public:
+  protected:
     typedef EntityEditorWindow::WidgetDefinitionCollection WidgetDefinitionCollection;
 
-    explicit MaterialEditorFormFactory(const renderer::Assembly& assembly);
+    explicit EntityEditorFormFactoryBase(const std::string& entity_name);
 
-    virtual void update(
-        const foundation::Dictionary&   values,
-        WidgetDefinitionCollection&     definitions) const;
+    void add_name_widget_definition(
+        const foundation::Dictionary&       values,
+        WidgetDefinitionCollection&         definitions) const;
+
+    void add_widget_definitions(
+        const foundation::DictionaryArray&  widgets,
+        const foundation::Dictionary&       values,
+        WidgetDefinitionCollection&         definitions) const;
 
   private:
-    const renderer::Assembly& m_assembly;
+    const std::string   m_entity_name;
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALEDITORFORMFACTORY_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYEDITORFORMFACTORYBASE_H

@@ -27,28 +27,34 @@
 //
 
 // Interface header.
-#include "collectionitem.h"
+#include "singlemodelentityeditorformfactory.h"
 
-// appleseed.studio headers.
-#include "mainwindow/project/entityitembase.h"
-
-// appleseed.renderer headers.
-#include "renderer/modeling/entity/entity.h"
+// appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
 
 using namespace foundation;
-using namespace renderer;
+using namespace std;
 
 namespace appleseed {
 namespace studio {
 
-CollectionItem::CollectionItem(const UniqueID class_uid, const QString& title)
-  : CollectionItemBase(class_uid, title)
+SingleModelEntityEditorFormFactory::SingleModelEntityEditorFormFactory(
+    const string&               entity_name,
+    const DictionaryArray&      entity_widgets)
+  : EntityEditorFormFactoryBase(entity_name)
+  , m_entity_widgets(entity_widgets)
 {
 }
 
-void CollectionItem::add_item(Entity& entity)
+void SingleModelEntityEditorFormFactory::update(
+    const Dictionary&           values,
+    WidgetDefinitionCollection& definitions) const
 {
-    addChild(new EntityItemBase<Entity>(entity));
+    definitions.clear();
+
+    add_name_widget_definition(values, definitions);
+
+    add_widget_definitions(m_entity_widgets, values, definitions);
 }
 
 }   // namespace studio

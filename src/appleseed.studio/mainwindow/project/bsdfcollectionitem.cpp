@@ -31,9 +31,9 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/assemblyentitybrowser.h"
-#include "mainwindow/project/entityeditorformfactory.h"
 #include "mainwindow/project/entityeditorwindow.h"
-#include "mainwindow/project/entityitem.h"
+#include "mainwindow/project/multimodelentityeditorformfactory.h"
+#include "mainwindow/project/multimodelentityitem.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/tools.h"
 
@@ -81,7 +81,7 @@ QMenu* BSDFCollectionItem::get_single_item_context_menu() const
 void BSDFCollectionItem::add_item(BSDF& bsdf)
 {
     addChild(
-        new EntityItem<BSDF, BSDFFactoryRegistrar>(
+        new MultiModelEntityItem<BSDF, BSDFFactoryRegistrar>(
             m_assembly,
             m_registrar,
             bsdf,
@@ -91,7 +91,7 @@ void BSDFCollectionItem::add_item(BSDF& bsdf)
 void BSDFCollectionItem::slot_create_bsdf()
 {
     auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
-        new EntityEditorFormFactory<BSDFFactoryRegistrar>(
+        new MultiModelEntityEditorFormFactory<BSDFFactoryRegistrar>(
             m_registrar,
             get_name_suggestion("bsdf", m_assembly.bsdfs())));
 

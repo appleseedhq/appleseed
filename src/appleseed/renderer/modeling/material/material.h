@@ -35,6 +35,7 @@
 #include "renderer/modeling/scene/containers.h"
 
 // Forward declarations.
+namespace foundation    { class DictionaryArray; }
 namespace renderer      { class BSDF; }
 namespace renderer      { class EDF; }
 namespace renderer      { class SurfaceShader; }
@@ -104,6 +105,9 @@ class RENDERERDLL MaterialFactory
     // Return a string identifying this material model.
     static const char* get_model();
 
+    // Return a set of widget definitions for this material model.
+    static foundation::DictionaryArray get_widget_definitions();
+
     // Create a new material.
     static foundation::auto_release_ptr<Material> create(
         const char*                     name,
@@ -130,20 +134,17 @@ class RENDERERDLL MaterialFactory
 // Material class implementation.
 //
 
-// Return the surface shader of this material.
 inline const SurfaceShader& Material::get_surface_shader() const
 {
     assert(m_surface_shader);
     return *m_surface_shader;
 }
 
-// Return the BSDF of this material, or 0 if the material doesn't have one.
 inline const BSDF* Material::get_bsdf() const
 {
     return m_bsdf;
 }
 
-// Return the EDF of this material, or 0 if the material doesn't have one.
 inline const EDF* Material::get_edf() const
 {
     return m_edf;

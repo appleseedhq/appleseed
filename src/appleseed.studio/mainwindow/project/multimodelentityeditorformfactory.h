@@ -26,11 +26,11 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYEDITORFORMFACTORY_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYEDITORFORMFACTORY_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_MULTIMODELENTITYEDITORFORMFACTORY_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_MULTIMODELENTITYEDITORFORMFACTORY_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/entityeditorwindow.h"
+#include "mainwindow/project/entityeditorformfactorybase.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
@@ -43,13 +43,11 @@ namespace appleseed {
 namespace studio {
 
 template <typename FactoryRegistrar>
-class EntityEditorFormFactory
-  : public EntityEditorWindow::IFormFactory
+class MultiModelEntityEditorFormFactory
+  : public EntityEditorFormFactoryBase
 {
   public:
-    typedef EntityEditorWindow::WidgetDefinitionCollection WidgetDefinitionCollection;
-
-    EntityEditorFormFactory(
+    MultiModelEntityEditorFormFactory(
         const FactoryRegistrar&         factory_registrar,
         const std::string&              entity_name);
 
@@ -59,41 +57,55 @@ class EntityEditorFormFactory
 
   private:
     const FactoryRegistrar&     m_factory_registrar;
-    const std::string           m_entity_name;
+
+    std::string add_model_widget_definition(
+        const foundation::Dictionary&   values,
+        WidgetDefinitionCollection&     definitions) const;
 };
 
 
 //
-// EntityEditorFormFactory class implementation.
+// MultiModelEntityEditorFormFactory class implementation.
 //
 
 template <typename FactoryRegistrar>
-EntityEditorFormFactory<FactoryRegistrar>::EntityEditorFormFactory(
-    const FactoryRegistrar&         factory_registrar,
-    const std::string&              entity_name)
-  : m_factory_registrar(factory_registrar)
-  , m_entity_name(entity_name)
+MultiModelEntityEditorFormFactory<FactoryRegistrar>::MultiModelEntityEditorFormFactory(
+    const FactoryRegistrar&             factory_registrar,
+    const std::string&                  entity_name)
+  : EntityEditorFormFactoryBase(entity_name)
+  , m_factory_registrar(factory_registrar)
 {
 }
 
 template <typename FactoryRegistrar>
-void EntityEditorFormFactory<FactoryRegistrar>::update(
-    const foundation::Dictionary&   values,
-    WidgetDefinitionCollection&     definitions) const
+void MultiModelEntityEditorFormFactory<FactoryRegistrar>::update(
+    const foundation::Dictionary&       values,
+    WidgetDefinitionCollection&         definitions) const
 {
     definitions.clear();
 
-    const std::string name = get_value(values, "name", m_entity_name);
+    add_name_widget_definition(values, definitions);
 
-    definitions.push_back(
-        foundation::Dictionary()
-            .insert("name", "name")
-            .insert("label", "Name")
-            .insert("widget", "text_box")
-            .insert("use", "required")
-            .insert("default", name)
-            .insert("focus", "true"));
+    const std::string model =
+        add_model_widget_definition(values, definitions);
 
+    if (!model.empty())
+    {
+        const typename FactoryRegistrar::FactoryType* factory =
+            m_factory_registrar.lookup(model.c_str());
+
+        add_widget_definitions(
+            factory->get_widget_definitions(),
+            values,
+            definitions);
+    }
+}
+
+template <typename FactoryRegistrar>
+std::string MultiModelEntityEditorFormFactory<FactoryRegistrar>::add_model_widget_definition(
+    const foundation::Dictionary&       values,
+    WidgetDefinitionCollection&         definitions) const
+{
     const typename FactoryRegistrar::FactoryArrayType factories =
         m_factory_registrar.get_factories();
 
@@ -121,30 +133,10 @@ void EntityEditorFormFactory<FactoryRegistrar>::update(
             .insert("default", model)
             .insert("on_change", "rebuild_form"));
 
-    if (!model.empty())
-    {
-        const typename FactoryRegistrar::FactoryType* factory =
-            m_factory_registrar.lookup(model.c_str());
-
-        DictionaryArray widget_definitions = factory->get_widget_definitions();
-
-        for (size_t i = 0; i < widget_definitions.size(); ++i)
-        {
-            Dictionary& widget_definition = widget_definitions[i];
-            const std::string widget_name = widget_definition.get<std::string>("name");
-
-            if (values.strings().exist(widget_name))
-            {
-                widget_definition.insert("default",
-                    values.get<std::string>(widget_name));
-            }
-
-            definitions.push_back(widget_definition);
-        }
-    }
+    return model;
 }
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYEDITORFORMFACTORY_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_MULTIMODELENTITYEDITORFORMFACTORY_H

@@ -31,9 +31,9 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/assemblyentitybrowser.h"
-#include "mainwindow/project/entityeditorformfactory.h"
 #include "mainwindow/project/entityeditorwindow.h"
-#include "mainwindow/project/entityitem.h"
+#include "mainwindow/project/multimodelentityeditorformfactory.h"
+#include "mainwindow/project/multimodelentityitem.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/tools.h"
 
@@ -84,7 +84,7 @@ QMenu* SurfaceShaderCollectionItem::get_single_item_context_menu() const
 void SurfaceShaderCollectionItem::add_item(SurfaceShader& surface_shader)
 {
     addChild(
-        new EntityItem<SurfaceShader, SurfaceShaderFactoryRegistrar>(
+        new MultiModelEntityItem<SurfaceShader, SurfaceShaderFactoryRegistrar>(
             m_assembly,
             m_registrar,
             surface_shader,
@@ -94,7 +94,7 @@ void SurfaceShaderCollectionItem::add_item(SurfaceShader& surface_shader)
 void SurfaceShaderCollectionItem::slot_create_surface_shader()
 {
     auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
-        new EntityEditorFormFactory<SurfaceShaderFactoryRegistrar>(
+        new MultiModelEntityEditorFormFactory<SurfaceShaderFactoryRegistrar>(
             m_registrar,
             get_name_suggestion("surface_shader", m_assembly.surface_shaders())));
 

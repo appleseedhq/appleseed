@@ -62,7 +62,7 @@ class CollectionItem
         const QString&              title,
         EntityContainer&            entities);
 
-    void add_item(const renderer::Entity& entity);
+    void add_item(renderer::Entity& entity);
 };
 
 template <typename EntityContainer>

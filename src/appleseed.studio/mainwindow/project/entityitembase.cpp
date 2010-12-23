@@ -29,53 +29,34 @@
 // Interface header.
 #include "entityitembase.h"
 
-// appleseed.renderer headers.
-#include "renderer/api/entity.h"
-
-// Qt headers.
-#include <QMenu>
-#include <QString>
-
 using namespace foundation;
-using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
-EntityItemBase::EntityItemBase(const Entity& entity)
-  : ItemBase(entity.get_class_uid())
-  , m_entity(entity)
-{
-    update_title();
-}
+//
+// EntityItemBaseSlots class implementation.
+//
 
-void EntityItemBase::update_title()
-{
-    set_title(QString::fromAscii(m_entity.get_name()));
-}
-
-QMenu* EntityItemBase::get_single_item_context_menu() const
-{
-    QMenu* menu = new QMenu(treeWidget());
-    menu->addAction("Edit...", this, SLOT(slot_edit()));
-    menu->addAction("Delete", this, SLOT(slot_delete()));
-    return menu;
-}
-
-void EntityItemBase::activate()
-{
-    slot_edit();
-}
-
-void EntityItemBase::slot_edit()
+EntityItemBaseSlots::EntityItemBaseSlots(const UniqueID class_uid)
+  : ItemBase(class_uid)
 {
 }
 
-void EntityItemBase::slot_edit_accepted(Dictionary values)
+EntityItemBaseSlots::EntityItemBaseSlots(const UniqueID class_uid, const QString& title)
+  : ItemBase(class_uid, title)
 {
 }
 
-void EntityItemBase::slot_delete()
+void EntityItemBaseSlots::slot_edit()
+{
+}
+
+void EntityItemBaseSlots::slot_edit_accepted(Dictionary values)
+{
+}
+
+void EntityItemBaseSlots::slot_delete()
 {
 }
 

@@ -31,9 +31,9 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/assemblyentitybrowser.h"
-#include "mainwindow/project/entityeditorformfactory.h"
 #include "mainwindow/project/entityeditorwindow.h"
-#include "mainwindow/project/entityitem.h"
+#include "mainwindow/project/multimodelentityeditorformfactory.h"
+#include "mainwindow/project/multimodelentityitem.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/tools.h"
 
@@ -81,7 +81,7 @@ QMenu* EDFCollectionItem::get_single_item_context_menu() const
 void EDFCollectionItem::add_item(EDF& edf)
 {
     addChild(
-        new EntityItem<EDF, EDFFactoryRegistrar>(
+        new MultiModelEntityItem<EDF, EDFFactoryRegistrar>(
             m_assembly,
             m_registrar,
             edf,
@@ -91,7 +91,7 @@ void EDFCollectionItem::add_item(EDF& edf)
 void EDFCollectionItem::slot_create_edf()
 {
     auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
-        new EntityEditorFormFactory<EDFFactoryRegistrar>(
+        new MultiModelEntityEditorFormFactory<EDFFactoryRegistrar>(
             m_registrar,
             get_name_suggestion("edf", m_assembly.edfs())));
 
