@@ -42,7 +42,6 @@
 #include <QObject>
 
 // Forward declarations.
-namespace renderer      { class Assembly; }
 class QWidget;
 
 namespace appleseed {
@@ -55,12 +54,10 @@ class EntityItem
 {
   public:
     EntityItem(
-        renderer::Assembly& assembly,
         Entity&             entity,
         ProjectBuilder&     project_builder);
 
   protected:
-    renderer::Assembly&     m_assembly;
     ProjectBuilder&         m_project_builder;
 
     virtual void slot_edit_accepted(foundation::Dictionary values);
@@ -77,11 +74,9 @@ class EntityItem
 
 template <typename Entity>
 EntityItem<Entity>::EntityItem(
-    renderer::Assembly&     assembly,
     Entity&                 entity,
     ProjectBuilder&         project_builder)
   : EntityItemBase(entity)
-  , m_assembly(assembly)
   , m_project_builder(project_builder)
 {
 }

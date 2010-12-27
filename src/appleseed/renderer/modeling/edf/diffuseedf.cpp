@@ -151,17 +151,17 @@ const char* DiffuseEDFFactory::get_human_readable_model() const
 
 DictionaryArray DiffuseEDFFactory::get_widget_definitions() const
 {
-    Dictionary entity_types;
-    entity_types.insert("color", "Colors");
-    entity_types.insert("texture_instance", "Textures");
-
     DictionaryArray definitions;
+
     definitions.push_back(
         Dictionary()
             .insert("name", "exitance")
             .insert("label", "Exitance")
             .insert("widget", "entity_picker")
-            .insert("entity_types", entity_types)
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
             .insert("use", "required")
             .insert("default", ""));
 

@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYENTITYBROWSER_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYENTITYBROWSER_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYBROWSER_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYBROWSER_H
 
 // appleseed.studio headers.
 #include "mainwindow/project/entityeditorwindow.h"
@@ -38,15 +38,33 @@
 // Forward declarations.
 namespace foundation    { class StringDictionary; }
 namespace renderer      { class Assembly; }
+namespace renderer      { class Scene; }
 
 namespace appleseed {
 namespace studio {
 
-class AssemblyEntityBrowser
+template <typename ParentEntity>
+class EntityBrowser;
+
+template <>
+class EntityBrowser<renderer::Scene>
   : public EntityEditorWindow::IEntityBrowser
 {
   public:
-    explicit AssemblyEntityBrowser(const renderer::Assembly& assembly);
+    explicit EntityBrowser(const renderer::Scene& scene);
+
+    virtual foundation::StringDictionary get_entities(const std::string& type) const;
+
+  private:
+    const renderer::Scene& m_scene;
+};
+
+template <>
+class EntityBrowser<renderer::Assembly>
+  : public EntityEditorWindow::IEntityBrowser
+{
+  public:
+    explicit EntityBrowser(const renderer::Assembly& assembly);
 
     virtual foundation::StringDictionary get_entities(const std::string& type) const;
 
@@ -57,4 +75,4 @@ class AssemblyEntityBrowser
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYENTITYBROWSER_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYBROWSER_H

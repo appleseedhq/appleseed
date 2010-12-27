@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "assemblyentitybrowser.h"
+#include "entitybrowser.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
@@ -48,15 +48,10 @@ using namespace std;
 namespace appleseed {
 namespace studio {
 
-AssemblyEntityBrowser::AssemblyEntityBrowser(const Assembly& assembly)
-  : m_assembly(assembly)
-{
-}
-
 namespace
 {
     template <typename EntityContainer>
-    StringDictionary build_entity_dictionary(const EntityContainer& entities)
+    inline StringDictionary build_entity_dictionary(const EntityContainer& entities)
     {
         StringDictionary result;
 
@@ -67,7 +62,33 @@ namespace
     }
 }
 
-StringDictionary AssemblyEntityBrowser::get_entities(const string& type) const
+EntityBrowser<Scene>::EntityBrowser(const Scene& scene)
+  : m_scene(scene)
+{
+}
+
+StringDictionary EntityBrowser<Scene>::get_entities(const string& type) const
+{
+    if (type == "color")
+    {
+        return build_entity_dictionary(m_scene.colors());
+    }
+    else if (type == "texture_instance")
+    {
+        return build_entity_dictionary(m_scene.texture_instances());
+    }
+    else
+    {
+        return StringDictionary();
+    }
+}
+
+EntityBrowser<Assembly>::EntityBrowser(const Assembly& assembly)
+  : m_assembly(assembly)
+{
+}
+
+StringDictionary EntityBrowser<Assembly>::get_entities(const string& type) const
 {
     if (type == "bsdf")
     {

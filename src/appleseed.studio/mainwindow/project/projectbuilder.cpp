@@ -33,6 +33,7 @@
 #include "mainwindow/project/assemblycollectionitem.h"
 #include "mainwindow/project/assemblyinstancecollectionitem.h"
 #include "mainwindow/project/assemblyitem.h"
+#include "mainwindow/project/environmentedfcollectionitem.h"
 #include "mainwindow/project/projecttree.h"
 #include "mainwindow/project/texturecollectionitem.h"
 #include "mainwindow/project/textureinstancecollectionitem.h"
@@ -138,6 +139,24 @@ void ProjectBuilder::insert_edf(
     m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(edf.ref());
 
     assembly.edfs().insert(edf);
+
+    notify_project_modification();
+}
+
+void ProjectBuilder::insert_environment_edf(
+    const Dictionary&   values) const
+{
+    const string name = get_entity_name(values);
+    const string model = values.get<string>("model");
+
+    const IEnvironmentEDFFactory* factory = m_environment_edf_factory_registrar.lookup(model.c_str());
+    assert(factory);
+
+    auto_release_ptr<EnvironmentEDF> env_edf(factory->create(name.c_str(), values));
+
+    m_project_tree.get_environment_edf_collection_item().add_item(env_edf.ref());
+
+    m_project.get_scene()->environment_edfs().insert(env_edf);
 
     notify_project_modification();
 }

@@ -30,7 +30,7 @@
 #include "objectinstanceitem.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/assemblyentitybrowser.h"
+#include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entitybrowserwindow.h"
 #include "mainwindow/project/projectbuilder.h"
 
@@ -163,7 +163,7 @@ void ObjectInstanceItem::slot_assign_material()
             treeWidget(),
             window_title.toStdString());
 
-    AssemblyEntityBrowser entity_browser(m_assembly);
+    EntityBrowser<Assembly> entity_browser(m_assembly);
 
     browser_window->add_items_page(
         "material",

@@ -30,17 +30,26 @@
 #include "environmentedfcollectionitem.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/entityitembase.h"
+#include "mainwindow/project/entitybrowser.h"
+#include "mainwindow/project/entityeditorwindow.h"
+#include "mainwindow/project/multimodelentityeditorformfactory.h"
+#include "mainwindow/project/multimodelentityitem.h"
 #include "mainwindow/project/projectbuilder.h"
-
-// appleseed.renderer headers.
-#include "renderer/api/environmentedf.h"
+#include "mainwindow/project/tools.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
+
+// Qt headers.
+#include <QMenu>
+
+// Standard headers.
+#include <memory>
 
 using namespace foundation;
 using namespace renderer;
+using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -54,9 +63,60 @@ EnvironmentEDFCollectionItem::EnvironmentEDFCollectionItem(
     Scene&                      scene,
     EnvironmentEDFContainer&    environment_edfs,
     ProjectBuilder&             project_builder)
-  : CollectionItem(g_class_uid, "Environment EDFs", environment_edfs)
+  : CollectionItemBase(g_class_uid, "Environment EDFs")
+  , m_scene(scene)
   , m_project_builder(project_builder)
 {
+    for (each<EnvironmentEDFContainer> i = environment_edfs; i; ++i)
+        add_item(*i);
+}
+
+QMenu* EnvironmentEDFCollectionItem::get_single_item_context_menu() const
+{
+    QMenu* menu = new QMenu(treeWidget());
+    menu->addAction("Create Environment EDF...", this, SLOT(slot_create_environment_edf()));
+    return menu;
+}
+
+void EnvironmentEDFCollectionItem::add_item(EnvironmentEDF& environment_edf)
+{
+    addChild(
+        new MultiModelEntityItem<EnvironmentEDF, Scene, EnvironmentEDFFactoryRegistrar>(
+            m_scene,
+            environment_edf,
+            m_registrar,
+            m_project_builder));
+}
+
+void EnvironmentEDFCollectionItem::slot_create_environment_edf()
+{
+    auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
+        new MultiModelEntityEditorFormFactory<EnvironmentEDFFactoryRegistrar>(
+            m_registrar,
+            get_name_suggestion("environment_edf", m_scene.environment_edfs())));
+
+    auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
+        new EntityBrowser<Scene>(m_scene));
+
+    open_entity_editor(
+        treeWidget(),
+        "Create Environment EDF",
+        form_factory,
+        entity_browser,
+        this,
+        SLOT(slot_create_environment_edf_accepted(foundation::Dictionary)));
+}
+
+void EnvironmentEDFCollectionItem::slot_create_environment_edf_accepted(Dictionary values)
+{
+    catch_entity_creation_errors(&EnvironmentEDFCollectionItem::create_environment_edf, values, "Environment EDF");
+}
+
+void EnvironmentEDFCollectionItem::create_environment_edf(const Dictionary& values)
+{
+    m_project_builder.insert_environment_edf(values);
+
+    qobject_cast<QWidget*>(sender())->close();
 }
 
 }   // namespace studio

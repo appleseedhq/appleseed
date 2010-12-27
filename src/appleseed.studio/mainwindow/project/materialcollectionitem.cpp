@@ -30,7 +30,7 @@
 #include "materialcollectionitem.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/assemblyentitybrowser.h"
+#include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entityeditorwindow.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/singlemodelentityeditorformfactory.h"
@@ -84,7 +84,7 @@ QMenu* MaterialCollectionItem::get_single_item_context_menu() const
 void MaterialCollectionItem::add_item(Material& material)
 {
     addChild(
-        new SingleModelEntityItem<Material, MaterialFactory>(
+        new SingleModelEntityItem<Material, Assembly, MaterialFactory>(
             m_assembly,
             material,
             m_project_builder));
@@ -98,7 +98,7 @@ void MaterialCollectionItem::slot_create_material()
             MaterialFactory::get_widget_definitions()));
 
     auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
-        new AssemblyEntityBrowser(m_assembly));
+        new EntityBrowser<Assembly>(m_assembly));
 
     open_entity_editor(
         treeWidget(),

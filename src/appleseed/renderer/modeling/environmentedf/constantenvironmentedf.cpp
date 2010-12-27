@@ -52,6 +52,8 @@ namespace
     // Constant-emittance environment EDF.
     //
 
+    const char* Model = "constant_environment_edf";
+
     class ConstantEnvironmentEDF
       : public EnvironmentEDF
     {
@@ -73,7 +75,7 @@ namespace
 
         virtual const char* get_model() const
         {
-            return ConstantEnvironmentEDFFactory::get_model();
+            return Model;
         }
 
         virtual void on_frame_begin(const Project& project)
@@ -133,17 +135,6 @@ namespace
         };
 
         InputValues     m_values;
-
-        void check_uniform(const char* input_name) const
-        {
-            if (!m_inputs.source(input_name)->is_uniform())
-            {
-                RENDERER_LOG_ERROR(
-                    "the \"%s\" input of a \"%s\" must be bound to a scalar or a color",
-                    input_name,
-                    ConstantEnvironmentEDFFactory::get_model());
-            }
-        }
     };
 }
 
@@ -152,9 +143,33 @@ namespace
 // ConstantEnvironmentEDFFactory class implementation.
 //
 
-const char* ConstantEnvironmentEDFFactory::get_model()
+const char* ConstantEnvironmentEDFFactory::get_model() const
 {
-    return "constant_environment_edf";
+    return Model;
+}
+
+const char* ConstantEnvironmentEDFFactory::get_human_readable_model() const
+{
+    return "Constant Environment EDF";
+}
+
+DictionaryArray ConstantEnvironmentEDFFactory::get_widget_definitions() const
+{
+    DictionaryArray definitions;
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "exitance")
+            .insert("label", "Exitance")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
+            .insert("use", "required")
+            .insert("default", ""));
+
+    return definitions;
 }
 
 auto_release_ptr<EnvironmentEDF> ConstantEnvironmentEDFFactory::create(

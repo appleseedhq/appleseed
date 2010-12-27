@@ -113,6 +113,8 @@ namespace
         const double    m_rcp_height;
     };
 
+    const char* Model = "latlong_map_environment_edf";
+
     class LatLongMapEnvironmentEDF
       : public EnvironmentEDF
     {
@@ -137,7 +139,7 @@ namespace
 
         virtual const char* get_model() const
         {
-            return LatLongMapEnvironmentEDFFactory::get_model();
+            return Model;
         }
 
         virtual void on_frame_begin(const Project& project)
@@ -382,9 +384,33 @@ namespace
 // LatLongMapEnvironmentEDFFactory class implementation.
 //
 
-const char* LatLongMapEnvironmentEDFFactory::get_model()
+const char* LatLongMapEnvironmentEDFFactory::get_model() const
 {
-    return "latlong_map_environment_edf";
+    return Model;
+}
+
+const char* LatLongMapEnvironmentEDFFactory::get_human_readable_model() const
+{
+    return "Latitude-Longitude Map Environment EDF";
+}
+
+DictionaryArray LatLongMapEnvironmentEDFFactory::get_widget_definitions() const
+{
+    DictionaryArray definitions;
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "exitance")
+            .insert("label", "Exitance")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
+            .insert("use", "required")
+            .insert("default", ""));
+
+    return definitions;
 }
 
 auto_release_ptr<EnvironmentEDF> LatLongMapEnvironmentEDFFactory::create(

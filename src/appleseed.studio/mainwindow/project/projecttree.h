@@ -67,6 +67,7 @@ class ProjectTree
     ColorCollectionItem& get_color_collection_item() const;
     TextureCollectionItem& get_texture_collection_item() const;
     TextureInstanceCollectionItem& get_texture_instance_collection_item() const;
+    EnvironmentEDFCollectionItem& get_environment_edf_collection_item() const;
     AssemblyCollectionItem& get_assembly_collection_item() const;
     AssemblyInstanceCollectionItem& get_assembly_instance_collection_item() const;
 

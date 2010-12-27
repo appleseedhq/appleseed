@@ -29,6 +29,10 @@
 // Interface header.
 #include "environmentedf.h"
 
+// appleseed.renderer headers.
+#include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/input/source.h"
+
 using namespace foundation;
 
 namespace renderer
@@ -54,6 +58,17 @@ void EnvironmentEDF::on_frame_begin(const Project& project)
 
 void EnvironmentEDF::on_frame_end(const Project& project)
 {
+}
+
+void EnvironmentEDF::check_uniform(const char* input_name) const
+{
+    if (!m_inputs.source(input_name)->is_uniform())
+    {
+        RENDERER_LOG_ERROR(
+            "the \"%s\" input of a \"%s\" must be bound to a scalar or a color",
+            input_name,
+            get_model());
+    }
 }
 
 }   // namespace renderer

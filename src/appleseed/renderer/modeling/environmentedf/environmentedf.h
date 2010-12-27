@@ -89,6 +89,9 @@ class RENDERERDLL EnvironmentEDF
     virtual double evaluate_pdf(
         InputEvaluator&             input_evaluator,
         const foundation::Vector3d& outgoing) const = 0;        // world space emission direction, unit-length
+
+  protected:
+    void check_uniform(const char* input_name) const;
 };
 
 }       // namespace renderer

@@ -30,7 +30,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYCREATORBASE_H
 
 // appleseed.renderer headers.
-#include "renderer/modeling/scene/containers.h"
+#include "renderer/api/scene.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"

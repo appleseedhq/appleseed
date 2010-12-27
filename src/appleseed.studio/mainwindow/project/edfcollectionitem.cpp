@@ -30,7 +30,7 @@
 #include "edfcollectionitem.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/assemblyentitybrowser.h"
+#include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entityeditorwindow.h"
 #include "mainwindow/project/multimodelentityeditorformfactory.h"
 #include "mainwindow/project/multimodelentityitem.h"
@@ -81,10 +81,10 @@ QMenu* EDFCollectionItem::get_single_item_context_menu() const
 void EDFCollectionItem::add_item(EDF& edf)
 {
     addChild(
-        new MultiModelEntityItem<EDF, EDFFactoryRegistrar>(
+        new MultiModelEntityItem<EDF, Assembly, EDFFactoryRegistrar>(
             m_assembly,
-            m_registrar,
             edf,
+            m_registrar,
             m_project_builder));
 }
 
@@ -96,7 +96,7 @@ void EDFCollectionItem::slot_create_edf()
             get_name_suggestion("edf", m_assembly.edfs())));
 
     auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
-        new AssemblyEntityBrowser(m_assembly));
+        new EntityBrowser<Assembly>(m_assembly));
 
     open_entity_editor(
         treeWidget(),

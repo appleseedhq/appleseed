@@ -32,6 +32,9 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/environmentedf/ienvironmentedffactory.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/containers/dictionaryarray.h"
+
 // Forward declarations.
 namespace renderer      { class EnvironmentEDF; }
 
@@ -47,7 +50,13 @@ class RENDERERDLL MirrorBallMapEnvironmentEDFFactory
 {
   public:
     // Return a string identifying this environment EDF model.
-    static const char* get_model();
+    virtual const char* get_model() const;
+
+    // Return a human-readable string identifying this environment EDF model.
+    virtual const char* get_human_readable_model() const;
+
+    // Return a set of widget definitions for this environment EDF model.
+    virtual foundation::DictionaryArray get_widget_definitions() const;
 
     // Create a new environment EDF instance.
     virtual foundation::auto_release_ptr<EnvironmentEDF> create(

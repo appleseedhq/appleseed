@@ -56,6 +56,8 @@ namespace
     //   http://gl.ict.usc.edu/Data/HighResProbes/
     //
 
+    const char* Model = "mirrorball_map_environment_edf";
+
     class MirrorBallMapEnvironmentEDF
       : public EnvironmentEDF
     {
@@ -77,7 +79,7 @@ namespace
 
         virtual const char* get_model() const
         {
-            return MirrorBallMapEnvironmentEDFFactory::get_model();
+            return Model;
         }
 
         virtual void sample(
@@ -152,9 +154,33 @@ namespace
 // MirrorBallMapEnvironmentEDFFactory class implementation.
 //
 
-const char* MirrorBallMapEnvironmentEDFFactory::get_model()
+const char* MirrorBallMapEnvironmentEDFFactory::get_model() const
 {
-    return "mirrorball_map_environment_edf";
+    return Model;
+}
+
+const char* MirrorBallMapEnvironmentEDFFactory::get_human_readable_model() const
+{
+    return "Mirror Ball Map Environment EDF";
+}
+
+DictionaryArray MirrorBallMapEnvironmentEDFFactory::get_widget_definitions() const
+{
+    DictionaryArray definitions;
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "exitance")
+            .insert("label", "Exitance")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
+            .insert("use", "required")
+            .insert("default", ""));
+
+    return definitions;
 }
 
 auto_release_ptr<EnvironmentEDF> MirrorBallMapEnvironmentEDFFactory::create(

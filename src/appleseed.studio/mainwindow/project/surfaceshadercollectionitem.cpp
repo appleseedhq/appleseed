@@ -30,7 +30,7 @@
 #include "surfaceshadercollectionitem.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/assemblyentitybrowser.h"
+#include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entityeditorwindow.h"
 #include "mainwindow/project/multimodelentityeditorformfactory.h"
 #include "mainwindow/project/multimodelentityitem.h"
@@ -84,10 +84,10 @@ QMenu* SurfaceShaderCollectionItem::get_single_item_context_menu() const
 void SurfaceShaderCollectionItem::add_item(SurfaceShader& surface_shader)
 {
     addChild(
-        new MultiModelEntityItem<SurfaceShader, SurfaceShaderFactoryRegistrar>(
+        new MultiModelEntityItem<SurfaceShader, Assembly, SurfaceShaderFactoryRegistrar>(
             m_assembly,
-            m_registrar,
             surface_shader,
+            m_registrar,
             m_project_builder));
 }
 
@@ -99,7 +99,7 @@ void SurfaceShaderCollectionItem::slot_create_surface_shader()
             get_name_suggestion("surface_shader", m_assembly.surface_shaders())));
 
     auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
-        new AssemblyEntityBrowser(m_assembly));
+        new EntityBrowser<Assembly>(m_assembly));
 
     open_entity_editor(
         treeWidget(),

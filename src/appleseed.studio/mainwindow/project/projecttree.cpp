@@ -88,6 +88,11 @@ TextureInstanceCollectionItem& ProjectTree::get_texture_instance_collection_item
     return *m_texture_instance_collection_item;
 }
 
+EnvironmentEDFCollectionItem& ProjectTree::get_environment_edf_collection_item() const
+{
+    return *m_environment_edf_collection_item;
+}
+
 AssemblyCollectionItem& ProjectTree::get_assembly_collection_item() const
 {
     return *m_assembly_collection_item;

@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
 #include "renderer/api/edf.h"
+#include "renderer/api/environmentedf.h"
 #include "renderer/api/surfaceshader.h"
 
 // appleseed.foundation headers.
@@ -84,6 +85,9 @@ class ProjectBuilder
         renderer::Assembly&                 assembly,
         const foundation::Dictionary&       values) const;
 
+    void insert_environment_edf(
+        const foundation::Dictionary&       values) const;
+
     void insert_surface_shader(
         renderer::Assembly&                 assembly,
         const foundation::Dictionary&       values) const;
@@ -113,12 +117,13 @@ class ProjectBuilder
     void project_modified() const;
 
   private:
-    renderer::Project&                      m_project;
-    ProjectTree&                            m_project_tree;
+    renderer::Project&                          m_project;
+    ProjectTree&                                m_project_tree;
 
-    renderer::BSDFFactoryRegistrar          m_bsdf_factory_registrar;
-    renderer::EDFFactoryRegistrar           m_edf_factory_registrar;
-    renderer::SurfaceShaderFactoryRegistrar m_surface_shader_factory_registrar;
+    renderer::BSDFFactoryRegistrar              m_bsdf_factory_registrar;
+    renderer::EDFFactoryRegistrar               m_edf_factory_registrar;
+    renderer::SurfaceShaderFactoryRegistrar     m_surface_shader_factory_registrar;
+    renderer::EnvironmentEDFFactoryRegistrar    m_environment_edf_factory_registrar;
 
     static std::string get_entity_name(const foundation::Dictionary& values);
 

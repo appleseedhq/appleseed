@@ -52,6 +52,8 @@ namespace
     // Gradient environment EDF.
     //
 
+    const char* Model = "gradient_environment_edf";
+
     class GradientEnvironmentEDF
       : public EnvironmentEDF
     {
@@ -74,7 +76,7 @@ namespace
 
         virtual const char* get_model() const
         {
-            return GradientEnvironmentEDFFactory::get_model();
+            return Model;
         }
 
         virtual void on_frame_begin(const Project& project)
@@ -139,17 +141,6 @@ namespace
 
         InputValues     m_values;
 
-        void check_uniform(const char* input_name) const
-        {
-            if (!m_inputs.source(input_name)->is_uniform())
-            {
-                RENDERER_LOG_ERROR(
-                    "the \"%s\" input of a \"%s\" must be bound to a scalar or a color",
-                    input_name,
-                    GradientEnvironmentEDFFactory::get_model());
-            }
-        }
-
         void compute_gradient(const double y, Spectrum& output) const
         {
             // Compute the blending factor between the horizon and zenith colors.
@@ -172,9 +163,45 @@ namespace
 // GradientEnvironmentEDFFactory class implementation.
 //
 
-const char* GradientEnvironmentEDFFactory::get_model()
+const char* GradientEnvironmentEDFFactory::get_model() const
 {
-    return "gradient_environment_edf";
+    return Model;
+}
+
+const char* GradientEnvironmentEDFFactory::get_human_readable_model() const
+{
+    return "Gradient Environment EDF";
+}
+
+DictionaryArray GradientEnvironmentEDFFactory::get_widget_definitions() const
+{
+    DictionaryArray definitions;
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "horizon_exitance")
+            .insert("label", "Horizon Exitance")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
+            .insert("use", "required")
+            .insert("default", ""));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "zenith_exitance")
+            .insert("label", "Zenith Exitance")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
+            .insert("use", "required")
+            .insert("default", ""));
+
+    return definitions;
 }
 
 auto_release_ptr<EnvironmentEDF> GradientEnvironmentEDFFactory::create(

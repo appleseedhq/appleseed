@@ -44,9 +44,7 @@ using namespace std;
 namespace renderer
 {
 
-//
-// EnvironmentEDFFactoryRegistrar class implementation.
-//
+DEFINE_ARRAY(EnvironmentEDFFactoryArray);
 
 struct EnvironmentEDFFactoryRegistrar::Impl
 {
@@ -56,21 +54,25 @@ struct EnvironmentEDFFactoryRegistrar::Impl
 EnvironmentEDFFactoryRegistrar::EnvironmentEDFFactoryRegistrar()
   : impl(new Impl())
 {
-    impl->m_registrar.insert(
-        ConstantEnvironmentEDFFactory::get_model(),
-        auto_ptr<IEnvironmentEDFFactory>(new ConstantEnvironmentEDFFactory()));
+    register_factory(auto_ptr<FactoryType>(new ConstantEnvironmentEDFFactory()));
+    register_factory(auto_ptr<FactoryType>(new GradientEnvironmentEDFFactory()));
+    register_factory(auto_ptr<FactoryType>(new LatLongMapEnvironmentEDFFactory()));
+    register_factory(auto_ptr<FactoryType>(new MirrorBallMapEnvironmentEDFFactory()));
+}
 
-    impl->m_registrar.insert(
-        GradientEnvironmentEDFFactory::get_model(),
-        auto_ptr<IEnvironmentEDFFactory>(new GradientEnvironmentEDFFactory()));
+void EnvironmentEDFFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
+{
+    impl->m_registrar.insert(factory->get_model(), factory);
+}
 
-    impl->m_registrar.insert(
-        LatLongMapEnvironmentEDFFactory::get_model(),
-        auto_ptr<IEnvironmentEDFFactory>(new LatLongMapEnvironmentEDFFactory()));
+EnvironmentEDFFactoryArray EnvironmentEDFFactoryRegistrar::get_factories() const
+{
+    FactoryArrayType factories;
 
-    impl->m_registrar.insert(
-        MirrorBallMapEnvironmentEDFFactory::get_model(),
-        auto_ptr<IEnvironmentEDFFactory>(new MirrorBallMapEnvironmentEDFFactory()));
+    for (const_each<Registrar<FactoryType>::Items> i = impl->m_registrar.items(); i; ++i)
+        factories.push_back(i->second);
+
+    return factories;
 }
 
 const EnvironmentEDFFactoryRegistrar::FactoryType*

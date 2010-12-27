@@ -30,39 +30,43 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_SINGLEMODELENTITYITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/assemblyentitybrowser.h"
+#include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entityitem.h"
 #include "mainwindow/project/entitynames.h"
 #include "mainwindow/project/singlemodelentityeditorformfactory.h"
+#include "mainwindow/project/tools.h"
 
 // appleseed.renderer headers.
-#include "renderer/utility/paramarray.h"
+#include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
+#include <memory>
 #include <string>
 
 // Forward declarations.
 namespace appleseed { namespace studio { class ProjectBuilder; } }
-namespace renderer  { class Assembly; }
 
 namespace appleseed {
 namespace studio {
 
-template <typename Entity, typename Factory>
+template <typename Entity, typename ParentEntity, typename Factory>
 class SingleModelEntityItem
   : public EntityItem<Entity>
 {
   public:
     SingleModelEntityItem(
-        renderer::Assembly& assembly,
+        ParentEntity&       parent,
         Entity&             entity,
         ProjectBuilder&     project_builder);
 
   protected:
     virtual void slot_edit();
+
+  private:
+    ParentEntity&           m_parent;
 };
 
 
@@ -70,28 +74,29 @@ class SingleModelEntityItem
 // Implementation.
 //
 
-template <typename Entity, typename Factory>
-SingleModelEntityItem<Entity, Factory>::SingleModelEntityItem(
-    renderer::Assembly&     assembly,
+template <typename Entity, typename ParentEntity, typename Factory>
+SingleModelEntityItem<Entity, ParentEntity, Factory>::SingleModelEntityItem(
+    ParentEntity&           parent,
     Entity&                 entity,
     ProjectBuilder&         project_builder)
-  : EntityItem(assembly, entity, project_builder)
+  : EntityItem(entity, project_builder)
+  , m_parent(parent)
 {
 }
 
-template <typename Entity, typename Factory>
-void SingleModelEntityItem<Entity, Factory>::slot_edit()
+template <typename Entity, typename ParentEntity, typename Factory>
+void SingleModelEntityItem<Entity, ParentEntity, Factory>::slot_edit()
 {
     const std::string window_title =
         std::string("Edit ") + get_entity_name<Entity>();
 
-    auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
+    std::auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
         new SingleModelEntityEditorFormFactory(
             m_entity.get_name(),
             Factory::get_widget_definitions()));
 
-    auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
-        new AssemblyEntityBrowser(m_assembly));
+    std::auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
+        new EntityBrowser<ParentEntity>(m_parent));
 
     foundation::Dictionary values = m_entity.get_parameters();
 
