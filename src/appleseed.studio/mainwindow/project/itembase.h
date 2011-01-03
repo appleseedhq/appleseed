@@ -52,6 +52,7 @@ class ItemBase
 
   public:
     ItemBase(const foundation::UniqueID class_uid);
+
     ItemBase(const foundation::UniqueID class_uid, const QString& title);
 
     virtual ~ItemBase() {}
