@@ -51,7 +51,7 @@ class EntityItemBaseSlots
     Q_OBJECT
 
   public:
-    EntityItemBaseSlots(const foundation::UniqueID class_uid);
+    explicit EntityItemBaseSlots(const foundation::UniqueID class_uid);
     EntityItemBaseSlots(const foundation::UniqueID class_uid, const QString& title);
 
   protected slots:
