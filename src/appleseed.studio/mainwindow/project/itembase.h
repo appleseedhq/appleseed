@@ -51,8 +51,7 @@ class ItemBase
     Q_OBJECT
 
   public:
-    ItemBase(const foundation::UniqueID class_uid);
-
+    explicit ItemBase(const foundation::UniqueID class_uid);
     ItemBase(const foundation::UniqueID class_uid, const QString& title);
 
     virtual ~ItemBase() {}
