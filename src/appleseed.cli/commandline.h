@@ -37,7 +37,7 @@
 #include <string>
 
 // Forward declarations.
-namespace appleseed { namespace cli { class SuperLogger; }}
+namespace appleseed { namespace cli { class SuperLogger; } }
 
 namespace appleseed {
 namespace cli {

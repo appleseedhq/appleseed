@@ -36,7 +36,7 @@
 #include "foundation/utility/containers/dictionary.h"
 
 // Forward declarations.
-namespace appleseed { namespace studio { struct ExceptionInvalidEntityName; }}
+namespace appleseed { namespace studio { struct ExceptionInvalidEntityName; } }
 class QString;
 
 namespace appleseed {

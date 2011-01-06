@@ -40,13 +40,13 @@
 #include <QObject>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class AssemblyCollectionItem; }}
-namespace appleseed { namespace studio { class AssemblyInstanceCollectionItem; }}
-namespace appleseed { namespace studio { class ColorCollectionItem; }}
-namespace appleseed { namespace studio { class EnvironmentEDFCollectionItem; }}
-namespace appleseed { namespace studio { class EnvironmentShaderCollectionItem; }}
-namespace appleseed { namespace studio { class TextureCollectionItem; }}
-namespace appleseed { namespace studio { class TextureInstanceCollectionItem; }}
+namespace appleseed { namespace studio { class AssemblyCollectionItem; } }
+namespace appleseed { namespace studio { class AssemblyInstanceCollectionItem; } }
+namespace appleseed { namespace studio { class ColorCollectionItem; } }
+namespace appleseed { namespace studio { class EnvironmentEDFCollectionItem; } }
+namespace appleseed { namespace studio { class EnvironmentShaderCollectionItem; } }
+namespace appleseed { namespace studio { class TextureCollectionItem; } }
+namespace appleseed { namespace studio { class TextureInstanceCollectionItem; } }
 namespace renderer  { class Project; }
 class QTreeWidget;
 

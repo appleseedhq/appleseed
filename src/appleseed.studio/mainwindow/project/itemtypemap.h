@@ -33,20 +33,20 @@
 #include "renderer/api/scene.h"
 
 // Forward declarations.
-namespace appleseed { namespace studio { class AssemblyCollectionItem; }}
-namespace appleseed { namespace studio { class AssemblyInstanceCollectionItem; }}
-namespace appleseed { namespace studio { class BSDFCollectionItem; }}
-namespace appleseed { namespace studio { class ColorCollectionItem; }}
-namespace appleseed { namespace studio { class EDFCollectionItem; }}
-namespace appleseed { namespace studio { class EnvironmentEDFCollectionItem; }}
-namespace appleseed { namespace studio { class EnvironmentShaderCollectionItem; }}
-namespace appleseed { namespace studio { class LightCollectionItem; }}
-namespace appleseed { namespace studio { class MaterialCollectionItem; }}
-namespace appleseed { namespace studio { class ObjectCollectionItem; }}
-namespace appleseed { namespace studio { class ObjectInstanceCollectionItem; }}
-namespace appleseed { namespace studio { class SurfaceShaderCollectionItem; }}
-namespace appleseed { namespace studio { class TextureCollectionItem; }}
-namespace appleseed { namespace studio { class TextureInstanceCollectionItem; }}
+namespace appleseed { namespace studio { class AssemblyCollectionItem; } }
+namespace appleseed { namespace studio { class AssemblyInstanceCollectionItem; } }
+namespace appleseed { namespace studio { class BSDFCollectionItem; } }
+namespace appleseed { namespace studio { class ColorCollectionItem; } }
+namespace appleseed { namespace studio { class EDFCollectionItem; } }
+namespace appleseed { namespace studio { class EnvironmentEDFCollectionItem; } }
+namespace appleseed { namespace studio { class EnvironmentShaderCollectionItem; } }
+namespace appleseed { namespace studio { class LightCollectionItem; } }
+namespace appleseed { namespace studio { class MaterialCollectionItem; } }
+namespace appleseed { namespace studio { class ObjectCollectionItem; } }
+namespace appleseed { namespace studio { class ObjectInstanceCollectionItem; } }
+namespace appleseed { namespace studio { class SurfaceShaderCollectionItem; } }
+namespace appleseed { namespace studio { class TextureCollectionItem; } }
+namespace appleseed { namespace studio { class TextureInstanceCollectionItem; } }
 
 namespace appleseed {
 namespace studio {

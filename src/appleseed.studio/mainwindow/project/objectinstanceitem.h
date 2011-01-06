@@ -37,8 +37,8 @@
 #include <QObject>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class ItemBase; }}
-namespace appleseed { namespace studio { class ProjectBuilder; }}
+namespace appleseed { namespace studio { class ItemBase; } }
+namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class Assembly; }
 namespace renderer  { class ObjectInstance; }
 class QMenu;
