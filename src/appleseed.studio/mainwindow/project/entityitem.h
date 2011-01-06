@@ -40,9 +40,7 @@
 
 // Qt headers.
 #include <QObject>
-
-// Forward declarations.
-class QWidget;
+#include <QWidget>
 
 namespace appleseed {
 namespace studio {

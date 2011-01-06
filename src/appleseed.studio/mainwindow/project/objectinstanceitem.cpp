@@ -47,6 +47,7 @@
 #include <QString>
 #include <Qt>
 #include <QVariant>
+#include <QWidget>
 
 Q_DECLARE_METATYPE(QList<appleseed::studio::ItemBase*>);
 

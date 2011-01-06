@@ -42,6 +42,7 @@
 
 // Qt headers.
 #include <QMenu>
+#include <QWidget>
 
 // Standard headers.
 #include <memory>
