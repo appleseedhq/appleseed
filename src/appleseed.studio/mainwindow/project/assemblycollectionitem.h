@@ -45,15 +45,15 @@
 #include <map>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class AssemblyItem; }}
-namespace appleseed { namespace studio { class ProjectBuilder; }}
+namespace appleseed { namespace studio { class AssemblyItem; } }
+namespace appleseed { namespace studio { class ProjectBuilder; } }
 class QMenu;
 
 namespace appleseed {
 namespace studio {
 
 class AssemblyCollectionItem
-  : public CollectionItemBase
+  : public CollectionItemBase<renderer::Assembly>
 {
     Q_OBJECT
 
@@ -65,7 +65,7 @@ class AssemblyCollectionItem
 
     virtual QMenu* get_single_item_context_menu() const;
 
-    void add_item(renderer::Assembly& assembly);
+    virtual void add_item(renderer::Assembly& assembly);
 
     AssemblyItem& get_item(const renderer::Assembly& assembly) const;
 

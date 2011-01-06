@@ -39,13 +39,13 @@
 #include <QObject>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class ProjectBuilder; }}
+namespace appleseed { namespace studio { class ProjectBuilder; } }
 
 namespace appleseed {
 namespace studio {
 
 class ObjectInstanceCollectionItem
-  : public CollectionItemBase
+  : public CollectionItemBase<renderer::ObjectInstance>
 {
     Q_OBJECT
 
@@ -55,7 +55,7 @@ class ObjectInstanceCollectionItem
         renderer::ObjectInstanceContainer&  object_instances,
         ProjectBuilder&                     project_builder);
 
-    void add_item(renderer::ObjectInstance& object_instance);
+    virtual void add_item(renderer::ObjectInstance& object_instance);
 
   private:
     renderer::Assembly& m_assembly;

@@ -34,13 +34,14 @@
 #include "mainwindow/project/entitycreatorbase.h"
 
 // appleseed.renderer headers.
+#include "renderer/api/material.h"
 #include "renderer/api/scene.h"
 
 // Qt headers.
 #include <QObject>
 
 // Forward declarations.
-namespace appleseed     { namespace studio { class ProjectBuilder; }}
+namespace appleseed     { namespace studio { class ProjectBuilder; } }
 namespace foundation    { class Dictionary; }
 namespace renderer      { class Material; }
 class QMenu;
@@ -49,7 +50,7 @@ namespace appleseed {
 namespace studio {
 
 class MaterialCollectionItem
-  : public CollectionItemBase
+  : public CollectionItemBase<renderer::Material>
   , private EntityCreatorBase
 {
     Q_OBJECT
@@ -62,7 +63,7 @@ class MaterialCollectionItem
 
     virtual QMenu* get_single_item_context_menu() const;
 
-    void add_item(renderer::Material& material);
+    virtual void add_item(renderer::Material& material);
 
   public slots:
     void slot_create_material();

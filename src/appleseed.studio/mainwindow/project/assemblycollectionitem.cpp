@@ -35,7 +35,6 @@
 #include "mainwindow/project/tools.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
 
 // Qt headers.
@@ -65,8 +64,7 @@ AssemblyCollectionItem::AssemblyCollectionItem(
   , m_scene(scene)
   , m_project_builder(project_builder)
 {
-    for (each<AssemblyContainer> i = assemblies; i; ++i)
-        add_item(*i);
+    add_items(assemblies);
 }
 
 QMenu* AssemblyCollectionItem::get_single_item_context_menu() const

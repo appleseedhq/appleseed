@@ -31,10 +31,8 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/objectinstanceitem.h"
-#include "mainwindow/project/projectbuilder.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
 
 using namespace foundation;
@@ -56,13 +54,16 @@ ObjectInstanceCollectionItem::ObjectInstanceCollectionItem(
   , m_assembly(assembly)
   , m_project_builder(project_builder)
 {
-    for (each<ObjectInstanceContainer> i = object_instances; i; ++i)
-        add_item(*i);
+    add_items(object_instances);
 }
 
 void ObjectInstanceCollectionItem::add_item(ObjectInstance& object_instance)
 {
-    addChild(new ObjectInstanceItem(m_assembly, object_instance, m_project_builder));
+    addChild(
+        new ObjectInstanceItem(
+            m_assembly,
+            object_instance,
+            m_project_builder));
 }
 
 }   // namespace studio

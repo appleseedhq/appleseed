@@ -51,9 +51,10 @@ AssemblyInstanceCollectionItem::AssemblyInstanceCollectionItem(
     Scene&                      scene,
     AssemblyInstanceContainer&  assembly_instances,
     ProjectBuilder&             project_builder)
-  : CollectionItem(g_class_uid, "Assembly Instances", assembly_instances)
+  : CollectionItemBase(g_class_uid, "Assembly Instances")
   , m_project_builder(project_builder)
 {
+    add_items(assembly_instances);
 }
 
 }   // namespace studio

@@ -33,9 +33,6 @@
 #include "mainwindow/project/entityitembase.h"
 #include "mainwindow/project/projectbuilder.h"
 
-// appleseed.renderer headers.
-#include "renderer/api/environmentshader.h"
-
 // appleseed.foundation headers.
 #include "foundation/utility/uid.h"
 
@@ -54,9 +51,10 @@ EnvironmentShaderCollectionItem::EnvironmentShaderCollectionItem(
     Scene&                      scene,
     EnvironmentShaderContainer& environment_shaders,
     ProjectBuilder&             project_builder)
-  : CollectionItem(g_class_uid, "Environment Shaders", environment_shaders)
+  : CollectionItemBase(g_class_uid, "Environment Shaders")
   , m_project_builder(project_builder)
 {
+    add_items(environment_shaders);
 }
 
 }   // namespace studio

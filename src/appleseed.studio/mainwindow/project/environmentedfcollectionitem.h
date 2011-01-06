@@ -41,7 +41,7 @@
 #include <QObject>
 
 // Forward declarations.
-namespace appleseed     { namespace studio { class ProjectBuilder; }}
+namespace appleseed     { namespace studio { class ProjectBuilder; } }
 namespace foundation    { class Dictionary; }
 class QMenu;
 
@@ -49,7 +49,7 @@ namespace appleseed {
 namespace studio {
 
 class EnvironmentEDFCollectionItem
-  : public CollectionItemBase
+  : public CollectionItemBase<renderer::EnvironmentEDF>
   , private EntityCreatorBase
 {
     Q_OBJECT
@@ -62,7 +62,7 @@ class EnvironmentEDFCollectionItem
 
     virtual QMenu* get_single_item_context_menu() const;
 
-    void add_item(renderer::EnvironmentEDF& edf);
+    virtual void add_item(renderer::EnvironmentEDF& edf);
 
   public slots:
     void slot_create_environment_edf();

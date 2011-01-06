@@ -33,10 +33,11 @@
 #include "mainwindow/project/itembase.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
 
 // Qt headers.
-#include <QObject>
+#include <QFont>
 
 // Forward declarations.
 class QString;
@@ -44,14 +45,50 @@ class QString;
 namespace appleseed {
 namespace studio {
 
+template <typename Entity>
 class CollectionItemBase
   : public ItemBase
 {
-    Q_OBJECT
-
   public:
-    CollectionItemBase(const foundation::UniqueID class_uid, const QString& title);
+    CollectionItemBase(
+        const foundation::UniqueID  class_uid,
+        const QString&              title);
+
+    virtual void add_item(Entity& entity);
+
+    template <typename EntityContainer>
+    void add_items(EntityContainer& items);
 };
+
+
+//
+// CollectionItemBase class implementation.
+//
+
+template <typename Entity>
+CollectionItemBase<Entity>::CollectionItemBase(
+    const foundation::UniqueID      class_uid,
+    const QString&                  title)
+  : ItemBase(class_uid, title)
+{
+    QFont font;
+    font.setBold(true);
+    setFont(0, font);
+}
+
+template <typename Entity>
+void CollectionItemBase<Entity>::add_item(Entity& entity)
+{
+    addChild(new ItemBase(entity.get_class_uid(), entity.get_name()));
+}
+
+template <typename Entity>
+template <typename EntityContainer>
+void CollectionItemBase<Entity>::add_items(EntityContainer& entities)
+{
+    for (foundation::each<EntityContainer> i = entities; i; ++i)
+        add_item(*i);
+}
 
 }       // namespace studio
 }       // namespace appleseed

@@ -38,7 +38,6 @@
 #include "mainwindow/project/tools.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
 
 // Qt headers.
@@ -67,8 +66,7 @@ EnvironmentEDFCollectionItem::EnvironmentEDFCollectionItem(
   , m_scene(scene)
   , m_project_builder(project_builder)
 {
-    for (each<EnvironmentEDFContainer> i = environment_edfs; i; ++i)
-        add_item(*i);
+    add_items(environment_edfs);
 }
 
 QMenu* EnvironmentEDFCollectionItem::get_single_item_context_menu() const

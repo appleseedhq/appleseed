@@ -33,9 +33,6 @@
 #include "mainwindow/project/entityitembase.h"
 #include "mainwindow/project/projectbuilder.h"
 
-// appleseed.renderer headers.
-#include "renderer/api/scene.h"
-
 // appleseed.foundation headers.
 #include "foundation/utility/uid.h"
 
@@ -54,20 +51,22 @@ TextureInstanceCollectionItem::TextureInstanceCollectionItem(
     Scene&                      scene,
     TextureInstanceContainer&   texture_instances,
     ProjectBuilder&             project_builder)
-  : CollectionItem(g_class_uid, "Texture Instances", texture_instances)
+  : CollectionItemBase(g_class_uid, "Texture Instances")
   , m_assembly(0)
   , m_project_builder(project_builder)
 {
+    add_items(texture_instances);
 }
 
 TextureInstanceCollectionItem::TextureInstanceCollectionItem(
     Assembly&                   assembly,
     TextureInstanceContainer&   texture_instances,
     ProjectBuilder&             project_builder)
-  : CollectionItem(g_class_uid, "Texture Instances", texture_instances)
+  : CollectionItemBase(g_class_uid, "Texture Instances")
   , m_assembly(&assembly)
   , m_project_builder(project_builder)
 {
+    add_items(texture_instances);
 }
 
 }   // namespace studio

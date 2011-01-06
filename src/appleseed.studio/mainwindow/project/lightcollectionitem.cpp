@@ -33,9 +33,6 @@
 #include "mainwindow/project/entityitembase.h"
 #include "mainwindow/project/projectbuilder.h"
 
-// appleseed.renderer headers.
-#include "renderer/api/light.h"
-
 // appleseed.foundation headers.
 #include "foundation/utility/uid.h"
 
@@ -54,10 +51,11 @@ LightCollectionItem::LightCollectionItem(
     Assembly&           assembly,
     LightContainer&     lights,
     ProjectBuilder&     project_builder)
-  : CollectionItem(g_class_uid, "Lights", lights)
+  : CollectionItemBase(g_class_uid, "Lights")
   , m_assembly(assembly)
   , m_project_builder(project_builder)
 {
+    add_items(lights);
 }
 
 }   // namespace studio

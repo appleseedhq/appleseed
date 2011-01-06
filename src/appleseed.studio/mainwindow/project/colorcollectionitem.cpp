@@ -33,9 +33,6 @@
 #include "mainwindow/project/entityitembase.h"
 #include "mainwindow/project/projectbuilder.h"
 
-// appleseed.renderer headers.
-#include "renderer/api/color.h"
-
 // appleseed.foundation headers.
 #include "foundation/utility/uid.h"
 
@@ -54,20 +51,22 @@ ColorCollectionItem::ColorCollectionItem(
     Scene&              scene,
     ColorContainer&     colors,
     ProjectBuilder&     project_builder)
-  : CollectionItem(g_class_uid, "Colors", colors)
+  : CollectionItemBase(g_class_uid, "Colors")
   , m_assembly(0)
   , m_project_builder(project_builder)
 {
+    add_items(colors);
 }
 
 ColorCollectionItem::ColorCollectionItem(
     Assembly&           assembly,
     ColorContainer&     colors,
     ProjectBuilder&     project_builder)
-  : CollectionItem(g_class_uid, "Colors", colors)
+  : CollectionItemBase(g_class_uid, "Colors")
   , m_assembly(&assembly)
   , m_project_builder(project_builder)
 {
+    add_items(colors);
 }
 
 }   // namespace studio

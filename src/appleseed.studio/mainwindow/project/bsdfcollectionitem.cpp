@@ -38,7 +38,6 @@
 #include "mainwindow/project/tools.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
 
 // Qt headers.
@@ -67,8 +66,7 @@ BSDFCollectionItem::BSDFCollectionItem(
   , m_assembly(assembly)
   , m_project_builder(project_builder)
 {
-    for (each<BSDFContainer> i = bsdfs; i; ++i)
-        add_item(*i);
+    add_items(bsdfs);
 }
 
 QMenu* BSDFCollectionItem::get_single_item_context_menu() const

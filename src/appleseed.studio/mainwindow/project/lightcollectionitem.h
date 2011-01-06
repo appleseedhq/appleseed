@@ -30,22 +30,23 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_LIGHTCOLLECTIONITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/collectionitem.h"
+#include "mainwindow/project/collectionitembase.h"
 
 // appleseed.renderer headers.
+#include "renderer/api/light.h"
 #include "renderer/api/scene.h"
 
 // Qt headers.
 #include <QObject>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class ProjectBuilder; }}
+namespace appleseed { namespace studio { class ProjectBuilder; } }
 
 namespace appleseed {
 namespace studio {
 
 class LightCollectionItem
-  : public CollectionItem
+  : public CollectionItemBase<renderer::Light>
 {
     Q_OBJECT
 

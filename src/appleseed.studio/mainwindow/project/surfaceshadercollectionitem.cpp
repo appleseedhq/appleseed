@@ -37,11 +37,7 @@
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/tools.h"
 
-// appleseed.renderer headers.
-#include "renderer/api/surfaceshader.h"
-
 // appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
 
 // Qt headers.
@@ -70,8 +66,7 @@ SurfaceShaderCollectionItem::SurfaceShaderCollectionItem(
   , m_assembly(assembly)
   , m_project_builder(project_builder)
 {
-    for (each<SurfaceShaderContainer> i = surface_shaders; i; ++i)
-        add_item(*i);
+    add_items(surface_shaders);
 }
 
 QMenu* SurfaceShaderCollectionItem::get_single_item_context_menu() const

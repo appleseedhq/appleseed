@@ -33,9 +33,6 @@
 #include "mainwindow/project/entityitembase.h"
 #include "mainwindow/project/projectbuilder.h"
 
-// appleseed.renderer headers.
-#include "renderer/api/object.h"
-
 // appleseed.foundation headers.
 #include "foundation/utility/uid.h"
 
@@ -60,10 +57,11 @@ ObjectCollectionItem::ObjectCollectionItem(
     Assembly&           assembly,
     ObjectContainer&    objects,
     ProjectBuilder&     project_builder)
-  : CollectionItem(g_class_uid, "Objects", objects)
+  : CollectionItemBase(g_class_uid, "Objects")
   , m_assembly(assembly)
   , m_project_builder(project_builder)
 {
+    add_items(objects);
 }
 
 QMenu* ObjectCollectionItem::get_single_item_context_menu() const

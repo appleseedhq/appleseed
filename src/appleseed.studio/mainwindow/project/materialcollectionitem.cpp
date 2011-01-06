@@ -37,11 +37,7 @@
 #include "mainwindow/project/singlemodelentityitem.h"
 #include "mainwindow/project/tools.h"
 
-// appleseed.renderer headers.
-#include "renderer/api/material.h"
-
 // appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
 
 // Qt headers.
@@ -70,8 +66,7 @@ MaterialCollectionItem::MaterialCollectionItem(
   , m_assembly(assembly)
   , m_project_builder(project_builder)
 {
-    for (each<MaterialContainer> i = materials; i; ++i)
-        add_item(*i);
+    add_items(materials);
 }
 
 QMenu* MaterialCollectionItem::get_single_item_context_menu() const

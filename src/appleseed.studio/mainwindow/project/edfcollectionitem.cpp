@@ -38,7 +38,6 @@
 #include "mainwindow/project/tools.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
 
 // Qt headers.
@@ -67,8 +66,7 @@ EDFCollectionItem::EDFCollectionItem(
   , m_assembly(assembly)
   , m_project_builder(project_builder)
 {
-    for (each<EDFContainer> i = edfs; i; ++i)
-        add_item(*i);
+    add_items(edfs);
 }
 
 QMenu* EDFCollectionItem::get_single_item_context_menu() const

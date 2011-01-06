@@ -33,9 +33,6 @@
 #include "mainwindow/project/entityitembase.h"
 #include "mainwindow/project/projectbuilder.h"
 
-// appleseed.renderer headers.
-#include "renderer/api/texture.h"
-
 // appleseed.foundation headers.
 #include "foundation/utility/uid.h"
 
@@ -47,9 +44,6 @@
 
 // Standard headers.
 #include <string>
-
-// Forward declarations.
-class QWidget;
 
 using namespace foundation;
 using namespace renderer;
@@ -67,20 +61,22 @@ TextureCollectionItem::TextureCollectionItem(
     Scene&              scene,
     TextureContainer&   textures,
     ProjectBuilder&     project_builder)
-  : CollectionItem(g_class_uid, "Textures", textures)
+  : CollectionItemBase(g_class_uid, "Textures")
   , m_assembly(0)
   , m_project_builder(project_builder)
 {
+    add_items(textures);
 }
 
 TextureCollectionItem::TextureCollectionItem(
     Assembly&           assembly,
     TextureContainer&   textures,
     ProjectBuilder&     project_builder)
-  : CollectionItem(g_class_uid, "Textures", textures)
+  : CollectionItemBase(g_class_uid, "Textures")
   , m_assembly(&assembly)
   , m_project_builder(project_builder)
 {
+    add_items(textures);
 }
 
 QMenu* TextureCollectionItem::get_single_item_context_menu() const

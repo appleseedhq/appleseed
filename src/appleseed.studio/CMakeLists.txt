@@ -114,7 +114,6 @@ set(mainwindow_project_sources
     mainwindow/project/bsdfcollectionitem.h
     mainwindow/project/collectionitem.cpp
     mainwindow/project/collectionitem.h
-    mainwindow/project/collectionitembase.cpp
     mainwindow/project/collectionitembase.h
     mainwindow/project/colorcollectionitem.cpp
     mainwindow/project/colorcollectionitem.h
