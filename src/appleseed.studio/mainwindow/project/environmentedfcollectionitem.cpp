@@ -63,7 +63,7 @@ EnvironmentEDFCollectionItem::EnvironmentEDFCollectionItem(
     Scene&                      scene,
     EnvironmentEDFContainer&    environment_edfs,
     ProjectBuilder&             project_builder)
-  : CollectionItemBase(g_class_uid, "Environment EDFs")
+  : ItemBase(g_class_uid, "Environment EDFs")
   , m_scene(scene)
   , m_project_builder(project_builder)
 {

@@ -34,25 +34,19 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
-#include "foundation/utility/uid.h"
 
 // Qt headers.
 #include <QFont>
-
-// Forward declarations.
-class QString;
 
 namespace appleseed {
 namespace studio {
 
 template <typename Entity>
 class CollectionItemBase
-  : public ItemBase
+  : public virtual ItemBase
 {
   public:
-    CollectionItemBase(
-        const foundation::UniqueID  class_uid,
-        const QString&              title);
+    CollectionItemBase();
 
     virtual void add_item(Entity& entity);
 
@@ -66,10 +60,7 @@ class CollectionItemBase
 //
 
 template <typename Entity>
-CollectionItemBase<Entity>::CollectionItemBase(
-    const foundation::UniqueID      class_uid,
-    const QString&                  title)
-  : ItemBase(class_uid, title)
+CollectionItemBase<Entity>::CollectionItemBase()
 {
     QFont font;
     font.setBold(true);

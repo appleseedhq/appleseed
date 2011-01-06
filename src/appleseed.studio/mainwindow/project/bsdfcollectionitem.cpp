@@ -63,7 +63,7 @@ BSDFCollectionItem::BSDFCollectionItem(
     Assembly&           assembly,
     BSDFContainer&      bsdfs,
     ProjectBuilder&     project_builder)
-  : CollectionItemBase(g_class_uid, "BSDFs")
+  : ItemBase(g_class_uid, "BSDFs")
   , m_assembly(assembly)
   , m_project_builder(project_builder)
 {

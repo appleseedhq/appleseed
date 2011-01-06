@@ -60,7 +60,7 @@ TextureCollectionItem::TextureCollectionItem(
     Scene&              scene,
     TextureContainer&   textures,
     ProjectBuilder&     project_builder)
-  : CollectionItemBase(g_class_uid, "Textures")
+  : ItemBase(g_class_uid, "Textures")
   , m_assembly(0)
   , m_project_builder(project_builder)
 {
@@ -71,7 +71,7 @@ TextureCollectionItem::TextureCollectionItem(
     Assembly&           assembly,
     TextureContainer&   textures,
     ProjectBuilder&     project_builder)
-  : CollectionItemBase(g_class_uid, "Textures")
+  : ItemBase(g_class_uid, "Textures")
   , m_assembly(&assembly)
   , m_project_builder(project_builder)
 {

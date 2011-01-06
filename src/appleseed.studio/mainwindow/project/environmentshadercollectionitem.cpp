@@ -47,7 +47,7 @@ EnvironmentShaderCollectionItem::EnvironmentShaderCollectionItem(
     Scene&                      scene,
     EnvironmentShaderContainer& environment_shaders,
     ProjectBuilder&             project_builder)
-  : CollectionItemBase(g_class_uid, "Environment Shaders")
+  : ItemBase(g_class_uid, "Environment Shaders")
   , m_project_builder(project_builder)
 {
     add_items(environment_shaders);

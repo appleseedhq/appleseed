@@ -47,7 +47,7 @@ ColorCollectionItem::ColorCollectionItem(
     Scene&              scene,
     ColorContainer&     colors,
     ProjectBuilder&     project_builder)
-  : CollectionItemBase(g_class_uid, "Colors")
+  : ItemBase(g_class_uid, "Colors")
   , m_assembly(0)
   , m_project_builder(project_builder)
 {
@@ -58,7 +58,7 @@ ColorCollectionItem::ColorCollectionItem(
     Assembly&           assembly,
     ColorContainer&     colors,
     ProjectBuilder&     project_builder)
-  : CollectionItemBase(g_class_uid, "Colors")
+  : ItemBase(g_class_uid, "Colors")
   , m_assembly(&assembly)
   , m_project_builder(project_builder)
 {

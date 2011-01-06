@@ -66,8 +66,11 @@ class ItemBase
 
     virtual void activate();
 
+  protected:
+    ItemBase();
+
   private:
-    const foundation::UniqueID m_class_uid;
+    foundation::UniqueID m_class_uid;
 };
 
 }       // namespace studio

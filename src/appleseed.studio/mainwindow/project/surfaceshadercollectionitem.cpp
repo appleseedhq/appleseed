@@ -63,7 +63,7 @@ SurfaceShaderCollectionItem::SurfaceShaderCollectionItem(
     Assembly&               assembly,
     SurfaceShaderContainer& surface_shaders,
     ProjectBuilder&         project_builder)
-  : CollectionItemBase(g_class_uid, "Surface Shaders")
+  : ItemBase(g_class_uid, "Surface Shaders")
   , m_assembly(assembly)
   , m_project_builder(project_builder)
 {

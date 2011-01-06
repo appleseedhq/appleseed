@@ -56,7 +56,7 @@ ObjectCollectionItem::ObjectCollectionItem(
     Assembly&           assembly,
     ObjectContainer&    objects,
     ProjectBuilder&     project_builder)
-  : CollectionItemBase(g_class_uid, "Objects")
+  : ItemBase(g_class_uid, "Objects")
   , m_assembly(assembly)
   , m_project_builder(project_builder)
 {

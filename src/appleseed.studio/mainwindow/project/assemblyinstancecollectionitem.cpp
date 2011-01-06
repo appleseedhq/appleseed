@@ -47,7 +47,7 @@ AssemblyInstanceCollectionItem::AssemblyInstanceCollectionItem(
     Scene&                      scene,
     AssemblyInstanceContainer&  assembly_instances,
     ProjectBuilder&             project_builder)
-  : CollectionItemBase(g_class_uid, "Assembly Instances")
+  : ItemBase(g_class_uid, "Assembly Instances")
   , m_project_builder(project_builder)
 {
     add_items(assembly_instances);

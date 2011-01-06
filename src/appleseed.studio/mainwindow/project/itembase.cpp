@@ -38,6 +38,10 @@ using namespace foundation;
 namespace appleseed {
 namespace studio {
 
+ItemBase::ItemBase()
+{
+}
+
 ItemBase::ItemBase(const UniqueID class_uid)
   : m_class_uid(class_uid)
 {

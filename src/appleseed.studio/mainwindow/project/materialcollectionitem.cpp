@@ -63,7 +63,7 @@ MaterialCollectionItem::MaterialCollectionItem(
     Assembly&           assembly,
     MaterialContainer&  materials,
     ProjectBuilder&     project_builder)
-  : CollectionItemBase(g_class_uid, "Materials")
+  : ItemBase(g_class_uid, "Materials")
   , m_assembly(assembly)
   , m_project_builder(project_builder)
 {

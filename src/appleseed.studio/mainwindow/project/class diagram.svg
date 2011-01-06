@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
-<svg width="94cm" height="59cm" viewBox="-93663 -43089 1870 1163" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<svg width="94cm" height="59cm" viewBox="-93663 -43104 1870 1178" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
   <g>
     <rect style="fill: #f8eecd" x="-92958.2" y="-42982.9" width="75.3" height="38"/>
     <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-92958.2" y="-42982.9" width="75.3" height="38"/>
@@ -526,4 +526,19 @@
       </text>
     </g>
   </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92920.5 -42944.9 C -92912.1,-42838.6 -92996.5,-42274.4 -92646,-42260.5"/>
+    <polygon style="fill: #000000" points="-92638.5,-42260.2 -92648.7,-42255.6 -92646,-42260.5 -92648.3,-42265.6 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92638.5,-42260.2 -92648.7,-42255.6 -92646,-42260.5 -92648.3,-42265.6 "/>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03097;font-family:sanserif;font-style:normal;font-weight:normal" x="-92809.5" y="-42905.2">
+    <tspan x="-92809.5" y="-42905.2">virtual</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03097;font-family:sanserif;font-style:normal;font-weight:normal" x="-92907.2" y="-42586.8">
+    <tspan x="-92907.2" y="-42586.8">virtual</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:28.2218;font-family:sanserif;font-style:normal;font-weight:normal" x="-93610.4" y="-43075">
+    <tspan x="-93610.4" y="-43075">appleseed.studio Project Explorer</tspan>
+    <tspan x="-93610.4" y="-43039.7">Class Inheritance Diagram</tspan>
+  </text>
 </svg>

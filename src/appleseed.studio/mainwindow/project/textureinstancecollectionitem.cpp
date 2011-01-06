@@ -47,7 +47,7 @@ TextureInstanceCollectionItem::TextureInstanceCollectionItem(
     Scene&                      scene,
     TextureInstanceContainer&   texture_instances,
     ProjectBuilder&             project_builder)
-  : CollectionItemBase(g_class_uid, "Texture Instances")
+  : ItemBase(g_class_uid, "Texture Instances")
   , m_assembly(0)
   , m_project_builder(project_builder)
 {
@@ -58,7 +58,7 @@ TextureInstanceCollectionItem::TextureInstanceCollectionItem(
     Assembly&                   assembly,
     TextureInstanceContainer&   texture_instances,
     ProjectBuilder&             project_builder)
-  : CollectionItemBase(g_class_uid, "Texture Instances")
+  : ItemBase(g_class_uid, "Texture Instances")
   , m_assembly(&assembly)
   , m_project_builder(project_builder)
 {

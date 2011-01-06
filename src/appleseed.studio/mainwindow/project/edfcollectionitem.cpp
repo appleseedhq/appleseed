@@ -63,7 +63,7 @@ EDFCollectionItem::EDFCollectionItem(
     Assembly&           assembly,
     EDFContainer&       edfs,
     ProjectBuilder&     project_builder)
-  : CollectionItemBase(g_class_uid, "EDFs")
+  : ItemBase(g_class_uid, "EDFs")
   , m_assembly(assembly)
   , m_project_builder(project_builder)
 {

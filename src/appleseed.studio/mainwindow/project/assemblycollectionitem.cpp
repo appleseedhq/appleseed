@@ -60,7 +60,7 @@ AssemblyCollectionItem::AssemblyCollectionItem(
     Scene&              scene,
     AssemblyContainer&  assemblies,
     ProjectBuilder&     project_builder)
-  : CollectionItemBase(g_class_uid, "Assemblies")
+  : ItemBase(g_class_uid, "Assemblies")
   , m_scene(scene)
   , m_project_builder(project_builder)
 {

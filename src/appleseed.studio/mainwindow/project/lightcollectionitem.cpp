@@ -47,7 +47,7 @@ LightCollectionItem::LightCollectionItem(
     Assembly&           assembly,
     LightContainer&     lights,
     ProjectBuilder&     project_builder)
-  : CollectionItemBase(g_class_uid, "Lights")
+  : ItemBase(g_class_uid, "Lights")
   , m_assembly(assembly)
   , m_project_builder(project_builder)
 {
