@@ -59,7 +59,7 @@ class EntityCreatorBase
 
 
 //
-// Implementation.
+// EntityCreatorBase class implementation.
 //
 
 template <typename T>

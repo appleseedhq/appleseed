@@ -67,7 +67,7 @@ class EntityItem
 
 
 //
-// Implementation.
+// EntityItem class implementation.
 //
 
 template <typename Entity>

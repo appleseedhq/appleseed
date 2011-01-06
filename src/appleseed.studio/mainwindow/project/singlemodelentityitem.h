@@ -62,16 +62,15 @@ class SingleModelEntityItem
         Entity&             entity,
         ProjectBuilder&     project_builder);
 
-  protected:
-    virtual void slot_edit();
-
   private:
     ParentEntity&           m_parent;
+
+    virtual void slot_edit();
 };
 
 
 //
-// Implementation.
+// SingleModelEntityItem class implementation.
 //
 
 template <typename Entity, typename ParentEntity, typename Factory>

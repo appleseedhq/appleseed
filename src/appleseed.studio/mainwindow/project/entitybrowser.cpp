@@ -51,7 +51,7 @@ namespace studio {
 namespace
 {
     template <typename EntityContainer>
-    inline StringDictionary build_entity_dictionary(const EntityContainer& entities)
+    StringDictionary build_entity_dictionary(const EntityContainer& entities)
     {
         StringDictionary result;
 

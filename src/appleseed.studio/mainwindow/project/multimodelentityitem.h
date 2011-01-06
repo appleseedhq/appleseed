@@ -63,17 +63,16 @@ class MultiModelEntityItem
         FactoryRegistrar&   registrar,
         ProjectBuilder&     project_builder);
 
-  protected:
-    virtual void slot_edit();
-
   private:
     ParentEntity&           m_parent;
     FactoryRegistrar&       m_registrar;
+
+    virtual void slot_edit();
 };
 
 
 //
-// Implementation.
+// MultiModelEntityItem class implementation.
 //
 
 template <typename Entity, typename ParentEntity, typename FactoryRegistrar>
