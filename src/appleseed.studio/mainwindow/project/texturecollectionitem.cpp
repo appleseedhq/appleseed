@@ -30,7 +30,6 @@
 #include "texturecollectionitem.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/entityitembase.h"
 #include "mainwindow/project/projectbuilder.h"
 
 // appleseed.foundation headers.

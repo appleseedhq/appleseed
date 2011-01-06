@@ -29,10 +29,6 @@
 // Interface header.
 #include "assemblyinstancecollectionitem.h"
 
-// appleseed.studio headers.
-#include "mainwindow/project/entityitembase.h"
-#include "mainwindow/project/projectbuilder.h"
-
 // appleseed.foundation headers.
 #include "foundation/utility/uid.h"
 
