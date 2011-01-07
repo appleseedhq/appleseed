@@ -80,10 +80,9 @@ QMenu* EnvironmentEDFCollectionItem::get_single_item_context_menu() const
 void EnvironmentEDFCollectionItem::add_item(EnvironmentEDF& environment_edf)
 {
     addChild(
-        new MultiModelEntityItem<EnvironmentEDF, Scene, EnvironmentEDFFactoryRegistrar>(
+        new MultiModelEntityItem<EnvironmentEDF, Scene>(
             m_scene,
             environment_edf,
-            m_registrar,
             m_project_builder));
 }
 

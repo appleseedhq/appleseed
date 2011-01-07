@@ -32,7 +32,7 @@
 // appleseed.studio headers.
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entityitem.h"
-#include "mainwindow/project/entitynames.h"
+#include "mainwindow/project/entitytraits.h"
 #include "mainwindow/project/singlemodelentityeditorformfactory.h"
 #include "mainwindow/project/tools.h"
 
@@ -87,7 +87,7 @@ template <typename Entity, typename ParentEntity, typename Factory>
 void SingleModelEntityItem<Entity, ParentEntity, Factory>::slot_edit()
 {
     const std::string window_title =
-        std::string("Edit ") + get_entity_name<Entity>();
+        std::string("Edit ") + EntityTraits<Entity>::get_entity_type_name();
 
     std::auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
         new SingleModelEntityEditorFormFactory(

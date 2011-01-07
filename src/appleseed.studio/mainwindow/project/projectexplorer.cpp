@@ -55,7 +55,8 @@ ProjectExplorer::ProjectExplorer(
     QTreeWidget*    tree_widget)
   : m_project(project)
   , m_tree_widget(tree_widget)
-  , m_project_tree(project, tree_widget)
+  , m_project_tree(tree_widget)
+  , m_project_builder(project, m_project_tree)
 {
     m_tree_widget->setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -68,8 +69,10 @@ ProjectExplorer::ProjectExplorer(
         this, SLOT(slot_item_activated(QTreeWidgetItem*, int)));
 
     connect(
-        &m_project_tree, SIGNAL(project_modified()),
+        &m_project_builder, SIGNAL(project_modified()),
         this, SIGNAL(project_modified()));
+
+    m_project_tree.initialize(project, m_project_builder);
 }
 
 QMenu* ProjectExplorer::build_no_item_context_menu() const

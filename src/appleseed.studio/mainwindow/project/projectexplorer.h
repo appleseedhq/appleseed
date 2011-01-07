@@ -30,6 +30,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTEXPLORER_H
 
 // appleseed.studio headers.
+#include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/projecttree.h"
 
 // appleseed.foundation headers.
@@ -67,6 +68,7 @@ class ProjectExplorer
     renderer::Project&      m_project;
     QTreeWidget*            m_tree_widget;
     ProjectTree             m_project_tree;
+    ProjectBuilder          m_project_builder;
 
     QMenu* build_no_item_context_menu() const;
     QMenu* build_single_item_context_menu(QTreeWidgetItem* item) const;

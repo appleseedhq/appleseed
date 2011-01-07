@@ -110,15 +110,10 @@ set(mainwindow_project_sources
     mainwindow/project/assemblyinstancecollectionitem.h
     mainwindow/project/assemblyitem.cpp
     mainwindow/project/assemblyitem.h
-    mainwindow/project/bsdfcollectionitem.cpp
-    mainwindow/project/bsdfcollectionitem.h
-    mainwindow/project/collectionitem.cpp
     mainwindow/project/collectionitem.h
     mainwindow/project/collectionitembase.h
     mainwindow/project/colorcollectionitem.cpp
     mainwindow/project/colorcollectionitem.h
-    mainwindow/project/edfcollectionitem.cpp
-    mainwindow/project/edfcollectionitem.h
     mainwindow/project/entitybrowser.cpp
     mainwindow/project/entitybrowser.h
     mainwindow/project/entitybrowserwindow.cpp
@@ -134,7 +129,7 @@ set(mainwindow_project_sources
     mainwindow/project/entityitem.h
     mainwindow/project/entityitembase.cpp
     mainwindow/project/entityitembase.h
-    mainwindow/project/entitynames.h
+    mainwindow/project/entitytraits.h
     mainwindow/project/environmentedfcollectionitem.cpp
     mainwindow/project/environmentedfcollectionitem.h
     mainwindow/project/environmentshadercollectionitem.cpp
@@ -146,6 +141,7 @@ set(mainwindow_project_sources
     mainwindow/project/lightcollectionitem.h
     mainwindow/project/materialcollectionitem.cpp
     mainwindow/project/materialcollectionitem.h
+    mainwindow/project/multimodelcollectionitem.h
     mainwindow/project/multimodelentityeditorformfactory.h
     mainwindow/project/multimodelentityitem.h
     mainwindow/project/objectcollectionitem.cpp
@@ -165,8 +161,6 @@ set(mainwindow_project_sources
     mainwindow/project/singlemodelentityeditorformfactory.cpp
     mainwindow/project/singlemodelentityeditorformfactory.h
     mainwindow/project/singlemodelentityitem.h
-    mainwindow/project/surfaceshadercollectionitem.cpp
-    mainwindow/project/surfaceshadercollectionitem.h
     mainwindow/project/texturecollectionitem.cpp
     mainwindow/project/texturecollectionitem.h
     mainwindow/project/textureinstancecollectionitem.cpp

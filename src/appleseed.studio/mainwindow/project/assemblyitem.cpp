@@ -30,15 +30,13 @@
 #include "assemblyitem.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/bsdfcollectionitem.h"
 #include "mainwindow/project/colorcollectionitem.h"
-#include "mainwindow/project/edfcollectionitem.h"
 #include "mainwindow/project/lightcollectionitem.h"
 #include "mainwindow/project/materialcollectionitem.h"
+#include "mainwindow/project/multimodelcollectionitem.h"
 #include "mainwindow/project/objectcollectionitem.h"
 #include "mainwindow/project/objectinstancecollectionitem.h"
 #include "mainwindow/project/projectbuilder.h"
-#include "mainwindow/project/surfaceshadercollectionitem.h"
 #include "mainwindow/project/texturecollectionitem.h"
 #include "mainwindow/project/textureinstancecollectionitem.h"
 #include "mainwindow/project/tools.h"
@@ -54,6 +52,9 @@
 #include "renderer/api/surfaceshader.h"
 #include "renderer/api/texture.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/uid.h"
+
 // Qt headers.
 #include <QFileDialog>
 #include <QMenu>
@@ -63,6 +64,7 @@
 // Standard headers.
 #include <string>
 
+using namespace foundation;
 using namespace renderer;
 using namespace std;
 
@@ -81,9 +83,9 @@ AssemblyItem::AssemblyItem(
     m_color_collection_item = add_collection_item(assembly.colors());
     m_texture_collection_item = add_collection_item(assembly.textures());
     m_texture_instance_collection_item = add_collection_item(assembly.texture_instances());
-    m_bsdf_collection_item = add_collection_item(assembly.bsdfs());
-    m_edf_collection_item = add_collection_item(assembly.edfs());
-    m_surface_shader_collection_item = add_collection_item(assembly.surface_shaders());
+    m_bsdf_collection_item = add_multi_model_collection_item<BSDF>(assembly.bsdfs());
+    m_edf_collection_item = add_multi_model_collection_item<EDF>(assembly.edfs());
+    m_surface_shader_collection_item = add_multi_model_collection_item<SurfaceShader>(assembly.surface_shaders());
     m_material_collection_item = add_collection_item(assembly.materials());
     m_light_collection_item = add_collection_item(assembly.lights());
     m_object_collection_item = add_collection_item(assembly.objects());
@@ -99,9 +101,9 @@ QMenu* AssemblyItem::get_single_item_context_menu() const
     menu->addAction("Import Objects...", m_object_collection_item, SLOT(slot_import_objects()));
     menu->addAction("Import Textures...", m_texture_collection_item, SLOT(slot_import_textures()));
     menu->addSeparator();
-    menu->addAction("Create BSDF...", m_bsdf_collection_item, SLOT(slot_create_bsdf()));
-    menu->addAction("Create EDF...", m_edf_collection_item, SLOT(slot_create_edf()));
-    menu->addAction("Create Surface Shader...", m_surface_shader_collection_item, SLOT(slot_create_surface_shader()));
+    menu->addAction("Create BSDF...", m_bsdf_collection_item, SLOT(slot_create()));
+    menu->addAction("Create EDF...", m_edf_collection_item, SLOT(slot_create()));
+    menu->addAction("Create Surface Shader...", m_surface_shader_collection_item, SLOT(slot_create()));
     menu->addAction("Create Material...", m_material_collection_item, SLOT(slot_create_material()));
     return menu;
 }
@@ -161,7 +163,29 @@ typename ItemTypeMap<EntityContainer>::T* AssemblyItem::add_collection_item(Enti
 {
     typedef ItemTypeMap<EntityContainer>::T ItemType;
 
-    ItemType* item = new ItemType(m_assembly, entities, m_project_builder);
+    ItemType* item =
+        new ItemType(
+            m_assembly,
+            entities,
+            m_project_builder);
+
+    addChild(item);
+
+    return item;
+}
+
+template <typename Entity, typename EntityContainer>
+CollectionItem<Entity, Assembly>* AssemblyItem::add_multi_model_collection_item(EntityContainer& entities)
+{
+    CollectionItem<Entity, Assembly>* item =
+        new MultiModelCollectionItem<Entity, Assembly>(
+            new_guid(),
+            EntityTraits<Entity>::get_human_readable_collection_type_name(),
+            m_assembly,
+            m_project_builder);
+
+    item->add_items(entities);
+
     addChild(item);
 
     return item;

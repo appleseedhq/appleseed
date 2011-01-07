@@ -26,22 +26,21 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_MULTIMODELENTITYITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_MULTIMODELENTITYITEM_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_MULTIMODELCOLLECTIONITEM_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_MULTIMODELCOLLECTIONITEM_H
 
 // appleseed.studio headers.
+#include "mainwindow/project/collectionitem.h"
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entityeditorwindow.h"
-#include "mainwindow/project/entityitem.h"
 #include "mainwindow/project/entitytraits.h"
 #include "mainwindow/project/multimodelentityeditorformfactory.h"
+#include "mainwindow/project/multimodelentityitem.h"
 #include "mainwindow/project/tools.h"
-
-// appleseed.renderer headers.
-#include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/uid.h"
 
 // Standard headers.
 #include <memory>
@@ -53,70 +52,88 @@ namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace appleseed {
 namespace studio {
 
+#pragma warning (push)
+#pragma warning (disable: 4250)     // 'class1' : inherits 'class2::member' via dominance
+
 template <typename Entity, typename ParentEntity>
-class MultiModelEntityItem
-  : public EntityItem<Entity>
+class MultiModelCollectionItem
+  : public CollectionItem<Entity, ParentEntity>
 {
   public:
-    MultiModelEntityItem(
-        ParentEntity&       parent,
-        Entity&             entity,
-        ProjectBuilder&     project_builder);
+    MultiModelCollectionItem(
+        const foundation::UniqueID  class_uid,
+        const QString&              title,
+        ParentEntity&               parent,
+        ProjectBuilder&             project_builder);
+
+    virtual void add_item(Entity& entity);
 
   private:
-    ParentEntity&           m_parent;
-
-    virtual void slot_edit();
+    virtual void slot_create();
 };
 
 
 //
-// MultiModelEntityItem class implementation.
+// MultiModelCollectionItem class implementation.
 //
 
 template <typename Entity, typename ParentEntity>
-MultiModelEntityItem<Entity, ParentEntity>::MultiModelEntityItem(
-    ParentEntity&           parent,
-    Entity&                 entity,
-    ProjectBuilder&         project_builder)
-  : EntityItem(entity, project_builder)
-  , m_parent(parent)
+MultiModelCollectionItem<Entity, ParentEntity>::MultiModelCollectionItem(
+    const foundation::UniqueID      class_uid,
+    const QString&                  title,
+    ParentEntity&                   parent,
+    ProjectBuilder&                 project_builder)
+  : ItemBase(class_uid, title)
+  , CollectionItem(parent, project_builder)
 {
 }
 
 template <typename Entity, typename ParentEntity>
-void MultiModelEntityItem<Entity, ParentEntity>::slot_edit()
+void MultiModelCollectionItem<Entity, ParentEntity>::add_item(Entity& entity)
+{
+    addChild(
+        new MultiModelEntityItem<Entity, ParentEntity>(
+            m_parent,
+            entity,
+            m_project_builder));
+}
+
+template <typename Entity, typename ParentEntity>
+void MultiModelCollectionItem<Entity, ParentEntity>::slot_create()
 {
     typedef typename EntityTraits<Entity> EntityTraits;
 
     const std::string window_title =
-        std::string("Edit ") +
+        std::string("Create ") +
         EntityTraits::get_human_readable_entity_type_name();
+
+    const std::string name_suggestion =
+        get_name_suggestion(
+            EntityTraits::get_entity_type_name(),
+            EntityTraits::get_entity_container(m_parent));
 
     typedef typename EntityTraits::FactoryRegistrarType FactoryRegistrarType;
 
     std::auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
         new MultiModelEntityEditorFormFactory<FactoryRegistrarType>(
             m_project_builder.get_factory_registrar<Entity>(),
-            m_entity.get_name()));
+            name_suggestion));
 
     std::auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
         new EntityBrowser<ParentEntity>(m_parent));
-
-    foundation::Dictionary values = m_entity.get_parameters();
-    values.insert("model", m_entity.get_model());
 
     open_entity_editor(
         treeWidget(),
         window_title,
         form_factory,
         entity_browser,
-        values,
         this,
-        SLOT(slot_edit_accepted(foundation::Dictionary)));
+        SLOT(slot_create_accepted(foundation::Dictionary)));
 }
+
+#pragma warning (pop)
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_MULTIMODELENTITYITEM_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_MULTIMODELCOLLECTIONITEM_H

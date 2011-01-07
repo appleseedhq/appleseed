@@ -30,14 +30,10 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTTREE_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/itemtypemap.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-
-// Qt headers.
-#include <QObject>
 
 // Forward declarations.
 namespace appleseed { namespace studio { class AssemblyCollectionItem; } }
@@ -45,40 +41,37 @@ namespace appleseed { namespace studio { class AssemblyInstanceCollectionItem; }
 namespace appleseed { namespace studio { class ColorCollectionItem; } }
 namespace appleseed { namespace studio { class EnvironmentEDFCollectionItem; } }
 namespace appleseed { namespace studio { class EnvironmentShaderCollectionItem; } }
+namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace appleseed { namespace studio { class TextureCollectionItem; } }
 namespace appleseed { namespace studio { class TextureInstanceCollectionItem; } }
 namespace renderer  { class Project; }
+namespace renderer  { class Scene; }
 class QTreeWidget;
 
 namespace appleseed {
 namespace studio {
 
 class ProjectTree
-  : public QObject
-  , foundation::NonCopyable
+  : foundation::NonCopyable
 {
-    Q_OBJECT
-
   public:
-    ProjectTree(
-        renderer::Project&  project,
+    explicit ProjectTree(
         QTreeWidget*        tree_widget);
+
+    void initialize(
+        renderer::Project&  project,
+        ProjectBuilder&     project_builder);
 
     ColorCollectionItem& get_color_collection_item() const;
     TextureCollectionItem& get_texture_collection_item() const;
     TextureInstanceCollectionItem& get_texture_instance_collection_item() const;
     EnvironmentEDFCollectionItem& get_environment_edf_collection_item() const;
+    EnvironmentShaderCollectionItem& get_environment_shader_collection_item() const;
     AssemblyCollectionItem& get_assembly_collection_item() const;
     AssemblyInstanceCollectionItem& get_assembly_instance_collection_item() const;
 
-  signals:
-    void project_modified() const;
-
   private:
-    renderer::Project&                  m_project;
     QTreeWidget*                        m_tree_widget;
-    ProjectBuilder                      m_project_builder;
-
     ColorCollectionItem*                m_color_collection_item;
     TextureCollectionItem*              m_texture_collection_item;
     TextureInstanceCollectionItem*      m_texture_instance_collection_item;
@@ -88,7 +81,10 @@ class ProjectTree
     AssemblyInstanceCollectionItem*     m_assembly_instance_collection_item;
 
     template <typename EntityContainer>
-    typename ItemTypeMap<EntityContainer>::T* add_collection_item(EntityContainer& entities);
+    typename ItemTypeMap<EntityContainer>::T* add_collection_item(
+        renderer::Scene&    scene,
+        EntityContainer&    entities,
+        ProjectBuilder&     project_builder);
 };
 
 }       // namespace studio

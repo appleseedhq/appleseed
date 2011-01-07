@@ -30,11 +30,9 @@
 #include "projectbuilder.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/assemblycollectionitem.h"
 #include "mainwindow/project/assemblyinstancecollectionitem.h"
 #include "mainwindow/project/assemblyitem.h"
 #include "mainwindow/project/environmentedfcollectionitem.h"
-#include "mainwindow/project/projecttree.h"
 #include "mainwindow/project/texturecollectionitem.h"
 #include "mainwindow/project/textureinstancecollectionitem.h"
 
@@ -56,7 +54,6 @@
 #include "boost/filesystem/path.hpp"
 
 // Standard headers.
-#include <cassert>
 #include <memory>
 
 using namespace boost;
@@ -105,44 +102,6 @@ void ProjectBuilder::insert_assembly_instance(
     notify_project_modification();
 }
 
-void ProjectBuilder::insert_bsdf(
-    Assembly&           assembly,
-    const Dictionary&   values) const
-{
-    const string name = get_entity_name(values);
-    const string model = values.get<string>("model");
-
-    const IBSDFFactory* factory = m_bsdf_factory_registrar.lookup(model.c_str());
-    assert(factory);
-
-    auto_release_ptr<BSDF> bsdf(factory->create(name.c_str(), values));
-
-    m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(bsdf.ref());
-
-    assembly.bsdfs().insert(bsdf);
-
-    notify_project_modification();
-}
-
-void ProjectBuilder::insert_edf(
-    Assembly&           assembly,
-    const Dictionary&   values) const
-{
-    const string name = get_entity_name(values);
-    const string model = values.get<string>("model");
-
-    const IEDFFactory* factory = m_edf_factory_registrar.lookup(model.c_str());
-    assert(factory);
-
-    auto_release_ptr<EDF> edf(factory->create(name.c_str(), values));
-
-    m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(edf.ref());
-
-    assembly.edfs().insert(edf);
-
-    notify_project_modification();
-}
-
 void ProjectBuilder::insert_environment_edf(
     const Dictionary&   values) const
 {
@@ -157,26 +116,6 @@ void ProjectBuilder::insert_environment_edf(
     m_project_tree.get_environment_edf_collection_item().add_item(env_edf.ref());
 
     m_project.get_scene()->environment_edfs().insert(env_edf);
-
-    notify_project_modification();
-}
-
-void ProjectBuilder::insert_surface_shader(
-    Assembly&           assembly,
-    const Dictionary&   values) const
-{
-    const string name = get_entity_name(values);
-    const string model = values.get<string>("model");
-
-    const ISurfaceShaderFactory* factory =
-        m_surface_shader_factory_registrar.lookup(model.c_str());
-    assert(factory);
-
-    auto_release_ptr<SurfaceShader> surface_shader(factory->create(name.c_str(), values));
-
-    m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(surface_shader.ref());
-
-    assembly.surface_shaders().insert(surface_shader);
 
     notify_project_modification();
 }

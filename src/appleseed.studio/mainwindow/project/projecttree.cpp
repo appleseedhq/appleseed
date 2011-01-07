@@ -46,31 +46,60 @@
 #include <QTreeWidget>
 
 using namespace renderer;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
 
-ProjectTree::ProjectTree(
-    Project&        project,
-    QTreeWidget*    tree_widget)
-  : m_project(project)
-  , m_tree_widget(tree_widget)
-  , m_project_builder(project, *this)
+ProjectTree::ProjectTree(QTreeWidget* tree_widget)
+  : m_tree_widget(tree_widget)
 {
-    connect(
-        &m_project_builder, SIGNAL(project_modified()),
-        this, SIGNAL(project_modified()));
+}
 
-    const Scene& scene = *m_project.get_scene();
+void ProjectTree::initialize(Project& project, ProjectBuilder& project_builder)
+{
+    Scene& scene = *project.get_scene();
 
-    m_color_collection_item = add_collection_item(scene.colors());
-    m_texture_collection_item = add_collection_item(scene.textures());
-    m_texture_instance_collection_item = add_collection_item(scene.texture_instances());
-    m_environment_edf_collection_item = add_collection_item(scene.environment_edfs());
-    m_environment_shader_collection_item = add_collection_item(scene.environment_shaders());
-    m_assembly_collection_item = add_collection_item(scene.assemblies());
-    m_assembly_instance_collection_item = add_collection_item(scene.assembly_instances());
+    m_color_collection_item =
+        add_collection_item(
+            scene,
+            scene.colors(),
+            project_builder);
+
+    m_texture_collection_item =
+        add_collection_item(
+            scene,
+            scene.textures(),
+            project_builder);
+
+    m_texture_instance_collection_item =
+        add_collection_item(
+            scene,
+            scene.texture_instances(),
+            project_builder);
+
+    m_environment_edf_collection_item =
+        add_collection_item(
+            scene,
+            scene.environment_edfs(),
+            project_builder);
+
+    m_environment_shader_collection_item =
+        add_collection_item(
+            scene,
+            scene.environment_shaders(),
+            project_builder);
+
+    m_assembly_collection_item =
+        add_collection_item(
+            scene,
+            scene.assemblies(),
+            project_builder);
+
+    m_assembly_instance_collection_item =
+        add_collection_item(
+            scene,
+            scene.assembly_instances(),
+            project_builder);
 }
 
 ColorCollectionItem& ProjectTree::get_color_collection_item() const
@@ -93,6 +122,11 @@ EnvironmentEDFCollectionItem& ProjectTree::get_environment_edf_collection_item()
     return *m_environment_edf_collection_item;
 }
 
+EnvironmentShaderCollectionItem& ProjectTree::get_environment_shader_collection_item() const
+{
+    return *m_environment_shader_collection_item;
+}
+
 AssemblyCollectionItem& ProjectTree::get_assembly_collection_item() const
 {
     return *m_assembly_collection_item;
@@ -104,13 +138,14 @@ AssemblyInstanceCollectionItem& ProjectTree::get_assembly_instance_collection_it
 }
 
 template <typename EntityContainer>
-typename ItemTypeMap<EntityContainer>::T* ProjectTree::add_collection_item(EntityContainer& entities)
+typename ItemTypeMap<EntityContainer>::T* ProjectTree::add_collection_item(
+    Scene&              scene,
+    EntityContainer&    entities,
+    ProjectBuilder&     project_builder)
 {
-    Scene& scene = *m_project.get_scene();
-
     typedef ItemTypeMap<EntityContainer>::T ItemType;
 
-    ItemType* item = new ItemType(scene, entities, m_project_builder);
+    ItemType* item = new ItemType(scene, entities, project_builder);
     m_tree_widget->addTopLevelItem(item);
 
     return item;
