@@ -72,8 +72,11 @@ MaterialCollectionItem::MaterialCollectionItem(
 
 QMenu* MaterialCollectionItem::get_single_item_context_menu() const
 {
-    QMenu* menu = new QMenu(treeWidget());
+    QMenu* menu = CollectionItemBase::get_single_item_context_menu();
+    menu->addSeparator();
+
     menu->addAction("Create Material...", this, SLOT(slot_create_material()));
+
     return menu;
 }
 

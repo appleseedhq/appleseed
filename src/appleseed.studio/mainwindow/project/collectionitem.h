@@ -104,7 +104,8 @@ CollectionItem<Entity, ParentEntity>::CollectionItem(
 template <typename Entity, typename ParentEntity>
 QMenu* CollectionItem<Entity, ParentEntity>::get_single_item_context_menu() const
 {
-    QMenu* menu = new QMenu(treeWidget());
+    QMenu* menu = CollectionItemBase::get_single_item_context_menu();
+    menu->addSeparator();
 
     menu->addAction(
         QString("Create %1...").arg(

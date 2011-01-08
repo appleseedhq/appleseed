@@ -99,9 +99,12 @@ void EntityItemBase<Entity>::update_title()
 template <typename Entity>
 QMenu* EntityItemBase<Entity>::get_single_item_context_menu() const
 {
-    QMenu* menu = new QMenu(treeWidget());
+    QMenu* menu = ItemBase::get_single_item_context_menu();
+    menu->addSeparator();
+
     menu->addAction("Edit...", this, SLOT(slot_edit()));
     menu->addAction("Delete", this, SLOT(slot_delete()));
+
     return menu;
 }
 

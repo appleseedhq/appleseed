@@ -61,7 +61,7 @@ ObjectInstanceItem::ObjectInstanceItem(
     Assembly&           assembly,
     ObjectInstance&     object_instance,
     ProjectBuilder&     project_builder)
-  : EntityItemBase(object_instance)
+  : ItemBase(object_instance.get_class_uid(), object_instance.get_name())
   , m_assembly(assembly)
   , m_object_instance(object_instance)
   , m_project_builder(project_builder)
@@ -71,10 +71,12 @@ ObjectInstanceItem::ObjectInstanceItem(
 
 QMenu* ObjectInstanceItem::get_single_item_context_menu() const
 {
-    QMenu* menu = EntityItemBase::get_single_item_context_menu();
+    QMenu* menu = ItemBase::get_single_item_context_menu();
     menu->addSeparator();
+
     menu->addAction("Assign Material...", this, SLOT(slot_assign_material()));
     menu->addAction("Unassign Material", this, SLOT(slot_unassign_material()));
+
     return menu;
 }
 
@@ -109,11 +111,14 @@ QMenu* ObjectInstanceItem::get_multiple_items_context_menu(const QList<ItemBase*
     if (!are_in_assembly(items_to_object_instance_items(items), m_assembly.get_uid()))
         return 0;
 
-    QMenu* menu = new QMenu(treeWidget());
+    QMenu* menu = ItemBase::get_multiple_items_context_menu(items);
+    menu->addSeparator();
+
     menu->addAction("Assign Material...", this, SLOT(slot_assign_material()))
         ->setData(QVariant::fromValue(items));
     menu->addAction("Unassign Material", this, SLOT(slot_unassign_material()))
         ->setData(QVariant::fromValue(items));
+
     return menu;
 }
 

@@ -77,7 +77,7 @@ AssemblyItem::AssemblyItem(
     Scene&          scene,
     Assembly&       assembly,
     ProjectBuilder& project_builder)
-  : EntityItemBase(assembly)
+  : ItemBase(assembly.get_class_uid(), assembly.get_name())
   , m_scene(scene)
   , m_assembly(assembly)
   , m_project_builder(project_builder)
@@ -96,17 +96,21 @@ AssemblyItem::AssemblyItem(
 
 QMenu* AssemblyItem::get_single_item_context_menu() const
 {
-    QMenu* menu = EntityItemBase::get_single_item_context_menu();
+    QMenu* menu = ItemBase::get_single_item_context_menu();
     menu->addSeparator();
+
     menu->addAction("Instantiate...", this, SLOT(slot_instantiate()));
     menu->addSeparator();
+
     menu->addAction("Import Objects...", m_object_collection_item, SLOT(slot_import_objects()));
     menu->addAction("Import Textures...", m_texture_collection_item, SLOT(slot_import_textures()));
     menu->addSeparator();
+
     menu->addAction("Create BSDF...", m_bsdf_collection_item, SLOT(slot_create()));
     menu->addAction("Create EDF...", m_edf_collection_item, SLOT(slot_create()));
     menu->addAction("Create Surface Shader...", m_surface_shader_collection_item, SLOT(slot_create()));
     menu->addAction("Create Material...", m_material_collection_item, SLOT(slot_create_material()));
+
     return menu;
 }
 

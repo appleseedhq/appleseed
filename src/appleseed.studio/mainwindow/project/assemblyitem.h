@@ -31,7 +31,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/collectionitem.h"
-#include "mainwindow/project/entityitembase.h"
+#include "mainwindow/project/itembase.h"
 #include "mainwindow/project/itemtypemap.h"
 
 // Qt headers.
@@ -64,7 +64,7 @@ namespace appleseed {
 namespace studio {
 
 class AssemblyItem
-  : public EntityItemBase<renderer::Assembly>
+  : public ItemBase
 {
     Q_OBJECT
 

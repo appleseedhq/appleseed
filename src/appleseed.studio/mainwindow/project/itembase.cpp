@@ -30,6 +30,7 @@
 #include "itembase.h"
 
 // Qt headers.
+#include <QMenu>
 #include <QString>
 #include <QStringList>
 
@@ -65,12 +66,12 @@ void ItemBase::set_title(const QString& title)
 
 QMenu* ItemBase::get_single_item_context_menu() const
 {
-    return 0;
+    return new QMenu(treeWidget());
 }
 
 QMenu* ItemBase::get_multiple_items_context_menu(const QList<ItemBase*>& items) const
 {
-    return 0;
+    return new QMenu(treeWidget());
 }
 
 void ItemBase::activate()
