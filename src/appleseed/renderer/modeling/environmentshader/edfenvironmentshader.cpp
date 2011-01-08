@@ -48,6 +48,8 @@ namespace
     // EDF-based environment shader.
     //
 
+    const char* Model = "edf_environment_shader";
+
     class EDFEnvironmentShader
       : public EnvironmentShader
     {
@@ -69,7 +71,7 @@ namespace
 
         virtual const char* get_model() const
         {
-            return EDFEnvironmentShaderFactory::get_model();
+            return Model;
         }
 
         virtual void on_frame_begin(const Project& project)
@@ -132,9 +134,32 @@ namespace
 // EDFEnvironmentShaderFactory class implementation.
 //
 
-const char* EDFEnvironmentShaderFactory::get_model()
+const char* EDFEnvironmentShaderFactory::get_model() const
 {
-    return "edf_environment_shader";
+    return Model;
+}
+
+const char* EDFEnvironmentShaderFactory::get_human_readable_model() const
+{
+    return "Environment EDF-Based Environment Shader";
+}
+
+DictionaryArray EDFEnvironmentShaderFactory::get_widget_definitions() const
+{
+    DictionaryArray definitions;
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "environment_edf")
+            .insert("label", "Environment EDF")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("environment_edf", "Environment EDFs"))
+            .insert("use", "required")
+            .insert("default", ""));
+
+    return definitions;
 }
 
 auto_release_ptr<EnvironmentShader> EDFEnvironmentShaderFactory::create(

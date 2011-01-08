@@ -26,11 +26,39 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_MATERIAL_H
-#define APPLESEED_RENDERER_API_MATERIAL_H
+#ifndef APPLESEED_RENDERER_MODELING_SURFACESHADER_SURFACESHADERTRAITS_H
+#define APPLESEED_RENDERER_MODELING_SURFACESHADER_SURFACESHADERTRAITS_H
 
-// API headers.
-#include "renderer/modeling/material/material.h"
-#include "renderer/modeling/material/materialtraits.h"
+// appleseed.renderer headers.
+#include "renderer/global/global.h"
+#include "renderer/modeling/entity/entitytraits.h"
+#include "renderer/modeling/scene/containers.h"
 
-#endif  // !APPLESEED_RENDERER_API_MATERIAL_H
+// Forward declarations.
+namespace renderer  { class SurfaceShader; }
+namespace renderer  { class SurfaceShaderFactoryRegistrar; }
+
+namespace renderer
+{
+
+//
+// Surface shader entity traits.
+//
+
+template <>
+struct EntityTraits<renderer::SurfaceShader>
+{
+    typedef renderer::SurfaceShaderContainer ContainerType;
+    typedef renderer::SurfaceShaderFactoryRegistrar FactoryRegistrarType;
+
+    static const char* get_entity_type_name()                           { return "surface_shader"; }
+    static const char* get_human_readable_entity_type_name()            { return "Surface Shader"; }
+    static const char* get_human_readable_collection_type_name()        { return "Surface Shaders"; }
+
+    template <typename ParentEntity>
+    static ContainerType& get_entity_container(ParentEntity& parent)    { return parent.surface_shaders(); }
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_SURFACESHADER_SURFACESHADERTRAITS_H

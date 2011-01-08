@@ -85,7 +85,9 @@ struct ExceptionUnknownEntity
   : public foundation::StringException
 {
     explicit ExceptionUnknownEntity(const char* s)
-      : foundation::StringException("unknown entity", s) {}
+      : foundation::StringException("unknown entity", s)
+    {
+    }
 };
 
 // Retrieve a mandatory entity from a container.

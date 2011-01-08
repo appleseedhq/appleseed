@@ -26,11 +26,39 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_MATERIAL_H
-#define APPLESEED_RENDERER_API_MATERIAL_H
+#ifndef APPLESEED_RENDERER_MODELING_EDF_EDFTRAITS_H
+#define APPLESEED_RENDERER_MODELING_EDF_EDFTRAITS_H
 
-// API headers.
-#include "renderer/modeling/material/material.h"
-#include "renderer/modeling/material/materialtraits.h"
+// appleseed.renderer headers.
+#include "renderer/global/global.h"
+#include "renderer/modeling/entity/entitytraits.h"
+#include "renderer/modeling/scene/containers.h"
 
-#endif  // !APPLESEED_RENDERER_API_MATERIAL_H
+// Forward declarations.
+namespace renderer  { class EDF; }
+namespace renderer  { class EDFFactoryRegistrar; }
+
+namespace renderer
+{
+
+//
+// EDF entity traits.
+//
+
+template <>
+struct EntityTraits<renderer::EDF>
+{
+    typedef renderer::EDFContainer ContainerType;
+    typedef renderer::EDFFactoryRegistrar FactoryRegistrarType;
+
+    static const char* get_entity_type_name()                           { return "edf"; }
+    static const char* get_human_readable_entity_type_name()            { return "EDF"; }
+    static const char* get_human_readable_collection_type_name()        { return "EDFs"; }
+
+    template <typename ParentEntity>
+    static ContainerType& get_entity_container(ParentEntity& parent)    { return parent.edfs(); }
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_EDF_EDFTRAITS_H

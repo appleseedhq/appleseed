@@ -32,6 +32,9 @@
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/containers/dictionaryarray.h"
+
 // Forward declarations.
 namespace renderer      { class EnvironmentShader; }
 
@@ -48,6 +51,15 @@ class RENDERERDLL IEnvironmentShaderFactory
   public:
     // Destructor.
     virtual ~IEnvironmentShaderFactory() {}
+
+    // Return a string identifying this environment shader model.
+    virtual const char* get_model() const = 0;
+
+    // Return a human-readable string identifying this environment shader model.
+    virtual const char* get_human_readable_model() const = 0;
+
+    // Return a set of widget definitions for this environment shader model.
+    virtual foundation::DictionaryArray get_widget_definitions() const = 0;
 
     // Create a new environment shader instance.
     virtual foundation::auto_release_ptr<EnvironmentShader> create(

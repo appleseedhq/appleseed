@@ -26,11 +26,25 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_MATERIAL_H
-#define APPLESEED_RENDERER_API_MATERIAL_H
+#ifndef APPLESEED_RENDERER_MODELING_ENTITY_ENTITYTRAITS_H
+#define APPLESEED_RENDERER_MODELING_ENTITY_ENTITYTRAITS_H
 
-// API headers.
-#include "renderer/modeling/material/material.h"
-#include "renderer/modeling/material/materialtraits.h"
+// appleseed.renderer headers.
+#include "renderer/global/global.h"
 
-#endif  // !APPLESEED_RENDERER_API_MATERIAL_H
+namespace renderer
+{
+
+//
+// The EntityTraits template provides metadata about entities as well as mappings
+// between entity, entity factory and entity factory registrar types.
+//
+// See the files renderer/modeling/<entity>/<entity>traits.h for the list of
+// available definitions.
+//
+
+template <typename Entity> struct EntityTraits;
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_ENTITY_ENTITYTRAITS_H

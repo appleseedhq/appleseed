@@ -33,6 +33,7 @@
 #include "renderer/modeling/environmentshader/edfenvironmentshader.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/environmentshader/environmentshaderfactoryregistrar.h"
+#include "renderer/modeling/environmentshader/environmentshadertraits.h"
 #include "renderer/modeling/environmentshader/ienvironmentshaderfactory.h"
 
 #endif  // !APPLESEED_RENDERER_API_ENVIRONMENTSHADER_H

@@ -26,11 +26,39 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_MATERIAL_H
-#define APPLESEED_RENDERER_API_MATERIAL_H
+#ifndef APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_ENVIRONMENTEDFTRAITS_H
+#define APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_ENVIRONMENTEDFTRAITS_H
 
-// API headers.
-#include "renderer/modeling/material/material.h"
-#include "renderer/modeling/material/materialtraits.h"
+// appleseed.renderer headers.
+#include "renderer/global/global.h"
+#include "renderer/modeling/entity/entitytraits.h"
+#include "renderer/modeling/scene/containers.h"
 
-#endif  // !APPLESEED_RENDERER_API_MATERIAL_H
+// Forward declarations.
+namespace renderer  { class EnvironmentEDF; }
+namespace renderer  { class EnvironmentEDFFactoryRegistrar; }
+
+namespace renderer
+{
+
+//
+// Environment EDF entity traits.
+//
+
+template <>
+struct EntityTraits<renderer::EnvironmentEDF>
+{
+    typedef renderer::EnvironmentEDFContainer ContainerType;
+    typedef renderer::EnvironmentEDFFactoryRegistrar FactoryRegistrarType;
+
+    static const char* get_entity_type_name()                           { return "environment_edf"; }
+    static const char* get_human_readable_entity_type_name()            { return "Environment EDF"; }
+    static const char* get_human_readable_collection_type_name()        { return "Environment EDFs"; }
+
+    template <typename ParentEntity>
+    static ContainerType& get_entity_container(ParentEntity& parent)    { return parent.environment_edfs(); }
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_ENVIRONMENTEDFTRAITS_H

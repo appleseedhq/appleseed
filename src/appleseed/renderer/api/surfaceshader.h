@@ -38,6 +38,7 @@
 #include "renderer/modeling/surfaceshader/smokesurfaceshader.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.h"
+#include "renderer/modeling/surfaceshader/surfaceshadertraits.h"
 #include "renderer/modeling/surfaceshader/voxelaosurfaceshader.h"
 
 #endif  // !APPLESEED_RENDERER_API_SURFACESHADER_H

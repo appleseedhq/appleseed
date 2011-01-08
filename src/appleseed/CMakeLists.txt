@@ -966,6 +966,7 @@ set(renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/bsdf.h
     renderer/modeling/bsdf/bsdffactoryregistrar.cpp
     renderer/modeling/bsdf/bsdffactoryregistrar.h
+    renderer/modeling/bsdf/bsdftraits.h
     renderer/modeling/bsdf/btdfwrapper.h
     renderer/modeling/bsdf/ibsdffactory.h
     renderer/modeling/bsdf/lambertianbrdf.cpp
@@ -1023,6 +1024,7 @@ set(renderer_modeling_edf_sources
     renderer/modeling/edf/edf.h
     renderer/modeling/edf/edffactoryregistrar.cpp
     renderer/modeling/edf/edffactoryregistrar.h
+    renderer/modeling/edf/edftraits.h
     renderer/modeling/edf/iedffactory.h
 )
 list(APPEND appleseed_sources
@@ -1038,6 +1040,7 @@ set(renderer_modeling_entity_sources
     renderer/modeling/entity/entity.h
     renderer/modeling/entity/entitymap.cpp
     renderer/modeling/entity/entitymap.h
+    renderer/modeling/entity/entitytraits.h
     renderer/modeling/entity/entityvector.cpp
     renderer/modeling/entity/entityvector.h
 )
@@ -1066,6 +1069,7 @@ set(renderer_modeling_environmentedf_sources
     renderer/modeling/environmentedf/environmentedf.h
     renderer/modeling/environmentedf/environmentedffactoryregistrar.cpp
     renderer/modeling/environmentedf/environmentedffactoryregistrar.h
+    renderer/modeling/environmentedf/environmentedftraits.h
     renderer/modeling/environmentedf/gradientenvironmentedf.cpp
     renderer/modeling/environmentedf/gradientenvironmentedf.h
     renderer/modeling/environmentedf/ienvironmentedffactory.h
@@ -1088,6 +1092,7 @@ set(renderer_modeling_environmentshader_sources
     renderer/modeling/environmentshader/environmentshader.h
     renderer/modeling/environmentshader/environmentshaderfactoryregistrar.cpp
     renderer/modeling/environmentshader/environmentshaderfactoryregistrar.h
+    renderer/modeling/environmentshader/environmentshadertraits.h
     renderer/modeling/environmentshader/ienvironmentshaderfactory.h
 )
 list(APPEND appleseed_sources
@@ -1106,26 +1111,6 @@ list(APPEND appleseed_sources
 )
 source_group("renderer\\modeling\\frame" FILES
     ${renderer_modeling_frame_sources}
-)
-
-set(renderer_modeling_object_sources
-    renderer/modeling/object/iregion.h
-    renderer/modeling/object/meshobject.cpp
-    renderer/modeling/object/meshobject.h
-    renderer/modeling/object/meshobjectreader.cpp
-    renderer/modeling/object/meshobjectreader.h
-    renderer/modeling/object/meshobjectwriter.cpp
-    renderer/modeling/object/meshobjectwriter.h
-    renderer/modeling/object/object.cpp
-    renderer/modeling/object/object.h
-    renderer/modeling/object/regionkit.h
-    renderer/modeling/object/triangle.h
-)
-list(APPEND appleseed_sources
-    ${renderer_modeling_object_sources}
-)
-source_group("renderer\\modeling\\object" FILES
-    ${renderer_modeling_object_sources}
 )
 
 set(renderer_modeling_input_sources
@@ -1165,12 +1150,33 @@ source_group("renderer\\modeling\\light" FILES
 set(renderer_modeling_material_sources
     renderer/modeling/material/material.cpp
     renderer/modeling/material/material.h
+    renderer/modeling/material/materialtraits.h
 )
 list(APPEND appleseed_sources
     ${renderer_modeling_material_sources}
 )
 source_group("renderer\\modeling\\material" FILES
     ${renderer_modeling_material_sources}
+)
+
+set(renderer_modeling_object_sources
+    renderer/modeling/object/iregion.h
+    renderer/modeling/object/meshobject.cpp
+    renderer/modeling/object/meshobject.h
+    renderer/modeling/object/meshobjectreader.cpp
+    renderer/modeling/object/meshobjectreader.h
+    renderer/modeling/object/meshobjectwriter.cpp
+    renderer/modeling/object/meshobjectwriter.h
+    renderer/modeling/object/object.cpp
+    renderer/modeling/object/object.h
+    renderer/modeling/object/regionkit.h
+    renderer/modeling/object/triangle.h
+)
+list(APPEND appleseed_sources
+    ${renderer_modeling_object_sources}
+)
+source_group("renderer\\modeling\\object" FILES
+    ${renderer_modeling_object_sources}
 )
 
 set(renderer_modeling_project_sources
@@ -1242,6 +1248,7 @@ set(renderer_modeling_surfaceshader_sources
     renderer/modeling/surfaceshader/surfaceshader.h
     renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.cpp
     renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.h
+    renderer/modeling/surfaceshader/surfaceshadertraits.h
     renderer/modeling/surfaceshader/voxelaosurfaceshader.cpp
     renderer/modeling/surfaceshader/voxelaosurfaceshader.h
 )

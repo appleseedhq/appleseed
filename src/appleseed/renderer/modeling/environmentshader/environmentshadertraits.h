@@ -26,56 +26,39 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_ENVIRONMENTSHADERFACTORYREGISTRAR_H
-#define APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_ENVIRONMENTSHADERFACTORYREGISTRAR_H
+#ifndef APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_ENVIRONMENTSHADERTRAITS_H
+#define APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_ENVIRONMENTSHADERTRAITS_H
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
-
-// appleseed.foundation headers.
-#include "foundation/utility/containers/array.h"
-#include "foundation/utility/implptr.h"
+#include "renderer/modeling/entity/entitytraits.h"
+#include "renderer/modeling/scene/containers.h"
 
 // Forward declarations.
-namespace renderer      { class IEnvironmentShaderFactory; }
+namespace renderer  { class EnvironmentShader; }
+namespace renderer  { class EnvironmentShaderFactoryRegistrar; }
 
 namespace renderer
 {
 
 //
-// An array of environment shader factories.
+// Environment shader entity traits.
 //
 
-DECLARE_ARRAY(EnvironmentShaderFactoryArray, IEnvironmentShaderFactory*);
-
-
-//
-// Environment shader factory registrar.
-//
-
-class RENDERERDLL EnvironmentShaderFactoryRegistrar
-  : public foundation::NonCopyable
+template <>
+struct EntityTraits<renderer::EnvironmentShader>
 {
-  public:
-    typedef IEnvironmentShaderFactory FactoryType;
-    typedef EnvironmentShaderFactoryArray FactoryArrayType;
+    typedef renderer::EnvironmentShaderContainer ContainerType;
+    typedef renderer::EnvironmentShaderFactoryRegistrar FactoryRegistrarType;
 
-    // Constructor.
-    EnvironmentShaderFactoryRegistrar();
+    static const char* get_entity_type_name()                           { return "environment_shader"; }
+    static const char* get_human_readable_entity_type_name()            { return "Environment Shader"; }
+    static const char* get_human_readable_collection_type_name()        { return "Environment Shaders"; }
 
-    // Register an environment EDF factory.
-    void register_factory(std::auto_ptr<FactoryType> factory);
-
-    // Retrieve the registered factories.
-    FactoryArrayType get_factories() const;
-
-    // Lookup a factory by name.
-    const FactoryType* lookup(const char* name) const;
-
-  private:
-    PIMPL(EnvironmentShaderFactoryRegistrar);
+    template <typename ParentEntity>
+    static ContainerType& get_entity_container(ParentEntity& parent)    { return parent.environment_shaders(); }
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_ENVIRONMENTSHADERFACTORYREGISTRAR_H
+#endif  // !APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_ENVIRONMENTSHADERTRAITS_H

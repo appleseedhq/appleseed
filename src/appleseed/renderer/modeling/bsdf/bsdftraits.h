@@ -26,11 +26,39 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_MATERIAL_H
-#define APPLESEED_RENDERER_API_MATERIAL_H
+#ifndef APPLESEED_RENDERER_MODELING_BSDF_BSDFTRAITS_H
+#define APPLESEED_RENDERER_MODELING_BSDF_BSDFTRAITS_H
 
-// API headers.
-#include "renderer/modeling/material/material.h"
-#include "renderer/modeling/material/materialtraits.h"
+// appleseed.renderer headers.
+#include "renderer/global/global.h"
+#include "renderer/modeling/entity/entitytraits.h"
+#include "renderer/modeling/scene/containers.h"
 
-#endif  // !APPLESEED_RENDERER_API_MATERIAL_H
+// Forward declarations.
+namespace renderer  { class BSDF; }
+namespace renderer  { class BSDFFactoryRegistrar; }
+
+namespace renderer
+{
+
+//
+// BSDF entity traits.
+//
+
+template <>
+struct EntityTraits<renderer::BSDF>
+{
+    typedef renderer::BSDFContainer ContainerType;
+    typedef renderer::BSDFFactoryRegistrar FactoryRegistrarType;
+
+    static const char* get_entity_type_name()                           { return "bsdf"; }
+    static const char* get_human_readable_entity_type_name()            { return "BSDF"; }
+    static const char* get_human_readable_collection_type_name()        { return "BSDFs"; }
+
+    template <typename ParentEntity>
+    static ContainerType& get_entity_container(ParentEntity& parent)    { return parent.bsdfs(); }
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_BSDF_BSDFTRAITS_H

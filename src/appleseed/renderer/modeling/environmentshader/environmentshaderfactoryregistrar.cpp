@@ -41,9 +41,7 @@ using namespace std;
 namespace renderer
 {
 
-//
-// EnvironmentShaderFactoryRegistrar class implementation.
-//
+DEFINE_ARRAY(EnvironmentShaderFactoryArray);
 
 struct EnvironmentShaderFactoryRegistrar::Impl
 {
@@ -53,9 +51,22 @@ struct EnvironmentShaderFactoryRegistrar::Impl
 EnvironmentShaderFactoryRegistrar::EnvironmentShaderFactoryRegistrar()
   : impl(new Impl())
 {
-    impl->m_registrar.insert(
-        EDFEnvironmentShaderFactory::get_model(),
-        auto_ptr<IEnvironmentShaderFactory>(new EDFEnvironmentShaderFactory()));
+    register_factory(auto_ptr<FactoryType>(new EDFEnvironmentShaderFactory()));
+}
+
+void EnvironmentShaderFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
+{
+    impl->m_registrar.insert(factory->get_model(), factory);
+}
+
+EnvironmentShaderFactoryArray EnvironmentShaderFactoryRegistrar::get_factories() const
+{
+    FactoryArrayType factories;
+
+    for (const_each<Registrar<FactoryType>::Items> i = impl->m_registrar.items(); i; ++i)
+        factories.push_back(i->second);
+
+    return factories;
 }
 
 const EnvironmentShaderFactoryRegistrar::FactoryType*
