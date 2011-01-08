@@ -58,8 +58,8 @@ class SingleModelEntityItem
 {
   public:
     SingleModelEntityItem(
-        ParentEntity&       parent,
         Entity&             entity,
+        ParentEntity&       parent,
         ProjectBuilder&     project_builder);
 
   private:
@@ -75,8 +75,8 @@ class SingleModelEntityItem
 
 template <typename Entity, typename ParentEntity, typename Factory>
 SingleModelEntityItem<Entity, ParentEntity, Factory>::SingleModelEntityItem(
-    ParentEntity&           parent,
     Entity&                 entity,
+    ParentEntity&           parent,
     ProjectBuilder&         project_builder)
   : EntityItem(entity, project_builder)
   , m_parent(parent)

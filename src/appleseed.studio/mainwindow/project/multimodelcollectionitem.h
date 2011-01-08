@@ -95,8 +95,8 @@ void MultiModelCollectionItem<Entity, ParentEntity>::add_item(Entity& entity)
 {
     addChild(
         new MultiModelEntityItem<Entity, ParentEntity>(
-            m_parent,
             entity,
+            m_parent,
             m_project_builder));
 }
 

@@ -59,8 +59,8 @@ class MultiModelEntityItem
 {
   public:
     MultiModelEntityItem(
-        ParentEntity&       parent,
         Entity&             entity,
+        ParentEntity&       parent,
         ProjectBuilder&     project_builder);
 
   private:
@@ -76,8 +76,8 @@ class MultiModelEntityItem
 
 template <typename Entity, typename ParentEntity>
 MultiModelEntityItem<Entity, ParentEntity>::MultiModelEntityItem(
-    ParentEntity&           parent,
     Entity&                 entity,
+    ParentEntity&           parent,
     ProjectBuilder&         project_builder)
   : EntityItem(entity, project_builder)
   , m_parent(parent)

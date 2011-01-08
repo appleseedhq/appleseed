@@ -81,8 +81,8 @@ void MaterialCollectionItem::add_item(Material& material)
 {
     addChild(
         new SingleModelEntityItem<Material, Assembly, MaterialFactory>(
-            m_assembly,
             material,
+            m_assembly,
             m_project_builder));
 }
 
