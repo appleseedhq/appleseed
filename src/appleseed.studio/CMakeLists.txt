@@ -129,11 +129,6 @@ set(mainwindow_project_sources
     mainwindow/project/entityitem.h
     mainwindow/project/entityitembase.cpp
     mainwindow/project/entityitembase.h
-    mainwindow/project/entitytraits.h
-    mainwindow/project/environmentedfcollectionitem.cpp
-    mainwindow/project/environmentedfcollectionitem.h
-    mainwindow/project/environmentshadercollectionitem.cpp
-    mainwindow/project/environmentshadercollectionitem.h
     mainwindow/project/itembase.cpp
     mainwindow/project/itembase.h
     mainwindow/project/itemtypemap.h

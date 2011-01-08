@@ -36,8 +36,6 @@
 namespace appleseed { namespace studio { class AssemblyCollectionItem; } }
 namespace appleseed { namespace studio { class AssemblyInstanceCollectionItem; } }
 namespace appleseed { namespace studio { class ColorCollectionItem; } }
-namespace appleseed { namespace studio { class EnvironmentEDFCollectionItem; } }
-namespace appleseed { namespace studio { class EnvironmentShaderCollectionItem; } }
 namespace appleseed { namespace studio { class LightCollectionItem; } }
 namespace appleseed { namespace studio { class MaterialCollectionItem; } }
 namespace appleseed { namespace studio { class ObjectCollectionItem; } }
@@ -57,8 +55,6 @@ template <typename> struct ItemTypeMap;
 template <> struct ItemTypeMap<renderer::AssemblyContainer>             { typedef AssemblyCollectionItem T; };
 template <> struct ItemTypeMap<renderer::AssemblyInstanceContainer>     { typedef AssemblyInstanceCollectionItem T; };
 template <> struct ItemTypeMap<renderer::ColorContainer>                { typedef ColorCollectionItem T; };
-template <> struct ItemTypeMap<renderer::EnvironmentEDFContainer>       { typedef EnvironmentEDFCollectionItem T; };
-template <> struct ItemTypeMap<renderer::EnvironmentShaderContainer>    { typedef EnvironmentShaderCollectionItem T; };
 template <> struct ItemTypeMap<renderer::LightContainer>                { typedef LightCollectionItem T; };
 template <> struct ItemTypeMap<renderer::MaterialContainer>             { typedef MaterialCollectionItem T; };
 template <> struct ItemTypeMap<renderer::ObjectContainer>               { typedef ObjectCollectionItem T; };

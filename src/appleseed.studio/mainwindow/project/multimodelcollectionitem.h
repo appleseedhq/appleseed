@@ -33,10 +33,12 @@
 #include "mainwindow/project/collectionitem.h"
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entityeditorwindow.h"
-#include "mainwindow/project/entitytraits.h"
 #include "mainwindow/project/multimodelentityeditorformfactory.h"
 #include "mainwindow/project/multimodelentityitem.h"
 #include "mainwindow/project/tools.h"
+
+// appleseed.renderer headers.
+#include "renderer/api/entity.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
@@ -101,7 +103,7 @@ void MultiModelCollectionItem<Entity, ParentEntity>::add_item(Entity& entity)
 template <typename Entity, typename ParentEntity>
 void MultiModelCollectionItem<Entity, ParentEntity>::slot_create()
 {
-    typedef typename EntityTraits<Entity> EntityTraits;
+    typedef typename renderer::EntityTraits<Entity> EntityTraits;
 
     const std::string window_title =
         std::string("Create ") +

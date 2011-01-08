@@ -32,8 +32,10 @@
 // appleseed.studio headers.
 #include "mainwindow/project/collectionitembase.h"
 #include "mainwindow/project/entitycreatorbase.h"
-#include "mainwindow/project/entitytraits.h"
 #include "mainwindow/project/projectbuilder.h"
+
+// appleseed.renderer headers.
+#include "renderer/api/entity.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
@@ -106,7 +108,7 @@ QMenu* CollectionItem<Entity, ParentEntity>::get_single_item_context_menu() cons
 
     menu->addAction(
         QString("Create %1...").arg(
-            EntityTraits<Entity>::get_human_readable_entity_type_name()),
+            renderer::EntityTraits<Entity>::get_human_readable_entity_type_name()),
         this,
         SLOT(slot_create()));
 
@@ -119,7 +121,7 @@ void CollectionItem<Entity, ParentEntity>::slot_create_accepted(foundation::Dict
     catch_entity_creation_errors(
         &CollectionItem::create,
         values,
-        EntityTraits<Entity>::get_human_readable_entity_type_name());
+        renderer::EntityTraits<Entity>::get_human_readable_entity_type_name());
 }
 
 template <typename Entity, typename ParentEntity>

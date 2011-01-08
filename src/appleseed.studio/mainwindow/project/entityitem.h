@@ -32,8 +32,10 @@
 // appleseed.studio headers.
 #include "mainwindow/project/entitycreatorbase.h"
 #include "mainwindow/project/entityitembase.h"
-#include "mainwindow/project/entitytraits.h"
 #include "mainwindow/project/projectbuilder.h"
+
+// appleseed.renderer headers.
+#include "renderer/api/entity.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
@@ -85,7 +87,7 @@ void EntityItem<Entity>::slot_edit_accepted(foundation::Dictionary values)
     catch_entity_creation_errors(
         &EntityItem::edit,
         values,
-        EntityTraits<Entity>::get_human_readable_entity_type_name());
+        renderer::EntityTraits<Entity>::get_human_readable_entity_type_name());
 }
 
 template <typename Entity>

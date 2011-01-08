@@ -33,11 +33,11 @@
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entityeditorwindow.h"
 #include "mainwindow/project/entityitem.h"
-#include "mainwindow/project/entitytraits.h"
 #include "mainwindow/project/multimodelentityeditorformfactory.h"
 #include "mainwindow/project/tools.h"
 
 // appleseed.renderer headers.
+#include "renderer/api/entity.h"
 #include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
@@ -87,7 +87,7 @@ MultiModelEntityItem<Entity, ParentEntity>::MultiModelEntityItem(
 template <typename Entity, typename ParentEntity>
 void MultiModelEntityItem<Entity, ParentEntity>::slot_edit()
 {
-    typedef typename EntityTraits<Entity> EntityTraits;
+    typedef typename renderer::EntityTraits<Entity> EntityTraits;
 
     const std::string window_title =
         std::string("Edit ") +

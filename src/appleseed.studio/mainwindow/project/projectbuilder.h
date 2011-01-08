@@ -31,13 +31,13 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/assemblycollectionitem.h"
-#include "mainwindow/project/entitytraits.h"
-#include "mainwindow/project/projecttree.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
 #include "renderer/api/edf.h"
+#include "renderer/api/entity.h"
 #include "renderer/api/environmentedf.h"
+#include "renderer/api/environmentshader.h"
 #include "renderer/api/surfaceshader.h"
 
 // appleseed.foundation headers.
@@ -54,6 +54,7 @@
 #include <string>
 
 // Forward declarations.
+namespace appleseed { namespace studio { class ProjectTree; } }
 namespace renderer  { class Assembly; }
 namespace renderer  { class Project; }
 namespace renderer  { class Scene; }
@@ -83,9 +84,6 @@ class ProjectBuilder
     void insert_assembly_instance(
         const std::string&                  name,
         renderer::Assembly&                 assembly) const;
-
-    void insert_environment_edf(
-        const foundation::Dictionary&       values) const;
 
     void insert_material(
         renderer::Assembly&                 assembly,
@@ -119,19 +117,21 @@ class ProjectBuilder
     void notify_project_modification() const;
 
     template <typename Entity>
-    const typename EntityTraits<Entity>::FactoryRegistrarType& get_factory_registrar() const;
+    const typename renderer::EntityTraits<Entity>::FactoryRegistrarType&
+        get_factory_registrar() const;
 
   signals:
     void project_modified() const;
 
   private:
-    renderer::Project&                          m_project;
-    ProjectTree&                                m_project_tree;
+    renderer::Project&                              m_project;
+    ProjectTree&                                    m_project_tree;
 
-    renderer::BSDFFactoryRegistrar              m_bsdf_factory_registrar;
-    renderer::EDFFactoryRegistrar               m_edf_factory_registrar;
-    renderer::SurfaceShaderFactoryRegistrar     m_surface_shader_factory_registrar;
-    renderer::EnvironmentEDFFactoryRegistrar    m_environment_edf_factory_registrar;
+    renderer::BSDFFactoryRegistrar                  m_bsdf_factory_registrar;
+    renderer::EDFFactoryRegistrar                   m_edf_factory_registrar;
+    renderer::SurfaceShaderFactoryRegistrar         m_surface_shader_factory_registrar;
+    renderer::EnvironmentEDFFactoryRegistrar        m_environment_edf_factory_registrar;
+    renderer::EnvironmentShaderFactoryRegistrar     m_environment_shader_factory_registrar;
 
     static std::string get_entity_name(const foundation::Dictionary& values);
 
@@ -154,28 +154,28 @@ void ProjectBuilder::insert_entity(
     const foundation::Dictionary&       values) const
 {
     foundation::auto_release_ptr<Entity> entity(
-        create_entity<Entity, renderer::Scene>(parent, values));
+        create_entity<Entity, renderer::Scene>(scene, values));
 
     m_project_tree.add_item(entity.ref());
 
-    EntityTraits<Entity>::get_entity_container(parent).insert(entity);
+    renderer::EntityTraits<Entity>::get_entity_container(scene).insert(entity);
 
     notify_project_modification();
 }
 
 template <typename Entity>
 void ProjectBuilder::insert_entity(
-    renderer::Assembly&                 parent,
+    renderer::Assembly&                 assembly,
     const foundation::Dictionary&       values) const
 {
     foundation::auto_release_ptr<Entity> entity(
-        create_entity<Entity, renderer::Assembly>(parent, values));
+        create_entity<Entity, renderer::Assembly>(assembly, values));
 
     m_project_tree.get_assembly_collection_item()
-                  .get_item(parent)
+                  .get_item(assembly)
                   .add_item(entity.ref());
 
-    EntityTraits<Entity>::get_entity_container(parent).insert(entity);
+    renderer::EntityTraits<Entity>::get_entity_container(assembly).insert(entity);
 
     notify_project_modification();
 }
@@ -188,7 +188,7 @@ foundation::auto_release_ptr<Entity> ProjectBuilder::create_entity(
     const std::string name = get_entity_name(values);
     const std::string model = values.get<std::string>("model");
 
-    typedef typename EntityTraits<Entity>::FactoryRegistrarType FactoryRegistrarType;
+    typedef typename renderer::EntityTraits<Entity>::FactoryRegistrarType FactoryRegistrarType;
     typedef typename FactoryRegistrarType::FactoryType FactoryType;
 
     const FactoryRegistrarType& factory_registrar = get_factory_registrar<Entity>();
@@ -199,31 +199,38 @@ foundation::auto_release_ptr<Entity> ProjectBuilder::create_entity(
 }
 
 template <>
-inline const typename EntityTraits<renderer::BSDF>::FactoryRegistrarType&
+inline const typename renderer::EntityTraits<renderer::BSDF>::FactoryRegistrarType&
 ProjectBuilder::get_factory_registrar<renderer::BSDF>() const
 {
     return m_bsdf_factory_registrar;
 }
 
 template <>
-inline const typename EntityTraits<renderer::EDF>::FactoryRegistrarType&
+inline const typename renderer::EntityTraits<renderer::EDF>::FactoryRegistrarType&
 ProjectBuilder::get_factory_registrar<renderer::EDF>() const
 {
     return m_edf_factory_registrar;
 }
 
 template <>
-inline const typename EntityTraits<renderer::SurfaceShader>::FactoryRegistrarType&
+inline const typename renderer::EntityTraits<renderer::SurfaceShader>::FactoryRegistrarType&
 ProjectBuilder::get_factory_registrar<renderer::SurfaceShader>() const
 {
     return m_surface_shader_factory_registrar;
 }
 
 template <>
-inline const typename EntityTraits<renderer::EnvironmentEDF>::FactoryRegistrarType&
+inline const typename renderer::EntityTraits<renderer::EnvironmentEDF>::FactoryRegistrarType&
 ProjectBuilder::get_factory_registrar<renderer::EnvironmentEDF>() const
 {
     return m_environment_edf_factory_registrar;
+}
+
+template <>
+inline const typename renderer::EntityTraits<renderer::EnvironmentShader>::FactoryRegistrarType&
+ProjectBuilder::get_factory_registrar<renderer::EnvironmentShader>() const
+{
+    return m_environment_shader_factory_registrar;
 }
 
 }       // namespace studio

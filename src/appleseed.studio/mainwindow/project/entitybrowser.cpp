@@ -33,6 +33,8 @@
 #include "renderer/api/bsdf.h"
 #include "renderer/api/color.h"
 #include "renderer/api/edf.h"
+#include "renderer/api/environmentedf.h"
+#include "renderer/api/environmentshader.h"
 #include "renderer/api/material.h"
 #include "renderer/api/scene.h"
 #include "renderer/api/surfaceshader.h"
@@ -72,6 +74,14 @@ StringDictionary EntityBrowser<Scene>::get_entities(const string& type) const
     if (type == "color")
     {
         return build_entity_dictionary(m_scene.colors());
+    }
+    else if (type == "environment_edf")
+    {
+        return build_entity_dictionary(m_scene.environment_edfs());
+    }
+    else if (type == "environment_shader")
+    {
+        return build_entity_dictionary(m_scene.environment_shaders());
     }
     else if (type == "texture_instance")
     {
