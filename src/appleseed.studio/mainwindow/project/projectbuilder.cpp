@@ -37,7 +37,6 @@
 #include "mainwindow/project/textureinstancecollectionitem.h"
 
 // appleseed.renderer headers.
-#include "renderer/api/material.h"
 #include "renderer/api/object.h"
 #include "renderer/api/project.h"
 #include "renderer/api/scene.h"
@@ -98,27 +97,6 @@ void ProjectBuilder::insert_assembly_instance(
     m_project_tree.add_item(assembly_instance.ref());
 
     m_project.get_scene()->assembly_instances().insert(assembly_instance);
-
-    notify_project_modification();
-}
-
-void ProjectBuilder::insert_material(
-    Assembly&           assembly,
-    const Dictionary&   values) const
-{
-    const string name = get_entity_name(values);
-
-    auto_release_ptr<Material> material(
-        MaterialFactory::create(
-            name.c_str(),
-            values,
-            assembly.surface_shaders(),
-            assembly.bsdfs(),
-            assembly.edfs()));
-
-    m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(material.ref());
-
-    assembly.materials().insert(material);
 
     notify_project_modification();
 }

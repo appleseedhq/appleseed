@@ -134,8 +134,6 @@ set(mainwindow_project_sources
     mainwindow/project/itemtypemap.h
     mainwindow/project/lightcollectionitem.cpp
     mainwindow/project/lightcollectionitem.h
-    mainwindow/project/materialcollectionitem.cpp
-    mainwindow/project/materialcollectionitem.h
     mainwindow/project/multimodelcollectionitem.h
     mainwindow/project/multimodelentityeditorformfactory.h
     mainwindow/project/multimodelentityitem.h
@@ -153,6 +151,7 @@ set(mainwindow_project_sources
     mainwindow/project/projectmanager.h
     mainwindow/project/projecttree.cpp
     mainwindow/project/projecttree.h
+    mainwindow/project/singlemodelcollectionitem.h
     mainwindow/project/singlemodelentityeditorformfactory.cpp
     mainwindow/project/singlemodelentityeditorformfactory.h
     mainwindow/project/singlemodelentityitem.h

@@ -26,21 +26,23 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_SINGLEMODELENTITYITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_SINGLEMODELENTITYITEM_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_SINGLEMODELCOLLECTIONITEM_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_SINGLEMODELCOLLECTIONITEM_H
 
 // appleseed.studio headers.
+#include "mainwindow/project/collectionitem.h"
 #include "mainwindow/project/entitybrowser.h"
-#include "mainwindow/project/entityitem.h"
+#include "mainwindow/project/entityeditorwindow.h"
 #include "mainwindow/project/singlemodelentityeditorformfactory.h"
+#include "mainwindow/project/singlemodelentityitem.h"
 #include "mainwindow/project/tools.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/entity.h"
-#include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/uid.h"
 
 // Standard headers.
 #include <memory>
@@ -52,69 +54,88 @@ namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace appleseed {
 namespace studio {
 
+#pragma warning (push)
+#pragma warning (disable: 4250)     // 'class1' : inherits 'class2::member' via dominance
+
 template <typename Entity, typename ParentEntity>
-class SingleModelEntityItem
-  : public EntityItem<Entity>
+class SingleModelCollectionItem
+  : public CollectionItem<Entity, ParentEntity>
 {
   public:
-    SingleModelEntityItem(
-        Entity&             entity,
-        ParentEntity&       parent,
-        ProjectBuilder&     project_builder);
+    SingleModelCollectionItem(
+        const foundation::UniqueID  class_uid,
+        const QString&              title,
+        ParentEntity&               parent,
+        ProjectBuilder&             project_builder);
+
+    virtual void add_item(Entity& entity);
 
   private:
-    ParentEntity&           m_parent;
-
-    virtual void slot_edit();
+    virtual void slot_create();
 };
 
 
 //
-// SingleModelEntityItem class implementation.
+// SingleModelCollectionItem class implementation.
 //
 
 template <typename Entity, typename ParentEntity>
-SingleModelEntityItem<Entity, ParentEntity>::SingleModelEntityItem(
-    Entity&                 entity,
-    ParentEntity&           parent,
-    ProjectBuilder&         project_builder)
-  : EntityItem(entity, project_builder)
-  , m_parent(parent)
+SingleModelCollectionItem<Entity, ParentEntity>::SingleModelCollectionItem(
+    const foundation::UniqueID      class_uid,
+    const QString&                  title,
+    ParentEntity&                   parent,
+    ProjectBuilder&                 project_builder)
+  : ItemBase(class_uid, title)
+  , CollectionItem(parent, project_builder)
 {
 }
 
 template <typename Entity, typename ParentEntity>
-void SingleModelEntityItem<Entity, ParentEntity>::slot_edit()
+void SingleModelCollectionItem<Entity, ParentEntity>::add_item(Entity& entity)
+{
+    addChild(
+        new SingleModelEntityItem<Entity, ParentEntity>(
+            entity,
+            m_parent,
+            m_project_builder));
+}
+
+template <typename Entity, typename ParentEntity>
+void SingleModelCollectionItem<Entity, ParentEntity>::slot_create()
 {
     typedef typename renderer::EntityTraits<Entity> EntityTraits;
 
     const std::string window_title =
-        std::string("Edit ") +
+        std::string("Create ") +
         EntityTraits::get_human_readable_entity_type_name();
+
+    const std::string name_suggestion =
+        get_name_suggestion(
+            EntityTraits::get_entity_type_name(),
+            EntityTraits::get_entity_container(m_parent));
 
     typedef typename EntityTraits::FactoryType FactoryType;
 
     std::auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
         new SingleModelEntityEditorFormFactory(
-            m_entity.get_name(),
+            name_suggestion,
             FactoryType::get_widget_definitions()));
 
     std::auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
         new EntityBrowser<ParentEntity>(m_parent));
-
-    foundation::Dictionary values = m_entity.get_parameters();
 
     open_entity_editor(
         treeWidget(),
         window_title,
         form_factory,
         entity_browser,
-        values,
         this,
-        SLOT(slot_edit_accepted(foundation::Dictionary)));
+        SLOT(slot_create_accepted(foundation::Dictionary)));
 }
+
+#pragma warning (pop)
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_SINGLEMODELENTITYITEM_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_SINGLEMODELCOLLECTIONITEM_H

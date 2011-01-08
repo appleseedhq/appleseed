@@ -32,12 +32,12 @@
 // appleseed.studio headers.
 #include "mainwindow/project/colorcollectionitem.h"
 #include "mainwindow/project/lightcollectionitem.h"
-#include "mainwindow/project/materialcollectionitem.h"
 #include "mainwindow/project/multimodelcollectionitem.h"
 #include "mainwindow/project/objectcollectionitem.h"
 #include "mainwindow/project/objectinstancecollectionitem.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/projecttree.h"
+#include "mainwindow/project/singlemodelcollectionitem.h"
 #include "mainwindow/project/texturecollectionitem.h"
 #include "mainwindow/project/textureinstancecollectionitem.h"
 #include "mainwindow/project/tools.h"
@@ -88,7 +88,7 @@ AssemblyItem::AssemblyItem(
     m_bsdf_collection_item = add_multi_model_collection_item<BSDF>(assembly.bsdfs());
     m_edf_collection_item = add_multi_model_collection_item<EDF>(assembly.edfs());
     m_surface_shader_collection_item = add_multi_model_collection_item<SurfaceShader>(assembly.surface_shaders());
-    m_material_collection_item = add_collection_item(assembly.materials());
+    m_material_collection_item = add_single_model_collection_item<Material>(assembly.materials());
     m_light_collection_item = add_collection_item(assembly.lights());
     m_object_collection_item = add_collection_item(assembly.objects());
     m_object_instance_collection_item = add_collection_item(assembly.object_instances());
@@ -174,6 +174,23 @@ typename ItemTypeMap<EntityContainer>::T* AssemblyItem::add_collection_item(Enti
             m_assembly,
             entities,
             m_project_builder);
+
+    addChild(item);
+
+    return item;
+}
+
+template <typename Entity, typename EntityContainer>
+CollectionItem<Entity, Assembly>* AssemblyItem::add_single_model_collection_item(EntityContainer& entities)
+{
+    CollectionItem<Entity, Assembly>* item =
+        new SingleModelCollectionItem<Entity, Assembly>(
+            new_guid(),
+            EntityTraits<Entity>::get_human_readable_collection_type_name(),
+            m_assembly,
+            m_project_builder);
+
+    item->add_items(entities);
 
     addChild(item);
 

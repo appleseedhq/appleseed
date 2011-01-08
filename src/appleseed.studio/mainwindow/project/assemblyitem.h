@@ -40,7 +40,6 @@
 // Forward declarations.
 namespace appleseed { namespace studio { class ColorCollectionItem; } }
 namespace appleseed { namespace studio { class LightCollectionItem; } }
-namespace appleseed { namespace studio { class MaterialCollectionItem; } }
 namespace appleseed { namespace studio { class ObjectCollectionItem; } }
 namespace appleseed { namespace studio { class ObjectInstanceCollectionItem; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
@@ -104,13 +103,18 @@ class AssemblyItem
     CollectionItem<
         renderer::SurfaceShader,
         renderer::Assembly>*        m_surface_shader_collection_item;
-    MaterialCollectionItem*         m_material_collection_item;
+    CollectionItem<
+        renderer::Material,
+        renderer::Assembly>*        m_material_collection_item;
     LightCollectionItem*            m_light_collection_item;
     ObjectCollectionItem*           m_object_collection_item;
     ObjectInstanceCollectionItem*   m_object_instance_collection_item;
 
     template <typename EntityContainer>
     typename ItemTypeMap<EntityContainer>::T* add_collection_item(EntityContainer& entities);
+
+    template <typename Entity, typename EntityContainer>
+    CollectionItem<Entity, renderer::Assembly>* add_single_model_collection_item(EntityContainer& entities);
 
     template <typename Entity, typename EntityContainer>
     CollectionItem<Entity, renderer::Assembly>* add_multi_model_collection_item(EntityContainer& entities);

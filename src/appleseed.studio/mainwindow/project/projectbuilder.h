@@ -38,6 +38,7 @@
 #include "renderer/api/entity.h"
 #include "renderer/api/environmentedf.h"
 #include "renderer/api/environmentshader.h"
+#include "renderer/api/material.h"
 #include "renderer/api/surfaceshader.h"
 
 // appleseed.foundation headers.
@@ -84,10 +85,6 @@ class ProjectBuilder
     void insert_assembly_instance(
         const std::string&                  name,
         renderer::Assembly&                 assembly) const;
-
-    void insert_material(
-        renderer::Assembly&                 assembly,
-        const foundation::Dictionary&       values) const;
 
     void insert_objects(
         renderer::Assembly&                 assembly,
@@ -196,6 +193,22 @@ foundation::auto_release_ptr<Entity> ProjectBuilder::create_entity(
 
     assert(factory);
     return factory->create(name.c_str(), values);
+}
+
+template <>
+inline foundation::auto_release_ptr<renderer::Material> ProjectBuilder::create_entity(
+    renderer::Assembly&                 assembly,
+    const foundation::Dictionary&       values) const
+{
+    const std::string name = get_entity_name(values);
+
+    return
+        renderer::MaterialFactory::create(
+            name.c_str(),
+            values,
+            assembly.surface_shaders(),
+            assembly.bsdfs(),
+            assembly.edfs());
 }
 
 template <>
