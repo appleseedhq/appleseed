@@ -31,6 +31,7 @@
 #include "foundation/image/drawing.h"
 #include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
+#include "foundation/math/area.h"
 #include "foundation/math/distance.h"
 #include "foundation/math/knn.h"
 #include "foundation/math/rng.h"
@@ -95,7 +96,7 @@ TEST_SUITE(Exploration_PointCloudSampling)
             bary[i] *= rcp_sum;
     }
 
-    void generate_random_initial_points(
+    void generate_random_initial_points_bean(
         MersenneTwister&            rng,
         vector<Vector2d>&           points,
         const size_t                count)
@@ -123,6 +124,47 @@ TEST_SUITE(Exploration_PointCloudSampling)
         }
     }
 
+    void generate_random_initial_points_disk(
+        MersenneTwister&            rng,
+        vector<Vector2d>&           points,
+        const size_t                count)
+    {
+        const Vector2d Center(0.5, 0.5);
+        const double Radius = 0.2;
+
+        for (size_t i = 0; i < count; ++i)
+        {
+            Vector2d s;
+            s[0] = rand_double2(rng);
+            s[1] = rand_double2(rng);
+            points.push_back(sample_disk_uniform(Center, Radius, s));
+        }
+    }
+
+    void generate_random_initial_points_circle(
+        MersenneTwister&            rng,
+        vector<Vector2d>&           points,
+        const size_t                count)
+    {
+        const Vector2d Center(0.5, 0.5);
+        const double Radius = 0.2;
+
+        for (size_t i = 0; i < count; ++i)
+            points.push_back(Center + Radius * sample_circle_uniform(rand_double2(rng)));
+    }
+
+    // todo: move to foundation/math/area.h.
+    template <typename T>
+    T triangle_area(
+        const Vector<T, 2>& v0,
+        const Vector<T, 2>& v1,
+        const Vector<T, 2>& v2)
+    {
+        const Vector<T, 2> e0 = v1 - v0;
+        const Vector<T, 2> e1 = v2 - v0;
+        return T(0.5) * abs((v1.x - v0.x) * (v2.y - v0.y) - (v2.x - v0.x) * (v1.y - v0.y));
+    }
+
     //
     // Method   Algorithm
     //
@@ -135,6 +177,7 @@ TEST_SUITE(Exploration_PointCloudSampling)
     //   M5     Old Particle Porn algorithm: apply M4 around points selected via M1
     //   M6     New Particle Porn algorithm: M1 with probabilistic rejection of new points
     //          that are too far from their neighbors
+    //   M7     Surface method
     //
 
     void generate_new_random_points(
@@ -144,7 +187,7 @@ TEST_SUITE(Exploration_PointCloudSampling)
         const size_t                multiplication_rate,
         const size_t                method)
     {
-        const double SamplingRadius = 0.1;
+        const double SamplingRadius = 0.025;
         const size_t NeighborCount = 3;
 
         assert(NeighborCount >= 3);     // in order to build triangles from nearest neighbors
@@ -250,7 +293,7 @@ TEST_SUITE(Exploration_PointCloudSampling)
                     random_barycentric_coordinates(rng, NeighborCount, knn_bary);
 
                     Vector2d new_point(0.0);
-     
+
                     for (size_t w = 0; w < NeighborCount; ++w)
                     {
                         const size_t neighbor_index = answer.get(w).m_index;
@@ -277,7 +320,7 @@ TEST_SUITE(Exploration_PointCloudSampling)
                             avg_dist += answer.get(w).m_distance;
                         avg_dist /= NeighborCount;
 
-                        const double Tension = 80.0;
+                        const double Tension = 150.0;
                         const double k = avg_dist / SamplingRadius;
                         const double acceptance_prob = exp(-k * Tension);
 
@@ -287,6 +330,36 @@ TEST_SUITE(Exploration_PointCloudSampling)
                             break;
                         }
                     }
+                }
+                else if (method == 7)
+                {
+                    query.run(initial_points[i]);
+
+                    Vector2d avg_n(0.0);
+
+                    for (size_t w = 0; w < NeighborCount; ++w)
+                    {
+                        const size_t neighbor_index = answer.get(w).m_index;
+                        const Vector2d neighbor_point = initial_points[neighbor_index];
+                        const Vector2d d = initial_points[i] - neighbor_point;
+
+                        Vector2d n(-d.y, d.x);
+
+                        if (dot(n, avg_n) < 0.0)
+                            n = -n;
+
+                        if (square_norm(n) > 0.0)
+                            avg_n += normalize(n);
+                    }
+
+                    avg_n = normalize(avg_n);
+
+                    const Vector2d plane(-avg_n.y, avg_n.x);
+
+                    const Vector2d new_point =
+                        initial_points[i] + rand_double1(rng, -SamplingRadius, SamplingRadius) * plane;
+
+                    new_points.push_back(new_point);
                 }
                 else
                 {
@@ -301,9 +374,10 @@ TEST_SUITE(Exploration_PointCloudSampling)
         MersenneTwister rng;
 
         vector<Vector2d> initial_points;
-        generate_random_initial_points(rng, initial_points, 100);
+//      generate_random_initial_points_bean(rng, initial_points, 100);
+        generate_random_initial_points_circle(rng, initial_points, 100);
 
-        for (size_t method = 1; method <= 6; ++method)
+        for (size_t method = 1; method <= 7; ++method)
         {
             vector<Vector2d> new_points;
             generate_new_random_points(rng, new_points, initial_points, 100, method);
@@ -329,5 +403,101 @@ TEST_SUITE(Exploration_PointCloudSampling)
 
             GenericImageFileWriter().write(sstr.str().c_str(), image);
         }
+    }
+
+    void rasterize(const Vector2d& point, Image& image)
+    {
+        const int Radius = 100;         // in pixels
+        const double Scale = 1.0;
+        const double Exponent = 2.0;
+
+        const CanvasProperties& props = image.properties();
+
+        const int cx = static_cast<int>(point.x * props.m_canvas_width);
+        const int cy = static_cast<int>(point.y * props.m_canvas_height);
+        const int max_x = static_cast<int>(props.m_canvas_width);
+        const int max_y = static_cast<int>(props.m_canvas_height);
+
+        for (int y = max(cy - Radius, 0); y < min(cy + Radius, max_y); ++y)
+        {
+            for (int x = max(cx - Radius, 0); x < min(cx + Radius, max_x); ++x)
+            {
+                const double dx2 = square(x - cx);
+                const double dy2 = square(y - cy);
+                const double distance = sqrt(dx2 + dy2) / Radius;
+                const double intensity =
+                    Scale * pow(saturate(1.0 - distance), Exponent);
+
+                Color3f color;
+
+                image.get_pixel(
+                    static_cast<size_t>(x),
+                    static_cast<size_t>(y),
+                    color);
+
+                color += Color3f(static_cast<float>(intensity));
+                color = saturate(color);
+
+                image.set_pixel(
+                    static_cast<size_t>(x),
+                    static_cast<size_t>(y),
+                    color);
+            }
+        }
+    }
+
+    void rasterize(const vector<Vector2d>& points, Image& image)
+    {
+        for (size_t i = 0; i < points.size(); ++i)
+            rasterize(points[i], image);
+    }
+
+    void apply_threshold(const double threshold, Image& image)
+    {
+        const CanvasProperties& props = image.properties();
+
+        for (size_t y = 0; y < props.m_canvas_height; ++y)
+        {
+            for (size_t x = 0; x < props.m_canvas_width; ++x)
+            {
+                Color3f color;
+                image.get_pixel(x, y, color);
+
+                if (color[0] < threshold)
+                    color.set(0.0f);
+                else color.set(1.0f);
+
+                image.set_pixel(x, y, color);
+            }
+        }
+    }
+
+    TEST_CASE(Thresholding)
+    {
+        MersenneTwister rng;
+
+        vector<Vector2d> initial_points;
+        generate_random_initial_points_bean(rng, initial_points, 100);
+
+        Image image(
+            1024,
+            1024,
+            32,
+            32,
+            3,
+            PixelFormatFloat);
+
+        image.clear(Color3f(0.0f));
+
+        rasterize(initial_points, image);
+        apply_threshold(0.99, image);
+
+        for (size_t i = 0; i < initial_points.size(); ++i)
+            Drawing::draw_dot(image, initial_points[i], Color3f(1.0f, 1.0f, 0.0f));
+
+        stringstream sstr;
+        sstr << "output/test_pointcloudsampling_thresholding.png";
+
+        GenericImageFileWriter().write(sstr.str().c_str(), image);
     }
 }
