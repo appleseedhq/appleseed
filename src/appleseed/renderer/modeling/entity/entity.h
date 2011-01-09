@@ -51,10 +51,10 @@ class RENDERERDLL Entity
   public:
     // Constructors.
     explicit Entity(
-        const foundation::UniqueID  class_uid);
+        const foundation::UniqueID      class_uid);
     Entity(
-        const foundation::UniqueID  class_uid,
-        const ParamArray&           params);
+        const foundation::UniqueID      class_uid,
+        const ParamArray&               params);
 
     // Return the unique ID of this class of entities.
     foundation::UniqueID get_class_uid() const;
