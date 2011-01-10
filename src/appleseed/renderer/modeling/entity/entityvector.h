@@ -229,48 +229,55 @@ class TypedEntityVector
 
 
 //
-// TypedEntityVector class implementation.
+// TypedEntityVector::iterator class implementation.
 //
 
-// Constructor.
 template <typename T>
 inline TypedEntityVector<T>::iterator::iterator(const EntityVector::iterator& rhs)
   : EntityVector::iterator(rhs)
 {
 }
 
-// Dereference operators.
 template <typename T>
 inline T& TypedEntityVector<T>::iterator::operator*() const
 {
     return reinterpret_cast<T&>(EntityVector::iterator::operator*());
 }
+
 template <typename T>
 inline T* TypedEntityVector<T>::iterator::operator->() const
 {
     return reinterpret_cast<T*>(EntityVector::iterator::operator->());
 }
 
-// Constructor.
+
+//
+// TypedEntityVector::const_iterator class implementation.
+//
+
 template <typename T>
 inline TypedEntityVector<T>::const_iterator::const_iterator(const EntityVector::const_iterator& rhs)
   : EntityVector::const_iterator(rhs)
 {
 }
 
-// Dereference operators.
 template <typename T>
 inline const T& TypedEntityVector<T>::const_iterator::operator*() const
 {
     return reinterpret_cast<const T&>(EntityVector::const_iterator::operator*());
 }
+
 template <typename T>
 inline const T* TypedEntityVector<T>::const_iterator::operator->() const
 {
     return reinterpret_cast<const T*>(EntityVector::const_iterator::operator->());
 }
 
-// Insert an entity into the container and return its index.
+
+//
+// TypedEntityVector class implementation.
+//
+
 template <typename T>
 inline size_t TypedEntityVector<T>::insert(foundation::auto_release_ptr<T> entity)
 {
@@ -278,31 +285,30 @@ inline size_t TypedEntityVector<T>::insert(foundation::auto_release_ptr<T> entit
         foundation::auto_release_ptr<Entity>(entity.release()));
 }
 
-// Return a given entity.
 template <typename T>
 inline T* TypedEntityVector<T>::get(const size_t index) const
 {
     return reinterpret_cast<T*>(EntityVector::get(index));
 }
 
-// Return mutable begin and end entity iterators.
 template <typename T>
 inline typename TypedEntityVector<T>::iterator TypedEntityVector<T>::begin()
 {
     return EntityVector::begin();
 }
+
 template <typename T>
 inline typename TypedEntityVector<T>::iterator TypedEntityVector<T>::end()
 {
     return EntityVector::end();
 }
 
-// Return constant begin and end entity iterators.
 template <typename T>
 inline typename TypedEntityVector<T>::const_iterator TypedEntityVector<T>::begin() const
 {
     return EntityVector::begin();
 }
+
 template <typename T>
 inline typename TypedEntityVector<T>::const_iterator TypedEntityVector<T>::end() const
 {

@@ -228,48 +228,55 @@ class TypedEntityMap
 
 
 //
-// TypedEntityMap class implementation.
+// TypedEntityMap::iterator class implementation.
 //
 
-// Constructor.
 template <typename T>
 inline TypedEntityMap<T>::iterator::iterator(const EntityMap::iterator& rhs)
   : EntityMap::iterator(rhs)
 {
 }
 
-// Dereference operators.
 template <typename T>
 inline T& TypedEntityMap<T>::iterator::operator*() const
 {
     return reinterpret_cast<T&>(EntityMap::iterator::operator*());
 }
+
 template <typename T>
 inline T* TypedEntityMap<T>::iterator::operator->() const
 {
     return reinterpret_cast<T*>(EntityMap::iterator::operator->());
 }
 
-// Constructor.
+
+//
+// TypedEntityMap::const_iterator class implementation.
+//
+
 template <typename T>
 inline TypedEntityMap<T>::const_iterator::const_iterator(const EntityMap::const_iterator& rhs)
   : EntityMap::const_iterator(rhs)
 {
 }
 
-// Dereference operators.
 template <typename T>
 inline const T& TypedEntityMap<T>::const_iterator::operator*() const
 {
     return reinterpret_cast<const T&>(EntityMap::const_iterator::operator*());
 }
+
 template <typename T>
 inline const T* TypedEntityMap<T>::const_iterator::operator->() const
 {
     return reinterpret_cast<const T*>(EntityMap::const_iterator::operator->());
 }
 
-// Insert an entity into the container and return its index.
+
+//
+// TypedEntityMap class implementation.
+//
+
 template <typename T>
 inline void TypedEntityMap<T>::insert(foundation::auto_release_ptr<T> entity)
 {
@@ -277,37 +284,36 @@ inline void TypedEntityMap<T>::insert(foundation::auto_release_ptr<T> entity)
         foundation::auto_release_ptr<Entity>(entity.release()));
 }
 
-// Return a given entity.
-// Return 0 if the requested entity does not exist.
 template <typename T>
 inline T* TypedEntityMap<T>::get(const foundation::UniqueID id) const
 {
     return static_cast<T*>(EntityMap::get(id));
 }
+
 template <typename T>
 inline T* TypedEntityMap<T>::get(const char* name) const
 {
     return static_cast<T*>(EntityMap::get(name));
 }
 
-// Return mutable begin and end entity iterators.
 template <typename T>
 inline typename TypedEntityMap<T>::iterator TypedEntityMap<T>::begin()
 {
     return EntityMap::begin();
 }
+
 template <typename T>
 inline typename TypedEntityMap<T>::iterator TypedEntityMap<T>::end()
 {
     return EntityMap::end();
 }
 
-// Return constant begin and end entity iterators.
 template <typename T>
 inline typename TypedEntityMap<T>::const_iterator TypedEntityMap<T>::begin() const
 {
     return EntityMap::begin();
 }
+
 template <typename T>
 inline typename TypedEntityMap<T>::const_iterator TypedEntityMap<T>::end() const
 {

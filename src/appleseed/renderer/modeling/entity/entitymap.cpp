@@ -38,10 +38,6 @@ using namespace std;
 namespace renderer
 {
 
-//
-// EntityMap class implementation.
-//
-
 struct EntityMap::Impl
 {
     typedef map<UniqueID, Entity*> Storage;
@@ -51,22 +47,26 @@ struct EntityMap::Impl
     Index   m_index;
 };
 
+
+//
+// EntityMap::iterator class implementation.
+//
+
 struct EntityMap::iterator::Impl
 {
     EntityMap::Impl::Storage::iterator m_it;
 };
 
-// Constructors.
 EntityMap::iterator::iterator()
   : impl(new Impl())
 {
 }
+
 EntityMap::iterator::iterator(const iterator& rhs)
   : impl(new Impl(*rhs.impl))
 {
 }
 
-// Assignment operator.
 EntityMap::iterator&
 EntityMap::iterator::operator=(const iterator& rhs)
 {
@@ -74,23 +74,23 @@ EntityMap::iterator::operator=(const iterator& rhs)
     return *this;
 }
 
-// Equality and inequality tests.
 bool EntityMap::iterator::operator==(const iterator& rhs) const
 {
     return impl->m_it == rhs.impl->m_it;
 }
+
 bool EntityMap::iterator::operator!=(const iterator& rhs) const
 {
     return impl->m_it != rhs.impl->m_it;
 }
 
-// Preincrement and predecrement operators.
 EntityMap::iterator&
 EntityMap::iterator::operator++()
 {
     ++impl->m_it;
     return *this;
 }
+
 EntityMap::iterator&
 EntityMap::iterator::operator--()
 {
@@ -98,34 +98,38 @@ EntityMap::iterator::operator--()
     return *this;
 }
 
-// Dereference operators.
 EntityMap::iterator::value_type&
 EntityMap::iterator::operator*() const
 {
     return *impl->m_it->second;
 }
+
 EntityMap::iterator::value_type*
 EntityMap::iterator::operator->() const
 {
     return impl->m_it->second;
 }
 
+
+//
+// EntityMap::const_iterator class implementation.
+//
+
 struct EntityMap::const_iterator::Impl
 {
     EntityMap::Impl::Storage::const_iterator m_it;
 };
 
-// Constructors.
 EntityMap::const_iterator::const_iterator()
   : impl(new Impl())
 {
 }
+
 EntityMap::const_iterator::const_iterator(const const_iterator& rhs)
   : impl(new Impl(*rhs.impl))
 {
 }
 
-// Assignment operator.
 EntityMap::const_iterator&
 EntityMap::const_iterator::operator=(const const_iterator& rhs)
 {
@@ -133,23 +137,23 @@ EntityMap::const_iterator::operator=(const const_iterator& rhs)
     return *this;
 }
 
-// Equality and inequality tests.
 bool EntityMap::const_iterator::operator==(const const_iterator& rhs) const
 {
     return impl->m_it == rhs.impl->m_it;
 }
+
 bool EntityMap::const_iterator::operator!=(const const_iterator& rhs) const
 {
     return impl->m_it != rhs.impl->m_it;
 }
 
-// Preincrement and predecrement operators.
 EntityMap::const_iterator&
 EntityMap::const_iterator::operator++()
 {
     ++impl->m_it;
     return *this;
 }
+
 EntityMap::const_iterator&
 EntityMap::const_iterator::operator--()
 {
@@ -157,64 +161,60 @@ EntityMap::const_iterator::operator--()
     return *this;
 }
 
-// Dereference operators.
 const EntityMap::const_iterator::value_type&
 EntityMap::const_iterator::operator*() const
 {
     return *impl->m_it->second;
 }
+
 const EntityMap::const_iterator::value_type*
 EntityMap::const_iterator::operator->() const
 {
     return impl->m_it->second;
 }
 
-// Constructor.
+
+//
+// EntityMap class implementation.
+//
+
 EntityMap::EntityMap()
   : impl(new Impl())
 {
 }
 
-// Destructor.
 EntityMap::~EntityMap()
 {
-    // Delete all entities.
     clear();
 
-    // Delete private implementation.
     delete impl;
 }
 
-// Swap the content of this container with another container.
 void EntityMap::swap(EntityMap& rhs)
 {
     impl->m_storage.swap(rhs.impl->m_storage);
     impl->m_index.swap(rhs.impl->m_index);
 }
 
-// Remove all entities from the container.
 void EntityMap::clear()
 {
-    // Delete all entities.
-    for (const_each<EntityMap::Impl::Storage> i = impl->m_storage; i; ++i)
+    for (const_each<Impl::Storage> i = impl->m_storage; i; ++i)
         i->second->release();
+
     impl->m_storage.clear();
     impl->m_index.clear();
 }
 
-// Return the number of entities in the container.
 size_t EntityMap::size() const
 {
     return impl->m_storage.size();
 }
 
-// Return true if the container is empty.
 bool EntityMap::empty() const
 {
     return impl->m_storage.empty();
 }
 
-// Insert an entity into the container.
 void EntityMap::insert(auto_release_ptr<Entity> entity)
 {
     // Retrieve the entity.
@@ -226,7 +226,6 @@ void EntityMap::insert(auto_release_ptr<Entity> entity)
     impl->m_index[entity_ptr->get_name()] = entity_ptr;
 }
 
-// Remove an entity from the container.
 void EntityMap::remove(const UniqueID id)
 {
     // Locate the entity.
@@ -242,26 +241,26 @@ void EntityMap::remove(const UniqueID id)
     delete it->second;
 }
 
-// Access an entity.
 Entity* EntityMap::get(const UniqueID id) const
 {
-    const EntityMap::Impl::Storage::iterator it = impl->m_storage.find(id);
+    const Impl::Storage::iterator it = impl->m_storage.find(id);
     return it == impl->m_storage.end() ? 0 : it->second;
 }
+
 Entity* EntityMap::get(const char* name) const
 {
     assert(name);
-    const EntityMap::Impl::Index::iterator it = impl->m_index.find(name);
+    const Impl::Index::iterator it = impl->m_index.find(name);
     return it == impl->m_index.end() ? 0 : it->second;
 }
 
-// Return mutable begin and end entity iterators.
 EntityMap::iterator EntityMap::begin()
 {
     iterator it;
     it.impl->m_it = impl->m_storage.begin();
     return it;
 }
+
 EntityMap::iterator EntityMap::end()
 {
     iterator it;
@@ -269,13 +268,13 @@ EntityMap::iterator EntityMap::end()
     return it;
 }
 
-// Return constant begin and end entity iterators.
 EntityMap::const_iterator EntityMap::begin() const
 {
     const_iterator it;
     it.impl->m_it = impl->m_storage.begin();
     return it;
 }
+
 EntityMap::const_iterator EntityMap::end() const
 {
     const_iterator it;
