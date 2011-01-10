@@ -66,10 +66,11 @@ class EntityItem
     ProjectBuilder&         m_project_builder;
 
     virtual void slot_edit_accepted(foundation::Dictionary values);
-    virtual void slot_delete();
 
   private:
     void edit(const foundation::Dictionary& values);
+
+    virtual void slot_delete_entity_and_item();
 };
 
 
@@ -112,8 +113,11 @@ void EntityItem<Entity, ParentEntity>::edit(const foundation::Dictionary& values
 }
 
 template <typename Entity, typename ParentEntity>
-void EntityItem<Entity, ParentEntity>::slot_delete()
+void EntityItem<Entity, ParentEntity>::slot_delete_entity_and_item()
 {
+    renderer::EntityTraits<Entity>::get_entity_container(m_parent).remove(m_entity);
+
+    delete this;
 }
 
 }       // namespace studio
