@@ -34,11 +34,12 @@
 // appleseed.foundation headers.
 #include "foundation/utility/test.h"
 
+using namespace foundation;
+using namespace renderer;
+using namespace std;
+
 TEST_SUITE(Renderer_Modeling_Entity_EntityVector)
 {
-    using namespace foundation;
-    using namespace renderer;
-
     TEST_CASE(Swap_GivenEntityVectorWithOneItemAndAnotherEmptyEntityVector_MovesItemToOtherContainer)
     {
         EntityVector v1;
@@ -49,5 +50,77 @@ TEST_SUITE(Renderer_Modeling_Entity_EntityVector)
 
         EXPECT_TRUE(v1.empty());
         EXPECT_FALSE(v2.empty());
+    }
+
+    TEST_CASE(Remove_GivenOneItem_RemovesItem)
+    {
+        EntityVector v;
+        v.insert(DummyEntityFactory::create("dummy"));
+
+        Entity* entity = v.get(v.get_index("dummy"));
+        v.remove(entity);
+
+        EXPECT_TRUE(v.empty());
+    }
+
+    struct DummyEntityReleaseCheck
+      : public Entity
+    {
+        bool m_release_was_called;
+
+        explicit DummyEntityReleaseCheck(const char* name)
+          : Entity(0)
+          , m_release_was_called(false)
+        {
+            set_name(name);
+        }
+
+        virtual void release()
+        {
+            m_release_was_called = true;
+        }
+    };
+
+    TEST_CASE(Remove_GivenOneItem_ReleasesItem)
+    {
+        auto_ptr<DummyEntityReleaseCheck> source_entity(new DummyEntityReleaseCheck("dummy"));
+
+        EntityVector v;
+        v.insert(auto_release_ptr<DummyEntityReleaseCheck>(source_entity.get()));
+
+        Entity* entity = v.get(v.get_index("dummy"));
+        v.remove(entity);
+
+        EXPECT_TRUE(source_entity->m_release_was_called);
+    }
+
+    TEST_CASE(Remove_RemovingFirstInsertedItemOfTwo_LeavesOtherItemIntact)
+    {
+        EntityVector v;
+        v.insert(DummyEntityFactory::create("dummy1"));
+        v.insert(DummyEntityFactory::create("dummy2"));
+
+        Entity* entity1 = v.get(v.get_index("dummy1"));
+        Entity* entity2 = v.get(v.get_index("dummy2"));
+
+        v.remove(entity1);
+
+        ASSERT_EQ(1, v.size());
+        EXPECT_EQ(entity2, v.get(v.get_index("dummy2")));
+    }
+
+    TEST_CASE(Remove_RemovingLastInsertedItemOfTwo_LeavesOtherItemIntact)
+    {
+        EntityVector v;
+        v.insert(DummyEntityFactory::create("dummy1"));
+        v.insert(DummyEntityFactory::create("dummy2"));
+
+        Entity* entity1 = v.get(v.get_index("dummy1"));
+        Entity* entity2 = v.get(v.get_index("dummy2"));
+
+        v.remove(entity2);
+
+        ASSERT_EQ(1, v.size());
+        EXPECT_EQ(entity1, v.get(v.get_index("dummy1")));
     }
 }

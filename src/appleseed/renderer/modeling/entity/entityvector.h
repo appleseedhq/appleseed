@@ -137,6 +137,9 @@ class RENDERERDLL EntityVector
     // Insert an entity into the container and return its index.
     size_t insert(foundation::auto_release_ptr<Entity> entity);
 
+    // Remove an entity from the container. The entity is deleted.
+    void remove(Entity* entity);
+
     // Return the index of a given entity in the container.
     // Return ~size_t(0) if the requested entity does not exist.
     size_t get_index(const char* name) const;

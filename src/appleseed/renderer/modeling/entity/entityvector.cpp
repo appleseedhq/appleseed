@@ -38,10 +38,6 @@ using namespace std;
 namespace renderer
 {
 
-//
-// EntityVector class implementation.
-//
-
 struct EntityVector::Impl
 {
     typedef vector<Entity*> Storage;
@@ -51,22 +47,26 @@ struct EntityVector::Impl
     Index   m_index;
 };
 
+
+//
+// EntityVector::iterator class implementation.
+//
+
 struct EntityVector::iterator::Impl
 {
     EntityVector::Impl::Storage::iterator m_it;
 };
 
-// Constructors.
 EntityVector::iterator::iterator()
   : impl(new Impl())
 {
 }
+
 EntityVector::iterator::iterator(const iterator& rhs)
   : impl(new Impl(*rhs.impl))
 {
 }
 
-// Assignment operator.
 EntityVector::iterator&
 EntityVector::iterator::operator=(const iterator& rhs)
 {
@@ -74,23 +74,23 @@ EntityVector::iterator::operator=(const iterator& rhs)
     return *this;
 }
 
-// Equality and inequality tests.
 bool EntityVector::iterator::operator==(const iterator& rhs) const
 {
     return impl->m_it == rhs.impl->m_it;
 }
+
 bool EntityVector::iterator::operator!=(const iterator& rhs) const
 {
     return impl->m_it != rhs.impl->m_it;
 }
 
-// Preincrement and predecrement operators.
 EntityVector::iterator&
 EntityVector::iterator::operator++()
 {
     ++impl->m_it;
     return *this;
 }
+
 EntityVector::iterator&
 EntityVector::iterator::operator--()
 {
@@ -98,34 +98,38 @@ EntityVector::iterator::operator--()
     return *this;
 }
 
-// Dereference operators.
 EntityVector::iterator::value_type&
 EntityVector::iterator::operator*() const
 {
     return **impl->m_it;
 }
+
 EntityVector::iterator::value_type*
 EntityVector::iterator::operator->() const
 {
     return *impl->m_it;
 }
 
+
+//
+// EntityVector::const_iterator class implementation.
+//
+
 struct EntityVector::const_iterator::Impl
 {
     EntityVector::Impl::Storage::const_iterator m_it;
 };
 
-// Constructors.
 EntityVector::const_iterator::const_iterator()
   : impl(new Impl())
 {
 }
+
 EntityVector::const_iterator::const_iterator(const const_iterator& rhs)
   : impl(new Impl(*rhs.impl))
 {
 }
 
-// Assignment operator.
 EntityVector::const_iterator&
 EntityVector::const_iterator::operator=(const const_iterator& rhs)
 {
@@ -133,23 +137,23 @@ EntityVector::const_iterator::operator=(const const_iterator& rhs)
     return *this;
 }
 
-// Equality and inequality tests.
 bool EntityVector::const_iterator::operator==(const const_iterator& rhs) const
 {
     return impl->m_it == rhs.impl->m_it;
 }
+
 bool EntityVector::const_iterator::operator!=(const const_iterator& rhs) const
 {
     return impl->m_it != rhs.impl->m_it;
 }
 
-// Preincrement and predecrement operators.
 EntityVector::const_iterator&
 EntityVector::const_iterator::operator++()
 {
     ++impl->m_it;
     return *this;
 }
+
 EntityVector::const_iterator&
 EntityVector::const_iterator::operator--()
 {
@@ -157,64 +161,60 @@ EntityVector::const_iterator::operator--()
     return *this;
 }
 
-// Dereference operators.
 const EntityVector::const_iterator::value_type&
 EntityVector::const_iterator::operator*() const
 {
     return **impl->m_it;
 }
+
 const EntityVector::const_iterator::value_type*
 EntityVector::const_iterator::operator->() const
 {
     return *impl->m_it;
 }
 
-// Constructor.
+
+//
+// EntityVector class implementation.
+//
+
 EntityVector::EntityVector()
   : impl(new Impl())
 {
 }
 
-// Destructor.
 EntityVector::~EntityVector()
 {
-    // Delete all entities.
     clear();
 
-    // Delete private implementation.
     delete impl;
 }
 
-// Swap the content of this container with another container.
 void EntityVector::swap(EntityVector& rhs)
 {
     impl->m_storage.swap(rhs.impl->m_storage);
     impl->m_index.swap(rhs.impl->m_index);
 }
 
-// Remove all entities from the container.
 void EntityVector::clear()
 {
-    // Delete all entities.
-    for (const_each<EntityVector::Impl::Storage> i = impl->m_storage; i; ++i)
+    for (const_each<Impl::Storage> i = impl->m_storage; i; ++i)
         (*i)->release();
+
     impl->m_storage.clear();
     impl->m_index.clear();
 }
 
-// Return the number of entities in the container.
 size_t EntityVector::size() const
 {
     return impl->m_storage.size();
 }
 
-// Return true if the container is empty.
 bool EntityVector::empty() const
 {
     return impl->m_storage.empty();
 }
 
-// Insert an entity into the container and return its index.
 size_t EntityVector::insert(auto_release_ptr<Entity> entity)
 {
     // Retrieve the entity.
@@ -229,28 +229,55 @@ size_t EntityVector::insert(auto_release_ptr<Entity> entity)
     return entity_index;
 }
 
-// Return the index of a given entity in the container.
+void EntityVector::remove(Entity* entity)
+{
+    assert(entity);
+
+    // Find the entity to remove in the vector.
+    const Impl::Index::iterator it = impl->m_index.find(entity->get_name());
+    assert(it != impl->m_index.end());
+
+    // Get the index of the entity.
+    const size_t index = it->second;
+    assert(impl->m_storage[index] == entity);
+
+    // Replace the entity to remove by the last entity of the vector.
+    const size_t last_index = impl->m_storage.size() - 1;
+    if (index < last_index)
+    {
+        Entity* last_entity = impl->m_storage[last_index];
+        impl->m_storage[index] = last_entity;
+        impl->m_index[last_entity->get_name()] = index;
+    }
+
+    // Remove the entity from the vector.
+    impl->m_storage.resize(impl->m_storage.size() - 1);
+    impl->m_index.erase(it);
+
+    // Delete the entity.
+    entity->release();
+}
+
 size_t EntityVector::get_index(const char* name) const
 {
     assert(name);
-    const EntityVector::Impl::Index::iterator it = impl->m_index.find(name);
+    const Impl::Index::iterator it = impl->m_index.find(name);
     return it == impl->m_index.end() ? ~size_t(0) : it->second;
 }
 
-// Return a given entity.
 Entity* EntityVector::get(const size_t index) const
 {
     assert(index < impl->m_storage.size());
     return impl->m_storage[index];
 }
 
-// Return mutable begin and end entity iterators.
 EntityVector::iterator EntityVector::begin()
 {
     iterator it;
     it.impl->m_it = impl->m_storage.begin();
     return it;
 }
+
 EntityVector::iterator EntityVector::end()
 {
     iterator it;
@@ -258,13 +285,13 @@ EntityVector::iterator EntityVector::end()
     return it;
 }
 
-// Return constant begin and end entity iterators.
 EntityVector::const_iterator EntityVector::begin() const
 {
     const_iterator it;
     it.impl->m_it = impl->m_storage.begin();
     return it;
 }
+
 EntityVector::const_iterator EntityVector::end() const
 {
     const_iterator it;
