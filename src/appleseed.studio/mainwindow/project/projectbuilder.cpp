@@ -73,7 +73,7 @@ ProjectBuilder::ProjectBuilder(
 
 void ProjectBuilder::notify_project_modification() const
 {
-    emit project_modified();
+    emit signal_project_modified();
 }
 
 void ProjectBuilder::insert_assembly(

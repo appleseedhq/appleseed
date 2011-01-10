@@ -69,8 +69,8 @@ ProjectExplorer::ProjectExplorer(
         this, SLOT(slot_item_activated(QTreeWidgetItem*, int)));
 
     connect(
-        &m_project_builder, SIGNAL(project_modified()),
-        this, SIGNAL(project_modified()));
+        &m_project_builder, SIGNAL(signal_project_modified()),
+        this, SIGNAL(signal_project_modified()));
 
     m_project_tree.initialize(project, m_project_builder);
 }

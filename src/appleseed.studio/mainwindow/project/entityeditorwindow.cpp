@@ -318,11 +318,11 @@ namespace
       public slots:
         void slot_accept(QString page_name, QString entity_name)
         {
-            emit accepted(m_widget_name, page_name, entity_name);
+            emit signal_accepted(m_widget_name, page_name, entity_name);
         }
 
       signals:
-        void accepted(QString widget_name, QString page_name, QString entity_name);
+        void signal_accepted(QString widget_name, QString page_name, QString entity_name);
 
       private:
         const QString m_widget_name;
@@ -352,11 +352,11 @@ void EntityEditorWindow::slot_open_entity_browser(const QString& widget_name)
         new ForwardAcceptedSignal(browser_window, widget_name);
 
     QObject::connect(
-        browser_window, SIGNAL(accepted(QString, QString)),
+        browser_window, SIGNAL(signal_accepted(QString, QString)),
         forward_signal, SLOT(slot_accept(QString, QString)));
 
     QObject::connect(
-        forward_signal, SIGNAL(accepted(QString, QString, QString)),
+        forward_signal, SIGNAL(signal_accepted(QString, QString, QString)),
         this, SLOT(slot_entity_browser_accept(QString, QString, QString)));
 
     browser_window->showNormal();
@@ -373,7 +373,7 @@ void EntityEditorWindow::slot_entity_browser_accept(QString widget_name, QString
 
 void EntityEditorWindow::slot_accept()
 {
-    emit accepted(get_values());
+    emit signal_accepted(get_values());
 }
 
 }   // namespace studio

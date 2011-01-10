@@ -144,11 +144,11 @@ namespace
       public slots:
         void slot_accepted(QString page_name, QString item_value)
         {
-            emit accepted(page_name, item_value, m_data);
+            emit signal_accepted(page_name, item_value, m_data);
         }
 
       signals:
-        void accepted(QString page_name, QString item_value, QVariant data);
+        void signal_accepted(QString page_name, QString item_value, QVariant data);
 
       private:
         const QVariant m_data;
@@ -180,11 +180,11 @@ void ObjectInstanceItem::slot_assign_material()
         new EnrichAndForwardAcceptedSignal(browser_window, action->data());
 
     QObject::connect(
-        browser_window, SIGNAL(accepted(QString, QString)),
+        browser_window, SIGNAL(signal_accepted(QString, QString)),
         forwarder, SLOT(slot_accepted(QString, QString)));
 
     QObject::connect(
-        forwarder, SIGNAL(accepted(QString, QString, QVariant)),
+        forwarder, SIGNAL(signal_accepted(QString, QString, QVariant)),
         this, SLOT(slot_assign_material_accepted(QString, QString, QVariant)));
 
     browser_window->showNormal();

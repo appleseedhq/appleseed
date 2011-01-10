@@ -162,7 +162,7 @@ void EntityBrowserWindow::slot_item_activated(QListWidgetItem* item)
 {
     const Page& page = m_pages[m_ui->tab_widget->currentIndex()];
 
-    emit accepted(QString::fromStdString(page.m_page_name), item->data(0).toString());
+    emit signal_accepted(QString::fromStdString(page.m_page_name), item->data(0).toString());
 }
 
 void EntityBrowserWindow::slot_accept()

@@ -87,7 +87,7 @@ void open_entity_editor(
             values);
 
     QObject::connect(
-        editor_window, SIGNAL(accepted(foundation::Dictionary)),
+        editor_window, SIGNAL(signal_accepted(foundation::Dictionary)),
         receiver, member);
 
     editor_window->showNormal();

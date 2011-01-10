@@ -62,7 +62,7 @@ class ProjectExplorer
         QTreeWidget*        tree_widget);
 
   signals:
-    void project_modified() const;
+    void signal_project_modified() const;
 
   private:
     renderer::Project&      m_project;

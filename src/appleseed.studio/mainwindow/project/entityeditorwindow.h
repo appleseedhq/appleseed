@@ -108,7 +108,7 @@ class EntityEditorWindow
     void rebuild_form(const foundation::Dictionary& values);
 
   signals:
-    void accepted(foundation::Dictionary values);
+    void signal_accepted(foundation::Dictionary values);
 
   private:
     class IWidgetProxy

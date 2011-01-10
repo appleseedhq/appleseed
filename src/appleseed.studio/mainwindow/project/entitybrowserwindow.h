@@ -65,7 +65,7 @@ class EntityBrowserWindow
         const foundation::StringDictionary& items);
 
   signals:
-    void accepted(QString page_name, QString item_value);
+    void signal_accepted(QString page_name, QString item_value);
 
   private:
     struct Page

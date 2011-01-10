@@ -363,7 +363,7 @@ void MainWindow::update_project_explorer()
                 m_ui->treewidget_project_explorer_scene));
 
         QObject::connect(
-            m_project_explorer.get(), SIGNAL(project_modified()),
+            m_project_explorer.get(), SIGNAL(signal_project_modified()),
             this, SLOT(slot_project_modified()));
     }
     else
