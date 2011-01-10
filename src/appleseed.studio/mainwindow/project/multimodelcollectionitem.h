@@ -68,7 +68,7 @@ class MultiModelCollectionItem
         ParentEntity&               parent,
         ProjectBuilder&             project_builder);
 
-    virtual void add_item(Entity& entity);
+    virtual void add_item(Entity* entity);
 
   private:
     virtual void slot_create();
@@ -91,7 +91,7 @@ MultiModelCollectionItem<Entity, ParentEntity>::MultiModelCollectionItem(
 }
 
 template <typename Entity, typename ParentEntity>
-void MultiModelCollectionItem<Entity, ParentEntity>::add_item(Entity& entity)
+void MultiModelCollectionItem<Entity, ParentEntity>::add_item(Entity* entity)
 {
     addChild(
         new MultiModelEntityItem<Entity, ParentEntity>(

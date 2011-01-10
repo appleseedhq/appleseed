@@ -48,7 +48,7 @@ class CollectionItemBase
   public:
     CollectionItemBase();
 
-    virtual void add_item(Entity& entity);
+    virtual void add_item(Entity* entity);
 
     template <typename EntityContainer>
     void add_items(EntityContainer& items);
@@ -68,9 +68,9 @@ CollectionItemBase<Entity>::CollectionItemBase()
 }
 
 template <typename Entity>
-void CollectionItemBase<Entity>::add_item(Entity& entity)
+void CollectionItemBase<Entity>::add_item(Entity* entity)
 {
-    addChild(new ItemBase(entity.get_class_uid(), entity.get_name()));
+    addChild(new ItemBase(entity->get_class_uid(), entity->get_name()));
 }
 
 template <typename Entity>
@@ -78,7 +78,7 @@ template <typename EntityContainer>
 void CollectionItemBase<Entity>::add_items(EntityContainer& entities)
 {
     for (foundation::each<EntityContainer> i = entities; i; ++i)
-        add_item(*i);
+        add_item(&*i);
 }
 
 }       // namespace studio

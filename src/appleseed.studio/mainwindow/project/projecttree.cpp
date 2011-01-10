@@ -110,37 +110,37 @@ void ProjectTree::initialize(Project& project, ProjectBuilder& project_builder)
             project_builder);
 }
 
-void ProjectTree::add_item(ColorEntity& color)
+void ProjectTree::add_item(ColorEntity* color)
 {
     m_color_collection_item->add_item(color);
 }
 
-void ProjectTree::add_item(Texture& texture)
+void ProjectTree::add_item(Texture* texture)
 {
     m_texture_collection_item->add_item(texture);
 }
 
-void ProjectTree::add_item(TextureInstance& texture_instance)
+void ProjectTree::add_item(TextureInstance* texture_instance)
 {
     m_texture_instance_collection_item->add_item(texture_instance);
 }
 
-void ProjectTree::add_item(EnvironmentEDF& environment_edf)
+void ProjectTree::add_item(EnvironmentEDF* environment_edf)
 {
     m_environment_edf_collection_item->add_item(environment_edf);
 }
 
-void ProjectTree::add_item(EnvironmentShader& environment_shader)
+void ProjectTree::add_item(EnvironmentShader* environment_shader)
 {
     m_environment_shader_collection_item->add_item(environment_shader);
 }
 
-void ProjectTree::add_item(Assembly& assembly)
+void ProjectTree::add_item(Assembly* assembly)
 {
     m_assembly_collection_item->add_item(assembly);
 }
 
-void ProjectTree::add_item(AssemblyInstance& assembly_instance)
+void ProjectTree::add_item(AssemblyInstance* assembly_instance)
 {
     m_assembly_instance_collection_item->add_item(assembly_instance);
 }

@@ -77,10 +77,10 @@ QMenu* AssemblyCollectionItem::get_single_item_context_menu() const
     return menu;
 }
 
-void AssemblyCollectionItem::add_item(Assembly& assembly)
+void AssemblyCollectionItem::add_item(Assembly* assembly)
 {
-    AssemblyItem* item = new AssemblyItem(m_scene, assembly, m_project_builder);
-    m_assembly_items[assembly.get_uid()] = item;
+    AssemblyItem* item = new AssemblyItem(m_scene, *assembly, m_project_builder);
+    m_assembly_items[assembly->get_uid()] = item;
     addChild(item);
 }
 

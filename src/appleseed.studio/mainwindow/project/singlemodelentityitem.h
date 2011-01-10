@@ -54,17 +54,15 @@ namespace studio {
 
 template <typename Entity, typename ParentEntity>
 class SingleModelEntityItem
-  : public EntityItem<Entity>
+  : public EntityItem<Entity, ParentEntity>
 {
   public:
     SingleModelEntityItem(
-        Entity&             entity,
+        Entity*             entity,
         ParentEntity&       parent,
         ProjectBuilder&     project_builder);
 
   private:
-    ParentEntity&           m_parent;
-
     virtual void slot_edit();
 };
 
@@ -75,11 +73,10 @@ class SingleModelEntityItem
 
 template <typename Entity, typename ParentEntity>
 SingleModelEntityItem<Entity, ParentEntity>::SingleModelEntityItem(
-    Entity&                 entity,
+    Entity*                 entity,
     ParentEntity&           parent,
     ProjectBuilder&         project_builder)
-  : EntityItem(entity, project_builder)
-  , m_parent(parent)
+  : EntityItem(entity, parent, project_builder)
 {
 }
 
@@ -96,13 +93,13 @@ void SingleModelEntityItem<Entity, ParentEntity>::slot_edit()
 
     std::auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
         new SingleModelEntityEditorFormFactory(
-            m_entity.get_name(),
+            m_entity->get_name(),
             FactoryType::get_widget_definitions()));
 
     std::auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
         new EntityBrowser<ParentEntity>(m_parent));
 
-    foundation::Dictionary values = m_entity.get_parameters();
+    foundation::Dictionary values = m_entity->get_parameters();
 
     open_entity_editor(
         treeWidget(),

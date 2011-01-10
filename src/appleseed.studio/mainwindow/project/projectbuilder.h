@@ -79,6 +79,12 @@ class ProjectBuilder
         renderer::Project&                  project,
         ProjectTree&                        project_tree);
 
+    template <typename Entity>
+    const typename renderer::EntityTraits<Entity>::FactoryRegistrarType&
+        get_factory_registrar() const;
+
+    void notify_project_modification() const;
+
     void insert_assembly(
         const std::string&                  name) const;
 
@@ -97,25 +103,20 @@ class ProjectBuilder
     void insert_textures(
         const std::string&                  path) const;
 
-    template <typename Entity>
+    template <typename Entity, typename ParentEntity>
     void insert_entity(
-        renderer::Scene&                    scene,
-        const foundation::Dictionary&       values) const;
-
-    template <typename Entity>
-    void insert_entity(
-        renderer::Assembly&                 assembly,
+        ParentEntity&                       parent,
         const foundation::Dictionary&       values) const;
 
     void edit_entity(
         renderer::Entity&                   entity,
         const foundation::Dictionary&       values) const;
 
-    void notify_project_modification() const;
-
-    template <typename Entity>
-    const typename renderer::EntityTraits<Entity>::FactoryRegistrarType&
-        get_factory_registrar() const;
+    template <typename Entity, typename ParentEntity>
+    Entity* replace_entity(
+        Entity*                             old_entity,
+        ParentEntity&                       parent,
+        const foundation::Dictionary&       values) const;
 
   signals:
     void project_modified() const;
@@ -138,6 +139,16 @@ class ProjectBuilder
     foundation::auto_release_ptr<Entity> create_entity(
         ParentEntity&                       parent,
         const foundation::Dictionary&       values) const;
+
+    template <typename Entity>
+    void add_item(
+        Entity*                             entity,
+        renderer::Scene&                    scene) const;
+
+    template <typename Entity>
+    void add_item(
+        Entity*                             entity,
+        renderer::Assembly&                 assembly) const;
 };
 
 
@@ -145,36 +156,74 @@ class ProjectBuilder
 // ProjectBuilder class implementation.
 //
 
-template <typename Entity>
+template <>
+inline const typename renderer::EntityTraits<renderer::BSDF>::FactoryRegistrarType&
+ProjectBuilder::get_factory_registrar<renderer::BSDF>() const
+{
+    return m_bsdf_factory_registrar;
+}
+
+template <>
+inline const typename renderer::EntityTraits<renderer::EDF>::FactoryRegistrarType&
+ProjectBuilder::get_factory_registrar<renderer::EDF>() const
+{
+    return m_edf_factory_registrar;
+}
+
+template <>
+inline const typename renderer::EntityTraits<renderer::SurfaceShader>::FactoryRegistrarType&
+ProjectBuilder::get_factory_registrar<renderer::SurfaceShader>() const
+{
+    return m_surface_shader_factory_registrar;
+}
+
+template <>
+inline const typename renderer::EntityTraits<renderer::EnvironmentEDF>::FactoryRegistrarType&
+ProjectBuilder::get_factory_registrar<renderer::EnvironmentEDF>() const
+{
+    return m_environment_edf_factory_registrar;
+}
+
+template <>
+inline const typename renderer::EntityTraits<renderer::EnvironmentShader>::FactoryRegistrarType&
+ProjectBuilder::get_factory_registrar<renderer::EnvironmentShader>() const
+{
+    return m_environment_shader_factory_registrar;
+}
+
+template <typename Entity, typename ParentEntity>
 void ProjectBuilder::insert_entity(
-    renderer::Scene&                    scene,
+    ParentEntity&                       parent,
     const foundation::Dictionary&       values) const
 {
     foundation::auto_release_ptr<Entity> entity(
-        create_entity<Entity, renderer::Scene>(scene, values));
+        create_entity<Entity, ParentEntity>(parent, values));
 
-    m_project_tree.add_item(entity.ref());
+    add_item(entity.get(), parent);
 
-    renderer::EntityTraits<Entity>::get_entity_container(scene).insert(entity);
+    renderer::EntityTraits<Entity>::get_entity_container(parent).insert(entity);
 
     notify_project_modification();
 }
 
-template <typename Entity>
-void ProjectBuilder::insert_entity(
-    renderer::Assembly&                 assembly,
+template <typename Entity, typename ParentEntity>
+Entity* ProjectBuilder::replace_entity(
+    Entity*                             old_entity,
+    ParentEntity&                       parent,
     const foundation::Dictionary&       values) const
 {
-    foundation::auto_release_ptr<Entity> entity(
-        create_entity<Entity, renderer::Assembly>(assembly, values));
+    renderer::EntityTraits<Entity>::get_entity_container(parent).remove(old_entity);
 
-    m_project_tree.get_assembly_collection_item()
-                  .get_item(assembly)
-                  .add_item(entity.ref());
+    foundation::auto_release_ptr<Entity> new_entity(
+        create_entity<Entity, ParentEntity>(parent, values));
 
-    renderer::EntityTraits<Entity>::get_entity_container(assembly).insert(entity);
+    Entity* new_entity_ptr = new_entity.get();
+
+    renderer::EntityTraits<Entity>::get_entity_container(parent).insert(new_entity);
 
     notify_project_modification();
+
+    return new_entity_ptr;
 }
 
 template <typename Entity, typename ParentEntity>
@@ -211,39 +260,22 @@ inline foundation::auto_release_ptr<renderer::Material> ProjectBuilder::create_e
             assembly.edfs());
 }
 
-template <>
-inline const typename renderer::EntityTraits<renderer::BSDF>::FactoryRegistrarType&
-ProjectBuilder::get_factory_registrar<renderer::BSDF>() const
+template <typename Entity>
+void ProjectBuilder::add_item(
+    Entity*                             entity,
+    renderer::Scene&                    scene) const
 {
-    return m_bsdf_factory_registrar;
+    m_project_tree.add_item(entity);
 }
 
-template <>
-inline const typename renderer::EntityTraits<renderer::EDF>::FactoryRegistrarType&
-ProjectBuilder::get_factory_registrar<renderer::EDF>() const
+template <typename Entity>
+void ProjectBuilder::add_item(
+    Entity*                             entity,
+    renderer::Assembly&                 assembly) const
 {
-    return m_edf_factory_registrar;
-}
-
-template <>
-inline const typename renderer::EntityTraits<renderer::SurfaceShader>::FactoryRegistrarType&
-ProjectBuilder::get_factory_registrar<renderer::SurfaceShader>() const
-{
-    return m_surface_shader_factory_registrar;
-}
-
-template <>
-inline const typename renderer::EntityTraits<renderer::EnvironmentEDF>::FactoryRegistrarType&
-ProjectBuilder::get_factory_registrar<renderer::EnvironmentEDF>() const
-{
-    return m_environment_edf_factory_registrar;
-}
-
-template <>
-inline const typename renderer::EntityTraits<renderer::EnvironmentShader>::FactoryRegistrarType&
-ProjectBuilder::get_factory_registrar<renderer::EnvironmentShader>() const
-{
-    return m_environment_shader_factory_registrar;
+    m_project_tree.get_assembly_collection_item()
+                  .get_item(assembly)
+                  .add_item(entity);
 }
 
 }       // namespace studio

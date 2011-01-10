@@ -65,7 +65,7 @@ class AssemblyCollectionItem
 
     virtual QMenu* get_single_item_context_menu() const;
 
-    virtual void add_item(renderer::Assembly& assembly);
+    virtual void add_item(renderer::Assembly* assembly);
 
     AssemblyItem& get_item(const renderer::Assembly& assembly) const;
 

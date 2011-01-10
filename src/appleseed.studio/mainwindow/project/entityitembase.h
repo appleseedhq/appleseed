@@ -65,7 +65,7 @@ class EntityItemBase
   : public EntityItemBaseSlots
 {
   public:
-    explicit EntityItemBase(Entity& entity);
+    explicit EntityItemBase(Entity* entity);
 
     void update_title();
 
@@ -74,7 +74,7 @@ class EntityItemBase
     virtual void activate();
 
   protected:
-    Entity& m_entity;
+    Entity* m_entity;
 };
 
 
@@ -83,8 +83,8 @@ class EntityItemBase
 //
 
 template <typename Entity>
-EntityItemBase<Entity>::EntityItemBase(Entity& entity)
-  : EntityItemBaseSlots(entity.get_class_uid())
+EntityItemBase<Entity>::EntityItemBase(Entity* entity)
+  : EntityItemBaseSlots(entity->get_class_uid())
   , m_entity(entity)
 {
     update_title();
@@ -93,7 +93,7 @@ EntityItemBase<Entity>::EntityItemBase(Entity& entity)
 template <typename Entity>
 void EntityItemBase<Entity>::update_title()
 {
-    set_title(QString::fromAscii(m_entity.get_name()));
+    set_title(QString::fromAscii(m_entity->get_name()));
 }
 
 template <typename Entity>

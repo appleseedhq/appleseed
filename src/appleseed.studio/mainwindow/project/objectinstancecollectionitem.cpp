@@ -57,12 +57,12 @@ ObjectInstanceCollectionItem::ObjectInstanceCollectionItem(
     add_items(object_instances);
 }
 
-void ObjectInstanceCollectionItem::add_item(ObjectInstance& object_instance)
+void ObjectInstanceCollectionItem::add_item(ObjectInstance* object_instance)
 {
     addChild(
         new ObjectInstanceItem(
             m_assembly,
-            object_instance,
+            *object_instance,
             m_project_builder));
 }
 

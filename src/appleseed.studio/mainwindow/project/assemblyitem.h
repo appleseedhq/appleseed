@@ -75,16 +75,16 @@ class AssemblyItem
 
     virtual QMenu* get_single_item_context_menu() const;
 
-    void add_item(renderer::ColorEntity& color);
-    void add_item(renderer::Texture& texture);
-    void add_item(renderer::TextureInstance& texture_instance);
-    void add_item(renderer::BSDF& bsdf);
-    void add_item(renderer::EDF& edf);
-    void add_item(renderer::SurfaceShader& surface_shader);
-    void add_item(renderer::Material& material);
-    void add_item(renderer::Light& light);
-    void add_item(renderer::Object& object);
-    void add_item(renderer::ObjectInstance& object_instance);
+    void add_item(renderer::ColorEntity* color);
+    void add_item(renderer::Texture* texture);
+    void add_item(renderer::TextureInstance* texture_instance);
+    void add_item(renderer::BSDF* bsdf);
+    void add_item(renderer::EDF* edf);
+    void add_item(renderer::SurfaceShader* surface_shader);
+    void add_item(renderer::Material* material);
+    void add_item(renderer::Light* light);
+    void add_item(renderer::Object* object);
+    void add_item(renderer::ObjectInstance* object_instance);
 
   private:
     renderer::Scene&                m_scene;

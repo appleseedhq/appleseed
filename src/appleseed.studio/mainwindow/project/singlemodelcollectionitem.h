@@ -68,7 +68,7 @@ class SingleModelCollectionItem
         ParentEntity&               parent,
         ProjectBuilder&             project_builder);
 
-    virtual void add_item(Entity& entity);
+    virtual void add_item(Entity* entity);
 
   private:
     virtual void slot_create();
@@ -91,7 +91,7 @@ SingleModelCollectionItem<Entity, ParentEntity>::SingleModelCollectionItem(
 }
 
 template <typename Entity, typename ParentEntity>
-void SingleModelCollectionItem<Entity, ParentEntity>::add_item(Entity& entity)
+void SingleModelCollectionItem<Entity, ParentEntity>::add_item(Entity* entity)
 {
     addChild(
         new SingleModelEntityItem<Entity, ParentEntity>(

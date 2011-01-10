@@ -68,13 +68,13 @@ class ProjectTree
         renderer::Project&              project,
         ProjectBuilder&                 project_builder);
 
-    void add_item(renderer::ColorEntity& color);
-    void add_item(renderer::Texture& texture);
-    void add_item(renderer::TextureInstance& texture_instance);
-    void add_item(renderer::EnvironmentEDF& environment_edf);
-    void add_item(renderer::EnvironmentShader& environment_shader);
-    void add_item(renderer::Assembly& assembly);
-    void add_item(renderer::AssemblyInstance& assembly_instance);
+    void add_item(renderer::ColorEntity* color);
+    void add_item(renderer::Texture* texture);
+    void add_item(renderer::TextureInstance* texture_instance);
+    void add_item(renderer::EnvironmentEDF* environment_edf);
+    void add_item(renderer::EnvironmentShader* environment_shader);
+    void add_item(renderer::Assembly* assembly);
+    void add_item(renderer::AssemblyInstance* assembly_instance);
 
     AssemblyCollectionItem& get_assembly_collection_item() const;
 

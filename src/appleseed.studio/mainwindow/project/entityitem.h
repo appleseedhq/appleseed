@@ -44,20 +44,25 @@
 #include <QObject>
 #include <QWidget>
 
+// Standard headers.
+#include <string>
+
 namespace appleseed {
 namespace studio {
 
-template <typename Entity>
+template <typename Entity, typename ParentEntity>
 class EntityItem
   : public EntityItemBase<Entity>
   , private EntityCreatorBase
 {
   public:
     EntityItem(
-        Entity&             entity,
+        Entity*             entity,
+        ParentEntity&       parent,
         ProjectBuilder&     project_builder);
 
   protected:
+    ParentEntity&           m_parent;
     ProjectBuilder&         m_project_builder;
 
     virtual void slot_edit_accepted(foundation::Dictionary values);
@@ -72,17 +77,19 @@ class EntityItem
 // EntityItem class implementation.
 //
 
-template <typename Entity>
-EntityItem<Entity>::EntityItem(
-    Entity&                 entity,
+template <typename Entity, typename ParentEntity>
+EntityItem<Entity, ParentEntity>::EntityItem(
+    Entity*                 entity,
+    ParentEntity&           parent,
     ProjectBuilder&         project_builder)
   : EntityItemBase(entity)
+  , m_parent(parent)
   , m_project_builder(project_builder)
 {
 }
 
-template <typename Entity>
-void EntityItem<Entity>::slot_edit_accepted(foundation::Dictionary values)
+template <typename Entity, typename ParentEntity>
+void EntityItem<Entity, ParentEntity>::slot_edit_accepted(foundation::Dictionary values)
 {
     catch_entity_creation_errors(
         &EntityItem::edit,
@@ -90,18 +97,22 @@ void EntityItem<Entity>::slot_edit_accepted(foundation::Dictionary values)
         renderer::EntityTraits<Entity>::get_human_readable_entity_type_name());
 }
 
-template <typename Entity>
-void EntityItem<Entity>::edit(const foundation::Dictionary& values)
+template <typename Entity, typename ParentEntity>
+void EntityItem<Entity, ParentEntity>::edit(const foundation::Dictionary& values)
 {
-    m_project_builder.edit_entity(m_entity, values);
+    const std::string model = values.get<std::string>("model");
+
+    if (model == m_entity->get_model())
+        m_project_builder.edit_entity(*m_entity, values);
+    else m_entity = m_project_builder.replace_entity(m_entity, m_parent, values);
 
     update_title();
 
     qobject_cast<QWidget*>(sender())->close();
 }
 
-template <typename Entity>
-void EntityItem<Entity>::slot_delete()
+template <typename Entity, typename ParentEntity>
+void EntityItem<Entity, ParentEntity>::slot_delete()
 {
 }
 

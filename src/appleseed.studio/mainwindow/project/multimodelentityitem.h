@@ -55,17 +55,15 @@ namespace studio {
 
 template <typename Entity, typename ParentEntity>
 class MultiModelEntityItem
-  : public EntityItem<Entity>
+  : public EntityItem<Entity, ParentEntity>
 {
   public:
     MultiModelEntityItem(
-        Entity&             entity,
+        Entity*             entity,
         ParentEntity&       parent,
         ProjectBuilder&     project_builder);
 
   private:
-    ParentEntity&           m_parent;
-
     virtual void slot_edit();
 };
 
@@ -76,11 +74,10 @@ class MultiModelEntityItem
 
 template <typename Entity, typename ParentEntity>
 MultiModelEntityItem<Entity, ParentEntity>::MultiModelEntityItem(
-    Entity&                 entity,
+    Entity*                 entity,
     ParentEntity&           parent,
     ProjectBuilder&         project_builder)
-  : EntityItem(entity, project_builder)
-  , m_parent(parent)
+  : EntityItem(entity, parent, project_builder)
 {
 }
 
@@ -98,13 +95,13 @@ void MultiModelEntityItem<Entity, ParentEntity>::slot_edit()
     std::auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
         new MultiModelEntityEditorFormFactory<FactoryRegistrarType>(
             m_project_builder.get_factory_registrar<Entity>(),
-            m_entity.get_name()));
+            m_entity->get_name()));
 
     std::auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
         new EntityBrowser<ParentEntity>(m_parent));
 
-    foundation::Dictionary values = m_entity.get_parameters();
-    values.insert("model", m_entity.get_model());
+    foundation::Dictionary values = m_entity->get_parameters();
+    values.insert("model", m_entity->get_model());
 
     open_entity_editor(
         treeWidget(),

@@ -71,13 +71,18 @@ ProjectBuilder::ProjectBuilder(
 {
 }
 
+void ProjectBuilder::notify_project_modification() const
+{
+    emit project_modified();
+}
+
 void ProjectBuilder::insert_assembly(
     const string&       name) const
 {
     auto_release_ptr<Assembly> assembly(
         AssemblyFactory::create(name.c_str(), ParamArray()));
 
-    m_project_tree.get_assembly_collection_item().add_item(assembly.ref());
+    m_project_tree.get_assembly_collection_item().add_item(assembly.get());
 
     m_project.get_scene()->assemblies().insert(assembly);
 
@@ -94,7 +99,7 @@ void ProjectBuilder::insert_assembly_instance(
             assembly,
             Transformd(Matrix4d::identity())));
 
-    m_project_tree.add_item(assembly_instance.ref());
+    m_project_tree.add_item(assembly_instance.get());
 
     m_project.get_scene()->assembly_instances().insert(assembly_instance);
 
@@ -120,7 +125,7 @@ void ProjectBuilder::insert_objects(
         object->get_parameters().insert("filename", filesystem::path(path).filename());
         object->get_parameters().insert("__common_base_name", base_object_name);
 
-        m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(*object);
+        m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(object);
 
         const size_t object_index =
             assembly.objects().insert(auto_release_ptr<Object>(object));
@@ -135,7 +140,7 @@ void ProjectBuilder::insert_objects(
                 Transformd(Matrix4d::identity()),
                 material_indices));
 
-        m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(object_instance.ref());
+        m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(object_instance.get());
 
         assembly.object_instances().insert(object_instance);
     }
@@ -188,14 +193,14 @@ void ProjectBuilder::insert_textures(
     auto_release_ptr<Texture> texture = create_texture(path);
     const string texture_name = texture->get_name();
 
-    m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(texture.ref());
+    m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(texture.get());
 
     const size_t texture_index = assembly.textures().insert(texture);
 
     auto_release_ptr<TextureInstance> texture_instance =
         create_texture_instance(texture_name, texture_index);
 
-    m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(texture_instance.ref());
+    m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(texture_instance.get());
 
     assembly.texture_instances().insert(texture_instance);
 
@@ -210,14 +215,14 @@ void ProjectBuilder::insert_textures(
     auto_release_ptr<Texture> texture = create_texture(path);
     const string texture_name = texture->get_name();
 
-    m_project_tree.add_item(texture.ref());
+    m_project_tree.add_item(texture.get());
 
     const size_t texture_index = scene.textures().insert(texture);
 
     auto_release_ptr<TextureInstance> texture_instance =
         create_texture_instance(texture_name, texture_index);
 
-    m_project_tree.add_item(texture_instance.ref());
+    m_project_tree.add_item(texture_instance.get());
 
     scene.texture_instances().insert(texture_instance);
 
@@ -241,11 +246,6 @@ void ProjectBuilder::edit_entity(
     }
 
     notify_project_modification();
-}
-
-void ProjectBuilder::notify_project_modification() const
-{
-    emit project_modified();
 }
 
 string ProjectBuilder::get_entity_name(const Dictionary& values)
