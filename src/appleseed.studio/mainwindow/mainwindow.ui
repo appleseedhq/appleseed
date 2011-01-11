@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>appleseed studio</string>
+   <string>appleseed.studio</string>
   </property>
   <property name="locale">
    <locale language="English" country="UnitedStates"/>

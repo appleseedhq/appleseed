@@ -73,7 +73,7 @@ namespace
 
         // Display a message box.
         QMessageBox msgbox;
-        msgbox.setWindowTitle("Application incorrectly installed");
+        msgbox.setWindowTitle("Application Incorrectly Installed");
         msgbox.setIcon(QMessageBox::Critical);
         msgbox.setText(
             "The application failed to start because it is not properly installed. "
@@ -110,7 +110,7 @@ namespace
     void display_stylesheet_load_error(const string& stylesheet_path)
     {
         QMessageBox msgbox;
-        msgbox.setWindowTitle("Failed to load default stylesheet");
+        msgbox.setWindowTitle("Failed to Load Default Stylesheet");
         msgbox.setIcon(QMessageBox::Warning);
         msgbox.setText(
             QString(
@@ -128,7 +128,7 @@ namespace
         const size_t    error_location)
     {
         QMessageBox msgbox;
-        msgbox.setWindowTitle("Failed to process default stylesheet");
+        msgbox.setWindowTitle("Failed to Process Default Stylesheet");
         msgbox.setIcon(QMessageBox::Warning);
         msgbox.setText(
             QString("An error occurred while processing the stylesheet %1.\n\n"

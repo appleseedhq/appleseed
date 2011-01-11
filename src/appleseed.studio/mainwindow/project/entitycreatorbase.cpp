@@ -44,7 +44,7 @@ void EntityCreatorBase::display_entity_creation_error(
     const QString&  message)
 {
     QMessageBox msgbox;
-    msgbox.setWindowTitle(QString("Failed to create %1").arg(entity_name));
+    msgbox.setWindowTitle(QString("Failed to Create %1").arg(entity_name));
     msgbox.setIcon(QMessageBox::Warning);
     msgbox.setText(message);
     msgbox.setStandardButtons(QMessageBox::Ok);
