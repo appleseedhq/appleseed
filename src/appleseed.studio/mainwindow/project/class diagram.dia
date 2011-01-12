@@ -28,7 +28,7 @@
           <dia:boolean val="false"/>
         </dia:attribute>
         <dia:attribute name="scaling">
-          <dia:real val="0.16189679503440857"/>
+          <dia:real val="0.16310419142246246"/>
         </dia:attribute>
         <dia:attribute name="fitto">
           <dia:boolean val="true"/>
@@ -1486,10 +1486,10 @@
     </dia:object>
     <dia:object type="Standard - Text" version="1" id="O39">
       <dia:attribute name="obj_pos">
-        <dia:point val="-4681.7,-2112.07"/>
+        <dia:point val="-4682.14,-2112.07"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="-4681.7,-2112.54;-4665.18,-2111.31"/>
+        <dia:rectangle val="-4682.14,-2112.54;-4665.62,-2111.31"/>
       </dia:attribute>
       <dia:attribute name="text">
         <dia:composite type="text">
@@ -1504,7 +1504,7 @@ NEVER USED DIRECTLY#</dia:string>
             <dia:real val="0.63500000370078613"/>
           </dia:attribute>
           <dia:attribute name="pos">
-            <dia:point val="-4681.7,-2112.07"/>
+            <dia:point val="-4682.14,-2112.07"/>
           </dia:attribute>
           <dia:attribute name="color">
             <dia:color val="#000000"/>
@@ -3268,10 +3268,10 @@ The name is a shortcut for EntityCollectionItemBase.#</dia:string>
     </dia:object>
     <dia:object type="Standard - Text" version="1" id="O79">
       <dia:attribute name="obj_pos">
-        <dia:point val="-4683.24,-2119.24"/>
+        <dia:point val="-4681.13,-2119.24"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="-4683.24,-2119.71;-4665.88,-2117.21"/>
+        <dia:rectangle val="-4681.13,-2119.71;-4666.29,-2117.21"/>
       </dia:attribute>
       <dia:attribute name="text">
         <dia:composite type="text">
@@ -3279,7 +3279,7 @@ The name is a shortcut for EntityCollectionItemBase.#</dia:string>
             <dia:string>#Base class for all entity items:
   - Built from an entity
   - Provides update_title()
-  - Provide a single-click context menu for edition &amp; deletion#</dia:string>
+  - Provide context menu items for edition &amp; deletion#</dia:string>
           </dia:attribute>
           <dia:attribute name="font">
             <dia:font family="Consolas" style="0" name="Courier"/>
@@ -3288,7 +3288,7 @@ The name is a shortcut for EntityCollectionItemBase.#</dia:string>
             <dia:real val="0.63500000370078613"/>
           </dia:attribute>
           <dia:attribute name="pos">
-            <dia:point val="-4683.24,-2119.24"/>
+            <dia:point val="-4681.13,-2119.24"/>
           </dia:attribute>
           <dia:attribute name="color">
             <dia:color val="#000000"/>

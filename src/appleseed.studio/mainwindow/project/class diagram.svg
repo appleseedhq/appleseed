@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
-<svg width="149cm" height="58cm" viewBox="-93665 -43089 2972 1157" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<svg width="148cm" height="58cm" viewBox="-93643 -43089 2950 1157" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
   <g>
     <rect style="fill: #f8eecd" x="-93284.7" y="-42257.5" width="131.8" height="38"/>
     <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-93284.7" y="-42257.5" width="131.8" height="38"/>
@@ -196,9 +196,9 @@
     <polygon style="fill: #000000" points="-92660.6,-42596.5 -92661.1,-42607.7 -92657.5,-42603.4 -92651.9,-42603.6 "/>
     <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92660.6,-42596.5 -92661.1,-42607.7 -92657.5,-42603.4 -92651.9,-42603.6 "/>
   </g>
-  <text style="fill: #000000;text-anchor:start;font-size:10.16;font-family:Consolas;font-style:normal;font-weight:normal" x="-93633.9" y="-42241.4">
-    <tspan x="-93633.9" y="-42241.4">Base class for entity items with generic edition &amp; deletion</tspan>
-    <tspan x="-93633.9" y="-42228.7">NEVER USED DIRECTLY</tspan>
+  <text style="fill: #000000;text-anchor:start;font-size:10.16;font-family:Consolas;font-style:normal;font-weight:normal" x="-93642.8" y="-42241.4">
+    <tspan x="-93642.8" y="-42241.4">Base class for entity items with generic edition &amp; deletion</tspan>
+    <tspan x="-93642.8" y="-42228.7">NEVER USED DIRECTLY</tspan>
   </text>
   <text style="fill: #000000;text-anchor:start;font-size:10.16;font-family:Consolas;font-style:normal;font-weight:normal" x="-92365.2" y="-42294.6">
     <tspan x="-92365.2" y="-42294.6">Base class for collections of entity items with generic creation</tspan>
@@ -451,11 +451,11 @@
     <polygon style="fill: #000000" points="-93218.8,-42258.6 -93223.8,-42268.6 -93218.8,-42266.1 -93213.8,-42268.6 "/>
     <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-93218.8,-42258.6 -93223.8,-42268.6 -93218.8,-42266.1 -93213.8,-42268.6 "/>
   </g>
-  <text style="fill: #000000;text-anchor:start;font-size:10.16;font-family:Consolas;font-style:normal;font-weight:normal" x="-93664.8" y="-42384.8">
-    <tspan x="-93664.8" y="-42384.8">Base class for all entity items:</tspan>
-    <tspan x="-93664.8" y="-42372.1">  - Built from an entity</tspan>
-    <tspan x="-93664.8" y="-42359.4">  - Provides update_title()</tspan>
-    <tspan x="-93664.8" y="-42346.7">  - Provide a single-click context menu for edition &amp; deletion</tspan>
+  <text style="fill: #000000;text-anchor:start;font-size:10.16;font-family:Consolas;font-style:normal;font-weight:normal" x="-93622.6" y="-42384.8">
+    <tspan x="-93622.6" y="-42384.8">Base class for all entity items:</tspan>
+    <tspan x="-93622.6" y="-42372.1">  - Built from an entity</tspan>
+    <tspan x="-93622.6" y="-42359.4">  - Provides update_title()</tspan>
+    <tspan x="-93622.6" y="-42346.7">  - Provide context menu items for edition &amp; deletion</tspan>
   </text>
   <g>
     <rect style="fill: #f8eecd" x="-93298.1" y="-42383.4" width="158.5" height="38"/>
