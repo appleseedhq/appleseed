@@ -32,7 +32,6 @@
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/material/material.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 
 // Forward declarations.
@@ -61,10 +60,9 @@ class ShadingEngine
         ShadingResult&          shading_result) const;
 
   private:
-    foundation::auto_release_ptr<SurfaceShader>     m_diagnostic_material_surface_shader;
-    foundation::auto_release_ptr<Material>          m_diagnostic_material;
+    foundation::auto_release_ptr<SurfaceShader>     m_diagnostic_surface_shader;
 
-    void create_diagnostic_material(const ParamArray& params);
+    void create_diagnostic_surface_shader(const ParamArray& params);
 
     void shade_hit_point(
         SamplingContext&        sampling_context,

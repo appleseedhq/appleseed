@@ -212,21 +212,6 @@ void InputBinder::bind_assembly_entities_inputs(
     const Assembly&                 assembly,
     const SymbolTable&              assembly_symbols)
 {
-    // Bind surface shaders inputs.
-    for (each<SurfaceShaderContainer> i = assembly.surface_shaders(); i; ++i)
-    {
-        SurfaceShader& surface_shader = *i;
-        bind_assembly_entity_inputs(
-            scene,
-            scene_symbols,
-            assembly,
-            assembly_symbols,
-            SymbolTable::symbol_name(SymbolTable::SymbolSurfaceShader),
-            surface_shader.get_name(),
-            surface_shader.get_parameters(),
-            surface_shader.get_inputs());
-    }
-
     // Bind BSDFs inputs.
     for (each<BSDFContainer> i = assembly.bsdfs(); i; ++i)
     {
@@ -255,6 +240,31 @@ void InputBinder::bind_assembly_entities_inputs(
             edf.get_name(),
             edf.get_parameters(),
             edf.get_inputs());
+    }
+
+    // Bind surface shaders inputs.
+    for (each<SurfaceShaderContainer> i = assembly.surface_shaders(); i; ++i)
+    {
+        SurfaceShader& surface_shader = *i;
+        bind_assembly_entity_inputs(
+            scene,
+            scene_symbols,
+            assembly,
+            assembly_symbols,
+            SymbolTable::symbol_name(SymbolTable::SymbolSurfaceShader),
+            surface_shader.get_name(),
+            surface_shader.get_parameters(),
+            surface_shader.get_inputs());
+    }
+
+    // Bind materials inputs.
+    for (each<MaterialContainer> i = assembly.materials(); i; ++i)
+    {
+        Material& material = *i;
+        material.bind_entities(
+            assembly.surface_shaders(),
+            assembly.bsdfs(),
+            assembly.edfs());
     }
 }
 

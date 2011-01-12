@@ -238,11 +238,14 @@ void ProjectBuilder::edit_entity(
     entity.set_name(name.c_str());
 
     // Update the other entity parameters.
-    ParamArray& params = entity.get_parameters();
     for (const_each<StringDictionary> i = values.strings(); i; ++i)
     {
-        if (params.strings().exist(i->name()))
-            params.insert(i->name(), i->value());
+        const string name = i->name();
+
+        if (name == "name" || name == "model")
+            continue;
+
+        entity.get_parameters().insert(i->name(), i->value());
     }
 
     notify_project_modification();

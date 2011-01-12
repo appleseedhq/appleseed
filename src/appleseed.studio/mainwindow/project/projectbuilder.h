@@ -251,13 +251,7 @@ inline foundation::auto_release_ptr<renderer::Material> ProjectBuilder::create_e
 {
     const std::string name = get_entity_name(values);
 
-    return
-        renderer::MaterialFactory::create(
-            name.c_str(),
-            values,
-            assembly.surface_shaders(),
-            assembly.bsdfs(),
-            assembly.edfs());
+    return renderer::MaterialFactory::create(name.c_str(), values);
 }
 
 template <typename Entity>

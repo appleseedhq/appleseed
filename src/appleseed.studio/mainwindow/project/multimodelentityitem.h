@@ -34,6 +34,7 @@
 #include "mainwindow/project/entityeditorwindow.h"
 #include "mainwindow/project/entityitem.h"
 #include "mainwindow/project/multimodelentityeditorformfactory.h"
+#include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/tools.h"
 
 // appleseed.renderer headers.
@@ -46,9 +47,6 @@
 // Standard headers.
 #include <memory>
 #include <string>
-
-// Forward declarations.
-namespace appleseed { namespace studio { class ProjectBuilder; } }
 
 namespace appleseed {
 namespace studio {
@@ -65,6 +63,7 @@ class MultiModelEntityItem
 
   private:
     virtual void slot_edit();
+    virtual void edit(const foundation::Dictionary& values);
 };
 
 
@@ -111,6 +110,20 @@ void MultiModelEntityItem<Entity, ParentEntity>::slot_edit()
         values,
         this,
         SLOT(slot_edit_accepted(foundation::Dictionary)));
+}
+
+template <typename Entity, typename ParentEntity>
+void MultiModelEntityItem<Entity, ParentEntity>::edit(const foundation::Dictionary& values)
+{
+    const std::string model = values.get<std::string>("model");
+
+    if (model == m_entity->get_model())
+        m_project_builder.edit_entity(*m_entity, values);
+    else m_entity = m_project_builder.replace_entity(m_entity, m_parent, values);
+
+    update_title();
+
+    qobject_cast<QWidget*>(sender())->close();
 }
 
 }       // namespace studio

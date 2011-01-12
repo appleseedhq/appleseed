@@ -54,6 +54,11 @@ class RENDERERDLL Material
     // Delete this instance.
     virtual void release();
 
+    void bind_entities(
+        const SurfaceShaderContainer&   surface_shaders,
+        const BSDFContainer&            bsdfs,
+        const EDFContainer&             edfs);
+
     // Return a string identifying the model of this material.
     const char* get_model() const;
 
@@ -73,25 +78,10 @@ class RENDERERDLL Material
     const BSDF*             m_bsdf;
     const EDF*              m_edf;
 
-    // Constructors.
+    // Constructor.
     Material(
         const char*                     name,
-        const SurfaceShader*            surface_shader);
-    Material(
-        const char*                     name,
-        const SurfaceShader*            surface_shader,
-        const BSDF*                     bsdf);
-    Material(
-        const char*                     name,
-        const SurfaceShader*            surface_shader,
-        const BSDF*                     bsdf,
-        const EDF*                      edf);
-    Material(
-        const char*                     name,
-        const ParamArray&               params,
-        const SurfaceShaderContainer&   surface_shaders,
-        const BSDFContainer&            bsdfs,
-        const EDFContainer&             edfs);
+        const ParamArray&               params);
 };
 
 
@@ -111,22 +101,7 @@ class RENDERERDLL MaterialFactory
     // Create a new material.
     static foundation::auto_release_ptr<Material> create(
         const char*                     name,
-        const SurfaceShader*            surface_shader);
-    static foundation::auto_release_ptr<Material> create(
-        const char*                     name,
-        const SurfaceShader*            surface_shader,
-        const BSDF*                     bsdf);
-    static foundation::auto_release_ptr<Material> create(
-        const char*                     name,
-        const SurfaceShader*            surface_shader,
-        const BSDF*                     bsdf,
-        const EDF*                      edf);
-    static foundation::auto_release_ptr<Material> create(
-        const char*                     name,
-        const ParamArray&               params,
-        const SurfaceShaderContainer&   surface_shaders,
-        const BSDFContainer&            bsdfs,
-        const EDFContainer&             edfs);
+        const ParamArray&               params);
 };
 
 

@@ -1486,12 +1486,7 @@ namespace
                 if (m_model == MaterialFactory::get_model())
                 {
                     m_material =
-                        MaterialFactory::create(
-                            m_name.c_str(),
-                            m_params,
-                            *m_surface_shaders,
-                            *m_bsdfs,
-                            *m_edfs);
+                        MaterialFactory::create(m_name.c_str(), m_params);
                 }
                 else
                 {

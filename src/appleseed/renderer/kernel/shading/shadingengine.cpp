@@ -35,6 +35,7 @@
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/material/material.h"
 #include "renderer/modeling/surfaceshader/constantsurfaceshader.h"
 #include "renderer/modeling/surfaceshader/diagnosticsurfaceshader.h"
 
@@ -53,21 +54,18 @@ namespace renderer
 
 ShadingEngine::ShadingEngine(const ParamArray& params)
 {
-    if (params.dictionaries().exist("override_shading"))
-        create_diagnostic_material(params.child("override_shading"));
+    create_diagnostic_surface_shader(params);
 }
 
-void ShadingEngine::create_diagnostic_material(const ParamArray& params)
+void ShadingEngine::create_diagnostic_surface_shader(const ParamArray& params)
 {
-    m_diagnostic_material_surface_shader =
-        DiagnosticSurfaceShaderFactory().create(
-            "__diagnostic_surface_shader",
-            params);
-
-    m_diagnostic_material =
-        MaterialFactory().create(
-            "__diagnostic_material",
-            m_diagnostic_material_surface_shader.get());
+    if (params.dictionaries().exist("override_shading"))
+    {
+        m_diagnostic_surface_shader =
+            DiagnosticSurfaceShaderFactory().create(
+                "__diagnostic_surface_shader",
+                params.child("override_shading"));
+    }
 }
 
 void ShadingEngine::shade_hit_point(
@@ -76,25 +74,27 @@ void ShadingEngine::shade_hit_point(
     const ShadingPoint&     shading_point,
     ShadingResult&          shading_result) const
 {
-    // Retrieve the material at the intersection point.
-    const Material* material = m_diagnostic_material.get();
-    if (material == 0)
+    // Use the diagnostic surface shader if there is one.
+    const SurfaceShader* surface_shader = m_diagnostic_surface_shader.get();
+
+    if (surface_shader == 0)
     {
-        // No diagnostic material: use the material assigned to the triangle.
-        material = shading_point.get_material();
+        // There is no diagnostic shader. Retrieve the material of the intersected surface.
+        const Material* material = shading_point.get_material();
+
         if (material == 0)
         {
-            // The triangle has no material: return solid pink.
+            // The intersected surface has no material: return solid pink.
             shading_result.set_to_solid_pink();
             return;
         }
+
+        // Use the surface shader of the intersected surface.
+        surface_shader = &material->get_surface_shader();
     }
 
-    // Retrieve the surface shader of the material.
-    const SurfaceShader& surface_shader = material->get_surface_shader();
-
     // Execute the surface shader.
-    surface_shader.evaluate(
+    surface_shader->evaluate(
         sampling_context,
         shading_context,
         shading_point,

@@ -50,72 +50,34 @@ namespace
 
 Material::Material(
     const char*                     name,
-    const SurfaceShader*            surface_shader)
-  : Entity(g_class_uid)
-{
-    assert(surface_shader);
-
-    set_name(name);
-
-    m_surface_shader = surface_shader;
-    m_bsdf = 0;
-    m_edf = 0;
-}
-
-Material::Material(
-    const char*                     name,
-    const SurfaceShader*            surface_shader,
-    const BSDF*                     bsdf)
-  : Entity(g_class_uid)
-{
-    assert(surface_shader);
-
-    set_name(name);
-
-    m_surface_shader = surface_shader;
-    m_bsdf = bsdf;
-    m_edf = 0;
-}
-
-Material::Material(
-    const char*                     name,
-    const SurfaceShader*            surface_shader,
-    const BSDF*                     bsdf,
-    const EDF*                      edf)
-  : Entity(g_class_uid)
-{
-    assert(surface_shader);
-
-    set_name(name);
-
-    m_surface_shader = surface_shader;
-    m_bsdf = bsdf;
-    m_edf = edf;
-}
-
-Material::Material(
-    const char*                     name,
-    const ParamArray&               params,
-    const SurfaceShaderContainer&   surface_shaders,
-    const BSDFContainer&            bsdfs,
-    const EDFContainer&             edfs)
+    const ParamArray&               params)
   : Entity(g_class_uid, params)
+  , m_surface_shader(0)
+  , m_bsdf(0)
+  , m_edf(0)
 {
     set_name(name);
-
-    m_surface_shader =
-        get_required_entity<SurfaceShader>(
-            surface_shaders,
-            params,
-            "surface_shader");
-
-    m_bsdf = get_optional_entity<BSDF>(bsdfs, params, "bsdf");
-    m_edf = get_optional_entity<EDF>(edfs, params, "edf");
 }
 
 void Material::release()
 {
     delete this;
+}
+
+void Material::bind_entities(
+    const SurfaceShaderContainer&   surface_shaders,
+    const BSDFContainer&            bsdfs,
+    const EDFContainer&             edfs)
+{
+    m_surface_shader =
+        get_required_entity<SurfaceShader>(
+            surface_shaders,
+            m_params,
+            "surface_shader");
+
+    m_bsdf = get_optional_entity<BSDF>(bsdfs, m_params, "bsdf");
+
+    m_edf = get_optional_entity<EDF>(edfs, m_params, "edf");
 }
 
 const char* Material::get_model() const
@@ -167,58 +129,9 @@ DictionaryArray MaterialFactory::get_widget_definitions()
 
 auto_release_ptr<Material> MaterialFactory::create(
     const char*                     name,
-    const SurfaceShader*            surface_shader)
+    const ParamArray&               params)
 {
-    return
-        auto_release_ptr<Material>(
-            new Material(
-                name,
-                surface_shader));
-}
-
-auto_release_ptr<Material> MaterialFactory::create(
-    const char*                     name,
-    const SurfaceShader*            surface_shader,
-    const BSDF*                     bsdf)
-{
-    return
-        auto_release_ptr<Material>(
-            new Material(
-                name,
-                surface_shader,
-                bsdf));
-}
-
-auto_release_ptr<Material> MaterialFactory::create(
-    const char*                     name,
-    const SurfaceShader*            surface_shader,
-    const BSDF*                     bsdf,
-    const EDF*                      edf)
-{
-    return
-        auto_release_ptr<Material>(
-            new Material(
-                name,
-                surface_shader,
-                bsdf,
-                edf));
-}
-
-auto_release_ptr<Material> MaterialFactory::create(
-    const char*                     name,
-    const ParamArray&               params,
-    const SurfaceShaderContainer&   surface_shaders,
-    const BSDFContainer&            bsdfs,
-    const EDFContainer&             edfs)
-{
-    return
-        auto_release_ptr<Material>(
-            new Material(
-                name,
-                params,
-                surface_shaders,
-                bsdfs,
-                edfs));
+    return auto_release_ptr<Material>(new Material(name, params));
 }
 
 }   // namespace renderer

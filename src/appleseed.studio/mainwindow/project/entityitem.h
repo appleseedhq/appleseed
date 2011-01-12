@@ -32,7 +32,6 @@
 // appleseed.studio headers.
 #include "mainwindow/project/entitycreatorbase.h"
 #include "mainwindow/project/entityitembase.h"
-#include "mainwindow/project/projectbuilder.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/entity.h"
@@ -46,6 +45,9 @@
 
 // Standard headers.
 #include <string>
+
+// Forward declarations.
+namespace appleseed { namespace studio { class ProjectBuilder; } }
 
 namespace appleseed {
 namespace studio {
@@ -66,10 +68,9 @@ class EntityItem
     ProjectBuilder&         m_project_builder;
 
     virtual void slot_edit_accepted(foundation::Dictionary values);
+    virtual void edit(const foundation::Dictionary& values) = 0;
 
   private:
-    void edit(const foundation::Dictionary& values);
-
     virtual void slot_delete_entity_and_item();
 };
 
@@ -96,20 +97,6 @@ void EntityItem<Entity, ParentEntity>::slot_edit_accepted(foundation::Dictionary
         &EntityItem::edit,
         values,
         renderer::EntityTraits<Entity>::get_human_readable_entity_type_name());
-}
-
-template <typename Entity, typename ParentEntity>
-void EntityItem<Entity, ParentEntity>::edit(const foundation::Dictionary& values)
-{
-    const std::string model = values.get<std::string>("model");
-
-    if (model == m_entity->get_model())
-        m_project_builder.edit_entity(*m_entity, values);
-    else m_entity = m_project_builder.replace_entity(m_entity, m_parent, values);
-
-    update_title();
-
-    qobject_cast<QWidget*>(sender())->close();
 }
 
 template <typename Entity, typename ParentEntity>

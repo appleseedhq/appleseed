@@ -529,12 +529,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         params.insert("bsdf", "white_material_brdf");
         white_material_index =
             assembly->materials().insert(
-                MaterialFactory::create(
-                    "white_material",
-                    params,
-                    assembly->surface_shaders(),
-                    assembly->bsdfs(),
-                    assembly->edfs()));
+                MaterialFactory::create("white_material", params));
     }
 
     //
@@ -556,12 +551,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         params.insert("bsdf", "red_material_brdf");
         red_material_index =
             assembly->materials().insert(
-                MaterialFactory::create(
-                    "red_material",
-                    params,
-                    assembly->surface_shaders(),
-                    assembly->bsdfs(),
-                    assembly->edfs()));
+                MaterialFactory::create("red_material", params));
     }
 
     //
@@ -583,12 +573,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         params.insert("bsdf", "green_material_brdf");
         green_material_index =
             assembly->materials().insert(
-                MaterialFactory::create(
-                    "green_material",
-                    params,
-                    assembly->surface_shaders(),
-                    assembly->bsdfs(),
-                    assembly->edfs()));
+                MaterialFactory::create("green_material", params));
     }
 
     //
@@ -618,12 +603,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         params.insert("edf", "light_material_edf");
         light_material_index =
             assembly->materials().insert(
-                MaterialFactory::create(
-                    "light_material",
-                    params,
-                    assembly->surface_shaders(),
-                    assembly->bsdfs(),
-                    assembly->edfs()));
+                MaterialFactory::create("light_material", params));
     }
 
     //
