@@ -39,6 +39,10 @@
 // Qt headers.
 #include <QList>
 #include <QObject>
+#include <QShortcut>
+
+// Standard headers.
+#include <memory>
 
 // Forward declarations.
 namespace renderer  { class Project; }
@@ -58,17 +62,18 @@ class ProjectExplorer
 
   public:
     ProjectExplorer(
-        renderer::Project&  project,
-        QTreeWidget*        tree_widget);
+        renderer::Project&      project,
+        QTreeWidget*            tree_widget);
 
   signals:
     void signal_project_modified() const;
 
   private:
-    renderer::Project&      m_project;
-    QTreeWidget*            m_tree_widget;
-    ProjectTree             m_project_tree;
-    ProjectBuilder          m_project_builder;
+    renderer::Project&          m_project;
+    QTreeWidget*                m_tree_widget;
+    ProjectTree                 m_project_tree;
+    ProjectBuilder              m_project_builder;
+    std::auto_ptr<QShortcut>    m_delete_shortcut;
 
     QMenu* build_no_item_context_menu() const;
     QMenu* build_single_item_context_menu(QTreeWidgetItem* item) const;
@@ -76,7 +81,8 @@ class ProjectExplorer
 
   private slots:
     void slot_context_menu(const QPoint& point);
-    void slot_item_activated(QTreeWidgetItem* item, int column);
+    void slot_activate_item(QTreeWidgetItem* item, int column);
+    void slot_delete_item();
 };
 
 }       // namespace studio

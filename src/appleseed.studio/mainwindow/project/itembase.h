@@ -65,6 +65,7 @@ class ItemBase
     virtual QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const;
 
     virtual void activate();
+    virtual void destroy();
 
   protected:
     ItemBase();

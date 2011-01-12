@@ -57,7 +57,7 @@ class EntityItemBaseSlots
   protected slots:
     virtual void slot_edit();
     virtual void slot_edit_accepted(foundation::Dictionary values);
-    virtual void slot_delete_entity_and_item();
+    virtual void slot_delete();
 };
 
 template <typename Entity>
@@ -72,6 +72,7 @@ class EntityItemBase
     virtual QMenu* get_single_item_context_menu() const;
 
     virtual void activate();
+    virtual void destroy();
 
   protected:
     Entity* m_entity;
@@ -103,7 +104,7 @@ QMenu* EntityItemBase<Entity>::get_single_item_context_menu() const
     menu->addSeparator();
 
     menu->addAction("Edit...", this, SLOT(slot_edit()));
-    menu->addAction("Delete", this, SLOT(slot_delete_entity_and_item()));
+    menu->addAction("Delete", this, SLOT(slot_delete()));
 
     return menu;
 }
@@ -112,6 +113,12 @@ template <typename Entity>
 void EntityItemBase<Entity>::activate()
 {
     slot_edit();
+}
+
+template <typename Entity>
+void EntityItemBase<Entity>::destroy()
+{
+    slot_delete();
 }
 
 }       // namespace studio

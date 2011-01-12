@@ -78,5 +78,9 @@ void ItemBase::activate()
 {
 }
 
+void ItemBase::destroy()
+{
+}
+
 }   // namespace studio
 }   // namespace appleseed

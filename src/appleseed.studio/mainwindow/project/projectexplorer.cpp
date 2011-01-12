@@ -37,8 +37,10 @@
 #include "foundation/utility/uid.h"
 
 // Qt headers.
+#include <QKeySequence>
 #include <QMenu>
 #include <QPoint>
+#include <Qt>
 #include <QTreeWidget>
 
 // Standard headers.
@@ -66,7 +68,14 @@ ProjectExplorer::ProjectExplorer(
 
     connect(
         m_tree_widget, SIGNAL(itemActivated(QTreeWidgetItem*, int)),
-        this, SLOT(slot_item_activated(QTreeWidgetItem*, int)));
+        this, SLOT(slot_activate_item(QTreeWidgetItem*, int)));
+
+    m_delete_shortcut.reset(
+        new QShortcut(QKeySequence(Qt::Key_Delete), m_tree_widget));
+
+    connect(
+        m_delete_shortcut.get(), SIGNAL(activated()),
+        this, SLOT(slot_delete_item()));
 
     connect(
         &m_project_builder, SIGNAL(signal_project_modified()),
@@ -143,9 +152,17 @@ void ProjectExplorer::slot_context_menu(const QPoint& point)
         menu->exec(m_tree_widget->mapToGlobal(point));
 }
 
-void ProjectExplorer::slot_item_activated(QTreeWidgetItem* item, int column)
+void ProjectExplorer::slot_activate_item(QTreeWidgetItem* item, int column)
 {
     static_cast<ItemBase*>(item)->activate();
+}
+
+void ProjectExplorer::slot_delete_item()
+{
+    const QList<QTreeWidgetItem*> selected_items = m_tree_widget->selectedItems();
+
+    for (int i = 0; i < selected_items.size(); ++i)
+        static_cast<ItemBase*>(selected_items[i])->destroy();
 }
 
 }   // namespace studio

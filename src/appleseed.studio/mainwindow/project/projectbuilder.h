@@ -86,6 +86,22 @@ class ProjectBuilder
 
     void notify_project_modification() const;
 
+    template <typename Entity, typename ParentEntity>
+    void insert_entity(
+        ParentEntity&                       parent,
+        const foundation::Dictionary&       values) const;
+
+    template <typename Entity, typename ParentEntity>
+    void remove_entity(
+        Entity*                             entity,
+        ParentEntity&                       parent) const;
+
+    template <typename Entity, typename ParentEntity>
+    Entity* replace_entity(
+        Entity*                             old_entity,
+        ParentEntity&                       parent,
+        const foundation::Dictionary&       values) const;
+
     void insert_assembly(
         const std::string&                  name) const;
 
@@ -103,17 +119,6 @@ class ProjectBuilder
 
     void insert_textures(
         const std::string&                  path) const;
-
-    template <typename Entity, typename ParentEntity>
-    void insert_entity(
-        ParentEntity&                       parent,
-        const foundation::Dictionary&       values) const;
-
-    template <typename Entity, typename ParentEntity>
-    Entity* replace_entity(
-        Entity*                             old_entity,
-        ParentEntity&                       parent,
-        const foundation::Dictionary&       values) const;
 
   signals:
     void signal_project_modified() const;
@@ -199,6 +204,16 @@ void ProjectBuilder::insert_entity(
     add_item(entity.get(), parent);
 
     renderer::EntityTraits<Entity>::get_entity_container(parent).insert(entity);
+
+    notify_project_modification();
+}
+
+template <typename Entity, typename ParentEntity>
+void ProjectBuilder::remove_entity(
+    Entity*                             entity,
+    ParentEntity&                       parent) const
+{
+    renderer::EntityTraits<Entity>::get_entity_container(parent).remove(entity);
 
     notify_project_modification();
 }

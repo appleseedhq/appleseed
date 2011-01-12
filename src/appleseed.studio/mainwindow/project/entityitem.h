@@ -44,9 +44,6 @@
 #include <QObject>
 #include <QWidget>
 
-// Standard headers.
-#include <string>
-
 namespace appleseed {
 namespace studio {
 
@@ -66,7 +63,7 @@ class EntityItem
     ProjectBuilder&         m_project_builder;
 
     virtual void slot_edit_accepted(foundation::Dictionary values);
-    virtual void slot_delete_entity_and_item();
+    virtual void slot_delete();
 
   private:
     void edit(const foundation::Dictionary& values);
@@ -98,9 +95,9 @@ void EntityItem<Entity, ParentEntity>::slot_edit_accepted(foundation::Dictionary
 }
 
 template <typename Entity, typename ParentEntity>
-void EntityItem<Entity, ParentEntity>::slot_delete_entity_and_item()
+void EntityItem<Entity, ParentEntity>::slot_delete()
 {
-    renderer::EntityTraits<Entity>::get_entity_container(m_parent).remove(m_entity);
+    m_project_builder.remove_entity(m_entity, m_parent);
 
     delete this;
 }

@@ -56,7 +56,7 @@ void EntityItemBaseSlots::slot_edit_accepted(Dictionary values)
 {
 }
 
-void EntityItemBaseSlots::slot_delete_entity_and_item()
+void EntityItemBaseSlots::slot_delete()
 {
 }
 
