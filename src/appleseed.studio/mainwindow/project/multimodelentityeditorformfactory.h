@@ -47,6 +47,8 @@ class MultiModelEntityEditorFormFactory
   : public EntityEditorFormFactoryBase
 {
   public:
+    static const std::string ModelParameter;
+
     MultiModelEntityEditorFormFactory(
         const FactoryRegistrar&         factory_registrar,
         const std::string&              entity_name);
@@ -67,6 +69,9 @@ class MultiModelEntityEditorFormFactory
 //
 // MultiModelEntityEditorFormFactory class implementation.
 //
+
+template <typename FactoryRegistrar>
+const std::string MultiModelEntityEditorFormFactory<FactoryRegistrar>::ModelParameter = "__model";
 
 template <typename FactoryRegistrar>
 MultiModelEntityEditorFormFactory<FactoryRegistrar>::MultiModelEntityEditorFormFactory(
@@ -120,12 +125,12 @@ std::string MultiModelEntityEditorFormFactory<FactoryRegistrar>::add_model_widge
     const std::string model =
         get_value(
             values,
-            "model",
+            ModelParameter,
             factories.empty() ? "" : factories[0]->get_model());
 
     definitions.push_back(
         foundation::Dictionary()
-            .insert("name", "model")
+            .insert("name", ModelParameter)
             .insert("label", "Model")
             .insert("widget", "dropdown_list")
             .insert("dropdown_items", model_items)

@@ -229,34 +229,13 @@ void ProjectBuilder::insert_textures(
     notify_project_modification();
 }
 
-void ProjectBuilder::edit_entity(
-    Entity&             entity,
-    const Dictionary&   values) const
-{
-    // Update the entity name as a special case.
-    const string name = get_entity_name(values);
-    entity.set_name(name.c_str());
-
-    // Update the other entity parameters.
-    for (const_each<StringDictionary> i = values.strings(); i; ++i)
-    {
-        const string name = i->name();
-
-        if (name == "name" || name == "model")
-            continue;
-
-        entity.get_parameters().insert(i->name(), i->value());
-    }
-
-    notify_project_modification();
-}
-
 string ProjectBuilder::get_entity_name(const Dictionary& values)
 {
-    if (!values.strings().exist("name"))
+    if (!values.strings().exist(EntityEditorFormFactoryBase::NameParameter))
         throw ExceptionInvalidEntityName();
 
-    const string name = trim_both(values.get<string>("name"));
+    const string name = trim_both(
+        values.get<string>(EntityEditorFormFactoryBase::NameParameter));
 
     if (!is_valid_entity_name(name))
         throw ExceptionInvalidEntityName();

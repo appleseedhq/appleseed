@@ -62,8 +62,13 @@ class MultiModelEntityItem
         ProjectBuilder&     project_builder);
 
   private:
+    typedef typename renderer::EntityTraits<Entity> EntityTraits;
+
+    typedef MultiModelEntityEditorFormFactory<
+        typename EntityTraits::FactoryRegistrarType
+    > MultiModelEntityEditorFormFactory;
+
     virtual void slot_edit();
-    virtual void edit(const foundation::Dictionary& values);
 };
 
 
@@ -83,16 +88,12 @@ MultiModelEntityItem<Entity, ParentEntity>::MultiModelEntityItem(
 template <typename Entity, typename ParentEntity>
 void MultiModelEntityItem<Entity, ParentEntity>::slot_edit()
 {
-    typedef typename renderer::EntityTraits<Entity> EntityTraits;
-
     const std::string window_title =
         std::string("Edit ") +
         EntityTraits::get_human_readable_entity_type_name();
 
-    typedef typename EntityTraits::FactoryRegistrarType FactoryRegistrarType;
-
     std::auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
-        new MultiModelEntityEditorFormFactory<FactoryRegistrarType>(
+        new MultiModelEntityEditorFormFactory(
             m_project_builder.get_factory_registrar<Entity>(),
             m_entity->get_name()));
 
@@ -100,7 +101,9 @@ void MultiModelEntityItem<Entity, ParentEntity>::slot_edit()
         new EntityBrowser<ParentEntity>(m_parent));
 
     foundation::Dictionary values = m_entity->get_parameters();
-    values.insert("model", m_entity->get_model());
+    values.insert(
+        MultiModelEntityEditorFormFactory::ModelParameter,
+        m_entity->get_model());
 
     open_entity_editor(
         treeWidget(),
@@ -110,20 +113,6 @@ void MultiModelEntityItem<Entity, ParentEntity>::slot_edit()
         values,
         this,
         SLOT(slot_edit_accepted(foundation::Dictionary)));
-}
-
-template <typename Entity, typename ParentEntity>
-void MultiModelEntityItem<Entity, ParentEntity>::edit(const foundation::Dictionary& values)
-{
-    const std::string model = values.get<std::string>("model");
-
-    if (model == m_entity->get_model())
-        m_project_builder.edit_entity(*m_entity, values);
-    else m_entity = m_project_builder.replace_entity(m_entity, m_parent, values);
-
-    update_title();
-
-    qobject_cast<QWidget*>(sender())->close();
 }
 
 }       // namespace studio

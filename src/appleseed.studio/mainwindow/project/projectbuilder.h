@@ -31,6 +31,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/assemblycollectionitem.h"
+#include "mainwindow/project/multimodelentityeditorformfactory.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
@@ -106,10 +107,6 @@ class ProjectBuilder
     template <typename Entity, typename ParentEntity>
     void insert_entity(
         ParentEntity&                       parent,
-        const foundation::Dictionary&       values) const;
-
-    void edit_entity(
-        renderer::Entity&                   entity,
         const foundation::Dictionary&       values) const;
 
     template <typename Entity, typename ParentEntity>
@@ -231,11 +228,14 @@ foundation::auto_release_ptr<Entity> ProjectBuilder::create_entity(
     ParentEntity&                       parent,
     const foundation::Dictionary&       values) const
 {
-    const std::string name = get_entity_name(values);
-    const std::string model = values.get<std::string>("model");
-
     typedef typename renderer::EntityTraits<Entity>::FactoryRegistrarType FactoryRegistrarType;
     typedef typename FactoryRegistrarType::FactoryType FactoryType;
+
+    const std::string name = get_entity_name(values);
+
+    const std::string model =
+        values.get<std::string>(
+            MultiModelEntityEditorFormFactory<FactoryRegistrarType>::ModelParameter);
 
     const FactoryRegistrarType& factory_registrar = get_factory_registrar<Entity>();
     const FactoryType* factory = factory_registrar.lookup(model.c_str());

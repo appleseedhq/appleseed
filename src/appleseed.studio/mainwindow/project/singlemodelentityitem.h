@@ -32,7 +32,6 @@
 // appleseed.studio headers.
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entityitem.h"
-#include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/singlemodelentityeditorformfactory.h"
 #include "mainwindow/project/tools.h"
 
@@ -46,6 +45,9 @@
 // Standard headers.
 #include <memory>
 #include <string>
+
+// Forward declarations.
+namespace appleseed { namespace studio { class ProjectBuilder; } }
 
 namespace appleseed {
 namespace studio {
@@ -62,7 +64,6 @@ class SingleModelEntityItem
 
   private:
     virtual void slot_edit();
-    virtual void edit(const foundation::Dictionary& values);
 };
 
 
@@ -108,16 +109,6 @@ void SingleModelEntityItem<Entity, ParentEntity>::slot_edit()
         values,
         this,
         SLOT(slot_edit_accepted(foundation::Dictionary)));
-}
-
-template <typename Entity, typename ParentEntity>
-void SingleModelEntityItem<Entity, ParentEntity>::edit(const foundation::Dictionary& values)
-{
-    m_project_builder.edit_entity(*m_entity, values);
-
-    update_title();
-
-    qobject_cast<QWidget*>(sender())->close();
 }
 
 }       // namespace studio

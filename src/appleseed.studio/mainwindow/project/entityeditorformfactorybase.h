@@ -45,6 +45,9 @@ namespace studio {
 class EntityEditorFormFactoryBase
   : public EntityEditorWindow::IFormFactory
 {
+  public:
+    static const std::string NameParameter;
+
   protected:
     typedef EntityEditorWindow::WidgetDefinitionCollection WidgetDefinitionCollection;
 

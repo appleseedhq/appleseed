@@ -32,6 +32,7 @@
 // appleseed.studio headers.
 #include "mainwindow/project/entitycreatorbase.h"
 #include "mainwindow/project/entityitembase.h"
+#include "mainwindow/project/projectbuilder.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/entity.h"
@@ -45,9 +46,6 @@
 
 // Standard headers.
 #include <string>
-
-// Forward declarations.
-namespace appleseed { namespace studio { class ProjectBuilder; } }
 
 namespace appleseed {
 namespace studio {
@@ -68,10 +66,10 @@ class EntityItem
     ProjectBuilder&         m_project_builder;
 
     virtual void slot_edit_accepted(foundation::Dictionary values);
-    virtual void edit(const foundation::Dictionary& values) = 0;
+    virtual void slot_delete_entity_and_item();
 
   private:
-    virtual void slot_delete_entity_and_item();
+    void edit(const foundation::Dictionary& values);
 };
 
 
@@ -105,6 +103,16 @@ void EntityItem<Entity, ParentEntity>::slot_delete_entity_and_item()
     renderer::EntityTraits<Entity>::get_entity_container(m_parent).remove(m_entity);
 
     delete this;
+}
+
+template <typename Entity, typename ParentEntity>
+void EntityItem<Entity, ParentEntity>::edit(const foundation::Dictionary& values)
+{
+    m_entity = m_project_builder.replace_entity(m_entity, m_parent, values);
+
+    update_title();
+
+    qobject_cast<QWidget*>(sender())->close();
 }
 
 }       // namespace studio

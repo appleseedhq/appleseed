@@ -42,6 +42,8 @@ using namespace std;
 namespace appleseed {
 namespace studio {
 
+const string EntityEditorFormFactoryBase::NameParameter = "__name";
+
 EntityEditorFormFactoryBase::EntityEditorFormFactoryBase(const string& entity_name)
   : m_entity_name(entity_name)
 {
@@ -51,11 +53,11 @@ void EntityEditorFormFactoryBase::add_name_widget_definition(
     const Dictionary&                   values,
     WidgetDefinitionCollection&         definitions) const
 {
-    const string name = get_value(values, "name", m_entity_name);
+    const string name = get_value(values, NameParameter, m_entity_name);
 
     definitions.push_back(
         Dictionary()
-            .insert("name", "name")
+            .insert("name", NameParameter)
             .insert("label", "Name")
             .insert("widget", "text_box")
             .insert("use", "required")
