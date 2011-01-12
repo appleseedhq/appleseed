@@ -41,6 +41,7 @@
 #include "foundation/utility/uid.h"
 
 // Qt headers.
+#include <QAction>
 #include <QColor>
 #include <QMenu>
 #include <QMetaType>
@@ -201,6 +202,7 @@ void ObjectInstanceItem::slot_assign_material_accepted(QString page_name, QStrin
     else
     {
         const QList<ItemBase*> items = data.value<QList<ItemBase*> >();
+
         for (int i = 0; i < items.size(); ++i)
             static_cast<ObjectInstanceItem*>(items[i])->assign_material(material_index);
     }
@@ -217,6 +219,7 @@ void ObjectInstanceItem::slot_unassign_material()
     else
     {
         const QList<ItemBase*> items = action->data().value<QList<ItemBase*> >();
+
         for (int i = 0; i < items.size(); ++i)
             static_cast<ObjectInstanceItem*>(items[i])->unassign_material();
     }
