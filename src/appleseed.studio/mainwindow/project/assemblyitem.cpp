@@ -109,7 +109,7 @@ QMenu* AssemblyItem::get_single_item_context_menu() const
     menu->addAction("Create BSDF...", m_bsdf_collection_item, SLOT(slot_create()));
     menu->addAction("Create EDF...", m_edf_collection_item, SLOT(slot_create()));
     menu->addAction("Create Surface Shader...", m_surface_shader_collection_item, SLOT(slot_create()));
-    menu->addAction("Create Material...", m_material_collection_item, SLOT(slot_create_material()));
+    menu->addAction("Create Material...", m_material_collection_item, SLOT(slot_create()));
 
     return menu;
 }
