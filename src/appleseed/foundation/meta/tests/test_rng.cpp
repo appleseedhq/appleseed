@@ -169,7 +169,7 @@ TEST_SUITE(Foundation_Math_Rng)
     {
         const float value = rand_float2(FakeRNG(0xFFFFFFFF));
 
-        EXPECT_EQ(0.99999994f, value);
+        EXPECT_LT(1.0f, value);
     }
 
     TEST_CASE(RandFloat2_Given0x00000000_ReturnsLowBound)
@@ -183,7 +183,7 @@ TEST_SUITE(Foundation_Math_Rng)
     {
         const float value = rand_float2(FakeRNG(0xFFFFFFFF), -12.0f, 42.0f);
 
-        EXPECT_EQ(41.999996f, value);
+        EXPECT_LT(42.0f, value);
     }
 
     //
@@ -201,7 +201,7 @@ TEST_SUITE(Foundation_Math_Rng)
     {
         const double value = rand_double2(FakeRNG(0xFFFFFFFF));
 
-        EXPECT_EQ(0.99999999976716936, value);
+        EXPECT_LT(1.0, value);
     }
 
     TEST_CASE(RandDouble2_Given0x00000000_ReturnsLowBound)
@@ -215,7 +215,7 @@ TEST_SUITE(Foundation_Math_Rng)
     {
         const double value = rand_double2(FakeRNG(0xFFFFFFFF), -12.0, 42.0);
 
-        EXPECT_EQ(41.999999987427145, value);
+        EXPECT_LT(42.0, value);
     }
 
     //
@@ -233,21 +233,21 @@ TEST_SUITE(Foundation_Math_Rng)
     {
         const float value = rand_float3(FakeRNG(0xFFFFFFFF));
 
-        EXPECT_EQ(0.99999994f, value);
+        EXPECT_LT(1.0f, value);
     }
 
     TEST_CASE(RandFloat3_Given0x00000000_ReturnsAlmostLowBound)
     {
         const float value = rand_float3(FakeRNG(0x00000000), -12.0f, 42.0f);
 
-        EXPECT_EQ(-11.999993f, value);
+        EXPECT_GT(-12.0f, value);
     }
 
     TEST_CASE(RandFloat3_Given0xFFFFFFFF_ReturnsAlmostHighBound)
     {
         const float value = rand_float3(FakeRNG(0xFFFFFFFF), -12.0f, 42.0f);
 
-        EXPECT_EQ(41.999996f, value);
+        EXPECT_LT(42.0f, value);
     }
 
     //
@@ -265,20 +265,20 @@ TEST_SUITE(Foundation_Math_Rng)
     {
         const double value = rand_double3(FakeRNG(0xFFFFFFFF));
 
-        EXPECT_EQ(0.99999999999999978, value);
+        EXPECT_LT(1.0, value);
     }
 
     TEST_CASE(RandDouble3_Given0x00000000_ReturnsAlmostLowBound)
     {
         const double value = rand_double3(FakeRNG(0x00000000), -12.0, 42.0);
 
-        EXPECT_EQ(-11.999999999999988, value);
+        EXPECT_GT(-12.0, value);
     }
 
     TEST_CASE(RandDouble3_Given0xFFFFFFFF_ReturnsAlmostHighBound)
     {
         const double value = rand_double3(FakeRNG(0xFFFFFFFF), -12.0, 42.0);
 
-        EXPECT_EQ(41.999999999999993, value);
+        EXPECT_LT(42.0, value);
     }
 }
