@@ -68,7 +68,7 @@ ProjectExplorer::ProjectExplorer(
 
     connect(
         m_tree_widget, SIGNAL(itemActivated(QTreeWidgetItem*, int)),
-        this, SLOT(slot_activate_item(QTreeWidgetItem*, int)));
+        this, SLOT(slot_edit_item(QTreeWidgetItem*, int)));
 
     m_delete_shortcut.reset(
         new QShortcut(QKeySequence(Qt::Key_Delete), m_tree_widget));
@@ -87,10 +87,12 @@ ProjectExplorer::ProjectExplorer(
 QMenu* ProjectExplorer::build_no_item_context_menu() const
 {
     QMenu* menu = new QMenu(m_tree_widget);
+
     menu->addAction(
         "Create Assembly...",
         &m_project_tree.get_assembly_collection_item(),
         SLOT(slot_create_assembly()));
+
     return menu;
 }
 
@@ -152,17 +154,17 @@ void ProjectExplorer::slot_context_menu(const QPoint& point)
         menu->exec(m_tree_widget->mapToGlobal(point));
 }
 
-void ProjectExplorer::slot_activate_item(QTreeWidgetItem* item, int column)
+void ProjectExplorer::slot_edit_item(QTreeWidgetItem* item, int column)
 {
-    static_cast<ItemBase*>(item)->activate();
+    static_cast<ItemBase*>(item)->slot_edit();
 }
 
 void ProjectExplorer::slot_delete_item()
 {
-    const QList<QTreeWidgetItem*> selected_items = m_tree_widget->selectedItems();
+    const QList<ItemBase*> items = item_widgets_to_items(m_tree_widget->selectedItems());
 
-    for (int i = 0; i < selected_items.size(); ++i)
-        static_cast<ItemBase*>(selected_items[i])->destroy();
+    if (are_same_class_uid(items))
+        items.first()->slot_delete_multiple(items);
 }
 
 }   // namespace studio

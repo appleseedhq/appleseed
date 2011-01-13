@@ -30,11 +30,15 @@
 #include "itembase.h"
 
 // Qt headers.
+#include <QAction>
 #include <QMenu>
 #include <QString>
 #include <QStringList>
+#include <QVariant>
 
 using namespace foundation;
+
+Q_DECLARE_METATYPE(QList<appleseed::studio::ItemBase*>);
 
 namespace appleseed {
 namespace studio {
@@ -74,12 +78,23 @@ QMenu* ItemBase::get_multiple_items_context_menu(const QList<ItemBase*>& items) 
     return new QMenu(treeWidget());
 }
 
-void ItemBase::activate()
+void ItemBase::slot_edit()
 {
 }
 
-void ItemBase::destroy()
+void ItemBase::slot_delete()
 {
+}
+
+void ItemBase::slot_delete_multiple(QList<ItemBase*> items)
+{
+    QAction* action = static_cast<QAction*>(sender());
+
+    if (action && !action->data().isNull())
+        items = action->data().value<QList<ItemBase*> >();
+
+    for (int i = 0; i < items.size(); ++i)
+        items[i]->slot_delete();
 }
 
 }   // namespace studio

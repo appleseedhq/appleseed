@@ -37,9 +37,13 @@
 #include "foundation/utility/uid.h"
 
 // Qt headers.
+#include <QList>
 #include <QMenu>
 #include <QObject>
 #include <QString>
+#include <QVariant>
+
+Q_DECLARE_METATYPE(QList<appleseed::studio::ItemBase*>);
 
 namespace appleseed {
 namespace studio {
@@ -55,9 +59,7 @@ class EntityItemBaseSlots
     EntityItemBaseSlots(const foundation::UniqueID class_uid, const QString& title);
 
   protected slots:
-    virtual void slot_edit();
     virtual void slot_edit_accepted(foundation::Dictionary values);
-    virtual void slot_delete();
 };
 
 template <typename Entity>
@@ -70,9 +72,7 @@ class EntityItemBase
     void update_title();
 
     virtual QMenu* get_single_item_context_menu() const;
-
-    virtual void activate();
-    virtual void destroy();
+    virtual QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const;
 
   protected:
     Entity* m_entity;
@@ -110,15 +110,15 @@ QMenu* EntityItemBase<Entity>::get_single_item_context_menu() const
 }
 
 template <typename Entity>
-void EntityItemBase<Entity>::activate()
+QMenu* EntityItemBase<Entity>::get_multiple_items_context_menu(const QList<ItemBase*>& items) const
 {
-    slot_edit();
-}
+    QMenu* menu = ItemBase::get_multiple_items_context_menu(items);
+    menu->addSeparator();
 
-template <typename Entity>
-void EntityItemBase<Entity>::destroy()
-{
-    slot_delete();
+    menu->addAction("Delete", this, SLOT(slot_delete_multiple()))
+        ->setData(QVariant::fromValue(items));
+
+    return menu;
 }
 
 }       // namespace studio

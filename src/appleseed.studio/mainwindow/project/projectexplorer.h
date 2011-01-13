@@ -81,7 +81,7 @@ class ProjectExplorer
 
   private slots:
     void slot_context_menu(const QPoint& point);
-    void slot_activate_item(QTreeWidgetItem* item, int column);
+    void slot_edit_item(QTreeWidgetItem* item, int column);
     void slot_delete_item();
 };
 

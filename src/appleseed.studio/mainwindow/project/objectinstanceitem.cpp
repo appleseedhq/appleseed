@@ -50,10 +50,10 @@
 #include <QVariant>
 #include <QWidget>
 
-Q_DECLARE_METATYPE(QList<appleseed::studio::ItemBase*>);
-
 using namespace foundation;
 using namespace renderer;
+
+Q_DECLARE_METATYPE(QList<appleseed::studio::ItemBase*>);
 
 namespace appleseed {
 namespace studio {

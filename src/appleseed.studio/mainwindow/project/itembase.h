@@ -61,11 +61,12 @@ class ItemBase
     void set_title(const QString& title);
 
     virtual QMenu* get_single_item_context_menu() const;
-
     virtual QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const;
 
-    virtual void activate();
-    virtual void destroy();
+  public slots:
+    virtual void slot_edit();
+    virtual void slot_delete();
+    virtual void slot_delete_multiple(QList<ItemBase*> items = QList<ItemBase*>());
 
   protected:
     ItemBase();

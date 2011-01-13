@@ -48,15 +48,7 @@ EntityItemBaseSlots::EntityItemBaseSlots(const UniqueID class_uid, const QString
 {
 }
 
-void EntityItemBaseSlots::slot_edit()
-{
-}
-
 void EntityItemBaseSlots::slot_edit_accepted(Dictionary values)
-{
-}
-
-void EntityItemBaseSlots::slot_delete()
 {
 }
 
