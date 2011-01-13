@@ -161,10 +161,20 @@ void ProjectExplorer::slot_edit_item(QTreeWidgetItem* item, int column)
 
 void ProjectExplorer::slot_delete_item()
 {
-    const QList<ItemBase*> items = item_widgets_to_items(m_tree_widget->selectedItems());
+    if (!m_tree_widget->hasFocus())
+        return;
 
-    if (are_same_class_uid(items))
-        items.first()->slot_delete_multiple(items);
+    const QList<QTreeWidgetItem*> selected_items = m_tree_widget->selectedItems();
+
+    if (selected_items.empty())
+        return;
+
+    const QList<ItemBase*> items = item_widgets_to_items(selected_items);
+
+    if (!are_same_class_uid(items))
+        return;
+
+    items.first()->slot_delete_multiple(items);
 }
 
 }   // namespace studio
