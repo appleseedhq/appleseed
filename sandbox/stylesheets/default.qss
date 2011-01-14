@@ -514,11 +514,12 @@ QListView::item:disabled
     color: DISABLED_TEXT_COLOR;
 }
 
-/* Necessary to avoid a disgracious blue background on Mac OS X. */
+#ifdef __APPLE__
 QTreeView::branch:selected
 {
-    background-color: DEFAULT_BACKGROUND_COLOR;     /* transparent is not enough */
+    background-color: DEFAULT_BACKGROUND_COLOR;     /* avoid a disgracious blue background on Mac OS X (transparent is not enough) */
 }
+#endif
 
 QTreeView::branch:has-children:closed:enabled
 {
@@ -619,6 +620,7 @@ QLabel[hasFrame="true"]
 /*
  * QFrame.
  */
+
 QFrame[hasFrame="true"]
 {
     border: BORDER_STYLE;
