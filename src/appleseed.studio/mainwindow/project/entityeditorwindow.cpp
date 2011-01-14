@@ -143,6 +143,7 @@ void EntityEditorWindow::rebuild_form(const Dictionary& values)
 void EntityEditorWindow::create_form_layout()
 {
     m_form_layout = new QFormLayout(m_ui->scrollarea_contents);
+    m_form_layout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
 
     int left, top, right, bottom;
     m_form_layout->getContentsMargins(&left, &top, &right, &bottom);
