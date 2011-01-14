@@ -71,6 +71,8 @@ class MultiModelCollectionItem
     virtual void add_item(Entity* entity);
 
   private:
+    typedef CollectionItem<Entity, ParentEntity> CollectionItem;
+
     virtual void slot_create();
 };
 
@@ -96,8 +98,8 @@ void MultiModelCollectionItem<Entity, ParentEntity>::add_item(Entity* entity)
     addChild(
         new MultiModelEntityItem<Entity, ParentEntity>(
             entity,
-            m_parent,
-            m_project_builder));
+            CollectionItem::m_parent,
+            CollectionItem::m_project_builder));
 }
 
 template <typename Entity, typename ParentEntity>
@@ -112,20 +114,20 @@ void MultiModelCollectionItem<Entity, ParentEntity>::slot_create()
     const std::string name_suggestion =
         get_name_suggestion(
             EntityTraits::get_entity_type_name(),
-            EntityTraits::get_entity_container(m_parent));
+            EntityTraits::get_entity_container(CollectionItem::m_parent));
 
     typedef typename EntityTraits::FactoryRegistrarType FactoryRegistrarType;
 
     std::auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
         new MultiModelEntityEditorFormFactory<FactoryRegistrarType>(
-            m_project_builder.get_factory_registrar<Entity>(),
+            CollectionItem::m_project_builder.template get_factory_registrar<Entity>(),
             name_suggestion));
 
     std::auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
-        new EntityBrowser<ParentEntity>(m_parent));
+        new EntityBrowser<ParentEntity>(CollectionItem::m_parent));
 
     open_entity_editor(
-        treeWidget(),
+        QTreeWidgetItem::treeWidget(),
         window_title,
         form_factory,
         entity_browser,

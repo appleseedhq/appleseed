@@ -167,7 +167,7 @@ void AssemblyItem::add_item(ObjectInstance* object_instance)
 template <typename EntityContainer>
 typename ItemTypeMap<EntityContainer>::T* AssemblyItem::add_collection_item(EntityContainer& entities)
 {
-    typedef ItemTypeMap<EntityContainer>::T ItemType;
+    typedef typename ItemTypeMap<EntityContainer>::T ItemType;
 
     ItemType* item =
         new ItemType(

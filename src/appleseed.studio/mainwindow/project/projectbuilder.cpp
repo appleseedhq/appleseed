@@ -32,7 +32,7 @@
 // appleseed.studio headers.
 #include "mainwindow/project/assemblyinstancecollectionitem.h"
 #include "mainwindow/project/assemblyitem.h"
-#include "mainwindow/project/projecttree.h"
+#include "mainwindow/project/exceptioninvalidentityname.h"
 #include "mainwindow/project/texturecollectionitem.h"
 #include "mainwindow/project/textureinstancecollectionitem.h"
 

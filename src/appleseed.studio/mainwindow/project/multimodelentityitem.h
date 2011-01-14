@@ -62,6 +62,7 @@ class MultiModelEntityItem
         ProjectBuilder&     project_builder);
 
   private:
+    typedef EntityItem<Entity, ParentEntity> EntityItem;
     typedef typename renderer::EntityTraits<Entity> EntityTraits;
 
     typedef MultiModelEntityEditorFormFactory<
@@ -94,19 +95,19 @@ void MultiModelEntityItem<Entity, ParentEntity>::slot_edit()
 
     std::auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
         new MultiModelEntityEditorFormFactory(
-            m_project_builder.get_factory_registrar<Entity>(),
-            m_entity->get_name()));
+            EntityItem::m_project_builder.template get_factory_registrar<Entity>(),
+            EntityItem::m_entity->get_name()));
 
     std::auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
-        new EntityBrowser<ParentEntity>(m_parent));
+        new EntityBrowser<ParentEntity>(EntityItem::m_parent));
 
-    foundation::Dictionary values = m_entity->get_parameters();
+    foundation::Dictionary values = EntityItem::m_entity->get_parameters();
     values.insert(
         MultiModelEntityEditorFormFactory::ModelParameter,
-        m_entity->get_model());
+        EntityItem::m_entity->get_model());
 
     open_entity_editor(
-        treeWidget(),
+        QTreeWidgetItem::treeWidget(),
         window_title,
         form_factory,
         entity_browser,

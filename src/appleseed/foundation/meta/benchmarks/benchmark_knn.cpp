@@ -347,15 +347,17 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Query)
     struct ParticlesFixture
       : public FixtureBase<AnswerSize>
     {
+        typedef FixtureBase<AnswerSize> FixtureBase;
+
         ParticlesFixture()
-          : FixtureBase<AnswerSize>("particles_k" + to_string(AnswerSize))
+          : FixtureBase("particles_k" + to_string(AnswerSize))
         {
 /*
             load_points_from_text_file("data/test_knn_points.txt", m_points);
             write_points_to_binary_file("data/test_knn_particles.bin", m_points);
 */
-            load_points_from_binary_file("data/test_knn_particles.bin", m_points);
-            prepare();
+            load_points_from_binary_file("data/test_knn_particles.bin", FixtureBase::m_points);
+            FixtureBase::prepare();
         }
     };
 
@@ -363,15 +365,17 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Query)
     struct PhotonMapFixture
       : public FixtureBase<AnswerSize>
     {
+        typedef FixtureBase<AnswerSize> FixtureBase;
+
         PhotonMapFixture()
-          : FixtureBase<AnswerSize>("photons_k" + to_string(AnswerSize))
+          : FixtureBase("photons_k" + to_string(AnswerSize))
         {
 /*
             load_points_from_toxic_photon_map("data/test_knn_gally_gpm.bin", m_points);
             write_points_to_binary_file("data/test_knn_photons.bin", m_points);
 */
-            load_points_from_binary_file("data/test_knn_photons.bin", m_points);
-            prepare();
+            load_points_from_binary_file("data/test_knn_photons.bin", FixtureBase::m_points);
+            FixtureBase::prepare();
         }
     };
 

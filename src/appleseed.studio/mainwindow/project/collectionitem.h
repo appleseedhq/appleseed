@@ -32,6 +32,7 @@
 // appleseed.studio headers.
 #include "mainwindow/project/collectionitembase.h"
 #include "mainwindow/project/entitycreatorbase.h"
+#include "mainwindow/project/itembase.h"
 #include "mainwindow/project/projectbuilder.h"
 
 // appleseed.renderer headers.
@@ -84,6 +85,8 @@ class CollectionItem
     virtual void slot_create_accepted(foundation::Dictionary values);
 
   private:
+    friend class EntityCreatorBase;
+
     void create(const foundation::Dictionary& values);
 };
 
@@ -104,7 +107,7 @@ CollectionItem<Entity, ParentEntity>::CollectionItem(
 template <typename Entity, typename ParentEntity>
 QMenu* CollectionItem<Entity, ParentEntity>::get_single_item_context_menu() const
 {
-    QMenu* menu = CollectionItemBase::get_single_item_context_menu();
+    QMenu* menu = CollectionItemBase<Entity>::get_single_item_context_menu();
     menu->addSeparator();
 
     menu->addAction(

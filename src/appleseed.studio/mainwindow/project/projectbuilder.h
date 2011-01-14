@@ -32,6 +32,7 @@
 // appleseed.studio headers.
 #include "mainwindow/project/assemblycollectionitem.h"
 #include "mainwindow/project/multimodelentityeditorformfactory.h"
+#include "mainwindow/project/projecttree.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
@@ -44,7 +45,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/core/exceptions/exception.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/autoreleaseptr.h"
 
@@ -71,11 +71,6 @@ class ProjectBuilder
     Q_OBJECT
 
   public:
-    struct ExceptionInvalidEntityName
-      : public foundation::Exception
-    {
-    };
-
     ProjectBuilder(
         renderer::Project&                  project,
         ProjectTree&                        project_tree);
@@ -159,35 +154,35 @@ class ProjectBuilder
 //
 
 template <>
-inline const typename renderer::EntityTraits<renderer::BSDF>::FactoryRegistrarType&
+inline const renderer::EntityTraits<renderer::BSDF>::FactoryRegistrarType&
 ProjectBuilder::get_factory_registrar<renderer::BSDF>() const
 {
     return m_bsdf_factory_registrar;
 }
 
 template <>
-inline const typename renderer::EntityTraits<renderer::EDF>::FactoryRegistrarType&
+inline const renderer::EntityTraits<renderer::EDF>::FactoryRegistrarType&
 ProjectBuilder::get_factory_registrar<renderer::EDF>() const
 {
     return m_edf_factory_registrar;
 }
 
 template <>
-inline const typename renderer::EntityTraits<renderer::SurfaceShader>::FactoryRegistrarType&
+inline const renderer::EntityTraits<renderer::SurfaceShader>::FactoryRegistrarType&
 ProjectBuilder::get_factory_registrar<renderer::SurfaceShader>() const
 {
     return m_surface_shader_factory_registrar;
 }
 
 template <>
-inline const typename renderer::EntityTraits<renderer::EnvironmentEDF>::FactoryRegistrarType&
+inline const renderer::EntityTraits<renderer::EnvironmentEDF>::FactoryRegistrarType&
 ProjectBuilder::get_factory_registrar<renderer::EnvironmentEDF>() const
 {
     return m_environment_edf_factory_registrar;
 }
 
 template <>
-inline const typename renderer::EntityTraits<renderer::EnvironmentShader>::FactoryRegistrarType&
+inline const renderer::EntityTraits<renderer::EnvironmentShader>::FactoryRegistrarType&
 ProjectBuilder::get_factory_registrar<renderer::EnvironmentShader>() const
 {
     return m_environment_shader_factory_registrar;

@@ -55,6 +55,7 @@ class Tree
     static const size_t Dimension = N;
 
     typedef Vector<T, N> VectorType;
+    typedef Node<T> NodeType;
 
     bool empty() const;
 
@@ -69,8 +70,6 @@ class Tree
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Knn_Builder, Build_GivenZeroPoint_BuildsEmptyTree);
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Knn_Builder, Build_GivenTwoPoints_BuildsCorrectTree);
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Knn_Builder, Build_GivenEightPoints_GeneratesFifteenNodes);
-
-    typedef Node<T> NodeType;
 
     std::vector<VectorType> m_points;
     std::vector<size_t>     m_indices;

@@ -116,7 +116,7 @@ TEST_SUITE(Foundation_Utility_Benchmark_BenchmarkAggregator)
         BenchmarkAggregator aggregator;
         aggregator.scan_directory("data/test_benchmarkaggregator/single benchmark file/");
 
-        const ptime date(date(2010, 6, 22), time_duration(17, 45, 31));
+        const ptime Date(date(2010, 6, 22), time_duration(17, 45, 31));
 
         const Dictionary& benchmarks = aggregator.get_benchmarks();
 
@@ -128,7 +128,7 @@ TEST_SUITE(Foundation_Utility_Benchmark_BenchmarkAggregator)
                     .get<UniqueID>("Case1"));
 
         ASSERT_EQ(1, serie1.size());
-        EXPECT_EQ(date, serie1[0].get_date());
+        EXPECT_EQ(Date, serie1[0].get_date());
         EXPECT_EQ(779.34, serie1[0].get_ticks());
 
         const BenchmarkSerie& serie2 =
@@ -139,7 +139,7 @@ TEST_SUITE(Foundation_Utility_Benchmark_BenchmarkAggregator)
                     .get<UniqueID>("Case2"));
 
         ASSERT_EQ(1, serie2.size());
-        EXPECT_EQ(date, serie2[0].get_date());
+        EXPECT_EQ(Date, serie2[0].get_date());
         EXPECT_EQ(877.22, serie2[0].get_ticks());
     }
 

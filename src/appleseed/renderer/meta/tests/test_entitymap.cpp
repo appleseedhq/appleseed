@@ -34,15 +34,15 @@
 // appleseed.foundation headers.
 #include "foundation/utility/test.h"
 
+using namespace foundation;
+using namespace renderer;
+
 TEST_SUITE(Renderer_Modeling_Entity_EntityMap)
 {
-    using namespace foundation;
-    using namespace renderer;
-
     TEST_CASE(Swap_GivenEntityMapWithOneItemAndAnotherEmptyEntityMap_MovesItemToOtherContainer)
     {
         EntityMap m1;
-        m1.insert(DummyEntityFactory::create("dummy"));
+        m1.insert(auto_release_ptr<Entity>(DummyEntityFactory::create("dummy")));
 
         EntityMap m2;
         m2.swap(m1);

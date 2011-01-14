@@ -259,7 +259,7 @@ auto_ptr<ChartBase> BenchmarkWindow::create_chart(
         chart->add_point(x, point.get_ticks());
     }
 
-    return chart;
+    return auto_ptr<ChartBase>(chart);
 }
 
 void BenchmarkWindow::slot_run_benchmarks()

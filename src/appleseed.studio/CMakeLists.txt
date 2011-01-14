@@ -129,6 +129,7 @@ set(mainwindow_project_sources
     mainwindow/project/entityitem.h
     mainwindow/project/entityitembase.cpp
     mainwindow/project/entityitembase.h
+    mainwindow/project/exceptioninvalidentityname.h
     mainwindow/project/itembase.cpp
     mainwindow/project/itembase.h
     mainwindow/project/itemtypemap.h

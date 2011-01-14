@@ -26,56 +26,21 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "environmentshaderfactoryregistrar.h"
-
-// appleseed.renderer headers.
-#include "renderer/modeling/environmentshader/edfenvironmentshader.h"
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_EXCEPTIONINVALIDENTITYNAME_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_EXCEPTIONINVALIDENTITYNAME_H
 
 // appleseed.foundation headers.
-#include "foundation/utility/registrar.h"
+#include "foundation/core/exceptions/exception.h"
 
-using namespace foundation;
-using namespace std;
+namespace appleseed {
+namespace studio {
 
-namespace renderer
+struct ExceptionInvalidEntityName
+  : public foundation::Exception
 {
-
-DEFINE_ARRAY(EnvironmentShaderFactoryArray);
-
-struct EnvironmentShaderFactoryRegistrar::Impl
-{
-    Registrar<IEnvironmentShaderFactory> m_registrar;
 };
 
-EnvironmentShaderFactoryRegistrar::EnvironmentShaderFactoryRegistrar()
-  : impl(new Impl())
-{
-    register_factory(auto_ptr<FactoryType>(new EDFEnvironmentShaderFactory()));
-}
+}       // namespace studio
+}       // namespace appleseed
 
-void EnvironmentShaderFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
-{
-    const string model = factory->get_model();
-    impl->m_registrar.insert(model, factory);
-}
-
-EnvironmentShaderFactoryArray EnvironmentShaderFactoryRegistrar::get_factories() const
-{
-    FactoryArrayType factories;
-
-    for (const_each<Registrar<FactoryType>::Items> i = impl->m_registrar.items(); i; ++i)
-        factories.push_back(i->second);
-
-    return factories;
-}
-
-const EnvironmentShaderFactoryRegistrar::FactoryType*
-EnvironmentShaderFactoryRegistrar::lookup(const char* name) const
-{
-    assert(name);
-
-    return impl->m_registrar.lookup(name);
-}
-
-}   // namespace renderer
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_EXCEPTIONINVALIDENTITYNAME_H

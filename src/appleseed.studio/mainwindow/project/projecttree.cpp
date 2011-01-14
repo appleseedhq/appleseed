@@ -32,7 +32,9 @@
 // appleseed.studio headers.
 #include "mainwindow/project/assemblycollectionitem.h"
 #include "mainwindow/project/assemblyinstancecollectionitem.h"
+#include "mainwindow/project/collectionitem.h"
 #include "mainwindow/project/colorcollectionitem.h"
+#include "mainwindow/project/itemtypemap.h"
 #include "mainwindow/project/multimodelcollectionitem.h"
 #include "mainwindow/project/texturecollectionitem.h"
 #include "mainwindow/project/textureinstancecollectionitem.h"
@@ -43,7 +45,6 @@
 #include "renderer/api/environmentedf.h"
 #include "renderer/api/environmentshader.h"
 #include "renderer/api/project.h"
-#include "renderer/api/scene.h"
 #include "renderer/api/texture.h"
 
 // appleseed.foundation headers.
@@ -52,59 +53,114 @@
 // Qt headers.
 #include <QTreeWidget>
 
+// Forward declarations.
+namespace renderer  { class Scene; }
+
 using namespace foundation;
 using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
-ProjectTree::ProjectTree(QTreeWidget* tree_widget)
-  : m_tree_widget(tree_widget)
+struct ProjectTree::Impl
 {
+    QTreeWidget*                                m_tree_widget;
+    ColorCollectionItem*                        m_color_collection_item;
+    TextureCollectionItem*                      m_texture_collection_item;
+    TextureInstanceCollectionItem*              m_texture_instance_collection_item;
+    CollectionItem<EnvironmentEDF, Scene>*      m_environment_edf_collection_item;
+    CollectionItem<EnvironmentShader, Scene>*   m_environment_shader_collection_item;
+    AssemblyCollectionItem*                     m_assembly_collection_item;
+    AssemblyInstanceCollectionItem*             m_assembly_instance_collection_item;
+
+    template <typename EntityContainer>
+    typename ItemTypeMap<EntityContainer>::T* add_collection_item(
+        Scene&              scene,
+        EntityContainer&    entities,
+        ProjectBuilder&     project_builder)
+    {
+        typedef typename ItemTypeMap<EntityContainer>::T ItemType;
+
+        ItemType* item =
+            new ItemType(
+                scene,
+                entities,
+                project_builder);
+
+        m_tree_widget->addTopLevelItem(item);
+
+        return item;
+    }
+
+    template <typename Entity, typename EntityContainer>
+    CollectionItem<Entity, Scene>* add_multi_model_collection_item(
+        Scene&              scene,
+        EntityContainer&    entities,
+        ProjectBuilder&     project_builder)
+    {
+        CollectionItem<Entity, Scene>* item =
+            new MultiModelCollectionItem<Entity, Scene>(
+                new_guid(),
+                EntityTraits<Entity>::get_human_readable_collection_type_name(),
+                scene,
+                project_builder);
+
+        item->add_items(entities);
+
+        m_tree_widget->addTopLevelItem(item);
+
+        return item;
+    }
+};
+
+ProjectTree::ProjectTree(QTreeWidget* tree_widget)
+  : impl(new Impl())
+{
+    impl->m_tree_widget = tree_widget;
 }
 
 void ProjectTree::initialize(Project& project, ProjectBuilder& project_builder)
 {
     Scene& scene = *project.get_scene();
 
-    m_color_collection_item =
-        add_collection_item(
+    impl->m_color_collection_item =
+        impl->add_collection_item(
             scene,
             scene.colors(),
             project_builder);
 
-    m_texture_collection_item =
-        add_collection_item(
+    impl->m_texture_collection_item =
+        impl->add_collection_item(
             scene,
             scene.textures(),
             project_builder);
 
-    m_texture_instance_collection_item =
-        add_collection_item(
+    impl->m_texture_instance_collection_item =
+        impl->add_collection_item(
             scene,
             scene.texture_instances(),
             project_builder);
 
-    m_environment_edf_collection_item =
-        add_multi_model_collection_item<EnvironmentEDF>(
+    impl->m_environment_edf_collection_item =
+        impl->add_multi_model_collection_item<EnvironmentEDF>(
             scene,
             scene.environment_edfs(),
             project_builder);
 
-    m_environment_shader_collection_item =
-        add_multi_model_collection_item<EnvironmentShader>(
+    impl->m_environment_shader_collection_item =
+        impl->add_multi_model_collection_item<EnvironmentShader>(
             scene,
             scene.environment_shaders(),
             project_builder);
 
-    m_assembly_collection_item =
-        add_collection_item(
+    impl->m_assembly_collection_item =
+        impl->add_collection_item(
             scene,
             scene.assemblies(),
             project_builder);
 
-    m_assembly_instance_collection_item =
-        add_collection_item(
+    impl->m_assembly_instance_collection_item =
+        impl->add_collection_item(
             scene,
             scene.assembly_instances(),
             project_builder);
@@ -112,81 +168,42 @@ void ProjectTree::initialize(Project& project, ProjectBuilder& project_builder)
 
 void ProjectTree::add_item(ColorEntity* color)
 {
-    m_color_collection_item->add_item(color);
+    impl->m_color_collection_item->add_item(color);
 }
 
 void ProjectTree::add_item(Texture* texture)
 {
-    m_texture_collection_item->add_item(texture);
+    impl->m_texture_collection_item->add_item(texture);
 }
 
 void ProjectTree::add_item(TextureInstance* texture_instance)
 {
-    m_texture_instance_collection_item->add_item(texture_instance);
+    impl->m_texture_instance_collection_item->add_item(texture_instance);
 }
 
 void ProjectTree::add_item(EnvironmentEDF* environment_edf)
 {
-    m_environment_edf_collection_item->add_item(environment_edf);
+    impl->m_environment_edf_collection_item->add_item(environment_edf);
 }
 
 void ProjectTree::add_item(EnvironmentShader* environment_shader)
 {
-    m_environment_shader_collection_item->add_item(environment_shader);
+    impl->m_environment_shader_collection_item->add_item(environment_shader);
 }
 
 void ProjectTree::add_item(Assembly* assembly)
 {
-    m_assembly_collection_item->add_item(assembly);
+    impl->m_assembly_collection_item->add_item(assembly);
 }
 
 void ProjectTree::add_item(AssemblyInstance* assembly_instance)
 {
-    m_assembly_instance_collection_item->add_item(assembly_instance);
+    impl->m_assembly_instance_collection_item->add_item(assembly_instance);
 }
 
 AssemblyCollectionItem& ProjectTree::get_assembly_collection_item() const
 {
-    return *m_assembly_collection_item;
-}
-
-template <typename EntityContainer>
-typename ItemTypeMap<EntityContainer>::T* ProjectTree::add_collection_item(
-    Scene&              scene,
-    EntityContainer&    entities,
-    ProjectBuilder&     project_builder)
-{
-    typedef ItemTypeMap<EntityContainer>::T ItemType;
-
-    ItemType* item =
-        new ItemType(
-            scene,
-            entities,
-            project_builder);
-
-    m_tree_widget->addTopLevelItem(item);
-
-    return item;
-}
-
-template <typename Entity, typename EntityContainer>
-CollectionItem<Entity, Scene>* ProjectTree::add_multi_model_collection_item(
-    Scene&              scene,
-    EntityContainer&    entities,
-    ProjectBuilder&     project_builder)
-{
-    CollectionItem<Entity, Scene>* item =
-        new MultiModelCollectionItem<Entity, Scene>(
-            new_guid(),
-            EntityTraits<Entity>::get_human_readable_collection_type_name(),
-            scene,
-            project_builder);
-
-    item->add_items(entities);
-
-    m_tree_widget->addTopLevelItem(item);
-
-    return item;
+    return *impl->m_assembly_collection_item;
 }
 
 }   // namespace studio

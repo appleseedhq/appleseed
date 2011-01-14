@@ -43,7 +43,7 @@ TEST_SUITE(Renderer_Modeling_Entity_EntityVector)
     TEST_CASE(Swap_GivenEntityVectorWithOneItemAndAnotherEmptyEntityVector_MovesItemToOtherContainer)
     {
         EntityVector v1;
-        v1.insert(DummyEntityFactory::create("dummy"));
+        v1.insert(auto_release_ptr<Entity>(DummyEntityFactory::create("dummy")));
 
         EntityVector v2;
         v2.swap(v1);
@@ -55,7 +55,7 @@ TEST_SUITE(Renderer_Modeling_Entity_EntityVector)
     TEST_CASE(Remove_GivenOneItem_RemovesItem)
     {
         EntityVector v;
-        v.insert(DummyEntityFactory::create("dummy"));
+        v.insert(auto_release_ptr<Entity>(DummyEntityFactory::create("dummy")));
 
         Entity* entity = v.get(v.get_index("dummy"));
         v.remove(entity);
@@ -86,7 +86,7 @@ TEST_SUITE(Renderer_Modeling_Entity_EntityVector)
         auto_ptr<DummyEntityReleaseCheck> source_entity(new DummyEntityReleaseCheck("dummy"));
 
         EntityVector v;
-        v.insert(auto_release_ptr<DummyEntityReleaseCheck>(source_entity.get()));
+        v.insert(auto_release_ptr<Entity>(source_entity.get()));
 
         Entity* entity = v.get(v.get_index("dummy"));
         v.remove(entity);
@@ -97,8 +97,8 @@ TEST_SUITE(Renderer_Modeling_Entity_EntityVector)
     TEST_CASE(Remove_RemovingFirstInsertedItemOfTwo_LeavesOtherItemIntact)
     {
         EntityVector v;
-        v.insert(DummyEntityFactory::create("dummy1"));
-        v.insert(DummyEntityFactory::create("dummy2"));
+        v.insert(auto_release_ptr<Entity>(DummyEntityFactory::create("dummy1")));
+        v.insert(auto_release_ptr<Entity>(DummyEntityFactory::create("dummy2")));
 
         Entity* entity1 = v.get(v.get_index("dummy1"));
         Entity* entity2 = v.get(v.get_index("dummy2"));
@@ -112,8 +112,8 @@ TEST_SUITE(Renderer_Modeling_Entity_EntityVector)
     TEST_CASE(Remove_RemovingLastInsertedItemOfTwo_LeavesOtherItemIntact)
     {
         EntityVector v;
-        v.insert(DummyEntityFactory::create("dummy1"));
-        v.insert(DummyEntityFactory::create("dummy2"));
+        v.insert(auto_release_ptr<Entity>(DummyEntityFactory::create("dummy1")));
+        v.insert(auto_release_ptr<Entity>(DummyEntityFactory::create("dummy2")));
 
         Entity* entity1 = v.get(v.get_index("dummy1"));
         Entity* entity2 = v.get(v.get_index("dummy2"));

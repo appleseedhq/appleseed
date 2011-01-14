@@ -66,6 +66,10 @@ class EntityItem
     virtual void slot_delete();
 
   private:
+    friend class EntityCreatorBase;
+
+    typedef EntityItemBase<Entity> EntityItemBase;
+
     void edit(const foundation::Dictionary& values);
 };
 
@@ -97,7 +101,7 @@ void EntityItem<Entity, ParentEntity>::slot_edit_accepted(foundation::Dictionary
 template <typename Entity, typename ParentEntity>
 void EntityItem<Entity, ParentEntity>::slot_delete()
 {
-    m_project_builder.remove_entity(m_entity, m_parent);
+    m_project_builder.remove_entity(EntityItemBase::m_entity, m_parent);
 
     delete this;
 }
@@ -105,11 +109,15 @@ void EntityItem<Entity, ParentEntity>::slot_delete()
 template <typename Entity, typename ParentEntity>
 void EntityItem<Entity, ParentEntity>::edit(const foundation::Dictionary& values)
 {
-    m_entity = m_project_builder.replace_entity(m_entity, m_parent, values);
+    EntityItemBase::m_entity =
+        m_project_builder.replace_entity(
+            EntityItemBase::m_entity,
+            m_parent,
+            values);
 
-    update_title();
+    EntityItemBase::update_title();
 
-    qobject_cast<QWidget*>(sender())->close();
+    qobject_cast<QWidget*>(QObject::sender())->close();
 }
 
 }       // namespace studio

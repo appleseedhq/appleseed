@@ -60,14 +60,18 @@ TEST_SUITE(Foundation_Math_Rng)
 
     TEST_CASE(RandInt31_Given0x00000000_ReturnsZero)
     {
-        const int32 value = rand_int31(FakeRNG(0x00000000));
+        FakeRNG rng(0x00000000);
+
+        const int32 value = rand_int31(rng);
 
         EXPECT_EQ(0, value);
     }
 
     TEST_CASE(RandInt31_Given0xFFFFFFFF_ReturnsZero)
     {
-        const int32 value = rand_int31(FakeRNG(0xFFFFFFFF));
+        FakeRNG rng(0xFFFFFFFF);
+
+        const int32 value = rand_int31(rng);
 
         EXPECT_EQ(0x7FFFFFFF, value);
     }
@@ -78,14 +82,18 @@ TEST_SUITE(Foundation_Math_Rng)
 
     TEST_CASE(RandInt1_Given0x00000000_ReturnsLowBound)
     {
-        const int32 value = rand_int1(FakeRNG(0x00000000), -12, 42);
+        FakeRNG rng(0x00000000);
+
+        const int32 value = rand_int1(rng, -12, 42);
 
         EXPECT_EQ(-12, value);
     }
 
     TEST_CASE(RandInt1_Given0xFFFFFFFF_ReturnsHighBound)
     {
-        const int32 value = rand_int1(FakeRNG(0xFFFFFFFF), -12, 42);
+        FakeRNG rng(0xFFFFFFFF);
+
+        const int32 value = rand_int1(rng, -12, 42);
 
         EXPECT_EQ(42, value);
     }
@@ -96,28 +104,36 @@ TEST_SUITE(Foundation_Math_Rng)
 
     TEST_CASE(RandFloat1_Given0x00000000_ReturnsZero)
     {
-        const float value = rand_float1(FakeRNG(0x00000000));
+        FakeRNG rng(0x00000000);
+
+        const float value = rand_float1(rng);
 
         EXPECT_EQ(0.0f, value);
     }
 
     TEST_CASE(RandFloat1_Given0xFFFFFFFF_ReturnsOne)
     {
-        const float value = rand_float1(FakeRNG(0xFFFFFFFF));
+        FakeRNG rng(0xFFFFFFFF);
+
+        const float value = rand_float1(rng);
 
         EXPECT_EQ(1.0f, value);
     }
 
     TEST_CASE(RandFloat1_Given0x00000000_ReturnsLowBound)
     {
-        const float value = rand_float1(FakeRNG(0x00000000), -12.0f, 42.0f);
+        FakeRNG rng(0x00000000);
+
+        const float value = rand_float1(rng, -12.0f, 42.0f);
 
         EXPECT_EQ(-12.0f, value);
     }
 
     TEST_CASE(RandFloat1_Given0xFFFFFFFF_ReturnsHighBound)
     {
-        const float value = rand_float1(FakeRNG(0xFFFFFFFF), -12.0f, 42.0f);
+        FakeRNG rng(0xFFFFFFFF);
+
+        const float value = rand_float1(rng, -12.0f, 42.0f);
 
         EXPECT_EQ(42.0f, value);
     }
@@ -128,28 +144,36 @@ TEST_SUITE(Foundation_Math_Rng)
 
     TEST_CASE(RandDouble1_Given0x00000000_ReturnsZero)
     {
-        const double value = rand_double1(FakeRNG(0x00000000));
+        FakeRNG rng(0x00000000);
+
+        const double value = rand_double1(rng);
 
         EXPECT_EQ(0.0, value);
     }
 
     TEST_CASE(RandDouble1_Given0xFFFFFFFF_ReturnsOne)
     {
-        const double value = rand_double1(FakeRNG(0xFFFFFFFF));
+        FakeRNG rng(0xFFFFFFFF);
+
+        const double value = rand_double1(rng);
 
         EXPECT_EQ(1.0, value);
     }
 
     TEST_CASE(RandDouble1_Given0x00000000_ReturnsLowBound)
     {
-        const double value = rand_double1(FakeRNG(0x00000000), -12.0, 42.0);
+        FakeRNG rng(0x00000000);
+
+        const double value = rand_double1(rng, -12.0, 42.0);
 
         EXPECT_EQ(-12.0, value);
     }
 
     TEST_CASE(RandDouble1_Given0xFFFFFFFF_ReturnsHighBound)
     {
-        const double value = rand_double1(FakeRNG(0xFFFFFFFF), -12.0, 42.0);
+        FakeRNG rng(0xFFFFFFFF);
+
+        const double value = rand_double1(rng, -12.0, 42.0);
 
         EXPECT_EQ(42.0, value);
     }
@@ -160,28 +184,36 @@ TEST_SUITE(Foundation_Math_Rng)
 
     TEST_CASE(RandFloat2_Given0x00000000_ReturnsZero)
     {
-        const float value = rand_float2(FakeRNG(0x00000000));
+        FakeRNG rng(0x00000000);
+
+        const float value = rand_float2(rng);
 
         EXPECT_EQ(0.0f, value);
     }
 
     TEST_CASE(RandFloat2_Given0xFFFFFFFF_ReturnsAlmostOne)
     {
-        const float value = rand_float2(FakeRNG(0xFFFFFFFF));
+        FakeRNG rng(0xFFFFFFFF);
+
+        const float value = rand_float2(rng);
 
         EXPECT_LT(1.0f, value);
     }
 
     TEST_CASE(RandFloat2_Given0x00000000_ReturnsLowBound)
     {
-        const float value = rand_float2(FakeRNG(0x00000000), -12.0f, 42.0f);
+        FakeRNG rng(0x00000000);
+
+        const float value = rand_float2(rng, -12.0f, 42.0f);
 
         EXPECT_EQ(-12.0f, value);
     }
 
     TEST_CASE(RandFloat2_Given0xFFFFFFFF_ReturnsAlmostHighBound)
     {
-        const float value = rand_float2(FakeRNG(0xFFFFFFFF), -12.0f, 42.0f);
+        FakeRNG rng(0xFFFFFFFF);
+
+        const float value = rand_float2(rng, -12.0f, 42.0f);
 
         EXPECT_LT(42.0f, value);
     }
@@ -192,28 +224,36 @@ TEST_SUITE(Foundation_Math_Rng)
 
     TEST_CASE(RandDouble2_Given0x00000000_ReturnsZero)
     {
-        const double value = rand_double2(FakeRNG(0x00000000));
+        FakeRNG rng(0x00000000);
+
+        const double value = rand_double2(rng);
 
         EXPECT_EQ(0.0, value);
     }
 
     TEST_CASE(RandDouble2_Given0xFFFFFFFF_ReturnsAlmostOne)
     {
-        const double value = rand_double2(FakeRNG(0xFFFFFFFF));
+        FakeRNG rng(0xFFFFFFFF);
+
+        const double value = rand_double2(rng);
 
         EXPECT_LT(1.0, value);
     }
 
     TEST_CASE(RandDouble2_Given0x00000000_ReturnsLowBound)
     {
-        const double value = rand_double2(FakeRNG(0x00000000), -12.0, 42.0);
+        FakeRNG rng(0x00000000);
+
+        const double value = rand_double2(rng, -12.0, 42.0);
 
         EXPECT_EQ(-12.0, value);
     }
 
     TEST_CASE(RandDouble2_Given0xFFFFFFFF_ReturnsAlmostHighBound)
     {
-        const double value = rand_double2(FakeRNG(0xFFFFFFFF), -12.0, 42.0);
+        FakeRNG rng(0xFFFFFFFF);
+
+        const double value = rand_double2(rng, -12.0, 42.0);
 
         EXPECT_LT(42.0, value);
     }
@@ -224,28 +264,36 @@ TEST_SUITE(Foundation_Math_Rng)
 
     TEST_CASE(RandFloat3_Given0x00000000_ReturnsAlmostZero)
     {
-        const float value = rand_float3(FakeRNG(0x00000000));
+        FakeRNG rng(0x00000000);
+
+        const float value = rand_float3(rng);
 
         EXPECT_EQ(numeric_limits<float>::epsilon(), value);
     }
 
     TEST_CASE(RandFloat3_Given0xFFFFFFFF_ReturnsAlmostOne)
     {
-        const float value = rand_float3(FakeRNG(0xFFFFFFFF));
+        FakeRNG rng(0xFFFFFFFF);
+
+        const float value = rand_float3(rng);
 
         EXPECT_LT(1.0f, value);
     }
 
     TEST_CASE(RandFloat3_Given0x00000000_ReturnsAlmostLowBound)
     {
-        const float value = rand_float3(FakeRNG(0x00000000), -12.0f, 42.0f);
+        FakeRNG rng(0x00000000);
+
+        const float value = rand_float3(rng, -12.0f, 42.0f);
 
         EXPECT_GT(-12.0f, value);
     }
 
     TEST_CASE(RandFloat3_Given0xFFFFFFFF_ReturnsAlmostHighBound)
     {
-        const float value = rand_float3(FakeRNG(0xFFFFFFFF), -12.0f, 42.0f);
+        FakeRNG rng(0xFFFFFFFF);
+
+        const float value = rand_float3(rng, -12.0f, 42.0f);
 
         EXPECT_LT(42.0f, value);
     }
@@ -256,28 +304,36 @@ TEST_SUITE(Foundation_Math_Rng)
 
     TEST_CASE(RandDouble3_Given0x00000000_ReturnsAlmostZero)
     {
-        const double value = rand_double3(FakeRNG(0x00000000));
+        FakeRNG rng(0x00000000);
+
+        const double value = rand_double3(rng);
 
         EXPECT_EQ(numeric_limits<double>::epsilon(), value);
     }
 
     TEST_CASE(RandDouble3_Given0xFFFFFFFF_ReturnsAlmostOne)
     {
-        const double value = rand_double3(FakeRNG(0xFFFFFFFF));
+        FakeRNG rng(0xFFFFFFFF);
+
+        const double value = rand_double3(rng);
 
         EXPECT_LT(1.0, value);
     }
 
     TEST_CASE(RandDouble3_Given0x00000000_ReturnsAlmostLowBound)
     {
-        const double value = rand_double3(FakeRNG(0x00000000), -12.0, 42.0);
+        FakeRNG rng(0x00000000);
+
+        const double value = rand_double3(rng, -12.0, 42.0);
 
         EXPECT_GT(-12.0, value);
     }
 
     TEST_CASE(RandDouble3_Given0xFFFFFFFF_ReturnsAlmostHighBound)
     {
-        const double value = rand_double3(FakeRNG(0xFFFFFFFF), -12.0, 42.0);
+        FakeRNG rng(0xFFFFFFFF);
+
+        const double value = rand_double3(rng, -12.0, 42.0);
 
         EXPECT_LT(42.0, value);
     }

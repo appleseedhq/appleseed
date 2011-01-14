@@ -64,7 +64,8 @@ BSDFFactoryRegistrar::BSDFFactoryRegistrar()
 
 void BSDFFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
 {
-    impl->m_registrar.insert(factory->get_model(), factory);
+    const string model = factory->get_model();
+    impl->m_registrar.insert(model, factory);
 }
 
 BSDFFactoryArray BSDFFactoryRegistrar::get_factories() const

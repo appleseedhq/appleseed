@@ -80,7 +80,7 @@ TextureCollectionItem::TextureCollectionItem(
 
 QMenu* TextureCollectionItem::get_single_item_context_menu() const
 {
-    QMenu* menu = CollectionItemBase::get_single_item_context_menu();
+    QMenu* menu = CollectionItemBase<Texture>::get_single_item_context_menu();
     menu->addSeparator();
 
     menu->addAction("Import Textures...", this, SLOT(slot_import_textures()));

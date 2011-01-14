@@ -81,11 +81,13 @@ class Builder
 
     struct PartitionPredicate
     {
-        TreeType&               m_tree;
+        typedef std::vector<VectorType> PointVector;
+
+        const PointVector&      m_points;
         const SplitType         m_split;
 
         PartitionPredicate(
-            TreeType&           tree,
+            const PointVector&  points,
             const SplitType&    split);
 
         bool operator()(
@@ -179,9 +181,9 @@ inline double Builder<T, N>::get_build_time() const
 
 template <typename T, size_t N>
 inline Builder<T, N>::PartitionPredicate::PartitionPredicate(
-    TreeType&                   tree,
+    const PointVector&          points,
     const SplitType&            split)
-  : m_tree(tree)
+  : m_points(points)
   , m_split(split)
 {
 }
@@ -190,7 +192,7 @@ template <typename T, size_t N>
 inline bool Builder<T, N>::PartitionPredicate::operator()(
     const size_t                index) const
 {
-    return m_tree.m_points[index][m_split.m_dimension] < m_split.m_abscissa;
+    return m_points[index][m_split.m_dimension] < m_split.m_abscissa;
 }
 
 template <typename T, size_t N>
@@ -217,7 +219,7 @@ void Builder<T, N>::partition(
             std::partition(
                 &m_tree.m_indices[0] + begin,
                 &m_tree.m_indices[0] + end,
-                PartitionPredicate(m_tree, split));
+                PartitionPredicate(m_tree.m_points, split));
 
         size_t pivot = bound - &m_tree.m_indices[0];
         assert(pivot > begin);

@@ -29,15 +29,17 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYCREATORBASE_H
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYCREATORBASE_H
 
+// appleseed.studio headers.
+#include "mainwindow/project/exceptioninvalidentityname.h"
+
 // appleseed.renderer headers.
 #include "renderer/api/scene.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
 
-// Forward declarations.
-namespace appleseed { namespace studio { struct ExceptionInvalidEntityName; } }
-class QString;
+// Qt headers.
+#include <QString>
 
 namespace appleseed {
 namespace studio {
@@ -72,7 +74,7 @@ void EntityCreatorBase::catch_entity_creation_errors(
     {
         (static_cast<T*>(this)->*method)(values);
     }
-    catch (const ProjectBuilder::ExceptionInvalidEntityName&)
+    catch (const ExceptionInvalidEntityName&)
     {
         display_entity_creation_error(
             entity_name,

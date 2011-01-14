@@ -56,7 +56,8 @@ EDFFactoryRegistrar::EDFFactoryRegistrar()
 
 void EDFFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
 {
-    impl->m_registrar.insert(factory->get_model(), factory);
+    const string model = factory->get_model();
+    impl->m_registrar.insert(model, factory);
 }
 
 EDFFactoryArray EDFFactoryRegistrar::get_factories() const

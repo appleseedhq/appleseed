@@ -71,6 +71,8 @@ class SingleModelCollectionItem
     virtual void add_item(Entity* entity);
 
   private:
+    typedef CollectionItem<Entity, ParentEntity> CollectionItem;
+
     virtual void slot_create();
 };
 
@@ -96,8 +98,8 @@ void SingleModelCollectionItem<Entity, ParentEntity>::add_item(Entity* entity)
     addChild(
         new SingleModelEntityItem<Entity, ParentEntity>(
             entity,
-            m_parent,
-            m_project_builder));
+            CollectionItem::m_parent,
+            CollectionItem::m_project_builder));
 }
 
 template <typename Entity, typename ParentEntity>
@@ -112,7 +114,7 @@ void SingleModelCollectionItem<Entity, ParentEntity>::slot_create()
     const std::string name_suggestion =
         get_name_suggestion(
             EntityTraits::get_entity_type_name(),
-            EntityTraits::get_entity_container(m_parent));
+            EntityTraits::get_entity_container(CollectionItem::m_parent));
 
     typedef typename EntityTraits::FactoryType FactoryType;
 
@@ -122,10 +124,10 @@ void SingleModelCollectionItem<Entity, ParentEntity>::slot_create()
             FactoryType::get_widget_definitions()));
 
     std::auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
-        new EntityBrowser<ParentEntity>(m_parent));
+        new EntityBrowser<ParentEntity>(CollectionItem::m_parent));
 
     open_entity_editor(
-        treeWidget(),
+        QTreeWidgetItem::treeWidget(),
         window_title,
         form_factory,
         entity_browser,

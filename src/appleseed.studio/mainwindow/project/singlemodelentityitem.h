@@ -63,6 +63,8 @@ class SingleModelEntityItem
         ProjectBuilder&     project_builder);
 
   private:
+    typedef EntityItem<Entity, ParentEntity> EntityItem;
+
     virtual void slot_edit();
 };
 
@@ -93,16 +95,16 @@ void SingleModelEntityItem<Entity, ParentEntity>::slot_edit()
 
     std::auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
         new SingleModelEntityEditorFormFactory(
-            m_entity->get_name(),
+            EntityItem::m_entity->get_name(),
             FactoryType::get_widget_definitions()));
 
     std::auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
-        new EntityBrowser<ParentEntity>(m_parent));
+        new EntityBrowser<ParentEntity>(EntityItem::m_parent));
 
-    foundation::Dictionary values = m_entity->get_parameters();
+    foundation::Dictionary values = EntityItem::m_entity->get_parameters();
 
     open_entity_editor(
-        treeWidget(),
+        QTreeWidgetItem::treeWidget(),
         window_title,
         form_factory,
         entity_browser,

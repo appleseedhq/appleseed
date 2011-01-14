@@ -69,7 +69,7 @@ AssemblyCollectionItem::AssemblyCollectionItem(
 
 QMenu* AssemblyCollectionItem::get_single_item_context_menu() const
 {
-    QMenu* menu = CollectionItemBase::get_single_item_context_menu();
+    QMenu* menu = CollectionItemBase<Assembly>::get_single_item_context_menu();
     menu->addSeparator();
 
     menu->addAction("Create Assembly...", this, SLOT(slot_create_assembly()));
