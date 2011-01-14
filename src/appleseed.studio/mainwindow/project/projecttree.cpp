@@ -119,6 +119,11 @@ ProjectTree::ProjectTree(QTreeWidget* tree_widget)
     impl->m_tree_widget = tree_widget;
 }
 
+ProjectTree::~ProjectTree()
+{
+    delete impl;
+}
+
 void ProjectTree::initialize(Project& project, ProjectBuilder& project_builder)
 {
     Scene& scene = *project.get_scene();

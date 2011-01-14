@@ -31,7 +31,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/utility/implptr.h"
 
 // Forward declarations.
 namespace appleseed { namespace studio { class AssemblyCollectionItem; } }
@@ -56,6 +55,8 @@ class ProjectTree
     explicit ProjectTree(
         QTreeWidget*        tree_widget);
 
+    ~ProjectTree();
+
     void initialize(
         renderer::Project&  project,
         ProjectBuilder&     project_builder);
@@ -72,7 +73,7 @@ class ProjectTree
 
   private:
     struct Impl;
-    foundation::impl_ptr<Impl, false> impl;
+    Impl* impl;
 };
 
 }       // namespace studio
