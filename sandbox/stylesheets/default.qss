@@ -66,6 +66,9 @@ QWidget
 
 QMainWindow::separator
 {
+#ifdef __APPLE__
+    background-color: DEFAULT_BACKGROUND_COLOR;
+#endif
     width: 5px;
     height: 5px;
 }
