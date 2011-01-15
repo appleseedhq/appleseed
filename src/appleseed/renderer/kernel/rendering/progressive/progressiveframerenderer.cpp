@@ -91,17 +91,6 @@ namespace
             for (size_t i = 0; i < m_params.m_thread_count; ++i)
                 m_sample_renderers.push_back(renderer_factory->create());
 
-            // Create sample generators, one per rendering thread.
-            for (size_t i = 0; i < m_params.m_thread_count; ++i)
-            {
-                m_sample_generators.push_back(
-                    new SampleGenerator(
-                        frame,
-                        m_sample_renderers[i],
-                        i,
-                        m_params.m_thread_count));
-            }
-
             if (callback_factory)
             {
                 // Instantiate tile callbacks, one per rendering thread.
@@ -123,10 +112,6 @@ namespace
             // Delete tile callbacks.
             for (const_each<TileCallbackVector> i = m_tile_callbacks; i; ++i)
                 (*i)->release();
-
-            // Delete sample generators.
-            for (const_each<SampleGeneratorVector> i = m_sample_generators; i; ++i)
-                delete *i;
 
             // Delete sample renderers.
             for (const_each<SampleRendererVector> i = m_sample_renderers; i; ++i)
@@ -155,10 +140,19 @@ namespace
 
             m_framebuffer->clear();
 
+            // Create sample generators, one per rendering thread.
+            assert(m_sample_generators.empty());
             for (size_t i = 0; i < m_params.m_thread_count; ++i)
-                m_sample_generators[i]->reset();
+            {
+                m_sample_generators.push_back(
+                    new SampleGenerator(
+                        m_frame,
+                        m_sample_renderers[i],
+                        i,
+                        m_params.m_thread_count));
+            }
 
-            // Schedule the first batch of pass jobs.
+            // Schedule the first batch of jobs.
             for (size_t i = 0; i < m_params.m_thread_count; ++i)
             {
                 m_job_queue.schedule(
@@ -170,7 +164,7 @@ namespace
                         m_job_queue,
                         i,
                         m_params.m_thread_count,
-                        0));
+                        0));    // pass number
             }
 
             // Start job execution.
@@ -185,6 +179,11 @@ namespace
 
             // Delete all non-executed tile jobs.
             m_job_queue.clear_scheduled_jobs();
+
+            // Delete sample generators.
+            for (const_each<SampleGeneratorVector> i = m_sample_generators; i; ++i)
+                delete *i;
+            m_sample_generators.clear();
         }
 
         // Return true if currently rendering.

@@ -31,13 +31,9 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
-#include "renderer/kernel/rendering/progressive/sample.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/job.h"
-
-// Standard headers.
-#include <vector>
 
 // Forward declarations.
 namespace renderer  { class Frame; }
@@ -75,10 +71,6 @@ class SampleGeneratorJob
     const size_t                m_job_index;
     const size_t                m_job_count;
     const size_t                m_pass;
-
-    std::vector<Sample>         m_samples;
-
-    size_t get_sample_count() const;
 
     void render();
 };

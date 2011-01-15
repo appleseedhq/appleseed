@@ -30,6 +30,7 @@
 #include "samplegenerator.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/rendering/progressive/progressiveframebuffer.h"
 #include "renderer/kernel/rendering/progressive/sample.h"
 #include "renderer/kernel/rendering/isamplerenderer.h"
 #include "renderer/kernel/shading/shadingresult.h"
@@ -37,6 +38,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/rng.h"
+#include "foundation/utility/memory.h"
 
 using namespace foundation;
 using namespace std;
@@ -53,50 +55,45 @@ namespace
     const size_t SampleBatchSize = 67;
 }
 
-// Constructor.
 SampleGenerator::SampleGenerator(
-    Frame&              frame,
-    ISampleRenderer*    sample_renderer,
-    const size_t        generator_index,
-    const size_t        generator_count)
+    Frame&                      frame,
+    ISampleRenderer*            sample_renderer,
+    const size_t                generator_index,
+    const size_t                generator_count)
   : m_frame(frame)
   , m_sample_renderer(sample_renderer)
   , m_lighting_conditions(frame.get_lighting_conditions())
-  , m_generator_index(generator_index)
   , m_stride((generator_count - 1) * SampleBatchSize)
+  , m_sequence_index(generator_index * SampleBatchSize)
 {
-    reset();
 }
 
-void SampleGenerator::reset()
-{
-    m_sequence_index = m_generator_index * SampleBatchSize;
-
-    // todo: we should also reinitialize the RNG.
-}
-
-// Generate a given number of samples.
 void SampleGenerator::generate_samples(
-    const size_t        sample_count,
-    Sample              samples[])
+    const size_t                sample_count,
+    ProgressiveFrameBuffer&     framebuffer)
 {
-    size_t sample_index = 0;
+    assert(sample_count > 0);
 
-    while (sample_index < sample_count)
+    ensure_size(m_samples, sample_count);
+
+    Sample* RESTRICT sample_ptr = &m_samples.front();
+    Sample* RESTRICT sample_end = sample_ptr + sample_count;
+
+    while (sample_ptr < sample_end)
     {
-        const size_t remaining = sample_count - sample_index;
+        const size_t remaining = sample_end - sample_ptr;
         size_t count = min(remaining, SampleBatchSize);
 
         while (count--)
         {
-            generate_sample(samples[sample_index]);
-
-            ++sample_index;
+            generate_sample(*sample_ptr++);
             ++m_sequence_index;
         }
 
         m_sequence_index += m_stride;
     }
+
+    framebuffer.store_samples(sample_count, &m_samples.front());
 }
 
 void SampleGenerator::generate_sample(Sample& sample)

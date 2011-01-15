@@ -50,7 +50,6 @@ namespace renderer
 // SampleGeneratorJob class implementation.
 //
 
-// Constructor.
 SampleGeneratorJob::SampleGeneratorJob(
     Frame&                  frame,
     ProgressiveFrameBuffer& framebuffer,
@@ -71,7 +70,6 @@ SampleGeneratorJob::SampleGeneratorJob(
 {
 }
 
-// Execute the job.
 void SampleGeneratorJob::execute(const size_t thread_index)
 {
     if (m_tile_callback)
@@ -100,25 +98,28 @@ void SampleGeneratorJob::execute(const size_t thread_index)
             m_pass + 1));
 }
 
-size_t SampleGeneratorJob::get_sample_count() const
+namespace
 {
-    const size_t MinSampleCount = 1024 * 4;
-    const size_t MaxSampleCount = 1024 * 128;
-    const size_t MinSamplePassCount = 8;
-    const size_t SampleIncrement = 4096;
-
-    if (m_pass < MinSamplePassCount)
-        return MinSampleCount;
-    else
+    size_t compute_sample_count(const size_t pass)
     {
-        const size_t p = m_pass - MinSamplePassCount;
-        return min<size_t>(MinSampleCount + p * SampleIncrement, MaxSampleCount);
+        const size_t MinSampleCount = 1024 * 4;
+        const size_t MaxSampleCount = 1024 * 128;
+        const size_t SampleIncrement = 1024 * 4;
+        const size_t MinSamplePassCount = 8;        // number of passes that will stick to MinSampleCount
+
+        if (pass < MinSamplePassCount)
+            return MinSampleCount;
+        else
+        {
+            const size_t p = pass - MinSamplePassCount;
+            return min<size_t>(MinSampleCount + p * SampleIncrement, MaxSampleCount);
+        }
     }
 }
 
 void SampleGeneratorJob::render()
 {
-    const size_t sample_count = get_sample_count();
+    const size_t sample_count = compute_sample_count(m_pass);
 
 /*
     RENDERER_LOG_DEBUG(
@@ -129,12 +130,7 @@ void SampleGeneratorJob::render()
         sample_count);
 */
 
-    ensure_size(m_samples, sample_count);
-
-    assert(!m_samples.empty());
-
-    m_sample_generator.generate_samples(sample_count, &m_samples.front());
-    m_framebuffer.store_samples(sample_count, &m_samples.front());
+    m_sample_generator.generate_samples(sample_count, m_framebuffer);
 
     const bool RoundRobinRender = false;
 

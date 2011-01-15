@@ -31,13 +31,17 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
+#include "renderer/kernel/rendering/progressive/sample.h"
+
+// Standard headers.
+#include <vector>
 
 // Forward declarations.
 namespace foundation    { class LightingConditions; }
 namespace foundation    { class MersenneTwister; }
 namespace renderer      { class Frame; }
 namespace renderer      { class ISampleRenderer; }
-namespace renderer      { class Sample; }
+namespace renderer      { class ProgressiveFrameBuffer; }
 
 namespace renderer
 {
@@ -48,29 +52,24 @@ class SampleGenerator
   public:
     // Constructor.
     SampleGenerator(
-        Frame&              frame,
-        ISampleRenderer*    sample_renderer,
-        const size_t        generator_index,
-        const size_t        generator_count);
+        Frame&                              frame,
+        ISampleRenderer*                    sample_renderer,
+        const size_t                        generator_index,
+        const size_t                        generator_count);
 
-    void reset();
-
-    // Generate a given number of samples.
+    // Generate @sample_count samples and store them in @framebuffer.
     void generate_samples(
-        const size_t        sample_count,
-        Sample              samples[]);
+        const size_t                        sample_count,
+        ProgressiveFrameBuffer&             framebuffer);
 
   private:
     Frame&                                  m_frame;
     ISampleRenderer*                        m_sample_renderer;
-    const size_t                            m_generator_index;
-    const size_t                            m_stride;
-
     const foundation::LightingConditions&   m_lighting_conditions;
-
+    const size_t                            m_stride;
     size_t                                  m_sequence_index;
-
     foundation::MersenneTwister             m_rng;
+    std::vector<Sample>                     m_samples;
 
     void generate_sample(Sample& sample);
 };
