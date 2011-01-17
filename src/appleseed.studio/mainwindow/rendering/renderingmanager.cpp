@@ -90,7 +90,6 @@ namespace
     };
 }
 
-// Constructor.
 RenderingManager::RenderingManager(StatusBar& status_bar)
   : m_status_bar(status_bar)
   , m_project(0)
@@ -126,7 +125,6 @@ RenderingManager::RenderingManager(StatusBar& status_bar)
         this, SIGNAL(signal_rendering_end()));
 }
 
-// Start rendering.
 void RenderingManager::start_rendering(
     Project*                    project,
     const ParamArray&           params,
@@ -170,13 +168,11 @@ void RenderingManager::start_rendering(
     m_master_renderer_thread->start();
 }
 
-// Return true if currently rendering, false otherwise.
 bool RenderingManager::is_rendering() const
 {
     return m_master_renderer_thread.get() && m_master_renderer_thread->isRunning();
 }
 
-// Wait until rendering has ended.
 void RenderingManager::wait_until_rendering_end()
 {
     while (is_rendering())
@@ -185,19 +181,18 @@ void RenderingManager::wait_until_rendering_end()
     }
 }
 
-// Abort rendering.
 void RenderingManager::abort_rendering()
 {
+    RENDERER_LOG_DEBUG("aborting rendering...");
+
     m_renderer_controller.set_status(IRendererController::AbortRendering);
 }
 
-// Restart rendering.
 void RenderingManager::restart_rendering()
 {
     m_renderer_controller.set_status(IRendererController::RestartRendering);
 }
 
-// Reinitialize rendering.
 void RenderingManager::reinitialize_rendering()
 {
     m_renderer_controller.set_status(IRendererController::ReinitializeRendering);
