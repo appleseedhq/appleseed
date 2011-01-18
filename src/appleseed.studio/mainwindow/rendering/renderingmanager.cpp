@@ -96,13 +96,28 @@ RenderingManager::RenderingManager(StatusBar& status_bar)
   , m_render_widget(0)
   , m_override_shading(false)
 {
+    //
+    // The connections below are using the Qt::BlockingQueuedConnection connection type.
+    //
+    // They are using a queued connection because the emitting thread is different from
+    // the receiving thread (the emitting thread is the master renderer thread, and the
+    // receiving thread is the UI thread of the main window (presumably).
+    //
+    // They are using a blocking queue connection because we need the receiving slot to
+    // have returned in the receiving thread before the emitting thread can continue.
+    //
+    // See http://doc.trolltech.com/4.6/qt.html#ConnectionType-enum for more details.
+    //
+
     connect(
         &m_renderer_controller, SIGNAL(signal_frame_begin()),
-        this, SLOT(slot_frame_begin()));
+        this, SLOT(slot_frame_begin()),
+        Qt::BlockingQueuedConnection);
 
     connect(
         &m_renderer_controller, SIGNAL(signal_frame_end()),
-        this, SLOT(slot_frame_end()));
+        this, SLOT(slot_frame_end()),
+        Qt::BlockingQueuedConnection);
 
     connect(
         &m_renderer_controller, SIGNAL(signal_rendering_begin()),
