@@ -337,7 +337,6 @@ namespace
         MasterRenderer renderer(
             project,
             params,
-            MasterRenderer::RenderOnce,
             &renderer_controller);
 
         // Render the frame.

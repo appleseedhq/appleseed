@@ -81,12 +81,10 @@ namespace renderer
 MasterRenderer::MasterRenderer(
     Project&                project,
     const ParamArray&       params,
-    const Mode              mode,
     IRendererController*    renderer_controller,
     ITileCallbackFactory*   tile_callback_factory)
   : m_project(project)
   , m_params(params)
-  , m_mode(mode)
   , m_renderer_controller(renderer_controller)
   , m_tile_callback_factory(tile_callback_factory)
 {
@@ -129,29 +127,29 @@ void MasterRenderer::do_render()
 {
     while (true)
     {
-        // Notify the rendering controller that rendering is beginning.
         m_renderer_controller->on_rendering_begin();
 
-        // Initialize the rendering components and render until completed or aborted.
-        const IRendererController::Status status = render_from_scratch();
+        const IRendererController::Status status = initialize_and_render_frame_sequence();
 
-        // In non-continuous rendering mode, stop after one frame.
-        if (m_mode == RenderOnce)
+        switch (status)
         {
+          case IRendererController::TerminateRendering:
             m_renderer_controller->on_rendering_success();
-            break;
-        }
+            return;
 
-        // If rendering was aborted, stop.
-        if (status == IRendererController::AbortRendering)
-        {
+          case IRendererController::AbortRendering:
             m_renderer_controller->on_rendering_abort();
+            return;
+
+          case IRendererController::ReinitializeRendering:
             break;
+
+          assert_otherwise;
         }
     }
 }
 
-IRendererController::Status MasterRenderer::render_from_scratch()
+IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence()
 {
     assert(m_project.get_scene());
     assert(m_project.get_frame());
@@ -248,7 +246,58 @@ IRendererController::Status MasterRenderer::render_from_scratch()
     }
 
     // Execute the main rendering loop.
-    return render_until_completed_or_aborted(frame_renderer.get());
+    return render_frame_sequence(frame_renderer.get());
+}
+
+IRendererController::Status MasterRenderer::render_frame_sequence(IFrameRenderer* frame_renderer)
+{
+    while (true) 
+    {
+        assert(!frame_renderer->is_rendering());
+
+        m_renderer_controller->on_frame_begin();
+
+        on_frame_begin();
+
+        const IRendererController::Status status = render_frame(frame_renderer);
+        assert(!frame_renderer->is_rendering());
+
+        on_frame_end();
+
+        m_renderer_controller->on_frame_end();
+
+        switch (status)
+        {
+          case IRendererController::TerminateRendering:
+          case IRendererController::AbortRendering:
+          case IRendererController::ReinitializeRendering:
+            return status;
+
+          case IRendererController::RestartRendering:
+            break;
+
+          assert_otherwise;
+        }
+    }
+}
+
+IRendererController::Status MasterRenderer::render_frame(IFrameRenderer* frame_renderer)
+{
+    frame_renderer->start_rendering();
+
+    while (frame_renderer->is_rendering())
+    {
+        const IRendererController::Status status = m_renderer_controller->on_progress();
+
+        if (status == IRendererController::ContinueRendering)
+            continue;
+
+        frame_renderer->stop_rendering();
+
+        return status;
+    }
+
+    return IRendererController::TerminateRendering;
 }
 
 bool MasterRenderer::bind_inputs() const
@@ -256,62 +305,6 @@ bool MasterRenderer::bind_inputs() const
     InputBinder input_binder;
     input_binder.bind(*m_project.get_scene());
     return input_binder.get_error_count() == 0;
-}
-
-IRendererController::Status MasterRenderer::render_until_completed_or_aborted(
-    IFrameRenderer* frame_renderer)
-{
-    while (true) 
-    {
-        assert(!frame_renderer->is_rendering());
-
-        // Notify the rendering controller that a frame is about to be rendered.
-        m_renderer_controller->on_frame_begin();
-
-        // Perform pre-frame rendering actions.
-        on_frame_begin();
-
-        // Start rendering the frame.
-        frame_renderer->start_rendering();
-
-        // Wait until rendering of the frame is complete.
-        const IRendererController::Status status = wait_until_frame_complete(frame_renderer);
-        assert(!frame_renderer->is_rendering());
-
-        // Perform post-frame rendering actions.
-        on_frame_end();
-
-        // Notify the rendering controller that a frame is finished rendering.
-        m_renderer_controller->on_frame_end();
-
-        // In non-continuous rendering mode, return after one frame.
-        if (m_mode == RenderOnce)
-            return IRendererController::ContinueRendering;
-
-        // If rendering was aborted or reinitialized, return.
-        if (status == IRendererController::AbortRendering ||
-            status == IRendererController::ReinitializeRendering)
-            return status;
-    }
-}
-
-IRendererController::Status MasterRenderer::wait_until_frame_complete(
-    IFrameRenderer* frame_renderer)
-{
-    while (frame_renderer->is_rendering())
-    {
-        // Report progress and retrieve status.
-        const IRendererController::Status status = m_renderer_controller->on_progress();
-
-        // Return if rendering was aborted or restarted.
-        if (status != IRendererController::ContinueRendering)
-        {
-            frame_renderer->stop_rendering();
-            return status;
-        }
-    }
-
-    return IRendererController::ContinueRendering;
 }
 
 namespace

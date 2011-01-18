@@ -70,7 +70,7 @@ class RenderingManager
     void start_rendering(
         renderer::Project*                      project,
         const renderer::ParamArray&             params,
-        const renderer::MasterRenderer::Mode    mode,
+        const bool                              highlight_tiles,
         RenderWidget*                           render_widget);
 
     // Return true if currently rendering, false otherwise.
@@ -122,10 +122,11 @@ class RenderingManager
     void archive_frame_to_disk();
 
   private slots:
-    void slot_camera_changed();
     void slot_rendering_begin();
     void slot_rendering_end();
     void slot_frame_begin();
+    void slot_frame_end();
+    void slot_camera_changed();
 };
 
 }       // namespace studio

@@ -64,6 +64,7 @@ class RENDERERDLL IRendererController
     enum Status
     {
         ContinueRendering = 0,
+        TerminateRendering,
         AbortRendering,
         RestartRendering,
         ReinitializeRendering

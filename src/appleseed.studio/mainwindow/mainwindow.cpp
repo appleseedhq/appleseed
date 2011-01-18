@@ -538,15 +538,10 @@ void MainWindow::start_rendering(const bool interactive)
     params.merge(m_settings);
     params.merge(configuration->get_parameters());
 
-    const MasterRenderer::Mode mode =
-        interactive
-            ? MasterRenderer::RenderContinuously
-            : MasterRenderer::RenderOnce;
-
     m_rendering_manager.start_rendering(
         m_project_manager.get_project(),
         params,
-        mode,
+        !interactive,
         m_render_widgets["RGB"]->m_render_widget);
 }
 

@@ -49,18 +49,10 @@ class RENDERERDLL MasterRenderer
   : public foundation::NonCopyable
 {
   public:
-    // Rendering modes.
-    enum Mode
-    {
-        RenderOnce = 0,
-        RenderContinuously
-    };
-
     // Constructor.
     MasterRenderer(
         Project&                project,
         const ParamArray&       params,
-        const Mode              mode,
         IRendererController*    renderer_controller,
         ITileCallbackFactory*   tile_callback_factory = 0);
 
@@ -74,24 +66,23 @@ class RENDERERDLL MasterRenderer
   private:
     Project&                    m_project;
     ParamArray                  m_params;
-    const Mode                  m_mode;
     IRendererController*        m_renderer_controller;
     ITileCallbackFactory*       m_tile_callback_factory;
 
-    // Continuously render from scratch.
+    // Render frame sequences, each time reinitializing the rendering components.
     void do_render();
 
-    // Initialize the rendering components and render until completed or aborted.
-    IRendererController::Status render_from_scratch();
+    // Initialize the rendering components and render a frame sequence.
+    IRendererController::Status initialize_and_render_frame_sequence();
+
+    // Render a frame sequence until the sequence is completed or rendering is aborted.
+    IRendererController::Status render_frame_sequence(IFrameRenderer* frame_renderer);
+
+    // Render a frame until until the frame is completed or rendering is aborted.
+    IRendererController::Status render_frame(IFrameRenderer* frame_renderer);
 
     // Bind all scene entities inputs. Return true on success, false otherwise.
     bool bind_inputs() const;
-
-    // Render (one or many frames) until rendering is completed or aborted.
-    IRendererController::Status render_until_completed_or_aborted(IFrameRenderer* frame_renderer);
-
-    // Wait until the frame being rendered is complete, or rendering was aborted.
-    IRendererController::Status wait_until_frame_complete(IFrameRenderer* frame_renderer);
 
     // Perform pre-frame rendering actions.
     void on_frame_begin() const;

@@ -98,8 +98,11 @@ RenderingManager::RenderingManager(StatusBar& status_bar)
 {
     connect(
         &m_renderer_controller, SIGNAL(signal_frame_begin()),
-        this, SLOT(slot_frame_begin()),
-        Qt::DirectConnection);
+        this, SLOT(slot_frame_begin()));
+
+    connect(
+        &m_renderer_controller, SIGNAL(signal_frame_end()),
+        this, SLOT(slot_frame_end()));
 
     connect(
         &m_renderer_controller, SIGNAL(signal_rendering_begin()),
@@ -128,7 +131,7 @@ RenderingManager::RenderingManager(StatusBar& status_bar)
 void RenderingManager::start_rendering(
     Project*                    project,
     const ParamArray&           params,
-    const MasterRenderer::Mode  mode,
+    const bool                  highlight_tiles,
     RenderWidget*               render_widget)
 {
     m_project = project;
@@ -147,8 +150,6 @@ void RenderingManager::start_rendering(
         m_camera_controller.get(), SIGNAL(signal_camera_changed()),
         this, SIGNAL(signal_camera_changed()));
 
-    const bool highlight_tiles = mode == MasterRenderer::RenderOnce;
-
     m_tile_callback_factory.reset(
         new QtTileCallbackFactory(
             m_render_widget,
@@ -158,7 +159,6 @@ void RenderingManager::start_rendering(
         new MasterRenderer(
             *m_project,
             params,
-            mode,
             &m_renderer_controller,
             m_tile_callback_factory.get()));
 
@@ -237,6 +237,57 @@ void RenderingManager::archive_frame_to_disk()
         autosave_path.directory_string().c_str());
 }
 
+void RenderingManager::slot_rendering_begin()
+{
+    assert(m_master_renderer.get());
+
+    if (m_override_shading)
+    {
+        m_master_renderer->get_parameters()
+            .push("shading_engine")
+            .push("override_shading")
+            .insert("mode", m_override_shading_mode);
+    }
+    else
+    {
+        m_master_renderer->get_parameters()
+            .push("shading_engine")
+            .dictionaries().remove("override_shading");
+    }
+
+    const int UpdateRate = 15;
+    m_render_widget_update_timer.start(1000 / UpdateRate, this);
+}
+
+void RenderingManager::slot_rendering_end()
+{
+    m_render_widget_update_timer.stop();
+
+    m_render_widget->update();
+
+    print_rendering_time();
+    print_average_luminance();
+    archive_frame_to_disk();
+
+    // Prevent manipulation of the camera after rendering has ended.
+    m_camera_controller.reset();
+}
+
+void RenderingManager::slot_frame_begin()
+{
+    m_renderer_controller.set_status(IRendererController::ContinueRendering);
+
+    m_camera_controller->update_camera_transform();
+
+    m_rendering_timer.start();
+    m_status_bar.start_rendering_time_display(&m_rendering_timer);
+}
+
+void RenderingManager::slot_frame_end()
+{
+    m_status_bar.stop_rendering_time_display();
+}
+
 void RenderingManager::slot_clear_shading_override()
 {
     m_override_shading = false;
@@ -258,54 +309,6 @@ void RenderingManager::slot_set_shading_override()
 void RenderingManager::slot_camera_changed()
 {
     restart_rendering();
-}
-
-void RenderingManager::slot_rendering_begin()
-{
-    assert(m_master_renderer.get());
-
-    if (m_override_shading)
-    {
-        m_master_renderer->get_parameters()
-            .push("shading_engine")
-            .push("override_shading")
-            .insert("mode", m_override_shading_mode);
-    }
-    else
-    {
-        m_master_renderer->get_parameters()
-            .push("shading_engine")
-            .dictionaries().remove("override_shading");
-    }
-
-    m_rendering_timer.start();
-    m_status_bar.start_rendering_time_display(&m_rendering_timer);
-
-    const int UpdateRate = 15;
-    m_render_widget_update_timer.start(1000 / UpdateRate, this);
-}
-
-void RenderingManager::slot_rendering_end()
-{
-    m_render_widget_update_timer.stop();
-
-    m_status_bar.stop_rendering_time_display();
-
-    m_render_widget->update();
-
-    print_rendering_time();
-    print_average_luminance();
-    archive_frame_to_disk();
-
-    // Prevent manipulation of the camera after rendering has ended.
-    m_camera_controller.reset();
-}
-
-void RenderingManager::slot_frame_begin()
-{
-    m_renderer_controller.set_status(IRendererController::ContinueRendering);
-
-    m_camera_controller->update_camera_transform();
 }
 
 }   // namespace studio
