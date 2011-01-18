@@ -58,10 +58,7 @@ CameraController::CameraController(
   : m_render_widget(render_widget)
   , m_camera(scene->get_camera())
 {
-    m_controller.set_transform(
-        m_camera->get_transform().get_local_to_parent());
-
-    set_controller_target(scene);
+    configure_controller(scene);
 
     m_render_widget->installEventFilter(this);
 }
@@ -101,10 +98,15 @@ bool CameraController::eventFilter(QObject* object, QEvent* event)
     return QObject::eventFilter(object, event);
 }
 
-void CameraController::set_controller_target(const Scene* scene)
+void CameraController::configure_controller(const Scene* scene)
 {
+    // Set the controller orientation and position based on the scene camera.
+    m_controller.set_transform(
+        m_camera->get_transform().get_local_to_parent());
+
     if (m_camera->get_parameters().strings().exist("controller_target"))
     {
+        // The camera already has a target position, use it.
         m_controller.set_target(
             m_camera->get_parameters().get_optional<Vector3d>(
                 "controller_target",
@@ -112,15 +114,13 @@ void CameraController::set_controller_target(const Scene* scene)
     }
     else
     {
+        // Otherwise, if the scene is not empty, use its center as the target position.
         const GAABB3 scene_bbox =
             compute_parent_bbox<GAABB3>(
                 scene->assembly_instances().begin(),
                 scene->assembly_instances().end());
-
-        m_controller.set_target(
-            scene_bbox.is_valid()
-                ? Vector3d(scene_bbox.center())
-                : Vector3d(0.0));
+        if (scene_bbox.is_valid())
+            m_controller.set_target(Vector3d(scene_bbox.center()));
     }
 }
 

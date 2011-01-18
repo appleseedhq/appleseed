@@ -75,7 +75,7 @@ class CameraController
 
     virtual bool eventFilter(QObject* object, QEvent* event);
 
-    void set_controller_target(const renderer::Scene* scene);
+    void configure_controller(const renderer::Scene* scene);
 
     foundation::Vector2d get_mouse_position(const QMouseEvent* event) const;
 
