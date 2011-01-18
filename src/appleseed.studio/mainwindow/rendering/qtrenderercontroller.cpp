@@ -36,19 +36,16 @@ namespace studio {
 // QtRendererController class implementation.
 //
 
-// Constructor.
 QtRendererController::QtRendererController()
   : m_status(ContinueRendering)
 {
 }
 
-// Set the status that will be returned by on_progress().
 void QtRendererController::set_status(const Status status)
 {
     m_status = status;
 }
 
-// This method is called before rendering begins.
 void QtRendererController::on_rendering_begin()
 {
     DefaultRendererController::on_rendering_begin();
@@ -56,7 +53,6 @@ void QtRendererController::on_rendering_begin()
     emit signal_rendering_begin();
 }
 
-// This method is called after rendering has succeeded.
 void QtRendererController::on_rendering_success()
 {
     DefaultRendererController::on_rendering_success();
@@ -64,7 +60,6 @@ void QtRendererController::on_rendering_success()
     emit signal_rendering_success();
 }
 
-// This method is called after rendering was aborted.
 void QtRendererController::on_rendering_abort()
 {
     DefaultRendererController::on_rendering_abort();
@@ -72,7 +67,6 @@ void QtRendererController::on_rendering_abort()
     emit signal_rendering_abort();
 }
 
-// This method is called before rendering a single frame.
 void QtRendererController::on_frame_begin()
 {
     DefaultRendererController::on_frame_begin();
@@ -80,7 +74,6 @@ void QtRendererController::on_frame_begin()
     emit signal_frame_begin();
 }
 
-// This method is called after rendering a single frame.
 void QtRendererController::on_frame_end()
 {
     DefaultRendererController::on_frame_end();
@@ -88,7 +81,6 @@ void QtRendererController::on_frame_end()
     emit signal_frame_end();
 }
 
-// This method is called continuously during rendering.
 QtRendererController::Status QtRendererController::on_progress()
 {
     DefaultRendererController::on_progress();
