@@ -112,7 +112,6 @@ class CameraController
 // CameraController class implementation.
 //
 
-// Constructor.
 template <typename T>
 CameraController<T>::CameraController()
   : m_drag_movement(None)
@@ -120,7 +119,6 @@ CameraController<T>::CameraController()
     set_transform(MatrixType::identity());
 }
 
-// Set/get the camera transformation.
 template <typename T>
 inline void CameraController<T>::set_transform(const MatrixType& m)
 {
@@ -145,6 +143,7 @@ inline void CameraController<T>::set_transform(const MatrixType& m)
     // Compute initial camera target.
     m_view.m_target = m_view.m_position - m_view.m_z;
 }
+
 template <typename T>
 inline Matrix<T, 4, 4> CameraController<T>::get_transform() const
 {
@@ -177,27 +176,28 @@ inline Matrix<T, 4, 4> CameraController<T>::get_transform() const
     return m;
 }
 
-// Set/get the camera target.
 template <typename T>
 inline void CameraController<T>::set_target(const Vector<T, 3>& target)
 {
     m_view.m_target = target;
 }
+
 template <typename T>
 inline const Vector<T, 3>& CameraController<T>::get_target() const
 {
     return m_view.m_target;
 }
 
-// Update the camera position and orientation using 2D dragging movements.
 template <typename T>
 void CameraController<T>::begin_drag(const Movement movement, const Vector<T, 2>& point)
 {
     assert(m_drag_movement == None);
+
     m_saved_view = m_view;
     m_drag_origin = point;
     m_drag_movement = movement;
 }
+
 template <typename T>
 void CameraController<T>::update_drag(const Vector<T, 2>& point)
 {
@@ -218,6 +218,7 @@ void CameraController<T>::update_drag(const Vector<T, 2>& point)
             speed *= 3.0;
         }
         break;
+
       case Track:
       case Dolly:
         {
@@ -229,6 +230,7 @@ void CameraController<T>::update_drag(const Vector<T, 2>& point)
     }
 
     const Vector<T, 2> delta = (point - m_drag_origin) * speed;
+
     m_drag_origin = point;
 
     switch (m_drag_movement)
@@ -236,44 +238,52 @@ void CameraController<T>::update_drag(const Vector<T, 2>& point)
       case Tumble:
         tumble(delta);
         break;
+
       case Track:
         track(delta);
         break;
+
       case Dolly:
         dolly(delta);
         break;
     }
 }
+
 template <typename T>
 void CameraController<T>::end_drag()
 {
     assert(m_drag_movement != None);
+
     m_drag_movement = None;
 }
+
 template <typename T>
 void CameraController<T>::cancel_drag()
 {
     assert(m_drag_movement != None);
+
     m_view = m_saved_view;
     m_drag_movement = None;
 }
 
-// Return the status of the controller.
 template <typename T>
 inline bool CameraController<T>::is_dragging() const
 {
     return m_drag_movement != None;
 }
+
 template <typename T>
 inline bool CameraController<T>::is_tumbling() const
 {
     return m_drag_movement == Tumble;
 }
+
 template <typename T>
 inline bool CameraController<T>::is_tracking() const
 {
     return m_drag_movement == Track;
 }
+
 template <typename T>
 inline bool CameraController<T>::is_dollying() const
 {
@@ -283,18 +293,22 @@ inline bool CameraController<T>::is_dollying() const
 template <typename T>
 void CameraController<T>::tumble(const Vector<T, 2>& delta)
 {
-    const Vector<T, 3> up(T(0.0), T(1.0), T(0.0));
+    const Vector<T, 3> Up(T(0.0), T(1.0), T(0.0));
+    const T MinAngleToVertical = deg_to_rad(T(5.0));
+    const T MaxAngleToVertical = T(Pi) - MinAngleToVertical;
 
     // Compute view vector.
     Vector<T, 3> u = m_view.m_position - m_view.m_target;
-    const T old_sq_dist = square_norm(u);
+    const T sq_dist = square_norm(u);
+
+    // No tumbling is possible if the camera and the target share the same position.
+    if (sq_dist == T(0.0))
+        return;
 
     // Compute angle to vertical axis.
-    const T angle_to_vertical = std::acos(dot(u, up) / std::sqrt(old_sq_dist));
+    const T angle_to_vertical = std::acos(dot(u, Up) / std::sqrt(sq_dist));
 
     // Clamp rotation around X axis.
-    const T MinAngleToVertical = deg_to_rad(T(5.0));
-    const T MaxAngleToVertical = T(Pi) - MinAngleToVertical;
     T delta_angle_to_vertical = delta.y * T(HalfPi);
     if (delta_angle_to_vertical + angle_to_vertical < MinAngleToVertical)
         delta_angle_to_vertical = angle_to_vertical - MinAngleToVertical;
@@ -306,14 +320,14 @@ void CameraController<T>::tumble(const Vector<T, 2>& delta)
     u = rotate(u, m_view.m_y, -delta.x * T(HalfPi));
 
     // Prevent numerical drifting of the camera-target distance.
-    u *= old_sq_dist / square_norm(u);
+    u *= sq_dist / square_norm(u);
 
     // Update camera position.
     m_view.m_position = m_view.m_target + u;
 
     // Update camera basis vectors.
     m_view.m_z = normalize(u);
-    m_view.m_x = normalize(cross(up, m_view.m_z));
+    m_view.m_x = normalize(cross(Up, m_view.m_z));
     m_view.m_y = normalize(cross(m_view.m_z, m_view.m_x));
 }
 

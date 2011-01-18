@@ -344,6 +344,7 @@ set(foundation_meta_tests_sources
     foundation/meta/tests/test_bsp.cpp
     foundation/meta/tests/test_bufferedfile.cpp
     foundation/meta/tests/test_cache.cpp
+    foundation/meta/tests/test_cameracontroller.cpp
     foundation/meta/tests/test_casts.cpp
     foundation/meta/tests/test_cdf.cpp
     foundation/meta/tests/test_color.cpp
