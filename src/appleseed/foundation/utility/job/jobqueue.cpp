@@ -50,25 +50,24 @@ namespace foundation
 
 struct JobQueue::Impl
 {
-    mutable mutex   m_mutex;            // to serialize access to job lists
-    JobList         m_scheduled_jobs;
-    JobList         m_running_jobs;
+    mutable Spinlock    m_spinlock;
+    JobList             m_scheduled_jobs;
+    JobList             m_running_jobs;
 
     static void delete_jobs(JobList& list)
     {
         for (each<JobList> i = list; i; ++i)
             delete *i;
+ 
         list.clear();
     }
 };
 
-// Constructor.
 JobQueue::JobQueue()
   : impl(new Impl())
 {
 }
 
-// Destructor.
 JobQueue::~JobQueue()
 {
     // We assume that worker threads are not running, so we don't lock.
@@ -82,78 +81,86 @@ JobQueue::~JobQueue()
     delete impl;
 }
 
-// Delete all scheduled jobs.
 void JobQueue::clear_scheduled_jobs()
 {
-    mutex::scoped_lock lock(impl->m_mutex);
+    Spinlock::ScopedLock lock(impl->m_spinlock);
+
     impl->delete_jobs(impl->m_scheduled_jobs);
 }
 
-// Return whether the job queue contains scheduled jobs.
 bool JobQueue::has_scheduled_jobs() const
 {
-    mutex::scoped_lock lock(impl->m_mutex);
+    Spinlock::ScopedLock lock(impl->m_spinlock);
+
     return !impl->m_scheduled_jobs.empty();
 }
 
-// Return whether the job queue contains running jobs.
 bool JobQueue::has_running_jobs() const
 {
-    mutex::scoped_lock lock(impl->m_mutex);
+    Spinlock::ScopedLock lock(impl->m_spinlock);
+
     return !impl->m_running_jobs.empty();
 }
 
-// Return whether the job queue contains scheduled or running jobs.
 bool JobQueue::has_scheduled_or_running_jobs() const
 {
-    mutex::scoped_lock lock(impl->m_mutex);
+    Spinlock::ScopedLock lock(impl->m_spinlock);
+
     return !impl->m_scheduled_jobs.empty() || !impl->m_running_jobs.empty();
 }
 
-// Return the number of scheduled jobs in the job queue.
 size_t JobQueue::get_scheduled_job_count() const
 {
-    mutex::scoped_lock lock(impl->m_mutex);
+    Spinlock::ScopedLock lock(impl->m_spinlock);
+
     return impl->m_scheduled_jobs.size();
 }
 
-// Return the number of running jobs in the job queue.
 size_t JobQueue::get_running_job_count() const
 {
-    mutex::scoped_lock lock(impl->m_mutex);
+    Spinlock::ScopedLock lock(impl->m_spinlock);
+
     return impl->m_running_jobs.size();
 }
 
-// Return the number of scheduled and running jobs in the job queue.
 size_t JobQueue::get_total_job_count() const
 {
-    mutex::scoped_lock lock(impl->m_mutex);
+    Spinlock::ScopedLock lock(impl->m_spinlock);
+
     return impl->m_scheduled_jobs.size() + impl->m_running_jobs.size();
 }
 
-// Schedule a job for execution.
 void JobQueue::schedule(IJob* job)
 {
-    mutex::scoped_lock lock(impl->m_mutex);
-
     assert(job);
+
+    Spinlock::ScopedLock lock(impl->m_spinlock);
+
     impl->m_scheduled_jobs.push_back(job);
 }
 
-// Wait until all scheduled and running jobs are completed.
 void JobQueue::wait_until_completion()
 {
-    while (has_scheduled_or_running_jobs())
+    while (true)
     {
-        // Wait for jobs to complete. Give up time slice.
+        if (impl->m_spinlock.try_lock())
+        {
+            if (impl->m_scheduled_jobs.empty() && impl->m_running_jobs.empty())
+            {
+                impl->m_spinlock.unlock();
+                return;
+            }
+
+            impl->m_spinlock.unlock();
+        }
+
         yield();
     }
 }
 
-// Acquire a scheduled job for execution.
 JobQueue::JobInfo JobQueue::acquire_scheduled_job()
 {
-    mutex::scoped_lock lock(impl->m_mutex);
+    Spinlock::ScopedLock lock(impl->m_spinlock);
 
     // Bail out if there is no scheduled jobs.
     if (impl->m_scheduled_jobs.empty())
@@ -170,16 +177,15 @@ JobQueue::JobInfo JobQueue::acquire_scheduled_job()
     return JobInfo(job, pred(impl->m_running_jobs.end()));
 }
 
-// Retire a running job.
 void JobQueue::retire_running_job(const JobInfo& job_info)
 {
-    mutex::scoped_lock lock(impl->m_mutex);
+    // Remove the job from the running list.
+    impl->m_spinlock.lock();
+    impl->m_running_jobs.erase(job_info.second);
+    impl->m_spinlock.unlock();
 
     // Delete the job.
     delete job_info.first;
-
-    // Remove the job from the running list.
-    impl->m_running_jobs.erase(job_info.second);
 }
 
 }   // namespace foundation
