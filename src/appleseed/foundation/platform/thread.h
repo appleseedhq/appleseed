@@ -70,6 +70,12 @@ class Spinlock
   public:
     Spinlock();
 
+    bool try_lock();
+
+    void lock();
+
+    void unlock();
+
     struct ScopedLock
       : public NonCopyable
     {
@@ -119,8 +125,24 @@ FOUNDATIONDLL void yield();
 // Spinlock class implementation.
 //
 
+inline bool Spinlock::try_lock()
+{
+    return m_sp.try_lock();
+}
+
+inline void Spinlock::lock()
+{
+    m_sp.lock();
+}
+
+inline void Spinlock::unlock()
+{
+    m_sp.unlock();
+}
+
 inline Spinlock::Spinlock()
 {
+    // todo: is there a simpler way to initialize m_sp in a platform-independent manner?
     boost::detail::spinlock initialized_sp = BOOST_DETAIL_SPINLOCK_INIT;
     m_sp = initialized_sp;
 }
