@@ -831,6 +831,8 @@ set(renderer_kernel_rendering_progressive_sources
     renderer/kernel/rendering/progressive/progressiveframerenderer.cpp
     renderer/kernel/rendering/progressive/progressiveframerenderer.h
     renderer/kernel/rendering/progressive/sample.h
+    renderer/kernel/rendering/progressive/samplecounter.cpp
+    renderer/kernel/rendering/progressive/samplecounter.h
     renderer/kernel/rendering/progressive/samplegenerator.cpp
     renderer/kernel/rendering/progressive/samplegenerator.h
     renderer/kernel/rendering/progressive/samplegeneratorjob.cpp
@@ -953,6 +955,7 @@ set(renderer_meta_tests_sources
     renderer/meta/tests/test_lightsampler.cpp
     renderer/meta/tests/test_paramarray.cpp
     renderer/meta/tests/test_projectfilereader.cpp
+    renderer/meta/tests/test_samplecounter.cpp
 )
 list(APPEND appleseed_sources
     ${renderer_meta_tests_sources}
