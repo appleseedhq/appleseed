@@ -49,7 +49,6 @@ namespace foundation
 // WorkerThread class implementation.
 //
 
-// Constructor.
 WorkerThread::WorkerThread(
     const size_t    thread_index,
     Logger&         logger,
@@ -65,13 +64,11 @@ WorkerThread::WorkerThread(
 {
 }
 
-// Destructor.
 WorkerThread::~WorkerThread()
 {
     stop();
 }
 
-// Start the worker thread.
 void WorkerThread::start()
 {
     // Don't do anything if the worker thread is already running.
@@ -83,7 +80,6 @@ void WorkerThread::start()
     m_thread = new thread(m_thread_func);
 }
 
-// Stop the worker thread.
 void WorkerThread::stop()
 {
     // Don't do anything if the worker thread is already stopped.
@@ -97,7 +93,6 @@ void WorkerThread::stop()
     m_thread = 0;
 }
 
-// Main line of the worker thread.
 void WorkerThread::run()
 {
     while (!m_terminate)
@@ -132,7 +127,6 @@ void WorkerThread::run()
     }
 }
 
-// Execute a job.
 void WorkerThread::execute_job(IJob& job)
 {
     try

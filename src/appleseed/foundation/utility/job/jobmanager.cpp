@@ -73,7 +73,6 @@ struct JobManager::Impl
     }
 };
 
-// Constructor.
 JobManager::JobManager(
     Logger&             logger,
     JobQueue&           job_queue,
@@ -88,7 +87,6 @@ JobManager::JobManager(
 {
 }
 
-// Destructor.
 JobManager::~JobManager()
 {
     stop();
@@ -96,13 +94,11 @@ JobManager::~JobManager()
     delete impl;
 }
 
-// Return the number of worker threads.
 size_t JobManager::get_thread_count() const
 {
     return impl->m_thread_count;
 }
 
-// Start job execution.
 void JobManager::start()
 {
     assert(impl->m_worker_threads.empty() ||
@@ -127,7 +123,6 @@ void JobManager::start()
         (*i)->start();
 }
 
-// Stop job execution.
 void JobManager::stop()
 {
     // Stop and delete the worker threads.

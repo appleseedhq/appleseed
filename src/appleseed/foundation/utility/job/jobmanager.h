@@ -72,7 +72,6 @@ class FOUNDATIONDLL JobManager
 {
   public:
     // Constructor.
-    // thread_count is the number of worker threads executing jobs.
     JobManager(
         Logger&         logger,
         JobQueue&       job_queue,
