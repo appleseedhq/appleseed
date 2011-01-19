@@ -30,9 +30,11 @@
 #define APPLESEED_FOUNDATION_PLATFORM_THREAD_H
 
 // appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/platform/types.h"
 
 // boost headers.
+#include "boost/smart_ptr/detail/spinlock.hpp"
 #include "boost/thread/mutex.hpp"
 #include "boost/thread/thread.hpp"
 
@@ -58,11 +60,27 @@
 namespace foundation
 {
 
-// Suspend the current thread for a given number of milliseconds.
-FOUNDATIONDLL void sleep(const uint32 ms);
+//
+// A spinlock based on boost::detail::spinlock.
+//
 
-// Give up the remainder of the current thread's time slice, to allow other threads to run.
-FOUNDATIONDLL void yield();
+class Spinlock
+  : public NonCopyable
+{
+  public:
+    Spinlock();
+
+    struct ScopedLock
+      : public NonCopyable
+    {
+        boost::detail::spinlock::scoped_lock m_lock;
+
+        explicit ScopedLock(Spinlock& spinlock);
+    };
+
+  private:
+    boost::detail::spinlock m_sp;
+};
 
 
 //
@@ -70,6 +88,7 @@ FOUNDATIONDLL void yield();
 //
 
 class FOUNDATIONDLL BenchmarkingThreadContext
+  : public NonCopyable
 {
   public:
     // The constructor configures the current thread for benchmarking.
@@ -83,6 +102,33 @@ class FOUNDATIONDLL BenchmarkingThreadContext
     struct Impl;
     Impl* impl;
 };
+
+
+//
+// Utility free functions.
+//
+
+// Suspend the current thread for a given number of milliseconds.
+FOUNDATIONDLL void sleep(const uint32 ms);
+
+// Give up the remainder of the current thread's time slice, to allow other threads to run.
+FOUNDATIONDLL void yield();
+
+
+//
+// Spinlock class implementation.
+//
+
+inline Spinlock::Spinlock()
+{
+    boost::detail::spinlock initialized_sp = BOOST_DETAIL_SPINLOCK_INIT;
+    m_sp = initialized_sp;
+}
+
+inline Spinlock::ScopedLock::ScopedLock(Spinlock& spinlock)
+  : m_lock(spinlock.m_sp)
+{
+}
 
 }       // namespace foundation
 

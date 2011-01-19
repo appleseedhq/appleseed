@@ -45,19 +45,6 @@ using namespace boost;
 namespace foundation
 {
 
-// Suspend the current thread for a given number of milliseconds.
-void sleep(const uint32 ms)
-{
-    this_thread::sleep(posix_time::milliseconds(ms));
-}
-
-// Give up the remainder of the current thread's time slice, to allow other threads to run.
-void yield()
-{
-    this_thread::yield();
-}
-
-
 //
 // BenchmarkingThreadContext class implementation (Windows).
 //
@@ -71,7 +58,6 @@ struct BenchmarkingThreadContext::Impl
     DWORD_PTR   m_thread_affinity_mask;
 };
 
-// Constructor.
 BenchmarkingThreadContext::BenchmarkingThreadContext()
   : impl(new Impl())
 {
@@ -87,7 +73,6 @@ BenchmarkingThreadContext::BenchmarkingThreadContext()
     impl->m_thread_affinity_mask = SetThreadAffinityMask(GetCurrentThread(), 1);
 }
 
-// Destructor.
 BenchmarkingThreadContext::~BenchmarkingThreadContext()
 {
     // Restore the previous settings.
@@ -104,18 +89,31 @@ BenchmarkingThreadContext::~BenchmarkingThreadContext()
 
 #else
 
-// Constructor.
 BenchmarkingThreadContext::BenchmarkingThreadContext()
 {
     // Do nothing on unsupported platforms.
 }
 
-// Destructor.
 BenchmarkingThreadContext::~BenchmarkingThreadContext()
 {
     // Do nothing on unsupported platforms.
 }
 
 #endif
+
+
+//
+// Utility free functions implementation.
+//
+
+void sleep(const uint32 ms)
+{
+    this_thread::sleep(posix_time::milliseconds(ms));
+}
+
+void yield()
+{
+    this_thread::yield();
+}
 
 }   // namespace foundation
