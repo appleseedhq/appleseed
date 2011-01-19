@@ -929,6 +929,7 @@ source_group("renderer\\kernel\\volume" FILES
 )
 
 set(renderer_meta_templates_sources
+    renderer/meta/templates/renderer_benchmark_template.cpp
     renderer/meta/templates/renderer_component_template.cpp
     renderer/meta/templates/renderer_component_template.h
     renderer/meta/templates/renderer_test_template.cpp
