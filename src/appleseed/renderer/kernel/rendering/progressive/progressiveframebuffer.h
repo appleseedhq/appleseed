@@ -38,7 +38,6 @@
 #include "foundation/platform/timer.h"
 
 // Forward declarations.
-namespace foundation    { class Tile; }
 namespace renderer      { class Frame; }
 namespace renderer      { class Sample; }
 
@@ -57,13 +56,14 @@ class ProgressiveFrameBuffer
     // Destructor.
     ~ProgressiveFrameBuffer();
 
+    // Get the dimensions of the framebuffer.
     size_t get_width() const;
     size_t get_height() const;
 
     // Thread-safe.
     void clear();
 
-    // Thread-safe.
+    // Store @samples into the framebuffer. Thread-safe.
     void store_samples(
         const size_t    sample_count,
         const Sample    samples[]);
@@ -71,42 +71,30 @@ class ProgressiveFrameBuffer
     // Thread-safe.
     void render_to_frame(Frame& frame);
 
+    // Like render_to_frame() but won't do anything if the framebuffer
+    // is locked by another thread. Thread-safe.
+    void try_render_to_frame(Frame& frame);
+
   private:
+    mutable foundation::Spinlock        m_spinlock;
     AccumulationFrameBuffer             m_fb;
-    mutable boost::mutex                m_fb_mutex;
+    foundation::uint64                  m_sample_count;
 
-    size_t                              m_sample_count;
-
-    typedef std::vector<AccumulationFrameBuffer*>
-        AccumulationFrameBufferVector;
+    typedef std::vector<AccumulationFrameBuffer*> AccumulationFrameBufferVector;
 
     AccumulationFrameBufferVector       m_mipmaps;
 
     foundation::DefaultWallclockTimer   m_timer;
     foundation::uint64                  m_timer_frequency;
-    
+
     foundation::uint64                  m_last_time;
-    size_t                              m_last_sample_count;
-
-    static void copy_to_frame(
-        const AccumulationFrameBuffer&  fb,
-        Frame&                          frame);
-
-    static void copy_to_frame_tile(
-        const AccumulationFrameBuffer&  fb,
-        foundation::Tile&               tile,
-        const size_t                    origin_x,
-        const size_t                    origin_y,
-        const size_t                    tile_x,
-        const size_t                    tile_y);
+    foundation::uint64                  m_last_sample_count;
 
     void allocate_mipmaps();
     void deallocate_mipmaps();
 
-    void store_sample(const Sample& sample);
-
+    void do_render_to_frame(Frame& frame);
     void render_to_frame_resample(Frame& frame) const;
-
     void recursive_resample(const size_t level) const;
 
     void print_statistics(const Frame& frame);

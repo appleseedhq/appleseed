@@ -65,6 +65,7 @@ SampleGenerator::SampleGenerator(
   , m_lighting_conditions(frame.get_lighting_conditions())
   , m_stride((generator_count - 1) * SampleBatchSize)
   , m_sequence_index(generator_index * SampleBatchSize)
+  , m_current_batch_size(0)
 {
 }
 
@@ -76,24 +77,28 @@ void SampleGenerator::generate_samples(
 
     ensure_size(m_samples, sample_count);
 
-    Sample* RESTRICT sample_ptr = &m_samples.front();
-    Sample* RESTRICT sample_end = sample_ptr + sample_count;
+    generate_sample_vector(0, sample_count);
+
+    framebuffer.store_samples(sample_count, &m_samples[0]);
+}
+
+void SampleGenerator::generate_sample_vector(const size_t index, const size_t count)
+{
+    Sample* RESTRICT sample_ptr = &m_samples[index];
+    Sample* RESTRICT sample_end = sample_ptr + count;
 
     while (sample_ptr < sample_end)
     {
-        const size_t remaining = sample_end - sample_ptr;
-        size_t count = min(remaining, SampleBatchSize);
+        generate_sample(*sample_ptr++);
 
-        while (count--)
+        ++m_sequence_index;
+
+        if (++m_current_batch_size == SampleBatchSize)
         {
-            generate_sample(*sample_ptr++);
-            ++m_sequence_index;
+            m_current_batch_size = 0;
+            m_sequence_index += m_stride;
         }
-
-        m_sequence_index += m_stride;
     }
-
-    framebuffer.store_samples(sample_count, &m_samples.front());
 }
 
 void SampleGenerator::generate_sample(Sample& sample)

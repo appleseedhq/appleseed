@@ -39,6 +39,7 @@
 namespace renderer  { class Frame; }
 namespace renderer  { class ITileCallback; }
 namespace renderer  { class ProgressiveFrameBuffer; }
+namespace renderer  { class SampleCounter; }
 namespace renderer  { class SampleGenerator; }
 
 namespace renderer
@@ -50,29 +51,29 @@ class SampleGeneratorJob
   public:
     // Constructor.
     SampleGeneratorJob(
-        Frame&                  frame,
-        ProgressiveFrameBuffer& framebuffer,
-        SampleGenerator&        sample_generator,
-        ITileCallback*          tile_callback,
-        foundation::JobQueue&   job_queue,
-        const size_t            job_index,
-        const size_t            job_count,
-        const size_t            pass);
+        Frame&                      frame,
+        ProgressiveFrameBuffer&     framebuffer,
+        SampleGenerator&            sample_generator,
+        SampleCounter&              sample_counter,
+        ITileCallback*              tile_callback,
+        foundation::JobQueue&       job_queue,
+        const size_t                job_index,
+        const size_t                job_count,
+        const size_t                pass);
 
     // Execute the job.
     virtual void execute(const size_t thread_index);
 
   private:
-    Frame&                      m_frame;
-    ProgressiveFrameBuffer&     m_framebuffer;
-    SampleGenerator&            m_sample_generator;
-    ITileCallback*              m_tile_callback;
-    foundation::JobQueue&       m_job_queue;
-    const size_t                m_job_index;
-    const size_t                m_job_count;
-    const size_t                m_pass;
-
-    void render();
+    Frame&                          m_frame;
+    ProgressiveFrameBuffer&         m_framebuffer;
+    SampleGenerator&                m_sample_generator;
+    SampleCounter&                  m_sample_counter;
+    ITileCallback*                  m_tile_callback;
+    foundation::JobQueue&           m_job_queue;
+    const size_t                    m_job_index;
+    const size_t                    m_job_count;
+    const size_t                    m_pass;
 };
 
 }       // namespace renderer

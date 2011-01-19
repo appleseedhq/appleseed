@@ -68,8 +68,11 @@ class SampleGenerator
     const foundation::LightingConditions&   m_lighting_conditions;
     const size_t                            m_stride;
     size_t                                  m_sequence_index;
-    foundation::MersenneTwister             m_rng;
+    size_t                                  m_current_batch_size;
     std::vector<Sample>                     m_samples;
+    foundation::MersenneTwister             m_rng;
+
+    void generate_sample_vector(const size_t index, const size_t count);
 
     void generate_sample(Sample& sample);
 };

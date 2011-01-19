@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/progressive/progressiveframebuffer.h"
+#include "renderer/kernel/rendering/progressive/samplecounter.h"
 #include "renderer/kernel/rendering/progressive/samplegenerator.h"
 #include "renderer/kernel/rendering/itilecallback.h"
 
@@ -50,10 +51,29 @@ namespace renderer
 // SampleGeneratorJob class implementation.
 //
 
+namespace
+{
+    const size_t MinSampleCount     = 1024 * 4;     // minimum number of samples in one pass
+    const size_t MaxSampleCount     = 1024 * 128;   // maximum number of samples in one pass
+    const size_t MinSamplePassCount = 8;            // number of passes that will stick to the minimum number of samples
+    const size_t SampleIncrement    = 1024 * 4;     // number of samples added at each pass
+    const bool RoundRobinRender     = false;        // enable/disable Round Robin rendering
+
+    size_t compute_sample_count(const size_t pass)
+    {
+        return
+            pass < MinSamplePassCount ? MinSampleCount :
+            min(
+                MinSampleCount + (pass - MinSamplePassCount) * SampleIncrement,
+                MaxSampleCount);
+    }
+}
+
 SampleGeneratorJob::SampleGeneratorJob(
     Frame&                  frame,
     ProgressiveFrameBuffer& framebuffer,
     SampleGenerator&        sample_generator,
+    SampleCounter&          sample_counter,
     ITileCallback*          tile_callback,
     JobQueue&               job_queue,
     const size_t            job_index,
@@ -62,6 +82,7 @@ SampleGeneratorJob::SampleGeneratorJob(
   : m_frame(frame)
   , m_framebuffer(framebuffer)
   , m_sample_generator(sample_generator)
+  , m_sample_counter(sample_counter)
   , m_tile_callback(tile_callback)
   , m_job_queue(job_queue)
   , m_job_index(job_index)
@@ -72,6 +93,12 @@ SampleGeneratorJob::SampleGeneratorJob(
 
 void SampleGeneratorJob::execute(const size_t thread_index)
 {
+    const size_t sample_count =
+        m_sample_counter.reserve(compute_sample_count(m_pass));
+
+    if (sample_count == 0)
+        return;
+
     if (m_tile_callback)
     {
         m_tile_callback->pre_render(
@@ -81,7 +108,10 @@ void SampleGeneratorJob::execute(const size_t thread_index)
             m_framebuffer.get_height());
     }
 
-    render();
+    m_sample_generator.generate_samples(sample_count, m_framebuffer);
+
+    if (!RoundRobinRender || m_pass % m_job_count == m_job_index)
+        m_framebuffer.try_render_to_frame(m_frame);
 
     if (m_tile_callback)
         m_tile_callback->post_render(m_frame);
@@ -91,51 +121,12 @@ void SampleGeneratorJob::execute(const size_t thread_index)
             m_frame,
             m_framebuffer,
             m_sample_generator,
+            m_sample_counter,
             m_tile_callback,
             m_job_queue,
             m_job_index,
             m_job_count,
             m_pass + 1));
-}
-
-namespace
-{
-    size_t compute_sample_count(const size_t pass)
-    {
-        const size_t MinSampleCount = 1024 * 4;
-        const size_t MaxSampleCount = 1024 * 128;
-        const size_t SampleIncrement = 1024 * 4;
-        const size_t MinSamplePassCount = 8;        // number of passes that will stick to MinSampleCount
-
-        if (pass < MinSamplePassCount)
-            return MinSampleCount;
-        else
-        {
-            const size_t p = pass - MinSamplePassCount;
-            return min<size_t>(MinSampleCount + p * SampleIncrement, MaxSampleCount);
-        }
-    }
-}
-
-void SampleGeneratorJob::render()
-{
-    const size_t sample_count = compute_sample_count(m_pass);
-
-/*
-    RENDERER_LOG_DEBUG(
-        "sample generator job " FMT_SIZE_T "/" FMT_SIZE_T ": pass " FMT_SIZE_T ", generating " FMT_SIZE_T " samples",
-        m_job_index + 1,
-        m_job_count,
-        m_pass,
-        sample_count);
-*/
-
-    m_sample_generator.generate_samples(sample_count, m_framebuffer);
-
-    const bool RoundRobinRender = false;
-
-    if (!RoundRobinRender || m_pass % m_job_count == m_job_index)
-        m_framebuffer.render_to_frame(m_frame);
 }
 
 }   // namespace renderer

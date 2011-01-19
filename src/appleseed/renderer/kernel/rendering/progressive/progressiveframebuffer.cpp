@@ -52,18 +52,16 @@ namespace renderer
 // ProgressiveFrameBuffer class implementation.
 //
 
-// Constructor.
 ProgressiveFrameBuffer::ProgressiveFrameBuffer(
     const size_t    width,
     const size_t    height)
   : m_fb(width, height)
 {
-    allocate_mipmaps();
-
     clear();
+
+    allocate_mipmaps();
 }
 
-// Destructor.
 ProgressiveFrameBuffer::~ProgressiveFrameBuffer()
 {
     deallocate_mipmaps();
@@ -71,11 +69,11 @@ ProgressiveFrameBuffer::~ProgressiveFrameBuffer()
 
 void ProgressiveFrameBuffer::clear()
 {
-    mutex::scoped_lock lock(m_fb_mutex);
+    Spinlock::ScopedLock lock(m_spinlock);
 
     m_fb.clear();
 
-   m_sample_count = 0;
+    m_sample_count = 0;
 
     m_timer_frequency = m_timer.frequency();
 
@@ -87,12 +85,25 @@ void ProgressiveFrameBuffer::store_samples(
     const size_t    sample_count,
     const Sample    samples[])
 {
-    mutex::scoped_lock lock(m_fb_mutex);
+    Spinlock::ScopedLock lock(m_spinlock);
 
-    for (size_t i = 0; i < sample_count; ++i)
+    const double fb_width = static_cast<double>(m_fb.get_width());
+    const double fb_height = static_cast<double>(m_fb.get_height());
+
+    const Sample* RESTRICT sample_ptr = samples;
+    const Sample* RESTRICT sample_end = samples + sample_count;
+
+    while (sample_ptr < sample_end)
     {
-        const Sample& sample = samples[i];
-        store_sample(sample);
+        const double fx = (0.5 + sample_ptr->m_position.x) * fb_width;
+        const double fy = (0.5 - sample_ptr->m_position.y) * fb_height;
+
+        const size_t x = truncate<size_t>(fx);
+        const size_t y = truncate<size_t>(fy);
+
+        m_fb.add_pixel(x, y, sample_ptr->m_color);
+
+        ++sample_ptr;
     }
 
     m_sample_count += sample_count;
@@ -100,68 +111,18 @@ void ProgressiveFrameBuffer::store_samples(
 
 void ProgressiveFrameBuffer::render_to_frame(Frame& frame)
 {
-    mutex::scoped_lock lock(m_fb_mutex);
+    Spinlock::ScopedLock lock(m_spinlock);
 
-    const bool Resample = false;
-
-    if (!Resample || m_fb.is_complete())
-    {
-        copy_to_frame(m_fb, frame);
-    }
-    else
-    {
-        render_to_frame_resample(frame);
-    }
-
-    print_statistics(frame);
+    do_render_to_frame(frame);
 }
 
-void ProgressiveFrameBuffer::copy_to_frame(
-    const AccumulationFrameBuffer&  fb,
-    Frame&                          frame)
+void ProgressiveFrameBuffer::try_render_to_frame(Frame& frame)
 {
-    const CanvasProperties& frame_props = frame.properties();
-
-    assert(frame_props.m_canvas_width == fb.get_width());
-    assert(frame_props.m_canvas_height == fb.get_height());
-    assert(frame_props.m_channel_count == 4);
-
-    for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
+    if (m_spinlock.try_lock())
     {
-        for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
-        {
-            Tile& tile = frame.tile(tx, ty);
+        do_render_to_frame(frame);
 
-            const size_t x = tx * frame_props.m_tile_width;
-            const size_t y = ty * frame_props.m_tile_height;
-
-            copy_to_frame_tile(fb, tile, x, y, tx, ty);
-        }
-    }
-}
-
-void ProgressiveFrameBuffer::copy_to_frame_tile(
-    const AccumulationFrameBuffer&  fb,
-    Tile&                           tile,
-    const size_t                    origin_x,
-    const size_t                    origin_y,
-    const size_t                    tile_x,
-    const size_t                    tile_y)
-{
-    const size_t tile_width = tile.get_width();
-    const size_t tile_height = tile.get_height();
-
-    for (size_t y = 0; y < tile_height; ++y)
-    {
-        for (size_t x = 0; x < tile_width; ++x)
-        {
-            const Color4f color =
-                fb.get_pixel(
-                    origin_x + x,
-                    origin_y + y);
-
-            tile.set_pixel(x, y, color);
-        }
+        m_spinlock.unlock();
     }
 }
 
@@ -190,15 +151,67 @@ void ProgressiveFrameBuffer::deallocate_mipmaps()
     m_mipmaps.clear();
 }
 
-inline void ProgressiveFrameBuffer::store_sample(const Sample& sample)
+namespace
 {
-    const double fx = (0.5 + sample.m_position.x) * m_fb.get_width();
-    const double fy = (0.5 - sample.m_position.y) * m_fb.get_height();
+    void copy_to_frame_tile(
+        const AccumulationFrameBuffer&  fb,
+        Tile&                           tile,
+        const size_t                    origin_x,
+        const size_t                    origin_y,
+        const size_t                    tile_x,
+        const size_t                    tile_y)
+    {
+        const size_t tile_width = tile.get_width();
+        const size_t tile_height = tile.get_height();
 
-    const size_t x = truncate<size_t>(fx);
-    const size_t y = truncate<size_t>(fy);
+        for (size_t y = 0; y < tile_height; ++y)
+        {
+            for (size_t x = 0; x < tile_width; ++x)
+            {
+                const Color4f color =
+                    fb.get_pixel(
+                        origin_x + x,
+                        origin_y + y);
 
-    m_fb.add_pixel(x, y, sample.m_color);
+                tile.set_pixel(x, y, color);
+            }
+        }
+    }
+
+    void copy_to_frame(
+        const AccumulationFrameBuffer&  fb,
+        Frame&                          frame)
+    {
+        const CanvasProperties& frame_props = frame.properties();
+
+        assert(frame_props.m_canvas_width == fb.get_width());
+        assert(frame_props.m_canvas_height == fb.get_height());
+        assert(frame_props.m_channel_count == 4);
+
+        for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
+        {
+            for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
+            {
+                Tile& tile = frame.tile(tx, ty);
+
+                const size_t x = tx * frame_props.m_tile_width;
+                const size_t y = ty * frame_props.m_tile_height;
+
+                copy_to_frame_tile(fb, tile, x, y, tx, ty);
+            }
+        }
+    }
+}
+
+void ProgressiveFrameBuffer::do_render_to_frame(Frame& frame)
+{
+    const bool Resample = false;
+
+    if (!Resample || m_fb.is_complete())
+        copy_to_frame(m_fb, frame);
+    else render_to_frame_resample(frame);
+
+    print_statistics(frame);
 }
 
 void ProgressiveFrameBuffer::render_to_frame_resample(Frame& frame) const
@@ -299,7 +312,7 @@ void ProgressiveFrameBuffer::print_statistics(const Frame& frame)
 
     if (elapsed_seconds >= 1.0)
     {
-        const size_t rendered_samples = m_sample_count - m_last_sample_count;
+        const uint64 rendered_samples = m_sample_count - m_last_sample_count;
 
         const double average_luminance = frame.compute_average_luminance();
 
@@ -307,7 +320,7 @@ void ProgressiveFrameBuffer::print_statistics(const Frame& frame)
             "%s samples in the progressive framebuffer (%s samples/pixel, %s samples/second, "
             "average luminance is %s)",
             pretty_uint(m_sample_count).c_str(),
-            pretty_ratio(m_sample_count, m_fb.get_pixel_count()).c_str(),
+            pretty_ratio(m_sample_count, static_cast<uint64>(m_fb.get_pixel_count())).c_str(),
             pretty_ratio(static_cast<double>(rendered_samples), elapsed_seconds).c_str(),
             pretty_scalar(average_luminance, 6).c_str());
 

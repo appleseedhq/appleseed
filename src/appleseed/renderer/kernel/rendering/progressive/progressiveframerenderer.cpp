@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/progressive/progressiveframebuffer.h"
+#include "renderer/kernel/rendering/progressive/samplecounter.h"
 #include "renderer/kernel/rendering/progressive/samplegenerator.h"
 #include "renderer/kernel/rendering/progressive/samplegeneratorjob.h"
 #include "renderer/kernel/rendering/framerendererbase.h"
@@ -75,6 +76,7 @@ namespace
             const ParamArray&       params)
           : m_frame(frame)
           , m_params(params)
+          , m_sample_counter(m_params.m_max_sample_count)
         {
             // We must have a renderer factory, but it's OK not to have a callback factory.
             assert(renderer_factory);
@@ -128,8 +130,6 @@ namespace
         virtual void render()
         {
             start_rendering();
-
-            // Note that, in the case of progressive rendering, this will never return.
             m_job_queue.wait_until_completion();
         }
 
@@ -139,6 +139,7 @@ namespace
             assert(!is_rendering());
 
             m_framebuffer->clear();
+            m_sample_counter.clear();
 
             // Create sample generators, one per rendering thread.
             assert(m_sample_generators.empty());
@@ -160,11 +161,12 @@ namespace
                         m_frame,
                         *m_framebuffer.get(),
                         *m_sample_generators[i],
+                        m_sample_counter,
                         m_tile_callbacks[i],
                         m_job_queue,
-                        i,
-                        m_params.m_thread_count,
-                        0));    // pass number
+                        i,                              // job index
+                        m_params.m_thread_count,        // job count
+                        0));                            // pass number
             }
 
             // Start job execution.
@@ -197,12 +199,12 @@ namespace
         struct Parameters
         {
             const size_t    m_thread_count;         // number of rendering threads
-            const size_t    m_samples_per_pass;     // number of samples added per pass, per pixel, when oversampling
+            const uint64    m_max_sample_count;     // maximum total number of samples to store in the framebuffer
 
             // Constructor, extract parameters.
             explicit Parameters(const ParamArray& params)
               : m_thread_count(FrameRendererBase::get_rendering_thread_count(params))
-              , m_samples_per_pass(params.get_optional<size_t>("samples_per_pass", 1))
+              , m_max_sample_count(params.get_optional<uint64>("max_samples", numeric_limits<uint64>::max()))
             {
             }
         };
@@ -218,6 +220,7 @@ namespace
         TileCallbackVector                  m_tile_callbacks;
 
         auto_ptr<ProgressiveFrameBuffer>    m_framebuffer;
+        SampleCounter                       m_sample_counter;
     };
 }
 
@@ -226,7 +229,6 @@ namespace
 // ProgressiveFrameRendererFactory class implementation.
 //
 
-// Constructor.
 ProgressiveFrameRendererFactory::ProgressiveFrameRendererFactory(
     Frame&                  frame,
     ISampleRendererFactory* renderer_factory,
@@ -239,13 +241,11 @@ ProgressiveFrameRendererFactory::ProgressiveFrameRendererFactory(
 {
 }
 
-// Delete this instance.
 void ProgressiveFrameRendererFactory::release()
 {
     delete this;
 }
 
-// Return a new progressive frame renderer instance.
 IFrameRenderer* ProgressiveFrameRendererFactory::create()
 {
     return
@@ -256,7 +256,6 @@ IFrameRenderer* ProgressiveFrameRendererFactory::create()
             m_params);
 }
 
-// Return a new progressive frame renderer instance.
 IFrameRenderer* ProgressiveFrameRendererFactory::create(
     Frame&                  frame,
     ISampleRendererFactory* renderer_factory,
