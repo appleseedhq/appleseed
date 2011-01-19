@@ -792,6 +792,8 @@ source_group("renderer\\kernel\\lighting" FILES
 )
 
 set(renderer_kernel_rendering_debug_sources
+    renderer/kernel/rendering/debug/blanksamplerenderer.cpp
+    renderer/kernel/rendering/debug/blanksamplerenderer.h
     renderer/kernel/rendering/debug/blanktilerenderer.cpp
     renderer/kernel/rendering/debug/blanktilerenderer.h
     renderer/kernel/rendering/debug/debugtilerenderer.cpp
