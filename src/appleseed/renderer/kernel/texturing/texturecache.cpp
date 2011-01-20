@@ -107,7 +107,6 @@ namespace
     }
 }
 
-// Constructor.
 TextureCache::TextureCache(
     const Scene&    scene,
     const size_t    memory_limit)
@@ -116,7 +115,6 @@ TextureCache::TextureCache(
 {
 }
 
-// Destructor.
 TextureCache::~TextureCache()
 {
     const string combined_stats =
@@ -149,7 +147,6 @@ TextureCache::~TextureCache()
 // TextureCache::TileSwapper class implementation.
 //
 
-// Constructor.
 TextureCache::TileSwapper::TileSwapper(
     const Scene&    scene,
     const size_t    memory_limit)
@@ -159,7 +156,6 @@ TextureCache::TileSwapper::TileSwapper(
     assert(m_memory_limit > 0);
 }
 
-// Load a cache line.
 void TextureCache::TileSwapper::load(const TileKey& key, TilePtr& tile) const
 {
     // Fetch the texture container.
@@ -202,7 +198,6 @@ void TextureCache::TileSwapper::load(const TileKey& key, TilePtr& tile) const
     }
 }
 
-// Unload a cache line.
 void TextureCache::TileSwapper::unload(const TileKey& key, TilePtr& tile) const
 {
     // Fetch the texture container.
@@ -228,7 +223,6 @@ void TextureCache::TileSwapper::unload(const TileKey& key, TilePtr& tile) const
     texture->unload_tile(key.m_tile_x, key.m_tile_y, tile);
 }
 
-// Return true if the cache is full, false otherwise.
 bool TextureCache::TileSwapper::is_full(
     const size_t    element_count,
     const size_t    memory_size) const
