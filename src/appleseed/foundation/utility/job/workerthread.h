@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/utility/job/abortswitch.h"
 
 // Standard headers.
 #include <cstddef>
@@ -90,7 +91,8 @@ class WorkerThread
     Logger&             m_logger;
     JobQueue&           m_job_queue;
     const bool          m_keep_running;
-    volatile bool       m_terminate;
+
+    AbortSwitch         m_abort_switch;
     ThreadFunc          m_thread_func;
     boost::thread*      m_thread;
 

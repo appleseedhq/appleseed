@@ -523,6 +523,7 @@ source_group("foundation\\utility\\filter" FILES
 )
 
 set(foundation_utility_job_sources
+    foundation/utility/job/abortswitch.h
     foundation/utility/job/ijob.h
     foundation/utility/job/jobmanager.cpp
     foundation/utility/job/jobmanager.h

@@ -58,7 +58,6 @@ WorkerThread::WorkerThread(
   , m_logger(logger)
   , m_job_queue(job_queue)
   , m_keep_running(keep_running)
-  , m_terminate(false)
   , m_thread_func(*this)
   , m_thread(0)
 {
@@ -75,8 +74,7 @@ void WorkerThread::start()
     if (m_thread)
         return;
 
-    m_terminate = false;
-
+    m_abort_switch.clear();
     m_thread = new thread(m_thread_func);
 }
 
@@ -86,7 +84,7 @@ void WorkerThread::stop()
     if (!m_thread)
         return;
 
-    m_terminate = true;
+    m_abort_switch.abort();
     m_thread->join();
 
     delete m_thread;
@@ -95,7 +93,7 @@ void WorkerThread::stop()
 
 void WorkerThread::run()
 {
-    while (!m_terminate)
+    while (!m_abort_switch.is_aborted())
     {
         // Acquire a job.
         const JobQueue::JobInfo job_info =

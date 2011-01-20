@@ -29,8 +29,11 @@
 // appleseed.foundation headers.
 #include "foundation/platform/timer.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/job/abortswitch.h"
+#include "foundation/utility/job/ijob.h"
+#include "foundation/utility/job/jobmanager.h"
+#include "foundation/utility/job/jobqueue.h"
 #include "foundation/utility/job/workerthread.h"
-#include "foundation/utility/job.h"
 #include "foundation/utility/log.h"
 #include "foundation/utility/test.h"
 
@@ -38,10 +41,40 @@
 #include <cstddef>
 #include <exception>
 
+using namespace foundation;
+using namespace std;
+
+TEST_SUITE(Foundation_Utility_Job_AbortSwitch)
+{
+    TEST_CASE(Constructor_ClearsAbortFlag)
+    {
+        AbortSwitch s;
+
+        EXPECT_FALSE(s.is_aborted());
+    }
+
+    TEST_CASE(Abort_SetsAbortFlag)
+    {
+        AbortSwitch s;
+
+        s.abort();
+
+        EXPECT_TRUE(s.is_aborted());
+    }
+
+    TEST_CASE(Clear_ClearsAbortFlag)
+    {
+        AbortSwitch s;
+        s.abort();
+
+        s.clear();
+
+        EXPECT_FALSE(s.is_aborted());
+    }
+}
+
 TEST_SUITE(Foundation_Utility_Job_JobQueue)
 {
-    using namespace foundation;
-
     struct EmptyJob
       : public IJob
     {
@@ -199,8 +232,6 @@ TEST_SUITE(Foundation_Utility_Job_JobQueue)
 
 TEST_SUITE(Foundation_Utility_Job_JobManager)
 {
-    using namespace foundation;
-
     struct FixtureJobManager
     {
         Logger      logger;
@@ -306,9 +337,6 @@ TEST_SUITE(Foundation_Utility_Job_JobManager)
 
 TEST_SUITE(Foundation_Utility_Job_WorkerThread)
 {
-    using namespace foundation;
-    using namespace std;
-
     struct JobThrowingBadAllocException
       : public IJob
     {
