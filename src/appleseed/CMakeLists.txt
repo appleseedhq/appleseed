@@ -928,6 +928,15 @@ source_group("renderer\\kernel\\volume" FILES
     ${renderer_kernel_volume_sources}
 )
 
+set(renderer_meta_benchmarks_sources
+)
+list(APPEND appleseed_sources
+    ${renderer_meta_benchmarks_sources}
+)
+source_group("renderer\\meta\\benchmarks" FILES
+    ${renderer_meta_benchmarks_sources}
+)
+
 set(renderer_meta_templates_sources
     renderer/meta/templates/renderer_benchmark_template.cpp
     renderer/meta/templates/renderer_component_template.cpp
