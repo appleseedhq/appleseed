@@ -36,11 +36,11 @@
 #include "foundation/utility/job.h"
 
 // Forward declarations.
-namespace renderer  { class Frame; }
-namespace renderer  { class ITileCallback; }
-namespace renderer  { class ProgressiveFrameBuffer; }
-namespace renderer  { class SampleCounter; }
-namespace renderer  { class SampleGenerator; }
+namespace renderer      { class Frame; }
+namespace renderer      { class ITileCallback; }
+namespace renderer      { class ProgressiveFrameBuffer; }
+namespace renderer      { class SampleCounter; }
+namespace renderer      { class SampleGenerator; }
 
 namespace renderer
 {
@@ -59,7 +59,8 @@ class SampleGeneratorJob
         foundation::JobQueue&       job_queue,
         const size_t                job_index,
         const size_t                job_count,
-        const size_t                pass);
+        const size_t                pass,
+        foundation::AbortSwitch&    abort_switch);
 
     // Execute the job.
     virtual void execute(const size_t thread_index);
@@ -74,6 +75,7 @@ class SampleGeneratorJob
     const size_t                    m_job_index;
     const size_t                    m_job_count;
     const size_t                    m_pass;
+    foundation::AbortSwitch&        m_abort_switch;
 };
 
 }       // namespace renderer

@@ -38,6 +38,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/rng.h"
+#include "foundation/utility/job.h"
 #include "foundation/utility/memory.h"
 
 using namespace foundation;
@@ -71,21 +72,16 @@ SampleGenerator::SampleGenerator(
 
 void SampleGenerator::generate_samples(
     const size_t                sample_count,
-    ProgressiveFrameBuffer&     framebuffer)
+    ProgressiveFrameBuffer&     framebuffer,
+    AbortSwitch&                abort_switch)
 {
     assert(sample_count > 0);
 
     ensure_size(m_samples, sample_count);
 
-    generate_sample_vector(0, sample_count);
-
-    framebuffer.store_samples(sample_count, &m_samples[0]);
-}
-
-void SampleGenerator::generate_sample_vector(const size_t index, const size_t count)
-{
-    Sample* RESTRICT sample_ptr = &m_samples[index];
-    Sample* RESTRICT sample_end = sample_ptr + count;
+    Sample* RESTRICT sample_org = &m_samples[0];
+    Sample* RESTRICT sample_ptr = sample_org;
+    Sample* RESTRICT sample_end = sample_ptr + sample_count;
 
     while (sample_ptr < sample_end)
     {
@@ -97,8 +93,14 @@ void SampleGenerator::generate_sample_vector(const size_t index, const size_t co
         {
             m_current_batch_size = 0;
             m_sequence_index += m_stride;
+
+            if (abort_switch.is_aborted())
+                break;
         }
     }
+
+    // Only store those samples that were effectively computed.
+    framebuffer.store_samples(sample_ptr - sample_org, sample_org);
 }
 
 void SampleGenerator::generate_sample(Sample& sample)

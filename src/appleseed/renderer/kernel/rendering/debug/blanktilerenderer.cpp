@@ -36,6 +36,9 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/tile.h"
 
+// Forward declarations.
+namespace foundation    { class AbortSwitch; }
+
 using namespace foundation;
 using namespace std;
 
@@ -62,7 +65,8 @@ namespace
         virtual void render_tile(
             const Frame&    frame,
             const size_t    tile_x,
-            const size_t    tile_y)
+            const size_t    tile_y,
+            AbortSwitch&    abort_switch)
         {
             assert(tile_x < frame.properties().m_tile_count_x);
             assert(tile_y < frame.properties().m_tile_count_y);

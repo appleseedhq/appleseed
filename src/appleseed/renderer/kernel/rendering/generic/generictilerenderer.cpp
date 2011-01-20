@@ -43,6 +43,7 @@
 #include "foundation/math/qmc.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/breakpoint.h"
+#include "foundation/utility/job.h"
 
 // Standard headers.
 #include <vector>
@@ -134,7 +135,8 @@ namespace
         virtual void render_tile(
             const Frame&    frame,
             const size_t    tile_x,
-            const size_t    tile_y)
+            const size_t    tile_y,
+            AbortSwitch&    abort_switch)
         {
             // Retrieve frame properties.
             const CanvasProperties& properties = frame.properties();
@@ -194,57 +196,60 @@ namespace
                 // Initialize the pixel color.
                 Color4f pixel_color(0.0f);
 
-                // Render, filter and accumulate samples.
-                const size_t base_sx = ix * m_sqrt_max_samples;
-                const size_t base_sy = iy * m_sqrt_max_samples;
-                for (size_t sy = 0; sy < m_sqrt_max_samples; ++sy)
+                if (!abort_switch.is_aborted())
                 {
-                    for (size_t sx = 0; sx < m_sqrt_max_samples; ++sx)
+                    // Render, filter and accumulate samples.
+                    const size_t base_sx = ix * m_sqrt_max_samples;
+                    const size_t base_sy = iy * m_sqrt_max_samples;
+                    for (size_t sy = 0; sy < m_sqrt_max_samples; ++sy)
                     {
-                        // Compute the sample position in sample space and the instance number.
-                        Vector2d sample_position;
-                        size_t instance;
-                        m_pixel_sampler.sample(
-                            base_sx + sx,
-                            base_sy + sy,
-                            sample_position,
-                            instance);
+                        for (size_t sx = 0; sx < m_sqrt_max_samples; ++sx)
+                        {
+                            // Compute the sample position in sample space and the instance number.
+                            Vector2d sample_position;
+                            size_t instance;
+                            m_pixel_sampler.sample(
+                                base_sx + sx,
+                                base_sy + sy,
+                                sample_position,
+                                instance);
 
-                        // Transform the sample position from sample space to NDC.
-                        sample_position[0] = sample_position[0] * m_rcp_sample_canvas_width - 0.5;
-                        sample_position[1] = 0.5 - sample_position[1] * m_rcp_sample_canvas_height;
+                            // Transform the sample position from sample space to NDC.
+                            sample_position[0] = sample_position[0] * m_rcp_sample_canvas_width - 0.5;
+                            sample_position[1] = 0.5 - sample_position[1] * m_rcp_sample_canvas_height;
 
-                        // Create a sampling context.
-                        SamplingContext sampling_context(
-                            m_rng,
-                            2,              // number of dimensions
-                            0,              // number of samples
-                            instance);      // initial instance number
+                            // Create a sampling context.
+                            SamplingContext sampling_context(
+                                m_rng,
+                                2,              // number of dimensions
+                                0,              // number of samples
+                                instance);      // initial instance number
 
-                        // Render the sample.
-                        ShadingResult shading_result;
-                        m_sample_renderer->render_sample(
-                            sampling_context,
-                            sample_position,
-                            shading_result);
+                            // Render the sample.
+                            ShadingResult shading_result;
+                            m_sample_renderer->render_sample(
+                                sampling_context,
+                                sample_position,
+                                shading_result);
 
-                        // todo: implement proper sample filtering.
-                        // todo: detect invalid sample values (NaN, infinity, etc.), set
-                        // them to black and mark them as faulty in the diagnostic map.
+                            // todo: implement proper sample filtering.
+                            // todo: detect invalid sample values (NaN, infinity, etc.), set
+                            // them to black and mark them as faulty in the diagnostic map.
 
-                        // Transform the sample to the linear RGB color space.
-                        shading_result.transform_to_linear_rgb(lighting_conditions);
+                            // Transform the sample to the linear RGB color space.
+                            shading_result.transform_to_linear_rgb(lighting_conditions);
 
-                        // Accumulate the sample.
-                        pixel_color[0] += shading_result.m_color[0];
-                        pixel_color[1] += shading_result.m_color[1];
-                        pixel_color[2] += shading_result.m_color[2];
-                        pixel_color[3] += shading_result.m_alpha[0];
+                            // Accumulate the sample.
+                            pixel_color[0] += shading_result.m_color[0];
+                            pixel_color[1] += shading_result.m_color[1];
+                            pixel_color[2] += shading_result.m_color[2];
+                            pixel_color[3] += shading_result.m_alpha[0];
+                        }
                     }
-                }
 
-                // Finish computing the pixel color.
-                pixel_color *= m_rcp_sample_count;
+                    // Finish computing the pixel color.
+                    pixel_color *= m_rcp_sample_count;
+                }
 
                 // Store the pixel color into the tile.
                 tile.set_pixel(tx, ty, pixel_color);

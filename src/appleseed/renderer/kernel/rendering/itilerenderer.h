@@ -33,6 +33,7 @@
 #include "renderer/global/global.h"
 
 // Forward declarations.
+namespace foundation    { class AbortSwitch; }
 namespace renderer      { class Frame; }
 
 namespace renderer
@@ -48,9 +49,10 @@ class RENDERERDLL ITileRenderer
   public:
     // Render a tile.
     virtual void render_tile(
-        const Frame&    frame,
-        const size_t    tile_x,
-        const size_t    tile_y) = 0;
+        const Frame&                frame,
+        const size_t                tile_x,
+        const size_t                tile_y,
+        foundation::AbortSwitch&    abort_switch) = 0;
 };
 
 

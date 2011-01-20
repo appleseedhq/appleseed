@@ -125,6 +125,8 @@ namespace
             assert(!is_rendering());
             assert(!m_job_queue.has_scheduled_or_running_jobs());
 
+            m_abort_switch.clear();
+
             // Create tile jobs.
             TileJobFactory::TileJobVector tile_jobs;
             m_tile_job_factory.create(
@@ -132,7 +134,8 @@ namespace
                 m_params.m_tile_ordering,
                 m_tile_renderers,
                 m_tile_callbacks,
-                tile_jobs);
+                tile_jobs,
+                m_abort_switch);
 
             // Schedule tile jobs.
             for (const_each<TileJobFactory::TileJobVector> i = tile_jobs; i; ++i)
@@ -145,6 +148,8 @@ namespace
         // Stop rendering.
         virtual void stop_rendering()
         {
+            m_abort_switch.abort();
+
             // Stop job execution.
             m_job_manager->stop();
 
@@ -209,6 +214,7 @@ namespace
 
         JobQueue                    m_job_queue;
         auto_ptr<JobManager>        m_job_manager;
+        AbortSwitch                 m_abort_switch;
 
         vector<ITileRenderer*>      m_tile_renderers;   // tile renderers, one per thread
         vector<ITileCallback*>      m_tile_callbacks;   // tile callbacks, none or one per thread

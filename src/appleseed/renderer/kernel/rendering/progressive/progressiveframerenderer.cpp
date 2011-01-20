@@ -137,7 +137,9 @@ namespace
         virtual void start_rendering()
         {
             assert(!is_rendering());
+            assert(!m_job_queue.has_scheduled_or_running_jobs());
 
+            m_abort_switch.clear();
             m_framebuffer->clear();
             m_sample_counter.clear();
 
@@ -166,7 +168,8 @@ namespace
                         m_job_queue,
                         i,                              // job index
                         m_params.m_thread_count,        // job count
-                        0));                            // pass number
+                        0,                              // pass number
+                        m_abort_switch));
             }
 
             // Start job execution.
@@ -176,6 +179,8 @@ namespace
         // Stop rendering.
         virtual void stop_rendering()
         {
+            m_abort_switch.abort();
+
             // Stop job execution.
             m_job_manager->stop();
 
@@ -214,6 +219,7 @@ namespace
 
         JobQueue                            m_job_queue;
         auto_ptr<JobManager>                m_job_manager;
+        AbortSwitch                         m_abort_switch;
 
         SampleRendererVector                m_sample_renderers;
         SampleGeneratorVector               m_sample_generators;

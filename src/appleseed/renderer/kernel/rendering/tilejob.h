@@ -63,7 +63,8 @@ class TileJob
         const TileCallbackVector&   tile_callbacks,
         const Frame&                frame,
         const size_t                tile_x,
-        const size_t                tile_y);
+        const size_t                tile_y,
+        foundation::AbortSwitch&    abort_switch);
 
     // Execute the job.
     virtual void execute(const size_t thread_index);
@@ -74,6 +75,7 @@ class TileJob
     const Frame&                    m_frame;
     const size_t                    m_tile_x;
     const size_t                    m_tile_y;
+    foundation::AbortSwitch&        m_abort_switch;
 };
 
 }       // namespace renderer

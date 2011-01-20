@@ -37,6 +37,7 @@
 #include <vector>
 
 // Forward declarations.
+namespace foundation    { class AbortSwitch; }
 namespace foundation    { class LightingConditions; }
 namespace foundation    { class MersenneTwister; }
 namespace renderer      { class Frame; }
@@ -60,7 +61,8 @@ class SampleGenerator
     // Generate @sample_count samples and store them in @framebuffer.
     void generate_samples(
         const size_t                        sample_count,
-        ProgressiveFrameBuffer&             framebuffer);
+        ProgressiveFrameBuffer&             framebuffer,
+        foundation::AbortSwitch&            abort_switch);
 
   private:
     Frame&                                  m_frame;
@@ -71,8 +73,6 @@ class SampleGenerator
     size_t                                  m_current_batch_size;
     std::vector<Sample>                     m_samples;
     foundation::MersenneTwister             m_rng;
-
-    void generate_sample_vector(const size_t index, const size_t count);
 
     void generate_sample(Sample& sample);
 };

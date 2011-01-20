@@ -40,6 +40,7 @@
 #include <vector>
 
 // Forward declarations.
+namespace foundation    { class AbortSwitch; }
 namespace foundation    { class CanvasProperties; }
 namespace renderer      { class Frame; }
 namespace renderer      { class TileJob; }
@@ -71,7 +72,8 @@ class TileJobFactory
         const TileOrdering                  tile_ordering,
         const TileJob::TileRendererVector&  tile_renderers,
         const TileJob::TileCallbackVector&  tile_callbacks,
-        TileJobVector&                      tile_jobs);
+        TileJobVector&                      tile_jobs,
+        foundation::AbortSwitch&            abort_switch);
 
   private:
     foundation::MersenneTwister             m_rng;

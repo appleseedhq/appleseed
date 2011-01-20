@@ -46,13 +46,13 @@ namespace renderer
 // TileJobFactory class implementation.
 //
 
-// Create tile jobs for a given frame.
 void TileJobFactory::create(
     const Frame&                        frame,
     const TileOrdering                  tile_ordering,
     const TileJob::TileRendererVector&  tile_renderers,
     const TileJob::TileCallbackVector&  tile_callbacks,
-    TileJobVector&                      tile_jobs)
+    TileJobVector&                      tile_jobs,
+    AbortSwitch&                        abort_switch)
 {
     // Retrieve frame properties.
     const CanvasProperties& props = frame.properties();
@@ -81,7 +81,8 @@ void TileJobFactory::create(
                 tile_callbacks,
                 frame,
                 tile_x,
-                tile_y));
+                tile_y,
+                abort_switch));
     }
 }
 

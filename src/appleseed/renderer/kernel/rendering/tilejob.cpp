@@ -48,18 +48,19 @@ namespace renderer
 // TileJob class implementation.
 //
 
-// Constructor.
 TileJob::TileJob(
     const TileRendererVector&   tile_renderers,
     const TileCallbackVector&   tile_callbacks,
     const Frame&                frame,
     const size_t                tile_x,
-    const size_t                tile_y)
+    const size_t                tile_y,
+    AbortSwitch&                abort_switch)
   : m_tile_renderers(tile_renderers)
   , m_tile_callbacks(tile_callbacks)
   , m_frame(frame)
   , m_tile_x(tile_x)
   , m_tile_y(tile_y)
+  , m_abort_switch(abort_switch)
 {
     // Either there is no tile callback, or there is the same number
     // of tile callbacks and rendering threads.
@@ -68,7 +69,6 @@ TileJob::TileJob(
         || m_tile_callbacks.size() == tile_renderers.size());
 }
 
-// Execute the job.
 void TileJob::execute(const size_t thread_index)
 {
     assert(thread_index < m_tile_renderers.size());
@@ -94,7 +94,12 @@ void TileJob::execute(const size_t thread_index)
     }
 
     // Render the tile.
-    m_tile_renderers[thread_index]->render_tile(m_frame, m_tile_x, m_tile_y);
+    ITileRenderer* tile_renderer = m_tile_renderers[thread_index];
+    tile_renderer->render_tile(
+        m_frame,
+        m_tile_x,
+        m_tile_y,
+        m_abort_switch);
 
     // Call the post-render tile callback.
     if (tile_callback)

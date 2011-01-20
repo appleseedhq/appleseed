@@ -78,7 +78,8 @@ SampleGeneratorJob::SampleGeneratorJob(
     JobQueue&               job_queue,
     const size_t            job_index,
     const size_t            job_count,
-    const size_t            pass)
+    const size_t            pass,
+    AbortSwitch&            abort_switch)
   : m_frame(frame)
   , m_framebuffer(framebuffer)
   , m_sample_generator(sample_generator)
@@ -88,6 +89,7 @@ SampleGeneratorJob::SampleGeneratorJob(
   , m_job_index(job_index)
   , m_job_count(job_count)
   , m_pass(pass)
+  , m_abort_switch(abort_switch)
 {
 }
 
@@ -108,7 +110,10 @@ void SampleGeneratorJob::execute(const size_t thread_index)
             m_framebuffer.get_height());
     }
 
-    m_sample_generator.generate_samples(sample_count, m_framebuffer);
+    m_sample_generator.generate_samples(
+        sample_count,
+        m_framebuffer,
+        m_abort_switch);
 
     if (!RoundRobinRender || m_pass % m_job_count == m_job_index)
         m_framebuffer.try_render_to_frame(m_frame);
@@ -116,17 +121,21 @@ void SampleGeneratorJob::execute(const size_t thread_index)
     if (m_tile_callback)
         m_tile_callback->post_render(m_frame);
 
-    m_job_queue.schedule(
-        new SampleGeneratorJob(
-            m_frame,
-            m_framebuffer,
-            m_sample_generator,
-            m_sample_counter,
-            m_tile_callback,
-            m_job_queue,
-            m_job_index,
-            m_job_count,
-            m_pass + 1));
+    if (!m_abort_switch.is_aborted())
+    {
+        m_job_queue.schedule(
+            new SampleGeneratorJob(
+                m_frame,
+                m_framebuffer,
+                m_sample_generator,
+                m_sample_counter,
+                m_tile_callback,
+                m_job_queue,
+                m_job_index,
+                m_job_count,
+                m_pass + 1,
+                m_abort_switch));
+    }
 }
 
 }   // namespace renderer
