@@ -27,7 +27,6 @@
 //
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/benchmark.h"

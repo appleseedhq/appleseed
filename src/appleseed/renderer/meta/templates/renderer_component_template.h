@@ -29,9 +29,6 @@
 #ifndef APPLESEED_RENDERER_category_module_file_H
 #define APPLESEED_RENDERER_category_module_file_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
-
 namespace renderer
 {
 
