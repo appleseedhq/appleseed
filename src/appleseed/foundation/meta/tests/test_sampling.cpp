@@ -228,7 +228,7 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext_DirectIlluminationSimulat
     }
 }
 
-TEST_SUITE(Foundation_Math_Sampling_Distribution)
+TEST_SUITE(Foundation_Math_Sampling_Mappings)
 {
     template <typename SamplingFunction>
     void draw_sampling_function(const string& filename, SamplingFunction& sampling_function)

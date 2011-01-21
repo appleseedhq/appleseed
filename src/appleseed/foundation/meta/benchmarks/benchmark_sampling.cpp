@@ -68,7 +68,7 @@ BENCHMARK_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
     }
 }
 
-BENCHMARK_SUITE(Foundation_Math_Sampling_Distribution)
+BENCHMARK_SUITE(Foundation_Math_Sampling_Mappings)
 {
     const size_t SampleCount = 16;
 

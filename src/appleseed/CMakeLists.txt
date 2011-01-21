@@ -193,7 +193,7 @@ source_group("foundation\\math\\rng" FILES
 )
 
 set(foundation_math_sampling_sources
-    foundation/math/sampling/distribution.h
+    foundation/math/sampling/mappings.h
     foundation/math/sampling/qmcsamplingcontext.h
     foundation/math/sampling/rngsamplingcontext.h
     foundation/math/sampling/rqmcsamplingcontext.h

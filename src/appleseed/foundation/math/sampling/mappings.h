@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_SAMPLING_DISTRIBUTION_H
-#define APPLESEED_FOUNDATION_MATH_SAMPLING_DISTRIBUTION_H
+#ifndef APPLESEED_FOUNDATION_MATH_SAMPLING_MAPPINGS_H
+#define APPLESEED_FOUNDATION_MATH_SAMPLING_MAPPINGS_H
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
@@ -45,6 +45,7 @@ namespace foundation
 //
 //   http://www.cs.kuleuven.ac.be/~phil/GI/TotalCompendium.pdf
 //   http://jgt.akpeters.com/papers/ShirleyChiu97/
+//   http://psgraphics.blogspot.com/2011/01/improved-code-for-concentric-map.html
 //
 
 
@@ -108,18 +109,14 @@ Vector<T, 3> sample_triangle_uniform(const Vector<T, 2>& s);
 
 
 //
-// Sphere sampling functions implementation.
+// Implementation.
 //
-
-// Check that a given 2-dimensional point is in [0,1)^2.
-#define FOUNDATION_CHECK_UNIT_SAMPLE(s)         \
-    assert(s[0] >= T(0.0) && s[0] < T(1.0));    \
-    assert(s[1] >= T(0.0) && s[1] < T(1.0))
 
 template <typename T>
 inline Vector<T, 3> sample_sphere_uniform(const Vector<T, 2>& s)
 {
-    FOUNDATION_CHECK_UNIT_SAMPLE(s);
+    assert(s[0] >= T(0.0) && s[0] < T(1.0));
+    assert(s[1] >= T(0.0) && s[1] < T(1.0));
 
     const T u = T(2.0) * T(Pi) * s[0];
     const T v = T(2.0) * std::sqrt(s[1] * (T(1.0) - s[1]));
@@ -134,15 +131,11 @@ inline Vector<T, 3> sample_sphere_uniform(const Vector<T, 2>& s)
     return d;
 }
 
-
-//
-// Hemisphere sampling functions implementation.
-//
-
 template <typename T>
 inline Vector<T, 3> sample_hemisphere_uniform(const Vector<T, 2>& s)
 {
-    FOUNDATION_CHECK_UNIT_SAMPLE(s);
+    assert(s[0] >= T(0.0) && s[0] < T(1.0));
+    assert(s[1] >= T(0.0) && s[1] < T(1.0));
 
     const T u = T(2.0) * T(Pi) * s[0];
     const T v = std::sqrt(T(1.0) - s[1] * s[1]);
@@ -160,7 +153,8 @@ inline Vector<T, 3> sample_hemisphere_uniform(const Vector<T, 2>& s)
 template <typename T>
 inline Vector<T, 3> sample_hemisphere_cosine(const Vector<T, 2>& s)
 {
-    FOUNDATION_CHECK_UNIT_SAMPLE(s);
+    assert(s[0] >= T(0.0) && s[0] < T(1.0));
+    assert(s[1] >= T(0.0) && s[1] < T(1.0));
 
     const T u = T(2.0) * T(Pi) * s[0];
     const T v = std::sqrt(T(1.0) - s[1]);
@@ -178,7 +172,8 @@ inline Vector<T, 3> sample_hemisphere_cosine(const Vector<T, 2>& s)
 template <typename T>
 inline Vector<T, 3> sample_hemisphere_cosine(const Vector<T, 2>& s, const T n)
 {
-    FOUNDATION_CHECK_UNIT_SAMPLE(s);
+    assert(s[0] >= T(0.0) && s[0] < T(1.0));
+    assert(s[1] >= T(0.0) && s[1] < T(1.0));
     assert(n >= T(0.0));
 
     const T u = T(2.0) * T(Pi) * s[0];
@@ -195,55 +190,36 @@ inline Vector<T, 3> sample_hemisphere_cosine(const Vector<T, 2>& s, const T n)
     return d;
 }
 
-
-//
-// Other sampling functions implementation.
-//
-
 template <typename T>
 inline Vector<T, 2> sample_circle_uniform(const T s)
 {
-    const T x = s * TwoPi;
-    return Vector<T, 2>(std::cos(x), std::sin(x));
+    assert(s >= T(0.0) && s < T(1.0));
+
+    const T phi = s * T(TwoPi);
+
+    return Vector<T, 2>(std::cos(phi), std::sin(phi));
 }
 
 template <typename T>
 inline Vector<T, 2> sample_disk_uniform(const Vector<T, 2>& s)
 {
-    FOUNDATION_CHECK_UNIT_SAMPLE(s);
+    assert(s[0] >= T(0.0) && s[0] < T(1.0));
+    assert(s[1] >= T(0.0) && s[1] < T(1.0));
 
-    const T a = T(2.0) * s[0] - T(1.0);     // (a,b) is now on [-1,1]^2
+    const T a = T(2.0) * s[0] - T(1.0);
     const T b = T(2.0) * s[1] - T(1.0);
 
     T phi, r;
 
-    if (a > -b)                             // region 1 or 2
+    if (a * a > b * b)
     {
-       if (a > b)                           // region 1, also |a| > |b|
-       {
-           r = a;
-           phi = T(Pi / 4.0) * (b / a);
-       }
-       else                                 // region 2, also |b| > |a|
-       {
-           r = b;
-           phi = T(Pi / 4.0) * (T(2.0) - (a / b));
-       }
+        r = a;
+        phi = T(Pi / 4.0) * (b / a);
     }
-    else                                    // region 3 or 4
+    else
     {
-       if (a < b)                           // region 3, also |a| >= |b|, a != 0
-       {
-            r = -a;
-            phi = T(Pi / 4.0) * (T(4.0) + (b / a));
-       }
-       else                                 // region 4, |b| >= |a|, but a==0 and b==0 could occur
-       {
-            r = -b;
-            if (b != T(0.0))
-                 phi = T(Pi / 4.0) * (T(6.0) - (a / b));
-            else phi = T(0.0);
-       }
+        r = b;
+        phi = T(Pi / 2.0) - T(Pi / 4.0) * (a / b);
     }
 
     return Vector<T, 2>(r * std::cos(phi), r * std::sin(phi));
@@ -252,14 +228,20 @@ inline Vector<T, 2> sample_disk_uniform(const Vector<T, 2>& s)
 template <typename T>
 inline Vector<T, 2> sample_disk_uniform_alt(const Vector<T, 2>& s)
 {
-    const T x = s[0] * TwoPi;
-    return std::sqrt(T(1.0) - s[1]) * Vector<T, 2>(std::cos(x), std::sin(x));
+    assert(s[0] >= T(0.0) && s[0] < T(1.0));
+    assert(s[1] >= T(0.0) && s[1] < T(1.0));
+
+    const T r = std::sqrt(T(1.0) - s[1]);
+    const T phi = s[0] * T(TwoPi);
+
+    return Vector<T, 2>(r * std::cos(phi), r * std::sin(phi));
 }
 
 template <typename T>
 inline Vector<T, 3> sample_triangle_uniform(const Vector<T, 2>& s)
 {
-    FOUNDATION_CHECK_UNIT_SAMPLE(s);
+    assert(s[0] >= T(0.0) && s[0] < T(1.0));
+    assert(s[1] >= T(0.0) && s[1] < T(1.0));
 
     const T sqrt_s0 = std::sqrt(s[0]);
 
@@ -273,8 +255,6 @@ inline Vector<T, 3> sample_triangle_uniform(const Vector<T, 2>& s)
     return b;
 }
 
-#undef FOUNDATION_CHECK_UNIT_SAMPLE
-
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_MATH_SAMPLING_DISTRIBUTION_H
+#endif  // !APPLESEED_FOUNDATION_MATH_SAMPLING_MAPPINGS_H
