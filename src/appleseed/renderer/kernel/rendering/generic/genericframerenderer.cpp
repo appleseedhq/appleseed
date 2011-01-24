@@ -78,7 +78,7 @@ namespace
                     global_logger(),
                     m_job_queue,
                     m_params.m_thread_count,
-                    false));        // don't keep threads alive if there's no more tile jobs
+                    false));        // don't keep threads alive if there's no more jobs
 
             // Instantiate tile renderers, one per rendering thread.
             for (size_t i = 0; i < m_params.m_thread_count; ++i)
