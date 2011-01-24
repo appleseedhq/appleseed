@@ -26,12 +26,12 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVEFRAMEBUFFER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVEFRAMEBUFFER_H
+#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_PROGRESSIVEFRAMEBUFFER_H
+#define APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_PROGRESSIVEFRAMEBUFFER_H
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
-#include "renderer/kernel/rendering/accumulationframebuffer.h"
+#include "renderer/kernel/rendering/progressive/accumulationframebuffer.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/thread.h"
@@ -117,4 +117,4 @@ inline size_t ProgressiveFrameBuffer::get_height() const
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVEFRAMEBUFFER_H
+#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_PROGRESSIVEFRAMEBUFFER_H
