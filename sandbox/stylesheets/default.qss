@@ -66,9 +66,7 @@ QWidget
 
 QMainWindow::separator
 {
-#ifdef __APPLE__
     background-color: DEFAULT_BACKGROUND_COLOR;
-#endif
     width: 5px;
     height: 5px;
 }
@@ -319,7 +317,7 @@ QMenu::right-arrow:selected
 
 QMenu::tearoff
 {
-    height: 10px;
+    height: 8px;
     background-color: SELECTED_BACKGROUND_COLOR;
 }
 
@@ -339,13 +337,18 @@ QToolBar
     border: BORDER_STYLE;
 }
 
-/* Does not work:
 QToolBar::separator
 {
-    margin-left: 10px;
-    margin-right: 10px;
+    width: 1px;
+    background-color: BORDER_COLOR;
+    margin: 4px 4px 4px 4px;
 }
-*/
+
+QToolBar::handle
+{
+    width: 5px;
+    background-color: SELECTED_BACKGROUND_COLOR;
+}
 
 QToolButton
 {
@@ -539,6 +542,11 @@ QTreeView::branch:has-children:closed:disabled
 QTreeView::branch:has-children:open:disabled
 {
     image: url(":/widgets/scrollbar_arrow_down_disabled.png");
+}
+
+QTreeView::branch:has-sibling
+{
+    background: DEFAULT_BACKGROUND_COLOR;
 }
 
 
