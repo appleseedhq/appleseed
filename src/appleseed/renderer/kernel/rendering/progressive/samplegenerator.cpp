@@ -30,9 +30,9 @@
 #include "samplegenerator.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/rendering/progressive/progressiveframebuffer.h"
-#include "renderer/kernel/rendering/progressive/sample.h"
 #include "renderer/kernel/rendering/isamplerenderer.h"
+#include "renderer/kernel/rendering/progressiveframebuffer.h"
+#include "renderer/kernel/rendering/sample.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/frame/frame.h"
 

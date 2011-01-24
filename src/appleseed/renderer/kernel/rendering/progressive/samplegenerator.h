@@ -31,7 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
-#include "renderer/kernel/rendering/progressive/sample.h"
+#include "renderer/kernel/rendering/sample.h"
 
 // Standard headers.
 #include <vector>

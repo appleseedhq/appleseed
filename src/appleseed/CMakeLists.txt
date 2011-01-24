@@ -829,15 +829,8 @@ source_group("renderer\\kernel\\rendering\\generic" FILES
 )
 
 set(renderer_kernel_rendering_progressive_sources
-    renderer/kernel/rendering/progressive/accumulationframebuffer.cpp
-    renderer/kernel/rendering/progressive/accumulationframebuffer.h
-    renderer/kernel/rendering/progressive/progressiveframebuffer.cpp
-    renderer/kernel/rendering/progressive/progressiveframebuffer.h
     renderer/kernel/rendering/progressive/progressiveframerenderer.cpp
     renderer/kernel/rendering/progressive/progressiveframerenderer.h
-    renderer/kernel/rendering/progressive/sample.h
-    renderer/kernel/rendering/progressive/samplecounter.cpp
-    renderer/kernel/rendering/progressive/samplecounter.h
     renderer/kernel/rendering/progressive/samplegenerator.cpp
     renderer/kernel/rendering/progressive/samplegenerator.h
     renderer/kernel/rendering/progressive/samplegeneratorjob.cpp
@@ -851,6 +844,8 @@ source_group("renderer\\kernel\\rendering\\progressive" FILES
 )
 
 set(renderer_kernel_rendering_sources
+    renderer/kernel/rendering/accumulationframebuffer.cpp
+    renderer/kernel/rendering/accumulationframebuffer.h
     renderer/kernel/rendering/defaultrenderercontroller.cpp
     renderer/kernel/rendering/defaultrenderercontroller.h
     renderer/kernel/rendering/framerendererbase.cpp
@@ -862,6 +857,11 @@ set(renderer_kernel_rendering_sources
     renderer/kernel/rendering/itilerenderer.h
     renderer/kernel/rendering/masterrenderer.cpp
     renderer/kernel/rendering/masterrenderer.h
+    renderer/kernel/rendering/progressiveframebuffer.cpp
+    renderer/kernel/rendering/progressiveframebuffer.h
+    renderer/kernel/rendering/sample.h
+    renderer/kernel/rendering/samplecounter.cpp
+    renderer/kernel/rendering/samplecounter.h
     renderer/kernel/rendering/tilecallbackbase.cpp
     renderer/kernel/rendering/tilecallbackbase.h
 )

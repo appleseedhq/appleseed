@@ -30,10 +30,10 @@
 #include "samplegeneratorjob.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/rendering/progressive/progressiveframebuffer.h"
-#include "renderer/kernel/rendering/progressive/samplecounter.h"
 #include "renderer/kernel/rendering/progressive/samplegenerator.h"
 #include "renderer/kernel/rendering/itilecallback.h"
+#include "renderer/kernel/rendering/progressiveframebuffer.h"
+#include "renderer/kernel/rendering/samplecounter.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/memory.h"

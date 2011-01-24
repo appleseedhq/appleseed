@@ -28,14 +28,14 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
-#include "renderer/kernel/rendering/progressive/samplecounter.h"
+#include "renderer/kernel/rendering/samplecounter.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/test.h"
 
 using namespace renderer;
 
-TEST_SUITE(Renderer_Kernel_Rendering_Progressive_SampleCounter)
+TEST_SUITE(Renderer_Kernel_Rendering_SampleCounter)
 {
     TEST_CASE(Constructor_InitializesSampleCountToZero)
     {

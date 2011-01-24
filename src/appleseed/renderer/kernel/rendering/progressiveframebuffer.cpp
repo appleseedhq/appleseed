@@ -30,7 +30,7 @@
 #include "progressiveframebuffer.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/rendering/progressive/sample.h"
+#include "renderer/kernel/rendering/sample.h"
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
