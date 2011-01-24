@@ -26,12 +26,12 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_TILEJOBFACTORY_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_TILEJOBFACTORY_H
+#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_TILEJOBFACTORY_H
+#define APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_TILEJOBFACTORY_H
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
-#include "renderer/kernel/rendering/tilejob.h"
+#include "renderer/kernel/rendering/generic/tilejob.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/rng.h"
@@ -86,4 +86,4 @@ class TileJobFactory
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_TILEJOBFACTORY_H
+#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_TILEJOBFACTORY_H

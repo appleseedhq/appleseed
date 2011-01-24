@@ -30,11 +30,11 @@
 #include "genericframerenderer.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/rendering/generic/tilejob.h"
+#include "renderer/kernel/rendering/generic/tilejobfactory.h"
 #include "renderer/kernel/rendering/framerendererbase.h"
 #include "renderer/kernel/rendering/itilecallback.h"
 #include "renderer/kernel/rendering/itilerenderer.h"
-#include "renderer/kernel/rendering/tilejob.h"
-#include "renderer/kernel/rendering/tilejobfactory.h"
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.

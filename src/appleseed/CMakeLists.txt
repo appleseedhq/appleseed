@@ -816,6 +816,10 @@ set(renderer_kernel_rendering_generic_sources
     renderer/kernel/rendering/generic/generictilerenderer.h
     renderer/kernel/rendering/generic/pixelsampler.cpp
     renderer/kernel/rendering/generic/pixelsampler.h
+    renderer/kernel/rendering/generic/tilejob.cpp
+    renderer/kernel/rendering/generic/tilejob.h
+    renderer/kernel/rendering/generic/tilejobfactory.cpp
+    renderer/kernel/rendering/generic/tilejobfactory.h
 )
 list(APPEND appleseed_sources
     ${renderer_kernel_rendering_generic_sources}
@@ -860,10 +864,6 @@ set(renderer_kernel_rendering_sources
     renderer/kernel/rendering/masterrenderer.h
     renderer/kernel/rendering/tilecallbackbase.cpp
     renderer/kernel/rendering/tilecallbackbase.h
-    renderer/kernel/rendering/tilejob.cpp
-    renderer/kernel/rendering/tilejob.h
-    renderer/kernel/rendering/tilejobfactory.cpp
-    renderer/kernel/rendering/tilejobfactory.h
 )
 list(APPEND appleseed_sources
     ${renderer_kernel_rendering_sources}
