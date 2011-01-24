@@ -87,7 +87,7 @@ namespace
                     global_logger(),
                     m_job_queue,
                     m_params.m_thread_count,
-                    true));         // keep threads alive, even if there's no more tile jobs
+                    true));         // keep threads alive, even if there's no more jobs
 
             // Instantiate sample renderers, one per rendering thread.
             for (size_t i = 0; i < m_params.m_thread_count; ++i)
@@ -184,7 +184,7 @@ namespace
             // Stop job execution.
             m_job_manager->stop();
 
-            // Delete all non-executed tile jobs.
+            // Delete all non-executed jobs.
             m_job_queue.clear_scheduled_jobs();
 
             // Delete sample generators.
