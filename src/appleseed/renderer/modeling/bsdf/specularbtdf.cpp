@@ -81,6 +81,7 @@ namespace
 
         virtual void sample(
             const void*         data,
+            const bool          adjoint,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
             const Vector3d&     s,
@@ -96,7 +97,7 @@ namespace
 
             const bool entering = dot(shading_normal, geometric_normal) > 0.0;
 
-            const double ior_outside = 1.0;             // todo: remove
+            const double ior_outside = 1.0;     // todo: remove
 
             // Figure out the incoming and transmitted IOR.
             double ior_i, ior_t;
@@ -179,6 +180,7 @@ namespace
 
         virtual void evaluate(
             const void*         data,
+            const bool          adjoint,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,

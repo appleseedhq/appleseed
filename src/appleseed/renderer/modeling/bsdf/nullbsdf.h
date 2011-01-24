@@ -37,7 +37,7 @@ namespace renderer
 {
 
 //
-// A dummy BSDF 
+// A dummy BSDF.
 //
 
 class NullBSDF
@@ -61,36 +61,38 @@ class NullBSDF
     }
 
     virtual void sample(
-        const void*                 data,                       // input values
-        const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
-        const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
-        const foundation::Vector3d& s,                          // sample in [0,1)^3
-        const foundation::Vector3d& outgoing,                   // world space outgoing direction, unit-length
-        foundation::Vector3d&       incoming,                   // world space incoming direction, unit-length
-        Spectrum&                   value,                      // BSDF value divided by PDF value
-        double&                     probability,                // PDF value
-        Mode&                       mode) const                 // scattering mode
+        const void*                     data,
+        const bool                      adjoint,
+        const foundation::Vector3d&     geometric_normal,
+        const foundation::Basis3d&      shading_basis,
+        const foundation::Vector3d&     s,
+        const foundation::Vector3d&     outgoing,
+        foundation::Vector3d&           incoming,
+        Spectrum&                       value,
+        double&                         probability,
+        Mode&                           mode) const
     {
         mode = None;
     }
 
     virtual void evaluate(
-        const void*                 data,                       // input values
-        const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
-        const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
-        const foundation::Vector3d& outgoing,                   // world space outgoing direction, unit-length
-        const foundation::Vector3d& incoming,                   // world space incoming direction, unit-length
-        Spectrum&                   value) const                // BSDF value for this pair of directions
+        const void*                     data,
+        const bool                      adjoint,
+        const foundation::Vector3d&     geometric_normal,
+        const foundation::Basis3d&      shading_basis,
+        const foundation::Vector3d&     outgoing,
+        const foundation::Vector3d&     incoming,
+        Spectrum&                       value) const
     {
         value.set(0.0f);
     }
 
     virtual double evaluate_pdf(
-        const void*                 data,                       // input values
-        const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
-        const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
-        const foundation::Vector3d& outgoing,                   // world space outgoing direction, unit-length
-        const foundation::Vector3d& incoming) const             // world space incoming direction, unit-length
+        const void*                     data,
+        const foundation::Vector3d&     geometric_normal,
+        const foundation::Basis3d&      shading_basis,
+        const foundation::Vector3d&     outgoing,
+        const foundation::Vector3d&     incoming) const
     {
         return 0.0;
     }

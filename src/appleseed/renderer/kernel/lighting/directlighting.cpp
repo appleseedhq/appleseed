@@ -106,6 +106,7 @@ void compute_direct_lighting(
         Spectrum bsdf_value;
         bsdf.evaluate(
             bsdf_data,
+            false,              // adjoint
             geometric_normal,
             shading_basis,
             outgoing,

@@ -86,6 +86,7 @@ class RENDERERDLL BSDF
     // of the BSDF divided by the probability density and the scattering mode.
     virtual void sample(
         const void*                 data,                       // input values
+        const bool                  adjoint,                    // use the adjoint scattering kernel if true
         const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
         const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
         const foundation::Vector3d& s,                          // sample in [0,1)^3
@@ -98,6 +99,7 @@ class RENDERERDLL BSDF
     // Evaluate the BSDF for a given pair of directions.
     virtual void evaluate(
         const void*                 data,                       // input values
+        const bool                  adjoint,                    // use the adjoint scattering kernel if true
         const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
         const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
         const foundation::Vector3d& outgoing,                   // world space outgoing direction, unit-length

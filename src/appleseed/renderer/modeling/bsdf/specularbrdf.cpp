@@ -78,6 +78,7 @@ namespace
 
         virtual void sample(
             const void*         data,
+            const bool          adjoint,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
             const Vector3d&     s,
@@ -117,6 +118,7 @@ namespace
 
         virtual void evaluate(
             const void*         data,
+            const bool          adjoint,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,

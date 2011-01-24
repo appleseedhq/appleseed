@@ -55,6 +55,7 @@ class BTDFWrapper
 
     virtual void sample(
         const void*                     data,
+        const bool                      adjoint,
         const foundation::Vector3d&     geometric_normal,
         const foundation::Basis3d&      shading_basis,
         const foundation::Vector3d&     s,
@@ -66,6 +67,7 @@ class BTDFWrapper
 
     virtual void evaluate(
         const void*                     data,
+        const bool                      adjoint,
         const foundation::Vector3d&     geometric_normal,
         const foundation::Basis3d&      shading_basis,
         const foundation::Vector3d&     outgoing,
@@ -96,6 +98,7 @@ BTDFWrapper<Base>::BTDFWrapper(
 template <typename Base>
 void BTDFWrapper<Base>::sample(
     const void*                         data,
+    const bool                          adjoint,
     const foundation::Vector3d&         geometric_normal,
     const foundation::Basis3d&          shading_basis,
     const foundation::Vector3d&         s,
@@ -110,6 +113,7 @@ void BTDFWrapper<Base>::sample(
 
     Base::sample(
         data,
+        adjoint,
         geometric_normal,
         shading_basis,
         s,
@@ -118,11 +122,19 @@ void BTDFWrapper<Base>::sample(
         value,
         probability,
         mode);
+
+    if (adjoint)
+    {
+        const double cos_ig = foundation::dot(incoming, geometric_normal);
+        const double cos_og = foundation::dot(outgoing, geometric_normal);
+        value *= static_cast<float>(cos_ig / cos_og);
+    }
 }
 
 template <typename Base>
 void BTDFWrapper<Base>::evaluate(
     const void*                         data,
+    const bool                          adjoint,
     const foundation::Vector3d&         geometric_normal,
     const foundation::Basis3d&          shading_basis,
     const foundation::Vector3d&         outgoing,
@@ -135,11 +147,19 @@ void BTDFWrapper<Base>::evaluate(
 
     Base::evaluate(
         data,
+        adjoint,
         geometric_normal,
         shading_basis,
         outgoing,
         incoming,
         value);
+
+    if (adjoint)
+    {
+        const double cos_ig = foundation::dot(incoming, geometric_normal);
+        const double cos_og = foundation::dot(outgoing, geometric_normal);
+        value *= static_cast<float>(cos_ig / cos_og);
+    }
 }
 
 template <typename Base>

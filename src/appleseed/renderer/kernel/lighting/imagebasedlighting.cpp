@@ -87,6 +87,7 @@ namespace
             BSDF::Mode mode;
             bsdf.sample(
                 bsdf_data,
+                false,              // adjoint
                 geometric_normal,
                 shading_basis,
                 s,
@@ -215,6 +216,7 @@ namespace
             Spectrum bsdf_value;
             bsdf.evaluate(
                 bsdf_data,
+                false,              // adjoint
                 geometric_normal,
                 shading_basis,
                 outgoing,

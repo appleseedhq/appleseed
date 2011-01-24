@@ -242,6 +242,7 @@ size_t PathTracer<PathVertexVisitor, ScatteringModesMask, Adjoint>::trace(
         Spectrum bsdf_value;
         bsdf->sample(
             bsdf_data,
+            Adjoint,
             shading_point_ptr->get_geometric_normal(),
             shading_point_ptr->get_shading_basis(),
             foundation::Vector3d(s[0], s[1], s[2]),

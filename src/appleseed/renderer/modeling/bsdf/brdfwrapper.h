@@ -55,6 +55,7 @@ class BRDFWrapper
 
     virtual void sample(
         const void*                     data,
+        const bool                      adjoint,
         const foundation::Vector3d&     geometric_normal,
         const foundation::Basis3d&      shading_basis,
         const foundation::Vector3d&     s,
@@ -66,6 +67,7 @@ class BRDFWrapper
 
     virtual void evaluate(
         const void*                     data,
+        const bool                      adjoint,
         const foundation::Vector3d&     geometric_normal,
         const foundation::Basis3d&      shading_basis,
         const foundation::Vector3d&     outgoing,
@@ -96,6 +98,7 @@ BRDFWrapper<Base>::BRDFWrapper(
 template <typename Base>
 void BRDFWrapper<Base>::sample(
     const void*                         data,
+    const bool                          adjoint,
     const foundation::Vector3d&         geometric_normal,
     const foundation::Basis3d&          shading_basis,
     const foundation::Vector3d&         s,
@@ -127,6 +130,7 @@ void BRDFWrapper<Base>::sample(
 
     Base::sample(
         data,
+        adjoint,
         geometric_normal,
         shading_basis,
         s,
@@ -135,11 +139,18 @@ void BRDFWrapper<Base>::sample(
         value,
         probability,
         mode);
+
+    if (adjoint)
+    {
+        const double cos_ig = foundation::dot(incoming, geometric_normal);
+        value *= static_cast<float>(cos_ig / cos_og);
+    }
 }
 
 template <typename Base>
 void BRDFWrapper<Base>::evaluate(
     const void*                         data,
+    const bool                          adjoint,
     const foundation::Vector3d&         geometric_normal,
     const foundation::Basis3d&          shading_basis,
     const foundation::Vector3d&         outgoing,
@@ -170,11 +181,15 @@ void BRDFWrapper<Base>::evaluate(
 
     Base::evaluate(
         data,
+        adjoint,
         geometric_normal,
         shading_basis,
         outgoing,
         incoming,
         value);
+
+    if (adjoint)
+        value *= static_cast<float>(cos_ig / cos_og);
 }
 
 template <typename Base>
