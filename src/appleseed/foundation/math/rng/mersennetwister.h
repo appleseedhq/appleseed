@@ -30,7 +30,6 @@
 #define APPLESEED_FOUNDATION_MATH_RNG_MERSENNETWISTER_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/platform/types.h"
 
 // Standard headers.
@@ -59,18 +58,17 @@ namespace foundation
 {
 
 //
-// Mersenne-Twister random number generator.
+// Mersenne Twister random number generator.
 //
 
 class FOUNDATIONDLL MersenneTwister
-  : public NonCopyable
 {
   public:
-    // Constructors, seeds the generator.
-    explicit MersenneTwister(uint32 seed = 5489UL);
-    MersenneTwister(uint32 init_key[], int key_length);
+    // Constructors, seed the generator.
+    explicit MersenneTwister(const uint32 seed = 5489UL);
+    MersenneTwister(const uint32 init_key[], const int key_length);
 
-    // Generates a full-range 32-bit random number.
+    // Generate a full-range 32-bit random number.
     uint32 rand_uint32();
 
   private:
@@ -96,7 +94,6 @@ class FOUNDATIONDLL MersenneTwister
 // MersenneTwister class implementation.
 //
 
-// Generates a full-range 32-bit random number.
 inline uint32 MersenneTwister::rand_uint32()
 {
     if (mti >= N)

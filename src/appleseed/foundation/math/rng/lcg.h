@@ -30,7 +30,6 @@
 #define APPLESEED_FOUNDATION_MATH_RNG_LCG_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/platform/types.h"
 
 namespace foundation
@@ -57,13 +56,12 @@ namespace foundation
 //
 
 class LCG
-  : public NonCopyable
 {
   public:
     // Constructor, seeds the generator.
     explicit LCG(const uint32 seed = 0);
 
-    // Generates a 32-bit random number.
+    // Generate a 32-bit random number.
     uint32 rand_uint32();
 
   private:
@@ -75,13 +73,11 @@ class LCG
 // LCG class implementation.
 //
 
-// Constructor, seed the generator.
 inline LCG::LCG(const uint32 seed)
   : m_x(seed)
 {
 }
 
-// Generates a 32-bit random number.
 inline uint32 LCG::rand_uint32()
 {
     m_x = 2147001325UL * m_x + 715136305UL;

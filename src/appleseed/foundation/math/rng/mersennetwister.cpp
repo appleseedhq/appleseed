@@ -75,14 +75,12 @@ namespace foundation
    Real versions are due to Isaku Wada, 2002/01/09 added.
 */
 
-// Constructor, seed the generator.
-MersenneTwister::MersenneTwister(uint32 seed)
+MersenneTwister::MersenneTwister(const uint32 seed)
 {
     init_state(seed);
 }
 
-// Constructor, seeds the generator.
-MersenneTwister::MersenneTwister(uint32 init_key[], int key_length)
+MersenneTwister::MersenneTwister(const uint32 init_key[], const int key_length)
 {
     /* initialize by an array with array-length */
     /* init_key is the array for initializing keys */
@@ -111,8 +109,7 @@ MersenneTwister::MersenneTwister(uint32 init_key[], int key_length)
     mt[0] = 0x80000000UL; /* MSB is 1; assuring non-zero initial array */ 
 }
 
-// Initialize the state vector with a seed.
-void MersenneTwister::init_state(uint32 seed)
+void MersenneTwister::init_state(const uint32 seed)
 {
     /* initializes mt[N] with a seed */
     mt[0]= seed & 0xffffffffUL;
@@ -128,7 +125,6 @@ void MersenneTwister::init_state(uint32 seed)
     }
 }
 
-// Update the state vector.
 void MersenneTwister::update_state()
 {
     /* generate N words at one time */

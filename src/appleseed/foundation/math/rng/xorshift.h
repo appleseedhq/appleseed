@@ -30,7 +30,6 @@
 #define APPLESEED_FOUNDATION_MATH_RNG_XORSHIFT_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/platform/types.h"
 
 // Standard headers.
@@ -54,13 +53,12 @@ namespace foundation
 //
 
 class Xorshift
-  : public NonCopyable
 {
   public:
     // Constructor, seeds the generator.
     explicit Xorshift(const uint32 seed = 2463534242UL);
 
-    // Generates a 32-bit random number.
+    // Generate a 32-bit random number.
     uint32 rand_uint32();
 
   private:
