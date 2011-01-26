@@ -30,10 +30,10 @@
 #include "samplegeneratorjob.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/rendering/progressive/progressiveframebuffer.h"
 #include "renderer/kernel/rendering/progressive/samplecounter.h"
-#include "renderer/kernel/rendering/progressive/samplegenerator.h"
+#include "renderer/kernel/rendering/isamplegenerator.h"
 #include "renderer/kernel/rendering/itilecallback.h"
+#include "renderer/kernel/rendering/progressiveframebuffer.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/memory.h"
@@ -72,7 +72,7 @@ namespace
 SampleGeneratorJob::SampleGeneratorJob(
     Frame&                  frame,
     ProgressiveFrameBuffer& framebuffer,
-    SampleGenerator&        sample_generator,
+    ISampleGenerator*       sample_generator,
     SampleCounter&          sample_counter,
     ITileCallback*          tile_callback,
     JobQueue&               job_queue,
@@ -110,7 +110,7 @@ void SampleGeneratorJob::execute(const size_t thread_index)
             m_framebuffer.get_height());
     }
 
-    m_sample_generator.generate_samples(
+    m_sample_generator->generate_samples(
         sample_count,
         m_framebuffer,
         m_abort_switch);

@@ -45,10 +45,9 @@ namespace renderer
 // AccumulationFrameBuffer class implementation.
 //
 
-// Constructor.
 AccumulationFrameBuffer::AccumulationFrameBuffer(
-    const size_t    width,
-    const size_t    height)
+    const size_t                    width,
+    const size_t                    height)
   : m_width(width)
   , m_height(height)
   , m_pixel_count(width * height)

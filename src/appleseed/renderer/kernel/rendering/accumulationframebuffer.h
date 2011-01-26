@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_ACCUMULATIONFRAMEBUFFER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_ACCUMULATIONFRAMEBUFFER_H
+#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_ACCUMULATIONFRAMEBUFFER_H
+#define APPLESEED_RENDERER_KERNEL_RENDERING_ACCUMULATIONFRAMEBUFFER_H
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
@@ -48,8 +48,8 @@ class AccumulationFrameBuffer
   public:
     // Constructor.
     AccumulationFrameBuffer(
-        const size_t                width,
-        const size_t                height);
+        const size_t                    width,
+        const size_t                    height);
 
     static void copy(
         const AccumulationFrameBuffer&  source,
@@ -66,51 +66,51 @@ class AccumulationFrameBuffer
     void clear();
 
     void clear_pixel(
-        const size_t                x,
-        const size_t                y);
+        const size_t                    x,
+        const size_t                    y);
 
     void add_pixel(
-        const size_t                x,
-        const size_t                y,
-        const foundation::Color4f&  color);
+        const size_t                    x,
+        const size_t                    y,
+        const foundation::Color4f&      color);
 
     void set_pixel(
-        const size_t                x,
-        const size_t                y,
-        const foundation::Color4f&  color);
+        const size_t                    x,
+        const size_t                    y,
+        const foundation::Color4f&      color);
 
     bool is_set(
-        const size_t                x,
-        const size_t                y) const;
+        const size_t                    x,
+        const size_t                    y) const;
 
     foundation::Color4f get_pixel(
-        const size_t                x,
-        const size_t                y) const;
+        const size_t                    x,
+        const size_t                    y) const;
 
     size_t get_pixel(
-        const size_t                x,
-        const size_t                y,
-        foundation::Color4f&        color) const;
+        const size_t                    x,
+        const size_t                    y,
+        foundation::Color4f&            color) const;
 
     foundation::Color4f get_pixel_bilinear(
-        const float                 x,
-        const float                 y) const;
+        const float                     x,
+        const float                     y) const;
 
   private:
     struct AccumulationPixel
     {
-        foundation::Color4f         m_color;
-        foundation::uint32          m_count;
+        foundation::Color4f             m_color;
+        foundation::uint32              m_count;
     };
 
-    const size_t                    m_width;
-    const size_t                    m_height;
-    const size_t                    m_pixel_count;
-    const double                    m_rcp_pixel_count;
+    const size_t                        m_width;
+    const size_t                        m_height;
+    const size_t                        m_pixel_count;
+    const double                        m_rcp_pixel_count;
 
-    std::auto_ptr<foundation::Tile> m_tile;
+    std::auto_ptr<foundation::Tile>     m_tile;
 
-    size_t                          m_coverage;
+    size_t                              m_coverage;
 };
 
 
@@ -266,4 +266,4 @@ inline foundation::Color4f AccumulationFrameBuffer::get_pixel_bilinear(
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_ACCUMULATIONFRAMEBUFFER_H
+#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_ACCUMULATIONFRAMEBUFFER_H

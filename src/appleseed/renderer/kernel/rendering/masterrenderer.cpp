@@ -38,10 +38,12 @@
 #include "renderer/kernel/rendering/debug/blanktilerenderer.h"
 #include "renderer/kernel/rendering/debug/debugtilerenderer.h"
 #include "renderer/kernel/rendering/generic/genericframerenderer.h"
+#include "renderer/kernel/rendering/generic/genericsamplegenerator.h"
 #include "renderer/kernel/rendering/generic/genericsamplerenderer.h"
 #include "renderer/kernel/rendering/generic/generictilerenderer.h"
 #include "renderer/kernel/rendering/progressive/progressiveframerenderer.h"
 #include "renderer/kernel/rendering/iframerenderer.h"
+#include "renderer/kernel/rendering/isamplegenerator.h"
 #include "renderer/kernel/rendering/isamplerenderer.h"
 #include "renderer/kernel/rendering/itilecallback.h"
 #include "renderer/kernel/rendering/itilerenderer.h"
@@ -226,11 +228,17 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         m_params.get_required<string>("frame_renderer", "generic");
     if (frame_renderer_param == "progressive")
     {
+        // Generic sample generator.
+        auto_ptr<ISampleGeneratorFactory> sample_generator_factory(
+            new GenericSampleGeneratorFactory(
+                *m_project.get_frame(),
+                sample_renderer_factory.get()));
+
         // Progressive frame renderer.
         frame_renderer.reset(
             ProgressiveFrameRendererFactory::create(
                 *m_project.get_frame(),
-                sample_renderer_factory.get(),
+                sample_generator_factory.get(),
                 m_tile_callback_factory,
                 m_params.child("progressive_frame_renderer")));
     }

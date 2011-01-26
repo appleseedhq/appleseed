@@ -30,13 +30,12 @@
 #include "progressiveframerenderer.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/rendering/progressive/progressiveframebuffer.h"
 #include "renderer/kernel/rendering/progressive/samplecounter.h"
-#include "renderer/kernel/rendering/progressive/samplegenerator.h"
 #include "renderer/kernel/rendering/progressive/samplegeneratorjob.h"
 #include "renderer/kernel/rendering/framerendererbase.h"
-#include "renderer/kernel/rendering/isamplerenderer.h"
+#include "renderer/kernel/rendering/isamplegenerator.h"
 #include "renderer/kernel/rendering/itilecallback.h"
+#include "renderer/kernel/rendering/progressiveframebuffer.h"
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
@@ -55,8 +54,7 @@ namespace renderer
 
 namespace
 {
-    typedef vector<ISampleRenderer*> SampleRendererVector;
-    typedef vector<SampleGenerator*> SampleGeneratorVector;
+    typedef vector<ISampleGenerator*> SampleGeneratorVector;
     typedef vector<ITileCallback*> TileCallbackVector;
 
 
@@ -68,18 +66,17 @@ namespace
       : public FrameRendererBase
     {
       public:
-        // Constructor.
         ProgressiveFrameRenderer(
-            Frame&                  frame,
-            ISampleRendererFactory* renderer_factory,
-            ITileCallbackFactory*   callback_factory,   // may be 0
-            const ParamArray&       params)
+            Frame&                          frame,
+            ISampleGeneratorFactory*        generator_factory,
+            ITileCallbackFactory*           callback_factory,
+            const ParamArray&               params)
           : m_frame(frame)
           , m_params(params)
           , m_sample_counter(m_params.m_max_sample_count)
         {
-            // We must have a renderer factory, but it's OK not to have a callback factory.
-            assert(renderer_factory);
+            // We must have a generator factory, but it's OK not to have a callback factory.
+            assert(generator_factory);
 
             // Create and initialize job manager.
             m_job_manager.reset(
@@ -89,9 +86,12 @@ namespace
                     m_params.m_thread_count,
                     true));         // keep threads alive, even if there's no more jobs
 
-            // Instantiate sample renderers, one per rendering thread.
+            // Instantiate sample generators, one per rendering thread.
             for (size_t i = 0; i < m_params.m_thread_count; ++i)
-                m_sample_renderers.push_back(renderer_factory->create());
+            {
+                m_sample_generators.push_back(
+                    generator_factory->create(i, m_params.m_thread_count));
+            }
 
             if (callback_factory)
             {
@@ -108,32 +108,28 @@ namespace
             print_rendering_thread_count(m_params.m_thread_count);
         }
 
-        // Destructor.
         virtual ~ProgressiveFrameRenderer()
         {
             // Delete tile callbacks.
             for (const_each<TileCallbackVector> i = m_tile_callbacks; i; ++i)
                 (*i)->release();
 
-            // Delete sample renderers.
-            for (const_each<SampleRendererVector> i = m_sample_renderers; i; ++i)
+            // Delete sample generators.
+            for (const_each<SampleGeneratorVector> i = m_sample_generators; i; ++i)
                 (*i)->release();
         }
 
-        // Delete this instance.
         virtual void release()
         {
             delete this;
         }
 
-        // Synchronous frame rendering.
         virtual void render()
         {
             start_rendering();
             m_job_queue.wait_until_completion();
         }
 
-        // Start rendering.
         virtual void start_rendering()
         {
             assert(!is_rendering());
@@ -143,17 +139,9 @@ namespace
             m_framebuffer->clear();
             m_sample_counter.clear();
 
-            // Create sample generators, one per rendering thread.
-            assert(m_sample_generators.empty());
+            // Reset sample generators.
             for (size_t i = 0; i < m_params.m_thread_count; ++i)
-            {
-                m_sample_generators.push_back(
-                    new SampleGenerator(
-                        m_frame,
-                        m_sample_renderers[i],
-                        i,
-                        m_params.m_thread_count));
-            }
+                m_sample_generators[i]->reset();
 
             // Schedule the first batch of jobs.
             for (size_t i = 0; i < m_params.m_thread_count; ++i)
@@ -162,7 +150,7 @@ namespace
                     new SampleGeneratorJob(
                         m_frame,
                         *m_framebuffer.get(),
-                        *m_sample_generators[i],
+                        m_sample_generators[i],
                         m_sample_counter,
                         m_tile_callbacks[i],
                         m_job_queue,
@@ -176,7 +164,6 @@ namespace
             m_job_manager->start();
         }
 
-        // Stop rendering.
         virtual void stop_rendering()
         {
             m_abort_switch.abort();
@@ -186,21 +173,14 @@ namespace
 
             // Delete all non-executed jobs.
             m_job_queue.clear_scheduled_jobs();
-
-            // Delete sample generators.
-            for (const_each<SampleGeneratorVector> i = m_sample_generators; i; ++i)
-                delete *i;
-            m_sample_generators.clear();
         }
 
-        // Return true if currently rendering.
         virtual bool is_rendering() const
         {
             return m_job_queue.has_scheduled_or_running_jobs();
         }
 
       private:
-        // Parameters.
         struct Parameters
         {
             const size_t    m_thread_count;         // number of rendering threads
@@ -221,7 +201,6 @@ namespace
         auto_ptr<JobManager>                m_job_manager;
         AbortSwitch                         m_abort_switch;
 
-        SampleRendererVector                m_sample_renderers;
         SampleGeneratorVector               m_sample_generators;
         TileCallbackVector                  m_tile_callbacks;
 
@@ -236,12 +215,12 @@ namespace
 //
 
 ProgressiveFrameRendererFactory::ProgressiveFrameRendererFactory(
-    Frame&                  frame,
-    ISampleRendererFactory* renderer_factory,
-    ITileCallbackFactory*   callback_factory,
-    const ParamArray&       params)
+    Frame&                      frame,
+    ISampleGeneratorFactory*    generator_factory,
+    ITileCallbackFactory*       callback_factory,
+    const ParamArray&           params)
   : m_frame(frame)
-  , m_renderer_factory(renderer_factory)  
+  , m_generator_factory(generator_factory)  
   , m_callback_factory(callback_factory)
   , m_params(params)
 {
@@ -257,21 +236,21 @@ IFrameRenderer* ProgressiveFrameRendererFactory::create()
     return
         new ProgressiveFrameRenderer(
             m_frame,
-            m_renderer_factory,
+            m_generator_factory,
             m_callback_factory,
             m_params);
 }
 
 IFrameRenderer* ProgressiveFrameRendererFactory::create(
-    Frame&                  frame,
-    ISampleRendererFactory* renderer_factory,
-    ITileCallbackFactory*   callback_factory,
-    const ParamArray&       params)
+    Frame&                      frame,
+    ISampleGeneratorFactory*    generator_factory,
+    ITileCallbackFactory*       callback_factory,
+    const ParamArray&           params)
 {
     return
         new ProgressiveFrameRenderer(
             frame,
-            renderer_factory,
+            generator_factory,
             callback_factory,
             params);
 }

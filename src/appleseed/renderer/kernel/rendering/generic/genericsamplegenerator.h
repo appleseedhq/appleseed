@@ -26,22 +26,47 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_SAMPLE_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_SAMPLE_H
+#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_GENERICSAMPLEGENERATOR_H
+#define APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_GENERICSAMPLEGENERATOR_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/kernel/rendering/isamplegenerator.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Standard headers.
+#include <cstddef>
+
+// Forward declarations.
+namespace renderer      { class Frame; }
+namespace renderer      { class ISampleRendererFactory; }
 
 namespace renderer
 {
 
-class Sample
+class DLLSYMBOL GenericSampleGeneratorFactory
+  : public ISampleGeneratorFactory
 {
   public:
-    foundation::Vector2d    m_position;
-    foundation::Color4f     m_color;
+    // Constructor.
+    GenericSampleGeneratorFactory(
+        Frame&                  frame,
+        ISampleRendererFactory* sample_renderer_factory);
+
+    // Delete this instance.
+    virtual void release();
+
+    // Return a new sample generator instance.
+    virtual ISampleGenerator* create(
+        const size_t            generator_index,
+        const size_t            generator_count);
+
+  private:
+    Frame&                      m_frame;
+    ISampleRendererFactory*     m_sample_renderer_factory;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_SAMPLE_H
+#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_GENERICSAMPLEGENERATOR_H

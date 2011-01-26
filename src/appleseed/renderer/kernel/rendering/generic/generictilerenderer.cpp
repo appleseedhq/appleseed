@@ -72,7 +72,6 @@ namespace
       : public ITileRenderer
     {
       public:
-        // Constructor.
         GenericTileRenderer(
             const Frame&            frame,
             ISampleRendererFactory* factory,
@@ -119,19 +118,11 @@ namespace
             m_rcp_sample_count = 1.0f / m_params.m_max_samples;
         }
 
-        // Destructor.
-        virtual ~GenericTileRenderer()
-        {
-            m_sample_renderer->release();
-        }
-
-        // Delete this instance.
         virtual void release()
         {
             delete this;
         }
 
-        // Render a tile.
         virtual void render_tile(
             const Frame&    frame,
             const size_t    tile_x,
@@ -257,7 +248,6 @@ namespace
         }
 
       private:
-        // Parameters.
         struct Parameters
         {
             const size_t        m_min_samples;          // minimum number of samples per pixel
@@ -285,17 +275,18 @@ namespace
         // Pixel coordinates in a tile; max tile size is 65536 x 65536 pixels.
         typedef Vector<uint16, 2> Pixel;
 
-        const Parameters            m_params;
-        ISampleRenderer*            m_sample_renderer;
-        SamplingContext::RNGType    m_rng;
+        const Parameters                    m_params;
+        auto_release_ptr<ISampleRenderer>   m_sample_renderer;
 
-        vector<Pixel>               m_pixel_ordering;
-        PixelSampler                m_pixel_sampler;
+        vector<Pixel>                       m_pixel_ordering;
+        PixelSampler                        m_pixel_sampler;
 
-        size_t                      m_sqrt_max_samples;
-        double                      m_rcp_sample_canvas_width;
-        double                      m_rcp_sample_canvas_height;
-        float                       m_rcp_sample_count;
+        size_t                              m_sqrt_max_samples;
+        double                              m_rcp_sample_canvas_width;
+        double                              m_rcp_sample_canvas_height;
+        float                               m_rcp_sample_count;
+
+        SamplingContext::RNGType            m_rng;
     };
 }
 
@@ -304,7 +295,6 @@ namespace
 // GenericTileRendererFactory class implementation.
 //
 
-// Constructor.
 GenericTileRendererFactory::GenericTileRendererFactory(
     const Frame&                frame,
     ISampleRendererFactory*     factory,
@@ -315,13 +305,11 @@ GenericTileRendererFactory::GenericTileRendererFactory(
 {
 }
 
-// Delete this instance.
 void GenericTileRendererFactory::release()
 {
     delete this;
 }
 
-// Return a new generic tile renderer instance.
 ITileRenderer* GenericTileRendererFactory::create()
 {
     return
@@ -331,7 +319,6 @@ ITileRenderer* GenericTileRendererFactory::create()
             m_params);
 }
 
-// Return a new generic tile renderer instance.
 ITileRenderer* GenericTileRendererFactory::create(
     const Frame&                frame,
     ISampleRendererFactory*     factory,

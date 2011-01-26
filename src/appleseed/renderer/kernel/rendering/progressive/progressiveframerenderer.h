@@ -35,7 +35,7 @@
 
 // Forward declarations.
 namespace renderer  { class Frame; }
-namespace renderer  { class ISampleRendererFactory; }
+namespace renderer  { class ISampleGeneratorFactory; }
 namespace renderer  { class ITileCallbackFactory; }
 
 namespace renderer
@@ -51,10 +51,10 @@ class RENDERERDLL ProgressiveFrameRendererFactory
   public:
     // Constructor.
     ProgressiveFrameRendererFactory(
-        Frame&                  frame,
-        ISampleRendererFactory* renderer_factory,
-        ITileCallbackFactory*   callback_factory,       // may be 0
-        const ParamArray&       params);
+        Frame&                      frame,
+        ISampleGeneratorFactory*    generator_factory,
+        ITileCallbackFactory*       callback_factory,       // may be 0
+        const ParamArray&           params);
 
     // Delete this instance.
     virtual void release();
@@ -64,16 +64,16 @@ class RENDERERDLL ProgressiveFrameRendererFactory
 
     // Return a new progressive frame renderer instance.
     static IFrameRenderer* create(
-        Frame&                  frame,
-        ISampleRendererFactory* renderer_factory,
-        ITileCallbackFactory*   callback_factory,       // may be 0
-        const ParamArray&       params);
+        Frame&                      frame,
+        ISampleGeneratorFactory*    generator_factory,
+        ITileCallbackFactory*       callback_factory,       // may be 0
+        const ParamArray&           params);
 
   private:
-    Frame&                      m_frame;
-    ISampleRendererFactory*     m_renderer_factory;
-    ITileCallbackFactory*       m_callback_factory;     // may be 0
-    ParamArray                  m_params;
+    Frame&                          m_frame;
+    ISampleGeneratorFactory*        m_generator_factory;
+    ITileCallbackFactory*           m_callback_factory;     // may be 0
+    ParamArray                      m_params;
 };
 
 }       // namespace renderer

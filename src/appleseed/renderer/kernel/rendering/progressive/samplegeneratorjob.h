@@ -37,10 +37,10 @@
 
 // Forward declarations.
 namespace renderer      { class Frame; }
+namespace renderer      { class ISampleGenerator; }
 namespace renderer      { class ITileCallback; }
 namespace renderer      { class ProgressiveFrameBuffer; }
 namespace renderer      { class SampleCounter; }
-namespace renderer      { class SampleGenerator; }
 
 namespace renderer
 {
@@ -53,7 +53,7 @@ class SampleGeneratorJob
     SampleGeneratorJob(
         Frame&                      frame,
         ProgressiveFrameBuffer&     framebuffer,
-        SampleGenerator&            sample_generator,
+        ISampleGenerator*           sample_generator,
         SampleCounter&              sample_counter,
         ITileCallback*              tile_callback,
         foundation::JobQueue&       job_queue,
@@ -68,7 +68,7 @@ class SampleGeneratorJob
   private:
     Frame&                          m_frame;
     ProgressiveFrameBuffer&         m_framebuffer;
-    SampleGenerator&                m_sample_generator;
+    ISampleGenerator*               m_sample_generator;
     SampleCounter&                  m_sample_counter;
     ITileCallback*                  m_tile_callback;
     foundation::JobQueue&           m_job_queue;
