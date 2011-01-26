@@ -667,6 +667,7 @@ source_group("foundation\\utility" FILES
 set(main_sources
     main/allocator.cpp
     main/dllmain.cpp
+    main/dllsymbol.h
 )
 list(APPEND appleseed_sources
     ${main_sources}
@@ -1337,8 +1338,9 @@ add_library(appleseed SHARED
 apply_preprocessor_definitions(appleseed)
 
 append_custom_preprocessor_definitions(appleseed
-    APPLESEED_FOUNDATION_EXPORTS
-    APPLESEED_RENDERER_EXPORTS
+    APPLESEED_FOUNDATION_EXPORTS        # deprecated, remove
+    APPLESEED_RENDERER_EXPORTS          # deprecated, remove
+    APPLESEED_EXPORTS
     APPLESEED_FOUNDATION_USE_SSE
 )
 
