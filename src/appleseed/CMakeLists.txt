@@ -831,6 +831,17 @@ source_group("renderer\\kernel\\rendering\\generic" FILES
     ${renderer_kernel_rendering_generic_sources}
 )
 
+set(renderer_kernel_rendering_lighttracing_sources
+    renderer/kernel/rendering/lighttracing/lighttracingsamplegenerator.cpp
+    renderer/kernel/rendering/lighttracing/lighttracingsamplegenerator.h
+)
+list(APPEND appleseed_sources
+    ${renderer_kernel_rendering_lighttracing_sources}
+)
+source_group("renderer\\kernel\\rendering\\lighttracing" FILES
+    ${renderer_kernel_rendering_lighttracing_sources}
+)
+
 set(renderer_kernel_rendering_progressive_sources
     renderer/kernel/rendering/progressive/progressiveframerenderer.cpp
     renderer/kernel/rendering/progressive/progressiveframerenderer.h
@@ -864,6 +875,8 @@ set(renderer_kernel_rendering_sources
     renderer/kernel/rendering/progressiveframebuffer.cpp
     renderer/kernel/rendering/progressiveframebuffer.h
     renderer/kernel/rendering/sample.h
+    renderer/kernel/rendering/samplegeneratorbase.cpp
+    renderer/kernel/rendering/samplegeneratorbase.h
     renderer/kernel/rendering/tilecallbackbase.cpp
     renderer/kernel/rendering/tilecallbackbase.h
 )

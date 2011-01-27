@@ -27,11 +27,10 @@
 //
 
 // Interface header.
-#include "genericsamplegenerator.h"
+#include "lighttracingsamplegenerator.h"
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/kernel/rendering/isamplerenderer.h"
 #include "renderer/kernel/rendering/sample.h"
 #include "renderer/kernel/rendering/samplegeneratorbase.h"
 #include "renderer/kernel/shading/shadingresult.h"
@@ -41,7 +40,6 @@
 #include "foundation/math/qmc.h"
 #include "foundation/math/rng.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/autoreleaseptr.h"
 
 // Forward declarations.
 namespace foundation    { class LightingConditions; }
@@ -54,21 +52,19 @@ namespace renderer
 namespace
 {
     //
-    // GenericSampleGenerator class implementation.
+    // LightTracingSampleGenerator class implementation.
     //
 
-    class GenericSampleGenerator
+    class LightTracingSampleGenerator
       : public SampleGeneratorBase
     {
       public:
-        GenericSampleGenerator(
-            Frame&                          frame,
-            ISampleRendererFactory*         sample_renderer_factory,
-            const size_t                    generator_index,
-            const size_t                    generator_count)
+        LightTracingSampleGenerator(
+            Frame&          frame,
+            const size_t    generator_index,
+            const size_t    generator_count)
           : SampleGeneratorBase(generator_index, generator_count)
           , m_frame(frame)
-          , m_sample_renderer(sample_renderer_factory->create())
           , m_lighting_conditions(frame.get_lighting_conditions())
         {
         }
@@ -85,10 +81,9 @@ namespace
         }
 
       private:
-        Frame&                              m_frame;
-        auto_release_ptr<ISampleRenderer>   m_sample_renderer;
-        const LightingConditions&           m_lighting_conditions;
-        MersenneTwister                     m_rng;
+        Frame&                      m_frame;
+        const LightingConditions&   m_lighting_conditions;
+        MersenneTwister             m_rng;
 
         virtual void generate_sample(Sample& sample)
         {
@@ -102,16 +97,18 @@ namespace
             // Create a sampling context.
             SamplingContext sampling_context(
                 m_rng,
-                2,                          // number of dimensions
-                0,                          // number of samples
-                m_sequence_index);          // initial instance number
+                2,                      // number of dimensions
+                0,                      // number of samples
+                m_sequence_index);      // initial instance number
 
             // Render the sample.
             ShadingResult shading_result;
+/*
             m_sample_renderer->render_sample(
                 sampling_context,
                 sample_position,
                 shading_result);
+*/
 
             // Transform the sample to the linear RGB color space.
             shading_result.transform_to_linear_rgb(m_lighting_conditions);
@@ -128,30 +125,26 @@ namespace
 
 
 //
-// GenericSampleGeneratorFactory class implementation.
+// LightTracingSampleGeneratorFactory class implementation.
 //
 
-GenericSampleGeneratorFactory::GenericSampleGeneratorFactory(
-    Frame&                  frame,
-    ISampleRendererFactory* sample_renderer_factory)
+LightTracingSampleGeneratorFactory::LightTracingSampleGeneratorFactory(Frame& frame)
   : m_frame(frame)
-  , m_sample_renderer_factory(sample_renderer_factory)
 {
 }
 
-void GenericSampleGeneratorFactory::release()
+void LightTracingSampleGeneratorFactory::release()
 {
     delete this;
 }
 
-ISampleGenerator* GenericSampleGeneratorFactory::create(
-    const size_t            generator_index,
-    const size_t            generator_count)
+ISampleGenerator* LightTracingSampleGeneratorFactory::create(
+    const size_t    generator_index,
+    const size_t    generator_count)
 {
     return
-        new GenericSampleGenerator(
+        new LightTracingSampleGenerator(
             m_frame,
-            m_sample_renderer_factory,
             generator_index,
             generator_count);
 }

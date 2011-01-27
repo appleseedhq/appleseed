@@ -41,6 +41,7 @@
 #include "renderer/kernel/rendering/generic/genericsamplegenerator.h"
 #include "renderer/kernel/rendering/generic/genericsamplerenderer.h"
 #include "renderer/kernel/rendering/generic/generictilerenderer.h"
+#include "renderer/kernel/rendering/lighttracing/lighttracingsamplegenerator.h"
 #include "renderer/kernel/rendering/progressive/progressiveframerenderer.h"
 #include "renderer/kernel/rendering/iframerenderer.h"
 #include "renderer/kernel/rendering/isamplegenerator.h"
@@ -160,35 +161,43 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     if (!bind_inputs())
         return IRendererController::AbortRendering;
 
-    // Create a light sampler.
+    // Create the light sampler.
     LightSampler light_sampler(*m_project.get_scene());
 
+    // Create the shading engine.
+    ShadingEngine shading_engine(m_params.child("shading_engine"));
+
+    //
     // Create a lighting engine factory.
+    //
+
     auto_ptr<ILightingEngineFactory> lighting_engine_factory;
+
     const string lighting_engine_param =
         m_params.get_required<string>("lighting_engine", "pt");
+
     if (lighting_engine_param == "drt")
     {
-        // Distribution ray tracing.
         lighting_engine_factory.reset(
             new DRTLightingEngineFactory(light_sampler, m_params.child("drt")));
     }
-    else
+    else if (lighting_engine_param == "pt")
     {
-        // Path tracing.
         lighting_engine_factory.reset(
             new PTLightingEngineFactory(light_sampler, m_params.child("pt")));
     }
 
-    // Create a shading engine.
-    ShadingEngine shading_engine(m_params.child("shading_engine"));
-
+    //
     // Create a sample renderer factory.
+    //
+
     auto_ptr<ISampleRendererFactory> sample_renderer_factory;
+
     const string sample_renderer_param =
         m_params.get_required<string>("sample_renderer", "generic");
+
+    if (sample_renderer_param == "generic")
     {
-        // Generic sample renderer.
         sample_renderer_factory.reset(
             new GenericSampleRendererFactory(
                 *m_project.get_scene(),
@@ -198,59 +207,81 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
                 m_params.child("generic_sample_renderer")));
     }
 
+    //
     // Create a tile renderer factory.
+    //
+
     auto_ptr<ITileRendererFactory> tile_renderer_factory;
+
     const string tile_renderer_param =
         m_params.get_required<string>("tile_renderer", "generic");
-    if (tile_renderer_param == "blank")
+
+    if (tile_renderer_param == "generic")
     {
-        // Blank tile renderer factory.
-        tile_renderer_factory.reset(new BlankTileRendererFactory());
-    }
-    else if (tile_renderer_param == "debug")
-    {
-        // Debug tile renderer factory.
-        tile_renderer_factory.reset(new DebugTileRendererFactory());
-    }
-    else
-    {
-        // Generic tile renderer factory.
         tile_renderer_factory.reset(
             new GenericTileRendererFactory(
                 *m_project.get_frame(),
                 sample_renderer_factory.get(),
                 m_params.child("generic_tile_renderer")));
     }
-
-    // Create a frame renderer.
-    auto_release_ptr<IFrameRenderer> frame_renderer;
-    const string frame_renderer_param =
-        m_params.get_required<string>("frame_renderer", "generic");
-    if (frame_renderer_param == "progressive")
+    else if (tile_renderer_param == "blank")
     {
-        // Generic sample generator.
-        auto_ptr<ISampleGeneratorFactory> sample_generator_factory(
+        tile_renderer_factory.reset(new BlankTileRendererFactory());
+    }
+    else if (tile_renderer_param == "debug")
+    {
+        tile_renderer_factory.reset(new DebugTileRendererFactory());
+    }
+
+    //
+    // Create a sample generator factory.
+    //
+
+    auto_ptr<ISampleGeneratorFactory> sample_generator_factory;
+
+    const string sample_generator_param =
+        m_params.get_optional<string>("sample_generator", "generic");
+
+    if (sample_generator_param == "generic")
+    {
+        sample_generator_factory.reset(
             new GenericSampleGeneratorFactory(
                 *m_project.get_frame(),
                 sample_renderer_factory.get()));
-
-        // Progressive frame renderer.
-        frame_renderer.reset(
-            ProgressiveFrameRendererFactory::create(
-                *m_project.get_frame(),
-                sample_generator_factory.get(),
-                m_tile_callback_factory,
-                m_params.child("progressive_frame_renderer")));
     }
-    else
+    else if (sample_generator_param == "lighttracing")
     {
-        // Generic frame renderer.
+        sample_generator_factory.reset(
+            new LightTracingSampleGeneratorFactory(
+                *m_project.get_frame()));
+    }
+
+    //
+    // Create a frame renderer.
+    //
+
+    auto_release_ptr<IFrameRenderer> frame_renderer;
+
+    const string frame_renderer_param =
+        m_params.get_required<string>("frame_renderer", "generic");
+
+    if (frame_renderer_param == "generic")
+    {
         frame_renderer.reset(
             GenericFrameRendererFactory::create(
                 *m_project.get_frame(),
                 tile_renderer_factory.get(),
                 m_tile_callback_factory,
                 m_params.child("generic_frame_renderer")));
+    }
+    else if (frame_renderer_param == "progressive")
+    {
+        frame_renderer.reset(
+            ProgressiveFrameRendererFactory::create(
+                *m_project.get_frame(),
+                sample_generator_factory.get(),
+                m_tile_callback_factory,
+                m_params.child("progressive_frame_renderer")));
     }
 
     // Execute the main rendering loop.
