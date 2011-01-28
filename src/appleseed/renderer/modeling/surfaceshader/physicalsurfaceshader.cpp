@@ -44,6 +44,7 @@
 
 // Forward declarations.
 namespace renderer  { class Project; }
+namespace renderer  { class TextureCache; }
 
 using namespace foundation;
 using namespace std;
@@ -115,7 +116,7 @@ namespace
 
         virtual void evaluate_alpha_mask(
             SamplingContext&        sampling_context,
-            const ShadingContext&   shading_context,
+            TextureCache&           texture_cache,
             const ShadingPoint&     shading_point,
             Alpha&                  alpha) const
         {
@@ -129,7 +130,7 @@ namespace
                 // Evaluate the inputs.
                 InputValues values;
                 m_inputs.evaluate(
-                    shading_context.get_texture_cache(),
+                    texture_cache,
                     shading_point.get_input_params(),
                     &values);
 

@@ -41,6 +41,9 @@
 #include "foundation/image/colorspace.h"
 #include "foundation/utility/containers/dictionaryarray.h"
 
+// Forward declarations.
+namespace renderer  { class TextureCache; }
+
 using namespace foundation;
 using namespace std;
 
@@ -103,15 +106,15 @@ namespace
         }
 
         virtual void evaluate_alpha_mask(
-            const SamplingContext&  sampling_context,
-            const ShadingContext&   shading_context,
+            SamplingContext&        sampling_context,
+            TextureCache&           texture_cache,
             const ShadingPoint&     shading_point,
             Alpha&                  alpha) const
         {
             // Evaluate the inputs.
             InputValues values;
             m_inputs.evaluate(
-                shading_context.get_texture_cache(),
+                texture_cache,
                 shading_point.get_input_params(),
                 &values);
 

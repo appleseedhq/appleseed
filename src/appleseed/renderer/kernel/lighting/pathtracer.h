@@ -32,7 +32,6 @@
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 #include "renderer/kernel/intersection/intersector.h"
-#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/bsdf/bsdf.h"
@@ -73,7 +72,8 @@ class PathTracer
 
     size_t trace(
         SamplingContext&        sampling_context,
-        const ShadingContext&   shading_context,
+        const Intersector&      intersector,
+        TextureCache&           texture_cache,
         const ShadingPoint&     shading_point,
         Spectrum&               radiance);          // output radiance, in W.sr^-1.m^-2
 
@@ -109,16 +109,13 @@ template <
 >
 size_t PathTracer<PathVertexVisitor, ScatteringModesMask, Adjoint>::trace(
     SamplingContext&            sampling_context,
-    const ShadingContext&       shading_context,
+    const Intersector&          intersector,
+    TextureCache&               texture_cache,
     const ShadingPoint&         shading_point,
     Spectrum&                   radiance)
 {
     // Initialize path radiance.
     radiance.set(0.0f);
-
-    // Retrieve items from the shading context.
-    const Intersector& intersector = shading_context.get_intersector();
-    TextureCache& texture_cache = shading_context.get_texture_cache();
 
     ShadingPoint shading_points[2];
     size_t shading_point_index = 0;
@@ -169,7 +166,7 @@ size_t PathTracer<PathVertexVisitor, ScatteringModesMask, Adjoint>::trace(
         Alpha alpha_mask;
         surface_shader.evaluate_alpha_mask(
             sampling_context,
-            shading_context,
+            texture_cache,
             *shading_point_ptr,
             alpha_mask);
 

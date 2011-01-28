@@ -38,6 +38,7 @@ namespace renderer      { class Project; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
 namespace renderer      { class ShadingResult; }
+namespace renderer      { class TextureCache; }
 
 namespace renderer
 {
@@ -72,7 +73,7 @@ class RENDERERDLL SurfaceShader
     // Evaluate the alpha mask at a given point.
     virtual void evaluate_alpha_mask(
         SamplingContext&        sampling_context,
-        const ShadingContext&   shading_context,
+        TextureCache&           texture_cache,
         const ShadingPoint&     shading_point,
         Alpha&                  alpha) const;
 };
@@ -84,7 +85,7 @@ class RENDERERDLL SurfaceShader
 
 inline void SurfaceShader::evaluate_alpha_mask(
     SamplingContext&        sampling_context,
-    const ShadingContext&   shading_context,
+    TextureCache&           texture_cache,
     const ShadingPoint&     shading_point,
     Alpha&                  alpha) const
 {

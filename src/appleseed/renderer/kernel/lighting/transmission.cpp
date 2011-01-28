@@ -106,7 +106,7 @@ double compute_transmission(
         Alpha alpha_mask;
         surface_shader.evaluate_alpha_mask(
             sampling_context,
-            shading_context,
+            shading_context.get_texture_cache(),
             *shading_point_ptr,
             alpha_mask);
 
