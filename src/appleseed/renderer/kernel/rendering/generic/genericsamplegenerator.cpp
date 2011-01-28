@@ -62,7 +62,7 @@ namespace
     {
       public:
         GenericSampleGenerator(
-            Frame&                          frame,
+            const Frame&                    frame,
             ISampleRendererFactory*         sample_renderer_factory,
             const size_t                    generator_index,
             const size_t                    generator_count)
@@ -85,7 +85,7 @@ namespace
         }
 
       private:
-        Frame&                              m_frame;
+        const Frame&                        m_frame;
         auto_release_ptr<ISampleRenderer>   m_sample_renderer;
         const LightingConditions&           m_lighting_conditions;
         MersenneTwister                     m_rng;
@@ -132,7 +132,7 @@ namespace
 //
 
 GenericSampleGeneratorFactory::GenericSampleGeneratorFactory(
-    Frame&                  frame,
+    const Frame&            frame,
     ISampleRendererFactory* sample_renderer_factory)
   : m_frame(frame)
   , m_sample_renderer_factory(sample_renderer_factory)

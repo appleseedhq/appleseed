@@ -51,7 +51,7 @@ class DLLSYMBOL GenericSampleGeneratorFactory
   public:
     // Constructor.
     GenericSampleGeneratorFactory(
-        Frame&                  frame,
+        const Frame&            frame,
         ISampleRendererFactory* sample_renderer_factory);
 
     // Delete this instance.
@@ -63,7 +63,7 @@ class DLLSYMBOL GenericSampleGeneratorFactory
         const size_t            generator_count);
 
   private:
-    Frame&                      m_frame;
+    const Frame&                m_frame;
     ISampleRendererFactory*     m_sample_renderer_factory;
 };
 
