@@ -42,9 +42,6 @@
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/scene/scene.h"
 
-// appleseed.foundation headers.
-#include "foundation/image/colorspace.h"
-
 using namespace foundation;
 using namespace std;
 
@@ -61,7 +58,6 @@ namespace
       : public ISampleRenderer
     {
       public:
-        // Constructor.
         GenericSampleRenderer(
             const Scene&            scene,
             const TraceContext&     trace_context,
@@ -69,36 +65,31 @@ namespace
             ShadingEngine&          shading_engine,
             const ParamArray&       params)
           : m_params(params)
-          , m_trace_context(trace_context)
+          , m_scene(scene)
           , m_intersector(trace_context, true, m_params.m_report_self_intersections)
-          , m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
           , m_texture_cache(scene, m_params.m_texture_cache_size)
           , m_lighting_engine(lighting_engine_factory->create())
           , m_shading_engine(shading_engine)
         {
         }
 
-        // Destructor.
         ~GenericSampleRenderer()
         {
             m_lighting_engine->release();
         }
 
-        // Delete this instance.
         virtual void release()
         {
             delete this;
         }
 
-        // Render a sample at a given point on the image plane.
         virtual void render_sample(
             SamplingContext&        sampling_context,
             const Vector2d&         image_point,        // point in image plane, in NDC
             ShadingResult&          shading_result)
         {
             // Retrieve the camera.
-            const Scene& scene = m_trace_context.get_scene();
-            const Camera* camera = scene.get_camera();
+            const Camera* camera = m_scene.get_camera();
             assert(camera);
 
             // Construct a primary ray.
@@ -116,7 +107,6 @@ namespace
             // Construct a shading context.
             ShadingContext shading_context(
                 m_intersector,
-                m_lighting_conditions,
                 m_texture_cache,
                 *m_lighting_engine);
 
@@ -129,7 +119,6 @@ namespace
         }
 
       private:
-        // Parameters.
         struct Parameters
         {
             const size_t    m_texture_cache_size;           // size in bytes of the texture cache
@@ -144,9 +133,8 @@ namespace
         };
 
         const Parameters            m_params;
-        const TraceContext&         m_trace_context;
+        const Scene&                m_scene;
         Intersector                 m_intersector;
-        LightingConditions          m_lighting_conditions;
         TextureCache                m_texture_cache;
         ILightingEngine*            m_lighting_engine;
         ShadingEngine&              m_shading_engine;
@@ -158,7 +146,6 @@ namespace
 // GenericSampleRendererFactory class implementation.
 //
 
-// Constructor.
 GenericSampleRendererFactory::GenericSampleRendererFactory(
     const Scene&            scene,
     const TraceContext&     trace_context,
@@ -173,13 +160,11 @@ GenericSampleRendererFactory::GenericSampleRendererFactory(
 {
 }
 
-// Delete this instance.
 void GenericSampleRendererFactory::release()
 {
     delete this;
 }
 
-// Return a new generic sample renderer instance.
 ISampleRenderer* GenericSampleRendererFactory::create()
 {
     return
@@ -191,7 +176,6 @@ ISampleRenderer* GenericSampleRendererFactory::create()
             m_params);
 }
 
-// Return a new generic sample renderer instance.
 ISampleRenderer* GenericSampleRendererFactory::create(
     const Scene&            scene,
     const TraceContext&     trace_context,

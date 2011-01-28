@@ -33,7 +33,6 @@
 #include "renderer/global/global.h"
 
 // Forward declarations.
-namespace foundation    { class LightingConditions; }
 namespace renderer      { class ILightingEngine; }
 namespace renderer      { class Intersector; }
 namespace renderer      { class TextureCache; }
@@ -51,16 +50,12 @@ class ShadingContext
   public:
     // Constructor.
     ShadingContext(
-        const Intersector&                      intersector,
-        const foundation::LightingConditions&   lighting_conditions,
-        TextureCache&                           texture_cache,
-        ILightingEngine&                        lighting_engine);
+        const Intersector&      intersector,
+        TextureCache&           texture_cache,
+        ILightingEngine&        lighting_engine);
 
     // Return the intersector.
     const Intersector& get_intersector() const;
-
-    // Return the lighting conditions.
-    const foundation::LightingConditions& get_lighting_conditions() const;
 
     // Return the texture cache.
     TextureCache& get_texture_cache() const;
@@ -69,10 +64,9 @@ class ShadingContext
     ILightingEngine& get_lighting_engine() const;
 
   private:
-    const Intersector&                          m_intersector;
-    const foundation::LightingConditions&       m_lighting_conditions;
-    TextureCache&                               m_texture_cache;
-    ILightingEngine&                            m_lighting_engine;
+    const Intersector&          m_intersector;
+    TextureCache&               m_texture_cache;
+    ILightingEngine&            m_lighting_engine;
 };
 
 
@@ -81,12 +75,10 @@ class ShadingContext
 //
 
 inline ShadingContext::ShadingContext(
-    const Intersector&                          intersector,
-    const foundation::LightingConditions&       lighting_conditions,
-    TextureCache&                               texture_cache,
-    ILightingEngine&                            lighting_engine)
+    const Intersector&          intersector,
+    TextureCache&               texture_cache,
+    ILightingEngine&            lighting_engine)
   : m_intersector(intersector)
-  , m_lighting_conditions(lighting_conditions)
   , m_texture_cache(texture_cache)
   , m_lighting_engine(lighting_engine)
 {
@@ -95,11 +87,6 @@ inline ShadingContext::ShadingContext(
 inline const Intersector& ShadingContext::get_intersector() const
 {
     return m_intersector;
-}
-
-inline const foundation::LightingConditions& ShadingContext::get_lighting_conditions() const
-{
-    return m_lighting_conditions;
 }
 
 inline TextureCache& ShadingContext::get_texture_cache() const

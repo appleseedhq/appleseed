@@ -47,7 +47,6 @@
 #include "renderer/utility/testutils.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/colorspace.h"
 #include "foundation/utility/test.h"
 
 using namespace foundation;
@@ -58,22 +57,19 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
     struct Fixture
       : public TestFixtureBase
     {
-        const Intersector           m_intersector;
-        MersenneTwister             m_rng;
-        SamplingContext             m_sampling_context;
-        const LightingConditions    m_lighting_conditions;
-        TextureCache                m_texture_cache;
-        NullLightingEngine          m_lighting_engine;
-        ShadingContext              m_shading_context;
+        const Intersector   m_intersector;
+        MersenneTwister     m_rng;
+        SamplingContext     m_sampling_context;
+        TextureCache        m_texture_cache;
+        NullLightingEngine  m_lighting_engine;
+        ShadingContext      m_shading_context;
 
         Fixture()
           : m_intersector(m_project.get_trace_context(), false)
           , m_sampling_context(m_rng)
-          , m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
           , m_texture_cache(m_scene, 1)
           , m_shading_context(
                 m_intersector,
-                m_lighting_conditions,
                 m_texture_cache,
                 m_lighting_engine)
         {
