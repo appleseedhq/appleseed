@@ -314,13 +314,9 @@ void LightSampler::collect_emitting_triangles(
 
 void LightSampler::sample(
     SamplingContext&        sampling_context,
-    const Vector3d&         point,
-    const Vector3d&         normal,
     const size_t            sample_count,
     LightSampleVector&      samples) const
 {
-    assert(is_normalized(normal));
-
     // No light source in the scene.
     if (!m_light_cdf.valid())
         return;
@@ -352,7 +348,6 @@ void LightSampler::sample(
         {
             sample_emitting_triangle(
                 Vector2d(s[1], s[2]),
-                point,
                 emitter_index - light_count,
                 emitter_prob,
                 sample);
@@ -378,7 +373,6 @@ void LightSampler::sample_light(
 
 void LightSampler::sample_emitting_triangle(
     const Vector2d&         s,
-    const Vector3d&         point,
     const size_t            triangle_index,
     const double            triangle_prob,
     LightSample&            sample) const
@@ -411,18 +405,8 @@ void LightSampler::sample_emitting_triangle(
     sample.m_input_params.m_geometric_normal = triangle.m_geometric_normal;
 
     // Set the remaining fields.
-    sample.m_outgoing = point - sample.m_input_params.m_point;
-    sample.m_square_distance = square_norm(sample.m_outgoing);
-    sample.m_outgoing /= sqrt(sample.m_square_distance);
     sample.m_edf = triangle.m_edf;
     sample.m_probability = triangle_prob * triangle.m_rcp_area;
-
-    // Properly orient the normals.
-    const Vector3d incoming = -sample.m_outgoing;
-    sample.m_input_params.m_shading_normal =
-        faceforward(sample.m_input_params.m_shading_normal, incoming);
-    sample.m_input_params.m_geometric_normal =
-        faceforward(sample.m_input_params.m_geometric_normal, incoming);
 }
 
 }   // namespace renderer

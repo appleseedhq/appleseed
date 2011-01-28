@@ -70,7 +70,6 @@ namespace
       : public ILightingEngine
     {
       public:
-        // Constructor.
         DRTLightingEngine(
             const LightSampler&     light_sampler,
             const ParamArray&       params)
@@ -79,7 +78,6 @@ namespace
         {
         }
 
-        // Destructor.
         ~DRTLightingEngine()
         {
             RENDERER_LOG_DEBUG(
@@ -93,13 +91,11 @@ namespace
                 m_stats.m_ray_tree_depth.get_dev());
         }
 
-        // Delete this instance.
         virtual void release()
         {
             delete this;
         }
 
-        // Compute the lighting at a given point of the scene.
         virtual void compute_lighting(
             SamplingContext&        sampling_context,
             const ShadingContext&   shading_context,
@@ -112,7 +108,7 @@ namespace
                 false                           // not adjoint
             > PathTracer;
 
-            PathVertexVisitor vertex_visitor(
+            PathVertexVisitor path_vertex_visitor(
                 m_params,
                 m_light_sampler,
                 m_light_samples,
@@ -120,7 +116,7 @@ namespace
                 shading_point.get_scene());
 
             PathTracer path_tracer(
-                vertex_visitor,
+                path_vertex_visitor,
                 m_params.m_minimum_path_length);
 
             const size_t path_length =
@@ -136,7 +132,6 @@ namespace
         }
 
       private:
-        // Parameters.
         struct Parameters
         {
             const size_t        m_max_reflection_depth;     // maximum reflection depth
@@ -158,13 +153,11 @@ namespace
             }
         };
 
-        // Statistics.
         struct Statistics
         {
             size_t              m_path_count;               // number of paths
             Population<size_t>  m_ray_tree_depth;           // ray tree depth
 
-            // Constructor.
             Statistics()
               : m_path_count(0)
             {
@@ -211,8 +204,6 @@ namespace
                 clear_keep_memory(m_light_samples);
                 m_light_sampler.sample(
                     sampling_context,
-                    point,
-                    shading_normal,
                     m_params.m_dl_sample_count,
                     m_light_samples);
 
@@ -325,7 +316,6 @@ namespace
 // DRTLightingEngineFactory class implementation.
 //
 
-// Constructor.
 DRTLightingEngineFactory::DRTLightingEngineFactory(
     const LightSampler& light_sampler,
     const ParamArray&   params)
@@ -334,19 +324,16 @@ DRTLightingEngineFactory::DRTLightingEngineFactory(
 {
 }
 
-// Delete this instance.
 void DRTLightingEngineFactory::release()
 {
     delete this;
 }
 
-// Return a new path tracing lighting engine instance.
 ILightingEngine* DRTLightingEngineFactory::create()
 {
     return new DRTLightingEngine(m_light_sampler, m_params);
 }
 
-// Return a new path tracing lighting engine instance.
 ILightingEngine* DRTLightingEngineFactory::create(
     const LightSampler& light_sampler,
     const ParamArray&   params)

@@ -82,12 +82,30 @@ void compute_direct_lighting(
         assert(sample.m_edf);
 
         // Compute the incoming direction in world space.
-        const Vector3d incoming = -sample.m_outgoing;
+        Vector3d incoming = sample.m_input_params.m_point - point;
 
         // Cull light samples behind the shading surface.
-        const double cos_in = dot(incoming, shading_normal);
+        double cos_in = dot(incoming, shading_normal);
         if (cos_in <= 0.0)
             continue;
+
+        // Compute the square distance between the light sample and the shading point.
+        const double sample_square_distance = square_norm(incoming);
+
+        // Normalize the incoming direction.
+        const double rcp_sample_distance = 1.0 / sqrt(sample_square_distance);
+        incoming *= rcp_sample_distance;
+        cos_in *= rcp_sample_distance;
+
+        // Compute the outgoing direction of the light sample.
+        const Vector3d sample_outgoing = -incoming;
+
+        // Compute properly oriented surface normals at the position of light sample.
+        InputParams sample_input_params = sample.m_input_params;
+        sample_input_params.m_shading_normal =
+            faceforward(sample_input_params.m_shading_normal, incoming);
+        sample_input_params.m_geometric_normal =
+            faceforward(sample_input_params.m_geometric_normal, incoming);
 
         // Compute the transmission factor between the light sample and the shading point.
         const double transmission =
@@ -95,7 +113,7 @@ void compute_direct_lighting(
                 sampling_context,
                 shading_context,
                 point,
-                sample.m_input_params.m_point,
+                sample_input_params.m_point,
                 parent_shading_point);
 
         // Discard occluded samples.
@@ -118,22 +136,22 @@ void compute_direct_lighting(
         const void* edf_data =
             edf_input_evaluator.evaluate(
                 sample.m_edf->get_inputs(),
-                sample.m_input_params);
+                sample_input_params);
 
         // Evaluate the EDF.
         Spectrum edf_value;
         sample.m_edf->evaluate(
             edf_data,
-            sample.m_input_params.m_geometric_normal,
-            Basis3d(sample.m_input_params.m_shading_normal),
-            sample.m_outgoing,
+            sample_input_params.m_geometric_normal,
+            Basis3d(sample_input_params.m_shading_normal),
+            sample_outgoing,
             edf_value);
 
         // Compute the geometric term. To keep the estimator unbiased, we don't
         // clamp the geometric term g if it is too small, and in particular we
         // allow it to be exactly zero, which will result in a variance spike.
-        const double cos_ln = dot(sample.m_outgoing, sample.m_input_params.m_shading_normal);
-        const double g = (cos_in * cos_ln) / sample.m_square_distance;
+        const double cos_ln = dot(sample_outgoing, sample_input_params.m_shading_normal);
+        const double g = (cos_in * cos_ln) / sample_square_distance;
         assert(g >= 0.0);
 
         // Compute the probability density with respect to surface area
@@ -145,8 +163,8 @@ void compute_direct_lighting(
                 shading_basis,
                 outgoing,
                 incoming);
-        py *= dot(sample.m_outgoing, sample.m_input_params.m_geometric_normal);
-        py /= sample.m_square_distance;
+        py *= dot(sample_outgoing, sample_input_params.m_geometric_normal);
+        py /= sample_square_distance;
 
         // Compute the MIS weight.
         const double mis_weight = mis_power2(sample.m_probability, py);

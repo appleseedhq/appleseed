@@ -78,7 +78,6 @@ namespace
       : public ILightingEngine
     {
       public:
-        // Constructor.
         PTLightingEngine(
             const LightSampler&     light_sampler,
             const ParamArray&       params)
@@ -87,7 +86,6 @@ namespace
         {
         }
 
-        // Destructor.
         ~PTLightingEngine()
         {
             RENDERER_LOG_DEBUG(
@@ -101,13 +99,11 @@ namespace
                 m_stats.m_path_length.get_dev());
         }
 
-        // Delete this instance.
         virtual void release()
         {
             delete this;
         }
 
-        // Compute the lighting at a given point of the scene.
         virtual void compute_lighting(
             SamplingContext&        sampling_context,
             const ShadingContext&   shading_context,
@@ -120,7 +116,7 @@ namespace
                 false                           // not adjoint
             > PathTracer;
 
-            PathVertexVisitor vertex_visitor(
+            PathVertexVisitor path_vertex_visitor(
                 m_params,
                 m_light_sampler,
                 m_light_samples,
@@ -128,7 +124,7 @@ namespace
                 shading_point.get_scene());
 
             PathTracer path_tracer(
-                vertex_visitor,
+                path_vertex_visitor,
                 m_params.m_minimum_path_length);
 
             const size_t path_length =
@@ -144,7 +140,6 @@ namespace
         }
 
       private:
-        // Parameters.
         struct Parameters
         {
             const bool          m_next_event_estimation;    // use next event estimation?
@@ -153,7 +148,6 @@ namespace
             const size_t        m_ibl_bsdf_sample_count;    // number of samples (in BSDF sampling) used to estimate IBL
             const size_t        m_ibl_env_sample_count;     // number of samples (in environment sampling) used to estimate IBL
 
-            // Constructor, extract parameters.
             explicit Parameters(const ParamArray& params)
               : m_next_event_estimation ( params.get_optional<bool>("next_event_estimation", true) )
               , m_minimum_path_length   ( params.get_optional<size_t>("minimum_path_length", 3) )
@@ -164,13 +158,11 @@ namespace
             }
         };
 
-        // Statistics.
         struct Statistics
         {
-            size_t              m_path_count;               // number of paths
-            Population<size_t>  m_path_length;              // path length
+            size_t              m_path_count;
+            Population<size_t>  m_path_length;
 
-            // Constructor.
             Statistics()
               : m_path_count(0)
             {
@@ -230,8 +222,6 @@ namespace
                     clear_keep_memory(m_light_samples);
                     m_light_sampler.sample(
                         sampling_context,
-                        point,
-                        shading_normal,
                         m_params.m_dl_sample_count,
                         m_light_samples);
 
@@ -371,7 +361,6 @@ namespace
 // PTLightingEngineFactory class implementation.
 //
 
-// Constructor.
 PTLightingEngineFactory::PTLightingEngineFactory(
     const LightSampler& light_sampler,
     const ParamArray&   params)
@@ -380,19 +369,16 @@ PTLightingEngineFactory::PTLightingEngineFactory(
 {
 }
 
-// Delete this instance.
 void PTLightingEngineFactory::release()
 {
     delete this;
 }
 
-// Return a new path tracing lighting engine instance.
 ILightingEngine* PTLightingEngineFactory::create()
 {
     return new PTLightingEngine(m_light_sampler, m_params);
 }
 
-// Return a new path tracing lighting engine instance.
 ILightingEngine* PTLightingEngineFactory::create(
     const LightSampler& light_sampler,
     const ParamArray&   params)

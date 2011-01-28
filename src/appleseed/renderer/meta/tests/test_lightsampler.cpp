@@ -51,8 +51,6 @@ TEST_SUITE(Renderer_Kernel_Lighting_LightSampler)
 
         light_sampler.sample(
             sampling_context,
-            Vector3d(0.0),              // point
-            Vector3d(1.0, 0.0, 0.0),    // normal
             1,                          // number of samples
             samples);
 

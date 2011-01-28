@@ -57,11 +57,9 @@ namespace renderer
 
 struct LightSample
 {
-    InputParams             m_input_params;                 // parameters for input evaluation
-    foundation::Vector3d    m_outgoing;                     // world space outgoing direction, unit-length
-    double                  m_square_distance;              // square distance from light sample to point
-    const EDF*              m_edf;
-    double                  m_probability;                  // probability of this sample to be chosen
+    InputParams     m_input_params;     // parameters for input evaluation
+    const EDF*      m_edf;
+    double          m_probability;      // probability of this sample to be chosen
 };
 
 typedef std::vector<LightSample> LightSampleVector;
@@ -77,15 +75,13 @@ class LightSampler
   public:
     // Constructor.
     explicit LightSampler(
-        const Scene&                    scene);
+        const Scene&            scene);
 
     // Sample the set of emitters.
     void sample(
-        SamplingContext&                sampling_context,
-        const foundation::Vector3d&     point,              // world space point where lighting is to be computed
-        const foundation::Vector3d&     normal,             // world space normal at that point, unit-length
-        const size_t                    sample_count,
-        LightSampleVector&              samples) const;
+        SamplingContext&        sampling_context,
+        const size_t            sample_count,
+        LightSampleVector&      samples) const;
 
     // Compute the probability density in area measure of a given light sample.
     double evaluate_pdf(const ShadingPoint& result) const;
@@ -148,7 +144,6 @@ class LightSampler
     // Generate a sample on the surface of a given emitting triangle.
     void sample_emitting_triangle(
         const foundation::Vector2d&     s,
-        const foundation::Vector3d&     point,
         const size_t                    triangle_index,
         const double                    triangle_prob,
         LightSample&                    sample) const;
