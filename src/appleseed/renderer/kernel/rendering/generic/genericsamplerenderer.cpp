@@ -124,7 +124,6 @@ namespace
             const size_t    m_texture_cache_size;           // size in bytes of the texture cache
             const bool      m_report_self_intersections;
 
-            // Constructor, extract parameters.
             explicit Parameters(const ParamArray& params)
               : m_texture_cache_size(params.get_optional<size_t>("texture_cache_size", 16 * 1024 * 1024))
               , m_report_self_intersections(params.get_optional<bool>("report_self_intersections", false))
@@ -132,12 +131,12 @@ namespace
             }
         };
 
-        const Parameters            m_params;
-        const Scene&                m_scene;
-        Intersector                 m_intersector;
-        TextureCache                m_texture_cache;
-        ILightingEngine*            m_lighting_engine;
-        ShadingEngine&              m_shading_engine;
+        const Parameters    m_params;
+        const Scene&        m_scene;
+        Intersector         m_intersector;
+        TextureCache        m_texture_cache;
+        ILightingEngine*    m_lighting_engine;
+        ShadingEngine&      m_shading_engine;
     };
 }
 

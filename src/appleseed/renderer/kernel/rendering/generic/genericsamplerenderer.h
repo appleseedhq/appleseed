@@ -77,7 +77,7 @@ class RENDERERDLL GenericSampleRendererFactory
     const TraceContext&         m_trace_context;
     ILightingEngineFactory*     m_lighting_engine_factory;
     ShadingEngine&              m_shading_engine;
-    ParamArray                  m_params;
+    const ParamArray            m_params;
 };
 
 }       // namespace renderer
