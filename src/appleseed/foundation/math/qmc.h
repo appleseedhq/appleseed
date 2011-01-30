@@ -79,6 +79,12 @@ template <typename T>
 T radical_inverse_base2(
     size_t          n);         // input digits
 
+// Radical inverse in base 2 with digits scrambling.
+template <typename T>
+T radical_inverse_base2(
+    const size_t    r,          // scrambling value
+    size_t          n);         // input digits
+
 // Compute the folded radical inverse of a given positive integer.
 // The returned value is in the interval [0,1).
 template <typename T>
@@ -144,6 +150,15 @@ Vector<T, Dim> halton_zaremba_sequence(
 template <typename T, size_t Dim>
 Vector<T, Dim> hammersley_sequence(
     const size_t    bases[],    // bases (Dim-1 entries, prime numbers)
+    size_t          n,          // input digits
+    size_t          count);     // total number of samples in sequence
+
+// Return the n'th sample of a scrambled 2D Hammersley sequence.
+// Samples are contained in the unit square [0,1)^2.
+// todo: replace count argument by rcp_count?
+template <typename T>
+Vector<T, 2> hammersley_sequence(
+    const size_t    r,          // scrambling value
     size_t          n,          // input digits
     size_t          count);     // total number of samples in sequence
 
@@ -236,12 +251,57 @@ inline T radical_inverse_base2(
 #else
 
     // Directly reverse the bit sequence of n by doing successive swaps.
+    n = (n >> 16) | (n << 16);      // 16-bit swap
+    n = ((n & 0xFF00FF00) >> 8) |
+        ((n & 0x00FF00FF) << 8);    // 8-bit swap
+    n = ((n & 0xF0F0F0F0) >> 4) |
+        ((n & 0x0F0F0F0F) << 4);    // 4-bit swap
+    n = ((n & 0xCCCCCCCC) >> 2) |
+        ((n & 0x33333333) << 2);    // 2-bit swap
+    n = ((n & 0xAAAAAAAA) >> 1) |
+        ((n & 0x55555555) << 1);    // 1-bit swap
 
-    n = (n >> 16) | (n << 16);                                  // 16-bit swap
-    n = ((n & 0xFF00FF00) >> 8) | ((n & 0x00FF00FF) << 8);      // 8-bit swap
-    n = ((n & 0xF0F0F0F0) >> 4) | ((n & 0x0F0F0F0F) << 4);      // 4-bit swap
-    n = ((n & 0xCCCCCCCC) >> 2) | ((n & 0x33333333) << 2);      // 2-bit swap
-    n = ((n & 0xAAAAAAAA) >> 1) | ((n & 0x55555555) << 1);      // 1-bit swap
+    return static_cast<T>(n) / static_cast<T>(0x100000000LL);
+
+#endif
+}
+
+template <typename T>
+inline T radical_inverse_base2(
+    const size_t    r,
+    size_t          n)
+{
+#if 0
+
+    // Straightforward implementation.
+
+    T x = 0.0;
+    T b = 0.5;
+
+    while (n)
+    {
+        x += (n & 1) * b;
+        b *= T(0.5);
+        n >>= 1;
+    }
+
+    return x;
+
+#else
+
+    // Directly reverse the bit sequence of n by doing successive swaps.
+    n = (n >> 16) | (n << 16);      // 16-bit swap
+    n = ((n & 0xFF00FF00) >> 8) |
+        ((n & 0x00FF00FF) << 8);    // 8-bit swap
+    n = ((n & 0xF0F0F0F0) >> 4) |
+        ((n & 0x0F0F0F0F) << 4);    // 4-bit swap
+    n = ((n & 0xCCCCCCCC) >> 2) |
+        ((n & 0x33333333) << 2);    // 2-bit swap
+    n = ((n & 0xAAAAAAAA) >> 1) |
+        ((n & 0x55555555) << 1);    // 1-bit swap
+
+    // Scrambling.
+    n ^= r;
 
     return static_cast<T>(n) / static_cast<T>(0x100000000LL);
 
@@ -332,8 +392,10 @@ inline Vector<T, Dim> halton_sequence(
     size_t          n)
 {
     Vector<T, Dim> p;
+
     for (size_t i = 0; i < Dim; ++i)
         p[i] = radical_inverse<T>(bases[i], n);
+
     return p;
 }
 
@@ -344,11 +406,13 @@ inline Vector<T, Dim> halton_sequence(
     size_t          n)
 {
     Vector<T, Dim> p;
+
     for (size_t i = 0; i < Dim; ++i)
     {
         p[i] = permuted_radical_inverse<T>(bases[i], perms, n);
         perms += bases[i];
     }
+
     return p;
 }
 
@@ -358,8 +422,10 @@ inline Vector<T, Dim> halton_zaremba_sequence(
     size_t          n)
 {
     Vector<T, Dim> p;
+
     for (size_t i = 0; i < Dim; ++i)
         p[i] = folded_radical_inverse<T>(bases[i], n);
+
     return p;
 }
 
@@ -375,9 +441,24 @@ inline Vector<T, Dim> hammersley_sequence(
     size_t          count)
 {
     Vector<T, Dim> p;
+
     p[0] = static_cast<T>(n) / count;
+
     for (size_t i = 1; i < Dim; ++i)
         p[i] = radical_inverse<T>(bases[i - 1], n);
+
+    return p;
+}
+
+template <typename T>
+inline Vector<T, 2> hammersley_sequence(
+    const size_t    r,
+    size_t          n,
+    size_t          count)
+{
+    Vector<T, 2> p;
+    p[0] = static_cast<T>(n) / count;
+    p[1] = radical_inverse_base2<T>(r, n);
     return p;
 }
 
@@ -389,12 +470,15 @@ inline Vector<T, Dim> hammersley_sequence(
     size_t          count)
 {
     Vector<T, Dim> p;
+
     p[0] = static_cast<T>(n) / count;
+
     for (size_t i = 1; i < Dim; ++i)
     {
         p[i] = permuted_radical_inverse<T>(bases[i - 1], perms, n);
         perms += bases[i - 1];
     }
+
     return p;
 }
 
@@ -405,9 +489,12 @@ inline Vector<T, Dim> hammersley_zaremba_sequence(
     size_t          count)
 {
     Vector<T, Dim> p;
+
     p[0] = static_cast<T>(n) / count;
+
     for (size_t i = 1; i < Dim; ++i)
         p[i] = folded_radical_inverse<T>(bases[i - 1], n);
+
     return p;
 }
 

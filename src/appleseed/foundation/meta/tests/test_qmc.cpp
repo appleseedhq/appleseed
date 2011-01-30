@@ -157,8 +157,8 @@ TEST_SUITE(Foundation_Math_QMC)
         for (size_t i = 0; i < PointCount; ++i)
             points.push_back(halton_sequence<double, 2>(bases, perms, initial_instance + i));
 
-        string filename =
-              "output/test_qmc_halton_" + permutation + "_scrambled_"
+        const string filename =
+              "output/test_qmc_halton_" + permutation + "_permuted_"
             + to_string(b0) + "_" + to_string(b1) + "_"
             + (initial_instance > 0 ? to_string(initial_instance) : "")
             + ".png";
@@ -210,7 +210,7 @@ TEST_SUITE(Foundation_Math_QMC)
             points.push_back(hammersley_sequence<double, 2>(bases, perms, i, PointCount));
 
         write_point_cloud_image(
-            "output/test_qmc_hammersley_" + permutation + "_scrambled_" + to_string(b) + ".png",
+            "output/test_qmc_hammersley_" + permutation + "_permuted_" + to_string(b) + ".png",
             points);
     }
 
@@ -243,6 +243,7 @@ TEST_SUITE(Foundation_Math_QMC)
         const size_t    b)
     {
         const size_t bases[1] = { b };
+
         vector<Vector2d> points;
 
         for (size_t i = 0; i < PointCount; ++i)
@@ -260,5 +261,25 @@ TEST_SUITE(Foundation_Math_QMC)
         generate_hammersley_zaremba_sequence_image(5);
         generate_hammersley_zaremba_sequence_image(7);
         generate_hammersley_zaremba_sequence_image(11);
+    }
+
+    TEST_CASE(Generate2DScrambledHammersleySequenceImage)
+    {
+        // This test illustrates what happens when each sample of the Hammersley set
+        // is scrambled with a distinct random value: the resulting sample set is
+        // indistinguishable from what would be obtained using pure random sampling.
+
+        vector<Vector2d> points;
+        MersenneTwister rng;
+
+        for (size_t i = 0; i < PointCount; ++i)
+        {
+            const size_t r = rand_int31(rng);
+            points.push_back(hammersley_sequence<double>(r, i, PointCount));
+        }
+
+        write_point_cloud_image(
+            "output/test_qmc_hammersley_2d_scrambled.png",
+            points);
     }
 }
