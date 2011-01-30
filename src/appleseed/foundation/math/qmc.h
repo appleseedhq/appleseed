@@ -271,24 +271,6 @@ inline T radical_inverse_base2(
     const size_t    r,
     size_t          n)
 {
-#if 0
-
-    // Straightforward implementation.
-
-    T x = 0.0;
-    T b = 0.5;
-
-    while (n)
-    {
-        x += (n & 1) * b;
-        b *= T(0.5);
-        n >>= 1;
-    }
-
-    return x;
-
-#else
-
     // Directly reverse the bit sequence of n by doing successive swaps.
     n = (n >> 16) | (n << 16);      // 16-bit swap
     n = ((n & 0xFF00FF00) >> 8) |
@@ -304,8 +286,6 @@ inline T radical_inverse_base2(
     n ^= r;
 
     return static_cast<T>(n) / static_cast<T>(0x100000000LL);
-
-#endif
 }
 
 template <typename T>
