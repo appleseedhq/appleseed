@@ -295,11 +295,10 @@ void DiagnosticSurfaceShader::evaluate(
         {
             // Retrieve the camera.
             const Scene& scene = shading_point.get_scene();
-            const Camera* camera = scene.get_camera();
-            assert(camera);
+            const Camera& camera = *scene.get_camera();
             
             // Retrieve the camera transformation.
-            const Transformd& camera_transform = camera->get_transform();
+            const Transformd& camera_transform = camera.get_transform();
 
             // Retrieve world space triangle vertices.
             const Vector3d& v0 = shading_point.get_vertex(0);
@@ -312,9 +311,9 @@ void DiagnosticSurfaceShader::evaluate(
             const Vector3d v2_cs = camera_transform.transform_point_to_local(v2);
 
             // Project triangle vertices to film space.
-            const Vector2d v0_fs = camera->project(v0_cs);
-            const Vector2d v1_fs = camera->project(v1_cs);
-            const Vector2d v2_fs = camera->project(v2_cs);
+            const Vector2d v0_fs = camera.project(v0_cs);
+            const Vector2d v1_fs = camera.project(v1_cs);
+            const Vector2d v2_fs = camera.project(v2_cs);
 
             // Retrieve world space intersection point.
             const Vector3d& point = shading_point.get_point();
@@ -323,7 +322,7 @@ void DiagnosticSurfaceShader::evaluate(
             const Vector3d point_cs = camera_transform.transform_point_to_local(point);
 
             // Project intersection point to film space.
-            const Vector2d point_fs = camera->project(point_cs);
+            const Vector2d point_fs = camera.project(point_cs);
 
             // Compute film space distance from intersection point to triangle edges.
             const double d0 = square_distance_point_segment(point_fs, v0_fs, v1_fs);
