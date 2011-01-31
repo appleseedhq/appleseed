@@ -100,11 +100,12 @@ namespace
             shading_result.m_color_space = ColorSpaceSpectral;
 
             // Retrieve the lighting engine.
-            ILightingEngine& lighting_engine =
+            ILightingEngine* lighting_engine =
                 shading_context.get_lighting_engine();
+            assert(lighting_engine);
 
             // Compute the lighting.
-            lighting_engine.compute_lighting(
+            lighting_engine->compute_lighting(
                 sampling_context,
                 shading_context,
                 shading_point,

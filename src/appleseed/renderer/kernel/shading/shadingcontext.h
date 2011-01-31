@@ -52,7 +52,7 @@ class ShadingContext
     ShadingContext(
         const Intersector&      intersector,
         TextureCache&           texture_cache,
-        ILightingEngine&        lighting_engine);
+        ILightingEngine*        lighting_engine = 0);
 
     // Return the intersector.
     const Intersector& get_intersector() const;
@@ -61,12 +61,12 @@ class ShadingContext
     TextureCache& get_texture_cache() const;
 
     // Return the light transport solver.
-    ILightingEngine& get_lighting_engine() const;
+    ILightingEngine* get_lighting_engine() const;
 
   private:
     const Intersector&          m_intersector;
     TextureCache&               m_texture_cache;
-    ILightingEngine&            m_lighting_engine;
+    ILightingEngine*            m_lighting_engine;
 };
 
 
@@ -77,7 +77,7 @@ class ShadingContext
 inline ShadingContext::ShadingContext(
     const Intersector&          intersector,
     TextureCache&               texture_cache,
-    ILightingEngine&            lighting_engine)
+    ILightingEngine*            lighting_engine)
   : m_intersector(intersector)
   , m_texture_cache(texture_cache)
   , m_lighting_engine(lighting_engine)
@@ -94,7 +94,7 @@ inline TextureCache& ShadingContext::get_texture_cache() const
     return m_texture_cache;
 }
 
-inline ILightingEngine& ShadingContext::get_lighting_engine() const
+inline ILightingEngine* ShadingContext::get_lighting_engine() const
 {
     return m_lighting_engine;
 }

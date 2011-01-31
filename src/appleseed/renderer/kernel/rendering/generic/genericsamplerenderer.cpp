@@ -88,13 +88,9 @@ namespace
             const Vector2d&         image_point,        // point in image plane, in NDC
             ShadingResult&          shading_result)
         {
-            // Retrieve the camera.
-            const Camera* camera = m_scene.get_camera();
-            assert(camera);
-
             // Construct a primary ray.
             ShadingRay primary_ray;
-            camera->generate_ray(
+            m_scene.get_camera()->generate_ray(
                 sampling_context,
                 image_point,
                 0.0f,               // ray time
@@ -108,7 +104,7 @@ namespace
             ShadingContext shading_context(
                 m_intersector,
                 m_texture_cache,
-                *m_lighting_engine);
+                m_lighting_engine);
 
             // Shade the intersection point.
             m_shading_engine.shade(

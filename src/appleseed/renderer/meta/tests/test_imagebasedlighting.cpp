@@ -30,7 +30,6 @@
 #include "renderer/global/global.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/intersection/tracecontext.h"
-#include "renderer/kernel/lighting/null/null.h"
 #include "renderer/kernel/lighting/imagebasedlighting.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/texturing/texturecache.h"
@@ -61,17 +60,13 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
         MersenneTwister     m_rng;
         SamplingContext     m_sampling_context;
         TextureCache        m_texture_cache;
-        NullLightingEngine  m_lighting_engine;
         ShadingContext      m_shading_context;
 
         Fixture()
           : m_intersector(m_project.get_trace_context(), false)
           , m_sampling_context(m_rng)
           , m_texture_cache(m_scene, 1)
-          , m_shading_context(
-                m_intersector,
-                m_texture_cache,
-                m_lighting_engine)
+          , m_shading_context(m_intersector, m_texture_cache)
         {
         }
     };
