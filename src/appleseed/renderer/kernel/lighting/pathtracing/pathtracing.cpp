@@ -111,20 +111,21 @@ namespace
             Spectrum&               radiance)   // output radiance, in W.sr^-1.m^-2
         {
             typedef PathTracer<
-                PathVertexVisitor,
+                PathVisitor,
                 BSDF::Diffuse | BSDF::Glossy | BSDF::Specular,
                 false                           // not adjoint
             > PathTracer;
 
-            PathVertexVisitor path_vertex_visitor(
+            PathVisitor path_visitor(
                 m_params,
                 m_light_sampler,
                 m_light_samples,
                 shading_context,
-                shading_point.get_scene());
+                shading_point.get_scene(),
+                radiance);
 
             PathTracer path_tracer(
-                path_vertex_visitor,
+                path_visitor,
                 m_params.m_minimum_path_length);
 
             const size_t path_length =
@@ -132,8 +133,7 @@ namespace
                     sampling_context,
                     shading_context.get_intersector(),
                     shading_context.get_texture_cache(),
-                    shading_point,
-                    radiance);
+                    shading_point);
 
             // Update statistics.
             ++m_stats.m_path_count;
@@ -170,26 +170,30 @@ namespace
             }
         };
 
-        class PathVertexVisitor
+        class PathVisitor
         {
           public:
-            PathVertexVisitor(
+            PathVisitor(
                 const Parameters&       params,
                 const LightSampler&     light_sampler,
                 LightSampleVector&      light_samples,
                 const ShadingContext&   shading_context,
-                const Scene&            scene)
+                const Scene&            scene,
+                Spectrum&               path_radiance)
               : m_params(params)
               , m_light_sampler(light_sampler)
               , m_light_samples(light_samples)
               , m_shading_context(shading_context)
               , m_texture_cache(shading_context.get_texture_cache())
+              , m_path_radiance(path_radiance)
             {
                 const Environment* environment = scene.get_environment();
                 m_env_edf = environment ? environment->get_environment_edf() : 0;
+
+                m_path_radiance.set(0.0f);
             }
 
-            void get_vertex_radiance(
+            void visit_vertex(
                 SamplingContext&        sampling_context,
                 const ShadingPoint&     shading_point,
                 const Vector3d&         outgoing,
@@ -197,7 +201,7 @@ namespace
                 const void*             bsdf_data,
                 const BSDF::Mode        bsdf_mode,
                 const double            bsdf_prob,
-                Spectrum&               vertex_radiance)
+                const Spectrum&         throughput)
             {
                 const Vector3d& point = shading_point.get_point();
                 const Vector3d& geometric_normal = shading_point.get_geometric_normal();
@@ -227,6 +231,7 @@ namespace
                         m_light_samples);
 
                     // Compute the incident radiance due to this light sample.
+                    Spectrum vertex_radiance;
                     compute_direct_lighting(
                         sampling_context,
                         m_shading_context,
@@ -294,6 +299,10 @@ namespace
 
                         vertex_radiance += emitted_radiance;
                     }
+
+                    // Update the path radiance.
+                    vertex_radiance *= throughput;
+                    m_path_radiance += vertex_radiance;
                 }
                 else
                 {
@@ -307,38 +316,45 @@ namespace
                             shading_basis,
                             outgoing,
                             emitted_radiance);
-                        vertex_radiance += emitted_radiance;
+
+                        // Update the path radiance.
+                        emitted_radiance *= throughput;
+                        m_path_radiance += emitted_radiance;
                     }
                 }
             }
 
-            bool get_environment_radiance(
+            void visit_environment(
                 const ShadingPoint&     shading_point,
                 const Vector3d&         outgoing,
-                Spectrum&               environment_radiance)
+                const Spectrum&         throughput)
             {
                 if (m_params.m_next_event_estimation)
-                    return false;
+                    return;
 
                 const Scene& scene = shading_point.get_scene();
 
-                // Retrieve the environment.
+                // Retrieve the environment, do nothing if there is none.
                 const Environment* environment = scene.get_environment();
                 if (!environment)
-                    return false;
+                    return;
 
-                // Retrieve the environment's EDF.
+                // Retrieve the environment EDF, do nothing if there is none.
                 const EnvironmentEDF* env_edf = environment->get_environment_edf();
                 if (!env_edf)
-                    return false;
+                    return;
 
+                // Evaluate the environment EDF.
                 InputEvaluator input_evaluator(m_texture_cache);
+                Spectrum environment_radiance;
                 env_edf->evaluate(
                     input_evaluator,
                     -outgoing,
                     environment_radiance);
 
-                return true;
+                // Update the path radiance.
+                environment_radiance *= throughput;
+                m_path_radiance += environment_radiance;
             }
 
           private:
@@ -348,6 +364,7 @@ namespace
             const ShadingContext&   m_shading_context;
             TextureCache&           m_texture_cache;
             const EnvironmentEDF*   m_env_edf;
+            Spectrum&               m_path_radiance;
         };
 
         const Parameters        m_params;

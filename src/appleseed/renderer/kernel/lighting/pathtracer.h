@@ -58,27 +58,28 @@ namespace renderer
 // A generic path tracer.
 //
 
-template <
-    typename    PathVertexVisitor,
-    int         ScatteringModesMask,
-    bool        Adjoint
->
+template <typename PathVisitor, int ScatteringModesMask, bool Adjoint>
 class PathTracer
 {
   public:
     PathTracer(
-        PathVertexVisitor&      vertex_visitor,
+        PathVisitor&            path_visitor,
         const size_t            rr_minimum_path_length);
 
     size_t trace(
         SamplingContext&        sampling_context,
         const Intersector&      intersector,
         TextureCache&           texture_cache,
-        const ShadingPoint&     shading_point,
-        Spectrum&               radiance);          // output radiance, in W.sr^-1.m^-2
+        const ShadingRay&       ray);
+
+    size_t trace(
+        SamplingContext&        sampling_context,
+        const Intersector&      intersector,
+        TextureCache&           texture_cache,
+        const ShadingPoint&     shading_point);
 
   private:
-    PathVertexVisitor&          m_vertex_visitor;
+    PathVisitor&                m_path_visitor;
     const size_t                m_rr_minimum_path_length;
 
     static bool has_reached_max_path_length(const size_t path_length);
@@ -89,34 +90,40 @@ class PathTracer
 // PathTracer class implementation.
 //
 
-template <
-    typename    PathVertexVisitor,
-    int         ScatteringModesMask,
-    bool        Adjoint
->
-PathTracer<PathVertexVisitor, ScatteringModesMask, Adjoint>::PathTracer(
-    PathVertexVisitor&          vertex_visitor,
+template <typename PathVisitor, int ScatteringModesMask, bool Adjoint>
+inline PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::PathTracer(
+    PathVisitor&                path_visitor,
     const size_t                rr_minimum_path_length)
-  : m_vertex_visitor(vertex_visitor)
+  : m_path_visitor(path_visitor)
   , m_rr_minimum_path_length(rr_minimum_path_length)
 {
 }
 
-template <
-    typename    PathVertexVisitor,
-    int         ScatteringModesMask,
-    bool        Adjoint
->
-size_t PathTracer<PathVertexVisitor, ScatteringModesMask, Adjoint>::trace(
+template <typename PathVisitor, int ScatteringModesMask, bool Adjoint>
+inline size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
     SamplingContext&            sampling_context,
     const Intersector&          intersector,
     TextureCache&               texture_cache,
-    const ShadingPoint&         shading_point,
-    Spectrum&                   radiance)
+    const ShadingRay&           ray)
 {
-    // Initialize path radiance.
-    radiance.set(0.0f);
+    ShadingPoint shading_point;
+    intersector.trace(ray, shading_point);
 
+    return
+        trace(
+            sampling_context,
+            intersector,
+            texture_cache,
+            shading_point);
+}
+
+template <typename PathVisitor, int ScatteringModesMask, bool Adjoint>
+size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
+    SamplingContext&            sampling_context,
+    const Intersector&          intersector,
+    TextureCache&               texture_cache,
+    const ShadingPoint&         shading_point)
+{
     ShadingPoint shading_points[2];
     size_t shading_point_index = 0;
     const ShadingPoint* shading_point_ptr = &shading_point;
@@ -138,16 +145,10 @@ size_t PathTracer<PathVertexVisitor, ScatteringModesMask, Adjoint>::trace(
         // Terminate the path if the ray didn't hit anything.
         if (!shading_point_ptr->hit())
         {
-            Spectrum environment_radiance;
-            if (m_vertex_visitor.get_environment_radiance(
-                    *shading_point_ptr,
-                    normalize(-ray.m_dir),
-                    environment_radiance))
-            {
-                // Update the path radiance.
-                environment_radiance *= throughput;
-                radiance += environment_radiance;
-            }
+            m_path_visitor.visit_environment(
+                *shading_point_ptr,
+                normalize(-ray.m_dir),
+                throughput);
 
             break;
         }
@@ -214,9 +215,8 @@ size_t PathTracer<PathVertexVisitor, ScatteringModesMask, Adjoint>::trace(
         // Compute the outgoing direction.
         const foundation::Vector3d outgoing = normalize(-ray.m_dir);
 
-        // Compute the contribution of this vertex to the path radiance.
-        Spectrum vertex_radiance;
-        m_vertex_visitor.get_vertex_radiance(
+        // Compute radiance contribution at this vertex.
+        m_path_visitor.visit_vertex(
             sampling_context,
             *shading_point_ptr,
             outgoing,
@@ -224,11 +224,7 @@ size_t PathTracer<PathVertexVisitor, ScatteringModesMask, Adjoint>::trace(
             bsdf_data,
             bsdf_mode,
             bsdf_prob,
-            vertex_radiance);
-
-        // Update the path radiance.
-        vertex_radiance *= throughput;
-        radiance += vertex_radiance;
+            throughput);
 
         // Generate a uniform sample in [0,1)^4.
         sampling_context = sampling_context.split(4, 1);
@@ -253,7 +249,7 @@ size_t PathTracer<PathVertexVisitor, ScatteringModesMask, Adjoint>::trace(
         if (!(bsdf_mode & ScatteringModesMask))
             break;
 
-        // Multiply the BSDF value by cos(theta).
+        // Multiply the BSDF value by |cos(theta)|.
         assert(foundation::is_normalized(incoming));
         const double cos_in =
             std::abs(
@@ -304,13 +300,9 @@ size_t PathTracer<PathVertexVisitor, ScatteringModesMask, Adjoint>::trace(
     return path_length;
 }
 
-template <
-    typename    PathVertexVisitor,
-    int         ScatteringModesMask,
-    bool        Adjoint
->
-inline
-bool PathTracer<PathVertexVisitor, ScatteringModesMask, Adjoint>::has_reached_max_path_length(const size_t path_length)
+template <typename PathVisitor, int ScatteringModesMask, bool Adjoint>
+inline bool PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::
+    has_reached_max_path_length(const size_t path_length)
 {
     const size_t MaxPathLength = 10000;
 
