@@ -33,7 +33,6 @@
 #include "renderer/kernel/rendering/progressiveframebuffer.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
 #include "foundation/utility/job.h"
 #include "foundation/utility/memory.h"
 
@@ -72,15 +71,14 @@ void SampleGeneratorBase::generate_samples(
 {
     assert(sample_count > 0);
 
-    ensure_size(m_samples, sample_count);
+    clear_keep_memory(m_samples);
+    m_samples.reserve(sample_count);
 
-    Sample* RESTRICT sample_org = &m_samples[0];
-    Sample* RESTRICT sample_ptr = sample_org;
-    Sample* RESTRICT sample_end = sample_ptr + sample_count;
+    size_t current_sample_count = 0;
 
-    while (sample_ptr < sample_end)
+    while (current_sample_count < sample_count)
     {
-        generate_sample(*sample_ptr++);
+        current_sample_count += generate_samples(m_sequence_index, m_samples);
 
         ++m_sequence_index;
 
@@ -94,8 +92,8 @@ void SampleGeneratorBase::generate_samples(
         }
     }
 
-    // Only store those samples that were effectively computed.
-    framebuffer.store_samples(sample_ptr - sample_org, sample_org);
+    if (current_sample_count > 0)
+        framebuffer.store_samples(current_sample_count, &m_samples[0]);
 }
 
 }   // namespace renderer

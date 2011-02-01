@@ -66,14 +66,20 @@ class SampleGeneratorBase
         foundation::AbortSwitch&    abort_switch);
 
   protected:
-    // Generate a single sample.
-    virtual void generate_sample(Sample& sample) = 0;
+    typedef std::vector<Sample> SampleVector;
 
+    // Generate one or multiple samples for a given sequence index and store them in @samples.
+    // Return the number of samples that were stored.
+    virtual size_t generate_samples(
+        const size_t                sequence_index,
+        SampleVector&               samples) = 0;
+
+  private:
     const size_t                    m_generator_index;
     const size_t                    m_stride;
     size_t                          m_sequence_index;
     size_t                          m_current_batch_size;
-    std::vector<Sample>             m_samples;
+    SampleVector                    m_samples;
 };
 
 }       // namespace renderer

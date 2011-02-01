@@ -161,8 +161,11 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     if (!bind_inputs())
         return IRendererController::AbortRendering;
 
+    const Scene& scene = *m_project.get_scene();
+    Frame& frame = *m_project.get_frame();
+
     // Create the light sampler.
-    LightSampler light_sampler(*m_project.get_scene());
+    LightSampler light_sampler(scene);
 
     // Create the shading engine.
     ShadingEngine shading_engine(m_params.child("shading_engine"));
@@ -179,12 +182,16 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     if (lighting_engine_param == "drt")
     {
         lighting_engine_factory.reset(
-            new DRTLightingEngineFactory(light_sampler, m_params.child("drt")));
+            new DRTLightingEngineFactory(
+                light_sampler,
+                m_params.child("drt")));
     }
     else if (lighting_engine_param == "pt")
     {
         lighting_engine_factory.reset(
-            new PTLightingEngineFactory(light_sampler, m_params.child("pt")));
+            new PTLightingEngineFactory(
+                light_sampler,
+                m_params.child("pt")));
     }
 
     //
@@ -200,7 +207,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     {
         sample_renderer_factory.reset(
             new GenericSampleRendererFactory(
-                *m_project.get_scene(),
+                scene,
                 m_project.get_trace_context(),
                 lighting_engine_factory.get(),
                 shading_engine,
@@ -220,7 +227,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     {
         tile_renderer_factory.reset(
             new GenericTileRendererFactory(
-                *m_project.get_frame(),
+                frame,
                 sample_renderer_factory.get(),
                 m_params.child("generic_tile_renderer")));
     }
@@ -246,14 +253,18 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     {
         sample_generator_factory.reset(
             new GenericSampleGeneratorFactory(
-                *m_project.get_frame(),
+                frame,
                 sample_renderer_factory.get()));
     }
     else if (sample_generator_param == "lighttracing")
     {
         sample_generator_factory.reset(
             new LightTracingSampleGeneratorFactory(
-                *m_project.get_frame()));
+                scene,
+                frame,
+                m_project.get_trace_context(),
+                light_sampler,
+                m_params.child("lighttracing_sample_generator")));
     }
 
     //
@@ -269,7 +280,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     {
         frame_renderer.reset(
             GenericFrameRendererFactory::create(
-                *m_project.get_frame(),
+                frame,
                 tile_renderer_factory.get(),
                 m_tile_callback_factory,
                 m_params.child("generic_frame_renderer")));
@@ -278,7 +289,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     {
         frame_renderer.reset(
             ProgressiveFrameRendererFactory::create(
-                *m_project.get_frame(),
+                frame,
                 sample_generator_factory.get(),
                 m_tile_callback_factory,
                 m_params.child("progressive_frame_renderer")));

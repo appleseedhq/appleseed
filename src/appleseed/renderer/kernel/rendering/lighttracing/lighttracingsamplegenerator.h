@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/isamplegenerator.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -40,6 +41,9 @@
 
 // Forward declarations.
 namespace renderer      { class Frame; }
+namespace renderer      { class LightSampler; }
+namespace renderer      { class Scene; }
+namespace renderer      { class TraceContext; }
 
 namespace renderer
 {
@@ -49,18 +53,27 @@ class DLLSYMBOL LightTracingSampleGeneratorFactory
 {
   public:
     // Constructor.
-    explicit LightTracingSampleGeneratorFactory(Frame& frame);
+    LightTracingSampleGeneratorFactory(
+        const Scene&            scene,
+        const Frame&            frame,
+        const TraceContext&     trace_context,
+        const LightSampler&     light_sampler,
+        const ParamArray&       params);
 
     // Delete this instance.
     virtual void release();
 
     // Return a new sample generator instance.
     virtual ISampleGenerator* create(
-        const size_t    generator_index,
-        const size_t    generator_count);
+        const size_t            generator_index,
+        const size_t            generator_count);
 
   private:
-    Frame&  m_frame;
+    const Scene&                m_scene;
+    const Frame&                m_frame;
+    const TraceContext&         m_trace_context;
+    const LightSampler&         m_light_sampler;
+    const ParamArray            m_params;
 };
 
 }       // namespace renderer

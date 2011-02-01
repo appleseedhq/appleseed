@@ -90,11 +90,13 @@ namespace
         const LightingConditions&           m_lighting_conditions;
         MersenneTwister                     m_rng;
 
-        virtual void generate_sample(Sample& sample)
+        virtual size_t generate_samples(
+            const size_t                    sequence_index,
+            SampleVector&                   samples)
         {
             // Compute the sample coordinates in [0,1)^2.
             const size_t Bases[2] = { 2, 3 };
-            const Vector2d s = halton_sequence<double, 2>(Bases, m_sequence_index);
+            const Vector2d s = halton_sequence<double, 2>(Bases, sequence_index);
 
             // Compute the sample position, in NDC.
             const Vector2d sample_position = m_frame.get_sample_position(s.x, s.y);
@@ -104,7 +106,7 @@ namespace
                 m_rng,
                 2,                          // number of dimensions
                 0,                          // number of samples
-                m_sequence_index);          // initial instance number
+                sequence_index);            // initial instance number
 
             // Render the sample.
             ShadingResult shading_result;
@@ -116,12 +118,16 @@ namespace
             // Transform the sample to the linear RGB color space.
             shading_result.transform_to_linear_rgb(m_lighting_conditions);
 
-            // Return the sample.
+            // Create a single sample.
+            Sample sample;
             sample.m_position = sample_position;
             sample.m_color[0] = shading_result.m_color[0];
             sample.m_color[1] = shading_result.m_color[1];
             sample.m_color[2] = shading_result.m_color[2];
             sample.m_color[3] = shading_result.m_alpha[0];
+            samples.push_back(sample);
+
+            return 1;
         }
     };
 }
