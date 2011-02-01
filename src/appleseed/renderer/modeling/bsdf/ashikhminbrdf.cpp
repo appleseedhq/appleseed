@@ -267,7 +267,7 @@ namespace
             const double num = pow(max(cos_hn, 0.0), exp);
             const double den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
             value = schlick_fresnel_reflection(values->m_rg, cos_oh);
-            value *= static_cast<float>(sval.m_kg8 * num / den);
+            value *= static_cast<float>(sval.m_kg * num / den);
 
             // Evaluate the diffuse component of the BRDF (equation 5).
             const double a = 1.0 - pow5(1.0 - 0.5 * cos_in);
@@ -279,8 +279,8 @@ namespace
             assert(pdf_diffuse > 0.0);
 
             // Evaluate the PDF of the glossy component (equation 8).
-            const double pdf_h = sval.m_kg2 * num;
-            const double pdf_glossy = pdf_h / (4.0 * cos_oh);
+            const double pdf_h = sval.m_kg * num;
+            const double pdf_glossy = pdf_h / cos_oh;
             assert(pdf_glossy >= 0.0);
 
             // Evaluate the final PDF.
@@ -339,7 +339,7 @@ namespace
             const double exp_num_v = values->m_nv * cos_hv * cos_hv;
             const double exp_den = 1.0 - cos_hn * cos_hn;
             const double exp = (exp_num_u + exp_num_v) / exp_den;
-            const double num = sval.m_kg8 * pow(max(cos_hn, 0.0), exp);
+            const double num = sval.m_kg * pow(max(cos_hn, 0.0), exp);
             const double den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
             Spectrum glossy = schlick_fresnel_reflection(values->m_rg, cos_oh);
             glossy *= static_cast<float>(num / den);
@@ -395,10 +395,10 @@ namespace
             const double exp_num_v = values->m_nv * cos_hv * cos_hv;
             const double exp_den = 1.0 - cos_hn * cos_hn;
             const double exp = (exp_num_u + exp_num_v) / exp_den;
-            const double pdf_h = sval.m_kg2 * pow(max(cos_hn, 0.0), exp);
+            const double pdf_h = sval.m_kg * pow(max(cos_hn, 0.0), exp);
 
             // Evaluate the PDF of the glossy component (equation 8).
-            const double pdf_glossy = pdf_h / (4.0 * cos_oh);
+            const double pdf_glossy = pdf_h / cos_oh;
             assert(pdf_glossy >= 0.0);
 
             // Evaluate the PDF of the diffuse component.
@@ -435,8 +435,7 @@ namespace
         // Precomputed shininess-related values.
         struct SVal
         {
-            double      m_kg2;
-            double      m_kg8;
+            double      m_kg;
             double      m_k;
         };
 
@@ -474,8 +473,7 @@ namespace
         static void compute_sval(const double nu, const double nv, SVal& sval)
         {
             // Precompute constant factor of glossy component (equations 4 and 6).
-            sval.m_kg2 = sqrt((nu + 1.0) * (nv + 1.0)) * (1.0 / TwoPi);
-            sval.m_kg8 = sval.m_kg2 * (1.0 / 4.0);
+            sval.m_kg = sqrt((nu + 1.0) * (nv + 1.0)) / (8.0 * Pi);
 
             // Precompute constant factor needed during hemisphere sampling.
             sval.m_k = sqrt((nu + 1.0) / (nv + 1.0));
