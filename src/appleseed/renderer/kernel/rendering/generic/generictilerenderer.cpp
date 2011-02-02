@@ -197,17 +197,17 @@ namespace
                         for (size_t sx = 0; sx < m_sqrt_max_samples; ++sx)
                         {
                             // Compute the sample position in sample space and the instance number.
-                            Vector2d sample_position;
+                            Vector2d s;
                             size_t instance;
                             m_pixel_sampler.sample(
                                 base_sx + sx,
                                 base_sy + sy,
-                                sample_position,
+                                s,
                                 instance);
 
-                            // Transform the sample position from sample space to NDC.
-                            sample_position[0] = sample_position[0] * m_rcp_sample_canvas_width - 0.5;
-                            sample_position[1] = 0.5 - sample_position[1] * m_rcp_sample_canvas_height;
+                            // Compute the sample position in NDC.
+                            const Vector2d sample_position =
+                                frame.get_sample_position(s.x, s.y);
 
                             // Create a sampling context.
                             SamplingContext sampling_context(

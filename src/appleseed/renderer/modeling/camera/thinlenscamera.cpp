@@ -161,8 +161,8 @@ namespace
 
             // Compute the location of the focus point.
             const Vector3d focus_point(
-                point.x * m_kx,
-                point.y * m_ky,
+                (point.x - 0.5) * m_kx,
+                (0.5 - point.y) * m_ky,
                 -m_focal_distance);
 
             // Set the ray direction.
@@ -188,7 +188,7 @@ namespace
         double              m_focal_length;         // focal length, in meters
         double              m_f_stop;               // f-stop
         bool                m_autofocus_enabled;    // is autofocus enabled?
-        Vector2d            m_autofocus_target;     // autofocus target on film plane, in NDC
+        Vector2d            m_autofocus_target;     // autofocus target on film plane in [0.5,0.5)^2
         double              m_focal_distance;       // focal distance, in meters
         double              m_lens_radius;          // radius of the lens, in meters, in local space
 
@@ -219,8 +219,8 @@ namespace
 
             // Transform the film point from NDC to camera space.
             const Vector3d target(
-                m_autofocus_target[0] * m_film_dimensions[0],
-                m_autofocus_target[1] * m_film_dimensions[1],
+                (m_autofocus_target[0] - 0.5) * m_film_dimensions[0],
+                (0.5 - m_autofocus_target[1]) * m_film_dimensions[1],
                 -m_focal_length);
 
             // Set the ray direction.

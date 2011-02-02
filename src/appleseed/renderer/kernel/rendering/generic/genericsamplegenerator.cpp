@@ -94,12 +94,10 @@ namespace
             const size_t                    sequence_index,
             SampleVector&                   samples)
         {
-            // Compute the sample coordinates in [0,1)^2.
+            // Compute the sample position in NDC.
             const size_t Bases[2] = { 2, 3 };
-            const Vector2d s = halton_sequence<double, 2>(Bases, sequence_index);
-
-            // Compute the sample position, in NDC.
-            const Vector2d sample_position = m_frame.get_sample_position(s.x, s.y);
+            const Vector2d sample_position =
+                halton_sequence<double, 2>(Bases, sequence_index);
 
             // Create a sampling context.
             SamplingContext sampling_context(

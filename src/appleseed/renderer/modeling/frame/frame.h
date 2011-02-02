@@ -75,11 +75,10 @@ class RENDERERDLL Frame
         const size_t        tile_x,
         const size_t        tile_y) const;
 
-    // Return the coordinates of a given sample.
-    // The returned point is expressed in normalized device coordinates [-0.5,0.5]^2.
+    // Return the normalized device coordinates of a given sample.
     foundation::Vector2d get_sample_position(
-        const double        sample_x,           // x coordinate of the sample in the image, in [0,1)
-        const double        sample_y) const;    // y coordinate of the sample in the image, in [0,1)
+        const double        sample_x,           // x coordinate of the sample in the image, in [0,width)
+        const double        sample_y) const;    // y coordinate of the sample in the image, in [0,height)
     foundation::Vector2d get_sample_position(
         const size_t        pixel_x,            // x coordinate of the pixel in the image
         const size_t        pixel_y,            // y coordinate of the pixel in the image
@@ -137,13 +136,15 @@ inline foundation::Vector2d Frame::get_sample_position(
     const double    sample_x,
     const double    sample_y) const
 {
-    assert(sample_x >= 0.0 && sample_x < 1.0);
-    assert(sample_y >= 0.0 && sample_y < 1.0);
+    assert(sample_x >= 0.0 && sample_x < static_cast<double>(m_props.m_canvas_width));
+    assert(sample_y >= 0.0 && sample_y < static_cast<double>(m_props.m_canvas_height));
 
-    const foundation::Vector2d p(sample_x - 0.5, 0.5 - sample_y);
+    const foundation::Vector2d p(
+        sample_x * m_props.m_rcp_canvas_width,
+        sample_y * m_props.m_rcp_canvas_height);
 
-    assert(p.x >= -0.5 && p.x <= 0.5);
-    assert(p.y >= -0.5 && p.y <= 0.5);
+    assert(p.x >= 0.0 && p.x < 1.0);
+    assert(p.y >= 0.0 && p.y < 1.0);
 
     return p;
 }
@@ -159,20 +160,10 @@ inline foundation::Vector2d Frame::get_sample_position(
     assert(sample_x >= 0.0 && sample_x < 1.0);
     assert(sample_y >= 0.0 && sample_y < 1.0);
 
-    foundation::Vector2d p;
-
-    // Compute sample coordinates in image space.
-    p.x = pixel_x + sample_x;
-    p.y = pixel_y + sample_y;
-
-    // Remap to normalized device coordinates.
-    p.x = p.x * m_props.m_rcp_canvas_width - 0.5;
-    p.y = 0.5 - p.y * m_props.m_rcp_canvas_height;
-
-    assert(p.x >= -0.5 && p.x <= 0.5);
-    assert(p.y >= -0.5 && p.y <= 0.5);
-
-    return p;
+    return
+        get_sample_position(
+            pixel_x + sample_x,
+            pixel_y + sample_y);
 }
 
 inline foundation::Vector2d Frame::get_sample_position(

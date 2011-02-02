@@ -47,7 +47,6 @@ class RENDERERDLL ISampleRenderer
 {
   public:
     // Render a sample at a given point on the image plane.
-    // The point is expressed in normalized device coordinates (NDC).
     // See renderer::Camera class documentation for details.
     virtual void render_sample(
         SamplingContext&                sampling_context,

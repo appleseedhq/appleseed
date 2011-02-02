@@ -56,8 +56,7 @@ class PixelSampler
     // Compute the position of a pixel sample and the initial instance number
     // of the corresponding sampling context, given the integer coordinates
     // of the subpixel grid cell containing the sample. The coordinates of the
-    // pixel sample are expressed in sample space, i.e. for a WxH image with
-    // N samples per pixels, in [0..W*N)x[0..H*N).
+    // pixel sample are expressed in sample space (http://appleseedhq.net/conventions).
     void sample(
         const size_t            sx,
         const size_t            sy,

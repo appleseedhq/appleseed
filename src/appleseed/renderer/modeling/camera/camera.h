@@ -73,14 +73,11 @@ class RENDERERDLL Camera
     virtual void on_frame_end(
         const Project&              project);
 
-    // Generate a ray, originating from a given point on the lens surface of the camera,
-    // and directed toward a given point on the film plane, at a given time.
-    // uv is a point in the unit square [0,1)^2; it is mapped to the surface of the
-    // camera lens. point is the target point on the film plane, expressed in normalized
-    // device coordinates [-0.5,0.5]^2, with (-0.5,-0.5) being at the lower left corner
-    // of the image plane and (0.5,0.5) being at the upper right corner, regardless of
-    // the image resolution. time is the time at which the ray must be generated.
-    // The generated ray is expressed in world space.
+    // Generate a ray originating from a given point on the lens surface of the camera
+    // and directed toward a given point on the film plane, at a given time. point is
+    // the target point on the film plane expressed in normalized device coordinates
+    // (http://appleseedhq.net/conventions). time is the time at which the ray must be
+    // generated. The generated ray is expressed in world space.
     virtual void generate_ray(
         SamplingContext&            sampling_context,
         const foundation::Vector2d& point,              // point on film plane, in NDC

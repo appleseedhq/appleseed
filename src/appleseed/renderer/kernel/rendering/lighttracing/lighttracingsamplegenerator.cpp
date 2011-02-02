@@ -175,8 +175,8 @@ namespace
                     m_camera.get_transform().transform_point_to_parent(Vector3d(0.0));
 
                 // Reject vertices not belonging on the image plane of the camera.
-                if (sample_position_ndc[0] < -0.5 || sample_position_ndc[0] > 0.5 ||
-                    sample_position_ndc[1] < -0.5 || sample_position_ndc[1] > 0.5)
+                if (sample_position_ndc[0] < 0.0 || sample_position_ndc[0] >= 1.0 ||
+                    sample_position_ndc[1] < 0.0 || sample_position_ndc[1] >= 1.0)
                     return;
 
                 // Compute the transmission factor between this vertex and the camera.

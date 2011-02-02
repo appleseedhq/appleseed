@@ -95,8 +95,8 @@ void ProgressiveFrameBuffer::store_samples(
 
     while (sample_ptr < sample_end)
     {
-        const double fx = (0.5 + sample_ptr->m_position.x) * fb_width;
-        const double fy = (0.5 - sample_ptr->m_position.y) * fb_height;
+        const double fx = sample_ptr->m_position.x * fb_width;
+        const double fy = sample_ptr->m_position.y * fb_height;
 
         const size_t x = truncate<size_t>(fx);
         const size_t y = truncate<size_t>(fy);
