@@ -240,18 +240,20 @@ foundation::auto_release_ptr<Entity> ProjectBuilder::create_entity(
 {
     typedef typename renderer::EntityTraits<Entity>::FactoryRegistrarType FactoryRegistrarType;
     typedef typename FactoryRegistrarType::FactoryType FactoryType;
+    typedef typename MultiModelEntityEditorFormFactory<FactoryRegistrarType> EntityEditorFormFactoryType;
 
     const std::string name = get_entity_name(values);
+    const std::string model = values.get<std::string>(EntityEditorFormFactoryType::ModelParameter);
 
-    const std::string model =
-        values.get<std::string>(
-            MultiModelEntityEditorFormFactory<FactoryRegistrarType>::ModelParameter);
+    foundation::Dictionary clean_values(values);
+    clean_values.strings().remove(EntityEditorFormFactoryType::NameParameter);
+    clean_values.strings().remove(EntityEditorFormFactoryType::ModelParameter);
 
     const FactoryRegistrarType& factory_registrar = get_factory_registrar<Entity>();
     const FactoryType* factory = factory_registrar.lookup(model.c_str());
 
     assert(factory);
-    return factory->create(name.c_str(), values);
+    return factory->create(name.c_str(), clean_values);
 }
 
 template <>
@@ -261,7 +263,10 @@ inline foundation::auto_release_ptr<renderer::Material> ProjectBuilder::create_e
 {
     const std::string name = get_entity_name(values);
 
-    return renderer::MaterialFactory::create(name.c_str(), values);
+    foundation::Dictionary clean_values(values);
+    clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter);
+
+    return renderer::MaterialFactory::create(name.c_str(), clean_values);
 }
 
 template <typename Entity>
