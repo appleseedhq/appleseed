@@ -33,16 +33,24 @@
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 
+using namespace foundation;
+
 TEST_SUITE(Foundation_Math_Transform)
 {
-    using namespace foundation;
+    TEST_CASE(Identity_ReturnsIdentityTransform)
+    {
+        const Transformd transform(Transformd::identity());
+
+        EXPECT_EQ(Matrix4d::identity(), transform.get_local_to_parent());
+        EXPECT_EQ(Matrix4d::identity(), transform.get_parent_to_local());
+    }
 
     struct FixtureTransformByIdentity
     {
-        const Transform<double> transform;
+        const Transformd transform;
 
         FixtureTransformByIdentity()
-          : transform(Matrix4d::identity())
+          : transform(Transformd::identity())
         {
         }
     };
@@ -85,7 +93,7 @@ TEST_SUITE(Foundation_Math_Transform)
 
     struct FixtureTransformByTranslation
     {
-        const Transform<double> transform;
+        const Transformd transform;
 
         FixtureTransformByTranslation()
           : transform(Matrix4d::translation(Vector3d(10.0, 20.0, 30.0)))
@@ -131,7 +139,7 @@ TEST_SUITE(Foundation_Math_Transform)
 
     struct FixtureTransformByRotation
     {
-        const Transform<double> transform;
+        const Transformd transform;
 
         FixtureTransformByRotation()
           : transform(Matrix4d::rotation_z(deg_to_rad(90.0)))
@@ -177,40 +185,34 @@ TEST_SUITE(Foundation_Math_Transform)
 
     TEST_CASE(MultiplicationOperator_GivenTwoIdentityTransforms_ReturnsIdentityTransform)
     {
-        typedef Transform<double> Transform;
+        const Transformd a(Transformd::identity());
+        const Transformd b(Transformd::identity());
 
-        const Transform a(Matrix4d::identity());
-        const Transform b(Matrix4d::identity());
-
-        const Transform result = a * b;
+        const Transformd result = a * b;
 
         EXPECT_EQ(Matrix4d::identity(), result.get_local_to_parent());
     }
 
     TEST_CASE(MultiplicationOperator_GivenIdentityTransformAndRotationTransform_ReturnsRotationTransform)
     {
-        typedef Transform<double> Transform;
-
         const Matrix4d rotation(Matrix4d::rotation_z(deg_to_rad(90.0)));
 
-        const Transform a(Matrix4d::identity());
-        const Transform b(rotation);
+        const Transformd a(Transformd::identity());
+        const Transformd b(rotation);
 
-        const Transform result = a * b;
+        const Transformd result = a * b;
 
         EXPECT_EQ(rotation, result.get_local_to_parent());
     }
 
     TEST_CASE(MultiplicationOperator_GivenRotationTransformAndIdentityTransform_ReturnsRotationTransform)
     {
-        typedef Transform<double> Transform;
-
         const Matrix4d rotation(Matrix4d::rotation_z(deg_to_rad(90.0)));
 
-        const Transform a(rotation);
-        const Transform b(Matrix4d::identity());
+        const Transformd a(rotation);
+        const Transformd b(Transformd::identity());
 
-        const Transform result = a * b;
+        const Transformd result = a * b;
 
         EXPECT_EQ(rotation, result.get_local_to_parent());
     }

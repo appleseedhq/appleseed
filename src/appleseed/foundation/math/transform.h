@@ -67,6 +67,9 @@ class Transform
         const MatrixType& local_to_parent,
         const MatrixType& parent_to_local);
 
+    // Return the identity transform.
+    static Transform identity();
+
     // Retrieve the transformation matrices.
     const MatrixType& get_local_to_parent() const;
     const MatrixType& get_parent_to_local() const;
@@ -142,6 +145,12 @@ inline Transform<T>::Transform(
   : m_local_to_parent(local_to_parent)
   , m_parent_to_local(parent_to_local)
 {
+}
+
+template <typename T>
+inline Transform<T> Transform<T>::identity()
+{
+    return Transform(MatrixType::identity());
 }
 
 template <typename T>
