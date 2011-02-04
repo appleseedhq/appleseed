@@ -298,13 +298,12 @@ bool Frame::archive(
 
 namespace
 {
-    inline Color4f clamp_to_zero(const Color4f& c)
+    inline Color3f clamp_to_zero(const Color3f& c)
     {
-        return Color4f(
+        return Color3f(
             max(c[0], 0.0f),
             max(c[1], 0.0f),
-            max(c[2], 0.0f),
-            max(c[3], 0.0f));
+            max(c[2], 0.0f));
     }
 
     double accumulate_luminance(const Tile& tile)
@@ -321,9 +320,9 @@ namespace
                 Color4f linear_rgba;
                 tile.get_pixel(x, y, linear_rgba);
 
-                linear_rgba = clamp_to_zero(linear_rgba);
+                const float lum =
+                    luminance(clamp_to_zero(linear_rgba.rgb()));
 
-                const float lum = luminance(linear_rgba.rgb());
                 assert(lum >= 0.0f);
 
                 accumulated_luminance += static_cast<double>(lum);
@@ -365,9 +364,9 @@ namespace
     {
         TEST_CASE(ClampToZero_GivenColorWithNegativeValues_ReplacesNegativeValuesWithZeroes)
         {
-            const Color4f result = clamp_to_zero(Color4f(-1.0f, 0.0f, 1.0f, -0.0f));
+            const Color3f result = clamp_to_zero(Color3f(-1.0f, -0.0f, 1.0f));
 
-            EXPECT_EQ(Color4f(0.0f, 0.0f, 1.0f, -0.0f), result);
+            EXPECT_EQ(Color3f(0.0f, -0.0f, 1.0f), result);
         }
 
         TEST_CASE(AccumulateLuminance_Given2x2TileFilledWithZeroes_ReturnsZero)
