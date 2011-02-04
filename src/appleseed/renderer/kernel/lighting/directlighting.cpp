@@ -100,7 +100,7 @@ void compute_direct_lighting(
         // Compute the outgoing direction of the light sample.
         const Vector3d sample_outgoing = -incoming;
 
-        // Compute properly oriented surface normals at the position of light sample.
+        // Compute properly oriented surface normals at the position of the light sample.
         InputParams sample_input_params = sample.m_input_params;
         sample_input_params.m_shading_normal =
             faceforward(sample_input_params.m_shading_normal, incoming);
@@ -150,8 +150,8 @@ void compute_direct_lighting(
         // Compute the geometric term. To keep the estimator unbiased, we don't
         // clamp the geometric term g if it is too small, and in particular we
         // allow it to be exactly zero, which will result in a variance spike.
-        const double cos_ln = dot(sample_outgoing, sample_input_params.m_shading_normal);
-        const double g = (cos_in * cos_ln) / sample_square_distance;
+        const double cos_on = dot(sample_outgoing, sample_input_params.m_shading_normal);
+        const double g = (cos_in * cos_on) / sample_square_distance;
         assert(g >= 0.0);
 
         // Compute the probability density with respect to surface area
