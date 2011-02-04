@@ -131,8 +131,8 @@ namespace
         virtual Vector2d project(const Vector3d& point) const
         {
             const double k = -m_focal_length / point.z;
-            const double x = (point.x + 0.5) * k * m_rcp_film_width;
-            const double y = (0.5 - point.y) * k * m_rcp_film_height;
+            const double x = 0.5 + (point.x * k * m_rcp_film_width);
+            const double y = 0.5 - (point.y * k * m_rcp_film_height);
             return Vector2d(x, y);
         }
 
