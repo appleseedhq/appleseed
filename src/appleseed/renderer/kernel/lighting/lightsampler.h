@@ -80,6 +80,9 @@ class LightSampler
     // Sample the set of emitters.
     void sample(
         SamplingContext&        sampling_context,
+        LightSample&            sample) const;
+    void sample(
+        SamplingContext&        sampling_context,
         const size_t            sample_count,
         LightSampleVector&      samples) const;
 
@@ -113,6 +116,7 @@ class LightSampler
     typedef foundation::CDF<size_t, double> LightCDF;
 
     LightVector                 m_lights;
+    size_t                      m_light_count;
 
     EmittingTriangleVector      m_emitting_triangles;
     double                      m_total_emissive_area;
@@ -134,14 +138,19 @@ class LightSampler
         const AssemblyInstance&         assembly_instance,
         const Assembly&                 assembly);
 
-    // Generate a sample for a given light.
+    // Compute the next sample.
+    void next_sample(
+        SamplingContext&                sampling_context,
+        LightSample&                    sample) const;
+
+    // Sample a given light.
     void sample_light(
         const foundation::Vector2d&     s,
         const size_t                    light_index,
         const double                    light_prob,
         LightSample&                    sample) const;
 
-    // Generate a sample on the surface of a given emitting triangle.
+    // Sample a given emitting triangle.
     void sample_emitting_triangle(
         const foundation::Vector2d&     s,
         const size_t                    triangle_index,

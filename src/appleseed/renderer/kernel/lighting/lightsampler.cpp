@@ -136,7 +136,8 @@ namespace
 }
 
 LightSampler::LightSampler(const Scene& scene)
-  : m_total_emissive_area(0.0)
+  : m_light_count(0)
+  , m_total_emissive_area(0.0)
   , m_rcp_total_emissive_area(0.0)
 {
     RENDERER_LOG_INFO("collecting light emitters...");
@@ -145,7 +146,8 @@ LightSampler::LightSampler(const Scene& scene)
     collect_lights(scene);
     collect_emitting_triangles(scene);
 
-    // Compute the reciprocal of the total area of the triangles emitting light.
+    // Precompute some values.
+    m_light_count = m_lights.size();
     m_rcp_total_emissive_area = 1.0 / m_total_emissive_area;
 
     // Prepare the CDF for sampling.
@@ -154,8 +156,8 @@ LightSampler::LightSampler(const Scene& scene)
 
     RENDERER_LOG_INFO(
         "found %s %s, %s emitting %s",
-        pretty_int(m_lights.size()).c_str(),
-        plural(m_lights.size(), "light").c_str(),
+        pretty_int(m_light_count).c_str(),
+        plural(m_light_count, "light").c_str(),
         pretty_int(m_emitting_triangles.size()).c_str(),
         plural(m_emitting_triangles.size(), "triangle").c_str());
 }
@@ -168,19 +170,16 @@ void LightSampler::collect_lights(const Scene& scene)
 
 void LightSampler::collect_lights(const AssemblyInstance& assembly_instance)
 {
-    // Loop over the lights of the assembly.
     const Assembly& assembly = assembly_instance.get_assembly();
-    const LightContainer& lights = assembly.lights();
-    const size_t light_count = lights.size();
-    for (size_t i = 0; i < light_count; ++i)
+
+    for (const_each<LightContainer> i = assembly.lights(); i; ++i)
     {
         // Retrieve the light.
-        const Light* light = lights.get(i);
-        assert(light);
+        const Light& light = *i;
 
         // Copy the light into the light vector.
         const size_t light_index = m_lights.size();
-        m_lights.push_back(light);
+        m_lights.push_back(&light);
 
         // todo: compute importance.
         const double importance = 1.0;
@@ -314,6 +313,19 @@ void LightSampler::collect_emitting_triangles(
 
 void LightSampler::sample(
     SamplingContext&        sampling_context,
+    LightSample&            sample) const
+{
+    // No light source in the scene.
+    if (!m_light_cdf.valid())
+        return;
+
+    sampling_context = sampling_context.split(3, 1);
+
+    next_sample(sampling_context, sample);
+}
+
+void LightSampler::sample(
+    SamplingContext&        sampling_context,
     const size_t            sample_count,
     LightSampleVector&      samples) const
 {
@@ -321,40 +333,42 @@ void LightSampler::sample(
     if (!m_light_cdf.valid())
         return;
 
-    // Create a sampling context.
     sampling_context = sampling_context.split(3, sample_count);
 
-    // Generate light samples.
-    const size_t light_count = m_lights.size();
     for (size_t i = 0; i < sample_count; ++i)
     {
-        // Sample the set of emitters (lights and emitting triangles).
-        const Vector3d s = sampling_context.next_vector2<3>();
-        const LightCDF::ItemWeightPair result = m_light_cdf.sample(s[0]);
-        const size_t emitter_index = result.first;
-        const double emitter_prob = result.second;
-
-        // Generate one sample on the chosen emitter.
         LightSample sample;
-        if (emitter_index < light_count)
-        {
-            sample_light(
-                Vector2d(s[1], s[2]),
-                emitter_index,
-                emitter_prob,
-                sample);
-        }
-        else
-        {
-            sample_emitting_triangle(
-                Vector2d(s[1], s[2]),
-                emitter_index - light_count,
-                emitter_prob,
-                sample);
-        }
-
-        // Store this sample.
+        next_sample(sampling_context, sample);
         samples.push_back(sample);
+    }
+}
+
+void LightSampler::next_sample(
+    SamplingContext&        sampling_context,
+    LightSample&            sample) const
+{
+    // Sample the set of emitters (lights and emitting triangles).
+    const Vector3d s = sampling_context.next_vector2<3>();
+    const LightCDF::ItemWeightPair result = m_light_cdf.sample(s[0]);
+    const size_t emitter_index = result.first;
+    const double emitter_prob = result.second;
+
+    // Generate one sample on the chosen emitter.
+    if (emitter_index < m_light_count)
+    {
+        sample_light(
+            Vector2d(s[1], s[2]),
+            emitter_index,
+            emitter_prob,
+            sample);
+    }
+    else
+    {
+        sample_emitting_triangle(
+            Vector2d(s[1], s[2]),
+            emitter_index - m_light_count,
+            emitter_prob,
+            sample);
     }
 }
 
