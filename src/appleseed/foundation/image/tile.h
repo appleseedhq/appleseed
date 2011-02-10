@@ -170,39 +170,41 @@ size_t dynamic_sizeof(const Tile& tile);
 // Tile class implementation.
 //
 
-// Tile properties.
 inline PixelFormat Tile::get_pixel_format() const
 {
     return m_pixel_format;
 }
+
 inline size_t Tile::get_width() const
 {
     return m_width;
 }
+
 inline size_t Tile::get_height() const
 {
     return m_height;
 }
+
 inline size_t Tile::get_channel_count() const
 {
     return m_channel_count;
 }
+
 inline size_t Tile::get_pixel_count() const
 {
     return m_pixel_count;
 }
+
 inline size_t Tile::get_size() const
 {
     return m_array_size;
 }
 
-// Return a pointer to the tile' storage.
 inline uint8* Tile::get_storage() const
 {
     return m_pixel_array;
 }
 
-// Direct access to a given pixel.
 inline uint8* Tile::pixel(
     const size_t    x,
     const size_t    y) const
@@ -213,6 +215,7 @@ inline uint8* Tile::pixel(
     assert(index < m_array_size);
     return m_pixel_array + index;
 }
+
 inline uint8* Tile::pixel(
     const size_t    i) const
 {
@@ -227,12 +230,11 @@ inline uint8* Tile::pixel(
 #define FOUNDATION_CHECK_PIXEL_SIZE(val) \
     assert(sizeof(T) == m_channel_count * sizeof(val[0]))
 
-// Structured write access to a given pixel, with automatic pixel format conversion.
 template <typename T>
 inline void Tile::set_pixel(
     const size_t    x,
     const size_t    y,
-    const T&        val)                        // pixel value
+    const T&        val)
 {
     FOUNDATION_CHECK_PIXEL_SIZE(val);
     Pixel::convert_to_format(
@@ -243,10 +245,11 @@ inline void Tile::set_pixel(
         pixel(x, y),                            // destination
         1);                                     // destination stride
 }
+
 template <typename T>
 inline void Tile::set_pixel(
     const size_t    i,
-    const T&        val)                        // pixel value
+    const T&        val)
 {
     FOUNDATION_CHECK_PIXEL_SIZE(val);
     Pixel::convert_to_format(
@@ -258,12 +261,11 @@ inline void Tile::set_pixel(
         1);                                     // destination stride
 }
 
-// Structured read access to a given pixel, with automatic pixel format conversion.
 template <typename T>
 inline void Tile::get_pixel(
     const size_t    x,
     const size_t    y,
-    T&              val) const                  // [out] pixel value
+    T&              val) const
 {
     FOUNDATION_CHECK_PIXEL_SIZE(val);
     const uint8* src = pixel(x, y);
@@ -275,10 +277,11 @@ inline void Tile::get_pixel(
         &val[0],                                // destination
         1);                                     // destination stride
 }
+
 template <typename T>
 inline void Tile::get_pixel(
     const size_t    i,
-    T&              val) const                  // [out] pixel value
+    T&              val) const
 {
     FOUNDATION_CHECK_PIXEL_SIZE(val);
     const uint8* src = pixel(i);
@@ -291,10 +294,9 @@ inline void Tile::get_pixel(
         1);                                     // destination stride
 }
 
-// Set all pixels to a given color.
 template <typename T>
 inline void Tile::clear(
-    const T&        val)                        // pixel value
+    const T&        val)
 {
     FOUNDATION_CHECK_PIXEL_SIZE(val);
 

@@ -39,7 +39,6 @@ namespace foundation
 // Tile class implementation.
 //
 
-// Construct a new tile.
 Tile::Tile(
     const size_t        width,
     const size_t        height,
@@ -80,7 +79,6 @@ Tile::Tile(
     }
 }
 
-// Construct a tile by converting an existing tile to a given pixel format.
 Tile::Tile(
     const Tile&         tile,
     const PixelFormat   pixel_format,
@@ -123,8 +121,6 @@ Tile::Tile(
         1);                                         // destination stride
 }
 
-// Construct a tile by converting an existing tile to a given pixel format,
-// and allowing reordering, replication and deletion of channels.
 Tile::Tile(
     const Tile&         tile,
     const PixelFormat   pixel_format,
@@ -174,7 +170,6 @@ Tile::Tile(
         shuffle_table);                             // channel shuffling table
 }
 
-// Copy constructor.
 Tile::Tile(const Tile&  rhs)
   : m_width(rhs.m_width)
   , m_height(rhs.m_height)
@@ -193,7 +188,6 @@ Tile::Tile(const Tile&  rhs)
     std::memcpy(m_pixel_array, rhs.m_pixel_array, m_array_size);
 }
 
-// Destructor.
 Tile::~Tile()
 {
     // Deallocate pixel array.
@@ -201,19 +195,18 @@ Tile::~Tile()
         delete [] m_pixel_array;
 }
 
-// Implements the foundation::ISerializable interface.
 Serializer* Tile::serialize(Serializer* serializer)
 {
     throw ExceptionNotImplemented();
     return serializer;
 }
+
 Deserializer* Tile::deserialize(Deserializer* deserializer)
 {
     throw ExceptionNotImplemented();
     return deserializer;
 }
 
-// Return the size of a tile, including the dynamically allocated memory.
 size_t dynamic_sizeof(const Tile& tile)
 {
     return sizeof(Tile) + tile.get_size();
