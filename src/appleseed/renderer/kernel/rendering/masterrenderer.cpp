@@ -278,7 +278,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     auto_ptr<AccumulationFramebuffer> accumulation_framebuffer;
 
     const string accumulation_fb_param =
-        m_params.get_optional<string>("accumulation_framebuffer", "global");
+        m_params.get_optional<string>("accumulation_framebuffer", "local");
 
     if (accumulation_fb_param == "global")
     {
