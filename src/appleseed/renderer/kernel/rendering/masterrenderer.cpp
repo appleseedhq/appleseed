@@ -43,17 +43,21 @@
 #include "renderer/kernel/rendering/generic/generictilerenderer.h"
 #include "renderer/kernel/rendering/lighttracing/lighttracingsamplegenerator.h"
 #include "renderer/kernel/rendering/progressive/progressiveframerenderer.h"
+#include "renderer/kernel/rendering/accumulationframebuffer.h"
+#include "renderer/kernel/rendering/globalaccumulationframebuffer.h"
 #include "renderer/kernel/rendering/iframerenderer.h"
 #include "renderer/kernel/rendering/isamplegenerator.h"
 #include "renderer/kernel/rendering/isamplerenderer.h"
 #include "renderer/kernel/rendering/itilecallback.h"
 #include "renderer/kernel/rendering/itilerenderer.h"
+#include "renderer/kernel/rendering/localaccumulationframebuffer.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingengine.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/edf/edf.h"
+#include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/input/inputbinder.h"
@@ -268,6 +272,30 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     }
 
     //
+    // Create an accumulation framebuffer.
+    //
+
+    auto_ptr<AccumulationFramebuffer> accumulation_framebuffer;
+
+    const string accumulation_fb_param =
+        m_params.get_optional<string>("accumulation_framebuffer", "global");
+
+    if (accumulation_fb_param == "global")
+    {
+        accumulation_framebuffer.reset(
+            new GlobalAccumulationFramebuffer(
+                frame.properties().m_canvas_width,
+                frame.properties().m_canvas_height));
+    }
+    else if (accumulation_fb_param == "local")
+    {
+        accumulation_framebuffer.reset(
+            new LocalAccumulationFramebuffer(
+                frame.properties().m_canvas_width,
+                frame.properties().m_canvas_height));
+    }
+
+    //
     // Create a frame renderer.
     //
 
@@ -290,6 +318,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         frame_renderer.reset(
             ProgressiveFrameRendererFactory::create(
                 frame,
+                *accumulation_framebuffer.get(),
                 sample_generator_factory.get(),
                 m_tile_callback_factory,
                 m_params.child("progressive_frame_renderer")));

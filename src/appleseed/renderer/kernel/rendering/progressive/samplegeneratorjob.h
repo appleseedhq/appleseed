@@ -36,10 +36,10 @@
 #include "foundation/utility/job.h"
 
 // Forward declarations.
+namespace renderer      { class AccumulationFramebuffer; }
 namespace renderer      { class Frame; }
 namespace renderer      { class ISampleGenerator; }
 namespace renderer      { class ITileCallback; }
-namespace renderer      { class ProgressiveFrameBuffer; }
 namespace renderer      { class SampleCounter; }
 
 namespace renderer
@@ -52,7 +52,7 @@ class SampleGeneratorJob
     // Constructor.
     SampleGeneratorJob(
         Frame&                      frame,
-        ProgressiveFrameBuffer&     framebuffer,
+        AccumulationFramebuffer&    framebuffer,
         ISampleGenerator*           sample_generator,
         SampleCounter&              sample_counter,
         ITileCallback*              tile_callback,
@@ -67,7 +67,7 @@ class SampleGeneratorJob
 
   private:
     Frame&                          m_frame;
-    ProgressiveFrameBuffer&         m_framebuffer;
+    AccumulationFramebuffer&        m_framebuffer;
     ISampleGenerator*               m_sample_generator;
     SampleCounter&                  m_sample_counter;
     ITileCallback*                  m_tile_callback;

@@ -39,7 +39,7 @@
 
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }
-namespace renderer      { class ProgressiveFrameBuffer; }
+namespace renderer      { class AccumulationFramebuffer; }
 
 namespace renderer
 {
@@ -62,7 +62,7 @@ class SampleGeneratorBase
     // Generate a given number of samples and store them into a progressive framebuffer.
     virtual void generate_samples(
         const size_t                sample_count,
-        ProgressiveFrameBuffer&     framebuffer,
+        AccumulationFramebuffer&    framebuffer,
         foundation::AbortSwitch&    abort_switch);
 
   protected:

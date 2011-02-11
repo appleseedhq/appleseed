@@ -32,10 +32,10 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/progressive/samplecounter.h"
 #include "renderer/kernel/rendering/progressive/samplegeneratorjob.h"
+#include "renderer/kernel/rendering/accumulationframebuffer.h"
 #include "renderer/kernel/rendering/framerendererbase.h"
 #include "renderer/kernel/rendering/isamplegenerator.h"
 #include "renderer/kernel/rendering/itilecallback.h"
-#include "renderer/kernel/rendering/progressiveframebuffer.h"
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
@@ -68,10 +68,12 @@ namespace
       public:
         ProgressiveFrameRenderer(
             Frame&                          frame,
+            AccumulationFramebuffer&        framebuffer,
             ISampleGeneratorFactory*        generator_factory,
             ITileCallbackFactory*           callback_factory,
             const ParamArray&               params)
           : m_frame(frame)
+          , m_framebuffer(framebuffer)
           , m_params(params)
           , m_sample_counter(m_params.m_max_sample_count)
         {
@@ -99,11 +101,6 @@ namespace
                 for (size_t i = 0; i < m_params.m_thread_count; ++i)
                     m_tile_callbacks.push_back(callback_factory->create());
             }
-
-            m_framebuffer.reset(
-                new ProgressiveFrameBuffer(
-                    frame.properties().m_canvas_width,
-                    frame.properties().m_canvas_height));
 
             print_rendering_thread_count(m_params.m_thread_count);
         }
@@ -136,7 +133,7 @@ namespace
             assert(!m_job_queue.has_scheduled_or_running_jobs());
 
             m_abort_switch.clear();
-            m_framebuffer->clear();
+            m_framebuffer.clear();
             m_sample_counter.clear();
 
             // Reset sample generators.
@@ -149,7 +146,7 @@ namespace
                 m_job_queue.schedule(
                     new SampleGeneratorJob(
                         m_frame,
-                        *m_framebuffer.get(),
+                        m_framebuffer,
                         m_sample_generators[i],
                         m_sample_counter,
                         m_tile_callbacks[i],
@@ -195,6 +192,7 @@ namespace
         };
 
         Frame&                              m_frame;
+        AccumulationFramebuffer&            m_framebuffer;
         const Parameters                    m_params;
 
         JobQueue                            m_job_queue;
@@ -204,7 +202,6 @@ namespace
         SampleGeneratorVector               m_sample_generators;
         TileCallbackVector                  m_tile_callbacks;
 
-        auto_ptr<ProgressiveFrameBuffer>    m_framebuffer;
         SampleCounter                       m_sample_counter;
     };
 }
@@ -216,10 +213,12 @@ namespace
 
 ProgressiveFrameRendererFactory::ProgressiveFrameRendererFactory(
     Frame&                      frame,
+    AccumulationFramebuffer&    framebuffer,
     ISampleGeneratorFactory*    generator_factory,
     ITileCallbackFactory*       callback_factory,
     const ParamArray&           params)
   : m_frame(frame)
+  , m_framebuffer(framebuffer)
   , m_generator_factory(generator_factory)  
   , m_callback_factory(callback_factory)
   , m_params(params)
@@ -236,6 +235,7 @@ IFrameRenderer* ProgressiveFrameRendererFactory::create()
     return
         new ProgressiveFrameRenderer(
             m_frame,
+            m_framebuffer,
             m_generator_factory,
             m_callback_factory,
             m_params);
@@ -243,6 +243,7 @@ IFrameRenderer* ProgressiveFrameRendererFactory::create()
 
 IFrameRenderer* ProgressiveFrameRendererFactory::create(
     Frame&                      frame,
+    AccumulationFramebuffer&    framebuffer,
     ISampleGeneratorFactory*    generator_factory,
     ITileCallbackFactory*       callback_factory,
     const ParamArray&           params)
@@ -250,6 +251,7 @@ IFrameRenderer* ProgressiveFrameRendererFactory::create(
     return
         new ProgressiveFrameRenderer(
             frame,
+            framebuffer,
             generator_factory,
             callback_factory,
             params);

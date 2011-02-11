@@ -29,239 +29,87 @@
 #ifndef APPLESEED_RENDERER_KERNEL_RENDERING_ACCUMULATIONFRAMEBUFFER_H
 #define APPLESEED_RENDERER_KERNEL_RENDERING_ACCUMULATIONFRAMEBUFFER_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
-
 // appleseed.foundation headers.
-#include "foundation/image/tile.h"
-#include "foundation/math/scalar.h"
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/platform/thread.h"
+#include "foundation/platform/timer.h"
+#include "foundation/platform/types.h"
 
 // Standard headers.
-#include <algorithm>
+#include <cstddef>
+
+// Forward declarations.
+namespace renderer      { class Frame; }
+namespace renderer      { class Sample; }
 
 namespace renderer
 {
 
-class AccumulationFrameBuffer
+class AccumulationFramebuffer
   : public foundation::NonCopyable
 {
   public:
     // Constructor.
-    AccumulationFrameBuffer(
-        const size_t                    width,
-        const size_t                    height);
+    AccumulationFramebuffer(
+        const size_t    width,
+        const size_t    height);
 
-    static void copy(
-        const AccumulationFrameBuffer&  source,
-        AccumulationFrameBuffer&        destination);
-
+    // Get the dimensions of the framebuffer.
     size_t get_width() const;
     size_t get_height() const;
-    size_t get_pixel_count() const;
 
-    bool is_complete() const;
-    size_t get_coverage_count() const;
-    double get_coverage_factor() const;
+    // Reset the framebuffer to its initial state. Thread-safe.
+    virtual void clear() = 0;
 
-    void clear();
+    // Store @samples into the framebuffer. Thread-safe.
+    virtual void store_samples(
+        const size_t    sample_count,
+        const Sample    samples[]) = 0;
 
-    void clear_pixel(
-        const size_t                    x,
-        const size_t                    y);
+    // Thread-safe.
+    void render_to_frame(Frame& frame);
 
-    void add_pixel(
-        const size_t                    x,
-        const size_t                    y,
-        const foundation::Color4f&      color);
+    // Like render_to_frame() but won't do anything if the framebuffer
+    // is locked by another thread. Thread-safe.
+    void try_render_to_frame(Frame& frame);
 
-    void set_pixel(
-        const size_t                    x,
-        const size_t                    y,
-        const foundation::Color4f&      color);
-
-    bool is_set(
-        const size_t                    x,
-        const size_t                    y) const;
-
-    foundation::Color4f get_pixel(
-        const size_t                    x,
-        const size_t                    y) const;
-
-    size_t get_pixel(
-        const size_t                    x,
-        const size_t                    y,
-        foundation::Color4f&            color) const;
-
-    foundation::Color4f get_pixel_bilinear(
-        const float                     x,
-        const float                     y) const;
-
-  private:
-    struct AccumulationPixel
-    {
-        foundation::Color4f             m_color;
-        foundation::uint32              m_count;
-    };
-
+  protected:
     const size_t                        m_width;
     const size_t                        m_height;
     const size_t                        m_pixel_count;
-    const double                        m_rcp_pixel_count;
 
-    std::auto_ptr<foundation::Tile>     m_tile;
+    mutable foundation::Spinlock        m_spinlock;
 
-    size_t                              m_coverage;
+    foundation::uint64                  m_sample_count;
+
+    foundation::DefaultWallclockTimer   m_timer;
+    foundation::uint64                  m_timer_frequency;
+
+    foundation::uint64                  m_last_time;
+    foundation::uint64                  m_last_sample_count;
+
+    void clear_no_lock();
+
+    void do_render_to_frame(Frame& frame);
+
+    virtual void develop_to_frame(Frame& frame) const = 0;
+
+    void print_statistics(const Frame& frame);
 };
 
 
 //
-// AccumulationFrameBuffer class implementation.
+// AccumulationFramebuffer class implementation.
 //
 
-inline size_t AccumulationFrameBuffer::get_width() const
+inline size_t AccumulationFramebuffer::get_width() const
 {
     return m_width;
 }
 
-inline size_t AccumulationFrameBuffer::get_height() const
+inline size_t AccumulationFramebuffer::get_height() const
 {
     return m_height;
-}
-
-inline size_t AccumulationFrameBuffer::get_pixel_count() const
-{
-    return m_pixel_count;
-}
-
-inline bool AccumulationFrameBuffer::is_complete() const
-{
-    return m_coverage == m_pixel_count;
-}
-
-inline size_t AccumulationFrameBuffer::get_coverage_count() const
-{
-    return m_coverage;
-}
-
-inline double AccumulationFrameBuffer::get_coverage_factor() const
-{
-    return static_cast<double>(m_coverage) * m_rcp_pixel_count;
-}
-
-inline void AccumulationFrameBuffer::clear_pixel(
-    const size_t                x,
-    const size_t                y)
-{
-    AccumulationPixel* pixel =
-        reinterpret_cast<AccumulationPixel*>(m_tile->pixel(x, y));
-
-    m_coverage -= pixel->m_count > 0 ? 1 : 0;
-
-    pixel->m_count = 0;
-}
-
-inline void AccumulationFrameBuffer::add_pixel(
-    const size_t                x,
-    const size_t                y,
-    const foundation::Color4f&  color)
-{
-    AccumulationPixel* pixel =
-        reinterpret_cast<AccumulationPixel*>(m_tile->pixel(x, y));
-
-    m_coverage += pixel->m_count == 0 ? 1 : 0;
-
-    pixel->m_color += color;
-    pixel->m_count += 1;
-}
-
-inline void AccumulationFrameBuffer::set_pixel(
-    const size_t                x,
-    const size_t                y,
-    const foundation::Color4f&  color)
-{
-    AccumulationPixel* pixel =
-        reinterpret_cast<AccumulationPixel*>(m_tile->pixel(x, y));
-
-    m_coverage += pixel->m_count == 0 ? 1 : 0;
-
-    pixel->m_color = color;
-    pixel->m_count = 1;
-}
-
-inline bool AccumulationFrameBuffer::is_set(
-    const size_t                x,
-    const size_t                y) const
-{
-    const AccumulationPixel* pixel =
-        reinterpret_cast<const AccumulationPixel*>(m_tile->pixel(x, y));
-
-    return pixel->m_count > 0;
-}
-
-inline foundation::Color4f AccumulationFrameBuffer::get_pixel(
-    const size_t                x,
-    const size_t                y) const
-{
-    const AccumulationPixel* pixel =
-        reinterpret_cast<const AccumulationPixel*>(m_tile->pixel(x, y));
-
-    return
-        pixel->m_count > 0
-            ? pixel->m_color / static_cast<float>(pixel->m_count)
-            : foundation::Color4f(0.0f);
-}
-
-inline size_t AccumulationFrameBuffer::get_pixel(
-    const size_t                x,
-    const size_t                y,
-    foundation::Color4f&        color) const
-{
-    const AccumulationPixel* pixel =
-        reinterpret_cast<const AccumulationPixel*>(m_tile->pixel(x, y));
-
-    if (pixel->m_count > 0)
-        color = pixel->m_color;
-    else color.set(0.0f);
-
-    return pixel->m_count;
-}
-
-inline foundation::Color4f AccumulationFrameBuffer::get_pixel_bilinear(
-    const float                 x,
-    const float                 y) const
-{
-    assert(x >= 0.0f);
-    assert(x <= 1.0f);
-    assert(y >= 0.0f);
-    assert(y <= 1.0f);
-
-    const float fx = x * m_width - 0.5f;
-    const float fy = y * m_height - 0.5f;
-
-    const int ix = foundation::truncate<int>(fx);
-    const int iy = foundation::truncate<int>(fy);
-
-    const size_t sx0 = static_cast<size_t>(std::max<int>(ix, 0));
-    const size_t sy0 = static_cast<size_t>(std::max<int>(iy, 0));
-    const size_t sx1 = static_cast<size_t>(std::min<int>(ix + 1, m_width - 1));
-    const size_t sy1 = static_cast<size_t>(std::min<int>(iy + 1, m_height - 1));
-
-    foundation::Color4f c00 = get_pixel(sx0, sy0);
-    foundation::Color4f c01 = get_pixel(sx0, sy1);
-    foundation::Color4f c10 = get_pixel(sx1, sy0);
-    foundation::Color4f c11 = get_pixel(sx1, sy1);
-
-    const float wx1 = fx - ix;
-    const float wy1 = fy - iy;
-    const float wx0 = 1.0f - wx1;
-    const float wy0 = 1.0f - wy1;
-
-    c00 *= wx0 * wy0;
-    c01 *= wx0 * wy1;
-    c10 *= wx1 * wy0;
-    c11 *= wx1 * wy1;
-
-    return c00 + c01 + c10 + c11;
 }
 
 }       // namespace renderer

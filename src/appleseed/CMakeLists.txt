@@ -864,16 +864,18 @@ set(renderer_kernel_rendering_sources
     renderer/kernel/rendering/defaultrenderercontroller.h
     renderer/kernel/rendering/framerendererbase.cpp
     renderer/kernel/rendering/framerendererbase.h
+    renderer/kernel/rendering/globalaccumulationframebuffer.cpp
+    renderer/kernel/rendering/globalaccumulationframebuffer.h
     renderer/kernel/rendering/iframerenderer.h
     renderer/kernel/rendering/irenderercontroller.h
     renderer/kernel/rendering/isamplegenerator.h
     renderer/kernel/rendering/isamplerenderer.h
     renderer/kernel/rendering/itilecallback.h
     renderer/kernel/rendering/itilerenderer.h
+    renderer/kernel/rendering/localaccumulationframebuffer.cpp
+    renderer/kernel/rendering/localaccumulationframebuffer.h
     renderer/kernel/rendering/masterrenderer.cpp
     renderer/kernel/rendering/masterrenderer.h
-    renderer/kernel/rendering/progressiveframebuffer.cpp
-    renderer/kernel/rendering/progressiveframebuffer.h
     renderer/kernel/rendering/sample.h
     renderer/kernel/rendering/samplegeneratorbase.cpp
     renderer/kernel/rendering/samplegeneratorbase.h

@@ -30,7 +30,7 @@
 #include "samplegeneratorbase.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/rendering/progressiveframebuffer.h"
+#include "renderer/kernel/rendering/accumulationframebuffer.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/job.h"
@@ -66,7 +66,7 @@ void SampleGeneratorBase::reset()
 
 void SampleGeneratorBase::generate_samples(
     const size_t                sample_count,
-    ProgressiveFrameBuffer&     framebuffer,
+    AccumulationFramebuffer&    framebuffer,
     AbortSwitch&                abort_switch)
 {
     assert(sample_count > 0);

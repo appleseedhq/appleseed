@@ -34,6 +34,7 @@
 #include "renderer/kernel/rendering/iframerenderer.h"
 
 // Forward declarations.
+namespace renderer  { class AccumulationFramebuffer; }
 namespace renderer  { class Frame; }
 namespace renderer  { class ISampleGeneratorFactory; }
 namespace renderer  { class ITileCallbackFactory; }
@@ -52,6 +53,7 @@ class RENDERERDLL ProgressiveFrameRendererFactory
     // Constructor.
     ProgressiveFrameRendererFactory(
         Frame&                      frame,
+        AccumulationFramebuffer&    framebuffer,
         ISampleGeneratorFactory*    generator_factory,
         ITileCallbackFactory*       callback_factory,       // may be 0
         const ParamArray&           params);
@@ -65,12 +67,14 @@ class RENDERERDLL ProgressiveFrameRendererFactory
     // Return a new progressive frame renderer instance.
     static IFrameRenderer* create(
         Frame&                      frame,
+        AccumulationFramebuffer&    framebuffer,
         ISampleGeneratorFactory*    generator_factory,
         ITileCallbackFactory*       callback_factory,       // may be 0
         const ParamArray&           params);
 
   private:
     Frame&                          m_frame;
+    AccumulationFramebuffer&        m_framebuffer;
     ISampleGeneratorFactory*        m_generator_factory;
     ITileCallbackFactory*           m_callback_factory;     // may be 0
     ParamArray                      m_params;

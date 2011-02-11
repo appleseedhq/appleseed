@@ -29,70 +29,86 @@
 // Interface header.
 #include "accumulationframebuffer.h"
 
+// appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
+#include "renderer/modeling/frame/frame.h"
+
 // appleseed.foundation headers.
-#include "foundation/image/pixel.h"
+#include "foundation/utility/string.h"
 
-// Standard headers.
-#include <cstring>
-
+using namespace boost;
 using namespace foundation;
 using namespace std;
 
 namespace renderer
 {
 
-//
-// AccumulationFrameBuffer class implementation.
-//
-
-AccumulationFrameBuffer::AccumulationFrameBuffer(
-    const size_t                    width,
-    const size_t                    height)
+AccumulationFramebuffer::AccumulationFramebuffer(
+    const size_t    width,
+    const size_t    height)
   : m_width(width)
   , m_height(height)
   , m_pixel_count(width * height)
-  , m_rcp_pixel_count(1.0 / m_pixel_count)
 {
-    // todo: change to static_assert<>.
-    assert(sizeof(AccumulationPixel) == 5 * sizeof(float));
-
-    m_tile.reset(
-        new Tile(
-            m_width,
-            m_height,
-            4 + 1,
-            PixelFormatFloat));
-
-    clear();
 }
 
-void AccumulationFrameBuffer::copy(
-    const AccumulationFrameBuffer&  source,
-    AccumulationFrameBuffer&        destination)
+void AccumulationFramebuffer::render_to_frame(Frame& frame)
 {
-    assert(destination.m_width == source.m_width);
-    assert(destination.m_height == source.m_height);
+    Spinlock::ScopedLock lock(m_spinlock);
 
-    memcpy(
-        destination.m_tile->pixel(0),
-        source.m_tile->pixel(0),
-        source.m_tile->get_size());
-
-    destination.m_coverage = source.m_coverage;
+    do_render_to_frame(frame);
 }
 
-void AccumulationFrameBuffer::clear()
+void AccumulationFramebuffer::try_render_to_frame(Frame& frame)
 {
-    AccumulationPixel* pixel =
-        reinterpret_cast<AccumulationPixel*>(m_tile->pixel(0));
-
-    for (size_t i = 0; i < m_pixel_count; ++i)
+    if (m_spinlock.try_lock())
     {
-        pixel[i].m_color.set(0.0f);
-        pixel[i].m_count = 0;
-    }
+        do_render_to_frame(frame);
 
-    m_coverage = 0;
+        m_spinlock.unlock();
+    }
+}
+
+void AccumulationFramebuffer::clear_no_lock()
+{
+    m_sample_count = 0;
+
+    m_timer_frequency = m_timer.frequency();
+
+    m_last_time = m_timer.read();
+    m_last_sample_count = 0;
+}
+
+void AccumulationFramebuffer::do_render_to_frame(Frame& frame)
+{
+    develop_to_frame(frame);
+
+    print_statistics(frame);
+}
+
+void AccumulationFramebuffer::print_statistics(const Frame& frame)
+{
+    const uint64 time = m_timer.read();
+    const uint64 elapsed_ticks = time - m_last_time;
+    const double elapsed_seconds = static_cast<double>(elapsed_ticks) / m_timer_frequency;
+
+    if (elapsed_seconds >= 1.0)
+    {
+        const uint64 rendered_samples = m_sample_count - m_last_sample_count;
+
+        const double average_luminance = frame.compute_average_luminance();
+
+        RENDERER_LOG_INFO(
+            "%s samples in the progressive framebuffer (%s samples/pixel, %s samples/second, "
+            "average luminance is %s)",
+            pretty_uint(m_sample_count).c_str(),
+            pretty_ratio(m_sample_count, static_cast<uint64>(m_pixel_count)).c_str(),
+            pretty_ratio(static_cast<double>(rendered_samples), elapsed_seconds).c_str(),
+            pretty_scalar(average_luminance, 6).c_str());
+
+        m_last_sample_count = m_sample_count;
+        m_last_time = time;
+    }
 }
 
 }   // namespace renderer
