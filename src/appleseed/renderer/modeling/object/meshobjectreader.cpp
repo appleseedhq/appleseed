@@ -89,7 +89,6 @@ namespace
       public:
         typedef vector<MeshObject*> MeshObjectVector;
 
-        // Constructor.
         MeshObjectBuilder(
             const ParamArray&   params,
             const string&       base_object_name)
@@ -99,13 +98,11 @@ namespace
         {
         }
 
-        // Return the meshes.
         const MeshObjectVector& get_objects() const
         {
             return m_objects;
         }
 
-        // Begin the definition of a mesh.
         virtual void begin_mesh(const string& name)
         {
             string object_name;
@@ -129,7 +126,6 @@ namespace
             m_triangulation_errors = 0;
         }
 
-        // End the definition of the mesh.
         virtual void end_mesh()
         {
             // Print the number of faces that could not be triangulated (if any).
@@ -154,25 +150,21 @@ namespace
                 plural(triangle_count, "triangle").c_str());
         }
 
-        // Append a vertex to the mesh.
         virtual size_t push_vertex(const Vector3d& v)
         {
             return m_objects.back()->push_vertex(GVector3(v));
         }
 
-        // Append a vertex normal to the mesh.
         virtual size_t push_vertex_normal(const Vector3d& v)
         {
             return m_objects.back()->push_vertex_normal(GVector3(v));
         }
 
-        // Append a texture coordinate to the mesh.
         virtual size_t push_tex_coords(const Vector2d& v)
         {
             return m_objects.back()->push_tex_coords(GVector2(v));
         }
 
-        // Begin the definition of a face.
         virtual void begin_face(const size_t vertex_count)
         {
             assert(vertex_count >= 3);
@@ -187,7 +179,6 @@ namespace
             m_face_material = Triangle::None;
         }
 
-        // End the definition of the face.
         virtual void end_face()
         {
             assert(m_face_vertices.size() == m_vertex_count);
@@ -229,28 +220,24 @@ namespace
             }
         }
 
-        // Assign vertices to the face.
         virtual void set_face_vertices(const size_t vertices[])
         {
             for (size_t i = 0; i < m_vertex_count; ++i)
                 m_face_vertices.push_back(static_cast<uint32>(vertices[i]));
         }
 
-        // Assign vertex normals to the face.
         virtual void set_face_vertex_normals(const size_t vertex_normals[])
         {
             for (size_t i = 0; i < m_vertex_count; ++i)
                 m_face_normals.push_back(static_cast<uint32>(vertex_normals[i]));
         }
 
-        // Assign texture coordinates to the face.
         virtual void set_face_vertex_tex_coords(const size_t tex_coords[])
         {
             for (size_t i = 0; i < m_vertex_count; ++i)
                 m_face_tex_coords.push_back(static_cast<uint32>(tex_coords[i]));
         }
 
-        // Assign a material to the face.
         virtual void set_face_material(const size_t material)
         {
             m_face_material = static_cast<uint32>(material);
@@ -275,13 +262,10 @@ namespace
         size_t                  m_face_count;
         size_t                  m_triangulation_errors;
 
-        // Insert a given triangle into the current mesh. The triangle is defined
-        // as a triple of indices into the arrays m_face_vertices, m_face_normals
-        // and m_face_tex_coords.
         void insert_triangle(
-            const size_t v0_index,
-            const size_t v1_index,
-            const size_t v2_index)
+            const size_t        v0_index,
+            const size_t        v1_index,
+            const size_t        v2_index)
         {
             Triangle triangle;
 
@@ -290,7 +274,7 @@ namespace
             triangle.m_v1 = m_face_vertices[v1_index];
             triangle.m_v2 = m_face_vertices[v2_index];
 
-            // Set triangle vertex normals (if any).
+            // Set triangle vertex normals.
             if (m_face_normals.size() == m_vertex_count)
             {
                 triangle.m_n0 = m_face_normals[v0_index];
@@ -343,7 +327,6 @@ namespace
 #pragma warning (pop)
 }
 
-// Read mesh objects from disk.
 MeshObjectArray MeshObjectReader::read(
     const char*         filename,
     const char*         base_object_name,
