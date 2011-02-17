@@ -329,9 +329,7 @@ void ExactSAHFunction<T>::minimize(
         const ValueType right_length = m_domain_end - i->m_abscissa;
 
         assert(left_length > ValueType(0.0));
-        assert(left_length < m_domain_end - m_domain_begin);
         assert(right_length > ValueType(0.0));
-        assert(right_length < m_domain_end - m_domain_begin);
 
         // Update the item counters.
         if (i->m_type == Event::Enter)
