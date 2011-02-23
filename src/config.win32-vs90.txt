@@ -64,8 +64,8 @@ set(preprocessor_definitions_release
 set(compiler_flags_common
     /WX                                     # Treat Warnings As Errors
     /GF                                     # Enable String Pooling
-    /wd4290                                 # C4290: C++ exception specification ignored except to indicate a function is not __declspec(nothrow)
-    /wd4355                                 # C4355: 'this' : used in base member initializer list
+    /wd4290                                 # Disable warning C4290: C++ exception specification ignored except to indicate a function is not __declspec(nothrow)
+    /wd4355                                 # Disable warning C4355: 'this' : used in base member initializer list
 )
 set(exe_linker_flags_common
     /WX                                     # Treat Warnings As Errors
