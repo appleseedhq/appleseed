@@ -40,6 +40,7 @@
     - 2.02:  fixed improper display of usage screen on PNG error(s); fixed
               unexpected-EOF and file-read-error cases; fixed Trace() cut-and-
               paste bugs
+    - 2.03:  deleted runtime MMX-enabling/disabling and obsolete -mmx* options
 
   ---------------------------------------------------------------------------
 
@@ -94,9 +95,9 @@
 
 #define PROGNAME  "rpng2-x"
 #define LONGNAME  "Progressive PNG Viewer for X"
-#define VERSION   "2.02 of 16 March 2008"
-#define RESNAME   "rpng2"	/* our X resource application name */
-#define RESCLASS  "Rpng"	/* our X resource class name */
+#define VERSION   "2.03 of 25 February 2010"
+#define RESNAME   "rpng2"       /* our X resource application name */
+#define RESCLASS  "Rpng"       /* our X resource class name */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -131,7 +132,7 @@
                   (e.type == KeyPress &&   /*  v--- or 1 for shifted keys */  \
                   ((k = XLookupKeysym(&e.xkey, 0)) == XK_q || k == XK_Escape)))
 
-#define NO_24BIT_MASKS	/* undef case not fully written--only for redisplay() */
+#define NO_24BIT_MASKS /* undef case not fully written--only for redisplay() */
 
 #define rgb1_max   bg_freq
 #define rgb1_min   bg_gray
@@ -301,7 +302,7 @@ int main(int argc, char **argv)
     int have_bg = FALSE;
 #ifdef FEATURE_LOOP
     int loop = FALSE;
-    long loop_interval = -1;		/* seconds (100,000 max) */
+    long loop_interval = -1;            /* seconds (100,000 max) */
 #endif
     double LUT_exponent;                /* just the lookup table */
     double CRT_exponent = 2.2;          /* just the monitor */
@@ -435,18 +436,6 @@ int main(int argc, char **argv)
                     loop_interval = 100000;
             }
 #endif
-#if (defined(__i386__) || defined(_M_IX86) || defined(__x86_64__))
-        } else if (!strncmp(*argv, "-nommxfilters", 7)) {
-            rpng2_info.nommxfilters = TRUE;
-        } else if (!strncmp(*argv, "-nommxcombine", 7)) {
-            rpng2_info.nommxcombine = TRUE;
-        } else if (!strncmp(*argv, "-nommxinterlace", 7)) {
-            rpng2_info.nommxinterlace = TRUE;
-        } else if (!strcmp(*argv, "-nommx")) {
-            rpng2_info.nommxfilters = TRUE;
-            rpng2_info.nommxcombine = TRUE;
-            rpng2_info.nommxinterlace = TRUE;
-#endif
         } else {
             if (**argv != '-') {
                 filename = *argv;
@@ -468,9 +457,6 @@ int main(int argc, char **argv)
         readpng2_version_info();
         fprintf(stderr, "\n"
           "Usage:  %s [-display xdpy] [-gamma exp] [-bgcolor bg | -bgpat pat]\n"
-#if (defined(__i386__) || defined(_M_IX86) || defined(__x86_64__))
-          "        %*s [[-nommxfilters] [-nommxcombine] [-nommxinterlace] | -nommx]\n"
-#endif
 #ifdef FEATURE_LOOP
           "        %*s [-usleep dur | -timing] [-pause] [-loop [sec]] file.png\n\n"
 #else
@@ -491,10 +477,6 @@ int main(int argc, char **argv)
           "\t\t  is complete (depends on -bgpat)\n"
           "    sec \tseconds to display each background image (default = 2)\n"
 #endif
-#if (defined(__i386__) || defined(_M_IX86) || defined(__x86_64__))
-          "    -nommx*\tdisable optimized MMX routines for decoding row filters,\n"
-          "\t\t  combining rows, and expanding interlacing, respectively\n"
-#endif
           "    dur \tduration in microseconds to wait after displaying each\n"
           "\t\t  row (for demo purposes)\n"
           "    -timing\tenables delay for every block read, to simulate modem\n"
@@ -503,9 +485,6 @@ int main(int argc, char **argv)
           "\nPress Q, Esc or mouse button 1 (within image window, after image\n"
           "is displayed) to quit.\n"
           "\n", PROGNAME,
-#if (defined(__i386__) || defined(_M_IX86) || defined(__x86_64__))
-          (int)strlen(PROGNAME), " ",
-#endif
           (int)strlen(PROGNAME), " ", default_display_exponent, num_bgpat-1);
         exit(1);
     }
@@ -802,8 +781,9 @@ static void rpng2_x_init(void)
     if (rpng2_x_create_window()) {
 
         /* GRR TEMPORARY HACK:  this is fundamentally no different from cases
-         * above; libpng should longjmp() back to us when png_ptr goes away.
-         * If we/it segfault instead, seems like a libpng bug... */
+         * above; libpng should call our error handler to longjmp() back to us
+         * when png_ptr goes away.  If we/it segfault instead, seems like a
+         * libpng bug... */
 
         /* we're here via libpng callback, so if window fails, clean and bail */
         readpng2_cleanup(&rpng2_info);
@@ -1297,7 +1277,7 @@ static int rpng2_x_load_bg_image(void)
         for (row = 0;  row < rpng2_info.height;  ++row) {
             src = bg_data + row*bg_rowbytes;
             dest = ximage->data + row*ximage_rowbytes;
-            if (bpp == 32) {	/* slightly optimized version */
+            if (bpp == 32) {    /* slightly optimized version */
                 for (i = rpng2_info.width;  i > 0;  --i) {
                     red   = *src++;
                     green = *src++;

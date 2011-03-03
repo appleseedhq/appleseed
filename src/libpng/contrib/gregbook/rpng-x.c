@@ -81,8 +81,8 @@
 #define PROGNAME  "rpng-x"
 #define LONGNAME  "Simple PNG Viewer for X"
 #define VERSION   "2.01 of 16 March 2008"
-#define RESNAME   "rpng"	/* our X resource application name */
-#define RESCLASS  "Rpng"	/* our X resource class name */
+#define RESNAME   "rpng"        /* our X resource application name */
+#define RESCLASS  "Rpng"        /* our X resource class name */
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -2,8 +2,11 @@
 //  VisualPng.C -- Shows a PNG image
 //------------------------------------
 
-// Copyright 2000, Willem van Schaik.  For conditions of distribution and
-// use, see the copyright/license/disclaimer notice in png.h
+// Copyright 2000, Willem van Schaik.
+
+// This code is released under the libpng license.
+// For conditions of distribution and use, see the disclaimer
+// and license in png.h
 
 // switches
 

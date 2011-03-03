@@ -93,7 +93,7 @@ int readpng_init(FILE *infile, ulg *pWidth, ulg *pHeight)
      * have used slightly more general png_sig_cmp() function instead */
 
     fread(sig, 1, 8, infile);
-    if (!png_check_sig(sig, 8))
+    if (png_sig_cmp(sig, 0, 8))
         return 1;   /* bad signature */
 
 
@@ -263,7 +263,8 @@ uch *readpng_get_image(double display_exponent, int *pChannels, ulg *pRowbytes)
         return NULL;
     }
 
-    Trace((stderr, "readpng_get_image:  channels = %d, rowbytes = %ld, height = %ld\n", *pChannels, rowbytes, height));
+    Trace((stderr, "readpng_get_image:  channels = %d, rowbytes = %ld, height = %ld\n",
+        *pChannels, rowbytes, height));
 
 
     /* set the individual row_pointers to point at the correct offsets */
