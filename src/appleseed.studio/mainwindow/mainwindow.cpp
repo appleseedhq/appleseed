@@ -662,6 +662,8 @@ void MainWindow::slot_open_project()
             if (successful)
             {
                 on_project_change();
+                update_workspace();
+                update_project_explorer();
             }
             else
             {
@@ -669,9 +671,6 @@ void MainWindow::slot_open_project()
             }
         }
     }
-
-    update_workspace();
-    update_project_explorer();
 }
 
 void MainWindow::slot_open_cornellbox_builtin_project()
