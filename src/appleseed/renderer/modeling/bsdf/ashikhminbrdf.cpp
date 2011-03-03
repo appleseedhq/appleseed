@@ -110,18 +110,22 @@ namespace
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            if (m_inputs.source("diffuse_reflectance")->is_uniform() &&
-                m_inputs.source("glossy_reflectance")->is_uniform())
+            m_uniform_reflectance =
+                m_inputs.source("diffuse_reflectance")->is_uniform() &&
+                m_inputs.source("glossy_reflectance")->is_uniform();
+
+            if (m_uniform_reflectance)
             {
-                m_uniform_reflectance = true;
                 m_compute_rval_return_value =
                     compute_rval(values->m_rd, values->m_rg, m_uniform_rval);
             }
 
-            if (m_inputs.source("shininess_u")->is_uniform() &&
-                m_inputs.source("shininess_v")->is_uniform())
+            m_uniform_shininess =
+                m_inputs.source("shininess_u")->is_uniform() &&
+                m_inputs.source("shininess_v")->is_uniform();
+            
+            if (m_uniform_shininess)
             {
-                m_uniform_shininess = true;
                 compute_sval(values->m_nu, values->m_nv, m_uniform_sval);
             }
         }
