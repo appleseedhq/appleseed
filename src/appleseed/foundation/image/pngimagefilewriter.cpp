@@ -39,6 +39,7 @@
 
 // libpng header.
 #include "png.h"
+#include "pngstruct.h"
 
 // Standard headers.
 #include <cassert>
