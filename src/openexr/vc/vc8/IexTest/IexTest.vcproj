@@ -4,7 +4,6 @@
 	Version="8.00"
 	Name="IexTest"
 	ProjectGUID="{DAC75A01-4299-4F6F-AE4A-3ECF0E5D66EC}"
-	RootNamespace="IexTest"
 	>
 	<Platforms>
 		<Platform
@@ -16,8 +15,8 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
-			IntermediateDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -38,7 +37,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName="../../../../../build/win32.vs80/openexr/Release/IexTest.tlb"
+				TypeLibraryName=".\Release/IexTest.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -46,18 +45,19 @@
 				Optimization="2"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="../../../Iex;../../../config.windows;../../../IexTest"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;NDEBUG;WIN32;_CONSOLE;_SECURE_SCL=0"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;NDEBUG;WIN32;_CONSOLE"
 				StringPooling="true"
 				RuntimeLibrary="2"
 				ForceConformanceInForLoopScope="true"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
+				ProgramDataBaseFileName="$(IntDir)/$(ProjectName).pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
 				CompileAs="0"
-				DisableSpecificWarnings="4290;4101"
+				DisableSpecificWarnings="4290"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -72,9 +72,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				OutputFile="..\bin\IexTest.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories=""
+				AdditionalLibraryDirectories=";../lib"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				EntryPointSymbol="mainCRTStartup"
@@ -104,13 +105,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Running IexTest program...."
-				CommandLine="&quot;$(TargetPath)&quot;"
+				CommandLine="..\bin\IexTest.exe"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
-			IntermediateDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -131,25 +132,26 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName="../../../../../build/win32.vs80/openexr/Debug/IexTest.tlb"
+				TypeLibraryName=".\Debug/IexTest.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../../../Iex;../../../config.windows;../../../IexTest"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_HAS_ITERATOR_DEBUGGING=0;_DEBUG;WIN32;_CONSOLE"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_DEBUG;WIN32;_CONSOLE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				ForceConformanceInForLoopScope="true"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
+				ProgramDataBaseFileName="$(IntDir)/IexTest_d.pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="4"
 				CompileAs="0"
-				DisableSpecificWarnings="4290;4101"
+				DisableSpecificWarnings="4290"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -164,9 +166,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				OutputFile="..\bin\$(ProjectName)_d.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories=""
+				AdditionalLibraryDirectories="C:\Test\bin_dll_d"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				EntryPointSymbol="mainCRTStartup"
@@ -196,13 +199,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Running IexTest program...."
-				CommandLine="&quot;$(TargetPath)&quot;"
+				CommandLine="..\bin\$(ProjectName)_d.exe"
 			/>
 		</Configuration>
 		<Configuration
 			Name="DebugDLL|Win32"
-			OutputDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
-			IntermediateDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -223,25 +226,26 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName="../../../../../build/win32.vs80/openexr/Debug/IexTest.tlb"
+				TypeLibraryName=".\Debug/IexTest.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../../../Iex;../../../config.windows;../../../IexTest"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_HAS_ITERATOR_DEBUGGING=0;_DEBUG;WIN32;_CONSOLE"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_DEBUG;WIN32;_CONSOLE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				ForceConformanceInForLoopScope="true"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
+				ProgramDataBaseFileName="$(IntDir)/$(ProjectName)_dll_d.pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="4"
 				CompileAs="0"
-				DisableSpecificWarnings="4290;4101"
+				DisableSpecificWarnings="4290"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -256,9 +260,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				OutputFile="..\bin\$(ProjectName)_dll_d.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="../../../../../build/win32.vs80/openexr/"
+				AdditionalLibraryDirectories="..\lib"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/$(ProjectName)_dll_d.pdb"
 				SubSystem="1"
@@ -289,13 +294,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Running IexTest program...."
-				CommandLine="&quot;$(TargetPath)&quot;"
+				CommandLine="..\bin\$(ProjectName)_dll_d.exe"
 			/>
 		</Configuration>
 		<Configuration
 			Name="ReleaseDLL|Win32"
-			OutputDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
-			IntermediateDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -316,7 +321,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName="../../../../../build/win32.vs80/openexr/Debug/IexTest.tlb"
+				TypeLibraryName=".\Release/IexTest.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -326,25 +331,25 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="../../../Iex;../../../config.windows;../../../IexTest"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_DEBUG;WIN32;_CONSOLE;_SECURE_SCL=0"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;WIN32;_CONSOLE"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="2"
 				ForceConformanceInForLoopScope="true"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
+				ProgramDataBaseFileName="$(IntDir)/$(ProjectName)_dll.pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="1"
 				CompileAs="0"
-				DisableSpecificWarnings="4290;4101"
+				DisableSpecificWarnings="4290"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
 				Culture="1033"
 			/>
 			<Tool
@@ -352,10 +357,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				OutputFile="..\bin\$(ProjectName)_dll.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="../../../../../build/win32.vs80/openexr/"
-				GenerateDebugInformation="true"
+				AdditionalLibraryDirectories="..\lib"
 				ProgramDatabaseFile="$(OutDir)/$(ProjectName)_dll.pdb"
 				SubSystem="1"
 				EntryPointSymbol="mainCRTStartup"
@@ -385,7 +390,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Running IexTest program...."
-				CommandLine="&quot;$(TargetPath)&quot;"
+				CommandLine="..\bin\$(ProjectName)_dll.exe"
 			/>
 		</Configuration>
 	</Configurations>

@@ -4,7 +4,6 @@
 	Version="8.00"
 	Name="ImathTest"
 	ProjectGUID="{DE65F857-A32D-4EA3-A161-C838773724B7}"
-	RootNamespace="ImathTest"
 	>
 	<Platforms>
 		<Platform
@@ -16,8 +15,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
-			IntermediateDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -38,19 +37,20 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName="../../../../../build/win32.vs80/openexr/Debug/ImathTest.tlb"
+				TypeLibraryName=".\Debug/ImathTest.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../../../Iex;../../../config.windows;../../../Imath;../../../ImathTest;../../../Half"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_HAS_ITERATOR_DEBUGGING=0;_DEBUG;WIN32;_CONSOLE"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_DEBUG;WIN32;_CONSOLE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				ForceConformanceInForLoopScope="true"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
+				ProgramDataBaseFileName="$(IntDir)/ImathTest_d.pdb"
 				WarningLevel="1"
 				SuppressStartupBanner="true"
 				Detect64BitPortabilityProblems="true"
@@ -71,9 +71,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				OutputFile="..\bin\$(ProjectName)_d.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="&quot;..\..\..\..\..\build\win32.vs80\openexr\Iex\$(ConfigurationName)&quot;;&quot;..\..\..\..\..\build\win32.vs80\openexr\Imath\$(ConfigurationName)&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				EntryPointSymbol="mainCRTStartup"
@@ -103,13 +103,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Running ImathTest program...."
-				CommandLine="&quot;$(TargetPath)&quot;"
+				CommandLine="..\bin\$(ProjectName)_d.exe"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
-			IntermediateDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory=".\Release"
+			IntermediateDirectory=".\Release"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -130,7 +130,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName="../../../../../build/win32.vs80/openexr/Release/ImathTest.tlb"
+				TypeLibraryName=".\Release/ImathTest.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -138,12 +138,13 @@
 				Optimization="2"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="../../../Iex;../../../config.windows;../../../Imath;../../../ImathTest;../../../Half"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;NDEBUG;WIN32;_CONSOLE;_SECURE_SCL=0"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;NDEBUG;WIN32;_CONSOLE"
 				StringPooling="true"
 				RuntimeLibrary="2"
 				ForceConformanceInForLoopScope="true"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
+				ProgramDataBaseFileName="$(IntDir)/$(ProjectName).pdb"
 				WarningLevel="1"
 				SuppressStartupBanner="true"
 				Detect64BitPortabilityProblems="true"
@@ -164,9 +165,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				OutputFile="../bin/ImathTest.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="&quot;..\..\..\..\..\build\win32.vs80\openexr\Iex\$(ConfigurationName)&quot;;&quot;..\..\..\..\..\build\win32.vs80\openexr\Imath\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories=";../lib"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				EntryPointSymbol="mainCRTStartup"
@@ -196,13 +198,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Running ImathTest program...."
-				CommandLine="&quot;$(TargetPath)&quot;"
+				CommandLine="..\bin\ImathTest.exe"
 			/>
 		</Configuration>
 		<Configuration
 			Name="DebugDLL|Win32"
-			OutputDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
-			IntermediateDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -223,14 +225,14 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName="../../../../../build/win32.vs80/openexr/Debug/ImathTest.tlb"
+				TypeLibraryName=".\Debug/ImathTest.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../../../Iex;../../../config.windows;../../../Imath;../../../ImathTest;../../../Half"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_HAS_ITERATOR_DEBUGGING=0;OPENEXR_DLL;_DEBUG;WIN32;_CONSOLE"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;OPENEXR_DLL;_DEBUG;WIN32;_CONSOLE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				ForceConformanceInForLoopScope="true"
@@ -257,10 +259,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Iex.lib Imath.lib"
+				AdditionalDependencies="Iex_dll_d.lib Imath_dll_d.lib"
+				OutputFile="..\bin\$(ProjectName)_dll_d.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="&quot;..\..\..\..\..\build\win32.vs80\openexr\Iex\$(ConfigurationName)&quot;;&quot;..\..\..\..\..\build\win32.vs80\openexr\Imath\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="..\lib"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/$(ProjectName)_dll_d.pdb"
 				SubSystem="1"
@@ -291,13 +294,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Running ImathTest program...."
-				CommandLine="&quot;$(TargetPath)&quot;"
+				CommandLine="..\bin\$(ProjectName)_dll_d.exe"
 			/>
 		</Configuration>
 		<Configuration
 			Name="ReleaseDLL|Win32"
-			OutputDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
-			IntermediateDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -318,7 +321,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName="../../../../../build/win32.vs80/openexr/Debug/ImathTest.tlb"
+				TypeLibraryName=".\Release/ImathTest.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -328,7 +331,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="../../../Iex;../../../config.windows;../../../Imath;../../../ImathTest;../../../Half"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;OPENEXR_DLL;_DEBUG;WIN32;_CONSOLE;_SECURE_SCL=0"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;OPENEXR_DLL;WIN32;_CONSOLE"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="false"
@@ -348,7 +351,6 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
 				Culture="1033"
 			/>
 			<Tool
@@ -356,11 +358,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Iex.lib Imath.lib"
+				AdditionalDependencies="Iex_dll.lib Imath_dll.lib"
+				OutputFile="..\bin\$(ProjectName)_dll.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="&quot;..\..\..\..\..\build\win32.vs80\openexr\Iex\$(ConfigurationName)&quot;;&quot;..\..\..\..\..\build\win32.vs80\openexr\Imath\$(ConfigurationName)&quot;"
-				GenerateDebugInformation="true"
+				AdditionalLibraryDirectories="..\lib"
 				ProgramDatabaseFile="$(OutDir)/$(ProjectName)_dll.pdb"
 				SubSystem="1"
 				EntryPointSymbol="mainCRTStartup"
@@ -390,7 +392,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Running ImathTest program...."
-				CommandLine="&quot;$(TargetPath)&quot;"
+				CommandLine="..\bin\$(ProjectName)_dll.exe"
 			/>
 		</Configuration>
 	</Configurations>

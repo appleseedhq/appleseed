@@ -4,7 +4,6 @@
 	Version="8.00"
 	Name="exrmaketiled"
 	ProjectGUID="{A09844B0-7C10-4A5D-9CE4-1C9267A0200D}"
-	RootNamespace="exrmaketiled"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -17,8 +16,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
-			IntermediateDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory="Debug"
+			IntermediateDirectory="Debug"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -42,12 +41,13 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../../../exrmaketiled;../include/OpenEXR;../../../IlmImf;../../../Iex;../../../Imath;../../../Half"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_HAS_ITERATOR_DEBUGGING=0;_DEBUG;WIN32;_CONSOLE"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_DEBUG;WIN32;_CONSOLE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				ForceConformanceInForLoopScope="true"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
+				ProgramDataBaseFileName="$(IntDir)/$(ProjectName)_d.pdb"
 				WarningLevel="1"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="4"
@@ -66,9 +66,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="zlibd.lib comctl32.lib"
+				OutputFile="..\bin\exrmaketiled_d.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="../../../../../build/win32.vs80/zlib/Win32_LIB_ASM_Debug"
+				AdditionalLibraryDirectories="../../../../zlib;../lib"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				TargetMachine="1"
@@ -100,8 +101,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
-			IntermediateDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory="Release"
+			IntermediateDirectory="Release"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -124,12 +125,13 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="../../../exrmaketiled;../include/OpenEXR;../../../IlmImf;../../../Iex;../../../Imath;../../../Half"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;NDEBUG;WIN32;_CONSOLE;_SECURE_SCL=0"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;NDEBUG;WIN32;_CONSOLE"
 				StringPooling="true"
 				RuntimeLibrary="2"
 				ForceConformanceInForLoopScope="true"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
+				ProgramDataBaseFileName="$(IntDir)/$(ProjectName).pdb"
 				WarningLevel="1"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
@@ -148,9 +150,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="zlib.lib comctl32.lib"
+				OutputFile="..\bin\exrmaketiled.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="../../../../../build/win32.vs80/zlib/Win32_LIB_ASM_Release"
+				AdditionalLibraryDirectories="../../../../zlib;../lib"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				TargetMachine="1"

@@ -16,8 +16,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
-			IntermediateDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -38,19 +38,20 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName="../../../../../build/win32.vs80/openexr/Debug/IlmImfTest.tlb"
+				TypeLibraryName=".\Debug/IlmImfTest.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../../../IlmThread;../../../config.windows;../../../IlmImf;../../../Iex;../../../Imath;../../../IlmImfTest;../../../Half"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_HAS_ITERATOR_DEBUGGING=0;_DEBUG;WIN32;_CONSOLE"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_DEBUG;WIN32;_CONSOLE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				ForceConformanceInForLoopScope="true"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
+				ProgramDataBaseFileName="$(IntDir)/IlmImfTest_d.pdb"
 				WarningLevel="1"
 				SuppressStartupBanner="true"
 				Detect64BitPortabilityProblems="true"
@@ -72,9 +73,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="zlibd.lib odbc32.lib odbccp32.lib"
+				OutputFile="..\bin\$(ProjectName)_d.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="../../../../../build/win32.vs80/zlib/Win32_LIB_ASM_Debug"
+				AdditionalLibraryDirectories="..\..\..\..\zlib;..\lib"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				EntryPointSymbol="mainCRTStartup"
@@ -104,13 +106,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Running IlmImfTest program..."
-				CommandLine="cd &quot;$(ProjectDir)&quot;..\..\..\IlmImfTest&#x0D;&#x0A;&quot;$(TargetPath)&quot;&#x0D;&#x0A;"
+				CommandLine="cd ..\..\..\IlmImfTest&#x0D;&#x0A;set path=%path%;..\..\zlib\lib;..\bin&#x0D;&#x0A;$(TargetPath)&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
-			IntermediateDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -131,7 +133,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName="../../../../../build/win32.vs80/openexr/Release/IlmImfTest.tlb"
+				TypeLibraryName=".\Release/IlmImfTest.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -139,12 +141,13 @@
 				Optimization="2"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="../../../IlmThread;../../../config.windows;../../../IlmImf;../../../Iex;../../../Imath;../../../IlmImfTest;../../../Half"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;NDEBUG;WIN32;_CONSOLE;_SECURE_SCL=0"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;NDEBUG;WIN32;_CONSOLE"
 				StringPooling="true"
 				RuntimeLibrary="2"
 				ForceConformanceInForLoopScope="true"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
+				ProgramDataBaseFileName="$(IntDir)/$(ProjectName).pdb"
 				WarningLevel="1"
 				SuppressStartupBanner="true"
 				Detect64BitPortabilityProblems="true"
@@ -166,9 +169,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="zlib.lib odbc32.lib odbccp32.lib"
+				OutputFile="..\bin\IlmImfTest.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="../../../../../build/win32.vs80/zlib/Win32_LIB_ASM_Release"
+				AdditionalLibraryDirectories="..\..\..\..\zlib;../lib"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				EntryPointSymbol="mainCRTStartup"
@@ -198,13 +202,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Running IlmImfTest program..."
-				CommandLine="cd &quot;$(ProjectDir)&quot;..\..\..\IlmImfTest&#x0D;&#x0A;&quot;$(TargetPath)&quot;&#x0D;&#x0A;"
+				CommandLine="cd ..\..\..\IlmImfTest&#x0D;&#x0A;set path=%path%;..\..\zlib\lib;..\bin&#x0D;&#x0A;$(TargetPath)&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
 			Name="DebugDLL|Win32"
-			OutputDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
-			IntermediateDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -225,19 +229,20 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName="../../../../../build/win32.vs80/openexr/Debug/IlmImfTest.tlb"
+				TypeLibraryName=".\Debug/IlmImfTest.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../../../IlmThread;../../../config.windows;../../../IlmImf;../../../Iex;../../../Imath;../../../IlmImfTest;../../../Half"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_HAS_ITERATOR_DEBUGGING=0;OPENEXR_DLL;_DEBUG;WIN32;_CONSOLE"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;OPENEXR_DLL;_DEBUG;WIN32;_CONSOLE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				ForceConformanceInForLoopScope="true"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
+				ProgramDataBaseFileName="$(IntDir)/$(ProjectName)_dll_d.pdb"
 				WarningLevel="1"
 				SuppressStartupBanner="true"
 				Detect64BitPortabilityProblems="true"
@@ -258,10 +263,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Iex.lib Imath.lib Half.lib IlmImf.lib IlmThread.lib zlib1d.lib odbc32.lib odbccp32.lib"
+				AdditionalDependencies="Iex_dll_d.lib Imath_dll_d.lib Half_dll_d.lib IlmImf_dll_d.lib IlmThread_dll_d.lib zlib1d.lib odbc32.lib odbccp32.lib"
+				OutputFile="..\bin\$(ProjectName)_dll_d.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="&quot;..\..\..\..\..\build\win32.vs80\openexr\Iex\$(ConfigurationName)&quot;;&quot;..\..\..\..\..\build\win32.vs80\openexr\Imath\$(ConfigurationName)&quot;;&quot;..\..\..\..\..\build\win32.vs80\openexr\Half\$(ConfigurationName)&quot;;&quot;..\..\..\..\..\build\win32.vs80\openexr\IlmImf\$(ConfigurationName)&quot;;&quot;..\..\..\..\..\build\win32.vs80\openexr\IlmThread\$(ConfigurationName)&quot;;../../../../../build/win32.vs80/zlib/Win32_DLL_ASM_Debug"
+				AdditionalLibraryDirectories="..\lib"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				EntryPointSymbol="mainCRTStartup"
@@ -291,13 +297,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Running IlmImfTest program..."
-				CommandLine="cd &quot;$(ProjectDir)&quot;..\..\..\IlmImfTest&#x0D;&#x0A;&quot;$(TargetPath)&quot;&#x0D;&#x0A;"
+				CommandLine="cd ..\..\..\IlmImfTest&#x0D;&#x0A;set path=%path%;..\..\zlib\lib;..\bin&#x0D;&#x0A;$(TargetPath)&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
 			Name="ReleaseDLL|Win32"
-			OutputDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
-			IntermediateDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -318,7 +324,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName="../../../../../build/win32.vs80/openexr/Debug/IlmImfTest.tlb"
+				TypeLibraryName=".\Release/IlmImfTest.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -328,13 +334,14 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="../../../IlmThread;../../../config.windows;../../../IlmImf;../../../Iex;../../../Imath;../../../IlmImfTest;../../../Half"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;OPENEXR_DLL;NDEBUG;WIN32;_CONSOLE;_SECURE_SCL=0"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;OPENEXR_DLL;NDEBUG;WIN32;_CONSOLE"
 				StringPooling="true"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="2"
 				ForceConformanceInForLoopScope="true"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
+				ProgramDataBaseFileName="$(IntDir)/$(ProjectName)_dll.pdb"
 				WarningLevel="1"
 				SuppressStartupBanner="true"
 				Detect64BitPortabilityProblems="true"
@@ -347,7 +354,6 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
 				Culture="1033"
 			/>
 			<Tool
@@ -355,11 +361,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Iex.lib Imath.lib Half.lib IlmImf.lib IlmThread.lib zlib1.lib odbc32.lib odbccp32.lib"
+				AdditionalDependencies="Iex_dll.lib Imath_dll.lib Half_dll.lib IlmImf_dll.lib IlmThread_dll.lib zlib1.lib odbc32.lib odbccp32.lib"
+				OutputFile="..\bin\$(ProjectName)_dll.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="&quot;..\..\..\..\..\build\win32.vs80\openexr\Iex\$(ConfigurationName)&quot;;&quot;..\..\..\..\..\build\win32.vs80\openexr\Imath\$(ConfigurationName)&quot;;&quot;..\..\..\..\..\build\win32.vs80\openexr\Half\$(ConfigurationName)&quot;;&quot;..\..\..\..\..\build\win32.vs80\openexr\IlmImf\$(ConfigurationName)&quot;;&quot;..\..\..\..\..\build\win32.vs80\openexr\IlmThread\$(ConfigurationName)&quot;;../../../../../build/win32.vs80/zlib/Win32_DLL_ASM_Release"
-				GenerateDebugInformation="true"
+				AdditionalLibraryDirectories="..\lib"
 				SubSystem="1"
 				EntryPointSymbol="mainCRTStartup"
 				TargetMachine="1"
@@ -388,7 +394,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Running IlmImfTest program..."
-				CommandLine="cd &quot;$(ProjectDir)&quot;..\..\..\IlmImfTest&#x0D;&#x0A;&quot;$(TargetPath)&quot;&#x0D;&#x0A;"
+				CommandLine="cd ..\..\..\IlmImfTest&#x0D;&#x0A;set path=%path%;..\..\zlib\lib;..\bin&#x0D;&#x0A;$(TargetPath)&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>

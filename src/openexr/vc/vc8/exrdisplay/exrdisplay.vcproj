@@ -4,7 +4,6 @@
 	Version="8.00"
 	Name="exrdisplay"
 	ProjectGUID="{B44416BF-AD63-4FEC-A288-DF5FCECD6717}"
-	RootNamespace="exrdisplay"
 	>
 	<Platforms>
 		<Platform
@@ -16,8 +15,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
-			IntermediateDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory=".\Debug"
+			IntermediateDirectory=".\Debug"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -38,19 +37,20 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName="../../../../../build/win32.vs80/openexr/Debug/exrdisplay.tlb"
+				TypeLibraryName=".\Debug/exrdisplay.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../include/OpenEXR;../../../exrdisplay;../../../../fltk"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_HAS_ITERATOR_DEBUGGING=0;_DEBUG;WIN32;_CONSOLE"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_DEBUG;WIN32;_CONSOLE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				ForceConformanceInForLoopScope="true"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
+				ProgramDataBaseFileName="$(IntDir)/$(ProjectName)_d.pdb"
 				WarningLevel="1"
 				SuppressStartupBanner="true"
 				Detect64BitPortabilityProblems="true"
@@ -72,9 +72,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="zlibd.lib fltkd.lib fltkgld.lib glu32.lib opengl32.lib comctl32.lib wsock32.lib"
+				OutputFile="..\bin\exrdisplay_d.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="../../../../fltk/lib,../../../../../build/win32.vs80/zlib/Win32_LIB_ASM_Debug"
+				AdditionalLibraryDirectories="../../../../fltk/lib,../../../../zlib;../lib"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				TargetMachine="1"
@@ -106,8 +107,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
-			IntermediateDirectory="..\..\..\..\..\build\win32.vs80\openexr\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory="Release"
+			IntermediateDirectory="Release"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -128,7 +129,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName="../../../../../build/win32.vs80/openexr/Release/exrdisplay.tlb"
+				TypeLibraryName=".\Release/exrdisplay.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -136,12 +137,13 @@
 				Optimization="2"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="../include/OpenEXR;../../../exrdisplay;../../../../fltk"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;NDEBUG;WIN32;_CONSOLE;_SECURE_SCL=0"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;NDEBUG;WIN32;_CONSOLE"
 				StringPooling="true"
 				RuntimeLibrary="2"
 				ForceConformanceInForLoopScope="true"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
+				ProgramDataBaseFileName="$(IntDir)/$(ProjectName).pdb"
 				WarningLevel="1"
 				SuppressStartupBanner="true"
 				Detect64BitPortabilityProblems="true"
@@ -163,9 +165,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="zlib.lib fltk.lib fltkgl.lib opengl32.lib glu32.lib comctl32.lib ws2_32.lib"
+				OutputFile="..\bin\exrdisplay.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="../../../../fltk/lib;../../../../../build/win32.vs80/zlib/Win32_LIB_ASM_Release"
+				AdditionalLibraryDirectories="../../../../fltk/lib;../lib"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				EntryPointSymbol="mainCRTStartup"
