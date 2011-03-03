@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,15 +16,18 @@
  */
 
 /*
- * $Id: PlatformUtils.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: PlatformUtils.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
+#if !defined(XERCESC_INCLUDE_GUARD_PLATFORMUTILS_HPP)
+#define XERCESC_INCLUDE_GUARD_PLATFORMUTILS_HPP
 
-#if !defined(PLATFORMUTILS_HPP)
-#define PLATFORMUTILS_HPP
-
+#include <xercesc/util/XercesDefs.hpp>
 #include <xercesc/util/XMLException.hpp>
 #include <xercesc/util/PanicHandler.hpp>
+
+#include <xercesc/util/XMLFileMgr.hpp>
+#include <xercesc/util/XMLMutexMgr.hpp>
 
 XERCES_CPP_NAMESPACE_BEGIN
 
@@ -59,7 +62,7 @@ private :
   *
   * This class contains methods that must be implemented in a platform
   * specific manner. The actual implementations of these methods are
-  * available in the per-platform files indide <code>src/util/Platforms
+  * available in the per-platform files inside <code>src/util/Platforms
   * </code>.
   */
 class XMLUTIL_EXPORT XMLPlatformUtils
@@ -86,11 +89,11 @@ public :
     /** The transcoding service.
       *
       * This is provided by the per platform driver, so each platform can
-      * choose what implemenation it wants to use. When the platform
+      * choose what implementation it wants to use. When the platform
       * independent initialization code needs to get a transcoding service
       * object, it will call <code>makeTransService()</code> to ask the
       * per-platform code to create one. Only one transcoding service
-      * object is reqeusted per-process, so it is shared and synchronized
+      * object is requested per-process, so it is shared and synchronized
       * among parser instances within that process.
       */
     static XMLTransService*     fgTransService;
@@ -100,14 +103,14 @@ public :
 
     /** The Panic Handler
       *
-      *   This is the application provided panic handler. 
+      *   This is the application provided panic handler.
       */
     static PanicHandler*        fgUserPanicHandler;
-    
+
     /** The Panic Handler
       *
-      *   This is the default panic handler. 
-      */    
+      *   This is the default panic handler.
+      */
     static PanicHandler*        fgDefaultPanicHandler;
 
     /** The configurable memory manager
@@ -116,31 +119,34 @@ public :
       *   application, a default implementation is used.
       */
     static MemoryManager*       fgMemoryManager;
-    
-    /** The array-allocating memory manager
-      *
-      *   This memory manager always allocates memory by calling the
-      *   global new[] operator. It may be used to allocate memory
-      *   where such memory needs to be deletable by calling delete [].
-      *   Since this allocator is always guaranteed to do the same thing
-      *   there is no reason, nor facility, to override it.
-      */
-    static MemoryManager*       fgArrayMemoryManager;
 
+    static XMLFileMgr*          fgFileMgr;
+    static XMLMutexMgr*         fgMutexMgr;
+
+    /** Global mutex for fast or infrequent operations.
+      *
+      *   Use this mutex only for fast (e.g., increment an integer,
+      *   check flag, etc.) or infrequent (e.g., once-off initialization)
+      *   operations.
+      */
     static XMLMutex*            fgAtomicMutex;
-    
+
+    static bool                 fgXMLChBigEndian;
+    static bool                 fgSSE2ok;
     //@}
 
 
-    /** @name Initialization amd Panic methods */
+    /** @name Initialization and Panic methods */
     //@{
 
     /** Perform per-process parser initialization
       *
       * Initialization <b>must</b> be called first in any client code.
       *
+      * @param locale The locale to use for messages.
+      *
       * The locale is set iff the Initialize() is invoked for the very first time,
-      * to ensure that each and every message loaders, in the process space, share
+      * to ensure that each and every message loader, in the process space, share
       * the same locale.
       *
       * All subsequent invocations of Initialize(), with a different locale, have
@@ -152,24 +158,79 @@ public :
       *
       * The default locale is "en_US".
       *
-      * nlsHome: user specified location where MsgLoader retrieves error message files.
-      *          the discussion above with regard to locale, applies to this nlsHome
-      *          as well.
+      * @param nlsHome User specified location where MsgLoader retrieves error message files.
+      *                the discussion above with regard to locale, applies to nlsHome as well.
       *
-      * panicHandler: application's panic handler, application owns this handler.
-      *               Application shall make sure that the plugged panic handler persists 
-      *               through the call to XMLPlatformUtils::terminate().       
+      * @param panicHandler Application's panic handler, application owns this handler.
+      *                     Application shall make sure that the plugged panic handler persists
+      *                     through the call to XMLPlatformUtils::Terminate().
       *
-      * memoryManager: plugged-in memory manager which is owned by user
-      *                applications. Applications must make sure that the
-      *                plugged-in memory manager persist through the call to
-      *                XMLPlatformUtils::terminate()
+      * @param memoryManager Plugged-in memory manager which is owned by the
+      *                      application. Applications must make sure that the
+      *                      plugged-in memory manager persist through the call to
+      *                      XMLPlatformUtils::Terminate()
       */
     static void Initialize(const char*          const locale = XMLUni::fgXercescDefaultLocale
                          , const char*          const nlsHome = 0
                          ,       PanicHandler*  const panicHandler = 0
-                         ,       MemoryManager* const memoryManager = 0
-                         ,       bool                 toInitStatics = false);
+                         ,       MemoryManager* const memoryManager = 0);
+
+      /** Perform per-process parser initialization
+      *
+      * Initialization <b>must</b> be called first in any client code.
+      *
+      * @param initialDOMHeapAllocSize The size of the first memory block
+      * allocated by the DOMDocument heap. Note that changing this parameter
+      * may result in poor performance and/or excessive memory usage. For
+      * the default value refer to dom/impl/DOMDocumentImpl.cpp.
+      *
+      * @param maxDOMHeapAllocSize The maximum size of the memory block
+      * allocated by the DOMDocument heap. As the document grows, the
+      * allocated by the heap memory blocks grow from initialDOMHeapAllocSize
+      * to maxDOMHeapAllocSize. Note that changing this parameter may result
+      * in poor performance and/or excessive memory usage. For the default
+      * value refer to dom/impl/DOMDocumentImpl.cpp.
+      *
+      * @param maxDOMSubAllocationSize The maximum size of the memory block
+      * requested that is handled by the DOMDocument heap. A request for a
+      * larger block is handled directly by the memory manager. Note that
+      * changing this parameter may result in poor performance and/or
+      * excessive memory usage. For the default value refer to
+      * dom/impl/DOMDocumentImpl.cpp.
+      *
+      * @param locale The locale to use for messages.
+      *
+      * The locale is set iff the Initialize() is invoked for the very first time,
+      * to ensure that each and every message loader, in the process space, share
+      * the same locale.
+      *
+      * All subsequent invocations of Initialize(), with a different locale, have
+      * no effect on the message loaders, either instantiated, or to be instantiated.
+      *
+      * To set to a different locale, client application needs to Terminate() (or
+      * multiple Terminate() in the case where multiple Initialize() have been invoked
+      * before), followed by Initialize(new_locale).
+      *
+      * The default locale is "en_US".
+      *
+      * @param nlsHome User specified location where MsgLoader retrieves error message files.
+      * the discussion above with regard to locale, applies to nlsHome as well.
+      *
+      * @param panicHandler Application's panic handler, application owns this handler.
+      * Application shall make sure that the plugged panic handler persists
+      * through the call to XMLPlatformUtils::Terminate().
+      *
+      * @param memoryManager Plugged-in memory manager which is owned by the
+      * application. Applications must make sure that the plugged-in memory
+      * manager persist through the call to XMLPlatformUtils::Terminate()
+      */
+    static void Initialize(XMLSize_t initialDOMHeapAllocSize
+                         , XMLSize_t maxDOMHeapAllocSize
+                         , XMLSize_t maxDOMSubAllocationSize
+                         , const char*          const locale = XMLUni::fgXercescDefaultLocale
+                         , const char*          const nlsHome = 0
+                         ,       PanicHandler*  const panicHandler = 0
+                         ,       MemoryManager* const memoryManager = 0);
 
     /** Perform per-process parser termination
       *
@@ -190,25 +251,31 @@ public :
       * in the absence of it, the default panic handler.
       *
       * In case the default panic handler does not support a particular
-      * platform, the platform specific panic hanlding shall be implemented
+      * platform, the platform specific panic handling shall be implemented
       * here </p>.
-      * 
+      *
       * @param reason The enumeration that defines the cause of the failure
       */
     static void panic
     (
         const   PanicHandler::PanicReasons    reason
     );
-    
+
     //@}
 
     /** @name File Methods */
     //@{
 
+    /** Make a new file object appropriate for the platform.
+      *
+      * @param manager The MemoryManager to use to allocate objects
+      */
+    static XMLFileMgr* makeFileMgr(MemoryManager* const manager);
+
     /** Get the current file position
       *
       * This must be implemented by the per-platform driver, which should
-      * use local file services to deterine the current position within
+      * use local file services to determine the current position within
       * the passed file.
       *
       * Since the file API provided here only reads, if the host platform
@@ -218,7 +285,7 @@ public :
       * @param theFile The file handle
       * @param manager The MemoryManager to use to allocate objects
       */
-    static unsigned int curFilePos(FileHandle theFile
+    static XMLFilePos curFilePos(FileHandle theFile
         , MemoryManager* const manager  = XMLPlatformUtils::fgMemoryManager);
 
     /** Closes the file handle
@@ -244,7 +311,7 @@ public :
       * @param manager The MemoryManager to use to allocate objects
       * @return Returns the size of the file in bytes
       */
-    static unsigned int fileSize(FileHandle theFile
+    static XMLFilePos fileSize(FileHandle theFile
         , MemoryManager* const manager  = XMLPlatformUtils::fgMemoryManager);
 
     /** Opens the file
@@ -327,10 +394,10 @@ public :
       *
       * @return Returns the number of bytes read from the stream or file
       */
-    static unsigned int readFileBuffer
+    static XMLSize_t readFileBuffer
     (
                 FileHandle      theFile
-        , const unsigned int    toRead
+        , const XMLSize_t       toRead
         ,       XMLByte* const  toFill
         , MemoryManager* const manager  = XMLPlatformUtils::fgMemoryManager
     );
@@ -352,7 +419,7 @@ public :
     static void writeBufferToFile
     (
           FileHandle     const  theFile
-        , long                  toWrite
+        , XMLSize_t             toWrite
         , const XMLByte* const  toFlush
         , MemoryManager* const manager  = XMLPlatformUtils::fgMemoryManager
     );
@@ -401,12 +468,12 @@ public :
         , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
     );
 
-    /** Gets the current working directory 
+    /** Gets the current working directory
       *
-      * This must be implemented by the per-platform driver. It returns 
-      * the current working directory is. 
+      * This must be implemented by the per-platform driver. It returns
+      * the current working directory is.
       * @param manager The MemoryManager to use to allocate objects
-      * @return Returns the current working directory. 
+      * @return Returns the current working directory.
       *         This is dyanmically allocated and must be deleted
       *         by the caller when its no longer needed! The memory returned
       *         will be allocated using the static memory manager, if users
@@ -419,9 +486,9 @@ public :
         MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
     );
 
-    /** Check if a charater is a slash
+    /** Check if a character is a slash
       *
-      * This must be implemented by the per-platform driver. 
+      * This must be implemented by the per-platform driver.
       *
       * @param c the character to be examined
       *
@@ -429,20 +496,20 @@ public :
       *         false otherwise
       */
     static inline bool isAnySlash(XMLCh c);
-    
-    /** Remove occurences of the pair of dot slash 
+
+    /** Remove occurrences of the pair of dot slash
       *
       * To remove the sequence, dot slash if it is part of the sequence,
       * slash dot slash.
       *
       * @param srcPath The path for which you want to remove the dot slash sequence.
       * @param manager The MemoryManager to use to allocate objects
-      * @return 
+      * @return
       */
     static void   removeDotSlash(XMLCh* const srcPath
         , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
 
-    /** Remove occurences of the dot dot slash 
+    /** Remove occurrences of the dot dot slash
       *
       * To remove the sequence, slash dot dot slash and its preceding path segment
       * if and only if the preceding path segment is not slash dot dot slash.
@@ -450,7 +517,7 @@ public :
       * @param srcPath The path for which you want to remove the slash dot
       *        dot slash sequence and its preceding path segment.
       * @param manager The MemoryManager to use to allocate objects
-      * @return 
+      * @return
       */
     static void   removeDotDotSlash(XMLCh* const srcPath
         , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
@@ -507,7 +574,7 @@ public :
       * This must be implemented by the per-platform driver, which should
       * use local services to return the current value of a running
       * millisecond timer. Note that the value returned is only as accurate
-      * as the millisecond time of the underyling host system.
+      * as the millisecond time of the underlying host system.
       *
       * @return Returns the system time as an unsigned long
       */
@@ -517,14 +584,24 @@ public :
     /** @name Mutex Methods */
     //@{
 
+    /** Factory method for creating MutexMgr object.
+      *
+      * This factory method creates a mutexmgr that will be used
+      * on the particular platform.
+      *
+      * @param manager The MemoryManager to use to allocate objects
+      */
+    static XMLMutexMgr* makeMutexMgr(MemoryManager* const manager);
+
     /** Closes a mutex handle
       *
       * Each per-platform driver must implement this. Only it knows what
       * the actual content of the passed mutex handle is.
       *
       * @param mtxHandle The mutex handle that you want to close
+      * @param manager The MemoryManager used to allocate the object
       */
-    static void closeMutex(void* const mtxHandle);
+    static void closeMutex(void* const mtxHandle, MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
 
     /** Locks a mutex handle
       *
@@ -544,7 +621,7 @@ public :
       *
       * @param manager The MemoryManager to use to allocate objects
       */
-    static void* makeMutex(MemoryManager* manager = XMLPlatformUtils::fgMemoryManager);
+    static void* makeMutex(MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
 
     /** Unlocks a mutex
       *
@@ -577,94 +654,10 @@ public :
 
     //@}
 
-    /** @name Miscellaneous synchronization methods */
-    //@{
-
-    /** Conditionally updates or returns a single word variable atomically
-      *
-      * This must be implemented by the per-platform driver. The
-      * compareAndSwap subroutine performs an atomic operation which
-      * compares the contents of a single word variable with a stored old
-      * value. If the values are equal, a new value is stored in the single
-      * word variable and TRUE is returned; otherwise, the old value is set
-      * to the current value of the single word variable and FALSE is
-      * returned.
-      *
-      * The compareAndSwap subroutine is useful when a word value must be
-      * updated only if it has not been changed since it was last read.
-      *
-      * Note: The word containing the single word variable must be aligned
-      * on a full word boundary.
-      *
-      * @param toFill Specifies the address of the single word variable
-      * @param newValue Specifies the new value to be conditionally assigned
-      * to the single word variable.
-      * @param toCompare Specifies the address of the old value to be checked
-      * against (and conditionally updated with) the value of the single word
-      * variable.
-      *
-      * @return Returns the new value assigned to the single word variable
-      */
-    static void* compareAndSwap
-    (
-                void**      toFill
-        , const void* const newValue
-        , const void* const toCompare
-    );
-
-    //@}
-
-
-    /** @name Atomic Increment and Decrement */
-    //@{
-
-    /** Increments a single word variable atomically.
-      *
-      * This must be implemented by the per-platform driver. The
-      * atomicIncrement subroutine increments one word in a single atomic
-      * operation. This operation is useful when a counter variable is shared
-      * between several threads or processes. When updating such a counter
-      * variable, it is important to make sure that the fetch, update, and
-      * store operations occur atomically (are not interruptible).
-      *
-      * @param location Specifies the address of the word variable to be
-      * incremented.
-      *
-      * @return The function return value is positive if the result of the
-      * operation was positive. Zero if the result of the operation was zero.
-      * Negative if the result of the operation was negative. Except for the
-      * zero case, the value returned may differ from the actual result of
-      * the operation - only the sign and zero/nonzero state is guaranteed
-      * to be correct.
-      */
-    static int atomicIncrement(int& location);
-
-    /** Decrements a single word variable atomically.
-      *
-      * This must be implemented by the per-platform driver. The
-      * atomicDecrement subroutine increments one word in a single atomic
-      * operation. This operation is useful when a counter variable is shared
-      * between several threads or processes. When updating such a counter
-      * variable, it is important to make sure that the fetch, update, and
-      * store operations occur atomically (are not interruptible).
-      *
-      * @param location Specifies the address of the word variable to be
-      * decremented.
-      *
-      * @return The function return value is positive if the result of the
-      * operation was positive. Zero if the result of the operation was zero.
-      * Negative if the result of the operation was negative. Except for the
-      * zero case, the value returned may differ from the actual result of the
-      * operation - only the sign and zero/nonzero state is guaranteed to be
-      * correct.
-      */
-    static int atomicDecrement(int& location);
-
-    //@}
 
     /** @name NEL Character Handling  */
     //@{
-	/**
+    /**
       * This function enables the recognition of NEL(0x85) char and LSEP (0x2028) as newline chars
       * which is disabled by default.
       * It is only called once per process. Once it is set, any subsequent calls
@@ -686,7 +679,7 @@ public :
 
     /** @name Strict IANA Encoding Checking */
     //@{
-	/**
+    /**
       * This function enables/disables strict IANA encoding names checking.
       *
       * The strict checking is disabled by default.
@@ -703,15 +696,15 @@ public :
       */
     static bool isStrictIANAEncoding();
     //@}
-		
+
     /**
       * Aligns the specified pointer per platform block allocation
-	  * requirements.
-	  *
-	  *	The results of this function may be altered by defining
-	  * XML_PLATFORM_NEW_BLOCK_ALIGNMENT.
-	  */
-	static inline size_t alignPointerForNewBlockAllocation(size_t ptrSize);
+      * requirements.
+      *
+      * The results of this function may be altered by defining
+      * XML_PLATFORM_NEW_BLOCK_ALIGNMENT.
+      */
+    static inline XMLSize_t alignPointerForNewBlockAllocation(XMLSize_t ptrSize);
 
 private :
     // -----------------------------------------------------------------------
@@ -740,7 +733,7 @@ private :
       */
     static XMLNetAccessor* makeNetAccessor();
 
-    /** Creates a Transoding service
+    /** Creates a Transcoding service
       *
       * Each per-platform driver must implement this method and return some
       * derivative of the XMLTransService class. This object serves as the
@@ -752,27 +745,11 @@ private :
       */
     static XMLTransService* makeTransService();
 
-    /** Does initialization for a particular platform
-      *
-      * Each per-platform driver must implement this to do any low level
-      * system initialization required. It <b>cannot</b> use any XML
-      * parser or utilities services!
-      */
-    static void platformInit();
-
-    /** Does termination for a particular platform
-      *
-      * Each per-platform driver must implement this to do any low level
-      * system resource cleanup required. It <b>cannot</b> use any XML
-      * parser or utilities services!
-      */
-    static void platformTerm();
-
     /** Search for sequence, slash dot dot slash
       *
       * @param srcPath the path to search
       *
-      * @return   the position of the first occurence of slash dot dot slash
+      * @return   the position of the first occurrence of slash dot dot slash
       *            -1 if no such sequence is found
       */
     static int  searchSlashDotDotSlash(XMLCh* const srcPath);
@@ -801,11 +778,11 @@ MakeXMLException(XMLPlatformUtilsException, XMLUTIL_EXPORT)
 //  XMLPlatformUtils: alignPointerForNewBlockAllocation
 // ---------------------------------------------------------------------------
 //  Calculate alignment required by platform for a new
-//	block allocation. We use this in our custom allocators
-//	to ensure that returned blocks are properly aligned.
+//  block allocation. We use this in our custom allocators
+//  to ensure that returned blocks are properly aligned.
 //  Note that, although this will take a pointer and return the position
 //  at which it should be placed for correct alignment, in our code
-//  we normally use size_t parameters to discover what the alignment
+//  we normally use XMLSize_t parameters to discover what the alignment
 //  of header blocks should be.  Thus, if this is to be
 //  used for the former purpose, to make compilers happy
 //  some casting will be necessary - neilg.
@@ -819,26 +796,26 @@ MakeXMLException(XMLPlatformUtilsException, XMLUTIL_EXPORT)
 //        If a platform requires absolutely no alignment, a value
 //        of 1 should be specified ("align pointers on 1 byte boundaries").
 //
-inline size_t
-XMLPlatformUtils::alignPointerForNewBlockAllocation(size_t ptrSize)
+inline XMLSize_t
+XMLPlatformUtils::alignPointerForNewBlockAllocation(XMLSize_t ptrSize)
 {
-	//	Macro XML_PLATFORM_NEW_BLOCK_ALIGNMENT may be defined
-	//	as needed to dictate alignment requirements on a
-	//	per-architecture basis. In the absense of that we
-	//	take an educated guess.
-	#ifdef XML_PLATFORM_NEW_BLOCK_ALIGNMENT
-		size_t alignment = XML_PLATFORM_NEW_BLOCK_ALIGNMENT;
-	#else
-		size_t alignment = (sizeof(void*) >= sizeof(double)) ? sizeof(void*) : sizeof(double);
-	#endif
-	
-	//	Calculate current alignment of pointer
-	size_t current = ptrSize % alignment;
-	
-	//	Adjust pointer alignment as needed
-	return (current == 0)
-		 ? ptrSize
-		 : (ptrSize + alignment - current);
+    //    Macro XML_PLATFORM_NEW_BLOCK_ALIGNMENT may be defined
+    //    as needed to dictate alignment requirements on a
+    //    per-architecture basis. In the absense of that we
+    //    take an educated guess.
+#ifdef XML_PLATFORM_NEW_BLOCK_ALIGNMENT
+    static const XMLSize_t alignment = XML_PLATFORM_NEW_BLOCK_ALIGNMENT;
+#else
+    static const XMLSize_t alignment = (sizeof(void*) >= sizeof(double)) ? sizeof(void*) : sizeof(double);
+#endif
+
+    //    Calculate current alignment of pointer
+    XMLSize_t current = ptrSize % alignment;
+
+    //    Adjust pointer alignment as needed
+    return (current == 0)
+         ? ptrSize
+         : (ptrSize + alignment - current);
 }
 
 

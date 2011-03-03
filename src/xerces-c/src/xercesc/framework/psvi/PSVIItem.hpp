@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: PSVIItem.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: PSVIItem.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#if !defined(PSVIITEM_HPP)
-#define PSVIITEM_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_PSVIITEM_HPP)
+#define XERCESC_INCLUDE_GUARD_PSVIITEM_HPP
 
 #include <xercesc/util/PlatformUtils.hpp>
 
@@ -132,7 +132,7 @@ public:
 
     /**
      * A list of error codes generated from validation attempts. 
-     * Need to find all the possible subclause reports that need reporting
+     * Need to find all the possible sub-clause reports that need reporting
      * 
      * @return list of error codes
      */

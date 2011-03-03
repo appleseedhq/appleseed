@@ -1,6 +1,3 @@
-#ifndef DOMAttr_HEADER_GUARD_
-#define DOMAttr_HEADER_GUARD_
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -19,9 +16,11 @@
  */
 
 /*
- * $Id: DOMAttr.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMAttr.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
+#if !defined(XERCESC_INCLUDE_GUARD_DOMATTR_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMATTR_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 #include <xercesc/dom/DOMNode.hpp>
@@ -150,9 +149,7 @@ public:
     /**
      * Returns whether this attribute is known to be of type ID or not. 
      * When it is and its value is unique, the ownerElement of this attribute 
-     * can be retrieved using getElementById on Document.
-     *
-     * <p><b>"Experimental - subject to change"</b></p>
+     * can be retrieved using getElementById on DOMDocument.
      *
      * @return <code>bool</code> stating if this <code>DOMAttr</code> is an ID
      * @since DOM level 3
@@ -163,12 +160,10 @@ public:
     /**
      * Returns the type information associated with this attribute.
      *
-     * <p><b>"Experimental - subject to change"</b></p>
-     *
      * @return the <code>DOMTypeInfo</code> associated with this attribute
      * @since DOM level 3
      */
-    virtual const DOMTypeInfo * getTypeInfo() const = 0;
+    virtual const DOMTypeInfo * getSchemaTypeInfo() const = 0;
 
     //@}
 

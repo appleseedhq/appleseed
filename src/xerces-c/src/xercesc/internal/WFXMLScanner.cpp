@@ -16,7 +16,7 @@
  */
 
 /*
-  * $Id: WFXMLScanner.cpp 568078 2007-08-21 11:43:25Z amassari $
+  * $Id: WFXMLScanner.cpp 833045 2009-11-05 13:21:27Z borisk $
  */
 
 
@@ -200,7 +200,6 @@ void WFXMLScanner::scanDocument(const InputSource& src)
                 (
                     XMLErrs::XMLException_Warning
                     , excToCatch.getCode()
-                    , excToCatch.getType()
                     , excToCatch.getMessage()
                 );
             else if (excToCatch.getErrorType() >= XMLErrorReporter::ErrType_Fatal)
@@ -208,7 +207,6 @@ void WFXMLScanner::scanDocument(const InputSource& src)
                 (
                     XMLErrs::XMLException_Fatal
                     , excToCatch.getCode()
-                    , excToCatch.getType()
                     , excToCatch.getMessage()
                 );
             else
@@ -216,7 +214,6 @@ void WFXMLScanner::scanDocument(const InputSource& src)
                 (
                     XMLErrs::XMLException_Error
                     , excToCatch.getCode()
-                    , excToCatch.getType()
                     , excToCatch.getMessage()
                 );
         }
@@ -249,7 +246,7 @@ bool WFXMLScanner::scanNext(XMLPScanToken& token)
         ThrowXMLwithMemMgr(RuntimeException, XMLExcepts::Scan_BadPScanToken, fMemoryManager);
 
     // Find the next token and remember the reader id
-    unsigned int orgReader;
+    XMLSize_t orgReader;
     XMLTokens curToken;
     bool retVal = true;
 
@@ -371,7 +368,6 @@ bool WFXMLScanner::scanNext(XMLPScanToken& token)
                 (
                     XMLErrs::XMLException_Warning
                     , excToCatch.getCode()
-                    , excToCatch.getType()
                     , excToCatch.getMessage()
                 );
             else if (excToCatch.getErrorType() >= XMLErrorReporter::ErrType_Fatal)
@@ -379,7 +375,6 @@ bool WFXMLScanner::scanNext(XMLPScanToken& token)
                 (
                     XMLErrs::XMLException_Fatal
                     , excToCatch.getCode()
-                    , excToCatch.getType()
                     , excToCatch.getMessage()
                 );
             else
@@ -387,7 +382,6 @@ bool WFXMLScanner::scanNext(XMLPScanToken& token)
                 (
                     XMLErrs::XMLException_Error
                     , excToCatch.getCode()
-                    , excToCatch.getType()
                     , excToCatch.getMessage()
                 );
         }
@@ -428,7 +422,7 @@ bool WFXMLScanner::scanNext(XMLPScanToken& token)
 void WFXMLScanner::commonInit()
 {
     fEntityTable = new (fMemoryManager) ValueHashTableOf<XMLCh>(11, fMemoryManager);
-    fAttrNameHashList = new (fMemoryManager)ValueVectorOf<unsigned int>(16, fMemoryManager);
+    fAttrNameHashList = new (fMemoryManager)ValueVectorOf<XMLSize_t>(16, fMemoryManager);
     fAttrNSList = new (fMemoryManager) ValueVectorOf<XMLAttr*>(8, fMemoryManager);
     fElements = new (fMemoryManager) RefVectorOf<XMLElementDecl>(32, true, fMemoryManager);
     fElementLookup = new (fMemoryManager) RefHashTableOf<XMLElementDecl>(109, false, fMemoryManager);
@@ -449,31 +443,6 @@ void WFXMLScanner::cleanUp()
     delete fAttrNSList;
     delete fElementLookup;
     delete fElements;
-}
-
-unsigned int
-WFXMLScanner::resolvePrefix(const   XMLCh* const          prefix
-                            , const ElemStack::MapModes mode)
-{
-    //  Watch for the special namespace prefixes. We always map these to
-    //  special URIs. 'xml' gets mapped to the official URI that its defined
-    //  to map to by the NS spec. xmlns gets mapped to a special place holder
-    //  URI that we define (so that it maps to something checkable.)
-    if (XMLString::equals(prefix, XMLUni::fgXMLNSString))
-        return fXMLNSNamespaceId;
-    else if (XMLString::equals(prefix, XMLUni::fgXMLString))
-        return fXMLNamespaceId;
-
-    //  Ask the element stack to search up itself for a mapping for the
-    //  passed prefix.
-    bool unknown;
-    unsigned int uriId = fElemStack.mapPrefixToURI(prefix, mode, unknown);
-
-    // If it was unknown, then the URI was faked in but we have to issue an error
-    if (unknown)
-        emitError(XMLErrs::UnknownPrefix, prefix);
-
-    return uriId;
 }
 
 //  This method will reset the scanner data structures, and related plugged
@@ -521,6 +490,7 @@ void WFXMLScanner::scanReset(const InputSource& src)
         , XMLReader::Type_General
         , XMLReader::Source_External
         , fCalculateSrcOfs
+        , fLowWaterMark
     );
 
     if (!newReader) {
@@ -588,7 +558,7 @@ bool WFXMLScanner::scanContent()
                 //  Sense what the next top level token is. According to what
                 //  this tells us, we will call something to handle that kind
                 //  of thing.
-                unsigned int orgReader;
+                XMLSize_t orgReader;
                 const XMLTokens curToken = senseNextToken(orgReader);
 
                 //  Handle character data and end of file specially. Char data
@@ -711,7 +681,7 @@ void WFXMLScanner::scanEndTag(bool& gotData)
     const bool isRoot = fElemStack.isEmpty();
 
     // Make sure that its the end of the element that we expect
-    if (!fReaderMgr.skippedString(topElem->fThisElement->getFullName()))
+    if (!fReaderMgr.skippedStringLong(topElem->fThisElement->getFullName()))
     {
         emitError
         (
@@ -822,8 +792,8 @@ bool WFXMLScanner::scanStartTag(bool& gotData)
 
     //  We loop until we either see a /> or >, handling attribute/value
     //  pairs until we get there.
-    unsigned int    attCount = 0;
-    unsigned int    curAttListSize = fAttrList->size();
+    XMLSize_t    attCount = 0;
+    XMLSize_t    curAttListSize = fAttrList->size();
     while (true)
     {
         // And get the next non-space character
@@ -837,17 +807,15 @@ bool WFXMLScanner::scanStartTag(bool& gotData)
         {
             if ((nextCh != chForwardSlash) && (nextCh != chCloseAngle))
             {
-                if (fReaderMgr.getCurrentReader()->isWhitespace(nextCh))
-                {
-                    // Ok, skip by them and peek another char
-                    fReaderMgr.skipPastSpaces();
-                    nextCh = fReaderMgr.peekNextChar();
-                }
-                 else
+                bool bFoundSpace;
+                fReaderMgr.skipPastSpaces(bFoundSpace);
+                if (!bFoundSpace)
                 {
                     // Emit the error but keep on going
                     emitError(XMLErrs::ExpectedWhitespace);
                 }
+                // Ok, peek another char
+                nextCh = fReaderMgr.peekNextChar();
             }
         }
 
@@ -907,11 +875,11 @@ bool WFXMLScanner::scanStartTag(bool& gotData)
 
             //  See if this attribute is declared more than one for this element.
             const XMLCh* attNameRawBuf = fAttNameBuf.getRawBuffer();
-            unsigned int attNameHash = XMLString::hash(attNameRawBuf, 109, fMemoryManager);
+            XMLSize_t attNameHash = XMLString::hash(attNameRawBuf, 109);
 
             if (attCount) {
 
-                for (unsigned int k=0; k < attCount; k++) {
+                for (XMLSize_t k=0; k < attCount; k++) {
 
                     if (fAttrNameHashList->elementAt(k) == attNameHash) {
                         if (
@@ -1153,8 +1121,8 @@ bool WFXMLScanner::scanStartTagNS(bool& gotData)
 
     // We loop until we either see a /> or >, handling attribute/value
     // pairs until we get there.
-    unsigned int attCount = 0;
-    unsigned int curAttListSize = fAttrList->size();
+    XMLSize_t attCount = 0;
+    XMLSize_t curAttListSize = fAttrList->size();
     while (true)
     {
         // And get the next non-space character
@@ -1168,17 +1136,15 @@ bool WFXMLScanner::scanStartTagNS(bool& gotData)
         {
             if ((nextCh != chForwardSlash) && (nextCh != chCloseAngle))
             {
-                if (fReaderMgr.getCurrentReader()->isWhitespace(nextCh))
-                {
-                    // Ok, skip by them and peek another char
-                    fReaderMgr.skipPastSpaces();
-                    nextCh = fReaderMgr.peekNextChar();
-                }
-                else
+                bool bFoundSpace;
+                fReaderMgr.skipPastSpaces(bFoundSpace);
+                if (!bFoundSpace)
                 {
                     // Emit the error but keep on going
                     emitError(XMLErrs::ExpectedWhitespace);
                 }
+                // Ok, peek another char
+                nextCh = fReaderMgr.peekNextChar();
             }
         }
 
@@ -1242,10 +1208,10 @@ bool WFXMLScanner::scanStartTagNS(bool& gotData)
 
             //  See if this attribute is declared more than one for this element.
             const XMLCh* attNameRawBuf = fAttNameBuf.getRawBuffer();
-            unsigned int attNameHash = XMLString::hash(attNameRawBuf, 109, fMemoryManager);
+            XMLSize_t attNameHash = XMLString::hash(attNameRawBuf, 109);
             if (attCount) {
 
-                for (unsigned int k=0; k < attCount; k++) {
+                for (XMLSize_t k=0; k < attCount; k++) {
 
                     if (fAttrNameHashList->elementAt(k) == attNameHash) {
                         if (XMLString::equals(
@@ -1536,62 +1502,6 @@ bool WFXMLScanner::scanStartTagNS(bool& gotData)
     return true;
 }
 
-unsigned int
-WFXMLScanner::resolveQName(const   XMLCh* const qName
-                           ,       XMLBuffer&   prefixBuf
-                           , const short        mode
-                           ,       int&         prefixColonPos)
-{
-    //  Lets split out the qName into a URI and name buffer first. The URI
-    //  can be empty.
-    prefixColonPos = XMLString::indexOf(qName, chColon);
-    if (prefixColonPos == -1)
-    {
-        //  Its all name with no prefix, so put the whole thing into the name
-        //  buffer. Then map the empty string to a URI, since the empty string
-        //  represents the default namespace. This will either return some
-        //  explicit URI which the default namespace is mapped to, or the
-        //  the default global namespace.
-        bool unknown = false;
-
-        prefixBuf.reset();
-        return fElemStack.mapPrefixToURI(XMLUni::fgZeroLenString, (ElemStack::MapModes) mode, unknown);
-    }
-    else
-    {
-        //  Copy the chars up to but not including the colon into the prefix
-        //  buffer.
-        prefixBuf.set(qName, prefixColonPos);
-
-        //  Watch for the special namespace prefixes. We always map these to
-        //  special URIs. 'xml' gets mapped to the official URI that its defined
-        //  to map to by the NS spec. xmlns gets mapped to a special place holder
-        //  URI that we define (so that it maps to something checkable.)
-        const XMLCh* prefixRawBuf = prefixBuf.getRawBuffer();
-        if (XMLString::equals(prefixRawBuf, XMLUni::fgXMLNSString)) {
-
-            // if this is an element, it is an error to have xmlns as prefix
-            if (mode == ElemStack::Mode_Element)
-                emitError(XMLErrs::NoXMLNSAsElementPrefix, qName);
-
-            return fXMLNSNamespaceId;
-        }
-        else if (XMLString::equals(prefixRawBuf, XMLUni::fgXMLString)) {
-            return  fXMLNamespaceId;
-        }
-        else
-        {
-            bool unknown = false;
-            unsigned int uriId = fElemStack.mapPrefixToURI(prefixRawBuf, (ElemStack::MapModes) mode, unknown);
-
-            if (unknown)
-                emitError(XMLErrs::UnknownPrefix, prefixRawBuf);
-
-            return uriId;
-        }
-    }
-}
-
 // ---------------------------------------------------------------------------
 //  XMLScanner: Private parsing methods
 // ---------------------------------------------------------------------------
@@ -1608,7 +1518,7 @@ bool WFXMLScanner::scanAttValue(const XMLCh* const attrName
 
     //  We have to get the current reader because we have to ignore closing
     //  quotes until we hit the same reader again.
-    const unsigned int curReader = fReaderMgr.getCurrentReaderNum();
+    const XMLSize_t curReader = fReaderMgr.getCurrentReaderNum();
 
     //  Loop until we get the attribute value. Note that we use a double
     //  loop here to avoid the setup/teardown overhead of the exception
@@ -2060,7 +1970,7 @@ WFXMLScanner::scanEntityRef(const bool
     escaped = false;
 
     // We have to insure that its all in one entity
-    const unsigned int curReader = fReaderMgr.getCurrentReaderNum();
+    const XMLSize_t curReader = fReaderMgr.getCurrentReaderNum();
 
     //  If the next char is a pound, then its a character reference and we
     //  need to expand it always.
@@ -2114,8 +2024,8 @@ WFXMLScanner::scanEntityRef(const bool
     // here's where we need to check if there's a SecurityManager,
     // how many entity references we've had
     if(fSecurityManager != 0 && ++fEntityExpansionCount > fEntityExpansionLimit) {
-        XMLCh expLimStr[16];
-        XMLString::binToText(fEntityExpansionLimit, expLimStr, 15, 10, fMemoryManager);
+        XMLCh expLimStr[32];
+        XMLString::sizeToText(fEntityExpansionLimit, expLimStr, 31, 10, fMemoryManager);
         emitError
         ( 
             XMLErrs::EntityExpansionLimitExceeded

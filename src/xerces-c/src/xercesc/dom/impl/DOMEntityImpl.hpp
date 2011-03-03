@@ -1,6 +1,3 @@
-#ifndef DOMEntityImpl_HEADER_GUARD_
-#define DOMEntityImpl_HEADER_GUARD_
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -19,8 +16,11 @@
  */
 
 /*
- * $Id: DOMEntityImpl.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMEntityImpl.hpp 641193 2008-03-26 08:06:57Z borisk $
  */
+
+#if !defined(XERCESC_INCLUDE_GUARD_DOMENTITYIMPL_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMENTITYIMPL_HPP
 
 //
 //  This file is part of the internal implementation of the C++ XML DOM.
@@ -42,7 +42,7 @@ XERCES_CPP_NAMESPACE_BEGIN
 class    DOMEntityReference;
 
 class CDOM_EXPORT DOMEntityImpl: public DOMEntity {
-private:
+protected:
     DOMNodeImpl      fNode;
     DOMParentNode    fParent;
 
@@ -53,12 +53,13 @@ private:
     DOMEntityReference*	fRefEntity;
 
     // New data introduced in DOM Level 3
-    const XMLCh*          fActualEncoding;
-    const XMLCh*          fEncoding;
-    const XMLCh*          fVersion;
+    const XMLCh*          fInputEncoding;
+    const XMLCh*          fXmlEncoding;
+    const XMLCh*          fXmlVersion;
     const XMLCh*          fBaseURI;
     bool                  fEntityRefNodeCloned;
-    // private helper function
+    
+    // helper function
     void	cloneEntityRefTree() const;
 
     friend class XercesDOMParser;
@@ -68,10 +69,11 @@ public:
     DOMEntityImpl(const DOMEntityImpl &other, bool deep=false);
     virtual ~DOMEntityImpl();
 
+public:
     // Declare all of the functions from DOMNode.
     DOMNODE_FUNCTIONS;
 
-
+public:
     virtual const XMLCh *   getPublicId() const;
     virtual const XMLCh *   getSystemId() const;
     virtual const XMLCh *   getNotationName() const;
@@ -80,18 +82,18 @@ public:
     virtual void            setSystemId(const XMLCh *arg);
 
     //DOM Level 2 additions. Non standard functions
-    virtual void		setEntityRef(DOMEntityReference *);
+    virtual void		    setEntityRef(DOMEntityReference *);
     virtual DOMEntityReference*	getEntityRef() const;
 
     //Introduced in DOM Level 3
-    virtual const XMLCh*           getActualEncoding() const;
-    virtual void                   setActualEncoding(const XMLCh* actualEncoding);
-    virtual const XMLCh*           getEncoding() const;
-    virtual void                   setEncoding(const XMLCh* encoding);
-    virtual const XMLCh*           getVersion() const;
-    virtual void                   setVersion(const XMLCh* version);
-    virtual void                   setBaseURI(const XMLCh *arg);
+    virtual const XMLCh*    getInputEncoding() const;
+    virtual const XMLCh*    getXmlEncoding() const;
+    virtual const XMLCh*    getXmlVersion() const;
+    virtual void            setBaseURI(const XMLCh *arg);
 
+    void                    setInputEncoding(const XMLCh* actualEncoding);
+    void                    setXmlEncoding(const XMLCh* encoding);
+    void                    setXmlVersion(const XMLCh* version);
 private:
     // -----------------------------------------------------------------------
     // Unimplemented constructors and operators

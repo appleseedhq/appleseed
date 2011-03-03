@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: NamespaceScope.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: NamespaceScope.cpp 729944 2008-12-29 17:03:32Z amassari $
  */
 
 // ---------------------------------------------------------------------------
@@ -31,8 +31,7 @@ XERCES_CPP_NAMESPACE_BEGIN
 // ---------------------------------------------------------------------------
 //  NamespaceScope: Constructors and Destructor
 // ---------------------------------------------------------------------------
-NamespaceScope::NamespaceScope(MemoryManager* const manager) :
-
+NamespaceScope::NamespaceScope(MemoryManager* const manager /*= XMLPlatformUtils::fgMemoryManager*/) :
     fEmptyNamespaceId(0)
     , fStackCapacity(8)
     , fStackTop(0)
@@ -46,6 +45,48 @@ NamespaceScope::NamespaceScope(MemoryManager* const manager) :
         fStackCapacity * sizeof(StackElem*)
     );//new StackElem*[fStackCapacity];
     memset(fStack, 0, fStackCapacity * sizeof(StackElem*));
+}
+
+NamespaceScope::NamespaceScope(const NamespaceScope* const initialize, MemoryManager* const manager /*= XMLPlatformUtils::fgMemoryManager*/) :
+    fEmptyNamespaceId(0)
+    , fStackCapacity(8)
+    , fStackTop(0)
+    , fPrefixPool(109, manager)
+    , fStack(0)
+    , fMemoryManager(manager)
+{
+    // Do an initial allocation of the stack and zero it out
+    fStack = (StackElem**) fMemoryManager->allocate
+    (
+        fStackCapacity * sizeof(StackElem*)
+    );//new StackElem*[fStackCapacity];
+    memset(fStack, 0, fStackCapacity * sizeof(StackElem*));
+
+    if(initialize)
+    {
+        reset(initialize->fEmptyNamespaceId);
+
+        // copy the existing bindings
+        for (unsigned int index = initialize->fStackTop; index > 0; index--)
+        {
+            // Get a convenience pointer to the current element
+            StackElem* curRow = initialize->fStack[index-1];
+
+            // If no prefixes mapped at this level, then go the next one
+            if (!curRow->fMapCount)
+                continue;
+
+            for (unsigned int mapIndex = 0; mapIndex < curRow->fMapCount; mapIndex++)
+            {
+                // go from the id to the prefix
+                const XMLCh* prefix = initialize->fPrefixPool.getValueForId(curRow->fMap[mapIndex].fPrefId);
+
+                // if the prefix is not already known, add it
+                if(getNamespaceForPrefix(prefix)==fEmptyNamespaceId)
+                    addPrefix(prefix, curRow->fMap[mapIndex].fURIId);
+            }
+        }
+    }
 }
 
 NamespaceScope::~NamespaceScope()
@@ -122,6 +163,16 @@ void NamespaceScope::addPrefix(const XMLCh* const prefixToAdd,
     // Map the prefix to its unique id
     const unsigned int prefId = fPrefixPool.addOrFind(prefixToAdd);
 
+    // Search the map at this level for the passed prefix
+    for (unsigned int mapIndex = 0; mapIndex < curRow->fMapCount; mapIndex++)
+    {
+        if (curRow->fMap[mapIndex].fPrefId == prefId)
+        {
+            curRow->fMap[mapIndex].fURIId = uriId;
+            return;
+        }
+    }
+
     //
     //  Add a new element to the prefix map for this element. If its full,
     //  then expand it out.
@@ -140,8 +191,7 @@ void NamespaceScope::addPrefix(const XMLCh* const prefixToAdd,
 }
 
 unsigned int
-NamespaceScope::getNamespaceForPrefix(const XMLCh* const prefixToMap,
-                                      const int depthLevel) const {
+NamespaceScope::getNamespaceForPrefix(const XMLCh* const prefixToMap) const {
 
     //
     //  Map the prefix to its unique id, from the prefix string pool. If its
@@ -157,11 +207,10 @@ NamespaceScope::getNamespaceForPrefix(const XMLCh* const prefixToMap,
     //  Start at the stack top and work backwards until we come to some
     //  element that mapped this prefix.
     //
-    int startAt = depthLevel;
-    for (int index = startAt; index >= 0; index--)
+    for (unsigned int index = fStackTop; index > 0; index--)
     {
         // Get a convenience pointer to the current element
-        StackElem* curRow = fStack[index];
+        StackElem* curRow = fStack[index-1];
 
         // If no prefixes mapped at this level, then go the next one
         if (!curRow->fMapCount)
@@ -192,6 +241,9 @@ void NamespaceScope::reset(const unsigned int emptyId)
 
     // And store the new special URI ids
     fEmptyNamespaceId = emptyId;
+
+    // add the first storage
+    increaseDepth();
 }
 
 

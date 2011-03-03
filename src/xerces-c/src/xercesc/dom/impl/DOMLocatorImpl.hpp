@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,18 +16,15 @@
  */
 
 /*
- * $Id: DOMLocatorImpl.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMLocatorImpl.hpp 676853 2008-07-15 09:58:05Z borisk $
  */
 
-
-#ifndef DOMLOCATORIMPL_HPP
-#define DOMLOCATORIMPL_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_DOMLOCATORIMPL_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMLOCATORIMPL_HPP
 
 #include <xercesc/dom/DOMLocator.hpp>
 
 XERCES_CPP_NAMESPACE_BEGIN
-
-
 
 /**
   * Introduced in DOM Level 3
@@ -48,11 +45,12 @@ public:
 
     DOMLocatorImpl
     (
-        const XMLSSize_t lineNum
-        , const XMLSSize_t columnNum
+          const XMLFileLoc lineNum
+        , const XMLFileLoc columnNum
         , DOMNode* const errorNode
         , const XMLCh* const uri
-        , const XMLSSize_t offset = -1
+        , const XMLFilePos offset = ~(XMLFilePos(0))
+        , const XMLFilePos utf16Offset = ~(XMLFilePos(0))
     );
 
     /** Desctructor */
@@ -60,123 +58,21 @@ public:
 
     //@}
 
-    /** @name Get function */
-    //@{
-
-   /**
-    * <p><b>"Experimental - subject to change"</b></p>
-    *
-    * Get the line number where the error occured. The value is -1 if there is
-    * no line number available.
-    *
-    * @see #setLineNumber
-    */
-    virtual XMLSSize_t getLineNumber() const;
-
-   /**
-    * <p><b>"Experimental - subject to change"</b></p>
-    *
-    * Get the column number where the error occured. The value is -1 if there
-    * is no column number available.
-    *
-    * @see #setColumnNumber
-    */
-    virtual XMLSSize_t getColumnNumber() const;
-
-   /**
-    * <p><b>"Experimental - subject to change"</b></p>
-    *
-    * Get the byte or character offset into the input source, if we're parsing
-    * a file or a byte stream then this will be the byte offset into that
-    * stream, but if a character media is parsed then the offset will be the
-    * character offset. The value is -1 if there is no offset available.
-    *
-    * @see #setOffset
-    */
-    virtual XMLSSize_t getOffset() const;
-
-   /**
-    * <p><b>"Experimental - subject to change"</b></p>
-    *
-    * Get the DOM Node where the error occured, or <code>null</code> if there
-    * is no node available.
-    *
-    * @see #setErrorNode
-    */
-    virtual DOMNode* getErrorNode() const;
-
-   /**
-    * <p><b>"Experimental - subject to change"</b></p>
-    *
-    * Get the URI where the error occured, or <code>null</code> if there is no
-    * URI available.
-    *
-    * @see #setURI
-    */
+    // DOMLocator interface
+    virtual XMLFileLoc getLineNumber() const;
+    virtual XMLFileLoc getColumnNumber() const;
+    virtual XMLFilePos getByteOffset() const;
+    virtual XMLFilePos getUtf16Offset() const;
+    virtual DOMNode* getRelatedNode() const;
     virtual const XMLCh* getURI() const;
 
-    //@}
-
-
-   /** @name Set function */
-    //@{
-
-   /**
-    * <p><b>"Experimental - subject to change"</b></p>
-    *
-    * Set the line number of the error
-    *
-    * @param lineNumber the line number to set
-    *
-    * @see #getLinNumner
-    */
-    virtual void setLineNumber(const XMLSSize_t lineNumber);
-
-   /**
-    * <p><b>"Experimental - subject to change"</b></p>
-    *
-    * Set the column number of the error
-    *
-    * @param columnNumber the column number to set.
-    *
-    * @see #getColumnNumner
-    */
-    virtual void setColumnNumber(const XMLSSize_t columnNumber);
-
-   /**
-    * <p><b>"Experimental - subject to change"</b></p>
-    *
-    * Set the byte/character offset.
-    *
-    * @param offset the byte/characte offset to set.
-    *
-    * @see #getOffset
-    */
-    virtual void setOffset(const XMLSSize_t offset);
-
-   /**
-    * <p><b>"Experimental - subject to change"</b></p>
-    *
-    * Set the DOM Node where the error occured
-    *
-    * @param errorNode the DOM Node to set
-    *
-    * @see #getErrorNode
-    */
-    virtual void setErrorNode(DOMNode* const errorNode);
-
-   /**
-    * <p><b>"Experimental - subject to change"</b></p>
-    *
-    * Set the URI where the error occured
-    *
-    * @param uri the URI to set.
-    *
-    * @see #getURI
-    */
-    virtual void setURI(const XMLCh* const uri);
-
-    //@}
+    // Setter functions
+    void setLineNumber(const XMLFileLoc lineNumber);
+    void setColumnNumber(const XMLFileLoc columnNumber);
+    void setByteOffset(const XMLFilePos offset);
+    void setUtf16Offset(const XMLFilePos offset);
+    void setRelatedNode(DOMNode* const errorNode);
+    void setURI(const XMLCh* const uri);
 
 
 private :
@@ -188,6 +84,7 @@ private :
     /* Assignment operator */
     DOMLocatorImpl& operator=(const DOMLocatorImpl&);
 
+protected:
     // -----------------------------------------------------------------------
     //  Private data members
     //
@@ -195,45 +92,55 @@ private :
     //  fColumnNum
     //      Track line/column number of where the error occured
     //
-    //  fOffset
-    //      Track character/byte offset in the input source where the error
+    //  fByteOffset
+    //      Track byte offset in the input source where the error
     //      occured
     //
-    //  fErrorNode
-    //      Current error node where the error occured
+    //  fUtf16Offset
+    //      Track character offset in the input source where the error
+    //      occured
+    //
+    //  fRelatedNode
+    //      Current node where the error occured
     //
     //  fURI
     //      The uri where the error occured
     // -----------------------------------------------------------------------
-    XMLSSize_t   fLineNum;
-    XMLSSize_t   fColumnNum;
-    XMLSSize_t   fOffset;
-    DOMNode*     fErrorNode;
-    const XMLCh* fURI;
+    XMLFileLoc       fLineNum;
+    XMLFileLoc       fColumnNum;
+    XMLFilePos      fByteOffset;
+    XMLFilePos      fUtf16Offset;
+    DOMNode*        fRelatedNode;
+    const XMLCh*    fURI;
 };
 
 
 // ---------------------------------------------------------------------------
 //  DOMLocatorImpl: Getter methods
 // ---------------------------------------------------------------------------
-inline XMLSSize_t DOMLocatorImpl::getLineNumber() const
+inline XMLFileLoc DOMLocatorImpl::getLineNumber() const
 {
     return fLineNum;
 }
 
-inline XMLSSize_t DOMLocatorImpl::getColumnNumber() const
+inline XMLFileLoc DOMLocatorImpl::getColumnNumber() const
 {
     return fColumnNum;
 }
 
-inline XMLSSize_t DOMLocatorImpl::getOffset() const
+inline XMLFilePos DOMLocatorImpl::getByteOffset() const
 {
-    return fOffset;
+    return fByteOffset;
 }
 
-inline DOMNode* DOMLocatorImpl::getErrorNode() const
+inline XMLFilePos DOMLocatorImpl::getUtf16Offset() const
 {
-    return fErrorNode;
+    return fUtf16Offset;
+}
+
+inline DOMNode* DOMLocatorImpl::getRelatedNode() const
+{
+    return fRelatedNode;
 }
 
 inline const XMLCh* DOMLocatorImpl::getURI() const
@@ -245,24 +152,29 @@ inline const XMLCh* DOMLocatorImpl::getURI() const
 // ---------------------------------------------------------------------------
 //  DOMLocatorImpl: Setter methods
 // ---------------------------------------------------------------------------
-inline void DOMLocatorImpl::setLineNumber(const XMLSSize_t lineNumber)
+inline void DOMLocatorImpl::setLineNumber(const XMLFileLoc lineNumber)
 {
     fLineNum = lineNumber;
 }
 
-inline void DOMLocatorImpl::setColumnNumber(const XMLSSize_t columnNumber)
+inline void DOMLocatorImpl::setColumnNumber(const XMLFileLoc columnNumber)
 {
     fColumnNum = columnNumber;
 }
 
-inline void DOMLocatorImpl::setOffset(const XMLSSize_t offset)
+inline void DOMLocatorImpl::setByteOffset(const XMLFilePos offset)
 {
-    fOffset = offset;
+    fByteOffset = offset;
 }
 
-inline void DOMLocatorImpl::setErrorNode(DOMNode* const errorNode)
+inline void DOMLocatorImpl::setUtf16Offset(const XMLFilePos offset)
 {
-    fErrorNode = errorNode;
+    fUtf16Offset = offset;
+}
+
+inline void DOMLocatorImpl::setRelatedNode(DOMNode* const errorNode)
+{
+    fRelatedNode = errorNode;
 }
 
 inline void DOMLocatorImpl::setURI(const XMLCh* const uri)

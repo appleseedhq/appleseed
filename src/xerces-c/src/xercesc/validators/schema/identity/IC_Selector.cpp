@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: IC_Selector.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: IC_Selector.cpp 803869 2009-08-13 12:56:21Z amassari $
  */
 
 // ---------------------------------------------------------------------------
@@ -61,34 +61,39 @@ void SelectorMatcher::startElement(const XMLElementDecl& elemDecl,
                                    const unsigned int urlId,
                                    const XMLCh* const elemPrefix,
                                    const RefVectorOf<XMLAttr>& attrList,
-                                   const unsigned int attrCount) {
+                                   const XMLSize_t attrCount,
+                                   ValidationContext* validationContext /*=0*/) 
+{
 
-    XPathMatcher::startElement(elemDecl, urlId, elemPrefix, attrList, attrCount);
+    XPathMatcher::startElement(elemDecl, urlId, elemPrefix, attrList, attrCount, validationContext);
     fElementDepth++;
 
     // activate the fields, if selector is matched
-    int matched = isMatched();
+    unsigned char matched = isMatched();
     if ((fMatchedDepth == -1 && ((matched & XP_MATCHED) == XP_MATCHED))
         || ((matched & XP_MATCHED_D) == XP_MATCHED_D)) {
 
         IdentityConstraint* ic = fSelector->getIdentityConstraint();
-        int count = ic->getFieldCount();
+        XMLSize_t count = ic->getFieldCount();
 
         fMatchedDepth = fElementDepth;
         fFieldActivator->startValueScopeFor(ic, fInitialDepth);
 
-        for (int i = 0; i < count; i++) {
+        for (XMLSize_t i = 0; i < count; i++) {
 
             XPathMatcher* matcher = fFieldActivator->activateField(ic->getFieldAt(i), fInitialDepth);
-            matcher->startElement(elemDecl, urlId, elemPrefix, attrList, attrCount);
+            matcher->startElement(elemDecl, urlId, elemPrefix, attrList, attrCount, validationContext);
         }
     }
 }
 
 void SelectorMatcher::endElement(const XMLElementDecl& elemDecl,
-                                 const XMLCh* const elemContent) {
+                                 const XMLCh* const elemContent, 
+                                 ValidationContext* validationContext /*=0*/,
+                                 DatatypeValidator* actualValidator /*=0*/) 
+{
 
-    XPathMatcher::endElement(elemDecl, elemContent);
+    XPathMatcher::endElement(elemDecl, elemContent, validationContext, actualValidator);
 
     if (fElementDepth-- == fMatchedDepth) {
 

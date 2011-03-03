@@ -78,7 +78,7 @@
           </tr>
         </table><br/>
         <table width="620" border="0" cellspacing="0" cellpadding="0">
-          <tr><td bgcolor="#0086b2"><img src="images/dot.gif" width="1" height="1"/></td></tr>
+          <tr><td bgcolor="#0086b2"><img src="resources/dot.gif" width="1" height="1"/></td></tr>
           <tr>
             <td align="center"><font size="-1" color="#0086b2"><i>
               Copyright &#169; <xsl:value-of select="$copyright"/>.
@@ -119,10 +119,19 @@
     <br/>
   </xsl:template>
 
+  <xsl:template match="section">
+    <xsl:variable name="sectid" select="concat('sect-',position())"/>
+    <img name="side-{$sectid}" src="graphics/{$sectid}-label.jpg" width="120" height="17" hspace="0" vspace="0" border="0" alt="{@label}"/>
+    <br/>
+  </xsl:template>
+
   <xsl:template match="separator">
     <img src="resources/separator.gif" width="120" height="6" hspace="0" vspace="0" border="0"/><br/>
   </xsl:template>
 
+  <xsl:template match="separator-space">
+    <img src="resources/separator-space.gif" width="120" height="6" hspace="0" vspace="0" border="0"/><br/>
+  </xsl:template>
 
 <!-- ###################################################################### -->
 <!-- document -->
@@ -283,6 +292,10 @@
     <li><xsl:apply-templates/></li>
   </xsl:template>
 
+  <xsl:template match="sup">
+    <sup><xsl:apply-templates/></sup>
+  </xsl:template>
+
     <!--Definition lists: gloss, term, label, item -->
   <xsl:template match="gloss">
     <dl><xsl:apply-templates/></dl>
@@ -408,7 +421,7 @@
   </xsl:template>
 
   <xsl:template match="img">
-    <img src="images/{@src}" border="0" vspace="4" hspace="4" align="right"/>
+    <img src="resources/{@src}" border="0" vspace="4" hspace="4" align="right"/>
   </xsl:template>
 
   <xsl:template match="resource-ref">

@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DTDScanner.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DTDScanner.cpp 833045 2009-11-05 13:21:27Z borisk $
  */
 
 
@@ -27,7 +27,9 @@
 #include <xercesc/util/FlagJanitor.hpp>
 #include <xercesc/util/Janitor.hpp>
 #include <xercesc/util/XMLUniDefs.hpp>
+#include <xercesc/util/ValueStackOf.hpp>
 #include <xercesc/util/UnexpectedEOFException.hpp>
+#include <xercesc/util/OutOfMemoryException.hpp>
 #include <xercesc/sax/InputSource.hpp>
 #include <xercesc/framework/XMLDocumentHandler.hpp>
 #include <xercesc/framework/XMLEntityHandler.hpp>
@@ -39,7 +41,6 @@
 #include <xercesc/validators/DTD/DTDEntityDecl.hpp>
 #include <xercesc/validators/DTD/DocTypeHandler.hpp>
 #include <xercesc/validators/DTD/DTDScanner.hpp>
-#include <xercesc/util/OutOfMemoryException.hpp>
 
 XERCES_CPP_NAMESPACE_BEGIN
 
@@ -232,7 +233,7 @@ bool DTDScanner::expandPERef( const   bool    scanExternal
             fScanner->emitError(XMLErrs::EntityNotFound, bbName.getRawBuffer());
         }
         else {
-            if (fScanner->getDoValidation())
+            if (fScanner->getValidationScheme() == XMLScanner::Val_Always)
                 fScanner->getValidator()->emitError(XMLValid::VC_EntityNotFound, bbName.getRawBuffer());
         }
 
@@ -244,7 +245,7 @@ bool DTDScanner::expandPERef( const   bool    scanExternal
     //  If we are a standalone document, then it has to have been declared
     //  in the internal subset. Keep going though.
     //
-    if (fScanner->getDoValidation() && fScanner->getStandalone() && !decl->getDeclaredInIntSubset())
+    if (fScanner->getValidationScheme() == XMLScanner::Val_Always && fScanner->getStandalone() && !decl->getDeclaredInIntSubset())
         fScanner->getValidator()->emitError(XMLValid::VC_IllegalRefInStandalone, bbName.getRawBuffer());
 
     //
@@ -267,6 +268,7 @@ bool DTDScanner::expandPERef( const   bool    scanExternal
             , XMLReader::Source_External
             , srcUsed
             , fScanner->getCalculateSrcOfs()
+            , fScanner->getLowWaterMark()
             , fScanner->getDisableDefaultEntityResolution()
         );
 
@@ -309,7 +311,7 @@ bool DTDScanner::expandPERef( const   bool    scanExternal
             //  to get back to here if we get an exception out of the
             //  ext subset scan.
             //
-            const unsigned int readerNum = fReaderMgr->getCurrentReaderNum();
+            const XMLSize_t readerNum = fReaderMgr->getCurrentReaderNum();
             try
             {
                 scanExtSubsetDecl(false, false);
@@ -376,15 +378,10 @@ bool DTDScanner::getQuotedString(XMLBuffer& toFill)
     if (!fReaderMgr->skipIfQuote(quoteCh))
         return false;
 
-    while (true)
+	XMLCh nextCh;
+    // Get another char and see if it matches the starting quote char
+    while ((nextCh=fReaderMgr->getNextChar())!=quoteCh)
     {
-        // Get another char
-        const XMLCh nextCh = fReaderMgr->getNextChar();
-
-        // See if it matches the starting quote char
-        if (nextCh == quoteCh)
-            break;
-
         //
         //  We should never get either an end of file null char here. If we
         //  do, just fail. It will be handled more gracefully in the higher
@@ -548,7 +545,7 @@ DTDScanner::scanAttDef(DTDElementDecl& parentElem, XMLBuffer& bufToUse)
     scanDefaultDecl(*decl);
 
     // If validating, then do a couple of validation constraints
-    if (fScanner->getDoValidation())
+    if (fScanner->getValidationScheme() == XMLScanner::Val_Always)
     {
         if (decl->getType() == XMLAttDef::ID)
         {
@@ -568,7 +565,7 @@ DTDScanner::scanAttDef(DTDElementDecl& parentElem, XMLBuffer& bufToUse)
             bool ok = false;
             if (decl->getType() == XMLAttDef::Enumeration) {
                 BaseRefVectorOf<XMLCh>* enumVector = XMLString::tokenizeString(decl->getEnumeration(), fMemoryManager);
-                int size = enumVector->size();
+                XMLSize_t size = enumVector->size();
                 ok = (size == 1 &&
                      (XMLString::equals(enumVector->elementAt(0), fgDefault) ||
                       XMLString::equals(enumVector->elementAt(0), fgPreserve))) ||
@@ -711,7 +708,7 @@ void DTDScanner::scanAttListDecl()
             //  make sure that we have not seen an id attribute yet. Set
             //  the flag to say that we've seen one now also.
             //
-            if (fScanner->getDoValidation())
+            if (fScanner->getValidationScheme() == XMLScanner::Val_Always)
             {
                 if (attDef->getType() == XMLAttDef::ID)
                 {
@@ -763,7 +760,7 @@ bool DTDScanner::scanAttValue(const   XMLCh* const        attrName
     //  We have to get the current reader because we have to ignore closing
     //  quotes until we hit the same reader again.
     //
-    const unsigned int curReader = fReaderMgr->getCurrentReaderNum();
+    const XMLSize_t curReader = fReaderMgr->getCurrentReaderNum();
 
     //
     //  Loop until we get the attribute value. Note that we use a double
@@ -1046,338 +1043,354 @@ DTDScanner::scanChildren(const DTDElementDecl& elemDecl, XMLBuffer& bufToUse)
     // Check for a PE ref here, but don't require spaces
     checkForPERef(false, true);
 
-    // We have to check entity nesting here
-    unsigned int curReader;
-
+    ValueStackOf<XMLSize_t>* arrNestedDecl=NULL;
     //
     //  We know that the caller just saw an opening parenthesis, so we need
-    //  to parse until we hit the end of it, recursing for other nested
-    //  parentheses we see.
+    //  to parse until we hit the end of it; if we find several parenthesis,
+    //  store them in an array to be processed later.
     //
     //  We have to check for one up front, since it could be something like
     //  (((a)*)) etc...
     //
     ContentSpecNode* curNode = 0;
-    if (fReaderMgr->skippedChar(chOpenParen))
+    while(fReaderMgr->skippedChar(chOpenParen))
     {
-        curReader = fReaderMgr->getCurrentReaderNum();
-
-        // Lets call ourself and get back the resulting node
-        curNode = scanChildren(elemDecl, bufToUse);
-
-        // If that failed, no need to go further, return failure
-        if (!curNode)
-            return 0;
-
-        if (curReader != fReaderMgr->getCurrentReaderNum() && fScanner->getDoValidation())
-            fScanner->getValidator()->emitError(XMLValid::PartialMarkupInPE);
-    }
-     else
-    {
-        // Not a nested paren, so it must be a leaf node
-        if (!fReaderMgr->getName(bufToUse))
-        {
-            fScanner->emitError(XMLErrs::ExpectedElementName);
-            return 0;
-        }
-
-        //
-        //  Create a leaf node for it. If we can find the element id for
-        //  this element, then use it. Else, we have to fault in an element
-        //  decl, marked as created because of being in a content model.
-        //
-        XMLElementDecl* decl = fDTDGrammar->getElemDecl(fEmptyNamespaceId, 0, bufToUse.getRawBuffer(), Grammar::TOP_LEVEL_SCOPE);
-        if (!decl)
-        {
-            decl = new (fGrammarPoolMemoryManager) DTDElementDecl
-            (
-                bufToUse.getRawBuffer()
-                , fEmptyNamespaceId
-                , DTDElementDecl::Any
-                , fGrammarPoolMemoryManager
-            );
-            decl->setCreateReason(XMLElementDecl::InContentModel);
-            decl->setExternalElemDeclaration(isReadingExternalEntity());
-            fDTDGrammar->putElemDecl(decl);
-        }
-        curNode = new (fGrammarPoolMemoryManager) ContentSpecNode
-        (
-            decl->getElementName()
-            , fGrammarPoolMemoryManager
-        );
+        // to check entity nesting
+        const XMLSize_t curReader = fReaderMgr->getCurrentReaderNum();
+        if(arrNestedDecl==NULL)
+            arrNestedDecl=new (fMemoryManager) ValueStackOf<XMLSize_t>(5, fMemoryManager);
+        arrNestedDecl->push(curReader);
 
         // Check for a PE ref here, but don't require spaces
-        const bool gotSpaces = checkForPERef(false, true);
-
-        // Check for a repetition character after the leaf
-        const XMLCh repCh = fReaderMgr->peekNextChar();
-        ContentSpecNode* tmpNode = makeRepNode(repCh, curNode, fGrammarPoolMemoryManager);
-        if (tmpNode != curNode)
-        {
-            if (gotSpaces)
-            {
-                if (fScanner->emitErrorWillThrowException(XMLErrs::UnexpectedWhitespace))
-                {
-                    delete tmpNode;
-                }
-                fScanner->emitError(XMLErrs::UnexpectedWhitespace);
-            }
-            fReaderMgr->getNextChar();
-            curNode = tmpNode;
-        }
+        checkForPERef(false, true);
     }
 
-    // Check for a PE ref here, but don't require spaces
-    checkForPERef(false, true);
-
-    //
-    //  Ok, the next character tells us what kind of content this particular
-    //  model this particular parentesized section is. Its either a choice if
-    //  we see ',', a sequence if we see '|', or a single leaf node if we see
-    //  a closing paren.
-    //
-    const XMLCh opCh = fReaderMgr->peekNextChar();
-
-    if ((opCh != chComma)
-    &&  (opCh != chPipe)
-    &&  (opCh != chCloseParen))
+    // We must find a leaf node here, either standalone or nested in the parenthesis
+    if (!fReaderMgr->getName(bufToUse))
     {
-        // Not a legal char, so delete our node and return failure
-        delete curNode;
-        fScanner->emitError(XMLErrs::ExpectedSeqChoiceLeaf);
+        fScanner->emitError(XMLErrs::ExpectedElementName);
         return 0;
     }
 
     //
-    //  Create the head node of the correct type. We need this to remember
-    //  the top of the local tree. If it was a single subexpr, then just
-    //  set the head node to the current node. For the others, we'll build
-    //  the tree off the second child as we move across.
+    //  Create a leaf node for it. If we can find the element id for
+    //  this element, then use it. Else, we have to fault in an element
+    //  decl, marked as created because of being in a content model.
     //
-    ContentSpecNode* headNode = 0;
-    ContentSpecNode::NodeTypes curType = ContentSpecNode::UnknownType;
-    if (opCh == chComma)
+    XMLElementDecl* decl = fDTDGrammar->getElemDecl(fEmptyNamespaceId, 0, bufToUse.getRawBuffer(), Grammar::TOP_LEVEL_SCOPE);
+    if (!decl)
     {
-        curType = ContentSpecNode::Sequence;
-        headNode = new (fGrammarPoolMemoryManager) ContentSpecNode
+        decl = new (fGrammarPoolMemoryManager) DTDElementDecl
         (
-            curType
-            , curNode
-            , 0
-            , true
-            , true
+            bufToUse.getRawBuffer()
+            , fEmptyNamespaceId
+            , DTDElementDecl::Any
             , fGrammarPoolMemoryManager
         );
-        curNode = headNode;
+        decl->setCreateReason(XMLElementDecl::InContentModel);
+        decl->setExternalElemDeclaration(isReadingExternalEntity());
+        fDTDGrammar->putElemDecl(decl);
     }
-     else if (opCh == chPipe)
-    {
-        curType = ContentSpecNode::Choice;
-        headNode = new (fGrammarPoolMemoryManager) ContentSpecNode
-        (
-            curType
-            , curNode
-            , 0
-            , true
-            , true
-            , fGrammarPoolMemoryManager
-        );
-        curNode = headNode;
-    }
-     else
-    {
-        headNode = curNode;
-        fReaderMgr->getNextChar();
-    }
+    curNode = new (fGrammarPoolMemoryManager) ContentSpecNode
+    (
+        decl->getElementName()
+        , fGrammarPoolMemoryManager
+    );
 
-    //
-    //  If it was a sequence or choice, we just loop until we get to the
-    //  end of our section, adding each new leaf or sub expression to the
-    //  right child of the current node, and making that new node the current
-    //  node.
-    //
-    if ((opCh == chComma) || (opCh == chPipe))
+    // Check for a PE ref here, but don't require spaces
+    const bool gotSpaces = checkForPERef(false, true);
+
+    // Check for a repetition character after the leaf
+    XMLCh repCh = fReaderMgr->peekNextChar();
+    ContentSpecNode* tmpNode = makeRepNode(repCh, curNode, fGrammarPoolMemoryManager);
+    if (tmpNode != curNode)
     {
-        ContentSpecNode* lastNode = 0;
-        while (true)
+        if (gotSpaces)
         {
-            //
-            //  The next thing must either be another | or , character followed
-            //  by another leaf or subexpression, or a closing parenthesis, or a
-            //  PE ref.
-            //
-            if (fReaderMgr->lookingAtChar(chPercent))
+            if (fScanner->emitErrorWillThrowException(XMLErrs::UnexpectedWhitespace))
             {
-                checkForPERef(false, true);
+                delete tmpNode;
             }
-             else if (fReaderMgr->skippedSpace())
-            {
-                // Just skip whitespace
-                fReaderMgr->skipPastSpaces();
-            }
-             else if (fReaderMgr->skippedChar(chCloseParen))
+            fScanner->emitError(XMLErrs::UnexpectedWhitespace);
+        }
+        fReaderMgr->getNextChar();
+        curNode = tmpNode;
+    }
+
+    while(arrNestedDecl==NULL || !arrNestedDecl->empty())
+    {
+        // Check for a PE ref here, but don't require spaces
+        checkForPERef(false, true);
+
+        //
+        //  Ok, the next character tells us what kind of content this particular
+        //  model this particular parentesized section is. Its either a choice if
+        //  we see ',', a sequence if we see '|', or a single leaf node if we see
+        //  a closing paren.
+        //
+        const XMLCh opCh = fReaderMgr->peekNextChar();
+
+        if ((opCh != chComma)
+        &&  (opCh != chPipe)
+        &&  (opCh != chCloseParen))
+        {
+            // Not a legal char, so delete our node and return failure
+            delete curNode;
+            fScanner->emitError(XMLErrs::ExpectedSeqChoiceLeaf);
+            return 0;
+        }
+
+        //
+        //  Create the head node of the correct type. We need this to remember
+        //  the top of the local tree. If it was a single subexpr, then just
+        //  set the head node to the current node. For the others, we'll build
+        //  the tree off the second child as we move across.
+        //
+        ContentSpecNode* headNode = 0;
+        ContentSpecNode::NodeTypes curType = ContentSpecNode::UnknownType;
+        if (opCh == chComma)
+        {
+            curType = ContentSpecNode::Sequence;
+            headNode = new (fGrammarPoolMemoryManager) ContentSpecNode
+            (
+                curType
+                , curNode
+                , 0
+                , true
+                , true
+                , fGrammarPoolMemoryManager
+            );
+            curNode = headNode;
+        }
+         else if (opCh == chPipe)
+        {
+            curType = ContentSpecNode::Choice;
+            headNode = new (fGrammarPoolMemoryManager) ContentSpecNode
+            (
+                curType
+                , curNode
+                , 0
+                , true
+                , true
+                , fGrammarPoolMemoryManager
+            );
+            curNode = headNode;
+        }
+         else
+        {
+            headNode = curNode;
+            fReaderMgr->getNextChar();
+        }
+
+        //
+        //  If it was a sequence or choice, we just loop until we get to the
+        //  end of our section, adding each new leaf or sub expression to the
+        //  right child of the current node, and making that new node the current
+        //  node.
+        //
+        if ((opCh == chComma) || (opCh == chPipe))
+        {
+            ContentSpecNode* lastNode = 0;
+            while (true)
             {
                 //
-                //  We've hit the end of this section, so break out. But, we
-                //  need to see if we left a partial sequence of choice node
-                //  without a second node. If so, we have to undo that and
-                //  put its left child into the right node of the previous
-                //  node.
+                //  The next thing must either be another | or , character followed
+                //  by another leaf or subexpression, or a closing parenthesis, or a
+                //  PE ref.
                 //
-                if ((curNode->getType() == ContentSpecNode::Choice)
-                ||  (curNode->getType() == ContentSpecNode::Sequence))
+                if (fReaderMgr->lookingAtChar(chPercent))
                 {
-                    if (!curNode->getSecond())
-                    {
-                        ContentSpecNode* saveFirst = curNode->orphanFirst();
-                        lastNode->setSecond(saveFirst);
-                        curNode = lastNode;
-                    }
+                    checkForPERef(false, true);
                 }
-                break;
-            }
-             else if (fReaderMgr->skippedChar(opCh))
-            {
-                // Check for a PE ref here, but don't require spaces
-                checkForPERef(false, true);
-
-                if (fReaderMgr->skippedChar(chOpenParen))
+                 else if (fReaderMgr->skippedSpace())
                 {
-                    curReader = fReaderMgr->getCurrentReaderNum();
-
-                    // Recurse to handle this new guy
-                    ContentSpecNode* subNode;
-                    try {
-                        subNode = scanChildren(elemDecl, bufToUse);
-                    }
-                    catch (const XMLErrs::Codes)
-                    {
-                        delete headNode;
-                        throw;
-                    }
-
-                    // If it failed, we are done, clean up here and return failure
-                    if (!subNode)
-                    {
-                        delete headNode;
-                        return 0;
-                    }
-
-                    if (curReader != fReaderMgr->getCurrentReaderNum() && fScanner->getDoValidation())
-                        fScanner->getValidator()->emitError(XMLValid::PartialMarkupInPE);
-
-                    // Else patch it in and make it the new current
-                    ContentSpecNode* newCur = new (fGrammarPoolMemoryManager) ContentSpecNode
-                    (
-                        curType
-                        , subNode
-                        , 0
-                        , true
-                        , true
-                        , fGrammarPoolMemoryManager
-                    );
-                    curNode->setSecond(newCur);
-                    lastNode = curNode;
-                    curNode = newCur;
+                    // Just skip whitespace
+                    fReaderMgr->skipPastSpaces();
                 }
-                 else
+                 else if (fReaderMgr->skippedChar(chCloseParen))
                 {
                     //
-                    //  Got to be a leaf node, so get a name. If we cannot get
-                    //  one, then clean up and get outa here.
+                    //  We've hit the end of this section, so break out. But, we
+                    //  need to see if we left a partial sequence of choice node
+                    //  without a second node. If so, we have to undo that and
+                    //  put its left child into the right node of the previous
+                    //  node.
                     //
-                    if (!fReaderMgr->getName(bufToUse))
+                    if ((curNode->getType() == ContentSpecNode::Choice)
+                    ||  (curNode->getType() == ContentSpecNode::Sequence))
                     {
-                        delete headNode;
-                        fScanner->emitError(XMLErrs::ExpectedElementName);
-                        return 0;
+                        if (!curNode->getSecond())
+                        {
+                            ContentSpecNode* saveFirst = curNode->orphanFirst();
+                            lastNode->setSecond(saveFirst);
+                            curNode = lastNode;
+                        }
                     }
+                    break;
+                }
+                 else if (fReaderMgr->skippedChar(opCh))
+                {
+                    // Check for a PE ref here, but don't require spaces
+                    checkForPERef(false, true);
 
-                    //
-                    //  Create a leaf node for it. If we can find the element
-                    //  id for this element, then use it. Else, we have to
-                    //  fault in an element decl, marked as created because
-                    //  of being in a content model.
-                    //
-                    XMLElementDecl* decl = fDTDGrammar->getElemDecl(fEmptyNamespaceId, 0, bufToUse.getRawBuffer(), Grammar::TOP_LEVEL_SCOPE);
-                    if (!decl)
+                    if (fReaderMgr->skippedChar(chOpenParen))
                     {
-                        decl = new (fGrammarPoolMemoryManager) DTDElementDecl
+                        const XMLSize_t curReader = fReaderMgr->getCurrentReaderNum();
+
+                        // Recurse to handle this new guy
+                        ContentSpecNode* subNode;
+                        try {
+                            subNode = scanChildren(elemDecl, bufToUse);
+                        }
+                        catch (const XMLErrs::Codes)
+                        {
+                            delete headNode;
+                            throw;
+                        }
+
+                        // If it failed, we are done, clean up here and return failure
+                        if (!subNode)
+                        {
+                            delete headNode;
+                            return 0;
+                        }
+
+                        if (curReader != fReaderMgr->getCurrentReaderNum() && fScanner->getValidationScheme() == XMLScanner::Val_Always)
+                            fScanner->getValidator()->emitError(XMLValid::PartialMarkupInPE);
+
+                        // Else patch it in and make it the new current
+                        ContentSpecNode* newCur = new (fGrammarPoolMemoryManager) ContentSpecNode
                         (
-                            bufToUse.getRawBuffer()
-                            , fEmptyNamespaceId
-                            , DTDElementDecl::Any
+                            curType
+                            , subNode
+                            , 0
+                            , true
+                            , true
                             , fGrammarPoolMemoryManager
                         );
-                        decl->setCreateReason(XMLElementDecl::InContentModel);
-                        decl->setExternalElemDeclaration(isReadingExternalEntity());
-                        fDTDGrammar->putElemDecl(decl);
+                        curNode->setSecond(newCur);
+                        lastNode = curNode;
+                        curNode = newCur;
                     }
+                     else
+                    {
+                        //
+                        //  Got to be a leaf node, so get a name. If we cannot get
+                        //  one, then clean up and get outa here.
+                        //
+                        if (!fReaderMgr->getName(bufToUse))
+                        {
+                            delete headNode;
+                            fScanner->emitError(XMLErrs::ExpectedElementName);
+                            return 0;
+                        }
 
-                    ContentSpecNode* tmpLeaf = new (fGrammarPoolMemoryManager) ContentSpecNode
-                    (
-                        decl->getElementName()
-                        , fGrammarPoolMemoryManager
-                    );
+                        //
+                        //  Create a leaf node for it. If we can find the element
+                        //  id for this element, then use it. Else, we have to
+                        //  fault in an element decl, marked as created because
+                        //  of being in a content model.
+                        //
+                        XMLElementDecl* decl = fDTDGrammar->getElemDecl(fEmptyNamespaceId, 0, bufToUse.getRawBuffer(), Grammar::TOP_LEVEL_SCOPE);
+                        if (!decl)
+                        {
+                            decl = new (fGrammarPoolMemoryManager) DTDElementDecl
+                            (
+                                bufToUse.getRawBuffer()
+                                , fEmptyNamespaceId
+                                , DTDElementDecl::Any
+                                , fGrammarPoolMemoryManager
+                            );
+                            decl->setCreateReason(XMLElementDecl::InContentModel);
+                            decl->setExternalElemDeclaration(isReadingExternalEntity());
+                            fDTDGrammar->putElemDecl(decl);
+                        }
 
-                    // Check for a repetition character after the leaf
-                    const XMLCh repCh = fReaderMgr->peekNextChar();
-                    ContentSpecNode* tmpLeaf2 = makeRepNode(repCh, tmpLeaf, fGrammarPoolMemoryManager);
-                    if (tmpLeaf != tmpLeaf2)
-                        fReaderMgr->getNextChar();
+                        ContentSpecNode* tmpLeaf = new (fGrammarPoolMemoryManager) ContentSpecNode
+                        (
+                            decl->getElementName()
+                            , fGrammarPoolMemoryManager
+                        );
 
-                    //
-                    //  Create a new sequence or choice node, with the leaf
-                    //  (or rep surrounding it) we just got as its first node.
-                    //  Make the new node the second node of the current node,
-                    //  and then make it the current node.
-                    //
-                    ContentSpecNode* newCur = new (fGrammarPoolMemoryManager) ContentSpecNode
-                    (
-                        curType
-                        , tmpLeaf2
-                        , 0
-                        , true
-                        , true
-                        , fGrammarPoolMemoryManager
-                    );
-                    curNode->setSecond(newCur);
-                    lastNode = curNode;
-                    curNode = newCur;
-                }
-            }
-             else
-            {
-                // Cannot be valid
-                delete headNode;  // emitError may do a throw so need to clean-up first
-                if (opCh == chComma)
-                {
-                    fScanner->emitError(XMLErrs::ExpectedChoiceOrCloseParen);
+                        // Check for a repetition character after the leaf
+                        const XMLCh repCh = fReaderMgr->peekNextChar();
+                        ContentSpecNode* tmpLeaf2 = makeRepNode(repCh, tmpLeaf, fGrammarPoolMemoryManager);
+                        if (tmpLeaf != tmpLeaf2)
+                            fReaderMgr->getNextChar();
+
+                        //
+                        //  Create a new sequence or choice node, with the leaf
+                        //  (or rep surrounding it) we just got as its first node.
+                        //  Make the new node the second node of the current node,
+                        //  and then make it the current node.
+                        //
+                        ContentSpecNode* newCur = new (fGrammarPoolMemoryManager) ContentSpecNode
+                        (
+                            curType
+                            , tmpLeaf2
+                            , 0
+                            , true
+                            , true
+                            , fGrammarPoolMemoryManager
+                        );
+                        curNode->setSecond(newCur);
+                        lastNode = curNode;
+                        curNode = newCur;
+                    }
                 }
                  else
                 {
-                    fScanner->emitError
-                    (
-                        XMLErrs::ExpectedSeqOrCloseParen
-                        , elemDecl.getFullName()
-                    );
-                }                
+                    // Cannot be valid
+                    delete headNode;  // emitError may do a throw so need to clean-up first
+                    if (opCh == chComma)
+                    {
+                        fScanner->emitError(XMLErrs::ExpectedChoiceOrCloseParen);
+                    }
+                     else
+                    {
+                        fScanner->emitError
+                        (
+                            XMLErrs::ExpectedSeqOrCloseParen
+                            , elemDecl.getFullName()
+                        );
+                    }                
+                    return 0;
+                }
+            }
+        }
+
+        //
+        //  We saw the terminating parenthesis so lets check for any repetition
+        //  character, and create a node for that, making the head node the child
+        //  of it.
+        //
+        const XMLCh repCh = fReaderMgr->peekNextChar();
+        curNode = makeRepNode(repCh, headNode, fGrammarPoolMemoryManager);
+        if (curNode != headNode)
+            fReaderMgr->getNextChar();
+
+        // prepare for recursion
+        if(arrNestedDecl==NULL)
+            break;
+        else
+        {
+            // If that failed, no need to go further, return failure
+            if (!curNode)
                 return 0;
+
+            const XMLSize_t curReader = arrNestedDecl->pop();
+            if (curReader != fReaderMgr->getCurrentReaderNum() && fScanner->getValidationScheme() == XMLScanner::Val_Always)
+                fScanner->getValidator()->emitError(XMLValid::PartialMarkupInPE);
+
+            if(arrNestedDecl->empty())
+            {
+                delete arrNestedDecl;
+                arrNestedDecl=NULL;
             }
         }
     }
 
-    //
-    //  We saw the terminating parenthesis so lets check for any repetition
-    //  character, and create a node for that, making the head node the child
-    //  of it.
-    //
-    XMLCh repCh = fReaderMgr->peekNextChar();
-    ContentSpecNode* retNode = makeRepNode(repCh, headNode, fGrammarPoolMemoryManager);
-    if (retNode != headNode)
-        fReaderMgr->getNextChar();
-
-    return retNode;
+    return curNode;
 }
 
 
@@ -1460,7 +1473,7 @@ void DTDScanner::scanComment()
             else
                 bbComment.append(nextCh);
         }
-         else if (curState == OneDash)
+        else if (curState == OneDash)
         {
             //
             //  If its another dash, then we change to the two dashes states.
@@ -1471,14 +1484,14 @@ void DTDScanner::scanComment()
             {
                 curState = TwoDashes;
             }
-             else
+            else
             {
                 bbComment.append(chDash);
                 bbComment.append(nextCh);
                 curState = InText;
             }
         }
-         else if (curState == TwoDashes)
+        else if (curState == TwoDashes)
         {
             // The next character must be the closing bracket
             if (nextCh != chCloseAngle)
@@ -1528,7 +1541,7 @@ bool DTDScanner::scanContentSpec(DTDElementDecl& toFill)
     }
 
     // Get the current reader id, so we can test for partial markup
-    const unsigned int curReader = fReaderMgr->getCurrentReaderNum();
+    const XMLSize_t curReader = fReaderMgr->getCurrentReaderNum();
 
     // We could have a PE ref here, but don't require space
     checkForPERef(false, true);
@@ -1549,7 +1562,7 @@ bool DTDScanner::scanContentSpec(DTDElementDecl& toFill)
         //  If we are validating we have to check that there are no multiple
         //  uses of any child elements.
         //
-        if (fScanner->getDoValidation())
+        if (fScanner->getValidationScheme() == XMLScanner::Val_Always)
         {
             if (((const MixedContentModel*)toFill.getContentModel())->hasDups())
                 fScanner->getValidator()->emitError(XMLValid::RepElemInMixed);
@@ -1571,7 +1584,7 @@ bool DTDScanner::scanContentSpec(DTDElementDecl& toFill)
     }
 
     // Make sure we are on the same reader as where we started
-    if (curReader != fReaderMgr->getCurrentReaderNum() && fScanner->getDoValidation())
+    if (curReader != fReaderMgr->getCurrentReaderNum() && fScanner->getValidationScheme() == XMLScanner::Val_Always)
         fScanner->getValidator()->emitError(XMLValid::PartialMarkupInPE);
 
     return status;
@@ -1662,7 +1675,7 @@ void DTDScanner::scanElementDecl()
     {
         if (decl->isDeclared())
         {
-            if (fScanner->getDoValidation())
+            if (fScanner->getValidationScheme() == XMLScanner::Val_Always)
                 fScanner->getValidator()->emitError(XMLValid::ElementAlreadyExists, bbName.getRawBuffer());
 
             if (!fDumElemDecl)
@@ -1909,7 +1922,7 @@ DTDScanner::scanEntityRef(XMLCh& firstCh, XMLCh& secondCh, bool& escaped)
     secondCh = 0;
 
     // We have to insure its all done in a single entity
-    const unsigned int curReader = fReaderMgr->getCurrentReaderNum();
+    const XMLSize_t curReader = fReaderMgr->getCurrentReaderNum();
 
     //
     //  If the next char is a pound, then its a character reference and we
@@ -1962,7 +1975,7 @@ DTDScanner::scanEntityRef(XMLCh& firstCh, XMLCh& secondCh, bool& escaped)
             fScanner->emitError(XMLErrs::EntityNotFound, bbName.getRawBuffer());
         }
         else {
-            if (fScanner->getDoValidation())
+            if (fScanner->getValidationScheme() == XMLScanner::Val_Always)
                 fScanner->getValidator()->emitError(XMLValid::VC_EntityNotFound, bbName.getRawBuffer());
         }
 
@@ -2016,6 +2029,7 @@ DTDScanner::scanEntityRef(XMLCh& firstCh, XMLCh& secondCh, bool& escaped)
             , XMLReader::Source_External
             , srcUsed
             , fScanner->getCalculateSrcOfs()
+            , fScanner->getLowWaterMark()
             , fScanner->getDisableDefaultEntityResolution()
         );
 
@@ -2094,7 +2108,7 @@ bool DTDScanner::scanEntityLiteral(XMLBuffer& toFill)
     XMLBuffer& nameBuf = bbName.getBuffer();
 
     // Remember the current reader
-    const unsigned int orgReader = fReaderMgr->getCurrentReaderNum();
+    const XMLSize_t orgReader = fReaderMgr->getCurrentReaderNum();
 
     //
     //  Loop until we see the ending quote character, handling any references
@@ -2244,7 +2258,7 @@ bool DTDScanner::scanEntityLiteral(XMLBuffer& toFill)
     //  then we propogated some entity out of the literal, so issue an
     //  error, but don't fail.
     //
-    if (fReaderMgr->getCurrentReaderNum() != orgReader && fScanner->getDoValidation())
+    if (fReaderMgr->getCurrentReaderNum() != orgReader && fScanner->getValidationScheme() == XMLScanner::Val_Always)
         fScanner->getValidator()->emitError(XMLValid::PartialMarkupInPE);
 
     return true;
@@ -2282,6 +2296,7 @@ bool DTDScanner::scanEntityDef(DTDEntityDecl& decl, const bool isPEDecl)
     if (!scanId(bbPubId.getBuffer(), bbSysId.getBuffer(), IDType_External))
         return false;
 
+    decl.setIsExternal(true);
     ReaderMgr::LastExtEntityInfo lastInfo;
     fReaderMgr->getLastExtEntityInfo(lastInfo);
 
@@ -2449,7 +2464,7 @@ void DTDScanner::scanExtSubsetDecl(const bool inIncludeSect, const bool isDTD)
     //  If we have a doc type handler and we are not being called recursively
     //  to handle an include section, tell it the ext subset starts
     //
-    if (fDocTypeHandler && !inIncludeSect)
+    if (fDocTypeHandler && isDTD && !inIncludeSect)
         fDocTypeHandler->startExtSubset();
 
     //
@@ -2478,7 +2493,7 @@ void DTDScanner::scanExtSubsetDecl(const bool inIncludeSect, const bool isDTD)
     }
 
     // Get the current reader number
-    const unsigned int orgReader = fReaderMgr->getCurrentReaderNum();
+    const XMLSize_t orgReader = fReaderMgr->getCurrentReaderNum();
 
     //
     //  Loop until we hit the end of the external subset entity. Note that
@@ -2496,11 +2511,15 @@ void DTDScanner::scanExtSubsetDecl(const bool inIncludeSect, const bool isDTD)
             {
                 const XMLCh nextCh = fReaderMgr->peekNextChar();
 
-                if (nextCh == chOpenAngle)
+                if (!nextCh)
+                {
+                    return; // nothing left
+                }
+                else if (nextCh == chOpenAngle)
                 {
                     // Get the reader we started this on
                     // XML 1.0 P28a Well-formedness constraint: PE Between Declarations
-                    const unsigned int orgReader = fReaderMgr->getCurrentReaderNum();
+                    const XMLSize_t orgReader = fReaderMgr->getCurrentReaderNum();
                     bool wasInPE = (fReaderMgr->getCurrentReader()->getType() == XMLReader::Type_PE);
 
                     //
@@ -2519,12 +2538,12 @@ void DTDScanner::scanExtSubsetDecl(const bool inIncludeSect, const bool isDTD)
                     if (fReaderMgr->getCurrentReaderNum() != orgReader){
                         if (wasInPE)
                             fScanner->emitError(XMLErrs::PEBetweenDecl);
-                        else if (fScanner->getDoValidation())
+                        else if (fScanner->getValidationScheme() == XMLScanner::Val_Always)
                             fScanner->getValidator()->emitError(XMLValid::PartialMarkupInPE);
                     }
 
                 }
-                 else if (fReaderMgr->getCurrentReader()->isWhitespace(nextCh))
+                else if (fReaderMgr->getCurrentReader()->isWhitespace(nextCh))
                 {
                     //
                     //  If we have a doc type handler, and advanced callbacks are
@@ -2543,7 +2562,7 @@ void DTDScanner::scanExtSubsetDecl(const bool inIncludeSect, const bool isDTD)
                             , bbSpace.getLen()
                         );
                     }
-                     else
+                    else
                     {
                         //
                         //  If we hit an end of entity in the middle of white
@@ -2553,7 +2572,7 @@ void DTDScanner::scanExtSubsetDecl(const bool inIncludeSect, const bool isDTD)
                         fReaderMgr->skipPastSpaces();
                     }
                 }
-                 else if (nextCh == chPercent)
+                else if (nextCh == chPercent)
                 {
                     //
                     //  Expand (and scan if external) the reference value. Tell
@@ -2563,7 +2582,7 @@ void DTDScanner::scanExtSubsetDecl(const bool inIncludeSect, const bool isDTD)
                     fReaderMgr->getNextChar();
                     expandPERef(true, false, false, true);
                 }
-                 else if (inIncludeSect && (nextCh == chCloseSquare))
+                else if (inIncludeSect && (nextCh == chCloseSquare))
                 {
                     //
                     //  Its the end of a conditional include section. So scan it and
@@ -2575,16 +2594,12 @@ void DTDScanner::scanExtSubsetDecl(const bool inIncludeSect, const bool isDTD)
                         fScanner->emitError(XMLErrs::ExpectedEndOfConditional);
                         fReaderMgr->skipPastChar(chCloseAngle);
                     }
-                     else if (!fReaderMgr->skippedChar(chCloseAngle))
+                    else if (!fReaderMgr->skippedChar(chCloseAngle))
                     {
                         fScanner->emitError(XMLErrs::ExpectedEndOfConditional);
                         fReaderMgr->skipPastChar(chCloseAngle);
                     }
                     return;
-                }
-                 else if (!nextCh)
-                {
-                    return; // nothing left
                 }
                 else
                 {
@@ -2617,7 +2632,6 @@ void DTDScanner::scanExtSubsetDecl(const bool inIncludeSect, const bool isDTD)
                 bAcceptDecl = false;
             }
         }
-
         catch(const EndOfEntityException& toCatch)
         {
             //
@@ -2657,7 +2671,7 @@ void DTDScanner::scanExtSubsetDecl(const bool inIncludeSect, const bool isDTD)
     }
 
     // If we have a doc type handler, tell it the ext subset ends
-    if (fDocTypeHandler && isDTD)
+    if (fDocTypeHandler && isDTD && !inIncludeSect)
         fDocTypeHandler->endExtSubset();
 }
 
@@ -2693,7 +2707,9 @@ bool DTDScanner::scanId(          XMLBuffer&  pubIdToFill
         }
 
         // We must skip spaces
-        if (!fReaderMgr->skipPastSpaces())
+        bool skippedSomething;
+        fReaderMgr->skipPastSpaces(skippedSomething);
+        if (!skippedSomething)
         {
             fScanner->emitError(XMLErrs::ExpectedWhitespace);
             return false;
@@ -2718,7 +2734,9 @@ bool DTDScanner::scanId(          XMLBuffer&  pubIdToFill
     //  So following this we must have whitespace, a public literal, whitespace,
     //  and a system literal.
     //
-    if (!fReaderMgr->skipPastSpaces())
+    bool skippedSomething;
+    fReaderMgr->skipPastSpaces(skippedSomething);
+    if (!skippedSomething)
     {
         fScanner->emitError(XMLErrs::ExpectedWhitespace);
 
@@ -2739,7 +2757,8 @@ bool DTDScanner::scanId(          XMLBuffer&  pubIdToFill
         return true;
 
     // check if there is any space follows
-    bool hasSpace = fReaderMgr->skipPastSpaces();
+    bool hasSpace;
+    fReaderMgr->skipPastSpaces(hasSpace);
 
     //
     //  In order to recover best here we need to see if
@@ -2945,7 +2964,7 @@ bool DTDScanner::scanInternalSubset()
         {
             // Remember this reader before we start the scan, for checking
             // XML 1.0 P28a Well-formedness constraint: PE Between Declarations
-            const unsigned int orgReader = fReaderMgr->getCurrentReaderNum();
+            const XMLSize_t orgReader = fReaderMgr->getCurrentReaderNum();
             bool wasInPE = (fReaderMgr->getCurrentReader()->getType() == XMLReader::Type_PE);
 
             // And scan this markup
@@ -2956,7 +2975,7 @@ bool DTDScanner::scanInternalSubset()
             if (fReaderMgr->getCurrentReaderNum() != orgReader) {
                 if (wasInPE)
                     fScanner->emitError(XMLErrs::PEBetweenDecl);
-                else if (fScanner->getDoValidation())
+                else if (fScanner->getValidationScheme() == XMLScanner::Val_Always)
                     fScanner->getValidator()->emitError(XMLValid::PartialMarkupInPE);
             }
         }
@@ -3082,7 +3101,7 @@ void DTDScanner::scanMarkupDecl(const bool parseTextDecl)
                     fScanner->emitError(XMLErrs::ExpectedINCLUDEBracket);
 
                 // Get the reader we started this on
-                const unsigned int orgReader = fReaderMgr->getCurrentReaderNum();
+                const XMLSize_t orgReader = fReaderMgr->getCurrentReaderNum();
 
                 checkForPERef(false, true);
 
@@ -3096,7 +3115,7 @@ void DTDScanner::scanMarkupDecl(const bool parseTextDecl)
                 //  And see if we got back to the same level. If not, then its
                 //  a partial markup error.
                 //
-                if (fReaderMgr->getCurrentReaderNum() != orgReader && fScanner->getDoValidation())
+                if (fReaderMgr->getCurrentReaderNum() != orgReader && fScanner->getValidationScheme() == XMLScanner::Val_Always)
                     fScanner->getValidator()->emitError(XMLValid::PartialMarkupInPE);
 
             }
@@ -3109,7 +3128,7 @@ void DTDScanner::scanMarkupDecl(const bool parseTextDecl)
                     fScanner->emitError(XMLErrs::ExpectedINCLUDEBracket);
 
                 // Get the reader we started this on
-                const unsigned int orgReader = fReaderMgr->getCurrentReaderNum();
+                const XMLSize_t orgReader = fReaderMgr->getCurrentReaderNum();
 
                 // And scan over the ignored part
                 scanIgnoredSection();
@@ -3118,7 +3137,7 @@ void DTDScanner::scanMarkupDecl(const bool parseTextDecl)
                 //  And see if we got back to the same level. If not, then its
                 //  a partial markup error.
                 //
-                if (fReaderMgr->getCurrentReaderNum() != orgReader && fScanner->getDoValidation())
+                if (fReaderMgr->getCurrentReaderNum() != orgReader && fScanner->getValidationScheme() == XMLScanner::Val_Always)
                     fScanner->getValidator()->emitError(XMLValid::PartialMarkupInPE);
 
             }
@@ -3731,18 +3750,13 @@ bool DTDScanner::scanSystemLiteral(XMLBuffer& toFill)
         return false;
     }
 
-    while (true)
+	XMLCh nextCh;
+    // Break out on terminating quote
+    while ((nextCh=fReaderMgr->getNextChar())!=quoteCh)
     {
-        const XMLCh nextCh = fReaderMgr->getNextChar();
-
         // Watch for EOF
         if (!nextCh)
             ThrowXMLwithMemMgr(UnexpectedEOFException, XMLExcepts::Gen_UnexpectedEOF, fMemoryManager);
-
-        // Break out on terminating quote
-        if (nextCh == quoteCh)
-            break;
-
         toFill.append(nextCh);
     }
     return true;

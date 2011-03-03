@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: SchemaElementDecl.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: SchemaElementDecl.cpp 609971 2008-01-08 13:30:47Z amassari $
  */
 
 
@@ -41,24 +41,17 @@ SchemaElementDecl::SchemaElementDecl(MemoryManager* const manager) :
     XMLElementDecl(manager)
     , fModelType(Any)
     , fPSVIScope(PSVIDefs::SCP_ABSENT)
-    , fValidity(PSVIDefs::UNKNOWN)
-    , fValidation(PSVIDefs::NONE)
     , fEnclosingScope(Grammar::TOP_LEVEL_SCOPE)
     , fFinalSet(0)
     , fBlockSet(0)    
     , fMiscFlags(0)
     , fDefaultValue(0)
     , fComplexTypeInfo(0)
-    , fAttDefs(0)
-    , fXsiComplexTypeInfo(0)
-    , fXsiSimpleTypeInfo(0)    
+    , fAttDefs(0)        
     , fIdentityConstraints(0)
     , fAttWildCard(0)
     , fSubstitutionGroupElem(0)
-    , fDatatypeValidator(0)
-    , fSeenValidation(false)
-    , fSeenNoValidation(false)
-    , fHadContent(false)
+    , fDatatypeValidator(0)    
 {
 }
 
@@ -66,58 +59,44 @@ SchemaElementDecl::SchemaElementDecl(const XMLCh* const                  prefix
                                    , const XMLCh* const                  localPart
                                    , const int                           uriId
                                    , const SchemaElementDecl::ModelTypes type
-                                   , const int                           enclosingScope
+                                   , const unsigned int                  enclosingScope
                                    , MemoryManager* const                manager) :
     XMLElementDecl(manager)
     , fModelType(type)
     , fPSVIScope(PSVIDefs::SCP_ABSENT)
-    , fValidity(PSVIDefs::UNKNOWN)
-    , fValidation(PSVIDefs::NONE)
     , fEnclosingScope(enclosingScope)
     , fFinalSet(0)
     , fBlockSet(0)    
     , fMiscFlags(0)
     , fDefaultValue(0)
     , fComplexTypeInfo(0)
-    , fAttDefs(0)
-    , fXsiComplexTypeInfo(0)
-    , fXsiSimpleTypeInfo(0)    
+    , fAttDefs(0)          
     , fIdentityConstraints(0)
     , fAttWildCard(0)
     , fSubstitutionGroupElem(0)
     , fDatatypeValidator(0)
-    , fSeenValidation(false)
-    , fSeenNoValidation(false)
-    , fHadContent(false)
 {
     setElementName(prefix, localPart, uriId);
 }
 
 SchemaElementDecl::SchemaElementDecl(const QName* const                  elementName
                                    , const SchemaElementDecl::ModelTypes type
-                                   , const int                           enclosingScope
+                                   , const unsigned int                  enclosingScope
                                    , MemoryManager* const                manager) :
     XMLElementDecl(manager)
     , fModelType(type)
     , fPSVIScope(PSVIDefs::SCP_ABSENT)
-    , fValidity(PSVIDefs::UNKNOWN)
-    , fValidation(PSVIDefs::NONE)
     , fEnclosingScope(enclosingScope)
     , fFinalSet(0)
     , fBlockSet(0)    
     , fMiscFlags(0)
     , fDefaultValue(0)
     , fComplexTypeInfo(0)
-    , fAttDefs(0)
-    , fXsiComplexTypeInfo(0)
-    , fXsiSimpleTypeInfo(0)    
+    , fAttDefs(0)        
     , fIdentityConstraints(0)
     , fAttWildCard(0)
     , fSubstitutionGroupElem(0)
     , fDatatypeValidator(0)
-    , fSeenValidation(false)
-    , fSeenNoValidation(false)
-    , fHadContent(false)
 {
     setElementName(elementName);
 }
@@ -134,61 +113,6 @@ SchemaElementDecl::~SchemaElementDecl()
 // ---------------------------------------------------------------------------
 //  SchemaElementDecl: XMLElementDecl virtual interface implementation
 // ---------------------------------------------------------------------------
-XMLAttDef* SchemaElementDecl::findAttr(const XMLCh* const    qName
-                                     , const unsigned int    uriId
-                                     , const XMLCh* const    baseName
-                                     , const XMLCh* const    prefix
-                                     , const LookupOpts      options
-                                     , bool&           wasAdded) const
-{
-    if (fComplexTypeInfo) {
-        return fComplexTypeInfo->findAttr(qName, uriId, baseName, prefix, options, wasAdded);
-    }
-    else {
-        if (options == XMLElementDecl::AddIfNotFound) {
-            SchemaAttDef* retVal = 0;
-
-            // If no att list exist yet, then create one
-            if (!fAttDefs) {
-                // Use a hash modulus of 29 and tell it owns its elements
-                ((SchemaElementDecl*)this)->fAttDefs =
-                    new (getMemoryManager()) RefHash2KeysTableOf<SchemaAttDef>(29, true, getMemoryManager());
-            }
-
-            retVal = fAttDefs->get(baseName, uriId);
-
-            // Fault it in if not found and ask to add it
-            if (!retVal)
-            {
-                // And add a default attribute for this name
-                retVal = new (getMemoryManager()) SchemaAttDef
-                (
-                    prefix
-                    , baseName
-                    , uriId
-                    , XMLAttDef::CData
-                    , XMLAttDef::Implied
-                    , getMemoryManager()
-                );
-                retVal->setElemId(getId());
-                fAttDefs->put((void*)retVal->getAttName()->getLocalPart(), uriId, retVal);
-
-                wasAdded = true;
-            }
-             else
-            {
-                wasAdded = false;
-            }
-            return retVal;
-        }
-        else {
-            wasAdded = false;
-            return 0;
-        }
-    }
-}
-
-
 XMLAttDefList& SchemaElementDecl::getAttDefList() const
 {
     if (!fComplexTypeInfo)
@@ -212,6 +136,7 @@ XMLElementDecl::CharDataOpts SchemaElementDecl::getCharDataOpts() const
     switch(modelType)
     {
         case Children :
+        case ElementOnlyEmpty :
             retVal = XMLElementDecl::SpacesOk;
             break;
 
@@ -236,22 +161,6 @@ bool SchemaElementDecl::hasAttDefs() const
     // If the collection hasn't been faulted in, then no att defs
     return false;
 
-}
-
-
-bool SchemaElementDecl::resetDefs()
-{
-    if (fComplexTypeInfo) {
-        return fComplexTypeInfo->resetDefs();
-    }
-    else if (fAttDefs) {
-        //all the attdefs here are faulted-in, so just reset the fAttDefs
-        //but still return false to indicate there is no real att defs
-        // defined in this element
-        fAttDefs->removeAll();
-    }
-
-    return false;
 }
 
 const XMLCh*
@@ -301,9 +210,7 @@ void SchemaElementDecl::serialize(XSerializeEngine& serEng)
     if (serEng.isStoring())
     {
         serEng<<(int)fModelType;
-        serEng<<(int)fPSVIScope;
-        serEng<<(int)fValidity;
-        serEng<<(int)fValidation;
+        serEng<<(int)fPSVIScope;        
 
         serEng<<fEnclosingScope;
         serEng<<fFinalSet;
@@ -318,12 +225,8 @@ void SchemaElementDecl::serialize(XSerializeEngine& serEng)
          * Serialize RefHash2KeysTableOf<SchemaAttDef>* fAttDefs;
          ***/
 
-        XTemplateSerializer::storeObject(fAttDefs, serEng);
-
-        serEng<<fXsiComplexTypeInfo;
-
-        DatatypeValidator::storeDV(serEng, (DatatypeValidator*)fXsiSimpleTypeInfo);
-
+        XTemplateSerializer::storeObject(fAttDefs, serEng);        
+        
         /***
          * Serialize RefVectorOf<IdentityConstraint>*   fIdentityConstraints;
          ***/
@@ -331,12 +234,7 @@ void SchemaElementDecl::serialize(XSerializeEngine& serEng)
 
         serEng<<fAttWildCard;
         serEng<<fSubstitutionGroupElem;
-        DatatypeValidator::storeDV(serEng, fDatatypeValidator);
-
-        serEng<<fSeenValidation;
-        serEng<<fSeenNoValidation;
-        serEng<<fHadContent;
-            
+        DatatypeValidator::storeDV(serEng, fDatatypeValidator);                
     }
     else
     {
@@ -344,11 +242,7 @@ void SchemaElementDecl::serialize(XSerializeEngine& serEng)
         serEng>>i;
         fModelType = (ModelTypes)i;
         serEng>>i;
-        fPSVIScope = (PSVIDefs::PSVIScope)i;
-        serEng>>i;
-        fValidity = (PSVIDefs::Validity)i;
-        serEng>> i;
-        fValidation = (PSVIDefs::Validation)i;
+        fPSVIScope = (PSVIDefs::PSVIScope)i;   
 
         serEng>>fEnclosingScope;
         serEng>>fFinalSet;
@@ -362,11 +256,7 @@ void SchemaElementDecl::serialize(XSerializeEngine& serEng)
         /***
          * DeSerialize RefHash2KeysTableOf<SchemaAttDef>* fAttDefs;
          ***/
-        XTemplateSerializer::loadObject(&fAttDefs, 29, true, serEng);
-
-        serEng>>fXsiComplexTypeInfo;
-
-        fXsiSimpleTypeInfo = DatatypeValidator::loadDV(serEng);
+        XTemplateSerializer::loadObject(&fAttDefs, 29, true, serEng);                
 
         /***
          * DeSerialize RefVectorOf<IdentityConstraint>*   fIdentityConstraints;
@@ -376,13 +266,7 @@ void SchemaElementDecl::serialize(XSerializeEngine& serEng)
         serEng>>fAttWildCard;
         serEng>>fSubstitutionGroupElem;
         fDatatypeValidator = DatatypeValidator::loadDV(serEng);
-
-        serEng>>fSeenValidation;
-        serEng>>fSeenNoValidation;
-        serEng>>fHadContent;
-
     }
-
 }
 
 XMLElementDecl::objectType  SchemaElementDecl::getObjectType() const

@@ -1,4 +1,0 @@
-<area shape="rect" href="$classEntityResolver.html" title="Basic interface for resolving entities." alt="" coords="5,7,120,33">
-<area shape="rect" href="$classDTDHandler.html" title="Receive notification of basic DTD&#45;related events." alt="" coords="144,7,243,33">
-<area shape="rect" href="$classDocumentHandler.html" title="Receive notification of general document events." alt="" coords="267,7,405,33">
-<area shape="rect" href="$classErrorHandler.html" title="Basic interface for SAX error handlers." alt="" coords="429,7,533,33">

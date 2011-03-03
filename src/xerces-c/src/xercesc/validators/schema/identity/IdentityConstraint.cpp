@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: IdentityConstraint.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: IdentityConstraint.cpp 676911 2008-07-15 13:27:32Z amassari $
  */
 
 // ---------------------------------------------------------------------------
@@ -90,12 +90,12 @@ bool IdentityConstraint::operator ==(const IdentityConstraint& other) const {
     if (*fSelector != *(other.fSelector))
         return false;
 
-    unsigned int fieldCount = fFields->size();
+    XMLSize_t fieldCount = fFields->size();
 
     if (fieldCount != other.fFields->size())
         return false;
 
-    for (unsigned int i = 0; i < fieldCount; i++) {
+    for (XMLSize_t i = 0; i < fieldCount; i++) {
         if (*(fFields->elementAt(i)) != *(other.fFields->elementAt(i)))
             return false;
     }
@@ -185,7 +185,7 @@ void IdentityConstraint::storeIC(XSerializeEngine&         serEng
     }
     else
     {
-        serEng<<(int) UNKNOWN;
+        serEng<<(int) ICType_UNKNOWN;
     }
 
 }
@@ -198,19 +198,19 @@ IdentityConstraint* IdentityConstraint::loadIC(XSerializeEngine& serEng)
 
     switch((ICType)type)
     {
-    case UNIQUE: 
+    case ICType_UNIQUE: 
         IC_Unique* ic_unique;
         serEng>>ic_unique;
         return ic_unique;      
-    case KEY:
+    case ICType_KEY:
         IC_Key* ic_key;
         serEng>>ic_key;
         return ic_key;
-    case KEYREF: 
+    case ICType_KEYREF: 
         IC_KeyRef* ic_keyref;
         serEng>>ic_keyref;
         return ic_keyref;
-    case UNKNOWN:
+    case ICType_UNKNOWN:
         return 0;
     default: //we treat this same as UnKnown
         return 0;

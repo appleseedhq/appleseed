@@ -16,7 +16,7 @@
  */
 
 /**
- * $Id: MemBufInputSource.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: MemBufInputSource.cpp 553941 2007-07-06 16:14:22Z amassari $
  */
 
 
@@ -32,7 +32,7 @@ XERCES_CPP_NAMESPACE_BEGIN
 //  MemBufInputSource: Constructors and Destructor
 // ---------------------------------------------------------------------------
 MemBufInputSource::MemBufInputSource( const XMLByte* const  srcDocBytes
-                                    , const unsigned int    byteCount
+                                    , const XMLSize_t       byteCount
                                     , const XMLCh* const    bufId
                                     , const bool            adoptBuffer
                                     , MemoryManager* const  manager) :
@@ -45,7 +45,7 @@ MemBufInputSource::MemBufInputSource( const XMLByte* const  srcDocBytes
 }
 
 MemBufInputSource::MemBufInputSource( const XMLByte* const  srcDocBytes
-                                    , const unsigned int    byteCount
+                                    , const XMLSize_t       byteCount
                                     , const char* const     bufId
                                     , const bool            adoptBuffer
                                     , MemoryManager* const  manager) :
@@ -63,8 +63,8 @@ MemBufInputSource::~MemBufInputSource()
         delete [] (XMLByte*)fSrcBytes;
 }
 
-void MemBufInputSource::resetMemBufInputSource(const   XMLByte* const  srcDocBytes
-                                , const unsigned int    byteCount)
+void MemBufInputSource::resetMemBufInputSource(const XMLByte* const  srcDocBytes
+                                             , const XMLSize_t       byteCount)
 {
     fByteCount = byteCount;
     fSrcBytes  = srcDocBytes;

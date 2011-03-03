@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMNodeListImpl.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMNodeListImpl.cpp 671894 2008-06-26 13:29:21Z borisk $
  */
 
 
@@ -31,7 +31,7 @@ XERCES_CPP_NAMESPACE_BEGIN
 //   this implementation is too stupid - needs a cache of some kind.
 //
 
-DOMNodeListImpl::DOMNodeListImpl(DOMNode *node)
+DOMNodeListImpl::DOMNodeListImpl(DOMParentNode *node)
 :   fNode(node)
 {
 }
@@ -46,7 +46,7 @@ DOMNodeListImpl:: ~DOMNodeListImpl()
 XMLSize_t DOMNodeListImpl::getLength() const{
     XMLSize_t count = 0;
     if (fNode) {
-        DOMNode *node = castToParentImpl(fNode)->fFirstChild;
+        DOMNode *node = fNode->fFirstChild;
         while(node != 0){
             ++count;
             node = castToChildImpl(node)->nextSibling;
@@ -60,7 +60,7 @@ XMLSize_t DOMNodeListImpl::getLength() const{
 
 DOMNode *DOMNodeListImpl::item(XMLSize_t index) const{
     if (fNode) {
-        DOMNode *node = castToParentImpl(fNode)->fFirstChild;
+        DOMNode *node = fNode->fFirstChild;
         for(XMLSize_t i=0; i<index && node!=0; ++i)
             node = castToChildImpl(node)->nextSibling;
         return node;
@@ -70,5 +70,3 @@ DOMNode *DOMNodeListImpl::item(XMLSize_t index) const{
 
 
 XERCES_CPP_NAMESPACE_END
-
-

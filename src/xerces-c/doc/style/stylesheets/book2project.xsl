@@ -177,7 +177,7 @@
       <processor name="xslt">
         <parameter name="stylesheet" value="sbk:/style/stylesheets/any2project.xsl"/>
       </processor>
-    </process>    
+    </process>
 
 
     <xsl:call-template name="header">
@@ -191,7 +191,7 @@
       <xsl:with-param name="label" select="@label"/>
     </xsl:call-template>
 
-    
+
     <create source="{@source}" target="{@id}.html" producer="parser" printer="html">
       <processor name="xslt">
         <parameter name="id" value="{@id}"/>
@@ -235,12 +235,22 @@
     </xsl:call-template>
 
   </xsl:template>
+
+  <xsl:template match="section">
+
+    <xsl:call-template name="sect-label">
+      <xsl:with-param name="id" select="concat('sect-',position())"/>
+      <xsl:with-param name="label" select="@label"/>
+    </xsl:call-template>
+
+  </xsl:template>
+
 <!-- ********************************************************************** -->
 <!-- NAMED TEMPLATES -->
 <!-- ********************************************************************** -->
 
 <!-- Generate the doument header image -->
-  <xsl:template name="header"> 
+  <xsl:template name="header">
     <xsl:param name="id"/>
     <xsl:param name="source"/>
     <xsl:param name="label"/>
@@ -254,10 +264,10 @@
   </xsl:template>
 
 <!-- Generate the three rollover label images -->
-  <xsl:template name="labels"> 
+  <xsl:template name="labels">
     <xsl:param name="id"/>
     <xsl:param name="label"/>
-    
+
     <create source="" target="graphics/{$id}-label-1.jpg" producer="context" printer="image">
       <parameter name="label" value="{$label}"/>
       <processor name="xslt">
@@ -281,6 +291,20 @@
       <processor name="xslt">
         <parameter name="stylesheet" value="sbk:/style/stylesheets/context2label.xsl"/>
         <parameter name="image" value="sbk:/style/graphics/button-b.gif"/>
+        <parameter name="color" value="ffffff"/>
+      </processor>
+    </create>
+  </xsl:template>
+
+<!-- Generate one bold section label -->
+  <xsl:template name="sect-label">
+    <xsl:param name="id"/>
+    <xsl:param name="label"/>
+
+    <create source="" target="graphics/{$id}-label.jpg" producer="context" printer="image">
+      <parameter name="label" value="{$label}"/>
+      <processor name="xslt">
+        <parameter name="stylesheet" value="sbk:/style/stylesheets/context2section.xsl"/>
         <parameter name="color" value="ffffff"/>
       </processor>
     </create>

@@ -14,8 +14,8 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\Release"
-			IntermediateDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\Release"
+			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
 			ConfigurationType="10"
 			UseOfMFC="0">
 			<Tool
@@ -29,8 +29,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\Debug"
-			IntermediateDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\Debug"
+			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
 			ConfigurationType="10"
 			UseOfMFC="0">
 			<Tool
@@ -44,8 +44,8 @@
 		</Configuration>
 		<Configuration
 			Name="Static Debug|Win32"
-			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\StaticDebug"
-			IntermediateDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\StaticDebug"
+			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
 			ConfigurationType="10"
 			UseOfMFC="0">
 			<Tool
@@ -59,8 +59,38 @@
 		</Configuration>
 		<Configuration
 			Name="Static Release|Win32"
-			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\StaticRelease"
-			IntermediateDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\StaticRelease"
+			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
+			ConfigurationType="10"
+			UseOfMFC="0">
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+		</Configuration>
+		<Configuration
+			Name="ICU Debug|Win32"
+			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
+			ConfigurationType="10"
+			UseOfMFC="0">
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+		</Configuration>
+		<Configuration
+			Name="ICU Release|Win32"
+			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
 			ConfigurationType="10"
 			UseOfMFC="0">
 			<Tool

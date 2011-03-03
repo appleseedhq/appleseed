@@ -16,7 +16,7 @@
  */
 
 /**
- * $Id: XMLSchemaDescription.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLSchemaDescription.cpp 471747 2006-11-06 14:31:56Z amassari $
  */
 
 

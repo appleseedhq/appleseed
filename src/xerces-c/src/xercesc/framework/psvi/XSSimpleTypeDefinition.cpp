@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XSSimpleTypeDefinition.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XSSimpleTypeDefinition.cpp 674012 2008-07-04 11:18:21Z borisk $
  */
 
 #include <xercesc/framework/psvi/XSSimpleTypeDefinition.hpp>
@@ -34,7 +34,7 @@ XERCES_CPP_NAMESPACE_BEGIN
 // ---------------------------------------------------------------------------
 //  Local, static functions
 // ---------------------------------------------------------------------------
-static bool XSSimpleTypeDefinitionTestFlag(int flag) 
+static bool XSSimpleTypeDefinitionTestFlag(int flag)
 {
     if (flag)
         return true;
@@ -69,7 +69,7 @@ XSSimpleTypeDefinition::XSSimpleTypeDefinition
     , fXSAnnotationList(0)
 {
     int finalset = fDatatypeValidator->getFinalSet();
-    if (finalset) 
+    if (finalset)
     {
         if (finalset & SchemaSymbols::XSD_EXTENSION)
             fFinal |= XSConstants::DERIVATION_EXTENSION;
@@ -99,13 +99,13 @@ XSSimpleTypeDefinition::XSSimpleTypeDefinition
 
 XSSimpleTypeDefinition::~XSSimpleTypeDefinition()
 {
-    if (fXSFacetList) 
+    if (fXSFacetList)
         delete fXSFacetList;
 
-    if (fXSMultiValueFacetList) 
+    if (fXSMultiValueFacetList)
         delete fXSMultiValueFacetList;
 
-    if (fPatternList) 
+    if (fPatternList)
         delete fPatternList;
 
     // don't delete fPrimitiveOrItemType -> deleted by XSModel
@@ -131,9 +131,9 @@ bool XSSimpleTypeDefinition::isFixedFacet(FACET facetName)
 }
 
 const XMLCh *XSSimpleTypeDefinition::getLexicalFacetValue(FACET facetName)
-{ 
-    unsigned int size = fXSFacetList->size();
-    for (unsigned int i=0; i<size; i++) 
+{
+    XMLSize_t size = fXSFacetList->size();
+    for (XMLSize_t i=0; i<size; i++)
     {
         if (((fXSFacetList->elementAt(i))->getFacetKind()) == facetName)
             return (fXSFacetList->elementAt(i))->getLexicalFacetValue();
@@ -170,27 +170,27 @@ bool XSSimpleTypeDefinition::getNumeric() const
 // ---------------------------------------------------------------------------
 //  XSSimpleTypeDefinition: virtual methods
 // ---------------------------------------------------------------------------
-const XMLCh *XSSimpleTypeDefinition::getName() 
+const XMLCh *XSSimpleTypeDefinition::getName() const
 {
     return fDatatypeValidator->getTypeLocalName();
 }
 
-const XMLCh *XSSimpleTypeDefinition::getNamespace() 
+const XMLCh *XSSimpleTypeDefinition::getNamespace()
 {
     return fDatatypeValidator->getTypeUri();
 }
 
-XSNamespaceItem *XSSimpleTypeDefinition::getNamespaceItem() 
+XSNamespaceItem *XSSimpleTypeDefinition::getNamespaceItem()
 {
     return fXSModel->getNamespaceItem(getNamespace());
 }
 
 bool XSSimpleTypeDefinition::getAnonymous() const
 {
-    return fDatatypeValidator->getAnonymous(); 
+    return fDatatypeValidator->getAnonymous();
 }
 
-XSTypeDefinition *XSSimpleTypeDefinition::getBaseType() 
+XSTypeDefinition *XSSimpleTypeDefinition::getBaseType()
 {
     return fBaseType;
 }
@@ -200,7 +200,7 @@ bool XSSimpleTypeDefinition::derivedFromType(const XSTypeDefinition * const ance
     if (!ancestorType)
         return false;
 
-    XSTypeDefinition* type;   
+    XSTypeDefinition* type;
 
     if (ancestorType->getTypeCategory() == XSTypeDefinition::COMPLEX_TYPE)
     {

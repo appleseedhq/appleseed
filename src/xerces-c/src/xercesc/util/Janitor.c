@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: Janitor.c 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: Janitor.c 669844 2008-06-20 10:11:44Z borisk $
  */
 
 
@@ -187,7 +187,9 @@ ArrayJanitor<T>::reset(T* p, MemoryManager* const manager)
     fMemoryManager = manager;
 }
 
-
+//
+// JanitorMemFunCall
+//
 
 template <class T>
 JanitorMemFunCall<T>::JanitorMemFunCall(
@@ -198,27 +200,49 @@ JanitorMemFunCall<T>::JanitorMemFunCall(
 {
 }
 
-
 template <class T>
 JanitorMemFunCall<T>::~JanitorMemFunCall()
 {
-    if (fObject != 0 && fToCall != 0)
-    {
-        (fObject->*fToCall)();
-    }
+  reset ();
 }
 
-
-// ---------------------------------------------------------------------------
-//  Janitor: Public, non-virtual methods
-// ---------------------------------------------------------------------------
-template <class T> void
-JanitorMemFunCall<T>::release()
+template <class T>
+T& JanitorMemFunCall<T>::operator*() const
 {
-    fObject = 0;
-    fToCall = 0;
+  return *fObject;
 }
 
+
+template <class T>
+T* JanitorMemFunCall<T>::operator->() const
+{
+  return fObject;
+}
+
+
+template <class T>
+T* JanitorMemFunCall<T>::get() const
+{
+  return fObject;
+}
+
+
+template <class T>
+T* JanitorMemFunCall<T>::release()
+{
+  T* p = fObject;
+  fObject = 0;
+  return p;
+}
+
+template <class T>
+void JanitorMemFunCall<T>::reset(T* p)
+{
+  if (fObject != 0 && fToCall != 0)
+    (fObject->*fToCall)();
+
+  fObject = p;
+}
 
 
 XERCES_CPP_NAMESPACE_END

@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XMLUniCharacter.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLUniCharacter.hpp 671870 2008-06-26 12:19:31Z amassari $
  */
 
-#if !defined(XMLUNICHARACTER_HPP)
-#define XMLUNICHARACTER_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XMLUNICHARACTER_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLUNICHARACTER_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 
@@ -35,7 +35,7 @@ public:
     // -----------------------------------------------------------------------
     //  Public Constants
     // -----------------------------------------------------------------------
-    // Unicode chara types
+    // Unicode char types
     enum {
         UNASSIGNED              = 0,
         UPPERCASE_LETTER        = 1,
@@ -59,17 +59,17 @@ public:
         DASH_PUNCTUATION        = 19,
         START_PUNCTUATION       = 20,
         END_PUNCTUATION         = 21,
-		CONNECTOR_PUNCTUATION   = 22,
+        CONNECTOR_PUNCTUATION   = 22,
         OTHER_PUNCTUATION       = 23,
         MATH_SYMBOL             = 24,
         CURRENCY_SYMBOL         = 25,
         MODIFIER_SYMBOL         = 26,
         OTHER_SYMBOL            = 27,
-		INITIAL_PUNCTUATION     = 28,
-		FINAL_PUNCTUATION       = 29
-	};
+        INITIAL_PUNCTUATION     = 28,
+        FINAL_PUNCTUATION       = 29
+    };
 
-	/** destructor */
+    /** destructor */
     ~XMLUniCharacter() {}
 
     /* Static methods for getting unicode character type */
@@ -81,7 +81,7 @@ public:
       * @param ch The character we want to get its unicode type
       */
     static unsigned short getType(const XMLCh ch);
-	//@}
+    //@}
 
 private :
 

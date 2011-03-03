@@ -1,6 +1,3 @@
-#ifndef DOMDocumentImpl_HEADER_GUARD_
-#define DOMDocumentImpl_HEADER_GUARD_
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -8,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,8 +16,11 @@
  */
 
 /*
- * $Id: DOMDocumentImpl.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMDocumentImpl.hpp 679340 2008-07-24 10:28:29Z borisk $
  */
+
+#if !defined(XERCESC_INCLUDE_GUARD_DOMDOCUMENTIMPL_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMDOCUMENTIMPL_HPP
 
 //
 //  This file is part of the internal implementation of the C++ XML DOM.
@@ -36,9 +36,12 @@
 #include <xercesc/util/RefHash2KeysTableOf.hpp>
 #include <xercesc/util/StringPool.hpp>
 #include <xercesc/util/KeyRefPair.hpp>
+#include <xercesc/util/XMLChar.hpp>
 #include <xercesc/dom/DOMDocument.hpp>
 #include <xercesc/dom/DOMUserDataHandler.hpp>
+#include <xercesc/dom/DOMMemoryManager.hpp>
 #include "DOMNodeImpl.hpp"
+#include "DOMStringPool.hpp"
 #include "DOMParentNode.hpp"
 #include "DOMDeepNodeListPool.hpp"
 
@@ -66,7 +69,6 @@ class DOMNodeFilterImpl;
 class DOMImplementation;
 class DOMNodeIDMap;
 class DOMRangeImpl;
-class DOMStringPool;
 class DOMBuffer;
 class MemoryManager;
 class XPathNSResolver;
@@ -77,28 +79,8 @@ typedef RefVectorOf<DOMNodeIteratorImpl>     NodeIterators;
 typedef KeyRefPair<void, DOMUserDataHandler> DOMUserDataRecord;
 typedef RefStackOf<DOMNode>               DOMNodePtr;
 
-class CDOM_EXPORT DOMDocumentImpl: public XMemory, public DOMDocument {
+class CDOM_EXPORT DOMDocumentImpl: public XMemory, public DOMMemoryManager, public DOMDocument {
 public:
-    // -----------------------------------------------------------------------
-    //  data types
-    // -----------------------------------------------------------------------
-    enum NodeObjectType {
-        ATTR_OBJECT                   = 0,
-        ATTR_NS_OBJECT                = 1,
-        CDATA_SECTION_OBJECT          = 2,
-        COMMENT_OBJECT                = 3,
-        DOCUMENT_FRAGMENT_OBJECT      = 4,
-        DOCUMENT_TYPE_OBJECT          = 5,
-        ELEMENT_OBJECT                = 6,
-        ELEMENT_NS_OBJECT             = 7,
-        ENTITY_OBJECT                 = 8,
-        ENTITY_REFERENCE_OBJECT       = 9,
-        NOTATION_OBJECT               = 10,
-        PROCESSING_INSTRUCTION_OBJECT = 11,
-        TEXT_OBJECT                   = 12
-    };
-
-
     // -----------------------------------------------------------------------
     //  data
     // -----------------------------------------------------------------------
@@ -107,19 +89,22 @@ public:
     DOMNodeIDMap*         fNodeIDMap;     // for use by GetElementsById().
 
 public:
-    DOMDocumentImpl(MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
+    DOMDocumentImpl(DOMImplementation* domImpl, MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
     DOMDocumentImpl(const XMLCh*     namespaceURI,     //DOM Level 2
                     const XMLCh*     qualifiedName,
                     DOMDocumentType* doctype,
+                    DOMImplementation* domImpl,
                     MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
     virtual ~DOMDocumentImpl();
 
     void                         setDocumentType(DOMDocumentType *doctype);
 
-    // Add all functions that are pure virutal in DOMNODE
+public:
+    // Add all functions that are pure virtual in DOMNODE
     DOMNODE_FUNCTIONS;
 
-    // Add all functions that are pure virutal in DOMDocument
+public:
+    // Add all functions that are pure virtual in DOMDocument
     virtual DOMAttr*             createAttribute(const XMLCh *name);
     virtual DOMCDATASection*     createCDATASection(const XMLCh *data);
     virtual DOMComment*          createComment(const XMLCh *data);
@@ -141,11 +126,11 @@ public:
     virtual DOMImplementation*   getImplementation() const;
     bool                         isXMLName(const XMLCh * s);
     virtual DOMNodeIterator*     createNodeIterator(DOMNode *root,
-                                                    unsigned long whatToShow,
+                                                    DOMNodeFilter::ShowType whatToShow,
                                                     DOMNodeFilter* filter,
                                                     bool entityReferenceExpansion);
     virtual DOMTreeWalker*       createTreeWalker(DOMNode *root,
-                                                  unsigned long whatToShow,
+                                                  DOMNodeFilter::ShowType whatToShow,
                                                   DOMNodeFilter* filter,
                                                   bool entityReferenceExpansion);
 
@@ -156,15 +141,26 @@ public:
     virtual void                 removeRange(DOMRangeImpl* range); //non-standard api
     virtual void                 removeNodeIterator(DOMNodeIteratorImpl* nodeIterator); //non-standard api
 
-    virtual const DOMXPathExpression*    createExpression(const XMLCh *expression, const DOMXPathNSResolver *resolver);
-    virtual const DOMXPathNSResolver*    createNSResolver(DOMNode *nodeResolver);
-    virtual void* evaluate(const XMLCh *expression, DOMNode *contextNode, const DOMXPathNSResolver *resolver, 
-                           unsigned short type, void* result);
+    virtual DOMXPathExpression* createExpression(const XMLCh *expression,
+                                                 const DOMXPathNSResolver *resolver);
+    virtual DOMXPathNSResolver* createNSResolver(const DOMNode *nodeResolver);
+    virtual DOMXPathResult* evaluate(const XMLCh *expression,
+                                     const DOMNode *contextNode,
+                                     const DOMXPathNSResolver *resolver,
+                                     DOMXPathResult::ResultType type,
+                                     DOMXPathResult* result);
 
 
     // Extension to be called by the Parser
     DOMEntityReference*  createEntityReferenceByParser(const XMLCh * name);
 
+    // Add all functions that are pure virtual in DOMMemoryManager
+    virtual XMLSize_t getMemoryAllocationBlockSize() const;
+    virtual void setMemoryAllocationBlockSize(XMLSize_t size);
+    virtual void* allocate(XMLSize_t amount);
+    virtual void* allocate(XMLSize_t amount, DOMMemoryManager::NodeObjectType type);
+    virtual void release(DOMNode* object, DOMMemoryManager::NodeObjectType type);
+    virtual XMLCh* cloneString(const XMLCh *src);
 
     //
     // Functions to keep track of document mutations, so that node list chached
@@ -203,13 +199,13 @@ public:
     }
 
     //Introduced in DOM Level 2
-    virtual DOMNode*             importNode(DOMNode *source, bool deep);
+    virtual DOMNode*             importNode(const DOMNode *source, bool deep);
     virtual DOMElement*          createElementNS(const XMLCh *namespaceURI,
                                                  const XMLCh *qualifiedName);
     virtual DOMElement*          createElementNS(const XMLCh *namespaceURI,
                                                  const XMLCh *qualifiedName,
-                                                 const XMLSSize_t lineNo,
-                                                 const XMLSSize_t columnNo);
+                                                 const XMLFileLoc lineNo,
+                                                 const XMLFileLoc columnNo);
     virtual DOMAttr*             createAttributeNS(const XMLCh *namespaceURI,
                                                    const XMLCh *qualifiedName);
     virtual DOMNodeList*         getElementsByTagNameNS(const XMLCh *namespaceURI,
@@ -217,23 +213,22 @@ public:
     virtual DOMElement*          getElementById(const XMLCh *elementId) const;
 
     //Introduced in DOM Level 3
-    virtual const XMLCh*         getActualEncoding() const;
-    virtual void                 setActualEncoding(const XMLCh* actualEncoding);
-    virtual const XMLCh*         getEncoding() const;
-    virtual void                 setEncoding(const XMLCh* encoding);
-    virtual bool                 getStandalone() const;
-    virtual void                 setStandalone(bool standalone);
-    virtual const XMLCh*         getVersion() const;
-    virtual void                 setVersion(const XMLCh* version);
+    virtual const XMLCh*         getInputEncoding() const;
+    virtual const XMLCh*         getXmlEncoding() const;
+    virtual bool                 getXmlStandalone() const;
+    virtual void                 setXmlStandalone(bool standalone);
+    virtual const XMLCh*         getXmlVersion() const;
+    virtual void                 setXmlVersion(const XMLCh* version);
     virtual const XMLCh*         getDocumentURI() const;
     virtual void                 setDocumentURI(const XMLCh* documentURI);
     virtual bool                 getStrictErrorChecking() const;
     virtual void                 setStrictErrorChecking(bool strictErrorChecking);
     virtual DOMNode*             adoptNode(DOMNode* source);
     virtual void                 normalizeDocument();
-    virtual DOMConfiguration*    getDOMConfiguration() const;
-    virtual void                 setDOMConfiguration(DOMConfiguration *config);
+    virtual DOMConfiguration*    getDOMConfig() const;
 
+    void                         setInputEncoding(const XMLCh* actualEncoding);
+    void                         setXmlEncoding(const XMLCh* encoding);
     // helper functions to prevent storing userdata pointers on every node.
     void*                        setUserData(DOMNodeImpl* n,
                                             const XMLCh* key,
@@ -244,7 +239,7 @@ public:
     void                         callUserDataHandlers(const DOMNodeImpl* n,
                                                       DOMUserDataHandler::DOMOperationType operation,
                                                       const DOMNode* src,
-                                                      const DOMNode* dst) const;
+                                                      DOMNode* dst) const;
     void                         transferUserData(DOMNodeImpl* n1, DOMNodeImpl* n2);
 
     DOMNode*                     renameNode(DOMNode* n,
@@ -264,15 +259,12 @@ public:
     //                               a document, and is not recovered until the
     //                               document itself is deleted.
     //
-    void*                        allocate(size_t amount);
-    void*                        allocate(size_t amount, NodeObjectType type);
-    XMLCh*                       cloneString(const XMLCh *src);
-    const XMLCh*                 getPooledString(const XMLCh *src);
+    const XMLCh*                 getPooledString(const XMLCh*);
+    const XMLCh*                 getPooledNString(const XMLCh*, XMLSize_t);
     void                         deleteHeap();
-    void                         release(DOMNode* object, NodeObjectType type);
     void                         releaseDocNotifyUserData(DOMNode* object);
     void                         releaseBuffer(DOMBuffer* buffer);
-    DOMBuffer*                   popBuffer();
+    DOMBuffer*                   popBuffer(XMLSize_t nMinSize);
     MemoryManager*               getMemoryManager() const;
 
     // Factory methods for getting/creating node lists.
@@ -284,30 +276,31 @@ public:
                                                  const XMLCh *namespaceURI,
                                                  const XMLCh *localName);
 
-private:
+protected:
     //Internal helper functions
-    virtual DOMNode*             importNode(DOMNode *source, bool deep, bool cloningNode);
+    virtual DOMNode*             importNode(const DOMNode *source, bool deep, bool cloningNode);
 
+private:
     // -----------------------------------------------------------------------
     // Unimplemented constructors and operators
     // -----------------------------------------------------------------------
     DOMDocumentImpl(const DOMDocumentImpl &);
     DOMDocumentImpl & operator = (const DOMDocumentImpl &);
 
-private:
+protected:
     // -----------------------------------------------------------------------
     //  data
     // -----------------------------------------------------------------------
     // New data introduced in DOM Level 3
-    const XMLCh*          fActualEncoding;
-    const XMLCh*          fEncoding;
-    bool                  fStandalone;
-    const XMLCh*          fVersion;
+    const XMLCh*          fInputEncoding;
+    const XMLCh*          fXmlEncoding;
+    bool                  fXmlStandalone;
+    const XMLCh*          fXmlVersion;
     const XMLCh*          fDocumentURI;
     DOMConfiguration*     fDOMConfiguration;
-    
+
     XMLStringPool         fUserDataTableKeys;
-    RefHash2KeysTableOf<DOMUserDataRecord>* fUserDataTable;
+    RefHash2KeysTableOf<DOMUserDataRecord, PtrHasher>* fUserDataTable;
 
 
     // Per-Document heap Variables.
@@ -343,11 +336,15 @@ private:
     // Other data
     DOMDocumentType*      fDocType;
     DOMElement*           fDocElement;
-    DOMStringPool*        fNamePool;
+
+    DOMStringPoolEntry**  fNameTable;
+    XMLSize_t             fNameTableSize;
+
     DOMNormalizer*        fNormalizer;
     Ranges*               fRanges;
     NodeIterators*        fNodeIterators;
     MemoryManager*        fMemoryManager;   // configurable memory manager
+    DOMImplementation*    fDOMImplementation;
 
     int                   fChanges;
     bool                  errorChecking;    // Bypass error checking.
@@ -359,6 +356,91 @@ inline MemoryManager* DOMDocumentImpl::getMemoryManager() const
     return fMemoryManager;
 }
 
+inline const XMLCh*  DOMDocumentImpl::getPooledString(const XMLCh *in)
+{
+  if (in == 0)
+    return 0;
+
+  DOMStringPoolEntry    **pspe;
+  DOMStringPoolEntry    *spe;
+
+  XMLSize_t inHash = XMLString::hash(in, fNameTableSize);
+  pspe = &fNameTable[inHash];
+  while (*pspe != 0)
+  {
+    if (XMLString::equals((*pspe)->fString, in))
+      return (*pspe)->fString;
+    pspe = &((*pspe)->fNext);
+  }
+
+  // This string hasn't been seen before.  Add it to the pool.
+  //
+
+  // Compute size to allocate.  Note that there's 1 char of string
+  // declared in the struct, so we don't need to add one again to
+  // account for the trailing null.
+  //
+  XMLSize_t sizeToAllocate = sizeof(DOMStringPoolEntry) + XMLString::stringLen(in)*sizeof(XMLCh);
+  *pspe = spe = (DOMStringPoolEntry *)allocate(sizeToAllocate);
+  spe->fNext = 0;
+  XMLString::copyString((XMLCh*)spe->fString, in);
+
+  return spe->fString;
+}
+
+inline const XMLCh* DOMDocumentImpl::
+getPooledNString(const XMLCh *in, XMLSize_t n)
+{
+  if (in == 0)
+    return 0;
+
+  DOMStringPoolEntry    **pspe;
+  DOMStringPoolEntry    *spe;
+
+  XMLSize_t inHash = XMLString::hashN(in, n, fNameTableSize);
+  pspe = &fNameTable[inHash];
+  while (*pspe != 0)
+  {
+    if (XMLString::equalsN((*pspe)->fString, in, n))
+      return (*pspe)->fString;
+    pspe = &((*pspe)->fNext);
+  }
+
+  // This string hasn't been seen before.  Add it to the pool.
+  //
+
+  // Compute size to allocate.  Note that there's 1 char of string
+  // declared in the struct, so we don't need to add one again to
+  // account for the trailing null.
+  //
+  XMLSize_t sizeToAllocate = sizeof(DOMStringPoolEntry) + n*sizeof(XMLCh);
+  *pspe = spe = (DOMStringPoolEntry *)allocate(sizeToAllocate);
+  spe->fNext = 0;
+  XMLString::copyNString((XMLCh*)spe->fString, in, n);
+
+  return spe->fString;
+}
+
+inline int DOMDocumentImpl::indexofQualifiedName(const XMLCh* name)
+{
+  int i = 0;
+  int colon = -1;
+  int colon_count = 0;
+  for (; *name != 0; ++i, ++name)
+  {
+    if (*name == chColon)
+    {
+      ++colon_count;
+      colon = i;
+    }
+  }
+
+  if (i == 0 || colon == 0 || colon == (i - 1) || colon_count > 1)
+    return -1;
+
+  return colon != -1 ? colon : 0;
+}
+
 XERCES_CPP_NAMESPACE_END
 
 // ---------------------------------------------------------------------------
@@ -367,17 +449,33 @@ XERCES_CPP_NAMESPACE_END
 //                 the heap owned by a document.
 //
 // ---------------------------------------------------------------------------
-inline void * operator new(size_t amt, XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc, XERCES_CPP_NAMESPACE_QUALIFIER DOMDocumentImpl::NodeObjectType type)
+inline void * operator new(size_t amt, XERCES_CPP_NAMESPACE_QUALIFIER DOMDocumentImpl *doc, XERCES_CPP_NAMESPACE_QUALIFIER DOMMemoryManager::NodeObjectType type)
 {
-    // revist.  Probably should be a checked cast.
-    void *p = ((XERCES_CPP_NAMESPACE_QUALIFIER DOMDocumentImpl *)doc)->allocate(amt, type);
+    void *p = doc->allocate(amt, type);
+    return p;
+}
+
+inline void * operator new(size_t amt, XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc, XERCES_CPP_NAMESPACE_QUALIFIER DOMMemoryManager::NodeObjectType type)
+{
+    XERCES_CPP_NAMESPACE_QUALIFIER DOMMemoryManager* mgr=(XERCES_CPP_NAMESPACE_QUALIFIER DOMMemoryManager*)doc->getFeature(XERCES_CPP_NAMESPACE_QUALIFIER XMLUni::fgXercescInterfaceDOMMemoryManager,0);
+    void* p=0;
+    if(mgr)
+        p = mgr->allocate(amt, type);
+    return p;
+}
+
+inline void * operator new(size_t amt, XERCES_CPP_NAMESPACE_QUALIFIER DOMDocumentImpl *doc)
+{
+    void* p = doc->allocate(amt);
     return p;
 }
 
 inline void * operator new(size_t amt, XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc)
 {
-    // revist.  Probably should be a checked cast.
-    void *p = ((XERCES_CPP_NAMESPACE_QUALIFIER DOMDocumentImpl *)doc)->allocate(amt);
+    XERCES_CPP_NAMESPACE_QUALIFIER DOMMemoryManager* mgr=(XERCES_CPP_NAMESPACE_QUALIFIER DOMMemoryManager*)doc->getFeature(XERCES_CPP_NAMESPACE_QUALIFIER XMLUni::fgXercescInterfaceDOMMemoryManager,0);
+    void* p=0;
+    if(mgr)
+        p = mgr->allocate(amt);
     return p;
 }
 
@@ -386,12 +484,21 @@ inline void * operator new(size_t amt, XERCES_CPP_NAMESPACE_QUALIFIER DOMDocumen
 //  Bypass compiler warning:
 //    no matching operator delete found; memory will not be freed if initialization throws an exception
 // ---------------------------------------------------------------------------
-#if _MSC_VER >= 1200 /* VC++ 6.0 */
-inline void operator delete(void* /*ptr*/, XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument * /*doc*/)
+#if !defined(XERCES_NO_MATCHING_DELETE_OPERATOR)
+inline void operator delete(void* /*ptr*/, XERCES_CPP_NAMESPACE_QUALIFIER DOMDocumentImpl * /*doc*/, XERCES_CPP_NAMESPACE_QUALIFIER DOMMemoryManager::NodeObjectType /*type*/)
 {
     return;
 }
-inline void operator delete(void* /*ptr*/, XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument * /*doc*/, XERCES_CPP_NAMESPACE_QUALIFIER DOMDocumentImpl::NodeObjectType /*type*/)
+inline void operator delete(void* /*ptr*/, XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument * /*doc*/, XERCES_CPP_NAMESPACE_QUALIFIER DOMMemoryManager::NodeObjectType /*type*/)
+{
+    return;
+}
+
+inline void operator delete(void* /*ptr*/, XERCES_CPP_NAMESPACE_QUALIFIER DOMDocumentImpl * /*doc*/)
+{
+    return;
+}
+inline void operator delete(void* /*ptr*/, XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument * /*doc*/)
 {
     return;
 }

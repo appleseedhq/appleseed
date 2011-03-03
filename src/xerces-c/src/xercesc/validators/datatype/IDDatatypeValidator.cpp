@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: IDDatatypeValidator.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: IDDatatypeValidator.cpp 471747 2006-11-06 14:31:56Z amassari $
  */
 
 // ---------------------------------------------------------------------------
@@ -24,6 +24,7 @@
 // ---------------------------------------------------------------------------
 #include <xercesc/validators/datatype/IDDatatypeValidator.hpp>
 #include <xercesc/validators/datatype/InvalidDatatypeValueException.hpp>
+#include <xercesc/util/XMLChar.hpp>
 
 XERCES_CPP_NAMESPACE_BEGIN
 
@@ -94,7 +95,7 @@ void IDDatatypeValidator::checkValueSpace(const XMLCh* const content
     //
     // 3.3.8 check must: "NCName"
     //
-    if ( !XMLString::isValidNCName(content))
+    if ( !XMLChar1_0::isValidNCName(content, XMLString::stringLen(content)) )
     {
         ThrowXMLwithMemMgr1(InvalidDatatypeValueException
                 , XMLExcepts::VALUE_Invalid_NCName

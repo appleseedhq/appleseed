@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: IDREFDatatypeValidator.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: IDREFDatatypeValidator.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-#if !defined(IDREF_DATATYPEVALIDATOR_HPP)
-#define IDREF_DATATYPEVALIDATOR_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_IDREF_DATATYPEVALIDATOR_HPP)
+#define XERCESC_INCLUDE_GUARD_IDREF_DATATYPEVALIDATOR_HPP
 
 #include <xercesc/validators/datatype/StringDatatypeValidator.hpp>
 #include <xercesc/framework/XMLRefInfo.hpp>
@@ -89,9 +89,6 @@ public:
         , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
     );
 
-    //deprecated
-    inline void setIDRefList(RefHashTableOf<XMLRefInfo>* fIDRefList);
-
     /***
      * Support for Serialization/De-serialization
      ***/
@@ -128,13 +125,6 @@ private:
     // -----------------------------------------------------------------------
 
 };
-
-// -----------------------------------------------------------------------
-// Validation methods
-// -----------------------------------------------------------------------
-inline void IDREFDatatypeValidator::setIDRefList(RefHashTableOf<XMLRefInfo>* )
-{
-}
 
 XERCES_CPP_NAMESPACE_END
 

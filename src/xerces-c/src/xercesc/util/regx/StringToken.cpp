@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: StringToken.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: StringToken.cpp 678879 2008-07-22 20:05:05Z amassari $
  */
 
 // ---------------------------------------------------------------------------
@@ -29,11 +29,11 @@ XERCES_CPP_NAMESPACE_BEGIN
 // ---------------------------------------------------------------------------
 //  Token: Constructors and Destructors
 // ---------------------------------------------------------------------------
-StringToken::StringToken(const unsigned short tokType,
+StringToken::StringToken(const Token::tokType tkType,
                          const XMLCh* const literal,
                          const int refNo,
                          MemoryManager* const manager)
-    : Token(tokType, manager)
+    : Token(tkType, manager)
     , fRefNo(refNo)
     , fString(XMLString::replicate(literal, manager))    
     , fMemoryManager(manager)
@@ -44,11 +44,11 @@ StringToken::StringToken(const unsigned short tokType,
 
 StringToken::~StringToken() {
 
-	fMemoryManager->deallocate(fString);//delete [] fString;
+    fMemoryManager->deallocate(fString);//delete [] fString;
 }
 
 XERCES_CPP_NAMESPACE_END
 
 /**
-  *	End of file StringToken.cpp
+  *    End of file StringToken.cpp
   */

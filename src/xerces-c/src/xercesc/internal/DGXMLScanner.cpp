@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DGXMLScanner.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DGXMLScanner.cpp 833045 2009-11-05 13:21:27Z borisk $
  */
 
 
@@ -42,7 +42,6 @@
 #include <xercesc/validators/DTD/DTDValidator.hpp>
 #include <xercesc/util/OutOfMemoryException.hpp>
 #include <xercesc/util/XMLResourceIdentifier.hpp>
-#include <xercesc/util/HashPtr.hpp>
 
 XERCES_CPP_NAMESPACE_BEGIN
 
@@ -105,7 +104,7 @@ DGXMLScanner::DGXMLScanner( XMLDocumentHandler* const docHandler
     CleanupType cleanup(this, &DGXMLScanner::cleanUp);
 
     try
-    {	
+    {
         commonInit();
     }
     catch(const OutOfMemoryException&)
@@ -225,7 +224,6 @@ void DGXMLScanner::scanDocument(const InputSource& src)
                 (
                     XMLErrs::XMLException_Warning
                     , excToCatch.getCode()
-                    , excToCatch.getType()
                     , excToCatch.getMessage()
                 );
             else if (excToCatch.getErrorType() >= XMLErrorReporter::ErrType_Fatal)
@@ -233,7 +231,6 @@ void DGXMLScanner::scanDocument(const InputSource& src)
                 (
                     XMLErrs::XMLException_Fatal
                     , excToCatch.getCode()
-                    , excToCatch.getType()
                     , excToCatch.getMessage()
                 );
             else
@@ -241,7 +238,6 @@ void DGXMLScanner::scanDocument(const InputSource& src)
                 (
                     XMLErrs::XMLException_Error
                     , excToCatch.getCode()
-                    , excToCatch.getType()
                     , excToCatch.getMessage()
                 );
         }
@@ -274,7 +270,7 @@ bool DGXMLScanner::scanNext(XMLPScanToken& token)
         ThrowXMLwithMemMgr(RuntimeException, XMLExcepts::Scan_BadPScanToken, fMemoryManager);
 
     // Find the next token and remember the reader id
-    unsigned int orgReader;
+    XMLSize_t orgReader;
     XMLTokens curToken;
 
     ReaderMgrResetType  resetReaderMgr(&fReaderMgr, &ReaderMgr::reset);
@@ -345,7 +341,10 @@ bool DGXMLScanner::scanNext(XMLPScanToken& token)
                     break;
 
                 case Token_StartTag :
-                    scanStartTag(gotData);
+                    if (fDoNamespaces)
+                        scanStartTagNS(gotData);
+                    else
+                        scanStartTag(gotData);
                     break;
 
                 default :
@@ -405,7 +404,6 @@ bool DGXMLScanner::scanNext(XMLPScanToken& token)
                 (
                     XMLErrs::XMLException_Warning
                     , excToCatch.getCode()
-                    , excToCatch.getType()
                     , excToCatch.getMessage()
                 );
             else if (excToCatch.getErrorType() >= XMLErrorReporter::ErrType_Fatal)
@@ -413,7 +411,6 @@ bool DGXMLScanner::scanNext(XMLPScanToken& token)
                 (
                     XMLErrs::XMLException_Fatal
                     , excToCatch.getCode()
-                    , excToCatch.getType()
                     , excToCatch.getMessage()
                 );
             else
@@ -421,7 +418,6 @@ bool DGXMLScanner::scanNext(XMLPScanToken& token)
                 (
                     XMLErrs::XMLException_Error
                     , excToCatch.getCode()
-                    , excToCatch.getType()
                     , excToCatch.getMessage()
                 );
         }
@@ -482,7 +478,7 @@ bool DGXMLScanner::scanContent()
                 //  Sense what the next top level token is. According to what
                 //  this tells us, we will call something to handle that kind
                 //  of thing.
-                unsigned int orgReader;
+                XMLSize_t orgReader;
                 const XMLTokens curToken = senseNextToken(orgReader);
 
                 //  Handle character data and end of file specially. Char data
@@ -541,7 +537,10 @@ bool DGXMLScanner::scanContent()
                         break;
 
                     case Token_StartTag :
-                        scanStartTag(gotData);
+                        if (fDoNamespaces)
+                            scanStartTagNS(gotData);
+                        else
+                            scanStartTag(gotData);
                         break;
 
                     default :
@@ -606,7 +605,7 @@ void DGXMLScanner::scanEndTag(bool& gotData)
     const bool isRoot = fElemStack.isEmpty();
 
     // Make sure that its the end of the element that we expect
-    if (!fReaderMgr.skippedString(tempElement->getFullName()))
+    if (!fReaderMgr.skippedStringLong(tempElement->getFullName()))
     {
         emitError
         (
@@ -641,8 +640,8 @@ void DGXMLScanner::scanEndTag(bool& gotData)
 
        //
        // XML1.0-3rd
-       // Validity Constraint: 
-       // The declaration matches EMPTY and the element has no content (not even 
+       // Validity Constraint:
+       // The declaration matches EMPTY and the element has no content (not even
        // entity references, comments, PIs or white space).
        //
        if ( (topElem->fCommentOrPISeen)               &&
@@ -657,23 +656,23 @@ void DGXMLScanner::scanEndTag(bool& gotData)
 
        //
        // XML1.0-3rd
-       // Validity Constraint: 
-       // 
-       // The declaration matches children and the sequence of child elements 
-       // belongs to the language generated by the regular expression in the 
-       // content model, with optional white space, comments and PIs 
-       // (i.e. markup matching production [27] Misc) between the start-tag and 
-       // the first child element, between child elements, or between the last 
-       // child element and the end-tag. 
+       // Validity Constraint:
        //
-       // Note that 
-       //    a CDATA section containing only white space or 
-       //    a reference to an entity whose replacement text is character references 
-       //       expanding to white space do not match the nonterminal S, and hence 
+       // The declaration matches children and the sequence of child elements
+       // belongs to the language generated by the regular expression in the
+       // content model, with optional white space, comments and PIs
+       // (i.e. markup matching production [27] Misc) between the start-tag and
+       // the first child element, between child elements, or between the last
+       // child element and the end-tag.
+       //
+       // Note that
+       //    a CDATA section containing only white space or
+       //    a reference to an entity whose replacement text is character references
+       //       expanding to white space do not match the nonterminal S, and hence
        //       cannot appear in these positions; however,
-       //    a reference to an internal entity with a literal value consisting 
-       //       of character references expanding to white space does match S, 
-       //       since its replacement text is the white space resulting from expansion 
+       //    a reference to an internal entity with a literal value consisting
+       //       of character references expanding to white space does match S,
+       //       since its replacement text is the white space resulting from expansion
        //       of the character references.
        //
        if ( (topElem->fReferenceEscaped)               &&
@@ -686,14 +685,16 @@ void DGXMLScanner::scanEndTag(bool& gotData)
                );
        }
 
-        int res = fValidator->checkContent
+        XMLSize_t failure;
+        bool res = fValidator->checkContent
         (
             topElem->fThisElement
             , topElem->fChildren
             , topElem->fChildCount
+            , &failure
         );
 
-        if (res >= 0)
+        if (!res)
         {
             //  One of the elements is not valid for the content. NOTE that
             //  if no children were provided but the content model requires
@@ -708,7 +709,7 @@ void DGXMLScanner::scanEndTag(bool& gotData)
                     , topElem->fThisElement->getFormattedContentModel()
                 );
             }
-            else if ((unsigned int)res >= topElem->fChildCount)
+            else if (failure >= topElem->fChildCount)
             {
                 fValidator->emitError
                 (
@@ -721,7 +722,7 @@ void DGXMLScanner::scanEndTag(bool& gotData)
                 fValidator->emitError
                 (
                     XMLValid::ElementNotValidForContent
-                    , topElem->fChildren[res]->getRawName()
+                    , topElem->fChildren[failure]->getRawName()
                     , topElem->fThisElement->getFormattedContentModel()
                 );
             }
@@ -759,7 +760,9 @@ void DGXMLScanner::scanDocTypeDecl()
         fDocTypeHandler->resetDocType();
 
     // There must be some space after DOCTYPE
-    if (!fReaderMgr.skipPastSpaces())
+    bool skippedSomething;
+    fReaderMgr.skipPastSpaces(skippedSomething);
+    if (!skippedSomething)
     {
         emitError(XMLErrs::ExpectedWhitespace);
 
@@ -805,19 +808,16 @@ void DGXMLScanner::scanDocTypeDecl()
         , fEmptyNamespaceId
         , DTDElementDecl::Any
         , rootDeclMgr
-    ); 
+    );
 
-    Janitor<DTDElementDecl> rootDeclJanitor(rootDecl);    
+    Janitor<DTDElementDecl> rootDeclJanitor(rootDecl);
     rootDecl->setCreateReason(DTDElementDecl::AsRootElem);
     rootDecl->setExternalElemDeclaration(true);
-    if(!fUseCachedGrammar) 
+    if(!fUseCachedGrammar)
     {
-        // this will break getRootElemId on DTDGrammar when
-        // cached grammars are in use, but 
-        // why would one use this anyway???
-        ((DTDGrammar*)fGrammar)->setRootElemId(fGrammar->putElemDecl(rootDecl));
+        fGrammar->putElemDecl(rootDecl);
         rootDeclJanitor.release();
-    } else 
+    } else
     {
         // put this in the undeclared pool so it gets deleted...
         XMLElementDecl* elemDecl = fDTDElemNonDeclPool->getByKey(bbRootName.getRawBuffer());
@@ -1009,7 +1009,8 @@ void DGXMLScanner::scanDocTypeDecl()
                             , XMLReader::RefFrom_NonLiteral
                             , XMLReader::Type_General
                             , XMLReader::Source_External
-                            , fCalculateSrcOfs                            
+                            , fCalculateSrcOfs
+                            , fLowWaterMark
                         );
             }
             else {
@@ -1023,6 +1024,7 @@ void DGXMLScanner::scanDocTypeDecl()
                             , XMLReader::Source_External
                             , srcUsed
                             , fCalculateSrcOfs
+                            , fLowWaterMark
                             , fDisableDefaultEntityResolution
                         );
                 janSrc.reset(srcUsed);
@@ -1049,6 +1051,7 @@ void DGXMLScanner::scanDocTypeDecl()
             const XMLCh gDTDStr[] = { chLatin_D, chLatin_T, chLatin_D , chNull };
             DTDEntityDecl* declDTD = new (fMemoryManager) DTDEntityDecl(gDTDStr, false, fMemoryManager);
             declDTD->setSystemId(sysId);
+            declDTD->setIsExternal(true);
             Janitor<DTDEntityDecl> janDecl(declDTD);
 
             // Mark this one as a throw at end
@@ -1072,15 +1075,13 @@ bool DGXMLScanner::scanStartTag(bool& gotData)
     //  Get the QName. In this case, we are not doing namespaces, so we just
     //  use it as is and don't have to break it into parts.
 
-    int  colonPosition;
-    bool validName = fDoNamespaces ? fReaderMgr.getQName(fQNameBuf, &colonPosition) :
-                                     fReaderMgr.getName(fQNameBuf);
+    bool validName = fReaderMgr.getName(fQNameBuf);
     if (!validName)
     {
         if (fQNameBuf.isEmpty())
             emitError(XMLErrs::ExpectedElementName);
         else
-            emitError(XMLErrs::InvalidElementName, fQNameBuf.getRawBuffer());        
+            emitError(XMLErrs::InvalidElementName, fQNameBuf.getRawBuffer());
         fReaderMgr.skipToChar(chOpenAngle);
         return false;
     }
@@ -1098,7 +1099,7 @@ bool DGXMLScanner::scanStartTag(bool& gotData)
     //
     //  We *do not* tell him to fault in a decl if he does not find one - NG.
     bool wasAdded = false;
-    const XMLCh* qnameRawBuf = fQNameBuf.getRawBuffer(); 
+    const XMLCh* qnameRawBuf = fQNameBuf.getRawBuffer();
 
     XMLElementDecl* elemDecl = fGrammar->getElemDecl
     (
@@ -1108,14 +1109,14 @@ bool DGXMLScanner::scanStartTag(bool& gotData)
         , Grammar::TOP_LEVEL_SCOPE
     );
     // look in the undeclared pool:
-    if(!elemDecl) 
+    if(!elemDecl)
     {
         elemDecl = fDTDElemNonDeclPool->getByKey(qnameRawBuf);
     }
-    if(!elemDecl) 
+    if(!elemDecl)
     {
         wasAdded = true;
-        elemDecl = new (fMemoryManager) DTDElementDecl 
+        elemDecl = new (fMemoryManager) DTDElementDecl
         (
             qnameRawBuf
             , fEmptyNamespaceId
@@ -1167,11 +1168,6 @@ bool DGXMLScanner::scanStartTag(bool& gotData)
             //  If a DocType exists, then check if it matches the root name there.
             if (fRootElemName && !XMLString::equals(qnameRawBuf, fRootElemName))
                 fValidator->emitError(XMLValid::RootElemNotLikeDocType);
-
-            //  Some validators may also want to check the root, call the
-            //  XMLValidator::checkRootElement
-            if (fValidatorFromUser && !fValidator->checkRootElement(elemDecl->getId()))
-                fValidator->emitError(XMLValid::RootElemNotLikeDocType);
         }
     }
     else if (fValidate)
@@ -1187,8 +1183,8 @@ bool DGXMLScanner::scanStartTag(bool& gotData)
 
     //  We loop until we either see a /> or >, handling attribute/value
     //  pairs until we get there.
-    unsigned int    attCount = 0;
-    unsigned int    curAttListSize = fAttrList->size();
+    XMLSize_t    attCount = 0;
+    XMLSize_t    curAttListSize = fAttrList->size();
     wasAdded = false;
 
     fElemCount++;
@@ -1228,15 +1224,14 @@ bool DGXMLScanner::scanStartTag(bool& gotData)
         {
             //  Assume its going to be an attribute, so get a name from
             //  the input.
-    
-            validName = fDoNamespaces ? fReaderMgr.getQName(fAttNameBuf, &colonPosition) :
-                                        fReaderMgr.getName(fAttNameBuf);                
-            if (!validName)            
+
+            validName = fReaderMgr.getName(fAttNameBuf);
+            if (!validName)
             {
                 if (fAttNameBuf.isEmpty())
                     emitError(XMLErrs::ExpectedAttrName);
                 else
-                    emitError(XMLErrs::InvalidAttrName, fAttNameBuf.getRawBuffer());                 
+                    emitError(XMLErrs::InvalidAttrName, fAttNameBuf.getRawBuffer());
                 fReaderMgr.skipPastChar(chCloseAngle);
                 return false;
             }
@@ -1344,48 +1339,9 @@ bool DGXMLScanner::scanStartTag(bool& gotData)
             }
 
             curAtt->setSpecified(true);
-            if (fDoNamespaces) {
-                curAtt->set(
-                    fEmptyNamespaceId, namePtr, XMLUni::fgZeroLenString
-                    , (attDef)? attDef->getType() : XMLAttDef::CData
-                );
 
-                // each attribute has the prefix:suffix="value"
-                const XMLCh* attPrefix = curAtt->getPrefix();
-                const XMLCh* attLocalName = curAtt->getName();
-
-                if (attPrefix && *attPrefix) {
-                    if (XMLString::equals(attPrefix, XMLUni::fgXMLString)) {
-                        curAtt->setURIId(fXMLNamespaceId);
-                    }
-                    else if (XMLString::equals(attPrefix, XMLUni::fgXMLNSString)) {
-                        curAtt->setURIId(fXMLNSNamespaceId);
-                        updateNSMap(attPrefix, attLocalName, attrValue);
-                    }
-                    else {
-                        fAttrNSList->addElement(curAtt);
-                    }
-                }
-                else if (XMLString::equals(XMLUni::fgXMLNSString, attLocalName))
-                {
-                    updateNSMap(attPrefix, XMLUni::fgZeroLenString, attrValue);
-                }
-
-                // NOTE: duplicate attribute check will be done, when we map
-                //       namespaces to all attributes
-                if (attDef) {
-                    unsigned int *curCountPtr = fAttDefRegistry->get(attDef);
-                    if (!curCountPtr) {
-                        curCountPtr = getNewUIntPtr();
-                        *curCountPtr = fElemCount;
-                        fAttDefRegistry->put(attDef, curCountPtr);
-                   }
-                    else if (*curCountPtr < fElemCount) {
-                        *curCountPtr = fElemCount;
-                    }
-                }
-            }
-            else {
+            // NO NAMESPACE CODE
+            {
                 curAtt->set(
                     0, namePtr, XMLUni::fgZeroLenString, XMLUni::fgZeroLenString
                     , (attDef)?attDef->getType():XMLAttDef::CData
@@ -1403,7 +1359,7 @@ bool DGXMLScanner::scanStartTag(bool& gotData)
                         *curCountPtr = fElemCount;
                     }
                     else {
-                        emitError( 
+                        emitError(
                             XMLErrs::AttrAlreadyUsedInSTag
                             , attDef->getFullName(), elemDecl->getFullName()
                         );
@@ -1413,12 +1369,9 @@ bool DGXMLScanner::scanStartTag(bool& gotData)
                 {
                     // reset namePtr so it refers to newly-allocated memory
                     namePtr = (XMLCh *)curAtt->getQName();
-                    if (!fUndeclaredAttrRegistry->containsKey(namePtr)) {
-                        fUndeclaredAttrRegistry->put((void *)namePtr, 0);
-                    }
-                    else
+                    if (!fUndeclaredAttrRegistry->putIfNotPresent(namePtr, 0))
                     {
-                        emitError( 
+                        emitError(
                             XMLErrs::AttrAlreadyUsedInSTag
                             , namePtr, elemDecl->getFullName()
                         );
@@ -1493,10 +1446,6 @@ bool DGXMLScanner::scanStartTag(bool& gotData)
         }
     }
 
-    //  Make an initial pass through the list and find any xmlns attributes.
-    if (fDoNamespaces && attCount)
-      scanAttrListforNameSpaces(fAttrList, attCount, elemDecl);
-
     if(attCount)
     {
         // clean up after ourselves:
@@ -1519,20 +1468,11 @@ bool DGXMLScanner::scanStartTag(bool& gotData)
     unsigned int uriId = fEmptyNamespaceId;
     if (fDocHandler)
     {
-        if (fDoNamespaces)
-        {
-            uriId = resolvePrefix
-            (
-                elemDecl->getElementName()->getPrefix()
-                , ElemStack::Mode_Element
-            );
-        }
-
         fDocHandler->startElement
         (
             *elemDecl
             , uriId
-            , (fDoNamespaces) ? elemDecl->getElementName()->getPrefix() : 0
+            , 0
             , *fAttrList
             , attCount
             , isEmpty
@@ -1548,8 +1488,9 @@ bool DGXMLScanner::scanStartTag(bool& gotData)
         // If validating, then insure that its legal to have no content
         if (fValidate)
         {
-            const int res = fValidator->checkContent(elemDecl, 0, 0);
-            if (res >= 0)
+            XMLSize_t failure;
+            bool res = fValidator->checkContent(elemDecl, 0, 0, &failure);
+            if (!res)
             {
                 fValidator->emitError
                 (
@@ -1571,60 +1512,464 @@ bool DGXMLScanner::scanStartTag(bool& gotData)
     return true;
 }
 
-unsigned int
-DGXMLScanner::resolveQName(const   XMLCh* const qName
-                           ,       XMLBuffer&   prefixBuf
-                           , const short        mode
-                           ,       int&         prefixColonPos)
+
+bool DGXMLScanner::scanStartTagNS(bool& gotData)
 {
-    //  Lets split out the qName into a URI and name buffer first. The URI
-    //  can be empty.
-    prefixColonPos = XMLString::indexOf(qName, chColon);
-    if (prefixColonPos == -1)
+    //  Assume we will still have data until proven otherwise. It will only
+    //  ever be false if this is the root and its empty.
+    gotData = true;
+
+    //  Get the QName. In this case, we are not doing namespaces, so we just
+    //  use it as is and don't have to break it into parts.
+
+    int  colonPosition;
+    bool validName = fReaderMgr.getQName(fQNameBuf, &colonPosition);
+    if (!validName)
     {
-        //  Its all name with no prefix, so put the whole thing into the name
-        //  buffer. Then map the empty string to a URI, since the empty string
-        //  represents the default namespace. This will either return some
-        //  explicit URI which the default namespace is mapped to, or the
-        //  the default global namespace.
-        bool unknown = false;
-
-        prefixBuf.reset();
-        return fElemStack.mapPrefixToURI(XMLUni::fgZeroLenString, (ElemStack::MapModes) mode, unknown);
-    }
-    else
-    {
-        //  Copy the chars up to but not including the colon into the prefix
-        //  buffer.
-        prefixBuf.set(qName, prefixColonPos);
-
-        //  Watch for the special namespace prefixes. We always map these to
-        //  special URIs. 'xml' gets mapped to the official URI that its defined
-        //  to map to by the NS spec. xmlns gets mapped to a special place holder
-        //  URI that we define (so that it maps to something checkable.)
-        const XMLCh* prefixRawBuf = prefixBuf.getRawBuffer();
-        if (XMLString::equals(prefixRawBuf, XMLUni::fgXMLNSString)) {
-
-            // if this is an element, it is an error to have xmlns as prefix
-            if (mode == ElemStack::Mode_Element)
-                emitError(XMLErrs::NoXMLNSAsElementPrefix, qName);
-
-            return fXMLNSNamespaceId;
-        }
-        else if (XMLString::equals(prefixRawBuf, XMLUni::fgXMLString)) {
-            return  fXMLNamespaceId;
-        }
+        if (fQNameBuf.isEmpty())
+            emitError(XMLErrs::ExpectedElementName);
         else
+            emitError(XMLErrs::InvalidElementName, fQNameBuf.getRawBuffer());
+        fReaderMgr.skipToChar(chOpenAngle);
+        return false;
+    }
+
+    // Assume it won't be an empty tag
+    bool isEmpty = false;
+
+    // See if its the root element
+    const bool isRoot = fElemStack.isEmpty();
+
+    //  Lets try to look up the element in the validator's element decl pool
+    //  We can pass bogus values for the URI id and the base name. We know that
+    //  this can only be called if we are doing a DTD style validator and that
+    //  he will only look at the QName.
+    //
+    //  We *do not* tell him to fault in a decl if he does not find one - NG.
+    bool wasAdded = false;
+    const XMLCh* qnameRawBuf = fQNameBuf.getRawBuffer();
+
+    XMLElementDecl* elemDecl = fGrammar->getElemDecl
+    (
+        fEmptyNamespaceId
+        , 0
+        , qnameRawBuf
+        , Grammar::TOP_LEVEL_SCOPE
+    );
+    // look in the undeclared pool:
+    if(!elemDecl)
+    {
+        elemDecl = fDTDElemNonDeclPool->getByKey(qnameRawBuf);
+    }
+    if(!elemDecl)
+    {
+        wasAdded = true;
+        elemDecl = new (fMemoryManager) DTDElementDecl
+        (
+            qnameRawBuf
+            , fEmptyNamespaceId
+            , DTDElementDecl::Any
+            , fMemoryManager
+        );
+        elemDecl->setId(fDTDElemNonDeclPool->put((DTDElementDecl*)elemDecl));
+    }
+
+    if (fValidate) {
+
+        if (wasAdded)
         {
-            bool unknown = false;
-            unsigned int uriId = fElemStack.mapPrefixToURI(prefixRawBuf, (ElemStack::MapModes) mode, unknown);
+            // This is to tell the reuse Validator that this element was
+            // faulted-in, was not an element in the validator pool originally
+            elemDecl->setCreateReason(XMLElementDecl::JustFaultIn);
 
-            if (unknown)
-                emitError(XMLErrs::UnknownPrefix, prefixRawBuf);
+            fValidator->emitError
+            (
+                XMLValid::ElementNotDefined
+                , qnameRawBuf
+            );
+        }
+        // If its not marked declared, then emit an error
+        else if (!elemDecl->isDeclared())
+        {
+            fValidator->emitError
+            (
+                XMLValid::ElementNotDefined
+                , qnameRawBuf
+            );
+        }
 
-            return uriId;
+
+        fValidator->validateElement(elemDecl);
+    }
+
+    // Expand the element stack and add the new element
+    fElemStack.addLevel(elemDecl, fReaderMgr.getCurrentReaderNum());
+
+    //  If this is the first element and we are validating, check the root
+    //  element.
+    if (isRoot)
+    {
+        fRootGrammar = fGrammar;
+
+        if (fValidate)
+        {
+            //  If a DocType exists, then check if it matches the root name there.
+            if (fRootElemName && !XMLString::equals(qnameRawBuf, fRootElemName))
+                fValidator->emitError(XMLValid::RootElemNotLikeDocType);
         }
     }
+    else if (fValidate)
+    {
+        //  If the element stack is not empty, then add this element as a
+        //  child of the previous top element. If its empty, this is the root
+        //  elem and is not the child of anything.
+        fElemStack.addChild(elemDecl->getElementName(), true);
+    }
+
+    // Skip any whitespace after the name
+    fReaderMgr.skipPastSpaces();
+
+    //  We loop until we either see a /> or >, handling attribute/value
+    //  pairs until we get there.
+    XMLSize_t    attCount = 0;
+    XMLSize_t    curAttListSize = fAttrList->size();
+    wasAdded = false;
+
+    fElemCount++;
+
+    while (true)
+    {
+        // And get the next non-space character
+        XMLCh nextCh = fReaderMgr.peekNextChar();
+
+        //  If the next character is not a slash or closed angle bracket,
+        //  then it must be whitespace, since whitespace is required
+        //  between the end of the last attribute and the name of the next
+        //  one.
+        if (attCount)
+        {
+            if ((nextCh != chForwardSlash) && (nextCh != chCloseAngle))
+            {
+                if (fReaderMgr.getCurrentReader()->isWhitespace(nextCh))
+                {
+                    // Ok, skip by them and peek another char
+                    fReaderMgr.skipPastSpaces();
+                    nextCh = fReaderMgr.peekNextChar();
+                }
+                 else
+                {
+                    // Emit the error but keep on going
+                    emitError(XMLErrs::ExpectedWhitespace);
+                }
+            }
+        }
+
+        //  Ok, here we first check for any of the special case characters.
+        //  If its not one, then we do the normal case processing, which
+        //  assumes that we've hit an attribute value, Otherwise, we do all
+        //  the special case checks.
+        if (!fReaderMgr.getCurrentReader()->isSpecialStartTagChar(nextCh))
+        {
+            //  Assume its going to be an attribute, so get a name from
+            //  the input.
+
+            validName = fReaderMgr.getQName(fAttNameBuf, &colonPosition);
+            if (!validName)
+            {
+                if (fAttNameBuf.isEmpty())
+                    emitError(XMLErrs::ExpectedAttrName);
+                else
+                    emitError(XMLErrs::InvalidAttrName, fAttNameBuf.getRawBuffer());
+                fReaderMgr.skipPastChar(chCloseAngle);
+                return false;
+            }
+
+            // And next must be an equal sign
+            if (!scanEq())
+            {
+                static const XMLCh tmpList[] =
+                {
+                    chSingleQuote, chDoubleQuote, chCloseAngle
+                    , chOpenAngle, chForwardSlash, chNull
+                };
+
+                emitError(XMLErrs::ExpectedEqSign);
+
+                //  Try to sync back up by skipping forward until we either
+                //  hit something meaningful.
+                const XMLCh chFound = fReaderMgr.skipUntilInOrWS(tmpList);
+
+                if ((chFound == chCloseAngle) || (chFound == chForwardSlash))
+                {
+                    // Jump back to top for normal processing of these
+                    continue;
+                }
+                else if ((chFound == chSingleQuote)
+                      ||  (chFound == chDoubleQuote)
+                      ||  fReaderMgr.getCurrentReader()->isWhitespace(chFound))
+                {
+                    // Just fall through assuming that the value is to follow
+                }
+                else if (chFound == chOpenAngle)
+                {
+                    // Assume a malformed tag and that new one is starting
+                    emitError(XMLErrs::UnterminatedStartTag, elemDecl->getFullName());
+                    return false;
+                }
+                else
+                {
+                    // Something went really wrong
+                    return false;
+                }
+            }
+
+            //  See if this attribute is declared for this element. If we are
+            //  not validating of course it will not be at first, but we will
+            //  fault it into the pool (to avoid lots of redundant errors.)
+            XMLCh * namePtr = fAttNameBuf.getRawBuffer();
+            XMLAttDef* attDef = ((DTDElementDecl *)elemDecl)->getAttDef(namePtr);
+
+            //  Skip any whitespace before the value and then scan the att
+            //  value. This will come back normalized with entity refs and
+            //  char refs expanded.
+            fReaderMgr.skipPastSpaces();
+            if (!scanAttValue(attDef, namePtr, fAttValueBuf))
+            {
+                static const XMLCh tmpList[] =
+                {
+                    chCloseAngle, chOpenAngle, chForwardSlash, chNull
+                };
+
+                emitError(XMLErrs::ExpectedAttrValue);
+
+                //  It failed, so lets try to get synced back up. We skip
+                //  forward until we find some whitespace or one of the
+                //  chars in our list.
+                const XMLCh chFound = fReaderMgr.skipUntilInOrWS(tmpList);
+
+                if ((chFound == chCloseAngle)
+                ||  (chFound == chForwardSlash)
+                ||  fReaderMgr.getCurrentReader()->isWhitespace(chFound))
+                {
+                    //  Just fall through and process this attribute, though
+                    //  the value will be "".
+                }
+                else if (chFound == chOpenAngle)
+                {
+                    // Assume a malformed tag and that new one is starting
+                    emitError(XMLErrs::UnterminatedStartTag, elemDecl->getFullName());
+                    return false;
+                }
+                else
+                {
+                    // Something went really wrong
+                    return false;
+                }
+            }
+
+            //  Add this attribute to the attribute list that we use to
+            //  pass them to the handler. We reuse its existing elements
+            //  but expand it as required.
+            // Note that we want to this first since this will
+            // make a copy of the namePtr; we can then make use of
+            // that copy in the hashtable lookup that checks
+            // for duplicates.  This will mean we may have to update
+            // the type of the XMLAttr later.
+            XMLAttr* curAtt;
+            const XMLCh* attrValue = fAttValueBuf.getRawBuffer();
+
+            if (attCount >= curAttListSize) {
+                curAtt = new (fMemoryManager) XMLAttr(fMemoryManager);
+                fAttrList->addElement(curAtt);
+            }
+            else {
+                curAtt = fAttrList->elementAt(attCount);
+            }
+
+            curAtt->setSpecified(true);
+            // DO NAMESPACES
+            {
+                curAtt->set(
+                    fEmptyNamespaceId, namePtr, XMLUni::fgZeroLenString
+                    , (attDef)? attDef->getType() : XMLAttDef::CData
+                );
+
+                // each attribute has the prefix:suffix="value"
+                const XMLCh* attPrefix = curAtt->getPrefix();
+                const XMLCh* attLocalName = curAtt->getName();
+
+                if (attPrefix && *attPrefix) {
+                    if (XMLString::equals(attPrefix, XMLUni::fgXMLString)) {
+                        curAtt->setURIId(fXMLNamespaceId);
+                    }
+                    else if (XMLString::equals(attPrefix, XMLUni::fgXMLNSString)) {
+                        curAtt->setURIId(fXMLNSNamespaceId);
+                        updateNSMap(attPrefix, attLocalName, attrValue);
+                    }
+                    else {
+                        fAttrNSList->addElement(curAtt);
+                    }
+                }
+                else if (XMLString::equals(XMLUni::fgXMLNSString, attLocalName))
+                {
+                    updateNSMap(attPrefix, XMLUni::fgZeroLenString, attrValue);
+                }
+
+                // NOTE: duplicate attribute check will be done, when we map
+                //       namespaces to all attributes
+                if (attDef) {
+                    unsigned int *curCountPtr = fAttDefRegistry->get(attDef);
+                    if (!curCountPtr) {
+                        curCountPtr = getNewUIntPtr();
+                        *curCountPtr = fElemCount;
+                        fAttDefRegistry->put(attDef, curCountPtr);
+                   }
+                    else if (*curCountPtr < fElemCount) {
+                        *curCountPtr = fElemCount;
+                    }
+                }
+            }
+
+            if (fValidate)
+            {
+                if (attDef) {
+                    // Let the validator pass judgement on the attribute value
+                    fValidator->validateAttrValue(
+                        attDef, fAttValueBuf.getRawBuffer(), false, elemDecl
+                    );
+                }
+                else
+                {
+                    fValidator->emitError
+                    (
+                        XMLValid::AttNotDefinedForElement
+                        , fAttNameBuf.getRawBuffer(), qnameRawBuf
+                    );
+                }
+            }
+
+            // must set the newly-minted value on the XMLAttr:
+            curAtt->setValue(attrValue);
+            attCount++;
+
+            // And jump back to the top of the loop
+            continue;
+        }
+
+        //  It was some special case character so do all of the checks and
+        //  deal with it.
+        if (!nextCh)
+            ThrowXMLwithMemMgr(UnexpectedEOFException, XMLExcepts::Gen_UnexpectedEOF, fMemoryManager);
+
+        if (nextCh == chForwardSlash)
+        {
+            fReaderMgr.getNextChar();
+            isEmpty = true;
+            if (!fReaderMgr.skippedChar(chCloseAngle))
+                emitError(XMLErrs::UnterminatedStartTag, elemDecl->getFullName());
+            break;
+        }
+        else if (nextCh == chCloseAngle)
+        {
+            fReaderMgr.getNextChar();
+            break;
+        }
+        else if (nextCh == chOpenAngle)
+        {
+            //  Check for this one specially, since its going to be common
+            //  and it is kind of auto-recovering since we've already hit the
+            //  next open bracket, which is what we would have seeked to (and
+            //  skipped this whole tag.)
+            emitError(XMLErrs::UnterminatedStartTag, elemDecl->getFullName());
+            break;
+        }
+        else if ((nextCh == chSingleQuote) || (nextCh == chDoubleQuote))
+        {
+            //  Check for this one specially, which is probably a missing
+            //  attribute name, e.g. ="value". Just issue expected name
+            //  error and eat the quoted string, then jump back to the
+            //  top again.
+            emitError(XMLErrs::ExpectedAttrName);
+            fReaderMgr.getNextChar();
+            fReaderMgr.skipQuotedString(nextCh);
+            fReaderMgr.skipPastSpaces();
+            continue;
+        }
+    }
+
+    //  Make an initial pass through the list and find any xmlns attributes.
+    if (attCount)
+      scanAttrListforNameSpaces(fAttrList, attCount, elemDecl);
+
+    if(attCount)
+    {
+        // clean up after ourselves:
+        // clear the map used to detect duplicate attributes
+        fUndeclaredAttrRegistry->removeAll();
+    }
+
+    //  Now lets get the fAttrList filled in. This involves faulting in any
+    //  defaulted and fixed attributes and normalizing the values of any that
+    //  we got explicitly.
+    //
+    //  We update the attCount value with the total number of attributes, but
+    //  it goes in with the number of values we got during the raw scan of
+    //  explictly provided attrs above.
+    attCount = buildAttList(attCount, elemDecl, *fAttrList);
+
+    //  If we have a document handler, then tell it about this start tag. We
+    //  don't have any URI id to send along, so send fEmptyNamespaceId. We also do not send
+    //  any prefix since its just one big name if we are not doing namespaces.
+    if (fDocHandler)
+    {
+        unsigned int uriId = resolvePrefix
+            (
+                elemDecl->getElementName()->getPrefix()
+                , ElemStack::Mode_Element
+            );
+
+        fDocHandler->startElement
+        (
+            *elemDecl
+            , uriId
+            , elemDecl->getElementName()->getPrefix()
+            , *fAttrList
+            , attCount
+            , isEmpty
+            , isRoot
+        );
+    }
+
+    //  If empty, validate content right now if we are validating and then
+    //  pop the element stack top. Else, we have to update the current stack
+    //  top's namespace mapping elements.
+    if (isEmpty)
+    {
+        // If validating, then insure that its legal to have no content
+        if (fValidate)
+        {
+            XMLSize_t failure;
+            bool res = fValidator->checkContent(elemDecl, 0, 0, &failure);
+            if (!res)
+            {
+                fValidator->emitError
+                (
+                    XMLValid::ElementNotValidForContent
+                    , qnameRawBuf
+                    , elemDecl->getFormattedContentModel()
+                );
+            }
+        }
+
+        // Pop the element stack back off since it'll never be used now
+        fElemStack.popTop();
+
+        // If the elem stack is empty, then it was an empty root
+        if (isRoot)
+            gotData = false;
+    }
+
+    return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -1681,7 +2026,7 @@ Grammar* DGXMLScanner::loadGrammar(const   InputSource& src
             if (excToCatch.getErrorType() == XMLErrorReporter::ErrType_Warning)
                 emitError
                 (
-                    XMLErrs::DisplayErrorMessage
+                    XMLErrs::XMLException_Warning
                     , excToCatch.getCode()
                     , excToCatch.getMessage()
                 );
@@ -1690,7 +2035,6 @@ Grammar* DGXMLScanner::loadGrammar(const   InputSource& src
                 (
                     XMLErrs::XMLException_Fatal
                     , excToCatch.getCode()
-                    , excToCatch.getType()
                     , excToCatch.getMessage()
                 );
             else
@@ -1698,7 +2042,6 @@ Grammar* DGXMLScanner::loadGrammar(const   InputSource& src
                 (
                     XMLErrs::XMLException_Error
                     , excToCatch.getCode()
-                    , excToCatch.getType()
                     , excToCatch.getMessage()
                 );
         }
@@ -1770,6 +2113,7 @@ Grammar* DGXMLScanner::loadDTDGrammar(const InputSource& src,
         , XMLReader::Type_General
         , XMLReader::Source_External
         , fCalculateSrcOfs
+        , fLowWaterMark
     );
     if (!newReader) {
         if (src.getIssueFatalErrorIfNotFound())
@@ -1786,6 +2130,7 @@ Grammar* DGXMLScanner::loadDTDGrammar(const InputSource& src,
     const XMLCh gDTDStr[] = { chLatin_D, chLatin_T, chLatin_D , chNull };
     DTDEntityDecl* declDTD = new (fMemoryManager) DTDEntityDecl(gDTDStr, false, fMemoryManager);
     declDTD->setSystemId(src.getSystemId());
+    declDTD->setIsExternal(true);
     Janitor<DTDEntityDecl> janDecl(declDTD);
 
     // Mark this one as a throw at end
@@ -1853,14 +2198,11 @@ void DGXMLScanner::commonInit()
     fDTDValidator = new (fMemoryManager) DTDValidator();
     initValidator(fDTDValidator);
     fDTDElemNonDeclPool = new (fMemoryManager) NameIdPool<DTDElementDecl>(29, 128, fMemoryManager);
-    fAttDefRegistry = new (fMemoryManager) RefHashTableOf<unsigned int>
+    fAttDefRegistry = new (fMemoryManager) RefHashTableOf<unsigned int, PtrHasher>
     (
-        131, false, new (fMemoryManager)HashPtr(), fMemoryManager
+        131, false, fMemoryManager
     );
-    fUndeclaredAttrRegistry = new (fMemoryManager) RefHashTableOf<unsigned int>
-    (
-        7, false, new (fMemoryManager)HashXMLCh(), fMemoryManager
-    );
+    fUndeclaredAttrRegistry = new (fMemoryManager) Hash2KeysSetOf<StringHasher>(7, fMemoryManager);
 
     if (fValidator)
     {
@@ -1889,8 +2231,8 @@ void DGXMLScanner::cleanUp()
 //  which have not been normalized. And we get the element declaration from
 //  which we will get any defaulted or fixed attribute defs and add those
 //  in as well.
-unsigned int
-DGXMLScanner::buildAttList(const unsigned int           attCount
+XMLSize_t
+DGXMLScanner::buildAttList(const XMLSize_t              attCount
                           ,       XMLElementDecl*       elemDecl
                           ,       RefVectorOf<XMLAttr>& toFill)
 {
@@ -1906,11 +2248,11 @@ DGXMLScanner::buildAttList(const unsigned int           attCount
         return 0;
 
     // Keep up with how many attrs we end up with total
-    unsigned int retCount = attCount;
+    XMLSize_t retCount = attCount;
 
     //  And get the current size of the output vector. This lets us use
     //  existing elements until we fill it, then start adding new ones.
-    const unsigned int curAttListSize = toFill.size();
+    const XMLSize_t curAttListSize = toFill.size();
 
     //  Ok, so lets get an enumerator for the attributes of this element
     //  and run through them for well formedness and validity checks. But
@@ -1919,7 +2261,7 @@ DGXMLScanner::buildAttList(const unsigned int           attCount
     if (hasDefs)
     {
         XMLAttDefList& attDefList = elemDecl->getAttDefList();
-        for(unsigned int i=0; i<attDefList.getAttDefCount(); i++)
+        for(XMLSize_t i=0; i<attDefList.getAttDefCount(); i++)
         {
             // Get the current att def, for convenience and its def type
             XMLAttDef& curDef = attDefList.getAttDef(i);
@@ -1977,7 +2319,6 @@ DGXMLScanner::buildAttList(const unsigned int           attCount
                             (
                                 fEmptyNamespaceId
                                 , curDef.getFullName()
-                                , XMLUni::fgZeroLenString
                                 , curDef.getValue()
                                 , curDef.getType()
                                 , false
@@ -2049,31 +2390,6 @@ DGXMLScanner::buildAttList(const unsigned int           attCount
     return retCount;
 }
 
-
-unsigned int
-DGXMLScanner::resolvePrefix(  const   XMLCh* const        prefix
-                              , const ElemStack::MapModes mode)
-{
-    //  Watch for the special namespace prefixes. We always map these to
-    //  special URIs. 'xml' gets mapped to the official URI that its defined
-    //  to map to by the NS spec. xmlns gets mapped to a special place holder
-    //  URI that we define (so that it maps to something checkable.)
-    if (XMLString::equals(prefix, XMLUni::fgXMLNSString))
-        return fXMLNSNamespaceId;
-    else if (XMLString::equals(prefix, XMLUni::fgXMLString))
-        return fXMLNamespaceId;
-
-    //  Ask the element stack to search up itself for a mapping for the
-    //  passed prefix.
-    bool unknown;
-    unsigned int uriId = fElemStack.mapPrefixToURI(prefix, mode, unknown);
-
-    // If it was unknown, then the URI was faked in but we have to issue an error
-    if (unknown)
-        emitError(XMLErrs::UnknownPrefix, prefix);
-
-    return uriId;
-}
 
 //  This method will reset the scanner data structures, and related plugged
 //  in stuff, for a new scan session. We get the input source for the primary
@@ -2149,6 +2465,7 @@ void DGXMLScanner::scanReset(const InputSource& src)
         , XMLReader::Type_General
         , XMLReader::Source_External
         , fCalculateSrcOfs
+        , fLowWaterMark
     );
 
     if (!newReader) {
@@ -2162,12 +2479,12 @@ void DGXMLScanner::scanReset(const InputSource& src)
     fReaderMgr.pushReader(newReader, 0);
 
     // and reset security-related things if necessary:
-    if(fSecurityManager != 0) 
+    if(fSecurityManager != 0)
     {
         fEntityExpansionLimit = fSecurityManager->getEntityExpansionLimit();
         fEntityExpansionCount = 0;
     }
-    if(fUIntPoolRowTotal >= 32) 
+    if(fUIntPoolRowTotal >= 32)
     { // 8 KB tied up with validating attributes...
         fAttDefRegistry->removeAll();
         recreateUIntPool();
@@ -2179,6 +2496,7 @@ void DGXMLScanner::scanReset(const InputSource& src)
         resetUIntPool();
     }
     fUndeclaredAttrRegistry->removeAll();
+    fAttrNSList->removeAllElements();
 }
 
 
@@ -2202,7 +2520,7 @@ void DGXMLScanner::sendCharData(XMLBuffer& toSend)
     {
         // Get the raw data we need for the callback
         const XMLCh* const rawBuf = toSend.getRawBuffer();
-        const unsigned int len = toSend.getLen();
+        const XMLSize_t len = toSend.getLen();
 
         // And see if the current element is a 'Children' style content model
         const ElemStack::StackElem* topElem = fElemStack.topElement();
@@ -2316,11 +2634,11 @@ void DGXMLScanner::updateNSMap(const    XMLCh* const attrPrefix
     );
 }
 
-void DGXMLScanner::scanAttrListforNameSpaces(RefVectorOf<XMLAttr>* theAttrList, int attCount, 
+void DGXMLScanner::scanAttrListforNameSpaces(RefVectorOf<XMLAttr>* theAttrList, XMLSize_t attCount,
                                                 XMLElementDecl*       elemDecl)
 {
     // Map prefixes to uris
-    for (unsigned int i=0; i < fAttrNSList->size(); i++) {
+    for (XMLSize_t i=0; i < fAttrNSList->size(); i++) {
         XMLAttr* providedAttr = fAttrNSList->elementAt(i);
         providedAttr->setURIId(
             resolvePrefix(providedAttr->getPrefix(), ElemStack::Mode_Attribute)
@@ -2332,46 +2650,46 @@ void DGXMLScanner::scanAttrListforNameSpaces(RefVectorOf<XMLAttr>* theAttrList, 
      // Decide if to use hash table to do duplicate checking
     bool toUseHashTable = false;
 
-	setAttrDupChkRegistry((unsigned int&)attCount, toUseHashTable);
-    for (int index = 0; index < attCount; index++)
+	setAttrDupChkRegistry(attCount, toUseHashTable);
+    for (XMLSize_t index = 0; index < attCount; index++)
     {
         // check for duplicate namespace attributes:
-        // by checking for qualified names with the same local part and with prefixes 
-        // which have been bound to namespace names that are identical.         
+        // by checking for qualified names with the same local part and with prefixes
+        // which have been bound to namespace names that are identical.
         XMLAttr* curAttr = theAttrList->elementAt(index);
         if (!toUseHashTable)
         {
             XMLAttr* loopAttr;
-            for (int attrIndex=0; attrIndex < index; attrIndex++) {
+            for (XMLSize_t attrIndex=0; attrIndex < index; attrIndex++) {
                 loopAttr = theAttrList->elementAt(attrIndex);
                 if (loopAttr->getURIId() == curAttr->getURIId() &&
                     XMLString::equals(loopAttr->getName(), curAttr->getName())) {
-                    emitError( 
+                    emitError(
                         XMLErrs::AttrAlreadyUsedInSTag, curAttr->getName()
                         , elemDecl->getFullName()
                     );
                 }
             }
         }
-        else 
+        else
         {
             if (fAttrDupChkRegistry->containsKey((void*)curAttr->getName(), curAttr->getURIId()))
             {
-                emitError( 
+                emitError(
                     XMLErrs::AttrAlreadyUsedInSTag
                     , curAttr->getName(), elemDecl->getFullName()
                 );
             }
 
             fAttrDupChkRegistry->put((void*)curAttr->getName(), curAttr->getURIId(), curAttr);
-        }                 
+        }
     }
 }
 
 InputSource* DGXMLScanner::resolveSystemId(const XMLCh* const sysId
                                           ,const XMLCh* const pubId)
 {
-    //Normalize sysId 
+    //Normalize sysId
     XMLBufBid nnSys(&fBufMgr);
     XMLBuffer& normalizedSysId = nnSys.getBuffer();
     XMLString::removeChar(sysId, 0xFFFF, normalizedSysId);
@@ -2394,7 +2712,7 @@ InputSource* DGXMLScanner::resolveSystemId(const XMLCh* const sysId
         XMLResourceIdentifier resourceIdentifier(XMLResourceIdentifier::ExternalEntity,
                             expSysId.getRawBuffer(), 0, pubId, lastInfo.systemId,
                             &fReaderMgr);
-        srcToFill = fEntityHandler->resolveEntity(&resourceIdentifier);       
+        srcToFill = fEntityHandler->resolveEntity(&resourceIdentifier);
     }
     else
     {
@@ -2429,14 +2747,14 @@ InputSource* DGXMLScanner::resolveSystemId(const XMLCh* const sysId
                 );
             }
             else
-                ThrowXMLwithMemMgr(MalformedURLException, XMLExcepts::URL_MalformedURL, fMemoryManager);            
+                ThrowXMLwithMemMgr(MalformedURLException, XMLExcepts::URL_MalformedURL, fMemoryManager);
         }
         else
         {
             if (fStandardUriConformant && urlTmp.hasInvalidChar())
                 ThrowXMLwithMemMgr(MalformedURLException, XMLExcepts::URL_MalformedURL, fMemoryManager);
             srcToFill = new (fMemoryManager) URLInputSource(urlTmp, fMemoryManager);
-        }        
+        }
     }
 
     return srcToFill;
@@ -2470,7 +2788,7 @@ bool DGXMLScanner::scanAttValue(  const   XMLAttDef* const    attDef
 
     //  We have to get the current reader because we have to ignore closing
     //  quotes until we hit the same reader again.
-    const unsigned int curReader = fReaderMgr.getCurrentReaderNum();
+    const XMLSize_t curReader = fReaderMgr.getCurrentReaderNum();
 
     // Get attribute def - to check to see if it's declared externally or not
     bool  isAttExternal = (attDef)
@@ -2995,7 +3313,7 @@ void DGXMLScanner::scanCharData(XMLBuffer& toUse)
         // See if the text contains whitespace
         // Get the raw data we need for the callback
         const XMLCh* rawBuf = toUse.getRawBuffer();
-        const unsigned int len = toUse.getLen();
+        const XMLSize_t len = toUse.getLen();
         const bool isSpaces = fReaderMgr.getCurrentReader()->containsWhiteSpace(rawBuf, len);
 
         if (isSpaces)
@@ -3045,7 +3363,7 @@ DGXMLScanner::scanEntityRef(  const   bool    inAttVal
     escaped = false;
 
     // We have to insure that its all in one entity
-    const unsigned int curReader = fReaderMgr.getCurrentReaderNum();
+    const XMLSize_t curReader = fReaderMgr.getCurrentReaderNum();
 
     //  If the next char is a pound, then its a character reference and we
     //  need to expand it always.
@@ -3069,13 +3387,13 @@ DGXMLScanner::scanEntityRef(  const   bool    inAttVal
 
     int  colonPosition;
     bool validName = fDoNamespaces ? fReaderMgr.getQName(bbName.getBuffer(), &colonPosition) :
-                                     fReaderMgr.getName(bbName.getBuffer()); 
-    if (!validName)    
+                                     fReaderMgr.getName(bbName.getBuffer());
+    if (!validName)
     {
         if (bbName.isEmpty())
             emitError(XMLErrs::ExpectedEntityRefName);
         else
-            emitError(XMLErrs::InvalidEntityRefName, bbName.getRawBuffer());        
+            emitError(XMLErrs::InvalidEntityRefName, bbName.getRawBuffer());
         return EntityExp_Failed;
     }
 
@@ -3143,6 +3461,7 @@ DGXMLScanner::scanEntityRef(  const   bool    inAttVal
             , XMLReader::Source_External
             , srcUsed
             , fCalculateSrcOfs
+            , fLowWaterMark
             , fDisableDefaultEntityResolution
         );
 
@@ -3165,10 +3484,10 @@ DGXMLScanner::scanEntityRef(  const   bool    inAttVal
         // here's where we need to check if there's a SecurityManager,
         // how many entity references we've had
         if(fSecurityManager != 0 && ++fEntityExpansionCount > fEntityExpansionLimit) {
-            XMLCh expLimStr[16];
-            XMLString::binToText(fEntityExpansionLimit, expLimStr, 15, 10, fMemoryManager);
+            XMLCh expLimStr[32];
+            XMLString::sizeToText(fEntityExpansionLimit, expLimStr, 31, 10, fMemoryManager);
             emitError
-            ( 
+            (
                 XMLErrs::EntityExpansionLimitExceeded
                 , expLimStr
             );
@@ -3223,10 +3542,10 @@ DGXMLScanner::scanEntityRef(  const   bool    inAttVal
         // here's where we need to check if there's a SecurityManager,
         // how many entity references we've had
         if(fSecurityManager != 0 && ++fEntityExpansionCount > fEntityExpansionLimit) {
-            XMLCh expLimStr[16];
-            XMLString::binToText(fEntityExpansionLimit, expLimStr, 15, 10, fMemoryManager);
+            XMLCh expLimStr[32];
+            XMLString::sizeToText(fEntityExpansionLimit, expLimStr, 31, 10, fMemoryManager);
             emitError
-            ( 
+            (
                 XMLErrs::EntityExpansionLimitExceeded
                 , expLimStr
             );

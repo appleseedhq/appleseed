@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XMLNumber.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLNumber.cpp 471747 2006-11-06 14:31:56Z amassari $
  */
 
 // ---------------------------------------------------------------------------
@@ -85,11 +85,9 @@ XMLNumber* XMLNumber::loadNumber(XMLNumber::NumberType  numType
     case XMLNumber::UnKnown:
         return 0;
         break;
-    default: //we treat this same as UnKnown
-        return 0;
-        break;
     }
-
+    //we treat this same as UnKnown
+    return 0;
 }
 
 XERCES_CPP_NAMESPACE_END

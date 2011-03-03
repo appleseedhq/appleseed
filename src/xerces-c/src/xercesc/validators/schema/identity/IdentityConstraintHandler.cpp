@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: IdentityConstraintHandler.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: IdentityConstraintHandler.cpp 803869 2009-08-13 12:56:21Z amassari $
  */
 
 // ---------------------------------------------------------------------------
@@ -76,18 +76,20 @@ IdentityConstraintHandler::~IdentityConstraintHandler()
 //  IdentityConstraintHandler:  methods
 // ---------------------------------------------------------------------------
 void IdentityConstraintHandler::deactivateContext(      SchemaElementDecl* const elem
-                                                , const XMLCh*             const content)
+                                                , const XMLCh*             const content
+                                                , ValidationContext*       validationContext /*=0*/
+                                                , DatatypeValidator*       actualValidator /*=0*/)
 {
 
-    int oldCount = fMatcherStack->getMatcherCount();
+    XMLSize_t oldCount = fMatcherStack->getMatcherCount();
 
     if (oldCount || elem->getIdentityConstraintCount()) 
     {
 
-        for (int i = oldCount - 1; i >= 0; i--) 
+        for (XMLSize_t i = oldCount; i > 0; i--) 
         {
-            XPathMatcher* matcher = fMatcherStack->getMatcherAt(i);
-            matcher->endElement(*(elem), content);
+            XPathMatcher* matcher = fMatcherStack->getMatcherAt(i-1);
+            matcher->endElement(*(elem), content, validationContext, actualValidator);
         }
 
         if (fMatcherStack->size() > 0) 
@@ -96,29 +98,29 @@ void IdentityConstraintHandler::deactivateContext(      SchemaElementDecl* const
         }
 
         // handle everything *but* keyref's.
-        int newCount = fMatcherStack->getMatcherCount();
+        XMLSize_t newCount = fMatcherStack->getMatcherCount();
 
-        for (int j = oldCount - 1; j >= newCount; j--) 
+        for (XMLSize_t j = oldCount; j > newCount; j--) 
         {
-            XPathMatcher* matcher = fMatcherStack->getMatcherAt(j);
+            XPathMatcher* matcher = fMatcherStack->getMatcherAt(j-1);
             IdentityConstraint* ic = matcher->getIdentityConstraint();
 
-            if (ic  && (ic->getType() != IdentityConstraint::KEYREF))
+            if (ic  && (ic->getType() != IdentityConstraint::ICType_KEYREF))
                 fValueStoreCache->transplant(ic, matcher->getInitialDepth());
         }
 
         // now handle keyref's...
-        for (int k = oldCount - 1; k >= newCount; k--) 
+        for (XMLSize_t k = oldCount; k > newCount; k--)
         {
-            XPathMatcher* matcher = fMatcherStack->getMatcherAt(k);
+            XPathMatcher* matcher = fMatcherStack->getMatcherAt(k-1);
             IdentityConstraint* ic = matcher->getIdentityConstraint();
 
-            if (ic && (ic->getType() == IdentityConstraint::KEYREF)) 
+            if (ic && (ic->getType() == IdentityConstraint::ICType_KEYREF)) 
             {
                 ValueStore* values = fValueStoreCache->getValueStoreFor(ic, matcher->getInitialDepth());
 
                 if (values) { // nothing to do if nothing matched!
-                    values->endDcocumentFragment(fValueStoreCache);
+                    values->endDocumentFragment(fValueStoreCache);
                 }
             }
         }
@@ -135,11 +137,11 @@ void IdentityConstraintHandler::activateIdentityConstraint
                      , const unsigned int                 uriId
                      , const XMLCh*                 const elemPrefix
                      , const RefVectorOf<XMLAttr>&        attrList
-                     , const unsigned int                 attrCount
-                      )
+                     , const XMLSize_t                    attrCount
+                     , ValidationContext*                 validationContext /*=0*/)
 {
 
-    unsigned int count = elem->getIdentityConstraintCount();
+    XMLSize_t count = elem->getIdentityConstraintCount();
 
     if (count || fMatcherStack->getMatcherCount()) 
     {
@@ -148,7 +150,7 @@ void IdentityConstraintHandler::activateIdentityConstraint
         fMatcherStack->pushContext();
         fValueStoreCache->initValueStoresFor( elem, elemDepth);
 
-        for (unsigned int i = 0; i < count; i++) 
+        for (XMLSize_t i = 0; i < count; i++) 
         {
             activateSelectorFor(elem->getIdentityConstraintAt(i), elemDepth);
         }
@@ -156,10 +158,10 @@ void IdentityConstraintHandler::activateIdentityConstraint
         // call all active identity constraints
         count = fMatcherStack->getMatcherCount();
 
-        for (unsigned int j = 0; j < count; j++) 
+        for (XMLSize_t j = 0; j < count; j++) 
         {
             XPathMatcher* matcher = fMatcherStack->getMatcherAt(j);
-            matcher->startElement(*elem, uriId, elemPrefix, attrList, attrCount);
+            matcher->startElement(*elem, uriId, elemPrefix, attrList, attrCount, validationContext);
         }
     }
 }

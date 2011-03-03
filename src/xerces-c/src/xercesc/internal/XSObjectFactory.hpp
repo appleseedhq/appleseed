@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XSObjectFactory.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XSObjectFactory.hpp 678409 2008-07-21 13:08:10Z borisk $
  */
 
-#if !defined(XSOBJECTFACTORY_HPP)
-#define XSOBJECTFACTORY_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XSOBJECTFACTORY_HPP)
+#define XERCESC_INCLUDE_GUARD_XSOBJECTFACTORY_HPP
 
 #include <xercesc/framework/psvi/XSConstants.hpp>
 #include <xercesc/util/RefHashTableOf.hpp>
@@ -221,9 +221,9 @@ private:
     //  fMemoryManager
     //      The memory manager used to create various XSObject(s).
     // -----------------------------------------------------------------------
-    MemoryManager*            fMemoryManager;
-    RefHashTableOf<XSObject>* fXercesToXSMap;
-    RefVectorOf<XSObject>*    fDeleteVector;
+    MemoryManager*                       fMemoryManager;
+    RefHashTableOf<XSObject, PtrHasher>* fXercesToXSMap;
+    RefVectorOf<XSObject>*               fDeleteVector;
 };
 
 inline XSObject* XSObjectFactory::getObjectFromMap(void* key)

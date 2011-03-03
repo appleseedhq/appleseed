@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: SchemaAttDef.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: SchemaAttDef.cpp 679359 2008-07-24 11:15:19Z borisk $
  */
 
 
@@ -44,13 +44,9 @@ const XMLCh* SchemaAttDef::getFullName() const
 SchemaAttDef::SchemaAttDef(MemoryManager* const manager) :
     XMLAttDef(XMLAttDef::CData, XMLAttDef::Implied, manager)
     , fElemId(XMLElementDecl::fgInvalidElemId)
-    , fValidity(PSVIDefs::UNKNOWN)
-    , fValidation(PSVIDefs::NONE)
-    , fPSVIScope(PSVIDefs::SCP_ABSENT)    
+    , fPSVIScope(PSVIDefs::SCP_ABSENT)
     , fAttName(0)
     , fDatatypeValidator(0)
-    , fAnyDatatypeValidator(0)
-    , fMemberTypeValidator(0)
     , fNamespaceList(0)
     , fBaseAttDecl(0)
 {
@@ -64,12 +60,8 @@ SchemaAttDef::SchemaAttDef( const XMLCh* const           prefix
                           , MemoryManager* const         manager) :
     XMLAttDef(type, defType, manager)
     , fElemId(XMLElementDecl::fgInvalidElemId)
-    , fValidity(PSVIDefs::UNKNOWN)
-    , fValidation(PSVIDefs::NONE)
     , fPSVIScope(PSVIDefs::SCP_ABSENT)
     , fDatatypeValidator(0)
-    , fAnyDatatypeValidator(0)
-    , fMemberTypeValidator(0)    
     , fNamespaceList(0)
     , fBaseAttDecl(0)
 {
@@ -87,12 +79,8 @@ SchemaAttDef::SchemaAttDef( const XMLCh* const           prefix
 
     XMLAttDef(attValue, type, defType, enumValues, manager)
     , fElemId(XMLElementDecl::fgInvalidElemId)
-    , fValidity(PSVIDefs::UNKNOWN)
-    , fValidation(PSVIDefs::NONE)
     , fPSVIScope(PSVIDefs::SCP_ABSENT)
     , fDatatypeValidator(0)
-    , fAnyDatatypeValidator(0)
-    , fMemberTypeValidator(0)
     , fNamespaceList(0)
     , fBaseAttDecl(0)
 {
@@ -105,13 +93,9 @@ SchemaAttDef::SchemaAttDef(const SchemaAttDef* other) :
               other->getDefaultType(), other->getEnumeration(),
               other->getMemoryManager())
     , fElemId(XMLElementDecl::fgInvalidElemId)
-    , fValidity(other->fValidity)
-    , fValidation(other->fValidation)
     , fPSVIScope(other->fPSVIScope)
     , fAttName(0)
     , fDatatypeValidator(other->fDatatypeValidator)
-    , fAnyDatatypeValidator(other->fAnyDatatypeValidator)
-    , fMemberTypeValidator(other->fMemberTypeValidator)
     , fNamespaceList(0)
     , fBaseAttDecl(other->fBaseAttDecl)
 {
@@ -155,16 +139,12 @@ void SchemaAttDef::serialize(XSerializeEngine& serEng)
 
     if (serEng.isStoring())
     {
-        serEng<<fElemId;
-        serEng<<(int)fValidity;
-        serEng<<(int)fValidation;
+        serEng.writeSize (fElemId);
         serEng<<(int)fPSVIScope;
 
         serEng<<fAttName;
 
         DatatypeValidator::storeDV(serEng, fDatatypeValidator);
-        DatatypeValidator::storeDV(serEng, fAnyDatatypeValidator);
-        DatatypeValidator::storeDV(serEng, (DatatypeValidator*)fMemberTypeValidator);
 
         /***
          * Serialize ValueVectorOf<unsigned int>
@@ -176,28 +156,20 @@ void SchemaAttDef::serialize(XSerializeEngine& serEng)
     else
     {
 
-        serEng>>fElemId;
+        serEng.readSize (fElemId);
         int i;
-        serEng>>i;
-        fValidity = (PSVIDefs::Validity)i;
-
-        serEng>>i;
-        fValidation = (PSVIDefs::Validation)i;
-        
         serEng>>i;
         fPSVIScope = (PSVIDefs::PSVIScope)i;
 
         serEng>>fAttName;
 
         fDatatypeValidator    = DatatypeValidator::loadDV(serEng);
-        fAnyDatatypeValidator = DatatypeValidator::loadDV(serEng);
-        fMemberTypeValidator  = DatatypeValidator::loadDV(serEng);
 
         /***
          * Deserialize ValueVectorOf<unsigned int>
          ***/
         XTemplateSerializer::loadObject(&fNamespaceList, 8, false, serEng);
-       
+
         serEng>>fBaseAttDecl;
     }
 }

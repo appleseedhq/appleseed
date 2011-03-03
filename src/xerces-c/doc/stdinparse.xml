@@ -24,8 +24,8 @@
         <p>StdInParse demonstrates streaming XML data from standard input.</p>
 
         <s3 title="Running StdInParse">
-          <p>The StdInParse sample parses an XML file from standard input and prints out a
-		  count of the number of
+          <p>The StdInParse sample parses an XML file from standard input and prints out
+		  the number of
           elements in the file. To run StdInParse, enter the following: </p>
 <source>StdInParse &lt; &lt;XML file&gt;</source>
           <p>The following parameters may be set from the command line </p>
@@ -52,7 +52,7 @@ Options:
              <em>-v=auto</em> will validate if a DOCTYPE declaration or a schema declaration is present in the XML document</p>
           <p>Make sure that you run StdInParse in the samples/data directory.</p>
           <p>Here is a sample output from StdInParse:</p>
-<source>cd &XercesCInstallDir;-linux/samples/data
+<source>cd &XercesC3InstallDir;/samples/data
 StdInParse -v=always &lt; personal.xml
 stdin: 10 ms (37 elems, 12 attrs, 0 spaces, 268 chars)</source>
           <p>Running StdInParse with the validating parser gives a different result because
@@ -62,7 +62,7 @@ stdin: 10 ms (37 elems, 12 attrs, 0 spaces, 268 chars)</source>
           <p>Note that the sum of spaces and characters in both versions is the same.</p>
 
           <note>The time reported by the program may be different depending on your
-          machine processor.</note>
+          processor speed.</note>
         </s3>
     </s2>
 </s1>

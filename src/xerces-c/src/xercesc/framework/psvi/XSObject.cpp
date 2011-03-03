@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XSObject.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XSObject.cpp 674012 2008-07-04 11:18:21Z borisk $
  */
 
 #include <xercesc/framework/psvi/XSObject.hpp>
@@ -29,7 +29,7 @@ XERCES_CPP_NAMESPACE_BEGIN
 // ---------------------------------------------------------------------------
 XSObject::XSObject(XSConstants::COMPONENT_TYPE compType,
                    XSModel* const xsModel,
-                   MemoryManager* const manager)  
+                   MemoryManager* const manager)
     : fComponentType(compType)
     , fXSModel(xsModel)
     , fMemoryManager(manager)
@@ -48,31 +48,29 @@ XSObject::~XSObject()
 // ---------------------------------------------------------------------------
 //  XSObject: Virtual interface methods
 // ---------------------------------------------------------------------------
-const XMLCh *XSObject::getName() 
+const XMLCh *XSObject::getName() const
 {
     return 0;
 }
 
-const XMLCh *XSObject::getNamespace() 
+const XMLCh *XSObject::getNamespace()
 {
     return 0;
 }
 
-XSNamespaceItem *XSObject::getNamespaceItem() 
+XSNamespaceItem *XSObject::getNamespaceItem()
 {
     return 0;
 }
 
-unsigned int XSObject::getId() const
+XMLSize_t XSObject::getId() const
 {
     return fId;
 }
 
-void XSObject::setId(unsigned int id)
+void XSObject::setId(XMLSize_t id)
 {
     fId = id;
 }
 
 XERCES_CPP_NAMESPACE_END
-
-

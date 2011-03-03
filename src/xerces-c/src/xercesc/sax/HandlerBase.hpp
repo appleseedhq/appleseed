@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: HandlerBase.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: HandlerBase.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-
-#ifndef HANDLERBASE_HPP
-#define HANDLERBASE_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_HANDLERBASE_HPP)
+#define XERCESC_INCLUDE_GUARD_HANDLERBASE_HPP
 
 #include <xercesc/sax/DocumentHandler.hpp>
 #include <xercesc/sax/DTDHandler.hpp>
@@ -80,7 +79,7 @@ public:
     virtual void characters
     (
         const   XMLCh* const    chars
-        , const unsigned int    length
+        , const XMLSize_t       length
     );
 
   /**
@@ -130,7 +129,7 @@ public:
     virtual void ignorableWhitespace
     (
         const   XMLCh* const    chars
-        , const unsigned int    length
+        , const XMLSize_t       length
     );
 
   /**
@@ -155,7 +154,7 @@ public:
     );
 
     /**
-    * Reset the Docuemnt object on its reuse
+    * Reset the Document object on its reuse
     *
     * @see DocumentHandler#resetDocument
     */
@@ -226,7 +225,7 @@ public:
     * in a subclass to do special translations such as catalog lookups
     * or URI redirection.</p>
     *
-    * @param publicId The public identifer, or null if none is
+    * @param publicId The public identifier, or null if none is
     *                 available.
     * @param systemId The system identifier provided in the XML
     *                 document.
@@ -378,7 +377,7 @@ private:
 //  HandlerBase: Inline default implementations
 // ---------------------------------------------------------------------------
 inline void HandlerBase::characters(const   XMLCh* const
-                                    , const unsigned int)
+                                    , const XMLSize_t)
 {
 }
 
@@ -401,7 +400,7 @@ inline void HandlerBase::fatalError(const SAXParseException& exc)
 
 inline void
 HandlerBase::ignorableWhitespace(   const   XMLCh* const
-                                    , const unsigned int)
+                                    , const XMLSize_t)
 {
 }
 

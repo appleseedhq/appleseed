@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: SAXException.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: SAXException.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-
-#ifndef SAXEXCEPTION_HPP
-#define SAXEXCEPTION_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_SAXEXCEPTION_HPP)
+#define XERCESC_INCLUDE_GUARD_SAXEXCEPTION_HPP
 
 #include <xercesc/util/XMLString.hpp>
 #include <xercesc/util/XMLUni.hpp>

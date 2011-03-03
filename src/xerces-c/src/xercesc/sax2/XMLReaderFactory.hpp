@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XMLReaderFactory.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLReaderFactory.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#ifndef XMLREADERFACTORY_HPP
-#define XMLREADERFACTORY_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XMLREADERFACTORY_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLREADERFACTORY_HPP
 
 #include <xercesc/sax2/SAX2XMLReader.hpp>
 #include <xercesc/sax/SAXException.hpp>
@@ -34,7 +34,7 @@ class XMLGrammarPool;
   * Creates a SAX2 parser (SAX2XMLReader).
   *
   * <p>Note: The parser object returned by XMLReaderFactory is owned by the
-  * calling users, and it's the responsiblity of the users to delete that
+  * calling users, and it's the responsibility of the users to delete that
   * parser object, once they no longer need it.</p>
   *
   * @see SAX2XMLReader#SAX2XMLReader

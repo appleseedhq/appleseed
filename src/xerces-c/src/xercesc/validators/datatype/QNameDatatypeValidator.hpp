@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: QNameDatatypeValidator.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: QNameDatatypeValidator.hpp 577322 2007-09-19 14:58:04Z cargilld $
  */
 
-#if !defined(QNAME_DATATYPEVALIDATOR_HPP)
-#define QNAME_DATATYPEVALIDATOR_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_QNAME_DATATYPEVALIDATOR_HPP)
+#define XERCESC_INCLUDE_GUARD_QNAME_DATATYPEVALIDATOR_HPP
 
 #include <xercesc/validators/datatype/AbstractStringValidator.hpp>
 
@@ -78,6 +78,8 @@ protected:
                             ,       ValidationContext* const context
                             , bool                           asBase
                             , MemoryManager* const manager);
+
+    virtual void inspectFacetBase(MemoryManager* const manager);
 
 private:
     // -----------------------------------------------------------------------

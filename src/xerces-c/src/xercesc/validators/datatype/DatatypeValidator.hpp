@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: DatatypeValidator.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DatatypeValidator.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#if !defined(DATATYPEVALIDATOR_HPP)
-#define DATATYPEVALIDATOR_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_DATATYPEVALIDATOR_HPP)
+#define XERCESC_INCLUDE_GUARD_DATATYPEVALIDATOR_HPP
 
 #include <xercesc/util/PlatformUtils.hpp>
 #include <xercesc/util/RefHashTableOf.hpp>
@@ -220,7 +220,7 @@ public:
      *       if no memory manager is provided.
      *
      *    2. client application is responsible for the 
-     *       proper deallcation of the memory allocated
+     *       proper deallocation of the memory allocated
      *       for the returned value.
      *
      *    3. In the case where the rawData is not valid
@@ -346,7 +346,7 @@ public:
 
     /***
       *
-      *  Serialzie DatatypeValidator derivative 
+      *  Serialize DatatypeValidator derivative 
       *
       *  Param
       *     serEng: serialize engine

@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XTemplateSerializer.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XTemplateSerializer.hpp 678409 2008-07-21 13:08:10Z borisk $
  */
 
-#if !defined(XTEMPLATE_SERIALIZER_HPP)
-#define XTEMPLATE_SERIALIZER_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XTEMPLATE_SERIALIZER_HPP)
+#define XERCESC_INCLUDE_GUARD_XTEMPLATE_SERIALIZER_HPP
 
 #include <xercesc/util/ValueVectorOf.hpp>
 #include <xercesc/util/RefArrayVectorOf.hpp>
@@ -60,7 +60,7 @@ public:
      *   SchemaElementDecl*
      *   unsigned int
      *
-     ***********************************************************/   
+     ***********************************************************/
     static void           storeObject(ValueVectorOf<SchemaElementDecl*>* const tempObjToWrite
                                     , XSerializeEngine&                        serEng);
 
@@ -83,7 +83,7 @@ public:
      *
      *   XMLCh
      *
-     ***********************************************************/   
+     ***********************************************************/
     static void           storeObject(RefArrayVectorOf<XMLCh>* const tempObjToWrite
                                     , XSerializeEngine&              serEng);
 
@@ -146,7 +146,7 @@ public:
                                    , int                                    initSize
                                    , bool                                   toAdopt
                                    , XSerializeEngine&                      serEng);
- 
+
     static void           storeObject(RefVectorOf<IdentityConstraint>* const tempObjToWrite
                                     , XSerializeEngine&                      serEng);
 
@@ -268,10 +268,10 @@ public:
                                    , bool                            toAdopt
                                    , XSerializeEngine&               serEng);
 
-    static void           storeObject(RefHashTableOf<XSAnnotation>* const tempObjToWrite
+    static void           storeObject(RefHashTableOf<XSAnnotation, PtrHasher>* const tempObjToWrite
                                     , XSerializeEngine&                   serEng);
 
-    static void           loadObject(RefHashTableOf<XSAnnotation>**  tempObjToRead
+    static void           loadObject(RefHashTableOf<XSAnnotation, PtrHasher>**  tempObjToRead
                                    , int                             initSize
                                    , bool                            toAdopt
                                    , XSerializeEngine&               serEng);

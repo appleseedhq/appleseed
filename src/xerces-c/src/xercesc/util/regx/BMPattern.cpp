@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: BMPattern.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: BMPattern.cpp 678879 2008-07-22 20:05:05Z amassari $
  */
 
 // ---------------------------------------------------------------------------
@@ -49,10 +49,10 @@ BMPattern::BMPattern( const XMLCh*         const pattern
 {
     CleanupType cleanup(this, &BMPattern::cleanUp);
 
-	try {
+    try {
         fPattern = XMLString::replicate(pattern, fMemoryManager);
-		initialize();
-	}
+        initialize();
+    }
     catch(const OutOfMemoryException&)
     {
         cleanup.release();
@@ -77,10 +77,10 @@ BMPattern::BMPattern( const XMLCh*         const pattern
 {
     CleanupType cleanup(this, &BMPattern::cleanUp);
 
-	try {
+    try {
         fPattern = XMLString::replicate(pattern, fMemoryManager);
-		initialize();
-	}
+        initialize();
+    }
     catch(const OutOfMemoryException&)
     {
         cleanup.release();
@@ -93,62 +93,62 @@ BMPattern::BMPattern( const XMLCh*         const pattern
 
 BMPattern::~BMPattern() {
 
-	cleanUp();
+    cleanUp();
 }
 
 // ---------------------------------------------------------------------------
 //  BMPattern: matches methods
 // ---------------------------------------------------------------------------
-int BMPattern::matches(const XMLCh* const content, int start, int limit) {
+int BMPattern::matches(const XMLCh* const content, XMLSize_t start, XMLSize_t limit) const {
 
-	const unsigned int	patternLen = XMLString::stringLen(fPattern);
-	// Uppercase Content
-	XMLCh* ucContent = 0;
+    const XMLSize_t patternLen = XMLString::stringLen(fPattern);
+    // Uppercase Content
+    XMLCh* ucContent = 0;
 
-	if (patternLen == 0)
-		return start;
+    if (patternLen == 0)
+        return (int)start;
 
-	if (fIgnoreCase) {
-		
-		ucContent = XMLString::replicate(content, fMemoryManager);
-		XMLString::upperCase(ucContent);
-	}
+    if (fIgnoreCase) {
+        
+        ucContent = XMLString::replicate(content, fMemoryManager);
+        XMLString::upperCase(ucContent);
+    }
 
-	ArrayJanitor<XMLCh> janUCContent(ucContent, fMemoryManager);
+    ArrayJanitor<XMLCh> janUCContent(ucContent, fMemoryManager);
 
-	int index = start + patternLen;
+    XMLSize_t index = start + patternLen;
 
-	while (index <= limit) {
+    while (index <= limit) {
 
-		int patternIndex = patternLen;
-		int nIndex = index + 1;
-		XMLCh ch = 0;
+        XMLSize_t patternIndex = patternLen;
+        XMLSize_t nIndex = index + 1;
+        XMLCh ch = 0;
 
-		while (patternIndex > 0) {
+        while (patternIndex > 0) {
 
-			ch = content[--index];
+            ch = content[--index];
 
-			if (ch != fPattern[--patternIndex]) {
+            if (ch != fPattern[--patternIndex]) {
 
-				// No match, so we will break. But first we have
-				// to check the ignore case flag. If it is set, then
-				// we try to match with the case ignored
-				if (!fIgnoreCase ||
-					(fUppercasePattern[patternIndex] != ucContent[index]))
-					break;
-			}
+                // No match, so we will break. But first we have
+                // to check the ignore case flag. If it is set, then
+                // we try to match with the case ignored
+                if (!fIgnoreCase ||
+                    (fUppercasePattern[patternIndex] != ucContent[index]))
+                    break;
+            }
 
-			if (patternIndex == 0)
-				return index;
-		}
+            if (patternIndex == 0)
+                return (int)index;
+        }
 
-		index += fShiftTable[ch % fShiftTableLen] + 1;
+        index += fShiftTable[ch % fShiftTableLen] + 1;
 
-		if (index < nIndex)
-			index = nIndex;
-	}
+        if (index < nIndex)
+            index = nIndex;
+    }
 
-	return -1;
+    return -1;
 }
 
 // ---------------------------------------------------------------------------
@@ -156,45 +156,45 @@ int BMPattern::matches(const XMLCh* const content, int start, int limit) {
 // ---------------------------------------------------------------------------
 void BMPattern::initialize() {
 
-	const unsigned int	patternLen = XMLString::stringLen(fPattern);
-	XMLCh* lowercasePattern = 0;
+    const XMLSize_t patternLen = XMLString::stringLen(fPattern);
+    XMLCh* lowercasePattern = 0;
 
-	fShiftTable = (int*) fMemoryManager->allocate(fShiftTableLen*sizeof(int)); //new int[fShiftTableLen];
+    fShiftTable = (XMLSize_t*) fMemoryManager->allocate(fShiftTableLen*sizeof(XMLSize_t)); //new XMLSize_t[fShiftTableLen];
 
-	if (fIgnoreCase) {
+    if (fIgnoreCase) {
 
-		fUppercasePattern = XMLString::replicate(fPattern, fMemoryManager);
-		lowercasePattern = XMLString::replicate(fPattern, fMemoryManager);
-		XMLString::upperCase(fUppercasePattern);
-		XMLString::lowerCase(lowercasePattern);
-	}
+        fUppercasePattern = XMLString::replicate(fPattern, fMemoryManager);
+        lowercasePattern = XMLString::replicate(fPattern, fMemoryManager);
+        XMLString::upperCase(fUppercasePattern);
+        XMLString::lowerCase(lowercasePattern);
+    }
 
-	ArrayJanitor<XMLCh> janLowercase(lowercasePattern, fMemoryManager);
+    ArrayJanitor<XMLCh> janLowercase(lowercasePattern, fMemoryManager);
 
-	for (unsigned int i=0; i< fShiftTableLen; i++)
-		fShiftTable[i] = patternLen;
+    for (unsigned int i=0; i< fShiftTableLen; i++)
+        fShiftTable[i] = patternLen;
 
-	for (unsigned int k=0; k< patternLen; k++) {
+    for (unsigned int k=0; k< patternLen; k++) {
 
-		XMLCh	ch = fPattern[k];
-		int		diff = patternLen - k - 1;
-		int		index = ch % fShiftTableLen;
+        XMLCh      ch = fPattern[k];
+        XMLSize_t diff = patternLen - k - 1;
+        int          index = ch % fShiftTableLen;
 
-		if (diff < fShiftTable[index])
-			fShiftTable[index] = diff;
+        if (diff < fShiftTable[index])
+            fShiftTable[index] = diff;
 
-		if (fIgnoreCase) {
+        if (fIgnoreCase) {
 
-			for (int j=0; j< 2; j++) {
+            for (int j=0; j< 2; j++) {
 
-				ch = (j == 0) ? fUppercasePattern[k] : lowercasePattern[k];
-				index = ch % fShiftTableLen;
+                ch = (j == 0) ? fUppercasePattern[k] : lowercasePattern[k];
+                index = ch % fShiftTableLen;
 
-				if (diff < fShiftTable[index])
-					fShiftTable[index] = diff;
-			}
-		}
-	}
+                if (diff < fShiftTable[index])
+                    fShiftTable[index] = diff;
+            }
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -210,5 +210,5 @@ void BMPattern::cleanUp() {
 XERCES_CPP_NAMESPACE_END
 
 /**
-  *	End of file BMPattern.cpp
+  *    End of file BMPattern.cpp
   */

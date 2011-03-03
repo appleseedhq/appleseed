@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: ValueStoreCache.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: ValueStoreCache.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#if !defined(VALUESTORECACHE_HPP)
-#define VALUESTORECACHE_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_VALUESTORECACHE_HPP)
+#define XERCESC_INCLUDE_GUARD_VALUESTORECACHE_HPP
 
 /**
   * This class is used to store the values for identity constraints.
@@ -28,7 +28,7 @@
   * Sketch of algorithm:
   *  - When a constraint is first encountered, its values are stored in the
   *    (local) fIC2ValueStoreMap;
-  *  - Once it is validated (i.e., wen it goes out of scope), its values are
+  *  - Once it is validated (i.e., when it goes out of scope), its values are
   *    merged into the fGlobalICMap;
   *  - As we encounter keyref's, we look at the global table to validate them.
   *  - Validation always occurs against the fGlobalIDConstraintMap (which
@@ -53,7 +53,7 @@
 XERCES_CPP_NAMESPACE_BEGIN
 
 // ---------------------------------------------------------------------------
-//  Forward Declcaration
+//  Forward Declaration
 // ---------------------------------------------------------------------------
 class ValueStore;
 class SchemaElementDecl;
@@ -92,7 +92,7 @@ public:
     //  Access methods
     // -----------------------------------------------------------------------
     ValueStore* getValueStoreFor(const IC_Field* const field, const int initialDepth);
-    ValueStore* getValueStoreFor(const IdentityConstraint* const ic, const int intialDepth);
+    ValueStore* getValueStoreFor(const IdentityConstraint* const ic, const int initialDepth);
     ValueStore* getGlobalValueStoreFor(const IdentityConstraint* const ic);
 
 	// -----------------------------------------------------------------------
@@ -106,7 +106,7 @@ public:
 
 private:
     // -----------------------------------------------------------------------
-    //  Unimplemented contstructors and operators
+    //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
     ValueStoreCache(const ValueStoreCache& other);
     ValueStoreCache& operator= (const ValueStoreCache& other);
@@ -121,9 +121,9 @@ private:
     //  Data
     // -----------------------------------------------------------------------
     RefVectorOf<ValueStore>*                 fValueStores;
-    RefHashTableOf<ValueStore>*              fGlobalICMap;
-    RefHash2KeysTableOf<ValueStore>*         fIC2ValueStoreMap;
-    RefStackOf<RefHashTableOf<ValueStore> >* fGlobalMapStack;
+    RefHashTableOf<ValueStore, PtrHasher>*   fGlobalICMap;
+    RefHash2KeysTableOf<ValueStore, PtrHasher>* fIC2ValueStoreMap;
+    RefStackOf<RefHashTableOf<ValueStore, PtrHasher> >* fGlobalMapStack;
     XMLScanner*                              fScanner;
     MemoryManager*                           fMemoryManager;
 };
@@ -170,4 +170,3 @@ XERCES_CPP_NAMESPACE_END
 /**
   * End of file ValueStoreCache.hpp
   */
-

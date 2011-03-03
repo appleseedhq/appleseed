@@ -16,11 +16,13 @@
  */
 
 /*
- * $Id: CMNode.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: CMNode.hpp 677430 2008-07-16 21:05:31Z borisk $
  */
 
-#if !defined(CMNODE_HPP)
-#define CMNODE_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_CMNODE_HPP)
+#define XERCESC_INCLUDE_GUARD_CMNODE_HPP
+
+#include <limits.h>
 
 #include <xercesc/validators/common/ContentSpecNode.hpp>
 #include <xercesc/validators/common/CMStateSet.hpp>
@@ -30,12 +32,18 @@ XERCES_CPP_NAMESPACE_BEGIN
 class CMNode : public XMemory
 {
 public :
+    enum {
+    	// Special value to indicate a nullable node
+        epsilonNode = UINT_MAX - 1
+    };
+
     // -----------------------------------------------------------------------
     //  Constructors and Destructors
     // -----------------------------------------------------------------------
     CMNode
     (
         const ContentSpecNode::NodeTypes type
+        , unsigned int maxStates
         , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
     );
     virtual ~CMNode();
@@ -44,22 +52,15 @@ public :
     // -----------------------------------------------------------------------
     //  Virtual methods to be provided derived node classes
     // -----------------------------------------------------------------------
-    virtual bool isNullable() const = 0;
-
+    virtual void orphanChild() = 0;
 
     // -----------------------------------------------------------------------
     //  Getter methods
     // -----------------------------------------------------------------------
     ContentSpecNode::NodeTypes getType() const;
-    const CMStateSet& getFirstPos() const;
-    const CMStateSet& getLastPos() const;
-
-
-    // -----------------------------------------------------------------------
-    //  Setter methods
-    // -----------------------------------------------------------------------
-    void setMaxStates(const unsigned int maxStates);
-
+    const CMStateSet& getFirstPos();
+    const CMStateSet& getLastPos();
+    bool isNullable() const;
 
 protected :
     // -----------------------------------------------------------------------
@@ -107,11 +108,17 @@ private :
     //      sets during the building of the DFA. Its unfortunate that it
     //      has to be stored redundantly, but we need to fault in the
     //      state set members and they have to be sized to this size.
+    //
+    //  fIsNullable
+    //      Whether the node can be empty
     // -----------------------------------------------------------------------
     ContentSpecNode::NodeTypes fType;
     CMStateSet*                fFirstPos;
     CMStateSet*                fLastPos;
     unsigned int               fMaxStates;
+
+protected:
+    bool                       fIsNullable;
 };
 
 
@@ -119,14 +126,16 @@ private :
 // ---------------------------------------------------------------------------
 //  CMNode: Constructors and Destructors
 // ---------------------------------------------------------------------------
-inline CMNode::CMNode(const ContentSpecNode::NodeTypes type,
-                      MemoryManager* const manager) :
+inline CMNode::CMNode(const ContentSpecNode::NodeTypes type
+                    , unsigned int maxStates
+                    , MemoryManager* const manager) :
 
     fMemoryManager(manager)
     , fType(type)
     , fFirstPos(0)
     , fLastPos(0)
-    , fMaxStates(~0)
+    , fMaxStates(maxStates)
+    , fIsNullable(false)
 {
 }
 
@@ -146,7 +155,7 @@ inline ContentSpecNode::NodeTypes CMNode::getType() const
     return fType;
 }
 
-inline const CMStateSet& CMNode::getFirstPos() const
+inline const CMStateSet& CMNode::getFirstPos()
 {
     //
     //  Fault in the state set if needed. Since we can't use mutable members
@@ -154,14 +163,13 @@ inline const CMStateSet& CMNode::getFirstPos() const
     //
     if (!fFirstPos)
     {
-        CMNode* unconstThis = (CMNode*)this;
-        unconstThis->fFirstPos = new (fMemoryManager) CMStateSet(fMaxStates, fMemoryManager);
-        unconstThis->calcFirstPos(*fFirstPos);
+        fFirstPos = new (fMemoryManager) CMStateSet(fMaxStates, fMemoryManager);
+        calcFirstPos(*fFirstPos);
     }
     return *fFirstPos;
 }
 
-inline const CMStateSet& CMNode::getLastPos() const
+inline const CMStateSet& CMNode::getLastPos()
 {
     //
     //  Fault in the state set if needed. Since we can't use mutable members
@@ -169,20 +177,15 @@ inline const CMStateSet& CMNode::getLastPos() const
     //
     if (!fLastPos)
     {
-        CMNode* unconstThis = (CMNode*)this;
-        unconstThis->fLastPos = new (fMemoryManager) CMStateSet(fMaxStates, fMemoryManager);
-        unconstThis->calcLastPos(*fLastPos);
+        fLastPos = new (fMemoryManager) CMStateSet(fMaxStates, fMemoryManager);
+        calcLastPos(*fLastPos);
     }
     return *fLastPos;
 }
 
-
-// ---------------------------------------------------------------------------
-//  CMNode: Setter methods
-// ---------------------------------------------------------------------------
-inline void CMNode::setMaxStates(const unsigned int maxStates)
+inline bool CMNode::isNullable() const
 {
-    fMaxStates = maxStates;
+    return fIsNullable;
 }
 
 XERCES_CPP_NAMESPACE_END

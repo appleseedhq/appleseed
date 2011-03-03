@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XMLScannerResolver.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLScannerResolver.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-#if !defined(XMLSCANNERRESOLVER_HPP)
-#define XMLSCANNERRESOLVER_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XMLSCANNERRESOLVER_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLSCANNERRESOLVER_HPP
 
 #include <xercesc/internal/XMLScanner.hpp>
 

@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: ClosureToken.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: ClosureToken.cpp 678879 2008-07-22 20:05:05Z amassari $
  */
 
 // ---------------------------------------------------------------------------
@@ -29,8 +29,8 @@ XERCES_CPP_NAMESPACE_BEGIN
 // ---------------------------------------------------------------------------
 //  ClosureToken: Constructors and Destructors
 // ---------------------------------------------------------------------------
-ClosureToken::ClosureToken(const unsigned short tokType, Token* const tok, MemoryManager* const manager)
-    : Token(tokType, manager)
+ClosureToken::ClosureToken(const Token::tokType tkType, Token* const tok, MemoryManager* const manager)
+    : Token(tkType, manager)
     , fMin(-1)    
     , fMax(-1)
     , fChild(tok)
@@ -46,5 +46,5 @@ ClosureToken::~ClosureToken() {
 XERCES_CPP_NAMESPACE_END
 
 /**
-  *	End of file ClosureToken.cpp
+  *    End of file ClosureToken.cpp
   */

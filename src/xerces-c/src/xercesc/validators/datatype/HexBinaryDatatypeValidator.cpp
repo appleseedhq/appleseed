@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: HexBinaryDatatypeValidator.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: HexBinaryDatatypeValidator.cpp 695949 2008-09-16 15:57:44Z borisk $
  */
 
 // ---------------------------------------------------------------------------
@@ -65,10 +65,10 @@ DatatypeValidator* HexBinaryDatatypeValidator::newInstance
 //  Utilities
 // ---------------------------------------------------------------------------
 
-void HexBinaryDatatypeValidator::checkValueSpace(const XMLCh* const content
-                                                 , MemoryManager* const manager)
+void HexBinaryDatatypeValidator::checkValueSpace(const XMLCh* const content,
+                                                 MemoryManager* const manager)
 {
-    if (getLength(content, manager) < 0)
+    if (HexBin::getDataLength(content) < 0)
     {
         ThrowXMLwithMemMgr1(InvalidDatatypeValueException
                 , XMLExcepts::VALUE_Not_HexBin
@@ -77,10 +77,10 @@ void HexBinaryDatatypeValidator::checkValueSpace(const XMLCh* const content
     }
 }
 
-int HexBinaryDatatypeValidator::getLength(const XMLCh* const content
+XMLSize_t HexBinaryDatatypeValidator::getLength(const XMLCh* const content
                                       , MemoryManager* const) const
 {
-    return HexBin::getDataLength(content);
+    return (XMLSize_t)HexBin::getDataLength(content);
 }
 
 /***

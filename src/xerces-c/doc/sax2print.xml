@@ -59,7 +59,7 @@ Options:
   * = Default if not provided explicitly.
 
 The parser has intrinsic support for the following encodings:
-    UTF-8, USASCII, ISO8859-1, UTF-16[BL]E, UCS-4[BL]E,
+    UTF-8, US-ASCII, ISO8859-1, UTF-16[BL]E, UCS-4[BL]E,
     WINDOWS-1252, IBM1140, IBM037, IBM1047.
 </source>
 
@@ -70,7 +70,7 @@ The parser has intrinsic support for the following encodings:
              <em>-v=never</em>  will not use any validation<br/>
              <em>-v=auto</em>   will validate if a DOCTYPE declaration or a schema declaration is present in the XML document</p>
           <p>Here is a sample output from SAX2Print</p>
-<source>cd &XercesCInstallDir;-linux/samples/data
+<source>cd &XercesC3InstallDir;/samples/data
 SAX2Print -v=always personal.xml
 
 &lt;?xml version="1.0" encoding="LATIN1"?&gt;

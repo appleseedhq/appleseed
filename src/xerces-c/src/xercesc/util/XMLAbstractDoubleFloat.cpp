@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XMLAbstractDoubleFloat.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLAbstractDoubleFloat.cpp 673155 2008-07-01 17:55:39Z dbertoni $
  */
 
 // ---------------------------------------------------------------------------
@@ -104,16 +104,16 @@ void XMLAbstractDoubleFloat::init(const XMLCh* const strValue)
         // digits, a decimal point,  or the exponent character,
         // they will all be single byte characters, and this will
         // work.
-        static const unsigned int  maxStackSize = 100;
+        static const XMLSize_t maxStackSize = 100;
 
-        unsigned int  lenTempStrValue = 0;
+        XMLSize_t lenTempStrValue = 0;
 
         
         // Need to check that the string only contains valid schema characters
         // since the call to strtod may allow other values.  For example, AIX
         // allows "infinity" and "+INF"
         XMLCh curChar;
-        while (curChar = tmpStrValue[lenTempStrValue]) {            
+        while ((curChar = tmpStrValue[lenTempStrValue])!=0) {
             if (!((curChar >= chDigit_0 &&
                    curChar <= chDigit_9) ||
                   curChar == chPeriod  ||
@@ -172,15 +172,6 @@ void XMLAbstractDoubleFloat::init(const XMLCh* const strValue)
 
 }
 
-//
-// 
-//
-XMLCh*  XMLAbstractDoubleFloat::toString() const
-{
-    // Return data using global operator new
-    return XMLString::replicate(fRawData);
-}
-
 XMLCh*  XMLAbstractDoubleFloat::getRawData() const
 {
     return fRawData;
@@ -208,12 +199,12 @@ const XMLCh*  XMLAbstractDoubleFloat::getFormattedString() const
 void XMLAbstractDoubleFloat::formatString()
 {
 
-    unsigned int rawDataLen = XMLString::stringLen(fRawData);
+    XMLSize_t rawDataLen = XMLString::stringLen(fRawData);
     fFormattedString = (XMLCh*) fMemoryManager->allocate
     (
         (rawDataLen + 8) * sizeof(XMLCh)
     );//new XMLCh [ rawDataLen + 8];
-    for (unsigned int i = 0; i < rawDataLen + 8; i++)
+    for (XMLSize_t i = 0; i < rawDataLen + 8; i++)
         fFormattedString[i] = chNull;
 
     XMLString::copyString(fFormattedString, fRawData);
@@ -316,8 +307,6 @@ int XMLAbstractDoubleFloat::compareValues(const XMLAbstractDoubleFloat* const lV
     {
         return (-1) * compareSpecial(rValue, manager);
     }
-
-    return 0;
 }
 
 int XMLAbstractDoubleFloat::compareSpecial(const XMLAbstractDoubleFloat* const specialValue                                         
@@ -405,7 +394,7 @@ void XMLAbstractDoubleFloat::normalizeZero(XMLCh* const inData)
 	
 	bool  isValidStr = true;
     XMLCh theChar;
-	while ((theChar=*srcStr++) && isValidStr)
+	while ((theChar=*srcStr++)!=0 && isValidStr)
 	{
 		if ( theChar != chPeriod && theChar != chDigit_0 )
 			isValidStr = false;           		// invalid char
@@ -543,7 +532,7 @@ XMLCh* XMLAbstractDoubleFloat::getCanonicalRepresentation(const XMLCh*         c
 
     try 
     {
-        int    strLen = XMLString::stringLen(rawData);
+        XMLSize_t strLen = XMLString::stringLen(rawData);
         XMLCh* manStr = (XMLCh*) memMgr->allocate((strLen + 1) * sizeof(XMLCh));
         ArrayJanitor<XMLCh> janManStr(manStr, memMgr);
         XMLCh* manBuf = (XMLCh*) memMgr->allocate((strLen + 1) * sizeof(XMLCh));
@@ -568,12 +557,12 @@ XMLCh* XMLAbstractDoubleFloat::getCanonicalRepresentation(const XMLCh*         c
         }
         else
         {
-            int    manLen = ePosition - rawData;
+            XMLSize_t manLen = ePosition - rawData;
             XMLString::copyNString(manStr, rawData, manLen);
             *(manStr + manLen) = chNull;
             XMLBigDecimal::parseDecimal(manStr, manBuf, sign, totalDigits, fractDigits, memMgr);
 
-            int    expLen = strLen - manLen - 1;
+            XMLSize_t expLen = strLen - manLen - 1;
             ePosition++;
             XMLString::copyNString(expStr, ePosition, expLen);
             *(expStr + expLen) = chNull;
@@ -620,7 +609,7 @@ XMLCh* XMLAbstractDoubleFloat::getCanonicalRepresentation(const XMLCh*         c
                     endPtr--;
             }
 
-            int remainLen = endPtr - &(manBuf[1]);
+            XMLSize_t remainLen = endPtr - &(manBuf[1]);
 
             if (remainLen)
             {

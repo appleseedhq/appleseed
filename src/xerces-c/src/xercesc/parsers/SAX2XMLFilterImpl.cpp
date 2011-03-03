@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: SAX2XMLFilterImpl.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: SAX2XMLFilterImpl.cpp 673975 2008-07-04 09:23:56Z borisk $
  */
 
 #include <xercesc/parsers/SAX2XMLFilterImpl.hpp>
@@ -87,7 +87,7 @@ const XMLCh* SAX2XMLFilterImpl::getURIText(unsigned int uriId) const
     return NULL;
 }
 
-unsigned int SAX2XMLFilterImpl::getSrcOffset() const
+XMLFilePos SAX2XMLFilterImpl::getSrcOffset() const
 {
     if(fParentReader)
         fParentReader->getSrcOffset();
@@ -113,7 +113,7 @@ XMLValidator* SAX2XMLFilterImpl::getValidator() const
 // ---------------------------------------------------------------------------
 //  SAX2XMLReader Interface
 // ---------------------------------------------------------------------------
-int SAX2XMLFilterImpl::getErrorCount() const
+XMLSize_t SAX2XMLFilterImpl::getErrorCount() const
 {
     if(fParentReader)
         return fParentReader->getErrorCount();
@@ -224,7 +224,7 @@ void* SAX2XMLFilterImpl::getProperty(const XMLCh* const name) const
 //  SAX2XMLFilterImpl: Grammar preparsing
 // ---------------------------------------------------------------------------
 Grammar* SAX2XMLFilterImpl::loadGrammar(const char* const systemId,
-                                        const short grammarType,
+                                        const Grammar::GrammarType grammarType,
                                         const bool toCache)
 {
     if(fParentReader)
@@ -233,7 +233,7 @@ Grammar* SAX2XMLFilterImpl::loadGrammar(const char* const systemId,
 }
 
 Grammar* SAX2XMLFilterImpl::loadGrammar(const XMLCh* const systemId,
-                                        const short grammarType,
+                                        const Grammar::GrammarType grammarType,
                                         const bool toCache)
 {
     if(fParentReader)
@@ -242,7 +242,7 @@ Grammar* SAX2XMLFilterImpl::loadGrammar(const XMLCh* const systemId,
 }
 
 Grammar* SAX2XMLFilterImpl::loadGrammar(const InputSource& source,
-                                        const short grammarType,
+                                        const Grammar::GrammarType grammarType,
                                         const bool toCache)
 {
     if(fParentReader)
@@ -256,7 +256,7 @@ void SAX2XMLFilterImpl::resetCachedGrammarPool()
         fParentReader->resetCachedGrammarPool();
 }
 
-void SAX2XMLFilterImpl::setInputBufferSize(const size_t bufferSize)
+void SAX2XMLFilterImpl::setInputBufferSize(const XMLSize_t bufferSize)
 {
     if(fParentReader)
         fParentReader->setInputBufferSize(bufferSize);
@@ -311,7 +311,7 @@ void SAX2XMLFilterImpl::resetDocType()
 // -----------------------------------------------------------------------
 
 void SAX2XMLFilterImpl::characters(const XMLCh* const    chars
-                                 , const unsigned int    length)
+                                 , const XMLSize_t       length)
 {
     if(fDocHandler)
         fDocHandler->characters(chars, length);
@@ -332,7 +332,7 @@ void SAX2XMLFilterImpl::endElement(const XMLCh* const uri
 }
 
 void SAX2XMLFilterImpl::ignorableWhitespace(const XMLCh* const    chars
-                                          , const unsigned int    length)
+                                          , const XMLSize_t       length)
 {
     if(fDocHandler)
         fDocHandler->ignorableWhitespace(chars, length);
@@ -414,4 +414,3 @@ void SAX2XMLFilterImpl::resetErrors()
 }
 
 XERCES_CPP_NAMESPACE_END
-

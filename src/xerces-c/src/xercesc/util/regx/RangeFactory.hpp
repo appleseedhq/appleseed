@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: RangeFactory.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: RangeFactory.hpp 678879 2008-07-22 20:05:05Z amassari $
  */
 
-#if !defined(RANGEFACTORY_HPP)
-#define RANGEFACTORY_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_RANGEFACTORY_HPP)
+#define XERCESC_INCLUDE_GUARD_RANGEFACTORY_HPP
 
 // ---------------------------------------------------------------------------
 //  Includes
@@ -73,7 +73,7 @@ protected:
     bool fKeywordsInitialized;
 
 private:
-	// -----------------------------------------------------------------------
+    // -----------------------------------------------------------------------
     //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
     RangeFactory(const RangeFactory&);
@@ -85,5 +85,5 @@ XERCES_CPP_NAMESPACE_END
 #endif
 
 /**
-  *	End file RangeFactory.hpp
+  *    End file RangeFactory.hpp
   */

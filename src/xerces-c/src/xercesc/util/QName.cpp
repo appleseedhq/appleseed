@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: QName.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: QName.cpp 810580 2009-09-02 15:52:22Z amassari $
  */
 
 #include <xercesc/util/Janitor.hpp>
@@ -127,7 +127,7 @@ QName::QName(const QName& qname)
 ,fRawName(0)
 ,fMemoryManager(qname.fMemoryManager)
 {
-    unsigned int newLen;
+    XMLSize_t newLen;
 
     newLen = XMLString::stringLen(qname.getLocalPart());
     fLocalPartBufSz = newLen + 8;
@@ -171,7 +171,7 @@ const XMLCh* QName::getRawName() const
             //  might be a little wasteful of memory but we don't have to do
             //  string len operations on the two strings.
             //
-            const unsigned int neededLen = fPrefixBufSz + fLocalPartBufSz + 1;
+            const XMLSize_t neededLen = fPrefixBufSz + fLocalPartBufSz + 1;
 
             //
             //  If no buffer, or the current one is too small, then allocate one
@@ -193,7 +193,7 @@ const XMLCh* QName::getRawName() const
                 *fRawName = 0;
             }
 
-            const unsigned int prefixLen = XMLString::stringLen(fPrefix);
+            const XMLSize_t prefixLen = XMLString::stringLen(fPrefix);
 
             XMLString::moveChars(fRawName, fPrefix, prefixLen);
             fRawName[prefixLen] = chColon;
@@ -227,7 +227,7 @@ XMLCh* QName::getRawName()
             //  might be a little wasteful of memory but we don't have to do
             //  string len operations on the two strings.
             //
-            const unsigned int neededLen = fPrefixBufSz + fLocalPartBufSz + 1;
+            const XMLSize_t neededLen = fPrefixBufSz + fLocalPartBufSz + 1;
 
             //
             //  If no buffer, or the current one is too small, then allocate one
@@ -250,7 +250,7 @@ XMLCh* QName::getRawName()
             }
 
 
-            const unsigned int prefixLen = XMLString::stringLen(fPrefix);
+            const XMLSize_t prefixLen = XMLString::stringLen(fPrefix);
 
             XMLString::moveChars(fRawName, fPrefix, prefixLen);
             fRawName[prefixLen] = chColon;
@@ -286,7 +286,7 @@ void QName::setName(const XMLCh* const    rawName
                   , const unsigned int    uriId)
 {
     //set the rawName
-    unsigned int newLen = XMLString::stringLen(rawName);
+    XMLSize_t newLen = XMLString::stringLen(rawName);
     //find out the prefix and localPart from the rawName
     const int colonInd = XMLString::indexOf(rawName, chColon);
 
@@ -308,7 +308,7 @@ void QName::setName(const XMLCh* const    rawName
     else
     {
         // No colon, so we just have a name with no prefix
-        setPrefix(XMLUni::fgZeroLenString);
+        setNPrefix(XMLUni::fgZeroLenString, 0);
 
         // And clean up any QName and leave it undone until/if asked for again
         if (fRawName)
@@ -321,12 +321,7 @@ void QName::setName(const XMLCh* const    rawName
     fURIId = uriId;
 }
 
-void QName::setPrefix(const XMLCh* prefix)
-{
-    setNPrefix(prefix, XMLString::stringLen(prefix));
-}
-
-void QName::setNPrefix(const XMLCh* prefix, const unsigned int newLen)
+void QName::setNPrefix(const XMLCh* prefix, const XMLSize_t newLen)
 {
     if (!fPrefixBufSz || (newLen > fPrefixBufSz))
     {
@@ -342,25 +337,7 @@ void QName::setNPrefix(const XMLCh* prefix, const unsigned int newLen)
     fPrefix[newLen] = chNull;
 }
 
-void QName::setLocalPart(const XMLCh* localPart)
-{
-    unsigned int newLen;
-
-    newLen = XMLString::stringLen(localPart);
-    if (!fLocalPartBufSz || (newLen > fLocalPartBufSz))
-    {
-        fMemoryManager->deallocate(fLocalPart); //delete [] fLocalPart;
-        fLocalPart = 0;
-        fLocalPartBufSz = newLen + 8;
-        fLocalPart = (XMLCh*) fMemoryManager->allocate
-        (
-            (fLocalPartBufSz + 1) * sizeof(XMLCh)
-        ); //new XMLCh[fLocalPartBufSz + 1];
-    }
-    XMLString::moveChars(fLocalPart, localPart, newLen + 1);
-}
-
-void QName::setNLocalPart(const XMLCh* localPart, const unsigned int newLen)
+void QName::setNLocalPart(const XMLCh* localPart, const XMLSize_t newLen)
 {
     if (!fLocalPartBufSz || (newLen > fLocalPartBufSz))
     {
@@ -388,6 +365,10 @@ void QName::setValues(const QName& qname)
 // -----------------------------------------------------------------------
 bool QName::operator==(const QName& qname) const
 {
+    // if we are an unitialized QName, check that the other is unitialized too
+    if (!fLocalPart && !fPrefix)
+        return !qname.fLocalPart && !qname.fPrefix;
+
     if (fURIId == 0) // null URI
         return (XMLString::equals(getRawName(),qname.getRawName()));
 
@@ -427,11 +408,11 @@ void QName::serialize(XSerializeEngine& serEng)
     }
     else
     {
-        int dataLen = 0;
+        XMLSize_t dataLen = 0;
 
-        serEng.readString(fPrefix, (int&)fPrefixBufSz, dataLen, XSerializeEngine::toReadBufferLen);
+        serEng.readString(fPrefix, fPrefixBufSz, dataLen, XSerializeEngine::toReadBufferLen);
 
-        serEng.readString(fLocalPart, (int&)fLocalPartBufSz, dataLen, XSerializeEngine::toReadBufferLen);
+        serEng.readString(fLocalPart, fLocalPartBufSz, dataLen, XSerializeEngine::toReadBufferLen);
 
         //force raw name rebuilt
         fRawNameBufSz = 0;        

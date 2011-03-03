@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: RegxDefs.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: RegxDefs.hpp 678879 2008-07-22 20:05:05Z amassari $
  */
 
-#if !defined(REGXDEFS_HPP)
-#define REGXDEFS_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_REGXDEFS_HPP)
+#define XERCESC_INCLUDE_GUARD_REGXDEFS_HPP
 
 // ---------------------------------------------------------------------------
 //  Includes
@@ -73,7 +73,7 @@ static const XMLCh fgXMLNameChar[] =
 {
     chLatin_x, chLatin_m, chLatin_l, chColon, chLatin_i, chLatin_s, chLatin_N,
     chLatin_a, chLatin_m, chLatin_e, chLatin_C, chLatin_h, chLatin_a,
-	chLatin_r, chNull
+    chLatin_r, chNull
 };
 
 static const XMLCh fgXMLInitialNameChar[] =
@@ -166,7 +166,7 @@ static const XMLCh fgUniIsPunct[] =
 
 static const XMLCh fgUniIsSpace[] =
 {
-	chLatin_I, chLatin_s, chLatin_S, chLatin_p, chLatin_a, chLatin_c,
+    chLatin_I, chLatin_s, chLatin_S, chLatin_p, chLatin_a, chLatin_c,
     chLatin_e, chNull
 };
 

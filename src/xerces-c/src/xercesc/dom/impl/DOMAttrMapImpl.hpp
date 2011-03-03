@@ -1,6 +1,3 @@
-#ifndef DOMAttrMapImpl_HEADER_GUARD_
-#define DOMAttrMapImpl_HEADER_GUARD_
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -8,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,8 +16,11 @@
  */
 
 /*
- * $Id: DOMAttrMapImpl.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMAttrMapImpl.hpp 678709 2008-07-22 10:56:56Z borisk $
  */
+
+#if !defined(XERCESC_INCLUDE_GUARD_DOMATTRMAPIMPL_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMATTRMAPIMPL_HPP
 
 //
 //  This file is part of the internal implementation of the C++ XML DOM.
@@ -36,21 +36,19 @@
 
 XERCES_CPP_NAMESPACE_BEGIN
 
-class DOMNodeVector;
 class DOMNode;
+class DOMNodeVector;
 
 class CDOM_EXPORT DOMAttrMapImpl : public DOMNamedNodeMap
 {
 protected:
     DOMNodeVector*    fNodes;
     DOMNode*          fOwnerNode;       // the node this map belongs to
+    bool              attrDefaults;
 
-    virtual void	cloneContent(const DOMAttrMapImpl *srcmap);
+    virtual void      cloneContent(const DOMAttrMapImpl *srcmap);
 
-    bool            readOnly();  // revisit.  Look at owner node read-only.
-
-private:
-    bool attrDefaults;
+    bool              readOnly();  // revisit.  Look at owner node read-only.
 
 public:
     DOMAttrMapImpl(DOMNode *ownerNod);
@@ -78,11 +76,23 @@ public:
     virtual DOMNode*        getNamedItem(const XMLCh *name) const;
     virtual DOMNode*        setNamedItem(DOMNode *arg);
     virtual DOMNode*        removeNamedItem(const XMLCh *name);
-    
+
     virtual DOMNode*        getNamedItemNS(const XMLCh *namespaceURI,
 	                                        const XMLCh *localName) const;
     virtual DOMNode*        setNamedItemNS(DOMNode *arg);
     virtual DOMNode*        removeNamedItemNS(const XMLCh *namespaceURI, const XMLCh *localName);
+
+    // Fast versions of the above functions which bypass validity checks.
+    // It also assumes that fNode is not 0 (call reserve) and that there
+    // is no previous node with this name. These are used in parsing.
+    //
+    void setNamedItemFast(DOMNode *arg);
+    void setNamedItemNSFast(DOMNode *arg);
+
+    // Tries to reserve space for the specified number of elements.
+    // Currently only works on newly-created instances (fNodes == 0).
+    //
+    void reserve (XMLSize_t);
 
     void reconcileDefaultAttributes(const DOMAttrMapImpl* defaults);
     void moveSpecifiedAttributes(DOMAttrMapImpl* srcmap);

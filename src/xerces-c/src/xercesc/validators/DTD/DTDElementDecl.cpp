@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DTDElementDecl.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DTDElementDecl.cpp 471747 2006-11-06 14:31:56Z amassari $
  */
 
 
@@ -96,51 +96,6 @@ DTDElementDecl::~DTDElementDecl()
 // ---------------------------------------------------------------------------
 //  The virtual element decl interface
 // ---------------------------------------------------------------------------
-XMLAttDef* DTDElementDecl::findAttr(const   XMLCh* const    qName
-                                    , const unsigned int
-                                    , const XMLCh* const
-                                    , const XMLCh* const
-                                    , const LookupOpts      options
-                                    ,       bool&           wasAdded) const
-{
-    DTDAttDef* retVal = 0;
-
-    // If no att list faulted in yet, then it cannot exist
-    if (fAttDefs)
-        retVal = fAttDefs->get(qName);
-
-    // Fault it in if not found and ask to add it
-    if (!retVal && (options == XMLElementDecl::AddIfNotFound))
-    {
-        // Fault in the list itself if not already
-        if (!fAttDefs)
-            faultInAttDefList();
-
-        // And add a default attribute for this name
-        retVal = new (getMemoryManager()) DTDAttDef
-        (
-            qName
-            , XMLAttDef::CData
-            , XMLAttDef::Implied
-            , getMemoryManager()
-        );
-        retVal->setElemId(getId());
-        fAttDefs->put((void*)retVal->getFullName(), retVal);
-        // update and/or create fAttList
-        if(!fAttList)
-            ((DTDElementDecl*)this)->fAttList = new (getMemoryManager()) DTDAttDefList(fAttDefs,getMemoryManager());
-        fAttList->addAttDef(retVal);
-
-        wasAdded = true;
-    }
-     else
-    {
-        wasAdded = false;
-    }
-    return retVal;
-}
-
-
 XMLAttDefList& DTDElementDecl::getAttDefList() const
 {
     if (!fAttList)
@@ -152,8 +107,6 @@ XMLAttDefList& DTDElementDecl::getAttDefList() const
         ((DTDElementDecl*)this)->fAttList = new (getMemoryManager()) DTDAttDefList(fAttDefs,getMemoryManager());
     }
 
-    // Reset it before we return it
-    fAttList->Reset();
     return *fAttList;
 }
 
@@ -186,24 +139,6 @@ bool DTDElementDecl::hasAttDefs() const
         return false;
 
     return !fAttDefs->isEmpty();
-}
-
-
-bool DTDElementDecl::resetDefs()
-{
-    // If the collection hasn't been faulted in, then no att defs
-    if (!fAttDefs)
-        return false;
-
-    //
-    //  Ok, run through them and clear the 'provided' flag on each of them.
-    //  This lets the scanner use them to track which has been provided and
-    //  which have not.
-    //
-    RefHashTableOfEnumerator<DTDAttDef> enumDefs(fAttDefs, false, getMemoryManager());
-    while (enumDefs.hasMoreElements())
-        enumDefs.nextElement().setProvided(false);
-    return true;
 }
 
 void

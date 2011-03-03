@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,16 +16,16 @@
  */
 
 /*
- * $Id: DGXMLScanner.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DGXMLScanner.hpp 810580 2009-09-02 15:52:22Z amassari $
  */
 
-
-#if !defined(DGXMLSCANNER_HPP)
-#define DGXMLSCANNER_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_DGXMLSCANNER_HPP)
+#define XERCESC_INCLUDE_GUARD_DGXMLSCANNER_HPP
 
 #include <xercesc/internal/XMLScanner.hpp>
 #include <xercesc/util/ValueVectorOf.hpp>
 #include <xercesc/util/NameIdPool.hpp>
+#include <xercesc/util/Hash2KeysSetOf.hpp>
 #include <xercesc/validators/common/Grammar.hpp>
 
 XERCES_CPP_NAMESPACE_BEGIN
@@ -66,13 +66,6 @@ public :
     virtual const XMLCh* getName() const;
     virtual NameIdPool<DTDEntityDecl>* getEntityDeclPool();
     virtual const NameIdPool<DTDEntityDecl>* getEntityDeclPool() const;
-    virtual unsigned int resolveQName
-    (
-        const   XMLCh* const        qName
-        ,       XMLBuffer&          prefixBufToFill
-        , const short               mode
-        ,       int&                prefixColonPos
-    );
     virtual void scanDocument
     (
         const   InputSource&    src
@@ -111,7 +104,7 @@ private :
     virtual void scanReset(const InputSource& src);
     virtual void sendCharData(XMLBuffer& toSend);
     virtual InputSource* resolveSystemId(const XMLCh* const sysId
-                                        ,const XMLCh* const pubId); 
+                                        ,const XMLCh* const pubId);
 
     // -----------------------------------------------------------------------
     //  Private helper methods
@@ -119,16 +112,11 @@ private :
     void commonInit();
     void cleanUp();
 
-    unsigned int buildAttList
+    XMLSize_t buildAttList
     (
-        const unsigned int                attCount
+        const XMLSize_t                     attCount
         ,       XMLElementDecl*             elemDecl
         ,       RefVectorOf<XMLAttr>&       toFill
-    );
-    unsigned int resolvePrefix
-    (
-        const   XMLCh* const        prefix
-        , const ElemStack::MapModes mode
     );
     void updateNSMap
     (
@@ -136,7 +124,7 @@ private :
         , const XMLCh* const attrLocalName
         , const XMLCh* const attrValue
     );
-    void scanAttrListforNameSpaces(RefVectorOf<XMLAttr>* theAttrList, int attCount, XMLElementDecl* elemDecl);
+    void scanAttrListforNameSpaces(RefVectorOf<XMLAttr>* theAttrList, XMLSize_t attCount, XMLElementDecl* elemDecl);
 
     // -----------------------------------------------------------------------
     //  Private scanning methods
@@ -168,11 +156,6 @@ private :
     //  fDTDValidator
     //      The DTD validator instance.
     //
-    //  fElemState
-    //  fElemStateSize
-    //      Stores an element next state from DFA content model - used for
-    //      wildcard validation
-    //
     // fDTDElemNonDeclPool
     //     registry of "faulted-in" DTD element decls
     // fElemCount
@@ -182,7 +165,7 @@ private :
     //      mapping from XMLAttDef instances to the count of the last
     //      start tag where they were utilized.
     // fUndeclaredAttrRegistry
-    //      mapping of attr QNames to the count of the last start tag in which they occurred
+    //      mapping of attr QNames to detect duplicates
     //
     // -----------------------------------------------------------------------
     ValueVectorOf<XMLAttr*>*    fAttrNSList;
@@ -190,8 +173,8 @@ private :
     DTDGrammar*                 fDTDGrammar;
     NameIdPool<DTDElementDecl>* fDTDElemNonDeclPool;
     unsigned int                fElemCount;
-    RefHashTableOf<unsigned int>* fAttDefRegistry;
-    RefHashTableOf<unsigned int>* fUndeclaredAttrRegistry;
+    RefHashTableOf<unsigned int, PtrHasher>* fAttDefRegistry;
+    Hash2KeysSetOf<StringHasher>*            fUndeclaredAttrRegistry;
 };
 
 inline const XMLCh* DGXMLScanner::getName() const

@@ -1,6 +1,3 @@
-#ifndef DOMNode_HEADER_GUARD_
-#define DOMNode_HEADER_GUARD_
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -8,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,8 +16,11 @@
  */
 
 /*
- * $Id: DOMNode.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMNode.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
+
+#if !defined(XERCESC_INCLUDE_GUARD_DOMNODE_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMNODE_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 
@@ -67,25 +67,25 @@ class DOMUserDataHandler;
  * </tr>
  * <tr>
  * <td valign='top' rowspan='1' colspan='1'>DOMCDATASection</td>
- * <td valign='top' rowspan='1' colspan='1'>&quot;#cdata-section&quot;</td>
+ * <td valign='top' rowspan='1' colspan='1'>&quot;\#cdata-section&quot;</td>
  * <td valign='top' rowspan='1' colspan='1'>content of the CDATA Section</td>
  * <td valign='top' rowspan='1' colspan='1'>null</td>
  * </tr>
  * <tr>
  * <td valign='top' rowspan='1' colspan='1'>DOMComment</td>
- * <td valign='top' rowspan='1' colspan='1'>&quot;#comment&quot;</td>
+ * <td valign='top' rowspan='1' colspan='1'>&quot;\#comment&quot;</td>
  * <td valign='top' rowspan='1' colspan='1'>content of the comment</td>
  * <td valign='top' rowspan='1' colspan='1'>null</td>
  * </tr>
  * <tr>
  * <td valign='top' rowspan='1' colspan='1'>DOMDocument</td>
- * <td valign='top' rowspan='1' colspan='1'>&quot;#document&quot;</td>
+ * <td valign='top' rowspan='1' colspan='1'>&quot;\#document&quot;</td>
  * <td valign='top' rowspan='1' colspan='1'>null</td>
  * <td valign='top' rowspan='1' colspan='1'>null</td>
  * </tr>
  * <tr>
  * <td valign='top' rowspan='1' colspan='1'>DOMDocumentFragment</td>
- * <td valign='top' rowspan='1' colspan='1'>&quot;#document-fragment&quot;</td>
+ * <td valign='top' rowspan='1' colspan='1'>&quot;\#document-fragment&quot;</td>
  * <td valign='top' rowspan='1' colspan='1'>null</td>
  * <td valign='top' rowspan='1' colspan='1'>null</td>
  * </tr>
@@ -127,7 +127,7 @@ class DOMUserDataHandler;
  * </tr>
  * <tr>
  * <td valign='top' rowspan='1' colspan='1'>DOMText</td>
- * <td valign='top' rowspan='1' colspan='1'>&quot;#text&quot;</td>
+ * <td valign='top' rowspan='1' colspan='1'>&quot;\#text&quot;</td>
  * <td valign='top' rowspan='1' colspan='1'>content of the text node</td>
  * <td valign='top' rowspan='1' colspan='1'>null</td>
  * </tr>
@@ -142,12 +142,12 @@ protected:
     //  Hidden constructors
     // -----------------------------------------------------------------------
     /** @name Hidden constructors */
-    //@{    
+    //@{
     DOMNode() {}
     DOMNode(const DOMNode &) {}
     //@}
 
-private:    
+private:
     // -----------------------------------------------------------------------
     // Unimplemented constructors and operators
     // -----------------------------------------------------------------------
@@ -172,7 +172,7 @@ public:
     // -----------------------------------------------------------------------
     //  Class Types
     // -----------------------------------------------------------------------
-    /** @name Public Contants */
+    /** @name Public Constants */
     //@{
     /**
      * NodeType
@@ -195,39 +195,30 @@ public:
     };
 
     /**
-     * TreePosition:
+     * DocumentPosition:
      *
-     * <p><b>"Experimental - subject to change"</b></p>
-     *
-     * <p><code>TREE_POSITION_PRECEDING:</code>
-     * The node precedes the reference node.</p>
-     * <p><code>TREE_POSITION_FOLLOWING:</code>
+     * <p><code>DOCUMENT_POSITION_CONTAINED_BY:</code>
+     * The node is contained by the reference node. A node which is contained is always following, too.</p>
+     * <p><code>DOCUMENT_POSITION_CONTAINS:</code>
+     * The node contains the reference node. A node which contains is always preceding, too.</p>
+     * <p><code>DOCUMENT_POSITION_DISCONNECTED:</code>
+     * The two nodes are disconnected. Order between disconnected nodes is always implementation-specific.</p>
+     * <p><code>DOCUMENT_POSITION_FOLLOWING:</code>
      * The node follows the reference node.</p>
-     * <p><code>TREE_POSITION_ANCESTOR:</code>
-     * The node is an ancestor of the reference node.</p>
-     * <p><code>TREE_POSITION_DESCENDANT:</code>
-     * The node is a descendant of the reference node.</p>
-     * <p><code>TREE_POSITION_EQUIVALENT:</code>
-     * The two nodes have an equivalent position. This is the case of two
-     * attributes that have the same <code>ownerElement</code>, and two
-     * nodes that are the same.</p>
-     * <p><code>TREE_POSITION_SAME_NODE:</code>
-     * The two nodes are the same. Two nodes that are the same have an
-     * equivalent position, though the reverse may not be true.</p>
-     * <p><code>TREE_POSITION_DISCONNECTED:</code>
-     * The two nodes are disconnected, they do not have any common ancestor.
-     * This is the case of two nodes that are not in the same document.</p>
+     * <p><code>DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC:</code>
+     * The determination of preceding versus following is implementation-specific.</p>
+     * <p><code>DOCUMENT_POSITION_PRECEDING:</code>
+     * The second node precedes the reference node.</p>
      *
      * @since DOM Level 3
      */
-    enum DOMTreePosition {
-        TREE_POSITION_PRECEDING   = 0x01,
-        TREE_POSITION_FOLLOWING   = 0x02,
-        TREE_POSITION_ANCESTOR    = 0x04,
-        TREE_POSITION_DESCENDANT  = 0x08,
-        TREE_POSITION_EQUIVALENT  = 0x10,
-        TREE_POSITION_SAME_NODE   = 0x20,
-        TREE_POSITION_DISCONNECTED = 0x00
+    enum DocumentPosition {
+        DOCUMENT_POSITION_DISCONNECTED            = 0x01,
+        DOCUMENT_POSITION_PRECEDING               = 0x02,
+        DOCUMENT_POSITION_FOLLOWING               = 0x04,
+        DOCUMENT_POSITION_CONTAINS                = 0x08,
+        DOCUMENT_POSITION_CONTAINED_BY            = 0x10,
+        DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = 0x20
     };
     //@}
 
@@ -258,7 +249,7 @@ public:
      * An enum value representing the type of the underlying object.
      * @since DOM Level 1
      */
-    virtual short           getNodeType() const = 0;
+    virtual NodeType            getNodeType() const = 0;
 
     /**
      * Gets the parent of this node.
@@ -623,8 +614,6 @@ public:
      * same values and calling the same DOM method on either reference
      * always has exactly the same effect.
      *
-     * <p><b>"Experimental - subject to change"</b></p>
-     *
      * @param other The node to test against.
      * @return Returns <code>true</code> if the nodes are the same,
      *   <code>false</code> otherwise.
@@ -667,8 +656,6 @@ public:
      * <code>DOMText</code> nodes, as well as any user data or event listeners
      * registered on the nodes.
      *
-     * <p><b>"Experimental - subject to change"</b></p>
-     *
      * @param arg The node to compare equality with.
      * @return If the nodes, and possibly subtrees are equal,
      *   <code>true</code> otherwise <code>false</code>.
@@ -691,8 +678,6 @@ public:
      * their original type.  Casting them to the wrong type may result
      * unexpected behavior.
      *
-     * <p><b>"Experimental - subject to change"</b></p>
-     *
      * @param key The key to associate the object to.
      * @param data The object to associate to the given key, or
      *   <code>null</code> to remove any existing association to that key.
@@ -713,8 +698,6 @@ public:
      * must first have been set to this node by calling
      * <code>setUserData</code> with the same key.
      *
-     * <p><b>"Experimental - subject to change"</b></p>
-     *
      * @param key The key the object is associated to.
      * @return Returns the <code>void*</code> associated to the given key
      *   on this node, or <code>null</code> if there was none.
@@ -732,8 +715,6 @@ public:
      * element if any, and the value of the <code>documentURI</code>
      * attribute from the <code>DOMDocument</code> interface otherwise.
      *
-     * <p><b>"Experimental - subject to change"</b></p>
-     *
      * <br> When the node is an <code>DOMElement</code>, a <code>DOMDocument</code>
      * or a a <code>DOMProcessingInstruction</code>, this attribute represents
      * the properties [base URI] defined in . When the node is a
@@ -742,30 +723,26 @@ public:
      * properties [declaration base URI].
      * @since DOM Level 3
      */
-    virtual const XMLCh*           getBaseURI() const = 0;
+    virtual const XMLCh*      getBaseURI() const = 0;
 
     /**
-     * Compares a node with this node with regard to their position in the
-     * tree and according to the document order. This order can be extended
-     * by module that define additional types of nodes.
-     *
-     * <p><b>"Experimental - subject to change"</b></p>
+     * Compares the reference node, i.e. the node on which this method is being called,
+     * with a node, i.e. the one passed as a parameter, with regard to their position
+     * in the document and according to the document order.
      *
      * @param other The node to compare against this node.
      * @return Returns how the given node is positioned relatively to this
      *   node.
      * @since DOM Level 3
      */
-    virtual short                  compareTreePosition(const DOMNode* other) const = 0;
+    virtual short             compareDocumentPosition(const DOMNode* other) const = 0;
 
     /**
      * This attribute returns the text content of this node and its
-     * descendants. No serialization is performed, the returned string 
-     * does not contain any markup. No whitespace normalization is 
-     * performed and the returned string does not contain the white 
+     * descendants. No serialization is performed, the returned string
+     * does not contain any markup. No whitespace normalization is
+     * performed and the returned string does not contain the white
      * spaces in element content.
-     *
-     * <p><b>"Experimental - subject to change"</b></p>
      *
      * <br>The string returned is made of the text content of this node
      * depending on its type, as defined below:
@@ -797,65 +774,52 @@ public:
      * @exception DOMException
      *   DOMSTRING_SIZE_ERR: Raised when it would return more characters than
      *   fit in a <code>DOMString</code> variable on the implementation
-     *   platform.     
-     * @see #setTextContext
+     *   platform.
+     * @see #setTextContent
      * @since DOM Level 3
      */
-    virtual const XMLCh*           getTextContent() const = 0;
+    virtual const XMLCh*      getTextContent() const = 0;
 
     /**
-     * This attribute removes any possible children this node may have and, if the 
-     * new string is not empty or null, replaced by a single <code>DOMText</code> 
-     * node containing the string this attribute is set to. No parsing is 
-     * performed, the input string is taken as pure textual content.  
-     *
-     * <p><b>"Experimental - subject to change"</b></p>
+     * This attribute removes any possible children this node may have and, if the
+     * new string is not empty or null, replaced by a single <code>DOMText</code>
+     * node containing the string this attribute is set to. No parsing is
+     * performed, the input string is taken as pure textual content.
      *
      * @exception DOMException
-     *   NO_MODIFICATION_ALLOWED_ERR: Raised when the node is readonly.     
-     * @see #getTextContext
+     *   NO_MODIFICATION_ALLOWED_ERR: Raised when the node is readonly.
+     * @see #getTextContent
      * @since DOM Level 3
      */
-    virtual void                   setTextContent(const XMLCh* textContent) = 0;
+    virtual void              setTextContent(const XMLCh* textContent) = 0;
 
     /**
-     * Look up the prefix associated to the given namespace URI, starting from
-     * this node.
-     *
-     * <p><b>"Experimental - subject to change"</b></p>
+     * Look up the prefix associated to the given namespace URI, starting from this node.
+     * The default namespace declarations are ignored by this method.
      *
      * @param namespaceURI The namespace URI to look for.
-     * @param useDefault  Indicates if the lookup mechanism should take into
-     *   account the default namespace or not.
      * @return Returns an associated namespace prefix if found,
-     *   <code>null</code> if none is found and <code>useDefault</code> is
-     *   false, or <code>null</code> if not found or it is the default
-     *   namespace and <code>useDefault</code> is <code>true</code>. If more
+     *   <code>null</code> if none is found. If more
      *   than one prefix are associated to the namespace prefix, the
      *   returned namespace prefix is implementation dependent.
      * @since DOM Level 3
      */
-    virtual const XMLCh*           lookupNamespacePrefix(const XMLCh* namespaceURI,
-                                                         bool useDefault) const = 0;
+    virtual const XMLCh*      lookupPrefix(const XMLCh* namespaceURI) const = 0;
 
     /**
      * This method checks if the specified <code>namespaceURI</code> is the
      * default namespace or not.
-     *
-     * <p><b>"Experimental - subject to change"</b></p>
      *
      * @param namespaceURI The namespace URI to look for.
      * @return  <code>true</code> if the specified <code>namespaceURI</code>
      *   is the default namespace, <code>false</code> otherwise.
      * @since DOM Level 3
      */
-    virtual bool                   isDefaultNamespace(const XMLCh* namespaceURI) const = 0;
+    virtual bool              isDefaultNamespace(const XMLCh* namespaceURI) const = 0;
 
     /**
      * Look up the namespace URI associated to the given prefix, starting from
      * this node.
-     *
-     * <p><b>"Experimental - subject to change"</b></p>
      *
      * @param prefix The prefix to look for. If this parameter is
      *   <code>null</code>, the method will return the default namespace URI
@@ -864,14 +828,13 @@ public:
      *   none is found.
      * @since DOM Level 3
      */
-    virtual const XMLCh*           lookupNamespaceURI(const XMLCh* prefix) const  = 0;
+    virtual const XMLCh*      lookupNamespaceURI(const XMLCh* prefix) const  = 0;
 
     /**
      * This method makes available a <code>DOMNode</code>'s specialized interface
      *
-     * <p><b>"Experimental - subject to change"</b></p>
-     *
      * @param feature The name of the feature requested (case-insensitive).
+     * @param version The version of the feature requested.
      * @return Returns an alternate <code>DOMNode</code> which implements the
      *   specialized APIs of the specified feature, if any, or
      *   <code>null</code> if there is no alternate <code>DOMNode</code> which
@@ -882,7 +845,7 @@ public:
      *   <code>attributes</code>, <code>childNodes</code>, etc.
      * @since DOM Level 3
      */
-    virtual DOMNode*               getInterface(const XMLCh* feature) = 0;
+    virtual void*             getFeature(const XMLCh* feature, const XMLCh* version) const = 0;
     //@}
 
     // -----------------------------------------------------------------------
@@ -904,7 +867,7 @@ public:
      *   INVALID_ACCESS_ERR: Raised if this Node has a parent and thus should not be released yet.
      */
     virtual void              release() = 0;
-    //@}     
+    //@}
 #if defined(XML_DOMREFCOUNT_EXPERIMENTAL)
     // -----------------------------------------------------------------------
     //  Non-standard Extension
@@ -942,12 +905,12 @@ public:
         ((DOMDocumentImpl*)(ptr->getOwnerDocument()))
 
 #define GET_DIRECT_MM(ptr)           \
-        ptr ? ((DOMDocumentImpl*)ptr)->getMemoryManager() : XMLPlatformUtils::fgMemoryManager        
+        (ptr ? ((DOMDocumentImpl*)ptr)->getMemoryManager() : XMLPlatformUtils::fgMemoryManager)
 
 #define GET_INDIRECT_MM(ptr)                                                    \
-        !ptr ? XMLPlatformUtils::fgMemoryManager :                              \
+        (!ptr ? XMLPlatformUtils::fgMemoryManager :                              \
         GET_OWNER_DOCUMENT(ptr) ? GET_OWNER_DOCUMENT(ptr)->getMemoryManager() : \
-        XMLPlatformUtils::fgMemoryManager
+        XMLPlatformUtils::fgMemoryManager)
 
 /***
  * For DOMNode and its derivatives
@@ -957,4 +920,3 @@ public:
 XERCES_CPP_NAMESPACE_END
 
 #endif
-

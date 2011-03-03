@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: Win32TransService.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: Win32TransService.hpp 676954 2008-07-15 16:29:19Z dbertoni $
  */
 
-#ifndef WIN32TRANSSERVICE_HPP
-#define WIN32TRANSSERVICE_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_WIN32TRANSSERVICE_HPP)
+#define XERCESC_INCLUDE_GUARD_WIN32TRANSSERVICE_HPP
 
 #include <xercesc/util/TransService.hpp>
 #include <xercesc/util/RefHashTableOf.hpp>
@@ -43,7 +43,7 @@ public :
     // -----------------------------------------------------------------------
     //  Constructors and Destructor
     // -----------------------------------------------------------------------
-    Win32TransService();
+    Win32TransService(MemoryManager* manager);
     virtual ~Win32TransService();
 
 
@@ -60,30 +60,28 @@ public :
     (
         const   XMLCh* const    comp1
         , const XMLCh* const    comp2
-        , const unsigned int    maxChars
+        , const XMLSize_t       maxChars
     );
 
     virtual const XMLCh* getId() const;
 
-    virtual bool isSpace(const XMLCh toCheck) const;
-
-    virtual XMLLCPTranscoder* makeNewLCPTranscoder();
+    virtual XMLLCPTranscoder* makeNewLCPTranscoder(MemoryManager* manager);
 
     virtual bool supportsSrcOfs() const;
 
-    virtual void upperCase(XMLCh* const toUpperCase) const;
-    virtual void lowerCase(XMLCh* const toLowerCase) const;
+    virtual void upperCase(XMLCh* const toUpperCase);
+    virtual void lowerCase(XMLCh* const toLowerCase);
 
 
 protected :
     // -----------------------------------------------------------------------
-    //  Protected virtual methods, implemented in Win32TransService2.cpp
+    //  Protected virtual methods
     // -----------------------------------------------------------------------
     virtual XMLTranscoder* makeNewXMLTranscoder
     (
         const   XMLCh* const            encodingName
         ,       XMLTransService::Codes& resValue
-        , const unsigned int            blockSize
+        , const XMLSize_t               blockSize
         ,       MemoryManager* const    manager
     );
 
@@ -103,14 +101,8 @@ private :
     //      This map is shared unsynchronized among all threads of the process,
     //      which is cool since it will be read only once its initialized.
 
-
-
-    static bool isAlias(const   HKEY            encodingKey
-                    ,       char* const     aliasBuf = 0
-                    , const unsigned int    nameBufSz = 0);
-
-
     RefHashTableOf<CPMapEntry>    *fCPMap;
+    MemoryManager*  fManager;
 };
 
 
@@ -134,9 +126,8 @@ public :
     Win32Transcoder
     (
         const   XMLCh* const    encodingName
-        , const unsigned int    winCP
         , const unsigned int    ieCP
-        , const unsigned int    blockSize
+        , const XMLSize_t       blockSize
         , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager);
     ~Win32Transcoder();
 
@@ -144,30 +135,30 @@ public :
     // -----------------------------------------------------------------------
     //  Implementation of the virtual transcoder interface
     // -----------------------------------------------------------------------
-    virtual unsigned int transcodeFrom
+    virtual XMLSize_t transcodeFrom
     (
         const   XMLByte* const          srcData
-        , const unsigned int            srcCount
+        , const XMLSize_t               srcCount
         ,       XMLCh* const            toFill
-        , const unsigned int            maxChars
-        ,       unsigned int&           bytesEaten
+        , const XMLSize_t               maxChars
+        ,       XMLSize_t&              bytesEaten
         ,       unsigned char* const    charSizes
     );
 
-    virtual unsigned int transcodeTo
+    virtual XMLSize_t transcodeTo
     (
         const   XMLCh* const    srcData
-        , const unsigned int    srcCount
+        , const XMLSize_t       srcCount
         ,       XMLByte* const  toFill
-        , const unsigned int    maxBytes
-        ,       unsigned int&   charsEaten
+        , const XMLSize_t       maxBytes
+        ,       XMLSize_t&      charsEaten
         , const UnRepOpts       options
     );
 
     virtual bool canTranscodeTo
     (
         const   unsigned int    toCheck
-    )   const;
+    );
 
 
 private :
@@ -182,13 +173,38 @@ private :
     //  Private data members
     //
     //  fIECP
-    //      This is the internet explorer code page for this encoding.
+    //      This is the code page for this encoding.
     //
-    //  fWinCP
-    //      This is the windows code page for this encoding.
+    //  fUsedDef
+    //      A flag passed into the conversions routines that is set to
+    //      TRUE when a default character was substituted for the actual
+    //      character.
+    //
+    //  fPtrUsedDef
+    //      A pointer to fUsedDef or a null pointer if the code page does not
+    //      support the parameter that returns whether or not a default
+    //      character was substituted.
+    //
+    //  fFromFlags
+    //      These are the flags passed to MultiByteToWideChar.  For some
+    //      code pages, this must be 0.  See the documentation of the function
+    //      for more details.
+    //
+    //  fToFlags
+    //      These are the flags passed to WideCharToMultiByte.  For some
+    //      code pages, this must be 0.  See the documentation of the function
+    //      for more details.
+    //
     // -----------------------------------------------------------------------
-    unsigned int    fIECP;
-    unsigned int    fWinCP;
+    UINT    fIECP;
+
+    BOOL    fUsedDef;
+
+    BOOL*   fPtrUsedDef;
+
+    DWORD   fFromFlags;
+
+    DWORD   fToFlags;
 };
 
 
@@ -213,25 +229,27 @@ public :
     // -----------------------------------------------------------------------
     //  Implementation of the virtual transcoder interface
     // -----------------------------------------------------------------------
-    virtual unsigned int calcRequiredSize(const char* const srcText
-        , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
-
-    virtual unsigned int calcRequiredSize(const XMLCh* const srcText
-        , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
-
-    virtual char* transcode(const XMLCh* const toTranscode);
     virtual char* transcode(const XMLCh* const toTranscode,
-                            MemoryManager* const manager);
+                            MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
 
-    virtual XMLCh* transcode(const char* const toTranscode);
     virtual XMLCh* transcode(const char* const toTranscode,
-                             MemoryManager* const manager);
+                             MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
+
+
+    // -----------------------------------------------------------------------
+    //  DEPRECATED old transcode interface
+    // -----------------------------------------------------------------------
+    virtual XMLSize_t calcRequiredSize(const char* const srcText
+        , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
+
+    virtual XMLSize_t calcRequiredSize(const XMLCh* const srcText
+        , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
 
     virtual bool transcode
     (
         const   char* const     toTranscode
         ,       XMLCh* const    toFill
-        , const unsigned int    maxChars
+        , const XMLSize_t       maxChars
         , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
     );
 
@@ -239,7 +257,7 @@ public :
     (
         const   XMLCh* const    toTranscode
         ,       char* const     toFill
-        , const unsigned int    maxChars
+        , const XMLSize_t       maxChars
         , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
     );
 
@@ -250,6 +268,8 @@ private :
     // -----------------------------------------------------------------------
     Win32LCPTranscoder(const Win32LCPTranscoder&);
     Win32LCPTranscoder& operator=(const Win32LCPTranscoder&);
+
+    MemoryManager*  fManager;
 };
 
 XERCES_CPP_NAMESPACE_END

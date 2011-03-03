@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,15 +17,15 @@
 
 
 /*
- * $Id: DOMAttrMapImpl.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMAttrMapImpl.cpp 678709 2008-07-22 10:56:56Z borisk $
  */
 
+#include "DOMCasts.hpp"
+#include "DOMNodeImpl.hpp"
+#include "DOMNodeVector.hpp"
 #include "DOMAttrMapImpl.hpp"
 #include "DOMAttrImpl.hpp"
-#include "DOMNodeImpl.hpp"
 #include "DOMElementImpl.hpp"
-#include "DOMCasts.hpp"
-#include "DOMNodeVector.hpp"
 
 #include <xercesc/dom/DOMAttr.hpp>
 #include <xercesc/dom/DOMException.hpp>
@@ -68,7 +68,7 @@ void DOMAttrMapImpl::cloneContent(const DOMAttrMapImpl *srcmap)
         {
             XMLSize_t size = srcmap->fNodes->size();
             if(size > 0) {
-                DOMDocument *doc = fOwnerNode->getOwnerDocument();
+                DOMDocumentImpl *doc = (DOMDocumentImpl*)fOwnerNode->getOwnerDocument();
                 fNodes = new (doc) DOMNodeVector(doc, size);
             }
         }
@@ -98,8 +98,8 @@ void DOMAttrMapImpl::setReadOnly(bool readOnl, bool deep)
     // this->fReadOnly=readOnl;
     if(deep && fNodes!=0)
     {
-        int sz = fNodes->size();
-        for (int i=0; i<sz; ++i) {
+        XMLSize_t sz = fNodes->size();
+        for (XMLSize_t i=0; i<sz; ++i) {
             castToNodeImpl(fNodes->elementAt(i))->setReadOnly(readOnl, deep);
         }
     }
@@ -111,12 +111,11 @@ bool DOMAttrMapImpl::readOnly() {
 
 int DOMAttrMapImpl::findNamePoint(const XMLCh *name) const
 {
-
     // Binary search
     int i=0;
     if(fNodes!=0)
     {
-        int first=0,last=fNodes->size()-1;
+        int first=0,last=(int)fNodes->size()-1;
 
         while(first<=last)
         {
@@ -185,12 +184,12 @@ DOMNode *DOMAttrMapImpl::setNamedItem(DOMNode *arg)
         i=-1-i; // Insert point (may be end of list)
         if(0==fNodes)
         {
-            fNodes=new (doc) DOMNodeVector(doc);
+            fNodes=new ((DOMDocumentImpl*)doc) DOMNodeVector(doc);
         }
         fNodes->insertElementAt(arg,i);
     }
     if (previous != 0) {
-        castToNodeImpl(previous)->fOwnerNode = fOwnerNode->getOwnerDocument();
+        castToNodeImpl(previous)->fOwnerNode = doc;
         castToNodeImpl(previous)->isOwned(false);
     }
 
@@ -211,8 +210,8 @@ int DOMAttrMapImpl::findNamePoint(const XMLCh *namespaceURI,
     // In addition, to get this to work with fNodes without any namespace
     // (namespaceURI and localNames are both 0) we then use the nodeName
     // as a secondary key.
-    int i, len = fNodes -> size();
-    for (i = 0; i < len; ++i) {
+    const XMLSize_t len = fNodes -> size();
+    for (XMLSize_t i = 0; i < len; ++i) {
         DOMNode *node = fNodes -> elementAt(i);
         const XMLCh * nNamespaceURI = node->getNamespaceURI();
         const XMLCh * nLocalName = node->getLocalName();
@@ -222,7 +221,7 @@ int DOMAttrMapImpl::findNamePoint(const XMLCh *namespaceURI,
             if (XMLString::equals(localName, nLocalName)
                 ||
                 (nLocalName == 0 && XMLString::equals(localName, node->getNodeName())))
-                return i;
+                return (int)i;
         }
     }
     return -1;	//not found
@@ -261,11 +260,11 @@ DOMNode *DOMAttrMapImpl::setNamedItemNS(DOMNode* arg)
         if (i<0)
           i = -1 - i;
         if(0==fNodes)
-            fNodes=new (doc) DOMNodeVector(doc);
+            fNodes=new ((DOMDocumentImpl*)doc) DOMNodeVector(doc);
         fNodes->insertElementAt(arg,i);
     }
     if (previous != 0) {
-        castToNodeImpl(previous)->fOwnerNode = fOwnerNode->getOwnerDocument();
+        castToNodeImpl(previous)->fOwnerNode = doc;
         castToNodeImpl(previous)->isOwned(false);
     }
 
@@ -382,10 +381,10 @@ void DOMAttrMapImpl::reconcileDefaultAttributes(const DOMAttrMapImpl* defaults) 
 
     // remove any existing default
     XMLSize_t nsize = getLength();
-    for (XMLSSize_t i = nsize - 1; i >= 0; i--) {
-        DOMAttr* attr = (DOMAttr*)item(i);
+    for (XMLSize_t i = nsize; i > 0; i--) {
+        DOMAttr* attr = (DOMAttr*)item(i-1);
         if (!attr->getSpecified()) {
-            removeNamedItemAt(i);
+            removeNamedItemAt(i-1);
         }
     }
 
@@ -419,10 +418,10 @@ void DOMAttrMapImpl::reconcileDefaultAttributes(const DOMAttrMapImpl* defaults) 
 void DOMAttrMapImpl::moveSpecifiedAttributes(DOMAttrMapImpl* srcmap) {
     XMLSize_t nsize = srcmap->getLength();
 
-    for (XMLSSize_t i = nsize - 1; i >= 0; i--) {
-        DOMAttr* attr = (DOMAttr*)srcmap->item(i);
+    for (XMLSize_t i = nsize; i > 0; i--) {
+        DOMAttr* attr = (DOMAttr*)srcmap->item(i-1);
         if (attr->getSpecified()) {
-            srcmap->removeNamedItemAt(i);
+            srcmap->removeNamedItemAt(i-1);
         }
 
         if (attr->getLocalName())
@@ -443,6 +442,53 @@ DOMNode * DOMAttrMapImpl::item(XMLSize_t index) const
         fNodes->elementAt(index) : 0;
 }
 
+void DOMAttrMapImpl::setNamedItemFast(DOMNode *arg)
+{
+    DOMNodeImpl *argImpl = castToNodeImpl(arg);
+
+    argImpl->fOwnerNode = fOwnerNode;
+    argImpl->isOwned(true);
+    int i = findNamePoint(arg->getNodeName());
+
+    if(i >= 0)
+      fNodes->setElementAt(arg, i);
+    else
+    {
+      i= -1 -i;
+      fNodes->insertElementAt(arg, i);
+    }
+}
+
+void DOMAttrMapImpl::setNamedItemNSFast(DOMNode* arg)
+{
+    DOMNodeImpl *argImpl = castToNodeImpl(arg);
+
+    argImpl->fOwnerNode = fOwnerNode;
+    argImpl->isOwned(true);
+    int i=findNamePoint(arg->getNamespaceURI(), arg->getLocalName());
+
+    if(i >= 0)
+    {
+        fNodes->setElementAt(arg,i);
+    }
+    else
+    {
+        i = findNamePoint(arg->getNodeName());
+
+        if (i < 0)
+          i = -1 - i;
+
+        fNodes->insertElementAt(arg,i);
+    }
+}
+
+void DOMAttrMapImpl::reserve (XMLSize_t n)
+{
+  if (fNodes == 0)
+  {
+    DOMDocumentImpl* doc = (DOMDocumentImpl*)fOwnerNode->getOwnerDocument();
+    fNodes = new (doc) DOMNodeVector(doc, n);
+  }
+}
 
 XERCES_CPP_NAMESPACE_END
-

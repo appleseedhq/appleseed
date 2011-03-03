@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: AnySimpleTypeDatatypeValidator.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: AnySimpleTypeDatatypeValidator.cpp 637054 2008-03-14 11:08:37Z amassari $
  */
 
 
@@ -41,6 +41,16 @@ AnySimpleTypeDatatypeValidator::AnySimpleTypeDatatypeValidator(MemoryManager* co
 AnySimpleTypeDatatypeValidator::~AnySimpleTypeDatatypeValidator()
 {
 
+}
+
+// ---------------------------------------------------------------------------
+//  DatatypeValidators: Compare methods
+// ---------------------------------------------------------------------------
+int AnySimpleTypeDatatypeValidator::compare(  const XMLCh* const lValue
+                                            , const XMLCh* const rValue
+                                            , MemoryManager* const)
+{
+    return XMLString::compareString(lValue, rValue);
 }
 
 // ---------------------------------------------------------------------------

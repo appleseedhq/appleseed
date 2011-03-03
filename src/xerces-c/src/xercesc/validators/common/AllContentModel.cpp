@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: AllContentModel.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: AllContentModel.cpp 676911 2008-07-15 13:27:32Z amassari $
  */
 
 
@@ -89,7 +89,7 @@ AllContentModel::AllContentModel( ContentSpecNode* const parentContentSpec
 
 AllContentModel::~AllContentModel()
 {
-    for (unsigned int index = 0; index < fCount; index++)
+    for (XMLSize_t index = 0; index < fCount; index++)
         delete fChildren[index];
     fMemoryManager->deallocate(fChildren); //delete [] fChildren;
     fMemoryManager->deallocate(fChildOptional); //delete [] fChildOptional;
@@ -104,33 +104,33 @@ AllContentModel::~AllContentModel()
 //must agree with
 //the order and number of child elements specified in the model.
 //
-int
+bool
 AllContentModel::validateContent( QName** const         children
-                                , const unsigned int    childCount
-                                , const unsigned int) const
+                                , XMLSize_t             childCount
+                                , unsigned int
+                                , XMLSize_t*            indexFailingChild
+                                , MemoryManager*    const manager) const
 {
     // If <all> had minOccurs of zero and there are
     // no children to validate, trivially validate
     if (childCount == 0 && (fHasOptionalContent || !fNumRequired))
-        return -1;
+        return true;
 
     // keep track of the required element seen
-    unsigned int numRequiredSeen = 0;
+    XMLSize_t numRequiredSeen = 0;
 
     if(childCount > 0)
-    {
-        MemoryManager* const localMemoryManager = children[0]->getMemoryManager();
-
+    {        
         // Check for duplicate element
-        bool* elementSeen = (bool*) localMemoryManager->allocate(fCount*sizeof(bool)); //new bool[fCount];
+        bool* elementSeen = (bool*) manager->allocate(fCount*sizeof(bool)); //new bool[fCount];
 
-        const ArrayJanitor<bool> jan(elementSeen, localMemoryManager);
+        const ArrayJanitor<bool> jan(elementSeen, manager);
 
         // initialize the array
-        for (unsigned int i = 0; i < fCount; i++)
+        for (XMLSize_t i = 0; i < fCount; i++)
             elementSeen[i] = false;
 
-        for (unsigned int outIndex = 0; outIndex < childCount; outIndex++) {
+        for (XMLSize_t outIndex = 0; outIndex < childCount; outIndex++) {
             // Get the current child out of the source index
             const QName* curChild = children[outIndex];
 
@@ -139,7 +139,7 @@ AllContentModel::validateContent( QName** const         children
                 continue;
 
             // And try to find it in our list
-            unsigned int inIndex = 0;
+            XMLSize_t inIndex = 0;
             for (; inIndex < fCount; inIndex++)
             {
                 const QName* inChild = fChildren[inIndex];
@@ -149,7 +149,8 @@ AllContentModel::validateContent( QName** const         children
                     // If this element was seen already, indicate an error was
                     // found at the duplicate index.
                     if (elementSeen[inIndex]) {
-                        return outIndex;
+                        *indexFailingChild=outIndex;
+                        return false;
                     }
                     else
                         elementSeen[inIndex] = true;
@@ -163,7 +164,8 @@ AllContentModel::validateContent( QName** const         children
 
             // We did not find this one, so the validation failed
             if (inIndex == fCount) {
-                return outIndex;
+                *indexFailingChild=outIndex;
+                return false;
             }
 
         }
@@ -171,44 +173,45 @@ AllContentModel::validateContent( QName** const         children
 
     // Were all the required elements of the <all> encountered?
     if (numRequiredSeen != fNumRequired) {
-        return childCount;
+        *indexFailingChild=childCount;
+        return false;
     }
 
     // Everything seems to be ok, so return success
-    return -1;
+    return true;
 }
 
 
-int AllContentModel::validateContentSpecial(QName** const           children
-                                          , const unsigned int      childCount
-                                          , const unsigned int
+bool AllContentModel::validateContentSpecial(QName** const          children
+                                          , XMLSize_t               childCount
+                                          , unsigned int
                                           , GrammarResolver*  const pGrammarResolver
-                                          , XMLStringPool*    const pStringPool) const
+                                          , XMLStringPool*    const pStringPool
+                                          , XMLSize_t*              indexFailingChild
+                                          , MemoryManager*    const manager) const
 {
     // If <all> had minOccurs of zero and there are
     // no children to validate, trivially validate
     if (childCount == 0 && (fHasOptionalContent || !fNumRequired))
-        return -1;
+        return true;
 
     // keep track of the required element seen
-    unsigned int numRequiredSeen = 0;
+    XMLSize_t numRequiredSeen = 0;
 
     if(childCount > 0)
     {
         SubstitutionGroupComparator comparator(pGrammarResolver, pStringPool);
 
-        MemoryManager* const localMemoryManager = children[0]->getMemoryManager();
-
         // Check for duplicate element
-        bool* elementSeen = (bool*) localMemoryManager->allocate(fCount*sizeof(bool)); //new bool[fCount];
+        bool* elementSeen = (bool*) manager->allocate(fCount*sizeof(bool)); //new bool[fCount];
 
-        const ArrayJanitor<bool> jan(elementSeen, localMemoryManager);
+        const ArrayJanitor<bool> jan(elementSeen, manager);
 
         // initialize the array
-        for (unsigned int i = 0; i < fCount; i++)
+        for (XMLSize_t i = 0; i < fCount; i++)
             elementSeen[i] = false;
 
-        for (unsigned int outIndex = 0; outIndex < childCount; outIndex++) {
+        for (XMLSize_t outIndex = 0; outIndex < childCount; outIndex++) {
             // Get the current child out of the source index
             QName* const curChild = children[outIndex];
 
@@ -217,7 +220,7 @@ int AllContentModel::validateContentSpecial(QName** const           children
                 continue;
 
             // And try to find it in our list
-            unsigned int inIndex = 0;
+            XMLSize_t inIndex = 0;
             for (; inIndex < fCount; inIndex++)
             {
                 QName* const inChild = fChildren[inIndex];
@@ -226,7 +229,8 @@ int AllContentModel::validateContentSpecial(QName** const           children
                     // If this element was seen already, indicate an error was
                     // found at the duplicate index.
                     if (elementSeen[inIndex]) {
-                        return outIndex;
+                        *indexFailingChild=outIndex;
+                        return false;
                     }
                     else
                         elementSeen[inIndex] = true;
@@ -240,7 +244,8 @@ int AllContentModel::validateContentSpecial(QName** const           children
 
             // We did not find this one, so the validation failed
             if (inIndex == fCount) {
-                return outIndex;
+                *indexFailingChild=outIndex;
+                return false;
             }
 
         }
@@ -248,11 +253,12 @@ int AllContentModel::validateContentSpecial(QName** const           children
 
     // Were all the required elements of the <all> encountered?
     if (numRequiredSeen != fNumRequired) {
-        return childCount;
+        *indexFailingChild=childCount;
+        return false;
     }
 
     // Everything seems to be ok, so return success
-    return -1;
+    return true;
 
 }
 
@@ -268,7 +274,7 @@ void AllContentModel::checkUniqueParticleAttribution
 {
     SubstitutionGroupComparator comparator(pGrammarResolver, pStringPool);
 
-    unsigned int i, j;
+    XMLSize_t i, j;
 
     // rename back
     for (i = 0; i < fCount; i++) {
@@ -319,7 +325,8 @@ AllContentModel::buildChildList(ContentSpecNode* const       curNode
 
         // Recurse on the left and right nodes
         buildChildList(leftNode, toFill, toOptional);
-        buildChildList(rightNode, toFill, toOptional);
+        if(rightNode)
+            buildChildList(rightNode, toFill, toOptional);
     }
     else if (curType == ContentSpecNode::Leaf)
     {
@@ -338,6 +345,31 @@ AllContentModel::buildChildList(ContentSpecNode* const       curNode
 
         toFill.addElement(leftNode->getElement());
         toOptional.addElement(true);
+    }
+    // only allow ZeroOrMore when it's the father of a Loop
+    else if (curType == ContentSpecNode::ZeroOrMore &&
+             curNode->getFirst()!=0 &&
+             curNode->getFirst()->getType()==ContentSpecNode::Loop)
+    {
+        ContentSpecNode* leftNode = curNode->getFirst();
+        buildChildList(leftNode, toFill, toOptional);
+    }
+    else if (curType == ContentSpecNode::Loop)
+    {
+        // At leaf, add the element to list of elements permitted in the all
+        int i;
+        for(i=0;i<curNode->getMinOccurs();i++)
+        {
+            toFill.addElement(curNode->getElement());
+            toOptional.addElement(false);
+            fNumRequired++;
+        }
+        if(curNode->getMaxOccurs()!=-1)
+            for(i=0;i<(curNode->getMaxOccurs() - curNode->getMinOccurs());i++)
+            {
+                toFill.addElement(curNode->getElement());
+                toOptional.addElement(true);
+            }
     }
     else
         ThrowXMLwithMemMgr(RuntimeException, XMLExcepts::CM_UnknownCMSpecType, fMemoryManager);

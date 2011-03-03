@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: DTDAttDef.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DTDAttDef.hpp 676911 2008-07-15 13:27:32Z amassari $
  */
 
-#if !defined(DTDATTDEF_HPP)
-#define DTDATTDEF_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_DTDATTDEF_HPP)
+#define XERCESC_INCLUDE_GUARD_DTDATTDEF_HPP
 
 #include <xercesc/framework/XMLAttDef.hpp>
 
@@ -72,23 +72,12 @@ public :
     // -----------------------------------------------------------------------
     //  Getter methods
     // -----------------------------------------------------------------------
-    unsigned int getElemId() const;
-
-    /**
-     * @deprecated
-    **/
-    virtual const XMLCh* getDOMTypeInfoName() const;
-
-    /**
-     * @deprecated
-    **/
-    virtual const XMLCh* getDOMTypeInfoUri() const;
-
+    XMLSize_t getElemId() const;
 
     // -----------------------------------------------------------------------
     //  Setter methods
     // -----------------------------------------------------------------------
-    void setElemId(const unsigned int newId);
+    void setElemId(const XMLSize_t newId);
     void setName(const XMLCh* const newName);
 
     /***
@@ -116,7 +105,7 @@ private :
     //      This is the name of the attribute. Since we don't do namespaces
     //      in the DTD, its just the fully qualified name.
     // -----------------------------------------------------------------------
-    unsigned int    fElemId;
+    XMLSize_t       fElemId;
     XMLCh*          fName;
 };
 
@@ -133,25 +122,15 @@ inline const XMLCh* DTDAttDef::getFullName() const
 // ---------------------------------------------------------------------------
 //  DTDAttDef: Getter methods
 // ---------------------------------------------------------------------------
-inline unsigned int DTDAttDef::getElemId() const
+inline XMLSize_t DTDAttDef::getElemId() const
 {
     return fElemId;
-}
-
-inline const XMLCh* DTDAttDef::getDOMTypeInfoName() const 
-{
-    return getAttTypeString(getType(), getMemoryManager());
-}
-
-inline const XMLCh* DTDAttDef::getDOMTypeInfoUri() const 
-{
-    return 0;
 }
 
 // ---------------------------------------------------------------------------
 //  DTDAttDef: Setter methods
 // ---------------------------------------------------------------------------
-inline void DTDAttDef::setElemId(const unsigned int newId)
+inline void DTDAttDef::setElemId(const XMLSize_t newId)
 {
     fElemId = newId;
 }

@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /**
-  * $Id: XSDDOMParser.cpp 568078 2007-08-21 11:43:25Z amassari $
+  * $Id: XSDDOMParser.cpp 729944 2008-12-29 17:03:32Z amassari $
   */
 
 
@@ -48,13 +48,13 @@ XSDDOMParser::XSDDOMParser( XMLValidator* const   valToAdopt
     , fInnerAnnotationDepth(-1)
     , fDepth(-1)
     , fUserErrorReporter(0)
-    , fUserEntityHandler(0)    
+    , fUserEntityHandler(0)
     , fURIs(0)
     , fAnnotationBuf(1023, manager)
 
 {
     fURIs = new (manager) ValueVectorOf<unsigned int>(16, manager);
-    fXSDErrorReporter.setErrorReporter(this);    
+    fXSDErrorReporter.setErrorReporter(this);
     setValidationScheme(XercesDOMParser::Val_Never);
     setDoNamespaces(true);
 }
@@ -82,7 +82,7 @@ DOMElement* XSDDOMParser::createElementNSNode(const XMLCh *namespaceURI,
 
 void XSDDOMParser::startAnnotation( const XMLElementDecl&       elemDecl
                                   , const RefVectorOf<XMLAttr>& attrList
-                                  , const unsigned int          attrCount)
+                                  , const XMLSize_t             attrCount)
 {
     fAnnotationBuf.append(chOpenAngle);
 	fAnnotationBuf.append(elemDecl.getFullName());
@@ -94,10 +94,10 @@ void XSDDOMParser::startAnnotation( const XMLElementDecl&       elemDecl
     // optimized for simplicity and the case that not many
     // namespaces are declared on this annotation...
     fURIs->removeAllElements();
-    for (unsigned int i=0; i < attrCount; i++) {
+    for (XMLSize_t i=0; i < attrCount; i++) {
 
         const XMLAttr* oneAttrib = attrList.elementAt(i);
-        const XMLCh* attrValue = oneAttrib->getValue();        
+        const XMLCh* attrValue = oneAttrib->getValue();
 
         if (XMLString::equals(oneAttrib->getName(), XMLUni::fgXMLNSString))
             fURIs->addElement(fScanner->getPrefixId(XMLUni::fgZeroLenString));
@@ -115,7 +115,7 @@ void XSDDOMParser::startAnnotation( const XMLElementDecl&       elemDecl
     // now we have to look through currently in-scope namespaces to see what
     // wasn't declared here
     ValueVectorOf<PrefMapElem*>* namespaceContext = fScanner->getNamespaceContext();
-    for (unsigned int j=0; j < namespaceContext->size(); j++)
+    for (XMLSize_t j=0; j < namespaceContext->size(); j++)
     {
         unsigned int prefId = namespaceContext->elementAt(j)->fPrefId;
 
@@ -136,6 +136,8 @@ void XSDDOMParser::startAnnotation( const XMLElementDecl&       elemDecl
             fAnnotationBuf.append(fScanner->getURIText(namespaceContext->elementAt(j)->fURIId));
             fAnnotationBuf.append(chDoubleQuote);
             fAnnotationBuf.append(chSpace);
+
+            fURIs->addElement(prefId);
         }
     }
 
@@ -145,13 +147,13 @@ void XSDDOMParser::startAnnotation( const XMLElementDecl&       elemDecl
 
 void XSDDOMParser::startAnnotationElement( const XMLElementDecl&       elemDecl
                                          , const RefVectorOf<XMLAttr>& attrList
-                                         , const unsigned int          attrCount)
+                                         , const XMLSize_t             attrCount)
 {
     fAnnotationBuf.append(chOpenAngle);
     fAnnotationBuf.append(elemDecl.getFullName());
     //fAnnotationBuf.append(chSpace);
 
-    for(unsigned int i=0; i < attrCount; i++) {
+    for(XMLSize_t i=0; i < attrCount; i++) {
 
         const XMLAttr* oneAttr = attrList.elementAt(i);
         fAnnotationBuf.append(chSpace);
@@ -217,7 +219,7 @@ void XSDDOMParser::startElement( const XMLElementDecl&       elemDecl
                                , const unsigned int          urlId
                                , const XMLCh* const          elemPrefix
                                , const RefVectorOf<XMLAttr>& attrList
-                               , const unsigned int          attrCount
+                               , const XMLSize_t             attrCount
                                , const bool                  isEmpty
                                , const bool                  isRoot)
 {
@@ -236,7 +238,7 @@ void XSDDOMParser::startElement( const XMLElementDecl&       elemDecl
 
             fAnnotationDepth = fDepth;
             startAnnotation(elemDecl, attrList, attrCount);
-        } 
+        }
     }
     else if (fDepth == fAnnotationDepth+1)
     {
@@ -274,7 +276,7 @@ void XSDDOMParser::startElement( const XMLElementDecl&       elemDecl
     }
 
     DOMElementImpl *elemImpl = (DOMElementImpl *) elem;
-    for (unsigned int index = 0; index < attrCount; ++index)
+    for (XMLSize_t index = 0; index < attrCount; ++index)
     {
         const XMLAttr* oneAttrib = attrList.elementAt(index);
         unsigned int attrURIId = oneAttrib->getURIId();
@@ -317,7 +319,7 @@ void XSDDOMParser::startElement( const XMLElementDecl&       elemDecl
         XMLAttDef* attr = 0;
         DOMAttrImpl * insertAttr = 0;
 
-        for (unsigned int i=0; i<defAttrs->getAttDefCount(); i++)
+        for (XMLSize_t i=0; i<defAttrs->getAttDefCount(); i++)
         {
             attr = &defAttrs->getAttDef(i);
 
@@ -363,7 +365,6 @@ void XSDDOMParser::startElement( const XMLElementDecl&       elemDecl
     }
 
     fCurrentParent->appendChild(elem);
-    fNodeStack->push(fCurrentParent);
     fCurrentParent = elem;
     fCurrentNode = elem;
     fWithinElement = true;
@@ -387,12 +388,12 @@ void XSDDOMParser::endElement( const XMLElementDecl& elemDecl
             fInnerAnnotationDepth = -1;
             endAnnotationElement(elemDecl, false);
 	    }
-        else if (fAnnotationDepth == fDepth) 
+        else if (fAnnotationDepth == fDepth)
         {
             fAnnotationDepth = -1;
             endAnnotationElement(elemDecl, true);
         }
-        else 
+        else
         {   // inside a child of annotation
             endAnnotationElement(elemDecl, false);
             fDepth--;
@@ -400,17 +401,18 @@ void XSDDOMParser::endElement( const XMLElementDecl& elemDecl
         }
     }
 
-	fDepth--;
+    fDepth--;
     fCurrentNode   = fCurrentParent;
-    fCurrentParent = fNodeStack->pop();
+    fCurrentParent = fCurrentNode->getParentNode ();
 
-    // If we've hit the end of content, clear the flag
-    if (fNodeStack->empty())
+    // If we've hit the end of content, clear the flag.
+    //
+    if (fCurrentParent == fDocument)
         fWithinElement = false;
 }
 
 void XSDDOMParser::docCharacters(  const   XMLCh* const    chars
-                              , const unsigned int    length
+                              , const XMLSize_t       length
                               , const bool            cdataSection)
 {
     // Ignore chars outside of content
@@ -479,7 +481,7 @@ void XSDDOMParser::endEntityReference(const XMLEntityDecl&)
 }
 
 void XSDDOMParser::ignorableWhitespace( const XMLCh* const chars
-                                      , const unsigned int length
+                                      , const XMLSize_t    length
                                       , const bool)
 {
     // Ignore chars before the root element
@@ -499,8 +501,8 @@ void XSDDOMParser::error(const   unsigned int                code
                          , const XMLCh* const                errorText
                          , const XMLCh* const                systemId
                          , const XMLCh* const                publicId
-                         , const XMLSSize_t                  lineNum
-                         , const XMLSSize_t                  colNum)
+                         , const XMLFileLoc                  lineNum
+                         , const XMLFileLoc                  colNum)
 {
     if (errType >= XMLErrorReporter::ErrType_Fatal)
         fSawFatal = true;
@@ -508,16 +510,6 @@ void XSDDOMParser::error(const   unsigned int                code
     if (fUserErrorReporter)
         fUserErrorReporter->error(code, msgDomain, errType, errorText,
                                   systemId, publicId, lineNum, colNum);
-}
-
-InputSource* XSDDOMParser::resolveEntity(const XMLCh* const publicId,
-                                         const XMLCh* const systemId,
-                                         const XMLCh* const baseURI)
-{
-    if (fUserEntityHandler)
-        return fUserEntityHandler->resolveEntity(publicId, systemId, baseURI);
-
-    return 0;
 }
 
 InputSource*

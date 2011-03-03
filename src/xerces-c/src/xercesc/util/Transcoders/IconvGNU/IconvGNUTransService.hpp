@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,14 +16,14 @@
  */
 
 /*
- * $Id: IconvGNUTransService.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: IconvGNUTransService.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#ifndef ICONVGNUTRANSSERVICE_HPP
-#define ICONVGNUTRANSSERVICE_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_ICONVGNUTRANSSERVICE_HPP)
+#define XERCESC_INCLUDE_GUARD_ICONVGNUTRANSSERVICE_HPP
 
 #include <xercesc/util/TransService.hpp>
-
+#include <xercesc/util/Mutexes.hpp>
 
 #include <iconv.h>
 
@@ -41,10 +41,11 @@ public:
     // -----------------------------------------------------------------------
     IconvGNUWrapper
     (
-  iconv_t		cd_from,
-  iconv_t		cd_to,
-  size_t		uchsize,
-  unsigned int	ubo
+      iconv_t		cd_from,
+      iconv_t		cd_to,
+      size_t		uchsize,
+      unsigned int	ubo,
+      MemoryManager* manager
     );
     virtual ~IconvGNUWrapper();
 
@@ -54,51 +55,22 @@ public:
     // Convert XMLCh into "native unicode" character
     void	xmlChToMbc (XMLCh xch, char *mbc) const;
 
-    // Return uppercase equivalent for XMLCh
-    XMLCh 	toUpper (const XMLCh ch) const;
-
-    // Return uppercase equivalent for XMLCh
-    XMLCh 	toLower (const XMLCh ch) const;
-
-    // Check if passed characters belongs to the :space: class
-    virtual bool isSpace(const XMLCh toCheck) const;
-
-    // Fill array of XMLCh characters with data, supplyed in the array
+    // Fill array of XMLCh characters with data, supplied in the array
     // of "native unicode" characters.
     XMLCh*	mbsToXML (
-  const char*	mbs_str,
-  size_t		mbs_cnt,
-  XMLCh*		xml_str,
-  size_t		xml_cnt
+      const char*	mbs_str,
+      XMLCh*		xml_str,
+      size_t		cnt
     ) const;
 
 
-    // Fill array of "native unicode" characters with data, supplyed
+    // Fill array of "native unicode" characters with data, supplied
     // in the array of XMLCh characters.
     char*	xmlToMbs
     (
-  const XMLCh*	xml_str,
-  size_t		xml_cnt,
-  char*		mbs_str,
-  size_t		mbs_cnt
-    ) const;
-
-    // Wrapper aroung the iconv() for transcoding from the local charset
-    size_t	iconvFrom
-    (
-  const char	*fromPtr,
-  size_t		*fromLen,
-  char		**toPtr,
-  size_t		toLen
-    ) const;
-
-    // Wrapper aroung the iconv() for transcoding to the local charset
-    size_t	iconvTo
-    (
-  const char	*fromPtr,
-  size_t		*fromLen,
-  char		**toPtr,
-  size_t		toLen
+      const XMLCh*	xml_str,
+      char*		mbs_str,
+      size_t		cnt
     ) const;
 
     // Private data accessors
@@ -108,9 +80,38 @@ public:
     inline unsigned int	UBO () const { return fUBO; }
 
 protected:
+    // The following four functions should called with the fMutex
+    // locked.
+    //
 
-    // Hiden defaull constructor
-    IconvGNUWrapper();
+    // Return uppercase equivalent for XMLCh
+    XMLCh 	toUpper (const XMLCh ch);
+
+    // Return uppercase equivalent for XMLCh
+    XMLCh 	toLower (const XMLCh ch);
+
+    // Wrapper around the iconv() for transcoding from the local charset
+    size_t	iconvFrom
+    (
+      const char	*fromPtr,
+      size_t		*fromLen,
+      char		**toPtr,
+      size_t		toLen
+    );
+
+    // Wrapper around the iconv() for transcoding to the local charset
+    size_t	iconvTo
+    (
+      const char	*fromPtr,
+      size_t		*fromLen,
+      char		**toPtr,
+      size_t		toLen
+    );
+
+protected:
+
+    // Hidden constructor
+    IconvGNUWrapper(MemoryManager* manager);
 
     // Private data accessors
     inline void	setCDTo (iconv_t cd) { fCDTo = cd; }
@@ -141,6 +142,9 @@ private:
     unsigned int fUBO;
     iconv_t	fCDTo;
     iconv_t	fCDFrom;
+
+protected:
+    XMLMutex    fMutex;
 };
 
 
@@ -155,7 +159,7 @@ public :
     // -----------------------------------------------------------------------
     //  Constructors and Destructor
     // -----------------------------------------------------------------------
-    IconvGNUTransService();
+    IconvGNUTransService(MemoryManager* manager);
     ~IconvGNUTransService();
 
 
@@ -172,19 +176,17 @@ public :
     (
         const   XMLCh* const    comp1
         , const XMLCh* const    comp2
-        , const unsigned int    maxChars
+        , const XMLSize_t       maxChars
     );
 
     virtual const XMLCh* getId() const;
 
-    virtual bool isSpace(const XMLCh toCheck) const;
-
-    virtual XMLLCPTranscoder* makeNewLCPTranscoder();
+    virtual XMLLCPTranscoder* makeNewLCPTranscoder(MemoryManager* manager);
 
     virtual bool supportsSrcOfs() const;
 
-    virtual void upperCase(XMLCh* const toUpperCase) const;
-    virtual void lowerCase(XMLCh* const toUpperCase) const;
+    virtual void upperCase(XMLCh* const toUpperCase);
+    virtual void lowerCase(XMLCh* const toUpperCase);
 
 protected :
     // -----------------------------------------------------------------------
@@ -194,7 +196,7 @@ protected :
     (
         const   XMLCh* const            encodingName
         ,       XMLTransService::Codes& resValue
-        , const unsigned int            blockSize
+        , const XMLSize_t               blockSize
         ,       MemoryManager* const    manager
     );
 
@@ -230,7 +232,7 @@ public :
     //  Constructors and Destructor
     // -----------------------------------------------------------------------
     IconvGNUTranscoder(const	XMLCh* const	encodingName
-  		, const unsigned int	blockSize
+  		, const XMLSize_t	blockSize
   		,	iconv_t		cd_from
   		,	iconv_t		cd_to
   		,	size_t		uchsize
@@ -243,30 +245,30 @@ public :
     // -----------------------------------------------------------------------
     //  Implementation of the virtual transcoder interface
     // -----------------------------------------------------------------------
-    virtual unsigned int transcodeFrom
+    virtual XMLSize_t transcodeFrom
     (
         const   XMLByte* const          srcData
-        , const unsigned int            srcCount
+        , const XMLSize_t               srcCount
         ,       XMLCh* const            toFill
-        , const unsigned int            maxChars
-        ,       unsigned int&           bytesEaten
+        , const XMLSize_t               maxChars
+        ,       XMLSize_t&              bytesEaten
         ,       unsigned char* const    charSizes
     );
 
-    virtual unsigned int transcodeTo
+    virtual XMLSize_t transcodeTo
     (
         const   XMLCh* const	srcData
-        , const unsigned int	srcCount
+        , const XMLSize_t	    srcCount
         ,       XMLByte* const	toFill
-        , const unsigned int	maxBytes
-        ,       unsigned int&	charsEaten
-        , const UnRepOpts	options
+        , const XMLSize_t	    maxBytes
+        ,       XMLSize_t&	    charsEaten
+        , const UnRepOpts	    options
     );
 
     virtual bool canTranscodeTo
     (
         const   unsigned int	toCheck
-    )   const;
+    );
 
 private :
     // -----------------------------------------------------------------------
@@ -291,10 +293,11 @@ public :
 
     IconvGNULCPTranscoder
     (
-  iconv_t		from,
-  iconv_t		to,
-  size_t		uchsize,
-  unsigned int	ubo
+      iconv_t		from,
+      iconv_t		to,
+      size_t		uchsize,
+      unsigned int	ubo,
+      MemoryManager* manager
     );
 
 protected:
@@ -308,33 +311,35 @@ public:
     // -----------------------------------------------------------------------
     //  Implementation of the virtual transcoder interface
     // -----------------------------------------------------------------------
-    virtual unsigned int calcRequiredSize(const char* const srcText
-        , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
-
-    virtual unsigned int calcRequiredSize(const XMLCh* const srcText
-        , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
-
-    virtual char* transcode(const XMLCh* const toTranscode);
     virtual char* transcode(const XMLCh* const toTranscode,
-                            MemoryManager* const manager);
+                            MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
 
-    virtual bool transcode
-    (
-        const   XMLCh* const    toTranscode
-        ,       char* const     toFill
-        , const unsigned int    maxBytes
-        , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
-    );
-
-    virtual XMLCh* transcode(const char* const toTranscode);
     virtual XMLCh* transcode(const char* const toTranscode,
-                             MemoryManager* const manager);
+                             MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
+
+
+    // -----------------------------------------------------------------------
+    //  DEPRECATED old transcode interface
+    // -----------------------------------------------------------------------
+    virtual XMLSize_t calcRequiredSize(const char* const srcText
+        , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
+
+    virtual XMLSize_t calcRequiredSize(const XMLCh* const srcText
+        , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
 
     virtual bool transcode
     (
         const   char* const     toTranscode
         ,       XMLCh* const    toFill
-        , const unsigned int    maxChars
+        , const XMLSize_t       maxChars
+        , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
+    );
+
+    virtual bool transcode
+    (
+        const   XMLCh* const    toTranscode
+        ,       char* const     toFill
+        , const XMLSize_t       maxChars
         , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
     );
 
@@ -350,4 +355,5 @@ private :
 XERCES_CPP_NAMESPACE_END
 
 #endif /* ICONVGNUTRANSSERVICE */
+
 

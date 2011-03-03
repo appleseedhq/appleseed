@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: MsgCatalogLoader.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: MsgCatalogLoader.cpp 614259 2008-01-22 16:59:21Z amassari $
  */
 
 
@@ -100,8 +100,8 @@ MsgCatalogLoader::MsgCatalogLoader(const XMLCh* const msgDomain)
     * To open user-specified locale specific cat file
     * and default cat file if necessary
     */
-    if ( ((int)(fCatalogHandle=catopen(catuser, 0)) == -1) &&
-         ((int)(fCatalogHandle=catopen(catdefault, 0)) == -1)   )
+    if ( ((fCatalogHandle=catopen(catuser, 0)) == (nl_catd)-1) &&
+         ((fCatalogHandle=catopen(catdefault, 0)) == (nl_catd)-1)   )
     {
         // Probably have to call panic here
         printf("Could not open catalog:\n %s\n or %s\n", catuser, catdefault);
@@ -129,7 +129,7 @@ MsgCatalogLoader::~MsgCatalogLoader()
 // ---------------------------------------------------------------------------
 bool MsgCatalogLoader::loadMsg(const  XMLMsgLoader::XMLMsgId  msgToLoad
                               ,       XMLCh*   const          toFill
-                              , const unsigned int            maxChars)
+                              , const XMLSize_t               maxChars)
 {
     char msgString[100];
     sprintf(msgString, "Could not find message ID %d from message set %d\n", msgToLoad, fMsgSet);
@@ -149,7 +149,7 @@ bool MsgCatalogLoader::loadMsg(const  XMLMsgLoader::XMLMsgId  msgToLoad
 
 bool MsgCatalogLoader::loadMsg(const  XMLMsgLoader::XMLMsgId  msgToLoad
                             ,       XMLCh* const            toFill
-                            , const unsigned int            maxChars
+                            , const XMLSize_t               maxChars
                             , const XMLCh* const            repText1
                             , const XMLCh* const            repText2
                             , const XMLCh* const            repText3
@@ -168,7 +168,7 @@ bool MsgCatalogLoader::loadMsg(const  XMLMsgLoader::XMLMsgId  msgToLoad
 
 bool MsgCatalogLoader::loadMsg(const  XMLMsgLoader::XMLMsgId  msgToLoad
                             ,       XMLCh* const            toFill
-                            , const unsigned int            maxChars
+                            , const XMLSize_t               maxChars
                             , const char* const             repText1
                             , const char* const             repText2
                             , const char* const             repText3

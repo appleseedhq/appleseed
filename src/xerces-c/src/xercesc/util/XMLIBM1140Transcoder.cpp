@@ -167,7 +167,7 @@ static const XMLTransService::TransRec gToTable[] =
   , { 0xFF58, 0xA7 }, { 0xFF59, 0xA8 }, { 0xFF5A, 0xA9 }, { 0xFF5B, 0xC0 }
   , { 0xFF5C, 0x4F }, { 0xFF5D, 0xD0 }, { 0xFF5E, 0xA1 }
 };
-static const unsigned int gToTableSz = 351;
+static const XMLSize_t gToTableSz = 351;
 
 
 
@@ -184,7 +184,7 @@ XMLCh XMLIBM1140Transcoder::xlatThisOne(const XMLByte toXlat)
 //  XMLIBM1140Transcoder: Constructors and Destructor
 // ---------------------------------------------------------------------------
 XMLIBM1140Transcoder::XMLIBM1140Transcoder( const   XMLCh* const    encodingName
-                                            , const unsigned int    blockSize
+                                            , const XMLSize_t       blockSize
                                             , MemoryManager* const  manager) :
     XML256TableTranscoder
     (

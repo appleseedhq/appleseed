@@ -27,7 +27,7 @@ XERCES_CPP_NAMESPACE_BEGIN
 //  BaseRefVectorOf: Constructors and Destructor
 // ---------------------------------------------------------------------------
 template <class TElem>
-BaseRefVectorOf<TElem>::BaseRefVectorOf( const unsigned int maxElems
+BaseRefVectorOf<TElem>::BaseRefVectorOf( const XMLSize_t maxElems
                                        , const bool adoptElems
                                        , MemoryManager* const manager) :
 
@@ -39,7 +39,7 @@ BaseRefVectorOf<TElem>::BaseRefVectorOf( const unsigned int maxElems
 {
     // Allocate and initialize the array
     fElemList = (TElem**) fMemoryManager->allocate(maxElems * sizeof(TElem*));//new TElem*[maxElems];
-    for (unsigned int index = 0; index < maxElems; index++)
+    for (XMLSize_t index = 0; index < maxElems; index++)
         fElemList[index] = 0;
 }
 
@@ -62,7 +62,7 @@ template <class TElem> void BaseRefVectorOf<TElem>::addElement(TElem* const toAd
 
 
 template <class TElem> void
-BaseRefVectorOf<TElem>::setElementAt(TElem* const toSet, const unsigned int setAt)
+BaseRefVectorOf<TElem>::setElementAt(TElem* const toSet, const XMLSize_t setAt)
 {
     if (setAt >= fCurCount)
         ThrowXMLwithMemMgr(ArrayIndexOutOfBoundsException, XMLExcepts::Vector_BadIndex, fMemoryManager);
@@ -73,7 +73,7 @@ BaseRefVectorOf<TElem>::setElementAt(TElem* const toSet, const unsigned int setA
 }
 
 template <class TElem> void BaseRefVectorOf<TElem>::
-insertElementAt(TElem* const toInsert, const unsigned int insertAt)
+insertElementAt(TElem* const toInsert, const XMLSize_t insertAt)
 {
     if (insertAt == fCurCount)
     {
@@ -87,7 +87,7 @@ insertElementAt(TElem* const toInsert, const unsigned int insertAt)
     ensureExtraCapacity(1);
 
     // Make room for the newbie
-    for (unsigned int index = fCurCount; index > insertAt; index--)
+    for (XMLSize_t index = fCurCount; index > insertAt; index--)
         fElemList[index] = fElemList[index-1];
 
     // And stick it in and bump the count
@@ -96,7 +96,7 @@ insertElementAt(TElem* const toInsert, const unsigned int insertAt)
 }
 
 template <class TElem> TElem* BaseRefVectorOf<TElem>::
-orphanElementAt(const unsigned int orphanAt)
+orphanElementAt(const XMLSize_t orphanAt)
 {
     if (orphanAt >= fCurCount)
         ThrowXMLwithMemMgr(ArrayIndexOutOfBoundsException, XMLExcepts::Vector_BadIndex, fMemoryManager);
@@ -113,7 +113,7 @@ orphanElementAt(const unsigned int orphanAt)
     }
 
     // Copy down every element above orphan point
-    for (unsigned int index = orphanAt; index < fCurCount-1; index++)
+    for (XMLSize_t index = orphanAt; index < fCurCount-1; index++)
         fElemList[index] = fElemList[index+1];
 
     // Keep unused elements zero for sanity's sake
@@ -127,7 +127,7 @@ orphanElementAt(const unsigned int orphanAt)
 
 template <class TElem> void BaseRefVectorOf<TElem>::removeAllElements()
 {
-    for (unsigned int index = 0; index < fCurCount; index++)
+    for (XMLSize_t index = 0; index < fCurCount; index++)
     {
         if (fAdoptedElems)
           delete fElemList[index];
@@ -139,7 +139,7 @@ template <class TElem> void BaseRefVectorOf<TElem>::removeAllElements()
 }
 
 template <class TElem> void BaseRefVectorOf<TElem>::
-removeElementAt(const unsigned int removeAt)
+removeElementAt(const XMLSize_t removeAt)
 {
     if (removeAt >= fCurCount)
         ThrowXMLwithMemMgr(ArrayIndexOutOfBoundsException, XMLExcepts::Vector_BadIndex, fMemoryManager);
@@ -156,7 +156,7 @@ removeElementAt(const unsigned int removeAt)
     }
 
     // Copy down every element above remove point
-    for (unsigned int index = removeAt; index < fCurCount-1; index++)
+    for (XMLSize_t index = removeAt; index < fCurCount-1; index++)
         fElemList[index] = fElemList[index+1];
 
     // Keep unused elements zero for sanity's sake
@@ -179,7 +179,7 @@ template <class TElem> void BaseRefVectorOf<TElem>::removeLastElement()
 template <class TElem>
 bool BaseRefVectorOf<TElem>::containsElement(const TElem* const toCheck) {
 
-    for (unsigned int i = 0; i < fCurCount; i++) {
+    for (XMLSize_t i = 0; i < fCurCount; i++) {
         if (fElemList[i] == toCheck) {
             return true;
         }
@@ -197,7 +197,7 @@ template <class TElem> void BaseRefVectorOf<TElem>::cleanup()
 {
     if (fAdoptedElems)
     {
-        for (unsigned int index = 0; index < fCurCount; index++)
+        for (XMLSize_t index = 0; index < fCurCount; index++)
             delete fElemList[index];
     }
     fMemoryManager->deallocate(fElemList);//delete [] fElemList;
@@ -215,7 +215,7 @@ template <class TElem> void BaseRefVectorOf<TElem>::reinitialize()
         cleanup();
 
     fElemList = (TElem**) fMemoryManager->allocate(fMaxCount * sizeof(TElem*));//new TElem*[fMaxCount];
-    for (unsigned int index = 0; index < fMaxCount; index++)
+    for (XMLSize_t index = 0; index < fMaxCount; index++)
         fElemList[index] = 0;
 
 }
@@ -230,13 +230,13 @@ MemoryManager* BaseRefVectorOf<TElem>::getMemoryManager() const
 // ---------------------------------------------------------------------------
 //  BaseRefVectorOf: Getter methods
 // ---------------------------------------------------------------------------
-template <class TElem> unsigned int BaseRefVectorOf<TElem>::curCapacity() const
+template <class TElem> XMLSize_t BaseRefVectorOf<TElem>::curCapacity() const
 {
     return fMaxCount;
 }
 
 template <class TElem> const TElem* BaseRefVectorOf<TElem>::
-elementAt(const unsigned int getAt) const
+elementAt(const XMLSize_t getAt) const
 {
     if (getAt >= fCurCount)
         ThrowXMLwithMemMgr(ArrayIndexOutOfBoundsException, XMLExcepts::Vector_BadIndex, fMemoryManager);
@@ -244,14 +244,14 @@ elementAt(const unsigned int getAt) const
 }
 
 template <class TElem> TElem*
-BaseRefVectorOf<TElem>::elementAt(const unsigned int getAt)
+BaseRefVectorOf<TElem>::elementAt(const XMLSize_t getAt)
 {
     if (getAt >= fCurCount)
         ThrowXMLwithMemMgr(ArrayIndexOutOfBoundsException, XMLExcepts::Vector_BadIndex, fMemoryManager);
     return fElemList[getAt];
 }
 
-template <class TElem> unsigned int BaseRefVectorOf<TElem>::size() const
+template <class TElem> XMLSize_t BaseRefVectorOf<TElem>::size() const
 {
     return fCurCount;
 }
@@ -261,9 +261,9 @@ template <class TElem> unsigned int BaseRefVectorOf<TElem>::size() const
 //  BaseRefVectorOf: Miscellaneous
 // ---------------------------------------------------------------------------
 template <class TElem> void BaseRefVectorOf<TElem>::
-ensureExtraCapacity(const unsigned int length)
+ensureExtraCapacity(const XMLSize_t length)
 {
-    unsigned int newMax = fCurCount + length;
+    XMLSize_t newMax = fCurCount + length;
 
     if (newMax <= fMaxCount)
         return;
@@ -278,7 +278,7 @@ ensureExtraCapacity(const unsigned int length)
     (
         newMax * sizeof(TElem*)
     );//new TElem*[newMax];
-    unsigned int index = 0;
+    XMLSize_t index = 0;
     for (; index < fCurCount; index++)
         newList[index] = fElemList[index];
 

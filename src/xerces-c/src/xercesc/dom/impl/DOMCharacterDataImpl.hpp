@@ -1,6 +1,3 @@
-#ifndef DOMCharacterDataImpl_HEADER_GUARD_
-#define DOMCharacterDataImpl_HEADER_GUARD_
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -8,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,8 +16,11 @@
  */
 
 /*
- * $Id: DOMCharacterDataImpl.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMCharacterDataImpl.hpp 678709 2008-07-22 10:56:56Z borisk $
  */
+
+#if !defined(XERCESC_INCLUDE_GUARD_DOMCHARACTERDATAIMPL_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMCHARACTERDATAIMPL_HPP
 
 //
 //  This file is part of the internal implementation of the C++ XML DOM.
@@ -55,11 +55,13 @@ public:
 
 public:
                    DOMCharacterDataImpl(DOMDocument *doc, const XMLCh *dat);
+                   DOMCharacterDataImpl(DOMDocument *doc, const XMLCh* data, XMLSize_t n);
                    DOMCharacterDataImpl(const DOMCharacterDataImpl &other);
                    ~DOMCharacterDataImpl();
     const          XMLCh * getNodeValue() const;
     void           setNodeValue(const XMLCh * value);
     void           appendData(const DOMNode *node, const  XMLCh *data);
+    void           appendData(const DOMNode *node, const  XMLCh *data, XMLSize_t n);
     void           deleteData(const DOMNode *node, XMLSize_t offset, XMLSize_t count);
     const XMLCh*   getData() const;
     XMLSize_t      getLength() const;
@@ -76,7 +78,7 @@ private:
     // -----------------------------------------------------------------------
     // Unimplemented constructors and operators
     // -----------------------------------------------------------------------
-    DOMCharacterDataImpl & operator = (const DOMCharacterDataImpl &);   
+    DOMCharacterDataImpl & operator = (const DOMCharacterDataImpl &);
 };
 
 #define GetDOMCharacterDataImplMemoryManager GET_DIRECT_MM(fDoc)

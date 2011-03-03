@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,37 +16,33 @@
  */
 
 /*
- * $Id: ValueHashTableOf.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: ValueHashTableOf.hpp 679340 2008-07-24 10:28:29Z borisk $
  */
 
+#if !defined(XERCESC_INCLUDE_GUARD_VALUEHASHTABLEOF_HPP)
+#define XERCESC_INCLUDE_GUARD_VALUEHASHTABLEOF_HPP
 
-#if !defined(VALUEHASHTABLEOF_HPP)
-#define VALUEHASHTABLEOF_HPP
 
-
-#include <xercesc/util/HashBase.hpp>
+#include <xercesc/util/Hashers.hpp>
 #include <xercesc/util/IllegalArgumentException.hpp>
 #include <xercesc/util/NoSuchElementException.hpp>
 #include <xercesc/util/RuntimeException.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
-#include <xercesc/util/XMLString.hpp>
-#include <xercesc/util/HashXMLCh.hpp>
 
 XERCES_CPP_NAMESPACE_BEGIN
 
+//  Forward declare the enumerator so it can be our friend.
 //
-//  Forward declare the enumerator so he can be our friend. Can you say
-//  friend? Sure...
-//
-template <class TVal> class ValueHashTableOfEnumerator;
-template <class TVal> struct ValueHashTableBucketElem;
+template <class TVal, class THasher = StringHasher>
+class ValueHashTableOfEnumerator;
 
 
 //
 //  This should really be a nested class, but some of the compilers we
 //  have to support cannot deal with that!
 //
-template <class TVal> struct ValueHashTableBucketElem
+template <class TVal>
+struct ValueHashTableBucketElem
 {
     ValueHashTableBucketElem(void* key, const TVal& value, ValueHashTableBucketElem<TVal>* next)
 		: fData(value), fNext(next), fKey(key)
@@ -55,40 +51,35 @@ template <class TVal> struct ValueHashTableBucketElem
     ValueHashTableBucketElem(){};
     ~ValueHashTableBucketElem(){};
 
-    TVal                           fData;
+    TVal                            fData;
     ValueHashTableBucketElem<TVal>* fNext;
-	void*                          fKey;
+    void*                           fKey;
 
 private:
     // -----------------------------------------------------------------------
     //  Unimplemented constructors and operators
-    // -----------------------------------------------------------------------    
+    // -----------------------------------------------------------------------
     ValueHashTableBucketElem(const ValueHashTableBucketElem<TVal>&);
     ValueHashTableBucketElem<TVal>& operator=(const ValueHashTableBucketElem<TVal>&);
 };
 
 
-template <class TVal> class ValueHashTableOf : public XMemory
+template <class TVal, class THasher = StringHasher>
+class ValueHashTableOf : public XMemory
 {
 public:
     // -----------------------------------------------------------------------
     //  Constructors and Destructor
     // -----------------------------------------------------------------------
-	// backwards compatability - default hasher is HashXMLCh
-    ValueHashTableOf
-    (
-          const unsigned int   modulus
-        , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
-    );
-	// if a hash function is passed in, it will be deleted when the hashtable is deleted.
-	// use a new instance of the hasher class for each hashtable, otherwise one hashtable
-	// may delete the hasher of a different hashtable if both use the same hasher.
-    ValueHashTableOf
-    (
-          const unsigned int   modulus
-        , HashBase*            hashBase
-        , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
-    );
+    ValueHashTableOf(
+      const XMLSize_t modulus,
+      MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
+
+    ValueHashTableOf(
+      const XMLSize_t modulus,
+      const THasher& hasher,
+      MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
+
     ~ValueHashTableOf();
 
 
@@ -111,29 +102,30 @@ public:
     // -----------------------------------------------------------------------
     //  Putters
     // -----------------------------------------------------------------------
-	void put(void* key, const TVal& valueToAdopt);
+    void put(void* key, const TVal& valueToAdopt);
 
 
 private :
     // -----------------------------------------------------------------------
     //  Declare our friends
     // -----------------------------------------------------------------------
-    friend class ValueHashTableOfEnumerator<TVal>;
+    friend class ValueHashTableOfEnumerator<TVal, THasher>;
 
 private:
     // -----------------------------------------------------------------------
     //  Unimplemented constructors and operators
-    // -----------------------------------------------------------------------    
-    ValueHashTableOf(const ValueHashTableOf<TVal>&);
-    ValueHashTableOf<TVal>& operator=(const ValueHashTableOf<TVal>&);
+    // -----------------------------------------------------------------------
+    ValueHashTableOf(const ValueHashTableOf<TVal, THasher>&);
+    ValueHashTableOf<TVal, THasher>& operator=(const ValueHashTableOf<TVal, THasher>&);
 
     // -----------------------------------------------------------------------
     //  Private methods
     // -----------------------------------------------------------------------
-    ValueHashTableBucketElem<TVal>* findBucketElem(const void* const key, unsigned int& hashVal);
-    const ValueHashTableBucketElem<TVal>* findBucketElem(const void* const key, unsigned int& hashVal) const;
-    void removeBucketElem(const void* const key, unsigned int& hashVal);
-	void initialize(const unsigned int modulus);
+    ValueHashTableBucketElem<TVal>* findBucketElem(const void* const key, XMLSize_t& hashVal);
+    const ValueHashTableBucketElem<TVal>* findBucketElem(const void* const key, XMLSize_t& hashVal) const;
+    void removeBucketElem(const void* const key, XMLSize_t& hashVal);
+    void initialize(const XMLSize_t modulus);
+    void rehash();
 
 
     // -----------------------------------------------------------------------
@@ -146,14 +138,16 @@ private:
     //  fHashModulus
     //      The modulus used for this hash table, to hash the keys. This is
     //      also the number of elements in the bucket list.
-	//
-	//  fHash
-	//      The hasher for the key data type.
+    //
+    //  fHash
+    //      The hasher for the key data type.
     // -----------------------------------------------------------------------
     MemoryManager*                   fMemoryManager;
     ValueHashTableBucketElem<TVal>** fBucketList;
-    unsigned int                     fHashModulus;
-	HashBase*                        fHash;
+    XMLSize_t                        fHashModulus;
+    XMLSize_t                        fInitialModulus;
+    XMLSize_t                        fCount;
+    THasher                          fHasher;
 };
 
 
@@ -162,15 +156,16 @@ private:
 //  An enumerator for a value array. It derives from the basic enumerator
 //  class, so that value vectors can be generically enumerated.
 //
-template <class TVal> class ValueHashTableOfEnumerator : public XMLEnumerator<TVal>, public XMemory
+template <class TVal, class THasher>
+class ValueHashTableOfEnumerator : public XMLEnumerator<TVal>, public XMemory
 {
 public :
     // -----------------------------------------------------------------------
     //  Constructors and Destructor
     // -----------------------------------------------------------------------
-    ValueHashTableOfEnumerator(ValueHashTableOf<TVal>* const toEnum
-        , const bool adopt = false
-        , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
+    ValueHashTableOfEnumerator(ValueHashTableOf<TVal, THasher>* const toEnum
+                               , const bool adopt = false
+                               , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
     virtual ~ValueHashTableOfEnumerator();
 
 
@@ -190,9 +185,9 @@ public :
 private :
     // -----------------------------------------------------------------------
     //  Unimplemented constructors and operators
-    // -----------------------------------------------------------------------    
-    ValueHashTableOfEnumerator(const ValueHashTableOfEnumerator<TVal>&);
-    ValueHashTableOfEnumerator<TVal>& operator=(const ValueHashTableOfEnumerator<TVal>&);
+    // -----------------------------------------------------------------------
+    ValueHashTableOfEnumerator(const ValueHashTableOfEnumerator<TVal, THasher>&);
+    ValueHashTableOfEnumerator<TVal, THasher>& operator=(const ValueHashTableOfEnumerator<TVal, THasher>&);
 
     // -----------------------------------------------------------------------
     //  Private methods
@@ -218,11 +213,11 @@ private :
     //  fToEnum
     //      The value array being enumerated.
     // -----------------------------------------------------------------------
-    bool                            fAdopted;
-    ValueHashTableBucketElem<TVal>* fCurElem;
-    unsigned int                    fCurHash;
-    ValueHashTableOf<TVal>*         fToEnum;
-    MemoryManager* const            fMemoryManager;
+    bool                             fAdopted;
+    ValueHashTableBucketElem<TVal>*  fCurElem;
+    XMLSize_t                        fCurHash;
+    ValueHashTableOf<TVal, THasher>* fToEnum;
+    MemoryManager* const             fMemoryManager;
 };
 
 XERCES_CPP_NAMESPACE_END

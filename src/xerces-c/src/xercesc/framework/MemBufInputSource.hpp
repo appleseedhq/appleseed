@@ -16,12 +16,12 @@
  */
 
 /*
- * $Id: MemBufInputSource.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: MemBufInputSource.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
 
-#if !defined(MEMBUFINPUTSOURCE_HPP)
-#define MEMBUFINPUTSOURCE_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_MEMBUFINPUTSOURCE_HPP)
+#define XERCESC_INCLUDE_GUARD_MEMBUFINPUTSOURCE_HPP
 
 #include <xercesc/sax/InputSource.hpp>
 
@@ -76,7 +76,7 @@ public :
       *
       * Note that the system id provided serves two purposes. Firstly it is
       * going to be displayed in error messages as the source of the error.
-      * And secondly, any entities which are refered to from this entity
+      * And secondly, any entities which are referred to from this entity
       * via relative paths/URLs will be relative to this fake system id.
       *
       * @param  srcDocBytes     The actual data buffer to be parsed from.
@@ -93,7 +93,7 @@ public :
     MemBufInputSource
     (
         const   XMLByte* const  srcDocBytes
-        , const unsigned int    byteCount
+        , const XMLSize_t       byteCount
         , const XMLCh* const    bufId
         , const bool            adoptBuffer = false
         , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
@@ -106,7 +106,7 @@ public :
     MemBufInputSource
     (
         const   XMLByte* const  srcDocBytes
-        , const unsigned int    byteCount
+        , const XMLSize_t       byteCount
         , const char* const     bufId
         , const bool            adoptBuffer = false
         , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
@@ -180,7 +180,7 @@ public :
       *                         in the buffer.     
       */
     void resetMemBufInputSource(const   XMLByte* const  srcDocBytes
-                                , const unsigned int    byteCount);
+                                , const XMLSize_t       byteCount);
     //@}
 
 
@@ -214,7 +214,7 @@ private :
     //      fAdopted flag.
     // -----------------------------------------------------------------------
     bool            fAdopted;
-    unsigned int    fByteCount;
+    XMLSize_t       fByteCount;
     bool            fCopyBufToStream;
     const XMLByte*  fSrcBytes;
 };

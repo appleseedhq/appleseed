@@ -21,6 +21,10 @@
 <s1 title="Migration Archive">
     <s2 title="Migrating to earlier Releases">
       <ul>
+        <li><link anchor="Migrateto310">Migrating from &XercesCName; 3.0.1 to 3.1.0</link></li>
+        <li><link anchor="Migrateto301">Migrating from &XercesCName; 3.0.0 to 3.0.1</link></li>
+	<li><link anchor="Migrateto300">Migrating from &XercesCName; 2.8.0 to 3.0.0</link></li>
+        <li><link anchor="Migrateto280">Migrating from &XercesCName; 2.7.0 to 2.8.0</link></li>
         <li><link anchor="Migrateto270">Migrating from &XercesCName; 2.6.0 to 2.7.0</link></li>
         <li><link anchor="Migrateto260">Migrating from &XercesCName; 2.5.0 to 2.6.0</link></li>
         <li><link anchor="Migrateto250">Migrating from &XercesCName; 2.4.0 to 2.5.0</link></li>
@@ -36,6 +40,200 @@
       </ul>
     </s2>
 
+    <anchor name="Migrateto310"/>
+    <s2 title="Migrating from &XercesCName; 3.0.1 to &XercesCName; 3.1.0">
+      <p>The following section is a discussion of the technical differences between
+      &XercesCName; 3.0.1 and &XercesCName; 3.1.0.</p>
+
+      <p>Topics discussed are:</p>
+      <ul>
+        <li><link anchor="NewFeatures310">New features in &XercesCName; 3.1.0</link></li>
+        <li><link anchor="API310">Public API Changes</link></li>
+      </ul>
+
+    <anchor name="NewFeatures310"/>
+    <s3 title="New features in &XercesCName; 3.1.0">
+      <ul>
+    <li>Working multi-import support. The support for handling multiple import
+        declarations with the same target namespaces has been improved and
+        thoroughly tested. Furthermore, the same logic was extended to
+        loadGrammar and the schemaLocation attributes so that you can load
+        several schemas with the same namespace and/or "add" more declarations
+        with the schemaLocation attributes. To enable this feature, set the
+        XMLUni::fgXercesHandleMultipleImports feature/parameter to true.
+        Starting with this release all the tests and examples have multi-import
+        support enabled by default.</li>
+
+    <li>New property, XMLUni::fgXercesLowWaterMark, allows to configure the
+        parser buffer low water mark. In particular, setting this value to 0
+        disables data caching in the parser which can be useful if you want
+        the SAX events to be dispatched as soon as the data is available.</li>
+
+    <li>DOMLSParser::parseWithContext implementation. In particular, this
+        functionality allows one to parse a document fragment with missing
+        namespace declarations as long as the context document provides them.</li>
+
+    <li>Improved performance and reduced memory footprint when validating with
+        large maxOccurs values. If available, the SSE2 instructions are used to
+        further speedup this case.</li>
+
+    <li>Improved scalability of the XML Schema identity checking (key, keyref,
+        and unique).</li>
+
+    <li>Multiple XML Schema conformance fixes.</li>
+
+    <li>More robust external library detection (libcurl and ICU). In particular,
+        the build system no longer tries to inject any additional paths such as
+        /usr or /usr/local.</li>
+
+    <li>Compilation of the ICU message loader resources no longer depends on
+        the ICU implementation details.</li>
+      </ul>
+    </s3>
+
+    <anchor name="API310"/>
+    <s3 title="Public API Changes">
+
+        <p>&XercesCName; 3.1.0 is a minor release and does
+           not include any public API changes that would preclude
+           applications using the previous version of &XercesCName; from
+           building successfully with this version.</p>
+    </s3>
+    </s2>
+
+    <anchor name="Migrateto301"/>
+    <s2 title="Migrating from &XercesCName; 3.0.0 to &XercesCName; 3.0.1">
+      <p>&XercesCName; 3.0.1 is a bugfix-only release and is
+         binary-compatible with &XercesCName; 3.0.0.</p>
+    </s2>
+
+    <anchor name="Migrateto300"/>
+    <s2 title="Migrating from &XercesCName; 2.8.0 to &XercesCName; 3.0.0">
+      <p>The following section is a discussion of the technical differences between
+      &XercesCName; 2.8.0 and &XercesCName; 3.0.0.</p>
+
+      <p>Topics discussed are:</p>
+      <ul>
+        <li><link anchor="NewFeatures300">New features in &XercesCName; 3.0.0</link></li>
+        <li><link anchor="API300">Public API Changes</link></li>
+        <ul>
+            <li><link anchor="NewAPI300">New Public API</link></li>
+            <li><link anchor="ModifiedAPI300">Modified Public API</link></li>
+            <li><link anchor="DeprecatedAPI300">Deprecated/Removed Public API</link></li>
+        </ul>
+      </ul>
+
+    <anchor name="NewFeatures300"/>
+    <s3 title="New features in &XercesCName; 3.0.0">
+      <ul>
+        <li>Autotools-based build system for the UNIX/Linux/Mac OS X platforms</li>
+        <li>Project files for VC++ 9</li>
+        <li>Support for the ICU transcoder in VC++ 7.1, 8, and 9 project files</li>
+        <li>libcurl-based net accessor</li>
+        <li>Support for XInclude in DOM</li>
+        <li>Support for both XPath 1 and XPath 2 models in the DOM XPath interface</li>
+        <li>Support for the XML Schema subset of XPath 1 in DOM</li>
+        <li>Conformance to the final DOM Level 3 interface specification</li>
+        <li>Ability to provide custom DOM memory manager as well as tune the global DOM heap parameters</li>
+        <li>All public and widely used interfaces as well as a large
+            portion of the implementation were converted to be 64-bit safe.</li>
+        <li>Various XML Schema fixes including the fix for the large
+            maxOccurs and minOccurs bug as well as for the changed ##other
+            interpretation</li>
+        <li>Reviewed and cleaned up diagnostics messages</li>
+        <li>Optimizations for SAX/SAX2 and DOM parsing as well as XML Schema
+            validation</li>
+      </ul>
+    </s3>
+
+    <anchor name="API300"/>
+    <s3 title="Public API Changes">
+
+        <p>&XercesCName; 3.0.0 is a major release and includes
+           a number of application-breaking interface changes compared to
+           &XercesCName; 2 series.
+           The following sub-sections provide an overview of the public API
+           changes between &XercesCName; 2 series and this release.</p>
+
+        <anchor name="NewAPI300"/>
+        <s4 title="New Public APIs">
+            <ul>
+              <li>XMLGrammarPoolImpl implementation has been moved to
+                  framework/ and is now publicly accessible</li>
+
+              <li>DOM XPath interfaces now support XPath 2 model</li>
+
+              <li>A number of DOM interfaces (DOMLSInput, DOMLSOuput,
+                  DOMLSParser, DOMLSSerializer, DOMConfiguration, etc.)
+                  were added as part of the the final DOM Level 3
+                  specification conformance work</li>
+            </ul>
+        </s4>
+
+        <anchor name="ModifiedAPI300"/>
+        <s4 title="Modified Public APIs">
+
+          <p>A large number of public APIs have been modified. Consult
+             individual interface documentation for details. The following
+             list gives an overview of major changes:</p>
+
+          <ul>
+            <li>Several DOM interfaces have been adjusted to conform to the final
+                DOM Level 3 specification</li>
+
+            <li>DOM XPath interfaces have been adjusted to support both XPath 1
+                and XPath 2</li>
+
+            <li>Many public interfaces that used int/long types to represent
+                memory-related sizes, counts, indexes, etc., have been modified
+                to use the 64-bit safe XMLSize_t type instead</li>
+          </ul>
+
+        </s4>
+
+        <anchor name="DeprecatedAPI300"/>
+        <s4 title="Deprecated/Removed Public APIs">
+          <p>All APIs marked as deprecated in &XercesCName; 2 series have
+             been removed in this release. In particular deprecated DOM
+             (depdom) as well as COM support have been removed.</p>
+
+          <p>Furthermore, a number of DOM interfaces (DOMBuilder, DOMWriter,
+             DOMInputSource, etc.) were replaced as part of the the final
+             DOM Level 3 specification conformance work.</p>
+        </s4>
+
+    </s3>
+    </s2>
+
+    <anchor name="Migrateto280"/>
+    <s2 title="Migrating from &XercesCName; 2.7.0 to &XercesCName; 2.8.0">
+    <p>The following section is a discussion of the technical differences between
+       &XercesCName; 2.7.0 code base and the &XercesCName; 2.8.0.</p>
+
+      <p>Topics discussed are:</p>
+      <ul>
+        <li><link anchor="NewFeatures280">New features in &XercesCName; 2.8.0</link></li>
+        <li><link anchor="API280">Public API Changes</link></li>
+        <ul>
+            <li><link anchor="NewAPI280">New Public API</link></li>
+            <li><link anchor="ModifiedAPI280">Modified Public API</link></li>
+            <li><link anchor="DeprecatedAPI280">Deprecated/Removed Public API</link></li>
+        </ul>
+      </ul>
+
+    <anchor name="NewFeatures280"/>
+    <s3 title="New features in &XercesCName; 2.8.0">
+      <ul>
+        <li>Exponential growth of memory block (from 16KB to 128KB) that are allocated by the DOM heap.</li>
+        <li>The NODE_CLONED notification is now sent to each node's user data handler when cloning the entire DOMDocument.</li>
+        <li>On Windows extract the registry code page from MIME\Database\Charset\&lt;encoding>\@InternetEncoding instead of MIME\Database\Charset\&lt;encoding>\@Codepage.</li>
+        <li>Allow whitespace-only nodes to be added as children of a DOMDocument.</li>
+        <li>When a node is cloned or imported the type information (PSVI) is also copied.</li>
+        <li>When using SAX2, including XMLReaderFactory to use createXMLReader doesn't include xercesc/parsers/SAX2XMLReaderImpl.hpp anymore. If you need to cast the SAX2XMLReader to SAX2XMLReaderImpl,
+            you need to include this header yourself.</li>
+      </ul>
+    </s3>
+    </s2>
 
     <anchor name="Migrateto270"/>
     <s2 title="Migrating from &XercesCName; 2.6.0 to &XercesCName; 2.7.0">
@@ -432,7 +630,7 @@
         <li>DOM Message: make use of the non-standard extension DOMImplementation::loadDOMExceptionMsg
         to load the default error text message for the correspond Exception Code.</li>
         <li>New feature XMLPlatformUtils::Initialize(const char* const locale) to set
-        the locale for message loader.   See <jump href="program-others.html#SpecifylocaleforMessageLoader">
+        the locale for message loader.   See <jump href="program-others-&XercesC3Series;.html#SpecifylocaleforMessageLoader">
         Specify locale for Message Loader</jump> for details</li>
         <li>Support Build with ICU Message Loader, or Message Catalog Message Loader</li>
         <li>RPM for Linux</li>
@@ -442,7 +640,7 @@
         <li>Performance: Break Scanner for different functionalities and many other performance improvement</li>
         <li>New feature, "http://apache.org/xml/features/dom/byte-order-mark", allows user to enable
             DOMWriter to write Byte-Order-Mark in the output XML stream,
-            See <jump href="program-dom.html#Byte-Order-Mark">
+            See <jump href="program-dom-&XercesC3Series;.html#Byte-Order-Mark">
             Xercesc Feature: Byte Order Mark</jump> for details</li>
       </ul>
     </s3>
@@ -450,14 +648,14 @@
     <anchor name="CPPNamespace220"/>
     <s3 title="Using C++ Namespace">
         <p>&XercesCName; 2.2.0 now supports C++ Namespace.  All &XercesCName;
-           classes, data and variables are defined in the &XercesCNamespace; namespace
+           classes, data and variables are defined in the &XercesC3Namespace; namespace
            if C++ Namespace support is ENABLED.</p>
 
         <p>All the binary distributions of &XercesCName; 2.2.0 are now built with
            C++ Namespace enabled.   Therefore users' applications that links with the distributed
            binary packages must namespace qualify all the &XercesCName; classes, data and variables.</p>
 
-        <p>See the Programming Guide <jump href="program-others.html#CPPNamespace">Using C++ Namespace</jump>
+        <p>See the Programming Guide <jump href="program-others-&XercesC3Series;.html#CPPNamespace">Using C++ Namespace</jump>
            for details.</p>
 
     </s3>
@@ -641,28 +839,7 @@
 
     <anchor name="LibraryChange200"/>
     <s3 title="Unix Library Name Change">
-      <p>The &XercesCName; UNIX Library now follows the Unix Shared Library Naming Convention (libname.so.soname).
-         It is now called:</p>
-         <ul>
-            <li>AIX</li>
-            <ul>
-              <li>&XercesCUnixLib;&XercesCUnixSoName;.so</li>
-              <li>symbolic link: &XercesCUnixLib;.so                      ----&gt; &XercesCUnixLib;&XercesCUnixVersion;.so</li>
-              <li>symbolic link: &XercesCUnixLib;&XercesCUnixVersion;.so  ----&gt; &XercesCUnixLib;&XercesCUnixSoName;.so</li>
-            </ul>
-            <li>Solaris / Linux</li>
-            <ul>
-              <li>&XercesCUnixLib;.so.&XercesCUnixSoName;</li>
-              <li>symbolic link: &XercesCUnixLib;.so                      ----&gt; &XercesCUnixLib;.so.&XercesCUnixVersion;</li>
-              <li>symbolic link: &XercesCUnixLib;.so.&XercesCUnixVersion; ----&gt; &XercesCUnixLib;.so.&XercesCUnixSoName;</li>
-            </ul>
-            <li>HP-UX</li>
-            <ul>
-              <li>&XercesCUnixLib;.sl.&XercesCUnixSoName;</li>
-              <li>symbolic link: &XercesCUnixLib;.sl                      ----&gt; &XercesCUnixLib;.sl.&XercesCUnixVersion;</li>
-              <li>symbolic link: &XercesCUnixLib;.sl.&XercesCUnixVersion; ----&gt; &XercesCUnixLib;.sl.&XercesCUnixSoName;</li>
-            </ul>
-         </ul>
+      <p>The &XercesCName; UNIX Library now follows the Unix Shared Library Naming Convention (libname.so.soname).</p>
     </s3>
 
     <anchor name="DirChange200"/>
@@ -711,7 +888,7 @@ void test(char* xmlFile) {
                      file is renamed as well</li>
                  <li>the rest is the same, see
                      <jump href="ApacheDOMC++Binding.html">Apache Recommended DOM C++ binding</jump>
-                     and <jump href="program-dom.html">DOM Programming Guide</jump> for more programming
+                     and <jump href="program-dom-&XercesC3Series;.html">DOM Programming Guide</jump> for more programming
                      information</li>
               </ul>
               <p>Users of IDOM are required to change all their #include lines and do a global rename of
@@ -806,7 +983,7 @@ void test(char* xmlFile) {
                   by targetNamespace (for Schema) or system id (for DTD).</li>
               <li>Plus "Grammar Caching" has much more functionalities other than above
                   (like "Pre-parsing Grammar").  Please refer to
-                  <jump href="program-others.html#GrammarCache">Preparsing Grammar and Grammar Caching
+                  <jump href="program-others-&XercesC3Series;.html#GrammarCache">Preparsing Grammar and Grammar Caching
                   </jump> for more programming details.</li>
            </ol>
     </s3>
@@ -822,7 +999,7 @@ void test(char* xmlFile) {
         <s4 title="New Public API">
             <ul>
               <li>To support DOM Level 3, the following are added (see
-                  <jump href="api.html">the API documentation page</jump> for details).</li>
+                  <jump href="api-&XercesC3Series;.html">the API documentation page</jump> for details).</li>
                 <ul>
                   <li>DOMNode functions set/getUserData, isSameNode isEqualNode.</li>
                   <li>DOMDocument functions renameNode, get/setActualEncoding, get/setEncoding, get/setVersion, get/setStandalone, get/setDocumentURI.</li>
@@ -909,7 +1086,7 @@ void test(char* xmlFile) {
               <li>The old Java-like DOM is now deprecated as described in
                   <link anchor="DirChange200">DOM Reorganization</link></li>
               <li>SAX2XMLReader::setValidationConstraint.   For consistency, SAX2XMLReader users should
-                  set the feature http://apache.org/xml/features/validation-error-as-fatal" instead.</li>
+                  set the feature "http://apache.org/xml/features/validation-error-as-fatal" instead.</li>
               <li>SAX2XMLReader::setExitOnFirstFatalError.  For consistency, SAX2XMLReader users should
                   set the feature "http://apache.org/xml/features/continue-after-fatal-error" instead.</li>
               <li>With the new Grammar Caching introduced, the following features will not be
@@ -977,7 +1154,7 @@ void test(char* xmlFile) {
         <s4 title="New Public API">
             <ul>
               <li>Added SAX2-ext's DeclHandler class.
-                  See <jump href="api.html">the API documentation page</jump> for details.</li>
+                  See <jump href="api-&XercesC3Series;.html">the API documentation page</jump> for details.</li>
               <li>To support SAX2-ext's DeclHandler, the following new methods are added
                   in classes DefaultHandler and SAX2XMLReader:</li>
               <ul>
@@ -1050,7 +1227,7 @@ void test(char* xmlFile) {
     <s3 title="New features in &XercesCName; 1.6.0">
       <ul>
         <li>Full Schema support is available in this release.
-            See <jump href="schema.html">the Schema page</jump> for details.</li>
+            See <jump href="schema-&XercesC3Series;.html">the Schema page</jump> for details.</li>
         <li>New sample SEnumVal to show how to enumerate the markup decls in a Schema Grammar is added.</li>
       </ul>
     </s3>
@@ -1138,16 +1315,13 @@ void test(char* xmlFile) {
               <li>New command line option "-s" for samples.</li>
             </ul>
             <p>
-               See <jump href="schema.html">the Schema page</jump> for details.
+               See <jump href="schema-&XercesC3Series;.html">the Schema page</jump> for details.
             </p>
         </s4>
 
         <s4 title="Experimental IDOM">
-           <p>The experimental IDOM API is a new design of the C++ DOM API. If you would like
-              to migrate from DOM to the experimental IDOM, please refer to
-              <jump href="program-idom.html">
-              IDOM programming guide.</jump> Please note that this experimental IDOM API is only
-              a prototype and is subject to change.
+           <p>The experimental IDOM API is a new design of the C++ DOM API. Please note that
+              this experimental IDOM API is only a prototype and is subject to change.
            </p>
         </s4>
 

@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XMLDouble.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLDouble.hpp 673155 2008-07-01 17:55:39Z dbertoni $
  */
 
-#ifndef XML_DOUBLE_HPP
-#define XML_DOUBLE_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XML_DOUBLE_HPP)
+#define XERCESC_INCLUDE_GUARD_XML_DOUBLE_HPP
 
 #include <xercesc/util/XMLAbstractDoubleFloat.hpp>
 
@@ -88,8 +88,8 @@ private:
 inline int XMLDouble::compareValues(const XMLDouble* const lValue
                                   , const XMLDouble* const rValue)
 {
-    return XMLAbstractDoubleFloat::compareValues((const XMLAbstractDoubleFloat* const) lValue,
-                                                 (const XMLAbstractDoubleFloat* const) rValue 
+    return XMLAbstractDoubleFloat::compareValues((const XMLAbstractDoubleFloat*) lValue,
+                                                 (const XMLAbstractDoubleFloat*) rValue 
                                                  , ((XMLAbstractDoubleFloat*)lValue)->getMemoryManager());
 }
 

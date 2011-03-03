@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMAttrImpl.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMAttrImpl.cpp 678709 2008-07-22 10:56:56Z borisk $
  */
 
 #include <xercesc/dom/DOMDocument.hpp>
@@ -44,7 +44,7 @@ DOMAttrImpl::DOMAttrImpl(const DOMAttrImpl &other, bool /*deep*/)
     , fParent (other.fParent)
     , fName(other.fName)
     , fSchemaType(other.fSchemaType)
-{    
+{
     if (other.fNode.isSpecified())
         fNode.isSpecified(true);
     else
@@ -53,7 +53,7 @@ DOMAttrImpl::DOMAttrImpl(const DOMAttrImpl &other, bool /*deep*/)
     if (other.fNode.isIdAttr())
     {
         fNode.isIdAttr(true);
-        DOMDocumentImpl *doc = (DOMDocumentImpl *)this->getOwnerDocument();
+        DOMDocumentImpl *doc = (DOMDocumentImpl *)fParent.fOwnerDocument;
         doc->getNodeIDMap()->add(this);
     }
 
@@ -67,7 +67,7 @@ DOMAttrImpl::~DOMAttrImpl() {
 
 DOMNode * DOMAttrImpl::cloneNode(bool deep) const
 {
-    DOMNode* newNode = new (this->getOwnerDocument(), DOMDocumentImpl::ATTR_OBJECT) DOMAttrImpl(*this, deep);
+    DOMNode* newNode = new (fParent.fOwnerDocument, DOMDocumentImpl::ATTR_OBJECT) DOMAttrImpl(*this, deep);
     fNode.callUserDataHandlers(DOMUserDataHandler::NODE_CLONED, this, newNode);
     return newNode;
 }
@@ -77,8 +77,7 @@ const XMLCh * DOMAttrImpl::getNodeName()  const{
     return fName;
 }
 
-
-short DOMAttrImpl::getNodeType() const {
+DOMNode::NodeType DOMAttrImpl::getNodeType() const {
     return DOMNode::ATTRIBUTE_NODE;
 }
 
@@ -125,11 +124,13 @@ const XMLCh * DOMAttrImpl::getValue() const
     // In such case, we have to visit each child to retrieve the text
     //
 
-    XMLBuffer buf(1023, ((DOMDocumentImpl *)this->getOwnerDocument())->getMemoryManager());
+    DOMDocumentImpl* doc = (DOMDocumentImpl*)fParent.fOwnerDocument;
+
+    XMLBuffer buf(1023, doc->getMemoryManager());
     for (node = fParent.fFirstChild; node != 0; node = castToChildImpl(node)->nextSibling)
         getTextValue(node, buf);
 
-    return (XMLCh*) ((DOMDocumentImpl *)this->getOwnerDocument())->getPooledString(buf.getRawBuffer());
+    return doc->getPooledString(buf.getRawBuffer());
 }
 
 void DOMAttrImpl::getTextValue(DOMNode* node, XMLBuffer& buf) const
@@ -173,7 +174,7 @@ void DOMAttrImpl::setValue(const XMLCh *val)
     //    then put it back in with the new name.  For now, we don't worry
     //    about what happens if the new name conflicts
     //
-    DOMDocumentImpl *doc = (DOMDocumentImpl *)getOwnerDocument();
+    DOMDocumentImpl *doc = (DOMDocumentImpl *)fParent.fOwnerDocument;
     if (fNode.isIdAttr())
         doc->getNodeIDMap()->remove(this);
 
@@ -186,7 +187,7 @@ void DOMAttrImpl::setValue(const XMLCh *val)
     }
 
     if (val != 0)              // Create and add the new one
-        appendChild(doc->createTextNode(val));
+        fParent.appendChildFast(doc->createTextNode(val));
     fNode.isSpecified(true);
     fParent.changed();
 
@@ -195,6 +196,13 @@ void DOMAttrImpl::setValue(const XMLCh *val)
 
 }
 
+void DOMAttrImpl::setValueFast(const XMLCh *val)
+{
+    if (val != 0)
+      fParent.appendChildFast(fParent.fOwnerDocument->createTextNode(val));
+
+    fNode.isSpecified (true);
+}
 
 
 
@@ -224,11 +232,11 @@ void DOMAttrImpl::release()
     if (fNode.isOwned() && !fNode.isToBeReleased())
         throw DOMException(DOMException::INVALID_ACCESS_ERR,0, GetDOMNodeMemoryManager);
 
-    DOMDocumentImpl* doc = (DOMDocumentImpl*) getOwnerDocument();
+    DOMDocumentImpl* doc = (DOMDocumentImpl*)fParent.fOwnerDocument;
     if (doc) {
         fNode.callUserDataHandlers(DOMUserDataHandler::NODE_DELETED, 0, 0);
         fParent.release();
-        doc->release(this, DOMDocumentImpl::ATTR_OBJECT);
+        doc->release(this, DOMMemoryManager::ATTR_OBJECT);
     }
     else {
         // shouldn't reach here
@@ -245,7 +253,7 @@ bool DOMAttrImpl::isId() const {
 DOMNode* DOMAttrImpl::rename(const XMLCh* namespaceURI, const XMLCh* name)
 {
     DOMElement* el = getOwnerElement();
-    DOMDocumentImpl* doc = (DOMDocumentImpl*) getOwnerDocument();
+    DOMDocumentImpl* doc = (DOMDocumentImpl*)fParent.fOwnerDocument;
 
     if (el)
         el->removeAttributeNode(this);
@@ -255,6 +263,9 @@ DOMNode* DOMAttrImpl::rename(const XMLCh* namespaceURI, const XMLCh* name)
 
         if (el)
             el->setAttributeNode(this);
+
+        // and fire user data NODE_RENAMED event
+        castToNodeImpl(this)->callUserDataHandlers(DOMUserDataHandler::NODE_RENAMED, this, this);
 
         return this;
     }
@@ -274,18 +285,18 @@ DOMNode* DOMAttrImpl::rename(const XMLCh* namespaceURI, const XMLCh* name)
             child = getFirstChild();
         }
 
-        // and fire user data NODE_RENAMED event
-        castToNodeImpl(newAttr)->callUserDataHandlers(DOMUserDataHandler::NODE_RENAMED, this, newAttr);
-
         // reattach attr to element
         if (el)
             el->setAttributeNodeNS(newAttr);
+
+        // and fire user data NODE_RENAMED event
+        castToNodeImpl(newAttr)->callUserDataHandlers(DOMUserDataHandler::NODE_RENAMED, this, newAttr);
 
         return newAttr;
     }
 }
 
-const DOMTypeInfo *DOMAttrImpl::getTypeInfo() const
+const DOMTypeInfo *DOMAttrImpl::getSchemaTypeInfo() const
 {
     if(!fSchemaType)
         return &DOMTypeInfoImpl::g_DtdNotValidatedAttribute;
@@ -294,7 +305,7 @@ const DOMTypeInfo *DOMAttrImpl::getTypeInfo() const
 }
 
 
-void DOMAttrImpl::setTypeInfo(const DOMTypeInfoImpl* typeInfo) 
+void DOMAttrImpl::setSchemaTypeInfo(const DOMTypeInfoImpl* typeInfo)
 {
     fSchemaType = typeInfo;
 }
@@ -307,15 +318,11 @@ bool DOMAttrImpl::isSupported(const XMLCh *feature, const XMLCh *version) const
     return fNode.isSupported (feature, version);
 }
 
-DOMNode * DOMAttrImpl::getInterface(const XMLCh* feature)
+void* DOMAttrImpl::getFeature(const XMLCh* feature, const XMLCh* version) const
 {
     if(XMLString::equals(feature, XMLUni::fgXercescInterfacePSVITypeInfo))
-    {
-        // go through a temp variable, as gcc 4.0.x computes the wrong offset if presented with two consecutive casts
-        const DOMPSVITypeInfo* pTmp=fSchemaType;
-        return (DOMNode*)pTmp;
-    }
-    return fNode.getInterface(feature); 
+        return (DOMPSVITypeInfo*)fSchemaType;
+    return fNode.getFeature(feature, version);
 }
 
            DOMNode*         DOMAttrImpl::appendChild(DOMNode *newChild)          {return fParent.appendChild (newChild); }
@@ -345,12 +352,11 @@ DOMNode * DOMAttrImpl::getInterface(const XMLCh* feature)
                                                                                  {return fNode.setUserData(key, data, handler); }
            void*            DOMAttrImpl::getUserData(const XMLCh* key) const     {return fNode.getUserData(key); }
            const XMLCh*     DOMAttrImpl::getBaseURI() const                      {return fNode.getBaseURI(); }
-           short            DOMAttrImpl::compareTreePosition(const DOMNode* other) const {return fNode.compareTreePosition(other); }
+           short            DOMAttrImpl::compareDocumentPosition(const DOMNode* other) const {return fNode.compareDocumentPosition(other); }
            const XMLCh*     DOMAttrImpl::getTextContent() const                  {return fNode.getTextContent(); }
            void             DOMAttrImpl::setTextContent(const XMLCh* textContent){fNode.setTextContent(textContent); }
-           const XMLCh*     DOMAttrImpl::lookupNamespacePrefix(const XMLCh* namespaceURI, bool useDefault) const  {return fNode.lookupNamespacePrefix(namespaceURI, useDefault); }
+           const XMLCh*     DOMAttrImpl::lookupPrefix(const XMLCh* namespaceURI) const  {return fNode.lookupPrefix(namespaceURI); }
            bool             DOMAttrImpl::isDefaultNamespace(const XMLCh* namespaceURI) const {return fNode.isDefaultNamespace(namespaceURI); }
            const XMLCh*     DOMAttrImpl::lookupNamespaceURI(const XMLCh* prefix) const  {return fNode.lookupNamespaceURI(prefix); }
 
 XERCES_CPP_NAMESPACE_END
-

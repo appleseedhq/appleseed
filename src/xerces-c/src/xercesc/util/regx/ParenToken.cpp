@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: ParenToken.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: ParenToken.cpp 678879 2008-07-22 20:05:05Z amassari $
  */
 
 // ---------------------------------------------------------------------------
@@ -29,9 +29,9 @@ XERCES_CPP_NAMESPACE_BEGIN
 // ---------------------------------------------------------------------------
 //  ParenToken: Constructors and Destructors
 // ---------------------------------------------------------------------------
-ParenToken::ParenToken(const unsigned short tokType,
+ParenToken::ParenToken(const Token::tokType tkType,
                        Token* const tok, const int noParen, MemoryManager* const manager)
-    : Token(tokType, manager)
+    : Token(tkType, manager)
     , fNoParen(noParen)
     , fChild(tok)
 {
@@ -46,5 +46,5 @@ ParenToken::~ParenToken() {
 XERCES_CPP_NAMESPACE_END
 
 /**
-  *	End of file ParenToken.cpp
+  *    End of file ParenToken.cpp
   */

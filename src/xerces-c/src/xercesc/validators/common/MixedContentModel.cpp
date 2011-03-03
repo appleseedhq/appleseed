@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: MixedContentModel.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: MixedContentModel.cpp 676911 2008-07-15 13:27:32Z amassari $
  */
 
 
@@ -79,7 +79,7 @@ MixedContentModel::MixedContentModel(const bool             dtd
     (
         fCount * sizeof(ContentSpecNode::NodeTypes)
     ); //new ContentSpecNode::NodeTypes[fCount];
-    for (unsigned int index = 0; index < fCount; index++) {
+    for (XMLSize_t index = 0; index < fCount; index++) {
         fChildren[index] = new (fMemoryManager) QName(*children.elementAt(index));
         fChildTypes[index] = childTypes.elementAt(index);
     }
@@ -87,7 +87,7 @@ MixedContentModel::MixedContentModel(const bool             dtd
 
 MixedContentModel::~MixedContentModel()
 {
-    for (unsigned int index = 0; index < fCount; index++) {
+    for (XMLSize_t index = 0; index < fCount; index++) {
         delete fChildren[index];
     }
     fMemoryManager->deallocate(fChildren); //delete [] fChildren;
@@ -104,10 +104,10 @@ bool MixedContentModel::hasDups() const
     if (fCount == 1)
         return false;
 
-    for (unsigned int index = 0; index < fCount; index++)
+    for (XMLSize_t index = 0; index < fCount; index++)
     {
         const QName* curVal = fChildren[index];
-        for (unsigned int iIndex = 0; iIndex < fCount; iIndex++)
+        for (XMLSize_t iIndex = 0; iIndex < fCount; iIndex++)
         {
             if (iIndex == index)
                 continue;
@@ -138,10 +138,12 @@ bool MixedContentModel::hasDups() const
 //must agree with
 //the order and number of child elements specified in the model.
 //
-int
+bool
 MixedContentModel::validateContent( QName** const         children
-                                  , const unsigned int    childCount
-                                  , const unsigned int) const
+                                  , XMLSize_t             childCount
+                                  , unsigned int
+                                  , XMLSize_t*            indexFailingChild
+                                  , MemoryManager*    const) const
 {
     // must match order
     if (fOrdered) {
@@ -161,13 +163,15 @@ MixedContentModel::validateContent( QName** const         children
             if (type == ContentSpecNode::Leaf) {
                 if (fDTD) {
                     if (!XMLString::equals(inChild->getRawName(), curChild->getRawName())) {
-                        return outIndex;
+                        *indexFailingChild=outIndex;
+                        return false;
                     }
                 }
                 else {
                     if ((inChild->getURI() != curChild->getURI()) ||
                         (!XMLString::equals(inChild->getLocalPart(), curChild->getLocalPart()))) {
-                        return outIndex;
+                        *indexFailingChild=outIndex;
+                        return false;
                     }
                 }
             }
@@ -175,11 +179,21 @@ MixedContentModel::validateContent( QName** const         children
             }
             else if (type == ContentSpecNode::Any_NS) {
                 if (inChild->getURI() != curChild->getURI())
-                    return outIndex;
+                {
+                    *indexFailingChild=outIndex;
+                    return false;
+                }
             }
-            else if (type == ContentSpecNode::Any_Other) {
-                if (inChild->getURI() == curChild->getURI())
-                    return outIndex;
+            else if (type == ContentSpecNode::Any_Other)
+            {
+                // Here we assume that empty string has id 1.
+                //
+                unsigned int uriId = curChild->getURI();
+                if (uriId == 1 || uriId == inChild->getURI())
+                {
+                    *indexFailingChild=outIndex;
+                    return false;
+                }
             }
 
             // advance index
@@ -224,8 +238,12 @@ MixedContentModel::validateContent( QName** const         children
                     if (inChild->getURI() == curChild->getURI())
                         break;
                 }
-                else if (type == ContentSpecNode::Any_Other) {
-                    if (inChild->getURI() != curChild->getURI())
+                else if (type == ContentSpecNode::Any_Other)
+                {
+                    // Here we assume that empty string has id 1.
+                    //
+                    unsigned int uriId = curChild->getURI();
+                    if (uriId != 1 && uriId != inChild->getURI())
                         break;
                 }
 
@@ -236,21 +254,25 @@ MixedContentModel::validateContent( QName** const         children
             }
             // We did not find this one, so the validation failed
             if (inIndex == fCount)
-                return outIndex;
+            {
+                *indexFailingChild=outIndex;
+                return false;
+            }
         }
     }
 
     // Everything seems to be in order, so return success
-    // success
-    return -1;
+    return true;
 }
 
 
-int MixedContentModel::validateContentSpecial(QName** const           children
-                                            , const unsigned int      childCount
-                                            , const unsigned int
+bool MixedContentModel::validateContentSpecial(QName** const          children
+                                            , XMLSize_t               childCount
+                                            , unsigned int
                                             , GrammarResolver*  const pGrammarResolver
-                                            , XMLStringPool*    const pStringPool) const
+                                            , XMLStringPool*    const pStringPool
+                                            , XMLSize_t*              indexFailingChild
+                                            , MemoryManager*    const) const
 {
 
     SubstitutionGroupComparator comparator(pGrammarResolver, pStringPool);
@@ -272,17 +294,30 @@ int MixedContentModel::validateContentSpecial(QName** const           children
 
             if (type == ContentSpecNode::Leaf) {
                 if ( !comparator.isEquivalentTo(curChild, inChild))
-                    return outIndex;
+                {
+                    *indexFailingChild=outIndex;
+                    return false;
+                }
             }
             else if (type == ContentSpecNode::Any) {
             }
             else if (type == ContentSpecNode::Any_NS) {
                 if (inChild->getURI() != curChild->getURI())
-                    return outIndex;
+                {
+                    *indexFailingChild=outIndex;
+                    return false;
+                }
             }
-            else if (type == ContentSpecNode::Any_Other) {
-                if (inChild->getURI() == curChild->getURI())
-                    return outIndex;
+            else if (type == ContentSpecNode::Any_Other)
+            {
+                // Here we assume that empty string has id 1.
+                //
+                unsigned int uriId = curChild->getURI();
+                if (uriId == 1 || uriId == inChild->getURI())
+                {
+                    *indexFailingChild=outIndex;
+                    return false;
+                }
             }
 
             // advance index
@@ -318,9 +353,13 @@ int MixedContentModel::validateContentSpecial(QName** const           children
                     if (inChild->getURI() == curChild->getURI())
                         break;
                 }
-                else if (type == ContentSpecNode::Any_Other) {
-                    if (inChild->getURI() != curChild->getURI())
-                        break;
+                else if (type == ContentSpecNode::Any_Other)
+                {
+                  // Here we assume that empty string has id 1.
+                  //
+                  unsigned int uriId = curChild->getURI();
+                  if (uriId != 1 && uriId != inChild->getURI())
+                    break;
                 }
 
                 // REVISIT: What about checking for multiple ANY matches?
@@ -330,13 +369,15 @@ int MixedContentModel::validateContentSpecial(QName** const           children
             }
             // We did not find this one, so the validation failed
             if (inIndex == fCount)
-                return outIndex;
+            {
+                *indexFailingChild=outIndex;
+                return false;
+            }
         }
     }
 
     // Everything seems to be in order, so return success
-    // success
-    return -1;
+    return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -386,4 +427,3 @@ MixedContentModel::buildChildList(  ContentSpecNode* const       curNode
 }
 
 XERCES_CPP_NAMESPACE_END
-

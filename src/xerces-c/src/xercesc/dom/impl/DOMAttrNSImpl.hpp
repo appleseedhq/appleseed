@@ -1,6 +1,3 @@
-#ifndef DOMAttrNSImpl_HEADER_GUARD_
-#define DOMAttrNSImpl_HEADER_GUARD_
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -8,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,8 +16,11 @@
  */
 
 /*
- * $Id: DOMAttrNSImpl.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMAttrNSImpl.hpp 678709 2008-07-22 10:56:56Z borisk $
  */
+
+#if !defined(XERCESC_INCLUDE_GUARD_DOMATTRNSIMPL_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMATTRNSIMPL_HPP
 
 //
 //  This file is part of the internal implementation of the C++ XML DOM.
@@ -48,8 +48,18 @@ protected:
 public:
     DOMAttrNSImpl(DOMDocument *ownerDoc, const XMLCh *name);
     DOMAttrNSImpl(DOMDocument *ownerDoc, //DOM Level 2
-	                const XMLCh *namespaceURI, const XMLCh *qualifiedName);
+                  const XMLCh *namespaceURI, const XMLCh *qualifiedName);
     DOMAttrNSImpl(const DOMAttrNSImpl &other, bool deep=false);
+
+    // Fast construction without any checks for name validity. Used in
+    // parsing. Note that if prefix is not specified and localName is
+    // 'xmlns', this constructor expects proper namespaceURI.
+    //
+    DOMAttrNSImpl(DOMDocument *ownerDoc,
+                  const XMLCh *namespaceURI,
+                  const XMLCh *prefix,        // Null or empty - no prefix.
+                  const XMLCh *localName,
+                  const XMLCh *qualifiedName);
 
     virtual DOMNode * cloneNode(bool deep) const;
     //Introduced in DOM Level 2
@@ -66,7 +76,7 @@ public:
 private:
     // -----------------------------------------------------------------------
     // Unimplemented constructors and operators
-    // -----------------------------------------------------------------------    
+    // -----------------------------------------------------------------------
     DOMAttrNSImpl & operator = (const DOMAttrNSImpl &);
 };
 

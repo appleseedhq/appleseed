@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: TokenInc.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: TokenInc.hpp 678879 2008-07-22 20:05:05Z amassari $
  */
 
-#if !defined(TOKENINC_HPP)
-#define TOKENINC_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_TOKENINC_HPP)
+#define XERCESC_INCLUDE_GUARD_TOKENINC_HPP
 
 // ---------------------------------------------------------------------------
 //  Includes
@@ -29,8 +29,6 @@
 #include <xercesc/util/regx/CharToken.hpp>
 #include <xercesc/util/regx/ClosureToken.hpp>
 #include <xercesc/util/regx/ConcatToken.hpp>
-#include <xercesc/util/regx/ConditionToken.hpp>
-#include <xercesc/util/regx/ModifierToken.hpp>
 #include <xercesc/util/regx/ParenToken.hpp>
 #include <xercesc/util/regx/StringToken.hpp>
 #include <xercesc/util/regx/UnionToken.hpp>

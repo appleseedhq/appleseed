@@ -15,8 +15,12 @@
  * limitations under the License.
  */
 
-#ifndef XMLEBCDICTRANSCODER_HPP
-#define XMLEBCDICTRANSCODER_HPP
+/*
+ * $Id: XMLEBCDICTranscoder.hpp 932887 2010-04-11 13:04:59Z borisk $
+ */
+
+#if !defined(XERCESC_INCLUDE_GUARD_XMLEBCDICTRANSCODER_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLEBCDICTRANSCODER_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 #include <xercesc/util/XML256TableTranscoder.hpp>
@@ -27,7 +31,7 @@ XERCES_CPP_NAMESPACE_BEGIN
 //  This class provides an implementation of the XMLTranscoder interface
 //  for a simple EBCDIC-US transcoder. The parser does some encodings
 //  intrinsically without depending upon external transcoding services.
-//  To make everything more orthagonal, we implement these internal
+//  To make everything more orthogonal, we implement these internal
 //  transcoders using the same transcoder abstraction as the pluggable
 //  transcoding services do.
 //
@@ -47,8 +51,8 @@ public :
     // -----------------------------------------------------------------------
     XMLEBCDICTranscoder
     (
-        const   XMLCh* const    encodingName
-        , const unsigned int    blockSize
+        const   XMLCh* const   encodingName
+        , const XMLSize_t      blockSize
         , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
     );
 

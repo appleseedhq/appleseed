@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMEntityImpl.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMEntityImpl.cpp 678381 2008-07-21 10:15:01Z borisk $
  */
 
 #include <xercesc/dom/DOMException.hpp>
@@ -34,12 +34,12 @@ DOMEntityImpl::DOMEntityImpl(DOMDocument *ownerDoc, const XMLCh *eName)
      fSystemId(0),
      fNotationName(0),
      fRefEntity(0),
-     fActualEncoding(0),
-     fEncoding(0),
-     fVersion(0),     
+     fInputEncoding(0),
+     fXmlEncoding(0),
+     fXmlVersion(0),
      fBaseURI(0),
      fEntityRefNodeCloned(false)
-{   
+{
     fName        = ((DOMDocumentImpl *)ownerDoc)->getPooledString(eName);
     fNode.setReadOnly(true, true);
 }
@@ -54,14 +54,14 @@ DOMEntityImpl::DOMEntityImpl(const DOMEntityImpl &other, bool deep)
       fSystemId(other.fSystemId),
       fNotationName(other.fNotationName),
       fRefEntity(other.fRefEntity),
-      fActualEncoding(other.fActualEncoding),
-      fEncoding(other.fEncoding),
-      fVersion(other.fVersion),
+      fInputEncoding(other.fInputEncoding),
+      fXmlEncoding(other.fXmlEncoding),
+      fXmlVersion(other.fXmlVersion),
       fBaseURI(other.fBaseURI),
       fEntityRefNodeCloned(false)
-{    
+{
     if (deep)
-        fParent.cloneChildren(&other);   
+        fParent.cloneChildren(&other);
     fNode.setReadOnly(true, true);
 }
 
@@ -72,7 +72,7 @@ DOMEntityImpl::~DOMEntityImpl() {
 
 DOMNode *DOMEntityImpl::cloneNode(bool deep) const
 {
-    DOMNode* newNode = new (getOwnerDocument(), DOMDocumentImpl::ENTITY_OBJECT) DOMEntityImpl(*this, deep);
+    DOMNode* newNode = new (fParent.fOwnerDocument, DOMMemoryManager::ENTITY_OBJECT) DOMEntityImpl(*this, deep);
     fNode.callUserDataHandlers(DOMUserDataHandler::NODE_CLONED, this, newNode);
     return newNode;
 }
@@ -83,7 +83,7 @@ const XMLCh * DOMEntityImpl::getNodeName() const {
 }
 
 
-short DOMEntityImpl::getNodeType() const {
+DOMNode::NodeType DOMEntityImpl::getNodeType() const {
     return DOMNode::ENTITY_NODE;
 }
 
@@ -119,28 +119,28 @@ void DOMEntityImpl::setNodeValue(const XMLCh *arg)
 
 void DOMEntityImpl::setNotationName(const XMLCh *arg)
 {
-    DOMDocumentImpl *doc = (DOMDocumentImpl *)this->getOwnerDocument();
+    DOMDocumentImpl *doc = (DOMDocumentImpl *)fParent.fOwnerDocument;
     fNotationName = doc->cloneString(arg);
 }
 
 
 void DOMEntityImpl::setPublicId(const XMLCh *arg)
 {
-    DOMDocumentImpl *doc = (DOMDocumentImpl *)this->getOwnerDocument();
+    DOMDocumentImpl *doc = (DOMDocumentImpl *)fParent.fOwnerDocument;
     fPublicId = doc->cloneString(arg);
 }
 
 
 void DOMEntityImpl::setSystemId(const XMLCh *arg)
 {
-    DOMDocumentImpl *doc = (DOMDocumentImpl *)this->getOwnerDocument();
+    DOMDocumentImpl *doc = (DOMDocumentImpl *)fParent.fOwnerDocument;
     fSystemId = doc->cloneString(arg);
 }
 
 
 void DOMEntityImpl::setBaseURI(const XMLCh* baseURI) {
     if (baseURI && *baseURI) {
-        XMLCh* temp = (XMLCh*) ((DOMDocumentImpl *)getOwnerDocument())->allocate((XMLString::stringLen(baseURI) + 9)*sizeof(XMLCh));
+        XMLCh* temp = (XMLCh*) ((DOMDocumentImpl *)fParent.fOwnerDocument)->allocate((XMLString::stringLen(baseURI) + 9)*sizeof(XMLCh));
         XMLString::fixURI(baseURI, temp);
         fBaseURI = temp;
     }
@@ -214,11 +214,11 @@ void DOMEntityImpl::release()
     if (fNode.isOwned() && !fNode.isToBeReleased())
         throw DOMException(DOMException::INVALID_ACCESS_ERR,0, GetDOMNodeMemoryManager);
 
-    DOMDocumentImpl* doc = (DOMDocumentImpl*) getOwnerDocument();
+    DOMDocumentImpl* doc = (DOMDocumentImpl*) fParent.fOwnerDocument;
     if (doc) {
         fNode.callUserDataHandlers(DOMUserDataHandler::NODE_DELETED, 0, 0);
         fParent.release();
-        doc->release(this, DOMDocumentImpl::ENTITY_OBJECT);
+        doc->release(this, DOMMemoryManager::ENTITY_OBJECT);
     }
     else {
         // shouldn't reach here
@@ -255,42 +255,41 @@ void DOMEntityImpl::release()
            void*            DOMEntityImpl::setUserData(const XMLCh* key, void* data, DOMUserDataHandler* handler)
                                                                                    {return fNode.setUserData(key, data, handler); }
            void*            DOMEntityImpl::getUserData(const XMLCh* key) const     {return fNode.getUserData(key); }
-           short            DOMEntityImpl::compareTreePosition(const DOMNode* other) const {return fNode.compareTreePosition(other); }
+           short            DOMEntityImpl::compareDocumentPosition(const DOMNode* other) const {return fNode.compareDocumentPosition(other); }
            const XMLCh*     DOMEntityImpl::getTextContent() const                  {return fNode.getTextContent(); }
            void             DOMEntityImpl::setTextContent(const XMLCh* textContent){fNode.setTextContent(textContent); }
-           const XMLCh*     DOMEntityImpl::lookupNamespacePrefix(const XMLCh* namespaceURI, bool useDefault) const  {return fNode.lookupNamespacePrefix(namespaceURI, useDefault); }
+           const XMLCh*     DOMEntityImpl::lookupPrefix(const XMLCh* namespaceURI) const  {return fNode.lookupPrefix(namespaceURI); }
            bool             DOMEntityImpl::isDefaultNamespace(const XMLCh* namespaceURI) const {return fNode.isDefaultNamespace(namespaceURI); }
            const XMLCh*     DOMEntityImpl::lookupNamespaceURI(const XMLCh* prefix) const  {return fNode.lookupNamespaceURI(prefix); }
-           DOMNode*         DOMEntityImpl::getInterface(const XMLCh* feature)      {return fNode.getInterface(feature); }
+           void*            DOMEntityImpl::getFeature(const XMLCh* feature, const XMLCh* version) const {return fNode.getFeature(feature, version); }
 
 
 //Introduced in DOM Level 3
-const XMLCh* DOMEntityImpl::getActualEncoding() const {
-    return fActualEncoding;
+const XMLCh* DOMEntityImpl::getInputEncoding() const {
+    return fInputEncoding;
 }
 
-void DOMEntityImpl::setActualEncoding(const XMLCh* actualEncoding){
-    DOMDocumentImpl *doc = (DOMDocumentImpl *)this->getOwnerDocument();
-    fActualEncoding = doc->cloneString(actualEncoding);
+void DOMEntityImpl::setInputEncoding(const XMLCh* actualEncoding){
+    DOMDocumentImpl *doc = (DOMDocumentImpl *)fParent.fOwnerDocument;
+    fInputEncoding = doc->cloneString(actualEncoding);
 }
 
-const XMLCh* DOMEntityImpl::getEncoding() const {
-    return fEncoding;
+const XMLCh* DOMEntityImpl::getXmlEncoding() const {
+    return fXmlEncoding;
 }
 
-void DOMEntityImpl::setEncoding(const XMLCh* encoding){
-    DOMDocumentImpl *doc = (DOMDocumentImpl *)this->getOwnerDocument();
-    fEncoding = doc->cloneString(encoding);
+void DOMEntityImpl::setXmlEncoding(const XMLCh* encoding){
+    DOMDocumentImpl *doc = (DOMDocumentImpl *)fParent.fOwnerDocument;
+    fXmlEncoding = doc->cloneString(encoding);
 }
 
-const XMLCh* DOMEntityImpl::getVersion() const {
-    return fVersion;
+const XMLCh* DOMEntityImpl::getXmlVersion() const {
+    return fXmlVersion;
 }
 
-void DOMEntityImpl::setVersion(const XMLCh* version){
-    DOMDocumentImpl *doc = (DOMDocumentImpl *)this->getOwnerDocument();
-    fVersion = doc->cloneString(version);
+void DOMEntityImpl::setXmlVersion(const XMLCh* version){
+    DOMDocumentImpl *doc = (DOMDocumentImpl *)fParent.fOwnerDocument;
+    fXmlVersion = doc->cloneString(version);
 }
 
 XERCES_CPP_NAMESPACE_END
-

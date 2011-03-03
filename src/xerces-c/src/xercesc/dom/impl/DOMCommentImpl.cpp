@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMCommentImpl.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMCommentImpl.cpp 678381 2008-07-21 10:15:01Z borisk $
  */
 
 #include "DOMCommentImpl.hpp"
@@ -55,7 +55,7 @@ DOMCommentImpl::~DOMCommentImpl() {
 
 DOMNode * DOMCommentImpl::cloneNode(bool deep) const
 {
-    DOMNode* newNode = new (getOwnerDocument(), DOMDocumentImpl::COMMENT_OBJECT) DOMCommentImpl(*this, deep);
+    DOMNode* newNode = new (getOwnerDocument(), DOMMemoryManager::COMMENT_OBJECT) DOMCommentImpl(*this, deep);
     fNode.callUserDataHandlers(DOMUserDataHandler::NODE_CLONED, this, newNode);
     return newNode;
 }
@@ -67,7 +67,7 @@ const XMLCh * DOMCommentImpl::getNodeName() const {
     return gComment;
 }
 
-short DOMCommentImpl::getNodeType() const {
+DOMNode::NodeType DOMCommentImpl::getNodeType() const {
     return DOMNode::COMMENT_NODE;
 }
 
@@ -80,7 +80,7 @@ void DOMCommentImpl::release()
     if (doc) {
         fNode.callUserDataHandlers(DOMUserDataHandler::NODE_DELETED, 0, 0);
         fCharacterData.releaseBuffer();
-        doc->release(this, DOMDocumentImpl::COMMENT_OBJECT);
+        doc->release(this, DOMMemoryManager::COMMENT_OBJECT);
     }
     else {
         // shouldn't reach here
@@ -101,9 +101,9 @@ DOMComment *DOMCommentImpl::splitText(XMLSize_t offset)
     if (offset > len)
         throw DOMException(DOMException::INDEX_SIZE_ERR, 0, GetDOMNodeMemoryManager);
 
+    DOMDocumentImpl *doc = (DOMDocumentImpl *)getOwnerDocument();
     DOMComment *newText =
-                getOwnerDocument()->createComment(
-                        this->substringData(offset, len - offset));
+      doc->createComment(this->substringData(offset, len - offset));
 
     DOMNode *parent = getParentNode();
     if (parent != 0)
@@ -111,8 +111,8 @@ DOMComment *DOMCommentImpl::splitText(XMLSize_t offset)
 
     fCharacterData.fDataBuf->chop(offset);
 
-    if (this->getOwnerDocument() != 0) {
-        Ranges* ranges = ((DOMDocumentImpl *)this->getOwnerDocument())->getRanges();
+    if (doc != 0) {
+        Ranges* ranges = doc->getRanges();
         if (ranges != 0) {
             XMLSize_t sz = ranges->size();
             if (sz != 0) {
@@ -157,13 +157,13 @@ DOMComment *DOMCommentImpl::splitText(XMLSize_t offset)
                                                                                     {return fNode.setUserData(key, data, handler); }
            void*            DOMCommentImpl::getUserData(const XMLCh* key) const     {return fNode.getUserData(key); }
            const XMLCh*     DOMCommentImpl::getBaseURI() const                      {return fNode.getBaseURI(); }
-           short            DOMCommentImpl::compareTreePosition(const DOMNode* other) const {return fNode.compareTreePosition(other); }
+           short            DOMCommentImpl::compareDocumentPosition(const DOMNode* other) const {return fNode.compareDocumentPosition(other); }
            const XMLCh*     DOMCommentImpl::getTextContent() const                  {return fNode.getTextContent(); }
            void             DOMCommentImpl::setTextContent(const XMLCh* textContent){fNode.setTextContent(textContent); }
-           const XMLCh*     DOMCommentImpl::lookupNamespacePrefix(const XMLCh* namespaceURI, bool useDefault) const  {return fNode.lookupNamespacePrefix(namespaceURI, useDefault); }
+           const XMLCh*     DOMCommentImpl::lookupPrefix(const XMLCh* namespaceURI) const  {return fNode.lookupPrefix(namespaceURI); }
            bool             DOMCommentImpl::isDefaultNamespace(const XMLCh* namespaceURI) const {return fNode.isDefaultNamespace(namespaceURI); }
            const XMLCh*     DOMCommentImpl::lookupNamespaceURI(const XMLCh* prefix) const  {return fNode.lookupNamespaceURI(prefix); }
-           DOMNode*         DOMCommentImpl::getInterface(const XMLCh* feature)      {return fNode.getInterface(feature); }
+           void*            DOMCommentImpl::getFeature(const XMLCh* feature, const XMLCh* version) const {return fNode.getFeature(feature, version); }
 
 
 
@@ -187,4 +187,3 @@ DOMComment *DOMCommentImpl::splitText(XMLSize_t offset)
            void             DOMCommentImpl::setNodeValue(const XMLCh  *nodeValue)   {fCharacterData.setNodeValue (this, nodeValue); }
 
 XERCES_CPP_NAMESPACE_END
-

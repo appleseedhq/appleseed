@@ -16,13 +16,11 @@
  */
 
 /*
- * $Id: DTDScanner.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DTDScanner.hpp 676911 2008-07-15 13:27:32Z amassari $
  */
 
-
-
-#if !defined(DTDSCANNER_HPP)
-#define DTDSCANNER_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_DTDSCANNER_HPP)
+#define XERCESC_INCLUDE_GUARD_DTDSCANNER_HPP
 
 #include <xercesc/validators/DTD/DTDGrammar.hpp>
 #include <xercesc/validators/DTD/DTDEntityDecl.hpp>
@@ -241,7 +239,7 @@ private:
     XMLScanner*                     fScanner;
     NameIdPool<DTDEntityDecl>*      fPEntityDeclPool;
     unsigned int                    fEmptyNamespaceId;
-    unsigned int                    fDocTypeReaderId;
+    XMLSize_t                       fDocTypeReaderId;
 };
 
 

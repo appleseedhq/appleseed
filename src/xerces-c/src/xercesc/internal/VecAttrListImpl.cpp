@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: VecAttrListImpl.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: VecAttrListImpl.cpp 672273 2008-06-27 13:57:00Z borisk $
  */
 
 
@@ -53,12 +53,12 @@ VecAttrListImpl::~VecAttrListImpl()
 // ---------------------------------------------------------------------------
 //  Implementation of the attribute list interface
 // ---------------------------------------------------------------------------
-unsigned int VecAttrListImpl::getLength() const
+XMLSize_t VecAttrListImpl::getLength() const
 {
     return fCount;
 }
 
-const XMLCh* VecAttrListImpl::getName(const unsigned int index) const
+const XMLCh* VecAttrListImpl::getName(const XMLSize_t index) const
 {
     if (index >= fCount) {
         return 0;
@@ -66,7 +66,7 @@ const XMLCh* VecAttrListImpl::getName(const unsigned int index) const
     return fVector->elementAt(index)->getQName();
 }
 
-const XMLCh* VecAttrListImpl::getType(const unsigned int index) const
+const XMLCh* VecAttrListImpl::getType(const XMLSize_t index) const
 {
     if (index >= fCount) {
         return 0;
@@ -74,7 +74,7 @@ const XMLCh* VecAttrListImpl::getType(const unsigned int index) const
     return XMLAttDef::getAttTypeString(fVector->elementAt(index)->getType(), fVector->getMemoryManager());
 }
 
-const XMLCh* VecAttrListImpl::getValue(const unsigned int index) const
+const XMLCh* VecAttrListImpl::getValue(const XMLSize_t index) const
 {
     if (index >= fCount) {
         return 0;
@@ -88,7 +88,7 @@ const XMLCh* VecAttrListImpl::getType(const XMLCh* const name) const
     //  Search the vector for the attribute with the given name and return
     //  its type.
     //
-    for (unsigned int index = 0; index < fCount; index++)
+    for (XMLSize_t index = 0; index < fCount; index++)
     {
         const XMLAttr* curElem = fVector->elementAt(index);
 
@@ -104,7 +104,7 @@ const XMLCh* VecAttrListImpl::getValue(const XMLCh* const name) const
     //  Search the vector for the attribute with the given name and return
     //  its type.
     //
-    for (unsigned int index = 0; index < fCount; index++)
+    for (XMLSize_t index = 0; index < fCount; index++)
     {
         const XMLAttr* curElem = fVector->elementAt(index);
 
@@ -124,7 +124,7 @@ const XMLCh* VecAttrListImpl::getValue(const char* const name) const
     //  Search the vector for the attribute with the given name and return
     //  its type.
     //
-    for (unsigned int index = 0; index < fCount; index++)
+    for (XMLSize_t index = 0; index < fCount; index++)
     {
         const XMLAttr* curElem = fVector->elementAt(index);
 
@@ -140,7 +140,7 @@ const XMLCh* VecAttrListImpl::getValue(const char* const name) const
 //  Setter methods
 // ---------------------------------------------------------------------------
 void VecAttrListImpl::setVector(const   RefVectorOf<XMLAttr>* const srcVec
-                                , const unsigned int                count
+                                , const XMLSize_t                   count
                                 , const bool                        adopt)
 {
     //

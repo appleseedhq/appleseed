@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMDocumentFragmentImpl.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMDocumentFragmentImpl.cpp 671894 2008-06-26 13:29:21Z borisk $
  */
 
 #include "DOMDocumentFragmentImpl.hpp"
@@ -51,7 +51,7 @@ DOMDocumentFragmentImpl::~DOMDocumentFragmentImpl()
 
 DOMNode *DOMDocumentFragmentImpl::cloneNode(bool deep) const
 {
-    DOMNode* newNode = new (castToNodeImpl(this)->getOwnerDocument(), DOMDocumentImpl::DOCUMENT_FRAGMENT_OBJECT) DOMDocumentFragmentImpl(*this, deep);
+    DOMNode* newNode = new (castToNodeImpl(this)->getOwnerDocument(), DOMMemoryManager::DOCUMENT_FRAGMENT_OBJECT) DOMDocumentFragmentImpl(*this, deep);
     fNode.callUserDataHandlers(DOMUserDataHandler::NODE_CLONED, this, newNode);
     return newNode;
 }
@@ -65,7 +65,7 @@ const XMLCh * DOMDocumentFragmentImpl::getNodeName() const {
 }
 
 
-short DOMDocumentFragmentImpl::getNodeType() const {
+DOMNode::NodeType DOMDocumentFragmentImpl::getNodeType() const {
     return DOMNode::DOCUMENT_FRAGMENT_NODE;
 }
 
@@ -85,7 +85,7 @@ void DOMDocumentFragmentImpl::release()
     if (doc) {
         fNode.callUserDataHandlers(DOMUserDataHandler::NODE_DELETED, 0, 0);
         fParent.release();
-        doc->release(this, DOMDocumentImpl::DOCUMENT_FRAGMENT_OBJECT);
+        doc->release(this, DOMMemoryManager::DOCUMENT_FRAGMENT_OBJECT);
     }
     else {
         // shouldn't reach here
@@ -126,14 +126,12 @@ void DOMDocumentFragmentImpl::release()
                                                                                              {return fNode.setUserData(key, data, handler); }
            void*            DOMDocumentFragmentImpl::getUserData(const XMLCh* key) const     {return fNode.getUserData(key); }
            const XMLCh*     DOMDocumentFragmentImpl::getBaseURI() const                      {return fNode.getBaseURI(); }
-           short            DOMDocumentFragmentImpl::compareTreePosition(const DOMNode* other) const {return fNode.compareTreePosition(other); }
+           short            DOMDocumentFragmentImpl::compareDocumentPosition(const DOMNode* other) const {return fNode.compareDocumentPosition(other); }
            const XMLCh*     DOMDocumentFragmentImpl::getTextContent() const                  {return fNode.getTextContent(); }
            void             DOMDocumentFragmentImpl::setTextContent(const XMLCh* textContent){fNode.setTextContent(textContent); }
-           const XMLCh*     DOMDocumentFragmentImpl::lookupNamespacePrefix(const XMLCh* namespaceURI, bool useDefault) const  {return fNode.lookupNamespacePrefix(namespaceURI, useDefault); }
+           const XMLCh*     DOMDocumentFragmentImpl::lookupPrefix(const XMLCh* namespaceURI) const  {return fNode.lookupPrefix(namespaceURI); }
            bool             DOMDocumentFragmentImpl::isDefaultNamespace(const XMLCh* namespaceURI) const {return fNode.isDefaultNamespace(namespaceURI); }
            const XMLCh*     DOMDocumentFragmentImpl::lookupNamespaceURI(const XMLCh* prefix) const  {return fNode.lookupNamespaceURI(prefix); }
-           DOMNode*         DOMDocumentFragmentImpl::getInterface(const XMLCh* feature)      {return fNode.getInterface(feature); }
+           void*            DOMDocumentFragmentImpl::getFeature(const XMLCh* feature, const XMLCh* version) const {return fNode.getFeature(feature, version); }
 
 XERCES_CPP_NAMESPACE_END
-
-

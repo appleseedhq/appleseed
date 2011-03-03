@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,12 +16,13 @@
  */
 
 /*
- * $Id: OutOfMemoryException.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: OutOfMemoryException.hpp 673960 2008-07-04 08:50:12Z borisk $
  */
 
-#if !defined(OUT_OF_MEMORY_EXCEPTION_HPP)
-#define OUT_OF_MEMORY_EXCEPTION_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_OUT_OF_MEMORY_EXCEPTION_HPP)
+#define XERCESC_INCLUDE_GUARD_OUT_OF_MEMORY_EXCEPTION_HPP
 
+#include <xercesc/util/XercesDefs.hpp>
 #include <xercesc/util/XMemory.hpp>
 #include <xercesc/util/XMLExceptMsgs.hpp>
 #include <xercesc/util/XMLUniDefs.hpp>
@@ -38,7 +39,7 @@ static const XMLCh gDefOutOfMemoryErrMsg[] =
 class XMLUTIL_EXPORT OutOfMemoryException : public XMemory
 {
 public:
-  
+
     OutOfMemoryException();
     ~OutOfMemoryException();
     // -----------------------------------------------------------------------
@@ -48,7 +49,7 @@ public:
     const XMLCh* getMessage() const;
     const XMLCh* getType() const;
     const char* getSrcFile() const;
-    unsigned int getSrcLine() const;
+    XMLFileLoc getSrcLine() const;
 
     OutOfMemoryException(const OutOfMemoryException& toCopy);
     OutOfMemoryException& operator=(const OutOfMemoryException& toAssign);
@@ -58,7 +59,7 @@ public:
 inline OutOfMemoryException::OutOfMemoryException() {}
 inline OutOfMemoryException::~OutOfMemoryException() {}
 inline OutOfMemoryException::OutOfMemoryException(const OutOfMemoryException& other) : XMemory(other) {}
-inline OutOfMemoryException& OutOfMemoryException::operator=(const OutOfMemoryException&) 
+inline OutOfMemoryException& OutOfMemoryException::operator=(const OutOfMemoryException&)
 {
     return *this;
 }
@@ -85,8 +86,8 @@ inline const char* OutOfMemoryException::getSrcFile() const
 {
     return "";
 }
-    
-inline unsigned int OutOfMemoryException::getSrcLine() const {
+
+inline XMLFileLoc OutOfMemoryException::getSrcLine() const {
     return 0;
 }
 

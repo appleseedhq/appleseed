@@ -16,16 +16,18 @@
  */
 
 /*
- * $Id: AnyURIDatatypeValidator.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: AnyURIDatatypeValidator.hpp 608951 2008-01-04 18:21:22Z amassari $
  */
 
-#if !defined(ANYURI_DATATYPEVALIDATOR_HPP)
-#define ANYURI_DATATYPEVALIDATOR_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_ANYURI_DATATYPEVALIDATOR_HPP)
+#define XERCESC_INCLUDE_GUARD_ANYURI_DATATYPEVALIDATOR_HPP
 
 #include <xercesc/validators/datatype/AbstractStringValidator.hpp>
 #include <xercesc/util/XMLUri.hpp>
 
 XERCES_CPP_NAMESPACE_BEGIN
+
+class XMLBuffer;
 
 class VALIDATORS_EXPORT AnyURIDatatypeValidator : public AbstractStringValidator
 {
@@ -81,6 +83,7 @@ private:
     // -----------------------------------------------------------------------
     AnyURIDatatypeValidator(const AnyURIDatatypeValidator&);
     AnyURIDatatypeValidator& operator=(const AnyURIDatatypeValidator&);    
+    void encode(const XMLCh* const content, const XMLSize_t len, XMLBuffer& encoded, MemoryManager* const manager);
 };
 
 XERCES_CPP_NAMESPACE_END

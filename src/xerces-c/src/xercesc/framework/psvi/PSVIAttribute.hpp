@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: PSVIAttribute.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: PSVIAttribute.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-#if !defined(PSVIATTRIBUTE_HPP)
-#define PSVIATTRIBUTE_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_PSVIATTRIBUTE_HPP)
+#define XERCESC_INCLUDE_GUARD_PSVIATTRIBUTE_HPP
 
 #include <xercesc/framework/psvi/PSVIItem.hpp>
 #include <xercesc/framework/psvi/XSSimpleTypeDefinition.hpp>

@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMDocumentTypeImpl.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMDocumentTypeImpl.cpp 678709 2008-07-22 10:56:56Z borisk $
  */
 
 #include "DOMDocumentTypeImpl.hpp"
@@ -26,7 +26,9 @@
 #include <xercesc/dom/DOMImplementation.hpp>
 #include <xercesc/util/XMLUniDefs.hpp>
 #include <xercesc/util/XMLChar.hpp>
-#include <xercesc/util/XMLRegisterCleanup.hpp>
+#include <xercesc/util/Mutexes.hpp>
+#include <xercesc/util/PlatformUtils.hpp>
+#include <xercesc/util/XMLInitializer.hpp>
 
 #include "DOMNamedNodeMapImpl.hpp"
 #include "DOMDocumentImpl.hpp"
@@ -34,43 +36,26 @@
 
 XERCES_CPP_NAMESPACE_BEGIN
 
-// ---------------------------------------------------------------------------
-//  Local static data
-// ---------------------------------------------------------------------------
+static DOMDocument* sDocument = 0;
+static XMLMutex*    sDocumentMutex = 0;
 
-static DOMDocument*       sDocument = 0;
-static XMLRegisterCleanup documentCleanup;
-
-static void reinitDocument()
+void XMLInitializer::initializeDOMDocumentTypeImpl()
 {
-    if (sDocument) {
-        sDocument->release();
-        sDocument = 0;
-    }
+    sDocumentMutex = new XMLMutex(XMLPlatformUtils::fgMemoryManager);
+
+    static const XMLCh gCoreStr[] = { chLatin_C, chLatin_o, chLatin_r, chLatin_e, chNull };
+    DOMImplementation* impl =  DOMImplementationRegistry::getDOMImplementation(gCoreStr);
+    sDocument = impl->createDocument(); // document type object (DTD).
 }
 
-static DOMDocument& gDocTypeDocument()
+void XMLInitializer::terminateDOMDocumentTypeImpl()
 {
-    if (!sDocument)
-    {
-        static const XMLCh gCoreStr[] = { chLatin_C, chLatin_o, chLatin_r, chLatin_e, chNull };
-        DOMImplementation* impl =  DOMImplementationRegistry::getDOMImplementation(gCoreStr);
-        DOMDocument* tmpDoc = impl->createDocument();                   // document type object (DTD).
+    sDocument->release();
+    sDocument = 0;
 
-        if (XMLPlatformUtils::compareAndSwap((void**)&sDocument, tmpDoc, 0))
-        {
-            // Someone beat us to it, so let's clean up ours
-            delete tmpDoc;
-        }
-        else
-        {
-            documentCleanup.registerCleanup(reinitDocument);
-        }
-    }
-
-    return *sDocument;
+    delete sDocumentMutex;
+    sDocumentMutex = 0;
 }
-
 
 DOMDocumentTypeImpl::DOMDocumentTypeImpl(DOMDocument *ownerDoc,
                                    const XMLCh *dtName,
@@ -87,14 +72,17 @@ DOMDocumentTypeImpl::DOMDocumentTypeImpl(DOMDocument *ownerDoc,
     fIntSubsetReading(false),
     fIsCreatedFromHeap(heap)
 {
-    if (ownerDoc) {
+    if (ownerDoc)
+    {
         fName = ((DOMDocumentImpl *)ownerDoc)->getPooledString(dtName);
         fEntities = new (ownerDoc) DOMNamedNodeMapImpl(this);
         fNotations= new (ownerDoc) DOMNamedNodeMapImpl(this);
         fElements = new (ownerDoc) DOMNamedNodeMapImpl(this);
     }
-    else {
-        DOMDocument* doc = &gDocTypeDocument();
+    else
+    {
+        XMLMutexLock lock(sDocumentMutex);
+        DOMDocument* doc = sDocument;
         fName = ((DOMDocumentImpl *)doc)->getPooledString(dtName);
         fEntities = new (doc) DOMNamedNodeMapImpl(this);
         fNotations= new (doc) DOMNamedNodeMapImpl(this);
@@ -117,8 +105,8 @@ DOMDocumentTypeImpl::DOMDocumentTypeImpl(DOMDocument *ownerDoc,
     fElements(0),
     fPublicId(0),
     fSystemId(0),
-    fInternalSubset(0),    
-    fIntSubsetReading(false),        
+    fInternalSubset(0),
+    fIntSubsetReading(false),
     fIsCreatedFromHeap(heap)
 {
     int index = DOMDocumentImpl::indexofQualifiedName(qualifiedName);
@@ -129,8 +117,8 @@ DOMDocumentTypeImpl::DOMDocumentTypeImpl(DOMDocument *ownerDoc,
         // we have to make sure the qualifiedName has correct prefix and localName
         // although we don't really to store them separately
         XMLCh* newName;
-        XMLCh temp[4000];
-        if (index >= 3999)
+        XMLCh temp[256];
+        if (index >= 255)
             newName = (XMLCh*) XMLPlatformUtils::fgMemoryManager->allocate
             (
                 (XMLString::stringLen(qualifiedName)+1) * sizeof(XMLCh)
@@ -152,11 +140,12 @@ DOMDocumentTypeImpl::DOMDocumentTypeImpl(DOMDocument *ownerDoc,
                 throw DOMException(DOMException::NAMESPACE_ERR, 0, GetDOMNodeMemoryManager);
         }
 
-        if (index >= 3999)
+        if (index >= 255)
             XMLPlatformUtils::fgMemoryManager->deallocate(newName);//delete[] newName;
     }
 
-    if (ownerDoc) {
+    if (ownerDoc)
+    {
         DOMDocumentImpl *docImpl = (DOMDocumentImpl *)ownerDoc;
         fPublicId = docImpl->cloneString(pubId);
         fSystemId = docImpl->cloneString(sysId);
@@ -165,8 +154,10 @@ DOMDocumentTypeImpl::DOMDocumentTypeImpl(DOMDocument *ownerDoc,
         fNotations= new (ownerDoc) DOMNamedNodeMapImpl(this);
         fElements = new (ownerDoc) DOMNamedNodeMapImpl(this);
     }
-    else {
-        DOMDocument* doc = &gDocTypeDocument();
+    else
+    {
+        XMLMutexLock lock(sDocumentMutex);
+        DOMDocument* doc = sDocument;
         fPublicId = ((DOMDocumentImpl*) doc)->cloneString(pubId);
         fSystemId = ((DOMDocumentImpl*) doc)->cloneString(sysId);
         fName = ((DOMDocumentImpl*) doc)->getPooledString(qualifiedName);
@@ -188,7 +179,7 @@ DOMDocumentTypeImpl::DOMDocumentTypeImpl(const DOMDocumentTypeImpl &other, bool 
     fPublicId(0),
     fSystemId(0),
     fInternalSubset(0),
-    fIntSubsetReading(other.fIntSubsetReading),       
+    fIntSubsetReading(other.fIntSubsetReading),
     fIsCreatedFromHeap(heap)
 {
     fName = other.fName;
@@ -215,10 +206,14 @@ DOMDocumentTypeImpl::~DOMDocumentTypeImpl()
 DOMNode *DOMDocumentTypeImpl::cloneNode(bool deep) const
 {
     DOMNode* newNode = 0;
-    if (castToNodeImpl(this)->getOwnerDocument())
-        newNode = new (castToNodeImpl(this)->getOwnerDocument(), DOMDocumentImpl::DOCUMENT_TYPE_OBJECT) DOMDocumentTypeImpl(*this, false, deep);
+    DOMDocument* doc = castToNodeImpl(this)->getOwnerDocument();
+    if (doc != 0)
+        newNode = new (doc, DOMMemoryManager::DOCUMENT_TYPE_OBJECT) DOMDocumentTypeImpl(*this, false, deep);
     else
-        newNode = new (&gDocTypeDocument(), DOMDocumentImpl::DOCUMENT_TYPE_OBJECT) DOMDocumentTypeImpl(*this, false, deep);
+    {
+        XMLMutexLock lock(sDocumentMutex);
+        newNode = new (sDocument, DOMMemoryManager::DOCUMENT_TYPE_OBJECT) DOMDocumentTypeImpl(*this, false, deep);
+    }
 
     fNode.callUserDataHandlers(DOMUserDataHandler::NODE_CLONED, this, newNode);
     return newNode;
@@ -242,7 +237,7 @@ void DOMDocumentTypeImpl::setOwnerDocument(DOMDocument *doc) {
             fSystemId = docImpl->cloneString(fSystemId);
             fInternalSubset = docImpl->cloneString(fInternalSubset);
             fName = docImpl->getPooledString(fName);
-            
+
             fNode.setOwnerDocument(doc);
             fParent.setOwnerDocument(doc);
 
@@ -263,7 +258,7 @@ const XMLCh * DOMDocumentTypeImpl::getNodeName() const
 }
 
 
-short DOMDocumentTypeImpl::getNodeType()  const {
+DOMNode::NodeType DOMDocumentTypeImpl::getNodeType()  const {
     return DOMNode::DOCUMENT_TYPE_NODE;
 }
 
@@ -342,28 +337,34 @@ void DOMDocumentTypeImpl::setPublicId(const XMLCh *value)
     if (value == 0)
         return;
 
-    if ((DOMDocumentImpl *)castToNodeImpl(this)->getOwnerDocument())
-        fPublicId = ((DOMDocumentImpl *)castToNodeImpl(this)->getOwnerDocument())->cloneString(value);
+    DOMDocumentImpl* doc = (DOMDocumentImpl *)castToNodeImpl(this)->getOwnerDocument();
+    if (doc != 0)
+        fPublicId = doc->cloneString(value);
     else {
-        fPublicId = ((DOMDocumentImpl *)&gDocTypeDocument())->cloneString(value);
+        XMLMutexLock lock(sDocumentMutex);
+        fPublicId = ((DOMDocumentImpl *)sDocument)->cloneString(value);
     }
 }
 
 void DOMDocumentTypeImpl::setSystemId(const XMLCh *value)
 {
-    if ((DOMDocumentImpl *)castToNodeImpl(this)->getOwnerDocument())
-        fSystemId = ((DOMDocumentImpl *)castToNodeImpl(this)->getOwnerDocument())->cloneString(value);
+    DOMDocumentImpl* doc = (DOMDocumentImpl *)castToNodeImpl(this)->getOwnerDocument();
+    if (doc != 0)
+        fSystemId = doc->cloneString(value);
     else {
-        fSystemId = ((DOMDocumentImpl *)&gDocTypeDocument())->cloneString(value);
+        XMLMutexLock lock(sDocumentMutex);
+        fSystemId = ((DOMDocumentImpl *)sDocument)->cloneString(value);
     }
 }
 
 void DOMDocumentTypeImpl::setInternalSubset(const XMLCh *value)
 {
-    if ((DOMDocumentImpl *)castToNodeImpl(this)->getOwnerDocument())
-        fInternalSubset = ((DOMDocumentImpl *)castToNodeImpl(this)->getOwnerDocument())->cloneString(value);
+    DOMDocumentImpl* doc = (DOMDocumentImpl *)castToNodeImpl(this)->getOwnerDocument();
+    if (doc != 0)
+        fInternalSubset = doc->cloneString(value);
     else {
-        fInternalSubset = ((DOMDocumentImpl *)&gDocTypeDocument())->cloneString(value);
+        XMLMutexLock lock(sDocumentMutex);
+        fInternalSubset = ((DOMDocumentImpl *)sDocument)->cloneString(value);
     }
 }
 
@@ -390,7 +391,7 @@ void DOMDocumentTypeImpl::release()
             DOMDocumentImpl* doc = (DOMDocumentImpl*) getOwnerDocument();
             if (doc) {
                 fNode.callUserDataHandlers(DOMUserDataHandler::NODE_DELETED, 0, 0);
-                doc->release(this, DOMDocumentImpl::DOCUMENT_TYPE_OBJECT);
+                doc->release(this, DOMMemoryManager::DOCUMENT_TYPE_OBJECT);
             }
             else {
                 // shouldn't reach here
@@ -432,10 +433,10 @@ void DOMDocumentTypeImpl::release()
                                                                                          {return fNode.setUserData(key, data, handler); }
            void*            DOMDocumentTypeImpl::getUserData(const XMLCh* key) const     {return fNode.getUserData(key); }
            const XMLCh*     DOMDocumentTypeImpl::getBaseURI() const                      {return fNode.getBaseURI(); }
-           short            DOMDocumentTypeImpl::compareTreePosition(const DOMNode* other) const {return fNode.compareTreePosition(other); }
+           short            DOMDocumentTypeImpl::compareDocumentPosition(const DOMNode* other) const {return fNode.compareDocumentPosition(other); }
            const XMLCh*     DOMDocumentTypeImpl::getTextContent() const                  {return fNode.getTextContent(); }
            void             DOMDocumentTypeImpl::setTextContent(const XMLCh* textContent){fNode.setTextContent(textContent); }
-           const XMLCh*     DOMDocumentTypeImpl::lookupNamespacePrefix(const XMLCh* namespaceURI, bool useDefault) const  {return fNode.lookupNamespacePrefix(namespaceURI, useDefault); }
+           const XMLCh*     DOMDocumentTypeImpl::lookupPrefix(const XMLCh* namespaceURI) const  {return fNode.lookupPrefix(namespaceURI); }
            bool             DOMDocumentTypeImpl::isDefaultNamespace(const XMLCh* namespaceURI) const {return fNode.isDefaultNamespace(namespaceURI); }
            const XMLCh*     DOMDocumentTypeImpl::lookupNamespaceURI(const XMLCh* prefix) const  {return fNode.lookupNamespaceURI(prefix); }
 
@@ -544,12 +545,11 @@ bool DOMDocumentTypeImpl::isSupported(const XMLCh *feature, const XMLCh *version
     return fNode.isSupported (feature, version);
 }
 
-DOMNode * DOMDocumentTypeImpl::getInterface(const XMLCh* feature)
+void* DOMDocumentTypeImpl::getFeature(const XMLCh* feature, const XMLCh* version) const
 {
     if(XMLString::equals(feature, XMLUni::fgXercescInterfaceDOMDocumentTypeImpl))
-        return (DOMNode*)(DOMDocumentTypeImpl*)this;
-    return fNode.getInterface(feature);
+        return (DOMDocumentTypeImpl*)this;
+    return fNode.getFeature(feature,version);
 }
 
 XERCES_CPP_NAMESPACE_END
-

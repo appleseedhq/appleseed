@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XMLString.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLString.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#if !defined(XMLSTRING_HPP)
-#define XMLSTRING_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XMLSTRING_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLSTRING_HPP
 
 #include <xercesc/util/BaseRefVectorOf.hpp>
 #include <xercesc/framework/XMLBuffer.hpp>
@@ -160,7 +160,7 @@ public:
     (
         const   char* const     str1
         , const char* const     str2
-        , const unsigned int    count
+        , const XMLSize_t       count
     );
 
     /** Lexicographically compares, at most, the first count characters in
@@ -180,7 +180,7 @@ public:
     (
         const   XMLCh* const    str1
         , const XMLCh* const    str2
-        , const unsigned int    count
+        , const XMLSize_t       count
     );
 
 
@@ -201,7 +201,7 @@ public:
     (
         const   char* const     str1
         , const char* const     str2
-        , const unsigned int    count
+        , const XMLSize_t       count
     );
 
     /** Lexicographically compares, at most, the first count characters in
@@ -222,7 +222,7 @@ public:
     (
         const   XMLCh* const    str1
         , const XMLCh* const    str2
-        , const unsigned int    count
+        , const XMLSize_t       count
     );
 
     /** Lexicographically compares <code>str1</code> and <code>str2</code> and
@@ -270,14 +270,46 @@ public:
       */
     static bool equals
     (
-          const XMLCh* const    str1
-        , const XMLCh* const    str2
+          const XMLCh* str1
+        , const XMLCh* str2
+    );
+
+    /** compares <code>str1</code> and <code>str2</code>
+      *
+      * @param str1 string to compare
+      * @param str2 string to compare
+      * @param n number of characters to compare
+      * @return true if two strings are equal, false if not
+      *  If one string is null, while the other is zero-length string,
+      *  it is considered as equal.
+      */
+    static bool equalsN
+    (
+          const XMLCh* str1
+        , const XMLCh* str2
+        , XMLSize_t n
     );
 
     static bool equals
     (
-          const char* const    str1
-        , const char* const    str2
+          const char* str1
+        , const char* str2
+    );
+
+    /** compares <code>str1</code> and <code>str2</code>
+      *
+      * @param str1 string to compare
+      * @param str2 string to compare
+      * @param n number of characters to compare
+      * @return true if two strings are equal, false if not
+      *  If one string is null, while the other is zero-length string,
+      *  it is considered as equal.
+      */
+    static bool equalsN
+    (
+          const char* str1
+        , const char* str2
+        , XMLSize_t n
     );
 
 	/** Lexicographically compares <code>str1</code> and <code>str2</code>
@@ -312,7 +344,7 @@ public:
 		, const	int				offset1
         , const XMLCh* const    str2
 		, const int				offset2
-		, const unsigned int	charCount
+		, const XMLSize_t       charCount
     );
 
 	/** Lexicographically compares <code>str1</code> and <code>str2</code>
@@ -348,7 +380,7 @@ public:
 		, const	int				offset1
         , const XMLCh* const    str2
 		, const int				offset2
-		, const unsigned int	charCount
+		, const XMLSize_t       charCount
     );
     //@}
 
@@ -400,9 +432,9 @@ public:
       */
     static bool copyNString
     (
-                XMLCh* const    target
-        , const XMLCh* const    src
-        , const unsigned int    maxChars
+                XMLCh* const   target
+        , const XMLCh* const   src
+        , const XMLSize_t      maxChars
     );
     //@}
 
@@ -412,28 +444,24 @@ public:
       *
       * @param toHash The string to hash
       * @param hashModulus The divisor to be used for hashing
-      * @param manager The MemoryManager to use to allocate objects
       * @return Returns the hash value
       */
-    static unsigned int hash
+    static XMLSize_t hash
     (
         const   char* const     toHash
-        , const unsigned int    hashModulus
-        , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
+        , const XMLSize_t       hashModulus
     );
 
     /** Hashes a string given a modulus
       *
       * @param toHash The string to hash
       * @param hashModulus The divisor to be used for hashing
-      * @param manager The MemoryManager to use to allocate objects
       * @return Returns the hash value
       */
-    static unsigned int hash
+    static XMLSize_t hash
     (
         const   XMLCh* const    toHash
-        , const unsigned int    hashModulus
-        , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
+        , const XMLSize_t       hashModulus
     );
 
     /** Hashes a string given a modulus taking a maximum number of characters
@@ -442,15 +470,13 @@ public:
       * @param toHash The string to hash
       * @param numChars The maximum number of characters to consider for hashing
       * @param hashModulus The divisor to be used for hashing
-      * @param manager The MemoryManager to use to allocate objects
       * @return Returns the hash value
       */
-    static unsigned int hashN
+    static XMLSize_t hashN
     (
         const   XMLCh* const    toHash
-        , const unsigned int    numChars
-        , const unsigned int    hashModulus
-        , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
+        , const XMLSize_t       numChars
+        , const XMLSize_t       hashModulus
     );
 
     //@}
@@ -458,7 +484,7 @@ public:
     /** @name Search functions */
     //@{
     /**
-      * Provides the index of the first occurance of a character within a string
+      * Provides the index of the first occurrence of a character within a string
       *
       * @param toSearch The string to search
       * @param ch The character to search within the string
@@ -468,7 +494,7 @@ public:
     static int indexOf(const char* const toSearch, const char ch);
 
     /**
-      * Provides the index of the first occurance of a character within a string
+      * Provides the index of the first occurrence of a character within a string
       *
       * @param toSearch The string to search
       * @param ch The character to search within the string
@@ -478,7 +504,7 @@ public:
     static int indexOf(const XMLCh* const toSearch, const XMLCh ch);
 
 	    /**
-      * Provides the index of the first occurance of a character within a string
+      * Provides the index of the first occurrence of a character within a string
       * starting from a given index
       *
       * @param toSearch The string to search
@@ -492,12 +518,12 @@ public:
     (
         const   char* const     toSearch
         , const char            chToFind
-        , const unsigned int    fromIndex
+        , const XMLSize_t       fromIndex
         , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
     );
 
     /**
-      * Provides the index of the first occurance of a character within a string
+      * Provides the index of the first occurrence of a character within a string
       * starting from a given index
       *
       * @param toSearch The string to search
@@ -511,12 +537,12 @@ public:
     (
         const   XMLCh* const    toSearch
         , const XMLCh           chToFind
-        , const unsigned int    fromIndex
+        , const XMLSize_t       fromIndex
         , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
     );
 
     /**
-      * Provides the index of the last occurance of a character within a string
+      * Provides the index of the last occurrence of a character within a string
       *
       * @param toSearch The string to search
       * @param ch The character to search within the string
@@ -526,7 +552,7 @@ public:
     static int lastIndexOf(const char* const toSearch, const char ch);
 
     /**
-      * Provides the index of the last occurance of a character within a string
+      * Provides the index of the last occurrence of a character within a string
       *
       * @param toSearch The string to search
       * @param ch The character to search within the string
@@ -536,7 +562,7 @@ public:
     static int lastIndexOf(const XMLCh* const toSearch, const XMLCh ch);
 
     /**
-      * Provides the index of the last occurance of a character within a string
+      * Provides the index of the last occurrence of a character within a string
       *
       * @param ch The character to search within the string
       * @param toSearch The string to search
@@ -548,11 +574,11 @@ public:
     (
         const XMLCh ch
         , const XMLCh* const toSearch
-        , const unsigned int toSearchLen
+        , const XMLSize_t    toSearchLen
     );
 
     /**
-      * Provides the index of the last occurance of a character within a string
+      * Provides the index of the last occurrence of a character within a string
       * starting backward from a given index
       *
       * @param toSearch The string to search
@@ -566,12 +592,12 @@ public:
     (
         const   char* const     toSearch
         , const char            chToFind
-        , const unsigned int    fromIndex
+        , const XMLSize_t       fromIndex
         , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
     );
 
     /**
-      * Provides the index of the last occurance of a character within a string
+      * Provides the index of the last occurrence of a character within a string
       * starting backward from a given index
       *
       * @param toSearch The string to search
@@ -585,7 +611,7 @@ public:
     (
         const   XMLCh* const    toSearch
         , const XMLCh           ch
-        , const unsigned int    fromIndex
+        , const XMLSize_t       fromIndex
         , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
     );
     //@}
@@ -601,7 +627,7 @@ public:
     (
                 XMLCh* const    targetStr
         , const XMLCh* const    srcStr
-        , const unsigned int    count
+        , const XMLSize_t       count
     );
 
     //@}
@@ -621,8 +647,8 @@ public:
     (
                 char* const    targetStr
         , const char* const    srcStr
-        , const int            startIndex
-        , const int            endIndex
+        , const XMLSize_t      startIndex
+        , const XMLSize_t      endIndex
         , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
     );
 
@@ -639,8 +665,8 @@ public:
     (
                 XMLCh* const    targetStr
         , const XMLCh* const    srcStr
-        , const int             startIndex
-        , const int             endIndex
+        , const XMLSize_t       startIndex
+        , const XMLSize_t       endIndex
         , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
     );
 
@@ -658,9 +684,9 @@ public:
     (
                 XMLCh* const    targetStr
         , const XMLCh* const    srcStr
-        , const int             startIndex
-        , const int             endIndex
-        , const int             srcStrLength
+        , const XMLSize_t       startIndex
+        , const XMLSize_t       endIndex
+        , const XMLSize_t       srcStrLength
         , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
     );
 
@@ -669,48 +695,30 @@ public:
     /** @name Replication function */
     //@{
     /** Replicates a string
-      * NOTE: The returned buffer is dynamically allocated and is the
+      * NOTE: The returned buffer is allocated with the MemoryManager. It is the
       * responsibility of the caller to delete it when not longer needed.
       * You can call XMLString::release to release this returned buffer.
       *
       * @param toRep The string to replicate
-      * @return Returns a pointer to the replicated string
-      * @see   XMLString::release(char**)
-      */
-    static char* replicate(const char* const toRep);
-
-    /** Replicates a string
-      * NOTE: The returned buffer is allocated with the MemoryManager. It is the
-      * responsibility of the caller to delete it when not longer needed.
-      *
-      * @param toRep The string to replicate
       * @param manager The MemoryManager to use to allocate the string
       * @return Returns a pointer to the replicated string
+      * @see   XMLString::release(char**, MemoryManager*)
       */
     static char* replicate(const char* const toRep,
-                           MemoryManager* const manager);
-
-    /** Replicates a string
-      * NOTE: The returned buffer is dynamically allocated and is the
-      * responsibility of the caller to delete it when not longer needed.
-      * You can call XMLString::release to release this returned buffer.
-
-      * @param toRep The string to replicate
-      * @return Returns a pointer to the replicated string
-      * @see   XMLString::release(XMLCh**)
-      */
-    static XMLCh* replicate(const XMLCh* const toRep);
+                           MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
 
     /** Replicates a string
       * NOTE: The returned buffer is allocated with the MemoryManager. It is the
       * responsibility of the caller to delete it when not longer needed.
+      * You can call XMLString::release to release this returned buffer.
       *
       * @param toRep The string to replicate
       * @param manager The MemoryManager to use to allocate the string
       * @return Returns a pointer to the replicated string
+      * @see   XMLString::release(XMLCh**, MemoryManager*)
       */
     static XMLCh* replicate(const XMLCh* const toRep,
-                            MemoryManager* const manager);
+                            MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
 
     //@}
 
@@ -782,10 +790,10 @@ public:
     );
 
 
-    /** Tells if a string has any occurance of any character of another 
+    /** Tells if a string has any occurrence of any character of another
       * string within itself
       * @param toSearch The string to be searched
-      * @param searchList The string from which characters to be searched for are drawn 
+      * @param searchList The string from which characters to be searched for are drawn
       * @return Returns the pointer to the location where the first occurrence of any
       * character from searchList is found,
       * else returns 0
@@ -796,10 +804,10 @@ public:
         , const XMLCh* const    searchList
     );
 
-    /** Tells if a string has any occurance of any character of another 
+    /** Tells if a string has any occurrence of any character of another
       * string within itself
       * @param toSearch The string to be searched
-      * @param searchList The string from which characters to be searched for are drawn 
+      * @param searchList The string from which characters to be searched for are drawn
       * @return Returns the pointer to the location where the first occurrence of any
       * character from searchList is found,
       * else returns 0
@@ -826,13 +834,13 @@ public:
       * @param src The string whose length is to be determined
       * @return Returns the length of the string
       */
-    static unsigned int stringLen(const char* const src);
+    static XMLSize_t stringLen(const char* const src);
 
     /** Get the length of the string
       * @param src The string whose length is to be determined
       * @return Returns the length of the string
       */
-    static unsigned int stringLen(const XMLCh* const src);
+    static XMLSize_t stringLen(const XMLCh* const src);
 
     /**
       *
@@ -845,38 +853,11 @@ public:
                               ,       MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
 
     /**
-      * Deprecated: please use XMLChar1_0::isValidNCName
-      *
-      * Checks whether an name is a valid NCName according to XML 1.0
-      * @param name The string to check its NCName validity
-      * @return Returns true if name is NCName valid, otherwise false
-      */
-    static bool isValidNCName(const XMLCh* const name);
-
-    /**
-      * Deprecated: please use XMLChar1_0::isValidName
-      *
-      * Checks whether an name is a valid Name according to XML 1.0
-      * @param name The string to check its Name validity
-      * @return Returns true if name is Name valid, otherwise false
-      */
-    static bool isValidName(const XMLCh* const name);
-
-    /**
       * Checks whether an name is a valid EncName.
       * @param name The string to check its EncName validity
       * @return Returns true if name is EncName valid, otherwise false
       */
     static bool isValidEncName(const XMLCh* const name);
-
-    /**
-      * Deprecated: please use XMLChar1_0::isValidQName
-      *
-      * Checks whether an name is a valid QName according to XML 1.0
-      * @param name The string to check its QName validity
-      * @return Returns true if name is QName valid, otherwise false
-      */
-    static bool isValidQName(const XMLCh* const name);
 
     /**
       * Checks whether a character is within [a-zA-Z].
@@ -907,15 +888,6 @@ public:
       */
     static bool isHex(XMLCh const theChar);
 
-    /**
-      * Deprecated: please use XMLChar1_0::isAllWhiteSpace
-      *
-      * Checks whether aa string contains only whitespace according to XML 1.0
-      * @param toCheck the string to check
-      * @return Returns true if it is, otherwise false
-      */
-    static bool isAllWhiteSpace(const XMLCh* const toCheck);
-
     /** Find is the string appears in the enum list
       * @param toFind the string to be found
       * @param enumList the list
@@ -928,6 +900,46 @@ public:
     /** @name Conversion functions */
     //@{
 
+      /** Converts size to a text string based a given radix
+      *
+      * @param toFormat The size to convert
+      * @param toFill The buffer that will hold the output on return. The
+      *        size of this buffer should at least be 'maxChars + 1'.
+      * @param maxChars The maximum number of output characters that can be
+      *         accepted. If the result will not fit, it is an error.
+      * @param radix The radix of the input data, based on which the conversion
+      * @param manager The MemoryManager to use to allocate objects
+      * will be done
+      */
+    static void sizeToText
+    (
+        const   XMLSize_t           toFormat
+        ,       char* const         toFill
+        , const XMLSize_t           maxChars
+        , const unsigned int        radix
+        , MemoryManager* const      manager = XMLPlatformUtils::fgMemoryManager
+    );
+
+    /** Converts size to a text string based a given radix
+      *
+      * @param toFormat The size to convert
+      * @param toFill The buffer that will hold the output on return. The
+      *        size of this buffer should at least be 'maxChars + 1'.
+      * @param maxChars The maximum number of output characters that can be
+      *         accepted. If the result will not fit, it is an error.
+      * @param radix The radix of the input data, based on which the conversion
+      * @param manager The MemoryManager to use to allocate objects
+      * will be done
+      */
+    static void sizeToText
+    (
+        const   XMLSize_t           toFormat
+        ,       XMLCh* const        toFill
+        , const XMLSize_t           maxChars
+        , const unsigned int        radix
+        , MemoryManager* const      manager = XMLPlatformUtils::fgMemoryManager
+    );
+
     /** Converts binary data to a text string based a given radix
       *
       * @param toFormat The number to convert
@@ -943,7 +955,7 @@ public:
     (
         const   unsigned int    toFormat
         ,       char* const     toFill
-        , const unsigned int    maxChars
+        , const XMLSize_t       maxChars
         , const unsigned int    radix
         , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
     );
@@ -963,7 +975,7 @@ public:
     (
         const   unsigned int    toFormat
         ,       XMLCh* const    toFill
-        , const unsigned int    maxChars
+        , const XMLSize_t       maxChars
         , const unsigned int    radix
         , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
     );
@@ -983,7 +995,7 @@ public:
     (
         const   unsigned long   toFormat
         ,       char* const     toFill
-        , const unsigned int    maxChars
+        , const XMLSize_t       maxChars
         , const unsigned int    radix
         , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
     );
@@ -1003,47 +1015,7 @@ public:
     (
         const   unsigned long   toFormat
         ,       XMLCh* const    toFill
-        , const unsigned int    maxChars
-        , const unsigned int    radix
-        , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
-    );
-
-    /** Converts binary data to a text string based a given radix
-      *
-      * @param toFormat The number to convert
-      * @param toFill The buffer that will hold the output on return. The
-      *        size of this buffer should at least be 'maxChars + 1'.
-      * @param maxChars The maximum number of output characters that can be
-      *         accepted. If the result will not fit, it is an error.
-      * @param radix The radix of the input data, based on which the conversion
-      * @param manager The MemoryManager to use to allocate objects
-      * will be done
-      */
-    static void binToText
-    (
-        const   long            toFormat
-        ,       char* const     toFill
-        , const unsigned int    maxChars
-        , const unsigned int    radix
-        , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
-    );
-
-    /** Converts binary data to a text string based a given radix
-      *
-      * @param toFormat The number to convert
-      * @param toFill The buffer that will hold the output on return. The
-      *        size of this buffer should at least be 'maxChars + 1'.
-      * @param maxChars The maximum number of output characters that can be
-      *         accepted. If the result will not fit, it is an error.
-      * @param radix The radix of the input data, based on which the conversion
-      * @param manager The MemoryManager to use to allocate objects
-      * will be done
-      */
-    static void binToText
-    (
-        const   long            toFormat
-        ,       XMLCh* const    toFill
-        , const unsigned int    maxChars
+        , const XMLSize_t       maxChars
         , const unsigned int    radix
         , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
     );
@@ -1063,7 +1035,7 @@ public:
     (
         const   int             toFormat
         ,       char* const     toFill
-        , const unsigned int    maxChars
+        , const XMLSize_t       maxChars
         , const unsigned int    radix
         , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
     );
@@ -1083,7 +1055,47 @@ public:
     (
         const   int             toFormat
         ,       XMLCh* const    toFill
-        , const unsigned int    maxChars
+        , const XMLSize_t       maxChars
+        , const unsigned int    radix
+        , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
+    );
+
+    /** Converts binary data to a text string based a given radix
+      *
+      * @param toFormat The number to convert
+      * @param toFill The buffer that will hold the output on return. The
+      *        size of this buffer should at least be 'maxChars + 1'.
+      * @param maxChars The maximum number of output characters that can be
+      *         accepted. If the result will not fit, it is an error.
+      * @param radix The radix of the input data, based on which the conversion
+      * @param manager The MemoryManager to use to allocate objects
+      * will be done
+      */
+    static void binToText
+    (
+        const   long            toFormat
+        ,       char* const     toFill
+        , const XMLSize_t       maxChars
+        , const unsigned int    radix
+        , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
+    );
+
+    /** Converts binary data to a text string based a given radix
+      *
+      * @param toFormat The number to convert
+      * @param toFill The buffer that will hold the output on return. The
+      *        size of this buffer should at least be 'maxChars + 1'.
+      * @param maxChars The maximum number of output characters that can be
+      *         accepted. If the result will not fit, it is an error.
+      * @param radix The radix of the input data, based on which the conversion
+      * @param manager The MemoryManager to use to allocate objects
+      * will be done
+      */
+    static void binToText
+    (
+        const   long            toFormat
+        ,       XMLCh* const    toFill
+        , const XMLSize_t       maxChars
         , const unsigned int    radix
         , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
     );
@@ -1091,7 +1103,7 @@ public:
     /**
       * Converts a string of decimal chars to a binary value
       *
-      * Note that leading and trailng whitespace is legal and will be ignored
+      * Note that leading and trailing whitespace is legal and will be ignored
       * but the remainder must be all decimal digits.
       *
       * @param toConvert The string of digits to convert
@@ -1109,7 +1121,7 @@ public:
     /**
       * Converts a string of decimal chars to a binary value
       *
-      * Note that leading and trailng whitespace is legal and will be ignored,
+      * Note that leading and trailing whitespace is legal and will be ignored,
       *
       * Only one and either of (+,-) after the leading whitespace, before
       * any other characters are allowed.
@@ -1133,7 +1145,7 @@ public:
     static void cut
     (
                 XMLCh* const    toCutFrom
-        , const unsigned int    count
+        , const XMLSize_t       count
     );
 
     /** Transcodes a string to native code-page
@@ -1142,21 +1154,18 @@ public:
       * responsibility of the caller to delete it when not longer needed.
       * You can call XMLString::release to release this returned buffer.
       *
-      * @param toTranscode The string to be transcoded      
+      * @param toTranscode The string to be transcoded
+      * @param manager The MemoryManager to use to allocate objects
       * @return Returns the transcoded string
-      * @see   XMLString::release(XMLCh**)
+      * @see   XMLString::release(XMLCh**, MemoryManager*)
       */
     static char* transcode
     (
-        const   XMLCh* const    toTranscode
-    );
-    static char* transcode
-    (
         const   XMLCh* const         toTranscode
-        ,       MemoryManager* const manager
+        ,       MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
     );
 
-    /** Transcodes a string to native code-page
+    /** Transcodes a string to native code-page (DEPRECATED)
       *
       * Be aware that when transcoding to an external encoding, that each
       * Unicode char can create multiple output bytes. So you cannot assume
@@ -1175,7 +1184,7 @@ public:
     (
         const   XMLCh* const    toTranscode
         ,       char* const     toFill
-        , const unsigned int    maxChars
+        , const XMLSize_t       maxChars
         , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
     );
 
@@ -1185,21 +1194,18 @@ public:
       * responsibility of the caller to delete it when not longer needed.
       * You can call XMLString::release to release this returned buffer.
       *
-      * @param toTranscode The string to be transcoded     
+      * @param toTranscode The string to be transcoded
+      * @param manager The MemoryManager to use to allocate objects
       * @return Returns the transcoded string
-      * @see   XMLString::release(char**)
+      * @see   XMLString::release(char**, MemoryManager*)
       */
     static XMLCh* transcode
     (
-        const   char* const     toTranscode
-    );
-    static XMLCh* transcode
-    (
         const   char* const          toTranscode
-        ,       MemoryManager* const manager
+        ,       MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
     );
 
-    /** Transcodes a string to native code-page
+    /** Transcodes a string to native code-page (DEPRECATED)
       * @param toTranscode The string tobe transcoded
       * @param toFill The buffer that is filled with the transcoded value.
       *        The size of this buffer should atleast be 'maxChars + 1'.
@@ -1213,7 +1219,7 @@ public:
     (
         const   char* const     toTranscode
         ,       XMLCh* const    toFill
-        , const unsigned int    maxChars
+        , const XMLSize_t       maxChars
         , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
     );
 
@@ -1256,7 +1262,7 @@ public:
     static XMLCh* makeUName
     (
         const   XMLCh* const    pszURI
-        , const XMLCh* const    pszName      
+        , const XMLCh* const    pszName
     );
 
     /**
@@ -1275,10 +1281,10 @@ public:
       * @param manager The MemoryManager to use to allocate objects
       * @return Returns the count of characters that are outputted
       */
-    static unsigned int replaceTokens
+    static XMLSize_t replaceTokens
     (
                 XMLCh* const    errText
-        , const unsigned int    maxChars
+        , const XMLSize_t       maxChars
         , const XMLCh* const    text1
         , const XMLCh* const    text2
         , const XMLCh* const    text3
@@ -1327,7 +1333,7 @@ public:
       *        On return , this buffer also holds the converted string
       * @param manager The MemoryManager to use to allocate objects
       */
-    static void replaceWS(XMLCh* const toConvert
+    static void replaceWS(XMLCh* toConvert
         , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager);
 
 	/** Collapse whitespace
@@ -1335,7 +1341,7 @@ public:
       *        On return , this buffer also holds the converted string
       * @param manager The MemoryManager to use to allocate objects
       */
-    static void collapseWS(XMLCh* const toConvert
+    static void collapseWS(XMLCh* toConvert
         , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager);
 
     /** Remove whitespace
@@ -1343,14 +1349,14 @@ public:
       *        On return , this buffer also holds the converted string
       * @param manager The MemoryManager to use to allocate objects
       */
-    static void removeWS(XMLCh* const toConvert
+    static void removeWS(XMLCh* toConvert
     , MemoryManager*       const manager = XMLPlatformUtils::fgMemoryManager);
 
 
     /** Remove character
-      * @param srcString The string 
+      * @param srcString The string
       * @param toRemove  The character needs to be removed from the string
-      * @param dstBuffer The buffer containning the result
+      * @param dstBuffer The buffer containing the result
       */
     static void removeChar(const XMLCh*     const srcString
                          , const XMLCh&           toRemove
@@ -1369,43 +1375,30 @@ public:
     /** @name String Memory Management functions */
     //@{
     /**
-     * Release the parameter char string that was allocated by the implementation (i.e.the parser).
-     *   The implementation will call operator delete[] and then turn the string to a null pointer.
-     *
-     * @param buf  The string to be deleted and become a null pointer.
-     */
-    static void release(char** buf);
-
-    /**
-     * Release the parameter XMLCh string that was allocated by the implementation (i.e.the parser).
-     *   The implementation will call operator delete[] and then turn the string to a null pointer.
-     *
-     * @param buf  The string to be deleted and become a null pointer.
-     */
-    static void release(XMLCh** buf);
-
-    /**
-     * Release the parameter XMLByte string that was allocated by the implementation (i.e.the parser).
-     *   The implementation will call operator delete[] and then turn the string to a null pointer.
-     *
-     * @param buf  The string to be deleted and become a null pointer.
-     */
-    static void release(XMLByte** buf);
-
-    /**
-     * Release the parameter string that was allocated using the version of XMLString::transcode
-     * that accepts a MemoryManager.
+     * Release the parameter string that was allocated by XMLString::transcode and XMLString::replicate.
      * The implementation will call MemoryManager::deallocate and then turn the string to a null pointer.
      *
      * @param buf  The string to be deleted and become a null pointer.
-     * @param manager The MemoryManager to use to allocate objects
+     * @param manager The MemoryManager used to allocate the string
      */
     static void release
     (
-        void**  buf
-        ,       MemoryManager* const manager
+        char**  buf
+        ,       MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
     );
 
+    /**
+     * Release the parameter string that was allocated by XMLString::transcode and XMLString::replicate.
+     * The implementation will call MemoryManager::deallocate and then turn the string to a null pointer.
+     *
+     * @param buf  The string to be deleted and become a null pointer.
+     * @param manager The MemoryManager used to allocate the string
+     */
+    static void release
+    (
+        XMLCh**  buf
+        ,       MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
+    );
     //@}
 
 
@@ -1434,7 +1427,7 @@ private :
 	  */
 	static bool validateRegion(const XMLCh* const str1, const int offset1,
 						const XMLCh* const str2, const int offset2,
-						const unsigned int charCount);
+						const XMLSize_t charCount);
 
     static MemoryManager* fgMemoryManager;
 
@@ -1448,26 +1441,21 @@ private :
 // ---------------------------------------------------------------------------
 inline void XMLString::moveChars(       XMLCh* const targetStr
                                 , const XMLCh* const srcStr
-                                , const unsigned int count)
+                                , const XMLSize_t    count)
 {
     memcpy(targetStr, srcStr, count * sizeof(XMLCh));
 }
 
-inline unsigned int XMLString::stringLen(const XMLCh* const src)
+inline XMLSize_t XMLString::stringLen(const XMLCh* const src)
 {
-    if (src == 0 || *src == 0)
-    {
+    if (src == 0)
         return 0;
-   }
-    else
-   {
-        const XMLCh* pszTmp = src + 1;
 
-        while (*pszTmp)
-            ++pszTmp;
+    const XMLCh* pszTmp = src;
 
-        return (unsigned int)(pszTmp - src);
-    }
+    while (*pszTmp++) ;
+
+    return (pszTmp - src - 1);
 }
 
 inline XMLCh* XMLString::replicate(const XMLCh* const toRep,
@@ -1477,7 +1465,7 @@ inline XMLCh* XMLString::replicate(const XMLCh* const toRep,
     XMLCh* ret = 0;
     if (toRep)
     {
-        const unsigned int len = stringLen(toRep);
+        const XMLSize_t len = stringLen(toRep);
         ret = (XMLCh*) manager->allocate((len+1) * sizeof(XMLCh)); //new XMLCh[len + 1];
         memcpy(ret, toRep, (len + 1) * sizeof(XMLCh));
     }
@@ -1500,9 +1488,9 @@ inline bool XMLString::endsWith(const XMLCh* const toTest,
                                 const XMLCh* const suffix)
 {
 
-    unsigned int suffixLen = XMLString::stringLen(suffix);
+    XMLSize_t suffixLen = XMLString::stringLen(suffix);
 
-    return regionMatches(toTest, XMLString::stringLen(toTest) - suffixLen,
+    return regionMatches(toTest, (int)(XMLString::stringLen(toTest) - suffixLen),
                          suffix, 0, suffixLen);
 }
 
@@ -1510,7 +1498,7 @@ inline bool XMLString::validateRegion(const XMLCh* const str1,
 									  const int offset1,
 									  const XMLCh* const str2,
 									  const int offset2,
-									  const unsigned int charCount)
+									  const XMLSize_t charCount)
 {
 
 	if (offset1 < 0 || offset2 < 0 ||
@@ -1521,56 +1509,72 @@ inline bool XMLString::validateRegion(const XMLCh* const str1,
 	return true;
 }
 
-inline bool XMLString::equals(   const XMLCh* const    str1
-                               , const XMLCh* const    str2)
+inline bool XMLString::equals(   const XMLCh* str1
+                               , const XMLCh* str2)
 {
-    const XMLCh* psz1 = str1;
-    const XMLCh* psz2 = str2;
+    if (str1 == str2)
+        return true;
 
-    if (psz1 == 0 || psz2 == 0) {
-        if ((psz1 != 0 && *psz1) || (psz2 != 0 && *psz2))
+    if (str1 == 0 || str2 == 0)
+        return ((!str1 || !*str1) && (!str2 || !*str2));
+
+    while (*str1)
+        if(*str1++ != *str2++)  // they are different (or str2 is shorter and we hit the NULL)
             return false;
-        else
-            return true;
-    }
 
-    while (*psz1 == *psz2)
-    {
-        // If either has ended, then they both ended, so equal
-        if (!*psz1)
-            return true;
-
-        // Move upwards for the next round
-        psz1++;
-        psz2++;
-    }
-    return false;
+    // either both ended (and *str2 is 0 too), or str2 is longer
+    return (*str2==0);
 }
 
-inline bool XMLString::equals(   const char* const    str1
-                               , const char* const    str2)
+inline bool XMLString::equalsN(const XMLCh* str1,
+                               const XMLCh* str2,
+                               XMLSize_t n)
 {
-    const char* psz1 = str1;
-    const char* psz2 = str2;
+    if (str1 == str2 || n == 0)
+      return true;
 
-    if (psz1 == 0 || psz2 == 0) {
-        if ((psz1 != 0 && *psz1) || (psz2 != 0 && *psz2))
+    if (str1 == 0 || str2 == 0)
+        return ((!str1 || !*str1) && (!str2 || !*str2));
+
+    for (; n != 0 && *str1 && *str2; --n, ++str1, ++str2)
+      if(*str1 != *str2)
+        break;
+
+    return n == 0 || *str1 == *str2; // either equal or both ended premat.
+}
+
+inline bool XMLString::equals(   const char* str1
+                               , const char* str2)
+{
+    if (str1 == str2)
+        return true;
+
+    if (str1 == 0 || str2 == 0)
+        return ((!str1 || !*str1) && (!str2 || !*str2));
+
+    while (*str1)
+        if(*str1++ != *str2++)  // they are different (or str2 is shorter and we hit the NULL)
             return false;
-        else
-            return true;
-    }
 
-    while (*psz1 == *psz2)
-    {
-        // If either has ended, then they both ended, so equal
-        if (!*psz1)
-            return true;
+    // either both ended (and *str2 is 0 too), or str2 is longer
+    return (*str2==0);
+}
 
-        // Move upwards for the next round
-        psz1++;
-        psz2++;
-    }
-    return false;
+inline bool XMLString::equalsN(const char* str1,
+                               const char* str2,
+                               XMLSize_t n)
+{
+    if (str1 == str2 || n == 0)
+      return true;
+
+    if (str1 == 0 || str2 == 0)
+        return ((!str1 || !*str1) && (!str2 || !*str2));
+
+    for (; n != 0 && *str1 && *str2; --n, ++str1, ++str2)
+      if(*str1 != *str2)
+        break;
+
+    return n == 0 || *str1 == *str2; // either equal or both ended premat.
 }
 
 inline int XMLString::lastIndexOf(const XMLCh* const toSearch, const XMLCh ch)
@@ -1578,23 +1582,37 @@ inline int XMLString::lastIndexOf(const XMLCh* const toSearch, const XMLCh ch)
     return XMLString::lastIndexOf(ch, toSearch, stringLen(toSearch));
 }
 
-inline unsigned int XMLString::hash(   const   XMLCh* const    tohash
-                                , const unsigned int    hashModulus
-                                , MemoryManager* const)
-{  
-    assert(hashModulus);
-
+inline XMLSize_t XMLString::hash(const   XMLCh* const   tohash
+                                , const XMLSize_t          hashModulus)
+{
     if (tohash == 0 || *tohash == 0)
         return 0;
 
     const XMLCh* curCh = tohash;
-    unsigned int hashVal = (unsigned int)(*curCh++);
+    XMLSize_t hashVal = (XMLSize_t)(*curCh++);
 
     while (*curCh)
-        hashVal = (hashVal * 38) + (hashVal >> 24) + (unsigned int)(*curCh++);
+        hashVal = (hashVal * 38) + (hashVal >> 24) + (XMLSize_t)(*curCh++);
 
     // Divide by modulus
     return hashVal % hashModulus;
+}
+
+inline XMLSize_t XMLString::hashN(const   XMLCh* const   tohash
+                                  , const XMLSize_t       n
+                                  , const XMLSize_t       hashModulus)
+{
+  if (tohash == 0 || n == 0)
+    return 0;
+
+  const XMLCh* curCh = tohash;
+  XMLSize_t hashVal = (XMLSize_t)(*curCh++);
+
+  for(XMLSize_t i=0;i<n;i++)
+    hashVal = (hashVal * 38) + (hashVal >> 24) + (XMLSize_t)(*curCh++);
+
+  // Divide by modulus
+  return hashVal % hashModulus;
 }
 
 XERCES_CPP_NAMESPACE_END

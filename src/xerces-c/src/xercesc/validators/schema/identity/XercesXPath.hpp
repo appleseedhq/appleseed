@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XercesXPath.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XercesXPath.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#if !defined(XERCESXPATH_HPP)
-#define XERCESXPATH_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XERCESXPATH_HPP)
+#define XERCESC_INCLUDE_GUARD_XERCESXPATH_HPP
 
 
 // ---------------------------------------------------------------------------
@@ -29,7 +29,7 @@
 #include <xercesc/util/QName.hpp>
 #include <xercesc/util/RefVectorOf.hpp>
 #include <xercesc/util/ValueVectorOf.hpp>
-
+#include <xercesc/validators/schema/NamespaceScope.hpp>
 #include <xercesc/internal/XSerializable.hpp>
 
 XERCES_CPP_NAMESPACE_BEGIN
@@ -38,8 +38,6 @@ XERCES_CPP_NAMESPACE_BEGIN
 //  Forward Declarations
 // ---------------------------------------------------------------------------
 class XMLStringPool;
-class NamespaceScope;
-
 
 class VALIDATORS_EXPORT XercesNodeTest : public XSerializable, public XMemory
 {
@@ -47,12 +45,12 @@ public:
     // -----------------------------------------------------------------------
     //  Constants
     // -----------------------------------------------------------------------
-    enum {
-        QNAME = 1,
-        WILDCARD = 2,
-        NODE = 3,
-        NAMESPACE= 4,
-        UNKNOWN
+    enum NodeType {
+        NodeType_QNAME = 1,
+        NodeType_WILDCARD = 2,
+        NodeType_NODE = 3,
+        NodeType_NAMESPACE= 4,
+        NodeType_UNKNOWN
     };
 
     // -----------------------------------------------------------------------
@@ -104,12 +102,12 @@ public:
     // -----------------------------------------------------------------------
     //  Constants
     // -----------------------------------------------------------------------
-    enum { // Axis type
-        CHILD = 1,
-        ATTRIBUTE = 2,
-        SELF = 3,
-        DESCENDANT = 4,
-        UNKNOWN
+    enum AxisType { // Axis type
+        AxisType_CHILD = 1,
+        AxisType_ATTRIBUTE = 2,
+        AxisType_SELF = 3,
+        AxisType_DESCENDANT = 4,
+        AxisType_UNKNOWN
     };
 
     // -----------------------------------------------------------------------
@@ -169,9 +167,9 @@ public:
     // -----------------------------------------------------------------------
     //  Access methods
     // -----------------------------------------------------------------------
-    unsigned int getStepSize() const;
+    XMLSize_t getStepSize() const;
     void addStep(XercesStep* const aStep);
-    XercesStep* getStep(const unsigned int index) const;
+    XercesStep* getStep(const XMLSize_t index) const;
 
     /***
      * Support for Serialization/De-serialization
@@ -182,7 +180,7 @@ public:
 
 private:
     // -----------------------------------------------------------------------
-    //  Unimplemented contstructors and operators
+    //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
     XercesLocationPath(const XercesLocationPath& other);
     XercesLocationPath& operator= (const XercesLocationPath& other);
@@ -262,7 +260,7 @@ public:
     // -----------------------------------------------------------------------
     XercesXPath(const XMLCh* const xpathExpr,
                 XMLStringPool* const stringPool,
-                NamespaceScope* const scopeContext,
+                XercesNamespaceResolver* const scopeContext,
                 const unsigned int emptyNamespaceId,
                 const bool isSelector = false,
                 MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
@@ -290,7 +288,7 @@ public:
 
 private:
     // -----------------------------------------------------------------------
-    //  Unimplemented contstructors and operators
+    //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
     XercesXPath(const XercesXPath& other);
     XercesXPath& operator= (const XercesXPath& other);
@@ -301,7 +299,7 @@ private:
     void cleanUp();
     void checkForSelectedAttributes();
     void parseExpression(XMLStringPool* const stringPool,
-                         NamespaceScope* const scopeContext);
+                         XercesNamespaceResolver* const scopeContext);
 
     // -----------------------------------------------------------------------
     //  Data members
@@ -357,8 +355,8 @@ public:
     // -----------------------------------------------------------------------
     //  Scan methods
     // -----------------------------------------------------------------------
-    bool scanExpression(const XMLCh* const data, int currentOffset,
-                        const int endOffset, ValueVectorOf<int>* const tokens);
+    bool scanExpression(const XMLCh* const data, XMLSize_t currentOffset,
+                        const XMLSize_t endOffset, ValueVectorOf<int>* const tokens);
 
 protected:
     // -----------------------------------------------------------------------
@@ -375,7 +373,7 @@ protected:
 
 private:
     // -----------------------------------------------------------------------
-    //  Unimplemented contstructors and operators
+    //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
     XPathScanner(const XPathScanner& other);
     XPathScanner& operator= (const XPathScanner& other);
@@ -388,10 +386,10 @@ private:
     // -----------------------------------------------------------------------
     //  Scan methods
     // -----------------------------------------------------------------------
-    int scanNCName(const XMLCh* const data, const int endOffset,
-                   int currentOffset);
-    int scanNumber(const XMLCh* const data, const int endOffset,
-                   int currentOffset, ValueVectorOf<int>* const tokens);
+    XMLSize_t scanNCName(const XMLCh* const data, const XMLSize_t endOffset,
+                   XMLSize_t currentOffset);
+    XMLSize_t scanNumber(const XMLCh* const data, const XMLSize_t endOffset,
+                   XMLSize_t currentOffset, ValueVectorOf<int>* const tokens);
 
     // -----------------------------------------------------------------------
     //  Data members
@@ -440,7 +438,7 @@ protected:
 
 private:
     // -----------------------------------------------------------------------
-    //  Unimplemented contstructors and operators
+    //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
     XPathScannerForSchema(const XPathScannerForSchema& other);
     XPathScannerForSchema& operator= (const XPathScannerForSchema& other);
@@ -449,7 +447,7 @@ private:
 // ---------------------------------------------------------------------------
 //  XercesLocationPath: Access methods
 // ---------------------------------------------------------------------------
-inline unsigned int XercesLocationPath::getStepSize() const {
+inline XMLSize_t XercesLocationPath::getStepSize() const {
 
     if (fSteps)
         return fSteps->size();
@@ -462,7 +460,7 @@ inline void XercesLocationPath::addStep(XercesStep* const aStep) {
     fSteps->addElement(aStep);
 }
 
-inline XercesStep* XercesLocationPath::getStep(const unsigned int index) const {
+inline XercesStep* XercesLocationPath::getStep(const XMLSize_t index) const {
 
     if (fSteps)
         return fSteps->elementAt(index);

@@ -1,6 +1,3 @@
-#ifndef DOMCommentImpl_HEADER_GUARD_
-#define DOMCommentImpl_HEADER_GUARD_
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -19,9 +16,11 @@
  */
 
 /*
- * $Id: DOMCommentImpl.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMCommentImpl.hpp 676911 2008-07-15 13:27:32Z amassari $
  */
 
+#if !defined(XERCESC_INCLUDE_GUARD_DOMCOMMENTIMPL_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMCOMMENTIMPL_HPP
 
 //
 //  This file is part of the internal implementation of the C++ XML DOM.
@@ -54,15 +53,16 @@ public:
     DOMCommentImpl(const DOMCommentImpl &other, bool deep);
     virtual ~DOMCommentImpl();
 
+public:
     // Declare all of the functions from DOMNode.
     DOMNODE_FUNCTIONS;
 
-
+public:
     // Functions from DOMCharacterData
     virtual void          appendData(const  XMLCh *data);
     virtual void          deleteData(XMLSize_t offset, XMLSize_t count);
     virtual const XMLCh * getData() const;
-    virtual XMLSize_t  getLength() const;
+    virtual XMLSize_t     getLength() const;
     virtual void          insertData(XMLSize_t offset, const XMLCh * data);
     virtual void          replaceData(XMLSize_t offset, XMLSize_t count, const XMLCh * data);
     virtual void          setData(const XMLCh * arg);

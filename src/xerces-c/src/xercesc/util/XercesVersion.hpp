@@ -15,8 +15,12 @@
  * limitations under the License.
  */
 
-#if !defined(XERCESVERSION_HPP)
-#define XERCESVERSION_HPP
+/*
+ * $Id: XercesVersion.hpp 935350 2010-04-18 15:02:36Z borisk $
+ */
+
+#if !defined(XERCESC_INCLUDE_GUARD_XERCESVERSION_HPP)
+#define XERCESC_INCLUDE_GUARD_XERCESVERSION_HPP
 
 // ---------------------------------------------------------------------------
 // X E R C E S   V E R S I O N   H E A D E R   D O C U M E N T A T I O N
@@ -43,7 +47,7 @@
  *
  *    The macro XERCES_GRAMMAR_SERIALIZATION_LEVEL has been added so that during
  *    development if users are using the latest code they can use the grammar
- *    serialization/desialization features.  Whenever a change is made to the
+ *    serialization/deserialization features.  Whenever a change is made to the
  *    serialization code this macro should be incremented.
  *
  * Xerces User Documentation:
@@ -122,14 +126,19 @@
  * AND DO NOT MODIFY ANYTHING ELSE IN THIS VERSION HEADER FILE
  */
 
-#define XERCES_VERSION_MAJOR 2
-#define XERCES_VERSION_MINOR 8
-#define XERCES_VERSION_REVISION 0
+#define XERCES_VERSION_MAJOR 3
+#define XERCES_VERSION_MINOR 1
+#define XERCES_VERSION_REVISION 1
 
 /***
- * data member added to XSAnnotation
+ *
+ * XERCES_GRAMMAR_SERIALIZATION_LEVEL = 4   SchemaAttDef, SchemaElementDecl serialize fPSVIScope
+ * XERCES_GRAMMAR_SERIALIZATION_LEVEL = 5   XercesStep serializes the axis as an int
+ * XERCES_GRAMMAR_SERIALIZATION_LEVEL = 6   added fIsExternal to XMLEntityDecl
+ * XERCES_GRAMMAR_SERIALIZATION_LEVEL = 7   size of line/column fields has changed
+ *
  ***/
-#define XERCES_GRAMMAR_SERIALIZATION_LEVEL 5
+#define XERCES_GRAMMAR_SERIALIZATION_LEVEL 7
 
 /** DO NOT MODIFY BELOW THIS LINE */
 

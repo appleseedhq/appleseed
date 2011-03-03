@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: ValueHashTableOf.c 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: ValueHashTableOf.c 679340 2008-07-24 10:28:29Z borisk $
  */
 
 
@@ -28,6 +28,7 @@
 #endif
 
 #include <xercesc/util/NullPointerException.hpp>
+#include <xercesc/util/Janitor.hpp>
 #include <assert.h>
 #include <new>
 
@@ -36,37 +37,37 @@ XERCES_CPP_NAMESPACE_BEGIN
 // ---------------------------------------------------------------------------
 //  ValueHashTableOf: Constructors and Destructor
 // ---------------------------------------------------------------------------
-template <class TVal>
-ValueHashTableOf<TVal>::ValueHashTableOf( const unsigned int modulus
-                                        , HashBase* hashBase
-                                        , MemoryManager* const manager)
+template <class TVal, class THasher>
+ValueHashTableOf<TVal, THasher>::ValueHashTableOf( const XMLSize_t modulus
+                                                   , const THasher& hasher
+                                                   , MemoryManager* const manager)
     : fMemoryManager(manager)
     , fBucketList(0)
     , fHashModulus(modulus)
-    , fHash(0)
+    , fInitialModulus(modulus)
+    , fCount(0)
+    , fHasher(hasher)
 {
-	initialize(modulus);
-	// set hasher
-	fHash = hashBase;
+    initialize(modulus);
 }
 
-template <class TVal>
-ValueHashTableOf<TVal>::ValueHashTableOf( const unsigned int modulus
-                                        , MemoryManager* const manager)
-	: fMemoryManager(manager)
+template <class TVal, class THasher>
+ValueHashTableOf<TVal, THasher>::ValueHashTableOf( const XMLSize_t modulus
+                                                   , MemoryManager* const manager)
+    : fMemoryManager(manager)
     , fBucketList(0)
     , fHashModulus(modulus)
-    , fHash(0)
+    , fInitialModulus(modulus)
+    , fCount(0)
+    , fHasher()
 {
-	initialize(modulus);
-
-	// create default hasher
-	fHash = new (fMemoryManager) HashXMLCh();
+    initialize(modulus);
 }
 
-template <class TVal> void ValueHashTableOf<TVal>::initialize(const unsigned int modulus)
+template <class TVal, class THasher>
+void ValueHashTableOf<TVal, THasher>::initialize(const XMLSize_t modulus)
 {
-	if (modulus == 0)
+    if (modulus == 0)
         ThrowXMLwithMemMgr(IllegalArgumentException, XMLExcepts::HshTbl_ZeroModulus, fMemoryManager);
 
     // Allocate the bucket list and zero them
@@ -77,49 +78,50 @@ template <class TVal> void ValueHashTableOf<TVal>::initialize(const unsigned int
     memset(fBucketList, 0, sizeof(fBucketList[0]) * fHashModulus);
 }
 
-template <class TVal> ValueHashTableOf<TVal>::~ValueHashTableOf()
+template <class TVal, class THasher>
+ValueHashTableOf<TVal, THasher>::~ValueHashTableOf()
 {
     removeAll();
 
     // Then delete the bucket list & hasher
     fMemoryManager->deallocate(fBucketList); //delete [] fBucketList;
-	delete fHash;
 }
 
 
 // ---------------------------------------------------------------------------
 //  ValueHashTableOf: Element management
 // ---------------------------------------------------------------------------
-template <class TVal> bool ValueHashTableOf<TVal>::isEmpty() const
+template <class TVal, class THasher>
+bool ValueHashTableOf<TVal, THasher>::isEmpty() const
 {
-    // Just check the bucket list for non-empty elements
-    for (unsigned int buckInd = 0; buckInd < fHashModulus; buckInd++)
-    {
-        if (fBucketList[buckInd] != 0)
-            return false;
-    }
-    return true;
+    return fCount==0;
 }
 
-template <class TVal> bool ValueHashTableOf<TVal>::
+template <class TVal, class THasher>
+bool ValueHashTableOf<TVal, THasher>::
 containsKey(const void* const key) const
 {
-    unsigned int hashVal;
+    XMLSize_t hashVal;
     const ValueHashTableBucketElem<TVal>* findIt = findBucketElem(key, hashVal);
     return (findIt != 0);
 }
 
-template <class TVal> void ValueHashTableOf<TVal>::
+template <class TVal, class THasher>
+void ValueHashTableOf<TVal, THasher>::
 removeKey(const void* const key)
 {
-    unsigned int hashVal;
+    XMLSize_t hashVal;
     removeBucketElem(key, hashVal);
 }
 
-template <class TVal> void ValueHashTableOf<TVal>::removeAll()
+template <class TVal, class THasher>
+void ValueHashTableOf<TVal, THasher>::removeAll()
 {
+    if(isEmpty())
+        return;
+
     // Clean up the buckets first
-    for (unsigned int buckInd = 0; buckInd < fHashModulus; buckInd++)
+    for (XMLSize_t buckInd = 0; buckInd < fHashModulus; buckInd++)
     {
         // Get the bucket list head for this entry
         ValueHashTableBucketElem<TVal>* curElem = fBucketList[buckInd];
@@ -139,15 +141,17 @@ template <class TVal> void ValueHashTableOf<TVal>::removeAll()
         // Clean out this entry
         fBucketList[buckInd] = 0;
     }
+    fCount = 0;
 }
 
 
 // ---------------------------------------------------------------------------
 //  ValueHashTableOf: Getters
 // ---------------------------------------------------------------------------
-template <class TVal> TVal& ValueHashTableOf<TVal>::get(const void* const key, MemoryManager* const manager)
+template <class TVal, class THasher>
+TVal& ValueHashTableOf<TVal, THasher>::get(const void* const key, MemoryManager* const manager)
 {
-    unsigned int hashVal;
+    XMLSize_t hashVal;
     ValueHashTableBucketElem<TVal>* findIt = findBucketElem(key, hashVal);
     if (!findIt)
         ThrowXMLwithMemMgr(NoSuchElementException, XMLExcepts::HshTbl_NoSuchKeyExists, manager);
@@ -155,10 +159,11 @@ template <class TVal> TVal& ValueHashTableOf<TVal>::get(const void* const key, M
     return findIt->fData;
 }
 
-template <class TVal> const TVal& ValueHashTableOf<TVal>::
+template <class TVal, class THasher>
+const TVal& ValueHashTableOf<TVal, THasher>::
 get(const void* const key) const
 {
-    unsigned int hashVal;
+    XMLSize_t hashVal;
     const ValueHashTableBucketElem<TVal>* findIt = findBucketElem(key, hashVal);
     if (!findIt)
         ThrowXMLwithMemMgr(NoSuchElementException, XMLExcepts::HshTbl_NoSuchKeyExists, fMemoryManager);
@@ -170,10 +175,18 @@ get(const void* const key) const
 // ---------------------------------------------------------------------------
 //  ValueHashTableOf: Putters
 // ---------------------------------------------------------------------------
-template <class TVal> void ValueHashTableOf<TVal>::put(void* key, const TVal& valueToAdopt)
+template <class TVal, class THasher>
+void ValueHashTableOf<TVal, THasher>::put(void* key, const TVal& valueToAdopt)
 {
+    // Apply 0.75 load factor to find threshold.
+    XMLSize_t threshold = fHashModulus * 3 / 4;
+
+    // If we've grown too big, expand the table and rehash.
+    if (fCount >= threshold)
+        rehash();
+
     // First see if the key exists already
-    unsigned int hashVal;
+    XMLSize_t hashVal;
     ValueHashTableBucketElem<TVal>* newBucket = findBucketElem(key, hashVal);
 
     //
@@ -183,14 +196,15 @@ template <class TVal> void ValueHashTableOf<TVal>::put(void* key, const TVal& va
     if (newBucket)
     {
         newBucket->fData = valueToAdopt;
-		newBucket->fKey = key;
+        newBucket->fKey = key;
     }
      else
     {
-        newBucket =            
+        newBucket =
             new (fMemoryManager->allocate(sizeof(ValueHashTableBucketElem<TVal>)))
             ValueHashTableBucketElem<TVal>(key, valueToAdopt, fBucketList[hashVal]);
         fBucketList[hashVal] = newBucket;
+        fCount++;
     }
 }
 
@@ -199,18 +213,73 @@ template <class TVal> void ValueHashTableOf<TVal>::put(void* key, const TVal& va
 // ---------------------------------------------------------------------------
 //  ValueHashTableOf: Private methods
 // ---------------------------------------------------------------------------
-template <class TVal> ValueHashTableBucketElem<TVal>* ValueHashTableOf<TVal>::
-findBucketElem(const void* const key, unsigned int& hashVal)
+template <class TVal, class THasher>
+void ValueHashTableOf<TVal, THasher>::rehash()
+{
+    const XMLSize_t newMod = (fHashModulus * 2) + 1;
+
+    ValueHashTableBucketElem<TVal>** newBucketList =
+        (ValueHashTableBucketElem<TVal>**) fMemoryManager->allocate
+    (
+        newMod * sizeof(ValueHashTableBucketElem<TVal>*)
+    );//new RefHashTableBucketElem<TVal>*[newMod];
+
+    // Make sure the new bucket list is destroyed if an
+    // exception is thrown.
+    ArrayJanitor<ValueHashTableBucketElem<TVal>*>  guard(newBucketList, fMemoryManager);
+
+    memset(newBucketList, 0, newMod * sizeof(newBucketList[0]));
+
+
+    // Rehash all existing entries.
+    for (XMLSize_t index = 0; index < fHashModulus; index++)
+    {
+        // Get the bucket list head for this entry
+        ValueHashTableBucketElem<TVal>* curElem = fBucketList[index];
+
+        while (curElem)
+        {
+            // Save the next element before we detach this one
+            ValueHashTableBucketElem<TVal>* const nextElem = curElem->fNext;
+
+            const XMLSize_t hashVal = fHasher.getHashVal(curElem->fKey, newMod);
+            assert(hashVal < newMod);
+
+            ValueHashTableBucketElem<TVal>* const newHeadElem = newBucketList[hashVal];
+
+            // Insert at the start of this bucket's list.
+            curElem->fNext = newHeadElem;
+            newBucketList[hashVal] = curElem;
+
+            curElem = nextElem;
+        }
+    }
+
+    ValueHashTableBucketElem<TVal>** const oldBucketList = fBucketList;
+
+    // Everything is OK at this point, so update the
+    // member variables.
+    fBucketList = guard.release();
+    fHashModulus = newMod;
+
+    // Delete the old bucket list.
+    fMemoryManager->deallocate(oldBucketList);//delete[] oldBucketList;
+
+}
+
+template <class TVal, class THasher>
+inline ValueHashTableBucketElem<TVal>* ValueHashTableOf<TVal, THasher>::
+findBucketElem(const void* const key, XMLSize_t& hashVal)
 {
     // Hash the key
-    hashVal = fHash->getHashVal(key, fHashModulus, fMemoryManager);
+    hashVal = fHasher.getHashVal(key, fHashModulus);
     assert(hashVal < fHashModulus);
 
     // Search that bucket for the key
     ValueHashTableBucketElem<TVal>* curElem = fBucketList[hashVal];
     while (curElem)
     {
-		if (fHash->equals(key, curElem->fKey))
+        if (fHasher.equals(key, curElem->fKey))
             return curElem;
 
         curElem = curElem->fNext;
@@ -218,18 +287,19 @@ findBucketElem(const void* const key, unsigned int& hashVal)
     return 0;
 }
 
-template <class TVal> const ValueHashTableBucketElem<TVal>* ValueHashTableOf<TVal>::
-findBucketElem(const void* const key, unsigned int& hashVal) const
+template <class TVal, class THasher>
+inline const ValueHashTableBucketElem<TVal>* ValueHashTableOf<TVal, THasher>::
+findBucketElem(const void* const key, XMLSize_t& hashVal) const
 {
     // Hash the key
-    hashVal = fHash->getHashVal(key, fHashModulus, fMemoryManager);
+    hashVal = fHasher.getHashVal(key, fHashModulus);
     assert(hashVal < fHashModulus);
 
     // Search that bucket for the key
     const ValueHashTableBucketElem<TVal>* curElem = fBucketList[hashVal];
     while (curElem)
     {
-        if (fHash->equals(key, curElem->fKey))
+        if (fHasher.equals(key, curElem->fKey))
             return curElem;
 
         curElem = curElem->fNext;
@@ -238,11 +308,12 @@ findBucketElem(const void* const key, unsigned int& hashVal) const
 }
 
 
-template <class TVal> void ValueHashTableOf<TVal>::
-removeBucketElem(const void* const key, unsigned int& hashVal)
+template <class TVal, class THasher>
+void ValueHashTableOf<TVal, THasher>::
+removeBucketElem(const void* const key, XMLSize_t& hashVal)
 {
     // Hash the key
-    hashVal = fHash->getHashVal(key, fHashModulus);
+    hashVal = fHasher.getHashVal(key, fHashModulus);
     assert(hashVal < fHashModulus);
 
     //
@@ -254,7 +325,7 @@ removeBucketElem(const void* const key, unsigned int& hashVal)
 
     while (curElem)
     {
-        if (fHash->equals(key, curElem->fKey))
+        if (fHasher.equals(key, curElem->fKey))
         {
             if (!lastElem)
             {
@@ -269,9 +340,11 @@ removeBucketElem(const void* const key, unsigned int& hashVal)
 
             // Delete the current element
             // delete curElem;
-			// destructor is empty...
+            // destructor is empty...
             // curElem->~ValueHashTableBucketElem();
-            fMemoryManager->deallocate(curElem);                        
+            fMemoryManager->deallocate(curElem);
+
+            fCount--;
 
             return;
         }
@@ -291,11 +364,12 @@ removeBucketElem(const void* const key, unsigned int& hashVal)
 // ---------------------------------------------------------------------------
 //  ValueHashTableOfEnumerator: Constructors and Destructor
 // ---------------------------------------------------------------------------
-template <class TVal> ValueHashTableOfEnumerator<TVal>::
-ValueHashTableOfEnumerator(ValueHashTableOf<TVal>* const toEnum
+template <class TVal, class THasher>
+ValueHashTableOfEnumerator<TVal, THasher>::
+ValueHashTableOfEnumerator(ValueHashTableOf<TVal, THasher>* const toEnum
                            , const bool adopt
                            , MemoryManager* const manager)
-	: fAdopted(adopt), fCurElem(0), fCurHash((unsigned int)-1), fToEnum(toEnum), fMemoryManager(manager)
+    : fAdopted(adopt), fCurElem(0), fCurHash((XMLSize_t)-1), fToEnum(toEnum), fMemoryManager(manager)
 {
     if (!toEnum)
         ThrowXMLwithMemMgr(NullPointerException, XMLExcepts::CPtr_PointerIsZero, manager);
@@ -310,7 +384,8 @@ ValueHashTableOfEnumerator(ValueHashTableOf<TVal>* const toEnum
     findNext();
 }
 
-template <class TVal> ValueHashTableOfEnumerator<TVal>::~ValueHashTableOfEnumerator()
+template <class TVal, class THasher>
+ValueHashTableOfEnumerator<TVal, THasher>::~ValueHashTableOfEnumerator()
 {
     if (fAdopted)
         delete fToEnum;
@@ -320,7 +395,8 @@ template <class TVal> ValueHashTableOfEnumerator<TVal>::~ValueHashTableOfEnumera
 // ---------------------------------------------------------------------------
 //  ValueHashTableOfEnumerator: Enum interface
 // ---------------------------------------------------------------------------
-template <class TVal> bool ValueHashTableOfEnumerator<TVal>::hasMoreElements() const
+template <class TVal, class THasher>
+bool ValueHashTableOfEnumerator<TVal, THasher>::hasMoreElements() const
 {
     //
     //  If our current has is at the max and there are no more elements
@@ -331,7 +407,8 @@ template <class TVal> bool ValueHashTableOfEnumerator<TVal>::hasMoreElements() c
     return true;
 }
 
-template <class TVal> TVal& ValueHashTableOfEnumerator<TVal>::nextElement()
+template <class TVal, class THasher>
+TVal& ValueHashTableOfEnumerator<TVal, THasher>::nextElement()
 {
     // Make sure we have an element to return
     if (!hasMoreElements())
@@ -347,7 +424,8 @@ template <class TVal> TVal& ValueHashTableOfEnumerator<TVal>::nextElement()
     return saveElem->fData;
 }
 
-template <class TVal> void* ValueHashTableOfEnumerator<TVal>::nextElementKey()
+template <class TVal, class THasher>
+void* ValueHashTableOfEnumerator<TVal, THasher>::nextElementKey()
 {
     // Make sure we have an element to return
     if (!hasMoreElements())
@@ -364,9 +442,10 @@ template <class TVal> void* ValueHashTableOfEnumerator<TVal>::nextElementKey()
 }
 
 
-template <class TVal> void ValueHashTableOfEnumerator<TVal>::Reset()
+template <class TVal, class THasher>
+void ValueHashTableOfEnumerator<TVal, THasher>::Reset()
 {
-    fCurHash = (unsigned int)-1;
+    fCurHash = (XMLSize_t)-1;
     fCurElem = 0;
     findNext();
 }
@@ -376,7 +455,8 @@ template <class TVal> void ValueHashTableOfEnumerator<TVal>::Reset()
 // ---------------------------------------------------------------------------
 //  ValueHashTableOfEnumerator: Private helper methods
 // ---------------------------------------------------------------------------
-template <class TVal> void ValueHashTableOfEnumerator<TVal>::findNext()
+template <class TVal, class THasher>
+void ValueHashTableOfEnumerator<TVal, THasher>::findNext()
 {
     //
     //  If there is a current element, move to its next element. If this
@@ -392,16 +472,14 @@ template <class TVal> void ValueHashTableOfEnumerator<TVal>::findNext()
     //
     if (!fCurElem)
     {
-        fCurHash++;
-        if (fCurHash == fToEnum->fHashModulus)
+        if (++fCurHash == fToEnum->fHashModulus)
             return;
 
         // Else find the next non-empty bucket
         while (fToEnum->fBucketList[fCurHash]==0)
         {
             // Bump to the next hash value. If we max out return
-            fCurHash++;
-            if (fCurHash == fToEnum->fHashModulus)
+            if (++fCurHash == fToEnum->fHashModulus)
                 return;
         }
         fCurElem = fToEnum->fBucketList[fCurHash];

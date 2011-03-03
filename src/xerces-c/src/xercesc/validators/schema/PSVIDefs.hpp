@@ -15,35 +15,22 @@
  * limitations under the License.
  */
 
-#if !defined(PSVIDEFS_HPP)
-#define PSVIDEFS_HPP
+/*
+ * $Id: PSVIDefs.hpp 932887 2010-04-11 13:04:59Z borisk $
+ */
+
+#if !defined(XERCESC_INCLUDE_GUARD_PSVIDEFS_HPP)
+#define XERCESC_INCLUDE_GUARD_PSVIDEFS_HPP
 
 XERCES_CPP_NAMESPACE_BEGIN
 
 class VALIDATORS_EXPORT PSVIDefs
 {
 public:
-    enum Validity {
-        UNKNOWN = 1,
-        INVALID = 2,
-        VALID   = 3
-    };
-    
-    enum Validation {
-        NONE    = 1,
-        PARTIAL = 2,
-        FULL    = 3
-    };
-
-    enum Complexity {
-        SIMPLE  = 1,
-        COMPLEX = 2
-    };
-
     enum PSVIScope
     {
         SCP_ABSENT    // declared in group/attribute group
-	    , SCP_GLOBAL  // global decalarion or ref
+	    , SCP_GLOBAL  // global declaration or ref
 	    , SCP_LOCAL   // local declaration
     };
 };

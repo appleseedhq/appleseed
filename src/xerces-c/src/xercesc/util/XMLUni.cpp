@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XMLUni.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLUni.cpp 833045 2009-11-05 13:21:27Z borisk $
  */
 
 
@@ -361,6 +361,12 @@ const XMLCh XMLUni::fgUCS4EncodingString4[] =
     chLatin_U, chLatin_T, chLatin_F, chDash, chDigit_3, chDigit_2, chNull
 };
 
+const XMLCh XMLUni::fgUCS4EncodingString5[] =
+{
+    chLatin_I, chLatin_S, chLatin_O, chDash, chDigit_1, chDigit_0, chDigit_6, chDigit_4, chDigit_6,
+    chDash, chLatin_U, chLatin_C, chLatin_S, chDash, chDigit_4, chNull
+};
+
 const XMLCh XMLUni::fgUCS4BEncodingString[] =
 {
     chLatin_U, chLatin_C, chLatin_S, chDash, chDigit_4, chSpace, chOpenParen, chLatin_B, chLatin_E, chCloseParen, chNull
@@ -630,7 +636,7 @@ const XMLCh XMLUni::fgXMLURIName[] =
     ,   chLatin_e, chLatin_s, chLatin_p, chLatin_a, chLatin_c, chLatin_e, chNull
 };
 
-const XMLCh XMLUni::fgInfosetURIName[] = 
+const XMLCh XMLUni::fgInfosetURIName[] =
 {
         chLatin_h, chLatin_t, chLatin_t, chLatin_p, chColon, chForwardSlash
     ,   chForwardSlash, chLatin_w, chLatin_w, chLatin_w, chPeriod, chLatin_w
@@ -900,6 +906,14 @@ const XMLCh XMLUni::fgXSerializationException_Name[] =
     ,   chLatin_p, chLatin_t, chLatin_i, chLatin_o, chLatin_n, chNull
 };
 
+const XMLCh XMLUni::fgXMLXIncludeException_Name[] =
+{
+        chLatin_X, chLatin_M, chLatin_L, chLatin_X, chLatin_I, chLatin_n
+    ,   chLatin_c, chLatin_l, chLatin_u, chLatin_d, chLatin_e, chLatin_E
+    ,   chLatin_x, chLatin_c, chLatin_e, chLatin_p, chLatin_t, chLatin_i
+    ,   chLatin_o, chLatin_n, chNull
+};
+
 const XMLCh XMLUni::fgNegINFString[] =
 {
     chDash, chLatin_I, chLatin_N, chLatin_F, chNull
@@ -1018,6 +1032,21 @@ const XMLCh XMLUni::fgXercesSchemaFullChecking[] =
     ,   chLatin_e, chLatin_c, chLatin_k, chLatin_i, chLatin_n, chLatin_g, chNull
 };
 
+//Xerces: http://apache.org/xml/features/validating/load-schema
+const XMLCh XMLUni::fgXercesLoadSchema[] =
+{
+        chLatin_h, chLatin_t, chLatin_t, chLatin_p, chColon, chForwardSlash
+    ,   chForwardSlash, chLatin_a, chLatin_p, chLatin_a, chLatin_c, chLatin_h
+    ,   chLatin_e, chPeriod, chLatin_o, chLatin_r, chLatin_g, chForwardSlash
+    ,   chLatin_x, chLatin_m, chLatin_l, chForwardSlash, chLatin_f, chLatin_e
+    ,   chLatin_a, chLatin_t, chLatin_u, chLatin_r, chLatin_e, chLatin_s
+    ,   chForwardSlash
+    ,   chLatin_v, chLatin_a, chLatin_l, chLatin_i, chLatin_d
+    ,   chLatin_a, chLatin_t, chLatin_i, chLatin_n, chLatin_g, chForwardSlash
+    ,   chLatin_l, chLatin_o, chLatin_a, chLatin_d, chDash
+    ,   chLatin_s, chLatin_c, chLatin_h, chLatin_e, chLatin_m, chLatin_a
+};
+
 //Xerces: http://apache.org/xml/features/validation/identity-constraint-checking
 const XMLCh XMLUni::fgXercesIdentityConstraintChecking[] =
 {
@@ -1028,7 +1057,7 @@ const XMLCh XMLUni::fgXercesIdentityConstraintChecking[] =
     ,   chLatin_a, chLatin_t, chLatin_u, chLatin_r, chLatin_e, chLatin_s
     ,   chForwardSlash, chLatin_v, chLatin_a, chLatin_l, chLatin_i, chLatin_d
     ,   chLatin_a, chLatin_t, chLatin_i, chLatin_o, chLatin_n, chForwardSlash
-    ,   chLatin_i, chLatin_d, chLatin_e, chLatin_n, chLatin_t, chLatin_i 
+    ,   chLatin_i, chLatin_d, chLatin_e, chLatin_n, chLatin_t, chLatin_i
     ,   chLatin_t, chLatin_y, chDash   , chLatin_c, chLatin_o, chLatin_n, chLatin_s
     ,   chLatin_t, chLatin_r, chLatin_a, chLatin_i, chLatin_n, chLatin_t
     ,   chDash,    chLatin_c, chLatin_h, chLatin_e, chLatin_c, chLatin_k, chLatin_i
@@ -1120,7 +1149,7 @@ const XMLCh XMLUni::fgXercesDOMHasPSVIInfo[] =
 };
 
 //Xerces: http://apache.org/xml/features/generate-synthetic-annotations
-const XMLCh XMLUni::fgXercesGenerateSyntheticAnnotations[] = 
+const XMLCh XMLUni::fgXercesGenerateSyntheticAnnotations[] =
 {
         chLatin_h, chLatin_t, chLatin_t, chLatin_p, chColon, chForwardSlash
     ,   chForwardSlash, chLatin_a, chLatin_p, chLatin_a, chLatin_c, chLatin_h
@@ -1129,13 +1158,13 @@ const XMLCh XMLUni::fgXercesGenerateSyntheticAnnotations[] =
     ,   chLatin_a, chLatin_t, chLatin_u, chLatin_r, chLatin_e, chLatin_s
     ,   chForwardSlash, chLatin_g, chLatin_e, chLatin_n, chLatin_e, chLatin_r
     ,   chLatin_a, chLatin_t, chLatin_e, chDash, chLatin_s, chLatin_y, chLatin_n
-    ,   chLatin_t, chLatin_h, chLatin_e, chLatin_t, chLatin_i, chLatin_c, chDash 
+    ,   chLatin_t, chLatin_h, chLatin_e, chLatin_t, chLatin_i, chLatin_c, chDash
     ,   chLatin_a, chLatin_n, chLatin_n, chLatin_o, chLatin_t, chLatin_a, chLatin_t
     ,   chLatin_i, chLatin_o, chLatin_n, chLatin_s, chNull
 };
 
-const XMLCh XMLUni::fgXercesValidateAnnotations[] =
 //Xerces: http://apache.org/xml/features/validate-annotations
+const XMLCh XMLUni::fgXercesValidateAnnotations[] =
 {
         chLatin_h, chLatin_t, chLatin_t, chLatin_p, chColon, chForwardSlash
     ,   chForwardSlash, chLatin_a, chLatin_p, chLatin_a, chLatin_c, chLatin_h
@@ -1225,6 +1254,19 @@ const XMLCh XMLUni::fgXercesParserUseDocumentFromImplementation[] =
     ,   chLatin_f, chLatin_r, chLatin_o, chLatin_m, chDash, chLatin_I, chLatin_m
     ,   chLatin_p, chLatin_l, chLatin_e, chLatin_m, chLatin_e, chLatin_n, chLatin_t
     ,   chLatin_a, chLatin_t, chLatin_i, chLatin_o, chLatin_n, chNull
+};
+
+//Property
+//Xerces: http://apache.org/xml/properties/entity-resolver
+const XMLCh XMLUni::fgXercesEntityResolver[] =
+{
+        chLatin_h, chLatin_t, chLatin_t, chLatin_p, chColon, chForwardSlash
+    ,   chForwardSlash, chLatin_a, chLatin_p, chLatin_a, chLatin_c, chLatin_h
+    ,   chLatin_e, chPeriod, chLatin_o, chLatin_r, chLatin_g, chForwardSlash
+    ,   chLatin_x, chLatin_m, chLatin_l, chForwardSlash, chLatin_p, chLatin_a
+    ,   chLatin_r, chLatin_s, chLatin_e, chLatin_r, chDash, chLatin_e, chLatin_n
+    ,   chLatin_t, chLatin_i, chLatin_t, chLatin_y, chDash, chLatin_r, chLatin_e
+    ,   chLatin_s, chLatin_o, chLatin_l, chLatin_v, chLatin_e, chLatin_r, chNull
 };
 
 
@@ -1334,8 +1376,39 @@ const XMLCh XMLUni::fgXercesSkipDTDValidation[] =
     ,   chLatin_s, chLatin_c, chLatin_h, chLatin_e, chLatin_m, chLatin_a
     ,   chForwardSlash, chLatin_s, chLatin_k, chLatin_i, chLatin_p, chDash
     ,   chLatin_d, chLatin_t, chLatin_d, chDash, chLatin_v, chLatin_a
-    ,   chLatin_l, chLatin_i, chLatin_d, chLatin_a, chLatin_t, chLatin_i 
+    ,   chLatin_l, chLatin_i, chLatin_d, chLatin_a, chLatin_t, chLatin_i
     ,   chLatin_o, chLatin_n, chNull
+};
+
+//Xerces: http://apache.org/xml/features/validation/schema/handle-multiple-imports
+const XMLCh XMLUni::fgXercesHandleMultipleImports[] =
+{
+        chLatin_h, chLatin_t, chLatin_t, chLatin_p, chColon, chForwardSlash
+    ,   chForwardSlash, chLatin_a, chLatin_p, chLatin_a, chLatin_c, chLatin_h
+    ,   chLatin_e, chPeriod, chLatin_o, chLatin_r, chLatin_g, chForwardSlash
+    ,   chLatin_x, chLatin_m, chLatin_l, chForwardSlash, chLatin_f, chLatin_e
+    ,   chLatin_a, chLatin_t, chLatin_u, chLatin_r, chLatin_e, chLatin_s
+    ,   chForwardSlash, chLatin_v, chLatin_a, chLatin_l, chLatin_i, chLatin_d
+    ,   chLatin_a, chLatin_t, chLatin_i, chLatin_o, chLatin_n, chForwardSlash
+    ,   chLatin_s, chLatin_c, chLatin_h, chLatin_e, chLatin_m, chLatin_a
+    ,   chForwardSlash, chLatin_h, chLatin_a, chLatin_n, chLatin_d, chLatin_l, chLatin_e, chDash
+    ,   chLatin_m, chLatin_u, chLatin_l, chLatin_t, chLatin_i, chLatin_p
+    ,   chLatin_l, chLatin_e, chDash, chLatin_i, chLatin_m, chLatin_p, chLatin_o
+    ,   chLatin_r, chLatin_t, chLatin_s, chNull
+};
+
+//Property
+//Xerces: http://apache.org/xml/properties/low-water-mark
+const XMLCh XMLUni::fgXercesLowWaterMark[] =
+{
+        chLatin_h, chLatin_t, chLatin_t, chLatin_p, chColon, chForwardSlash
+    ,   chForwardSlash, chLatin_a, chLatin_p, chLatin_a, chLatin_c, chLatin_h
+    ,   chLatin_e, chPeriod, chLatin_o, chLatin_r, chLatin_g, chForwardSlash
+    ,   chLatin_x, chLatin_m, chLatin_l, chForwardSlash, chLatin_p, chLatin_r
+    ,   chLatin_o, chLatin_p, chLatin_e, chLatin_r, chLatin_t, chLatin_i
+    ,   chLatin_e, chLatin_s, chForwardSlash, chLatin_l, chLatin_o, chLatin_w
+    ,   chDash, chLatin_w, chLatin_a, chLatin_t, chLatin_e, chLatin_r, chDash
+    ,   chLatin_m, chLatin_a, chLatin_r, chLatin_k, chNull
 };
 
 //Introduced in DOM Level 3
@@ -1366,6 +1439,15 @@ const XMLCh XMLUni::fgDOMCharsetOverridesXMLEncoding[] =
     ,   chLatin_n, chLatin_g, chNull
 };
 
+const XMLCh XMLUni::fgDOMCheckCharacterNormalization[] =
+{
+        chLatin_c, chLatin_h, chLatin_e, chLatin_c, chLatin_k, chDash
+    ,   chLatin_c, chLatin_h, chLatin_a, chLatin_r, chLatin_a, chLatin_c, chLatin_t
+    ,   chLatin_e, chLatin_r, chDash, chLatin_n, chLatin_o, chLatin_r, chLatin_m
+    ,   chLatin_a, chLatin_l, chLatin_i, chLatin_z, chLatin_a, chLatin_t, chLatin_i
+    ,   chLatin_o, chLatin_n, chNull
+};
+
 const XMLCh XMLUni::fgDOMDatatypeNormalization[] =
 {
         chLatin_d, chLatin_a, chLatin_t, chLatin_a, chLatin_t, chLatin_y, chLatin_p
@@ -1374,15 +1456,46 @@ const XMLCh XMLUni::fgDOMDatatypeNormalization[] =
     ,   chLatin_n, chNull
 };
 
+const XMLCh XMLUni::fgDOMDisallowDoctype[] =
+{
+        chLatin_d, chLatin_i, chLatin_s, chLatin_a, chLatin_l, chLatin_l, chLatin_o
+    ,   chLatin_w, chDash, chLatin_d, chLatin_o, chLatin_c, chLatin_t, chLatin_y
+    ,   chLatin_e, chNull
+};
+
+const XMLCh XMLUni::fgDOMElementContentWhitespace[] =
+{
+        chLatin_e, chLatin_l, chLatin_e, chLatin_m, chLatin_e, chLatin_n, chLatin_t
+    ,   chDash, chLatin_c, chLatin_o, chLatin_n, chLatin_t, chLatin_e, chLatin_n
+    ,   chLatin_t, chDash, chLatin_w, chLatin_h, chLatin_i, chLatin_t, chLatin_e
+    ,   chLatin_s, chLatin_p, chLatin_a, chLatin_c, chLatin_e, chNull
+};
+
 const XMLCh XMLUni::fgDOMEntities[] =
 {
         chLatin_e, chLatin_n, chLatin_t, chLatin_i, chLatin_t, chLatin_i, chLatin_e
     ,   chLatin_s, chNull
 };
 
+const XMLCh XMLUni::fgDOMErrorHandler[] =
+{
+        chLatin_e, chLatin_r, chLatin_r, chLatin_o, chLatin_r, chDash, chLatin_h
+    ,   chLatin_a, chLatin_n, chLatin_d, chLatin_l, chLatin_e, chLatin_r, chNull
+};
+
 const XMLCh XMLUni::fgDOMInfoset[] =
 {
         chLatin_i, chLatin_n, chLatin_f, chLatin_o, chLatin_s, chLatin_e, chLatin_t, chNull
+};
+
+const XMLCh XMLUni::fgDOMIgnoreUnknownCharacterDenormalization[] =
+{
+        chLatin_i, chLatin_g, chLatin_n, chLatin_o, chLatin_r, chLatin_e, chDash
+    ,   chLatin_u, chLatin_n, chLatin_k, chLatin_n, chLatin_o, chLatin_w, chLatin_n
+    ,   chDash, chLatin_c, chLatin_h, chLatin_a, chLatin_r, chLatin_a, chLatin_c
+    ,   chLatin_t, chLatin_e, chLatin_r, chDash, chLatin_d, chLatin_e, chLatin_n
+    ,   chLatin_o, chLatin_r, chLatin_m, chLatin_a, chLatin_l, chLatin_i, chLatin_z
+    ,   chLatin_a, chLatin_t, chLatin_i, chLatin_o, chLatin_n, chNull
 };
 
 const XMLCh XMLUni::fgDOMNamespaces[] =
@@ -1399,12 +1512,52 @@ const XMLCh XMLUni::fgDOMNamespaceDeclarations[] =
     ,   chLatin_s, chNull
 };
 
+const XMLCh XMLUni::fgDOMNormalizeCharacters[] =
+{
+        chLatin_n, chLatin_o, chLatin_r, chLatin_m, chLatin_a, chLatin_l, chLatin_i
+    ,   chLatin_z, chLatin_e, chDash, chLatin_c, chLatin_h, chLatin_a, chLatin_r
+    ,   chLatin_a, chLatin_c, chLatin_t, chLatin_e, chLatin_r, chLatin_s, chNull
+};
+
+const XMLCh XMLUni::fgDOMResourceResolver[] =
+{
+        chLatin_r, chLatin_e, chLatin_s, chLatin_o, chLatin_u, chLatin_r, chLatin_c
+    ,   chLatin_e, chDash, chLatin_r, chLatin_e, chLatin_s, chLatin_o, chLatin_l
+    ,   chLatin_v, chLatin_e, chLatin_r, chNull
+};
+
+const XMLCh XMLUni::fgDOMSchemaLocation[] =
+{
+        chLatin_s, chLatin_c, chLatin_h, chLatin_e, chLatin_m, chLatin_a, chDash
+    ,   chLatin_l, chLatin_o, chLatin_c, chLatin_a, chLatin_t, chLatin_i, chLatin_o
+    ,   chLatin_n, chNull
+};
+
+const XMLCh XMLUni::fgDOMSchemaType[] =
+{
+        chLatin_s, chLatin_c, chLatin_h, chLatin_e, chLatin_m, chLatin_a, chDash
+    ,   chLatin_t, chLatin_y, chLatin_p, chLatin_e, chNull
+};
+
+const XMLCh XMLUni::fgDOMSplitCDATASections[] =
+{
+        chLatin_s, chLatin_p, chLatin_l, chLatin_i, chLatin_t, chDash, chLatin_c
+    ,   chLatin_d, chLatin_a, chLatin_t, chLatin_a, chDash, chLatin_s, chLatin_e
+    ,   chLatin_c, chLatin_t, chLatin_i, chLatin_o, chLatin_n, chLatin_s, chNull
+};
+
 const XMLCh XMLUni::fgDOMSupportedMediatypesOnly[] =
 {
         chLatin_s, chLatin_u, chLatin_p, chLatin_p, chLatin_o, chLatin_r, chLatin_t
     ,   chLatin_e, chLatin_d, chDash, chLatin_m, chLatin_e, chLatin_d, chLatin_i
-    ,   chLatin_a, chLatin_t, chLatin_y, chLatin_p, chLatin_e, chLatin_s, chDash
+    ,   chLatin_a, chDash, chLatin_t, chLatin_y, chLatin_p, chLatin_e, chLatin_s, chDash
     ,   chLatin_o, chLatin_n, chLatin_l, chLatin_y, chNull
+};
+
+const XMLCh XMLUni::fgDOMValidate[] =
+{
+        chLatin_v, chLatin_a, chLatin_l, chLatin_i, chLatin_d, chLatin_a, chLatin_t
+    ,   chLatin_e, chNull
 };
 
 const XMLCh XMLUni::fgDOMValidateIfSchema[] =
@@ -1414,19 +1567,31 @@ const XMLCh XMLUni::fgDOMValidateIfSchema[] =
     ,   chLatin_h, chLatin_e, chLatin_m, chLatin_a, chNull
 };
 
-const XMLCh XMLUni::fgDOMValidation[] =
+const XMLCh XMLUni::fgDOMWellFormed[] =
 {
-        chLatin_v, chLatin_a, chLatin_l, chLatin_i, chLatin_d, chLatin_a, chLatin_t
-    ,   chLatin_i, chLatin_o, chLatin_n, chNull
+        chLatin_w, chLatin_e, chLatin_l, chLatin_l, chDash, chLatin_f, chLatin_o
+    ,   chLatin_r, chLatin_m, chLatin_e, chLatin_d, chNull
 };
 
-const XMLCh XMLUni::fgDOMWhitespaceInElementContent[] =
+
+
+const XMLCh XMLUni::fgDOMXMLSchemaType[] =
 {
-        chLatin_w, chLatin_h, chLatin_i, chLatin_t, chLatin_e, chLatin_s, chLatin_p
-    ,   chLatin_a, chLatin_c, chLatin_e, chDash, chLatin_i, chLatin_n, chDash
-    ,   chLatin_e, chLatin_l, chLatin_e, chLatin_m, chLatin_e, chLatin_n, chLatin_t
-    ,   chDash, chLatin_c, chLatin_o, chLatin_n, chLatin_t, chLatin_e, chLatin_n
-    ,   chLatin_t, chNull
+        chLatin_h, chLatin_t, chLatin_t, chLatin_p, chColon, chForwardSlash
+    ,   chForwardSlash, chLatin_w, chLatin_w, chLatin_w, chPeriod, chLatin_w
+    ,   chDigit_3, chPeriod, chLatin_o, chLatin_r, chLatin_g, chForwardSlash
+    ,   chDigit_2, chDigit_0, chDigit_0, chDigit_1, chForwardSlash, chLatin_X
+    ,   chLatin_M, chLatin_L, chLatin_S, chLatin_c, chLatin_h, chLatin_e
+    ,   chLatin_m, chLatin_a, chNull
+};
+
+const XMLCh XMLUni::fgDOMDTDType[] =
+{
+        chLatin_h, chLatin_t, chLatin_t, chLatin_p, chColon, chForwardSlash
+    ,   chForwardSlash, chLatin_w, chLatin_w, chLatin_w, chPeriod, chLatin_w
+    ,   chDigit_3, chPeriod, chLatin_o, chLatin_r, chLatin_g, chForwardSlash
+    ,   chLatin_T, chLatin_R, chForwardSlash, chLatin_R, chLatin_E, chLatin_C
+    ,   chDash, chLatin_x, chLatin_m, chLatin_l, chNull
 };
 
 //Introduced in DOM Level 3
@@ -1515,10 +1680,27 @@ const XMLCh XMLUni::fgDOMWRTBOM[] =
 
 //xml-declaration
 const XMLCh XMLUni::fgDOMXMLDeclaration[] =
-{ 
+{
     chLatin_x, chLatin_m, chLatin_l, chDash, chLatin_d, chLatin_e, chLatin_c,
     chLatin_l, chLatin_a, chLatin_r, chLatin_a, chLatin_t, chLatin_i, chLatin_o,
-    chLatin_n, chNull 
+    chLatin_n, chNull
+};
+
+//Xerces: http://apache.org/xml/features/pretty-print/space-first-level-elements
+const XMLCh XMLUni::fgDOMWRTXercesPrettyPrint[] =
+{
+    chLatin_h, chLatin_t, chLatin_t, chLatin_p, chColon, chForwardSlash,
+    chForwardSlash, chLatin_a, chLatin_p, chLatin_a, chLatin_c, chLatin_h,
+    chLatin_e, chPeriod, chLatin_o, chLatin_r, chLatin_g, chForwardSlash,
+    chLatin_x, chLatin_m, chLatin_l, chForwardSlash, chLatin_f, chLatin_e,
+    chLatin_a, chLatin_t, chLatin_u, chLatin_r, chLatin_e, chLatin_s,
+    chForwardSlash, chLatin_p, chLatin_r, chLatin_e, chLatin_t, chLatin_t,
+    chLatin_y, chDash, chLatin_p, chLatin_r, chLatin_i, chLatin_n, chLatin_t,
+    chForwardSlash, chLatin_s, chLatin_p, chLatin_a, chLatin_c, chLatin_e,
+    chDash, chLatin_f, chLatin_i, chLatin_r, chLatin_s, chLatin_t, chDash,
+    chLatin_l, chLatin_e, chLatin_v, chLatin_e, chLatin_l, chDash,
+    chLatin_e, chLatin_l, chLatin_e, chLatin_m, chLatin_e, chLatin_n,
+    chLatin_t, chLatin_s, chNull
 };
 
 const XMLCh XMLUni::fgXercescInterfacePSVITypeInfo[] =
@@ -1533,6 +1715,20 @@ const XMLCh XMLUni::fgXercescInterfaceDOMDocumentTypeImpl[] =
     chLatin_D, chLatin_O, chLatin_M, chLatin_D, chLatin_o, chLatin_c, chLatin_u,
     chLatin_m, chLatin_e, chLatin_n, chLatin_t, chLatin_T, chLatin_y, chLatin_p,
     chLatin_e, chLatin_I, chLatin_m, chLatin_p, chLatin_l, chNull
+};
+
+const XMLCh XMLUni::fgXercescInterfaceDOMDocumentImpl[] =
+{
+    chLatin_D, chLatin_O, chLatin_M, chLatin_D, chLatin_o, chLatin_c, chLatin_u,
+    chLatin_m, chLatin_e, chLatin_n, chLatin_t, chLatin_I, chLatin_m, chLatin_p,
+    chLatin_l, chNull
+};
+
+const XMLCh XMLUni::fgXercescInterfaceDOMMemoryManager[] =
+{
+    chLatin_D, chLatin_O, chLatin_M, chLatin_M, chLatin_e, chLatin_m, chLatin_o,
+    chLatin_r, chLatin_y, chLatin_M, chLatin_a, chLatin_n, chLatin_a, chLatin_g,
+    chLatin_e, chLatin_r, chNull
 };
 
 // en_US
@@ -1561,7 +1757,7 @@ const XMLCh XMLUni::fgDefErrMsg[] =
     ,   chLatin_g, chLatin_e, chNull
 };
 
-// Datatype 
+// Datatype
 const XMLCh XMLUni::fgValueZero[] =
 {
     chDigit_0, chNull
@@ -1668,7 +1864,12 @@ const XMLCh XMLUni::fgBooleanValueSpace[][8] =
     { chDigit_1, chNull }
 };
 
-const unsigned int XMLUni::fgBooleanValueSpaceArraySize = sizeof XMLUni::fgBooleanValueSpace / sizeof (XMLUni::fgBooleanValueSpace[0]);
+const XMLCh XMLUni::fgXercesDoXInclude[] =
+{
+		 /* temp value */
+		 chLatin_D, chLatin_o, chLatin_X, chLatin_I, chNull
+};
+
+const XMLSize_t XMLUni::fgBooleanValueSpaceArraySize = sizeof XMLUni::fgBooleanValueSpace / sizeof (XMLUni::fgBooleanValueSpace[0]);
 
 XERCES_CPP_NAMESPACE_END
-

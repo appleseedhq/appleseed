@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XMLSchemaDescriptionImpl.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLSchemaDescriptionImpl.cpp 471747 2006-11-06 14:31:56Z amassari $
  */
 
 
@@ -85,7 +85,7 @@ const XMLCh* XMLSchemaDescriptionImpl::getTargetNamespace() const
     return fNamespace; 
 }
 
-RefArrayVectorOf<XMLCh>* XMLSchemaDescriptionImpl::getLocationHints() const
+const RefArrayVectorOf<XMLCh>* XMLSchemaDescriptionImpl::getLocationHints() const
 { 
     return fLocationHints; 
 }

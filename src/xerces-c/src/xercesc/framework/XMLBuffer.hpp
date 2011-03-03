@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: XMLBuffer.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLBuffer.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-
-#if !defined(XMLBUFFER_HPP)
-#define XMLBUFFER_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XMLBUFFER_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLBUFFER_HPP
 
 #include <xercesc/util/XMemory.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
@@ -51,15 +50,15 @@ public :
 
     /** @name Constructor */
     //@{
-    XMLBuffer(const unsigned int capacity = 1023
+    XMLBuffer(const XMLSize_t capacity = 1023
               , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager) :
-        
+
         fIndex(0)
         , fCapacity(capacity)
         , fFullSize(0)
         , fUsed(false)
         , fMemoryManager(manager)
-        , fFullHandler(0)       
+        , fFullHandler(0)
         , fBuffer(0)
     {
         // Buffer is one larger than capacity, to allow for zero term
@@ -81,29 +80,29 @@ public :
     // -----------------------------------------------------------------------
     //  Buffer Full Handler Management
     // -----------------------------------------------------------------------
-    void setFullHandler(XMLBufferFullHandler* handler, const unsigned int fullSize)
+    void setFullHandler(XMLBufferFullHandler* handler, const XMLSize_t fullSize)
     {
-        if (handler && fullSize) {            
+        if (handler && fullSize) {
             fFullHandler = handler;
             fFullSize = fullSize;
 
             // Need to consider the case that the fullsize is less than the current capacity.
             // For example, say fullSize = 100 and fCapacity is 1023 (the default).
             // If the fIndex is less than the fullSize, then no problem.  We can just carry
-            // on by resetting fCapacity to fullsize and proceed business as usual.            
-            // If the fIndex is already bigger than the fullSize then we call insureCapacity
+            // on by resetting fCapacity to fullsize and proceed business as usual.
+            // If the fIndex is already bigger than the fullSize then we call ensureCapacity
             // to see if it can handle emptying the current buffer (it will throw an
             // exception if it can't).
             if (fullSize < fCapacity) {
                 fCapacity = fullSize;
                 if (fIndex >= fullSize) {
-                    insureCapacity(0); 
-                }               
+                    ensureCapacity(0);
+                }
             }
         }
         else {
             // reset fFullHandler to zero because setFullHandler had bad input
-            fFullHandler = 0;            
+            fFullHandler = 0;
         }
     }
 
@@ -114,16 +113,16 @@ public :
     {
         // Put in char and bump the index
         if (fIndex == fCapacity)
-            insureCapacity(1);
+            ensureCapacity(1);
         fBuffer[fIndex++] = toAppend;
     }
 
-    void append (const XMLCh* const chars, const unsigned int count)
-    {        
+    void append (const XMLCh* const chars, const XMLSize_t count)
+    {
         if (count) {
             if (fIndex + count >= fCapacity) {
-                insureCapacity(count);
-            }            
+                ensureCapacity(count);
+            }
             memcpy(&fBuffer[fIndex], chars, count * sizeof(XMLCh));
             fIndex += count;
         }
@@ -136,18 +135,18 @@ public :
     {
         if (chars != 0 && *chars != 0) {
             // get length of chars
-            unsigned int count = 0;
-            for (; *(chars+count); count++ );
+            XMLSize_t count = 0;
+            for (; *(chars+count); count++ ) /*noop*/;
 
             if (fIndex + count >= fCapacity) {
-                insureCapacity(count);
-            }  
+                ensureCapacity(count);
+            }
             memcpy(&fBuffer[fIndex], chars, count * sizeof(XMLCh));
             fIndex += count;
         }
     }
 
-    void set (const XMLCh* const chars, const unsigned int count)
+    void set (const XMLCh* const chars, const XMLSize_t count)
     {
         fIndex = 0;
         append(chars, count);
@@ -156,7 +155,8 @@ public :
     void set (const XMLCh* const chars)
     {
         fIndex = 0;
-        append(chars);
+        if (chars != 0 && *chars != 0)
+            append(chars);
     }
 
     const XMLCh* getRawBuffer() const
@@ -174,7 +174,6 @@ public :
     void reset()
     {
         fIndex = 0;
-        fBuffer[0] = 0;
     }
 
     // -----------------------------------------------------------------------
@@ -185,7 +184,7 @@ public :
         return fUsed;
     }
 
-    unsigned int getLen() const
+    XMLSize_t getLen() const
     {
         return fIndex;
     }
@@ -218,7 +217,7 @@ private :
     // -----------------------------------------------------------------------
     //  Private helpers
     // -----------------------------------------------------------------------
-    void insureCapacity(const unsigned int extraNeeded);
+    void ensureCapacity(const XMLSize_t extraNeeded);
 
 
     // -----------------------------------------------------------------------
@@ -244,13 +243,13 @@ private :
     //      indicated by fFullSize. If writing to the buffer would exceed the
     //      buffer's maximum size, fFullHandler's bufferFull callback is
     //      invoked, to empty the buffer.
-    // -----------------------------------------------------------------------    
-    unsigned int                fIndex;
-    unsigned int                fCapacity;
-    unsigned int                fFullSize;
+    // -----------------------------------------------------------------------
+    XMLSize_t                   fIndex;
+    XMLSize_t                   fCapacity;
+    XMLSize_t                   fFullSize;
     bool                        fUsed;
     MemoryManager* const        fMemoryManager;
-    XMLBufferFullHandler*       fFullHandler;    
+    XMLBufferFullHandler*       fFullHandler;
     XMLCh*                      fBuffer;
 };
 

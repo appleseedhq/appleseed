@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: SchemaAttDefList.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: SchemaAttDefList.hpp 673679 2008-07-03 13:50:10Z borisk $
  */
 
-
-#if !defined(SCHEMAATTDEFLIST_HPP)
-#define SCHEMAATTDEFLIST_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_SCHEMAATTDEFLIST_HPP)
+#define XERCESC_INCLUDE_GUARD_SCHEMAATTDEFLIST_HPP
 
 #include <xercesc/util/RefHash2KeysTableOf.hpp>
 #include <xercesc/validators/schema/SchemaElementDecl.hpp>
@@ -60,20 +59,15 @@ public :
     //  Implementation of the virtual interface
     // -----------------------------------------------------------------------
 
-    /** 
-     * @deprecated This method is not thread-safe.
-     */
-    virtual bool hasMoreElements() const;
-
     virtual bool isEmpty() const;
     virtual XMLAttDef* findAttDef
     (
-        const   unsigned long       uriID
+        const   unsigned int       uriID
         , const XMLCh* const        attName
     );
     virtual const XMLAttDef* findAttDef
     (
-        const   unsigned long       uriID
+        const   unsigned int       uriID
         , const XMLCh* const        attName
     )   const;
     virtual XMLAttDef* findAttDef
@@ -89,40 +83,30 @@ public :
 
     XMLAttDef* findAttDefLocalPart
     (
-        const   unsigned long       uriID
+        const   unsigned int        uriID
         , const XMLCh* const        attLocalPart
     );
 
     const XMLAttDef* findAttDefLocalPart
     (
-        const   unsigned long       uriID
+        const   unsigned int        uriID
         , const XMLCh* const        attLocalPart
     )   const;
-
-    /** 
-     * @deprecated This method is not thread-safe.
-     */
-    virtual XMLAttDef& nextElement();
-
-    /** 
-     * @deprecated This method is not thread-safe.
-     */
-    virtual void Reset();
 
     /**
      * return total number of attributes in this list
      */
-    virtual unsigned int getAttDefCount() const ;
+    virtual XMLSize_t getAttDefCount() const ;
 
     /**
      * return attribute at the index-th position in the list.
      */
-    virtual XMLAttDef &getAttDef(unsigned int index) ;
+    virtual XMLAttDef &getAttDef(XMLSize_t index) ;
 
     /**
      * return attribute at the index-th position in the list.
      */
-    virtual const XMLAttDef &getAttDef(unsigned int index) const ;
+    virtual const XMLAttDef &getAttDef(XMLSize_t index) const ;
 
     /***
      * Support for Serialization/De-serialization
@@ -159,9 +143,9 @@ private :
     // -----------------------------------------------------------------------
     RefHash2KeysTableOfEnumerator<SchemaAttDef>*    fEnum;
     RefHash2KeysTableOf<SchemaAttDef>*              fList;
-    SchemaAttDef**                          fArray;
-    unsigned int                            fSize;
-    unsigned int                            fCount;
+    SchemaAttDef**                                  fArray;
+    XMLSize_t                                       fSize;
+    XMLSize_t                                       fCount;
 
     friend class ComplexTypeInfo;
 };
@@ -180,13 +164,13 @@ inline void SchemaAttDefList::addAttDef(SchemaAttDef *toAdd)
     fArray[fCount++] = toAdd;
 }
 
-inline XMLAttDef* SchemaAttDefList::findAttDefLocalPart(const   unsigned long       uriID
+inline XMLAttDef* SchemaAttDefList::findAttDefLocalPart(const   unsigned int       uriID
                                                       , const XMLCh* const        attLocalPart)
 {
     return fList->get((void*)attLocalPart, uriID);
 }
 
-inline const XMLAttDef* SchemaAttDefList::findAttDefLocalPart(const   unsigned long       uriID
+inline const XMLAttDef* SchemaAttDefList::findAttDefLocalPart(const   unsigned int       uriID
                                                             , const XMLCh* const        attLocalPart)   const
 {
     return fList->get((void*)attLocalPart, uriID);

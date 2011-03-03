@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: KVStringPair.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: KVStringPair.hpp 554580 2007-07-09 09:09:51Z amassari $
  */
 
-#if !defined(KVSTRINGPAIR_HPP)
-#define KVSTRINGPAIR_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_KVSTRINGPAIR_HPP)
+#define XERCESC_INCLUDE_GUARD_KVSTRINGPAIR_HPP
 
 #include <xercesc/util/XMemory.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
@@ -51,15 +51,15 @@ public:
     (
         const XMLCh* const key
         , const XMLCh* const value
-        , const unsigned int valueLength
+        , const XMLSize_t    valueLength
         , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
     );
     KVStringPair
     (
         const XMLCh* const key
-        , const unsigned int keyLength
+        , const XMLSize_t    keyLength
         , const XMLCh* const value
-        , const unsigned int valueLength
+        , const XMLSize_t    valueLength
         , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
     );
     KVStringPair(const KVStringPair& toCopy);
@@ -85,12 +85,12 @@ public:
     void setKey
     (
         const   XMLCh* const newKey
-        , const unsigned int newKeyLength
+        , const XMLSize_t    newKeyLength
     );
     void setValue
     (
         const   XMLCh* const newValue
-        , const unsigned int newValueLength
+        , const XMLSize_t    newValueLength
     );
     void set
     (
@@ -100,9 +100,9 @@ public:
     void set
     (
         const     XMLCh* const newKey
-        , const   unsigned int newKeyLength
+        , const   XMLSize_t    newKeyLength
         , const   XMLCh* const newValue
-        , const   unsigned int newValueLength
+        , const   XMLSize_t    newValueLength
     );
 
     /***
@@ -130,8 +130,8 @@ private :
     //      The amount of memory allocated for fValue.
     //
     // -----------------------------------------------------------------------
-    unsigned long  fKeyAllocSize;
-    unsigned long  fValueAllocSize;
+    XMLSize_t      fKeyAllocSize;
+    XMLSize_t      fValueAllocSize;
     XMLCh*         fKey;
     XMLCh*         fValue;
     MemoryManager* fMemoryManager;
@@ -174,7 +174,7 @@ inline void KVStringPair::setValue(const XMLCh* const newValue)
 }
 
 inline void KVStringPair::setKey(  const XMLCh* const newKey
-                                 , const unsigned int newKeyLength)
+                                 , const XMLSize_t    newKeyLength)
 {
     if (newKeyLength >= fKeyAllocSize)
     {
@@ -188,7 +188,7 @@ inline void KVStringPair::setKey(  const XMLCh* const newKey
 }
 
 inline void KVStringPair::setValue(  const XMLCh* const newValue
-                                   , const unsigned int newValueLength)
+                                   , const XMLSize_t    newValueLength)
 {
     if (newValueLength >= fValueAllocSize)
     {
@@ -209,9 +209,9 @@ inline void KVStringPair::set(  const   XMLCh* const    newKey
 }
 
 inline void KVStringPair::set(  const   XMLCh* const newKey
-                              , const   unsigned int newKeyLength
+                              , const   XMLSize_t    newKeyLength
                               , const   XMLCh* const newValue
-                              , const   unsigned int newValueLength)
+                              , const   XMLSize_t    newValueLength)
 {
     setKey(newKey, newKeyLength);
     setValue(newValue, newValueLength);

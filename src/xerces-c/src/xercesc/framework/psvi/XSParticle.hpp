@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XSParticle.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XSParticle.hpp 883665 2009-11-24 11:41:38Z borisk $
  */
 
-#if !defined(XSPARTICLE_HPP)
-#define XSPARTICLE_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XSPARTICLE_HPP)
+#define XERCESC_INCLUDE_GUARD_XSPARTICLE_HPP
 
 #include <xercesc/framework/psvi/XSObject.hpp>
 
@@ -30,7 +30,7 @@ XERCES_CPP_NAMESPACE_BEGIN
  * This class describes all properties of a Schema Particle
  * component.
  * This is *always* owned by the validator /parser object from which
- * it is obtained.  
+ * it is obtained.
  */
 
 // forward declarations
@@ -53,7 +53,7 @@ public:
          */
         TERM_ELEMENT        = XSConstants::ELEMENT_DECLARATION,
         /*
-         * the particle's content is a model group 
+         * the particle's content is a model group
          */
         TERM_MODELGROUP     = XSConstants::MODEL_GROUP_DEFINITION,
         /*
@@ -68,13 +68,14 @@ public:
     //@{
 
     /**
-      * The default constructor 
+      * The default constructor
       *
       * @param  termType
       * @param  xsModel
       * @param  particleTerm
       * @param  minOccurs
       * @param  maxOccurs
+      * @param  unbounded
       * @param  manager     The configurable memory manager
       */
     XSParticle
@@ -82,9 +83,10 @@ public:
         TERM_TYPE              termType
         , XSModel* const       xsModel
         , XSObject* const      particleTerm
-        , int                  minOccurs
-        , int                  maxOccurs
-        , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
+        , XMLSize_t            minOccurs
+        , XMLSize_t            maxOccurs
+        , bool                 unbounded
+        , MemoryManager* const manager
     );
 
     //@};
@@ -99,15 +101,15 @@ public:
     //@{
 
     /**
-     * [min occurs]: determines the minimum number of terms that can occur. 
+     * [min occurs]: determines the minimum number of terms that can occur.
      */
-    int getMinOccurs() const;
+    XMLSize_t getMinOccurs() const;
 
     /**
-     * [max occurs] determines the maximum number of terms that can occur. To 
-     * query for value of unbounded use <code>maxOccursUnbounded</code>. 
+     * [max occurs] determines the maximum number of terms that can occur. To
+     * query for value of unbounded use <code>maxOccursUnbounded</code>.
      */
-    int getMaxOccurs() const;
+    XMLSize_t getMaxOccurs() const;
 
     /**
      * [max occurs] whether the maxOccurs value is unbounded.
@@ -115,7 +117,7 @@ public:
     bool getMaxOccursUnbounded() const;
 
     /**
-     * Returns the type of the [term]: one of 
+     * Returns the type of the [term]: one of
      * TERM_EMPTY, TERM_ELEMENT, TERM_MODELGROUP, or TERM_WILDCARD.
      */
     TERM_TYPE getTermType() const;
@@ -125,7 +127,7 @@ public:
      * this method returns that declaration; otherwise, it returns 0.
      * @returns The element declaration that is the [term] of this Particle
      * if and only if getTermType() == TERM_ELEMENT.
-     */ 
+     */
     XSElementDeclaration *getElementTerm();
 
     /**
@@ -133,7 +135,7 @@ public:
      * this method returns that definition; otherwise, it returns 0.
      * @returns The model group that is the [term] of this Particle
      * if and only if getTermType() == TERM_MODELGROUP.
-     */ 
+     */
     XSModelGroup *getModelGroupTerm();
 
     /**
@@ -141,7 +143,7 @@ public:
      * this method returns that declaration; otherwise, it returns 0.
      * @returns The wildcard declaration that is the [term] of this Particle
      * if and only if getTermType() == TERM_WILDCARD.
-     */ 
+     */
     XSWildcard *getWildcardTerm();
 
     //@}
@@ -165,24 +167,25 @@ protected:
     //  data members
     // -----------------------------------------------------------------------
     TERM_TYPE fTermType;
-    int       fMinOccurs;
-    int       fMaxOccurs;
+    XMLSize_t fMinOccurs;
+    XMLSize_t fMaxOccurs;
+    bool      fUnbounded;
     XSObject* fTerm;
 };
 
-inline int XSParticle::getMinOccurs() const
+inline XMLSize_t XSParticle::getMinOccurs() const
 {
     return fMinOccurs;
 }
 
-inline int XSParticle::getMaxOccurs() const
+inline XMLSize_t XSParticle::getMaxOccurs() const
 {
     return fMaxOccurs;
 }
 
 inline bool XSParticle::getMaxOccursUnbounded() const
 {
-    return (fMaxOccurs == -1);
+    return fUnbounded;
 }
 
 inline XSParticle::TERM_TYPE XSParticle::getTermType() const

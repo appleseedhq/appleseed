@@ -22,12 +22,12 @@
 
     <s2 title="PParse">
         <p>PParse demonstrates progressive parsing.</p>
-        <p>In this example, the programmer doesn't have to depend upon throwing
+        <p>In this example, the application doesn't have to depend upon throwing
             an exception to terminate the parsing operation. Calling parseFirst() will
             cause the DTD to be parsed (both internal and external subsets) and any
             pre-content, i.e. everything up to but not including the root element.
             Subsequent calls to parseNext() will cause one more piece of markup to
-            be parsed, and spit out from the core scanning code to the parser. You
+            be parsed, and propagated from the core scanning code to the parser. You
             can quit the parse any time by just not calling parseNext() anymore
             and breaking out of the loop. When you call parseNext() and the end
             of the root element is the next piece of markup, the parser will
@@ -35,8 +35,8 @@
 			know that the parse is done.</p>
 
         <s3 title="Running PParse">
-        	<p>PParse parses an XML file and prints out a count of the number of
-          elements in the file</p>
+        	<p>PParse parses an XML file and prints out the number of
+          elements in the file.</p>
 <source>Usage:
     PParse [options] &lt;XML file&gt;
 
@@ -60,7 +60,7 @@ Options:
              <em>-v=never</em> will not use any validation<br/>
              <em>-v=auto</em> will validate if a DOCTYPE declaration or a schema declaration is present in the XML document</p>
           <p>Here is a sample output from PParse</p>
-<source>cd &XercesCInstallDir;-linux/samples/data
+<source>cd &XercesC3InstallDir;/samples/data
 PParse -v=always personal.xml
 personal.xml: 60 ms (37 elems, 12 attrs, 134 spaces, 134 chars)</source>
           <p>Running PParse with the validating parser gives a different result because
@@ -70,7 +70,7 @@ personal.xml: 10 ms (37 elems, 12 attrs, 0 spaces, 268 chars)</source>
           <p>Note that the sum of spaces and characters in both versions is the same.</p>
 
           <note>The time reported by the program may be different depending on your
-          machine processor.</note>
+          processor speed.</note>
         </s3>
     </s2>
 </s1>

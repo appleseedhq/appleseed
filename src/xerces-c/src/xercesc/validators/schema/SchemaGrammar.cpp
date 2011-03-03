@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,22 +16,19 @@
  */
 
 /*
- * $Id: SchemaGrammar.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: SchemaGrammar.cpp 883376 2009-11-23 15:45:23Z borisk $
  */
-
 
 // ---------------------------------------------------------------------------
 //  Includes
 // ---------------------------------------------------------------------------
 #include <xercesc/validators/schema/SchemaGrammar.hpp>
-#include <xercesc/validators/schema/NamespaceScope.hpp>
 #include <xercesc/validators/schema/ComplexTypeInfo.hpp>
 #include <xercesc/validators/schema/SchemaSymbols.hpp>
 #include <xercesc/validators/schema/XercesGroupInfo.hpp>
 #include <xercesc/validators/schema/XercesAttGroupInfo.hpp>
 #include <xercesc/validators/schema/XMLSchemaDescriptionImpl.hpp>
 #include <xercesc/util/OutOfMemoryException.hpp>
-#include <xercesc/util/HashPtr.hpp>
 #include <xercesc/framework/psvi/XSAnnotation.hpp>
 
 #include <xercesc/internal/XTemplateSerializer.hpp>
@@ -54,7 +51,6 @@ SchemaGrammar::SchemaGrammar(MemoryManager* const manager) :
     , fComplexTypeRegistry(0)
     , fGroupInfoRegistry(0)
     , fAttGroupInfoRegistry(0)
-    , fNamespaceScope(0)
     , fValidSubstitutionGroups(0)
     , fValidationContext(0)
     , fMemoryManager(manager)
@@ -62,6 +58,8 @@ SchemaGrammar::SchemaGrammar(MemoryManager* const manager) :
     , fAnnotations(0)
     , fValidated(false)
     , fDatatypeRegistry(manager)
+    , fScopeCount (0)
+    , fAnonTypeCount (0)
 {
     CleanupType cleanup(this, &SchemaGrammar::cleanUp);
 
@@ -80,15 +78,14 @@ SchemaGrammar::SchemaGrammar(MemoryManager* const manager) :
         fGroupElemDeclPool = new (fMemoryManager) RefHash3KeysIdPool<SchemaElementDecl>(109, false, 128, fMemoryManager);
         fNotationDeclPool = new (fMemoryManager) NameIdPool<XMLNotationDecl>(109, 128, fMemoryManager);
         fValidationContext = new (fMemoryManager) ValidationContextImpl(fMemoryManager);
-        fDatatypeRegistry.expandRegistryToFullSchemaSet();
 
         //REVISIT: use grammarPool to create
         fGramDesc = new (fMemoryManager) XMLSchemaDescriptionImpl(XMLUni::fgXMLNSURIName, fMemoryManager);
 
         // Create annotation table
-        fAnnotations = new (fMemoryManager) RefHashTableOf<XSAnnotation>
+        fAnnotations = new (fMemoryManager) RefHashTableOf<XSAnnotation, PtrHasher>
         (
-            29, true, new (fMemoryManager) HashPtr(), fMemoryManager
+            29, true, fMemoryManager
         );
 
         //
@@ -141,7 +138,7 @@ XMLElementDecl* SchemaGrammar::findOrAddElemDecl (const   unsigned int    uriId
         );
         if(!fElemNonDeclPool)
             fElemNonDeclPool = new (fMemoryManager) RefHash3KeysIdPool<SchemaElementDecl>(29, true, 128, fMemoryManager);
-        const unsigned int elemId = fElemNonDeclPool->put((void*)retVal->getBaseName(), uriId, scope, retVal);
+        const XMLSize_t elemId = fElemNonDeclPool->put((void*)retVal->getBaseName(), uriId, scope, retVal);
         retVal->setId(elemId);
         wasAdded = true;
     }
@@ -173,7 +170,7 @@ XMLElementDecl* SchemaGrammar::putElemDecl (const   unsigned int    uriId
         if(!fElemNonDeclPool)
             fElemNonDeclPool = new (fMemoryManager) RefHash3KeysIdPool<SchemaElementDecl>(29, true, 128, fMemoryManager);
         retVal->setId(fElemNonDeclPool->put((void*)retVal->getBaseName(), uriId, scope, retVal));
-    } else 
+    } else
     {
         retVal->setId(fElemDeclPool->put((void*)retVal->getBaseName(), uriId, scope, retVal));
     }
@@ -197,7 +194,6 @@ void SchemaGrammar::reset()
 
 void SchemaGrammar::cleanUp()
 {
-
     delete fElemDeclPool;
     if(fElemNonDeclPool)
         delete fElemNonDeclPool;
@@ -208,7 +204,6 @@ void SchemaGrammar::cleanUp()
     delete fComplexTypeRegistry;
     delete fGroupInfoRegistry;
     delete fAttGroupInfoRegistry;
-    delete fNamespaceScope;
     delete fValidSubstitutionGroups;
     delete fValidationContext;
     delete fGramDesc;
@@ -217,7 +212,7 @@ void SchemaGrammar::cleanUp()
 
 void SchemaGrammar::setGrammarDescription(XMLGrammarDescription* gramDesc)
 {
-    if ((!gramDesc) || 
+    if ((!gramDesc) ||
         (gramDesc->getGrammarType() != Grammar::SchemaGrammarType))
         return;
 
@@ -239,7 +234,7 @@ void SchemaGrammar::putAnnotation(void* key, XSAnnotation* const annotation)
 void SchemaGrammar::addAnnotation(XSAnnotation* const annotation)
 {
     XSAnnotation* lAnnot = fAnnotations->get(this);
-	
+
     if (lAnnot)
         lAnnot->setNext(annotation);
     else
@@ -256,8 +251,7 @@ void SchemaGrammar::serialize(XSerializeEngine& serEng)
 {
 
     /***
-     * don't serialize NamespaceScope*    fNamespaceScope;
-     *                 ValidationContext* fValidationContext;
+     * don't serialize ValidationContext* fValidationContext;
      *                                    fElemNonDeclPool
      ***/
 
@@ -280,8 +274,8 @@ void SchemaGrammar::serialize(XSerializeEngine& serEng)
         /***
          * Serialize NameIdPool<XMLNotationDecl>*           fNotationDeclPool;
          ***/
-        XTemplateSerializer::storeObject(fNotationDeclPool, serEng);        
-    
+        XTemplateSerializer::storeObject(fNotationDeclPool, serEng);
+
         /***
          *
          * Serialize RefHashTableOf<XMLAttDef>*             fAttributeDeclRegistry;
@@ -296,7 +290,7 @@ void SchemaGrammar::serialize(XSerializeEngine& serEng)
         XTemplateSerializer::storeObject(fComplexTypeRegistry, serEng);
         XTemplateSerializer::storeObject(fGroupInfoRegistry, serEng);
         XTemplateSerializer::storeObject(fAttGroupInfoRegistry, serEng);
-       
+
         /***
          * Serialize RefHash2KeysTableOf<ElemVector>*       fValidSubstitutionGroups;
          ***/
@@ -333,8 +327,8 @@ void SchemaGrammar::serialize(XSerializeEngine& serEng)
         /***
          * Deserialize NameIdPool<XMLNotationDecl>*           fNotationDeclPool;
          ***/
-        XTemplateSerializer::loadObject(&fNotationDeclPool, 109, 128, serEng);        
-    
+        XTemplateSerializer::loadObject(&fNotationDeclPool, 109, 128, serEng);
+
         /***
          *
          * Deserialize RefHashTableOf<XMLAttDef>*             fAttributeDeclRegistry;
@@ -349,7 +343,7 @@ void SchemaGrammar::serialize(XSerializeEngine& serEng)
         XTemplateSerializer::loadObject(&fComplexTypeRegistry, 29, true, serEng);
         XTemplateSerializer::loadObject(&fGroupInfoRegistry, 13, true, serEng);
         XTemplateSerializer::loadObject(&fAttGroupInfoRegistry, 13, true, serEng);
-       
+
         /***
          * Deserialize RefHash2KeysTableOf<ElemVector>*       fValidSubstitutionGroups;
          ***/

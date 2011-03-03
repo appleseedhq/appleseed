@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XercesElementWildcard.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XercesElementWildcard.cpp 671133 2008-06-24 11:22:29Z borisk $
  */
 
 
@@ -93,22 +93,26 @@ bool XercesElementWildcard::wildcardIntersect(ContentSpecNode::NodeTypes t1,
         return true;
     }
     else if (((t1 & 0x0f) == ContentSpecNode::Any_NS) &&
-             ((t2 & 0x0f) == ContentSpecNode::Any_NS) &&
-             (w1 == w2)) {
+             ((t2 & 0x0f) == ContentSpecNode::Any_NS)) {
         // if both are "some_namespace" and equal, then intersects
-        return true;
+        return w1 == w2;
     }
     else if (((t1 & 0x0f) == ContentSpecNode::Any_Other) &&
              ((t2 & 0x0f) == ContentSpecNode::Any_Other)) {
-        // if both are "##other", and equal, then intersects
+        // if both are "##other", then intersects
         return true;
     }
-    else if (((((t1 & 0x0f) == ContentSpecNode::Any_NS) &&
-               ((t2 & 0x0f) == ContentSpecNode::Any_Other)) ||
-              (((t1 & 0x0f) == ContentSpecNode::Any_Other) &&
-               ((t2 & 0x0f) == ContentSpecNode::Any_NS))) &&
-             (w1 != w2)) {
-        return true;
+    // Below we assume that empty string has id 1.
+    //
+    else if (((t1 & 0x0f) == ContentSpecNode::Any_NS) &&
+             ((t2 & 0x0f) == ContentSpecNode::Any_Other))
+    {
+      return w1 != w2 && w1 != 1;
+    }
+    else if (((t1 & 0x0f) == ContentSpecNode::Any_Other) &&
+             ((t2 & 0x0f) == ContentSpecNode::Any_NS))
+    {
+      return w1 != w2 && w2 != 1;
     }
     return false;
 }

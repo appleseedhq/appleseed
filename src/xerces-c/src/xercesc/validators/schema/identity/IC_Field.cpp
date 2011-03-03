@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: IC_Field.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: IC_Field.cpp 471747 2006-11-06 14:31:56Z amassari $
  */
 
 // ---------------------------------------------------------------------------
@@ -96,12 +96,6 @@ bool IC_Field::operator!= (const IC_Field& other) const {
 // ---------------------------------------------------------------------------
 //  IC_Field: Factory methods
 // ---------------------------------------------------------------------------
-XPathMatcher* IC_Field::createMatcher(ValueStore* const,
-                                      MemoryManager* const) {
-
-    return 0;
-}
-
 XPathMatcher* IC_Field::createMatcher(FieldActivator* const fieldActivator,
                                       ValueStore* const valueStore,
                                       MemoryManager* const manager)

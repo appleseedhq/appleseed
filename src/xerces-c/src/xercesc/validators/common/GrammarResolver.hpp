@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-/**
- * $Id: GrammarResolver.hpp 568078 2007-08-21 11:43:25Z amassari $
+/*
+ * $Id: GrammarResolver.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#if !defined(GRAMMARRESOLVER_HPP)
-#define GRAMMARRESOLVER_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_GRAMMARRESOLVER_HPP)
+#define XERCESC_INCLUDE_GUARD_GRAMMARRESOLVER_HPP
 
 #include <xercesc/framework/XMLGrammarPool.hpp>
 #include <xercesc/util/RefHashTableOf.hpp>
@@ -71,6 +71,13 @@ public:
      */
     DatatypeValidator* getDatatypeValidator(const XMLCh* const uriStr,
                                             const XMLCh* const typeName);
+
+    /**
+     * Retrieve the DatatypeValidatorFactory used for built-in schema types
+     *
+     * @return the DatatypeValidator associated with namespace for XMLSchema
+     */
+    DatatypeValidatorFactory* getBuiltinDatatypeValidatorFactory();
 
     /**
      * Retrieve the grammar that is associated with the specified namespace key
@@ -209,7 +216,7 @@ private:
     //
     //  fGrammarPool           The Grammar Set either plugged or created. 
     //
-    //  fDataTypeReg           DatatypeValidatorFactory registery
+    //  fDataTypeReg           DatatypeValidatorFactory registry
     //
     //  fMemoryManager         Pluggable memory manager for dynamic memory
     //                         allocation/deallocation
@@ -252,6 +259,11 @@ inline MemoryManager* GrammarResolver::getGrammarPoolMemoryManager() const
 inline ValueVectorOf<SchemaGrammar*>* GrammarResolver::getGrammarsToAddToXSModel()
 {
     return fGrammarsToAddToXSModel;
+}
+
+inline DatatypeValidatorFactory* GrammarResolver::getBuiltinDatatypeValidatorFactory()
+{
+    return fDataTypeReg;
 }
 
 XERCES_CPP_NAMESPACE_END

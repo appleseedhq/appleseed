@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: SGXMLScanner.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: SGXMLScanner.cpp 925236 2010-03-19 14:29:47Z borisk $
  */
 
 
@@ -34,8 +34,10 @@
 #include <xercesc/framework/XMLPScanToken.hpp>
 #include <xercesc/framework/MemoryManager.hpp>
 #include <xercesc/framework/XMLGrammarPool.hpp>
+#include <xercesc/framework/psvi/PSVIElement.hpp>
 #include <xercesc/framework/psvi/PSVIHandler.hpp>
 #include <xercesc/framework/psvi/PSVIAttributeList.hpp>
+#include <xercesc/framework/psvi/XSAnnotation.hpp>
 #include <xercesc/internal/EndOfEntityException.hpp>
 #include <xercesc/validators/common/ContentLeafNameTypeVector.hpp>
 #include <xercesc/validators/schema/SchemaValidator.hpp>
@@ -45,8 +47,8 @@
 #include <xercesc/validators/schema/XMLSchemaDescriptionImpl.hpp>
 #include <xercesc/validators/schema/identity/IdentityConstraintHandler.hpp>
 #include <xercesc/validators/schema/identity/IC_Selector.hpp>
+#include <xercesc/validators/schema/identity/ValueStore.hpp>
 #include <xercesc/util/OutOfMemoryException.hpp>
-#include <xercesc/util/HashPtr.hpp>
 #include <xercesc/util/XMLStringTokenizer.hpp>
 
 XERCES_CPP_NAMESPACE_BEGIN
@@ -70,6 +72,7 @@ SGXMLScanner::SGXMLScanner( XMLValidator* const valToAdopt
     , fGrammarType(Grammar::UnKnown)
     , fElemStateSize(16)
     , fElemState(0)
+    , fElemLoopState(0)
     , fContent(1023, manager)
     , fEntityTable(0)
     , fRawAttrList(0)
@@ -81,11 +84,13 @@ SGXMLScanner::SGXMLScanner( XMLValidator* const valToAdopt
     , fElemNonDeclPool(0)
     , fElemCount(0)
     , fAttDefRegistry(0)
-    , fUndeclaredAttrRegistryNS(0)
+    , fUndeclaredAttrRegistry(0)
     , fPSVIAttrList(0)
     , fModel(0)
     , fPSVIElement(0)
-    , fErrorStack(0)       
+    , fErrorStack(0)
+    , fSchemaInfoList(0)
+    , fCachedSchemaInfoList(0)
 {
     CleanupType cleanup(this, &SGXMLScanner::cleanUp);
 
@@ -118,6 +123,7 @@ SGXMLScanner::SGXMLScanner( XMLDocumentHandler* const docHandler
     , fGrammarType(Grammar::UnKnown)
     , fElemStateSize(16)
     , fElemState(0)
+    , fElemLoopState(0)
     , fContent(1023, manager)
     , fEntityTable(0)
     , fRawAttrList(0)
@@ -129,16 +135,18 @@ SGXMLScanner::SGXMLScanner( XMLDocumentHandler* const docHandler
     , fElemNonDeclPool(0)
     , fElemCount(0)
     , fAttDefRegistry(0)
-    , fUndeclaredAttrRegistryNS(0)
+    , fUndeclaredAttrRegistry(0)
     , fPSVIAttrList(0)
     , fModel(0)
     , fPSVIElement(0)
-    , fErrorStack(0)        
+    , fErrorStack(0)
+    , fSchemaInfoList(0)
+    , fCachedSchemaInfoList(0)
 {
     CleanupType cleanup(this, &SGXMLScanner::cleanUp);
 
     try
-    {	
+    {
         commonInit();
     }
     catch(const OutOfMemoryException&)
@@ -254,7 +262,6 @@ void SGXMLScanner::scanDocument(const InputSource& src)
                 (
                     XMLErrs::XMLException_Warning
                     , excToCatch.getCode()
-                    , excToCatch.getType()
                     , excToCatch.getMessage()
                 );
             else if (excToCatch.getErrorType() >= XMLErrorReporter::ErrType_Fatal)
@@ -262,7 +269,6 @@ void SGXMLScanner::scanDocument(const InputSource& src)
                 (
                     XMLErrs::XMLException_Fatal
                     , excToCatch.getCode()
-                    , excToCatch.getType()
                     , excToCatch.getMessage()
                 );
             else
@@ -270,7 +276,6 @@ void SGXMLScanner::scanDocument(const InputSource& src)
                 (
                     XMLErrs::XMLException_Error
                     , excToCatch.getCode()
-                    , excToCatch.getType()
                     , excToCatch.getMessage()
                 );
         }
@@ -303,7 +308,7 @@ bool SGXMLScanner::scanNext(XMLPScanToken& token)
         ThrowXMLwithMemMgr(RuntimeException, XMLExcepts::Scan_BadPScanToken, fMemoryManager);
 
     // Find the next token and remember the reader id
-    unsigned int orgReader;
+    XMLSize_t orgReader;
     XMLTokens curToken;
 
     ReaderMgrResetType  resetReaderMgr(&fReaderMgr, &ReaderMgr::reset);
@@ -437,7 +442,6 @@ bool SGXMLScanner::scanNext(XMLPScanToken& token)
                 (
                     XMLErrs::XMLException_Warning
                     , excToCatch.getCode()
-                    , excToCatch.getType()
                     , excToCatch.getMessage()
                 );
             else if (excToCatch.getErrorType() >= XMLErrorReporter::ErrType_Fatal)
@@ -445,7 +449,6 @@ bool SGXMLScanner::scanNext(XMLPScanToken& token)
                 (
                     XMLErrs::XMLException_Fatal
                     , excToCatch.getCode()
-                    , excToCatch.getType()
                     , excToCatch.getMessage()
                 );
             else
@@ -453,7 +456,6 @@ bool SGXMLScanner::scanNext(XMLPScanToken& token)
                 (
                     XMLErrs::XMLException_Error
                     , excToCatch.getCode()
-                    , excToCatch.getType()
                     , excToCatch.getMessage()
                 );
         }
@@ -494,7 +496,7 @@ bool SGXMLScanner::scanNext(XMLPScanToken& token)
 //  This method is called from scanStartTag() to handle the very raw initial
 //  scan of the attributes. It just fills in the passed collection with
 //  key/value pairs for each attribute. No processing is done on them at all.
-unsigned int
+XMLSize_t
 SGXMLScanner::rawAttrScan(const   XMLCh* const                elemName
                           ,       RefVectorOf<KVStringPair>&  toFill
                           ,       bool&                       isEmpty)
@@ -502,8 +504,8 @@ SGXMLScanner::rawAttrScan(const   XMLCh* const                elemName
     //  Keep up with how many attributes we've seen so far, and how many
     //  elements are available in the vector. This way we can reuse old
     //  elements until we run out and then expand it.
-    unsigned int attCount = 0;
-    unsigned int curVecSize = toFill.size();
+    XMLSize_t attCount = 0;
+    XMLSize_t curVecSize = toFill.size();
 
     // Assume it is not empty
     isEmpty = false;
@@ -550,17 +552,17 @@ SGXMLScanner::rawAttrScan(const   XMLCh* const                elemName
             //  the input.
             int colonPosition;
             if (!fReaderMgr.getQName(fAttNameBuf, &colonPosition))
-            {                
+            {
                 if (fAttNameBuf.isEmpty())
                     emitError(XMLErrs::ExpectedAttrName);
                 else
-                    emitError(XMLErrs::InvalidAttrName, fAttNameBuf.getRawBuffer());   
+                    emitError(XMLErrs::InvalidAttrName, fAttNameBuf.getRawBuffer());
                 fReaderMgr.skipPastChar(chCloseAngle);
                 return attCount;
             }
 
             const XMLCh* curAttNameBuf = fAttNameBuf.getRawBuffer();
- 
+
             // And next must be an equal sign
             if (!scanEq())
             {
@@ -743,7 +745,7 @@ bool SGXMLScanner::scanContent()
                 //  Sense what the next top level token is. According to what
                 //  this tells us, we will call something to handle that kind
                 //  of thing.
-                unsigned int orgReader;
+                XMLSize_t orgReader;
                 const XMLTokens curToken = senseNextToken(orgReader);
 
                 //  Handle character data and end of file specially. Char data
@@ -861,7 +863,7 @@ void SGXMLScanner::scanEndTag(bool& gotData)
     // Make sure that its the end of the element that we expect
     const XMLCh *elemName = fElemStack.getCurrentSchemaElemName();
     const ElemStack::StackElem* topElem = fElemStack.topElement();
-    if (!fReaderMgr.skippedString(elemName))
+    if (!fReaderMgr.skippedStringLong(elemName))
     {
         emitError
         (
@@ -869,7 +871,7 @@ void SGXMLScanner::scanEndTag(bool& gotData)
             , elemName
         );
         fReaderMgr.skipPastChar(chCloseAngle);
-        fElemStack.popTop(); 
+        fElemStack.popTop();
         return;
     }
 
@@ -920,14 +922,16 @@ void SGXMLScanner::scanEndTag(bool& gotData)
     DatatypeValidator* psviMemberType = 0;
     if (fValidate)
     {
-        int res = fValidator->checkContent
+        XMLSize_t failure;
+        bool res = fValidator->checkContent
         (
             topElem->fThisElement
             , topElem->fChildren
             , topElem->fChildCount
+            , &failure
         );
 
-        if (res >= 0)
+        if (!res)
         {
             //  One of the elements is not valid for the content. NOTE that
             //  if no children were provided but the content model requires
@@ -942,7 +946,7 @@ void SGXMLScanner::scanEndTag(bool& gotData)
                     , topElem->fThisElement->getFormattedContentModel()
                 );
             }
-            else if ((unsigned int)res >= topElem->fChildCount)
+            else if (failure >= topElem->fChildCount)
             {
                 fValidator->emitError
                 (
@@ -955,11 +959,11 @@ void SGXMLScanner::scanEndTag(bool& gotData)
                 fValidator->emitError
                 (
                     XMLValid::ElementNotValidForContent
-                    , topElem->fChildren[res]->getRawName()
+                    , topElem->fChildren[failure]->getRawName()
                     , topElem->fThisElement->getFormattedContentModel()
                 );
             }
-            
+
         }
 
         // update PSVI info
@@ -981,13 +985,15 @@ void SGXMLScanner::scanEndTag(bool& gotData)
                         (
                          (SchemaElementDecl *) topElem->fThisElement
                        , fContent.getRawBuffer()
+                       , fValidationContext
+                       , fPSVIElemContext.fCurrentDV
                         );
         }
 
     }
 
-    // QName dv needed topElem to resolve URIs on the checkContent 
-    fElemStack.popTop(); 
+    // QName dv needed topElem to resolve URIs on the checkContent
+    fElemStack.popTop();
 
     // See if it was the root element, to avoid multiple calls below
     const bool isRoot = fElemStack.isEmpty();
@@ -999,7 +1005,7 @@ void SGXMLScanner::scanEndTag(bool& gotData)
             (SchemaElementDecl*)topElem->fThisElement, psviMemberType
         );
     }
-    // now we can reset the datatype buffer, since the 
+    // now we can reset the datatype buffer, since the
     // application has had a chance to copy the characters somewhere else
     ((SchemaValidator *)fValidator)->clearDatatypeBuffer();
 
@@ -1019,7 +1025,7 @@ void SGXMLScanner::scanEndTag(bool& gotData)
         (
             *topElem->fThisElement
             , uriId
-            , isRoot            
+            , isRoot
             , fPrefixBuf.getRawBuffer()
         );
     }
@@ -1070,8 +1076,8 @@ void SGXMLScanner::scanDocTypeDecl()
 
 //  This method is called to scan a start tag when we are processing
 //  namespaces. This method is called after we've scanned the < of a
-//  start tag. So we have to get the element name, then scan the attributes, 
-//  after which we are either going to see >, />, or attributes followed 
+//  start tag. So we have to get the element name, then scan the attributes,
+//  after which we are either going to see >, />, or attributes followed
 //  by one of those sequences.
 bool SGXMLScanner::scanStartTag(bool& gotData)
 {
@@ -1106,7 +1112,7 @@ bool SGXMLScanner::scanStartTag(bool& gotData)
     //  might be (since we need the element decl in order to do that.)
     const XMLCh* qnameRawBuf = fQNameBuf.getRawBuffer();
     bool isEmpty;
-    unsigned int attCount = rawAttrScan
+    XMLSize_t attCount = rawAttrScan
     (
         qnameRawBuf
         , *fRawAttrList
@@ -1116,7 +1122,7 @@ bool SGXMLScanner::scanStartTag(bool& gotData)
     // save the contentleafname and currentscope before addlevel, for later use
     ContentLeafNameTypeVector* cv = 0;
     XMLContentModel* cm = 0;
-    int currentScope = Grammar::TOP_LEVEL_SCOPE;
+    unsigned int currentScope = Grammar::TOP_LEVEL_SCOPE;
     bool laxThisOne = false;
     if (!isRoot)
     {
@@ -1155,7 +1161,7 @@ bool SGXMLScanner::scanStartTag(bool& gotData)
     //  Now, since we might have to update the namespace map for this element,
     //  but we don't have the element decl yet, we just tell the element stack
     //  to expand up to get ready.
-    unsigned int elemDepth = fElemStack.addLevel();
+    XMLSize_t elemDepth = fElemStack.addLevel();
     fElemStack.setValidationFlag(fValidate);
     fElemStack.setPrefixColonPos(prefixColonPos);
 
@@ -1165,9 +1171,9 @@ bool SGXMLScanner::scanStartTag(bool& gotData)
         && (fExternalSchemaLocation || fExternalNoNamespaceSchemaLocation)) {
 
         if (fExternalSchemaLocation)
-            parseSchemaLocation(fExternalSchemaLocation);
+            parseSchemaLocation(fExternalSchemaLocation, true);
         if (fExternalNoNamespaceSchemaLocation)
-            resolveSchemaGrammar(fExternalNoNamespaceSchemaLocation, XMLUni::fgZeroLenString);
+            resolveSchemaGrammar(fExternalNoNamespaceSchemaLocation, XMLUni::fgZeroLenString, true);
     }
 
     //  Make an initial pass through the list and find any xmlns attributes or
@@ -1177,7 +1183,7 @@ bool SGXMLScanner::scanStartTag(bool& gotData)
 
     //  Resolve the qualified name to a URI and name so that we can look up
     //  the element decl for this element. We have now update the prefix to
-    //  namespace map so we should get the correct element now.    
+    //  namespace map so we should get the correct element now.
     unsigned int uriId = resolveQNameWithColon
     (
         qnameRawBuf
@@ -1213,7 +1219,7 @@ bool SGXMLScanner::scanStartTag(bool& gotData)
           , qnameRawBuf
           , currentScope
         );
-        if(!elemDecl) 
+        if(!elemDecl)
         {
             // look in the list of undeclared elements, as would have been done
             // before we made grammars stateless:
@@ -1223,7 +1229,7 @@ bool SGXMLScanner::scanStartTag(bool& gotData)
         // no element decl.  The other uses in this scope will only
         // be encountered if there continues to be no element decl--which
         // implies that this will have been initialized correctly.
-        unsigned orgGrammarUri = uriId;
+        unsigned int orgGrammarUri = uriId;
         if (!elemDecl && ( orgGrammarUri = fURIStringPool->getId(original_uriStr)) != uriId) {
             // not found, switch to the specified grammar
             const XMLCh* uriStr = getURIText(uriId);
@@ -1235,7 +1241,7 @@ bool SGXMLScanner::scanStartTag(bool& gotData)
                     XMLValid::GrammarNotFound
                     ,uriStr
                 );
-            } 
+            }
 
             elemDecl = fGrammar->getElemDecl
             (
@@ -1255,29 +1261,30 @@ bool SGXMLScanner::scanStartTag(bool& gotData)
                            , qnameRawBuf
                            , Grammar::TOP_LEVEL_SCOPE
                        );
-            if(!elemDecl) 
+            if(!elemDecl)
             {
                 // look in the list of undeclared elements, as would have been done
                 // before we made grammars stateless:
-                elemDecl = fElemNonDeclPool->getByKey(nameRawBuf, uriId, Grammar::TOP_LEVEL_SCOPE);
+                elemDecl = fElemNonDeclPool->getByKey(nameRawBuf, uriId, (int)Grammar::TOP_LEVEL_SCOPE);
             }
             if(!elemDecl) {
                 // still not found in specified uri
-                // try emptyNamesapce see if element should be un-qualified.
-                elemDecl = fGrammar->getElemDecl
+                // try emptyNamespace see if element should be un-qualified.
+                // Use a temp variable until we decide this is the case
+                XMLElementDecl* tempElemDecl = fGrammar->getElemDecl
                            (
                                fEmptyNamespaceId
                                , nameRawBuf
                                , qnameRawBuf
                                , currentScope
-                           ); 
-                bool errorCondition = elemDecl && elemDecl->getCreateReason() != XMLElementDecl::JustFaultIn;
-                if (errorCondition && fValidate) {
+                           );
+                if (tempElemDecl && tempElemDecl->getCreateReason() != XMLElementDecl::JustFaultIn && fValidate) {
                     fValidator->emitError
                     (
                         XMLValid::ElementNotUnQualified
-                        , elemDecl->getFullName()
+                        , qnameRawBuf
                     );
+                    elemDecl = tempElemDecl;
                 }
             }
         }
@@ -1326,7 +1333,7 @@ bool SGXMLScanner::scanStartTag(bool& gotData)
         // no element decl.  The other uses in this scope will only
         // be encountered if there continues to be no element decl--which
         // implies that this will have been initialized correctly.
-        unsigned orgGrammarUri = fEmptyNamespaceId;
+        unsigned int orgGrammarUri = fEmptyNamespaceId;
         if (!elemDecl && (orgGrammarUri = fURIStringPool->getId(original_uriStr)) != fEmptyNamespaceId) {
             //not found, switch grammar and try globalNS
             bool errorCondition = !switchGrammar(XMLUni::fgZeroLenString) && fValidate;
@@ -1336,7 +1343,7 @@ bool SGXMLScanner::scanStartTag(bool& gotData)
                 (
                     XMLValid::GrammarNotFound
                   , XMLUni::fgZeroLenString
-                );                
+                );
             }
 
             elemDecl = fGrammar->getElemDecl
@@ -1361,7 +1368,7 @@ bool SGXMLScanner::scanStartTag(bool& gotData)
             {
                 // look in the list of undeclared elements, as would have been done
                 // before we made grammars stateless:
-                elemDecl = fElemNonDeclPool->getByKey(nameRawBuf, uriId, Grammar::TOP_LEVEL_SCOPE);
+                elemDecl = fElemNonDeclPool->getByKey(nameRawBuf, uriId, (int)Grammar::TOP_LEVEL_SCOPE);
             }
             if (!elemDecl && orgGrammarUri != fEmptyNamespaceId) {
                 // still Not found in specified uri
@@ -1376,19 +1383,21 @@ bool SGXMLScanner::scanStartTag(bool& gotData)
                     );
                 }
 
-                elemDecl = fGrammar->getElemDecl
+                // Use a temp variable until we decide this is the case
+                XMLElementDecl* tempElemDecl = fGrammar->getElemDecl
                            (
                                orgGrammarUri
                                , nameRawBuf
                                , qnameRawBuf
                                , currentScope
                            );
-                if (elemDecl && elemDecl->getCreateReason() != XMLElementDecl::JustFaultIn && fValidate) {
+                if (tempElemDecl && tempElemDecl->getCreateReason() != XMLElementDecl::JustFaultIn && fValidate) {
                     fValidator->emitError
                     (
                         XMLValid::ElementNotQualified
-                        , elemDecl->getFullName()
+                        , qnameRawBuf
                     );
+                    elemDecl=tempElemDecl;
                 }
             }
         }
@@ -1419,9 +1428,10 @@ bool SGXMLScanner::scanStartTag(bool& gotData)
 
     //  We do something different here according to whether we found the
     //  element or not.
+    bool bXsiTypeSet= (fValidator)?((SchemaValidator*)fValidator)->getIsXsiTypeSet():false;
     if (wasAdded)
     {
-        if (laxThisOne) {
+        if (laxThisOne && !bXsiTypeSet) {
             fValidate = false;
             fElemStack.setValidationFlag(fValidate);
         }
@@ -1433,12 +1443,15 @@ bool SGXMLScanner::scanStartTag(bool& gotData)
             // faulted-in, was not an element in the grammar pool originally
             elemDecl->setCreateReason(XMLElementDecl::JustFaultIn);
 
-            fValidator->emitError
-            (
-                XMLValid::ElementNotDefined
-                , elemDecl->getFullName()
-            );
-            fPSVIElemContext.fErrorOccurred = true;
+            if(!bXsiTypeSet)
+            {
+                fValidator->emitError
+                (
+                    XMLValid::ElementNotDefined
+                    , elemDecl->getFullName()
+                );
+                fPSVIElemContext.fErrorOccurred = true;
+            }
         }
     }
     else
@@ -1446,15 +1459,16 @@ bool SGXMLScanner::scanStartTag(bool& gotData)
         // If its not marked declared and validating, then emit an error
         if (!elemDecl->isDeclared()) {
             if(elemDecl->getCreateReason() == XMLElementDecl::NoReason) {
-                fPSVIElemContext.fErrorOccurred = true;
+                if(!bXsiTypeSet)
+                    fPSVIElemContext.fErrorOccurred = true;
             }
             if (laxThisOne) {
                 fValidate = false;
-                fElemStack.setValidationFlag(fValidate);                
+                fElemStack.setValidationFlag(fValidate);
             }
-            
-            if (fValidate)
-                {
+
+            if (fValidate && !bXsiTypeSet)
+            {
                 fValidator->emitError
                 (
                     XMLValid::ElementNotDefined
@@ -1519,36 +1533,31 @@ bool SGXMLScanner::scanStartTag(bool& gotData)
 
         // switch grammar if the typeinfo has a different grammar (happens when there is xsi:type)
         XMLCh* typeName = typeinfo->getTypeName();
-        //anonymous used to have a name starting with #
-        //const XMLCh poundStr[] = {chPound, chNull};
-        //if (!XMLString::startsWith(typeName, poundStr)) {
-        if (!typeinfo->getAnonymous()) {        
-            const int comma = XMLString::indexOf(typeName, chComma);
-            if (comma > 0) {
-                XMLBuffer prefixBuf(comma+1, fMemoryManager);
-                prefixBuf.append(typeName, comma);
-                const XMLCh* uriStr = prefixBuf.getRawBuffer();
+        const int comma = XMLString::indexOf(typeName, chComma);
+        if (comma > 0) {
+            XMLBuffer prefixBuf(comma+1, fMemoryManager);
+            prefixBuf.append(typeName, comma);
+            const XMLCh* uriStr = prefixBuf.getRawBuffer();
 
-                bool errorCondition = !switchGrammar(uriStr) && fValidate;
-                if (errorCondition && !laxThisOne)
-                {
-                    fValidator->emitError
-                    (
-                        XMLValid::GrammarNotFound
-                        , prefixBuf.getRawBuffer()
-                    );
-                }
+            bool errorCondition = !switchGrammar(uriStr) && fValidate;
+            if (errorCondition && !laxThisOne)
+            {
+                fValidator->emitError
+                (
+                    XMLValid::GrammarNotFound
+                    , prefixBuf.getRawBuffer()
+                );
             }
-            else if (comma == 0) {
-                bool errorCondition = !switchGrammar(XMLUni::fgZeroLenString) && fValidate;
-                if (errorCondition && !laxThisOne)
-                {
-                    fValidator->emitError
-                    (
-                        XMLValid::GrammarNotFound
-                        , XMLUni::fgZeroLenString
-                    );
-                }
+        }
+        else if (comma == 0) {
+            bool errorCondition = !switchGrammar(XMLUni::fgZeroLenString) && fValidate;
+            if (errorCondition && !laxThisOne)
+            {
+                fValidator->emitError
+                (
+                    XMLValid::GrammarNotFound
+                    , XMLUni::fgZeroLenString
+                );
             }
         }
     }
@@ -1560,22 +1569,12 @@ bool SGXMLScanner::scanStartTag(bool& gotData)
     }
 
     fElemState[elemDepth] = 0;
+    fElemLoopState[elemDepth] = 0;
     fElemStack.setCurrentGrammar(fGrammar);
 
     //  If this is the first element and we are validating, check the root
     //  element.
-    if (isRoot)
-    {
-        if (fValidate)
-        {
-            //  Some validators may also want to check the root, call the
-            //  XMLValidator::checkRootElement
-            if (fValidatorFromUser && !fValidator->checkRootElement(elemDecl->getId())) {
-                fValidator->emitError(XMLValid::RootElemNotLikeDocType);
-            }
-        }
-    }
-    else if (parentValidation)
+    if (!isRoot && parentValidation)
     {
         //  If the element stack is not empty, then add this element as a
         //  child of the previous top element. If its empty, this is the root
@@ -1600,11 +1599,11 @@ bool SGXMLScanner::scanStartTag(bool& gotData)
     {
         // clean up after ourselves:
         // clear the map used to detect duplicate attributes
-        fUndeclaredAttrRegistryNS->removeAll();
+        fUndeclaredAttrRegistry->removeAll();
     }
 
     // activate identity constraints
-    if (toCheckIdentityConstraint()) 
+    if (toCheckIdentityConstraint())
     {
         fICHandler->activateIdentityConstraint
                         (
@@ -1614,6 +1613,7 @@ bool SGXMLScanner::scanStartTag(bool& gotData)
                         , fPrefixBuf.getRawBuffer()
                         , *fAttrList
                         , attCount
+                        , fValidationContext
                         );
 
     }
@@ -1685,8 +1685,9 @@ bool SGXMLScanner::scanStartTag(bool& gotData)
         // If validating, then insure that its legal to have no content
         if (fValidate)
         {
-            const int res = fValidator->checkContent(elemDecl, 0, 0);
-            if (res >= 0)
+            XMLSize_t failure;
+            bool res = fValidator->checkContent(elemDecl, 0, 0, &failure);
+            if (!res)
             {
                 // REVISIT:  in the case of xsi:type, this may
                 // return the wrong string...
@@ -1701,7 +1702,7 @@ bool SGXMLScanner::scanStartTag(bool& gotData)
             if (((SchemaValidator*) fValidator)->getErrorOccurred())
                 fPSVIElemContext.fErrorOccurred = true;
             // note that if we're empty, won't be a current DV
-            else 
+            else
             {
                 if (fPSVIHandler)
                 {
@@ -1710,7 +1711,7 @@ bool SGXMLScanner::scanStartTag(bool& gotData)
                         fPSVIElemContext.fNormalizedValue = ((SchemaElementDecl *)elemDecl)->getDefaultValue();
                 }
                 if (fPSVIElemContext.fCurrentDV && fPSVIElemContext.fCurrentDV->getType() == DatatypeValidator::Union)
-                    psviMemberType = fValidationContext->getValidatingMemberType(); 
+                    psviMemberType = fValidationContext->getValidatingMemberType();
             }
 
             // call matchers and de-activate context
@@ -1720,12 +1721,14 @@ bool SGXMLScanner::scanStartTag(bool& gotData)
                        (
                         (SchemaElementDecl *) elemDecl
                       , fContent.getRawBuffer()
-                       );                
+                      , fValidationContext
+                      , fPSVIElemContext.fCurrentDV
+                       );
             }
 
         }
         else if (fGrammarType == Grammar::SchemaGrammarType) {
-            ((SchemaValidator*)fValidator)->setNillable(false);
+            ((SchemaValidator*)fValidator)->resetNillable();
         }
 
         if (fPSVIHandler)
@@ -1772,14 +1775,14 @@ bool SGXMLScanner::scanStartTag(bool& gotData)
             ComplexTypeInfo*   curTypeInfo = 0;
             DatatypeValidator* curDV = 0;
             XSTypeDefinition*  typeDef = 0;
-        
+
             if (fValidate && elemDecl->isDeclared())
             {
                 curTypeInfo = ((SchemaValidator*) fValidator)->getCurrentTypeInfo();
-                    
+
                 if (curTypeInfo)
                 {
-                    typeDef = (XSTypeDefinition*) fModel->getXSObject(curTypeInfo);       
+                    typeDef = (XSTypeDefinition*) fModel->getXSObject(curTypeInfo);
                 }
                 else
                 {
@@ -1791,21 +1794,21 @@ bool SGXMLScanner::scanStartTag(bool& gotData)
                     }
                 }
             }
-                       
+
             fPSVIElement->reset
                 (
-                  PSVIElement::VALIDITY_NOTKNOWN 
-                , PSVIElement::VALIDATION_NONE   
-                , fRootElemName                  
-                , ((SchemaValidator*) fValidator)->getIsElemSpecified() 
+                  PSVIElement::VALIDITY_NOTKNOWN
+                , PSVIElement::VALIDATION_NONE
+                , fRootElemName
+                , ((SchemaValidator*) fValidator)->getIsElemSpecified()
                 , (elemDecl->isDeclared()) ? (XSElementDeclaration*) fModel->getXSObject(elemDecl) : 0
-                , typeDef 
+                , typeDef
                 , 0 //memberType
-                , fModel 
-                , ((SchemaElementDecl*)elemDecl)->getDefaultValue()  
-                , 0                                                  
-                , 0                                                  
-                , 0                                                  
+                , fModel
+                , ((SchemaElementDecl*)elemDecl)->getDefaultValue()
+                , 0
+                , 0
+                , 0
                 );
 
 
@@ -1824,71 +1827,6 @@ bool SGXMLScanner::scanStartTag(bool& gotData)
     return true;
 }
 
-
-unsigned int
-SGXMLScanner::resolveQName(const   XMLCh* const qName
-                           ,       XMLBuffer&   prefixBuf
-                           , const short        mode
-                           ,       int&         prefixColonPos)
-{
-    prefixColonPos = XMLString::indexOf(qName, chColon);
-    return resolveQNameWithColon(qName, prefixBuf, mode, prefixColonPos);
-}
-
-unsigned int 
-SGXMLScanner::resolveQNameWithColon(const   XMLCh* const qName
-                                    ,       XMLBuffer&   prefixBuf
-                                    , const short        mode
-                                    , const int          prefixColonPos)
-{
-    //  Lets split out the qName into a URI and name buffer first. The URI
-    //  can be empty.    
-    if (prefixColonPos == -1)
-    {
-        //  Its all name with no prefix, so put the whole thing into the name
-        //  buffer. Then map the empty string to a URI, since the empty string
-        //  represents the default namespace. This will either return some
-        //  explicit URI which the default namespace is mapped to, or the
-        //  the default global namespace.
-        bool unknown = false;
-
-        prefixBuf.reset();
-        return fElemStack.mapPrefixToURI(XMLUni::fgZeroLenString, (ElemStack::MapModes) mode, unknown);
-    }
-    else
-    {
-        //  Copy the chars up to but not including the colon into the prefix
-        //  buffer.
-        prefixBuf.set(qName, prefixColonPos);
-
-        //  Watch for the special namespace prefixes. We always map these to
-        //  special URIs. 'xml' gets mapped to the official URI that its defined
-        //  to map to by the NS spec. xmlns gets mapped to a special place holder
-        //  URI that we define (so that it maps to something checkable.)
-        const XMLCh* prefixRawBuf = prefixBuf.getRawBuffer();
-        if (XMLString::equals(prefixRawBuf, XMLUni::fgXMLNSString)) {
-
-            // if this is an element, it is an error to have xmlns as prefix
-            if (mode == ElemStack::Mode_Element)
-                emitError(XMLErrs::NoXMLNSAsElementPrefix, qName);
-
-            return fXMLNSNamespaceId;
-        }
-        else if (XMLString::equals(prefixRawBuf, XMLUni::fgXMLString)) {
-            return  fXMLNamespaceId;
-        }
-        else
-        {
-            bool unknown = false;
-            unsigned int uriId = fElemStack.mapPrefixToURI(prefixRawBuf, (ElemStack::MapModes) mode, unknown);
-
-            if (unknown)
-                emitError(XMLErrs::UnknownPrefix, prefixRawBuf);
-
-            return uriId;
-        }
-    }
-}
 
 // ---------------------------------------------------------------------------
 //  SGXMLScanner: Grammar preparsing
@@ -1948,7 +1886,7 @@ Grammar* SGXMLScanner::loadGrammar(const   InputSource& src
             if (excToCatch.getErrorType() == XMLErrorReporter::ErrType_Warning)
                 emitError
                 (
-                    XMLErrs::DisplayErrorMessage
+                    XMLErrs::XMLException_Warning
                     , excToCatch.getCode()
                     , excToCatch.getMessage()
                 );
@@ -1957,7 +1895,6 @@ Grammar* SGXMLScanner::loadGrammar(const   InputSource& src
                 (
                     XMLErrs::XMLException_Fatal
                     , excToCatch.getCode()
-                    , excToCatch.getType()
                     , excToCatch.getMessage()
                 );
             else
@@ -1965,7 +1902,6 @@ Grammar* SGXMLScanner::loadGrammar(const   InputSource& src
                 (
                     XMLErrs::XMLException_Error
                     , excToCatch.getCode()
-                    , excToCatch.getType()
                     , excToCatch.getMessage()
                 );
         }
@@ -1992,6 +1928,11 @@ Grammar* SGXMLScanner::loadGrammar(const   InputSource& src
     return loadedGrammar;
 }
 
+void SGXMLScanner::resetCachedGrammar ()
+{
+  fCachedSchemaInfoList->removeAll ();
+}
+
 // ---------------------------------------------------------------------------
 //  SGXMLScanner: Private helper methods
 // ---------------------------------------------------------------------------
@@ -2001,6 +1942,10 @@ void SGXMLScanner::commonInit()
 {
     //  Create the element state array
     fElemState = (unsigned int*) fMemoryManager->allocate
+    (
+        fElemStateSize * sizeof(unsigned int)
+    ); //new unsigned int[fElemStateSize];
+    fElemLoopState = (unsigned int*) fMemoryManager->allocate
     (
         fElemStateSize * sizeof(unsigned int)
     ); //new unsigned int[fElemStateSize];
@@ -2029,15 +1974,15 @@ void SGXMLScanner::commonInit()
     fEntityTable->put((void*) XMLUni::fgQuot, chDoubleQuote);
     fEntityTable->put((void*) XMLUni::fgApos, chSingleQuote);
     fElemNonDeclPool = new (fMemoryManager) RefHash3KeysIdPool<SchemaElementDecl>(29, true, 128, fMemoryManager);
-    fAttDefRegistry = new (fMemoryManager) RefHashTableOf<unsigned int>
+    fAttDefRegistry = new (fMemoryManager) RefHashTableOf<unsigned int, PtrHasher>
     (
-        131, false, new (fMemoryManager)HashPtr(), fMemoryManager
+        131, false, fMemoryManager
     );
-    fUndeclaredAttrRegistryNS = new (fMemoryManager) RefHash2KeysTableOf<unsigned int>
-    (
-        7, false, new (fMemoryManager)HashXMLCh(), fMemoryManager
-    );
+    fUndeclaredAttrRegistry = new (fMemoryManager) Hash2KeysSetOf<StringHasher>(7, fMemoryManager);
     fPSVIAttrList = new (fMemoryManager) PSVIAttributeList(fMemoryManager);
+
+    fSchemaInfoList = new (fMemoryManager) RefHash2KeysTableOf<SchemaInfo>(29, fMemoryManager);
+    fCachedSchemaInfoList = new (fMemoryManager) RefHash2KeysTableOf<SchemaInfo>(29, fMemoryManager);
 
     if (fValidator)
     {
@@ -2053,6 +1998,7 @@ void SGXMLScanner::commonInit()
 void SGXMLScanner::cleanUp()
 {
     fMemoryManager->deallocate(fElemState); //delete [] fElemState;
+    fMemoryManager->deallocate(fElemLoopState); //delete [] fElemLoopState;
     delete fSchemaGrammar;
     delete fEntityTable;
     delete fRawAttrList;
@@ -2061,13 +2007,16 @@ void SGXMLScanner::cleanUp()
     delete fICHandler;
     delete fElemNonDeclPool;
     delete fAttDefRegistry;
-    delete fUndeclaredAttrRegistryNS;
+    delete fUndeclaredAttrRegistry;
     delete fPSVIAttrList;
     if (fPSVIElement)
         delete fPSVIElement;
 
     if (fErrorStack)
         delete fErrorStack;
+
+    delete fSchemaInfoList;
+    delete fCachedSchemaInfoList;
 }
 
 void SGXMLScanner::resizeElemState() {
@@ -2077,18 +2026,27 @@ void SGXMLScanner::resizeElemState() {
     (
         newSize * sizeof(unsigned int)
     ); //new unsigned int[newSize];
+    unsigned int* newElemLoopState = (unsigned int*) fMemoryManager->allocate
+    (
+        newSize * sizeof(unsigned int)
+    ); //new unsigned int[newSize];
 
     // Copy the existing values
     unsigned int index = 0;
     for (; index < fElemStateSize; index++)
+    {
         newElemState[index] = fElemState[index];
+        newElemLoopState[index] = fElemLoopState[index];
+    }
 
     for (; index < newSize; index++)
-        newElemState[index] = 0;
+        newElemLoopState[index] = newElemState[index] = 0;
 
     // Delete the old array and udpate our members
     fMemoryManager->deallocate(fElemState); //delete [] fElemState;
+    fMemoryManager->deallocate(fElemLoopState); //delete [] fElemLoopState;
     fElemState = newElemState;
+    fElemLoopState = newElemLoopState;
     fElemStateSize = newSize;
 }
 
@@ -2117,9 +2075,9 @@ void SGXMLScanner::resizeRawAttrColonList() {
 //  which have not been normalized. And we get the element declaration from
 //  which we will get any defaulted or fixed attribute defs and add those
 //  in as well.
-unsigned int
+XMLSize_t
 SGXMLScanner::buildAttList(const  RefVectorOf<KVStringPair>&  providedAttrs
-                          , const unsigned int                attCount
+                          , const XMLSize_t                   attCount
                           ,       XMLElementDecl*             elemDecl
                           ,       RefVectorOf<XMLAttr>&       toFill)
 {
@@ -2137,7 +2095,7 @@ SGXMLScanner::buildAttList(const  RefVectorOf<KVStringPair>&  providedAttrs
         }
     }
 
-    const bool hasDefs = (currType && fValidate) 
+    const bool hasDefs = (currType && fValidate)
             ? currType->hasAttDefs()
             : elemDecl->hasAttDefs();
 
@@ -2150,20 +2108,24 @@ SGXMLScanner::buildAttList(const  RefVectorOf<KVStringPair>&  providedAttrs
         return 0;
 
     // Keep up with how many attrs we end up with total
-    unsigned int retCount = 0;
+    XMLSize_t retCount = 0;
 
     //  And get the current size of the output vector. This lets us use
     //  existing elements until we fill it, then start adding new ones.
-    const unsigned int curAttListSize = toFill.size();
+    const XMLSize_t curAttListSize = toFill.size();
 
     //  We need a buffer into which raw scanned attribute values will be
     //  normalized.
     XMLBufBid bbNormal(&fBufMgr);
     XMLBuffer& normBuf = bbNormal.getBuffer();
 
+    XMLBufBid bbPrefix(&fBufMgr);
+    XMLBuffer& prefixBuf = bbPrefix.getBuffer();
+
     //  Loop through our explicitly provided attributes, which are in the raw
     //  scanned form, and build up XMLAttr objects.
-    unsigned int index;
+    XMLSize_t index;
+    const XMLCh* prefPtr, *suffPtr;
     for (index = 0; index < attCount; index++)
     {
         PSVIItem::VALIDITY_STATE attrValid = PSVIItem::VALIDITY_VALID;
@@ -2173,65 +2135,47 @@ SGXMLScanner::buildAttList(const  RefVectorOf<KVStringPair>&  providedAttrs
         //  We have to split the name into its prefix and name parts. Then
         //  we map the prefix to its URI.
         const XMLCh* const namePtr = curPair->getKey();
-        ArrayJanitor <XMLCh> janName(0);
-
-        // use a stack-based buffer when possible.
-        XMLCh tempBuffer[100];
 
         const int colonInd = fRawAttrColonList[index];
-        const XMLCh* prefPtr = XMLUni::fgZeroLenString;
-        const XMLCh* suffPtr = XMLUni::fgZeroLenString;
+        unsigned int uriId;
         if (colonInd != -1)
         {
-            // We have to split the string, so make a copy.
-            if (XMLString::stringLen(namePtr) < sizeof(tempBuffer) / sizeof(tempBuffer[0]))
-            {
-                XMLString::copyString(tempBuffer, namePtr);
-                tempBuffer[colonInd] = chNull;
-                prefPtr = tempBuffer;
-            }
-            else
-            {
-                janName.reset(XMLString::replicate(namePtr, fMemoryManager), fMemoryManager);
-                janName[colonInd] = chNull;
-                prefPtr = janName.get();
-            }
-
+            prefixBuf.set(namePtr, colonInd);
+            prefPtr = prefixBuf.getRawBuffer();
             suffPtr = namePtr + colonInd + 1;
+            //  Map the prefix to a URI id
+            uriId = resolvePrefix(prefPtr, ElemStack::Mode_Attribute);
         }
         else
         {
             // No colon, so we just have a name with no prefix
+            prefPtr = XMLUni::fgZeroLenString;
             suffPtr = namePtr;
+            // an empty prefix is always the empty namespace, when dealing with attributes
+            uriId = fEmptyNamespaceId;
         }
-
-        //  Map the prefix to a URI id. We tell him that we are mapping an
-        //  attr prefix, so any xmlns attrs at this level will not affect it.
-        const unsigned int uriId = resolvePrefix(prefPtr, ElemStack::Mode_Attribute);
 
         //  If the uri comes back as the xmlns or xml URI or its just a name
         //  and that name is 'xmlns', then we handle it specially. So set a
         //  boolean flag that lets us quickly below know which we are dealing
         //  with.
-        const bool isNSAttr = (uriId == fXMLNSNamespaceId)
-                              
-                              || XMLString::equals(suffPtr, XMLUni::fgXMLNSString)
-                              || XMLString::equals(getURIText(uriId), SchemaSymbols::fgURI_XSI);
-
+        const bool isNSAttr = (uriId == fEmptyNamespaceId)?
+                                XMLString::equals(suffPtr, XMLUni::fgXMLNSString) :
+                                (uriId == fXMLNSNamespaceId || XMLString::equals(getURIText(uriId), SchemaSymbols::fgURI_XSI));
 
         //  If its not a special case namespace attr of some sort, then we
         //  do normal checking and processing.
-        XMLAttDef::AttTypes attType;
+        XMLAttDef::AttTypes attType = XMLAttDef::CData;
         DatatypeValidator *attrValidator = 0;
         PSVIAttribute *psviAttr = 0;
         bool otherXSI = false;
 
         if (isNSAttr)
         {
-            if(fUndeclaredAttrRegistryNS->containsKey(suffPtr, uriId))
+            if(!fUndeclaredAttrRegistry->putIfNotPresent(suffPtr, uriId))
             {
                 emitError
-                ( 
+                (
                     XMLErrs::AttrAlreadyUsedInSTag
                     , namePtr
                     , elemDecl->getFullName()
@@ -2255,7 +2199,7 @@ SGXMLScanner::buildAttList(const  RefVectorOf<KVStringPair>&  providedAttrs
 
                         ValueValidate = true;
                     }
-                    else if (XMLString::equals(suffPtr, SchemaSymbols::fgXSI_SCHEMALOCACTION))
+                    else if (XMLString::equals(suffPtr, SchemaSymbols::fgXSI_SCHEMALOCATION))
                     {
                         // use anyURI as the validator
                         // tokenize the data and use the anyURI data for each piece
@@ -2268,9 +2212,9 @@ SGXMLScanner::buildAttList(const  RefVectorOf<KVStringPair>&  providedAttrs
                         //do performance analysis of the anyuri datatype.
                         //ValueValidate = true;
                         ValueValidate = false;
-                        tokenizeBuffer = true;                        
+                        tokenizeBuffer = true;
                     }
-                    else if (XMLString::equals(suffPtr, SchemaSymbols::fgXSI_NONAMESPACESCHEMALOCACTION))
+                    else if (XMLString::equals(suffPtr, SchemaSymbols::fgXSI_NONAMESPACESCHEMALOCATION))
                     {
                         attrValidator = DatatypeValidatorFactory::getBuiltInRegistry()->get(SchemaSymbols::fgDT_ANYURI);
                         //We should validate this value however
@@ -2288,24 +2232,22 @@ SGXMLScanner::buildAttList(const  RefVectorOf<KVStringPair>&  providedAttrs
                         ValueValidate = true;
                     }
                     else {
-                        otherXSI = true;                       
+                        otherXSI = true;
                     }
                 }
 
                 if (!otherXSI) {
-                    fUndeclaredAttrRegistryNS->put((void *)suffPtr, uriId, 0);
-
-                    // Just normalize as CDATA
-                    attType = XMLAttDef::CData;
                     normalizeAttRawValue
                     (
                         namePtr
                         , curPair->getValue()
                         , normBuf
-                    );                    
+                    );
 
                     if (fValidate && attrValidator && ValueValidate)
                     {
+                        ((SchemaValidator*) fValidator)->normalizeWhiteSpace(attrValidator, normBuf.getRawBuffer(), normBuf, true);
+
                         ValidationContext* const    theContext =
                             getValidationContext();
 
@@ -2314,13 +2256,13 @@ SGXMLScanner::buildAttList(const  RefVectorOf<KVStringPair>&  providedAttrs
                             try
                             {
                                 if (tokenizeBuffer) {
-                                    XMLStringTokenizer tokenizer(normBuf.getRawBuffer(), fMemoryManager);                                    
-                                    while (tokenizer.hasMoreTokens()) {                                       
+                                    XMLStringTokenizer tokenizer(normBuf.getRawBuffer(), fMemoryManager);
+                                    while (tokenizer.hasMoreTokens()) {
                                         attrValidator->validate(
                                             tokenizer.nextToken(),
                                             theContext,
                                             fMemoryManager);
-                                    }                                  
+                                    }
                                 }
                                 else {
                                     attrValidator->validate(
@@ -2331,14 +2273,14 @@ SGXMLScanner::buildAttList(const  RefVectorOf<KVStringPair>&  providedAttrs
                             }
                             catch (const XMLException& idve)
                             {
-                                fValidator->emitError (XMLValid::DatatypeError, idve.getCode(), idve.getType(), idve.getMessage());
+                                fValidator->emitError (XMLValid::DatatypeError, idve.getCode(), idve.getMessage());
                             }
                         }
                     }
 
                     if(getPSVIHandler() && fGrammarType == Grammar::SchemaGrammarType)
                     {
-	                    psviAttr = fPSVIAttrList->getPSVIAttributeToFill(suffPtr, fURIStringPool->getValueForId(uriId)); 
+	                    psviAttr = fPSVIAttrList->getPSVIAttributeToFill(suffPtr, fURIStringPool->getValueForId(uriId));
 	                    XSSimpleTypeDefinition *validatingType = (attrValidator)
                             ? (XSSimpleTypeDefinition *)fModel->getXSObject(attrValidator)
                             : 0;
@@ -2359,7 +2301,7 @@ SGXMLScanner::buildAttList(const  RefVectorOf<KVStringPair>&  providedAttrs
             }
         }
 
-        if (!isNSAttr || otherXSI)        
+        if (!isNSAttr || otherXSI)
         {
             // Some checking for attribute wild card first (for schema)
             bool laxThisOne = false;
@@ -2458,7 +2400,7 @@ SGXMLScanner::buildAttList(const  RefVectorOf<KVStringPair>&  providedAttrs
                 else
                 {
                     emitError
-                    ( 
+                    (
                         XMLErrs::AttrAlreadyUsedInSTag
                         , attDef->getFullName()
                         , elemDecl->getFullName()
@@ -2468,12 +2410,10 @@ SGXMLScanner::buildAttList(const  RefVectorOf<KVStringPair>&  providedAttrs
             }
             else
             {
-                if(!fUndeclaredAttrRegistryNS->containsKey(suffPtr, uriId))
-                    fUndeclaredAttrRegistryNS->put((void *)suffPtr, uriId, 0);
-                else
+                if(!fUndeclaredAttrRegistry->putIfNotPresent(suffPtr, uriId))
                 {
                     emitError
-                    ( 
+                    (
                         XMLErrs::AttrAlreadyUsedInSTag
                         , namePtr
                         , elemDecl->getFullName()
@@ -2489,7 +2429,7 @@ SGXMLScanner::buildAttList(const  RefVectorOf<KVStringPair>&  providedAttrs
                 if(!laxThisOne && !skipThisOne)
                 {
                     fPSVIElemContext.fErrorOccurred = true;
-                } 
+                }
                 if(getPSVIHandler())
                 {
                     if(!laxThisOne && !skipThisOne)
@@ -2551,7 +2491,7 @@ SGXMLScanner::buildAttList(const  RefVectorOf<KVStringPair>&  providedAttrs
                 if (tempDV && tempDV->getWSFacet() != DatatypeValidator::PRESERVE)
                 {
                     // normalize the attribute according to schema whitespace facet
-                    ((SchemaValidator*) fValidator)->normalizeWhiteSpace(tempDV, xsNormalized, fWSNormalizeBuf);
+                    ((SchemaValidator*) fValidator)->normalizeWhiteSpace(tempDV, xsNormalized, fWSNormalizeBuf, true);
                     xsNormalized = fWSNormalizeBuf.getRawBuffer();
                     if (fNormalizeData && fValidate) {
                         normBuf.set(xsNormalized);
@@ -2592,7 +2532,7 @@ SGXMLScanner::buildAttList(const  RefVectorOf<KVStringPair>&  providedAttrs
                         if (tempDV && tempDV->getWSFacet() != DatatypeValidator::PRESERVE)
                         {
                             // normalize the attribute according to schema whitespace facet
-                            ((SchemaValidator*) fValidator)->normalizeWhiteSpace(tempDV, xsNormalized, fWSNormalizeBuf);
+                            ((SchemaValidator*) fValidator)->normalizeWhiteSpace(tempDV, xsNormalized, fWSNormalizeBuf, true);
                             xsNormalized = fWSNormalizeBuf.getRawBuffer();
                             if (fNormalizeData && fValidate && !skipThisOne) {
                                 normBuf.set(xsNormalized);
@@ -2622,7 +2562,10 @@ SGXMLScanner::buildAttList(const  RefVectorOf<KVStringPair>&  providedAttrs
                 }
 
                 // Save the type for later use
-                attType = (attDef)?attDef->getType():XMLAttDef::CData;
+                if (attDef)
+                {
+                    attType = attDef->getType();
+                }
             }
 
             // now fill in the PSVIAttributes entry for this attribute:
@@ -2741,10 +2684,10 @@ SGXMLScanner::buildAttList(const  RefVectorOf<KVStringPair>&  providedAttrs
 
         XMLAttDefList& attDefList = getAttDefList(currType, elemDecl);
 
-        for(unsigned int i=0; i<attDefList.getAttDefCount(); i++)
+        for(XMLSize_t i=0; i<attDefList.getAttDefCount(); i++)
         {
             // Get the current att def, for convenience and its def type
-            XMLAttDef *curDef = &attDefList.getAttDef(i);            
+            XMLAttDef *curDef = &attDefList.getAttDef(i);
             const XMLAttDef::DefAttTypes defType = curDef->getDefaultType();
 
             unsigned int *attCountPtr = fAttDefRegistry->get(curDef);
@@ -2822,7 +2765,7 @@ SGXMLScanner::buildAttList(const  RefVectorOf<KVStringPair>&  providedAttrs
                         );
                         XSAttributeDeclaration *defAttrDecl = (XSAttributeDeclaration *)fModel->getXSObject((void *)curDef);
                         DatatypeValidator * attrDataType = ((SchemaAttDef *)curDef)->getDatatypeValidator();
-                        XSSimpleTypeDefinition *defAttrType = 
+                        XSSimpleTypeDefinition *defAttrType =
                             (XSSimpleTypeDefinition*)fModel->getXSObject(attrDataType);
                         // would have occurred during validation of default value
                         if(((SchemaValidator *)fValidator)->getErrorOccurred())
@@ -2834,7 +2777,7 @@ SGXMLScanner::buildAttList(const  RefVectorOf<KVStringPair>&  providedAttrs
                                 , defAttrType
                                 , 0
                                 , curDef->getValue()
-                                , true 
+                                , true
                                 , defAttrDecl
                                 , 0
                             );
@@ -2870,7 +2813,7 @@ SGXMLScanner::buildAttList(const  RefVectorOf<KVStringPair>&  providedAttrs
             {
                 //attribute is provided
                 // (schema) report error for PROHIBITED attrs that are present (V_TAGc)
-                if (defType == XMLAttDef::Prohibited && fValidate) 
+                if (defType == XMLAttDef::Prohibited && fValidate)
                 {
                     fValidator->emitError
                     (
@@ -2884,7 +2827,7 @@ SGXMLScanner::buildAttList(const  RefVectorOf<KVStringPair>&  providedAttrs
                         // bad luck...
                         PSVIAttribute *prohibitedAttr = fPSVIAttrList->getAttributePSVIByName
                         (
-                            attQName->getLocalPart(), 
+                            attQName->getLocalPart(),
                             fURIStringPool->getValueForId(attQName->getURI())
                         );
                         prohibitedAttr->updateValidity(PSVIItem::VALIDITY_INVALID);
@@ -2934,7 +2877,7 @@ bool SGXMLScanner::normalizeAttValue( const   XMLAttDef* const    attDef
 
     //  Loop through the chars of the source value and normalize it according
     //  to the type.
-    States curState = InContent;    
+    States curState = InContent;
     bool firstNonWS = false;
     XMLCh nextCh;
     const XMLCh* srcPtr = value;
@@ -2945,12 +2888,12 @@ bool SGXMLScanner::normalizeAttValue( const   XMLAttDef* const    attDef
             //  escaped characters (which are indicated by a 0xFFFF value followed
             //  by the char that was escaped.)
             nextCh = *srcPtr;
-            
+
             // Do we have an escaped character ?
             if (nextCh == 0xFFFF)
             {
                 nextCh = *++srcPtr;
-            } 
+            }
             else if ( (nextCh <= 0x0D) && (nextCh == 0x09 || nextCh == 0x0A || nextCh == 0x0D) ) {
                 // Check Validity Constraint for Standalone document declaration
                 // XML 1.0, Section 2.9
@@ -2964,9 +2907,9 @@ bool SGXMLScanner::normalizeAttValue( const   XMLAttDef* const    attDef
             }
             else if (nextCh == chOpenAngle) {
                 //  If its not escaped, then make sure its not a < character, which is
-                //  not allowed in attribute values.                                
+                //  not allowed in attribute values.
                 emitError(XMLErrs::BracketInAttrValue, attName);
-                retVal = false;                
+                retVal = false;
             }
 
             // Add this char to the target buffer
@@ -2988,10 +2931,10 @@ bool SGXMLScanner::normalizeAttValue( const   XMLAttDef* const    attDef
             if (nextCh == 0xFFFF)
             {
                 nextCh = *++srcPtr;
-            } 
-            else if (nextCh == chOpenAngle) { 
+            }
+            else if (nextCh == chOpenAngle) {
                 //  If its not escaped, then make sure its not a < character, which is
-                //  not allowed in attribute values.                               
+                //  not allowed in attribute values.
                 emitError(XMLErrs::BracketInAttrValue, attName);
                 retVal = false;
             }
@@ -3096,60 +3039,6 @@ bool SGXMLScanner::normalizeAttRawValue( const   XMLCh* const        attrName
     return retVal;
 }
 
-unsigned int
-SGXMLScanner::resolvePrefix(  const   XMLCh* const        prefix
-                              , const ElemStack::MapModes mode)
-{
-    //  Watch for the special namespace prefixes. We always map these to
-    //  special URIs. 'xml' gets mapped to the official URI that its defined
-    //  to map to by the NS spec. xmlns gets mapped to a special place holder
-    //  URI that we define (so that it maps to something checkable.)
-    if (XMLString::equals(prefix, XMLUni::fgXMLNSString))
-        return fXMLNSNamespaceId;
-    else if (XMLString::equals(prefix, XMLUni::fgXMLString))
-        return fXMLNamespaceId;
-
-    //  Ask the element stack to search up itself for a mapping for the
-    //  passed prefix.
-    bool unknown;
-    unsigned int uriId = fElemStack.mapPrefixToURI(prefix, mode, unknown);
-
-    // If it was unknown, then the URI was faked in but we have to issue an error
-    if (unknown)
-        emitError(XMLErrs::UnknownPrefix, prefix);
-
-    return uriId;
-}
-
-unsigned int
-SGXMLScanner::resolvePrefix(  const   XMLCh* const        prefix
-                              ,       XMLBuffer&          bufToFill
-                              , const ElemStack::MapModes mode)
-{
-    //  Watch for the special namespace prefixes. We always map these to
-    //  special URIs. 'xml' gets mapped to the official URI that its defined
-    //  to map to by the NS spec. xmlns gets mapped to a special place holder
-    //  URI that we define (so that it maps to something checkable.)
-    if (XMLString::equals(prefix, XMLUni::fgXMLNSString))
-        return fXMLNSNamespaceId;
-    else if (XMLString::equals(prefix, XMLUni::fgXMLString))
-        return fXMLNamespaceId;
-
-    //  Ask the element stack to search up itself for a mapping for the
-    //  passed prefix.
-    bool unknown;
-    unsigned int uriId = fElemStack.mapPrefixToURI(prefix, mode, unknown);
-
-    // If it was unknown, then the URI was faked in but we have to issue an error
-    if (unknown)
-        emitError(XMLErrs::UnknownPrefix, prefix);
-
-    getURIText(uriId,bufToFill);
-
-    return uriId;
-}
-
-
 //  This method will reset the scanner data structures, and related plugged
 //  in stuff, for a new scan session. We get the input source for the primary
 //  XML entity, create the reader for it, and push it on the stack so that
@@ -3166,6 +3055,10 @@ void SGXMLScanner::scanReset(const InputSource& src)
     //          required to insure that files are closed.
     fGrammarResolver->cacheGrammarFromParse(fToCacheGrammar);
     fGrammarResolver->useCachedGrammarInParse(fUseCachedGrammar);
+
+    // Clear transient schema info list.
+    //
+    fSchemaInfoList->removeAll ();
 
     // fModel may need updating, as fGrammarResolver could have cleaned it
     if(fModel && getPSVIHandler())
@@ -3267,6 +3160,7 @@ void SGXMLScanner::scanReset(const InputSource& src)
         , XMLReader::Type_General
         , XMLReader::Source_External
         , fCalculateSrcOfs
+        , fLowWaterMark
     );
 
     if (!newReader) {
@@ -3280,13 +3174,13 @@ void SGXMLScanner::scanReset(const InputSource& src)
     fReaderMgr.pushReader(newReader, 0);
 
     // and reset security-related things if necessary:
-    if(fSecurityManager != 0) 
+    if(fSecurityManager != 0)
     {
         fEntityExpansionLimit = fSecurityManager->getEntityExpansionLimit();
         fEntityExpansionCount = 0;
     }
     fElemCount = 0;
-    if(fUIntPoolRowTotal >= 32) 
+    if(fUIntPoolRowTotal >= 32)
     { // 8 KB tied up with validating attributes...
         fAttDefRegistry->removeAll();
         recreateUIntPool();
@@ -3297,7 +3191,7 @@ void SGXMLScanner::scanReset(const InputSource& src)
         // though their buckets will still be tied up
         resetUIntPool();
     }
-    fUndeclaredAttrRegistryNS->removeAll();
+    fUndeclaredAttrRegistry->removeAll();
 }
 
 
@@ -3321,20 +3215,21 @@ void SGXMLScanner::sendCharData(XMLBuffer& toSend)
     {
         // Get the raw data we need for the callback
         const XMLCh* rawBuf = toSend.getRawBuffer();
-        const unsigned int len = toSend.getLen();
+        const XMLSize_t len = toSend.getLen();
 
         // Get the character data opts for the current element
         XMLElementDecl::CharDataOpts charOpts = XMLElementDecl::AllCharData;
         // And see if the current element is a 'Children' style content model
         ComplexTypeInfo *currType = ((SchemaValidator*)fValidator)->getCurrentTypeInfo();
-        if(currType) 
+        if(currType)
         {
-            SchemaElementDecl::ModelTypes modelType = (SchemaElementDecl::ModelTypes) currType->getContentType(); 
-            if(modelType == SchemaElementDecl::Children) 
+            SchemaElementDecl::ModelTypes modelType = (SchemaElementDecl::ModelTypes) currType->getContentType();
+            if(modelType == SchemaElementDecl::Children ||
+               modelType == SchemaElementDecl::ElementOnlyEmpty)
                 charOpts = XMLElementDecl::SpacesOk;
-            else if(modelType == SchemaElementDecl::Empty) 
-                charOpts = XMLElementDecl::NoCharData; 
-        } 
+            else if(modelType == SchemaElementDecl::Empty)
+                charOpts = XMLElementDecl::NoCharData;
+        }
 
         // should not be necessary once PSVI method on element decls
         // are removed
@@ -3344,7 +3239,7 @@ void SGXMLScanner::sendCharData(XMLBuffer& toSend)
             fValidator->emitError(XMLValid::NoCharDataInCM);
             if (getPSVIHandler())
             {
-                // REVISIT:           
+                // REVISIT:
                 // PSVIElement->setValidity(PSVIItem::VALIDITY_INVALID);
             }
         }
@@ -3359,7 +3254,7 @@ void SGXMLScanner::sendCharData(XMLBuffer& toSend)
             }
             else if (charOpts == XMLElementDecl::AllCharData)
             {
-                unsigned int xsLen;
+                XMLSize_t xsLen;
                 const XMLCh* xsNormalized;
                 DatatypeValidator* tempDV = ((SchemaValidator*) fValidator)->getCurrentDatatypeValidator();
                 if (tempDV && tempDV->getWSFacet() != DatatypeValidator::PRESERVE)
@@ -3399,7 +3294,7 @@ void SGXMLScanner::sendCharData(XMLBuffer& toSend)
             //  issue an error.
             if (charOpts == XMLElementDecl::AllCharData)
             {
-                unsigned int xsLen;
+                XMLSize_t xsLen;
                 const XMLCh *xsNormalized;
                 DatatypeValidator* tempDV = ((SchemaValidator*) fValidator)->getCurrentDatatypeValidator();
                 if (tempDV && tempDV->getWSFacet() != DatatypeValidator::PRESERVE)
@@ -3435,7 +3330,7 @@ void SGXMLScanner::sendCharData(XMLBuffer& toSend)
                 fValidator->emitError(XMLValid::NoCharDataInCM);
                 if (getPSVIHandler())
                 {
-                    // REVISIT:                
+                    // REVISIT:
                     // PSVIElement->setValidity(PSVIItem::VALIDITY_INVALID);
                 }
             }
@@ -3498,7 +3393,7 @@ void SGXMLScanner::updateNSMap(const  XMLCh* const    attrName
     //        2. if xxx is xml, then yyy must match XMLUni::fgXMLURIName, and vice versa
     //        3. yyy is not XMLUni::fgXMLNSURIName
     //        4. if xxx is not null, then yyy cannot be an empty string.
-    const XMLCh* prefPtr = XMLUni::fgZeroLenString;    
+    const XMLCh* prefPtr = XMLUni::fgZeroLenString;
     if (colonOfs != -1) {
         prefPtr = &attrName[colonOfs + 1];
 
@@ -3533,14 +3428,13 @@ void SGXMLScanner::updateNSMap(const  XMLCh* const    attrName
     );
 }
 
-void SGXMLScanner::scanRawAttrListforNameSpaces(int attCount)
+void SGXMLScanner::scanRawAttrListforNameSpaces(XMLSize_t attCount)
 {
     //  Make an initial pass through the list and find any xmlns attributes or
     //  schema attributes.
     //  When we find one, send it off to be used to update the element stack's
     //  namespace mappings.
-    int index;
-    for (index = 0; index < attCount; index++)
+    for (XMLSize_t index = 0; index < attCount; index++)
     {
         // each attribute has the prefix:suffix="value"
         const KVStringPair* curPair = fRawAttrList->elementAt(index);
@@ -3569,7 +3463,7 @@ void SGXMLScanner::scanRawAttrListforNameSpaces(int attCount)
         XMLBufBid bbXsi(&fBufMgr);
         XMLBuffer& fXsiType = bbXsi.getBuffer();
 
-        for (index = 0; index < attCount; index++)
+        for (XMLSize_t index = 0; index < attCount; index++)
         {
             // each attribute has the prefix:suffix="value"
             const KVStringPair* curPair = fRawAttrList->elementAt(index);
@@ -3584,7 +3478,7 @@ void SGXMLScanner::scanRawAttrListforNameSpaces(int attCount)
             }
             else {
                 prefPtr = XMLUni::fgZeroLenString;
-            }            
+            }
 
             // if schema URI has been seen, scan for the schema location and uri
             // and resolve the schema grammar; or scan for schema type
@@ -3593,18 +3487,33 @@ void SGXMLScanner::scanRawAttrListforNameSpaces(int attCount)
                 const XMLCh* valuePtr = curPair->getValue();
                 const XMLCh*  suffPtr = &rawPtr[colonInd + 1];
 
-                if (XMLString::equals(suffPtr, SchemaSymbols::fgXSI_SCHEMALOCACTION))
+                if (XMLString::equals(suffPtr, SchemaSymbols::fgXSI_SCHEMALOCATION))
                     parseSchemaLocation(valuePtr);
-                else if (XMLString::equals(suffPtr, SchemaSymbols::fgXSI_NONAMESPACESCHEMALOCACTION))
+                else if (XMLString::equals(suffPtr, SchemaSymbols::fgXSI_NONAMESPACESCHEMALOCATION))
                     resolveSchemaGrammar(valuePtr, XMLUni::fgZeroLenString);
 
-                if (XMLString::equals(suffPtr, SchemaSymbols::fgXSI_TYPE)) {
-                        fXsiType.set(valuePtr);
-                }
-                else if (XMLString::equals(suffPtr, SchemaSymbols::fgATT_NILL)
-                         && fValidator && fValidator->handlesSchema()
-                         && XMLString::equals(valuePtr, SchemaSymbols::fgATTVAL_TRUE)) {
+                if( fValidator && fValidator->handlesSchema() )
+                {
+                    if (XMLString::equals(suffPtr, SchemaSymbols::fgXSI_TYPE))
+                    {
+                        // normalize the attribute according to schema whitespace facet
+                        DatatypeValidator* tempDV = DatatypeValidatorFactory::getBuiltInRegistry()->get(SchemaSymbols::fgDT_QNAME);
+                        ((SchemaValidator*) fValidator)->normalizeWhiteSpace(tempDV, valuePtr, fXsiType, true);
+                    }
+                    else if (XMLString::equals(suffPtr, SchemaSymbols::fgATT_NILL))
+                    {
+                        // normalize the attribute according to schema whitespace facet
+                        XMLBuffer& fXsiNil = fBufMgr.bidOnBuffer();
+                        DatatypeValidator* tempDV = DatatypeValidatorFactory::getBuiltInRegistry()->get(SchemaSymbols::fgDT_BOOLEAN);
+                        ((SchemaValidator*) fValidator)->normalizeWhiteSpace(tempDV, valuePtr, fXsiNil, true);
+                        if(XMLString::equals(fXsiNil.getRawBuffer(), SchemaSymbols::fgATTVAL_TRUE))
                             ((SchemaValidator*)fValidator)->setNillable(true);
+                        else if(XMLString::equals(fXsiNil.getRawBuffer(), SchemaSymbols::fgATTVAL_FALSE))
+                            ((SchemaValidator*)fValidator)->setNillable(false);
+                        else
+                            emitError(XMLErrs::InvalidAttValue, fXsiNil.getRawBuffer(), valuePtr);
+                        fBufMgr.releaseBuffer(fXsiNil);
+                    }
                 }
             }
         }
@@ -3624,32 +3533,48 @@ void SGXMLScanner::scanRawAttrListforNameSpaces(int attCount)
     }
 }
 
-void SGXMLScanner::parseSchemaLocation(const XMLCh* const schemaLocationStr)
+void SGXMLScanner::parseSchemaLocation(const XMLCh* const schemaLocationStr, bool ignoreLoadSchema)
 {
     BaseRefVectorOf<XMLCh>* schemaLocation = XMLString::tokenizeString(schemaLocationStr, fMemoryManager);
     Janitor<BaseRefVectorOf<XMLCh> > janLoc(schemaLocation);
 
-    unsigned int size = schemaLocation->size();
+    XMLSize_t size = schemaLocation->size();
     if (size % 2 != 0 ) {
         emitError(XMLErrs::BadSchemaLocation);
     } else {
-        for(unsigned int i=0; i<size; i=i+2) {
-            resolveSchemaGrammar(schemaLocation->elementAt(i+1), schemaLocation->elementAt(i));
+        // We need a buffer to normalize the attribute value into
+        XMLBuffer normalBuf(1023, fMemoryManager);
+        for(XMLSize_t i=0; i<size; i=i+2) {
+            normalizeAttRawValue(SchemaSymbols::fgXSI_SCHEMALOCATION, schemaLocation->elementAt(i), normalBuf);
+            resolveSchemaGrammar(schemaLocation->elementAt(i+1), normalBuf.getRawBuffer(), ignoreLoadSchema);
         }
     }
 }
 
-void SGXMLScanner::resolveSchemaGrammar(const XMLCh* const loc, const XMLCh* const uri) {
+void SGXMLScanner::resolveSchemaGrammar(const XMLCh* const loc, const XMLCh* const uri, bool ignoreLoadSchema) {
 
     Grammar* grammar = 0;
- 
+
     {
-        XMLSchemaDescriptionImpl    theSchemaDescription(uri, fMemoryManager);   
-        theSchemaDescription.setLocationHints(loc); 
+        XMLSchemaDescriptionImpl    theSchemaDescription(uri, fMemoryManager);
+        theSchemaDescription.setLocationHints(loc);
         grammar = fGrammarResolver->getGrammar(&theSchemaDescription);
     }
 
-    if (!grammar || grammar->getGrammarType() == Grammar::DTDGrammarType) {
+    // If multi-import is enabled, make sure the existing grammar came
+    // from the import directive. Otherwise we may end up reloading
+    // the same schema that came from the external grammar pool. Ideally,
+    // we would move fSchemaInfoList to XMLGrammarPool so that it survives
+    // the destruction of the scanner in which case we could rely on the
+    // same logic we use to weed out duplicate schemas below.
+    //
+    if (!grammar || grammar->getGrammarType() == Grammar::DTDGrammarType ||
+        (getHandleMultipleImports() &&
+         ((XMLSchemaDescription*)grammar->getGrammarDescription())->
+         getContextType () == XMLSchemaDescription::CONTEXT_IMPORT))
+    {
+      if (fLoadSchema || ignoreLoadSchema)
+      {
         XSDDOMParser parser(0, fMemoryManager, 0);
 
         parser.setValidationScheme(XercesDOMParser::Val_Never);
@@ -3657,7 +3582,7 @@ void SGXMLScanner::resolveSchemaGrammar(const XMLCh* const loc, const XMLCh* con
         parser.setUserEntityHandler(fEntityHandler);
         parser.setUserErrorReporter(fErrorReporter);
 
-        //Normalize sysId 
+        //Normalize sysId
         XMLBufBid nnSys(&fBufMgr);
         XMLBuffer& normalizedSysId = nnSys.getBuffer();
         XMLString::removeChar(loc, 0xFFFF, normalizedSysId);
@@ -3715,7 +3640,7 @@ void SGXMLScanner::resolveSchemaGrammar(const XMLCh* const loc, const XMLCh* con
                     );
                 }
                 else
-                    ThrowXMLwithMemMgr(MalformedURLException, XMLExcepts::URL_MalformedURL, fMemoryManager);            
+                    ThrowXMLwithMemMgr(MalformedURLException, XMLExcepts::URL_MalformedURL, fMemoryManager);
             }
             else
             {
@@ -3723,11 +3648,31 @@ void SGXMLScanner::resolveSchemaGrammar(const XMLCh* const loc, const XMLCh* con
                     ThrowXMLwithMemMgr(MalformedURLException, XMLExcepts::URL_MalformedURL, fMemoryManager);
 
                 srcToFill = new (fMemoryManager) URLInputSource(urlTmp, fMemoryManager);
-            }        
+            }
         }
 
         // Put a janitor on the input source
         Janitor<InputSource> janSrc(srcToFill);
+
+        // Check if this exact schema has already been seen.
+        //
+        const XMLCh* sysId = srcToFill->getSystemId();
+        unsigned int uriId = (uri && *uri) ? fURIStringPool->addOrFind(uri) : fEmptyNamespaceId;
+        SchemaInfo* importSchemaInfo = 0;
+
+        if (fUseCachedGrammar)
+          importSchemaInfo = fCachedSchemaInfoList->get(sysId, uriId);
+
+        if (!importSchemaInfo && !fToCacheGrammar)
+          importSchemaInfo = fSchemaInfoList->get(sysId, uriId);
+
+        if (importSchemaInfo)
+        {
+          // We haven't added any new grammars so it is safe to just
+          // return.
+          //
+          return;
+        }
 
         // Should just issue warning if the schema is not found
         bool flag = srcToFill->getIssueFatalErrorIfNotFound();
@@ -3749,15 +3694,37 @@ void SGXMLScanner::resolveSchemaGrammar(const XMLCh* const loc, const XMLCh* con
             if (root != 0)
             {
                 const XMLCh* newUri = root->getAttribute(SchemaSymbols::fgATT_TARGETNAMESPACE);
+                bool newGrammar = false;
                 if (!XMLString::equals(newUri, uri)) {
                     if (fValidate || fValScheme == Val_Auto) {
                         fValidator->emitError(XMLValid::WrongTargetNamespace, loc, uri);
                     }
 
                     grammar = fGrammarResolver->getGrammar(newUri);
+                    newGrammar = true;
                 }
 
-                if (!grammar || grammar->getGrammarType() == Grammar::DTDGrammarType) {
+                if (!grammar ||
+                    grammar->getGrammarType() == Grammar::DTDGrammarType ||
+                    (getHandleMultipleImports() &&
+                     ((XMLSchemaDescription*) grammar->getGrammarDescription())->
+                     getContextType () == XMLSchemaDescription::CONTEXT_IMPORT))
+                {
+                    // If we switched namespace URI, recheck the schema info.
+                    //
+                    if (newGrammar)
+                    {
+                      unsigned int newUriId = (newUri && *newUri) ? fURIStringPool->addOrFind(newUri) : fEmptyNamespaceId;
+
+                      if (fUseCachedGrammar)
+                        importSchemaInfo = fCachedSchemaInfoList->get(sysId, newUriId);
+
+                      if (!importSchemaInfo && !fToCacheGrammar)
+                        importSchemaInfo = fSchemaInfoList->get(sysId, newUriId);
+
+                      if (importSchemaInfo)
+                        return;
+                    }
 
                     //  Since we have seen a grammar, set our validation flag
                     //  at this point if the validation scheme is auto
@@ -3766,26 +3733,52 @@ void SGXMLScanner::resolveSchemaGrammar(const XMLCh* const loc, const XMLCh* con
                         fElemStack.setValidationFlag(fValidate);
                     }
 
-                    grammar = new (fGrammarPoolMemoryManager) SchemaGrammar(fGrammarPoolMemoryManager);
-                    XMLSchemaDescription* gramDesc = (XMLSchemaDescription*) grammar->getGrammarDescription();
+                    bool grammarFound = grammar &&
+                      grammar->getGrammarType() == Grammar::SchemaGrammarType;
+
+                    SchemaGrammar* schemaGrammar;
+
+                    if (grammarFound) {
+                      schemaGrammar = (SchemaGrammar*) grammar;
+                    }
+                    else {
+                      schemaGrammar = new (fGrammarPoolMemoryManager) SchemaGrammar(fGrammarPoolMemoryManager);
+                    }
+
+                    XMLSchemaDescription* gramDesc = (XMLSchemaDescription*) schemaGrammar->getGrammarDescription();
+
                     gramDesc->setContextType(XMLSchemaDescription::CONTEXT_PREPARSE);
-                    gramDesc->setLocationHints(srcToFill->getSystemId());
+                    gramDesc->setLocationHints(sysId);
 
                     TraverseSchema traverseSchema
                     (
                         root
                         , fURIStringPool
-                        , (SchemaGrammar*) grammar
+                        , schemaGrammar
                         , fGrammarResolver
+                        , fUseCachedGrammar ? fCachedSchemaInfoList : fSchemaInfoList
+                        , fToCacheGrammar ? fCachedSchemaInfoList : fSchemaInfoList
                         , this
-                        , srcToFill->getSystemId()
+                        , sysId
                         , fEntityHandler
                         , fErrorReporter
                         , fMemoryManager
+                        , grammarFound
                     );
 
+                    // Reset the now invalid schema roots in the collected
+                    // schema info entries.
+                    //
+                    {
+                      RefHash2KeysTableOfEnumerator<SchemaInfo> i (
+                        fToCacheGrammar ? fCachedSchemaInfoList : fSchemaInfoList);
+
+                      while (i.hasMoreElements ())
+                        i.nextElement().resetRoot ();
+                    }
+
                     if (fGrammarType == Grammar::DTDGrammarType) {
-                        fGrammar = grammar;
+                        fGrammar = schemaGrammar;
                         fGrammarType = Grammar::SchemaGrammarType;
                         fValidator->setGrammar(fGrammar);
                     }
@@ -3797,9 +3790,10 @@ void SGXMLScanner::resolveSchemaGrammar(const XMLCh* const loc, const XMLCh* con
                 }
             }
         }
+      }
     }
-    else {
-
+    else
+    {
         //  Since we have seen a grammar, set our validation flag
         //  at this point if the validation scheme is auto
         if (fValScheme == Val_Auto && !fValidate) {
@@ -3823,7 +3817,7 @@ void SGXMLScanner::resolveSchemaGrammar(const XMLCh* const loc, const XMLCh* con
 InputSource* SGXMLScanner::resolveSystemId(const XMLCh* const sysId
                                           ,const XMLCh* const pubId)
 {
-    //Normalize sysId 
+    //Normalize sysId
     XMLBufBid nnSys(&fBufMgr);
     XMLBuffer& normalizedSysId = nnSys.getBuffer();
     XMLString::removeChar(sysId, 0xFFFF, normalizedSysId);
@@ -3881,14 +3875,14 @@ InputSource* SGXMLScanner::resolveSystemId(const XMLCh* const sysId
                 );
             }
             else
-                ThrowXMLwithMemMgr(MalformedURLException, XMLExcepts::URL_MalformedURL, fMemoryManager);            
+                ThrowXMLwithMemMgr(MalformedURLException, XMLExcepts::URL_MalformedURL, fMemoryManager);
         }
         else
         {
             if (fStandardUriConformant && urlTmp.hasInvalidChar())
                 ThrowXMLwithMemMgr(MalformedURLException, XMLExcepts::URL_MalformedURL, fMemoryManager);
             srcToFill = new (fMemoryManager) URLInputSource(urlTmp, fMemoryManager);
-        }              
+        }
     }
 
     return srcToFill;
@@ -3936,36 +3930,81 @@ Grammar* SGXMLScanner::loadXMLSchemaGrammar(const InputSource& src,
         DOMElement* root = document->getDocumentElement();// This is what we pass to TraverserSchema
         if (root != 0)
         {
-            SchemaGrammar* grammar = new (fGrammarPoolMemoryManager) SchemaGrammar(fGrammarPoolMemoryManager);
-            XMLSchemaDescription* gramDesc = (XMLSchemaDescription*) grammar->getGrammarDescription();
-            gramDesc->setContextType(XMLSchemaDescription::CONTEXT_PREPARSE);
-            gramDesc->setLocationHints(src.getSystemId());
+            const XMLCh* nsUri = root->getAttribute(SchemaSymbols::fgATT_TARGETNAMESPACE);
+            Grammar* grammar = fGrammarResolver->getGrammar(nsUri);
 
-            TraverseSchema traverseSchema
-            (
-                root
-                , fURIStringPool
-                , (SchemaGrammar*) grammar
-                , fGrammarResolver
-                , this
-                , src.getSystemId()
-                , fEntityHandler
-                , fErrorReporter
-                , fMemoryManager
-            );
+            // Check if this exact schema has already been seen.
+            //
+            const XMLCh* sysId = src.getSystemId();
+            SchemaInfo* importSchemaInfo = 0;
+
+            if (grammar)
+            {
+              if (nsUri && *nsUri)
+                importSchemaInfo = fCachedSchemaInfoList->get(sysId, fURIStringPool->addOrFind(nsUri));
+              else
+                importSchemaInfo = fCachedSchemaInfoList->get(sysId, fEmptyNamespaceId);
+            }
+
+            if (!importSchemaInfo)
+            {
+              bool grammarFound = grammar &&
+                grammar->getGrammarType() == Grammar::SchemaGrammarType &&
+                getHandleMultipleImports();
+
+              SchemaGrammar* schemaGrammar;
+
+              if (grammarFound)
+                schemaGrammar = (SchemaGrammar*) grammar;
+              else
+                schemaGrammar = new (fGrammarPoolMemoryManager) SchemaGrammar(fGrammarPoolMemoryManager);
+
+              XMLSchemaDescription* gramDesc = (XMLSchemaDescription*) schemaGrammar->getGrammarDescription();
+              gramDesc->setContextType(XMLSchemaDescription::CONTEXT_PREPARSE);
+              gramDesc->setLocationHints(sysId);
+
+              TraverseSchema traverseSchema
+                (
+                  root
+                  , fURIStringPool
+                  , schemaGrammar
+                  , fGrammarResolver
+                  , fCachedSchemaInfoList
+                  , toCache ? fCachedSchemaInfoList : fSchemaInfoList
+                  , this
+                  , sysId
+                  , fEntityHandler
+                  , fErrorReporter
+                  , fMemoryManager
+                  , grammarFound
+                );
+
+              grammar = schemaGrammar;
+
+              // Reset the now invalid schema roots in the collected
+              // schema info entries.
+              //
+              {
+                RefHash2KeysTableOfEnumerator<SchemaInfo> i (
+                  toCache ? fCachedSchemaInfoList : fSchemaInfoList);
+
+                while (i.hasMoreElements ())
+                  i.nextElement().resetRoot ();
+              }
+            }
 
             if (fValidate) {
-                //  validate the Schema scan so far
-                fValidator->setGrammar(grammar);
-                fValidator->preContentValidation(false, true);
+              //  validate the Schema scan so far
+              fValidator->setGrammar(grammar);
+              fValidator->preContentValidation(false);
             }
 
             if (toCache) {
-                fGrammarResolver->cacheGrammars();
+              fGrammarResolver->cacheGrammars();
             }
 
             if(getPSVIHandler())
-                fModel = fGrammarResolver->getXSModel();
+              fModel = fGrammarResolver->getXSModel();
 
             return grammar;
         }
@@ -4002,7 +4041,7 @@ bool SGXMLScanner::basicAttrValueScan(const XMLCh* const attrName, XMLBuffer& to
 
     //  We have to get the current reader because we have to ignore closing
     //  quotes until we hit the same reader again.
-    const unsigned int curReader = fReaderMgr.getCurrentReaderNum();
+    const XMLSize_t curReader = fReaderMgr.getCurrentReaderNum();
 
     //  Loop until we get the attribute value. Note that we use a double
     //  loop here to avoid the setup/teardown overhead of the exception
@@ -4155,14 +4194,15 @@ void SGXMLScanner::scanCDSection()
     XMLElementDecl::CharDataOpts charOpts = XMLElementDecl::AllCharData;
     // And see if the current element is a 'Children' style content model
     ComplexTypeInfo *currType = ((SchemaValidator*)fValidator)->getCurrentTypeInfo();
-    if(currType) 
+    if(currType)
     {
-        SchemaElementDecl::ModelTypes modelType = (SchemaElementDecl::ModelTypes) currType->getContentType(); 
-        if(modelType == SchemaElementDecl::Children) 
+        SchemaElementDecl::ModelTypes modelType = (SchemaElementDecl::ModelTypes) currType->getContentType();
+        if(modelType == SchemaElementDecl::Children ||
+           modelType == SchemaElementDecl::ElementOnlyEmpty)
             charOpts = XMLElementDecl::SpacesOk;
-        else if(modelType == SchemaElementDecl::Empty) 
-            charOpts = XMLElementDecl::NoCharData; 
-    } 
+        else if(modelType == SchemaElementDecl::Empty)
+            charOpts = XMLElementDecl::NoCharData;
+    }
 
     // should not be necessary when PSVI on element decl removed
     const ElemStack::StackElem* topElem = fElemStack.topElement();
@@ -4192,7 +4232,7 @@ void SGXMLScanner::scanCDSection()
                     fValidator->emitError(XMLValid::NoWSForStandalone);
                     if (getPSVIHandler())
                     {
-                        // REVISIT:                
+                        // REVISIT:
                         // PSVIElement->setValidity(PSVIItem::VALIDITY_INVALID);
                     }
                 }
@@ -4208,7 +4248,7 @@ void SGXMLScanner::scanCDSection()
                 emitError(XMLErrs::Expected2ndSurrogateChar);
             }
 
-            unsigned int xsLen = bbCData.getLen();
+            XMLSize_t xsLen = bbCData.getLen();
             const XMLCh* xsNormalized = bbCData.getRawBuffer();
             if (fValidate) {
 
@@ -4230,7 +4270,7 @@ void SGXMLScanner::scanCDSection()
                     fValidator->emitError(XMLValid::NoCharDataInCM);
                     if (getPSVIHandler())
                     {
-                        // REVISIT:                
+                        // REVISIT:
                         // PSVIElement->setValidity(PSVIItem::VALIDITY_INVALID);
                     }
                 }
@@ -4491,7 +4531,7 @@ void SGXMLScanner::scanCharData(XMLBuffer& toUse)
         // See if the text contains whitespace
         // Get the raw data we need for the callback
         const XMLCh* rawBuf = toUse.getRawBuffer();
-        const unsigned int len = toUse.getLen();
+        const XMLSize_t len = toUse.getLen();
         const bool isSpaces = fReaderMgr.getCurrentReader()->containsWhiteSpace(rawBuf, len);
 
         if (isSpaces)
@@ -4505,12 +4545,13 @@ void SGXMLScanner::scanCharData(XMLBuffer& toUse)
                 XMLElementDecl::CharDataOpts charOpts = XMLElementDecl::AllCharData;
                 // And see if the current element is a 'Children' style content model
                 ComplexTypeInfo *currType = ((SchemaValidator*)fValidator)->getCurrentTypeInfo();
-                if(currType) 
+                if(currType)
                 {
-                    SchemaElementDecl::ModelTypes modelType = (SchemaElementDecl::ModelTypes) currType->getContentType(); 
-                    if(modelType == SchemaElementDecl::Children) 
+                    SchemaElementDecl::ModelTypes modelType = (SchemaElementDecl::ModelTypes) currType->getContentType();
+                    if(modelType == SchemaElementDecl::Children ||
+                       modelType == SchemaElementDecl::ElementOnlyEmpty)
                         charOpts = XMLElementDecl::SpacesOk;
-                } 
+                }
 
                 if (charOpts == XMLElementDecl::SpacesOk)  // => Element Content
                 {
@@ -4520,7 +4561,7 @@ void SGXMLScanner::scanCharData(XMLBuffer& toUse)
                     fValidator->emitError(XMLValid::NoWSForStandalone);
                     if (getPSVIHandler())
                     {
-                        // REVISIT:                
+                        // REVISIT:
                         // PSVIElement->setValidity(PSVIItem::VALIDITY_INVALID);
                     }
                 }
@@ -4554,7 +4595,7 @@ SGXMLScanner::scanEntityRef(  const   bool
     escaped = false;
 
     // We have to insure that its all in one entity
-    const unsigned int curReader = fReaderMgr.getCurrentReaderNum();
+    const XMLSize_t curReader = fReaderMgr.getCurrentReaderNum();
 
     //  If the next char is a pound, then its a character reference and we
     //  need to expand it always.
@@ -4577,7 +4618,7 @@ SGXMLScanner::scanEntityRef(  const   bool
     XMLBufBid bbName(&fBufMgr);
     int colonPosition;
     if (!fReaderMgr.getQName(bbName.getBuffer(), &colonPosition))
-    {        
+    {
         if (bbName.isEmpty())
             emitError(XMLErrs::ExpectedEntityRefName);
         else
@@ -4612,10 +4653,10 @@ SGXMLScanner::scanEntityRef(  const   bool
     // here's where we need to check if there's a SecurityManager,
     // how many entity references we've had
     if(fSecurityManager != 0 && ++fEntityExpansionCount > fEntityExpansionLimit) {
-        XMLCh expLimStr[16];
-        XMLString::binToText(fEntityExpansionLimit, expLimStr, 15, 10, fMemoryManager);
+        XMLCh expLimStr[32];
+        XMLString::sizeToText(fEntityExpansionLimit, expLimStr, 31, 10, fMemoryManager);
         emitError
-        ( 
+        (
             XMLErrs::EntityExpansionLimitExceeded
             , expLimStr
         );
@@ -4656,12 +4697,13 @@ bool SGXMLScanner::switchGrammar(const XMLCh* const newGrammarNameSpace)
 // if lax - validate only if the element if found
 bool SGXMLScanner::laxElementValidation(QName* element, ContentLeafNameTypeVector* cv,
                                         const XMLContentModel* const cm,
-                                        const unsigned int parentElemDepth)
+                                        const XMLSize_t parentElemDepth)
 {
     bool skipThisOne = false;
     bool laxThisOne = false;
     unsigned int elementURI = element->getURI();
     unsigned int currState = fElemState[parentElemDepth];
+    unsigned int currLoop = fElemLoopState[parentElemDepth];
 
     if (currState == XMLContentModel::gInvalidTrans) {
         return laxThisOne;
@@ -4670,15 +4712,14 @@ bool SGXMLScanner::laxElementValidation(QName* element, ContentLeafNameTypeVecto
     SubstitutionGroupComparator comparator(fGrammarResolver, fURIStringPool);
 
     if (cv) {
-        unsigned int i = 0;
-        unsigned int leafCount = cv->getLeafCount();
+        XMLSize_t i = 0;
+        XMLSize_t leafCount = cv->getLeafCount();
+        unsigned int nextState = 0;
 
         for (; i < leafCount; i++) {
 
             QName* fElemMap = cv->getLeafNameAt(i);
             unsigned int uri = fElemMap->getURI();
-            unsigned int nextState;
-            bool anyEncountered = false;
             ContentSpecNode::NodeTypes type = cv->getLeafTypeAt(i);
 
             if (type == ContentSpecNode::Leaf) {
@@ -4688,52 +4729,55 @@ bool SGXMLScanner::laxElementValidation(QName* element, ContentLeafNameTypeVecto
 
                     nextState = cm->getNextState(currState, i);
 
-                    if (nextState != XMLContentModel::gInvalidTrans) {
-                        fElemState[parentElemDepth] = nextState;
+                    if (nextState != XMLContentModel::gInvalidTrans)
                         break;
-                    }
                 }
             } else if ((type & 0x0f) == ContentSpecNode::Any) {
-                anyEncountered = true;
+                nextState = cm->getNextState(currState, i);
+                if (nextState != XMLContentModel::gInvalidTrans)
+                    break;
             }
             else if ((type & 0x0f) == ContentSpecNode::Any_Other) {
-                if (uri != elementURI) {
-                    anyEncountered = true;
+                if (uri != elementURI && elementURI != fEmptyNamespaceId) {
+                    nextState = cm->getNextState(currState, i);
+                    if (nextState != XMLContentModel::gInvalidTrans)
+                        break;
                 }
             }
             else if ((type & 0x0f) == ContentSpecNode::Any_NS) {
                 if (uri == elementURI) {
-                    anyEncountered = true;
+                    nextState = cm->getNextState(currState, i);
+                    if (nextState != XMLContentModel::gInvalidTrans)
+                        break;
                 }
             }
 
-            if (anyEncountered) {
-
-                nextState = cm->getNextState(currState, i);
-                if (nextState != XMLContentModel::gInvalidTrans) {
-                    fElemState[parentElemDepth] = nextState;
-
-                    if (type == ContentSpecNode::Any_Skip ||
-                        type == ContentSpecNode::Any_NS_Skip ||
-                        type == ContentSpecNode::Any_Other_Skip) {
-                        skipThisOne = true;
-                    }
-                    else if (type == ContentSpecNode::Any_Lax ||
-                             type == ContentSpecNode::Any_NS_Lax ||
-                             type == ContentSpecNode::Any_Other_Lax) {
-                        laxThisOne = true;
-                    }
-
-                    break;
-                }
-            }
         } // for
 
         if (i == leafCount) { // no match
             fElemState[parentElemDepth] = XMLContentModel::gInvalidTrans;
+            fElemLoopState[parentElemDepth] = 0;
             return laxThisOne;
         }
 
+        ContentSpecNode::NodeTypes type = cv->getLeafTypeAt(i);
+        if ((type & 0x0f) == ContentSpecNode::Any ||
+            (type & 0x0f) == ContentSpecNode::Any_Other ||
+            (type & 0x0f) == ContentSpecNode::Any_NS)
+        {
+            if (type == ContentSpecNode::Any_Skip ||
+                type == ContentSpecNode::Any_NS_Skip ||
+                type == ContentSpecNode::Any_Other_Skip) {
+                skipThisOne = true;
+            }
+            else if (type == ContentSpecNode::Any_Lax ||
+                     type == ContentSpecNode::Any_NS_Lax ||
+                     type == ContentSpecNode::Any_Other_Lax) {
+                laxThisOne = true;
+            }
+        }
+        fElemState[parentElemDepth] = nextState;
+        fElemLoopState[parentElemDepth] = currLoop;
     } // if
 
     if (skipThisOne) {
@@ -4763,10 +4807,10 @@ bool SGXMLScanner::anyAttributeValidation(SchemaAttDef* attWildCard, unsigned in
     }
     else if (wildCardType == XMLAttDef::Any_List) {
         ValueVectorOf<unsigned int>* nameURIList = attWildCard->getNamespaceList();
-        unsigned int listSize = (nameURIList) ? nameURIList->size() : 0;
+        XMLSize_t listSize = (nameURIList) ? nameURIList->size() : 0;
 
         if (listSize) {
-            for (unsigned int i=0; i < listSize; i++) {
+            for (XMLSize_t i=0; i < listSize; i++) {
                 if (nameURIList->elementAt(i) == uriId)
                     anyEncountered = true;
             }
@@ -4781,7 +4825,7 @@ bool SGXMLScanner::anyAttributeValidation(SchemaAttDef* attWildCard, unsigned in
             if (getPSVIHandler())
             {
                 // REVISIT:
-                // PSVIAttribute->setValidationAttempted(PSVIItem::VALIDATION_NONE);            
+                // PSVIAttribute->setValidationAttempted(PSVIItem::VALIDATION_NONE);
             }
         }
         else if (defType == XMLAttDef::ProcessContents_Lax) {
@@ -4851,7 +4895,7 @@ void SGXMLScanner::endElementPSVI(SchemaElementDecl* const elemDecl,
         , validationAttempted
         , fRootElemName
         , fPSVIElemContext.fIsSpecified
-        , (elemDecl->isDeclared()) 
+        , (elemDecl->isDeclared())
             ? (XSElementDeclaration*) fModel->getXSObject(elemDecl) : 0
         , typeDef
         , (memberDV) ? (XSSimpleTypeDefinition*) fModel->getXSObject(memberDV) : 0

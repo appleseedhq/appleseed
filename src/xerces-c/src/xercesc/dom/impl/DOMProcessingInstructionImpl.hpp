@@ -1,5 +1,3 @@
-#ifndef DOMProcessingInstructionImpl_HEADER_GUARD_
-#define DOMProcessingInstructionImpl_HEADER_GUARD_
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,8 +16,11 @@
  */
 
 /*
- * $Id: DOMProcessingInstructionImpl.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMProcessingInstructionImpl.hpp 641193 2008-03-26 08:06:57Z borisk $
  */
+
+#if !defined(XERCESC_INCLUDE_GUARD_DOMPROCESSINGINSTRUCTIONIMPL_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMPROCESSINGINSTRUCTIONIMPL_HPP
 
 //
 //  This file is part of the internal implementation of the C++ XML DOM.
@@ -44,7 +45,7 @@ class    DocumentImpl;
 
 
 class CDOM_EXPORT DOMProcessingInstructionImpl: public DOMProcessingInstruction {
-private:
+protected:
     DOMNodeImpl   fNode;
     DOMChildNode  fChild;
     // use fCharacterData to store its data so that those character utitlites can be used
@@ -61,9 +62,11 @@ public:
                               bool deep=false);
     virtual ~DOMProcessingInstructionImpl();
 
+public:
     // Declare all of the functions from DOMNode.
     DOMNODE_FUNCTIONS;
 
+public:
     virtual const XMLCh *getData() const;
     virtual const XMLCh *getTarget() const;
     virtual void setData(const XMLCh *arg);

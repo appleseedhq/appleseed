@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: DTDElementDecl.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DTDElementDecl.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-
-#if !defined(DTDELEMENTDECL_HPP)
-#define DTDELEMENTDECL_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_DTDELEMENTDECL_HPP)
+#define XERCESC_INCLUDE_GUARD_DTDELEMENTDECL_HPP
 
 #include <xercesc/util/RefHashTableOf.hpp>
 #include <xercesc/util/QName.hpp>
@@ -37,7 +36,7 @@ class DTDAttDefList;
 
 //
 //  This class is a derivative of the basic element decl. This one implements
-//  the virtuals so that they work for a DTD. THe big difference is that
+//  the virtuals so that they work for a DTD. The big difference is that
 //  they don't live in any URL in the DTD. The names are just stored as full
 //  QNames, so they are not split out and element decls don't live within
 //  URL namespaces or anything like that.
@@ -88,19 +87,9 @@ public :
     // -----------------------------------------------------------------------
     //  The virtual element decl interface
     // -----------------------------------------------------------------------
-    virtual XMLAttDef* findAttr
-    (
-        const   XMLCh* const    qName
-        , const unsigned int    uriId
-        , const XMLCh* const    baseName
-        , const XMLCh* const    prefix
-        , const LookupOpts      options
-        ,       bool&           wasAdded
-    )   const;
     virtual XMLAttDefList& getAttDefList() const;
     virtual CharDataOpts getCharDataOpts() const;
-    virtual bool hasAttDefs() const;
-    virtual bool resetDefs();
+    virtual bool hasAttDefs() const;   
     virtual const ContentSpecNode* getContentSpec() const;
     virtual ContentSpecNode* getContentSpec();
     virtual void setContentSpec(ContentSpecNode* toAdopt);
@@ -123,16 +112,6 @@ public :
     const DTDAttDef* getAttDef(const XMLCh* const attName) const;
     DTDAttDef* getAttDef(const XMLCh* const attName);
     ModelTypes getModelType() const;
-
-    /**
-     * @deprecated
-    **/
-    const XMLCh* getDOMTypeInfoName() const;
-
-    /**
-     * @deprecated
-    **/
-    const XMLCh* getDOMTypeInfoUri() const;
 
     // -----------------------------------------------------------------------
     //  Setter methods
@@ -252,14 +231,6 @@ inline const XMLCh* DTDElementDecl::getKey() const
 inline DTDElementDecl::ModelTypes DTDElementDecl::getModelType() const
 {
     return fModelType;
-}
-
-inline const XMLCh* DTDElementDecl::getDOMTypeInfoName() const {
-    return 0;
-}
-
-inline const XMLCh* DTDElementDecl::getDOMTypeInfoUri() const {
-    return 0;
 }
 
 // ---------------------------------------------------------------------------

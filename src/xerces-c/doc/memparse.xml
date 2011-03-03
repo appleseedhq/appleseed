@@ -21,7 +21,7 @@
 <s1 title="Sample: MemParse">
 
     <s2 title="MemParse">
-        <p>MemParse uses the Validating SAX Parser to parse a memory buffer containing
+        <p>MemParse uses the SAX Parser to parse a memory buffer containing
                   XML statements, and reports the number of elements and attributes found.</p>
 
         <s3 title="Running MemParse">
@@ -102,7 +102,7 @@ Parsing took 10 ms (4 elements, 1 attributes, 0 spaces, 111 characters).</source
           <p>Note that the sum of spaces and characters in both versions is the same.</p>
 
           <note>The time reported by the system may be different, depending on your
-          processor type.</note>
+          processor speed.</note>
 
         </s3>
     </s2>

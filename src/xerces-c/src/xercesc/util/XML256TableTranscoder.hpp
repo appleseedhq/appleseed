@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: XML256TableTranscoder.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XML256TableTranscoder.hpp 635560 2008-03-10 14:10:09Z borisk $
  */
 
-
-#ifndef XML256TABLETRANSCODER_HPP
-#define XML256TABLETRANSCODER_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XML256TABLETRANSCODER_HPP)
+#define XERCESC_INCLUDE_GUARD_XML256TABLETRANSCODER_HPP
 
 #include <xercesc/util/TransService.hpp>
 
@@ -45,30 +44,30 @@ public :
     // -----------------------------------------------------------------------
     //  The virtual transcoding interface
     // -----------------------------------------------------------------------
-    virtual unsigned int transcodeFrom
+    virtual XMLSize_t transcodeFrom
     (
         const   XMLByte* const          srcData
-        , const unsigned int            srcCount
+        , const XMLSize_t               srcCount
         ,       XMLCh* const            toFill
-        , const unsigned int            maxChars
-        ,       unsigned int&           bytesEaten
+        , const XMLSize_t               maxChars
+        ,       XMLSize_t&              bytesEaten
         ,       unsigned char* const    charSizes
     );
 
-    virtual unsigned int transcodeTo
+    virtual XMLSize_t transcodeTo
     (
         const   XMLCh* const    srcData
-        , const unsigned int    srcCount
+        , const XMLSize_t       srcCount
         ,       XMLByte* const  toFill
-        , const unsigned int    maxBytes
-        ,       unsigned int&   charsEaten
+        , const XMLSize_t       maxBytes
+        ,       XMLSize_t&      charsEaten
         , const UnRepOpts       options
     );
 
     virtual bool canTranscodeTo
     (
         const   unsigned int    toCheck
-    )   const;
+    );
 
 
 protected :
@@ -78,10 +77,10 @@ protected :
     XML256TableTranscoder
     (
         const   XMLCh* const                        encodingName
-        , const unsigned int                        blockSize
+        , const XMLSize_t                           blockSize
         , const XMLCh* const                        fromTable
         , const XMLTransService::TransRec* const    toTable
-        , const unsigned int                        toTableSize
+        , const XMLSize_t                           toTableSize
         , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
     );
 
@@ -138,7 +137,7 @@ private :
     //      itself.
     // -----------------------------------------------------------------------
     const XMLCh*                        fFromTable;
-    unsigned int                        fToSize;
+    XMLSize_t                           fToSize;
     const XMLTransService::TransRec*    fToTable;
 };
 

@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: ICUTransService.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: ICUTransService.cpp 901107 2010-01-20 08:45:02Z borisk $
  */
 
 
@@ -46,6 +46,19 @@
 extern "C" const uint8_t U_IMPORT icudata_dat[];
 #endif
 #endif
+
+#if !defined(U16_NEXT_UNSAFE) && defined(UTF16_NEXT_CHAR_UNSAFE)
+    #define U16_NEXT_UNSAFE UTF16_NEXT_CHAR_UNSAFE
+#endif
+
+#if !defined(U16_APPEND_UNSAFE) && defined(UTF16_APPEND_CHAR_UNSAFE)
+    #define U16_APPEND_UNSAFE UTF16_APPEND_CHAR_UNSAFE
+#endif
+
+#if !defined(U_IS_BMP) && defined(UTF16_CHAR_LENGTH)
+    #define U_IS_BMP(c) (UTF16_CHAR_LENGTH(c)==1)
+#endif
+
 
 XERCES_CPP_NAMESPACE_BEGIN
 
@@ -80,11 +93,11 @@ static const XMLCh gswaplfnlId[] =
 //  When XMLCh and ICU's UChar are not the same size, we have to do a temp
 //  conversion of all strings. These local helper methods make that easier.
 //
-static UChar* convertToUChar( const   XMLCh* const    toConvert
-                            , const unsigned int    srcLen = 0
+static UChar* convertToUChar( const XMLCh* const   toConvert
+                            , const XMLSize_t      srcLen = 0
                             , MemoryManager* const manager = 0)
 {
-    const unsigned int actualLen = srcLen
+    const XMLSize_t actualLen = srcLen
                                    ? srcLen : XMLString::stringLen(toConvert);
 
     UChar* tmpBuf = (manager)
@@ -123,14 +136,17 @@ static XMLCh* convertToXMLCh( const UChar* const toConvert,
 // ---------------------------------------------------------------------------
 //  ICUTransService: Constructors and Destructor
 // ---------------------------------------------------------------------------
-ICUTransService::ICUTransService()
+ICUTransService::ICUTransService(MemoryManager*)
 {
-#if (U_ICU_VERSION_MAJOR_NUM > 2 || (U_ICU_VERSION_MAJOR_NUM == 2 && U_ICU_VERSION_MINOR_NUM >= 6))
+  // Starting with ICU 3.4 we don't need to call init anymore.
+  //
+#if (U_ICU_VERSION_MAJOR_NUM > 2 || (U_ICU_VERSION_MAJOR_NUM == 2 && U_ICU_VERSION_MINOR_NUM >= 6)) && \
+  (U_ICU_VERSION_MAJOR_NUM < 3 || (U_ICU_VERSION_MAJOR_NUM == 3 && U_ICU_VERSION_MINOR_NUM < 4))
     UErrorCode errorCode=U_ZERO_ERROR;
     u_init(&errorCode);
     if(U_FAILURE(errorCode)) {
         XMLPlatformUtils::panic(PanicHandler::Panic_NoTransService);
-    }    
+    }
 #endif
 
 #if !defined(XML_OS390) && !defined(XML_AS400) && !defined(XML_HPUX) && !defined(XML_PTX)
@@ -214,7 +230,7 @@ int ICUTransService::compareIString(const   XMLCh* const    comp1
 
 int ICUTransService::compareNIString(const  XMLCh* const    comp1
                                     , const XMLCh* const    comp2
-                                    , const unsigned int    maxChars)
+                                    , const XMLSize_t       maxChars)
 {
     if (maxChars > 0)
     {
@@ -268,26 +284,7 @@ const XMLCh* ICUTransService::getId() const
     return gMyServiceId;
 }
 
-
-bool ICUTransService::isSpace(const XMLCh toCheck) const
-{
-    //
-    //  <TBD>
-    //  For now, we short circuit some of the control chars because ICU
-    //  is not correctly reporting them as space. Later, when they change
-    //  this, we can get rid of this special case.
-    //
-    if ((toCheck == 0x09)
-    ||  (toCheck == 0x0A)
-    ||  (toCheck == 0x0D))
-    {
-        return true;
-    }
-    return (u_isspace(UChar(toCheck)) != 0);
-}
-
-
-XMLLCPTranscoder* ICUTransService::makeNewLCPTranscoder()
+XMLLCPTranscoder* ICUTransService::makeNewLCPTranscoder(MemoryManager* manager)
 {
     //
     //  Try to create a default converter. If it fails, return a null
@@ -300,7 +297,7 @@ XMLLCPTranscoder* ICUTransService::makeNewLCPTranscoder()
         return 0;
 
     // That went ok, so create an ICU LCP transcoder wrapper and return it
-    return new ICULCPTranscoder(converter);
+    return new (manager) ICULCPTranscoder(converter);
 }
 
 
@@ -312,16 +309,13 @@ bool ICUTransService::supportsSrcOfs() const
 
 
 template <class FunctionType>
-static void
-doCaseConvert(
-            XMLCh*          convertString,
-            FunctionType    caseFunction)
+static void doCaseConvert(XMLCh*          convertString,
+                          FunctionType    caseFunction)
 {
     // Note the semantics of this function are broken, since it's
     // possible that changing the case of a string could increase
     // its length, but there's no way to handle such a situation.
-    const unsigned int  len =
-            XMLString::stringLen(convertString);
+    const XMLSize_t len = XMLString::stringLen(convertString);
 
     size_t  readPos = 0;
     size_t  writePos = 0;
@@ -356,12 +350,12 @@ doCaseConvert(
 
 
 
-void ICUTransService::upperCase(XMLCh* const toUpperCase) const
+void ICUTransService::upperCase(XMLCh* const toUpperCase)
 {
     doCaseConvert(toUpperCase, u_toupper);
 }
 
-void ICUTransService::lowerCase(XMLCh* const toLowerCase) const
+void ICUTransService::lowerCase(XMLCh* const toLowerCase)
 {
     doCaseConvert(toLowerCase, u_tolower);
 }
@@ -374,23 +368,23 @@ void ICUTransService::lowerCase(XMLCh* const toLowerCase) const
 XMLTranscoder* ICUTransService::
 makeNewXMLTranscoder(const  XMLCh* const            encodingName
                     ,       XMLTransService::Codes& resValue
-                    , const unsigned int            blockSize
+                    , const XMLSize_t               blockSize
                     ,       MemoryManager* const    manager)
 {
-    //  
-    //  For encodings that end with "s390" we need to strip off the "s390" 
-    //  from the encoding name and add ",swaplfnl" to the encoding name	
-    //  that we pass into ICU on the ucnv_openU.  
-    //  
+    //
+    //  For encodings that end with "s390" we need to strip off the "s390"
+    //  from the encoding name and add ",swaplfnl" to the encoding name
+    //  that we pass into ICU on the ucnv_openU.
+    //
     XMLCh* encodingNameToUse = (XMLCh*) encodingName;
     XMLCh* workBuffer = 0;
 
     if ( (XMLString::endsWith(encodingNameToUse, gs390Id)) ||
          (XMLString::endsWith(encodingNameToUse, gS390Id)) )
     {
-       int workBufferSize = (XMLString::stringLen(encodingNameToUse) + XMLString::stringLen(gswaplfnlId) - XMLString::stringLen(gS390Id) + 1);
+       XMLSize_t workBufferSize = (XMLString::stringLen(encodingNameToUse) + XMLString::stringLen(gswaplfnlId) - XMLString::stringLen(gS390Id) + 1);
        workBuffer = (XMLCh*) manager->allocate(workBufferSize * sizeof(XMLCh));
-       int moveSize = XMLString::stringLen(encodingNameToUse) - XMLString::stringLen(gS390Id);
+       XMLSize_t moveSize = XMLString::stringLen(encodingNameToUse) - XMLString::stringLen(gS390Id);
        XMLString::moveChars(workBuffer, encodingNameToUse, moveSize);
        XMLString::moveChars((workBuffer + moveSize), gswaplfnlId, XMLString::stringLen(gswaplfnlId));
        encodingNameToUse = workBuffer;
@@ -434,7 +428,7 @@ makeNewXMLTranscoder(const  XMLCh* const            encodingName
 // ---------------------------------------------------------------------------
 ICUTranscoder::ICUTranscoder(const  XMLCh* const        encodingName
                             ,       UConverter* const   toAdopt
-                            , const unsigned int        blockSize
+                            , const XMLSize_t           blockSize
                             , MemoryManager* const      manager) :
 
     XMLTranscoder(encodingName, blockSize, manager)
@@ -470,19 +464,14 @@ ICUTranscoder::~ICUTranscoder()
 // ---------------------------------------------------------------------------
 //  ICUTranscoder: The virtual transcoder API
 // ---------------------------------------------------------------------------
-unsigned int
+XMLSize_t
 ICUTranscoder::transcodeFrom(const  XMLByte* const          srcData
-                            , const unsigned int            srcCount
+                            , const XMLSize_t               srcCount
                             ,       XMLCh* const            toFill
-                            , const unsigned int            maxChars
-                            ,       unsigned int&           bytesEaten
+                            , const XMLSize_t               maxChars
+                            ,       XMLSize_t&              bytesEaten
                             ,       unsigned char* const    charSizes)
 {
-    // If debugging, insure the block size is legal
-    #if defined(XERCES_DEBUG)
-    checkBlockSize(maxChars);
-    #endif
-
     // Set up pointers to the start and end of the source buffer
     const XMLByte*  startSrc = srcData;
     const XMLByte*  endSrc = srcData + srcCount;
@@ -502,7 +491,7 @@ ICUTranscoder::transcodeFrom(const  XMLByte* const          srcData
     UChar* orgTarget = startTarget;
 
     //
-    //  Transoode the buffer.  Buffer overflow errors are normal, occuring
+    //  Transcode the buffer.  Buffer overflow errors are normal, occuring
     //  when the raw input buffer holds more characters than will fit in
     //  the Unicode output buffer.
     //
@@ -547,7 +536,7 @@ ICUTranscoder::transcodeFrom(const  XMLByte* const          srcData
     bytesEaten = startSrc - srcData;
 
     // And the characters decoded
-    const unsigned int charsDecoded = startTarget - orgTarget;
+    const XMLSize_t charsDecoded = startTarget - orgTarget;
 
     //
     //  Translate the array of char offsets into an array of character
@@ -609,12 +598,12 @@ ICUTranscoder::transcodeFrom(const  XMLByte* const          srcData
 }
 
 
-unsigned int
+XMLSize_t
 ICUTranscoder::transcodeTo( const   XMLCh* const    srcData
-                            , const unsigned int    srcCount
+                            , const XMLSize_t       srcCount
                             ,       XMLByte* const  toFill
-                            , const unsigned int    maxBytes
-                            ,       unsigned int&   charsEaten
+                            , const XMLSize_t       maxBytes
+                            ,       XMLSize_t&      charsEaten
                             , const UnRepOpts       options)
 {
     //
@@ -707,7 +696,7 @@ ICUTranscoder::transcodeTo( const   XMLCh* const    srcData
 }
 
 
-bool ICUTranscoder::canTranscodeTo(const unsigned int toCheck) const
+bool ICUTranscoder::canTranscodeTo(const unsigned int toCheck)
 {
     //
     //  If the passed value is really a surrogate embedded together, then
@@ -805,7 +794,7 @@ ICULCPTranscoder::~ICULCPTranscoder()
 // ---------------------------------------------------------------------------
 //  ICULCPTranscoder: Constructors and Destructor
 // ---------------------------------------------------------------------------
-unsigned int ICULCPTranscoder::calcRequiredSize(const XMLCh* const srcText
+XMLSize_t ICULCPTranscoder::calcRequiredSize(const XMLCh* const srcText
                                                 , MemoryManager* const manager)
 {
     if (!srcText)
@@ -859,11 +848,11 @@ unsigned int ICULCPTranscoder::calcRequiredSize(const XMLCh* const srcText
     if (err != U_BUFFER_OVERFLOW_ERROR)
         return 0;
 
-    return (unsigned int)targetCap;
+    return (XMLSize_t)targetCap;
 }
 
-unsigned int ICULCPTranscoder::calcRequiredSize(const char* const srcText
-                                                , MemoryManager* const manager)
+XMLSize_t ICULCPTranscoder::calcRequiredSize(const char* const srcText
+                                                , MemoryManager* const /*manager*/)
 {
     if (!srcText)
         return 0;
@@ -880,7 +869,7 @@ unsigned int ICULCPTranscoder::calcRequiredSize(const char* const srcText
             , 0
             , 0
             , srcText
-            , strlen(srcText)
+            , (int32_t)strlen(srcText)
             , &err
         );
     }
@@ -890,114 +879,14 @@ unsigned int ICULCPTranscoder::calcRequiredSize(const char* const srcText
 
 #if (U_ICU_VERSION_MAJOR_NUM < 2)
     // Subtract one since it includes the terminator space
-    return (unsigned int)(targetCap - 1);
+    return (XMLSize_t)(targetCap - 1);
 #else
     // Starting ICU 2.0, this is fixed and all ICU String functions have consistent NUL-termination behavior.
     // The returned length is always the number of output UChar's, not counting an additional, terminating NUL.
-    return (unsigned int)(targetCap);
+    return (XMLSize_t)(targetCap);
 #endif
 }
 
-
-char* ICULCPTranscoder::transcode(const XMLCh* const toTranscode)
-{
-    char* retBuf = 0;
-
-    // Check for a couple of special cases
-    if (!toTranscode)
-        return retBuf;
-
-    if (!*toTranscode)
-    {
-        retBuf = new char[1];
-        retBuf[0] = 0;
-        return retBuf;
-    }
-
-    //
-    //  Get the length of the source string since we'll have to use it in
-    //  a couple places below.
-    //
-    const unsigned int srcLen = XMLString::stringLen(toTranscode);
-
-    //
-    //  If XMLCh and UChar are not the same size, then we have to make a
-    //  temp copy of the text to pass to ICU.
-    //
-    const UChar* actualSrc;
-    UChar* ncActual = 0;
-    if (sizeof(XMLCh) == sizeof(UChar))
-    {
-        actualSrc = (const UChar*)toTranscode;
-    }
-     else
-    {
-        // Allocate a non-const temp buf, but store it also in the actual
-        ncActual = convertToUChar(toTranscode, 0, XMLPlatformUtils::fgMemoryManager);
-        actualSrc = ncActual;
-    }
-
-    // Insure that the temp buffer, if any, gets cleaned up via the nc pointer
-    ArrayJanitor<UChar> janTmp(ncActual, XMLPlatformUtils::fgMemoryManager);
-
-    // Caculate a return buffer size not too big, but less likely to overflow
-    int32_t targetLen = (int32_t)(srcLen * 1.25);
-
-    // Allocate the return buffer
-    retBuf = new char[targetLen + 1];
-
-    //
-    //  Lock now while we call the converter. Use a faux block to do the
-    //  lock so that it unlocks immediately afterwards.
-    //
-    UErrorCode err = U_ZERO_ERROR;
-    int32_t targetCap;
-    {
-        XMLMutexLock lockConverter(&fMutex);
-
-        targetCap = ucnv_fromUChars
-        (
-            fConverter
-            , retBuf
-            , targetLen + 1
-            , actualSrc
-            , -1
-            , &err
-        );
-    }
-
-    // If targetLen is not enough then buffer overflow might occur
-    if ((err == U_BUFFER_OVERFLOW_ERROR) || (err == U_STRING_NOT_TERMINATED_WARNING))
-    {
-        //
-        //  Reset the error, delete the old buffer, allocate a new one,
-        //  and try again.
-        //
-        err = U_ZERO_ERROR;
-        delete [] retBuf;
-        retBuf = new char[targetCap + 1];
-
-        // Lock again before we retry
-        XMLMutexLock lockConverter(&fMutex);
-        targetCap = ucnv_fromUChars
-        (
-            fConverter
-            , retBuf
-            , targetCap + 1
-            , actualSrc
-            , -1
-            , &err
-        );
-    }
-
-    if (U_FAILURE(err))
-    {
-        delete [] retBuf;
-        return 0;
-    }
-
-    return retBuf;
-}
 
 char* ICULCPTranscoder::transcode(const XMLCh* const toTranscode,
                                   MemoryManager* const manager)
@@ -1019,7 +908,7 @@ char* ICULCPTranscoder::transcode(const XMLCh* const toTranscode,
     //  Get the length of the source string since we'll have to use it in
     //  a couple places below.
     //
-    const unsigned int srcLen = XMLString::stringLen(toTranscode);
+    const XMLSize_t srcLen = XMLString::stringLen(toTranscode);
 
     //
     //  If XMLCh and UChar are not the same size, then we have to make a
@@ -1098,94 +987,6 @@ char* ICULCPTranscoder::transcode(const XMLCh* const toTranscode,
     }
 
     return retBuf;
-}
-
-XMLCh* ICULCPTranscoder::transcode(const char* const toTranscode)
-{
-    // Watch for a few pyscho corner cases
-    if (!toTranscode)
-        return 0;
-
-    if (!*toTranscode)
-    {
-        XMLCh* retVal = new XMLCh[1];
-        retVal[0] = 0;
-        return retVal;
-    }
-
-    //
-    //  Get the length of the string to transcode. The Unicode string will
-    //  almost always be no more chars than were in the source, so this is
-    //  the best guess as to the storage needed.
-    //
-    const int32_t srcLen = (int32_t)strlen(toTranscode);
-
-    // We need a target buffer of UChars to fill in
-    UChar* targetBuf = 0;
-
-    // Now lock while we do these calculations
-    UErrorCode err = U_ZERO_ERROR;
-    int32_t targetCap;
-    {
-        XMLMutexLock lockConverter(&fMutex);
-
-        //
-        //  Here we don't know what the target length will be so use 0 and
-        //  expect an U_BUFFER_OVERFLOW_ERROR in which case it'd get resolved
-        //  by the correct capacity value.
-        //
-        targetCap = ucnv_toUChars
-        (
-            fConverter
-            , 0
-            , 0
-            , toTranscode
-            , srcLen
-            , &err
-        );
-
-        if (err != U_BUFFER_OVERFLOW_ERROR)
-            return 0;
-
-        err = U_ZERO_ERROR;
-        targetBuf = new UChar[targetCap + 1];
-        ucnv_toUChars
-        (
-            fConverter
-            , targetBuf
-            , targetCap + 1
-            , toTranscode
-            , srcLen
-            , &err
-        );
-    }
-
-    if (U_FAILURE(err))
-    {
-        // Clean up if we got anything allocated
-        delete [] targetBuf;
-        return 0;
-    }
-
-    // Cap it off to make sure
-    targetBuf[targetCap] = 0;
-
-    //
-    //  If XMLCh and UChar are the same size, then we can return retVal
-    //  as is. Else, we have to allocate another buffer and copy the data
-    //  over to it.
-    //
-    XMLCh* actualRet;
-    if (sizeof(XMLCh) == sizeof(UChar))
-    {
-        actualRet = (XMLCh*)targetBuf;
-    }
-     else
-    {
-        actualRet = convertToXMLCh(targetBuf);
-        delete [] targetBuf;
-    }
-    return actualRet;
 }
 
 XMLCh* ICULCPTranscoder::transcode(const char* const toTranscode,
@@ -1280,7 +1081,7 @@ XMLCh* ICULCPTranscoder::transcode(const char* const toTranscode,
 
 bool ICULCPTranscoder::transcode(const  char* const     toTranscode
                                 ,       XMLCh* const    toFill
-                                , const unsigned int    maxChars
+                                , const XMLSize_t       maxChars
                                 , MemoryManager* const  manager)
 {
     // Check for a couple of psycho corner cases
@@ -1297,7 +1098,7 @@ bool ICULCPTranscoder::transcode(const  char* const     toTranscode
     }
 
     // We'll need this in a couple of places below
-    const unsigned int srcLen = strlen(toTranscode);
+    const XMLSize_t srcLen = strlen(toTranscode);
 
     //
     //  Set up the target buffer. If XMLCh and UChar are not the same size
@@ -1323,9 +1124,9 @@ bool ICULCPTranscoder::transcode(const  char* const     toTranscode
         (
             fConverter
             , targetBuf
-            , maxChars + 1
+            , (int32_t)maxChars + 1
             , toTranscode
-            , srcLen
+            , (int32_t)srcLen
             , &err
         );
     }
@@ -1356,7 +1157,7 @@ bool ICULCPTranscoder::transcode(const  char* const     toTranscode
 
 bool ICULCPTranscoder::transcode(   const   XMLCh* const    toTranscode
                                     ,       char* const     toFill
-                                    , const unsigned int    maxChars
+                                    , const XMLSize_t       maxChars
                                     , MemoryManager* const  manager)
 {
     // Watch for a few psycho corner cases
@@ -1404,7 +1205,7 @@ bool ICULCPTranscoder::transcode(   const   XMLCh* const    toTranscode
         (
             fConverter
             , toFill
-            , maxChars
+            , (int32_t)maxChars
             , actualSrc
             , -1
             , &err

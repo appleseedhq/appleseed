@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XMLStringTokenizer.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLStringTokenizer.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#if !defined(XMLSTRINGTOKENIZER_HPP)
-#define XMLSTRINGTOKENIZER_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XMLSTRINGTOKENIZER_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLSTRINGTOKENIZER_HPP
 
 #include <xercesc/util/RefArrayVectorOf.hpp>
 #include <xercesc/util/XMLString.hpp>
@@ -111,7 +111,7 @@ public:
       * Returns the number of tokens remaining in the string using the current
       * delimiter set.
       */
-    int countTokens();
+    unsigned int countTokens();
 
     /**
       * Returns the next token from this string tokenizer.
@@ -153,13 +153,13 @@ private:
     //      The string to be parsed
 	//
     //  fDelimeters
-    //      A set of delimeter characters
+    //      A set of delimiter characters
     //
     //  fTokens
     //      A vector of the token strings
     // -----------------------------------------------------------------------
-    int                 fOffset;
-    int                 fStringLen;
+    XMLSize_t           fOffset;
+    XMLSize_t           fStringLen;
 	XMLCh*              fString;
     const XMLCh*        fDelimeters;
 	RefArrayVectorOf<XMLCh>* fTokens;
@@ -178,15 +178,15 @@ inline bool XMLStringTokenizer::isDelimeter(const XMLCh ch) {
 // ---------------------------------------------------------------------------
 //  XMLStringTokenizer: Management methods
 // ---------------------------------------------------------------------------
-inline int XMLStringTokenizer::countTokens() {
+inline unsigned int XMLStringTokenizer::countTokens() {
 
     if (fStringLen == 0)
 		return 0;
 
-    int  tokCount = 0;
+    unsigned int tokCount = 0;
     bool inToken = false;
 
-    for (int i= fOffset; i< fStringLen; i++) {
+    for (XMLSize_t i= fOffset; i< fStringLen; i++) {
 
         if (isDelimeter(fString[i])) {
 

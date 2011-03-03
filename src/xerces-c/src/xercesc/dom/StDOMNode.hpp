@@ -1,6 +1,3 @@
-#ifndef DOMSPtr_HEADER_GUARD_
-#define DOMSPtr_HEADER_GUARD_
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -19,8 +16,11 @@
  */
 
 /*
- * $Id: StDOMNode.hpp 570125 2007-08-27 13:57:11Z amassari $
+ * $Id: StDOMNode.hpp 570480 2007-08-28 16:36:34Z amassari $
  */
+
+#if !defined(XERCESC_INCLUDE_GUARD_STDOMNODE_HPP)
+#define XERCESC_INCLUDE_GUARD_STDOMNODE_HPP
 
 #include <xercesc/dom/DOMNode.hpp>
 #include <xercesc/dom/DOMAttr.hpp>

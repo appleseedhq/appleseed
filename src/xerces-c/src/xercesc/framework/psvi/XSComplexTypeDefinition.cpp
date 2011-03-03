@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XSComplexTypeDefinition.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XSComplexTypeDefinition.cpp 594002 2007-11-12 01:05:09Z cargilld $
  */
 
 #include <xercesc/framework/psvi/XSComplexTypeDefinition.hpp>
@@ -126,8 +126,9 @@ XSComplexTypeDefinition::CONTENT_TYPE XSComplexTypeDefinition::getContentType() 
         case SchemaElementDecl::Simple:
             return CONTENTTYPE_SIMPLE;
         case SchemaElementDecl::Empty:
+        case SchemaElementDecl::ElementOnlyEmpty:
             return CONTENTTYPE_EMPTY;
-        case SchemaElementDecl::Children:
+        case SchemaElementDecl::Children:        
             return CONTENTTYPE_ELEMENT;
         default:
             //case SchemaElementDecl::Mixed_Complex:
@@ -153,7 +154,7 @@ XSAnnotationList *XSComplexTypeDefinition::getAnnotations()
 // ---------------------------------------------------------------------------
 //  XSComplexTypeDefinition: virtual methods
 // ---------------------------------------------------------------------------
-const XMLCh *XSComplexTypeDefinition::getName() 
+const XMLCh *XSComplexTypeDefinition::getName() const
 {
     return fComplexTypeInfo->getTypeLocalName();
 }

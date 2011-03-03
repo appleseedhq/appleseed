@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XMLBigDecimal.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLBigDecimal.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#ifndef XML_BIGDECIMAL_HPP
-#define XML_BIGDECIMAL_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XML_BIGDECIMAL_HPP)
+#define XERCESC_INCLUDE_GUARD_XML_BIGDECIMAL_HPP
 
 #include <xercesc/util/XMLNumber.hpp>
 #include <xercesc/util/XMLString.hpp>
@@ -78,13 +78,6 @@ public:
                 ,        MemoryManager* const manager
                 );
 
-    /**
-     *
-     *  Deprecated: please use getRawData
-     *
-     */
-    virtual XMLCh*        toString() const;
-    
     virtual XMLCh*        getRawData() const;
 
     virtual const XMLCh*  getFormattedString() const;
@@ -130,7 +123,7 @@ private:
     void  cleanUp();
     
     // -----------------------------------------------------------------------
-    //  Unimplemented contstructors and operators
+    //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------       
     XMLBigDecimal(const XMLBigDecimal& other);
     XMLBigDecimal& operator=(const XMLBigDecimal& other);        
@@ -142,7 +135,7 @@ private:
     //     sign
     //
     //  fTotalDigits
-    //     the total number of didits 
+    //     the total number of digits 
     //
     //  fScale
     //     the number of digits to the right of the decimal point
@@ -161,7 +154,7 @@ private:
     int            fSign;
     unsigned int   fTotalDigits;
     unsigned int   fScale;
-    unsigned int   fRawDataLen;
+    XMLSize_t      fRawDataLen;
     XMLCh*         fRawData;
     XMLCh*         fIntVal;
     MemoryManager* fMemoryManager;
@@ -206,15 +199,6 @@ inline MemoryManager* XMLBigDecimal::getMemoryManager() const
 inline XMLCh*  XMLBigDecimal::getIntVal() const
 {
     return fIntVal;
-}
-
-//
-// The caller needs to de-allocate the memory allocated by this function
-//
-inline XMLCh*  XMLBigDecimal::toString() const
-{
-    // Return data using global operator new
-    return XMLString::replicate(fRawData);
 }
 
 XERCES_CPP_NAMESPACE_END

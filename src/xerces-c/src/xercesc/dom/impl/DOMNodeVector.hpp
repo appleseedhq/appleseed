@@ -1,5 +1,3 @@
-#ifndef DOMNodeVector_HEADER_GUARD_
-#define DOMNodeVector_HEADER_GUARD_
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,8 +16,11 @@
  */
 
 /*
- * $Id: DOMNodeVector.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMNodeVector.hpp 676796 2008-07-15 05:04:13Z dbertoni $
  */
+
+#if !defined(XERCESC_INCLUDE_GUARD_DOMNODEVECTOR_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMNODEVECTOR_HPP
 
 //
 //  This file is part of the internal implementation of the C++ XML DOM.
@@ -42,11 +43,11 @@ class DOMDocument;
 class  DOMNodeVector {
 private:
     DOMNode        **data;
-    XMLSize_t      allocatedSize;
-    XMLSize_t      nextFreeSlot;
+    XMLSize_t       allocatedSize;
+    XMLSize_t       nextFreeSlot;
     void           init(DOMDocument *doc, XMLSize_t size);
     void           checkSpace();
-    
+
     // unimplemented
     DOMNodeVector ( const DOMNodeVector& toCopy);
     DOMNodeVector& operator= (const DOMNodeVector& other);

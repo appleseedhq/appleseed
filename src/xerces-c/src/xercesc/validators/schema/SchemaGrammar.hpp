@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,13 +16,11 @@
  */
 
 /*
- * $Id: SchemaGrammar.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: SchemaGrammar.hpp 883376 2009-11-23 15:45:23Z borisk $
  */
 
-
-
-#if !defined(SCHEMAGRAMMAR_HPP)
-#define SCHEMAGRAMMAR_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_SCHEMAGRAMMAR_HPP)
+#define XERCESC_INCLUDE_GUARD_SCHEMAGRAMMAR_HPP
 
 #include <xercesc/framework/XMLNotationDecl.hpp>
 #include <xercesc/util/RefHash3KeysIdPool.hpp>
@@ -51,7 +49,6 @@ XERCES_CPP_NAMESPACE_BEGIN
 //  Forward Declarations
 // ---------------------------------------------------------------------------
 class ComplexTypeInfo;
-class NamespaceScope;
 class XercesGroupInfo;
 class XercesAttGroupInfo;
 class XSAnnotation;
@@ -90,7 +87,7 @@ public:
         ,       bool&           wasAdded
     ) ;
 
-    virtual unsigned int getElemId
+    virtual XMLSize_t getElemId
     (
         const   unsigned int    uriId
         , const XMLCh* const    baseName
@@ -146,13 +143,13 @@ public:
         , const bool            notDeclared = false
     );
 
-    virtual unsigned int putElemDecl
+    virtual XMLSize_t putElemDecl
     (
         XMLElementDecl* const elemDecl
         , const bool          notDeclared = false
     )   ;
 
-    virtual unsigned int putNotationDecl
+    virtual XMLSize_t putNotationDecl
     (
         XMLNotationDecl* const notationDecl
     )   const;
@@ -171,12 +168,9 @@ public:
     RefHashTableOf<XercesGroupInfo>* getGroupInfoRegistry() const;
     RefHashTableOf<XercesAttGroupInfo>* getAttGroupInfoRegistry() const;
     DatatypeValidatorFactory* getDatatypeRegistry();
-    NamespaceScope* getNamespaceScope() const;
     RefHash2KeysTableOf<ElemVector>* getValidSubstitutionGroups() const;
 
-    //deprecated
-    RefHashTableOf<XMLRefInfo>* getIDRefList() const;
-
+    // @deprecated
     ValidationContext*          getValidationContext() const;
 
     // -----------------------------------------------------------------------
@@ -187,7 +181,6 @@ public:
     void setComplexTypeRegistry(RefHashTableOf<ComplexTypeInfo>* const other);
     void setGroupInfoRegistry(RefHashTableOf<XercesGroupInfo>* const other);
     void setAttGroupInfoRegistry(RefHashTableOf<XercesAttGroupInfo>* const other);
-    void setNamespaceScope(NamespaceScope* const nsScope);
     void setValidSubstitutionGroups(RefHash2KeysTableOf<ElemVector>* const);
 
     virtual void                    setGrammarDescription( XMLGrammarDescription*);
@@ -196,7 +189,7 @@ public:
     // -----------------------------------------------------------------------
     //  Helper methods
     // -----------------------------------------------------------------------
-    unsigned int putGroupElemDecl
+    XMLSize_t putGroupElemDecl
     (
         XMLElementDecl* const elemDecl
     )   const;
@@ -238,11 +231,23 @@ public:
     XSAnnotation* getAnnotation();
     const XSAnnotation* getAnnotation() const;
 
-    /** 
+    /**
       * Get annotation hash table, to enumerate through them
       */
-    RefHashTableOf<XSAnnotation>*  getAnnotations();
-    const RefHashTableOf<XSAnnotation>*  getAnnotations() const;
+    RefHashTableOf<XSAnnotation, PtrHasher>*  getAnnotations();
+    const RefHashTableOf<XSAnnotation, PtrHasher>*  getAnnotations() const;
+
+    /**
+     * Get/set scope count.
+     */
+    unsigned int getScopeCount () const;
+    void setScopeCount (unsigned int);
+
+    /**
+     * Get/set anonymous type count.
+     */
+    unsigned int getAnonTypeCount () const;
+    void setAnonTypeCount (unsigned int);
 
     /***
      * Support for Serialization/De-serialization
@@ -300,9 +305,6 @@ private:
     //  fDatatypeRegistry
     //      Datatype validator factory
     //
-    //  fNamespaceScope
-    //      Prefix to Namespace map
-    //
     //  fValidSubstitutionGroups
     //      Valid list of elements that can substitute a given element
     //
@@ -318,24 +320,27 @@ private:
     //  fGramDesc: adopted
     //
     // -----------------------------------------------------------------------
-    XMLCh*                                 fTargetNamespace;
-    RefHash3KeysIdPool<SchemaElementDecl>* fElemDeclPool;
-    RefHash3KeysIdPool<SchemaElementDecl>* fElemNonDeclPool;
-    RefHash3KeysIdPool<SchemaElementDecl>* fGroupElemDeclPool;
-    NameIdPool<XMLNotationDecl>*           fNotationDeclPool;
-    RefHashTableOf<XMLAttDef>*             fAttributeDeclRegistry;
-    RefHashTableOf<ComplexTypeInfo>*       fComplexTypeRegistry;
-    RefHashTableOf<XercesGroupInfo>*       fGroupInfoRegistry;
-    RefHashTableOf<XercesAttGroupInfo>*    fAttGroupInfoRegistry;
-    NamespaceScope*                        fNamespaceScope;
-    RefHash2KeysTableOf<ElemVector>*       fValidSubstitutionGroups;
-    ValidationContext*                     fValidationContext;
-    MemoryManager*                         fMemoryManager;
-    XMLSchemaDescription*                  fGramDesc;
-    RefHashTableOf<XSAnnotation>*          fAnnotations;
+    XMLCh*                                   fTargetNamespace;
+    RefHash3KeysIdPool<SchemaElementDecl>*   fElemDeclPool;
+    RefHash3KeysIdPool<SchemaElementDecl>*   fElemNonDeclPool;
+    RefHash3KeysIdPool<SchemaElementDecl>*   fGroupElemDeclPool;
+    NameIdPool<XMLNotationDecl>*             fNotationDeclPool;
+    RefHashTableOf<XMLAttDef>*               fAttributeDeclRegistry;
+    RefHashTableOf<ComplexTypeInfo>*         fComplexTypeRegistry;
+    RefHashTableOf<XercesGroupInfo>*         fGroupInfoRegistry;
+    RefHashTableOf<XercesAttGroupInfo>*      fAttGroupInfoRegistry;
+    RefHash2KeysTableOf<ElemVector>*         fValidSubstitutionGroups;
+    // @deprecated
+    ValidationContext*                       fValidationContext;
+    MemoryManager*                           fMemoryManager;
+    XMLSchemaDescription*                    fGramDesc;
+    RefHashTableOf<XSAnnotation, PtrHasher>* fAnnotations;
 
     bool                                   fValidated;
     DatatypeValidatorFactory               fDatatypeRegistry;
+
+    unsigned int                             fScopeCount;
+    unsigned int                             fAnonTypeCount;
 };
 
 
@@ -382,22 +387,13 @@ inline DatatypeValidatorFactory* SchemaGrammar::getDatatypeRegistry() {
     return &fDatatypeRegistry;
 }
 
-inline NamespaceScope* SchemaGrammar::getNamespaceScope() const {
-
-    return fNamespaceScope;
-}
-
 inline RefHash2KeysTableOf<ElemVector>*
 SchemaGrammar::getValidSubstitutionGroups() const {
 
     return fValidSubstitutionGroups;
 }
 
-inline RefHashTableOf<XMLRefInfo>* SchemaGrammar::getIDRefList() const {
-
-    return fValidationContext->getIdRefList();
-}
-
+// @deprecated
 inline ValidationContext* SchemaGrammar::getValidationContext() const {
 
     return fValidationContext;
@@ -428,12 +424,12 @@ inline const XSAnnotation* SchemaGrammar::getAnnotation() const
     return fAnnotations->get(this);
 }
 
-inline RefHashTableOf<XSAnnotation>* SchemaGrammar::getAnnotations()
+inline RefHashTableOf<XSAnnotation, PtrHasher>* SchemaGrammar::getAnnotations()
 {
     return fAnnotations;
 }
 
-inline const RefHashTableOf<XSAnnotation>* SchemaGrammar::getAnnotations() const
+inline const RefHashTableOf<XSAnnotation, PtrHasher>* SchemaGrammar::getAnnotations() const
 {
     return fAnnotations;
 }
@@ -471,11 +467,6 @@ SchemaGrammar::setAttGroupInfoRegistry(RefHashTableOf<XercesAttGroupInfo>* const
     fAttGroupInfoRegistry = other;
 }
 
-inline void SchemaGrammar::setNamespaceScope(NamespaceScope* const nsScope) {
-
-    fNamespaceScope = nsScope;
-}
-
 inline void
 SchemaGrammar::setValidSubstitutionGroups(RefHash2KeysTableOf<ElemVector>* const other) {
 
@@ -495,7 +486,7 @@ inline const XMLCh* SchemaGrammar::getTargetNamespace() const {
 }
 
 // Element Decl
-inline unsigned int SchemaGrammar::getElemId (const   unsigned int  uriId
+inline XMLSize_t SchemaGrammar::getElemId (const   unsigned int  uriId
                                               , const XMLCh* const    baseName
                                               , const XMLCh* const
                                               , unsigned int          scope ) const
@@ -573,9 +564,9 @@ inline XMLElementDecl* SchemaGrammar::getElemDecl(const unsigned int elemId)
     return decl;
 }
 
-inline unsigned int
+inline XMLSize_t
 SchemaGrammar::putElemDecl(XMLElementDecl* const elemDecl,
-                           const bool notDeclared) 
+                           const bool notDeclared)
 {
     if (notDeclared)
     {
@@ -587,7 +578,7 @@ SchemaGrammar::putElemDecl(XMLElementDecl* const elemDecl,
     return fElemDeclPool->put(elemDecl->getBaseName(), elemDecl->getURI(), ((SchemaElementDecl* )elemDecl)->getEnclosingScope(), (SchemaElementDecl*) elemDecl);
 }
 
-inline unsigned int SchemaGrammar::putGroupElemDecl (XMLElementDecl* const elemDecl)   const
+inline XMLSize_t SchemaGrammar::putGroupElemDecl (XMLElementDecl* const elemDecl)   const
 {
     return fGroupElemDeclPool->put(elemDecl->getBaseName(), elemDecl->getURI(), ((SchemaElementDecl* )elemDecl)->getEnclosingScope(), (SchemaElementDecl*) elemDecl);
 }
@@ -603,7 +594,7 @@ inline XMLNotationDecl* SchemaGrammar::getNotationDecl(const XMLCh* const notNam
     return fNotationDeclPool->getByKey(notName);
 }
 
-inline unsigned int SchemaGrammar::putNotationDecl(XMLNotationDecl* const notationDecl)   const
+inline XMLSize_t SchemaGrammar::putNotationDecl(XMLNotationDecl* const notationDecl)   const
 {
     return fNotationDeclPool->put(notationDecl);
 }
@@ -616,6 +607,30 @@ inline bool SchemaGrammar::getValidated() const
 inline void SchemaGrammar::setValidated(const bool newState)
 {
     fValidated = newState;
+}
+
+inline unsigned int
+SchemaGrammar::getScopeCount () const
+{
+  return fScopeCount;
+}
+
+inline void
+SchemaGrammar::setScopeCount (unsigned int scopeCount)
+{
+  fScopeCount = scopeCount;
+}
+
+inline unsigned int
+SchemaGrammar::getAnonTypeCount () const
+{
+  return fAnonTypeCount;
+}
+
+inline void
+SchemaGrammar::setAnonTypeCount (unsigned int count)
+{
+  fAnonTypeCount = count;
 }
 
 XERCES_CPP_NAMESPACE_END

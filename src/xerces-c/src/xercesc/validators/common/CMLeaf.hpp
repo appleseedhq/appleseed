@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: CMLeaf.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: CMLeaf.hpp 677396 2008-07-16 19:36:20Z amassari $
  */
 
-#if !defined(CMLEAF_HPP)
-#define CMLEAF_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_CMLEAF_HPP)
+#define XERCESC_INCLUDE_GUARD_CMLEAF_HPP
 
 #include <xercesc/validators/common/CMNode.hpp>
 
@@ -40,16 +40,18 @@ public :
     // -----------------------------------------------------------------------
     CMLeaf
     (
-          QName* const         element
-        , const unsigned int   position = (~0)
-        , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
+          QName* const          element
+        , unsigned int          position
+        , unsigned int          maxStates
+        , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
     );
     CMLeaf
     (
-          QName* const         element
-        , const unsigned int   position
-        , const bool           adopt
-        , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
+          QName* const          element
+        , unsigned int          position
+        , bool                  adopt
+        , unsigned int          maxStates
+        , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
     );
     ~CMLeaf();
 
@@ -61,6 +63,7 @@ public :
     const QName* getElement() const;
     unsigned int getPosition() const;
 
+    virtual bool isRepeatableLeaf() const;
 
     // -----------------------------------------------------------------------
     //  Setter methods
@@ -71,8 +74,7 @@ public :
     // -----------------------------------------------------------------------
     //  Implementation of public CMNode virtual interface
     // -----------------------------------------------------------------------
-    bool isNullable() const;
-
+    virtual void orphanChild();
 
 protected :
     // -----------------------------------------------------------------------
@@ -112,10 +114,11 @@ private :
 // -----------------------------------------------------------------------
 //  Constructors
 // -----------------------------------------------------------------------
-inline CMLeaf::CMLeaf(       QName* const         element
-                     , const unsigned int         position
-                     ,       MemoryManager* const manager) :
-    CMNode(ContentSpecNode::Leaf, manager)
+inline CMLeaf::CMLeaf( QName* const         element
+                     , unsigned int         position
+                     , unsigned int         maxStates
+                     , MemoryManager* const manager) :
+    CMNode(ContentSpecNode::Leaf, maxStates, manager)
     , fElement(0)
     , fPosition(position)
     , fAdopt(false)
@@ -136,13 +139,16 @@ inline CMLeaf::CMLeaf(       QName* const         element
     {
         fElement = element;
     }
+    // Leaf nodes are never nullable unless its an epsilon node
+    fIsNullable=(fPosition == epsilonNode);
 }
 
-inline CMLeaf::CMLeaf(       QName* const         element
-                     , const unsigned int         position
-                     , const bool                 adopt
-                     ,       MemoryManager* const manager) :
-    CMNode(ContentSpecNode::Leaf, manager)
+inline CMLeaf::CMLeaf( QName* const         element
+                     , unsigned int         position
+                     , bool                 adopt
+                     , unsigned int         maxStates
+                     , MemoryManager* const manager) :
+    CMNode(ContentSpecNode::Leaf, maxStates, manager)
     , fElement(0)
     , fPosition(position)
     , fAdopt(adopt)
@@ -163,6 +169,8 @@ inline CMLeaf::CMLeaf(       QName* const         element
     {
         fElement = element;
     }
+    // Leaf nodes are never nullable unless its an epsilon node
+    fIsNullable=(fPosition == epsilonNode);
 }
 
 inline CMLeaf::~CMLeaf()
@@ -190,6 +198,10 @@ inline unsigned int CMLeaf::getPosition() const
     return fPosition;
 }
 
+inline bool CMLeaf::isRepeatableLeaf() const
+{
+    return false;
+}
 
 // ---------------------------------------------------------------------------
 //  Setter methods
@@ -203,12 +215,9 @@ inline void CMLeaf::setPosition(const unsigned int newPosition)
 // ---------------------------------------------------------------------------
 //  Implementation of public CMNode virtual interface
 // ---------------------------------------------------------------------------
-inline bool CMLeaf::isNullable() const
+inline void CMLeaf::orphanChild()
 {
-    // Leaf nodes are never nullable unless its an epsilon node
-    return (fPosition == -1);
 }
-
 
 // ---------------------------------------------------------------------------
 //  Implementation of protected CMNode virtual interface
@@ -216,7 +225,7 @@ inline bool CMLeaf::isNullable() const
 inline void CMLeaf::calcFirstPos(CMStateSet& toSet) const
 {
     // If we are an epsilon node, then the first pos is an empty set
-    if (fPosition == -1)
+    if (isNullable())
     {
         toSet.zeroBits();
         return;
@@ -229,7 +238,7 @@ inline void CMLeaf::calcFirstPos(CMStateSet& toSet) const
 inline void CMLeaf::calcLastPos(CMStateSet& toSet) const
 {
     // If we are an epsilon node, then the last pos is an empty set
-    if (fPosition == -1)
+    if (isNullable())
     {
         toSet.zeroBits();
         return;

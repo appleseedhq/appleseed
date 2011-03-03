@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: BitOps.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: BitOps.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-#if !defined(BITOPS_HPP)
-#define BITOPS_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_BITOPS_HPP)
+#define XERCESC_INCLUDE_GUARD_BITOPS_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 

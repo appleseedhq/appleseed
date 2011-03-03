@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: RangeTokenMap.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: RangeTokenMap.hpp 678879 2008-07-22 20:05:05Z amassari $
  */
 
-#if !defined(RANGETOKENMAP_HPP)
-#define RANGETOKENMAP_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_RANGETOKENMAP_HPP)
+#define XERCESC_INCLUDE_GUARD_RANGETOKENMAP_HPP
 
 // ---------------------------------------------------------------------------
 //  Includes
@@ -48,14 +48,14 @@ public:
     // -----------------------------------------------------------------------
     //  Getter methods
     // -----------------------------------------------------------------------
-	unsigned int getCategoryId() const;
-	RangeToken*  getRangeToken(const bool complement = false) const;
+    unsigned int getCategoryId() const;
+    RangeToken*  getRangeToken(const bool complement = false) const;
 
-	// -----------------------------------------------------------------------
+    // -----------------------------------------------------------------------
     //  Setter methods
     // -----------------------------------------------------------------------
-	void setRangeToken(RangeToken* const tok, const bool complement = false);
-	void setCategoryId(const unsigned int categId);
+    void setRangeToken(RangeToken* const tok, const bool complement = false);
+    void setCategoryId(const unsigned int categId);
 
 private:
     // -----------------------------------------------------------------------
@@ -78,7 +78,7 @@ public:
     //  Putter methods
     // -----------------------------------------------------------------------
     void addCategory(const XMLCh* const categoryName);
-	void addRangeMap(const XMLCh* const categoryName,
+    void addRangeMap(const XMLCh* const categoryName,
                      RangeFactory* const rangeFactory);
     void addKeywordMap(const XMLCh* const keyword,
                        const XMLCh* const categoryName);
@@ -86,23 +86,18 @@ public:
     // -----------------------------------------------------------------------
     //  Instance methods
     // -----------------------------------------------------------------------
-	static RangeTokenMap* instance();
+    static RangeTokenMap* instance();
 
     // -----------------------------------------------------------------------
     //  Setter methods
     // -----------------------------------------------------------------------
-	void setRangeToken(const XMLCh* const keyword, RangeToken* const tok,
+    void setRangeToken(const XMLCh* const keyword, RangeToken* const tok,
                        const bool complement = false);
 
     // -----------------------------------------------------------------------
     //  Getter methods
     // -----------------------------------------------------------------------
-	TokenFactory* getTokenFactory() const;
-
-	// -----------------------------------------------------------------------
-    //  Notification that lazy data has been deleted
-    // -----------------------------------------------------------------------
-	static void reinitInstance();
+    TokenFactory* getTokenFactory() const;
 
 protected:
     // -----------------------------------------------------------------------
@@ -118,15 +113,15 @@ protected:
      *  Gets a commonly used RangeToken from the token registry based on the
      *  range name - Called by TokenFactory.
      */
-	 RangeToken* getRange(const XMLCh* const name,
+     RangeToken* getRange(const XMLCh* const name,
                           const bool complement = false);
 
      RefHashTableOf<RangeTokenElemMap>* getTokenRegistry() const;
      RefHashTableOf<RangeFactory>* getRangeMap() const;
-	 XMLStringPool* getCategories() const;
+     XMLStringPool* getCategories() const;
 
 private:
-	// -----------------------------------------------------------------------
+    // -----------------------------------------------------------------------
     //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
     RangeTokenMap(const RangeTokenMap&);
@@ -142,14 +137,14 @@ private:
     void initializeRegistry();
     void buildTokenRanges();
     void cleanUp();
-	friend class TokenFactory;
+    friend class TokenFactory;
 
     // -----------------------------------------------------------------------
     //  Private data members
     //
     //  fTokenRegistry
     //      Contains a set of commonly used tokens
-	//
+    //
     //  fRangeMap
     //      Contains a map between a category name and a RangeFactory object.
     //
@@ -164,10 +159,10 @@ private:
     //
     //  fMutex
     //      A mutex object for synchronization
-    // -----------------------------------------------------------------------	
+    // -----------------------------------------------------------------------
     RefHashTableOf<RangeTokenElemMap>* fTokenRegistry;
     RefHashTableOf<RangeFactory>*      fRangeMap;
-	XMLStringPool*                     fCategories;
+    XMLStringPool*                     fCategories;
     TokenFactory*                      fTokenFactory;
     XMLMutex                           fMutex;
     static RangeTokenMap*              fInstance;
@@ -185,7 +180,7 @@ inline unsigned int RangeTokenElemMap::getCategoryId() const {
 
 inline RangeToken* RangeTokenElemMap::getRangeToken(const bool complement) const {
 
-	return complement ? fNRange : fRange;
+    return complement ? fNRange : fRange;
 }
 
 // ---------------------------------------------------------------------------
@@ -201,7 +196,7 @@ inline void RangeTokenElemMap::setRangeToken(RangeToken* const tok,
 
     if (complement)
         fNRange = tok;
-	else
+    else
         fRange = tok;
 }
 
@@ -233,5 +228,5 @@ XERCES_CPP_NAMESPACE_END
 #endif
 
 /**
-  *	End file RangeToken.hpp
+  *    End file RangeToken.hpp
   */

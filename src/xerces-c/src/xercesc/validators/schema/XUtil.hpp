@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XUtil.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XUtil.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-#if !defined(XUTIL_HPP)
-#define XUTIL_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XUTIL_HPP)
+#define XERCESC_INCLUDE_GUARD_XUTIL_HPP
 
 #include <xercesc/dom/DOMElement.hpp>
 #include <xercesc/dom/DOMDocument.hpp>

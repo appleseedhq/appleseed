@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: SchemaSymbols.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: SchemaSymbols.hpp 802804 2009-08-10 14:21:48Z amassari $
  */
 
-#if !defined(SCHEMASYMBOLS_HPP)
-#define SCHEMASYMBOLS_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_SCHEMASYMBOLS_HPP)
+#define XERCESC_INCLUDE_GUARD_SCHEMASYMBOLS_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 
@@ -38,8 +38,12 @@ public :
     // -----------------------------------------------------------------------
     static const XMLCh fgURI_XSI[];
     static const XMLCh fgURI_SCHEMAFORSCHEMA[];
+    // deprecated (typo)
     static const XMLCh fgXSI_SCHEMALOCACTION[];
+    // deprecated (typo)
     static const XMLCh fgXSI_NONAMESPACESCHEMALOCACTION[];
+    static const XMLCh fgXSI_SCHEMALOCATION[];
+    static const XMLCh fgXSI_NONAMESPACESCHEMALOCATION[];
     static const XMLCh fgXSI_TYPE[];
     static const XMLCh fgELT_ALL[];
     static const XMLCh fgELT_ANNOTATION[];

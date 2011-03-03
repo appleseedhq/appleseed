@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XSWildcard.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XSWildcard.cpp 674012 2008-07-04 11:18:21Z borisk $
  */
 
 #include <xercesc/framework/psvi/XSWildcard.hpp>
@@ -58,11 +58,11 @@ XSWildcard::XSWildcard(SchemaAttDef* const  attWildCard,
         ValueVectorOf<unsigned int>* nsList = attWildCard->getNamespaceList();
         if (nsList)
         {
-            unsigned int nsListSize = nsList->size();
+            XMLSize_t nsListSize = nsList->size();
             if (nsListSize)
             {
                 fNsConstraintList = new (manager) RefArrayVectorOf<XMLCh>(nsListSize, true, manager);
-                for (unsigned int i=0; i < nsListSize; i++)
+                for (XMLSize_t i=0; i < nsListSize; i++)
                 {
                     fNsConstraintList->addElement
                     (
@@ -151,9 +151,9 @@ XSWildcard::XSWildcard(const ContentSpecNode* const elmWildCard,
     }
 }
 
-XSWildcard::~XSWildcard() 
+XSWildcard::~XSWildcard()
 {
-    if (fNsConstraintList) 
+    if (fNsConstraintList)
         delete fNsConstraintList;
 }
 

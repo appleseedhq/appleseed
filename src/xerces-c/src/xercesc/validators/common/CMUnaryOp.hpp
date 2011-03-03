@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: CMUnaryOp.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: CMUnaryOp.hpp 677396 2008-07-16 19:36:20Z amassari $
  */
 
-
-#if !defined(CMUNARYOP_HPP)
-#define CMUNARYOP_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_CMUNARYOP_HPP)
+#define XERCESC_INCLUDE_GUARD_CMUNARYOP_HPP
 
 #include <xercesc/validators/common/CMNode.hpp>
 
@@ -38,9 +37,10 @@ public :
     // -----------------------------------------------------------------------
     CMUnaryOp
     (
-          const ContentSpecNode::NodeTypes type
-        ,       CMNode* const              nodeToAdopt
-        ,       MemoryManager* const       manager = XMLPlatformUtils::fgMemoryManager
+          ContentSpecNode::NodeTypes    type
+        , CMNode* const                 nodeToAdopt
+        , unsigned int                  maxStates
+        , MemoryManager* const          manager = XMLPlatformUtils::fgMemoryManager
     );
     ~CMUnaryOp();
 
@@ -55,7 +55,7 @@ public :
     // -----------------------------------------------------------------------
     //  Implementation of the public CMNode virtual interface
     // -----------------------------------------------------------------------
-    bool isNullable() const;
+    virtual void orphanChild();
 
 
 protected :

@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMDocumentImpl.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMDocumentImpl.cpp 932949 2010-04-11 17:40:33Z borisk $
  */
 #include "DOMDocumentImpl.hpp"
 #include "DOMCasts.hpp"
@@ -36,27 +36,37 @@
 #include "DOMNotationImpl.hpp"
 #include "DOMProcessingInstructionImpl.hpp"
 #include "DOMTextImpl.hpp"
-#include "DOMStringPool.hpp"
 #include "DOMTreeWalkerImpl.hpp"
 #include "DOMNodeIteratorImpl.hpp"
 #include "DOMNodeIDMap.hpp"
 #include "DOMRangeImpl.hpp"
 #include "DOMTypeInfoImpl.hpp"
+#include "DOMXPathExpressionImpl.hpp"
+#include "DOMXPathNSResolverImpl.hpp"
 
 #include <xercesc/dom/DOMImplementation.hpp>
-#include <xercesc/util/XMLChar.hpp>
 #include <xercesc/framework/MemoryManager.hpp>
 #include <xercesc/util/OutOfMemoryException.hpp>
+#include <xercesc/util/XMLInitializer.hpp>
+#include <xercesc/util/Janitor.hpp>
 
 XERCES_CPP_NAMESPACE_BEGIN
 
 // The chunk size to allocate from the system allocator.
-static const XMLSize_t kInitialHeapAllocSize =  0x4000;
-static const XMLSize_t kMaxHeapAllocSize     = 0x20000;
-static const XMLSize_t kMaxSubAllocationSize =  0x1000;  // Any request for more bytes
-                                                         // than this will be handled by
-                                                         // allocating directly with system.
+static XMLSize_t kInitialHeapAllocSize =  0x4000;
+static XMLSize_t kMaxHeapAllocSize     = 0x80000;
+static XMLSize_t kMaxSubAllocationSize =  0x0100;  // Any request for more bytes
+                                                   // than this will be handled by
+                                                   // allocating directly with system.
 
+void XMLInitializer::initializeDOMHeap (XMLSize_t initialHeapAllocSize,
+                                        XMLSize_t maxHeapAllocSize,
+                                        XMLSize_t maxSubAllocationSize)
+{
+  kInitialHeapAllocSize = initialHeapAllocSize;
+  kMaxHeapAllocSize = maxHeapAllocSize;
+  kMaxSubAllocationSize = maxSubAllocationSize;
+}
 
 //
 //   Constructors.   Warning - be very careful with the ordering of initialization
@@ -68,19 +78,19 @@ static const XMLSize_t kMaxSubAllocationSize =  0x1000;  // Any request for more
 //                             fNode and fParent constructors used here can not
 //                             allocate.
 //
-DOMDocumentImpl::DOMDocumentImpl(MemoryManager* const manager)
+DOMDocumentImpl::DOMDocumentImpl(DOMImplementation* domImpl, MemoryManager* const manager)
     : fNode(this),
       fParent(this),
       fNodeIDMap(0),
-      fActualEncoding(0),
-      fEncoding(0),
-      fStandalone(false),
-      fVersion(0),
+      fInputEncoding(0),
+      fXmlEncoding(0),
+      fXmlStandalone(false),
+      fXmlVersion(0),
       fDocumentURI(0),
       fDOMConfiguration(0),
       fUserDataTableKeys(17, manager),
       fUserDataTable(0),
-      fCurrentBlock(0),      
+      fCurrentBlock(0),
       fFreePtr(0),
       fFreeBytesRemaining(0),
       fHeapAllocSize(kInitialHeapAllocSize),
@@ -89,15 +99,19 @@ DOMDocumentImpl::DOMDocumentImpl(MemoryManager* const manager)
       fNodeListPool(0),
       fDocType(0),
       fDocElement(0),
-      fNamePool(0),
-      fNormalizer(0),      
+      fNameTableSize(257),
+      fNormalizer(0),
       fRanges(0),
       fNodeIterators(0),
       fMemoryManager(manager),
-      fChanges(0),      
+      fDOMImplementation(domImpl),
+      fChanges(0),
       errorChecking(true)
 {
-    fNamePool    = new (this) DOMStringPool(257, this);
+    fNameTable = (DOMStringPoolEntry**)allocate (
+      sizeof (DOMStringPoolEntry*) * fNameTableSize);
+    for (XMLSize_t i = 0; i < fNameTableSize; i++)
+      fNameTable[i] = 0;
 }
 
 
@@ -105,19 +119,20 @@ DOMDocumentImpl::DOMDocumentImpl(MemoryManager* const manager)
 DOMDocumentImpl::DOMDocumentImpl(const XMLCh *fNamespaceURI,
                                const XMLCh *qualifiedName,
                                DOMDocumentType *doctype,
+                               DOMImplementation* domImpl,
                                MemoryManager* const manager)
     : fNode(this),
       fParent(this),
       fNodeIDMap(0),
-      fActualEncoding(0),
-      fEncoding(0),
-      fStandalone(false),
-      fVersion(0),
+      fInputEncoding(0),
+      fXmlEncoding(0),
+      fXmlStandalone(false),
+      fXmlVersion(0),
       fDocumentURI(0),
       fDOMConfiguration(0),
       fUserDataTableKeys(17, manager),
       fUserDataTable(0),
-      fCurrentBlock(0),      
+      fCurrentBlock(0),
       fFreePtr(0),
       fFreeBytesRemaining(0),
       fHeapAllocSize(kInitialHeapAllocSize),
@@ -126,15 +141,20 @@ DOMDocumentImpl::DOMDocumentImpl(const XMLCh *fNamespaceURI,
       fNodeListPool(0),
       fDocType(0),
       fDocElement(0),
-      fNamePool(0),
-      fNormalizer(0),      
+      fNameTableSize(257),
+      fNormalizer(0),
       fRanges(0),
       fNodeIterators(0),
       fMemoryManager(manager),
+      fDOMImplementation(domImpl),
       fChanges(0),
       errorChecking(true)
 {
-    fNamePool    = new (this) DOMStringPool(257, this);
+    fNameTable = (DOMStringPoolEntry**)allocate (
+      sizeof (DOMStringPoolEntry*) * fNameTableSize);
+    for (XMLSize_t i = 0; i < fNameTableSize; i++)
+      fNameTable[i] = 0;
+
     try {
         setDocumentType(doctype);
 
@@ -161,7 +181,9 @@ void DOMDocumentImpl::setDocumentType(DOMDocumentType *doctype)
     // New doctypes can be created either with the factory methods on DOMImplementation, in
     //   which case ownerDocument will be 0, or with methods on DocumentImpl, in which case
     //   ownerDocument will be set, but the DocType won't yet be a child of the document.
-    if (doctype->getOwnerDocument() != 0 && doctype->getOwnerDocument() != this)
+    //
+    DOMDocument* doc = doctype->getOwnerDocument();
+    if (doc != 0 && doc != this)
         throw DOMException(    //one doctype can belong to only one DOMDocumentImpl
         DOMException::WRONG_DOCUMENT_ERR, 0, getMemoryManager());
 
@@ -178,6 +200,13 @@ void DOMDocumentImpl::setDocumentType(DOMDocumentType *doctype)
 
 DOMDocumentImpl::~DOMDocumentImpl()
 {
+    // While DOMConfiguration is allocated on the Document's heap, itself
+    // it uses the memory manager directly. This means that while we cannot
+    // delete with operator delete, we need to call its d-tor.
+    //
+    if (fDOMConfiguration)
+      fDOMConfiguration->~DOMConfiguration ();
+
     //  Clean up the fNodeListPool
     if (fNodeListPool)
         fNodeListPool->cleanup();
@@ -211,12 +240,12 @@ DOMDocumentImpl::~DOMDocumentImpl()
 DOMNode *DOMDocumentImpl::cloneNode(bool deep) const {
 
     // Note:  the cloned document node goes on the same heap we live in.
-    DOMDocumentImpl *newdoc = new (fMemoryManager) DOMDocumentImpl(fMemoryManager);
-    if(fEncoding && *fEncoding)
-        newdoc->setEncoding(fEncoding);
-    if(fVersion && *fVersion)
-        newdoc->setVersion(fVersion);
-    newdoc->setStandalone(fStandalone);
+    DOMDocumentImpl *newdoc = new (fMemoryManager) DOMDocumentImpl(fDOMImplementation, fMemoryManager);
+    if(fXmlEncoding && *fXmlEncoding)
+        newdoc->setXmlEncoding(fXmlEncoding);
+    if(fXmlVersion && *fXmlVersion)
+        newdoc->setXmlVersion(fXmlVersion);
+    newdoc->setXmlStandalone(fXmlStandalone);
 
     // then the children by _importing_ them
     if (deep)
@@ -236,7 +265,7 @@ const XMLCh * DOMDocumentImpl::getNodeName() const {
 }
 
 
-short DOMDocumentImpl::getNodeType() const {
+DOMNode::NodeType DOMDocumentImpl::getNodeType() const {
     return DOMNode::DOCUMENT_NODE;
 }
 
@@ -252,27 +281,27 @@ DOMAttr *DOMDocumentImpl::createAttribute(const XMLCh *nam)
 {
     if(!nam || !isXMLName(nam))
         throw DOMException(DOMException::INVALID_CHARACTER_ERR,0, getMemoryManager());
-    return new (this, DOMDocumentImpl::ATTR_OBJECT) DOMAttrImpl(this,nam);
+    return new (this, DOMMemoryManager::ATTR_OBJECT) DOMAttrImpl(this,nam);
 }
 
 
 
 DOMCDATASection *DOMDocumentImpl::createCDATASection(const XMLCh *data) {
-    return new (this, DOMDocumentImpl::CDATA_SECTION_OBJECT) DOMCDATASectionImpl(this,data);
+    return new (this, DOMMemoryManager::CDATA_SECTION_OBJECT) DOMCDATASectionImpl(this,data);
 }
 
 
 
 DOMComment *DOMDocumentImpl::createComment(const XMLCh *data)
 {
-    return new (this, DOMDocumentImpl::COMMENT_OBJECT) DOMCommentImpl(this, data);
+    return new (this, DOMMemoryManager::COMMENT_OBJECT) DOMCommentImpl(this, data);
 }
 
 
 
 DOMDocumentFragment *DOMDocumentImpl::createDocumentFragment()
 {
-    return new (this, DOMDocumentImpl::DOCUMENT_FRAGMENT_OBJECT) DOMDocumentFragmentImpl(this);
+    return new (this, DOMMemoryManager::DOCUMENT_FRAGMENT_OBJECT) DOMDocumentFragmentImpl(this);
 }
 
 
@@ -283,7 +312,7 @@ DOMDocumentType *DOMDocumentImpl::createDocumentType(const XMLCh *nam)
         throw DOMException(
         DOMException::INVALID_CHARACTER_ERR, 0, getMemoryManager());
 
-    return new (this, DOMDocumentImpl::DOCUMENT_TYPE_OBJECT) DOMDocumentTypeImpl(this, nam, false);
+    return new (this, DOMMemoryManager::DOCUMENT_TYPE_OBJECT) DOMDocumentTypeImpl(this, nam, false);
 }
 
 
@@ -297,7 +326,7 @@ DOMDocumentType *
         throw DOMException(
         DOMException::INVALID_CHARACTER_ERR, 0, getMemoryManager());
 
-    return new (this, DOMDocumentImpl::DOCUMENT_TYPE_OBJECT) DOMDocumentTypeImpl(this, qualifiedName, publicId, systemId, false);
+    return new (this, DOMMemoryManager::DOCUMENT_TYPE_OBJECT) DOMDocumentTypeImpl(this, qualifiedName, publicId, systemId, false);
 }
 
 
@@ -307,13 +336,13 @@ DOMElement *DOMDocumentImpl::createElement(const XMLCh *tagName)
     if(!tagName || !isXMLName(tagName))
         throw DOMException(DOMException::INVALID_CHARACTER_ERR,0, getMemoryManager());
 
-    return new (this, DOMDocumentImpl::ELEMENT_OBJECT) DOMElementImpl(this,tagName);
+    return new (this, DOMMemoryManager::ELEMENT_OBJECT) DOMElementImpl(this,tagName);
 }
 
 
 DOMElement *DOMDocumentImpl::createElementNoCheck(const XMLCh *tagName)
 {
-    return new (this, DOMDocumentImpl::ELEMENT_OBJECT) DOMElementImpl(this, tagName);
+    return new (this, DOMMemoryManager::ELEMENT_OBJECT) DOMElementImpl(this, tagName);
 }
 
 
@@ -325,7 +354,7 @@ DOMEntity *DOMDocumentImpl::createEntity(const XMLCh *nam)
         throw DOMException(
         DOMException::INVALID_CHARACTER_ERR, 0, getMemoryManager());
 
-    return new (this, DOMDocumentImpl::ENTITY_OBJECT) DOMEntityImpl(this, nam);
+    return new (this, DOMMemoryManager::ENTITY_OBJECT) DOMEntityImpl(this, nam);
 }
 
 
@@ -336,7 +365,7 @@ DOMEntityReference *DOMDocumentImpl::createEntityReference(const XMLCh *nam)
         throw DOMException(
         DOMException::INVALID_CHARACTER_ERR, 0, getMemoryManager());
 
-    return new (this, DOMDocumentImpl::ENTITY_REFERENCE_OBJECT) DOMEntityReferenceImpl(this, nam);
+    return new (this, DOMMemoryManager::ENTITY_REFERENCE_OBJECT) DOMEntityReferenceImpl(this, nam);
 }
 
 DOMEntityReference *DOMDocumentImpl::createEntityReferenceByParser(const XMLCh *nam)
@@ -345,7 +374,7 @@ DOMEntityReference *DOMDocumentImpl::createEntityReferenceByParser(const XMLCh *
         throw DOMException(
         DOMException::INVALID_CHARACTER_ERR, 0, getMemoryManager());
 
-    return new (this, DOMDocumentImpl::ENTITY_REFERENCE_OBJECT) DOMEntityReferenceImpl(this, nam, false);
+    return new (this, DOMMemoryManager::ENTITY_REFERENCE_OBJECT) DOMEntityReferenceImpl(this, nam, false);
 }
 
 DOMNotation *DOMDocumentImpl::createNotation(const XMLCh *nam)
@@ -354,7 +383,7 @@ DOMNotation *DOMDocumentImpl::createNotation(const XMLCh *nam)
         throw DOMException(
         DOMException::INVALID_CHARACTER_ERR, 0, getMemoryManager());
 
-    return new (this, DOMDocumentImpl::NOTATION_OBJECT) DOMNotationImpl(this, nam);
+    return new (this, DOMMemoryManager::NOTATION_OBJECT) DOMNotationImpl(this, nam);
 }
 
 
@@ -364,7 +393,7 @@ DOMProcessingInstruction *DOMDocumentImpl::createProcessingInstruction(
 {
     if(!target || !isXMLName(target))
         throw DOMException(DOMException::INVALID_CHARACTER_ERR,0, getMemoryManager());
-    return new (this, DOMDocumentImpl::PROCESSING_INSTRUCTION_OBJECT) DOMProcessingInstructionImpl(this,target,data);
+    return new (this, DOMMemoryManager::PROCESSING_INSTRUCTION_OBJECT) DOMProcessingInstructionImpl(this,target,data);
 }
 
 
@@ -372,12 +401,15 @@ DOMProcessingInstruction *DOMDocumentImpl::createProcessingInstruction(
 
 DOMText *DOMDocumentImpl::createTextNode(const XMLCh *data)
 {
-    return new (this, DOMDocumentImpl::TEXT_OBJECT) DOMTextImpl(this,data);
+    return new (this, DOMMemoryManager::TEXT_OBJECT) DOMTextImpl(this,data);
 }
 
 
 DOMNodeIterator* DOMDocumentImpl::createNodeIterator (
-          DOMNode *root, unsigned long whatToShow, DOMNodeFilter* filter, bool entityReferenceExpansion)
+  DOMNode *root,
+  DOMNodeFilter::ShowType whatToShow,
+  DOMNodeFilter* filter,
+  bool entityReferenceExpansion)
 {
     if (!root) {
         throw DOMException(DOMException::NOT_SUPPORTED_ERR, 0, getMemoryManager());
@@ -417,29 +449,35 @@ void DOMDocumentImpl::removeNodeIterator(DOMNodeIteratorImpl* nodeIterator)
 }
 
 
-const DOMXPathExpression* DOMDocumentImpl::createExpression(const XMLCh *, const DOMXPathNSResolver *)
+DOMXPathExpression* DOMDocumentImpl::createExpression(const XMLCh * expression, const DOMXPathNSResolver *resolver)
 {
-    throw DOMException(DOMException::NOT_SUPPORTED_ERR, 0, getMemoryManager());
-    return 0;
+    return new (getMemoryManager()) DOMXPathExpressionImpl(expression, resolver, getMemoryManager());
 }
 
-const DOMXPathNSResolver* DOMDocumentImpl::createNSResolver(DOMNode *)
-
+DOMXPathNSResolver* DOMDocumentImpl::createNSResolver(const DOMNode *nodeResolver)
 {
-    throw DOMException(DOMException::NOT_SUPPORTED_ERR, 0, getMemoryManager());
-    return 0;
+    return new (getMemoryManager()) DOMXPathNSResolverImpl(nodeResolver, getMemoryManager());
 }
 
-void* DOMDocumentImpl::evaluate(const XMLCh *, DOMNode *, const DOMXPathNSResolver *, 
-                           unsigned short, void* ) 
+DOMXPathResult* DOMDocumentImpl::evaluate(const XMLCh *expression,
+                                          const DOMNode *contextNode,
+                                          const DOMXPathNSResolver *resolver,
+                                          DOMXPathResult::ResultType type,
+                                          DOMXPathResult* result)
 {
-    throw DOMException(DOMException::NOT_SUPPORTED_ERR, 0, getMemoryManager());
-    return 0;
+    JanitorMemFunCall<DOMXPathExpression> expr(
+      createExpression(expression, resolver),
+      &DOMXPathExpression::release);
+    return expr->evaluate(contextNode, type, result);
 }
 
 
 
-DOMTreeWalker* DOMDocumentImpl::createTreeWalker (DOMNode *root, unsigned long whatToShow, DOMNodeFilter* filter, bool entityReferenceExpansion)
+DOMTreeWalker* DOMDocumentImpl::createTreeWalker (
+  DOMNode *root,
+  DOMNodeFilter::ShowType whatToShow,
+  DOMNodeFilter* filter,
+  bool entityReferenceExpansion)
 {
     if (!root) {
         throw DOMException(DOMException::NOT_SUPPORTED_ERR, 0, getMemoryManager());
@@ -474,7 +512,8 @@ DOMNodeList *DOMDocumentImpl::getElementsByTagName(const XMLCh *tagname) const
 
 
 DOMImplementation   *DOMDocumentImpl::getImplementation() const {
-    return DOMImplementation::getImplementation();
+
+    return fDOMImplementation;
 }
 
 
@@ -536,7 +575,8 @@ DOMNode* DOMDocumentImpl::replaceChild(DOMNode *newChild, DOMNode *oldChild) {
 
 bool DOMDocumentImpl::isXMLName(const XMLCh *s)
 {
-    if (XMLString::equals(fVersion, XMLUni::fgVersion1_1))
+    // fXmlVersion points directly to the static constants
+    if (fXmlVersion==XMLUni::fgVersion1_1)
         return XMLChar1_1::isValidName(s);
     else
         return XMLChar1_0::isValidName(s);
@@ -567,25 +607,25 @@ void DOMDocumentImpl::setNodeValue(const XMLCh *x)
 
 
 //Introduced in DOM Level 2
-DOMNode *DOMDocumentImpl::importNode(DOMNode *source, bool deep)
+DOMNode *DOMDocumentImpl::importNode(const DOMNode *source, bool deep)
 {
     return importNode(source, deep, false);
 }
 
 
 DOMElement *DOMDocumentImpl::createElementNS(const XMLCh *fNamespaceURI,
-    const XMLCh *qualifiedName)
+                                             const XMLCh *qualifiedName)
 {
     if(!qualifiedName || !isXMLName(qualifiedName))
         throw DOMException(DOMException::INVALID_CHARACTER_ERR,0, getMemoryManager());
-    //XMLCh * pooledTagName = this->fNamePool->getPooledString(qualifiedName);
-    return new (this, DOMDocumentImpl::ELEMENT_NS_OBJECT) DOMElementNSImpl(this, fNamespaceURI, qualifiedName);
+
+    return new (this, DOMMemoryManager::ELEMENT_NS_OBJECT) DOMElementNSImpl(this, fNamespaceURI, qualifiedName);
 }
 
 DOMElement *DOMDocumentImpl::createElementNS(const XMLCh *fNamespaceURI,
                                               const XMLCh *qualifiedName,
-                                              const XMLSSize_t lineNo,
-                                              const XMLSSize_t columnNo)
+                                              const XMLFileLoc lineNo,
+                                              const XMLFileLoc columnNo)
 {
     if(!qualifiedName || !isXMLName(qualifiedName))
         throw DOMException(DOMException::INVALID_CHARACTER_ERR,0, getMemoryManager());
@@ -599,7 +639,7 @@ DOMAttr *DOMDocumentImpl::createAttributeNS(const XMLCh *fNamespaceURI,
 {
     if(!qualifiedName || !isXMLName(qualifiedName))
         throw DOMException(DOMException::INVALID_CHARACTER_ERR,0, getMemoryManager());
-    return new (this, DOMDocumentImpl::ATTR_NS_OBJECT) DOMAttrNSImpl(this, fNamespaceURI, qualifiedName);
+    return new (this, DOMMemoryManager::ATTR_NS_OBJECT) DOMAttrNSImpl(this, fNamespaceURI, qualifiedName);
 }
 
 
@@ -623,31 +663,10 @@ DOMElement *DOMDocumentImpl::getElementById(const XMLCh *elementId) const
     return theAttr->getOwnerElement();
 }
 
-
-//Return the index > 0 of ':' in the given qualified name qName="prefix:localName".
-//Return 0 if there is no ':', or -1 if qName is malformed such as ":abcd" or "abcd:".
-int DOMDocumentImpl::indexofQualifiedName(const XMLCh * qName)
-{
-    int qNameLen = XMLString::stringLen(qName);
-    int index = -1, count = 0;
-    for (int i = 0; i < qNameLen; ++i) {
-        if (qName[i] == chColon) {
-            index = i;
-            ++count;    //number of ':' found
-        }
-    }
-
-    if (qNameLen == 0 || count > 1 || index == 0 || index == qNameLen-1)
-        return -1;
-    return count == 0 ? 0 : index;
-}
-
-
-const XMLCh*     DOMDocumentImpl::getBaseURI() const
+const XMLCh* DOMDocumentImpl::getBaseURI() const
 {
 	  return fDocumentURI;
 }
-
 
 DOMRange* DOMDocumentImpl::createRange()
 {
@@ -724,9 +743,9 @@ bool DOMDocumentImpl::isKidOK(DOMNode *parent, DOMNode *child)
       }
       int p=parent->getNodeType();
       int ch = child->getNodeType();
-      return ((kidOK[p] & 1<<ch) != 0) || 
-             (p==DOMNode::DOCUMENT_NODE && ch==DOMNode::TEXT_NODE && 
-              ((XMLString::equals(((DOMDocument*)parent)->getVersion(), XMLUni::fgVersion1_1))?
+      return ((kidOK[p] & 1<<ch) != 0) ||
+             (p==DOMNode::DOCUMENT_NODE && ch==DOMNode::TEXT_NODE &&
+              ((XMLString::equals(((DOMDocument*)parent)->getXmlVersion(), XMLUni::fgVersion1_1))?
                     XMLChar1_1::isAllSpaces(child->getNodeValue(), XMLString::stringLen(child->getNodeValue())):
                     XMLChar1_0::isAllSpaces(child->getNodeValue(), XMLString::stringLen(child->getNodeValue())))
              );
@@ -761,8 +780,6 @@ int             DOMDocumentImpl::changes() const{
            DOMNode*         DOMDocumentImpl::getPreviousSibling() const              {return fNode.getPreviousSibling (); }
            bool             DOMDocumentImpl::hasChildNodes() const                   {return fParent.hasChildNodes (); }
            void             DOMDocumentImpl::normalize()                             {fParent.normalize (); }
-           bool             DOMDocumentImpl::isSupported(const XMLCh *feature, const XMLCh *version) const
-                                                                                     {return fNode.isSupported (feature, version); }
            void             DOMDocumentImpl::setPrefix(const XMLCh  *prefix)         {fNode.setPrefix(prefix); }
            bool             DOMDocumentImpl::hasAttributes() const                   {return fNode.hasAttributes(); }
            bool             DOMDocumentImpl::isSameNode(const DOMNode* other) const  {return fNode.isSameNode(other);}
@@ -770,13 +787,12 @@ int             DOMDocumentImpl::changes() const{
            void*            DOMDocumentImpl::setUserData(const XMLCh* key, void* data, DOMUserDataHandler* handler)
                                                                                      {return fNode.setUserData(key, data, handler); }
            void*            DOMDocumentImpl::getUserData(const XMLCh* key) const     {return fNode.getUserData(key); }
-           short            DOMDocumentImpl::compareTreePosition(const DOMNode* other) const {return fNode.compareTreePosition(other); }
+           short            DOMDocumentImpl::compareDocumentPosition(const DOMNode* other) const {return fNode.compareDocumentPosition(other); }
            const XMLCh*     DOMDocumentImpl::getTextContent() const                  {return fNode.getTextContent(); }
            void             DOMDocumentImpl::setTextContent(const XMLCh* textContent){fNode.setTextContent(textContent); }
-           const XMLCh*     DOMDocumentImpl::lookupNamespacePrefix(const XMLCh* namespaceURI, bool useDefault) const  {return fNode.lookupNamespacePrefix(namespaceURI, useDefault); }
+           const XMLCh*     DOMDocumentImpl::lookupPrefix(const XMLCh* namespaceURI) const  {return fNode.lookupPrefix(namespaceURI); }
            bool             DOMDocumentImpl::isDefaultNamespace(const XMLCh* namespaceURI) const {return fNode.isDefaultNamespace(namespaceURI); }
            const XMLCh*     DOMDocumentImpl::lookupNamespaceURI(const XMLCh* prefix) const  {return fNode.lookupNamespaceURI(prefix); }
-           DOMNode*         DOMDocumentImpl::getInterface(const XMLCh* feature)      {return fNode.getInterface(feature); }
 
 
 
@@ -793,7 +809,7 @@ int             DOMDocumentImpl::changes() const{
 XMLCh * DOMDocumentImpl::cloneString(const XMLCh *src)
 {
     if (!src) return 0;
-    size_t   len = XMLString::stringLen(src);
+    XMLSize_t len = XMLString::stringLen(src);
     len = (len + 1) * sizeof(XMLCh);
     len = (len % 4) + len;
     XMLCh *newStr = (XMLCh *)this->allocate(len);
@@ -801,87 +817,92 @@ XMLCh * DOMDocumentImpl::cloneString(const XMLCh *src)
     return newStr;
 }
 
-
-const XMLCh *  DOMDocumentImpl::getPooledString(const XMLCh *src)
+XMLSize_t DOMDocumentImpl::getMemoryAllocationBlockSize() const
 {
-    if (!src) return 0;
-    else return this->fNamePool->getPooledString(src);
+    return fHeapAllocSize;
 }
 
-void *         DOMDocumentImpl::allocate(size_t amount)
-{	
-	//	Align the request size so that suballocated blocks
-	//	beyond this one will be maintained at the same alignment.
-	amount = XMLPlatformUtils::alignPointerForNewBlockAllocation(amount);
+void DOMDocumentImpl::setMemoryAllocationBlockSize(XMLSize_t size)
+{
+    // the new size must be bigger than the maximum amount of each allocation
+    if(size>kMaxSubAllocationSize)
+        fHeapAllocSize=size;
+}
 
-    // If the request is for a largish block, hand it off to the system
-    //   allocator.  The block still must be linked into the list of
-    //   allocated blocks so that it will be deleted when the time comes.
-    if (amount > kMaxSubAllocationSize)
+void* DOMDocumentImpl::allocate(XMLSize_t amount)
+{
+  //	Align the request size so that suballocated blocks
+  //	beyond this one will be maintained at the same alignment.
+  amount = XMLPlatformUtils::alignPointerForNewBlockAllocation(amount);
+
+  // If the request is for a largish block, hand it off to the system
+  //   allocator.  The block still must be linked into the list of
+  //   allocated blocks so that it will be deleted when the time comes.
+  if (amount > kMaxSubAllocationSize)
+  {
+    //	The size of the header we add to our raw blocks
+    XMLSize_t sizeOfHeader = XMLPlatformUtils::alignPointerForNewBlockAllocation(sizeof(void *));
+
+    //	Try to allocate the block
+    void* newBlock;
+    newBlock = fMemoryManager->allocate(sizeOfHeader + amount);
+
+    //	Link it into the list beyond current block, as current block
+    //	is still being subdivided. If there is no current block
+    //	then track that we have no bytes to further divide.
+    if (fCurrentBlock)
     {
-		//	The size of the header we add to our raw blocks
-		size_t sizeOfHeader = XMLPlatformUtils::alignPointerForNewBlockAllocation(sizeof(void *));
-
-		//	Try to allocate the block
-        void* newBlock;
-        newBlock = fMemoryManager->allocate((sizeOfHeader + amount) * sizeof(char)); //new char[amount + sizeOfHeader];
-        
-		//	Link it into the list beyond current block, as current block
-		//	is still being subdivided. If there is no current block
-		//	then track that we have no bytes to further divide.
-        if (fCurrentBlock)
-        {
-            *(void **)newBlock = *(void **)fCurrentBlock;
-            *(void **)fCurrentBlock = newBlock;
-        }
-        else
-        {
-            fCurrentBlock = newBlock;
-            fFreePtr = 0;
-            fFreeBytesRemaining = 0;
-        }
-		
-        void *retPtr = (char *)newBlock + sizeOfHeader;
-        return retPtr;
+      *(void **)newBlock = *(void **)fCurrentBlock;
+      *(void **)fCurrentBlock = newBlock;
+    }
+    else
+    {
+      *(void **)newBlock = 0;
+      fCurrentBlock = newBlock;
+      fFreePtr = 0;
+      fFreeBytesRemaining = 0;
     }
 
-    //	It's a normal (sub-allocatable) request.
-	//	Are we out of room in our current block?
-	if (amount > fFreeBytesRemaining)
-    {
-        // Request doesn't fit in the current block.
-
-		// The size of the header we add to our raw blocks
-		size_t sizeOfHeader = XMLPlatformUtils::alignPointerForNewBlockAllocation(sizeof(void *));
-
-        // Get a new block from the system allocator.
-        void* newBlock;
-        newBlock = fMemoryManager->allocate(fHeapAllocSize * sizeof(char)); //new char[kHeapAllocSize];
-        
-        *(void **)newBlock = fCurrentBlock;
-        fCurrentBlock = newBlock;
-        fFreePtr = (char *)newBlock + sizeOfHeader;
-        fFreeBytesRemaining = fHeapAllocSize - sizeOfHeader;
-
-        if(fHeapAllocSize<kMaxHeapAllocSize)
-            fHeapAllocSize*=2;
-    }
-
-	//	Subdivide the request off current block
-    void *retPtr = fFreePtr;
-    fFreePtr += amount;
-    fFreeBytesRemaining -= amount;
-	
+    void *retPtr = (char*)newBlock + sizeOfHeader;
     return retPtr;
+  }
+
+  //	It's a normal (sub-allocatable) request.
+  //	Are we out of room in our current block?
+  if (amount > fFreeBytesRemaining)
+  {
+    // Request doesn't fit in the current block.
+    // The size of the header we add to our raw blocks
+    XMLSize_t sizeOfHeader = XMLPlatformUtils::alignPointerForNewBlockAllocation(sizeof(void *));
+
+    // Get a new block from the system allocator.
+    void* newBlock;
+    newBlock = fMemoryManager->allocate(fHeapAllocSize);
+
+    *(void **)newBlock = fCurrentBlock;
+    fCurrentBlock = newBlock;
+    fFreePtr = (char *)newBlock + sizeOfHeader;
+    fFreeBytesRemaining = fHeapAllocSize - sizeOfHeader;
+
+    if(fHeapAllocSize<kMaxHeapAllocSize)
+      fHeapAllocSize*=2;
+  }
+
+  //	Subdivide the request off current block
+  void *retPtr = fFreePtr;
+  fFreePtr += amount;
+  fFreeBytesRemaining -= amount;
+
+  return retPtr;
 }
 
 
-void    DOMDocumentImpl::deleteHeap()
+void DOMDocumentImpl::deleteHeap()
 {
     while (fCurrentBlock != 0)
     {
         void *nextBlock = *(void **)fCurrentBlock;
-        fMemoryManager->deallocate(fCurrentBlock); //delete [] (char*) fCurrentBlock;
+        fMemoryManager->deallocate(fCurrentBlock);
         fCurrentBlock = nextBlock;
     }
 }
@@ -895,7 +916,7 @@ DOMNodeList *DOMDocumentImpl::getDeepNodeList(const DOMNode *rootNode, const XML
 
     DOMDeepNodeListImpl* retList = fNodeListPool->getByKey(rootNode, tagName, 0);
     if (!retList) {
-        int id = fNodeListPool->put((void*) rootNode, (XMLCh*) tagName, 0, new (this) DOMDeepNodeListImpl(rootNode, tagName));
+        XMLSize_t id = fNodeListPool->put((void*) rootNode, (XMLCh*) tagName, 0, new (this) DOMDeepNodeListImpl(rootNode, tagName));
         retList = fNodeListPool->getById(id);
     }
 
@@ -914,7 +935,7 @@ DOMNodeList *DOMDocumentImpl::getDeepNodeList(const DOMNode *rootNode,     //DOM
     DOMDeepNodeListImpl* retList = fNodeListPool->getByKey(rootNode, localName, namespaceURI);
     if (!retList) {
         // the pool will adopt the DOMDeepNodeListImpl
-        int id = fNodeListPool->put((void*) rootNode, (XMLCh*) localName, (XMLCh*) namespaceURI, new (this) DOMDeepNodeListImpl(rootNode, namespaceURI, localName));
+        XMLSize_t id = fNodeListPool->put((void*) rootNode, (XMLCh*) localName, (XMLCh*) namespaceURI, new (this) DOMDeepNodeListImpl(rootNode, namespaceURI, localName));
         retList = fNodeListPool->getById(id);
     }
 
@@ -923,41 +944,47 @@ DOMNodeList *DOMDocumentImpl::getDeepNodeList(const DOMNode *rootNode,     //DOM
 
 
 //Introduced in DOM Level 3
-const XMLCh* DOMDocumentImpl::getActualEncoding() const {
-    return fActualEncoding;
+const XMLCh* DOMDocumentImpl::getInputEncoding() const {
+    return fInputEncoding;
 }
 
-void DOMDocumentImpl::setActualEncoding(const XMLCh* actualEncoding){
-    fActualEncoding = cloneString(actualEncoding);
+void DOMDocumentImpl::setInputEncoding(const XMLCh* actualEncoding){
+    fInputEncoding = cloneString(actualEncoding);
 }
 
-const XMLCh* DOMDocumentImpl::getEncoding() const {
-    return fEncoding;
+const XMLCh* DOMDocumentImpl::getXmlEncoding() const {
+    return fXmlEncoding;
 }
 
-void DOMDocumentImpl::setEncoding(const XMLCh* encoding){
-    fEncoding = cloneString(encoding);
+void DOMDocumentImpl::setXmlEncoding(const XMLCh* encoding){
+    fXmlEncoding = cloneString(encoding);
 }
 
-bool DOMDocumentImpl::getStandalone() const{
-    return fStandalone;
+bool DOMDocumentImpl::getXmlStandalone() const{
+    return fXmlStandalone;
 }
 
-void DOMDocumentImpl::setStandalone(bool standalone){
-    fStandalone = standalone;
+void DOMDocumentImpl::setXmlStandalone(bool standalone){
+    fXmlStandalone = standalone;
 }
 
-const XMLCh* DOMDocumentImpl::getVersion() const {
-    return fVersion;
+const XMLCh* DOMDocumentImpl::getXmlVersion() const {
+    return fXmlVersion;
 }
 
-void DOMDocumentImpl::setVersion(const XMLCh* version){
-    if ((version && *version) &&
-        !XMLString::equals(version, XMLUni::fgVersion1_0) &&
-        !XMLString::equals(version, XMLUni::fgVersion1_1))
+void DOMDocumentImpl::setXmlVersion(const XMLCh* version){
+
+    // store the static strings, so that comparisons will be faster
+    if(version==0)
+        fXmlVersion = 0;
+    else if(*version==0)
+        fXmlVersion = XMLUni::fgZeroLenString;
+    else if(XMLString::equals(version, XMLUni::fgVersion1_0))
+        fXmlVersion = XMLUni::fgVersion1_0;
+    else if(XMLString::equals(version, XMLUni::fgVersion1_1))
+        fXmlVersion = XMLUni::fgVersion1_1;
+    else
         throw DOMException(DOMException::NOT_SUPPORTED_ERR, 0, getMemoryManager());
-
-    fVersion = cloneString(version);
 }
 
 const XMLCh* DOMDocumentImpl::getDocumentURI() const
@@ -983,31 +1010,56 @@ void DOMDocumentImpl::setStrictErrorChecking(bool strictErrorChecking) {
     setErrorChecking(strictErrorChecking);
 }
 
-DOMNode* DOMDocumentImpl::adoptNode(DOMNode*) {
-    throw DOMException(DOMException::NOT_SUPPORTED_ERR, 0, getMemoryManager());
+DOMNode* DOMDocumentImpl::adoptNode(DOMNode* sourceNode) {
+    if(sourceNode->getOwnerDocument()!=this)
+    {
+        // cannot take ownership of a node created by another document, as it comes from its memory pool
+        // and would be delete when the original document is deleted
+        return 0;
+    }
+    // if the adopted node is already part of this document (i.e. the source and target document are the same),
+    // this method still has the effect of removing the source node from the child list of its parent, if any
+    switch(sourceNode->getNodeType())
+    {
+    case DOCUMENT_NODE:
+    case DOCUMENT_TYPE_NODE:
+        throw DOMException(DOMException::NOT_SUPPORTED_ERR, 0, getMemoryManager());
+    case ATTRIBUTE_NODE:
+        {
+            DOMAttr* sourceAttr=(DOMAttr*)sourceNode;
+            DOMElement* sourceAttrElem=sourceAttr->getOwnerElement();
+            if(sourceAttrElem)
+                sourceAttrElem->removeAttributeNode(sourceAttr);
+            fNode.callUserDataHandlers(DOMUserDataHandler::NODE_ADOPTED, sourceNode, sourceNode);
+            break;
+        }
+    default:
+        {
+            DOMNode* sourceNodeParent=sourceNode->getParentNode();
+            if(sourceNodeParent)
+                sourceNodeParent->removeChild(sourceNode);
+            fNode.callUserDataHandlers(DOMUserDataHandler::NODE_ADOPTED, sourceNode, sourceNode);
+        }
+    }
     return 0;
 }
 
 void DOMDocumentImpl::normalizeDocument() {
 
-    if(!fNormalizer) 
+    if(!fNormalizer)
         fNormalizer = new (fMemoryManager) DOMNormalizer(fMemoryManager);
 
     fNormalizer->normalizeDocument(this);
 }
 
-DOMConfiguration* DOMDocumentImpl::getDOMConfiguration() const {
+DOMConfiguration* DOMDocumentImpl::getDOMConfig() const {
     if(!fDOMConfiguration)
         ((DOMDocumentImpl*)this)->fDOMConfiguration = new ((DOMDocumentImpl*)this) DOMConfigurationImpl(fMemoryManager);
 
     return fDOMConfiguration;
 }
 
-void DOMDocumentImpl::setDOMConfiguration(DOMConfiguration *config) {
-    fDOMConfiguration = config;
-}
-
-DOMNode *DOMDocumentImpl::importNode(DOMNode *source, bool deep, bool cloningDoc)
+DOMNode *DOMDocumentImpl::importNode(const DOMNode *source, bool deep, bool cloningDoc)
 {
     DOMNode *newnode=0;
     bool oldErrorCheckingFlag = errorChecking;
@@ -1024,18 +1076,18 @@ DOMNode *DOMDocumentImpl::importNode(DOMNode *source, bool deep, bool cloningDoc
                 DOMElementNSImpl* nsElem = (DOMElementNSImpl*)createElementNS(source->getNamespaceURI(), source->getNodeName());
                 DOMTypeInfoImpl* clonedTypeInfo=NULL;
                 // if the source has type informations, copy them
-                DOMPSVITypeInfo* sourcePSVI=(DOMPSVITypeInfo*)source->getInterface(XMLUni::fgXercescInterfacePSVITypeInfo);
+                DOMPSVITypeInfo* sourcePSVI=(DOMPSVITypeInfo*)source->getFeature(XMLUni::fgXercescInterfacePSVITypeInfo, 0);
                 if(sourcePSVI && sourcePSVI->getNumericProperty(DOMPSVITypeInfo::PSVI_Schema_Specified))
                     clonedTypeInfo=new (this) DOMTypeInfoImpl(this, sourcePSVI);
                 else
                 {
-                    const DOMTypeInfo * typeInfo=((DOMElement*)source)->getTypeInfo();
+                    const DOMTypeInfo * typeInfo=((DOMElement*)source)->getSchemaTypeInfo();
                     // copy it only if it has valid data
-                    if(typeInfo && typeInfo->getName()!=NULL)
-                        clonedTypeInfo=new (this) DOMTypeInfoImpl(typeInfo->getNamespace(), typeInfo->getName());
+                    if(typeInfo && typeInfo->getTypeName()!=NULL)
+                        clonedTypeInfo=new (this) DOMTypeInfoImpl(typeInfo->getTypeNamespace(), typeInfo->getTypeName());
                 }
                 if(clonedTypeInfo)
-                    nsElem->setTypeInfo(clonedTypeInfo);
+                    nsElem->setSchemaTypeInfo(clonedTypeInfo);
                 newelement=nsElem;
             }
             DOMNamedNodeMap *srcattr=source->getAttributes();
@@ -1068,22 +1120,23 @@ DOMNode *DOMDocumentImpl::importNode(DOMNode *source, bool deep, bool cloningDoc
             DOMAttrImpl* newattr=NULL;
             if (source->getLocalName() == 0)
                 newattr = (DOMAttrImpl*)createAttribute(source->getNodeName());
-            else
+            else {
                 newattr = (DOMAttrImpl*)createAttributeNS(source->getNamespaceURI(), source->getNodeName());
+            }
             DOMTypeInfoImpl* clonedTypeInfo=NULL;
             // if the source has type informations, copy them
-            DOMPSVITypeInfo* sourcePSVI=(DOMPSVITypeInfo*)source->getInterface(XMLUni::fgXercescInterfacePSVITypeInfo);
+            DOMPSVITypeInfo* sourcePSVI=(DOMPSVITypeInfo*)source->getFeature(XMLUni::fgXercescInterfacePSVITypeInfo, 0);
             if(sourcePSVI && sourcePSVI->getNumericProperty(DOMPSVITypeInfo::PSVI_Schema_Specified))
                 clonedTypeInfo=new (this) DOMTypeInfoImpl(this, sourcePSVI);
             else
             {
-                const DOMTypeInfo * typeInfo=((DOMAttr*)source)->getTypeInfo();
+                const DOMTypeInfo * typeInfo=((DOMAttr*)source)->getSchemaTypeInfo();
                 // copy it only if it has valid data
-                if(typeInfo && typeInfo->getName()!=NULL)
-                    clonedTypeInfo=new (this) DOMTypeInfoImpl(typeInfo->getNamespace(), typeInfo->getName());
+                if(typeInfo && typeInfo->getTypeName()!=NULL)
+                    clonedTypeInfo=new (this) DOMTypeInfoImpl(typeInfo->getTypeNamespace(), typeInfo->getTypeName());
             }
             if(clonedTypeInfo)
-                newattr->setTypeInfo(clonedTypeInfo);
+                newattr->setSchemaTypeInfo(clonedTypeInfo);
             newnode=newattr;
         }
         deep = true;
@@ -1100,8 +1153,9 @@ DOMNode *DOMDocumentImpl::importNode(DOMNode *source, bool deep, bool cloningDoc
         {
             DOMEntityReferenceImpl* newentityRef = (DOMEntityReferenceImpl*)createEntityReference(source->getNodeName());
             newnode=newentityRef;
-            errorChecking = false;
-            newentityRef->setReadOnly(false, true); //allow deep import temporarily
+            // Only the EntityReference itself is copied, even if a deep import is requested, since the source and
+            // destination documents might have defined the entity differently.
+            deep = false;
         }
         break;
     case DOMNode::ENTITY_NODE :
@@ -1111,14 +1165,14 @@ DOMNode *DOMDocumentImpl::importNode(DOMNode *source, bool deep, bool cloningDoc
             newentity->setPublicId(srcentity->getPublicId());
             newentity->setSystemId(srcentity->getSystemId());
             newentity->setNotationName(srcentity->getNotationName());
+            newentity->setBaseURI(srcentity->getBaseURI());
             // Kids carry additional value
             newnode=newentity;
             castToNodeImpl(newentity)->setReadOnly(false, true);// allow deep import temporarily
         }
         break;
     case DOMNode::PROCESSING_INSTRUCTION_NODE :
-        newnode = createProcessingInstruction(source->getNodeName(),
-            source->getNodeValue());
+        newnode = createProcessingInstruction(source->getNodeName(), source->getNodeValue());
         break;
     case DOMNode::COMMENT_NODE :
         newnode = createComment(source->getNodeValue());
@@ -1131,7 +1185,7 @@ DOMNode *DOMDocumentImpl::importNode(DOMNode *source, bool deep, bool cloningDoc
                 throw DOMException(DOMException::NOT_SUPPORTED_ERR, 0, getMemoryManager());
 
             DOMDocumentType *srcdoctype = (DOMDocumentType *)source;
-            DOMDocumentType *newdoctype = (DOMDocumentType *)
+            DOMDocumentTypeImpl *newdoctype = (DOMDocumentTypeImpl *)
                 createDocumentType(srcdoctype->getNodeName(),
                 srcdoctype->getPublicId(),
                 srcdoctype->getSystemId());
@@ -1152,17 +1206,17 @@ DOMNode *DOMDocumentImpl::importNode(DOMNode *source, bool deep, bool cloningDoc
             }
             const XMLCh* intSubset=srcdoctype->getInternalSubset();
             if(intSubset != 0) {
-                ((DOMDocumentTypeImpl *)newdoctype)->setInternalSubset(intSubset);
+                newdoctype->setInternalSubset(intSubset);
             }
 
             // detect if the DTD being copied is our own implementation, and use the provided methods
             try
             {
-                DOMDocumentTypeImpl* docTypeImpl=(DOMDocumentTypeImpl*)(srcdoctype->getInterface(XMLUni::fgXercescInterfaceDOMDocumentTypeImpl));
+                DOMDocumentTypeImpl* docTypeImpl=(DOMDocumentTypeImpl*)(srcdoctype->getFeature(XMLUni::fgXercescInterfaceDOMDocumentTypeImpl, XMLUni::fgZeroLenString));
                 if(docTypeImpl)
                 {
                     smap = docTypeImpl->getElements();
-                    tmap = ((DOMDocumentTypeImpl *)newdoctype)->getElements();
+                    tmap = newdoctype->getElements();
                     if (smap != 0) {
                         for(XMLSize_t i = 0; i < smap->getLength(); i++) {
                             tmap->setNamedItem(importNode(smap->item(i), true, cloningDoc));
@@ -1185,7 +1239,7 @@ DOMNode *DOMDocumentImpl::importNode(DOMNode *source, bool deep, bool cloningDoc
             DOMNotationImpl *newnotation = (DOMNotationImpl *)createNotation(source->getNodeName());
             newnotation->setPublicId(srcnotation->getPublicId());
             newnotation->setSystemId(srcnotation->getSystemId());
-            // Kids carry additional value
+            newnotation->setBaseURI(srcnotation->getBaseURI());
             newnode=newnotation;
             // No name, no value
             break;
@@ -1205,8 +1259,7 @@ DOMNode *DOMDocumentImpl::importNode(DOMNode *source, bool deep, bool cloningDoc
             newnode->appendChild(importNode(srckid, true, cloningDoc));
         }
 
-    if (newnode->getNodeType() == DOMNode::ENTITY_REFERENCE_NODE
-        || newnode->getNodeType() == DOMNode::ENTITY_NODE) {
+    if (newnode->getNodeType() == DOMNode::ENTITY_NODE) {
         castToNodeImpl(newnode)->setReadOnly(true, true);
         errorChecking = oldErrorCheckingFlag;
     }
@@ -1231,11 +1284,10 @@ void* DOMDocumentImpl::setUserData(DOMNodeImpl* n, const XMLCh* key, void* data,
 
     if (!fUserDataTable) {
         // create the table on heap so that it can be cleaned in destructor
-        fUserDataTable = new (fMemoryManager) RefHash2KeysTableOf<DOMUserDataRecord>
+        fUserDataTable = new (fMemoryManager) RefHash2KeysTableOf<DOMUserDataRecord, PtrHasher>
         (
             109
             , true
-            , new (fMemoryManager) HashPtr()
             , fMemoryManager
         );
     }
@@ -1255,7 +1307,7 @@ void* DOMDocumentImpl::setUserData(DOMNodeImpl* n, const XMLCh* key, void* data,
         fUserDataTable->put((void*)n, keyId, new (fMemoryManager) DOMUserDataRecord(data, handler));
     }
     else {
-        RefHash2KeysTableOfEnumerator<DOMUserDataRecord> enumKeys(fUserDataTable, false, fMemoryManager);
+        RefHash2KeysTableOfEnumerator<DOMUserDataRecord, PtrHasher> enumKeys(fUserDataTable, false, fMemoryManager);
         enumKeys.setPrimaryKey(n);
         if (!enumKeys.hasMoreElements())
             n->hasUserData(false);
@@ -1278,10 +1330,10 @@ void* DOMDocumentImpl::getUserData(const DOMNodeImpl* n, const XMLCh* key) const
     return 0;
 }
 
-void DOMDocumentImpl::callUserDataHandlers(const DOMNodeImpl* n, DOMUserDataHandler::DOMOperationType operation, const DOMNode* src, const DOMNode* dst) const
+void DOMDocumentImpl::callUserDataHandlers(const DOMNodeImpl* n, DOMUserDataHandler::DOMOperationType operation, const DOMNode* src, DOMNode* dst) const
 {
     if (fUserDataTable) {
-        RefHash2KeysTableOfEnumerator<DOMUserDataRecord> userDataEnum(fUserDataTable, false, fMemoryManager);
+        RefHash2KeysTableOfEnumerator<DOMUserDataRecord, PtrHasher> userDataEnum(fUserDataTable, false, fMemoryManager);
         userDataEnum.setPrimaryKey(n);
         // Create a snapshot of the handlers to be called, as the "handle" callback could be invalidating the enumerator by calling
         // setUserData on the dst node
@@ -1331,10 +1383,7 @@ void DOMDocumentImpl::transferUserData(DOMNodeImpl* n1, DOMNodeImpl* n2)
 DOMNode* DOMDocumentImpl::renameNode(DOMNode* n, const XMLCh* namespaceURI, const XMLCh* name)
 {
     if (n->getOwnerDocument() != this)
-        if (n->getNodeType() == DOCUMENT_NODE)
-            throw DOMException(DOMException::NOT_SUPPORTED_ERR, 0, getMemoryManager());
-        else
-            throw DOMException(DOMException::WRONG_DOCUMENT_ERR, 0, getMemoryManager());
+        throw DOMException(DOMException::WRONG_DOCUMENT_ERR, 0, getMemoryManager());
 
     switch (n->getNodeType()) {
         case ELEMENT_NODE:
@@ -1342,8 +1391,9 @@ DOMNode* DOMDocumentImpl::renameNode(DOMNode* n, const XMLCh* namespaceURI, cons
         case ATTRIBUTE_NODE:
             return ((DOMAttrImpl*)n)->rename(namespaceURI, name);
         default:
-            throw DOMException(DOMException::NOT_SUPPORTED_ERR, 0, getMemoryManager());
+            break;
     }
+    throw DOMException(DOMException::NOT_SUPPORTED_ERR, 0, getMemoryManager());
 
     return 0;
 }
@@ -1370,16 +1420,16 @@ void DOMDocumentImpl::release()
 void DOMDocumentImpl::releaseDocNotifyUserData(DOMNode* object)
 {
     DOMNode *child = object->getFirstChild();
-    
+
     while( child != 0)
     {
-            
-         DOMNamedNodeMap *attrlist=child->getAttributes(); 
-    
-         if(attrlist!=0) 
-             for(XMLSize_t i=0;i<attrlist->getLength();++i) 
-                 releaseDocNotifyUserData(attrlist->item(i)); 
-            
+
+         DOMNamedNodeMap *attrlist=child->getAttributes();
+
+         if(attrlist!=0)
+             for(XMLSize_t i=0;i<attrlist->getLength();++i)
+                 releaseDocNotifyUserData(attrlist->item(i));
+
         releaseDocNotifyUserData(child);
         child = child->getNextSibling();
     }
@@ -1387,7 +1437,7 @@ void DOMDocumentImpl::releaseDocNotifyUserData(DOMNode* object)
     castToNodeImpl(object)->callUserDataHandlers(DOMUserDataHandler::NODE_DELETED, 0, 0);
 }
 
-void DOMDocumentImpl::release(DOMNode* object, NodeObjectType type)
+void DOMDocumentImpl::release(DOMNode* object, DOMMemoryManager::NodeObjectType type)
 {
     if (!fRecycleNodePtr)
         fRecycleNodePtr = new (fMemoryManager) RefArrayOf<DOMNodePtr> (15, fMemoryManager);
@@ -1406,16 +1456,20 @@ void DOMDocumentImpl::releaseBuffer(DOMBuffer* buffer)
     fRecycleBufferPtr->push(buffer);
 }
 
-DOMBuffer* DOMDocumentImpl::popBuffer()
+DOMBuffer* DOMDocumentImpl::popBuffer(XMLSize_t nMinSize)
 {
     if (!fRecycleBufferPtr || fRecycleBufferPtr->empty())
         return 0;
 
+    for(XMLSize_t index=fRecycleBufferPtr->size()-1;index>0;index--)
+        if(fRecycleBufferPtr->elementAt(index)->getCapacity()>=nMinSize)
+            return fRecycleBufferPtr->popAt(index);
+    // if we didn't find a buffer big enough, get the last one
     return fRecycleBufferPtr->pop();
 }
 
 
-void * DOMDocumentImpl::allocate(size_t amount, NodeObjectType type)
+void * DOMDocumentImpl::allocate(XMLSize_t amount, DOMMemoryManager::NodeObjectType type)
 {
     if (!fRecycleNodePtr)
         return allocate(amount);
@@ -1427,5 +1481,29 @@ void * DOMDocumentImpl::allocate(size_t amount, NodeObjectType type)
     return (void*) ptr->pop();
 
 }
+
+bool DOMDocumentImpl::isSupported(const XMLCh *feature, const XMLCh *version) const
+{
+    // check for '+DOMMemoryManager'
+    if(feature && *feature=='+' && XMLString::equals(feature+1, XMLUni::fgXercescInterfaceDOMMemoryManager))
+        return true;
+    if(feature && *feature)
+    {
+        if((*feature==chPlus && XMLString::equals(feature+1, XMLUni::fgXercescInterfaceDOMDocumentImpl)) ||
+           XMLString::equals(feature, XMLUni::fgXercescInterfaceDOMDocumentImpl))
+            return true;
+    }
+    return fNode.isSupported (feature, version);
+}
+
+void* DOMDocumentImpl::getFeature(const XMLCh* feature, const XMLCh* version) const
+{
+    if(XMLString::equals(feature, XMLUni::fgXercescInterfaceDOMMemoryManager))
+        return (DOMMemoryManager*)this;
+    if(XMLString::equals(feature, XMLUni::fgXercescInterfaceDOMDocumentImpl))
+        return (DOMDocumentImpl*)this;
+    return fNode.getFeature(feature,version);
+}
+
 
 XERCES_CPP_NAMESPACE_END

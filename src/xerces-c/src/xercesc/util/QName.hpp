@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: QName.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: QName.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#if !defined(QNAME_HPP)
-#define QNAME_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_QNAME_HPP)
+#define XERCESC_INCLUDE_GUARD_QNAME_HPP
 
 #include <xercesc/util/XMLString.hpp>
 #include <xercesc/util/XMLUniDefs.hpp>
@@ -35,7 +35,7 @@ class XMLUTIL_EXPORT QName : public XSerializable, public XMemory
 {
 public :
     // -----------------------------------------------------------------------
-    //  Contructors and Destructor
+    //  Constructors and Destructor
     // -----------------------------------------------------------------------
     /** Default constructor. */
     QName(MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
@@ -96,8 +96,8 @@ public :
 
     void setPrefix(const XMLCh*) ;
     void setLocalPart(const XMLCh*) ;
-    void setNPrefix(const XMLCh*, const unsigned int) ;
-    void setNLocalPart(const XMLCh*, const unsigned int) ;
+    void setNPrefix(const XMLCh*, const XMLSize_t ) ;
+    void setNLocalPart(const XMLCh*, const XMLSize_t ) ;
     void setURI(const unsigned int) ;
 
     void setValues(const QName& qname);
@@ -134,7 +134,7 @@ private :
     //      The prefix that was applied to this attribute's name, and the
     //      current size of the buffer (minus one for the null.) Prefixes
     //      really don't matter technically but it might be required for
-    //      pratical reasons, to recreate the original document for instance.
+    //      practical reasons, to recreate the original document for instance.
     //
     //  fLocalPart
     //  fLocalPartBufSz
@@ -146,14 +146,14 @@ private :
     //      This is the QName form of the name, which is faulted in (from the
     //      prefix and name) upon request. The size field indicates the
     //      current size of the buffer (minus one for the null.) It will be
-    //      zero until fauled in.
+    //      zero until filled in.
     //
     //  fURIId
     //      The id of the URI that this attribute belongs to.
     // -----------------------------------------------------------------------
-    unsigned int        fPrefixBufSz;
-    unsigned int        fLocalPartBufSz;
-    unsigned int        fRawNameBufSz;
+    XMLSize_t           fPrefixBufSz;
+    XMLSize_t           fLocalPartBufSz;
+    XMLSize_t           fRawNameBufSz;
     unsigned int        fURIId;
     XMLCh*              fPrefix;
     XMLCh*              fLocalPart;
@@ -200,6 +200,16 @@ inline MemoryManager* QName::getMemoryManager() const
 inline void QName::setURI(const unsigned int uriId)
 {
     fURIId = uriId;
+}
+
+inline void QName::setPrefix(const XMLCh* prefix)
+{
+    setNPrefix(prefix, XMLString::stringLen(prefix));
+}
+
+inline void QName::setLocalPart(const XMLCh* localPart)
+{
+    setNLocalPart(localPart, XMLString::stringLen(localPart));
 }
 
 XERCES_CPP_NAMESPACE_END

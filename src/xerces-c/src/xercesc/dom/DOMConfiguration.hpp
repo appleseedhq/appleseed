@@ -15,33 +15,35 @@
  * limitations under the License.
  */
 
-#if !defined(DOMCONFIGURATION_HPP)
-#define DOMCONFIGURATION_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_DOMCONFIGURATION_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMCONFIGURATION_HPP
 
 //------------------------------------------------------------------------------------
 //  Includes
 //------------------------------------------------------------------------------------
 
 #include <xercesc/util/XMLString.hpp>
+#include <xercesc/util/RefVectorOf.hpp>
+#include <xercesc/dom/DOMStringList.hpp>
 
 XERCES_CPP_NAMESPACE_BEGIN
 
 /**
  *   The DOMConfiguration interface represents the configuration of
  *   a document  and  maintains  a  table of recognized parameters.
- *   using  the   configuration,   it   is   possible   to   change
+ *   Using  the   configuration,   it   is   possible   to   change
  *   Document.normalizeDocument  behavior,  such  as replacing
  *   CDATASection   nodes   with   Text  nodes  or
  *   specifying  the  type  of the schema that must be used when the
  *   validation of the Document is requested. DOMConfiguration
  *   objects  are  also used in [DOM Level 3 Load and Save] in
- *   the DOMBuilder and DOMWriter interfaces.
+ *   the DOMLSParser and DOMLSSerializer interfaces.
  *
  *   The  DOMConfiguration  distinguish  two  types  of  parameters:
  *   boolean     (boolean    parameters)    and    DOMUserData
  *   (parameters). The names used by the DOMConfiguration object are
  *   defined  throughout  the  DOM Level 3 specifications. Names are
- *   case-insensitives.   To   avoid   possible   conflicts,   as  a
+ *   case-insensitive.   To   avoid   possible   conflicts,   as  a
  *   convention,   names   referring   to   boolean  parameters  and
  *   parameters defined outside the DOM specification should be made
  *   unique.  Names  are  recommended  to  follow the XML name
@@ -55,14 +57,6 @@ XERCES_CPP_NAMESPACE_BEGIN
  *
  *   Note: Parameters are similar to features and properties used in
  *   SAX2 [SAX].
- *
- * Issue DOMConfiguration-1:
- *         Can we rename boolean parameters to "flags"?
- *
- * Issue DOMConfiguration-2:
- *         Are  boolean  parameters  and  parameters within the same
- *         scope for uniqueness? Which exception should be raised by
- *         setBooleanParameter("error-handler", true)?
  *
  *   The following list of parameters defined in the DOM:
  *
@@ -79,12 +73,6 @@ XERCES_CPP_NAMESPACE_BEGIN
  *         Document  node.  Mutations  to  the  document  from
  *         within  an  error  handler  will result in implementation
  *         dependent behaviour.
- *
- *       Issue DOMConfiguration-4:
- *               Should   we   say  non  "readonly"  operations  are
- *               implementation dependent instead?
- *               Resolution:  Removed:  "or re-invoking a validation
- *               operation".
  *
  * "schema-type"
  *         [optional]
@@ -146,11 +134,6 @@ XERCES_CPP_NAMESPACE_BEGIN
  *               In particular, there is no way to specify the order
  *               of the attributes in the DOM.
  *
- *             Issue normalizationFeature-14:
- *                     What  happen  to  other  features?  are  they
- *                     ignored? if yes, how do you know if a feature
- *                     is ignored?
- *
  *       false
  *               [required] (default)
  *               Do not canonicalize the document.
@@ -160,14 +143,6 @@ XERCES_CPP_NAMESPACE_BEGIN
  *       true
  *               [required] (default)
  *               Keep CDATASection nodes in the document.
- *
- *             Issue normalizationFeature-11:
- *                     Name  does not work really well in this case.
- *                     ALH     suggests     renaming     this     to
- *                     "cdata-sections".  It works for both load and
- *                     save.
- *                     Resolution:  Renamed as suggested. (Telcon 27
- *                     Jan 2002).
  *
  *       false
  *               [required]
@@ -191,12 +166,6 @@ XERCES_CPP_NAMESPACE_BEGIN
  *               [required]
  *               Exposed normalized values in the tree.
  *
- *             Issue normalizationFeature-8:
- *                     We should define "datatype normalization".
- *                     Resolution:  DTD  normalization  always apply
- *                     because  it's  part  of  XML 1.0. Clarify the
- *                     spec. (Telcon 27 Jan 2002).
- *
  *       false
  *               [required] (default)
  *               Do not perform normalization on the tree.
@@ -217,12 +186,6 @@ XERCES_CPP_NAMESPACE_BEGIN
  *               won't be removed if an implementation does not have
  *               any information available.
  *
- *             Issue normalizationFeature-2:
- *                     How  does  exactly  work?  What's the comment
- *                     about level 1 implementations?
- *                     Resolution:  Remove  "Level 1" (Telcon 16 Jan
- *                     2002).
- *
  *       false
  *               [required]
  *               Keep all attributes and all content.
@@ -233,16 +196,6 @@ XERCES_CPP_NAMESPACE_BEGIN
  *               [required]
  *               Keep  EntityReference  and Entity nodes
  *               in the document.
- *
- *             Issue normalizationFeature-9:
- *                     How does that interact with
- *                     expand-entity-references?     ALH    suggests
- *                     consolidating  the  two  to  a single feature
- *                     called  "entity-references" that is used both
- *                     for load and save.
- *                     Resolution:  Consolidate both features into a
- *                     single  feature called 'entities'. (Telcon 27
- *                     Jan 2002).
  *
  *       false
  *               [required] (default)
@@ -266,28 +219,14 @@ XERCES_CPP_NAMESPACE_BEGIN
  *               This   forces   the  following  features  to  true:
  *               whitespace-in-element-content,            comments,
  *               namespaces.
- *               Other  features  are  not  changed unless explicity
+ *               Other  features  are  not  changed unless explicitly
  *               specified in the description of the features.
  *               Note  that  querying  this  feature with getFeature
  *               returns   true  only  if  the  individual  features
  *               specified above are appropriately set.
  *
- *             Issue normalizationFeature-12:
- *                     Name  doesn't  work  well  here. ALH suggests
- *                     renaming    this   to   limit-to-infoset   or
- *                     match-infoset, something like that.
- *                     Resolution:  Renamed 'infoset' (Telcon 27 Jan
- *                     2002).
- *
  *       false
  *               Setting infoset to false has no effect.
- *
- *             Issue normalizationFeature-13:
- *                     Shouldn't  we  change  this  to  setting  the
- *                     relevant options back to their default value?
- *                     Resolution:   No,   this   is   more  like  a
- *                     convenience  function, it's better to keep it
- *                     simple. (F2F 28 Feb 2002).
  *
  * "namespaces"
  *
@@ -385,18 +324,11 @@ XERCES_CPP_NAMESPACE_BEGIN
  *               has  a  schema.  Note  that  validation  must still
  *               happen if validate is true.
  *
- * "whitespace-in-element-content"
+ * "element-content-whitespace"
  *
  *       true
  *               [required] (default)
  *               Keep all white spaces in the document.
- *
- *             Issue normalizationFeature-15:
- *                     How   does   this   feature   interact   with
- *                     "validate" and
- *                     Text.isWhitespaceInElementContent.
- *                     Resolution:  issue  no  longer  relevant (f2f
- *                     october 2002).
  *
  *       false
  *               [optional]
@@ -456,6 +388,7 @@ public:
      * @since DOM level 3
      **/
     virtual void setParameter(const XMLCh* name, const void* value) = 0;
+    virtual void setParameter(const XMLCh* name, bool value) = 0;
 
     // -----------------------------------------------------------------------
     //  Getter methods
@@ -487,6 +420,17 @@ public:
      * @since DOM level 3
      **/
     virtual bool canSetParameter(const XMLCh* name, const void* value) const = 0;
+    virtual bool canSetParameter(const XMLCh* name, bool value) const = 0;
+
+    /**
+     * The list of the parameters supported by this DOMConfiguration object and 
+     * for which at least one value can be set by the application. 
+     * Note that this list can also contain parameter names defined outside this specification.
+     *
+     * @return The list of parameters that can be used with setParameter/getParameter
+     * @since DOM level 3
+     **/
+    virtual const DOMStringList* getParameterNames() const = 0;
 
     // -----------------------------------------------------------------------
     //  All constructors are hidden, just the destructor is available

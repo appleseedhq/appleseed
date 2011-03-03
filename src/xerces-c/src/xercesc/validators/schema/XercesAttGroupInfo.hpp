@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XercesAttGroupInfo.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XercesAttGroupInfo.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#if !defined(XERCESATTGROUPINFO_HPP)
-#define XERCESATTGROUPINFO_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XERCESATTGROUPINFO_HPP)
+#define XERCESC_INCLUDE_GUARD_XERCESATTGROUPINFO_HPP
 
 
 /**
@@ -57,14 +57,14 @@ public:
     //  Getter methods
     // -----------------------------------------------------------------------
     bool                containsTypeWithId() const;
-    unsigned int        attributeCount() const;
-    unsigned int        anyAttributeCount() const;
+    XMLSize_t           attributeCount() const;
+    XMLSize_t           anyAttributeCount() const;
     unsigned int        getNameId() const;
     unsigned int        getNamespaceId() const;
-    SchemaAttDef*       attributeAt(const unsigned int index);
-    const SchemaAttDef* attributeAt(const unsigned int index) const;
-    SchemaAttDef*       anyAttributeAt(const unsigned int index);
-    const SchemaAttDef* anyAttributeAt(const unsigned int index) const;
+    SchemaAttDef*       attributeAt(const XMLSize_t index);
+    const SchemaAttDef* attributeAt(const XMLSize_t index) const;
+    SchemaAttDef*       anyAttributeAt(const XMLSize_t index);
+    const SchemaAttDef* anyAttributeAt(const XMLSize_t index) const;
     SchemaAttDef*       getCompleteWildCard() const;
     const SchemaAttDef* getAttDef(const XMLCh* const baseName,
                                   const int uriId) const;
@@ -90,7 +90,7 @@ public:
 
 private:
     // -----------------------------------------------------------------------
-    //  Unimplemented contstructors and operators
+    //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
     XercesAttGroupInfo(const XercesAttGroupInfo& elemInfo);
     XercesAttGroupInfo& operator= (const XercesAttGroupInfo& other);
@@ -115,7 +115,7 @@ inline bool XercesAttGroupInfo::containsTypeWithId() const {
     return fTypeWithId;
 }
 
-inline unsigned int XercesAttGroupInfo::attributeCount() const {
+inline XMLSize_t XercesAttGroupInfo::attributeCount() const {
 
     if (fAttributes) {
         return fAttributes->size();
@@ -124,7 +124,7 @@ inline unsigned int XercesAttGroupInfo::attributeCount() const {
     return 0;
 }
 
-inline unsigned int XercesAttGroupInfo::anyAttributeCount() const {
+inline XMLSize_t XercesAttGroupInfo::anyAttributeCount() const {
 
     if (fAnyAttributes) {
         return fAnyAttributes->size();
@@ -144,7 +144,7 @@ inline unsigned int XercesAttGroupInfo::getNamespaceId() const
 }
 
 inline SchemaAttDef*
-XercesAttGroupInfo::attributeAt(const unsigned int index) {
+XercesAttGroupInfo::attributeAt(const XMLSize_t index) {
 
     if (fAttributes) {
         return fAttributes->elementAt(index);
@@ -154,7 +154,7 @@ XercesAttGroupInfo::attributeAt(const unsigned int index) {
 }
 
 inline const SchemaAttDef*
-XercesAttGroupInfo::attributeAt(const unsigned int index) const {
+XercesAttGroupInfo::attributeAt(const XMLSize_t index) const {
 
     if (fAttributes) {
         return fAttributes->elementAt(index);
@@ -164,7 +164,7 @@ XercesAttGroupInfo::attributeAt(const unsigned int index) const {
 }
 
 inline SchemaAttDef*
-XercesAttGroupInfo::anyAttributeAt(const unsigned int index) {
+XercesAttGroupInfo::anyAttributeAt(const XMLSize_t index) {
 
     if (fAnyAttributes) {
         return fAnyAttributes->elementAt(index);
@@ -174,7 +174,7 @@ XercesAttGroupInfo::anyAttributeAt(const unsigned int index) {
 }
 
 inline const SchemaAttDef*
-XercesAttGroupInfo::anyAttributeAt(const unsigned int index) const {
+XercesAttGroupInfo::anyAttributeAt(const XMLSize_t index) const {
 
     if (fAnyAttributes) {
         return fAnyAttributes->elementAt(index);

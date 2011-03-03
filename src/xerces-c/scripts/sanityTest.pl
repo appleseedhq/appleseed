@@ -17,7 +17,7 @@
 #
 
 #
-# $Id: sanityTest.pl 570125 2007-08-27 13:57:11Z amassari $
+# $Id: sanityTest.pl 696141 2008-09-17 03:06:33Z dbertoni $
 #
 
 
@@ -95,6 +95,7 @@ system ("DOMPrint -wfpp=on -wddc=off -v=never personal.xml");
 system ("DOMPrint -wfpp=on -wddc=off personal.xml");
 system ("DOMPrint -wfpp=on -wddc=on  personal.xml");
 system ("DOMPrint -wfpp=on -wddc=off -n -s personal-schema.xml");
+system ("DOMPrint -v=never -xpath=//name personal.xml");
 
 #  Run StdInParse
 system ("StdInParse < personal.xml");
@@ -117,6 +118,11 @@ system ("SEnumVal personal-schema.xml");
 #  Run CreateDOMDocument
 system ("CreateDOMDocument");
 
+#  Run SAXPrint.  This tests long element names.
+print  ("\nTest of a long element name.\n");
+system ("SAXPrint -v=never long.xml");
+print  ("\n\n");
+
 #
 #  Run the test cases
 #
@@ -136,12 +142,6 @@ system ("RangeTest");
 #  Run DOMTraversalTest
 print  ("DOMTraversalTest\n");
 system ("DOMTraversalTest");
-
-#  Run DeprecatedDOMCount
-system ("DeprecatedDOMCount");
-system ("DeprecatedDOMCount -v=never personal.xml");
-system ("DeprecatedDOMCount personal.xml");
-system ("DeprecatedDOMCount -n -s personal-schema.xml");
 
 #  Run XSerializerTest
 system ("XSerializerTest");
@@ -203,7 +203,7 @@ system ("MemHandlerTest -v=always -n -r=2 -s -f personal-schema.xml");
 
 chdir "..".$pathsep."..";
 
-chdir "tests".$pathsep."DOM".$pathsep."TypeInfo";
+chdir "tests".$pathsep."src".$pathsep."DOM".$pathsep."TypeInfo";
 system ("DOMTypeInfoTest");
 
 chdir "..".$pathsep."..";

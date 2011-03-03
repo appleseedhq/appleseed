@@ -1,6 +1,3 @@
-#ifndef DOMNodeIDMap_HEADER_GUARD_
-#define DOMNodeIDMap_HEADER_GUARD_
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -19,8 +16,11 @@
  */
 
 /*
- * $Id: DOMNodeIDMap.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMNodeIDMap.hpp 676911 2008-07-15 13:27:32Z amassari $
  */
+
+#if !defined(XERCESC_INCLUDE_GUARD_DOMNODEIDMAP_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMNODEIDMAP_HPP
 
 //
 //  This file is part of the internal implementation of the C++ XML DOM.
@@ -50,10 +50,10 @@ class DOMDocument;
 class DOMNodeIDMap {
 public:
 
-    DOMNodeIDMap(int initialSize, DOMDocument *doc);    // Create a new hash table, sized to hold "initialSize"
+    DOMNodeIDMap(XMLSize_t initialSize, DOMDocument *doc);    // Create a new hash table, sized to hold "initialSize"
                                      //  Entries.  It will automatically grow if need be.
 
-    virtual ~DOMNodeIDMap();
+    ~DOMNodeIDMap();
 
 private:
     DOMNodeIDMap(const DOMNodeIDMap &other);   // No copy, assignement, comparison.
@@ -71,16 +71,14 @@ private:
 
 private:
     DOMAttr      **fTable;
-    XMLSize_t  fSizeIndex;              // Index of the current table size in the
-                                           //   array of possible table sizes.
-	XMLSize_t  fSize;                   // The current size of the table array
-                                           //   (number of slots, not bytes.)
-    XMLSize_t  fNumEntries;             // The number of entries used.
-    XMLSize_t  fMaxEntries;             // The max number of entries to use before
-                                           //   growing the table.
-    DOMDocument *fDoc;                    // The owning document.
-
-
+    XMLSize_t      fSizeIndex;              // Index of the current table size in the
+                                            //   array of possible table sizes.
+	XMLSize_t      fSize;                   // The current size of the table array
+                                            //   (number of slots, not bytes.)
+    XMLSize_t      fNumEntries;              // The number of entries used.
+    XMLSize_t      fMaxEntries;              // The max number of entries to use before
+                                            //   growing the table.
+    DOMDocument *fDoc;                      // The owning document.
 };
 
 XERCES_CPP_NAMESPACE_END

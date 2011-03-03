@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: UnionDatatypeValidator.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: UnionDatatypeValidator.cpp 677559 2008-07-17 11:35:27Z amassari $
  */
 
 // ---------------------------------------------------------------------------
@@ -42,7 +42,6 @@ UnionDatatypeValidator::UnionDatatypeValidator(MemoryManager* const manager)
 ,fMemberTypesInherited(false)
 ,fEnumeration(0)
 ,fMemberTypeValidators(0)
-,fValidatedDatatype(0)
 
 {}
 
@@ -60,7 +59,6 @@ UnionDatatypeValidator::UnionDatatypeValidator(
 ,fMemberTypesInherited(false)
 ,fEnumeration(0)
 ,fMemberTypeValidators(0)
-,fValidatedDatatype(0)
 {
     if ( !memberTypeValidators )
     {
@@ -88,7 +86,6 @@ UnionDatatypeValidator::UnionDatatypeValidator(
 ,fMemberTypesInherited(memberTypesInherited)
 ,fEnumeration(0)
 ,fMemberTypeValidators(memberTypeValidators)
-,fValidatedDatatype(0)
 {
     //
     // baseValidator another UnionDTV from which,
@@ -178,8 +175,8 @@ void UnionDatatypeValidator::init(DatatypeValidator*            const baseValida
         if ( ((getFacetsDefined() & DatatypeValidator::FACET_ENUMERATION) != 0) &&
             (getEnumeration() !=0))
         {
-            int i = 0;
-            int enumLength = getEnumeration()->size();
+            XMLSize_t i = 0;
+            XMLSize_t enumLength = getEnumeration()->size();
             try
             {
                 for ( ; i < enumLength; i++)
@@ -261,8 +258,7 @@ void UnionDatatypeValidator::checkContent(const XMLCh*             const content
                 memTypeValid = true;
                 
                 //set the validator of the type actually used to validate the content
-                DatatypeValidator *dtv = fMemberTypeValidators->elementAt(i);
-                fValidatedDatatype = dtv;
+                DatatypeValidator *dtv = fMemberTypeValidators->elementAt(i);                
                 // context will be null during schema construction
                 if(context)
                     context->setValidatingMemberType(dtv);
@@ -310,12 +306,12 @@ void UnionDatatypeValidator::checkContent(const XMLCh*             const content
         //
         RefVectorOf<DatatypeValidator>* memberDTV = getMemberTypeValidators();
         RefArrayVectorOf<XMLCh>* tmpEnum = getEnumeration();
-        unsigned int memberTypeNumber = memberDTV->size();
-        unsigned int enumLength = tmpEnum->size();
+        XMLSize_t memberTypeNumber = memberDTV->size();
+        XMLSize_t enumLength = tmpEnum->size();
 
-        for ( unsigned int memberIndex = 0; memberIndex < memberTypeNumber; ++memberIndex)
+        for ( XMLSize_t memberIndex = 0; memberIndex < memberTypeNumber; ++memberIndex)
         {
-            for ( unsigned int enumIndex = 0; enumIndex < enumLength; ++enumIndex)
+            for ( XMLSize_t enumIndex = 0; enumIndex < enumLength; ++enumIndex)
             {
                 try
                 {
@@ -343,12 +339,23 @@ int UnionDatatypeValidator::compare(const XMLCh* const lValue
                                   , MemoryManager* const manager)
 {
     RefVectorOf<DatatypeValidator>* memberDTV = getMemberTypeValidators();
-    unsigned int memberTypeNumber = memberDTV->size();
+    XMLSize_t memberTypeNumber = memberDTV->size();
 
-    for ( unsigned int memberIndex = 0; memberIndex < memberTypeNumber; ++memberIndex)
+    for ( XMLSize_t memberIndex = 0; memberIndex < memberTypeNumber; ++memberIndex)
     {
-        if (memberDTV->elementAt(memberIndex)->compare(lValue, rValue, manager) ==0)
-            return  0;
+        // 'compare' can throw exceptions when the datatype is not valid, or just 
+        // return -1; so attempt to validate both values to get the right validator
+        try
+        {
+            memberDTV->elementAt(memberIndex)->validate(lValue, 0, manager);                       
+            memberDTV->elementAt(memberIndex)->validate(rValue, 0, manager);                       
+            if (memberDTV->elementAt(memberIndex)->compare(lValue, rValue, manager) ==0)
+                return  0;
+        }
+        catch (XMLException&)
+        {
+            //absorbed
+        }
     }
 
     //REVISIT: what does it mean for UNION1 to be <less than> or <greater than> UNION2 ?
@@ -364,8 +371,8 @@ const RefArrayVectorOf<XMLCh>* UnionDatatypeValidator::getEnumString() const
 /***
  * 2.5.1.3 Union datatypes
  *
- * The canonical-lexical-representation for a ·union· datatype is defined as the lexical form 
- * in which the values have the canonical lexical representation of the appropriate ·memberTypes·.       
+ * The canonical-lexical-representation for a union datatype is defined as the lexical form 
+ * in which the values have the canonical lexical representation of the appropriate memberTypes.       
  ***/
 const XMLCh* UnionDatatypeValidator::getCanonicalRepresentation(const XMLCh*         const rawData
                                                               ,       MemoryManager* const memMgr
@@ -436,9 +443,6 @@ void UnionDatatypeValidator::serialize(XSerializeEngine& serEng)
          ***/
         XTemplateSerializer::storeObject(fEnumeration, serEng);
         XTemplateSerializer::storeObject(fMemberTypeValidators, serEng);
-
-        DatatypeValidator::storeDV(serEng, fValidatedDatatype);
-
     }
     else
     {
@@ -451,9 +455,6 @@ void UnionDatatypeValidator::serialize(XSerializeEngine& serEng)
          ***/
         XTemplateSerializer::loadObject(&fEnumeration, 8, true, serEng);
         XTemplateSerializer::loadObject(&fMemberTypeValidators, 4, false, serEng);
-
-        fValidatedDatatype = DatatypeValidator::loadDV(serEng);
-
     }
 }
 

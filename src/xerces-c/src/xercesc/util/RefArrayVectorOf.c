@@ -28,7 +28,7 @@ XERCES_CPP_NAMESPACE_BEGIN
 //  RefArrayVectorOf: Constructor and Destructor
 // ---------------------------------------------------------------------------
 template <class TElem>
-RefArrayVectorOf<TElem>::RefArrayVectorOf( const unsigned int maxElems
+RefArrayVectorOf<TElem>::RefArrayVectorOf( const XMLSize_t maxElems
                                          , const bool adoptElems
                                          , MemoryManager* const manager)
     : BaseRefVectorOf<TElem>(maxElems, adoptElems, manager)
@@ -40,14 +40,14 @@ template <class TElem> RefArrayVectorOf<TElem>::~RefArrayVectorOf()
 {
     if (this->fAdoptedElems)
     {
-      for (unsigned int index = 0; index < this->fCurCount; index++)
+        for (XMLSize_t index = 0; index < this->fCurCount; index++)
             this->fMemoryManager->deallocate(this->fElemList[index]);//delete[] fElemList[index];
     }
     this->fMemoryManager->deallocate(this->fElemList);//delete [] fElemList;
 }
 
 template <class TElem> void
-RefArrayVectorOf<TElem>::setElementAt(TElem* const toSet, const unsigned int setAt)
+RefArrayVectorOf<TElem>::setElementAt(TElem* const toSet, const XMLSize_t setAt)
 {
     if (setAt >= this->fCurCount)
         ThrowXMLwithMemMgr(ArrayIndexOutOfBoundsException, XMLExcepts::Vector_BadIndex, this->fMemoryManager);
@@ -60,10 +60,10 @@ RefArrayVectorOf<TElem>::setElementAt(TElem* const toSet, const unsigned int set
 
 template <class TElem> void RefArrayVectorOf<TElem>::removeAllElements()
 {
-    for (unsigned int index = 0; index < this->fCurCount; index++)
+    for (XMLSize_t index = 0; index < this->fCurCount; index++)
     {
         if (this->fAdoptedElems)
-          this->fMemoryManager->deallocate(this->fElemList[index]);
+            this->fMemoryManager->deallocate(this->fElemList[index]);
 
         // Keep unused elements zero for sanity's sake
         this->fElemList[index] = 0;
@@ -72,7 +72,7 @@ template <class TElem> void RefArrayVectorOf<TElem>::removeAllElements()
 }
 
 template <class TElem> void RefArrayVectorOf<TElem>::
-removeElementAt(const unsigned int removeAt)
+removeElementAt(const XMLSize_t removeAt)
 {
     if (removeAt >= this->fCurCount)
         ThrowXMLwithMemMgr(ArrayIndexOutOfBoundsException, XMLExcepts::Vector_BadIndex, this->fMemoryManager);
@@ -89,7 +89,7 @@ removeElementAt(const unsigned int removeAt)
     }
 
     // Copy down every element above remove point
-    for (unsigned int index = removeAt; index < this->fCurCount-1; index++)
+    for (XMLSize_t index = removeAt; index < this->fCurCount-1; index++)
         this->fElemList[index] = this->fElemList[index+1];
 
     // Keep unused elements zero for sanity's sake
@@ -113,7 +113,7 @@ template <class TElem> void RefArrayVectorOf<TElem>::cleanup()
 {
     if (this->fAdoptedElems)
     {
-        for (unsigned int index = 0; index < this->fCurCount; index++)
+        for (XMLSize_t index = 0; index < this->fCurCount; index++)
             this->fMemoryManager->deallocate(this->fElemList[index]);
     }
     this->fMemoryManager->deallocate(this->fElemList);//delete [] fElemList;

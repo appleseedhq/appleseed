@@ -44,7 +44,7 @@ template <class TType> ENameMapFor<TType>::~ENameMapFor()
 //  ENameMapFor: Implementation of virtual factory method
 // ---------------------------------------------------------------------------
 template <class TType> XMLTranscoder*
-ENameMapFor<TType>::makeNew(const unsigned int blockSize,
+ENameMapFor<TType>::makeNew(const XMLSize_t      blockSize,
                             MemoryManager* const manager) const
 {
     return new (manager) TType(getKey(), blockSize, manager);
@@ -72,7 +72,7 @@ template <class TType> EEndianNameMapFor<TType>::~EEndianNameMapFor()
 //  ENameMapFor: Implementation of virtual factory method
 // ---------------------------------------------------------------------------
 template <class TType> XMLTranscoder*
-EEndianNameMapFor<TType>::makeNew(const unsigned int blockSize,
+EEndianNameMapFor<TType>::makeNew(const XMLSize_t      blockSize,
                                   MemoryManager* const manager) const
 {
     return new (manager) TType(getKey(), blockSize, fSwapped, manager);

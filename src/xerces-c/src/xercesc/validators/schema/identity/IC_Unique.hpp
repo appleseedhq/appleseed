@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: IC_Unique.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: IC_Unique.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#if !defined(IC_UNIQUE_HPP)
-#define IC_UNIQUE_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_IC_UNIQUE_HPP)
+#define XERCESC_INCLUDE_GUARD_IC_UNIQUE_HPP
 
 
 /**
@@ -59,7 +59,7 @@ public:
 
 private:
     // -----------------------------------------------------------------------
-    //  Unimplemented contstructors and operators
+    //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
     IC_Unique(const IC_Unique& other);
     IC_Unique& operator= (const IC_Unique& other);
@@ -71,7 +71,7 @@ private:
 // ---------------------------------------------------------------------------
 inline short IC_Unique::getType() const {
 
-    return IdentityConstraint::UNIQUE;
+    return IdentityConstraint::ICType_UNIQUE;
 }
 
 XERCES_CPP_NAMESPACE_END

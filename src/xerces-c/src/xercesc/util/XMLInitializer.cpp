@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XMLInitializer.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLInitializer.cpp 635560 2008-03-10 14:10:09Z borisk $
  */
 
 
@@ -31,30 +31,91 @@ XERCES_CPP_NAMESPACE_BEGIN
 // ---------------------------------------------------------------------------
 //  XMLInitializer: Initialization methods
 // ---------------------------------------------------------------------------
-void XMLInitializer::InitializeAllStaticData()
+void XMLInitializer::initializeStaticData()
 {
-    try {
-        initializeMsgLoader4DOM();
+    try
+    {
+        // Note that in some cases the order of initialization can be
+        // important.
+        //
+
+        // Core
+        //
+        initializeEncodingValidator();
+        initializeXMLException();
+        initializeXMLScanner();
+        initializeXMLValidator();
+
+        // Regex
+        //
         initializeRangeTokenMap();
         initializeRegularExpression();
-        initializeDOMImplementationImpl();
+
+        // DTD
+        //
+        initializeDTDGrammar();
+
+        // Schema
+        //
+        initializeXSDErrorReporter();
+        initializeDatatypeValidatorFactory();
+        initializeGeneralAttributeCheck();
+        initializeXSValue();
+        initializeComplexTypeInfo();
+
+        // DOM
+        //
         initializeDOMImplementationRegistry();
-        initializeEmptyNodeList();
-        initializeDOMNormalizerMsgLoader();
-        initializeValidatorMsgLoader();
-        initializeXSValueStatics();
-        initializeScannerMsgLoader();
-        initializeEncodingValidator();
-        initializeExceptionMsgLoader();
-        initializeDVFactory();
-        initializeGeneralAttrCheckMap();
-        initializeXSDErrReporterMsgLoader();
-        initializeDTDGrammarDfltEntities();
-        initializeAnyType();
+        initializeDOMImplementationImpl();
+        initializeDOMDocumentTypeImpl();
+        initializeDOMNodeListImpl();
+        initializeDOMNormalizer();
     }
     catch(...) {
         XMLPlatformUtils::panic(PanicHandler::Panic_AllStaticInitErr);
     }
+}
+
+
+void XMLInitializer::terminateStaticData()
+{
+    // Terminate in the reverse order of initialization. There shouldn't
+    // be any exceptions and if there are, we can't do anything about them
+    // since we are no longer initialized (think of it as throwing from
+    // a destructor).
+    //
+
+    // DOM
+    //
+    terminateDOMNormalizer();
+    terminateDOMNodeListImpl();
+    terminateDOMDocumentTypeImpl();
+    terminateDOMImplementationImpl();
+    terminateDOMImplementationRegistry();
+
+    // Schema
+    //
+    terminateComplexTypeInfo();
+    terminateXSValue();
+    terminateGeneralAttributeCheck();
+    terminateDatatypeValidatorFactory();
+    terminateXSDErrorReporter();
+
+    // DTD
+    //
+    terminateDTDGrammar();
+
+    // Regex
+    //
+    terminateRegularExpression();
+    terminateRangeTokenMap();
+
+    // Core
+    //
+    terminateXMLValidator();
+    terminateXMLScanner();
+    terminateXMLException();
+    terminateEncodingValidator();
 }
 
 

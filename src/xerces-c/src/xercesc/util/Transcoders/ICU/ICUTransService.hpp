@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: ICUTransService.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: ICUTransService.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#ifndef ICUTRANSSERVICE_HPP
-#define ICUTRANSSERVICE_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_ICUTRANSSERVICE_HPP)
+#define XERCESC_INCLUDE_GUARD_ICUTRANSSERVICE_HPP
 
 #include <xercesc/util/Mutexes.hpp>
 #include <xercesc/util/TransService.hpp>
@@ -36,7 +36,7 @@ public :
     // -----------------------------------------------------------------------
     //  Constructors and Destructor
     // -----------------------------------------------------------------------
-    ICUTransService();
+    ICUTransService(MemoryManager* manager);
     ~ICUTransService();
 
 
@@ -53,19 +53,17 @@ public :
     (
         const   XMLCh* const    comp1
         , const XMLCh* const    comp2
-        , const unsigned int    maxChars
+        , const XMLSize_t       maxChars
     );
 
     virtual const XMLCh* getId() const;
 
-    virtual bool isSpace(const XMLCh toCheck) const;
-
-    virtual XMLLCPTranscoder* makeNewLCPTranscoder();
+    virtual XMLLCPTranscoder* makeNewLCPTranscoder(MemoryManager* manager);
 
     virtual bool supportsSrcOfs() const;
 
-    virtual void upperCase(XMLCh* const toUpperCase) const;
-    virtual void lowerCase(XMLCh* const toLowerCase) const;
+    virtual void upperCase(XMLCh* const toUpperCase);
+    virtual void lowerCase(XMLCh* const toLowerCase);
 
 
 protected :
@@ -76,7 +74,7 @@ protected :
     (
         const   XMLCh* const            encodingName
         ,       XMLTransService::Codes& resValue
-        , const unsigned int            blockSize
+        , const XMLSize_t               blockSize
         ,       MemoryManager* const    manager
     );
 
@@ -101,7 +99,7 @@ public :
     (
         const   XMLCh* const        encodingName
         ,       UConverter* const   toAdopt
-        , const unsigned int        blockSize
+        , const XMLSize_t           blockSize
         , MemoryManager* const      manager = XMLPlatformUtils::fgMemoryManager
     );
     ~ICUTranscoder();
@@ -110,30 +108,30 @@ public :
     // -----------------------------------------------------------------------
     //  Implementation of the virtual transcoder interface
     // -----------------------------------------------------------------------
-    virtual unsigned int transcodeFrom
+    virtual XMLSize_t transcodeFrom
     (
         const   XMLByte* const          srcData
-        , const unsigned int            srcCount
+        , const XMLSize_t               srcCount
         ,       XMLCh* const            toFill
-        , const unsigned int            maxChars
-        ,       unsigned int&           bytesEaten
+        , const XMLSize_t               maxChars
+        ,       XMLSize_t&              bytesEaten
         ,       unsigned char* const    charSizes
     );
 
-    virtual unsigned int transcodeTo
+    virtual XMLSize_t transcodeTo
     (
         const   XMLCh* const    srcData
-        , const unsigned int    srcCount
+        , const XMLSize_t       srcCount
         ,       XMLByte* const  toFill
-        , const unsigned int    maxBytes
-        ,       unsigned int&   charsEaten
+        , const XMLSize_t       maxBytes
+        ,       XMLSize_t&      charsEaten
         , const UnRepOpts       options
     );
 
     virtual bool canTranscodeTo
     (
         const   unsigned int    toCheck
-    )   const;
+    );
 
 
 
@@ -159,7 +157,7 @@ private :
     //
     //  fSrcOffsets
     //      This is an array of longs, which are allocated to the size of
-    //      the trancoding block (if any) indicated in the ctor. It is used
+    //      the transcoding block (if any) indicated in the ctor. It is used
     //      to get the character offsets from ICU, which are then translated
     //      into an array of char sizes for return.
     // -----------------------------------------------------------------------
@@ -182,25 +180,27 @@ public :
     // -----------------------------------------------------------------------
     //  Implementation of the virtual transcoder interface
     // -----------------------------------------------------------------------
-    virtual unsigned int calcRequiredSize(const char* const srcText
-        , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
-
-    virtual unsigned int calcRequiredSize(const XMLCh* const srcText
-        , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
-
-    virtual char* transcode(const XMLCh* const toTranscode);
     virtual char* transcode(const XMLCh* const toTranscode,
-                            MemoryManager* const manager);
+                            MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
 
-    virtual XMLCh* transcode(const char* const toTranscode);
     virtual XMLCh* transcode(const char* const toTranscode,
-                             MemoryManager* const manager);
+                             MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
+
+
+    // -----------------------------------------------------------------------
+    //  DEPRECATED old transcode interface
+    // -----------------------------------------------------------------------
+    virtual XMLSize_t calcRequiredSize(const char* const srcText
+        , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
+
+    virtual XMLSize_t calcRequiredSize(const XMLCh* const srcText
+        , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
 
     virtual bool transcode
     (
         const   char* const     toTranscode
         ,       XMLCh* const    toFill
-        , const unsigned int    maxChars
+        , const XMLSize_t       maxChars
         , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
     );
 
@@ -208,7 +208,7 @@ public :
     (
         const   XMLCh* const    toTranscode
         ,       char* const     toFill
-        , const unsigned int    maxChars
+        , const XMLSize_t       maxChars
         , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
     );
 

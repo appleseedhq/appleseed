@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: IdentityConstraintHandler.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: IdentityConstraintHandler.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#if !defined(IDENTITYCONSTRAINT_HANDLER_HPP)
-#define IDENTITYCONSTRAINT_HANDLER_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_IDENTITYCONSTRAINT_HANDLER_HPP)
+#define XERCESC_INCLUDE_GUARD_IDENTITYCONSTRAINT_HANDLER_HPP
 
 // ---------------------------------------------------------------------------
 //  Includes
@@ -57,7 +57,7 @@ public:
     // -----------------------------------------------------------------------
     //  Getter methods
     // -----------------------------------------------------------------------
-    inline  int          getMatcherCount() const;
+    inline  XMLSize_t    getMatcherCount() const;
 
 	// -----------------------------------------------------------------------
     //  Setter methods
@@ -72,7 +72,8 @@ public:
                              (
                                     SchemaElementDecl* const elem
                             , const XMLCh*             const content
-                              );
+                            , ValidationContext*       validationContext = 0
+                            , DatatypeValidator*       actualValidator = 0);
 
             void         activateIdentityConstraint
                                (
@@ -81,14 +82,14 @@ public:
                              , const unsigned int                 uriId
                              , const XMLCh*                 const elemPrefix
                              , const RefVectorOf<XMLAttr>&        attrList
-                             , const unsigned int                 attrCount
-                               );
+                             , const XMLSize_t                    attrCount
+                             , ValidationContext*                 validationContext = 0 );
 
             void         reset();
 
 private:
     // -----------------------------------------------------------------------
-    //  Unimplemented contstructors and operators
+    //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
     IdentityConstraintHandler(const IdentityConstraintHandler& other);
     IdentityConstraintHandler& operator= (const IdentityConstraintHandler& other);
@@ -143,7 +144,7 @@ void  IdentityConstraintHandler::endDocument()
 }
 
 inline
-int  IdentityConstraintHandler::getMatcherCount() const
+XMLSize_t IdentityConstraintHandler::getMatcherCount() const
 {
     return fMatcherStack->getMatcherCount();
 }

@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMCDATASectionImpl.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMCDATASectionImpl.cpp 678709 2008-07-22 10:56:56Z borisk $
  */
 
 #include "DOMCDATASectionImpl.hpp"
@@ -26,21 +26,29 @@
 #include "DOMCasts.hpp"
 #include "DOMStringPool.hpp"
 #include <xercesc/dom/DOMException.hpp>
+#include <xercesc/dom/DOMNodeFilter.hpp>
+#include <xercesc/dom/DOMTreeWalker.hpp>
 #include <xercesc/util/XMLUniDefs.hpp>
 
 XERCES_CPP_NAMESPACE_BEGIN
 
 DOMCDATASectionImpl::DOMCDATASectionImpl(DOMDocument *ownerDoc,
                                    const XMLCh *dat)
-    : fNode(ownerDoc), fParent(ownerDoc), fCharacterData(ownerDoc, dat)
+    : fNode(ownerDoc), fCharacterData(ownerDoc, dat)
 {
+    fNode.setIsLeafNode(true);
 }
 
+DOMCDATASectionImpl::
+DOMCDATASectionImpl(DOMDocument *ownerDoc, const XMLCh* data, XMLSize_t n)
+    : fNode(ownerDoc), fCharacterData(ownerDoc, data, n)
+{
+    fNode.setIsLeafNode(true);
+}
 
 DOMCDATASectionImpl::DOMCDATASectionImpl(const DOMCDATASectionImpl &other, bool /*deep*/)
     : DOMCDATASection(other),
     fNode(*castToNodeImpl(&other)),
-    fParent(*castToParentImpl(&other)),
     fChild(*castToChildImpl(&other)),
     fCharacterData(other.fCharacterData)
 {
@@ -55,7 +63,7 @@ DOMCDATASectionImpl::~DOMCDATASectionImpl()
 
 DOMNode  *DOMCDATASectionImpl::cloneNode(bool deep) const
 {
-    DOMNode* newNode = new (this->getOwnerDocument(), DOMDocumentImpl::CDATA_SECTION_OBJECT) DOMCDATASectionImpl(*this, deep);
+    DOMNode* newNode = new (this->getOwnerDocument(), DOMMemoryManager::CDATA_SECTION_OBJECT) DOMCDATASectionImpl(*this, deep);
     fNode.callUserDataHandlers(DOMUserDataHandler::NODE_CLONED, this, newNode);
     return newNode;
 }
@@ -68,7 +76,7 @@ const XMLCh * DOMCDATASectionImpl::getNodeName() const {
 }
 
 
-short DOMCDATASectionImpl::getNodeType() const {
+DOMNode::NodeType DOMCDATASectionImpl::getNodeType() const {
     return DOMNode::CDATA_SECTION_NODE;
 }
 
@@ -93,9 +101,9 @@ DOMText *DOMCDATASectionImpl::splitText(XMLSize_t offset)
     if (offset > len)
         throw DOMException(DOMException::INDEX_SIZE_ERR, 0, GetDOMNodeMemoryManager);
 
+    DOMDocumentImpl *doc = (DOMDocumentImpl *)getOwnerDocument();
     DOMText *newText =
-                getOwnerDocument()->createCDATASection(
-                        this->substringData(offset, len - offset));
+      doc->createCDATASection(this->substringData(offset, len - offset));
 
     DOMNode *parent = getParentNode();
     if (parent != 0)
@@ -103,8 +111,8 @@ DOMText *DOMCDATASectionImpl::splitText(XMLSize_t offset)
 
     fCharacterData.fDataBuf->chop(offset);
 
-    if (this->getOwnerDocument() != 0) {
-        Ranges* ranges = ((DOMDocumentImpl *)this->getOwnerDocument())->getRanges();
+    if (doc != 0) {
+        Ranges* ranges = doc->getRanges();
         if (ranges != 0) {
             XMLSize_t sz = ranges->size();
             if (sz != 0) {
@@ -119,19 +127,108 @@ DOMText *DOMCDATASectionImpl::splitText(XMLSize_t offset)
 }
 
 
-bool DOMCDATASectionImpl::getIsWhitespaceInElementContent() const
+bool DOMCDATASectionImpl::getIsElementContentWhitespace() const
 {
     return isIgnorableWhitespace();
 }
 
-const XMLCh* DOMCDATASectionImpl::getWholeText() {
-    throw DOMException(DOMException::NOT_SUPPORTED_ERR, 0, GetDOMNodeMemoryManager);
-    return 0;
+const XMLCh* DOMCDATASectionImpl::getWholeText() const
+{
+    DOMDocument *doc = getOwnerDocument();
+    DOMTreeWalker* pWalker=doc->createTreeWalker(doc->getDocumentElement(), DOMNodeFilter::SHOW_ALL, NULL, true);
+    pWalker->setCurrentNode((DOMNode*)this);
+    // Logically-adjacent text nodes are Text or CDATASection nodes that can be visited sequentially in document order or in
+    // reversed document order without entering, exiting, or passing over Element, Comment, or ProcessingInstruction nodes.
+	DOMNode* prevNode;
+    while((prevNode=pWalker->previousNode())!=NULL)
+    {
+        if(prevNode->getNodeType()==ELEMENT_NODE || prevNode->getNodeType()==COMMENT_NODE || prevNode->getNodeType()==PROCESSING_INSTRUCTION_NODE)
+            break;
+    }
+	XMLBuffer buff(1023, GetDOMNodeMemoryManager);
+	DOMNode* nextNode;
+    while((nextNode=pWalker->nextNode())!=NULL)
+    {
+        if(nextNode->getNodeType()==ELEMENT_NODE || nextNode->getNodeType()==COMMENT_NODE || nextNode->getNodeType()==PROCESSING_INSTRUCTION_NODE)
+            break;
+        if(nextNode->getNodeType()==TEXT_NODE || nextNode->getNodeType()==CDATA_SECTION_NODE)
+    		buff.append(nextNode->getNodeValue());
+    }
+    pWalker->release();
+
+    XMLCh* wholeString = (XMLCh*) (GetDOMNodeMemoryManager->allocate((buff.getLen()+1)*sizeof(XMLCh)));
+	XMLString::copyString(wholeString, buff.getRawBuffer());
+	return wholeString;
 }
 
-DOMText* DOMCDATASectionImpl::replaceWholeText(const XMLCh*){
-    throw DOMException(DOMException::NOT_SUPPORTED_ERR, 0, GetDOMNodeMemoryManager);
-    return 0;
+DOMText* DOMCDATASectionImpl::replaceWholeText(const XMLCh* newText)
+{
+    DOMDocument *doc = getOwnerDocument();
+    DOMTreeWalker* pWalker=doc->createTreeWalker(doc->getDocumentElement(), DOMNodeFilter::SHOW_ALL, NULL, true);
+    pWalker->setCurrentNode((DOMNode*)this);
+    // Logically-adjacent text nodes are Text or CDATASection nodes that can be visited sequentially in document order or in
+    // reversed document order without entering, exiting, or passing over Element, Comment, or ProcessingInstruction nodes.
+    DOMNode* pFirstTextNode=this;
+	DOMNode* prevNode;
+    while((prevNode=pWalker->previousNode())!=NULL)
+    {
+        if(prevNode->getNodeType()==ELEMENT_NODE || prevNode->getNodeType()==COMMENT_NODE || prevNode->getNodeType()==PROCESSING_INSTRUCTION_NODE)
+            break;
+        pFirstTextNode=prevNode;
+    }
+    // before doing any change we need to check if we are going to remove an entity reference that doesn't contain just text
+    DOMNode* pCurrentNode=pWalker->getCurrentNode();
+	DOMNode* nextNode;
+    while((nextNode=pWalker->nextNode())!=NULL)
+    {
+        if(nextNode->getNodeType()==ELEMENT_NODE || nextNode->getNodeType()==COMMENT_NODE || nextNode->getNodeType()==PROCESSING_INSTRUCTION_NODE)
+            break;
+        if(nextNode->getNodeType()==ENTITY_REFERENCE_NODE)
+        {
+            DOMTreeWalker* pInnerWalker=doc->createTreeWalker(nextNode, DOMNodeFilter::SHOW_ALL, NULL, true);
+            while(pInnerWalker->nextNode())
+            {
+                short nodeType=pInnerWalker->getCurrentNode()->getNodeType();
+                if(nodeType!=ENTITY_REFERENCE_NODE && nodeType!=TEXT_NODE && nodeType!=CDATA_SECTION_NODE)
+                    throw DOMException(DOMException::NO_MODIFICATION_ALLOWED_ERR, 0, GetDOMNodeMemoryManager);
+            }
+            pInnerWalker->release();
+        }
+    }
+    DOMText* retVal=NULL;
+    // if the first node in the chain is a text node, replace its content, otherwise create a new node
+    if(newText && *newText)
+    {
+        if(!castToNodeImpl(pFirstTextNode)->isReadOnly() && (pFirstTextNode->getNodeType()==TEXT_NODE || pFirstTextNode->getNodeType()==CDATA_SECTION_NODE))
+        {
+            pFirstTextNode->setNodeValue(newText);
+            retVal=(DOMText*)pFirstTextNode;
+        }
+        else
+        {
+            if(getNodeType()==TEXT_NODE)
+                retVal=doc->createTextNode(newText);
+            else
+                retVal=doc->createCDATASection(newText);
+            pFirstTextNode->getParentNode()->insertBefore(retVal, pFirstTextNode);
+        }
+    }
+    // now delete all the following text nodes
+    pWalker->setCurrentNode(pCurrentNode);
+    while((nextNode=pWalker->nextNode())!=NULL)
+    {
+        if(nextNode->getNodeType()==ELEMENT_NODE || nextNode->getNodeType()==COMMENT_NODE || nextNode->getNodeType()==PROCESSING_INSTRUCTION_NODE)
+            break;
+        if(nextNode!=retVal)
+        {
+            // keep the tree walker valid
+            pWalker->previousNode();
+            nextNode->getParentNode()->removeChild(nextNode);
+            nextNode->release();
+        }
+    }
+    pWalker->release();
+    return retVal;
 }
 
 
@@ -144,9 +241,8 @@ void DOMCDATASectionImpl::release()
 
     if (doc) {
         fNode.callUserDataHandlers(DOMUserDataHandler::NODE_DELETED, 0, 0);
-        fParent.release();
         fCharacterData.releaseBuffer();
-        doc->release(this, DOMDocumentImpl::CDATA_SECTION_OBJECT);
+        doc->release(this, DOMMemoryManager::CDATA_SECTION_OBJECT);
     }
     else {
         // shouldn't reach here
@@ -158,43 +254,43 @@ void DOMCDATASectionImpl::release()
 //
 //  Delegation stubs for other DOM_Node inherited functions.
 //
-           DOMNode*         DOMCDATASectionImpl::appendChild(DOMNode *newChild)          {return fParent.appendChild (newChild); }
+           DOMNode*         DOMCDATASectionImpl::appendChild(DOMNode *newChild)          {return fNode.appendChild (newChild); }
            DOMNamedNodeMap* DOMCDATASectionImpl::getAttributes() const                   {return fNode.getAttributes (); }
-           DOMNodeList*     DOMCDATASectionImpl::getChildNodes() const                   {return fParent.getChildNodes (); }
-           DOMNode*         DOMCDATASectionImpl::getFirstChild() const                   {return fParent.getFirstChild (); }
-           DOMNode*         DOMCDATASectionImpl::getLastChild() const                    {return fParent.getLastChild (); }
+           DOMNodeList*     DOMCDATASectionImpl::getChildNodes() const                   {return fNode.getChildNodes (); }
+           DOMNode*         DOMCDATASectionImpl::getFirstChild() const                   {return fNode.getFirstChild (); }
+           DOMNode*         DOMCDATASectionImpl::getLastChild() const                    {return fNode.getLastChild (); }
      const XMLCh*           DOMCDATASectionImpl::getLocalName() const                    {return fNode.getLocalName (); }
      const XMLCh*           DOMCDATASectionImpl::getNamespaceURI() const                 {return fNode.getNamespaceURI (); }
            DOMNode*         DOMCDATASectionImpl::getNextSibling() const                  {return fChild.getNextSibling (); }
      const XMLCh*           DOMCDATASectionImpl::getNodeValue() const                    {return fCharacterData.getNodeValue (); }
-           DOMDocument*     DOMCDATASectionImpl::getOwnerDocument() const                {return fParent.fOwnerDocument; }
+           DOMDocument*     DOMCDATASectionImpl::getOwnerDocument() const                {return fNode.getOwnerDocument(); }
      const XMLCh*           DOMCDATASectionImpl::getPrefix() const                       {return fNode.getPrefix (); }
            DOMNode*         DOMCDATASectionImpl::getParentNode() const                   {return fChild.getParentNode (this); }
            DOMNode*         DOMCDATASectionImpl::getPreviousSibling() const              {return fChild.getPreviousSibling (this); }
-           bool             DOMCDATASectionImpl::hasChildNodes() const                   {return fParent.hasChildNodes (); }
+           bool             DOMCDATASectionImpl::hasChildNodes() const                   {return fNode.hasChildNodes (); }
            DOMNode*         DOMCDATASectionImpl::insertBefore(DOMNode *newChild, DOMNode *refChild)
-                                                                                         {return fParent.insertBefore (newChild, refChild); }
+                                                                                         {return fNode.insertBefore (newChild, refChild); }
            void             DOMCDATASectionImpl::normalize()                             {fNode.normalize (); }
-           DOMNode*         DOMCDATASectionImpl::removeChild(DOMNode *oldChild)          {return fParent.removeChild (oldChild); }
+           DOMNode*         DOMCDATASectionImpl::removeChild(DOMNode *oldChild)          {return fNode.removeChild (oldChild); }
            DOMNode*         DOMCDATASectionImpl::replaceChild(DOMNode *newChild, DOMNode *oldChild)
-                                                                                         {return fParent.replaceChild (newChild, oldChild); }
+                                                                                         {return fNode.replaceChild (newChild, oldChild); }
            bool             DOMCDATASectionImpl::isSupported(const XMLCh *feature, const XMLCh *version) const
                                                                                          {return fNode.isSupported (feature, version); }
            void             DOMCDATASectionImpl::setPrefix(const XMLCh  *prefix)         {fNode.setPrefix(prefix); }
            bool             DOMCDATASectionImpl::hasAttributes() const                   {return fNode.hasAttributes(); }
            bool             DOMCDATASectionImpl::isSameNode(const DOMNode* other) const  {return fNode.isSameNode(other); }
-           bool             DOMCDATASectionImpl::isEqualNode(const DOMNode* arg) const   {return fParent.isEqualNode(arg); }
+           bool             DOMCDATASectionImpl::isEqualNode(const DOMNode* arg) const   {return fNode.isEqualNode(arg); }
            void*            DOMCDATASectionImpl::setUserData(const XMLCh* key, void* data, DOMUserDataHandler* handler)
                                                                                          {return fNode.setUserData(key, data, handler); }
            void*            DOMCDATASectionImpl::getUserData(const XMLCh* key) const     {return fNode.getUserData(key); }
            const XMLCh*     DOMCDATASectionImpl::getBaseURI() const                      {return fNode.getBaseURI(); }
-           short            DOMCDATASectionImpl::compareTreePosition(const DOMNode* other) const {return fNode.compareTreePosition(other); }
+           short            DOMCDATASectionImpl::compareDocumentPosition(const DOMNode* other) const {return fNode.compareDocumentPosition(other); }
            const XMLCh*     DOMCDATASectionImpl::getTextContent() const                  {return fNode.getTextContent(); }
            void             DOMCDATASectionImpl::setTextContent(const XMLCh* textContent){fNode.setTextContent(textContent); }
-           const XMLCh*     DOMCDATASectionImpl::lookupNamespacePrefix(const XMLCh* namespaceURI, bool useDefault) const  {return fNode.lookupNamespacePrefix(namespaceURI, useDefault); }
+           const XMLCh*     DOMCDATASectionImpl::lookupPrefix(const XMLCh* namespaceURI) const  {return fNode.lookupPrefix(namespaceURI); }
            bool             DOMCDATASectionImpl::isDefaultNamespace(const XMLCh* namespaceURI) const {return fNode.isDefaultNamespace(namespaceURI); }
            const XMLCh*     DOMCDATASectionImpl::lookupNamespaceURI(const XMLCh* prefix) const  {return fNode.lookupNamespaceURI(prefix); }
-           DOMNode*         DOMCDATASectionImpl::getInterface(const XMLCh* feature)      {return fNode.getInterface(feature); }
+           void*            DOMCDATASectionImpl::getFeature(const XMLCh* feature, const XMLCh* version) const {return fNode.getFeature(feature, version); }
 
 
 
@@ -218,5 +314,3 @@ void DOMCDATASectionImpl::release()
            void             DOMCDATASectionImpl::setNodeValue(const XMLCh  *nodeValue)   {fCharacterData.setNodeValue (this, nodeValue); }
 
 XERCES_CPP_NAMESPACE_END
-
-

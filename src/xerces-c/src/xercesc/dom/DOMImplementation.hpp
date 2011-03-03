@@ -1,6 +1,3 @@
-#ifndef DOMImplementation_HEADER_GUARD_
-#define DOMImplementation_HEADER_GUARD_
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -8,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,11 +16,15 @@
  */
 
 /*
- * $Id: DOMImplementation.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMImplementation.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
+
+#if !defined(XERCESC_INCLUDE_GUARD_DOMIMPLEMENTATION_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMIMPLEMENTATION_HPP
 
 #include <xercesc/dom/DOMImplementationLS.hpp>
 #include <xercesc/dom/DOMException.hpp>
+#include <xercesc/dom/DOMLSException.hpp>
 #include <xercesc/dom/DOMRangeException.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
 
@@ -46,7 +47,7 @@ protected:
     //  Hidden constructors
     // -----------------------------------------------------------------------
     /** @name Hidden constructors */
-    //@{    
+    //@{
         DOMImplementation() {};                                      // no plain constructor
     //@}
 
@@ -56,7 +57,7 @@ private:
     // -----------------------------------------------------------------------
     /** @name Unimplemented constructors and operators */
     //@{
-        DOMImplementation(const DOMImplementation &);   // no copy construtor.
+        DOMImplementation(const DOMImplementation &);   // no copy constructor.
         DOMImplementation & operator = (const DOMImplementation &);  // No Assignment
     //@}
 
@@ -182,24 +183,21 @@ public:
     /** @name Functions introduced in DOM Level 3 */
     //@{
     /**
-     * This method makes available a <code>DOMImplementation</code>'s
-     * specialized interface (see ).
-     *
-     * <p><b>"Experimental - subject to change"</b></p>
+     * This method returns a specialized object which implements the specialized APIs
+     * of the specified feature and version, as specified in DOM Features.
+     * This method also allow the implementation to provide specialized objects which
+     * do not support the <code>DOMImplementation</code> interface.
      *
      * @param feature The name of the feature requested (case-insensitive).
-     * @return Returns an alternate <code>DOMImplementation</code> which
-     *   implements the specialized APIs of the specified feature, if any,
-     *   or <code>null</code> if there is no alternate
-     *   <code>DOMImplementation</code> object which implements interfaces
-     *   associated with that feature. Any alternate
-     *   <code>DOMImplementation</code> returned by this method must
-     *   delegate to the primary core <code>DOMImplementation</code> and not
-     *   return results inconsistent with the primary
-     *   <code>DOMImplementation</code>
+     *        Note that any plus sign "+" prepended to the name of the feature will
+     *        be ignored since it is not significant in the context of this method.
+     * @param version This is the version number of the feature to test.
+     * @return Returns an object which implements the specialized APIs of the specified
+     *         feature and version, if any, or null if there is no object which implements
+     *         interfaces associated with that feature.
      * @since DOM Level 3
      */
-    virtual DOMImplementation* getInterface(const XMLCh* feature) = 0;
+    virtual void* getFeature(const XMLCh* feature, const XMLCh* version) const = 0;
 
     //@}
 
@@ -227,38 +225,21 @@ public:
     /**
      * Non-standard extension
      *
-     *  Load the default error text message for DOMException.
-      * @param msgToLoad The DOM ExceptionCode id to be processed
-      * @param toFill    The buffer that will hold the output on return. The
-      *         size of this buffer should at least be 'maxChars + 1'.
-      * @param maxChars  The maximum number of output characters that can be
-      *         accepted. If the result will not fit, it is an error.
-      * @return <code>true</code> if the message is successfully loaded
+     * Load the default error text message for DOMException.
+     * @param msgToLoad The DOM ExceptionCode id to be processed
+     * @param toFill    The buffer that will hold the output on return. The
+     *         size of this buffer should at least be 'maxChars + 1'.
+     * @param maxChars  The maximum number of output characters that can be
+     *         accepted. If the result will not fit, it is an error.
+     * @return <code>true</code> if the message is successfully loaded
      */
     static bool loadDOMExceptionMsg
     (
-        const   DOMException::ExceptionCode  msgToLoad
+          const   short  msgToLoad
         ,       XMLCh* const                 toFill
-        , const unsigned int                 maxChars
+        , const XMLSize_t                    maxChars
     );
 
-    /**
-     * Non-standard extension
-     *
-     *  Load the default error text message for DOMRangeException.
-      * @param msgToLoad The DOM RangeExceptionCode id to be processed
-      * @param toFill    The buffer that will hold the output on return. The
-      *         size of this buffer should at least be 'maxChars + 1'.
-      * @param maxChars  The maximum number of output characters that can be
-      *         accepted. If the result will not fit, it is an error.
-      * @return <code>true</code> if the message is successfully loaded
-     */
-    static bool loadDOMExceptionMsg
-    (
-        const   DOMRangeException::RangeExceptionCode  msgToLoad
-        ,       XMLCh* const                           toFill
-        , const unsigned int                           maxChars
-    );
     //@}
 
 };

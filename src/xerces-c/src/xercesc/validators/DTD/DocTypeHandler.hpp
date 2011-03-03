@@ -16,13 +16,11 @@
  */
 
 /*
- * $Id: DocTypeHandler.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DocTypeHandler.hpp 557282 2007-07-18 14:54:15Z amassari $
  */
 
-
-
-#if !defined(DOCTYPEHANDLER_HPP)
-#define DOCTYPEHANDLER_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_DOCTYPEHANDLER_HPP)
+#define XERCESC_INCLUDE_GUARD_DOCTYPEHANDLER_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 #include <xercesc/framework/XMLNotationDecl.hpp>
@@ -85,7 +83,7 @@ public:
     virtual void doctypeWhitespace
     (
         const   XMLCh* const    chars
-        , const unsigned int    length
+        , const XMLSize_t       length
     ) = 0;
 
     virtual void elementDecl

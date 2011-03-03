@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XSNamespaceItem.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XSNamespaceItem.cpp 674012 2008-07-04 11:18:21Z borisk $
  */
 
 #include <xercesc/framework/psvi/XSNamespaceItem.hpp>
@@ -40,9 +40,9 @@ XSNamespaceItem::XSNamespaceItem(XSModel* const       xsModel,
     , fSchemaNamespace(grammar->getTargetNamespace())
 {
     // Populate XSNamedMaps by going through the components
-    for (unsigned int i=0; i<XSConstants::MULTIVALUE_FACET; i++)
-    {        
-        switch (i+1) 
+    for (XMLSize_t i=0; i<XSConstants::MULTIVALUE_FACET; i++)
+    {
+        switch (i+1)
         {
             case XSConstants::ATTRIBUTE_DECLARATION:
             case XSConstants::ELEMENT_DECLARATION:
@@ -50,14 +50,14 @@ XSNamespaceItem::XSNamespaceItem(XSModel* const       xsModel,
             case XSConstants::ATTRIBUTE_GROUP_DEFINITION:
             case XSConstants::MODEL_GROUP_DEFINITION:
             case XSConstants::NOTATION_DECLARATION:
-                fComponentMap[i] = new (fMemoryManager) XSNamedMap<XSObject> 
+                fComponentMap[i] = new (fMemoryManager) XSNamedMap<XSObject>
                 (
                     20,     // size
                     29,     // modulus
                     fXSModel->getURIStringPool(),
-                    false,  // adoptElems 
+                    false,  // adoptElems
                     fMemoryManager
-                );               
+                );
                 fHashMap[i] = new (fMemoryManager) RefHashTableOf<XSObject>
                 (
                     29,
@@ -79,7 +79,7 @@ XSNamespaceItem::XSNamespaceItem(XSModel* const       xsModel,
                 break;
         }
     }
-    
+
     fXSAnnotationList = new (manager) RefVectorOf <XSAnnotation> (5, false, manager);
 }
 
@@ -93,9 +93,9 @@ XSNamespaceItem::XSNamespaceItem(XSModel* const       xsModel,
     , fSchemaNamespace(schemaNamespace)
 {
     // Populate XSNamedMaps by going through the components
-    for (unsigned int i=0; i<XSConstants::MULTIVALUE_FACET; i++)
-    {        
-        switch (i+1) 
+    for (XMLSize_t i=0; i<XSConstants::MULTIVALUE_FACET; i++)
+    {
+        switch (i+1)
         {
             case XSConstants::ATTRIBUTE_DECLARATION:
             case XSConstants::ELEMENT_DECLARATION:
@@ -103,14 +103,14 @@ XSNamespaceItem::XSNamespaceItem(XSModel* const       xsModel,
             case XSConstants::ATTRIBUTE_GROUP_DEFINITION:
             case XSConstants::MODEL_GROUP_DEFINITION:
             case XSConstants::NOTATION_DECLARATION:
-                fComponentMap[i] = new (fMemoryManager) XSNamedMap<XSObject> 
+                fComponentMap[i] = new (fMemoryManager) XSNamedMap<XSObject>
                 (
                     20,     // size
                     29,     // modulus
                     fXSModel->getURIStringPool(),
-                    false,  // adoptElems 
+                    false,  // adoptElems
                     fMemoryManager
-                );               
+                );
                 fHashMap[i] = new (fMemoryManager) RefHashTableOf<XSObject>
                 (
                     29,
@@ -132,28 +132,28 @@ XSNamespaceItem::XSNamespaceItem(XSModel* const       xsModel,
                 break;
         }
     }
-    
+
     fXSAnnotationList = new (manager) RefVectorOf <XSAnnotation> (5, false, manager);
 }
 
 XSNamespaceItem::~XSNamespaceItem()
 {
-    for (unsigned int i=0; i<XSConstants::MULTIVALUE_FACET; i++)
+    for (XMLSize_t i=0; i<XSConstants::MULTIVALUE_FACET; i++)
     {
-        switch (i+1) 
+        switch (i+1)
         {
             case XSConstants::ATTRIBUTE_DECLARATION:
             case XSConstants::ELEMENT_DECLARATION:
             case XSConstants::TYPE_DEFINITION:
             case XSConstants::ATTRIBUTE_GROUP_DEFINITION:
             case XSConstants::MODEL_GROUP_DEFINITION:
-            case XSConstants::NOTATION_DECLARATION:            
+            case XSConstants::NOTATION_DECLARATION:
                 delete fComponentMap[i];
-                delete fHashMap[i];             
+                delete fHashMap[i];
                 break;
         }
     }
-    
+
     delete fXSAnnotationList;
 }
 
@@ -196,7 +196,7 @@ XSAttributeGroupDefinition *XSNamespaceItem::getAttributeGroup(const XMLCh *name
 XSModelGroupDefinition *XSNamespaceItem::getModelGroupDefinition(const XMLCh *name)
 {
     if (name)
-        return (XSModelGroupDefinition*) fHashMap[XSConstants::MODEL_GROUP_DEFINITION -1]->get(name);         
+        return (XSModelGroupDefinition*) fHashMap[XSConstants::MODEL_GROUP_DEFINITION -1]->get(name);
     return 0;
 }
 
@@ -207,7 +207,7 @@ XSNotationDeclaration *XSNamespaceItem::getNotationDeclaration(const XMLCh *name
     return 0;
 }
 
-StringList *XSNamespaceItem::getDocumentLocations()
+const StringList *XSNamespaceItem::getDocumentLocations()
 {
     if (fGrammar)
         return ((XMLSchemaDescriptionImpl*) fGrammar->getGrammarDescription())->getLocationHints();
@@ -216,5 +216,3 @@ StringList *XSNamespaceItem::getDocumentLocations()
 }
 
 XERCES_CPP_NAMESPACE_END
-
-

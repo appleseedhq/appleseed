@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: StdOutFormatTarget.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: StdOutFormatTarget.hpp 553937 2007-07-06 16:02:19Z amassari $
  */
 
-#ifndef StdOutFormatTarget_HEADER_GUARD_
-#define StdOutFormatTarget_HEADER_GUARD_
+#if !defined(XERCESC_INCLUDE_GUARD_STDOUTFORMATTARGET_HPP)
+#define XERCESC_INCLUDE_GUARD_STDOUTFORMATTARGET_HPP
 
 #include <xercesc/framework/XMLFormatter.hpp>
 
@@ -39,7 +39,7 @@ public:
     //  Implementations of the format target interface
     // -----------------------------------------------------------------------
     virtual void writeChars(const XMLByte* const toWrite
-                          , const unsigned int   count
+                          , const XMLSize_t      count
                           , XMLFormatter* const  formatter);
 
     virtual void flush();

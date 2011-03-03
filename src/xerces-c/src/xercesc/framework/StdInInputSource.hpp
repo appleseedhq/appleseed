@@ -16,12 +16,12 @@
  */
 
 /*
- * $Id: StdInInputSource.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: StdInInputSource.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
 
-#if !defined(STDININPUTSOURCE_HPP)
-#define STDININPUTSOURCE_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_STDININPUTSOURCE_HPP)
+#define XERCESC_INCLUDE_GUARD_STDININPUTSOURCE_HPP
 
 #include <xercesc/sax/InputSource.hpp>
 

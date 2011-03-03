@@ -1,6 +1,3 @@
-#ifndef DOMNodeFilter_HEADER_GUARD_
-#define DOMNodeFilter_HEADER_GUARD_
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -8,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,8 +16,11 @@
  */
 
 /*
- * $Id: DOMNodeFilter.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMNodeFilter.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
+
+#if !defined(XERCESC_INCLUDE_GUARD_DOMNODEFILTER_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMNODEFILTER_HPP
 
 #include <xercesc/dom/DOMNode.hpp>
 
@@ -53,9 +53,9 @@ protected:
     //  Hidden constructors
     // -----------------------------------------------------------------------
     /** @name Hidden constructors */
-    //@{    
+    //@{
     DOMNodeFilter() {};
-    //@}    
+    //@}
 
 private:
     // -----------------------------------------------------------------------
@@ -83,7 +83,7 @@ public:
     // -----------------------------------------------------------------------
     //  Class Types
     // -----------------------------------------------------------------------
-    /** @name Public Contants */
+    /** @name Public Constants */
     //@{
     /**
      * Constants returned by acceptNode.
@@ -174,7 +174,7 @@ public:
      *
      * @since DOM Level 2
      */
-    enum ShowType {
+    enum ShowTypeMasks {
         SHOW_ALL                       = 0x0000FFFF,
         SHOW_ELEMENT                   = 0x00000001,
         SHOW_ATTRIBUTE                 = 0x00000002,
@@ -189,6 +189,9 @@ public:
         SHOW_DOCUMENT_FRAGMENT         = 0x00000400,
         SHOW_NOTATION                  = 0x00000800
     };
+
+    typedef unsigned long ShowType;
+
     //@}
 
     // -----------------------------------------------------------------------
@@ -208,7 +211,7 @@ public:
      *   rejected, or skipped, as defined above.
      * @since DOM Level 2
      */
-    virtual short acceptNode (const DOMNode* node) const =0;
+    virtual FilterAction acceptNode (const DOMNode* node) const =0;
     //@}
 
 };

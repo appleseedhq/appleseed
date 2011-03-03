@@ -1,6 +1,3 @@
-#ifndef DOMElement_HEADER_GUARD_
-#define DOMElement_HEADER_GUARD_
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -19,8 +16,11 @@
  */
 
 /*
- * $Id: DOMElement.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMElement.hpp 792236 2009-07-08 17:22:35Z amassari $
  */
+
+#if !defined(XERCESC_INCLUDE_GUARD_DOMELEMENT_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMELEMENT_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 #include <xercesc/dom/DOMNode.hpp>
@@ -58,6 +58,9 @@ class DOMTypeInfo;
  * safely be used as a convenience.
  *
  * @since DOM Level 1
+ *
+ * It also defines the ElementTraversal helper interface defined by http://www.w3.org/TR/2008/REC-ElementTraversal-20081222/
+ *
  */
 
 class CDOM_EXPORT DOMElement: public DOMNode {
@@ -389,78 +392,132 @@ public:
     //@{
 
     /**
-     * Declares the <code>DOMAttr</code> specified by name to be of type ID. If the
-     * value of the specified <code>DOMAttr</code> is unique then this element node
-     * can later be retrieved using getElementById on Document. Note, however,
-     * that this simply affects this node and does not change any grammar that
-     * may be in use.
+     * If the parameter isId is <code>true</code>, this method declares the specified 
+     * attribute to be a user-determined ID attribute. 
+     * This affects the value of <code>DOMAttr::isId</code> and the behavior of 
+     * <code>DOMDocument::getElementById</code>, but does not change any schema that 
+     * may be in use, in particular this does not affect the <code>DOMAttr::getSchemaTypeInfo</code>
+     * of the specified DOMAttr node. Use the value <code>false</code> for the parameter isId 
+     * to undeclare an attribute for being a user-determined ID attribute.
      * To specify an <code>DOMAttr</code> by local name and namespace URI, use the
      * setIdAttributeNS method.
+     *
      * @param name The name of the <code>DOMAttr</code>.
+     * @param isId Whether the attribute is of type ID.
      * @exception DOMException
-     *    NO_MODIFICATION_ALLOWED_ERR: Raised if this node is readonly.
-     *    <br />NOT_FOUND_ERR: Raised if the specified node is not an <code>DOMAttr</code>
+     *    NO_MODIFICATION_ALLOWED_ERR: Raised if this node is readonly.<br>
+     *    NOT_FOUND_ERR: Raised if the specified node is not an <code>DOMAttr</code>
      * of this element.
      *
-     * <p><b>"Experimental - subject to change"</b></p>
-     *
      * @since DOM Level 3
      */
-    virtual void setIdAttribute(const XMLCh* name) = 0;
+    virtual void setIdAttribute(const XMLCh* name, bool isId) = 0;
 
 
     /**
-     * Declares the <code>DOMAttr</code> specified by local name and namespace
-     * URI to be of type ID. If the value of the specified <code>DOMAttr</code>
-     * is unique then this <code>DOMElement</code> node can later be retrieved
-     * using getElementById on <code>DOMDocument</code>. Note, however, that
-     * this simply affects this node and does not change any grammar that may
-     * be in use.
+     * If the parameter isId is <code>true</code>, this method declares the specified 
+     * attribute to be a user-determined ID attribute. 
+     * This affects the value of <code>DOMAttr::isId</code> and the behavior of 
+     * <code>DOMDocument::getElementById</code>, but does not change any schema that 
+     * may be in use, in particular this does not affect the <code>DOMAttr::getSchemaTypeInfo</code>
+     * of the specified DOMAttr node. Use the value <code>false</code> for the parameter isId 
+     * to undeclare an attribute for being a user-determined ID attribute.
+     *
      * @param namespaceURI The namespace URI of the <code>DOMAttr</code>.
      * @param localName The local name of the <code>DOMAttr</code>.
+     * @param isId Whether the attribute is of type ID.
      * @exception  DOMException
-     *   NO_MODIFICATION_ALLOWED_ERR: Raised if this node is readonly.
-     *   <br />NOT_FOUND_ERR: Raised if the specified node is not an <code>DOMAttr</code> of this element.
-     *
-     * <p><b>"Experimental - subject to change"</b></p>
+     *   NO_MODIFICATION_ALLOWED_ERR: Raised if this node is readonly.<br>
+     *   NOT_FOUND_ERR: Raised if the specified node is not an <code>DOMAttr</code> of this element.
      *
      * @since DOM Level 3
      */
-    virtual void setIdAttributeNS(const XMLCh* namespaceURI, const XMLCh* localName) = 0;
+    virtual void setIdAttributeNS(const XMLCh* namespaceURI, const XMLCh* localName, bool isId) = 0;
 
 
 
     /**
-     * Declares the <code>DOMAttr</code> specified by node to be of type ID.
-     * If the value of the specified <code>DOMAttr</code> is unique then this
-     * <code>DOMElement</code> node can later be retrieved using getElementById
-     * on <code>DOMDocument</code>. Note, however, that this simply affects this
-     * node and does not change any grammar that may be in use.
-     * @param idAttr The <code>DOMAttr</code> node.
-     * @exception  DOMException
-     *   NO_MODIFICATION_ALLOWED_ERR: Raised if this node is readonly.
-     *   <br />NOT_FOUND_ERR: Raised if the specified node is not an <code>DOMAttr</code> of this element.
+     * If the parameter isId is <code>true</code>, this method declares the specified 
+     * attribute to be a user-determined ID attribute. 
+     * This affects the value of <code>DOMAttr::isId</code> and the behavior of 
+     * <code>DOMDocument::getElementById</code>, but does not change any schema that 
+     * may be in use, in particular this does not affect the <code>DOMAttr::getSchemaTypeInfo</code>
+     * of the specified DOMAttr node. Use the value <code>false</code> for the parameter isId 
+     * to undeclare an attribute for being a user-determined ID attribute.
      *
-     * <p><b>"Experimental - subject to change"</b></p>
+     * @param idAttr The <code>DOMAttr</code> node.
+     * @param isId Whether the attribute is of type ID.
+     * @exception  DOMException
+     *   NO_MODIFICATION_ALLOWED_ERR: Raised if this node is readonly.<br>
+     *   NOT_FOUND_ERR: Raised if the specified node is not an <code>DOMAttr</code> of this element.
      *
      * @since DOM Level 3
      */
-    virtual void setIdAttributeNode(const DOMAttr *idAttr) = 0;
+    virtual void setIdAttributeNode(const DOMAttr *idAttr, bool isId) = 0;
 
 
 
     /**
      * Returns the type information associated with this element.
      *
-     * <p><b>"Experimental - subject to change"</b></p>
-     *
      * @return the <code>DOMTypeInfo</code> associated with this element
      * @since DOM level 3
      */
-    virtual const DOMTypeInfo* getTypeInfo() const = 0;
+    virtual const DOMTypeInfo* getSchemaTypeInfo() const = 0;
 
     //@}
 
+    // -----------------------------------------------------------------------
+    //  DOMElementTraversal interface
+    // -----------------------------------------------------------------------
+    /** @name Functions introduced in the ElementTraversal specification (http://www.w3.org/TR/2008/REC-ElementTraversal-20081222/)*/
+    //@{
+    // -----------------------------------------------------------------------
+    //  Getter methods
+    // -----------------------------------------------------------------------
+    /**
+     * The first child of type DOMElement.
+     *
+     * @return The <code>DOMElement</code> object that is the first element node
+     *   among the child nodes of this node, or <code>null</code> if there is none.
+     */
+    virtual DOMElement *         getFirstElementChild() const = 0;
+
+    /**
+     * The last child of type DOMElement.
+     *
+     * @return The <code>DOMElement</code> object that is the last element node
+     *   among the child nodes of this node, or <code>null</code> if there is none.
+     */
+    virtual DOMElement *         getLastElementChild() const = 0;
+
+    /**
+     * The previous sibling node of type DOMElement.
+     *
+     * @return The <code>DOMElement</code> object that is the previous sibling element node
+     *   in document order, or <code>null</code> if there is none.
+     */
+    virtual DOMElement *         getPreviousElementSibling() const = 0;
+
+    /**
+     * The next sibling node of type DOMElement.
+     *
+     * @return The <code>DOMElement</code> object that is the next sibling element node
+     *   in document order, or <code>null</code> if there is none.
+     */
+    virtual DOMElement *         getNextElementSibling() const = 0;
+
+    /**
+     * The number of child nodes that are of type DOMElement.
+     *
+     * Note: the count is computed every time this function is invoked
+     *
+     * @return The number of <code>DOMElement</code> objects that are direct children
+     *   of this object (nested elements are not counted), or <code>0</code> if there is none.
+     * 
+     */
+    virtual XMLSize_t            getChildElementCount() const = 0;
+    //@}
 };
 
 XERCES_CPP_NAMESPACE_END

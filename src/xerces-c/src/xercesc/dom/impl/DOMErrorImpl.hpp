@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,15 +16,15 @@
  */
 
 /*
- * $Id: DOMErrorImpl.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMErrorImpl.hpp 676853 2008-07-15 09:58:05Z borisk $
  */
 
-
-#ifndef DOMERRORIMPL_HPP
-#define DOMERRORIMPL_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_DOMERRORIMPL_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMERRORIMPL_HPP
 
 #include <xercesc/dom/DOMError.hpp>
 #include <xercesc/util/XMLString.hpp>
+
 XERCES_CPP_NAMESPACE_BEGIN
 
 
@@ -42,21 +42,21 @@ public:
     //@{
 
     /** Constructors */
-    DOMErrorImpl(const short severity);
+    DOMErrorImpl(const ErrorSeverity severity);
 
     DOMErrorImpl
     (
-        const short severity
+        const ErrorSeverity severity
         , const XMLCh* const message
         , DOMLocator* const location
     );
 
     DOMErrorImpl
     (
-        const short severity
+        const ErrorSeverity severity
         , const XMLCh* type
         , const XMLCh* message
-        , void* relatedData 
+        , void* relatedData
     );
 
     /** Desctructor */
@@ -64,100 +64,24 @@ public:
 
     //@}
 
-    /** @name Get function */
-    //@{
-
-   /**
-    * <p><b>"Experimental - subject to change"</b></p>
-    *
-    * Get the severity of the error
-    */
-    virtual short getSeverity() const;
-
-   /**
-    * <p><b>"Experimental - subject to change"</b></p>
-    *
-    * Get the message describing the error that occured.
-    */
+    // DOMError interface
+    virtual ErrorSeverity getSeverity() const;
     virtual const XMLCh* getMessage() const;
-
-   /**
-    * <p><b>"Experimental - subject to change"</b></p>
-    *
-    * Get the location of the error
-    */
     virtual DOMLocator* getLocation() const;
-
-    /**
-     * The related platform dependent exception if any.
-     *
-     * <p><b>"Experimental - subject to change"</b></p>
-     *
-     * @see   setRelatedException
-     * @since DOM Level 3
-     */
     virtual void* getRelatedException() const;
-
     virtual const XMLCh* getType() const;
-
     virtual void* getRelatedData() const;
 
-    //@}
-
-
-   /** @name Set function */
-    //@{
-
-   /**
-    * <p><b>"Experimental - subject to change"</b></p>
-    *
-    * Set the severity of the error
-    *
-    * @param severity the type of the error to set
-    */
-    virtual void setSeverity(const short severity);
-
-   /**
-    * <p><b>"Experimental - subject to change"</b></p>
-    *
-    * Set the error message
-    *
-    * @param message the error message to set.
-    */
-    virtual void setMessage(const XMLCh* const message);
-
-   /**
-    * <p><b>"Experimental - subject to change"</b></p>
-    *
-    * Set the location of the error
-    *
-    * @param location the location of the error to set.
-    */
-    virtual void setLocation(DOMLocator* const location);
-
-   /**
-    * @param value <code>true</code> if DOMLocator is owned and should be
-    *              deleted, <code>false</code> otherwise.
-    */
+    // Setters
+    void setSeverity(const ErrorSeverity severity);
+    void setMessage(const XMLCh* const message);
+    void setLocation(DOMLocator* const location);
     void setAdoptLocation(const bool value);
+    void setRelatedException(void* exc) const;
+    void setType(const XMLCh* type);
+    void setRelatedData(void* relatedData);
 
-    /**
-     * The related platform dependent exception if any.
-     *
-     * <p><b>"Experimental - subject to change"</b></p>
-     *
-     * @param exc the related exception to set.
-     * @see   getRelatedException
-     * @since DOM Level 3
-     */
-    virtual void setRelatedException(void* exc) const;
-
-    virtual void setType(const XMLCh* type);
-
-    virtual void setRelatedData(void* relatedData);
-
-
-private :
+private:
     /* Unimplemented constructors and operators */
 
     /* Copy constructor */
@@ -166,6 +90,7 @@ private :
     /* Assignment operator */
     DOMErrorImpl& operator=(const DOMErrorImpl&);
 
+protected:
     // -----------------------------------------------------------------------
     //  Private data members
     //
@@ -188,18 +113,18 @@ private :
     //      The data related to this error.
     //
     // -----------------------------------------------------------------------
-    bool         fAdoptLocation;
-    short        fSeverity;
-    const XMLCh* fMessage;
-    DOMLocator*  fLocation;
-    const XMLCh* fType;
-    void*        fRelatedData;
+    bool          fAdoptLocation;
+    ErrorSeverity fSeverity;
+    const XMLCh*  fMessage;
+    DOMLocator*   fLocation;
+    const XMLCh*  fType;
+    void*         fRelatedData;
 };
 
 // ---------------------------------------------------------------------------
 //  DOMErrorImpl: Getter methods
 // ---------------------------------------------------------------------------
-inline short DOMErrorImpl::getSeverity() const
+inline DOMError::ErrorSeverity DOMErrorImpl::getSeverity() const
 {
     return fSeverity;
 }
@@ -219,20 +144,20 @@ inline void* DOMErrorImpl::getRelatedException() const
     return 0;
 }
 
-inline const XMLCh* DOMErrorImpl::getType() const 
+inline const XMLCh* DOMErrorImpl::getType() const
 {
     return fType;
 }
 
-inline void* DOMErrorImpl::getRelatedData() const 
+inline void* DOMErrorImpl::getRelatedData() const
 {
     return fRelatedData;
 }
 
 // ---------------------------------------------------------------------------
-//  DOMLocatorImpl: Setter methods
+//  DOMErrorImpl: Setter methods
 // ---------------------------------------------------------------------------
-inline void DOMErrorImpl::setSeverity(const short severity)
+inline void DOMErrorImpl::setSeverity(const ErrorSeverity severity)
 {
     fSeverity = severity;
 }

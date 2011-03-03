@@ -16,13 +16,17 @@
  */
 
 /*
- * $Id: Win32TransService.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: Win32TransService.cpp 676954 2008-07-15 16:29:19Z dbertoni $
  */
 
 
 // ---------------------------------------------------------------------------
 //  Includes
 // ---------------------------------------------------------------------------
+#if HAVE_CONFIG_H
+#	include <config.h>
+#endif
+
 #include <xercesc/util/PlatformUtils.hpp>
 #include <xercesc/util/TranscodingException.hpp>
 #include <xercesc/util/XMLException.hpp>
@@ -31,8 +35,6 @@
 #include <xercesc/util/XMLUni.hpp>
 #include <xercesc/util/RefHashTableOf.hpp>
 #include "Win32TransService.hpp"
-#include <windows.h>
-#include <ctype.h>
 
 XERCES_CPP_NAMESPACE_BEGIN
 
@@ -46,9 +48,108 @@ static const XMLCh gMyServiceId[] =
 };
 
 
+#if !HAVE_WCSUPR
+void _wcsupr(LPWSTR str)
+{
+    int nLen=XMLString::stringLen(str);
+    ::LCMapStringW( GetThreadLocale(), LCMAP_UPPERCASE, str, nLen, str, nLen);
+}
+#endif
 
+#if !HAVE_WCSLWR
+void _wcslwr(LPWSTR str)
+{
+    int nLen=XMLString::stringLen(str);
+    ::LCMapStringW( GetThreadLocale(), LCMAP_LOWERCASE, str, nLen, str, nLen);
+}
+#endif
 
+#if !HAVE_WCSNICMP
+int _wcsnicmp(LPCWSTR comp1, LPCWSTR comp2, unsigned int nLen)
+{
+    unsigned int len = XMLString::stringLen( comp1);
+    unsigned int otherLen = XMLString::stringLen( comp2);
+    unsigned int countChar = 0;
+    unsigned int maxChars;
+    int          theResult = 0;
 
+    // Determine at what string index the comparison stops.
+    len = ( len > nLen ) ? nLen : len;
+    otherLen = ( otherLen > nLen ) ? nLen : otherLen;
+    maxChars = ( len > otherLen ) ? otherLen : len;
+
+    // Handle situation when one argument or the other is NULL
+    // by returning +/- string length of non-NULL argument (inferred
+    // from XMLString::CompareNString).
+
+    // Obs. Definition of stringLen(XMLCh*) implies NULL ptr and ptr
+    // to Empty String are equivalent.  It handles NULL args, BTW.
+
+    if ( !comp1 )
+    {
+        // Negative because null ptr (c1) less than string (c2).
+        return ( 0 - otherLen );
+    }
+
+    if ( !comp2 )
+    {
+        // Positive because string (c1) still greater than null ptr (c2).
+        return len;
+    }
+
+    // Copy const parameter strings (plus terminating nul) into locals.
+    XMLCh* firstBuf = (XMLCh*) XMLPlatformUtils::fgMemoryManager->allocate( (++len) * sizeof(XMLCh) );//new XMLCh[ ++len];
+    XMLCh* secondBuf = (XMLCh*) XMLPlatformUtils::fgMemoryManager->allocate( (++otherLen) * sizeof(XMLCh) );//new XMLCh[ ++otherLen];
+    memcpy( firstBuf, comp1, len * sizeof(XMLCh));
+    memcpy( secondBuf, comp2, otherLen * sizeof(XMLCh));
+
+    // Then uppercase both strings, losing their case info.
+    ::LCMapStringW( GetThreadLocale(), LCMAP_UPPERCASE, (LPWSTR)firstBuf, len, (LPWSTR)firstBuf, len);
+    ::LCMapStringW( GetThreadLocale(), LCMAP_UPPERCASE, (LPWSTR)secondBuf, otherLen, (LPWSTR)secondBuf, otherLen);
+
+    // Strings are equal until proven otherwise.
+    while ( ( countChar < maxChars ) && ( !theResult ) )
+    {
+        theResult = (int)(firstBuf[countChar]) - (int)(secondBuf[countChar]);
+        ++countChar;
+    }
+
+    XMLPlatformUtils::fgMemoryManager->deallocate(firstBuf);//delete [] firstBuf;
+    XMLPlatformUtils::fgMemoryManager->deallocate(secondBuf);//delete [] secondBuf;
+
+    return theResult;
+}
+#endif
+
+#if !HAVE_WCSICMP
+int _wcsicmp(LPCWSTR comp1, LPCWSTR comp2)
+{
+    unsigned int len = XMLString::stringLen( comp1);
+    unsigned int otherLen = XMLString::stringLen( comp2);
+    // Must compare terminating NUL to return difference if one string is shorter than the other.
+    unsigned int maxChars = ( len > otherLen ) ? otherLen : len;
+    return _wcsnicmp(comp1, comp2, maxChars+1);
+}
+#endif
+
+// it's a local function (instead of a static function) so that we are not 
+// forced to include <windows.h> in the header
+bool isAlias(const   HKEY            encodingKey
+             ,       char* const     aliasBuf = 0
+             , const unsigned int    nameBufSz = 0)
+{
+    unsigned long theType;
+    unsigned long theSize = nameBufSz;
+    return (::RegQueryValueExA
+    (
+        encodingKey
+        , "AliasForCharset"
+        , 0
+        , &theType
+        , (unsigned char*)aliasBuf
+        , &theSize
+    ) == ERROR_SUCCESS);
+}
 
 // ---------------------------------------------------------------------------
 //  This is the simple CPMapEntry class. It just contains an encoding name
@@ -63,15 +164,15 @@ public :
     CPMapEntry
     (
         const   XMLCh* const    encodingName
-        , const unsigned int    cpId
         , const unsigned int    ieId
+        , MemoryManager*        manager
     );
 
     CPMapEntry
     (
         const   char* const     encodingName
-        , const unsigned int    cpId
         , const unsigned int    ieId
+        , MemoryManager*        manager
     );
 
     ~CPMapEntry();
@@ -82,7 +183,6 @@ public :
     // -----------------------------------------------------------------------
     const XMLCh* getEncodingName() const;
     const XMLCh* getKey() const;
-    unsigned int getWinCP() const;
     unsigned int getIEEncoding() const;
 
 
@@ -102,41 +202,33 @@ private :
     //      This is the encoding name for the code page that this instance
     //      represents.
     //
-    //  fCPId
-    //      This is the Windows specific code page for the encoding that this
-    //      instance represents.
-    //
     //  fIEId
-    //      This is the IE encoding id. Its not used at this time, but we
-    //      go ahead and get it and store it just in case for later.
+    //      This is the code page id.
     // -----------------------------------------------------------------------
     XMLCh*          fEncodingName;
-    unsigned int    fCPId;
     unsigned int    fIEId;
+    MemoryManager*  fManager;
 };
 
 // ---------------------------------------------------------------------------
 //  CPMapEntry: Constructors and Destructor
 // ---------------------------------------------------------------------------
 CPMapEntry::CPMapEntry( const   char* const     encodingName
-                        , const unsigned int    cpId
-                        , const unsigned int    ieId) :
+                        , const unsigned int    ieId
+                        , MemoryManager*        manager) :
     fEncodingName(0)
-    , fCPId(cpId)
     , fIEId(ieId)
+    , fManager(manager)
 {
     // Transcode the name to Unicode and store that copy
-    const unsigned int srcLen = strlen(encodingName);
-    const unsigned charLen = ::mblen(encodingName, MB_CUR_MAX);
-    if (charLen != -1) {
-        const unsigned int targetLen = srcLen/charLen;
-
-
-        fEncodingName = (XMLCh*) XMLPlatformUtils::fgMemoryManager->allocate
+    int targetLen=::MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, encodingName, -1, NULL, 0);
+    if(targetLen!=0)
+    {
+        fEncodingName = (XMLCh*) fManager->allocate
         (
             (targetLen + 1) * sizeof(XMLCh)
         );//new XMLCh[targetLen + 1];
-        ::mbstowcs(fEncodingName, encodingName, srcLen);
+        ::MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, encodingName, -1, (LPWSTR)fEncodingName, targetLen);
         fEncodingName[targetLen] = 0;
 
         //
@@ -148,14 +240,14 @@ CPMapEntry::CPMapEntry( const   char* const     encodingName
 }
 
 CPMapEntry::CPMapEntry( const   XMLCh* const    encodingName
-                        , const unsigned int    cpId
-                        , const unsigned int    ieId) :
+                        , const unsigned int    ieId
+                        , MemoryManager*        manager) :
 
     fEncodingName(0)
-    , fCPId(cpId)
     , fIEId(ieId)
+    , fManager(manager)
 {
-    fEncodingName = XMLString::replicate(encodingName, XMLPlatformUtils::fgMemoryManager);
+    fEncodingName = XMLString::replicate(encodingName, fManager);
 
     //
     //  Upper case it because we are using a hash table and need to be
@@ -166,7 +258,7 @@ CPMapEntry::CPMapEntry( const   XMLCh* const    encodingName
 
 CPMapEntry::~CPMapEntry()
 {
-    XMLPlatformUtils::fgMemoryManager->deallocate(fEncodingName);//delete [] fEncodingName;
+    fManager->deallocate(fEncodingName);//delete [] fEncodingName;
 }
 
 
@@ -178,19 +270,13 @@ const XMLCh* CPMapEntry::getEncodingName() const
     return fEncodingName;
 }
 
-unsigned int CPMapEntry::getWinCP() const
-{
-    return fCPId;
-}
-
 unsigned int CPMapEntry::getIEEncoding() const
 {
     return fIEId;
 }
 
 
-
-
+static bool onXPOrLater = false;
 
 
 //---------------------------------------------------------------------------
@@ -203,8 +289,22 @@ unsigned int CPMapEntry::getIEEncoding() const
 // ---------------------------------------------------------------------------
 //  Win32TransService: Constructors and Destructor
 // ---------------------------------------------------------------------------
-Win32TransService::Win32TransService()
+Win32TransService::Win32TransService(MemoryManager* manager) :
+    fCPMap(NULL)
+    , fManager(manager)
 {
+    // Figure out if we are on XP or later and save that flag for later use.
+    // We need this because of certain code page conversion calls.
+    OSVERSIONINFO   OSVer;
+    OSVer.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+    ::GetVersionEx(&OSVer);
+
+    if ((OSVer.dwPlatformId == VER_PLATFORM_WIN32_NT) &&
+        ((OSVer.dwMajorVersion == 5) && (OSVer.dwMinorVersion > 0)))
+    {
+        onXPOrLater = true;
+    }
+
     fCPMap = new RefHashTableOf<CPMapEntry>(109);
 
     //
@@ -318,7 +418,7 @@ Win32TransService::Win32TransService()
                     continue;
                 }
 
-                CPMapEntry* newEntry = new CPMapEntry(nameBuf, CPId, IEId);
+                CPMapEntry* newEntry = new (fManager) CPMapEntry(nameBuf, IEId, fManager);
                 fCPMap->put((void*)newEntry->getEncodingName(), newEntry);
             }
         }
@@ -369,15 +469,14 @@ Win32TransService::Win32TransService()
         //
         if (isAlias(encodingKey, aliasBuf, nameBufSz))
         {
-            const unsigned int srcLen = strlen(aliasBuf);
-            size_t targetLen=::mbstowcs(NULL, aliasBuf, srcLen);
-            if(targetLen!=-1)
+            int targetLen = ::MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, aliasBuf, -1, NULL, 0);
+            if(targetLen!=0)
             {
-                XMLCh* uniAlias = (XMLCh*) XMLPlatformUtils::fgMemoryManager->allocate
+                XMLCh* uniAlias = (XMLCh*) fManager->allocate
                 (
                     (targetLen + 1) * sizeof(XMLCh)
                 );//new XMLCh[targetLen + 1];
-                ::mbstowcs(uniAlias, aliasBuf, srcLen);
+                ::MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, aliasBuf, -1, (LPWSTR)uniAlias, targetLen);
                 uniAlias[targetLen] = 0;
                 _wcsupr(uniAlias);
 
@@ -385,15 +484,14 @@ Win32TransService::Win32TransService()
                 CPMapEntry* aliasedEntry = fCPMap->get(uniAlias);
                 if (aliasedEntry)
                 {
-                    const unsigned int srcLen = strlen(nameBuf);
-                    size_t targetLen=::mbstowcs(NULL, nameBuf, srcLen);
-                    if(targetLen!=-1)
+                    int targetLen = ::MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, nameBuf, -1, NULL, 0);
+                    if(targetLen!=0)
                     {
-                        XMLCh* uniName = (XMLCh*) XMLPlatformUtils::fgMemoryManager->allocate
+                        XMLCh* uniName = (XMLCh*) fManager->allocate
                         (
                             (targetLen + 1) * sizeof(XMLCh)
                         );//new XMLCh[targetLen + 1];
-                        ::mbstowcs(uniName, nameBuf, srcLen);
+                        ::MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, nameBuf, -1, (LPWSTR)uniName, targetLen);
                         uniName[targetLen] = 0;
                         _wcsupr(uniName);
 
@@ -402,16 +500,16 @@ Win32TransService::Win32TransService()
                         //  Otherwise, don't take it. They map aliases that are
                         //  just different case.
                         //
-                        if (::wcscmp(uniName, aliasedEntry->getEncodingName()))
+						if (!XMLString::equals(uniName, aliasedEntry->getEncodingName()))
                         {
-                            CPMapEntry* newEntry = new CPMapEntry(uniName, aliasedEntry->getWinCP(), aliasedEntry->getIEEncoding());
+                            CPMapEntry* newEntry = new (fManager) CPMapEntry(uniName, aliasedEntry->getIEEncoding(), fManager);
                             fCPMap->put((void*)newEntry->getEncodingName(), newEntry);
                         }
 
-                        XMLPlatformUtils::fgMemoryManager->deallocate(uniName);//delete [] uniName;
+                        fManager->deallocate(uniName);//delete [] uniName;
                     }
                 }
-                XMLPlatformUtils::fgMemoryManager->deallocate(uniAlias);//delete [] uniAlias;
+                fManager->deallocate(uniAlias);//delete [] uniAlias;
             }
         }
 
@@ -421,7 +519,6 @@ Win32TransService::Win32TransService()
 
     // And close the main key handle
     ::RegCloseKey(charsetKey);
-
 }
 
 Win32TransService::~Win32TransService()
@@ -442,7 +539,7 @@ int Win32TransService::compareIString(  const   XMLCh* const    comp1
 
 int Win32TransService::compareNIString( const   XMLCh* const    comp1
                                         , const XMLCh* const    comp2
-                                        , const unsigned int    maxChars)
+                                        , const XMLSize_t       maxChars)
 {
     return _wcsnicmp(comp1, comp2, maxChars);
 }
@@ -453,17 +550,10 @@ const XMLCh* Win32TransService::getId() const
     return gMyServiceId;
 }
 
-
-bool Win32TransService::isSpace(const XMLCh toCheck) const
-{
-    return (iswspace(toCheck) != 0);
-}
-
-
-XMLLCPTranscoder* Win32TransService::makeNewLCPTranscoder()
+XMLLCPTranscoder* Win32TransService::makeNewLCPTranscoder(MemoryManager* manager)
 {
     // Just allocate a new LCP transcoder of our type
-    return new Win32LCPTranscoder;
+    return new (manager) Win32LCPTranscoder;
 }
 
 
@@ -478,49 +568,30 @@ bool Win32TransService::supportsSrcOfs() const
 }
 
 
-void Win32TransService::upperCase(XMLCh* const toUpperCase) const
+void Win32TransService::upperCase(XMLCh* const toUpperCase)
 {
     _wcsupr(toUpperCase);
 }
 
-void Win32TransService::lowerCase(XMLCh* const toLowerCase) const
+void Win32TransService::lowerCase(XMLCh* const toLowerCase)
 {
     _wcslwr(toLowerCase);
 }
 
-bool Win32TransService::isAlias(const   HKEY            encodingKey
-                    ,       char* const     aliasBuf
-                    , const unsigned int    nameBufSz )
-{
-    unsigned long theType;
-    unsigned long theSize = nameBufSz;
-    return (::RegQueryValueExA
-    (
-        encodingKey
-        , "AliasForCharset"
-        , 0
-        , &theType
-        , (unsigned char*)aliasBuf
-        , &theSize
-    ) == ERROR_SUCCESS);
-}
-
-
 XMLTranscoder*
 Win32TransService::makeNewXMLTranscoder(const   XMLCh* const            encodingName
                                         ,       XMLTransService::Codes& resValue
-                                        , const unsigned int            blockSize
+                                        , const XMLSize_t               blockSize
                                         ,       MemoryManager* const    manager)
 {
-    const unsigned int upLen = 1024;
+    const XMLSize_t upLen = 1024;
     XMLCh upEncoding[upLen + 1];
 
     //
     //  Get an upper cased copy of the encoding name, since we use a hash
     //  table and we store them all in upper case.
     //
-    ::wcsncpy(upEncoding, encodingName, upLen);
-    upEncoding[upLen] = 0;
+    XMLString::copyNString(upEncoding, encodingName, upLen);
     _wcsupr(upEncoding);
 
     // Now to try to find this guy in the CP map
@@ -537,7 +608,6 @@ Win32TransService::makeNewXMLTranscoder(const   XMLCh* const            encoding
     return new (manager) Win32Transcoder
     (
         encodingName
-        , theEntry->getWinCP()
         , theEntry->getIEEncoding()
         , blockSize
         , manager
@@ -558,19 +628,70 @@ Win32TransService::makeNewXMLTranscoder(const   XMLCh* const            encoding
 //---------------------------------------------------------------------------
 
 
+inline DWORD
+getFlagsValue(
+            UINT    idCP,
+            DWORD   desiredFlags)
+{
+    if (idCP == 50220 ||
+        idCP == 50227 ||
+        (idCP >= 57002 &&
+         idCP <= 57011))
+    {
+        // These code pages do not support any
+        // flag options.
+        return 0;
+    }
+    else if (idCP == 65001)
+    {
+        // UTF-8 only supports MB_ERR_INVALID_CHARS on
+        // versions of Windows since XP
+        if (!onXPOrLater)
+        {
+            return 0;
+        }
+        else
+        {
+            return desiredFlags & MB_ERR_INVALID_CHARS ?
+                        MB_ERR_INVALID_CHARS : 0;
+        }
+    }
+    else
+    {
+        return desiredFlags;
+    }
+}
+
+
+
 // ---------------------------------------------------------------------------
 //  Win32Transcoder: Constructors and Destructor
 // ---------------------------------------------------------------------------
-Win32Transcoder::Win32Transcoder(const  XMLCh* const    encodingName
-                                , const unsigned int    winCP
-                                , const unsigned int    ieCP
-                                , const unsigned int    blockSize
+Win32Transcoder::Win32Transcoder(const  XMLCh* const   encodingName
+                                , const unsigned int   ieCP
+                                , const XMLSize_t      blockSize
                                 , MemoryManager* const manager) :
 
     XMLTranscoder(encodingName, blockSize, manager)
     , fIECP(ieCP)
-    , fWinCP(winCP)
+    , fUsedDef(FALSE)
+    , fPtrUsedDef(0)
+    , fFromFlags(getFlagsValue(ieCP, MB_PRECOMPOSED | MB_ERR_INVALID_CHARS))
+#if defined(WC_NO_BEST_FIT_CHARS)
+    , fToFlags(getFlagsValue(ieCP, WC_COMPOSITECHECK | WC_SEPCHARS | WC_NO_BEST_FIT_CHARS))
+#else
+    , fToFlags(getFlagsValue(ieCP, WC_COMPOSITECHECK | WC_SEPCHARS))
+#endif
 {
+    // Some code pages require that MultiByteToWideChar and WideCharToMultiByte
+    // be passed 0 for their second parameters (dwFlags).  If that's the case,
+    // it's also necessary to pass null pointers for the last two parameters
+    // to WideCharToMultiByte.  This is apparently because it's impossible to
+    // determine whether or not a substitution (replacement) character was used.
+    if (fToFlags)
+    {
+        fPtrUsedDef = &fUsedDef;
+    }
 }
 
 Win32Transcoder::~Win32Transcoder()
@@ -581,12 +702,12 @@ Win32Transcoder::~Win32Transcoder()
 // ---------------------------------------------------------------------------
 //  Win32Transcoder: The virtual transcoder API
 // ---------------------------------------------------------------------------
-unsigned int
+XMLSize_t
 Win32Transcoder::transcodeFrom( const   XMLByte* const      srcData
-                                , const unsigned int        srcCount
+                                , const XMLSize_t           srcCount
                                 ,       XMLCh* const        toFill
-                                , const unsigned int        maxChars
-                                ,       unsigned int&       bytesEaten
+                                , const XMLSize_t           maxChars
+                                ,       XMLSize_t&          bytesEaten
                                 ,       unsigned char* const charSizes)
 {
     // Get temp pointers to the in and out buffers, and the chars sizes one
@@ -612,7 +733,7 @@ Win32Transcoder::transcodeFrom( const   XMLByte* const      srcData
         unsigned char toEat = ::IsDBCSLeadByteEx(fIECP, *inPtr) ?
                                     2 : 1;
 
-        // Make sure a whol char is in the source
+        // Make sure a whole char is in the source
         if (inPtr + toEat > inEnd)
             break;
 
@@ -620,7 +741,7 @@ Win32Transcoder::transcodeFrom( const   XMLByte* const      srcData
         const unsigned int converted = ::MultiByteToWideChar
         (
             fIECP
-            , MB_PRECOMPOSED | MB_ERR_INVALID_CHARS
+            , fFromFlags
             , (const char*)inPtr
             , toEat
             , outPtr
@@ -664,12 +785,12 @@ Win32Transcoder::transcodeFrom( const   XMLByte* const      srcData
 }
 
 
-unsigned int
+XMLSize_t
 Win32Transcoder::transcodeTo(const  XMLCh* const    srcData
-                            , const unsigned int    srcCount
+                            , const XMLSize_t       srcCount
                             ,       XMLByte* const  toFill
-                            , const unsigned int    maxBytes
-                            ,       unsigned int&   charsEaten
+                            , const XMLSize_t       maxBytes
+                            ,       XMLSize_t&      charsEaten
                             , const UnRepOpts       options)
 {
     // Get pointers to the start and end of each buffer
@@ -686,21 +807,21 @@ Win32Transcoder::transcodeTo(const  XMLCh* const    srcData
     //  conversion API is too dumb to tell us how many chars it converted if
     //  it couldn't do the whole source.
     //
-    BOOL usedDef;
+    fUsedDef = FALSE;
     while ((outPtr < outEnd) && (srcPtr < srcEnd))
     {
         //
         //  Do one char and see if it made it.
-        const unsigned int bytesStored = ::WideCharToMultiByte
+        const int bytesStored = ::WideCharToMultiByte
         (
             fIECP
-            , WC_COMPOSITECHECK | WC_SEPCHARS
+            , fToFlags
             , srcPtr
             , 1
             , (char*)outPtr
-            , outEnd - outPtr
+            , (int)(outEnd - outPtr)
             , 0
-            , &usedDef
+            , fPtrUsedDef
         );
 
         // If we didn't transcode anything, then we are done
@@ -711,7 +832,7 @@ Win32Transcoder::transcodeTo(const  XMLCh* const    srcData
         //  If the defaault char was used and the options indicate that
         //  this isn't allowed, then throw.
         //
-        if (usedDef && (options == UnRep_Throw))
+        if (fUsedDef && (options == UnRep_Throw))
         {
             XMLCh tmpBuf[17];
             XMLString::binToText((unsigned int)*srcPtr, tmpBuf, 16, 16, getMemoryManager());
@@ -738,7 +859,7 @@ Win32Transcoder::transcodeTo(const  XMLCh* const    srcData
 }
 
 
-bool Win32Transcoder::canTranscodeTo(const unsigned int toCheck) const
+bool Win32Transcoder::canTranscodeTo(const unsigned int toCheck)
 {
     //
     //  If the passed value is really a surrogate embedded together, then
@@ -763,20 +884,21 @@ bool Win32Transcoder::canTranscodeTo(const unsigned int toCheck) const
     //
     char tmpBuf[64];
 
-    BOOL usedDef;
+    fUsedDef = FALSE;
+
     const unsigned int bytesStored = ::WideCharToMultiByte
     (
         fIECP
-        , WC_COMPOSITECHECK | WC_SEPCHARS
+        , fToFlags
         , srcBuf
         , srcCount
         , tmpBuf
         , 64
         , 0
-        , &usedDef
+        , fPtrUsedDef
     );
 
-    if (!bytesStored || usedDef)
+    if (!bytesStored || fUsedDef)
         return false;
 
     return true;
@@ -806,7 +928,7 @@ Win32LCPTranscoder::~Win32LCPTranscoder()
 // ---------------------------------------------------------------------------
 //  Win32LCPTranscoder: Implementation of the virtual transcoder interface
 // ---------------------------------------------------------------------------
-unsigned int Win32LCPTranscoder::calcRequiredSize(const char* const srcText
+XMLSize_t Win32LCPTranscoder::calcRequiredSize(const char* const srcText
                                                   , MemoryManager* const /*manager*/)
 {
     if (!srcText)
@@ -816,41 +938,13 @@ unsigned int Win32LCPTranscoder::calcRequiredSize(const char* const srcText
 }
 
 
-unsigned int Win32LCPTranscoder::calcRequiredSize(const XMLCh* const srcText
+XMLSize_t Win32LCPTranscoder::calcRequiredSize(const XMLCh* const srcText
                                                   , MemoryManager* const /*manager*/)
 {
     if (!srcText)
         return 0;
 
     return ::WideCharToMultiByte(CP_ACP, 0, srcText, -1, NULL, 0, NULL, NULL);
-}
-
-// Return value using global operator new
-// Revisit: deprecate ?
-char* Win32LCPTranscoder::transcode(const XMLCh* const toTranscode)
-{
-    if (!toTranscode)
-        return 0;
-
-    char* retVal = 0;
-    if (*toTranscode)
-    {
-        // Calc the needed size
-        const unsigned int neededLen = calcRequiredSize(toTranscode);
-
-        // Allocate a buffer of that size plus one for the null and transcode
-        retVal = new char[neededLen + 1];
-        ::WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)toTranscode, -1, retVal, neededLen+1, NULL, NULL);
-
-        // And cap it off anyway just to make sure
-        retVal[neededLen] = 0;
-    }
-     else
-    {
-        retVal = new char[1];
-        retVal[0] = 0;
-    }
-    return retVal;
 }
 
 char* Win32LCPTranscoder::transcode(const XMLCh* const toTranscode,
@@ -863,11 +957,11 @@ char* Win32LCPTranscoder::transcode(const XMLCh* const toTranscode,
     if (*toTranscode)
     {
         // Calc the needed size
-        const unsigned int neededLen = calcRequiredSize(toTranscode, manager);
+        const XMLSize_t neededLen = calcRequiredSize(toTranscode, manager);
 
         // Allocate a buffer of that size plus one for the null and transcode
         retVal = (char*) manager->allocate((neededLen + 1) * sizeof(char)); //new char[neededLen + 1];
-        ::WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)toTranscode, -1, retVal, neededLen+1, NULL, NULL);
+        ::WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)toTranscode, -1, retVal, (int)neededLen+1, NULL, NULL);
 
         // And cap it off anyway just to make sure
         retVal[neededLen] = 0;
@@ -875,40 +969,6 @@ char* Win32LCPTranscoder::transcode(const XMLCh* const toTranscode,
      else
     {
         retVal = (char*) manager->allocate(sizeof(char)); //new char[1];
-        retVal[0] = 0;
-    }
-    return retVal;
-}
-
-// Return value using global operator new
-// Revisit: deprecate ?
-XMLCh* Win32LCPTranscoder::transcode(const char* const toTranscode)
-{
-    if (!toTranscode)
-        return 0;
-
-    XMLCh* retVal = 0;
-    if (*toTranscode)
-    {
-        // Calculate the buffer size required
-        const unsigned int neededLen = calcRequiredSize(toTranscode);
-        if (neededLen == 0)
-        {
-            retVal = new XMLCh[1];
-            retVal[0] = 0;
-            return retVal;
-        }
-
-        // Allocate a buffer of that size plus one for the null and transcode
-        retVal = new XMLCh[neededLen + 1];
-        ::MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, toTranscode, -1, (LPWSTR)retVal, neededLen + 1);
-
-        // Cap it off just to make sure. We are so paranoid!
-        retVal[neededLen] = 0;
-    }
-     else
-    {
-        retVal = new XMLCh[1];
         retVal[0] = 0;
     }
     return retVal;
@@ -924,7 +984,7 @@ XMLCh* Win32LCPTranscoder::transcode(const char* const toTranscode,
     if (*toTranscode)
     {
         // Calculate the buffer size required
-        const unsigned int neededLen = calcRequiredSize(toTranscode, manager);
+        const XMLSize_t neededLen = calcRequiredSize(toTranscode, manager);
         if (neededLen == 0)
         {
             retVal = (XMLCh*) manager->allocate(sizeof(XMLCh)); //new XMLCh[1];
@@ -934,7 +994,7 @@ XMLCh* Win32LCPTranscoder::transcode(const char* const toTranscode,
 
         // Allocate a buffer of that size plus one for the null and transcode
         retVal = (XMLCh*) manager->allocate((neededLen + 1) * sizeof(XMLCh)); //new XMLCh[neededLen + 1];
-        ::MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, toTranscode, -1, (LPWSTR)retVal, neededLen + 1);
+        ::MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, toTranscode, -1, (LPWSTR)retVal, (int)neededLen + 1);
 
         // Cap it off just to make sure. We are so paranoid!
         retVal[neededLen] = 0;
@@ -950,7 +1010,7 @@ XMLCh* Win32LCPTranscoder::transcode(const char* const toTranscode,
 
 bool Win32LCPTranscoder::transcode( const   char* const     toTranscode
                                     ,       XMLCh* const    toFill
-                                    , const unsigned int    maxChars
+                                    , const XMLSize_t       maxChars
                                     , MemoryManager* const  /*manager*/)
 {
     // Check for a couple of psycho corner cases
@@ -967,7 +1027,7 @@ bool Win32LCPTranscoder::transcode( const   char* const     toTranscode
     }
 
     // This one has a fixed size output, so try it and if it fails it fails
-    if ( 0 == ::MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, toTranscode, -1, (LPWSTR)toFill, maxChars + 1) )
+    if ( 0 == ::MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, toTranscode, -1, (LPWSTR)toFill, (int)(maxChars + 1)) )
         return false;
     return true;
 }
@@ -975,7 +1035,7 @@ bool Win32LCPTranscoder::transcode( const   char* const     toTranscode
 
 bool Win32LCPTranscoder::transcode( const   XMLCh* const    toTranscode
                                     ,       char* const     toFill
-                                    , const unsigned int    maxBytes
+                                    , const XMLSize_t       maxBytes
                                     , MemoryManager* const  /*manager*/)
 {
     // Watch for a couple of pyscho corner cases
@@ -992,7 +1052,7 @@ bool Win32LCPTranscoder::transcode( const   XMLCh* const    toTranscode
     }
 
     // This one has a fixed size output, so try it and if it fails it fails
-    if ( 0 == ::WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)toTranscode, -1, toFill, maxBytes + 1, NULL, NULL) )
+    if ( 0 == ::WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)toTranscode, -1, toFill, (int)(maxBytes + 1), NULL, NULL) )
         return false;
 
     // Cap it off just in case
@@ -1002,6 +1062,3 @@ bool Win32LCPTranscoder::transcode( const   XMLCh* const    toTranscode
 
 
 XERCES_CPP_NAMESPACE_END
-
-
-

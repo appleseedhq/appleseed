@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: UnionToken.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: UnionToken.cpp 678395 2008-07-21 11:40:41Z amassari $
  */
 
 // ---------------------------------------------------------------------------
@@ -38,8 +38,8 @@ const unsigned short UnionToken::INITIALSIZE = 8;
 // ---------------------------------------------------------------------------
 //  UnionToken: Constructors and Destructors
 // ---------------------------------------------------------------------------
-UnionToken::UnionToken(const unsigned short tokType, MemoryManager* const manager)
-    : Token(tokType, manager)
+UnionToken::UnionToken(const Token::tokType tkType, MemoryManager* const manager)
+    : Token(tkType, manager)
     , fChildren(0)
 {
 
@@ -68,12 +68,11 @@ void UnionToken::addChild(Token* const child, TokenFactory* const tokFactory) {
         return;
     }
 
-    unsigned short childType = child->getTokenType();
-    unsigned int   childSize = child->size();
-
+    Token::tokType childType = child->getTokenType();
     if (childType == T_CONCAT) {
 
-        for (unsigned int i = 0; i < childSize; i++) {
+        XMLSize_t childSize = child->size();
+        for (XMLSize_t i = 0; i < childSize; i++) {
 
             addChild(child->getChild(i), tokFactory);
         }
@@ -81,7 +80,7 @@ void UnionToken::addChild(Token* const child, TokenFactory* const tokFactory) {
         return;
     }
 
-    unsigned int childrenSize = fChildren->size();
+    XMLSize_t childrenSize = fChildren->size();
     if (childrenSize == 0) {
 
         fChildren->addElement(child);
@@ -89,7 +88,7 @@ void UnionToken::addChild(Token* const child, TokenFactory* const tokFactory) {
     }
 
     Token* previousTok = fChildren->elementAt(childrenSize - 1);
-    unsigned short previousType = previousTok->getTokenType();
+    Token::tokType previousType = previousTok->getTokenType();
 
     if (!((previousType == T_CHAR || previousType == T_STRING)
           && (childType == T_CHAR || childType == T_STRING))) {

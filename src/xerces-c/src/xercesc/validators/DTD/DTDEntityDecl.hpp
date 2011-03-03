@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: DTDEntityDecl.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DTDEntityDecl.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-
-#if !defined(DTDENTITYDECL_HPP)
-#define DTDENTITYDECL_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_DTDENTITYDECL_HPP)
+#define XERCESC_INCLUDE_GUARD_DTDENTITYDECL_HPP
 
 #include <xercesc/framework/XMLEntityDecl.hpp>
 

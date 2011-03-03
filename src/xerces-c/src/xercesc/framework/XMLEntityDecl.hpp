@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XMLEntityDecl.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLEntityDecl.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#if !defined(XMLENTITYDECL_HPP)
-#define XMLENTITYDECL_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XMLENTITYDECL_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLENTITYDECL_HPP
 
 #include <xercesc/util/XMemory.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
@@ -58,7 +58,7 @@ public:
     //@{
 
     /**
-      *  Deafult Constructor
+      *  Default Constructor
       */
     XMLEntityDecl(MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
 
@@ -160,7 +160,7 @@ public:
       * Gets the pool id of this entity. Validators maintain all decls in
       * pools, from which they can be quickly extracted via id.
       */
-    unsigned int getId() const;
+    XMLSize_t getId() const;
 
     /**
       * Returns a const pointer to the name of this entity decl. This name
@@ -204,11 +204,11 @@ public:
      *  by getValue(). If this entity is external, this will be zero since
      *  an external entity has no internal value.
      */
-    unsigned int getValueLen() const;
+    XMLSize_t getValueLen() const;
 
     /**
       * Indicates that this entity is an external entity. If not, then it is
-      * assumed to be an internal entity, suprise.
+      * assumed to be an internal entity, surprise.
       */
     bool isExternal() const;
 
@@ -250,6 +250,13 @@ public:
     (
         const   XMLCh* const    entName
     );
+
+    /**
+     *  This method will mark whether the entity is external.
+     *
+     *  @param  value   The new value for the 'is external' flag.
+     */
+    void setIsExternal(bool value);
 
     /**
      *  This method will set the notation name for this entity. By setting
@@ -298,7 +305,7 @@ public:
     //@}
 
     /* For internal use only */
-    void setId(const unsigned int newId);
+    void setId(const XMLSize_t newId);
 
 
     // -----------------------------------------------------------------------
@@ -344,7 +351,7 @@ private :
     //      This is the unique id given to this entity decl.
     //
     //  fName
-    //      The name of the enitity. Entity names are never namespace based.
+    //      The name of the entity. Entity names are never namespace based.
     //
     //  fNotationName
     //      The optional notation of the entity. If there was none, then its
@@ -365,14 +372,15 @@ private :
     //      The base URI of the entity.   According to XML InfoSet, such value
     //      is the URI where it is declared (NOT referenced).
     // -----------------------------------------------------------------------
-    unsigned int    fId;
-    unsigned int    fValueLen;
+    XMLSize_t       fId;
+    XMLSize_t       fValueLen;
     XMLCh*          fValue;
     XMLCh*          fName;
     XMLCh*          fNotationName;
     XMLCh*          fPublicId;
     XMLCh*          fSystemId;
     XMLCh*          fBaseURI;
+    bool            fIsExternal;
     MemoryManager*  fMemoryManager;
 };
 
@@ -380,7 +388,7 @@ private :
 // ---------------------------------------------------------------------------
 //  XMLEntityDecl: Getter methods
 // ---------------------------------------------------------------------------
-inline unsigned int XMLEntityDecl::getId() const
+inline XMLSize_t XMLEntityDecl::getId() const
 {
     return fId;
 }
@@ -415,15 +423,14 @@ inline const XMLCh* XMLEntityDecl::getValue() const
     return fValue;
 }
 
-inline unsigned int XMLEntityDecl::getValueLen() const
+inline XMLSize_t XMLEntityDecl::getValueLen() const
 {
     return fValueLen;
 }
 
 inline bool XMLEntityDecl::isExternal() const
 {
-    // If it has a system or public id, its external
-    return ((fPublicId != 0) || (fSystemId != 0));
+    return fIsExternal;
 }
 
 inline bool XMLEntityDecl::isUnparsed() const
@@ -440,9 +447,14 @@ inline MemoryManager* XMLEntityDecl::getMemoryManager() const
 // ---------------------------------------------------------------------------
 //  XMLEntityDecl: Setter methods
 // ---------------------------------------------------------------------------
-inline void XMLEntityDecl::setId(const unsigned int newId)
+inline void XMLEntityDecl::setId(const XMLSize_t newId)
 {
     fId = newId;
+}
+
+inline void XMLEntityDecl::setIsExternal(bool value)
+{
+    fIsExternal = value;
 }
 
 inline void XMLEntityDecl::setNotationName(const XMLCh* const newName)

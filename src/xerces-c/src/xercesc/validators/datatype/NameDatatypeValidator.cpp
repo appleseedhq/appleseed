@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: NameDatatypeValidator.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: NameDatatypeValidator.cpp 558817 2007-07-23 18:12:54Z cargilld $
  */
 
 // ---------------------------------------------------------------------------

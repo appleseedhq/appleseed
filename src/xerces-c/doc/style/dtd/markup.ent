@@ -1,7 +1,7 @@
 <?xml encoding='ISO-8859-1'?>
 
 <!-- MARKUP ENTITY -->
-<!ENTITY % markup "em|ref|code|br">
+<!ENTITY % markup "em|ref|code|br|sup">
 
 <!-- import the external source-specific dtd -->
 <!ENTITY % externalEntity SYSTEM "entities.ent">
@@ -17,5 +17,6 @@
 <!ELEMENT ref (#PCDATA|%links;)*>
 <!ELEMENT code (#PCDATA|%links;)*>
 <!ELEMENT br EMPTY>
+<!ELEMENT sup (#PCDATA)>
 
-<!-- CVS $Revision: 173497 $ $Date: 2002-02-13 21:49:41 +0200 (Wed, 13 Feb 2002) $ -->
+<!-- CVS $Revision: 807660 $ $Date: 2009-08-25 16:53:52 +0200 (Tue, 25 Aug 2009) $ -->

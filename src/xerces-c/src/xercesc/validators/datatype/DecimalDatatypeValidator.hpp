@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: DecimalDatatypeValidator.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DecimalDatatypeValidator.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-#if !defined(DECIMAL_DATATYPEVALIDATOR_HPP)
-#define DECIMAL_DATATYPEVALIDATOR_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_DECIMAL_DATATYPEVALIDATOR_HPP)
+#define XERCESC_INCLUDE_GUARD_DECIMAL_DATATYPEVALIDATOR_HPP
 
 #include <xercesc/validators/datatype/AbstractNumericValidator.hpp>
 #include <xercesc/util/RefVectorOf.hpp>

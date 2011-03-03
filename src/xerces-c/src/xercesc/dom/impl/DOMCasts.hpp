@@ -1,6 +1,3 @@
-#ifndef DOMCasts_HEADER_GUARD_
-#define DOMCasts_HEADER_GUARD_
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -19,8 +16,11 @@
  */
 
 /*
- * $Id: DOMCasts.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMCasts.hpp 673975 2008-07-04 09:23:56Z borisk $
  */
+
+#if !defined(XERCESC_INCLUDE_GUARD_DOMCASTS_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMCASTS_HPP
 
 //
 //  This file is part of the internal implementation of the C++ XML DOM.
@@ -119,14 +119,14 @@ static inline DOMChildNode *castToChildImpl(const DOMNode *p) {
 
 static inline DOMNode *castToNode(const DOMParentNode *p ) {
 	DOMElementImpl* dummy = 0;
-    size_t parentOffset = (char *)&(dummy->fParent) - (char *)dummy;
+    XMLSize_t parentOffset = (char *)&(dummy->fParent) - (char *)dummy;
     char *retPtr = (char *)p - parentOffset;
     return (DOMNode *)retPtr;
 }
 
 static inline DOMNode *castToNode(const DOMNodeImpl *p) {
 	DOMElementImpl* dummy = 0;
-    size_t nodeImplOffset = (char *)&(dummy->fNode) - (char *)dummy;
+    XMLSize_t nodeImplOffset = (char *)&(dummy->fNode) - (char *)dummy;
     char *retPtr = (char *)p - nodeImplOffset;
     return (DOMNode *)retPtr;
 }
@@ -135,8 +135,8 @@ static inline DOMNode *castToNode(const DOMNodeImpl *p) {
 static inline DOMNodeImpl *castToNodeImpl(const DOMParentNode *p)
 {
 	DOMElementImpl* dummy = 0;
-    size_t nodeImplOffset = (char *)&(dummy->fNode) - (char *)dummy;
-    size_t parentOffset = (char *)&(dummy->fParent) - (char *)dummy;
+    XMLSize_t nodeImplOffset = (char *)&(dummy->fNode) - (char *)dummy;
+    XMLSize_t parentOffset = (char *)&(dummy->fParent) - (char *)dummy;
     char *retPtr = (char *)p - parentOffset + nodeImplOffset;
     return (DOMNodeImpl *)retPtr;
 }

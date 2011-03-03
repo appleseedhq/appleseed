@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: BinOutputStream.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: BinOutputStream.hpp 553915 2007-07-06 14:57:08Z amassari $
  */
 
-#if !defined(BIN_OUTPUT_STREAM_HPP)
-#define BIN_OUTPUT_STREAM_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_BIN_OUTPUT_STREAM_HPP)
+#define XERCESC_INCLUDE_GUARD_BIN_OUTPUT_STREAM_HPP
 
 #include <xercesc/util/XMemory.hpp>
 
@@ -37,12 +37,12 @@ public :
     // -----------------------------------------------------------------------
     //  The virtual output stream interface
     // -----------------------------------------------------------------------
-    virtual unsigned int curPos() const = 0;
+    virtual XMLFilePos curPos() const = 0;
 
     virtual void writeBytes
     (
           const XMLByte* const      toGo
-        , const unsigned int        maxToWrite
+        , const XMLSize_t           maxToWrite
     ) = 0;
 
 protected :

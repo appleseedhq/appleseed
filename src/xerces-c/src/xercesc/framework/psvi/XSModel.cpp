@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: XSModel.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XSModel.cpp 674012 2008-07-04 11:18:21Z borisk $
  */
 
 #include <xercesc/framework/psvi/XSModel.hpp>
 #include <xercesc/framework/psvi/XSNamespaceItem.hpp>
-#include <xercesc/internal/XMLGrammarPoolImpl.hpp>
 #include <xercesc/validators/schema/SchemaGrammar.hpp>
 #include <xercesc/validators/common/GrammarResolver.hpp>
 #include <xercesc/validators/schema/XercesAttGroupInfo.hpp>
@@ -58,7 +57,7 @@ XSModel::XSModel( XMLGrammarPool *grammarPool
     fObjFactory = new (fMemoryManager) XSObjectFactory(manager);
 
     // Populate XSNamedMaps by going through the components
-    for (unsigned int i=0; i<XSConstants::MULTIVALUE_FACET; i++)
+    for (XMLSize_t i=0; i<XSConstants::MULTIVALUE_FACET; i++)
     {
         switch (i+1)
         {
@@ -137,15 +136,14 @@ XSModel::XSModel( XMLGrammarPool *grammarPool
     );
 
     DatatypeValidatorFactory dvFactory(manager);
-    dvFactory.expandRegistryToFullSchemaSet();
     addS4SToXSModel
     (
         namespaceItem
         , dvFactory.getBuiltInRegistry()
     );
     // don't include  S4S (thus the -1)
-    unsigned int numberOfNamespaces = fXSNamespaceItemList->size() -1;
-    for (unsigned int j = 0; j < numberOfNamespaces; j++)
+    XMLSize_t numberOfNamespaces = fXSNamespaceItemList->size() -1;
+    for (XMLSize_t j = 0; j < numberOfNamespaces; j++)
         addGrammarToXSModel(fXSNamespaceItemList->elementAt(j));
 }
 
@@ -157,7 +155,7 @@ XSModel::XSModel( XSModel *baseModel
     , fXSNamespaceItemList(0)
     , fURIStringPool(0)
     , fXSAnnotationList(0)
-    , fHashNamespace(0)    
+    , fHashNamespace(0)
     , fObjFactory(0)
     , fDeleteNamespace(0)
     , fParent(baseModel)
@@ -167,7 +165,7 @@ XSModel::XSModel( XSModel *baseModel
     fURIStringPool = grammarResolver->getStringPool();
     fObjFactory = new (manager) XSObjectFactory(manager);
 
-    unsigned int i;
+    XMLSize_t i;
     // Populate XSNamedMaps by going through the components
     for (i=0; i<XSConstants::MULTIVALUE_FACET; i++)
     {
@@ -206,7 +204,7 @@ XSModel::XSModel( XSModel *baseModel
     fNamespaceStringList        = new (manager) RefArrayVectorOf <XMLCh>(10, true, manager);
     fXSNamespaceItemList        = new (manager) RefVectorOf <XSNamespaceItem>(10, false, manager);
     fDeleteNamespace            = new (manager) RefVectorOf <XSNamespaceItem>(10, true, manager);
-    fXSAnnotationList           = new (manager) RefVectorOf <XSAnnotation> (10, false, manager); 
+    fXSAnnotationList           = new (manager) RefVectorOf <XSAnnotation> (10, false, manager);
     fHashNamespace              = new (manager) RefHashTableOf<XSNamespaceItem> (11, false, manager);
 
     if (fParent)
@@ -230,7 +228,7 @@ XSModel::XSModel( XSModel *baseModel
 
         for (i=0; i<XSConstants::MULTIVALUE_FACET; i++)
         {
-            switch (i+1) 
+            switch (i+1)
             {
                 case XSConstants::ATTRIBUTE_DECLARATION:
                 case XSConstants::ELEMENT_DECLARATION:
@@ -238,7 +236,7 @@ XSModel::XSModel( XSModel *baseModel
                 case XSConstants::ATTRIBUTE_GROUP_DEFINITION:
                 case XSConstants::MODEL_GROUP_DEFINITION:
                 case XSConstants::NOTATION_DECLARATION:
-                    for (unsigned int j=0; j<fParent->fComponentMap[i]->getLength(); j++)
+                    for (XMLSize_t j=0; j<fParent->fComponentMap[i]->getLength(); j++)
                     {
                         XSObject* copyObj = fParent->fComponentMap[i]->item(j);
                         fComponentMap[i]->addElement(copyObj,
@@ -247,7 +245,7 @@ XSModel::XSModel( XSModel *baseModel
                     }
                 break;
             }
-            for (unsigned int j=0; j<fParent->fIdVector[i]->size(); j++)
+            for (XMLSize_t j=0; j<fParent->fIdVector[i]->size(); j++)
             {
                 fIdVector[i]->addElement(fParent->fIdVector[i]->elementAt(j));
             }
@@ -263,8 +261,8 @@ XSModel::XSModel( XSModel *baseModel
     // Now add information from the new grammars but first create the
     // XSNamespaceItem's so we can have access to the XSAnnotations...
     ValueVectorOf<SchemaGrammar*>* grammarsToAdd = grammarResolver->getGrammarsToAddToXSModel();
-    unsigned int numberOfNamespaces = fXSNamespaceItemList->size();
-    unsigned int numberOfNamespacesToAdd = 0;
+    XMLSize_t numberOfNamespaces = fXSNamespaceItemList->size();
+    XMLSize_t numberOfNamespacesToAdd = 0;
     for (i=0; i < grammarsToAdd->size(); i++)
     {
         SchemaGrammar* lGrammar = grammarsToAdd->elementAt(i);
@@ -286,7 +284,6 @@ XSModel::XSModel( XSModel *baseModel
     if (!fAddedS4SGrammar)
     {
         DatatypeValidatorFactory dvFactory(manager);
-        dvFactory.expandRegistryToFullSchemaSet();
 
         XSNamespaceItem* namespaceItem = new (manager) XSNamespaceItem
         (
@@ -319,7 +316,7 @@ XSModel::XSModel( XSModel *baseModel
 
 XSModel::~XSModel()
 {
-    for (unsigned int i=0; i<XSConstants::MULTIVALUE_FACET; i++)
+    for (XMLSize_t i=0; i<XSConstants::MULTIVALUE_FACET; i++)
     {
         switch (i+1)
         {
@@ -352,7 +349,7 @@ XSModel::~XSModel()
 //  XSModel: Helper methods
 // ---------------------------------------------------------------------------
 void XSModel::addComponentToIdVector(XSObject* const component,
-                                     int componentIndex)
+                                     XMLSize_t componentIndex)
 {
     component->setId(fIdVector[componentIndex]->size());
     fIdVector[componentIndex]->addElement(component);
@@ -361,7 +358,7 @@ void XSModel::addComponentToIdVector(XSObject* const component,
 
 void XSModel::addComponentToNamespace(XSNamespaceItem* const namespaceItem,
                                       XSObject* const component,
-                                      int componentIndex,
+                                      XMLSize_t componentIndex,
                                       bool addToXSModel)
 {
     namespaceItem->fComponentMap[componentIndex]->addElement
@@ -411,7 +408,7 @@ XSModel::addS4SToXSModel(XSNamespaceItem* const namespaceItem,
     );
 
     // add remaining built-in
-    RefHashTableOfEnumerator<DatatypeValidator> simpleEnum = 
+    RefHashTableOfEnumerator<DatatypeValidator> simpleEnum =
         RefHashTableOfEnumerator<DatatypeValidator> (builtInDV, false, fMemoryManager);
     while (simpleEnum.hasMoreElements())
     {
@@ -453,11 +450,11 @@ void XSModel::addGrammarToXSModel(XSNamespaceItem* namespaceItem)
     }
 
     // Loop through top-level elements in the grammar...
-    RefHash3KeysIdPoolEnumerator<SchemaElementDecl> elemEnum = namespaceItem->fGrammar->getElemEnumerator();    
+    RefHash3KeysIdPoolEnumerator<SchemaElementDecl> elemEnum = namespaceItem->fGrammar->getElemEnumerator();
     while (elemEnum.hasMoreElements())
     {
         SchemaElementDecl& curElem = elemEnum.nextElement();
-        if (curElem.getEnclosingScope() == Grammar::TOP_LEVEL_SCOPE) 
+        if (curElem.getEnclosingScope() == Grammar::TOP_LEVEL_SCOPE)
         {
             XSElementDeclaration* xsElemDecl = fObjFactory->addOrFind
             (
@@ -546,7 +543,7 @@ void XSModel::addGrammarToXSModel(XSNamespaceItem* namespaceItem)
         } // end of model group loop
     }
 
-    // Loop through notations in the grammar...    
+    // Loop through notations in the grammar...
     NameIdPoolEnumerator<XMLNotationDecl> notationEnum = namespaceItem->fGrammar->getNotationEnumerator();
     while (notationEnum.hasMoreElements())
     {
@@ -578,14 +575,14 @@ void XSModel::addGrammarToXSModel(XSNamespaceItem* namespaceItem)
 //  XSModel: Access methods
 // ---------------------------------------------------------------------------
 /**
- * [schema components]: a list of top-level components, i.e. element 
- * declarations, attribute declarations, etc. 
- * @param objectType The type of the declaration, i.e. 
- *   <code>ELEMENT_DECLARATION</code>, 
+ * [schema components]: a list of top-level components, i.e. element
+ * declarations, attribute declarations, etc.
+ * @param objectType The type of the declaration, i.e.
+ *   <code>ELEMENT_DECLARATION</code>,
  *   <code>TYPE_DEFINITION</code> and any other component type that
  * may be a property of a schema component.
- * @return A list of top-level definition of the specified type in 
- *   <code>objectType</code> or <code>null</code>. 
+ * @return A list of top-level definition of the specified type in
+ *   <code>objectType</code> or <code>null</code>.
  */
 XSNamedMap <XSObject> *XSModel::getComponents(XSConstants::COMPONENT_TYPE objectType)
 {
@@ -593,16 +590,16 @@ XSNamedMap <XSObject> *XSModel::getComponents(XSConstants::COMPONENT_TYPE object
 }
 
 /**
- * Convenience method. Returns a list of top-level component declarations 
- * that are defined within the specified namespace, i.e. element 
- * declarations, attribute declarations, etc. 
- * @param objectType The type of the declaration, i.e. 
+ * Convenience method. Returns a list of top-level component declarations
+ * that are defined within the specified namespace, i.e. element
+ * declarations, attribute declarations, etc.
+ * @param objectType The type of the declaration, i.e.
  *   <code>ELEMENT_DECLARATION</code>.
- * @param compNamespace The namespace to which declaration belong or 
+ * @param compNamespace The namespace to which declaration belong or
  *   <code>null</code> (for components with no target namespace).
- * @return A list of top-level definitions of the specified type in 
- *   <code>objectType</code> and defined in the specified 
- *   <code>namespace</code> or <code>null</code>. 
+ * @return A list of top-level definitions of the specified type in
+ *   <code>objectType</code> and defined in the specified
+ *   <code>namespace</code> or <code>null</code>.
  */
 XSNamedMap <XSObject> *XSModel::getComponentsByNamespace(XSConstants::COMPONENT_TYPE objectType,
                                                const XMLCh *compNamespace)
@@ -612,7 +609,7 @@ XSNamedMap <XSObject> *XSModel::getComponentsByNamespace(XSConstants::COMPONENT_
         namespaceItem = getNamespaceItem(compNamespace);
     else
         namespaceItem = getNamespaceItem(XMLUni::fgZeroLenString);
-    
+
     if (namespaceItem)
         return namespaceItem->getComponents(objectType);
 
@@ -628,11 +625,11 @@ XSAnnotationList *XSModel::getAnnotations()
 }
 
 /**
- * Convenience method. Returns a top-level element declaration. 
+ * Convenience method. Returns a top-level element declaration.
  * @param name The name of the declaration.
  * @param compNamespace The namespace of the declaration, null if absent.
- * @return A top-level element declaration or <code>null</code> if such 
- *   declaration does not exist. 
+ * @return A top-level element declaration or <code>null</code> if such
+ *   declaration does not exist.
  */
 XSElementDeclaration *XSModel::getElementDeclaration(const XMLCh *name
             , const XMLCh *compNamespace)
@@ -650,11 +647,11 @@ XSElementDeclaration *XSModel::getElementDeclaration(const XMLCh *name
 }
 
 /**
- * Convenience method. Returns a top-level attribute declaration. 
+ * Convenience method. Returns a top-level attribute declaration.
  * @param name The name of the declaration.
  * @param compNamespace The namespace of the declaration, null if absent.
- * @return A top-level attribute declaration or <code>null</code> if such 
- *   declaration does not exist. 
+ * @return A top-level attribute declaration or <code>null</code> if such
+ *   declaration does not exist.
  */
 XSAttributeDeclaration *XSModel::getAttributeDeclaration(const XMLCh *name
             , const XMLCh *compNamespace)
@@ -672,12 +669,12 @@ XSAttributeDeclaration *XSModel::getAttributeDeclaration(const XMLCh *name
 }
 
 /**
- * Convenience method. Returns a top-level simple or complex type 
- * definition. 
+ * Convenience method. Returns a top-level simple or complex type
+ * definition.
  * @param name The name of the definition.
  * @param compNamespace The namespace of the declaration, null if absent.
- * @return An <code>XSTypeDefinition</code> or <code>null</code> if such 
- *   definition does not exist. 
+ * @return An <code>XSTypeDefinition</code> or <code>null</code> if such
+ *   definition does not exist.
  */
 XSTypeDefinition *XSModel::getTypeDefinition(const XMLCh *name
             , const XMLCh *compNamespace)
@@ -687,7 +684,7 @@ XSTypeDefinition *XSModel::getTypeDefinition(const XMLCh *name
         namespaceItem = getNamespaceItem(compNamespace);
     else
         namespaceItem = getNamespaceItem(XMLUni::fgZeroLenString);
-    
+
     if (namespaceItem)
         return namespaceItem->getTypeDefinition(name);
 
@@ -695,11 +692,11 @@ XSTypeDefinition *XSModel::getTypeDefinition(const XMLCh *name
 }
 
 /**
- * Convenience method. Returns a top-level attribute group definition. 
+ * Convenience method. Returns a top-level attribute group definition.
  * @param name The name of the definition.
  * @param compNamespace The namespace of the declaration, null if absent.
- * @return A top-level attribute group definition or <code>null</code> if 
- *   such definition does not exist. 
+ * @return A top-level attribute group definition or <code>null</code> if
+ *   such definition does not exist.
  */
 XSAttributeGroupDefinition *XSModel::getAttributeGroup(const XMLCh *name
             , const XMLCh *compNamespace)
@@ -717,11 +714,11 @@ XSAttributeGroupDefinition *XSModel::getAttributeGroup(const XMLCh *name
 }
 
 /**
- * Convenience method. Returns a top-level model group definition. 
+ * Convenience method. Returns a top-level model group definition.
  * @param name The name of the definition.
  * @param compNamespace The namespace of the declaration, null if absent.
- * @return A top-level model group definition definition or 
- *   <code>null</code> if such definition does not exist. 
+ * @return A top-level model group definition definition or
+ *   <code>null</code> if such definition does not exist.
  */
 XSModelGroupDefinition *XSModel::getModelGroupDefinition(const XMLCh *name
             , const XMLCh *compNamespace)
@@ -739,11 +736,11 @@ XSModelGroupDefinition *XSModel::getModelGroupDefinition(const XMLCh *name
 }
 
 /**
- * Convenience method. Returns a top-level notation declaration. 
+ * Convenience method. Returns a top-level notation declaration.
  * @param name The name of the declaration.
  * @param compNamespace The namespace of the declaration, null if absent.
- * @return A top-level notation declaration or <code>null</code> if such 
- *   declaration does not exist. 
+ * @return A top-level notation declaration or <code>null</code> if such
+ *   declaration does not exist.
  */
 XSNotationDeclaration *XSModel::getNotationDeclaration(const XMLCh *name
             , const XMLCh *compNamespace)
@@ -761,7 +758,7 @@ XSNotationDeclaration *XSModel::getNotationDeclaration(const XMLCh *name
 }
 
 /**
-  * Optional.  Return a component given a component type and a unique Id.  
+  * Optional.  Return a component given a component type and a unique Id.
   * May not be supported for all component types.
   * @param compId unique Id of the component within its type
   * @param compType type of the component
@@ -769,7 +766,7 @@ XSNotationDeclaration *XSModel::getNotationDeclaration(const XMLCh *name
   * if no such component exists or this is unsupported for
   * this type of component.
   */
-XSObject *XSModel::getXSObjectById(unsigned int  compId
+XSObject *XSModel::getXSObjectById(XMLSize_t  compId
             , XSConstants::COMPONENT_TYPE compType)
 {
     if (compId < fIdVector[compType -1]->size())
@@ -800,5 +797,3 @@ XSObject* XSModel::getXSObject(void* key)
 
 
 XERCES_CPP_NAMESPACE_END
-
-

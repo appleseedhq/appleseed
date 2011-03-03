@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMTreeWalkerImpl.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMTreeWalkerImpl.cpp 671894 2008-06-26 13:29:21Z borisk $
  */
 
 #include "DOMTreeWalkerImpl.hpp"
@@ -30,13 +30,13 @@ XERCES_CPP_NAMESPACE_BEGIN
 /** constructor */
 DOMTreeWalkerImpl::DOMTreeWalkerImpl (
                                 DOMNode* root,
-                                unsigned long whatToShow,
+                                DOMNodeFilter::ShowType whatToShow,
                                 DOMNodeFilter* nodeFilter,
                                 bool expandEntityRef)
 :   fWhatToShow(whatToShow),
-    fNodeFilter(nodeFilter),    
+    fNodeFilter(nodeFilter),
     fCurrentNode(root),
-    fRoot(root),    
+    fRoot(root),
     fExpandEntityReferences(expandEntityRef)
 {
 }
@@ -47,7 +47,7 @@ DOMTreeWalkerImpl::DOMTreeWalkerImpl (const DOMTreeWalkerImpl& twi)
     fWhatToShow(twi.fWhatToShow),
     fNodeFilter(twi.fNodeFilter),
     fCurrentNode(twi.fCurrentNode),
-    fRoot(twi.fRoot),    
+    fRoot(twi.fRoot),
     fExpandEntityReferences(twi.fExpandEntityReferences)
 {
 }
@@ -75,7 +75,7 @@ DOMNode* DOMTreeWalkerImpl::getRoot () {
 
 
 /** Return the whatToShow value */
-unsigned long DOMTreeWalkerImpl::getWhatToShow () {
+DOMNodeFilter::ShowType DOMTreeWalkerImpl::getWhatToShow () {
     return fWhatToShow;
 }
 
@@ -171,7 +171,7 @@ DOMNode* DOMTreeWalkerImpl::lastChild () {
  */
 
 DOMNode* DOMTreeWalkerImpl::previousSibling () {
-	
+
     if (!fCurrentNode) return 0;
 
     DOMNode* node = getPreviousSibling(fCurrentNode);
@@ -188,7 +188,7 @@ DOMNode* DOMTreeWalkerImpl::previousSibling () {
  */
 
 DOMNode* DOMTreeWalkerImpl::nextSibling () {
-		
+
     if (!fCurrentNode) return 0;
 
     DOMNode* node = getNextSibling(fCurrentNode);
@@ -205,7 +205,7 @@ DOMNode* DOMTreeWalkerImpl::nextSibling () {
  */
 
 DOMNode* DOMTreeWalkerImpl::previousNode () {
-	
+
     if (!fCurrentNode) return 0;
 
     // get sibling
@@ -240,7 +240,7 @@ DOMNode* DOMTreeWalkerImpl::previousNode () {
  */
 
 DOMNode* DOMTreeWalkerImpl::nextNode () {
-	
+
     if (!fCurrentNode) return 0;
 
     DOMNode* node = getFirstChild(fCurrentNode);
@@ -283,7 +283,7 @@ DOMNode* DOMTreeWalkerImpl::nextNode () {
  */
 
 DOMNode* DOMTreeWalkerImpl::getParentNode (DOMNode* node) {
-	
+
     if (!node || node == fRoot) return 0;
 
     DOMNode* newNode = node->getParentNode();
@@ -306,7 +306,7 @@ DOMNode* DOMTreeWalkerImpl::getParentNode (DOMNode* node) {
  */
 
 DOMNode* DOMTreeWalkerImpl::getNextSibling (DOMNode* node) {
-	
+
     if (!node || node == fRoot) return 0;
 
     DOMNode* newNode = node->getNextSibling();
@@ -349,7 +349,7 @@ DOMNode* DOMTreeWalkerImpl::getNextSibling (DOMNode* node) {
  */
 
 DOMNode* DOMTreeWalkerImpl::getPreviousSibling (DOMNode* node) {
-		
+
     if (!node || node == fRoot) return 0;
 
     DOMNode* newNode = node->getPreviousSibling();
@@ -391,7 +391,7 @@ DOMNode* DOMTreeWalkerImpl::getPreviousSibling (DOMNode* node) {
  */
 
 DOMNode* DOMTreeWalkerImpl::getFirstChild (DOMNode* node) {
-		
+
     if (!node) return 0;
 
     if(!fExpandEntityReferences && node->getNodeType()==DOMNode::ENTITY_REFERENCE_NODE)
@@ -422,7 +422,7 @@ DOMNode* DOMTreeWalkerImpl::getFirstChild (DOMNode* node) {
  */
 
 DOMNode* DOMTreeWalkerImpl::getLastChild (DOMNode* node) {
-	
+
     if (!node) return 0;
 
     if(!fExpandEntityReferences && node->getNodeType()==DOMNode::ENTITY_REFERENCE_NODE)
@@ -449,7 +449,7 @@ DOMNode* DOMTreeWalkerImpl::getLastChild (DOMNode* node) {
 /** The node is accepted if it passes the whatToShow and the filter. */
 
 short DOMTreeWalkerImpl::acceptNode (DOMNode* node) {
-	
+
     if (fNodeFilter == 0) {
         if ( ( fWhatToShow & (1 << (node->getNodeType() - 1))) != 0)
         {
@@ -482,4 +482,3 @@ void DOMTreeWalkerImpl::release()
 }
 
 XERCES_CPP_NAMESPACE_END
-

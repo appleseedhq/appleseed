@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: EmptyStackException.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: EmptyStackException.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-#if !defined(EMPTYSTACKEXCEPTION_HPP)
-#define EMPTYSTACKEXCEPTION_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_EMPTYSTACKEXCEPTION_HPP)
+#define XERCESC_INCLUDE_GUARD_EMPTYSTACKEXCEPTION_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 #include <xercesc/util/XMLException.hpp>

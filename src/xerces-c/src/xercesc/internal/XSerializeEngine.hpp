@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XSerializeEngine.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XSerializeEngine.hpp 679296 2008-07-24 08:13:42Z borisk $
  */
 
-#if !defined(XSERIALIZE_ENGINE_HPP)
-#define XSERIALIZE_ENGINE_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XSERIALIZE_ENGINE_HPP)
+#define XERCESC_INCLUDE_GUARD_XSERIALIZE_ENGINE_HPP
 
 #include <xercesc/util/RefHashTableOf.hpp>
 #include <xercesc/util/ValueVectorOf.hpp>
@@ -45,9 +45,9 @@ class XMLUTIL_EXPORT XSerializeEngine
 public:
 
     enum { mode_Store
-         , mode_Load 
+         , mode_Load
     };
-    
+
 
     static const bool toReadBufferLen;
 
@@ -55,7 +55,7 @@ public:
 
     /***
       *
-      *  Destructor 
+      *  Destructor
       *
       ***/
     ~XSerializeEngine();
@@ -76,7 +76,7 @@ public:
       ***/
     XSerializeEngine(BinInputStream*         inStream
                    , XMLGrammarPool* const   gramPool
-                   , unsigned long           bufSize = 8192 );
+                   , XMLSize_t               bufSize = 8192 );
 
 
     /***
@@ -95,55 +95,13 @@ public:
       ***/
     XSerializeEngine(BinOutputStream*        outStream
                    , XMLGrammarPool* const   gramPool
-                   , unsigned long           bufSize = 8192 );
-
-
-    /***
-      *
-      *  Deprecated
-      *
-      *  Constructor for de-serialization(loading)
-      *
-      *  Application needs to make sure that the instance of
-      *  BinInputStream, persists beyond the life of this
-      *  SerializeEngine.
-      *
-      *  Param
-      *     inStream         input stream
-      *     manager          MemoryManager
-      *     bufSize          the size of the internal buffer
-      *
-      ***/
-    XSerializeEngine(BinInputStream*         inStream
-                   , MemoryManager* const    manager = XMLPlatformUtils::fgMemoryManager
-                   , unsigned long           bufSize = 8192 );
-
-    
-    /***
-      *
-      *  Deprecated
-      *
-      *  Constructor for serialization(storing)
-      *
-      *  Application needs to make sure that the instance of
-      *  BinOutputStream, persists beyond the life of this
-      *  SerializeEngine.
-      *
-      *  Param
-      *     outStream        output stream
-      *     manager          MemoryManager
-      *     bufSize          the size of the internal buffer
-      *
-      ***/
-    XSerializeEngine(BinOutputStream*        outStream
-                   , MemoryManager* const    manager = XMLPlatformUtils::fgMemoryManager
-                   , unsigned long           bufSize = 8192 );
+                   , XMLSize_t               bufSize = 8192 );
 
     /***
       *
       *  When serialization, flush out the internal buffer
       *
-      *  Return: 
+      *  Return:
       *
       ***/
     void flush();
@@ -152,7 +110,7 @@ public:
       *
       *  Checking if the serialize engine is doing serialization(storing)
       *
-      *  Return: true, if it is 
+      *  Return: true, if it is
       *          false, otherwise
       *
       ***/
@@ -162,7 +120,7 @@ public:
       *
       *  Checking if the serialize engine is doing de-serialization(loading)
       *
-      *  Return: true, if it is 
+      *  Return: true, if it is
       *          false, otherwise
       *
       ***/
@@ -207,7 +165,7 @@ public:
       *  Return: level
       *
       ***/
-    inline unsigned short getStorerLevel() const;
+    inline unsigned int getStorerLevel() const;
 
     /***
       *
@@ -245,7 +203,7 @@ public:
       *
       ***/
            void           write(const XMLByte* const toWrite
-                               ,      int            writeLen);
+                               ,      XMLSize_t      writeLen);
 
     /***
       *
@@ -259,7 +217,7 @@ public:
       *
       ***/
            void           write(const XMLCh* const toWrite
-                               ,      int          writeLen);
+                               ,      XMLSize_t    writeLen);
 
     /***
       *
@@ -277,7 +235,7 @@ public:
       *
       ***/
            void           writeString(const XMLCh* const toWrite
-                                    , const int          bufferLen = 0
+                                    , const XMLSize_t    bufferLen = 0
                                     , bool               toWriteBufLen = false);
 
     /***
@@ -296,7 +254,7 @@ public:
       *
       ***/
            void           writeString(const XMLByte* const toWrite
-                                    , const int            bufferLen = 0
+                                    , const XMLSize_t      bufferLen = 0
                                     , bool                 toWriteBufLen = false);
 
     static const bool toWriteBufferLen;
@@ -341,7 +299,7 @@ public:
       *
       ***/
            void           read(XMLByte* const toRead
-                             , int            readLen);
+                             , XMLSize_t      readLen);
 
     /***
       *
@@ -355,7 +313,7 @@ public:
       *
       ***/
            void           read(XMLCh* const toRead
-                             , int          readLen);
+                             , XMLSize_t    readLen);
 
     /***
       *
@@ -374,8 +332,8 @@ public:
       *
       ***/
            void           readString(XMLCh*&        toRead
-                                   , int&           bufferLen
-                                   , int&           dataLen
+                                   , XMLSize_t&     bufferLen
+                                   , XMLSize_t&     dataLen
                                    , bool           toReadBufLen = false);
 
      /***
@@ -393,8 +351,8 @@ public:
        *
        ***/
             inline void     readString(XMLCh*&        toRead
-                                    , int&            bufferLen);
- 
+                                    , XMLSize_t&      bufferLen);
+
      /***
        *
        *  Read a stream of XMLCh from the internal buffer.
@@ -424,8 +382,8 @@ public:
       *
       ***/
            void           readString(XMLByte*&      toRead
-                                   , int&           bufferLen
-                                   , int&           dataLen
+                                   , XMLSize_t&     bufferLen
+                                   , XMLSize_t&     dataLen
                                    , bool           toReadBufLen = false);
 
 
@@ -444,8 +402,8 @@ public:
        *
        ***/
             inline void       readString(XMLByte*&      toRead
-                                       , int&           bufferLen);
- 
+                                       , XMLSize_t&     bufferLen);
+
      /***
        *
        *  Read a stream of XMLByte from the internal buffer.
@@ -499,7 +457,7 @@ public:
       *  Param
       *    objectPtr:     the template object pointer newly instantiated
       *
-      *  Return:  
+      *  Return:
       *
       ***/
            void           registerObject(void* const templateObjectToRegister);
@@ -515,9 +473,9 @@ public:
 
     /***
       *
-      *  Insertion operators for 
+      *  Insertion operators for
       *     . basic Xerces data types
-      *     . built-in types 
+      *     . built-in types
       *
       ***/
            XSerializeEngine& operator<<(XMLByte);
@@ -533,11 +491,19 @@ public:
            XSerializeEngine& operator<<(double);
            XSerializeEngine& operator<<(bool);
 
+    // These cannot be done as operators since on some platforms they
+    // may collide with int/long types.
+    //
+    void writeSize (XMLSize_t);
+    void writeInt64 (XMLInt64);
+    void writeUInt64 (XMLUInt64);
+
+
     /***
       *
-      *  Extraction operators for 
+      *  Extraction operators for
       *     . basic Xerces data types
-      *     . built-in types 
+      *     . built-in types
       *
       ***/
            XSerializeEngine& operator>>(XMLByte&);
@@ -553,22 +519,26 @@ public:
            XSerializeEngine& operator>>(double&);
            XSerializeEngine& operator>>(bool&);
 
+    void readSize (XMLSize_t&);
+    void readInt64 (XMLInt64&);
+    void readUInt64 (XMLUInt64&);
+
     /***
       *
       *  Getters
       *
       ***/
-    inline 
-    XMLSize_t   getBufSize()    const;
+    inline
+    XMLSize_t       getBufSize()    const;
 
-    inline 
-    XMLSize_t   getBufCur()     const;
+    inline
+    XMLSize_t       getBufCur()     const;
 
-    inline 
-    XMLSize_t   getBufCurAccumulated()     const;
+    inline
+    XMLSize_t       getBufCurAccumulated()     const;
 
-    inline 
-    XMLSize_t   getBufCount()    const;
+    inline
+    unsigned long   getBufCount()    const;
 
     void                  trace(char*)     const;
 
@@ -595,15 +565,15 @@ private:
       ***/
            XSerializable* lookupLoadPool(XSerializedObjectId_t objectTag) const;
            void           addLoadPool(void* const objectPtr);
-   
+
     /***
-      *   
+      *
       *    Intenal Buffer Operations
       *
       ***/
-    inline void           checkAndFillBuffer(int bytesNeedToRead);
+    inline void           checkAndFillBuffer(XMLSize_t bytesNeedToRead);
 
-    inline void           checkAndFlushBuffer(int bytesNeedToWrite);
+    inline void           checkAndFlushBuffer(XMLSize_t bytesNeedToWrite);
 
            void           fillBuffer();
 
@@ -614,7 +584,7 @@ private:
     inline void           resetBuffer();
 
     /***
-      *   
+      *
       *    Helper
       *
       ***/
@@ -628,15 +598,13 @@ private:
 
     inline void            ensurePointer(void* const)               const;
 
-    inline void            ensureBufferLen(int  bufferLen)          const;
-
     inline void            Assert(bool  toEval
                                 , const XMLExcepts::Codes toThrow)  const;
 
 
-    inline XMLSize_t          calBytesNeeded(XMLSize_t)  const;
+    inline XMLSize_t       calBytesNeeded(XMLSize_t)  const;
 
-    inline XMLSize_t          alignAdjust(XMLSize_t)     const;
+    inline XMLSize_t       alignAdjust(XMLSize_t)     const;
 
     inline void            alignBufCur(XMLSize_t);
 
@@ -648,17 +616,17 @@ private:
     // -------------------------------------------------------------------------------
     //  data
     //
-    //  fStoreLoad: 
+    //  fStoreLoad:
     //               Indicator: storing(serialization) or loading(de-serialization)
     //
     //  fStorerLevel:
-    //              The level of the serialize engine which created the binary 
+    //              The level of the serialize engine which created the binary
     //              stream that this serialize engine is loading
     //
     //              It is set by GrammarPool when loading
     //
     //  fGrammarPool:
-    //               Thw owning GrammarPool which instantiate this SerializeEngine 
+    //               Thw owning GrammarPool which instantiate this SerializeEngine
     //               instance
     //
     //  fInputStream:
@@ -666,14 +634,14 @@ private:
     //               by client application, not owned.
     //
     //  fOutputStream:
-    //               Binary stream to write to (serialization), provided 
+    //               Binary stream to write to (serialization), provided
     //               by client application, not owned.
     //
     //  fBufSize:
     //               The size of the internal buffer
     //
     //  fBufStart/fBufEnd:
-    //               
+    //
     //               The internal buffer.
     //  fBufEnd:
     //               one beyond the last valid cell
@@ -694,20 +662,20 @@ private:
     //  fMapCount:
     // -------------------------------------------------------------------------------
     const short                            fStoreLoad;
-    short                                  fStorerLevel;
+    unsigned int                           fStorerLevel;
 
     XMLGrammarPool*  const                 fGrammarPool;
     BinInputStream*  const                 fInputStream;
     BinOutputStream* const                 fOutputStream;
 
-    XMLSize_t                              fBufCount;
+    unsigned long                          fBufCount;
 
     //buffer
     const XMLSize_t                        fBufSize;
 	XMLByte* const                         fBufStart;
-	XMLByte* const                         fBufEnd; 
+	XMLByte* const                         fBufEnd;
     XMLByte*                               fBufCur;
-    XMLByte*                               fBufLoadMax; 
+    XMLByte*                               fBufLoadMax;
 
 
 
@@ -720,7 +688,7 @@ private:
      *   value: XMLInteger*, owned
      *
      ***/
-    RefHashTableOf<XSerializedObjectId>*   fStorePool;  
+    RefHashTableOf<XSerializedObjectId, PtrHasher>*   fStorePool;
 
     /***
      *   Vector for loading object, objects are NOT owned
@@ -729,7 +697,7 @@ private:
      *           XProtoType*
      *
      ***/
-    ValueVectorOf<void*>*                  fLoadPool;    
+    ValueVectorOf<void*>*                  fLoadPool;
 
     /***
      *   object counter
@@ -753,8 +721,8 @@ inline bool XSerializeEngine::isLoading() const
 inline XSerializeEngine& operator<<(XSerializeEngine&       serEng
                                   , XSerializable* const    serObj)
 {
-	serEng.write(serObj); 
-    return serEng; 
+	serEng.write(serObj);
+    return serEng;
 }
 
 inline void XSerializeEngine::ensureStoring() const
@@ -774,65 +742,65 @@ inline void XSerializeEngine::Assert(bool toEval
 {
     if (!toEval)
     {
-        ThrowXMLwithMemMgr(XSerializationException, toThrow, getMemoryManager());  
+        ThrowXMLwithMemMgr(XSerializationException, toThrow, getMemoryManager());
     }
 
 }
 
 inline void XSerializeEngine::readString(XMLCh*&        toRead
-                                       , int&           bufferLen)
+                                       , XMLSize_t&     bufferLen)
 {
-    int  dummyDataLen;                
+    XMLSize_t dummyDataLen;
     readString(toRead, bufferLen, dummyDataLen);
 }
 
 inline void XSerializeEngine::readString(XMLCh*&        toRead)
 {
-    int  dummyBufferLen;
-    int  dummyDataLen;
+    XMLSize_t dummyBufferLen;
+    XMLSize_t dummyDataLen;
     readString(toRead, dummyBufferLen, dummyDataLen);
 }
 
 inline void XSerializeEngine::readString(XMLByte*&      toRead
-                                       , int&           bufferLen)
+                                       , XMLSize_t&     bufferLen)
 {
-    int  dummyDataLen;
+    XMLSize_t dummyDataLen;
     readString(toRead, bufferLen, dummyDataLen);
 }
 
 inline void XSerializeEngine::readString(XMLByte*&      toRead)
 {
-    int  dummyBufferLen;
-    int  dummyDataLen;
+    XMLSize_t dummyBufferLen;
+    XMLSize_t dummyDataLen;
     readString(toRead, dummyBufferLen, dummyDataLen);
 }
 
-inline 
+inline
 XMLSize_t XSerializeEngine::getBufSize() const
 {
     return fBufSize;
 }
 
-inline 
+inline
 XMLSize_t XSerializeEngine::getBufCur() const
 {
-    return XMLSize_t (fBufCur-fBufStart);
+    return (fBufCur-fBufStart);
 }
 
-inline 
+inline
 XMLSize_t XSerializeEngine::getBufCurAccumulated() const
 {
     return (fBufCount - (isStoring() ? 0: 1)) * fBufSize + (fBufCur-fBufStart);
 }
 
-inline 
-XMLSize_t XSerializeEngine::getBufCount() const
+inline
+unsigned long XSerializeEngine::getBufCount() const
 {
     return fBufCount;
 }
 
-inline 
-unsigned short XSerializeEngine::getStorerLevel() const
+inline
+unsigned int XSerializeEngine::getStorerLevel() const
 {
     return fStorerLevel;
 }

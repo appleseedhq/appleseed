@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: FloatDatatypeValidator.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: FloatDatatypeValidator.cpp 676911 2008-07-15 13:27:32Z amassari $
  */
 
 // ---------------------------------------------------------------------------
@@ -128,8 +128,8 @@ void  FloatDatatypeValidator::setEnumeration(MemoryManager* const manager)
     if (!fStrEnumeration)
         return;
 
-    int i = 0;
-    int enumLength = fStrEnumeration->size();
+    XMLSize_t i = 0;
+    XMLSize_t enumLength = fStrEnumeration->size();
 
     FloatDatatypeValidator *numBase = (FloatDatatypeValidator*) getBaseValidator();
     if (numBase)
@@ -207,8 +207,8 @@ void FloatDatatypeValidator::checkContent(const XMLCh*             const content
 
     if (getEnumeration() != 0)
     {
-        int i=0;
-        int enumLength = getEnumeration()->size();
+        XMLSize_t i=0;
+        XMLSize_t enumLength = getEnumeration()->size();
         for ( ; i < enumLength; i++)
         {
             if (compareValues(theData, (XMLFloat*) getEnumeration()->elementAt(i))==0)

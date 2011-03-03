@@ -6,7 +6,7 @@
 <!ENTITY % externalEntity SYSTEM "entities.ent">
 %externalEntity;
 
-<!ELEMENT book (resources?|document|hidden|faqs|changes|group|container|external|separator)+>
+<!ELEMENT book (resources?|document|hidden|faqs|changes|group|container|external|section|separator|separator-space)+>
 <!ATTLIST book title     CDATA #REQUIRED
                copyright CDATA #IMPLIED>
 
@@ -50,6 +50,10 @@
 <!ATTLIST external label CDATA #REQUIRED
                    href  CDATA #REQUIRED>
 
+<!ELEMENT section EMPTY>
+<!ATTLIST section label CDATA #REQUIRED>
+
 <!ELEMENT separator EMPTY>
 
-<!-- CVS $Revision: 173499 $ $Date: 2002-02-14 17:51:55 +0200 (Thu, 14 Feb 2002) $ -->
+<!ELEMENT separator-space EMPTY>
+

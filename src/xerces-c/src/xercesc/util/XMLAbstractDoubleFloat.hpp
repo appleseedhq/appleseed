@@ -16,11 +16,12 @@
  */
 
 /*
- * $Id: XMLAbstractDoubleFloat.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLAbstractDoubleFloat.hpp 605828 2007-12-20 08:05:47Z amassari $
  */
 
-#ifndef XML_ABSTRACT_DOUBLE_FLOAT_HPP
-#define XML_ABSTRACT_DOUBLE_FLOAT_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XML_ABSTRACT_DOUBLE_FLOAT_HPP)
+#define XERCESC_INCLUDE_GUARD_XML_ABSTRACT_DOUBLE_FLOAT_HPP
+
 
 #include <xercesc/util/XMLNumber.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
@@ -33,7 +34,7 @@ XERCES_CPP_NAMESPACE_BEGIN
  *   double values have a lexical representation consisting of a mantissa followed,
  *   optionally, by the character "E" or "e", followed by an exponent.
  *
- *   The exponent �must� be an integer.
+ *   The exponent must be an integer.
  *   The mantissa must be a decimal number.
  *   The representations for exponent and mantissa must follow the lexical rules
  *   for integer and decimal.
@@ -48,7 +49,7 @@ XERCES_CPP_NAMESPACE_BEGIN
  *   float values have a lexical representation consisting of a mantissa followed,
  *   optionally, by the character "E" or "e", followed by an exponent.
  *
- *   The exponent �must� be an integer.
+ *   The exponent must be an integer.
  *   The mantissa must be a decimal number.
  *   The representations for exponent and mantissa must follow the lexical rules
  *   for integer and decimal.
@@ -77,13 +78,6 @@ public:
                           const XMLCh*         const rawData
                         ,       MemoryManager* const memMgr = XMLPlatformUtils::fgMemoryManager
                         );
-
-    /**
-     *
-     *  Deprecated: please use getRawData
-     *
-     */
-    virtual XMLCh*        toString() const;
     
     virtual XMLCh*        getRawData() const;
 

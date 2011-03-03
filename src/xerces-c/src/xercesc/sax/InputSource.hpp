@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: InputSource.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: InputSource.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-
-#ifndef INPUTSOURCE_HPP
-#define INPUTSOURCE_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_INPUTSOURCE_HPP)
+#define XERCESC_INCLUDE_GUARD_INPUTSOURCE_HPP
 
 #include <xercesc/util/PlatformUtils.hpp>
 
@@ -99,7 +98,7 @@ public:
     //@{
   /**
     * An input source can be set to force the parser to assume a particular
-    * encoding for the data that input source reprsents, via the setEncoding()
+    * encoding for the data that input source represents, via the setEncoding()
     * method. This method returns name of the encoding that is to be forced.
     * If the encoding has never been forced, it returns a null pointer.
     *

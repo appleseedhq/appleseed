@@ -19,7 +19,7 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\$(ConfigurationName)"
+			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC9\$(ConfigurationName)"
 			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
@@ -40,18 +40,21 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Release/DOMCount.tlb"
+				TypeLibraryName="$(OutDir)\DOMCount.tlb"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="2"
 				AdditionalIncludeDirectories="..\..\..\..\..\src"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_CONSOLE,WIN32,NDEBUG,_WINDOWS,PLATFORM_WIN32"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_CONSOLE;WIN32;NDEBUG;_WINDOWS"
 				StringPooling="true"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				DisableLanguageExtensions="true"
 				PrecompiledHeaderFile="$(IntDir)\DOMCount.pch"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\DOMCount_vc90"
 				WarningLevel="3"
 				CompileAs="0"
 			/>
@@ -68,12 +71,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="xerces-c_2.lib"
-				OutputFile="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Release/DOMCount.exe"
+				AdditionalOptions=""
+				AdditionalDependencies="xerces-c_3.lib"
+				OutputFile="$(OutDir)\DOMCount.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Release"
-				ProgramDatabaseFile="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Release/DOMCount.pdb"
+				AdditionalLibraryDirectories="$(OutDir)"
+				ProgramDatabaseFile="$(OutDir)\DOMCount.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -102,8 +105,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|x64"
-			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory=".\..\..\..\..\..\Build\Win64\VC9\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -124,13 +127,13 @@
 			<Tool
 				Name="VCMIDLTool"
 				TargetEnvironment="3"
-				TypeLibraryName=".\..\..\..\..\..\Build\Win64\VC8\Release/DOMCount.tlb"
+				TypeLibraryName="$(OutDir)\DOMCount.tlb"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="2"
 				AdditionalIncludeDirectories="..\..\..\..\..\src"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_CONSOLE,WIN32,NDEBUG,_WINDOWS,PLATFORM_WIN32"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_CONSOLE;WIN64;NDEBUG;_WINDOWS"
 				StringPooling="true"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -138,7 +141,7 @@
 				PrecompiledHeaderFile="$(IntDir)\DOMCount.pch"
 				AssemblerListingLocation="$(IntDir)\"
 				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\DOMCount_vc90"
 				WarningLevel="3"
 				CompileAs="0"
 			/>
@@ -155,11 +158,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="xerces-c_2.lib"
-				OutputFile=".\..\..\..\..\..\Build\Win64\VC8\Release/DOMCount.exe"
+				AdditionalDependencies="xerces-c_3.lib"
+				OutputFile="$(OutDir)\DOMCount.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\..\..\..\Build\Win64\VC8\Release"
-				ProgramDatabaseFile=".\..\..\..\..\..\Build\Win64\VC8\Release/DOMCount.pdb"
+				AdditionalLibraryDirectories="$(OutDir)"
+				ProgramDatabaseFile="$(OutDir)\DOMCount.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -189,7 +192,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\$(ConfigurationName)"
+			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC9\$(ConfigurationName)"
 			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
@@ -210,15 +213,19 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Debug/DOMCount.tlb"
+				TypeLibraryName="$(OutDir)\DOMCount.tlb"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\..\..\..\src"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_CONSOLE,WIN32,_DEBUG,_WINDOWS,PLATFORM_WIN32"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_CONSOLE;WIN32;_DEBUG;_WINDOWS"
 				RuntimeLibrary="3"
+				TreatWChar_tAsBuiltInType="true"
 				PrecompiledHeaderFile="$(IntDir)\DOMCount.pch"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\DOMCount_vc90"
 				WarningLevel="3"
 				DebugInformationFormat="4"
 				CompileAs="0"
@@ -236,13 +243,13 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="xerces-c_2D.lib"
-				OutputFile="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Debug/DOMCount.exe"
+				AdditionalOptions=""
+				AdditionalDependencies="xerces-c_3D.lib"
+				OutputFile="$(OutDir)\DOMCount.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Debug"
+				AdditionalLibraryDirectories="$(OutDir)"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Debug/DOMCount.pdb"
+				ProgramDatabaseFile="$(OutDir)\DOMCount.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -271,8 +278,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|x64"
-			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory=".\..\..\..\..\..\Build\Win64\VC9\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -293,18 +300,19 @@
 			<Tool
 				Name="VCMIDLTool"
 				TargetEnvironment="3"
-				TypeLibraryName=".\..\..\..\..\..\Build\Win64\VC8\Debug/DOMCount.tlb"
+				TypeLibraryName="$(OutDir)\DOMCount.tlb"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\..\..\..\src"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_CONSOLE,WIN32,_DEBUG,_WINDOWS,PLATFORM_WIN32"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_CONSOLE;WIN64;_DEBUG;_WINDOWS"
 				RuntimeLibrary="3"
+				TreatWChar_tAsBuiltInType="true"
 				PrecompiledHeaderFile="$(IntDir)\DOMCount.pch"
 				AssemblerListingLocation="$(IntDir)\"
 				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\DOMCount_vc90"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 				CompileAs="0"
@@ -322,12 +330,13 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="xerces-c_2D.lib"
-				OutputFile=".\..\..\..\..\..\Build\Win64\VC8\Debug/DOMCount.exe"
+				AdditionalOptions=""
+				AdditionalDependencies="xerces-c_3D.lib"
+				OutputFile="$(OutDir)\DOMCount.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\..\..\..\Build\Win64\VC8\Debug"
+				AdditionalLibraryDirectories="$(OutDir)"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\..\..\..\..\..\Build\Win64\VC8\Debug/DOMCount.pdb"
+				ProgramDatabaseFile="$(OutDir)\DOMCount.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -357,7 +366,7 @@
 		</Configuration>
 		<Configuration
 			Name="Static Release|Win32"
-			OutputDirectory="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\$(ConfigurationName)"
+			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC9\$(ConfigurationName)"
 			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
@@ -378,18 +387,21 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Static Release/DOMCount.tlb"
+				TypeLibraryName="$(OutDir)\DOMCount.tlb"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="2"
 				AdditionalIncludeDirectories="..\..\..\..\..\src"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_CONSOLE,WIN32,NDEBUG,_WINDOWS,PLATFORM_WIN32,XML_LIBRARY"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_CONSOLE;WIN32;NDEBUG;_WINDOWS;XERCES_STATIC_LIBRARY"
 				StringPooling="true"
-				RuntimeLibrary="2"
+				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				DisableLanguageExtensions="true"
 				PrecompiledHeaderFile="$(IntDir)\DOMCount.pch"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\DOMCount_vc90"
 				WarningLevel="3"
 				CompileAs="0"
 			/>
@@ -406,12 +418,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="xerces-c_static_2.lib"
-				OutputFile="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Static Release/DOMCount.exe"
+				AdditionalOptions=""
+				AdditionalDependencies="xerces-c_static_3.lib"
+				OutputFile="$(OutDir)\DOMCount.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Static Release"
-				ProgramDatabaseFile="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Static Release/DOMCount.pdb"
+				AdditionalLibraryDirectories="$(OutDir)"
+				ProgramDatabaseFile="$(OutDir)\DOMCount.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -440,8 +452,8 @@
 		</Configuration>
 		<Configuration
 			Name="Static Release|x64"
-			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory=".\..\..\..\..\..\Build\Win64\VC9\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -462,13 +474,13 @@
 			<Tool
 				Name="VCMIDLTool"
 				TargetEnvironment="3"
-				TypeLibraryName=".\..\..\..\..\..\Build\Win64\VC8\Static Release/DOMCount.tlb"
+				TypeLibraryName="$(OutDir)\DOMCount.tlb"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="2"
 				AdditionalIncludeDirectories="..\..\..\..\..\src"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_CONSOLE,WIN32,NDEBUG,_WINDOWS,PLATFORM_WIN32,XML_LIBRARY"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_CONSOLE;WIN64;NDEBUG;_WINDOWS;XERCES_STATIC_LIBRARY"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -476,7 +488,7 @@
 				PrecompiledHeaderFile="$(IntDir)\DOMCount.pch"
 				AssemblerListingLocation="$(IntDir)\"
 				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\DOMCount_vc90"
 				WarningLevel="3"
 				CompileAs="0"
 			/>
@@ -493,11 +505,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="xerces-c_static_2.lib"
-				OutputFile=".\..\..\..\..\..\Build\Win64\VC8\Static Release/DOMCount.exe"
+				AdditionalOptions=""
+				AdditionalDependencies="xerces-c_static_3.lib"
+				OutputFile="$(OutDir)\DOMCount.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\..\..\..\Build\Win64\VC8\Static Release"
-				ProgramDatabaseFile=".\..\..\..\..\..\Build\Win64\VC8\Static Release/DOMCount.pdb"
+				AdditionalLibraryDirectories="$(OutDir)"
+				ProgramDatabaseFile="$(OutDir)\DOMCount.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -527,7 +540,7 @@
 		</Configuration>
 		<Configuration
 			Name="Static Debug|Win32"
-			OutputDirectory="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\$(ConfigurationName)"
+			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC9\$(ConfigurationName)"
 			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
@@ -548,15 +561,18 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Static Debug/DOMCount.tlb"
+				TypeLibraryName="$(OutDir)\DOMCount.tlb"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\..\..\..\src"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_CONSOLE,WIN32,_DEBUG,_WINDOWS,PLATFORM_WIN32,XML_LIBRARY"
-				RuntimeLibrary="3"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_CONSOLE;WIN32;_DEBUG;_WINDOWS;XERCES_STATIC_LIBRARY"
+				RuntimeLibrary="1"
 				PrecompiledHeaderFile="$(IntDir)\DOMCount.pch"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\DOMCount_vc90"
 				WarningLevel="3"
 				DebugInformationFormat="4"
 				CompileAs="0"
@@ -574,13 +590,13 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="xerces-c_static_2D.lib"
-				OutputFile="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Static Debug/DOMCount.exe"
+				AdditionalOptions=""
+				AdditionalDependencies="xerces-c_static_3D.lib"
+				OutputFile="$(OutDir)\DOMCount.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Static Debug"
+				AdditionalLibraryDirectories="$(OutDir)"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Static Debug/DOMCount.pdb"
+				ProgramDatabaseFile="$(OutDir)\DOMCount.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -609,8 +625,8 @@
 		</Configuration>
 		<Configuration
 			Name="Static Debug|x64"
-			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory=".\..\..\..\..\..\Build\Win64\VC9\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -631,18 +647,18 @@
 			<Tool
 				Name="VCMIDLTool"
 				TargetEnvironment="3"
-				TypeLibraryName=".\..\..\..\..\..\Build\Win64\VC8\Static Debug/DOMCount.tlb"
+				TypeLibraryName="$(OutDir)\DOMCount.tlb"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\..\..\..\src"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_CONSOLE,WIN32,_DEBUG,_WINDOWS,PLATFORM_WIN32,XML_LIBRARY"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_CONSOLE;WIN64;_DEBUG;_WINDOWS;XERCES_STATIC_LIBRARY"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile="$(IntDir)\DOMCount.pch"
 				AssemblerListingLocation="$(IntDir)\"
 				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\DOMCount_vc90"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 				CompileAs="0"
@@ -660,12 +676,360 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="xerces-c_static_2D.lib"
-				OutputFile=".\..\..\..\..\..\Build\Win64\VC8\Static Debug/DOMCount.exe"
+				AdditionalOptions=""
+				AdditionalDependencies="xerces-c_static_3D.lib"
+				OutputFile="$(OutDir)\DOMCount.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\..\..\..\Build\Win64\VC8\Static Debug"
+				AdditionalLibraryDirectories="$(OutDir)"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\..\..\..\..\..\Build\Win64\VC8\Static Debug/DOMCount.pdb"
+				ProgramDatabaseFile="$(OutDir)\DOMCount.pdb"
+				SubSystem="1"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="17"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="ICU Debug|Win32"
+			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC9\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TypeLibraryName="$(OutDir)\DOMCount.tlb"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="..\..\..\..\..\src"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_CONSOLE;WIN32;_DEBUG;_WINDOWS"
+				RuntimeLibrary="3"
+				TreatWChar_tAsBuiltInType="true"
+				PrecompiledHeaderFile="$(IntDir)\DOMCount.pch"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\DOMCount_vc90"
+				WarningLevel="3"
+				DebugInformationFormat="4"
+				CompileAs="0"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalOptions=""
+				AdditionalDependencies="xerces-c_3D.lib"
+				OutputFile="$(OutDir)\DOMCount.exe"
+				LinkIncremental="2"
+				AdditionalLibraryDirectories="$(OutDir)"
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile="$(OutDir)\DOMCount.pdb"
+				SubSystem="1"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="ICU Debug|x64"
+			OutputDirectory=".\..\..\..\..\..\Build\Win64\VC9\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TargetEnvironment="3"
+				TypeLibraryName="$(OutDir)\DOMCount.tlb"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="..\..\..\..\..\src"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_CONSOLE;WIN64;_DEBUG;_WINDOWS"
+				RuntimeLibrary="3"
+				TreatWChar_tAsBuiltInType="true"
+				PrecompiledHeaderFile="$(IntDir)\DOMCount.pch"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\DOMCount_vc90"
+				WarningLevel="3"
+				DebugInformationFormat="3"
+				CompileAs="0"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalOptions=""
+				AdditionalDependencies="xerces-c_3D.lib"
+				OutputFile="$(OutDir)\DOMCount.exe"
+				LinkIncremental="2"
+				AdditionalLibraryDirectories="$(OutDir)"
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile="$(OutDir)\DOMCount.pdb"
+				SubSystem="1"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="17"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="ICU Release|Win32"
+			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC9\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TypeLibraryName="$(OutDir)\DOMCount.tlb"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				InlineFunctionExpansion="2"
+				AdditionalIncludeDirectories="..\..\..\..\..\src"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_CONSOLE;WIN32;NDEBUG;_WINDOWS"
+				StringPooling="true"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
+				DisableLanguageExtensions="true"
+				PrecompiledHeaderFile="$(IntDir)\DOMCount.pch"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\DOMCount_vc90"
+				WarningLevel="3"
+				CompileAs="0"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1033"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalOptions=""
+				AdditionalDependencies="xerces-c_3.lib"
+				OutputFile="$(OutDir)\DOMCount.exe"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories="$(OutDir)"
+				ProgramDatabaseFile="$(OutDir)\DOMCount.pdb"
+				SubSystem="1"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="ICU Release|x64"
+			OutputDirectory=".\..\..\..\..\..\Build\Win64\VC9\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TargetEnvironment="3"
+				TypeLibraryName="$(OutDir)\DOMCount.tlb"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				InlineFunctionExpansion="2"
+				AdditionalIncludeDirectories="..\..\..\..\..\src"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;_CONSOLE;WIN64;NDEBUG;_WINDOWS"
+				StringPooling="true"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
+				DisableLanguageExtensions="true"
+				PrecompiledHeaderFile="$(IntDir)\DOMCount.pch"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\DOMCount_vc90"
+				WarningLevel="3"
+				CompileAs="0"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1033"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="xerces-c_3.lib"
+				OutputFile="$(OutDir)\DOMCount.exe"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories="$(OutDir)"
+				ProgramDatabaseFile="$(OutDir)\DOMCount.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -698,11 +1062,11 @@
 	</References>
 	<Files>
 		<File
-			RelativePath="..\..\..\..\..\samples\DOMCount\DOMCount.cpp"
+			RelativePath="..\..\..\..\..\samples\src\DOMCount\DOMCount.cpp"
 			>
 		</File>
 		<File
-			RelativePath="..\..\..\..\..\samples\DOMCount\DOMCount.hpp"
+			RelativePath="..\..\..\..\..\samples\src\DOMCount\DOMCount.hpp"
 			>
 		</File>
 	</Files>

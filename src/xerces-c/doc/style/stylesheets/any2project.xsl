@@ -11,7 +11,7 @@
   </xsl:template>
 
   <xsl:template match="img">
-    <resource source="{@src}" target="images/{@src}"/>
+    <resource source="{@src}" target="resources/{@src}"/>
   </xsl:template>
 
   <xsl:template match="node()">

@@ -16,10 +16,11 @@
  */
 
 /*
- * $Id: XMLUniDefs.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLUniDefs.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
-#if !defined(XMLUNIDEFS_HPP)
-#define XMLUNIDEFS_HPP
+
+#if !defined(XERCESC_INCLUDE_GUARD_XMLUNIDEFS_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLUNIDEFS_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 

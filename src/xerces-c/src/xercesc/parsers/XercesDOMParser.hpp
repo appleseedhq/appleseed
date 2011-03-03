@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,22 +16,21 @@
  */
 
 /*
- * $Id: XercesDOMParser.hpp 568078 2007-08-21 11:43:25Z amassari $
- *
+ * $Id: XercesDOMParser.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#if !defined(XercesDOMParser_HPP)
-#define XercesDOMParser_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XERCESDOMPARSER_HPP)
+#define XERCESC_INCLUDE_GUARD_XERCESDOMPARSER_HPP
 
 
 #include <xercesc/parsers/AbstractDOMParser.hpp>
+#include <xercesc/validators/common/Grammar.hpp>
 
 XERCES_CPP_NAMESPACE_BEGIN
 
 
 class EntityResolver;
 class ErrorHandler;
-class Grammar;
 class XMLEntityResolver;
 class XMLResourceIdentifier;
 
@@ -39,7 +38,7 @@ class XMLResourceIdentifier;
   * This class implements the Document Object Model (DOM) interface.
   * It should be used by applications which choose to parse and
   * process the XML document using the DOM api's. This implementation
-  * also allows the applications to install an error and an entitty
+  * also allows the applications to install an error and an entity
   * handler (useful extensions to the DOM specification).
   *
   * <p>It can be used to instantiate a validating or non-validating
@@ -49,7 +48,7 @@ class PARSERS_EXPORT XercesDOMParser : public AbstractDOMParser
 {
 public :
     // -----------------------------------------------------------------------
-    //  Constructors and Detructor
+    //  Constructors and Destructor
     // -----------------------------------------------------------------------
 
     /** @name Constructors and Destructor */
@@ -60,7 +59,7 @@ public :
       * validation. If you don't provide a validator, a default one will
       * be created for you in the scanner.
       *
-      * @param gramPool   Pointer to the grammar pool instance from 
+      * @param gramPool   Pointer to the grammar pool instance from
       *                   external application.
       *                   The parser does NOT own it.
       *
@@ -73,7 +72,7 @@ public :
     (
           XMLValidator* const   valToAdopt = 0
         , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
-        , XMLGrammarPool* const gramPool = 0        
+        , XMLGrammarPool* const gramPool = 0
     );
 
     /**
@@ -136,7 +135,7 @@ public :
       * @return The pointer to the installed entity resolver object.
       */
     XMLEntityResolver* getXMLEntityResolver();
- 
+
     /**
       * Get a const pointer to the entity resolver
       *
@@ -200,10 +199,10 @@ public :
      *
      * @return offset within the input source
      */
-    unsigned int getSrcOffset() const;
+    XMLFilePos getSrcOffset() const;
 
     /** Get the 'ignore cached DTD grammar' flag
-      *    
+      *
       * @return true, if the parser is currently configured to
       *         ignore cached DTD, false otherwise.
       *
@@ -299,7 +298,7 @@ public :
       * instead of building the grammar from scratch, to validate XML
       * documents.
       *
-      * If the 'Grammar caching' flag is set to true, this mehod ignore the
+      * If the 'Grammar caching' flag is set to true, this method ignore the
       * value passed in.
       *
       * The parser's default state is: false.
@@ -402,8 +401,8 @@ public :
         , const XMLCh* const                errorText
         , const XMLCh* const                systemId
         , const XMLCh* const                publicId
-        , const XMLSSize_t                  lineNum
-        , const XMLSSize_t                  colNum
+        , const XMLFileLoc                  lineNum
+        , const XMLFileLoc                  colNum
     );
 
     /** Reset any error data before a new parse
@@ -442,7 +441,7 @@ public :
     /** Expand a system id
       *
       * This method allows an installed XMLEntityHandler to further
-      * process any system id's of enternal entities encountered in
+      * process any system id's of external entities encountered in
       * the XML file being parsed, such as redirection etc.
       *
       * <b>This method always returns 'false'
@@ -474,37 +473,7 @@ public :
       *
       * This method allows a user installed entity handler to further
       * process any pointers to external entities. The applications can
-      * implement 'redirection' via this callback. This method is also
-      * borrowed from the SAX specification.
-      *
-      * @deprecated This method is no longer called (the other resolveEntity one is).
-      *
-      * @param publicId A const pointer to a Unicode string representing the
-      *                 public id of the entity just parsed.
-      * @param systemId A const pointer to a Unicode string representing the
-      *                 system id of the entity just parsed.
-      * @param baseURI  A const pointer to a Unicode string representing the
-      *                 base URI of the entity just parsed,
-      *                 or <code>null</code> if there is no base URI.
-      * @return The value returned by the user installed resolveEntity
-      *         method or NULL otherwise to indicate no processing was done.
-      *         The returned InputSource is owned by the parser which is
-      *         responsible to clean up the memory.
-      * @see DOMEntityResolver
-      * @see XMLEntityHandler
-      */
-    virtual InputSource* resolveEntity
-    (
-        const   XMLCh* const    publicId
-        , const XMLCh* const    systemId
-        , const XMLCh* const    baseURI = 0
-    );
-
-    /** Resolve a public/system id
-      *
-      * This method allows a user installed entity handler to further
-      * process any pointers to external entities. The applications can
-      * implement 'redirection' via this callback.  
+      * implement 'redirection' via this callback.
       *
       * @param resourceIdentifier An object containing the type of
       *        resource to be resolved and the associated data members
@@ -552,13 +521,12 @@ public :
       * is enabled, the parser will cache the grammars for re-use. If a grammar
       * key is found in the pool, no caching of any grammar will take place.
       *
-      * <p><b>"Experimental - subject to change"</b></p>
       *
       * @param source A const reference to the SAX InputSource object which
       *               points to the schema grammar file to be preparsed.
       * @param grammarType The grammar type (Schema or DTD).
       * @param toCache If <code>true</code>, we cache the preparsed grammar,
-      *                otherwise, no chaching. Default is <code>false</code>.
+      *                otherwise, no caching. Default is <code>false</code>.
       * @return The preparsed schema grammar object (SchemaGrammar or
       *         DTDGrammar). That grammar object is owned by the parser.
       *
@@ -571,7 +539,7 @@ public :
       * @see InputSource#InputSource
       */
     Grammar* loadGrammar(const InputSource& source,
-                         const short grammarType,
+                         const Grammar::GrammarType grammarType,
                          const bool toCache = false);
 
     /**
@@ -582,14 +550,13 @@ public :
       * is enabled, the parser will cache the grammars for re-use. If a grammar
       * key is found in the pool, no caching of any grammar will take place.
       *
-      * <p><b>"Experimental - subject to change"</b></p>
       *
       * @param systemId A const XMLCh pointer to the Unicode string which
       *                 contains the path to the XML grammar file to be
       *                 preparsed.
       * @param grammarType The grammar type (Schema or DTD).
       * @param toCache If <code>true</code>, we cache the preparsed grammar,
-      *                otherwise, no chaching. Default is <code>false</code>.
+      *                otherwise, no caching. Default is <code>false</code>.
       * @return The preparsed schema grammar object (SchemaGrammar or
       *         DTDGrammar). That grammar object is owned by the parser.
       *
@@ -600,7 +567,7 @@ public :
       * @exception DOMException A DOM exception as per DOM spec.
       */
     Grammar* loadGrammar(const XMLCh* const systemId,
-                         const short grammarType,
+                         const Grammar::GrammarType grammarType,
                          const bool toCache = false);
 
     /**
@@ -611,13 +578,12 @@ public :
       * is enabled, the parser will cache the grammars for re-use. If a grammar
       * key is found in the pool, no caching of any grammar will take place.
       *
-      * <p><b>"Experimental - subject to change"</b></p>
       *
       * @param systemId A const char pointer to a native string which contains
       *                 the path to the XML grammar file to be preparsed.
       * @param grammarType The grammar type (Schema or DTD).
       * @param toCache If <code>true</code>, we cache the preparsed grammar,
-      *                otherwise, no chaching. Default is <code>false</code>.
+      *                otherwise, no caching. Default is <code>false</code>.
       * @return The preparsed schema grammar object (SchemaGrammar or
       *         DTDGrammar). That grammar object is owned by the parser.
       *
@@ -628,7 +594,7 @@ public :
       * @exception DOMException A DOM exception as per DOM spec.
       */
     Grammar* loadGrammar(const char* const systemId,
-                         const short grammarType,
+                         const Grammar::GrammarType grammarType,
                          const bool toCache = false);
 
     /**

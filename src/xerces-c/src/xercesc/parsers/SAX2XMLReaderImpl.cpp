@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: SAX2XMLReaderImpl.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: SAX2XMLReaderImpl.cpp 882548 2009-11-20 13:44:14Z borisk $
  */
 
 #include <xercesc/util/IOException.hpp>
@@ -49,7 +49,7 @@ SAX2XMLReader * XMLReaderFactory::createXMLReader(  MemoryManager* const  manage
                                                   , XMLGrammarPool* const gramPool)
 {
     SAX2XMLReaderImpl* pImpl=new (manager) SAX2XMLReaderImpl(manager, gramPool);
-	return pImpl;
+    return pImpl;
 }
 
 
@@ -80,6 +80,7 @@ SAX2XMLReaderImpl::SAX2XMLReaderImpl(MemoryManager* const  manager
     , fPrefixesStorage(0)
     , fPrefixes(0)
     , fPrefixCounts(0)
+    , fTempQName(0)
     , fDTDHandler(0)
     , fEntityResolver(0)
     , fXMLEntityResolver(0)
@@ -138,17 +139,18 @@ void SAX2XMLReaderImpl::initialize()
         fAdvDHListSize * sizeof(XMLDocumentHandler*)
     );//new XMLDocumentHandler*[fAdvDHListSize];
     memset(fAdvDHList, 0, sizeof(void*) * fAdvDHListSize);
-	
-	// SAX2 default is for namespaces (feature http://xml.org/sax/features/namespaces) to be on
-	setDoNamespaces(true) ;
 
-	// default: schema is on
-	setDoSchema(true);
-	
+    // SAX2 default is for namespaces (feature http://xml.org/sax/features/namespaces) to be on
+    setDoNamespaces(true) ;
+
+    // default: schema is on
+    setDoSchema(true);
+
     fPrefixesStorage = new (fMemoryManager) XMLStringPool(109, fMemoryManager) ;
-	fPrefixes    = new (fMemoryManager) ValueStackOf<unsigned int> (30, fMemoryManager) ;
-	fTempAttrVec  = new (fMemoryManager) RefVectorOf<XMLAttr>  (10, false, fMemoryManager) ;
-	fPrefixCounts = new (fMemoryManager) ValueStackOf<unsigned int>(10, fMemoryManager) ;
+    fPrefixes        = new (fMemoryManager) ValueStackOf<unsigned int> (30, fMemoryManager) ;
+    fTempAttrVec     = new (fMemoryManager) RefVectorOf<XMLAttr>  (10, false, fMemoryManager) ;
+    fPrefixCounts    = new (fMemoryManager) ValueStackOf<XMLSize_t>(10, fMemoryManager) ;
+    fTempQName       = new (fMemoryManager) XMLBuffer(32, fMemoryManager);
 }
 
 
@@ -161,6 +163,7 @@ void SAX2XMLReaderImpl::cleanUp()
     delete fTempAttrVec;
     delete fPrefixCounts;
     delete fGrammarResolver;
+    delete fTempQName;
     // grammar pool must do this
     //delete fURIStringPool;
 }
@@ -174,7 +177,7 @@ void SAX2XMLReaderImpl::installAdvDocHandler(XMLDocumentHandler* const toInstall
     if (fAdvDHCount == fAdvDHListSize)
     {
         // Calc a new size and allocate the new temp buffer
-        const unsigned int newSize = (unsigned int)(fAdvDHListSize * 1.5);
+        const XMLSize_t newSize = (XMLSize_t)(fAdvDHListSize * 1.5);
         XMLDocumentHandler** newList = (XMLDocumentHandler**) fMemoryManager->allocate
         (
             newSize * sizeof(XMLDocumentHandler*)
@@ -216,7 +219,7 @@ bool SAX2XMLReaderImpl::removeAdvDocHandler(XMLDocumentHandler* const toRemove)
     //  Search the array until we find this handler. If we find a null entry
     //  first, we can stop there before the list is kept contiguous.
     //
-    unsigned int index;
+    XMLSize_t index;
     for (index = 0; index < fAdvDHCount; index++)
     {
         //
@@ -262,25 +265,25 @@ bool SAX2XMLReaderImpl::removeAdvDocHandler(XMLDocumentHandler* const toRemove)
 void SAX2XMLReaderImpl::setValidator(XMLValidator* valueToAdopt)
 {
     fValidator = valueToAdopt;
-	fScanner->setValidator(valueToAdopt);
+    fScanner->setValidator(valueToAdopt);
 }
 
 XMLValidator* SAX2XMLReaderImpl::getValidator() const
 {
-	return fScanner->getValidator();
+    return fScanner->getValidator();
 }
 
 // ---------------------------------------------------------------------------
 //  SAX2XMLReader Interface
 // ---------------------------------------------------------------------------
-int SAX2XMLReaderImpl::getErrorCount() const
+XMLSize_t SAX2XMLReaderImpl::getErrorCount() const
 {
     return fScanner->getErrorCount();
 }
 
 void SAX2XMLReaderImpl::setContentHandler(ContentHandler* const handler)
 {
-	fDocHandler = handler;
+    fDocHandler = handler;
     if (fDocHandler)
     {
         //
@@ -333,10 +336,10 @@ void SAX2XMLReaderImpl::setPSVIHandler(PSVIHandler* const handler)
 {
     fPSVIHandler = handler;
     if (fPSVIHandler) {
-        fScanner->setPSVIHandler(fPSVIHandler);        
+        fScanner->setPSVIHandler(fPSVIHandler);
     }
     else {
-        fScanner->setPSVIHandler(0);       
+        fScanner->setPSVIHandler(0);
     }
 }
 
@@ -447,7 +450,6 @@ void SAX2XMLReaderImpl::parse (const   char* const     systemId)
     {
         fParseInProgress = true;
         fScanner->scanDocument(systemId);
-        fParseInProgress = false;
     }
     catch(const OutOfMemoryException&)
     {
@@ -514,7 +516,7 @@ void SAX2XMLReaderImpl::parseReset(XMLPScanToken& token)
 //  SAX2XMLReaderImpl: Overrides of the XMLDocumentHandler interface
 // ---------------------------------------------------------------------------
 void SAX2XMLReaderImpl::docCharacters(  const   XMLCh* const    chars
-                                , const unsigned int    length
+                                , const XMLSize_t       length
                                 , const bool            cdataSection)
 {
     // Suppress the chars before the root element.
@@ -537,7 +539,7 @@ void SAX2XMLReaderImpl::docCharacters(  const   XMLCh* const    chars
     //  If there are any installed advanced handlers, then lets call them
     //  with this info.
     //
-    for (unsigned int index = 0; index < fAdvDHCount; index++)
+    for (XMLSize_t index = 0; index < fAdvDHCount; index++)
         fAdvDHList[index]->docCharacters(chars, length, cdataSection);
 }
 
@@ -556,7 +558,7 @@ void SAX2XMLReaderImpl::docComment(const XMLCh* const commentText)
     //  OK, if there are any installed advanced handlers,
     // then let's call them with this info.
     //
-    for (unsigned int index = 0; index < fAdvDHCount; index++)
+    for (XMLSize_t index = 0; index < fAdvDHCount; index++)
         fAdvDHList[index]->docComment(commentText);
 }
 
@@ -570,7 +572,7 @@ void SAX2XMLReaderImpl::XMLDecl( const  XMLCh* const    versionStr
     // SAX has no way to report this event. But, if there are any installed
     //  advanced handlers, then lets call them with this info.
     //
-    for (unsigned int index = 0; index < fAdvDHCount; index++)
+    for (XMLSize_t index = 0; index < fAdvDHCount; index++)
         fAdvDHList[index]->XMLDecl( versionStr,
                                     encodingStr,
                                     standaloneStr,
@@ -589,7 +591,7 @@ void SAX2XMLReaderImpl::docPI(  const   XMLCh* const    target
     //  If there are any installed advanced handlers, then lets call them
     //  with this info.
     //
-    for (unsigned int index = 0; index < fAdvDHCount; index++)
+    for (XMLSize_t index = 0; index < fAdvDHCount; index++)
         fAdvDHList[index]->docPI(target, data);
 }
 
@@ -603,7 +605,7 @@ void SAX2XMLReaderImpl::endDocument()
     //  If there are any installed advanced handlers, then lets call them
     //  with this info.
     //
-    for (unsigned int index = 0; index < fAdvDHCount; index++)
+    for (XMLSize_t index = 0; index < fAdvDHCount; index++)
         fAdvDHList[index]->endDocument();
 }
 
@@ -618,13 +620,13 @@ void SAX2XMLReaderImpl::endEntityReference(const XMLEntityDecl& entityDecl)
     //  SAX has no way to report this event. But, if there are any installed
     //  advanced handlers, then lets call them with this info.
     //
-    for (unsigned int index = 0; index < fAdvDHCount; index++)
+    for (XMLSize_t index = 0; index < fAdvDHCount; index++)
         fAdvDHList[index]->endEntityReference(entityDecl);
 }
 
 
 void SAX2XMLReaderImpl::ignorableWhitespace(const   XMLCh* const    chars
-                                    , const unsigned int    length
+                                    , const XMLSize_t       length
                                     , const bool            cdataSection)
 {
     // Do not report the whitespace before the root element.
@@ -639,7 +641,7 @@ void SAX2XMLReaderImpl::ignorableWhitespace(const   XMLCh* const    chars
     //  If there are any installed advanced handlers, then lets call them
     //  with this info.
     //
-    for (unsigned int index = 0; index < fAdvDHCount; index++)
+    for (XMLSize_t index = 0; index < fAdvDHCount; index++)
         fAdvDHList[index]->ignorableWhitespace(chars, length, cdataSection);
 }
 
@@ -650,7 +652,7 @@ void SAX2XMLReaderImpl::resetDocument()
     //  If there are any installed advanced handlers, then lets call them
     //  with this info.
     //
-    for (unsigned int index = 0; index < fAdvDHCount; index++)
+    for (XMLSize_t index = 0; index < fAdvDHCount; index++)
         fAdvDHList[index]->resetDocument();
 
     // Make sure our element depth flag gets set back to zero
@@ -667,16 +669,15 @@ void SAX2XMLReaderImpl::startDocument()
 {
     // Just map to the SAX document handler
     if (fDocHandler)
-    {
         fDocHandler->setDocumentLocator(fScanner->getLocator());
+    if(fDocHandler)
         fDocHandler->startDocument();
-    }
 
     //
     //  If there are any installed advanced handlers, then lets call them
     //  with this info.
     //
-    for (unsigned int index = 0; index < fAdvDHCount; index++)
+    for (XMLSize_t index = 0; index < fAdvDHCount; index++)
         fAdvDHList[index]->startDocument();
 }
 
@@ -686,7 +687,7 @@ startElement(   const   XMLElementDecl&         elemDecl
                 , const unsigned int            elemURLId
                 , const XMLCh* const            elemPrefix
                 , const RefVectorOf<XMLAttr>&   attrList
-                , const unsigned int            attrCount
+                , const XMLSize_t               attrCount
                 , const bool                    isEmpty
                 , const bool                    isRoot)
 {
@@ -696,44 +697,46 @@ startElement(   const   XMLElementDecl&         elemDecl
 
     if (fDocHandler)
     {
-        ArrayJanitor<XMLCh> janElemName(NULL);
-        XMLCh* elemQName = NULL;
+        const QName* qName=elemDecl.getElementName();
+        const XMLCh* baseName=qName->getLocalPart();
+        const XMLCh* elemQName = 0;
         if(elemPrefix==0 || *elemPrefix==0)
-            elemQName=(XMLCh*)elemDecl.getBaseName();
-        else if(XMLString::equals(elemPrefix, elemDecl.getElementName()->getPrefix()))
-            elemQName=(XMLCh*)elemDecl.getElementName()->getRawName();
+            elemQName=baseName;
+        else if(XMLString::equals(elemPrefix, qName->getPrefix()))
+            elemQName=qName->getRawName();
         else
         {
-            unsigned int prefixLen=XMLString::stringLen(elemPrefix);
-            elemQName=(XMLCh*)fMemoryManager->allocate((prefixLen+1+XMLString::stringLen(elemDecl.getBaseName())+1)*sizeof(XMLCh));
-            XMLString::moveChars(elemQName, elemPrefix, prefixLen);
-            elemQName[prefixLen] = chColon;
-            XMLString::copyString(&elemQName[prefixLen+1], elemDecl.getBaseName());
-            janElemName.reset(elemQName, fMemoryManager);
+            fTempQName->set(elemPrefix);
+            fTempQName->append(chColon);
+            fTempQName->append(baseName);
+            elemQName=fTempQName->getRawBuffer();
         }
 
         if (getDoNamespaces())
         {
-            unsigned int numPrefix = 0;
-            const XMLCh*   nsString = XMLUni::fgXMLNSString;
-            const XMLAttr* tempAttr = 0;
+            XMLSize_t numPrefix = 0;
 
             if (!fNamespacePrefix)
-            {
                 fTempAttrVec->removeAllElements();
-            }
 
-            for (unsigned int i = 0; i < attrCount; i++)
+            for (XMLSize_t i = 0; i < attrCount; i++)
             {
                 const XMLCh*   nsPrefix = 0;
                 const XMLCh*   nsURI    = 0;
 
-                tempAttr = attrList.elementAt(i);
-                if (XMLString::equals(tempAttr->getQName(), nsString))
-                    nsURI = tempAttr->getValue();
-                if (XMLString::equals(tempAttr->getPrefix(), nsString))
+                const XMLAttr* tempAttr = attrList.elementAt(i);
+                const XMLCh* prefix = tempAttr->getPrefix();
+                if(prefix && *prefix)
                 {
-                    nsPrefix = tempAttr->getName();
+                    if(XMLString::equals(prefix, XMLUni::fgXMLNSString))
+                    {
+                        nsPrefix = tempAttr->getName();
+                        nsURI = tempAttr->getValue();
+                    }
+                }
+                else if (XMLString::equals(tempAttr->getName(), XMLUni::fgXMLNSString))
+                {
+                    nsPrefix = XMLUni::fgZeroLenString;
                     nsURI = tempAttr->getValue();
                 }
                 if (!fNamespacePrefix)
@@ -743,9 +746,8 @@ startElement(   const   XMLElementDecl&         elemDecl
                 }
                 if (nsURI != 0)
                 {
-                    if (nsPrefix == 0)
-                        nsPrefix = XMLUni::fgZeroLenString;
-                    fDocHandler->startPrefixMapping(nsPrefix, nsURI);
+                    if(fDocHandler)
+                        fDocHandler->startPrefixMapping(nsPrefix, nsURI);
                     unsigned int nPrefixId=fPrefixesStorage->addOrFind(nsPrefix);
                     fPrefixes->push(nPrefixId) ;
                     numPrefix++;
@@ -758,21 +760,27 @@ startElement(   const   XMLElementDecl&         elemDecl
                 fAttrList.setVector(&attrList, attrCount, fScanner);
 
             // call startElement() with namespace declarations
-            fDocHandler->startElement
-            (
-                fScanner->getURIText(elemURLId)
-                , elemDecl.getBaseName()
-                , elemQName
-                , fAttrList
-            );
+            if(fDocHandler)
+            {
+                fDocHandler->startElement
+                (
+                    fScanner->getURIText(elemURLId)
+                    , baseName
+                    , elemQName
+                    , fAttrList
+                );
+            }
         }
         else // no namespace
         {
             fAttrList.setVector(&attrList, attrCount, fScanner);
-            fDocHandler->startElement(XMLUni::fgZeroLenString,
-										elemDecl.getBaseName(),
-										elemQName,
-										fAttrList);
+            if(fDocHandler)
+            {
+                fDocHandler->startElement(XMLUni::fgZeroLenString,
+                                          XMLUni::fgZeroLenString,
+                                          qName->getRawName(),
+                                          fAttrList);
+            }
         }
 
 
@@ -782,25 +790,32 @@ startElement(   const   XMLElementDecl&         elemDecl
             // call endPrefixMapping appropriately.
             if (getDoNamespaces())
             {
-                fDocHandler->endElement
-                (
-                    fScanner->getURIText(elemURLId)
-                    , elemDecl.getBaseName()
-                    , elemQName
-                );
+                if(fDocHandler)
+                {
+                    fDocHandler->endElement
+                    (
+                        fScanner->getURIText(elemURLId)
+                        , baseName
+                        , elemQName
+                    );
+                }
 
-                unsigned int numPrefix = fPrefixCounts->pop();
-                for (unsigned int i = 0; i < numPrefix; ++i)
+                XMLSize_t numPrefix = fPrefixCounts->pop();
+                for (XMLSize_t i = 0; i < numPrefix; ++i)
                 {
                     unsigned int nPrefixId = fPrefixes->pop() ;
-                    fDocHandler->endPrefixMapping( fPrefixesStorage->getValueForId(nPrefixId) );
+                    if(fDocHandler)
+                        fDocHandler->endPrefixMapping( fPrefixesStorage->getValueForId(nPrefixId) );
                 }
             }
             else
             {
-                fDocHandler->endElement(XMLUni::fgZeroLenString,
-                                elemDecl.getBaseName(),
-                                elemQName);
+                if(fDocHandler)
+                {
+                    fDocHandler->endElement(XMLUni::fgZeroLenString,
+                                    XMLUni::fgZeroLenString,
+                                    qName->getRawName());
+                }
             }
         }
     }
@@ -809,7 +824,7 @@ startElement(   const   XMLElementDecl&         elemDecl
     //  If there are any installed advanced handlers, then lets call them
     //  with this info.
     //
-    for (unsigned int index = 0; index < fAdvDHCount; index++)
+    for (XMLSize_t index = 0; index < fAdvDHCount; index++)
     {
         fAdvDHList[index]->startElement
         (
@@ -832,47 +847,50 @@ void SAX2XMLReaderImpl::endElement( const   XMLElementDecl& elemDecl
     // Just map to the SAX document handler
     if (fDocHandler)
     {
-        ArrayJanitor<XMLCh> janElemName(NULL);
-        XMLCh* elemQName = NULL;
+        const QName* qName=elemDecl.getElementName();
+        const XMLCh* baseName=qName->getLocalPart();
+        const XMLCh* elemQName = 0;
         if(elemPrefix==0 || *elemPrefix==0)
-            elemQName=(XMLCh*)elemDecl.getBaseName();
-        else if(XMLString::equals(elemPrefix, elemDecl.getElementName()->getPrefix()))
-            elemQName=(XMLCh*)elemDecl.getElementName()->getRawName();
+            elemQName=baseName;
+        else if(XMLString::equals(elemPrefix, qName->getPrefix()))
+            elemQName=qName->getRawName();
         else
         {
-            unsigned int prefixLen=XMLString::stringLen(elemPrefix);
-            elemQName=(XMLCh*)fMemoryManager->allocate((prefixLen+1+XMLString::stringLen(elemDecl.getBaseName())+1)*sizeof(XMLCh));
-            XMLString::moveChars(elemQName, elemPrefix, prefixLen);
-            elemQName[prefixLen] = chColon;
-            XMLString::copyString(&elemQName[prefixLen+1], elemDecl.getBaseName());
-            janElemName.reset(elemQName, fMemoryManager);
+            fTempQName->set(elemPrefix);
+            fTempQName->append(chColon);
+            fTempQName->append(baseName);
+            elemQName=fTempQName->getRawBuffer();
         }
 
         if (getDoNamespaces())
         {
-            fDocHandler->endElement
-            (
-                fScanner->getURIText(uriId)
-                , elemDecl.getBaseName()
-                , elemQName
-            );
+            if(fDocHandler)
+            {
+                fDocHandler->endElement
+                (
+                    fScanner->getURIText(uriId)
+                    , baseName
+                    , elemQName
+                );
+            }
 
             // get the prefixes back so that we can call endPrefixMapping()
-            unsigned int numPrefix = fPrefixCounts->pop();
-            for (unsigned int i = 0; i < numPrefix; i++)
+            XMLSize_t numPrefix = fPrefixCounts->pop();
+            for (XMLSize_t i = 0; i < numPrefix; i++)
             {
                 unsigned int nPrefixId = fPrefixes->pop() ;
-                fDocHandler->endPrefixMapping( fPrefixesStorage->getValueForId(nPrefixId) );
+                if(fDocHandler)
+                    fDocHandler->endPrefixMapping( fPrefixesStorage->getValueForId(nPrefixId) );
             }
         }
         else
         {
-            fDocHandler->endElement
-            (
-                XMLUni::fgZeroLenString,
-                elemDecl.getBaseName(),
-                elemQName 
-            );
+            if(fDocHandler)
+            {
+              fDocHandler->endElement(XMLUni::fgZeroLenString,
+                                      XMLUni::fgZeroLenString,
+                                      qName->getRawName());
+            }
         }
     }
 
@@ -880,7 +898,7 @@ void SAX2XMLReaderImpl::endElement( const   XMLElementDecl& elemDecl
     //  If there are any installed advanced handlers, then lets call them
     //  with this info.
     //
-    for (unsigned int index = 0; index < fAdvDHCount; index++)
+    for (XMLSize_t index = 0; index < fAdvDHCount; index++)
         fAdvDHList[index]->endElement(elemDecl, uriId, isRoot, elemPrefix);
 
     //
@@ -900,7 +918,7 @@ void SAX2XMLReaderImpl::startEntityReference(const XMLEntityDecl& entityDecl)
     //  SAX has no way to report this. But, If there are any installed
     //  advanced handlers, then lets call them with this info.
     //
-    for (unsigned int index = 0; index < fAdvDHCount; index++)
+    for (XMLSize_t index = 0; index < fAdvDHCount; index++)
         fAdvDHList[index]->startEntityReference(entityDecl);
 }
 
@@ -928,7 +946,7 @@ void SAX2XMLReaderImpl::attDef( const   DTDElementDecl& elemDecl
         if (isEnumeration) {
 
             const XMLCh* enumString = attDef.getEnumeration();
-            unsigned int enumLen = XMLString::stringLen(enumString);
+            XMLSize_t enumLen = XMLString::stringLen(enumString);
 
             if (attType == XMLAttDef::Notation) {
 
@@ -938,7 +956,7 @@ void SAX2XMLReaderImpl::attDef( const   DTDElementDecl& elemDecl
 
             enumBuf.append(chOpenParen);
 
-            for (unsigned int i=0; i<enumLen; i++) {
+            for (XMLSize_t i=0; i<enumLen; i++) {
                 if (enumString[i] == chSpace)
                     enumBuf.append(chPipe);
                 else
@@ -993,7 +1011,7 @@ void SAX2XMLReaderImpl::doctypePI(  const   XMLCh* const
 
 
 void SAX2XMLReaderImpl::doctypeWhitespace(  const   XMLCh* const
-                                    , const unsigned int)
+                                    , const XMLSize_t)
 {
     // Unused by SAX DTDHandler interface at this time
 }
@@ -1027,11 +1045,10 @@ void SAX2XMLReaderImpl::endIntSubset()
 void SAX2XMLReaderImpl::endExtSubset()
 {
     // Call the installed LexicalHandler.
-    if (fLexicalHandler) {
-
+    if (fLexicalHandler)
         fLexicalHandler->endEntity(gDTDEntityStr);
+    if (fLexicalHandler)
         fLexicalHandler->endDTD();
-    }
 
     // Unused by SAX DTDHandler interface at this time
 }
@@ -1067,7 +1084,7 @@ void SAX2XMLReaderImpl::entityDecl( const   DTDEntityDecl&  entityDecl
 
             if (isPEDecl) {
 
-                unsigned int nameLen = XMLString::stringLen(entityName);
+                XMLSize_t nameLen = XMLString::stringLen(entityName);
                 XMLCh* tmpName = (XMLCh*) fMemoryManager->allocate
                 (
                     (nameLen + 2) * sizeof(XMLCh)
@@ -1167,17 +1184,6 @@ void SAX2XMLReaderImpl::resetEntities()
     // Nothing to do for this one
 }
 
-
-InputSource* SAX2XMLReaderImpl::resolveEntity(   const   XMLCh* const    publicId
-                                               , const   XMLCh* const    systemId
-                                               , const   XMLCh* const)
-{
-    // Just map to the SAX entity resolver handler
-    if (fEntityResolver)
-        return fEntityResolver->resolveEntity(publicId, systemId);
-    return 0;
-}
-
 InputSource* SAX2XMLReaderImpl::resolveEntity(XMLResourceIdentifier* resourceIdentifier)
 {
     //
@@ -1185,14 +1191,14 @@ InputSource* SAX2XMLReaderImpl::resolveEntity(XMLResourceIdentifier* resourceIde
     //  return a null pointer to cause the default resolution.
     //
     if (fEntityResolver)
-        return fEntityResolver->resolveEntity(resourceIdentifier->getPublicId(), 
+        return fEntityResolver->resolveEntity(resourceIdentifier->getPublicId(),
                                                 resourceIdentifier->getSystemId());
     if (fXMLEntityResolver)
         return fXMLEntityResolver->resolveEntity(resourceIdentifier);
 
     return 0;
 }
- 
+
 void SAX2XMLReaderImpl::startInputSource(const InputSource&)
 {
     // Nothing to do for this one
@@ -1214,8 +1220,8 @@ void SAX2XMLReaderImpl::error(  const   unsigned int        originalExceptCode
                         , const XMLCh* const                errorText
                         , const XMLCh* const                systemId
                         , const XMLCh* const                publicId
-                        , const XMLSSize_t                  lineNum
-                        , const XMLSSize_t                  colNum)
+                        , const XMLFileLoc                  lineNum
+                        , const XMLFileLoc                  colNum)
 {
     SAXParseException toThrow = SAXParseException
     (
@@ -1254,7 +1260,7 @@ void SAX2XMLReaderImpl::setFeature(const XMLCh* const name, const bool value)
 
     if (fParseInProgress)
         throw SAXNotSupportedException("Feature modification is not supported during parse.", fMemoryManager);
-	
+
     if (XMLString::compareIStringASCII(name, XMLUni::fgSAX2CoreNameSpaces) == 0)
     {
         setDoNamespaces(value);
@@ -1301,6 +1307,10 @@ void SAX2XMLReaderImpl::setFeature(const XMLCh* const name, const bool value)
     else if (XMLString::compareIStringASCII(name, XMLUni::fgXercesLoadExternalDTD) == 0)
     {
         fScanner->setLoadExternalDTD(value);
+    }
+    else if (XMLString::compareIStringASCII(name, XMLUni::fgXercesLoadSchema) == 0)
+    {
+        fScanner->setLoadSchema(value);
     }
     else if (XMLString::compareIStringASCII(name, XMLUni::fgXercesContinueAfterFatalError) == 0)
     {
@@ -1354,6 +1364,10 @@ void SAX2XMLReaderImpl::setFeature(const XMLCh* const name, const bool value)
     {
         fScanner->setSkipDTDValidation(value);
     }
+    else if (XMLString::compareIStringASCII(name, XMLUni::fgXercesHandleMultipleImports) == 0)
+    {
+        fScanner->setHandleMultipleImports(value);
+    }
     else
        throw SAXNotRecognizedException("Unknown Feature", fMemoryManager);
 }
@@ -1376,6 +1390,8 @@ bool SAX2XMLReaderImpl::getFeature(const XMLCh* const name) const
         return fScanner->getIdentityConstraintChecking();
     else if (XMLString::compareIStringASCII(name, XMLUni::fgXercesLoadExternalDTD) == 0)
         return fScanner->getLoadExternalDTD();
+    else if (XMLString::compareIStringASCII(name, XMLUni::fgXercesLoadSchema) == 0)
+        return fScanner->getLoadSchema();
     else if (XMLString::compareIStringASCII(name, XMLUni::fgXercesContinueAfterFatalError) == 0)
         return !fScanner->getExitOnFirstFatal();
     else if (XMLString::compareIStringASCII(name, XMLUni::fgXercesValidationErrorAsFatal) == 0)
@@ -1400,6 +1416,8 @@ bool SAX2XMLReaderImpl::getFeature(const XMLCh* const name) const
         return fScanner->getDisableDefaultEntityResolution();
     else if (XMLString::compareIStringASCII(name, XMLUni::fgXercesSkipDTDValidation) == 0)
         return fScanner->getSkipDTDValidation();
+    else if (XMLString::compareIStringASCII(name, XMLUni::fgXercesHandleMultipleImports) == 0)
+        return fScanner->getHandleMultipleImports();
     else
        throw SAXNotRecognizedException("Unknown Feature", fMemoryManager);
 
@@ -1408,21 +1426,25 @@ bool SAX2XMLReaderImpl::getFeature(const XMLCh* const name) const
 
 void SAX2XMLReaderImpl::setProperty(const XMLCh* const name, void* value)
 {
-	if (fParseInProgress)
-		throw SAXNotSupportedException("Property modification is not supported during parse.", fMemoryManager);
+    if (fParseInProgress)
+        throw SAXNotSupportedException("Property modification is not supported during parse.", fMemoryManager);
 
-	if (XMLString::compareIStringASCII(name, XMLUni::fgXercesSchemaExternalSchemaLocation) == 0)
-	{
-		fScanner->setExternalSchemaLocation((XMLCh*)value);
-	}
-	else if (XMLString::compareIStringASCII(name, XMLUni::fgXercesSchemaExternalNoNameSpaceSchemaLocation) == 0)
-	{
-		fScanner->setExternalNoNamespaceSchemaLocation((XMLCh*)value);
-	}
-	else if (XMLString::compareIStringASCII(name, XMLUni::fgXercesSecurityManager) == 0)
-	{
-		fScanner->setSecurityManager((SecurityManager*)value);
-	}
+    if (XMLString::compareIStringASCII(name, XMLUni::fgXercesSchemaExternalSchemaLocation) == 0)
+    {
+        fScanner->setExternalSchemaLocation((XMLCh*)value);
+    }
+    else if (XMLString::compareIStringASCII(name, XMLUni::fgXercesSchemaExternalNoNameSpaceSchemaLocation) == 0)
+    {
+        fScanner->setExternalNoNamespaceSchemaLocation((XMLCh*)value);
+    }
+    else if (XMLString::compareIStringASCII(name, XMLUni::fgXercesSecurityManager) == 0)
+    {
+        fScanner->setSecurityManager((SecurityManager*)value);
+    }
+    else if (XMLString::compareIStringASCII(name, XMLUni::fgXercesLowWaterMark) == 0)
+    {
+        fScanner->setLowWaterMark(*(const XMLSize_t*)value);
+    }
     else if (XMLString::equals(name, XMLUni::fgXercesScannerName))
     {
         XMLScanner* tempScanner = XMLScannerResolver::resolveScanner
@@ -1454,6 +1476,8 @@ void* SAX2XMLReaderImpl::getProperty(const XMLCh* const name) const
         return (void*)fScanner->getExternalNoNamespaceSchemaLocation();
     else if (XMLString::compareIStringASCII(name, XMLUni::fgXercesSecurityManager) == 0)
         return (void*)fScanner->getSecurityManager();
+    else if (XMLString::compareIStringASCII(name, XMLUni::fgXercesLowWaterMark) == 0)
+        return (void*)&fScanner->getLowWaterMark();
     else if (XMLString::equals(name, XMLUni::fgXercesScannerName))
         return (void*)fScanner->getName();
     else
@@ -1501,7 +1525,7 @@ bool SAX2XMLReaderImpl::getDoSchema() const
 //  SAX2XMLReaderImpl: Grammar preparsing
 // ---------------------------------------------------------------------------
 Grammar* SAX2XMLReaderImpl::loadGrammar(const char* const systemId,
-                                        const short grammarType,
+                                        const Grammar::GrammarType grammarType,
                                         const bool toCache)
 {
     // Avoid multiple entrance
@@ -1527,7 +1551,7 @@ Grammar* SAX2XMLReaderImpl::loadGrammar(const char* const systemId,
 }
 
 Grammar* SAX2XMLReaderImpl::loadGrammar(const XMLCh* const systemId,
-                                        const short grammarType,
+                                        const Grammar::GrammarType grammarType,
                                         const bool toCache)
 {
     // Avoid multiple entrance
@@ -1553,7 +1577,7 @@ Grammar* SAX2XMLReaderImpl::loadGrammar(const XMLCh* const systemId,
 }
 
 Grammar* SAX2XMLReaderImpl::loadGrammar(const InputSource& source,
-                                        const short grammarType,
+                                        const Grammar::GrammarType grammarType,
                                         const bool toCache)
 {
     // Avoid multiple entrance
@@ -1586,9 +1610,10 @@ void SAX2XMLReaderImpl::resetInProgress()
 void SAX2XMLReaderImpl::resetCachedGrammarPool()
 {
     fGrammarResolver->resetCachedGrammar();
+    fScanner->resetCachedGrammar();
 }
 
-void SAX2XMLReaderImpl::setInputBufferSize(const size_t bufferSize)
+void SAX2XMLReaderImpl::setInputBufferSize(const XMLSize_t bufferSize)
 {
     fScanner->setInputBufferSize(bufferSize);
 }
@@ -1600,4 +1625,3 @@ Grammar* SAX2XMLReaderImpl::getGrammar(const XMLCh* const nameSpaceKey)
 
 
 XERCES_CPP_NAMESPACE_END
-

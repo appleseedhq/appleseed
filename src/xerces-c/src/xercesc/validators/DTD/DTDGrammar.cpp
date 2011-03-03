@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DTDGrammar.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DTDGrammar.cpp 676911 2008-07-15 13:27:32Z amassari $
  */
 
 
@@ -25,7 +25,6 @@
 // ---------------------------------------------------------------------------
 #include <xercesc/util/XMLUniDefs.hpp>
 #include <xercesc/util/XMLUni.hpp>
-#include <xercesc/util/XMLRegisterCleanup.hpp>
 #include <xercesc/util/XMLInitializer.hpp>
 #include <xercesc/validators/DTD/DTDGrammar.hpp>
 #include <xercesc/validators/DTD/XMLDTDDescriptionImpl.hpp>
@@ -35,18 +34,11 @@
 XERCES_CPP_NAMESPACE_BEGIN
 
 // ---------------------------------------------------------------------------
-//  Local static data
-// ---------------------------------------------------------------------------
-static bool               sEntityPoolMutexRegistered = false;
-static XMLMutex*          sEntityPoolMutex = 0;
-static XMLRegisterCleanup entityPoolRegistryCleanup;
-
-// ---------------------------------------------------------------------------
 //  DTDGrammar: Static member data
 // ---------------------------------------------------------------------------
 NameIdPool<DTDEntityDecl>* DTDGrammar::fDefaultEntities = 0;
 
-void XMLInitializer::initializeDTDGrammarDfltEntities()
+void XMLInitializer::initializeDTDGrammar()
 {
     DTDGrammar::fDefaultEntities = new NameIdPool<DTDEntityDecl>(11, 12);
 
@@ -66,11 +58,13 @@ void XMLInitializer::initializeDTDGrammarDfltEntities()
         DTDGrammar::fDefaultEntities->put(new DTDEntityDecl(XMLUni::fgGT, chCloseAngle, true, true));
         DTDGrammar::fDefaultEntities->put(new DTDEntityDecl(XMLUni::fgQuot, chDoubleQuote, true, true));
         DTDGrammar::fDefaultEntities->put(new DTDEntityDecl(XMLUni::fgApos, chSingleQuote, true, true));
-
-        // register cleanup method
-        entityPoolRegistryCleanup.registerCleanup(DTDGrammar::reinitDfltEntities);
-        sEntityPoolMutexRegistered = true;
     }
+}
+
+void XMLInitializer::terminateDTDGrammar()
+{
+  delete DTDGrammar::fDefaultEntities;
+  DTDGrammar::fDefaultEntities = 0;
 }
 
 //---------------------------------------------------------------------------
@@ -83,7 +77,6 @@ DTDGrammar::DTDGrammar(MemoryManager* const manager) :
     , fEntityDeclPool(0)
     , fNotationDeclPool(0)
     , fGramDesc(0)
-    , fRootElemId(0)
     , fValidated(false)
 {
     //
@@ -101,35 +94,18 @@ DTDGrammar::DTDGrammar(MemoryManager* const manager) :
 
     //REVISIT: use grammarPool to create
     fGramDesc = new (fMemoryManager) XMLDTDDescriptionImpl(XMLUni::fgDTDEntityString, fMemoryManager);
-
-    // Create default entities
-    resetEntityDeclPool();
 }
 
 DTDGrammar::~DTDGrammar()
 {
     delete fElemDeclPool;
-    if(fElemNonDeclPool) 
+    if(fElemNonDeclPool)
     {
         delete fElemNonDeclPool;
     }
     delete fEntityDeclPool;
     delete fNotationDeclPool;
     delete fGramDesc;
-}
-
-// -----------------------------------------------------------------------
-//  Notification that lazy data has been deleted
-// -----------------------------------------------------------------------
-void DTDGrammar::reinitDfltEntities() {
-
-    delete fDefaultEntities;
-    fDefaultEntities = 0;
-
-    // delete local static data
-    delete sEntityPoolMutex;
-    sEntityPoolMutex = 0;
-    sEntityPoolMutexRegistered = false;
 }
 
 // -----------------------------------------------------------------------
@@ -157,7 +133,7 @@ XMLElementDecl* DTDGrammar::findOrAddElemDecl (const   unsigned int    uriId
         );
         if(!fElemNonDeclPool)
             fElemNonDeclPool = new (fMemoryManager) NameIdPool<DTDElementDecl>(29, 128, fMemoryManager);
-        const unsigned int elemId = fElemNonDeclPool->put(retVal);
+        const XMLSize_t elemId = fElemNonDeclPool->put(retVal);
         retVal->setId(elemId);
         wasAdded = true;
     }
@@ -187,7 +163,7 @@ XMLElementDecl* DTDGrammar::putElemDecl (const   unsigned int    uriId
         if(!fElemNonDeclPool)
             fElemNonDeclPool = new (fMemoryManager) NameIdPool<DTDElementDecl>(29, 128, fMemoryManager);
         retVal->setId(fElemNonDeclPool->put(retVal));
-    } else 
+    } else
     {
         retVal->setId(fElemDeclPool->put(retVal));
     }
@@ -208,54 +184,9 @@ void DTDGrammar::reset()
     fValidated = false;
 }
 
-void DTDGrammar::resetEntityDeclPool() {
-
-    // Initialize default entities if not initialized
-    if (!sEntityPoolMutexRegistered)
-    {
-        if (!sEntityPoolMutex)
-        {
-            XMLMutexLock lock(XMLPlatformUtils::fgAtomicMutex);
-            if (!sEntityPoolMutex)
-                sEntityPoolMutex = new XMLMutex(XMLPlatformUtils::fgMemoryManager);
-        }
-
-        // Use a faux scope to synchronize while we do this
-        {
-            XMLMutexLock lock(sEntityPoolMutex);
-
-            // If we got here first, then register it and set the registered flag
-            if (!sEntityPoolMutexRegistered)
-            {
-                fDefaultEntities = new NameIdPool<DTDEntityDecl>(11, 12);
-
-                //
-                // Add the default entity entries for the character refs that must
-                // always be present. We indicate that they are from the internal
-                // subset. They aren't really, but they have to look that way so
-                // that they are still valid for use within a standalone document.
-                //
-                // We also mark them as special char entities, which allows them
-                // to be used in places whether other non-numeric general entities
-                // cannot.
-                //
-                fDefaultEntities->put(new DTDEntityDecl(XMLUni::fgAmp, chAmpersand, true, true));
-                fDefaultEntities->put(new DTDEntityDecl(XMLUni::fgLT, chOpenAngle, true, true));
-                fDefaultEntities->put(new DTDEntityDecl(XMLUni::fgGT, chCloseAngle, true, true));
-                fDefaultEntities->put(new DTDEntityDecl(XMLUni::fgQuot, chDoubleQuote, true, true));
-                fDefaultEntities->put(new DTDEntityDecl(XMLUni::fgApos, chSingleQuote, true, true));
-
-                // register cleanup method
-                entityPoolRegistryCleanup.registerCleanup(DTDGrammar::reinitDfltEntities);
-                sEntityPoolMutexRegistered = true;
-            }
-        }
-    }
-}
-
 void DTDGrammar::setGrammarDescription( XMLGrammarDescription* gramDesc)
 {
-    if ((!gramDesc) || 
+    if ((!gramDesc) ||
         (gramDesc->getGrammarType() != Grammar::DTDGrammarType))
         return;
 
@@ -302,7 +233,6 @@ void DTDGrammar::serialize(XSerializeEngine& serEng)
          ***/
         fGramDesc->serialize(serEng);
 
-        serEng<<fRootElemId;
         serEng<<fValidated;
     }
     else
@@ -325,7 +255,6 @@ void DTDGrammar::serialize(XSerializeEngine& serEng)
          ***/
         fGramDesc->serialize(serEng);
 
-        serEng>>fRootElemId;
         serEng>>fValidated;
     }
 

@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XMLRangeFactory.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLRangeFactory.cpp 678879 2008-07-22 20:05:05Z amassari $
  */
 
 // ---------------------------------------------------------------------------
@@ -28,6 +28,7 @@
 #include <xercesc/util/regx/TokenFactory.hpp>
 #include <xercesc/util/regx/RangeToken.hpp>
 #include <xercesc/util/regx/RangeTokenMap.hpp>
+#include <xercesc/util/regx/UnicodeRangeFactory.hpp>
 #include <xercesc/util/Janitor.hpp>
 #include <string.h>
 
@@ -62,9 +63,9 @@ static void setupRange(XMLInt32* const rangeMap,
 
 static unsigned int getTableLen(const XMLCh* const theTable) {
 
-    unsigned int rangeLen = XMLString::stringLen(theTable);
+    XMLSize_t rangeLen = XMLString::stringLen(theTable);
 
-    return rangeLen + 2*XMLString::stringLen(theTable + rangeLen + 1);
+    return (unsigned int)(rangeLen + 2*XMLString::stringLen(theTable + rangeLen + 1));
 }
 
 // ---------------------------------------------------------------------------
@@ -107,7 +108,7 @@ void XMLRangeFactory::buildRanges(RangeTokenMap *rangeTokMap) {
     tok->createMap();
     rangeTokMap->setRangeToken(fgXMLSpace, tok);
 
-    tok = (RangeToken*) RangeToken::complementRanges(tok, tokFactory);
+    tok = RangeToken::complementRanges(tok, tokFactory);
     // Build the internal map.
     tok->createMap();
     rangeTokMap->setRangeToken(fgXMLSpace, tok , true);
@@ -126,7 +127,7 @@ void XMLRangeFactory::buildRanges(RangeTokenMap *rangeTokMap) {
     tok->createMap();
     rangeTokMap->setRangeToken(fgXMLDigit, tok);
 
-    tok = (RangeToken*) RangeToken::complementRanges(tok, tokFactory);
+    tok = RangeToken::complementRanges(tok, tokFactory);
     // Build the internal map.
     tok->createMap();
     rangeTokMap->setRangeToken(fgXMLDigit, tok , true);
@@ -173,7 +174,7 @@ void XMLRangeFactory::buildRanges(RangeTokenMap *rangeTokMap) {
     tok->createMap();
     rangeTokMap->setRangeToken(fgXMLNameChar, tok);
 
-    tok = (RangeToken*) RangeToken::complementRanges(tok, tokFactory);
+    tok = RangeToken::complementRanges(tok, tokFactory);
     // Build the internal map.
     tok->createMap();
     rangeTokMap->setRangeToken(fgXMLNameChar, tok , true);
@@ -198,25 +199,33 @@ void XMLRangeFactory::buildRanges(RangeTokenMap *rangeTokMap) {
     tok->createMap();
     rangeTokMap->setRangeToken(fgXMLInitialNameChar, tok);
 
-    tok = (RangeToken*) RangeToken::complementRanges(tok, tokFactory);
+    tok = RangeToken::complementRanges(tok, tokFactory);
     // Build the internal map.
     tok->createMap();
     rangeTokMap->setRangeToken(fgXMLInitialNameChar, tok , true);
 
     // Create word range
+    // \w = [#x0000-#x10FFFF]-[\p{P}\p{Z}\p{C}] (all characters except the set of "punctuation", "separator" and "other" characters) 
     tok = tokFactory->createRange();
-    tok->setRangeValues(wordRange, wordRangeLen);
-    janWordRange.orphan();
+    for(int i=0; i<=0xFFFF; i++)
+    {
+        unsigned short chType=UnicodeRangeFactory::getUniCategory(XMLUniCharacter::getType(i));
+        if(chType == UnicodeRangeFactory::CHAR_PUNCTUATION || 
+           chType == UnicodeRangeFactory::CHAR_SEPARATOR || 
+           chType == UnicodeRangeFactory::CHAR_OTHER)
+            tok->addRange(i, i);
+    }
     tok->sortRanges();
     tok->compactRanges();
     // Build the internal map.
     tok->createMap();
-    rangeTokMap->setRangeToken(fgXMLWord, tok);
+    rangeTokMap->setRangeToken(fgXMLWord, tok , true);
 
-    tok = (RangeToken*) RangeToken::complementRanges(tok, tokFactory);
+    tok = RangeToken::complementRanges(tok, tokFactory);
     // Build the internal map.
     tok->createMap();
-    rangeTokMap->setRangeToken(fgXMLWord, tok , true);
+    rangeTokMap->setRangeToken(fgXMLWord, tok);
+
 
     fRangesCreated = true;
 }

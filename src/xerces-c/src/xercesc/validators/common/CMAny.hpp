@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: CMAny.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: CMAny.hpp 677396 2008-07-16 19:36:20Z amassari $
  */
 
-#if !defined(CMANY_HPP)
-#define CMANY_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_CMANY_HPP)
+#define XERCESC_INCLUDE_GUARD_CMANY_HPP
 
 #include <xercesc/validators/common/CMNode.hpp>
 
@@ -36,10 +36,11 @@ public :
     // -----------------------------------------------------------------------
     CMAny
     (
-        const   ContentSpecNode::NodeTypes type
-        , const unsigned int               URI
-        , const unsigned int               position
-        ,       MemoryManager* const       manager = XMLPlatformUtils::fgMemoryManager
+        ContentSpecNode::NodeTypes      type
+        , unsigned int                  URI
+        , unsigned int                  position
+        , unsigned int                  maxStates
+        ,       MemoryManager* const    manager = XMLPlatformUtils::fgMemoryManager
     );
     ~CMAny();
 
@@ -58,7 +59,7 @@ public :
     // -----------------------------------------------------------------------
     //  Implementation of the public CMNode virtual interface
     // -----------------------------------------------------------------------
-    bool isNullable() const;
+    virtual void orphanChild();
 
 
 protected :
@@ -78,7 +79,7 @@ private :
     //  XMLContentSpec.CONTENTSPECNODE_ANY,
     //  XMLContentSpec.CONTENTSPECNODE_ANY_OTHER.
     //
-	//  fPosition
+    //  fPosition
     //  Part of the algorithm to convert a regex directly to a DFA
     //  numbers each leaf sequentially. If its -1, that means its an
     //  epsilon node. Zero and greater are non-epsilon positions.

@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: CMBinaryOp.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: CMBinaryOp.cpp 677396 2008-07-16 19:36:20Z amassari $
  */
 
 
@@ -34,11 +34,12 @@ XERCES_CPP_NAMESPACE_BEGIN
 // ---------------------------------------------------------------------------
 //  CMBinaryOp: Constructors
 // ---------------------------------------------------------------------------
-CMBinaryOp::CMBinaryOp( const ContentSpecNode::NodeTypes type
-                        ,     CMNode* const              leftToAdopt
-                        ,     CMNode* const              rightToAdopt
-                        ,     MemoryManager* const       manager) :
-    CMNode(type, manager)
+CMBinaryOp::CMBinaryOp( ContentSpecNode::NodeTypes  type
+                        , CMNode* const             leftToAdopt
+                        , CMNode* const             rightToAdopt
+                        , unsigned int              maxStates
+                        , MemoryManager* const      manager) :
+    CMNode(type, maxStates, manager)
     , fLeftChild(leftToAdopt)
     , fRightChild(rightToAdopt)
 {
@@ -48,6 +49,15 @@ CMBinaryOp::CMBinaryOp( const ContentSpecNode::NodeTypes type
     {
         ThrowXMLwithMemMgr(RuntimeException, XMLExcepts::CM_BinOpHadUnaryType, manager);
     }
+    //
+    //  If its an alternation, then if either child is nullable then
+    //  this node is nullable. If its a concatenation, then both of
+    //  them have to be nullable.
+    //
+    if ((type & 0x0f) == ContentSpecNode::Choice)
+        fIsNullable=(fLeftChild->isNullable() || fRightChild->isNullable());
+    else
+        fIsNullable=(fLeftChild->isNullable() && fRightChild->isNullable());
 }
 
 CMBinaryOp::~CMBinaryOp()
@@ -84,19 +94,13 @@ CMNode* CMBinaryOp::getRight()
 // ---------------------------------------------------------------------------
 //  CMBinaryOp: Implementation of the public CMNode virtual interface
 // ---------------------------------------------------------------------------
-bool CMBinaryOp::isNullable() const
+void CMBinaryOp::orphanChild()
 {
-    //
-    //  If its an alternation, then if either child is nullable then
-    //  this node is nullable. If its a concatenation, then both of
-    //  them have to be nullable.
-    //
-    if ((getType() & 0x0f) == ContentSpecNode::Choice)
-        return (fLeftChild->isNullable() || fRightChild->isNullable());
-
-    return (fLeftChild->isNullable() && fRightChild->isNullable());
+    delete fLeftChild;
+    fLeftChild=0;
+    delete fRightChild;
+    fRightChild=0;
 }
-
 
 // ---------------------------------------------------------------------------
 //  CMBinaryOp: Implementation of the protected CMNode virtual interface

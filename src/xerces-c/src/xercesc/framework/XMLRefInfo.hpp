@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: XMLRefInfo.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLRefInfo.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-
-#if !defined(XMLIDREFINFO_HPP)
-#define XMLIDREFINFO_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XMLREFINFO_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLREFINFO_HPP
 
 #include <xercesc/util/XMemory.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
@@ -33,7 +32,7 @@ XERCES_CPP_NAMESPACE_BEGIN
 
 /**
  *  This class provides a simple means to track ID Ref usage. Since id/idref
- *  semamatics are part of XML 1.0, any validator will likely to be able to
+ *  semantics are part of XML 1.0, any validator will likely to be able to
  *  track them. Instances of this class represent a reference and two markers,
  *  one for its being declared and another for its being used. When the
  *  document is done, one can look at each instance and, if used but not

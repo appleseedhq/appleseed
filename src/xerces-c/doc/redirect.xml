@@ -24,13 +24,13 @@
         <p>Redirect uses the SAX EntityResolver handler to redirect the
 		input stream for external entities. It installs an entity
 		resolver, traps the call to the external DTD file and redirects
-		it to another specific file which contains the actual DTD.</p>
+		it to another file which contains the actual DTD.</p>
 
         <s3 title="Running Redirect">
 
-          <p>This program illustrates how a XML application can use the SAX EntityResolver
+          <p>This program illustrates how an application can use the SAX EntityResolver
                    handler to redirect the input stream for external entities. It installs an entity
-                   resolver, traps the call to the external DTD file and redirects it to another specific
+                   resolver, traps the call to the external DTD file and redirects it to another
                    file which contains the actual DTD.</p>
 
                     <p>The program then counts and reports the number of elements and attributes in
@@ -38,10 +38,10 @@
 <source>Redirect &lt;XML file&gt;</source>
 
                    <p>Redirect is invoked as follows:</p>
-<source>cd &XercesCInstallDir;-linux/samples/data
+<source>cd &XercesC3InstallDir;/samples/data
 Redirect personal.xml</source>
           <p>The output is the following:</p>
-<source>cd &XercesCInstallDir;-linux/samples/data
+<source>cd &XercesC3InstallDir;/samples/data
 Redirect personal.xml
 personal.xml: 30 ms (37 elems, 12 attrs, 0 spaces, 268 chars)</source>
 
@@ -58,7 +58,7 @@ personal.xml: 30 ms (37 elems, 12 attrs, 0 spaces, 268 chars)</source>
              redirect all references to entities outside of its domain to local cached copies.</p>
 
           <note>The time reported by the program may be different depending on your
-          machine processor.</note>
+          processor speed.</note>
 
         </s3>
     </s2>

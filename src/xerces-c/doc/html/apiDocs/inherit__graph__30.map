@@ -1,9 +1,0 @@
-<area shape="rect" href="$classContentHandler.html" title="Receive notification of general document events." alt="" coords="13,5,139,32">
-<area shape="rect" href="$classDefaultHandler.html" title="Default base class for SAX2 handlers." alt="" coords="195,132,315,159">
-<area shape="rect" href="$classDeclHandler.html" title="Receive notification of DTD declaration events." alt="" coords="27,56,125,83">
-<area shape="rect" href="$classDocumentHandler.html" title="Receive notification of general document events." alt="" coords="7,309,145,336">
-<area shape="rect" href="$classHandlerBase.html" title="Default base class for handlers." alt="" coords="203,233,307,260">
-<area shape="rect" href="$classDTDHandler.html" title="Receive notification of basic DTD&#45;related events." alt="" coords="27,157,125,184">
-<area shape="rect" href="$classEntityResolver.html" title="Basic interface for resolving entities." alt="" coords="19,208,133,235">
-<area shape="rect" href="$classErrorHandler.html" title="Basic interface for SAX error handlers." alt="" coords="24,259,128,285">
-<area shape="rect" href="$classLexicalHandler.html" title="Receive notification of lexical events." alt="" coords="19,107,133,133">

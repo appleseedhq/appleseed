@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: Janitor.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: Janitor.hpp 669844 2008-06-20 10:11:44Z borisk $
  */
 
-
-#if !defined(JANITOR_HPP)
-#define JANITOR_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_JANITOR_HPP)
+#define XERCESC_INCLUDE_GUARD_JANITOR_HPP
 
 #include <xercesc/util/XMemory.hpp>
 #include <xercesc/framework/MemoryManager.hpp>
@@ -99,7 +98,7 @@ private :
     // -----------------------------------------------------------------------
 	ArrayJanitor();
     ArrayJanitor(const ArrayJanitor<T>& copy);
-    ArrayJanitor<T>& operator=(const ArrayJanitor<T>& copy);    
+    ArrayJanitor<T>& operator=(const ArrayJanitor<T>& copy);
 
     // -----------------------------------------------------------------------
     //  Private data members
@@ -129,10 +128,12 @@ public  :
 
     ~JanitorMemFunCall();
 
-    // -----------------------------------------------------------------------
-    //  Public, non-virtual methods
-    // -----------------------------------------------------------------------
-	void release();
+    //  small amount of auto_ptr compatibility
+    T& operator*() const;
+    T* operator->() const;
+    T* get() const;
+    T* release();
+    void reset(T* p = 0);
 
 private :
     // -----------------------------------------------------------------------

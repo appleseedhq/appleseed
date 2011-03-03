@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: ValueVectorOf.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: ValueVectorOf.hpp 676911 2008-07-15 13:27:32Z amassari $
  */
 
-
-#if !defined(VALUEVECTOROF_HPP)
-#define VALUEVECTOROF_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_VALUEVECTOROF_HPP)
+#define XERCESC_INCLUDE_GUARD_VALUEVECTOROF_HPP
 
 #include <xercesc/util/ArrayIndexOutOfBoundsException.hpp>
 #include <xercesc/util/XMLEnumerator.hpp>
@@ -38,7 +37,7 @@ public :
     // -----------------------------------------------------------------------
     ValueVectorOf
     (
-        const unsigned int maxElems
+        const XMLSize_t maxElems
         , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
         , const bool toCallDestructor = false
     );
@@ -56,27 +55,27 @@ public :
     //  Element management
     // -----------------------------------------------------------------------
     void addElement(const TElem& toAdd);
-    void setElementAt(const TElem& toSet, const unsigned int setAt);
-    void insertElementAt(const TElem& toInsert, const unsigned int insertAt);
-    void removeElementAt(const unsigned int removeAt);
+    void setElementAt(const TElem& toSet, const XMLSize_t setAt);
+    void insertElementAt(const TElem& toInsert, const XMLSize_t insertAt);
+    void removeElementAt(const XMLSize_t removeAt);
     void removeAllElements();
-    bool containsElement(const TElem& toCheck, const unsigned int startIndex = 0);
+    bool containsElement(const TElem& toCheck, const XMLSize_t startIndex = 0);
 
 
     // -----------------------------------------------------------------------
     //  Getter methods
     // -----------------------------------------------------------------------
-    const TElem& elementAt(const unsigned int getAt) const;
-    TElem& elementAt(const unsigned int getAt);
-    unsigned int curCapacity() const;
-    unsigned int size() const;
+    const TElem& elementAt(const XMLSize_t getAt) const;
+    TElem& elementAt(const XMLSize_t getAt);
+    XMLSize_t curCapacity() const;
+    XMLSize_t size() const;
     MemoryManager* getMemoryManager() const;
 
 
     // -----------------------------------------------------------------------
     //  Miscellaneous
     // -----------------------------------------------------------------------
-    void ensureExtraCapacity(const unsigned int length);
+    void ensureExtraCapacity(const XMLSize_t length);
     const TElem* rawData() const;
 
 
@@ -96,8 +95,8 @@ private:
     //      size.
     // -----------------------------------------------------------------------
     bool            fCallDestructor;
-    unsigned int    fCurCount;
-    unsigned int    fMaxCount;
+    XMLSize_t       fCurCount;
+    XMLSize_t       fMaxCount;
     TElem*          fElemList;
     MemoryManager*  fMemoryManager;
 };
@@ -150,7 +149,7 @@ private :
     //      The value vector being enumerated.
     // -----------------------------------------------------------------------
     bool                    fAdopted;
-    unsigned int            fCurIndex;
+    XMLSize_t               fCurIndex;
     ValueVectorOf<TElem>*   fToEnum;
 };
 

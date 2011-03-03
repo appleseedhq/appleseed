@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: SimpleContentModel.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: SimpleContentModel.cpp 799211 2009-07-30 09:06:43Z amassari $
  */
 
 
@@ -39,16 +39,18 @@ XERCES_CPP_NAMESPACE_BEGIN
 //  pretty simple 'bull your way through it' test according to what kind of
 //  operation it is for.
 //
-int
+bool
 SimpleContentModel::validateContent(QName** const       children
-                                  , const unsigned int  childCount
-                                  , const unsigned int) const
+                                  , XMLSize_t           childCount
+                                  , unsigned int
+                                  , XMLSize_t*          indexFailingChild
+                                  , MemoryManager*    const) const
 {
     //
     //  According to the type of operation, we do the correct type of
     //  content check.
     //
-    unsigned int index;
+    XMLSize_t index;
     switch(fOp & 0x0f)
     {
         case ContentSpecNode::Leaf :
@@ -57,23 +59,31 @@ SimpleContentModel::validateContent(QName** const       children
             //  element type we stored.
             //
             if (!childCount)
-                return 0;
+            {
+                *indexFailingChild=0;
+                return false;
+            }
 
             // If the 0th child is not the right kind, report an error at 0
             if (fDTD) {
                 if (!XMLString::equals(children[0]->getRawName(), fFirstChild->getRawName())) {
-                    return 0;
+                    *indexFailingChild=0;
+                    return false;
                 }
             }
             else {
                 if ((children[0]->getURI() != fFirstChild->getURI()) ||
                     !XMLString::equals(children[0]->getLocalPart(), fFirstChild->getLocalPart())) {
-                    return 0;
+                    *indexFailingChild=0;
+                    return false;
                 }
             }
 
             if (childCount > 1)
-                return 1;
+            {
+                *indexFailingChild=1;
+                return false;
+            }
             break;
 
         case ContentSpecNode::ZeroOrOne :
@@ -85,20 +95,24 @@ SimpleContentModel::validateContent(QName** const       children
             if (childCount == 1) {
                 if (fDTD) {
                     if (!XMLString::equals(children[0]->getRawName(), fFirstChild->getRawName())) {
-                            return 0;
+                        *indexFailingChild=0;
+                        return false;
                     }
                 }
                 else {
                     if ((children[0]->getURI() != fFirstChild->getURI()) ||
                         (!XMLString::equals(children[0]->getLocalPart(), fFirstChild->getLocalPart()))) {
-                        return 0;
+                        *indexFailingChild=0;
+                        return false;
                     }
                 }
             }
 
-
             if (childCount > 1)
-                return 1;
+            {
+                *indexFailingChild=1;
+                return false;
+            }
             break;
 
         case ContentSpecNode::ZeroOrMore :
@@ -112,7 +126,8 @@ SimpleContentModel::validateContent(QName** const       children
                 if (fDTD) {
                     for (index = 0; index < childCount; index++) {
                         if (!XMLString::equals(children[index]->getRawName(), fFirstChild->getRawName())) {
-                            return index;
+                            *indexFailingChild=index;
+                            return false;
                         }
                     }
                 }
@@ -120,7 +135,8 @@ SimpleContentModel::validateContent(QName** const       children
                     for (index = 0; index < childCount; index++) {
                         if ((children[index]->getURI() != fFirstChild->getURI()) ||
                             !XMLString::equals(children[index]->getLocalPart(), fFirstChild->getLocalPart())) {
-                            return index;
+                            *indexFailingChild=index;
+                            return false;
                         }
                     }
                 }
@@ -134,12 +150,16 @@ SimpleContentModel::validateContent(QName** const       children
             //  element type that we stored.
             //
             if (childCount == 0)
-                return 0;
+            {
+                *indexFailingChild=0;
+                return false;
+            }
 
             if (fDTD) {
                 for (index = 0; index < childCount; index++) {
                     if (!XMLString::equals(children[index]->getRawName(), fFirstChild->getRawName())) {
-                        return index;
+                        *indexFailingChild=index;
+                        return false;
                     }
                 }
             }
@@ -147,7 +167,8 @@ SimpleContentModel::validateContent(QName** const       children
                 for (index = 0; index < childCount; index++) {
                     if ((children[index]->getURI() != fFirstChild->getURI()) ||
                         !XMLString::equals(children[index]->getLocalPart(), fFirstChild->getLocalPart())) {
-                        return index;
+                        *indexFailingChild=index;
+                        return false;
                     }
                 }
             }
@@ -159,12 +180,16 @@ SimpleContentModel::validateContent(QName** const       children
             //  two types we stored.
             //
             if (!childCount)
-                return 0;
+            {
+                *indexFailingChild=0;
+                return false;
+            }
 
             if (fDTD) {
                 if (!XMLString::equals(children[0]->getRawName(), fFirstChild->getRawName()) &&
                     !XMLString::equals(children[0]->getRawName(), fSecondChild->getRawName())) {
-                    return 0;
+                    *indexFailingChild=0;
+                    return false;
                 }
             }
             else {
@@ -172,12 +197,16 @@ SimpleContentModel::validateContent(QName** const       children
                      !XMLString::equals(children[0]->getLocalPart(), fFirstChild->getLocalPart())) &&
                     ((children[0]->getURI() != fSecondChild->getURI()) ||
                      !XMLString::equals(children[0]->getLocalPart(), fSecondChild->getLocalPart()))) {
-                    return 0;
+                     *indexFailingChild=0;
+                     return false;
                 }
             }
 
             if (childCount > 1)
-                return 1;
+            {
+                *indexFailingChild=1;
+                return false;
+            }
             break;
 
         case ContentSpecNode::Sequence :
@@ -188,35 +217,52 @@ SimpleContentModel::validateContent(QName** const       children
             //  in this content mode.
             //
             if (!childCount)
-                return 0;
+            {
+                *indexFailingChild=0;
+                return false;
+            }
 
-            if (childCount == 2) {
-                if (fDTD) {
-                    if (!XMLString::equals(children[0]->getRawName(), fFirstChild->getRawName())) {
-                        return 0;
-                    }
-                    if (!XMLString::equals(children[1]->getRawName(), fSecondChild->getRawName())) {
-                        return 1;
-                    }
-                }
-                else {
-                    if ((children[0]->getURI() != fFirstChild->getURI()) ||
-                        !XMLString::equals(children[0]->getLocalPart(), fFirstChild->getLocalPart())) {
-                        return 0;
-                    }
-
-                    if ((children[1]->getURI() != fSecondChild->getURI()) ||
-                        !XMLString::equals(children[1]->getLocalPart(), fSecondChild->getLocalPart())) {
-                        return 1;
-                    }
+            // test first child
+            if (fDTD) {
+                if (!XMLString::equals(children[0]->getRawName(), fFirstChild->getRawName())) {
+                    *indexFailingChild=0;
+                    return false;
                 }
             }
             else {
-                if (childCount > 2) {
-                    return 2;
+                if ((children[0]->getURI() != fFirstChild->getURI()) ||
+                    !XMLString::equals(children[0]->getLocalPart(), fFirstChild->getLocalPart())) {
+                    *indexFailingChild=0;
+                    return false;
+                }
+            }
+            // test second child, if present
+            if( childCount == 1)
+            {
+                // missing second child
+                *indexFailingChild=1;
+                return false;
+            }
+            else
+            {
+                if (fDTD) {
+                    if (!XMLString::equals(children[1]->getRawName(), fSecondChild->getRawName())) {
+                        *indexFailingChild=1;
+                        return false;
+                    }
+                }
+                else {
+                    if ((children[1]->getURI() != fSecondChild->getURI()) ||
+                        !XMLString::equals(children[1]->getLocalPart(), fSecondChild->getLocalPart())) {
+                        *indexFailingChild=1;
+                        return false;
+                    }
                 }
 
-                return childCount;
+                if (childCount > 2) {
+                    *indexFailingChild=2;
+                    return false;
+                }
             }
             break;
 
@@ -224,14 +270,16 @@ SimpleContentModel::validateContent(QName** const       children
             ThrowXMLwithMemMgr(RuntimeException, XMLExcepts::CM_UnknownCMSpecType, fMemoryManager);
             break;
     }
-    return -1;
+    return true;
 }
 
-int SimpleContentModel::validateContentSpecial(QName** const          children
-                                            , const unsigned int      childCount
-                                            , const unsigned int
+bool SimpleContentModel::validateContentSpecial(QName** const         children
+                                            , XMLSize_t               childCount
+                                            , unsigned int
                                             , GrammarResolver*  const pGrammarResolver
-                                            , XMLStringPool*    const pStringPool) const
+                                            , XMLStringPool*    const pStringPool
+                                            , XMLSize_t*              indexFailingChild
+                                            , MemoryManager*    const) const
 {
 
     SubstitutionGroupComparator comparator(pGrammarResolver, pStringPool);
@@ -249,17 +297,26 @@ int SimpleContentModel::validateContentSpecial(QName** const          children
             //  element type we stored.
             //
             if (!childCount)
-                return 0;
+            {
+                *indexFailingChild=0;
+                return false;
+            }
 
             if ((children[0]->getURI() != fFirstChild->getURI()) ||
                 !XMLString::equals(children[0]->getLocalPart(), fFirstChild->getLocalPart()))
             {
                 if (!comparator.isEquivalentTo(children[0], fFirstChild))
-                   return 0;
+                {
+                    *indexFailingChild=0;
+                    return false;
+                }
             }
 
             if (childCount > 1)
-                return 1;
+            {
+                *indexFailingChild=1;
+                return false;
+            }
             break;
 
         case ContentSpecNode::ZeroOrOne :
@@ -273,11 +330,17 @@ int SimpleContentModel::validateContentSpecial(QName** const          children
                 !XMLString::equals(children[0]->getLocalPart(), fFirstChild->getLocalPart())))
             {
                 if(!comparator.isEquivalentTo(children[0], fFirstChild))
-                    return 0;
+                {
+                    *indexFailingChild=0;
+                    return false;
+                }
             }
 
             if (childCount > 1)
-                return 1;
+            {
+                *indexFailingChild=1;
+                return false;
+            }
             break;
 
         case ContentSpecNode::ZeroOrMore :
@@ -293,8 +356,11 @@ int SimpleContentModel::validateContentSpecial(QName** const          children
                     if ((children[index]->getURI() != fFirstChild->getURI()) ||
                         !XMLString::equals(children[index]->getLocalPart(), fFirstChild->getLocalPart()))
                     {
-    				    if (!comparator.isEquivalentTo(children[index], fFirstChild))
-                            return index;
+                        if (!comparator.isEquivalentTo(children[index], fFirstChild))
+                        {
+                            *indexFailingChild=index;
+                            return false;
+                        }
                     }
                 }
             }
@@ -307,15 +373,21 @@ int SimpleContentModel::validateContentSpecial(QName** const          children
             //  element type that we stored.
             //
             if (childCount == 0)
-                return 0;
+            {
+                *indexFailingChild=0;
+                return false;
+            }
 
             for (index = 0; index < childCount; index++)
             {
                 if ((children[index]->getURI() != fFirstChild->getURI()) ||
                     !XMLString::equals(children[index]->getLocalPart(), fFirstChild->getLocalPart()))
                 {
-    			    if (!comparator.isEquivalentTo(children[index], fFirstChild))
-                        return index;
+                    if (!comparator.isEquivalentTo(children[index], fFirstChild))
+                    {
+                        *indexFailingChild=index;
+                        return false;
+                    }
                 }
             }
             break;
@@ -326,7 +398,10 @@ int SimpleContentModel::validateContentSpecial(QName** const          children
             //  two types we stored.
             //
             if (!childCount)
-                return 0;
+            {
+                *indexFailingChild=0;
+                return false;
+            }
 
             if (((children[0]->getURI() != fFirstChild->getURI()) ||
                  !XMLString::equals(children[0]->getLocalPart(), fFirstChild->getLocalPart())) &&
@@ -336,11 +411,17 @@ int SimpleContentModel::validateContentSpecial(QName** const          children
 
                  if (!comparator.isEquivalentTo(children[0], fFirstChild) &&
                      !comparator.isEquivalentTo(children[0], fSecondChild) )
-                     return 0;
+                 {
+                     *indexFailingChild=0;
+                     return false;
+                 }
             }
 
             if (childCount > 1)
-                return 1;
+            {
+                *indexFailingChild=1;
+                return false;
+            }
             break;
 
         case ContentSpecNode::Sequence :
@@ -351,32 +432,45 @@ int SimpleContentModel::validateContentSpecial(QName** const          children
             //  in this content mode.
             //
             if (!childCount)
-                return 0;
-
-            if (childCount == 2)
             {
-                if ((children[0]->getURI() != fFirstChild->getURI()) ||
-                    !XMLString::equals(children[0]->getLocalPart(), fFirstChild->getLocalPart()))
-                {
-                    if(!comparator.isEquivalentTo(children[0], fFirstChild))
-                        return 0;
-                }
+                *indexFailingChild=0;
+                return false;
+            }
 
+            // test first child
+            if ((children[0]->getURI() != fFirstChild->getURI()) ||
+                !XMLString::equals(children[0]->getLocalPart(), fFirstChild->getLocalPart()))
+            {
+                if(!comparator.isEquivalentTo(children[0], fFirstChild))
+                {
+                    *indexFailingChild=0;
+                    return false;
+                }
+            }
+            // test second child, if present
+            if( childCount == 1)
+            {
+                // missing second child
+                *indexFailingChild=1;
+                return false;
+            }
+            else
+            {
                 if ((children[1]->getURI() != fSecondChild->getURI()) ||
                     !XMLString::equals(children[1]->getLocalPart(), fSecondChild->getLocalPart()))
                 {
                     if (!comparator.isEquivalentTo(children[1], fSecondChild))
-                        return 1;
-                }
-            }
-            else
-            {
-                if (childCount > 2)
-                {
-                    return 2;
+                    {
+                        *indexFailingChild=1;
+                        return false;
+                    }
                 }
 
-                return childCount;
+                if (childCount > 2) {
+                    *indexFailingChild=2;
+                    return false;
+                }
+
             }
             break;
 
@@ -384,7 +478,7 @@ int SimpleContentModel::validateContentSpecial(QName** const          children
             ThrowXMLwithMemMgr(RuntimeException, XMLExcepts::CM_UnknownCMSpecType, fMemoryManager);
             break;
     }
-    return -1;
+    return true;
 }
 
 ContentLeafNameTypeVector* SimpleContentModel::getContentLeafNameTypeVector() const

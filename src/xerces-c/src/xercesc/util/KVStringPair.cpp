@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: KVStringPair.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: KVStringPair.cpp 554580 2007-07-09 09:09:51Z amassari $
  */
 
 
@@ -54,7 +54,7 @@ KVStringPair::KVStringPair(const XMLCh* const key,
 
 KVStringPair::KVStringPair(const XMLCh* const key,
                            const XMLCh* const value,
-                           const unsigned int valueLength,
+                           const XMLSize_t    valueLength,
                            MemoryManager* const manager)
 :fKeyAllocSize(0)
 ,fValueAllocSize(0)
@@ -67,9 +67,9 @@ KVStringPair::KVStringPair(const XMLCh* const key,
 }
 
 KVStringPair::KVStringPair(const XMLCh* const key,
-                           const unsigned int keyLength,
+                           const XMLSize_t    keyLength,
                            const XMLCh* const value,
-                           const unsigned int valueLength,
+                           const XMLSize_t    valueLength,
                            MemoryManager* const manager)
 :fKeyAllocSize(0)
 ,fValueAllocSize(0)
@@ -116,9 +116,9 @@ void KVStringPair::serialize(XSerializeEngine& serEng)
     }
     else
     {
-        int dataLen = 0;
-        serEng.readString(fKey,   (int&)fKeyAllocSize,   dataLen, XSerializeEngine::toReadBufferLen);
-        serEng.readString(fValue, (int&)fValueAllocSize, dataLen, XSerializeEngine::toReadBufferLen);
+        XMLSize_t dataLen = 0;
+        serEng.readString(fKey,   fKeyAllocSize,   dataLen, XSerializeEngine::toReadBufferLen);
+        serEng.readString(fValue, fValueAllocSize, dataLen, XSerializeEngine::toReadBufferLen);
     }
 
 }

@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,17 +16,13 @@
  */
 
 /*
- * $Id: UnixHTTPURLInputStream.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: UnixHTTPURLInputStream.hpp 670359 2008-06-22 13:43:45Z borisk $
  */
 
-#if !defined(UNIXHTTPURLINPUTSTREAM_HPP)
-#define UNIXHTTPURLINPUTSTREAM_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_UNIXHTTPURLINPUTSTREAM_HPP)
+#define XERCESC_INCLUDE_GUARD_UNIXHTTPURLINPUTSTREAM_HPP
 
-
-#include <xercesc/util/XMLURL.hpp>
-#include <xercesc/util/XMLExceptMsgs.hpp>
-#include <xercesc/util/BinInputStream.hpp>
-#include <xercesc/util/XMLNetAccessor.hpp>
+#include <xercesc/util/NetAccessors/BinHTTPInputStreamCommon.hpp>
 
 XERCES_CPP_NAMESPACE_BEGIN
 
@@ -34,20 +30,14 @@ XERCES_CPP_NAMESPACE_BEGIN
 // This class implements the BinInputStream interface specified by the XML
 // parser.
 //
-
-class XMLUTIL_EXPORT UnixHTTPURLInputStream : public BinInputStream
+class XMLUTIL_EXPORT UnixHTTPURLInputStream : public BinHTTPInputStreamCommon
 {
 public :
     UnixHTTPURLInputStream(const XMLURL&  urlSource, const XMLNetHTTPInfo* httpInfo=0);
     ~UnixHTTPURLInputStream();
 
-    unsigned int curPos() const;
-    unsigned int readBytes
-    (
-                XMLByte* const  toFill
-        , const unsigned int    maxToRead
-    );
-
+    virtual bool send(const char *buf, XMLSize_t len);
+    virtual int receive(char *buf, XMLSize_t len);
 
 private :
     // -----------------------------------------------------------------------
@@ -61,31 +51,10 @@ private :
     //
     //  fSocket
     //      The socket representing the connection to the remote file.
-    //  fBytesProcessed
-    //      Its a rolling count of the number of bytes processed off this
-    //      input stream.
-    //  fBuffer
-    //      Holds the http header, plus the first part of the actual
-    //      data.  Filled at the time the stream is opened, data goes
-    //      out to user in response to readBytes().
-    //  fBufferPos, fBufferEnd
-    //      Pointers into fBuffer, showing start and end+1 of content
-    //      that readBytes must return.
     // -----------------------------------------------------------------------
 
     int                 fSocket;
-    unsigned int        fBytesProcessed;
-    char                fBuffer[4000];
-    char *              fBufferEnd;
-    char *              fBufferPos;
-    MemoryManager*      fMemoryManager;
-}; // UnixHTTPURLInputStream
-
-
-inline unsigned int UnixHTTPURLInputStream::curPos() const
-{
-    return fBytesProcessed;
-}
+};
 
 XERCES_CPP_NAMESPACE_END
 

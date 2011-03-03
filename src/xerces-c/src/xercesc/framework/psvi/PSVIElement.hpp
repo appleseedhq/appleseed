@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: PSVIElement.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: PSVIElement.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-#if !defined(PSVIELEMENT_HPP)
-#define PSVIELEMENT_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_PSVIELEMENT_HPP)
+#define XERCESC_INCLUDE_GUARD_PSVIELEMENT_HPP
 
 #include <xercesc/framework/psvi/PSVIItem.hpp>
 

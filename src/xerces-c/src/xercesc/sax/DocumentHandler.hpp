@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: DocumentHandler.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DocumentHandler.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-
-#ifndef DOCUMENTHANDLER_HPP
-#define DOCUMENTHANDLER_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_DOCUMENTHANDLER_HPP)
+#define XERCESC_INCLUDE_GUARD_DOCUMENTHANDLER_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 
@@ -104,7 +103,7 @@ public:
     virtual void characters
     (
         const   XMLCh* const    chars
-        , const unsigned int    length
+        , const XMLSize_t       length
     ) = 0;
 
   /**
@@ -164,7 +163,7 @@ public:
     virtual void ignorableWhitespace
     (
         const   XMLCh* const    chars
-        , const unsigned int    length
+        , const XMLSize_t       length
     ) = 0;
 
   /**
@@ -191,9 +190,9 @@ public:
     ) = 0;
 
     /**
-    * Reset the Docuemnt object on its reuse
+    * Reset the Document object on its reuse
     *
-    * <p>This method helps in reseting the document implementational
+    * <p>This method helps in reseting the document implementation
     * defaults each time the document is begun.</p>
     *
     */
@@ -254,7 +253,7 @@ public:
     * <p>If the element name has a namespace prefix, the prefix will
     * still be attached.  Note that the attribute list provided will
     * contain only attributes with explicit values (specified or
-    * defaulted): #IMPLIED attributes will be omitted.</p>
+    * defaulted): \#IMPLIED attributes will be omitted.</p>
     *
     * @param name The element type name.
     * @param attrs The attributes attached to the element, if any.

@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: CMUnaryOp.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: CMUnaryOp.cpp 677396 2008-07-16 19:36:20Z amassari $
  */
 
 
@@ -32,10 +32,11 @@ XERCES_CPP_NAMESPACE_BEGIN
 // ---------------------------------------------------------------------------
 //  CMUnaryOp: Constructors and Destructor
 // ---------------------------------------------------------------------------
-CMUnaryOp::CMUnaryOp( const ContentSpecNode::NodeTypes type
-                    ,       CMNode* const              nodeToAdopt
-                    ,       MemoryManager* const       manager) :
-    CMNode(type, manager)
+CMUnaryOp::CMUnaryOp( ContentSpecNode::NodeTypes type
+                    , CMNode* const              nodeToAdopt
+                    , unsigned int               maxStates
+                    , MemoryManager* const       manager) :
+    CMNode(type, maxStates, manager)
     , fChild(nodeToAdopt)
 {
     // Insure that its one of the types we require
@@ -45,6 +46,10 @@ CMUnaryOp::CMUnaryOp( const ContentSpecNode::NodeTypes type
     {
         ThrowXMLwithMemMgr(RuntimeException, XMLExcepts::CM_UnaryOpHadBinType, manager);
     }
+    if (type == ContentSpecNode::OneOrMore)
+        fIsNullable=fChild->isNullable();
+    else
+        fIsNullable=true;
 }
 
 CMUnaryOp::~CMUnaryOp()
@@ -70,14 +75,11 @@ CMNode* CMUnaryOp::getChild()
 // ---------------------------------------------------------------------------
 //  CMUnaryOp: Implementation of the public CMNode virtual interface
 // ---------------------------------------------------------------------------
-bool CMUnaryOp::isNullable() const
+void CMUnaryOp::orphanChild()
 {
-    if (getType() == ContentSpecNode::OneOrMore)
-        return fChild->isNullable();
-    else
-        return true;
+    delete fChild;
+    fChild=0;
 }
-
 
 // ---------------------------------------------------------------------------
 //  CMUnaryOp: Implementation of the protected CMNode virtual interface

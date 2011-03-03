@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: InMemMsgLoader.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: InMemMsgLoader.cpp 570552 2007-08-28 19:57:36Z amassari $
  */
 
 
@@ -61,7 +61,7 @@ InMemMsgLoader::~InMemMsgLoader()
 // ---------------------------------------------------------------------------
 bool InMemMsgLoader::loadMsg(const  XMLMsgLoader::XMLMsgId  msgToLoad
                             ,       XMLCh* const            toFill
-                            , const unsigned int            maxChars)
+                            , const XMLSize_t               maxChars)
 {
     //
     //  Just use the id to map into the correct array of messages. Then
@@ -115,7 +115,7 @@ bool InMemMsgLoader::loadMsg(const  XMLMsgLoader::XMLMsgId  msgToLoad
 
 bool InMemMsgLoader::loadMsg(const  XMLMsgLoader::XMLMsgId  msgToLoad
                             ,       XMLCh* const            toFill
-                            , const unsigned int            maxChars
+                            , const XMLSize_t               maxChars
                             , const XMLCh* const            repText1
                             , const XMLCh* const            repText2
                             , const XMLCh* const            repText3
@@ -134,7 +134,7 @@ bool InMemMsgLoader::loadMsg(const  XMLMsgLoader::XMLMsgId  msgToLoad
 
 bool InMemMsgLoader::loadMsg(const  XMLMsgLoader::XMLMsgId  msgToLoad
                             ,       XMLCh* const            toFill
-                            , const unsigned int            maxChars
+                            , const XMLSize_t               maxChars
                             , const char* const             repText1
                             , const char* const             repText2
                             , const char* const             repText3

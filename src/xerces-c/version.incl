@@ -1,13 +1,12 @@
 #
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
-# 
+# Copyright 1999-2004 The Apache Software Foundation.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
 #      http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,9 +15,8 @@
 #
 #
 #
-# $Id: version.incl 568078 2007-08-21 11:43:25Z amassari $
+# $Id: version.incl 935350 2010-04-18 15:02:36Z borisk $
 #
-VER=2_8_0
-SO_TARGET_VERSION=28
-SO_TARGET_VERSION_MAJOR=0
-WIN_MSG_VER=2_8
+VER=3_1_1
+INTERFACE_VER_D=3.1
+INTERFACE_VER_U=3_1

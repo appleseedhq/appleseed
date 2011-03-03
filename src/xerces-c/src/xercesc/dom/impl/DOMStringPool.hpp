@@ -1,6 +1,3 @@
-#ifndef DOMStringPool_HEADER_GUARD_
-#define DOMStringPool_HEADER_GUARD_
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -8,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,8 +16,11 @@
  */
 
 /*
- * $Id: DOMStringPool.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMStringPool.hpp 678766 2008-07-22 14:00:16Z borisk $
  */
+
+#if !defined(XERCESC_INCLUDE_GUARD_DOMSTRINGPOOL_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMSTRINGPOOL_HPP
 
 //
 //  This file is part of the internal implementation of the C++ XML DOM.
@@ -35,38 +35,23 @@
 
 XERCES_CPP_NAMESPACE_BEGIN
 
-
-struct  DOMStringPoolEntry;
 class   DOMDocumentImpl;
 
 //
-// DOMStringPool is a hash table of XMLCh* Strings.
-//  Each DOM Document maintains a DOMStringPool containing a XMLCh* String
-//  for each Element tag name and Attribute Name that has been added
-//  to the document.  When creating additional elements or attributes,
-//  if the name has been seen before, the already existing string
-//  will be reused.
+//  DStringPoolEntry - one of these structs is allocated for each
+//                      XMLCh String in the pool.  Each slot in the
+//                      hash table array itself is a pointer to the head
+//                      of a singly-linked list of these structs.
 //
-class DOMStringPool
+//                      Although this struct is delcared with a string length of one,
+//                      the factory method allocates enough storage to hold the full
+//                      string length.
+//
+struct DOMStringPoolEntry
 {
-public:
-    DOMStringPool(int  hashTableSize, DOMDocumentImpl *doc);
-    ~DOMStringPool();
-
-    const XMLCh *getPooledString(const XMLCh *in);
-
-
-private:
-    DOMStringPool(const DOMStringPool &other);      // Copy constructor and assignment
-    DOMStringPool& operator = (const DOMStringPool &other); //  of DOMStringPool are not supported.
-
-
-    DOMDocumentImpl     *fDoc;
-    DOMStringPoolEntry **fHashTable;
-    int                 fHashTableSize;
-
+    DOMStringPoolEntry    *fNext;
+    XMLCh                 fString[1];
 };
-
 
 //
 // DOMBuffer is a lightweight text buffer
@@ -78,9 +63,7 @@ public :
     // -----------------------------------------------------------------------
     //  Constructors and Destructor
     // -----------------------------------------------------------------------
-    DOMBuffer(DOMDocumentImpl *doc, int capacity = 31);
-
-    DOMBuffer(DOMDocumentImpl *doc, const XMLCh* string);
+    DOMBuffer(DOMDocumentImpl *doc, XMLSize_t capacity = 31);
 
     ~DOMBuffer()
     {
@@ -89,11 +72,11 @@ public :
     // -----------------------------------------------------------------------
     //  Buffer Management
     // -----------------------------------------------------------------------
-    void append
-    (
-        const   XMLCh* const    chars
-        , const unsigned int    count = 0
-    );
+    void append (const XMLCh* const chars);
+    void append (const XMLCh* const chars, const XMLSize_t count);
+
+    void set (const XMLCh* const chars);
+    void set (const XMLCh* const chars, const XMLSize_t count);
 
     const XMLCh* getRawBuffer() const
     {
@@ -107,15 +90,9 @@ public :
         fBuffer[0] = 0;
     }
 
-    void set
-    (
-        const   XMLCh* const    chars
-        , const unsigned int    count = 0
-    );
-
     void chop
     (
-        const unsigned int    count
+        const XMLSize_t    count
     )
     {
         fBuffer[count] = 0;
@@ -126,15 +103,20 @@ public :
     // -----------------------------------------------------------------------
     //  Getters
     // -----------------------------------------------------------------------
-    unsigned int getLen() const
+    XMLSize_t getLen() const
     {
         return fIndex;
+    }
+
+    XMLSize_t getCapacity() const
+    {
+        return fCapacity;
     }
 
     // -----------------------------------------------------------------------
     //  Private helpers
     // -----------------------------------------------------------------------
-    void expandCapacity(const unsigned int extraNeeded);
+    void expandCapacity(const XMLSize_t extraNeeded);
 
 
 private :
@@ -156,9 +138,9 @@ private :
     //  fDoc
     //      For allocating memory
     // -----------------------------------------------------------------------
-    XMLCh*          fBuffer;
-    unsigned int    fIndex;
-    unsigned int    fCapacity;
+    XMLCh*           fBuffer;
+    XMLSize_t        fIndex;
+    XMLSize_t        fCapacity;
     DOMDocumentImpl* fDoc;
 
     // -----------------------------------------------------------------------
@@ -167,6 +149,62 @@ private :
     DOMBuffer(const DOMBuffer &);
     DOMBuffer & operator = (const DOMBuffer &);
 };
+
+inline void DOMBuffer::
+append (const XMLCh* const chars)
+{
+  XMLSize_t count = XMLString::stringLen(chars);
+  if (fIndex + count >= fCapacity)
+    expandCapacity(count);
+
+  memcpy(&fBuffer[fIndex], chars, count * sizeof(XMLCh));
+  fIndex += count;
+
+  // Keep it null terminated
+  fBuffer[fIndex] = 0;
+}
+
+inline void DOMBuffer::
+append (const XMLCh* const chars, const XMLSize_t count)
+{
+  if (fIndex + count >= fCapacity)
+    expandCapacity(count);
+
+  memcpy(&fBuffer[fIndex], chars, count * sizeof(XMLCh));
+  fIndex += count;
+
+  // Keep it null terminated
+  fBuffer[fIndex] = 0;
+}
+
+inline void DOMBuffer::
+set (const XMLCh* const chars)
+{
+  XMLSize_t count = XMLString::stringLen(chars);
+  fIndex = 0;
+  if (count >= fCapacity)
+    expandCapacity(count);
+
+  memcpy(fBuffer, chars, count * sizeof(XMLCh));
+  fIndex = count;
+
+  // Keep it null terminated
+  fBuffer[fIndex] = 0;
+}
+
+inline void DOMBuffer::
+set (const XMLCh* const chars, const XMLSize_t count)
+{
+  fIndex = 0;
+  if (count >= fCapacity)
+    expandCapacity(count);
+
+  memcpy(fBuffer, chars, count * sizeof(XMLCh));
+  fIndex = count;
+
+  // Keep it null terminated
+  fBuffer[fIndex] = 0;
+}
 
 XERCES_CPP_NAMESPACE_END
 

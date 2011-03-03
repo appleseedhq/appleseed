@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: DefaultHandler.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DefaultHandler.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-
-#ifndef DEFAULTHANDLER_HPP
-#define DEFAULTHANDLER_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_DEFAULTHANDLER_HPP)
+#define XERCESC_INCLUDE_GUARD_DEFAULTHANDLER_HPP
 
 #include <xercesc/sax2/ContentHandler.hpp>
 #include <xercesc/sax2/LexicalHandler.hpp>
@@ -88,7 +87,7 @@ public:
     virtual void characters
     (
         const   XMLCh* const    chars
-        , const unsigned int    length
+        , const XMLSize_t       length
     );
 
   /**
@@ -113,7 +112,7 @@ public:
     * each element (such as finalising a tree node or writing
     * output to a file).</p>
     *
-    * @param uri The URI of the asscioated namespace for this element
+    * @param uri The URI of the associated namespace for this element
 	* @param localname The local part of the element name
 	* @param qname The QName of this element
     * @exception SAXException Any SAX exception, possibly
@@ -145,7 +144,7 @@ public:
     virtual void ignorableWhitespace
     (
         const   XMLCh* const    chars
-        , const unsigned int    length
+        , const XMLSize_t       length
     );
 
   /**
@@ -170,7 +169,7 @@ public:
     );
 
     /**
-    * Reset the Docuemnt object on its reuse
+    * Reset the Document object on its reuse
     *
     * @see DocumentHandler#resetDocument
     */
@@ -215,7 +214,7 @@ public:
     * each element (such as allocating a new tree node or writing
     * output to a file).</p>
     *
-    * @param uri The URI of the asscioated namespace for this element
+    * @param uri The URI of the associated namespace for this element
 	* @param localname the local part of the element name
 	* @param qname the QName of this element
     * @param attrs The specified or defaulted attributes.
@@ -303,7 +302,7 @@ public:
     * in a subclass to do special translations such as catalog lookups
     * or URI redirection.</p>
     *
-    * @param publicId The public identifer, or null if none is
+    * @param publicId The public identifier, or null if none is
     *                 available.
     * @param systemId The system identifier provided in the XML
     *                 document.
@@ -446,7 +445,7 @@ public:
    /**
     * Receive notification of comments.
     *
-    * <p>The Parser will call this method to report each occurence of
+    * <p>The Parser will call this method to report each occurrence of
     * a comment in the XML document.</p>
     *
     * <p>The application must not attempt to read from the array
@@ -460,7 +459,7 @@ public:
     virtual void comment
     (
         const   XMLCh* const    chars
-        , const unsigned int    length
+        , const XMLSize_t       length
     );
 
   /**
@@ -645,7 +644,7 @@ private:
 //  HandlerBase: Inline default implementations
 // ---------------------------------------------------------------------------
 inline void DefaultHandler::characters(const   XMLCh* const
-                                       ,const   unsigned int)
+                                       ,const  XMLSize_t)
 {
 }
 
@@ -670,7 +669,7 @@ inline void DefaultHandler::fatalError(const SAXParseException& exc)
 
 inline void
 DefaultHandler::ignorableWhitespace( const   XMLCh* const
-                                    , const unsigned int)
+                                    , const XMLSize_t)
 {
 }
 
@@ -748,7 +747,7 @@ inline void DefaultHandler::skippedEntity ( const	XMLCh* const)
 }
 
 inline void DefaultHandler::comment(  const   XMLCh* const
-                                       , const unsigned int)
+                                       , const XMLSize_t)
 {
 }
 

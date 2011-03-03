@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: AnySimpleTypeDatatypeValidator.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: AnySimpleTypeDatatypeValidator.hpp 637054 2008-03-14 11:08:37Z amassari $
  */
 
-#if !defined(ANYSIMPLETYPEDATATYPEVALIDATOR_HPP)
-#define ANYSIMPLETYPEDATATYPEVALIDATOR_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_ANYSIMPLETYPEDATATYPEVALIDATOR_HPP)
+#define XERCESC_INCLUDE_GUARD_ANYSIMPLETYPEDATATYPEVALIDATOR_HPP
 
 #include <xercesc/validators/datatype/DatatypeValidator.hpp>
 
@@ -95,7 +95,7 @@ public:
       *
       */
 
-    bool isSubstitutableBy(const DatatypeValidator* const toCheck);
+    virtual bool isSubstitutableBy(const DatatypeValidator* const toCheck);
 
 	 //@}
 
@@ -113,7 +113,7 @@ public:
       * @param  value2    string to compare
       *
       */
-    int compare(const XMLCh* const value1, const XMLCh* const value2
+    virtual int compare(const XMLCh* const value1, const XMLCh* const value2
         , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
         );
 
@@ -151,17 +151,6 @@ private:
 inline bool AnySimpleTypeDatatypeValidator::isAtomic() const {
 
     return false;
-}
-
-
-// ---------------------------------------------------------------------------
-//  DatatypeValidators: Compare methods
-// ---------------------------------------------------------------------------
-inline int AnySimpleTypeDatatypeValidator::compare(const XMLCh* const,
-                                                   const XMLCh* const
-                                                   , MemoryManager* const)
-{
-    return -1;
 }
 
 // ---------------------------------------------------------------------------

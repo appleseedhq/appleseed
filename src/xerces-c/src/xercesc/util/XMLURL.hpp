@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XMLURL.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLURL.hpp 536133 2007-05-08 09:05:14Z amassari $
  */
 
-#if !defined(XMLURL_HPP)
-#define XMLURL_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XMLURL_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLURL_HPP
 
 #include <xercesc/util/PlatformUtils.hpp>
 

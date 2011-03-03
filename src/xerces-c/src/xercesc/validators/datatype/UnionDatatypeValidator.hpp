@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: UnionDatatypeValidator.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: UnionDatatypeValidator.hpp 676911 2008-07-15 13:27:32Z amassari $
  */
 
-#if !defined(UNION_DATATYPEVALIDATOR_HPP)
-#define UNION_DATATYPEVALIDATOR_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_UNION_DATATYPEVALIDATOR_HPP)
+#define XERCESC_INCLUDE_GUARD_UNION_DATATYPEVALIDATOR_HPP
 
 #include <xercesc/validators/datatype/DatatypeValidator.hpp>
 
@@ -172,41 +172,6 @@ public:
 
     RefVectorOf<DatatypeValidator>* getMemberTypeValidators() const;
 
-
-    /**
-     * Returns the type name that was actually used to validate the last time validate was called
-     * note - this does not mean that it fully validated sucessfully
-     * @deprecated
-     **/
-    const XMLCh* getMemberTypeName() const;
-
-    /**
-     * Returns the type uri that was actually used to validate the last time validate was called
-     * note - this does not mean that it fully validated sucessfully
-     * @deprecated
-     **/
-    const XMLCh* getMemberTypeUri() const;
-
-    /**
-     * Returns true if the type that was actually used to validate the last time validate was called 
-     * is anonymous
-     * @deprecated
-     */
-    bool getMemberTypeAnonymous() const;
-
-
-    /**
-     * Returns the member DatatypeValidator used to validate the content the last time validate 
-     * was called
-     * @deprecated
-     */
-    const DatatypeValidator* getMemberTypeValidator() const;
-
-    /**
-     * Called inbetween uses of this validator to reset PSVI information
-     */
-    void reset();
-
 private:
     // -----------------------------------------------------------------------
     //  Unimplemented constructors and operators
@@ -240,16 +205,12 @@ private:
     //  fMemberTypeValidators
     //      we own it (or not, depending on the state of fMemberTypesInherited).
     //
-    //  fValidatedDatatype
-    //      the dataTypeValidator  that was actually used to validate the last time validate was called
-    //
     // -----------------------------------------------------------------------
 
      bool                             fEnumerationInherited;
      bool                             fMemberTypesInherited;
      RefArrayVectorOf<XMLCh>*         fEnumeration;
-     RefVectorOf<DatatypeValidator>*  fMemberTypeValidators;
-     DatatypeValidator*               fValidatedDatatype;
+     RefVectorOf<DatatypeValidator>*  fMemberTypeValidators;   
 };
 
 inline DatatypeValidator* UnionDatatypeValidator::newInstance
@@ -317,9 +278,9 @@ inline bool UnionDatatypeValidator::isAtomic() const {
         return false;
     }
 
-    unsigned int memberSize = fMemberTypeValidators->size();
+    XMLSize_t memberSize = fMemberTypeValidators->size();
 
-    for (unsigned int i=0; i < memberSize; i++) {
+    for (XMLSize_t i=0; i < memberSize; i++) {
         if (!fMemberTypeValidators->elementAt(i)->isAtomic()) {
             return false;
         }
@@ -335,9 +296,9 @@ inline bool UnionDatatypeValidator::isSubstitutableBy(const DatatypeValidator* c
     }
 
     if (fMemberTypeValidators) {
-        unsigned int memberSize = fMemberTypeValidators->size();
+        XMLSize_t memberSize = fMemberTypeValidators->size();
 
-        for (unsigned int i=0; i < memberSize; i++) {
+        for (XMLSize_t i=0; i < memberSize; i++) {
             if ((fMemberTypeValidators->elementAt(i)->getType() == DatatypeValidator::Union) &&
                 (fMemberTypeValidators->elementAt(i) == toCheck))
                 return false;
@@ -347,36 +308,6 @@ inline bool UnionDatatypeValidator::isSubstitutableBy(const DatatypeValidator* c
         }
     }
     return false;
-}
-
-inline const XMLCh* UnionDatatypeValidator::getMemberTypeName() const {
-    if(fValidatedDatatype) {
-        return fValidatedDatatype->getTypeLocalName();
-    }
-    return 0;
-}
-
-inline const XMLCh* UnionDatatypeValidator::getMemberTypeUri() const 
-{
-    if(fValidatedDatatype) {
-        return fValidatedDatatype->getTypeUri();
-    }
-    return 0;
-}
-
-inline bool UnionDatatypeValidator::getMemberTypeAnonymous() const {
-    if(fValidatedDatatype) {
-        return fValidatedDatatype->getAnonymous();
-    }
-    return 0;
-}
-
-inline const DatatypeValidator* UnionDatatypeValidator::getMemberTypeValidator() const {
-    return fValidatedDatatype;
-}
-
-inline void UnionDatatypeValidator::reset() {
-    fValidatedDatatype = 0;
 }
 
 XERCES_CPP_NAMESPACE_END

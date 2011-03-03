@@ -20,10 +20,13 @@
 
 <s1 title="Installation">
 
+    <p>Source and binary distributions installation instructions are
+       available for the following platforms:</p>
+
     <ul>
-      <li><link anchor="Windows">Installation Instructions for Windows</link></li>
-      <li><link anchor="Unix">Installation Instructions for UNIX/Mac OS X/Linux</link></li>
-      <li><link anchor="Cygwin">Installation Instructions for Cygwin</link></li>
+      <li><link anchor="Windows">Windows</link></li>
+      <li><link anchor="Unix">UNIX/Linux/Mac OS X</link></li>
+      <li><link anchor="Cygwin">Cygwin</link></li>
     </ul>
 
     <anchor name="Windows"/>
@@ -34,47 +37,53 @@
 
       <s3 title="Source distribution">
         <p>The &XercesCName; source is available in the source distribution:
-           &XercesCSrcInstallDir;.zip.</p>
+           &XercesC3SrcInstallDir;.zip.</p>
 
         <p>Install the &XercesCName; source distribution by using <code>unzip</code>
-		on the &XercesCSrcInstallDir;.zip archive in the Windows environment. You can
+		on the &XercesC3SrcInstallDir;.zip archive in the Windows environment. You can
 		use WinZip, or any other UnZip utility:</p>
 <source>
-unzip &XercesCSrcInstallDir;.zip
+unzip &XercesC3SrcInstallDir;.zip
 </source>
-        <p>This creates the &apos;&XercesCSrcInstallDir;&apos; sub-directory
+        <p>This creates the &apos;&XercesC3SrcInstallDir;&apos; sub-directory
 		containing the &XercesCName; source distribution. </p>
 
         <p>If you need to build the &XercesCName; source after installation,
-        please follow the <jump href="build.html">Build Instructions</jump>.</p>
+        please follow the <jump href="build-&XercesC3Series;.html">Build Instructions</jump>.</p>
 
       </s3>
       <s3 title="Binary distribution">
         <p>Install the &XercesCName; binary distribution by using <code>unzip</code>
-	   on the &XercesCInstallDir;-{arch}-windows-{compiler}.zip archive in
+	   on the &XercesC3InstallDir;-{arch}-windows-{compiler}.zip archive in
            the Windows environment. Here {arch} denotes the CPU architecture
            and {compiler} denotes the C++ compiler of your choice. You can use
            WinZip, or any other UnZip utility. For example:</p>
 
 <source>
-unzip &XercesCInstallDir;-x86-windows-vc_8_0.zip
+unzip &XercesC3InstallDir;-x86-windows-vc-8.0.zip
 </source>
 
-        <p>This creates a &apos;&XercesCInstallDir;-x86-windows-vc_8_0&apos;
+        <p>This creates a &apos;&XercesC3InstallDir;-x86-windows-vc-8.0&apos;
            sub-directory containing the &XercesCName; binary distribution.</p>
 
-        <p>You need to add the &apos;&XercesCInstallDir;-{arch}-windows-{compiler}\bin&apos;
+        <p>You need to add the &apos;&XercesC3InstallDir;-{arch}-windows-{compiler}\bin&apos;
 	   directory to your path.
            To do this go to the start menu, click the settings menu and
            select control panel. When the control panel opens, double
            click on System and select the &apos;Environment&apos; tab.
 	   Locate the PATH variable under system variables and add
-           &lt;full-path-to-&XercesCInstallDir;-{arch}-windows-{compiler}>\bin
+           &lt;full-path-to-&XercesC3InstallDir;-{arch}-windows-{compiler}>\bin
            to the PATH variable.</p>
+
+        <p>Additionally, if you don't have the corresponding version of
+           Microsoft Visual C++ installed, you may need to download and
+           install the C/C++ runtime libraries from the Microsoft website.
+           For example, for Visual Studio 2008 (9.0) the package is called
+           "Microsoft Visual C++ 2008 Redistributable Package".</p>
 
         <p>The binary distribution contains the pre-built parser libraries
            and sample executables. Please refer to the
-           <jump href="samples.html">Samples</jump> for how to run the
+           <jump href="samples-&XercesC3Series;.html">Samples</jump> for how to run the
            samples.</p>
 
       </s3>
@@ -88,46 +97,46 @@ unzip &XercesCInstallDir;-x86-windows-vc_8_0.zip
 
       <s3 title="Source distribution">
         <p>The &XercesCName; source is available in the source distribution:
-           &XercesCSrcInstallDir;.tar.gz.</p>
+           &XercesC3SrcInstallDir;.tar.gz.</p>
 
         <p>Install the &XercesCName; source distribution
-           &XercesCSrcInstallDir;.tar.gz by extracting the files
+           &XercesC3SrcInstallDir;.tar.gz by extracting the files
            from the compressed archive:</p>
 <source>
-gzip -d &XercesCSrcInstallDir;.tar.gz
-tar -xf &XercesCSrcInstallDir;.tar
+gzip -d &XercesC3SrcInstallDir;.tar.gz
+tar -xf &XercesC3SrcInstallDir;.tar
 </source>
-        <p>This creates the &apos;&XercesCSrcInstallDir;&apos; sub-directory
+        <p>This creates the &apos;&XercesC3SrcInstallDir;&apos; sub-directory
 	   containing the &XercesCName; source distribution. </p>
 
         <p>If you need to build the &XercesCName; source after installation,
-           please follow the <jump href="build.html">Build Instructions</jump>.</p>
+           please follow the <jump href="build-&XercesC3Series;.html">Build Instructions</jump>.</p>
 
       </s3>
       <s3 title="Binary distribution">
-        <p>Install the binary distribution &XercesCInstallDir;-{arch}-{os}-{compiler}.tar.gz
+        <p>Install the binary distribution &XercesC3InstallDir;-{arch}-{os}-{compiler}.tar.gz
            by extracting the files from the compressed archive. Here {arch}
            denotes the CPU architecture, {os} denotes the operating system,
            and {compiler} denotes the C++ compiler of your choice.
            For example:</p>
 <source>
-gzip -d &XercesCInstallDir;-x86-linux-gcc_3_4.tar.gz
-tar -xf &XercesCInstallDir;-x86-linux-gcc_3_4.tar
+gzip -d &XercesC3InstallDir;-x86-linux-gcc-3.4.tar.gz
+tar -xf &XercesC3InstallDir;-x86-linux-gcc-3.4.tar
 </source>
-        <p>This will create an '&XercesCInstallDir;-x86-linux-gcc_3_4'
+        <p>This will create an '&XercesC3InstallDir;-x86-linux-gcc-3.4'
            sub-directory containing the &XercesCName; binary distribution.</p>
 
         <p>You will need to add the
-           &XercesCInstallDir;-{arch}-{os}-{compiler}/bin directory to your
+           &XercesC3InstallDir;-{arch}-{os}-{compiler}/bin directory to your
            PATH environment variable:</p>
 
         <p>For Bourne Shell, K Shell or Bash, type: </p>
 <source>
-export PATH="$PATH:&lt;full-path-to-&XercesCInstallDir;-{arch}-{os}-{compiler}>/bin"
+export PATH="$PATH:&lt;full-path-to-&XercesC3InstallDir;-{arch}-{os}-{compiler}>/bin"
 </source>
 		<p>For C Shell, type:</p>
 <source>
-setenv PATH "$PATH:&lt;full-path-to-&XercesCInstallDir;-{arch}-{os}-{compiler}>/bin"
+setenv PATH "$PATH:&lt;full-path-to-&XercesC3InstallDir;-{arch}-{os}-{compiler}>/bin"
 </source>
 
         <p>If you wish to make this setting permanent, you need to change
@@ -140,7 +149,7 @@ setenv PATH "$PATH:&lt;full-path-to-&XercesCInstallDir;-{arch}-{os}-{compiler}>/
 
         <p>In the following shell commands, the &lt;xerces-path>
            denotes the full path to the
-           &XercesCInstallDir;-{arch}-{os}-{compiler} directory. For
+           &XercesC3InstallDir;-{arch}-{os}-{compiler} directory. For
            Bourne Shell, K Shell or Bash, type:</p>
 <source>
 export LIBPATH=&lt;xerces-path>/lib:$LIBPATH (AIX)
@@ -159,7 +168,7 @@ setenv DYLD_LIBRARY_PATH "&lt;xerces-path>/lib:$DYLD_LIBRARY_PATH" (Mac OS X)
 
         <p>The binary distribution contains the pre-built parser libraries
            and sample executables. Please refer to the
-           <jump href="samples.html">Samples</jump> for how to run the
+           <jump href="samples-&XercesC3Series;.html">Samples</jump> for how to run the
            samples.</p>
       </s3>
    </s2>
@@ -172,47 +181,31 @@ setenv DYLD_LIBRARY_PATH "&lt;xerces-path>/lib:$DYLD_LIBRARY_PATH" (Mac OS X)
 
       <s3 title="Source distribution">
         <p>The &XercesCName; source is available in the source distribution:
-           &XercesCSrcInstallDir;.tar.gz.</p>
+           &XercesC3SrcInstallDir;.tar.gz.</p>
 
         <p>Install the &XercesCName; source distribution
-           &XercesCSrcInstallDir;.tar.gz by extracting the files
+           &XercesC3SrcInstallDir;.tar.gz by extracting the files
            from the compressed archive:</p>
 <source>
-tar -xfz &XercesCSrcInstallDir;.tar.gz
+tar -xfz &XercesC3SrcInstallDir;.tar.gz
 </source>
-        <p>This creates the &apos;&XercesCSrcInstallDir;&apos; sub-directory
+        <p>This creates the &apos;&XercesC3SrcInstallDir;&apos; sub-directory
 	   containing the &XercesCName; source distribution. </p>
 
         <p>If you need to build the &XercesCName; source after installation,
-           please follow the <jump href="build.html">Build Instructions</jump>.
+           please follow the <jump href="build-&XercesC3Series;.html">Build Instructions</jump>.
         </p>
 
       </s3>
 
       <s3 title="Binary distribution">
-        <p>Install the binary distribution by running
-           <jump href="http://www.cygwin.com">Cygwin</jump> setup.exe.
-           When you reach the "Packages" step of the Cygwin Setup wizard,
-           expand the "Devel" category, then click in the "New" column next
-           to "xerces-c-devel" until it reads "&XercesCVersion;-X".</p>
+        <p>Precompiled Xerces-C++ libraries for Cygwin are provide as
+           part of the Cygwin package repository. To install the binary
+           distribution run Cygwin setup.exe.
+           When you reach the Packages step of the Cygwin Setup wizard,
+           expand the Devel category, then click in the New column next
+           to "xerces-c-devel" until it reads "&XercesC3Version;-X".</p>
 
-        <p>This will install the necessary libraries and include files
-           for the &XercesCName; binary distribution.</p>
-
-        <p>If you wish to run programs linked to &XercesCName; that were
-           built in the Cygwin environment, you need to add your Cygwin
-           "bin" directory to your Windows PATH environment variable.
-           In typical Cygwin installations, the bin directory is in the
-           Cygwin directory on the drive that windows is installed on.
-           For instance, if windows is installed to "C:\Windows\System32",
-           Your Cygwin bin directory may be "C:\cygwin\bin".</p>
-
-        <p>The binary distribution contains the pre-built parser libraries.
-           Sample executables may be available in a future release on the
-           Cygwin platform.  In the meantime, they may be built from the
-           source distribution by following the
-           <jump href="build.html">Build Instructions</jump> for
-          "Building samples".</p>
       </s3>
    </s2>
 </s1>

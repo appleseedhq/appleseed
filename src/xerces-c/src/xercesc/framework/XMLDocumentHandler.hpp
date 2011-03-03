@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,12 +16,11 @@
  */
 
  /*
- * $Id: XMLDocumentHandler.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLDocumentHandler.hpp 673679 2008-07-03 13:50:10Z borisk $
  */
 
-
-#if !defined(XMLDOCUMENTHANDLER_HPP)
-#define XMLDOCUMENTHANDLER_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XMLDOCUMENTHANDLER_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLDOCUMENTHANDLER_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 #include <xercesc/util/RefVectorOf.hpp>
@@ -78,7 +77,7 @@ public:
     virtual void docCharacters
     (
         const   XMLCh* const    chars
-        , const unsigned int    length
+        , const XMLSize_t       length
         , const bool            cdataSection
     ) = 0;
 
@@ -172,12 +171,12 @@ public:
       * @param  length      The number of characters to read from the array.
       * @param  cdataSection Indicates that this data is inside a CDATA
       *                     section.
-      * @see #characters
+      * @see #docCharacters
       */
     virtual void ignorableWhitespace
     (
         const   XMLCh* const    chars
-        , const unsigned int    length
+        , const XMLSize_t       length
         , const bool            cdataSection
     ) = 0;
 
@@ -219,7 +218,7 @@ public:
         , const unsigned int            uriId
         , const XMLCh* const            prefixName
         , const RefVectorOf<XMLAttr>&   attrList
-        , const unsigned int            attrCount
+        , const XMLSize_t               attrCount
         , const bool                    isEmpty
         , const bool                    isRoot
     ) = 0;
@@ -258,30 +257,6 @@ public:
         , const XMLCh* const    autoEncodingStr
     ) = 0;
 
-    /** Receive notification of the name and namespace of the type that validated 
-      * the element corresponding to the most recent endElement event.
-      * This event will be fired immediately after the
-      * endElement() event that signifies the end of the element
-      * to which it applies; no other events will intervene.
-      * This method is <em>EXPERIMENTAL</em> and may change, disappear 
-      * or become pure virtual at any time.
-      *
-      * This corresponds to a part of the information required by DOM Core
-      * level 3's TypeInfo interface.
-      *
-      * @param  typeName        local name of the type that actually validated
-      *                         the content of the element corresponding to the
-      *                         most recent endElement() callback
-      * @param  typeURI         namespace of the type that actually validated
-      *                         the content of the element corresponding to the
-      *                         most recent endElement() callback
-      * @deprecated
-      */
-    virtual void elementTypeInfo
-    (
-        const   XMLCh* const /* typeName */
-        , const XMLCh* const /* typeURI */
-    ) { /* non pure virtual to permit backward compatibility of implementations.  */  };
     //@}
 
 

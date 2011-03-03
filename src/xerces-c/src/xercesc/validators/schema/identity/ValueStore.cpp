@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: ValueStore.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: ValueStore.cpp 804209 2009-08-14 13:15:05Z amassari $
  */
 
 // ---------------------------------------------------------------------------
@@ -33,176 +33,64 @@
 
 XERCES_CPP_NAMESPACE_BEGIN
 
+//
 // ---------------------------------------------------------------------------
-//  ValueStore: Constructors and Destructor
+// ICValueHasher: the hasher for identity constraints values
 // ---------------------------------------------------------------------------
-ValueStore::ValueStore(IdentityConstraint* const ic,
-                       XMLScanner* const scanner,
-                       MemoryManager* const manager)
-    : fDoReportError(false)
-    , fValuesCount(0)
-    , fIdentityConstraint(ic)
-    , fValues(manager)
-    , fValueTuples(0)
-    , fKeyValueStore(0)
-    , fScanner(scanner)
-    , fMemoryManager(manager)
+XMLSize_t ICValueHasher::getHashVal(const void* key, XMLSize_t mod) const
 {
-	fDoReportError = (scanner && scanner->getDoValidation());
-}
+    const FieldValueMap* valueMap=(const FieldValueMap*)key;
+    XMLSize_t hashVal = 0;
 
-
-ValueStore::~ValueStore()
-{
-    delete fValueTuples;
-}
-
-// ---------------------------------------------------------------------------
-//  ValueStore: Helper methods
-// ---------------------------------------------------------------------------
-void ValueStore::addValue(IC_Field* const,
-                          DatatypeValidator* const,
-                          const XMLCh* const) {
-
-}
-
-void ValueStore::addValue(FieldActivator* const fieldActivator,
-                          IC_Field* const field,
-                          DatatypeValidator* const dv,
-                          const XMLCh* const value) {
-
-    if (!fieldActivator->getMayMatch(field) && fDoReportError) {
-        fScanner->getValidator()->emitError(XMLValid::IC_FieldMultipleMatch);
-    }
-
-    // do we even know this field?
-    int index = fValues.indexOf(field);
-
-    if (index == -1) {
-
-        if (fDoReportError) {
-           fScanner->getValidator()->emitError(XMLValid::IC_UnknownField);
-        }
-
-        return;
-    }
-
-    // store value
-    if (!fValues.getDatatypeValidatorAt(index) &&
-        !fValues.getValueAt(index)) {
-        fValuesCount++;
-    }
-
-    fValues.put(field, dv, value);
-
-    if (fValuesCount == (int) fValues.size()) {
-
-        // is this value as a group duplicated?
-        if (contains(&fValues)) {
-            duplicateValue();
-        }
-
-        // store values
-        if (!fValueTuples) {
-            fValueTuples = new (fMemoryManager) RefVectorOf<FieldValueMap>(4, true, fMemoryManager);
-        }
-
-        fValueTuples->addElement(new (fMemoryManager) FieldValueMap(fValues));
-    }
-}
-
-void ValueStore::append(const ValueStore* const other) {
-
-    if (!other->fValueTuples) {
-        return;
-    }
-
-    unsigned int tupleSize = other->fValueTuples->size();
-
-    for (unsigned int i=0; i<tupleSize; i++) {
-
-	    FieldValueMap* valueMap = other->fValueTuples->elementAt(i);
-
-        if (!contains(valueMap)) {
-
-            if (!fValueTuples) {
-                fValueTuples = new (fMemoryManager) RefVectorOf<FieldValueMap>(4, true, fMemoryManager);
-            }
-
-            fValueTuples->addElement(new (fMemoryManager) FieldValueMap(*valueMap));
-        }
-    }
-}
-
-void ValueStore::startValueScope() {
-
-    fValuesCount = 0;
-
-    int count = fIdentityConstraint->getFieldCount();
-
-    for (int i = 0; i < count; i++) {
-        fValues.put(fIdentityConstraint->getFieldAt(i), 0, 0);
-    }
-}
-
-void ValueStore::endValueScope() {
-
-    if (fValuesCount == 0) {
-
-        if (fIdentityConstraint->getType() == IdentityConstraint::KEY && fDoReportError) {
-            fScanner->getValidator()->emitError(XMLValid::IC_AbsentKeyValue,
-                fIdentityConstraint->getElementName());
-        }
-
-        return;
-    }
-
-    // do we have enough values?
-    if ((fValuesCount != fIdentityConstraint->getFieldCount()) && fDoReportError) {
-
-        if(fIdentityConstraint->getType()==IdentityConstraint::KEY)
+    XMLSize_t size = valueMap->size();
+    for (XMLSize_t j=0; j<size; j++) {
+        // reach the most generic datatype validator
+        DatatypeValidator* dv = valueMap->getDatatypeValidatorAt(j);
+        while(dv && dv->getBaseValidator())
+            dv = dv->getBaseValidator();
+        const XMLCh* const val = valueMap->getValueAt(j);
+        const XMLCh* canonVal = (dv && val)?dv->getCanonicalRepresentation(val, fMemoryManager):0;
+        if(canonVal)
         {
-			fScanner->getValidator()->emitError(XMLValid::IC_KeyNotEnoughValues,
-                fIdentityConstraint->getElementName(), fIdentityConstraint->getIdentityConstraintName());
+            hashVal += XMLString::hash(canonVal, mod);
+            fMemoryManager->deallocate((void*)canonVal);
         }
+        else if(val)
+            hashVal += XMLString::hash(val, mod);
     }
+
+    return hashVal % mod;
 }
 
-bool ValueStore::contains(const FieldValueMap* const other) {
+bool ICValueHasher::equals(const void *const key1, const void *const key2) const
+{
+    const FieldValueMap* left=(const FieldValueMap*)key1;
+    const FieldValueMap* right=(const FieldValueMap*)key2;
 
-    if (fValueTuples) {
+    XMLSize_t lSize = left->size();
+    XMLSize_t rSize = right->size();
+    if (lSize == rSize) 
+    {
+        bool matchFound = true;
 
-        unsigned int otherSize = other->size();
-        unsigned int tupleSize = fValueTuples->size();
-
-        for (unsigned int i=0; i<tupleSize; i++) {
-
-            FieldValueMap* valueMap = fValueTuples->elementAt(i);
-
-            if (otherSize == valueMap->size()) {
-
-                bool matchFound = true;
-
-                for (unsigned int j=0; j<otherSize; j++) {
-                    if (!isDuplicateOf(valueMap->getDatatypeValidatorAt(j), valueMap->getValueAt(j),
-                                       other->getDatatypeValidatorAt(j), other->getValueAt(j))) {
-                        matchFound = false;
-                        break;
-                    }
-                }
-
-                if (matchFound) { // found it
-                    return true;
-                }
+        for (XMLSize_t j=0; j<rSize; j++) {
+            if (!isDuplicateOf(left->getDatatypeValidatorAt(j), left->getValueAt(j),
+                               right->getDatatypeValidatorAt(j), right->getValueAt(j))) {
+                matchFound = false;
+                break;
             }
         }
-    }
 
+        if (matchFound) { // found it
+            return true;
+        }
+    }
     return false;
 }
 
-bool ValueStore::isDuplicateOf(DatatypeValidator* const dv1, const XMLCh* const val1,
-                               DatatypeValidator* const dv2, const XMLCh* const val2) {
+bool ICValueHasher::isDuplicateOf(DatatypeValidator* const dv1, const XMLCh* const val1,
+                                  DatatypeValidator* const dv2, const XMLCh* const val2) const 
+{
 
     // if either validator's null, fall back on string comparison
     if(!dv1 || !dv2) {
@@ -240,19 +128,164 @@ bool ValueStore::isDuplicateOf(DatatypeValidator* const dv1, const XMLCh* const 
     return false;
 }
 
+// ---------------------------------------------------------------------------
+//  ValueStore: Constructors and Destructor
+// ---------------------------------------------------------------------------
+ValueStore::ValueStore(IdentityConstraint* const ic,
+                       XMLScanner* const scanner,
+                       MemoryManager* const manager)
+    : fDoReportError(false)
+    , fValuesCount(0)
+    , fIdentityConstraint(ic)
+    , fValues(manager)
+    , fValueTuples(0)
+    , fScanner(scanner)
+    , fMemoryManager(manager)
+{
+    fDoReportError = (scanner && (scanner->getValidationScheme() == XMLScanner::Val_Always));
+}
+
+
+ValueStore::~ValueStore()
+{
+    delete fValueTuples;
+}
+
+// ---------------------------------------------------------------------------
+//  ValueStore: Helper methods
+// ---------------------------------------------------------------------------
+void ValueStore::addValue(FieldActivator* const fieldActivator,
+                          IC_Field* const field,
+                          DatatypeValidator* const dv,
+                          const XMLCh* const value) {
+
+    if (!fieldActivator->getMayMatch(field) && fDoReportError) {
+        fScanner->getValidator()->emitError(XMLValid::IC_FieldMultipleMatch);
+    }
+
+    // do we even know this field?
+    XMLSize_t index;
+    bool bFound = fValues.indexOf(field, index);
+
+    if (!bFound) {
+
+        if (fDoReportError) {
+           fScanner->getValidator()->emitError(XMLValid::IC_UnknownField);
+        }
+
+        return;
+    }
+
+    // store value
+    if (!fValues.getDatatypeValidatorAt(index) &&
+        !fValues.getValueAt(index)) {
+        fValuesCount++;
+    }
+
+    fValues.put(field, dv, value);
+
+    if (fValuesCount == fValues.size()) {
+
+        // is this value as a group duplicated?
+        if (contains(&fValues)) {
+            duplicateValue();
+        }
+
+        // store values
+        if (!fValueTuples) {
+            fValueTuples = new (fMemoryManager) RefHashTableOf<FieldValueMap, ICValueHasher>(107, true, ICValueHasher(fMemoryManager), fMemoryManager);
+        }
+
+        FieldValueMap* pICItem = new (fMemoryManager) FieldValueMap(fValues);
+        fValueTuples->put(pICItem, pICItem);
+    }
+}
+
+void ValueStore::append(const ValueStore* const other) {
+
+    if (!other->fValueTuples) {
+        return;
+    }
+
+    RefHashTableOfEnumerator<FieldValueMap, ICValueHasher> iter(other->fValueTuples, false, fMemoryManager);
+    while(iter.hasMoreElements())
+    {
+        FieldValueMap& valueMap = iter.nextElement();
+
+        if (!contains(&valueMap)) {
+
+            if (!fValueTuples) {
+                fValueTuples = new (fMemoryManager) RefHashTableOf<FieldValueMap, ICValueHasher>(107, true, ICValueHasher(fMemoryManager), fMemoryManager);
+            }
+
+            FieldValueMap* pICItem = new (fMemoryManager) FieldValueMap(valueMap);
+            fValueTuples->put(pICItem, pICItem);
+        }
+    }
+}
+
+void ValueStore::startValueScope() {
+
+    fValuesCount = 0;
+
+    XMLSize_t count = fIdentityConstraint->getFieldCount();
+
+    for (XMLSize_t i = 0; i < count; i++) {
+        fValues.put(fIdentityConstraint->getFieldAt(i), 0, 0);
+    }
+}
+
+void ValueStore::endValueScope() {
+
+    if (fValuesCount == 0) {
+
+        if (fIdentityConstraint->getType() == IdentityConstraint::ICType_KEY && fDoReportError) {
+            fScanner->getValidator()->emitError(XMLValid::IC_AbsentKeyValue,
+                fIdentityConstraint->getElementName());
+        }
+
+        return;
+    }
+
+    // do we have enough values?
+    if ((fValuesCount != fIdentityConstraint->getFieldCount()) && fDoReportError) {
+
+        if(fIdentityConstraint->getType()==IdentityConstraint::ICType_KEY)
+        {
+			fScanner->getValidator()->emitError(XMLValid::IC_KeyNotEnoughValues,
+                fIdentityConstraint->getElementName(), fIdentityConstraint->getIdentityConstraintName());
+        }
+    }
+}
+
+bool ValueStore::contains(const FieldValueMap* const other) {
+
+    if (fValueTuples)
+        return fValueTuples->get(other)!=0;
+
+    return false;
+}
+
+void ValueStore::clear()
+{
+    fValuesCount=0;
+    fValues.clear();
+    if(fValueTuples)
+        fValueTuples->removeAll();
+}
 
 // ---------------------------------------------------------------------------
 //  ValueStore: Document handling methods
 // ---------------------------------------------------------------------------
-void ValueStore::endDcocumentFragment(ValueStoreCache* const valueStoreCache) {
+void ValueStore::endDocumentFragment(ValueStoreCache* const valueStoreCache) {
 
-    if (fIdentityConstraint->getType() == IdentityConstraint::KEYREF) {
+    if (fIdentityConstraint->getType() == IdentityConstraint::ICType_KEYREF) {
 
         // verify references
         // get the key store corresponding (if it exists):
-        fKeyValueStore = valueStoreCache->getGlobalValueStoreFor(((IC_KeyRef*) fIdentityConstraint)->getKey());
+        ValueStore* keyValueStore = valueStoreCache->getGlobalValueStoreFor(((IC_KeyRef*) fIdentityConstraint)->getKey());
 
-        if (!fKeyValueStore) {
+        if (!keyValueStore) {
 
             if (fDoReportError) {
                 fScanner->getValidator()->emitError(XMLValid::IC_KeyRefOutOfScope,
@@ -262,16 +295,18 @@ void ValueStore::endDcocumentFragment(ValueStoreCache* const valueStoreCache) {
             return;
         }
 
-        unsigned int count = (fValueTuples) ? fValueTuples->size() : 0;
+        if(fValueTuples)
+        {
+            RefHashTableOfEnumerator<FieldValueMap, ICValueHasher> iter(fValueTuples, false, fMemoryManager);
+            while(iter.hasMoreElements())
+            {
+                FieldValueMap& valueMap = iter.nextElement();
 
-        for (unsigned int i = 0; i < count; i++) {
+                if (!keyValueStore->contains(&valueMap) && fDoReportError) {
 
-            FieldValueMap* valueMap = fValueTuples->elementAt(i);
-
-            if (!fKeyValueStore->contains(valueMap) && fDoReportError) {
-
-                fScanner->getValidator()->emitError(XMLValid::IC_KeyNotFound,
-                    fIdentityConstraint->getElementName());
+                    fScanner->getValidator()->emitError(XMLValid::IC_KeyNotFound,
+                        fIdentityConstraint->getElementName());
+                }
             }
         }
     }
@@ -282,7 +317,7 @@ void ValueStore::endDcocumentFragment(ValueStoreCache* const valueStoreCache) {
 // ---------------------------------------------------------------------------
 void ValueStore::reportNilError(IdentityConstraint* const ic) {
 
-    if (fDoReportError && ic->getType() == IdentityConstraint::KEY) {
+    if (fDoReportError && ic->getType() == IdentityConstraint::ICType_KEY) {
         fScanner->getValidator()->emitError(XMLValid::IC_KeyMatchesNillable,
                                             ic->getElementName());
     }
@@ -293,13 +328,13 @@ void ValueStore::duplicateValue() {
     if (fDoReportError) {
 
         switch (fIdentityConstraint->getType()) {
-        case IdentityConstraint::UNIQUE:
+        case IdentityConstraint::ICType_UNIQUE:
             {
                 fScanner->getValidator()->emitError(XMLValid::IC_DuplicateUnique,
                     fIdentityConstraint->getElementName());
                 break;
             }
-        case IdentityConstraint::KEY:
+        case IdentityConstraint::ICType_KEY:
             {
                 fScanner->getValidator()->emitError(XMLValid::IC_DuplicateKey,
                     fIdentityConstraint->getElementName());

@@ -166,15 +166,15 @@ static const XMLTransService::TransRec gToTable[] =
   , { 0xFF59, 0x79 }, { 0xFF5A, 0x7A }, { 0xFF5B, 0x7B }, { 0xFF5C, 0x7C }
   , { 0xFF5D, 0x7D }, { 0xFF5E, 0x7E }
 };
-static const unsigned int gToTableSz = 350;
+static const XMLSize_t gToTableSz = 350;
 
 
 
 // ---------------------------------------------------------------------------
 //  XML1140Transcoder: Constructors and Destructor
 // ---------------------------------------------------------------------------
-XMLWin1252Transcoder::XMLWin1252Transcoder( const   XMLCh* const encodingName
-                                            , const unsigned int blockSize
+XMLWin1252Transcoder::XMLWin1252Transcoder( const   XMLCh* const   encodingName
+                                            , const XMLSize_t      blockSize
                                             , MemoryManager* const manager) :
     XML256TableTranscoder
     (

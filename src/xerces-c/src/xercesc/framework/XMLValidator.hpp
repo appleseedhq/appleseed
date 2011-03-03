@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,12 +16,11 @@
  */
 
  /*
- * $Id: XMLValidator.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLValidator.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-
-#if !defined(XMLVALIDATOR_HPP)
-#define XMLVALIDATOR_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XMLVALIDATOR_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLVALIDATOR_HPP
 
 #include <xercesc/framework/XMLAttr.hpp>
 #include <xercesc/framework/XMLValidityCodes.hpp>
@@ -95,12 +94,18 @@ public:
       *
       * @param  childCount  The number of elements in the childIds array. It can
       *                     be zero if the element had none.
+      *
+      * @param  indexFailingChild  On return, it will contain the index of the 
+      *                            children failing validation, if the retun value
+      *                            is false
+      *
       */
-    virtual int checkContent
+    virtual bool checkContent
     (
         XMLElementDecl* const   elemDecl
         , QName** const         children
-        , const unsigned int    childCount
+        , XMLSize_t             childCount
+        , XMLSize_t*            indexFailingChild
     ) = 0;
 
     /**
@@ -134,7 +139,7 @@ public:
 
     /**
       * This method is called by the scanner before a new document is about
-      * to start. It gives the validator a change to reset itself in preperation
+      * to start. It gives the validator a change to reset itself in preparation
       * for another validation pass.
       */
     virtual void reset() = 0;
@@ -305,7 +310,7 @@ public:
         , const char* const     text2 = 0
         , const char* const     text3 = 0
         , const char* const     text4 = 0
-    );    
+    );
     void emitError
     (
         const   XMLValid::Codes toEmit
@@ -314,32 +319,10 @@ public:
         , const XMLCh* const        text2 = 0
         , const XMLCh* const        text3 = 0
         , const XMLCh* const        text4 = 0
-        
+
     );
 
     //@}
-
-    // -----------------------------------------------------------------------
-    //  Deprecated XMLValidator interface
-    // -----------------------------------------------------------------------
-    /**
-      *
-      * DEPRECATED.
-      * For those validators that contrain the possible root elements of a
-      * document to only particular elements, they should use this call to
-      * validate that the passed root element id is a legal root element.
-      */
-    bool checkRootElement
-    (
-        const   unsigned int
-    ) { return true;};
-
-    // -----------------------------------------------------------------------
-    //  Notification that lazy data has been deleted
-    // -----------------------------------------------------------------------
-	static void reinitMsgMutex();
-
-	static void reinitMsgLoader();
 
 protected :
     // -----------------------------------------------------------------------

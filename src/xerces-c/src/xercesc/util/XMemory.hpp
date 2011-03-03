@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: XMemory.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMemory.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-
-#if !defined(XMEMORY_HPP)
-#define XMEMORY_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XMEMORY_HPP)
+#define XERCESC_INCLUDE_GUARD_XMEMORY_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 #include <stdlib.h>
@@ -34,7 +33,7 @@ class MemoryManager;
  *  This class makes it possible to override the C++ memory management by
  *  adding new/delete operators to this base class.
  *
- *  This class is used in conjuction with the pluggable memory manager. It
+ *  This class is used in conjunction with the pluggable memory manager. It
  *  allows applications to control Xerces memory management.
  */
 
@@ -54,7 +53,7 @@ public :
       */
     void* operator new(size_t size);
 
-#if defined(XML_VISUALCPP)
+#if defined(XERCES_MFC_SUPPORT)
     /**
       * This method overrides the MFC debug version of the operator new
       * 
@@ -98,7 +97,7 @@ public :
     void operator delete(void* p);
 
      //The Borland compiler is complaining about duplicate overloading of delete
-#if !defined(XML_BORLAND)
+#if !defined(XERCES_NO_MATCHING_DELETE_OPERATOR)
     /**
       * This method provides a matching delete for the custom operator new
       *
@@ -133,12 +132,11 @@ protected :
     }
     //@}
 
-#if defined(XML_BORLAND)
+#if defined(XERCES_NEED_XMEMORY_VIRTUAL_DESTRUCTOR)
     virtual ~XMemory()
     {
     }
 #endif
-
 };
 
 XERCES_CPP_NAMESPACE_END

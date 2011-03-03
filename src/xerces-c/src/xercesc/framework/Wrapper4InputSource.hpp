@@ -16,14 +16,13 @@
  */
 
 /*
- * $Id: Wrapper4InputSource.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: Wrapper4InputSource.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
+#if !defined(XERCESC_INCLUDE_GUARD_WRAPPER4INPUTSOURCE_HPP)
+#define XERCESC_INCLUDE_GUARD_WRAPPER4INPUTSOURCE_HPP
 
-#ifndef WRAPPER4INPUTSOURCE_HPP
-#define WRAPPER4INPUTSOURCE_HPP
-
-#include <xercesc/dom/DOMInputSource.hpp>
+#include <xercesc/dom/DOMLSInput.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
 
 XERCES_CPP_NAMESPACE_BEGIN
@@ -32,9 +31,9 @@ class InputSource;
 
 
 /**
-  * Wrap a SAX InputSource object to a DOM InputSource.
+  * Wrap a SAX InputSource object and make it behave like DOMLSInput.
   */
-class XMLPARSER_EXPORT Wrapper4InputSource: public DOMInputSource
+class XMLPARSER_EXPORT Wrapper4InputSource: public DOMLSInput
 {
 public:
     /** @name Constructors and Destructor */
@@ -43,7 +42,7 @@ public:
   /**
     * Constructor
     *
-    * Wrap a SAX InputSource and pretend it to be a DOMInputSource.
+    * Wrap a SAX InputSource and make it behave like a DOMLSInput.
     * By default, the wrapper will adopt the SAX InputSource that is wrapped.
     *
     * @param  inputSource  The SAX InputSource to be wrapped
@@ -67,27 +66,28 @@ public:
     /** @name Virtual input source interface */
     //@{
   /**
-    * <p><b>"Experimental - subject to change"</b></p>
+    * This wrapper doesn't support string data
     *
+    */
+    virtual const XMLCh* getStringData() const;
+
+  /**
     * Makes the byte stream for this input source.
     *
     * <p>The function will call the makeStream of the wrapped input source.
     * The returned stream becomes the parser's property.</p>
     *
-    * @see BinInputStream
+    * @see InputSource
     */
-    BinInputStream* makeStream() const;
-
+    virtual InputSource* getByteStream() const;
     //@}
 
     // -----------------------------------------------------------------------
     /** @name Getter methods */
     //@{
   /**
-    * <p><b>"Experimental - subject to change"</b></p>
-    *
     * An input source can be set to force the parser to assume a particular
-    * encoding for the data that input source reprsents, via the setEncoding()
+    * encoding for the data that input source represents, via the setEncoding()
     * method. This method will delegate to the wrapped input source to return
     * name of the encoding that is to be forced. If the encoding has never
     * been forced, it returns a null pointer.
@@ -95,12 +95,10 @@ public:
     * @return The forced encoding, or null if none was supplied.
     * @see #setEncoding
     */
-    const XMLCh* getEncoding() const;
+    virtual const XMLCh* getEncoding() const;
 
 
   /**
-    * <p><b>"Experimental - subject to change"</b></p>
-    *
     * Get the public identifier for this input source. Delegated to the
     * wrapped input source object.
     *
@@ -111,8 +109,6 @@ public:
 
 
   /**
-    * <p><b>"Experimental - subject to change"</b></p>
-    *
     * Get the system identifier for this input source. Delegated to the
     * wrapped input source object.
     *
@@ -124,22 +120,18 @@ public:
     const XMLCh* getSystemId() const;
 
    /**
-     * Get the base URI to be used for resolving relative URIs to absolute
-     * URIs. If the baseURI is itself a relative URI, the behavior is
-     * implementation dependent. Delegated to the wrapped intput source
-     * object.
-     *
-     * <p><b>"Experimental - subject to change"</b></p>
-     *
-     * @return The base URI.
-     * @see #setBaseURI
-     * @since DOM Level 3
-     */
+    * Get the base URI to be used for resolving relative URIs to absolute
+    * URIs. If the baseURI is itself a relative URI, the behavior is
+    * implementation dependent. Delegated to the wrapped intput source
+    * object.
+    *
+    * @return The base URI.
+    * @see #setBaseURI
+    * @since DOM Level 3
+    */
     const XMLCh* getBaseURI() const;
 
- /**
-    * <p><b>"Experimental - subject to change"</b></p>
-    *
+   /**
     * Get the flag that indicates if the parser should issue fatal error if this input source
     * is not found. Delegated to the wrapped input source object.
     *
@@ -155,10 +147,19 @@ public:
     // -----------------------------------------------------------------------
     /** @name Setter methods */
     //@{
+  /**
+    * This wrapper only exposes the given InputSource, no setting allowed
+    *
+    */
+    virtual void setStringData(const XMLCh* data);
 
   /**
-    * <p><b>"Experimental - subject to change"</b></p>
+    * This wrapper only exposes the given InputSource, no setting allowed
     *
+    */
+    virtual void setByteStream(InputSource* stream);
+
+  /**
     * Set the encoding which will be required for use with the XML text read
     * via a stream opened by this input source. This will update the wrapped
     * input source object.
@@ -174,8 +175,6 @@ public:
 
 
   /**
-    * <p><b>"Experimental - subject to change"</b></p>
-    *
     * Set the public identifier for this input source. This will update the
     * wrapped input source object.
     *
@@ -190,8 +189,6 @@ public:
     void setPublicId(const XMLCh* const publicId);
 
   /**
-    * <p><b>"Experimental - subject to change"</b></p>
-    *
     * Set the system identifier for this input source. This will update the
     * wrapped input source object.
     *
@@ -214,8 +211,6 @@ public:
     * implementation dependent. This will update the wrapped input source
     * object.
     *
-    * <p><b>"Experimental - subject to change"</b></p>
-    *
     * @param baseURI The base URI.
     * @see #getBaseURI
     * @since DOM Level 3
@@ -223,8 +218,6 @@ public:
     void setBaseURI(const XMLCh* const baseURI);
 
   /**
-    * <p><b>"Experimental - subject to change"</b></p>
-    *
     * Indicates if the parser should issue fatal error if this input source
     * is not found.  If set to false, the parser issue warning message
     * instead. This will update the wrapped input source object.
@@ -236,7 +229,7 @@ public:
     *
     * @see #getIssueFatalErrorIfNotFound
     */
-    void setIssueFatalErrorIfNotFound(const bool flag);
+    void setIssueFatalErrorIfNotFound(bool flag);
 
    /**
     * Called to indicate that this DOMInputSource is no longer in use
@@ -272,10 +265,23 @@ inline const XMLCh* Wrapper4InputSource::getBaseURI() const
     return 0; // REVISIT - should we return an empty string?
 }
 
+inline const XMLCh* Wrapper4InputSource::getStringData() const
+{
+    return 0;
+}
+
 // ---------------------------------------------------------------------------
 //  Wrapper4InputSource: Setter methods
 // ---------------------------------------------------------------------------
 inline void Wrapper4InputSource::setBaseURI(const XMLCh* const)
+{
+}
+
+inline void Wrapper4InputSource::setStringData(const XMLCh*)
+{
+}
+
+inline void Wrapper4InputSource::setByteStream(InputSource*)
 {
 }
 

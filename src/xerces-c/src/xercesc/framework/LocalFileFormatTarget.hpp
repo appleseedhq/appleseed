@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: LocalFileFormatTarget.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: LocalFileFormatTarget.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#ifndef LocalFileFormatTarget_HEADER_GUARD_
-#define LocalFileFormatTarget_HEADER_GUARD_
+#if !defined(XERCESC_INCLUDE_GUARD_LOCALFILEFORMATTARGET_HPP)
+#define XERCESC_INCLUDE_GUARD_LOCALFILEFORMATTARGET_HPP
 
 #include <xercesc/framework/XMLFormatter.hpp>
 
@@ -50,7 +50,7 @@ public:
     //  Implementations of the format target interface
     // -----------------------------------------------------------------------
     virtual void writeChars(const XMLByte* const toWrite
-                          , const unsigned int   count
+                          , const XMLSize_t      count
                           , XMLFormatter* const  formatter);
 
     virtual void flush();
@@ -65,8 +65,7 @@ private:
     // -----------------------------------------------------------------------
     //  Private helpers
     // -----------------------------------------------------------------------
-    void flushBuffer();
-    bool insureCapacity(const unsigned int extraNeeded);
+    void ensureCapacity(const XMLSize_t extraNeeded);
 
     // -----------------------------------------------------------------------
     //  Private data members
@@ -89,8 +88,8 @@ private:
     // -----------------------------------------------------------------------
     FileHandle      fSource;
     XMLByte*        fDataBuf;
-    unsigned int    fIndex;
-    unsigned int    fCapacity;
+    XMLSize_t       fIndex;
+    XMLSize_t       fCapacity;
     MemoryManager*  fMemoryManager;
 };
 
@@ -98,4 +97,3 @@ private:
 XERCES_CPP_NAMESPACE_END
 
 #endif
-

@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: CMAny.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: CMAny.cpp 677396 2008-07-16 19:36:20Z amassari $
  */
 
 // ---------------------------------------------------------------------------
@@ -32,11 +32,12 @@ XERCES_CPP_NAMESPACE_BEGIN
 // ---------------------------------------------------------------------------
 //  CMUnaryOp: Constructors and Destructor
 // ---------------------------------------------------------------------------
-CMAny::CMAny( const ContentSpecNode::NodeTypes type
-            , const unsigned int               URI
-            , const unsigned int               position
-            ,       MemoryManager* const       manager) :
-       CMNode(type, manager)
+CMAny::CMAny( ContentSpecNode::NodeTypes type
+            , unsigned int               URI
+            , unsigned int               position
+            , unsigned int               maxStates
+            ,       MemoryManager* const manager) :
+       CMNode(type, maxStates, manager)
      , fURI(URI)
      , fPosition(position)
 {
@@ -44,11 +45,11 @@ CMAny::CMAny( const ContentSpecNode::NodeTypes type
     &&  (type & 0x0f) != ContentSpecNode::Any_Other
     &&  (type & 0x0f) != ContentSpecNode::Any_NS)
     {
-		ThrowXMLwithMemMgr1(RuntimeException,
-		          XMLExcepts::CM_NotValidSpecTypeForNode,
-				  "CMAny", manager);
+        ThrowXMLwithMemMgr1(RuntimeException, XMLExcepts::CM_NotValidSpecTypeForNode,
+                            "CMAny", manager);
     }
-
+    // Leaf nodes are never nullable unless its an epsilon node
+    fIsNullable=(fPosition == epsilonNode);
 }
 
 CMAny::~CMAny()
@@ -60,7 +61,7 @@ CMAny::~CMAny()
 // ---------------------------------------------------------------------------
 unsigned int CMAny::getURI() const
 {
-	return fURI;
+    return fURI;
 }
 
 unsigned int CMAny::getPosition() const
@@ -79,10 +80,8 @@ void CMAny::setPosition(const unsigned int newPosition)
 // ---------------------------------------------------------------------------
 //  Implementation of public CMNode virtual interface
 // ---------------------------------------------------------------------------
-bool CMAny::isNullable() const
+void CMAny::orphanChild()
 {
-    // Leaf nodes are never nullable unless its an epsilon node
-    return (fPosition == -1);
 }
 
 // ---------------------------------------------------------------------------
@@ -91,25 +90,21 @@ bool CMAny::isNullable() const
 void CMAny::calcFirstPos(CMStateSet& toSet) const
 {
     // If we are an epsilon node, then the first pos is an empty set
-    if (fPosition == -1)
+    if (isNullable())
         toSet.zeroBits();
     else
     // Otherwise, its just the one bit of our position
         toSet.setBit(fPosition);
-
-	return;
 }
 
 void CMAny::calcLastPos(CMStateSet& toSet) const
 {
     // If we are an epsilon node, then the last pos is an empty set
-    if (fPosition == -1)
+    if (isNullable())
         toSet.zeroBits();
     // Otherwise, its just the one bit of our position
     else
         toSet.setBit(fPosition);
-
-	return;
 }
 
 XERCES_CPP_NAMESPACE_END

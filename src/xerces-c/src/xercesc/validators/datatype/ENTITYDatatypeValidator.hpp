@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: ENTITYDatatypeValidator.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: ENTITYDatatypeValidator.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-#if !defined(ENTITY_DATATYPEVALIDATOR_HPP)
-#define ENTITY_DATATYPEVALIDATOR_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_ENTITY_DATATYPEVALIDATOR_HPP)
+#define XERCESC_INCLUDE_GUARD_ENTITY_DATATYPEVALIDATOR_HPP
 
 #include <xercesc/validators/datatype/StringDatatypeValidator.hpp>
 #include <xercesc/util/NameIdPool.hpp>
@@ -108,17 +108,6 @@ public:
         , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
     );
 
-// -----------------------------------------------------------------------
-// Setter methods
-// -----------------------------------------------------------------------
-    /** @name Setter Functions */
-    //@{
-
-    //deprecated
-    inline void    setEntityDeclPool(NameIdPool<DTDEntityDecl>* const entityDeclPool);
-
-    //@}
-
     /***
      * Support for Serialization/De-serialization
      ***/
@@ -145,13 +134,6 @@ private:
     ENTITYDatatypeValidator& operator = (const  ENTITYDatatypeValidator&);
 
 };
-
-// -----------------------------------------------------------------------
-// Setter methods
-// -----------------------------------------------------------------------
-inline void ENTITYDatatypeValidator::setEntityDeclPool(NameIdPool<DTDEntityDecl>* const )
-{
-}
 
 XERCES_CPP_NAMESPACE_END
 

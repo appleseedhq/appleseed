@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: ValueVectorOf.c 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: ValueVectorOf.c 676911 2008-07-15 13:27:32Z amassari $
  */
 
 
@@ -34,7 +34,7 @@ XERCES_CPP_NAMESPACE_BEGIN
 //  ValueVectorOf: Constructors and Destructor
 // ---------------------------------------------------------------------------
 template <class TElem>
-ValueVectorOf<TElem>::ValueVectorOf(const unsigned int maxElems,
+ValueVectorOf<TElem>::ValueVectorOf(const XMLSize_t maxElems,
                                     MemoryManager* const manager,
                                     const bool toCallDestructor) :
 
@@ -67,15 +67,15 @@ ValueVectorOf<TElem>::ValueVectorOf(const ValueVectorOf<TElem>& toCopy) :
     ); //new TElem[fMaxCount];
 
     memset(fElemList, 0, fMaxCount * sizeof(TElem));
-    for (unsigned int index = 0; index < fCurCount; index++)
+    for (XMLSize_t index = 0; index < fCurCount; index++)
         fElemList[index] = toCopy.fElemList[index];
 }
 
 template <class TElem> ValueVectorOf<TElem>::~ValueVectorOf()
 {
     if (fCallDestructor) {
-        for (int index= fMaxCount - 1; index >= 0; index--)
-            fElemList[index].~TElem();
+        for (XMLSize_t index=fMaxCount; index > 0; index--)
+            fElemList[index-1].~TElem();
     }
     fMemoryManager->deallocate(fElemList); //delete [] fElemList;
 }
@@ -103,7 +103,7 @@ ValueVectorOf<TElem>::operator=(const ValueVectorOf<TElem>& toAssign)
     }
 
     fCurCount = toAssign.fCurCount;
-    for (unsigned int index = 0; index < fCurCount; index++)
+    for (XMLSize_t index = 0; index < fCurCount; index++)
         fElemList[index] = toAssign.fElemList[index];
 
     return *this;
@@ -116,12 +116,11 @@ ValueVectorOf<TElem>::operator=(const ValueVectorOf<TElem>& toAssign)
 template <class TElem> void ValueVectorOf<TElem>::addElement(const TElem& toAdd)
 {
     ensureExtraCapacity(1);
-    fElemList[fCurCount] = toAdd;
-    fCurCount++;
+    fElemList[fCurCount++] = toAdd;
 }
 
 template <class TElem> void ValueVectorOf<TElem>::
-setElementAt(const TElem& toSet, const unsigned int setAt)
+setElementAt(const TElem& toSet, const XMLSize_t setAt)
 {
     if (setAt >= fCurCount)
         ThrowXMLwithMemMgr(ArrayIndexOutOfBoundsException, XMLExcepts::Vector_BadIndex, fMemoryManager);
@@ -129,7 +128,7 @@ setElementAt(const TElem& toSet, const unsigned int setAt)
 }
 
 template <class TElem> void ValueVectorOf<TElem>::
-insertElementAt(const TElem& toInsert, const unsigned int insertAt)
+insertElementAt(const TElem& toInsert, const XMLSize_t insertAt)
 {
     if (insertAt == fCurCount)
     {
@@ -142,7 +141,7 @@ insertElementAt(const TElem& toInsert, const unsigned int insertAt)
 
     // Make room for the newbie
     ensureExtraCapacity(1);
-    for (unsigned int index = fCurCount; index > insertAt; index--)
+    for (XMLSize_t index = fCurCount; index > insertAt; index--)
         fElemList[index] = fElemList[index-1];
 
     // And stick it in and bump the count
@@ -151,19 +150,13 @@ insertElementAt(const TElem& toInsert, const unsigned int insertAt)
 }
 
 template <class TElem> void ValueVectorOf<TElem>::
-removeElementAt(const unsigned int removeAt)
+removeElementAt(const XMLSize_t removeAt)
 {
     if (removeAt >= fCurCount)
         ThrowXMLwithMemMgr(ArrayIndexOutOfBoundsException, XMLExcepts::Vector_BadIndex, fMemoryManager);
 
-    if (removeAt == fCurCount-1)
-    {
-        fCurCount--;
-        return;
-    }
-
     // Copy down every element above remove point
-    for (unsigned int index = removeAt; index < fCurCount-1; index++)
+    for (XMLSize_t index = removeAt; index < fCurCount-1; index++)
         fElemList[index] = fElemList[index+1];
 
     // And bump down count
@@ -177,9 +170,9 @@ template <class TElem> void ValueVectorOf<TElem>::removeAllElements()
 
 template <class TElem>
 bool ValueVectorOf<TElem>::containsElement(const TElem& toCheck,
-                                           const unsigned int startIndex) {
+                                           const XMLSize_t startIndex) {
 
-    for (unsigned int i = startIndex; i < fCurCount; i++) {
+    for (XMLSize_t i = startIndex; i < fCurCount; i++) {
         if (fElemList[i] == toCheck) {
             return true;
         }
@@ -193,7 +186,7 @@ bool ValueVectorOf<TElem>::containsElement(const TElem& toCheck,
 //  ValueVectorOf: Getter methods
 // ---------------------------------------------------------------------------
 template <class TElem> const TElem& ValueVectorOf<TElem>::
-elementAt(const unsigned int getAt) const
+elementAt(const XMLSize_t getAt) const
 {
     if (getAt >= fCurCount)
         ThrowXMLwithMemMgr(ArrayIndexOutOfBoundsException, XMLExcepts::Vector_BadIndex, fMemoryManager);
@@ -201,19 +194,19 @@ elementAt(const unsigned int getAt) const
 }
 
 template <class TElem> TElem& ValueVectorOf<TElem>::
-elementAt(const unsigned int getAt)
+elementAt(const XMLSize_t getAt)
 {
     if (getAt >= fCurCount)
         ThrowXMLwithMemMgr(ArrayIndexOutOfBoundsException, XMLExcepts::Vector_BadIndex, fMemoryManager);
     return fElemList[getAt];
 }
 
-template <class TElem> unsigned int ValueVectorOf<TElem>::curCapacity() const
+template <class TElem> XMLSize_t ValueVectorOf<TElem>::curCapacity() const
 {
     return fMaxCount;
 }
 
-template <class TElem> unsigned int ValueVectorOf<TElem>::size() const
+template <class TElem> XMLSize_t ValueVectorOf<TElem>::size() const
 {
     return fCurCount;
 }
@@ -228,28 +221,28 @@ MemoryManager* ValueVectorOf<TElem>::getMemoryManager() const
 //  ValueVectorOf: Miscellaneous
 // ---------------------------------------------------------------------------
 template <class TElem> void ValueVectorOf<TElem>::
-ensureExtraCapacity(const unsigned int length)
+ensureExtraCapacity(const XMLSize_t length)
 {
-    unsigned int newMax = fCurCount + length;
+    XMLSize_t newMax = fCurCount + length;
 
-    if (newMax <= fMaxCount)
-        return;
+    if (newMax > fMaxCount)
+    {
+        // Avoid too many reallocations by expanding by a percentage
+        XMLSize_t minNewMax = (XMLSize_t)((double)fCurCount * 1.25);
+        if (newMax < minNewMax)
+            newMax = minNewMax;
 
-    // Avoid too many reallocations by expanding by a percentage
-    unsigned int minNewMax = (unsigned int)((double)fCurCount * 1.25);
-    if (newMax < minNewMax)
-        newMax = minNewMax;
+        TElem* newList = (TElem*) fMemoryManager->allocate
+        (
+            newMax * sizeof(TElem)
+        ); //new TElem[newMax];
+        for (XMLSize_t index = 0; index < fCurCount; index++)
+            newList[index] = fElemList[index];
 
-    TElem* newList = (TElem*) fMemoryManager->allocate
-    (
-        newMax * sizeof(TElem)
-    ); //new TElem[newMax];
-    for (unsigned int index = 0; index < fCurCount; index++)
-        newList[index] = fElemList[index];
-
-    fMemoryManager->deallocate(fElemList); //delete [] fElemList;
-    fElemList = newList;
-    fMaxCount = newMax;
+        fMemoryManager->deallocate(fElemList); //delete [] fElemList;
+        fElemList = newList;
+        fMaxCount = newMax;
+    }
 }
 
 template <class TElem> const TElem* ValueVectorOf<TElem>::rawData() const

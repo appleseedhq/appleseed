@@ -36,11 +36,11 @@
         commonly used handler classes are ContentHandler which is
         called when XML constructs are recognized, and ErrorHandler
         which is called when an error occurs. The header files for the
-        various SAX2 handler classes are in
-        '&lt;&XercesCInstallDir;>/include/xercesc/sax2'</p>
+        various SAX2 handler classes are in the <code>xercesc/sax2/</code>
+        directory.</p>
 
-      <p>As a convenience, &XercesCName; provides the class
-        DefaultHandler, which is a single class which is publicly derived
+      <p>As a convenience, &XercesCName; provides DefaultHandler,
+        a single class which is publicly derived
         from all the Handler classes. DefaultHandler's default
         implementation of the handler callback methods is to do
         nothing. A convenient way to get started with &XercesCName; is
@@ -68,7 +68,9 @@ public:
       <p>This is the implementation file MySAX2Handler.cpp:</p>
 
 <source>#include "MySAX2Handler.hpp"
-#include &lt;iostream.h>
+#include &lt;iostream>
+
+using namespace std;
 
 MySAX2Handler::MySAX2Handler()
 {
@@ -90,11 +92,12 @@ void MySAX2Handler::fatalError(const SAXParseException&amp; exception)
     cout &lt;&lt; "Fatal Error: " &lt;&lt; message
          &lt;&lt; " at line: " &lt;&lt; exception.getLineNumber()
          &lt;&lt; endl;
+    XMLString::release(&amp;message);
 }</source>
 
       <p>The XMLCh and Attributes types are supplied by
-        &XercesCName; and are documented in the include
-        files. Examples of their usage appear in the source code to
+        &XercesCName; and are documented in the API Reference.
+        Examples of their usage appear in the source code to
         the sample applications.</p>
     </s2>
 
@@ -102,11 +105,11 @@ void MySAX2Handler::fatalError(const SAXParseException&amp; exception)
     <s2 title="SAX2XMLReader">
         <anchor name="ConstructParser2"/>
         <s3 title="Constructing an XML Reader">
-          <p>In order to use &XercesCName; to parse XML files, you will
+          <p>In order to use &XercesCName; SAX2 to parse XML files, you will
             need to create an instance of the SAX2XMLReader class. The example
             below shows the code you need in order to create an instance
             of SAX2XMLReader. The ContentHandler and ErrorHandler instances
-            required by the SAX API are provided using the DefaultHandler
+            required by the SAX2 API are provided using the DefaultHandler
             class supplied with &XercesCName;.</p>
 
     <source>
@@ -115,13 +118,10 @@ void MySAX2Handler::fatalError(const SAXParseException&amp; exception)
     #include &lt;xercesc/sax2/DefaultHandler.hpp>
     #include &lt;xercesc/util/XMLString.hpp>
 
-    #if defined(XERCES_NEW_IOSTREAMS)
     #include &lt;iostream>
-    #else
-    #include &lt;iostream.h>
-    #endif
 
-    XERCES_CPP_NAMESPACE_USE
+    using namespace std;
+    using namespace xercesc;
 
     int main (int argc, char* args[]) {
 
@@ -139,7 +139,7 @@ void MySAX2Handler::fatalError(const SAXParseException&amp; exception)
 
         char* xmlFile = "x1.xml";
         SAX2XMLReader* parser = XMLReaderFactory::createXMLReader();
-        parser->setFeature(XMLUni::fgSAX2CoreValidation, true);   
+        parser->setFeature(XMLUni::fgSAX2CoreValidation, true);
         parser->setFeature(XMLUni::fgSAX2CoreNameSpaces, true);   // optional
 
         DefaultHandler* defaultHandler = new DefaultHandler();
@@ -283,6 +283,21 @@ void MySAX2Handler::fatalError(const SAXParseException&amp; exception)
 
             <p/>
 
+            <anchor name="load-schema"/>
+            <table>
+                <tr><th colspan="2"><em>http://apache.org/xml/features/validating/load-schema</em></th></tr>
+                <tr><th><em>true:</em></th><td> Load the schema. </td></tr>
+                <tr><th><em>false:</em></th><td> Don't load the schema if it wasn't found in the grammar pool. </td></tr>
+                <tr><th><em>default:</em></th><td> true </td></tr>
+                <tr><th><em>XMLUni Predefined Constant:</em></th><td> fgXercesLoadSchema </td></tr>
+                <tr><th><em>note:</em></th><td> This feature is ignored and no schemas are loaded if schema processing is disabled. </td></tr>
+                <tr><th><em>see:</em></th><td>
+                <link anchor="schema">http://apache.org/xml/features/validation/schema</link>
+                </td></tr>
+            </table>
+
+            <p/>
+
             <anchor name="load-external-dtd"/>
             <table>
                 <tr><th colspan="2"><em>http://apache.org/xml/features/nonvalidating/load-external-dtd</em></th></tr>
@@ -389,28 +404,28 @@ void MySAX2Handler::fatalError(const SAXParseException&amp; exception)
                 improves the performance.</td></tr>
             </table>
             <p/>
-            
+
             <anchor name="IdentityConstraintChecking"/>
             <table>
                 <tr><th colspan="2"><em>http://apache.org/xml/features/validation/identity-constraint-checking</em></th></tr>
                 <tr><th><em>true:</em></th><td> Enable identity constraint checking. </td></tr>
                 <tr><th><em>false:</em></th><td> Disable identity constraint checking. </td></tr>
                 <tr><th><em>default:</em></th><td> true </td></tr>
-                <tr><th><em>XMLUni Predefined Constant:</em></th><td> fgXercesIdentityConstraintChecking </td></tr>                
+                <tr><th><em>XMLUni Predefined Constant:</em></th><td> fgXercesIdentityConstraintChecking </td></tr>
             </table>
             <p/>
-            
+
             <anchor name="GenerateSyntheticAnnotations"/>
             <table>
                 <tr><th colspan="2"><em>http://apache.org/xml/features/generate-synthetic-annotations</em></th></tr>
-                <tr><th><em>true:</em></th><td> Enable generation of synthetic annotations.  A synthetic annotation will be 
+                <tr><th><em>true:</em></th><td> Enable generation of synthetic annotations.  A synthetic annotation will be
                 generated when a schema component has non-schema attributes but no child annotation. </td></tr>
                 <tr><th><em>false:</em></th><td> Disable generation of synthetic annotations. </td></tr>
                 <tr><th><em>default:</em></th><td> false </td></tr>
-                <tr><th><em>XMLUni Predefined Constant:</em></th><td> fgXercesGenerateSyntheticAnnotations </td></tr>                
+                <tr><th><em>XMLUni Predefined Constant:</em></th><td> fgXercesGenerateSyntheticAnnotations </td></tr>
             </table>
             <p/>
-            
+
             <anchor name="XercesValidateAnnotations"/>
             <table>
                 <tr><th colspan="2"><em>http://apache.org/xml/features/validate-annotations</em></th></tr>
@@ -420,57 +435,68 @@ void MySAX2Handler::fatalError(const SAXParseException&amp; exception)
                 <tr><th><em>XMLUni Predefined Constant:</em></th><td> fgXercesValidateAnnotations </td></tr>
                 <tr><th><em>note:</em></th><td> Each annotation is validated independently. </td></tr>
             </table>
-            <p/>                                    
-            
+            <p/>
+
             <anchor name="IgnoreAnnotations"/>
             <table>
                 <tr><th colspan="2"><em>http://apache.org/xml/features/schema/ignore-annotations</em></th></tr>
                 <tr><th><em>true:</em></th><td> Do not generate XSAnnotations when traversing a schema.</td></tr>
                 <tr><th><em>false:</em></th><td> Generate XSAnnotations when traversing a schema.</td></tr>
-                <tr><th><em>default:</em></th><td> false </td></tr>     
-                <tr><th><em>XMLUni Predefined Constant:</em></th><td> fgXercesIgnoreAnnotations </td></tr>           
+                <tr><th><em>default:</em></th><td> false </td></tr>
+                <tr><th><em>XMLUni Predefined Constant:</em></th><td> fgXercesIgnoreAnnotations </td></tr>
             </table>
-            <p/>    
-            
+            <p/>
+
             <anchor name="DisableDefaultEntityResolution"/>
             <table>
                 <tr><th colspan="2"><em>http://apache.org/xml/features/disable-default-entity-resolution</em></th></tr>
                 <tr><th><em>true:</em></th><td> The parser will not attempt to resolve the entity when the resolveEntity method returns NULL.</td></tr>
                 <tr><th><em>false:</em></th><td> The parser will attempt to resolve the entity when the resolveEntity method returns NULL.</td></tr>
-                <tr><th><em>default:</em></th><td> false </td></tr>       
-                <tr><th><em>XMLUni Predefined Constant:</em></th><td> fgXercesDisableDefaultEntityResolution </td></tr>         
+                <tr><th><em>default:</em></th><td> false </td></tr>
+                <tr><th><em>XMLUni Predefined Constant:</em></th><td> fgXercesDisableDefaultEntityResolution </td></tr>
             </table>
             <p/>
-            
+
             <anchor name="SkipDTDValidation"/>
             <table>
                 <tr><th colspan="2"><em>http://apache.org/xml/features/validation/schema/skip-dtd-validation</em></th></tr>
                 <tr><th><em>true:</em></th><td> When schema validation is on the parser will ignore the DTD, except for entities.</td></tr>
                 <tr><th><em>false:</em></th><td> The parser will not ignore DTDs when validating.</td></tr>
-                <tr><th><em>default:</em></th><td> false </td></tr>                
+                <tr><th><em>default:</em></th><td> false </td></tr>
                 <tr><th><em>XMLUni Predefined Constant:</em></th><td> fgXercesSkipDTDValidation </td></tr>
                 <tr><th><em>see:</em></th><td>
-                <link anchor="schema">Schema Validation</link></td></tr>                
+                <link anchor="schema">Schema Validation</link></td></tr>
             </table>
-            <p/>                                               
-                      
+            <p/>
+
            <anchor name="IgnoreCachedDTD"/>
-            <table>            
+            <table>
                 <tr><th colspan="2"><em>http://apache.org/xml/features/validation/ignoreCachedDTD</em></th></tr>
-                <tr><th><em>true:</em></th><td> Ignore a cached DTD when an XML document contains both an 
+                <tr><th><em>true:</em></th><td> Ignore a cached DTD when an XML document contains both an
                 								internal and external DTD, and the use cached grammar from parse option
                 								is enabled. Currently, we do not allow using cached DTD grammar when an
                 								internal subset is present in the document. This option will only affect
-                								the behavior of the parser when an internal and external DTD both exist 
+                								the behavior of the parser when an internal and external DTD both exist
                 								in a document (i.e. no effect if document has no internal subset).</td></tr>
                 <tr><th><em>false:</em></th><td> Don't ignore cached DTD. </td></tr>
                 <tr><th><em>default:</em></th><td> false </td></tr>
                 <tr><th><em>XMLUni Predefined Constant:</em></th><td> fgXercesIgnoreCachedDTD </td></tr>
-                <tr><th><em>see:</em></th><td>                
+                <tr><th><em>see:</em></th><td>
                 <link anchor="use-cached">http://apache.org/xml/features/validation/use-cachedGrammarInParse</link>
                 </td></tr>
             </table>
-            <p/>              
+            <p/>
+
+            <anchor name="HandleMultipleImports"/>
+            <table>
+                <tr><th colspan="2"><em>http://apache.org/xml/features/validation/schema/handle-multiple-imports</em></th></tr>
+                <tr><th><em>true:</em></th><td> During schema validation allow multiple schemas with the same namespace
+                                                to be imported.</td></tr>
+                <tr><th><em>false:</em></th><td> Don't import multiple schemas with the same namespace. </td></tr>
+                <tr><th><em>default:</em></th><td> false </td></tr>
+                <tr><th><em>XMLUni Predefined Constant:</em></th><td> fgXercesHandleMultipleImports </td></tr>
+            </table>
+            <p/>
             </s4>
         </s3>
 
@@ -547,7 +573,7 @@ void MySAX2Handler::fatalError(const SAXParseException&amp; exception)
                             one of those constants.</td></tr>
                 <tr><th><em>Value Type</em></th><td> XMLCh* </td></tr>
                 <tr><th><em>XMLUni Predefined Constant:</em></th><td> fgXercesScannerName </td></tr>
-                <tr><th><em>note: </em></th><td> See <jump href="program-others.html#UseSpecificScanner">Use Specific Scanner</jump>
+                <tr><th><em>note: </em></th><td> See <jump href="program-others-&XercesC3Series;.html#UseSpecificScanner">Use Specific Scanner</jump>
                 for more programming details. </td></tr>
             </table>
 
@@ -556,7 +582,7 @@ void MySAX2Handler::fatalError(const SAXParseException&amp; exception)
             <table>
                 <tr><th colspan="2"><em>http://apache.org/xml/properties/security-manager</em></th></tr>
                 <tr><th><em>Description</em></th>
-                <td> 
+                <td>
                     Certain valid XML and XML Schema constructs can force a
                     processor to consume more system resources than an
                     application may wish.  In fact, certain features could
@@ -564,10 +590,10 @@ void MySAX2Handler::fatalError(const SAXParseException&amp; exception)
                     denial-of-service attack.  This property allows
                     applications to impose limits on the amount of
                     resources the processor will consume while processing
-                    these constructs.  
+                    these constructs.
                 </td></tr>
                 <tr><th><em>Value</em></th>
-                <td> 
+                <td>
                     An instance of the SecurityManager class (see
                     <code>xercesc/util/SecurityManager</code>).  This
                     class's documentation describes the particular limits
@@ -587,14 +613,34 @@ void MySAX2Handler::fatalError(const SAXParseException&amp; exception)
                 <tr><th><em>Value Type</em></th><td> SecurityManager* </td></tr>
                 <tr><th><em>XMLUni Predefined Constant:</em></th><td> fgXercesSecurityManager </td></tr>
             </table>
-            
             <p/>
-                        
-            <table>            
+
+            <table>
+                <tr><th
+                colspan="2"><em>http://apache.org/xml/properties/low-water-mark</em></th></tr>
+                <tr><th><em>Description</em></th>
+                <td>
+                    If the number of available bytes in the raw buffer is less than
+                    the low water mark the parser will attempt to read more data before
+                    continuing parsing. By default the value for this parameter is 100
+                    bytes. You may want to set this parameter to 0 if you would like
+                    the parser to parse the available data immediately without
+                    potentially blocking while waiting for more date.
+                </td></tr>
+                <tr><th><em>Value</em></th>
+                <td>
+                    New low water mark.
+                </td></tr>
+                <tr><th><em>Value Type</em></th><td> XMLSize_t* </td></tr>
+		<tr><th><em>XMLUni Predefined Constant:</em></th><td> fgXercesLowWaterMark </td></tr>
+            </table>
+            <p/>
+
+            <table>
                 <tr><th
                 colspan="2"><em>setInputBufferSize(const size_t bufferSize)</em></th></tr>
                 <tr><th><em>Description</em></th>
-                <td> 
+                <td>
                     Set maximum input buffer size.
                     This method allows users to limit the size of buffers used in parsing
                     XML character data. The effect of setting this size is to limit the
@@ -602,12 +648,12 @@ void MySAX2Handler::fatalError(const SAXParseException&amp; exception)
                     The parser's default input buffer size is 1 megabyte.
                 </td></tr>
                 <tr><th><em>Value</em></th>
-                <td> 
+                <td>
                     The maximum input buffer size
                 </td></tr>
                 <tr><th><em>Value Type</em></th><td> XMLCh* </td></tr>
             </table>
-                        
+
             <p/>
           </s4>
         </s3>

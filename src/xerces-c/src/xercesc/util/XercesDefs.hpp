@@ -16,12 +16,34 @@
  */
 
 /*
- * $Id: XercesDefs.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XercesDefs.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
+#if !defined(XERCESC_INCLUDE_GUARD_XERCESDEFS_HPP)
+#define XERCESC_INCLUDE_GUARD_XERCESDEFS_HPP
 
-#if !defined(XERCESDEFS_HPP)
-#define XERCESDEFS_HPP
+// ---------------------------------------------------------------------------
+//  The file xerces_hdr_config defines critical configuration information
+//	used by the remainder of this file.
+//
+//	There are two major configuration files:
+//		- xerces_autoconf_config.hpp-- Contains defines that are safe for
+//									   access through public headers.
+//
+//		- config.h					-- Contains defines that may conflict
+//									   with other packages; should only be
+//									   included by Xerces implementation files.
+//
+//	Both of these files are generated through the autoconf/configure process.
+// ---------------------------------------------------------------------------
+
+//
+// If this is an autoconf configured build, we include Xerces_autoconf_config.hpp
+// Otherwise we include a preconfigured config appropriate for the particular
+// platform that the specific makefile should copy over.
+//
+//  If the next line generates an error then you haven't run ./configure
+#include	<xercesc/util/Xerces_autoconf_config.hpp>
 
 // ---------------------------------------------------------------------------
 //  Include the Xerces version information; this is kept in a separate file to
@@ -29,175 +51,6 @@
 // ---------------------------------------------------------------------------
 #include    <xercesc/util/XercesVersion.hpp>
 
-
-// ---------------------------------------------------------------------------
-//  Include the header that does automatic sensing of the current platform
-//  and compiler.
-// ---------------------------------------------------------------------------
-#include    <xercesc/util/AutoSense.hpp>
-
-#define XERCES_Invalid_File_Handle 0
-
-// ---------------------------------------------------------------------------
-//  According to the platform we include a platform specific file. This guy
-//  will set up any platform specific stuff, such as character mode.
-// ---------------------------------------------------------------------------
-#if defined(XML_WIN32)
-#include    <xercesc/util/Platforms/Win32/Win32Defs.hpp>
-#endif
-
-#if defined(XML_CYGWIN)
-#include    <xercesc/util/Platforms/Cygwin/CygwinDefs.hpp>
-#endif
-
-#if defined(XML_AIX)
-#include    <xercesc/util/Platforms/AIX/AIXDefs.hpp>
-#endif
-
-#if defined(XML_SOLARIS)
-#include    <xercesc/util/Platforms/Solaris/SolarisDefs.hpp>
-#endif
-
-#if defined(XML_OPENSERVER)
-#include    <xercesc/util/Platforms/OpenServer/OpenServerDefs.hpp>
-#endif
-
-#if defined(XML_UNIXWARE)
-#include    <xercesc/util/Platforms/UnixWare/UnixWareDefs.hpp>
-#endif
-
-#if defined(XML_HPUX)
-#include    <xercesc/util/Platforms/HPUX/HPUXDefs.hpp>
-#endif
-
-#if defined(XML_IRIX)
-#include    <xercesc/util/Platforms/IRIX/IRIXDefs.hpp>
-#endif
-
-#if defined(XML_INTERIX)
-#include    <xercesc/util/Platforms/Interix/InterixDefs.hpp>
-#endif
-
-#if defined(XML_TANDEM)
-#include    <xercesc/util/Platforms/Tandem/TandemDefs.hpp>
-#endif
-
-#if defined(XML_BEOS)
-#include    <xercesc/util/Platforms/BeOS/BeOSDefs.hpp>
-#endif
-
-#if defined(XML_LINUX)
-#include    <xercesc/util/Platforms/Linux/LinuxDefs.hpp>
-#endif
-
-#if defined(XML_FREEBSD)
-#include    <xercesc/util/Platforms/FreeBSD/FreeBSDDefs.hpp>
-#endif
-
-#if defined(XML_OS390)
-#include    <xercesc/util/Platforms/OS390/OS390Defs.hpp>
-#endif
-
-#if defined(XML_PTX)
-#include    <xercesc/util/Platforms/PTX/PTXDefs.hpp>
-#endif
-
-#if defined(XML_OS2)
-#include    <xercesc/util/Platforms/OS2/OS2Defs.hpp>
-#endif
-
-#if defined(XML_MACOS)
-#include	<xercesc/util/Platforms/MacOS/MacOSDefs.hpp>
-#endif
-
-#if defined(XML_AS400)
-#include	<xercesc/util/Platforms/OS400/OS400Defs.hpp>
-#endif
-
-#if defined(XML_TRU64)
-#include	<xercesc/util/Platforms/Tru64/Tru64Defs.hpp>
-#endif
-
-#if defined(XML_QNX)
-#include	<xercesc/util/Platforms/QNX/QNXDefs.hpp>
-#endif
-
-// ---------------------------------------------------------------------------
-//  And now we subinclude a header according to the development environment
-//  we are on. This guy defines for each platform some basic stuff that is
-//  specific to the development environment.
-// ---------------------------------------------------------------------------
-#if defined(XML_VISUALCPP)
-#include    <xercesc/util/Compilers/VCPPDefs.hpp>
-#endif
-
-#if defined(XML_CSET)
-#include    <xercesc/util/Compilers/CSetDefs.hpp>
-#endif
-
-#if defined(XML_BORLAND)
-#include    <xercesc/util/Compilers/BorlandCDefs.hpp>
-#endif
-
-#if defined(XML_SUNCC) || defined(XML_SUNCC5)
-#include    <xercesc/util/Compilers/SunCCDefs.hpp>
-#endif
-
-#if defined(XML_SCOCC)
-#include    <xercesc/util/Compilers/SCOCCDefs.hpp>
-#endif
-
-#if defined(XML_SOLARIS_KAICC)
-#include    <xercesc/util/Compilers/SunKaiDefs.hpp>
-#endif
-
-#if defined(XML_HPUX_CC) || defined(XML_HPUX_aCC) || defined(XML_HPUX_KAICC)
-#include    <xercesc/util/Compilers/HPCCDefs.hpp>
-#endif
-
-#if defined(XML_MIPSPRO_CC)
-#include    <xercesc/util/Compilers/MIPSproDefs.hpp>
-#endif
-
-#if defined(XML_TANDEMCC)
-#include    <xercesc/util/Compilers/TandemCCDefs.hpp>
-#endif
-
-#if defined(XML_GCC)
-#include    <xercesc/util/Compilers/GCCDefs.hpp>
-#endif
-
-#if defined(XML_MVSCPP)
-#include    <xercesc/util/Compilers/MVSCPPDefs.hpp>
-#endif
-
-#if defined(XML_IBMVAW32)
-#include    <xercesc/util/Compilers/IBMVAW32Defs.hpp>
-#endif
-
-#if defined(XML_IBMVAOS2)
-#include    <xercesc/util/Compilers/IBMVAOS2Defs.hpp>
-#endif
-
-#if defined(XML_METROWERKS)
-#include	<xercesc/util/Compilers/CodeWarriorDefs.hpp>
-#endif
-
-#if defined(XML_PTX_CC)
-#include	<xercesc/util/Compilers/PTXCCDefs.hpp>
-#endif
-
-#if defined(XML_AS400)
-#include	<xercesc/util/Compilers/OS400SetDefs.hpp>
-#endif
-
-#if defined(XML_DECCXX)
-#include	<xercesc/util/Compilers/DECCXXDefs.hpp>
-#endif
-
-#if defined(XML_QCC)
-#include	<xercesc/util/Compilers/QCCDefs.hpp>
-#endif
 
 // ---------------------------------------------------------------------------
 //  Some general typedefs that are defined for internal flexibility.
@@ -221,7 +74,7 @@ typedef XMLUInt32           UCS4Ch;
 //
 //  This flag will be set in the per-development environment stuff above.
 // ---------------------------------------------------------------------------
-#if defined(NO_NATIVE_BOOL)
+#if defined(XERCES_NO_NATIVE_BOOL)
   #ifndef bool
     typedef int     bool;
   #endif
@@ -233,15 +86,11 @@ typedef XMLUInt32           UCS4Ch;
   #endif
 #endif
 
-#if defined(XML_NETBSD)
-#include       <xercesc/util/Platforms/NetBSD/NetBSDDefs.hpp>
-#endif
-
 // ---------------------------------------------------------------------------
-//  According to whether the compiler suports L"" type strings, we define
+//  According to whether the compiler supports L"" type strings, we define
 //  the XMLStrL() macro one way or another.
 // ---------------------------------------------------------------------------
-#if defined(XML_LSTRSUPPORT)
+#if defined(XERCES_LSTRSUPPORT)
 #define XMLStrL(str)  L##str
 #else
 #define XMLStrL(str)  str
@@ -280,52 +129,45 @@ typedef XMLUInt32           UCS4Ch;
 //  PLATFORM_XXXX keywords are set in the per-development environment
 //  include above.
 // ---------------------------------------------------------------------------
-#if defined(PROJ_XMLUTIL)
-#define XMLUTIL_EXPORT PLATFORM_EXPORT
-#else
-#define XMLUTIL_EXPORT PLATFORM_IMPORT
-#endif
 
-#if defined(PROJ_XMLPARSER)
-#define XMLPARSER_EXPORT PLATFORM_EXPORT
-#else
-#define XMLPARSER_EXPORT PLATFORM_IMPORT
-#endif
+// The DLL_EXPORT flag should be defined on the command line during the build of a DLL
+// configure conspires to make this happen.
 
-#if defined(PROJ_SAX4C)
-#define SAX_EXPORT PLATFORM_EXPORT
+#if defined(DLL_EXPORT)
+  #if defined(XERCES_BUILDING_LIBRARY)
+    #define XMLUTIL_EXPORT XERCES_PLATFORM_EXPORT
+    #define XMLPARSER_EXPORT XERCES_PLATFORM_EXPORT
+    #define SAX_EXPORT XERCES_PLATFORM_EXPORT
+    #define SAX2_EXPORT XERCES_PLATFORM_EXPORT
+    #define CDOM_EXPORT XERCES_PLATFORM_EXPORT
+    #define PARSERS_EXPORT  XERCES_PLATFORM_EXPORT
+    #define VALIDATORS_EXPORT  XERCES_PLATFORM_EXPORT
+    #define XINCLUDE_EXPORT  XERCES_PLATFORM_EXPORT
+  #else
+    #define XMLUTIL_EXPORT XERCES_PLATFORM_IMPORT
+    #define XMLPARSER_EXPORT XERCES_PLATFORM_IMPORT
+    #define SAX_EXPORT XERCES_PLATFORM_IMPORT
+    #define SAX2_EXPORT XERCES_PLATFORM_IMPORT
+    #define CDOM_EXPORT XERCES_PLATFORM_IMPORT
+    #define PARSERS_EXPORT  XERCES_PLATFORM_IMPORT
+    #define VALIDATORS_EXPORT  XERCES_PLATFORM_IMPORT
+    #define XINCLUDE_EXPORT  XERCES_PLATFORM_IMPORT
+  #endif
+  #if defined(XERCES_BUILDING_DEPRECATED_LIBRARY)
+    #define DEPRECATED_DOM_EXPORT XERCES_PLATFORM_EXPORT
+  #else
+    #define DEPRECATED_DOM_EXPORT XERCES_PLATFORM_IMPORT
+  #endif
 #else
-#define SAX_EXPORT PLATFORM_IMPORT
-#endif
-
-#if defined(PROJ_SAX2)
-#define SAX2_EXPORT PLATFORM_EXPORT
-#else
-#define SAX2_EXPORT PLATFORM_IMPORT
-#endif
-
-#if defined(PROJ_DOM)
-#define CDOM_EXPORT PLATFORM_EXPORT
-#else
-#define CDOM_EXPORT PLATFORM_IMPORT
-#endif
-
-#if defined(PROJ_DEPRECATED_DOM)
-#define DEPRECATED_DOM_EXPORT PLATFORM_EXPORT
-#else
-#define DEPRECATED_DOM_EXPORT PLATFORM_IMPORT
-#endif
-
-#if defined(PROJ_PARSERS)
-#define PARSERS_EXPORT  PLATFORM_EXPORT
-#else
-#define PARSERS_EXPORT  PLATFORM_IMPORT
-#endif
-
-#if defined(PROJ_VALIDATORS)
-#define VALIDATORS_EXPORT  PLATFORM_EXPORT
-#else
-#define VALIDATORS_EXPORT  PLATFORM_IMPORT
+  #define XMLUTIL_EXPORT 
+  #define XMLPARSER_EXPORT 
+  #define SAX_EXPORT 
+  #define SAX2_EXPORT
+  #define CDOM_EXPORT
+  #define DEPRECATED_DOM_EXPORT 
+  #define PARSERS_EXPORT 
+  #define VALIDATORS_EXPORT
+  #define XINCLUDE_EXPORT
 #endif
 
 #endif

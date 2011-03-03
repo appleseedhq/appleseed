@@ -21,8 +21,8 @@
 <s1 title="Sample: CreateDOMDocument">
 
     <s2 title="CreateDOMDocument">
-        <p> CreateDOMDocument, illustrates how you can create a DOM tree in
-            memory from scratch. It then reports the elements in the tree that
+        <p>The CreateDOMDocument example illustrates how you can create a DOM tree in
+            memory from scratch. It then reports the number of elements in the tree that
             was just created.</p>
 
         <s3 title="Running CreateDOMDocument">

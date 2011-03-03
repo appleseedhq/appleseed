@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: NOTATIONDatatypeValidator.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: NOTATIONDatatypeValidator.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-#if !defined(NOTATION_DATATYPEVALIDATOR_HPP)
-#define NOTATION_DATATYPEVALIDATOR_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_NOTATION_DATATYPEVALIDATOR_HPP)
+#define XERCESC_INCLUDE_GUARD_NOTATION_DATATYPEVALIDATOR_HPP
 
 #include <xercesc/validators/datatype/AbstractStringValidator.hpp>
 

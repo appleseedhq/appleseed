@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: DTDAttDefList.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DTDAttDefList.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-
-#if !defined(DTDATTDEFLIST_HPP)
-#define DTDATTDEFLIST_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_DTDATTDEFLIST_HPP)
+#define XERCESC_INCLUDE_GUARD_DTDATTDEFLIST_HPP
 
 #include <xercesc/util/RefHashTableOf.hpp>
 #include <xercesc/validators/DTD/DTDElementDecl.hpp>
@@ -37,7 +36,7 @@ XERCES_CPP_NAMESPACE_BEGIN
 //
 //  Since each validator can store attributes differently, this abstract
 //  interface allows each validator to provide an implementation of this
-//  data strucure that works best for it.
+//  data structure that works best for it.
 //
 //  For us, we just wrap the RefHashTableOf collection that the DTDElementDecl
 //  class uses to store the attributes that belong to it.
@@ -64,19 +63,15 @@ public :
     //  Implementation of the virtual interface
     // -----------------------------------------------------------------------
 
-    /** 
-     * @deprecated This method is not thread-safe.
-     */
-    virtual bool hasMoreElements() const;
     virtual bool isEmpty() const;
     virtual XMLAttDef* findAttDef
     (
-        const   unsigned long       uriID
+        const   unsigned int       uriID
         , const XMLCh* const        attName
     );
     virtual const XMLAttDef* findAttDef
     (
-        const   unsigned long       uriID
+        const   unsigned int       uriID
         , const XMLCh* const        attName
     )   const;
     virtual XMLAttDef* findAttDef
@@ -89,31 +84,21 @@ public :
         const   XMLCh* const        attURI
         , const XMLCh* const        attName
     )   const;
-
-    /** 
-     * @deprecated This method is not thread-safe.
-     */
-    virtual XMLAttDef& nextElement();
-
-    /** 
-     * @deprecated This method is not thread-safe.
-     */
-    virtual void Reset();
 
     /**
      * return total number of attributes in this list
      */
-    virtual unsigned int getAttDefCount() const ;
+    virtual XMLSize_t getAttDefCount() const ;
 
     /**
      * return attribute at the index-th position in the list.
      */
-    virtual XMLAttDef &getAttDef(unsigned int index) ;
+    virtual XMLAttDef &getAttDef(XMLSize_t index) ;
 
     /**
      * return attribute at the index-th position in the list.
      */
-    virtual const XMLAttDef &getAttDef(unsigned int index) const ;
+    virtual const XMLAttDef &getAttDef(XMLSize_t index) const ;
 
     /***
      * Support for Serialization/De-serialization
@@ -151,8 +136,8 @@ private :
     RefHashTableOfEnumerator<DTDAttDef>*    fEnum;
     RefHashTableOf<DTDAttDef>*              fList;
     DTDAttDef**                             fArray;
-    unsigned int                            fSize;
-    unsigned int                            fCount;
+    XMLSize_t                               fSize;
+    XMLSize_t                               fCount;
 
     friend class DTDElementDecl;
 };

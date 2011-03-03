@@ -16,7 +16,7 @@
  */
 
 /*
- *	$Id: MacOSUnicodeConverter.cpp 568078 2007-08-21 11:43:25Z amassari $
+ *	$Id: MacOSUnicodeConverter.cpp 695759 2008-09-16 08:04:55Z borisk $
  */
  
  
@@ -29,13 +29,8 @@
 #include <cstddef>
 #include <cstring>
 
-#if defined(XML_METROWERKS) || (__GNUC__ >= 3 && _GLIBCPP_USE_WCHAR_T)
-	// Only used under metrowerks.
-	#include <cwctype>
-#endif
-
 #if defined(__APPLE__)
-    //	Framework includes from ProjectBuilder
+    //	Framework includes
     #include <CoreServices/CoreServices.h>
 #else
     //	Classic includes otherwise
@@ -58,7 +53,6 @@
 #include <xercesc/util/TranscodingException.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
 #include <xercesc/util/Janitor.hpp>
-#include <xercesc/util/Platforms/MacOS/MacOSPlatformUtils.hpp>
 
 XERCES_CPP_NAMESPACE_BEGIN
 
@@ -94,11 +88,11 @@ const XMLCh MacOSUnicodeConverter::fgMacLCPEncodingName[] =
 // ---------------------------------------------------------------------------
 //  MacOSUnicodeConverter: Constructors and Destructor
 // ---------------------------------------------------------------------------
-MacOSUnicodeConverter::MacOSUnicodeConverter()
+MacOSUnicodeConverter::MacOSUnicodeConverter(MemoryManager* manager)
   : fCollator(NULL)
 {
 	//	Test for presense of unicode collation functions
-	fHasUnicodeCollation = (UCCompareText != (void*)kUnresolvedCFragSymbolAddress);
+	fHasUnicodeCollation = (UCCompareText != NULL);
     
     //  Create a unicode collator for doing string comparisons
     if (fHasUnicodeCollation)
@@ -157,25 +151,6 @@ int MacOSUnicodeConverter::compareIString(  const XMLCh* const    comp1
 									
         return ((status != noErr) || equivalent) ? 0 : order;
 	}
-#if defined(XML_METROWERKS)
-	else
-	{
-		const XMLCh* cptr1 = comp1;
-		const XMLCh* cptr2 = comp2;
-		
-		while ( (*cptr1 != 0) && (*cptr2 != 0) )
-		{
-			std::wint_t wch1 = std::towupper(*cptr1);
-			std::wint_t wch2 = std::towupper(*cptr2);
-			if (wch1 != wch2)
-				break;
-			
-			cptr1++;
-			cptr2++;
-		}
-		return (int) (std::towupper(*cptr1) - std::towupper(*cptr2));
-	}
-#else
 	else
 	{
 		//	For some reason there is no platform utils available
@@ -183,13 +158,12 @@ int MacOSUnicodeConverter::compareIString(  const XMLCh* const    comp1
 		XMLPlatformUtils::panic(PanicHandler::Panic_NoTransService);
 		return 0;
 	}
-#endif
 }
 
 
 int MacOSUnicodeConverter::compareNIString( const XMLCh* const  comp1
                                         , const XMLCh* const    comp2
-                                        , const unsigned int    maxChars)
+                                        , const XMLSize_t       maxChars)
 {
 	//	If unicode collation routines are available, use them.
 	//	This should be the case on Mac OS 8.6 and later,
@@ -225,27 +199,6 @@ int MacOSUnicodeConverter::compareNIString( const XMLCh* const  comp1
                                 
         return ((status != noErr) || equivalent) ? 0 : order;
 	}
-#if defined(XML_METROWERKS)
-	else
-	{
-		unsigned int  n = 0;
-		const XMLCh* cptr1 = comp1;
-		const XMLCh* cptr2 = comp2;
-	
-		while ( (*cptr1 != 0) && (*cptr2 != 0) && (n < maxChars) )
-		{
-			std::wint_t wch1 = std::towupper(*cptr1);
-			std::wint_t wch2 = std::towupper(*cptr2);
-			if (wch1 != wch2)
-				break;
-			
-			cptr1++;
-			cptr2++;
-			n++;
-		}
-		return (int)(std::towupper(*cptr1) - std::towupper(*cptr2));
-	}
-#else
 	else
 	{
 		//	For some reason there is no platform utils available
@@ -253,7 +206,6 @@ int MacOSUnicodeConverter::compareNIString( const XMLCh* const  comp1
 		XMLPlatformUtils::panic(PanicHandler::Panic_NoTransService);
 		return 0;
 	}
-#endif
 }
 
 
@@ -261,25 +213,6 @@ const XMLCh* MacOSUnicodeConverter::getId() const
 {
     return fgMyServiceId;
 }
-
-
-bool MacOSUnicodeConverter::isSpace(const XMLCh toCheck) const
-{
-#if TARGET_API_MAC_CARBON
-
-   //	Return true if the specified character is in the set.
-   CFCharacterSetRef wsSet = CFCharacterSetGetPredefined(kCFCharacterSetWhitespaceAndNewline);
-   return CFCharacterSetIsCharacterMember(wsSet, toCheck);
-
-#elif defined(XML_METROWERKS) || (__GNUC__ >= 3 && _GLIBCPP_USE_WCHAR_T)
-
-	// Use this if there's a reasonable c library available.
-	// ProjectBuilder currently has no support for iswspace ;(
-    return (std::iswspace(toCheck) != 0);
-
-#endif
-}
-
 
 TextEncoding
 MacOSUnicodeConverter::discoverLCPEncoding()
@@ -309,7 +242,7 @@ MacOSUnicodeConverter::discoverLCPEncoding()
 	//  Since posix paths are utf-8 encoding on OS X, and the OS X
 	//  terminal uses utf-8 by default, this seems to make the most sense.
 	#if !defined(XML_MACOS_LCP_TRADITIONAL)
-	if (gMacOSXOrBetter)
+	if (true /*gMacOSXOrBetter*/)
 	{
 		//  Manufacture a text encoding for UTF8
 		encoding = CreateTextEncoding(kTextEncodingUnicodeDefault,
@@ -322,11 +255,10 @@ MacOSUnicodeConverter::discoverLCPEncoding()
 }
 
 
-XMLLCPTranscoder* MacOSUnicodeConverter::makeNewLCPTranscoder()
+XMLLCPTranscoder* MacOSUnicodeConverter::makeNewLCPTranscoder(MemoryManager* manager)
 {
 	XMLLCPTranscoder* result = NULL;
 	OSStatus status = noErr;
-    MemoryManager* manager = XMLPlatformUtils::fgMemoryManager;
 	
 	//  Discover the text encoding to use for the LCP
 	TextEncoding lcpTextEncoding = discoverLCPEncoding();
@@ -342,7 +274,7 @@ XMLLCPTranscoder* MacOSUnicodeConverter::makeNewLCPTranscoder()
     {
         //  Pass the XMLTranscoder over to the LPC transcoder
         if (resValue == XMLTransService::Ok)
-            result = new MacOSLCPTranscoder(xmlTrans, manager);
+            result = new (manager) MacOSLCPTranscoder(xmlTrans, manager);
         else
             delete xmlTrans;
     }
@@ -358,7 +290,7 @@ bool MacOSUnicodeConverter::supportsSrcOfs() const
 }
 
 
-void MacOSUnicodeConverter::upperCase(XMLCh* const toUpperCase) const
+void MacOSUnicodeConverter::upperCase(XMLCh* const toUpperCase)
 {
 #if TARGET_API_MAC_CARBON
 
@@ -373,7 +305,7 @@ void MacOSUnicodeConverter::upperCase(XMLCh* const toUpperCase) const
    CFStringUppercase(cfString, NULL);
    CFRelease(cfString);
 
-#elif defined(XML_METROWERKS) || (__GNUC__ >= 3 && _GLIBCPP_USE_WCHAR_T)
+#elif (__GNUC__ >= 3 && _GLIBCPP_USE_WCHAR_T)
 
 	// Use this if there's a reasonable c library available.
 	// Metrowerks does this reasonably
@@ -387,7 +319,7 @@ void MacOSUnicodeConverter::upperCase(XMLCh* const toUpperCase) const
 }
 
 
-void MacOSUnicodeConverter::lowerCase(XMLCh* const toLowerCase) const
+void MacOSUnicodeConverter::lowerCase(XMLCh* const toLowerCase)
 {
 #if TARGET_API_MAC_CARBON
 
@@ -402,7 +334,7 @@ void MacOSUnicodeConverter::lowerCase(XMLCh* const toLowerCase) const
    CFStringLowercase(cfString, NULL);
    CFRelease(cfString);
 
-#elif defined(XML_METROWERKS) || (__GNUC__ >= 3 && _GLIBCPP_USE_WCHAR_T)
+#elif (__GNUC__ >= 3 && _GLIBCPP_USE_WCHAR_T)
 
 	// Use this if there's a reasonable c library available.
 	// Metrowerks does this reasonably
@@ -425,13 +357,24 @@ MacOSUnicodeConverter::ConvertWideToNarrow(const XMLCh* wide, char* narrow, std:
 }
 
 
+void
+MacOSUnicodeConverter::CopyCStringToPascal(const char* c, Str255 pas)
+{
+	int len = strlen(c);
+	if (len > sizeof(pas)-1)
+		len = sizeof(pas)-1;
+	memmove(&pas[1], c, len);
+	pas[0] = len;
+}
+
+
 // ---------------------------------------------------------------------------
 //  MacOSTransService: The protected virtual transcoding service API
 // ---------------------------------------------------------------------------
 XMLTranscoder*
 MacOSUnicodeConverter::makeNewXMLTranscoder(const   XMLCh* const		encodingName
                                         ,       XMLTransService::Codes& resValue
-                                        , const unsigned int			blockSize
+                                        , const XMLSize_t               blockSize
                                         ,       MemoryManager* const    manager)
 {
 	XMLTranscoder* result = NULL;
@@ -464,7 +407,7 @@ MacOSUnicodeConverter::makeNewXMLTranscoder(const   XMLCh* const		encodingName
 XMLTranscoder*
 MacOSUnicodeConverter::makeNewXMLTranscoder(const   XMLCh* const		encodingName
                                         ,       XMLTransService::Codes& resValue
-                                        , const unsigned int			blockSize
+                                        , const XMLSize_t               blockSize
 										,		TextEncoding            textEncoding
                                         ,       MemoryManager* const    manager)
 {
@@ -515,8 +458,8 @@ MacOSUnicodeConverter::makeNewXMLTranscoder(const   XMLCh* const		encodingName
 bool
 MacOSUnicodeConverter::IsMacOSUnicodeConverterSupported(void)
 {
-    return UpgradeScriptInfoToTextEncoding != (void*)kUnresolvedCFragSymbolAddress
-        && CreateTextToUnicodeInfoByEncoding != (void*)kUnresolvedCFragSymbolAddress
+    return UpgradeScriptInfoToTextEncoding != (void*)NULL
+        && CreateTextToUnicodeInfoByEncoding != (void*)NULL
         ;
 }
 
@@ -527,7 +470,7 @@ MacOSUnicodeConverter::IsMacOSUnicodeConverterSupported(void)
 MacOSTranscoder::MacOSTranscoder(const  XMLCh* const    encodingName
 								, TECObjectRef          textToUnicode
 								, TECObjectRef          unicodeToText
-                                , const unsigned int    blockSize
+                                , const XMLSize_t       blockSize
                                 , MemoryManager* const  manager) :
     XMLTranscoder(encodingName, blockSize, manager),
     mTextToUnicode(textToUnicode),
@@ -548,13 +491,13 @@ MacOSTranscoder::~MacOSTranscoder()
 //  MacOSTranscoder: The virtual transcoder API
 // ---------------------------------------------------------------------------
 
-unsigned int
-MacOSTranscoder::transcodeFrom(  const  XMLByte* const			srcData
-                                , const unsigned int			srcCount
-                                ,       XMLCh* const			toFill
-                                , const unsigned int			maxChars
-                                ,       unsigned int&			bytesEaten
-                                ,       unsigned char* const	charSizes)
+XMLSize_t
+MacOSTranscoder::transcodeFrom(  const  XMLByte* const          srcData
+                                , const XMLSize_t               srcCount
+                                ,       XMLCh* const            toFill
+                                , const XMLSize_t               maxChars
+                                ,       XMLSize_t&              bytesEaten
+                                ,       unsigned char* const    charSizes)
 {
 	//  Reset the tec state (since we don't know that we're part of a
 	//  larger run of text).
@@ -588,12 +531,12 @@ MacOSTranscoder::transcodeFrom(  const  XMLByte* const			srcData
 }
 
 
-unsigned int
+XMLSize_t
 MacOSTranscoder::transcodeTo(const  XMLCh* const    srcData
-                            , const unsigned int    srcCount
+                            , const XMLSize_t       srcCount
                             ,       XMLByte* const  toFill
-                            , const unsigned int    maxBytes
-                            ,       unsigned int&   charsEaten
+                            , const XMLSize_t       maxBytes
+                            ,       XMLSize_t&      charsEaten
                             , const UnRepOpts       options)
 {
 	//  Reset the tec state (since we don't know that we're part of a
@@ -626,7 +569,7 @@ MacOSTranscoder::transcodeTo(const  XMLCh* const    srcData
     	if (status == kTECUnmappableElementErr && options == UnRep_Throw)
     	{
     		XMLCh tmpBuf[17];
-            XMLString::binToText((unsigned int)&srcData[charsConsumed], tmpBuf, 16, 16);
+            XMLString::binToText(srcData[charsConsumed], tmpBuf, 16, 16);
             ThrowXML2
             (
                 TranscodingException
@@ -643,7 +586,7 @@ MacOSTranscoder::transcodeTo(const  XMLCh* const    srcData
 
 
 bool
-MacOSTranscoder::canTranscodeTo(const unsigned int toCheck) const
+MacOSTranscoder::canTranscodeTo(const unsigned int toCheck)
 {
 	//
     //  If the passed value is really a surrogate embedded together, then
@@ -694,7 +637,8 @@ MacOSTranscoder::canTranscodeTo(const unsigned int toCheck) const
 // ---------------------------------------------------------------------------
 MacOSLCPTranscoder::MacOSLCPTranscoder(XMLTranscoder* const transcoder, MemoryManager* const manager)
  : mTranscoder(transcoder),
-   mManager(manager)
+   mManager(manager),
+   mMutex (manager)
 {
 }
 
@@ -717,8 +661,7 @@ MacOSLCPTranscoder::~MacOSLCPTranscoder()
 //	converting twice. It would be nice if the calling code could do some
 //	extra buffering to avoid this result.
 // ---------------------------------------------------------------------------
-unsigned int
-MacOSLCPTranscoder::calcRequiredSize(const char* const srcText
+XMLSize_t MacOSLCPTranscoder::calcRequiredSize(const char* const srcText
                                      , MemoryManager* const manager)
 {
 	if (!srcText)
@@ -731,15 +674,15 @@ MacOSLCPTranscoder::calcRequiredSize(const char* const srcText
 	std::size_t totalCharsProduced = 0;
 
 	const char* src = srcText;
-	unsigned int srcCnt = std::strlen(src);
+	XMLSize_t srcCnt = std::strlen(src);
     
     //  Iterate over the characters, converting into a temporary buffer which we'll discard.
     //  All this to get the size required.
 	while (srcCnt > 0)
     {
         TempXMLBuf tmpBuf;
-        unsigned int bytesConsumed = 0;
-		unsigned int charsProduced = mTranscoder->transcodeFrom((XMLByte*)src, srcCnt,
+        XMLSize_t bytesConsumed = 0;
+		XMLSize_t charsProduced = mTranscoder->transcodeFrom((XMLByte*)src, srcCnt,
 														tmpBuf, kTempBufCount,
 														bytesConsumed,
 														NULL);
@@ -766,8 +709,7 @@ MacOSLCPTranscoder::calcRequiredSize(const char* const srcText
 //	converting twice. It would be nice if the calling code could do some
 //	extra buffering to avoid this result.
 // ---------------------------------------------------------------------------
-unsigned int
-MacOSLCPTranscoder::calcRequiredSize(const XMLCh* const srcText
+XMLSize_t MacOSLCPTranscoder::calcRequiredSize(const XMLCh* const srcText
                                      , MemoryManager* const manager)
 {
 	if (!srcText)
@@ -779,15 +721,15 @@ MacOSLCPTranscoder::calcRequiredSize(const XMLCh* const srcText
 	std::size_t     totalBytesProduced = 0;
 
 	const XMLCh*    src     = srcText;
-	unsigned int    srcCnt  = XMLString::stringLen(src);
+	XMLSize_t    srcCnt  = XMLString::stringLen(src);
     
     //  Iterate over the characters, converting into a temporary buffer which we'll discard.
     //  All this to get the size required.
-   while (srcCnt > 0)
+    while (srcCnt > 0)
     {
         TempCharBuf tmpBuf;
-        unsigned int charsConsumed = 0;
-		unsigned int bytesProduced = mTranscoder->transcodeTo(src, srcCnt,
+        XMLSize_t charsConsumed = 0;
+		XMLSize_t bytesProduced = mTranscoder->transcodeTo(src, srcCnt,
                                             (XMLByte*)tmpBuf, kTempBufCount,
                                             charsConsumed,
                                             XMLTranscoder::UnRep_RepChar);
@@ -808,15 +750,6 @@ MacOSLCPTranscoder::calcRequiredSize(const XMLCh* const srcText
 
 
 char*
-MacOSLCPTranscoder::transcode(const XMLCh* const srcText)
-{
-	//	Transcode using a memory manager that allocates
-	//	memory using new[].
-	return transcode(srcText, XMLPlatformUtils::fgArrayMemoryManager);
-}
-
-
-char*
 MacOSLCPTranscoder::transcode(const XMLCh* const srcText,
                               MemoryManager* const manager)
 {
@@ -829,7 +762,7 @@ MacOSLCPTranscoder::transcode(const XMLCh* const srcText,
 
 	ArrayJanitor<char> result(0);
 	const XMLCh* src		= srcText;
-	unsigned int srcCnt		= XMLString::stringLen(src);
+	XMLSize_t srcCnt		= XMLString::stringLen(src);
 	std::size_t resultCnt	= 0;
 
     //  Iterate over the characters, buffering into a local temporary
@@ -839,8 +772,8 @@ MacOSLCPTranscoder::transcode(const XMLCh* const srcText,
     {
 		//  Transcode some characters
         TempCharBuf tmpBuf;
-        unsigned int charsConsumed = 0;
-        unsigned int bytesProduced = mTranscoder->transcodeTo(src, srcCnt,
+        XMLSize_t charsConsumed = 0;
+        XMLSize_t bytesProduced = mTranscoder->transcodeTo(src, srcCnt,
                                             (XMLByte*)tmpBuf, kTempBufCount,
                                             charsConsumed,
                                             XMLTranscoder::UnRep_RepChar);
@@ -893,15 +826,6 @@ MacOSLCPTranscoder::transcode(const XMLCh* const srcText,
 
 
 XMLCh*
-MacOSLCPTranscoder::transcode(const char* const srcText)
-{
-	//	Transcode using a memory manager that allocates
-	//	memory using new[].
-	return transcode(srcText, XMLPlatformUtils::fgArrayMemoryManager);
-}
-
-
-XMLCh*
 MacOSLCPTranscoder::transcode(const char* const srcText,
                               MemoryManager* const manager)
 {
@@ -924,8 +848,8 @@ MacOSLCPTranscoder::transcode(const char* const srcText,
     {
         //  Transcode some characters
 		TempXMLBuf tmpBuf;
-        unsigned int bytesConsumed = 0;
-		unsigned int charsProduced = mTranscoder->transcodeFrom((XMLByte*)src, srcCnt,
+        XMLSize_t bytesConsumed = 0;
+		XMLSize_t charsProduced = mTranscoder->transcodeFrom((XMLByte*)src, srcCnt,
 												tmpBuf, kTempBufCount,
 												bytesConsumed,
 												NULL);
@@ -979,7 +903,7 @@ MacOSLCPTranscoder::transcode(const char* const srcText,
 bool
 MacOSLCPTranscoder::transcode( 		 const   char* const	toTranscode
                                     ,       XMLCh* const    toFill
-                                    , const unsigned int    maxChars
+                                    , const XMLSize_t       maxChars
                                     , MemoryManager* const  manager)
 {
     // toFill must contain space for maxChars XMLCh characters + 1 (for terminating NULL).
@@ -996,9 +920,9 @@ MacOSLCPTranscoder::transcode( 		 const   char* const	toTranscode
 	XMLMutexLock lock(&mMutex);
 
     //  Call the transcoder to do the work
-    unsigned int srcLen = std::strlen(toTranscode);
-    unsigned int bytesConsumed = 0;
-    unsigned int charsProduced = mTranscoder->transcodeFrom((XMLByte*)toTranscode, srcLen,
+    XMLSize_t srcLen = std::strlen(toTranscode);
+    XMLSize_t bytesConsumed = 0;
+    XMLSize_t charsProduced = mTranscoder->transcodeFrom((XMLByte*)toTranscode, srcLen,
                                             toFill, maxChars,
 											bytesConsumed,
 											NULL);
@@ -1014,7 +938,7 @@ MacOSLCPTranscoder::transcode( 		 const   char* const	toTranscode
 bool
 MacOSLCPTranscoder::transcode( 		const   XMLCh* const    toTranscode
                                     ,       char* const     toFill
-                                    , const unsigned int    maxChars
+                                    , const XMLSize_t       maxChars
                                     , MemoryManager* const  manager)
 {
     //	toFill must contain space for maxChars bytes + 1 (for terminating NULL).
@@ -1031,9 +955,9 @@ MacOSLCPTranscoder::transcode( 		const   XMLCh* const    toTranscode
 	XMLMutexLock lock(&mMutex);
 
     //  Call the transcoder to do the work
-    unsigned int srcLen = XMLString::stringLen(toTranscode);
-    unsigned int charsConsumed = 0;
-    unsigned int bytesProduced = mTranscoder->transcodeTo(toTranscode, srcLen,
+    XMLSize_t srcLen = XMLString::stringLen(toTranscode);
+    XMLSize_t charsConsumed = 0;
+    XMLSize_t bytesProduced = mTranscoder->transcodeTo(toTranscode, srcLen,
                                             (XMLByte*)toFill, maxChars,
                                             charsConsumed,
                                             XMLTranscoder::UnRep_RepChar);

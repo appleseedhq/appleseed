@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMNotationImpl.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMNotationImpl.cpp 671894 2008-06-26 13:29:21Z borisk $
  */
 
 #include "DOMDocumentImpl.hpp"
@@ -34,11 +34,11 @@ DOMNotationImpl::DOMNotationImpl(DOMDocument *ownerDoc, const XMLCh *nName)
 }
 
 DOMNotationImpl::DOMNotationImpl(const DOMNotationImpl &other, bool /*deep*/)
-    : DOMNotation(other), 
-      fNode(other.fNode), 
-      fName(other.fName), 
+    : DOMNotation(other),
+      fNode(other.fNode),
+      fName(other.fName),
       fPublicId(other.fPublicId),
-      fSystemId(other.fSystemId), 
+      fSystemId(other.fSystemId),
       fBaseURI(other.fBaseURI)
 {
     fNode.setIsLeafNode(true);
@@ -52,7 +52,7 @@ DOMNotationImpl::~DOMNotationImpl()
 
 DOMNode *DOMNotationImpl::cloneNode(bool deep) const
 {
-    DOMNode* newNode = new (getOwnerDocument(), DOMDocumentImpl::NOTATION_OBJECT) DOMNotationImpl(*this, deep);
+    DOMNode* newNode = new (getOwnerDocument(), DOMMemoryManager::NOTATION_OBJECT) DOMNotationImpl(*this, deep);
     fNode.callUserDataHandlers(DOMUserDataHandler::NODE_CLONED, this, newNode);
     return newNode;
 }
@@ -63,7 +63,7 @@ const XMLCh * DOMNotationImpl::getNodeName() const {
 }
 
 
-short DOMNotationImpl::getNodeType() const {
+DOMNode::NodeType DOMNotationImpl::getNodeType() const {
     return DOMNode::NOTATION_NODE;
 }
 
@@ -114,7 +114,7 @@ void DOMNotationImpl::release()
     DOMDocumentImpl* doc = (DOMDocumentImpl*) getOwnerDocument();
     if (doc) {
         fNode.callUserDataHandlers(DOMUserDataHandler::NODE_DELETED, 0, 0);
-        doc->release(this, DOMDocumentImpl::NOTATION_OBJECT);
+        doc->release(this, DOMMemoryManager::NOTATION_OBJECT);
     }
     else {
         // shouldn't reach here
@@ -167,15 +167,13 @@ const XMLCh* DOMNotationImpl::getBaseURI() const
            void*            DOMNotationImpl::setUserData(const XMLCh* key, void* data, DOMUserDataHandler* handler)
                                                                                      {return fNode.setUserData(key, data, handler); }
            void*            DOMNotationImpl::getUserData(const XMLCh* key) const     {return fNode.getUserData(key); }
-           short            DOMNotationImpl::compareTreePosition(const DOMNode* other) const {return fNode.compareTreePosition(other); }
+           short            DOMNotationImpl::compareDocumentPosition(const DOMNode* other) const {return fNode.compareDocumentPosition(other); }
            const XMLCh*     DOMNotationImpl::getTextContent() const                  {return fNode.getTextContent(); }
            void             DOMNotationImpl::setTextContent(const XMLCh* textContent){fNode.setTextContent(textContent); }
-           const XMLCh*     DOMNotationImpl::lookupNamespacePrefix(const XMLCh* namespaceURI, bool useDefault) const  {return fNode.lookupNamespacePrefix(namespaceURI, useDefault); }
+           const XMLCh*     DOMNotationImpl::lookupPrefix(const XMLCh* namespaceURI) const  {return fNode.lookupPrefix(namespaceURI); }
            bool             DOMNotationImpl::isDefaultNamespace(const XMLCh* namespaceURI) const {return fNode.isDefaultNamespace(namespaceURI); }
            const XMLCh*     DOMNotationImpl::lookupNamespaceURI(const XMLCh* prefix) const  {return fNode.lookupNamespaceURI(prefix); }
-           DOMNode*         DOMNotationImpl::getInterface(const XMLCh* feature)      {return fNode.getInterface(feature); }
+           void*            DOMNotationImpl::getFeature(const XMLCh* feature, const XMLCh* version) const {return fNode.getFeature(feature, version); }
 
 
 XERCES_CPP_NAMESPACE_END
-
-

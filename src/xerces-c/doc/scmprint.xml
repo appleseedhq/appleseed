@@ -41,7 +41,7 @@ Options:
 </source>
           <p>Here is some sample output from SCMPrint (as the output is verbose
              it has been truncated)</p>
-<source>cd &XercesCInstallDir;-linux/samples/data
+<source>cd &XercesC3InstallDir;/samples/data
 SCMPrint personal.xsd
 
 ********** Printing out information from Schema **********

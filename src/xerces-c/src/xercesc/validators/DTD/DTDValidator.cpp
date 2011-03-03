@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DTDValidator.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DTDValidator.cpp 729944 2008-12-29 17:03:32Z amassari $
  */
 
 
@@ -51,9 +51,10 @@ DTDValidator::~DTDValidator()
 // ---------------------------------------------------------------------------
 //  DTDValidator: Implementation of the XMLValidator interface
 // ---------------------------------------------------------------------------
-int DTDValidator::checkContent(XMLElementDecl* const elemDecl
-                              , QName** const        children
-                              , const unsigned int   childCount)
+bool DTDValidator::checkContent(XMLElementDecl* const elemDecl
+                              , QName** const         children
+                              , XMLSize_t             childCount
+                              , XMLSize_t*         indexFailingChild)
 {
     //
     //  Look up the element id in our element decl pool. This will get us
@@ -75,7 +76,10 @@ int DTDValidator::checkContent(XMLElementDecl* const elemDecl
         //  we return 0 as the index of the first bad child.
         //
         if (childCount)
-            return 0;
+        {
+            *indexFailingChild=0;
+            return false;
+        }
     }
      else if (modelType == DTDElementDecl::Any)
     {
@@ -88,7 +92,7 @@ int DTDValidator::checkContent(XMLElementDecl* const elemDecl
         const XMLContentModel* elemCM = elemDecl->getContentModel();
 
         // Ask it to validate and return its return
-        return elemCM->validateContent(children, childCount, getScanner()->getEmptyNamespaceId());
+        return elemCM->validateContent(children, childCount, getScanner()->getEmptyNamespaceId(), indexFailingChild, getScanner()->getMemoryManager());
     }
      else
     {
@@ -96,7 +100,7 @@ int DTDValidator::checkContent(XMLElementDecl* const elemDecl
     }
 
     // Went ok, so return success
-    return -1;
+    return true;
 }
 
 
@@ -384,8 +388,11 @@ DTDValidator::validateAttrValue(const   XMLAttDef*      attDef
 
 }
 
-void DTDValidator::preContentValidation(bool reuseGrammar,
-                                        bool validateDefAttr)
+void DTDValidator::preContentValidation(bool
+#if defined(XERCES_DEBUG)
+										reuseGrammar
+#endif
+                                       ,bool validateDefAttr)
 {
     //
     //  Lets enumerate all of the elements in the element decl pool
@@ -471,7 +478,7 @@ void DTDValidator::preContentValidation(bool reuseGrammar,
         bool seenNOTATION = false;
         bool elemEmpty = (curElem.getModelType() == DTDElementDecl::Empty);
 
-        for(unsigned int i=0; i<attDefList.getAttDefCount(); i++)
+        for(XMLSize_t i=0; i<attDefList.getAttDefCount(); i++)
         {
             const XMLAttDef& curAttDef = attDefList.getAttDef(i);
 

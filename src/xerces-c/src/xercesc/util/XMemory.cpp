@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XMemory.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMemory.cpp 635226 2008-03-09 12:04:39Z borisk $
  */
 
 
@@ -44,7 +44,7 @@ void* XMemory::operator new(size_t size)
     return (char*)block + headerSize;
 }
 
-#if defined(XML_VISUALCPP)
+#if defined(XERCES_MFC_SUPPORT)
 
 void* XMemory::operator new(size_t size, const char* /*file*/, int /*line*/)
 { 
@@ -62,8 +62,9 @@ void* XMemory::operator new(size_t size, MemoryManager* manager)
 {
     assert(manager != 0);
 	
-	size_t headerSize = XMLPlatformUtils::alignPointerForNewBlockAllocation(
-										sizeof(MemoryManager*));
+    size_t headerSize = XMLPlatformUtils::alignPointerForNewBlockAllocation(
+       sizeof(MemoryManager*));
+       
     void* const block = manager->allocate(headerSize + size);
     *(MemoryManager**)block = manager;
 
@@ -79,8 +80,8 @@ void XMemory::operator delete(void* p)
 {
     if (p != 0)
     {
-		size_t headerSize = XMLPlatformUtils::alignPointerForNewBlockAllocation(
-											sizeof(MemoryManager*));
+        size_t headerSize = XMLPlatformUtils::alignPointerForNewBlockAllocation(
+          sizeof(MemoryManager*));
         void* const block = (char*)p - headerSize;
 
         MemoryManager* const manager = *(MemoryManager**)block;
@@ -90,7 +91,7 @@ void XMemory::operator delete(void* p)
 }
 
 //The Borland compiler is complaining about duplicate overloading of delete
-#if !defined(XML_BORLAND)
+#if !defined(XERCES_NO_MATCHING_DELETE_OPERATOR)
 
 void XMemory::operator delete(void* p, MemoryManager* manager)
 {

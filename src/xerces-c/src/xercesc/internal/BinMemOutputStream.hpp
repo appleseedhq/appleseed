@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: BinMemOutputStream.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: BinMemOutputStream.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#ifndef BINMEMOUTPUTSTREAM_HEADER_GUARD_
-#define BINMEMOUTPUTSTREAM_HEADER_GUARD_
+#if !defined(XERCESC_INCLUDE_GUARD_BINMEMOUTPUTSTREAM_HPP)
+#define XERCESC_INCLUDE_GUARD_BINMEMOUTPUTSTREAM_HPP
 
 #include <xercesc/framework/BinOutputStream.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
@@ -38,19 +38,19 @@ public :
 
     BinMemOutputStream
     (
-         int                     initCapacity = 1023
+         XMLSize_t               initCapacity = 1023
        , MemoryManager* const    manager      = XMLPlatformUtils::fgMemoryManager
     );
 
     // -----------------------------------------------------------------------
     //  Implementation of the output stream interface
     // -----------------------------------------------------------------------
-    virtual unsigned int curPos() const;
+    virtual XMLFilePos curPos() const;
 
     virtual void writeBytes
     (
       const XMLByte*     const      toGo
-    , const unsigned int            maxToWrite
+    , const XMLSize_t            maxToWrite
     ) ;
 
     // -----------------------------------------------------------------------
@@ -58,7 +58,7 @@ public :
     // -----------------------------------------------------------------------
     const XMLByte* getRawBuffer() const;
 
-    unsigned int getSize() const;
+    XMLFilePos getSize() const;
     void reset();
 
 private :
@@ -71,7 +71,7 @@ private :
     // -----------------------------------------------------------------------
     //  Private helpers
     // -----------------------------------------------------------------------
-    void insureCapacity(const unsigned int extraNeeded);
+    void ensureCapacity(const XMLSize_t extraNeeded);
 
     // -----------------------------------------------------------------------
     //  Private data members
@@ -91,8 +91,8 @@ private :
     // -----------------------------------------------------------------------
     MemoryManager*  fMemoryManager;
     XMLByte*        fDataBuf;
-    unsigned int    fIndex;
-    unsigned int    fCapacity;
+    XMLSize_t       fIndex;
+    XMLSize_t       fCapacity;
 
 };
 

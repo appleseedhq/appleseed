@@ -16,17 +16,18 @@
  */
 
  /*
- * $Id: PSVIHandler.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: PSVIHandler.hpp 676796 2008-07-15 05:04:13Z dbertoni $
  */
 
+#if !defined(XERCESC_INCLUDE_GUARD_PSVIHANDLER_HPP)
+#define XERCESC_INCLUDE_GUARD_PSVIHANDLER_HPP
 
-#if !defined(PSVIHANDLER_HPP)
-#define PSVIHANDLER_HPP
-
-#include <xercesc/framework/psvi/PSVIElement.hpp>
-#include <xercesc/framework/psvi/PSVIAttributeList.hpp>
 
 XERCES_CPP_NAMESPACE_BEGIN
+
+
+class PSVIElement;
+class PSVIAttributeList;
 
 
 /**

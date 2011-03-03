@@ -165,7 +165,7 @@ static const XMLTransService::TransRec gToTable[] =
   , { 0xFF57, 0xA6 }, { 0xFF58, 0xA7 }, { 0xFF59, 0xA8 }, { 0xFF5A, 0xA9 }
   , { 0xFF5B, 0xC0 }, { 0xFF5C, 0x4F }, { 0xFF5D, 0xD0 }, { 0xFF5E, 0xA1 }
 };
-static const unsigned int gToTableSz = sizeof(gToTable)/sizeof(gToTable[0]);
+static const XMLSize_t gToTableSz = sizeof(gToTable)/sizeof(gToTable[0]);
 
 
 
@@ -181,8 +181,8 @@ XMLCh XMLEBCDICTranscoder::xlatThisOne(const XMLByte toXlat)
 // ---------------------------------------------------------------------------
 //  XMLEBCDICTranscoder: Constructors and Destructor
 // ---------------------------------------------------------------------------
-XMLEBCDICTranscoder::XMLEBCDICTranscoder(const  XMLCh* const    encodingName
-                                        , const unsigned int    blockSize
+XMLEBCDICTranscoder::XMLEBCDICTranscoder(const  XMLCh* const   encodingName
+                                        , const XMLSize_t      blockSize
                                         , MemoryManager* const manager) :
 
     XML256TableTranscoder

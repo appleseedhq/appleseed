@@ -15,8 +15,12 @@
  * limitations under the License.
  */
 
-#ifndef XMLWIN1252TRANSCODER_HPP
-#define XMLWIN1252TRANSCODER_HPP
+/*
+ * $Id: XMLWin1252Transcoder.hpp 570552 2007-08-28 19:57:36Z amassari $
+ */
+
+#if !defined(XERCESC_INCLUDE_GUARD_XMLWIN1252TRANSCODER_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLWIN1252TRANSCODER_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 #include <xercesc/util/XML256TableTranscoder.hpp>
@@ -37,8 +41,8 @@ public :
     // -----------------------------------------------------------------------
     XMLWin1252Transcoder
     (
-        const   XMLCh* const    encodingName
-        , const unsigned int    blockSize
+        const   XMLCh* const   encodingName
+        , const XMLSize_t      blockSize
         , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
     );
 

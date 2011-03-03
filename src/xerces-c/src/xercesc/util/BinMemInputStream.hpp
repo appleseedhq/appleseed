@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,38 +16,11 @@
  */
 
 /*
- *
- * Revision 1.5  2004/09/08 13:56:21  peiyongz
- * Apache License Version 2.0
- *
- * Revision 1.4  2004/01/29 11:48:46  cargilld
- * Code cleanup changes to get rid of various compiler diagnostic messages.
- *
- * Revision 1.3  2003/05/16 03:11:22  knoaman
- * Partial implementation of the configurable memory manager.
- *
- * Revision 1.2  2002/11/04 15:22:03  tng
- * C++ Namespace Support.
- *
- * Revision 1.1.1.1  2002/02/01 22:22:10  peiyongz
- * sane_include
- *
- * Revision 1.3  2000/02/24 20:05:24  abagchi
- * Swat for removing Log from API docs
- *
- * Revision 1.2  2000/02/06 07:48:01  rahulj
- * Year 2K copyright swat.
- *
- * Revision 1.1.1.1  1999/11/09 01:04:07  twl
- * Initial checkin
- *
- * Revision 1.3  1999/11/08 20:45:04  rahul
- * Swat for adding in Product name and CVS comment log variable.
- *
+ * $Id: BinMemInputStream.hpp 670359 2008-06-22 13:43:45Z borisk $
  */
 
-#if !defined(BINMEMINPUTSTREAM_HPP)
-#define BINMEMINPUTSTREAM_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_BINMEMINPUTSTREAM_HPP)
+#define XERCESC_INCLUDE_GUARD_BINMEMINPUTSTREAM_HPP
 
 #include <xercesc/util/BinInputStream.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
@@ -74,7 +47,7 @@ public :
     BinMemInputStream
     (
         const   XMLByte* const  initData
-        , const unsigned int    capacity
+        , const XMLSize_t       capacity
         , const BufOpts         bufOpt = BufOpt_Copy
         , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
     );
@@ -90,22 +63,24 @@ public :
     // -----------------------------------------------------------------------
     //  Implementation of the input stream interface
     // -----------------------------------------------------------------------
-    virtual unsigned int curPos() const;
+    virtual XMLFilePos curPos() const;
 
-    virtual unsigned int readBytes
+    virtual XMLSize_t readBytes
     (
                 XMLByte* const  toFill
-        , const unsigned int    maxToRead
+        , const XMLSize_t       maxToRead
     );
 
-    inline unsigned int getSize() const;
-    
+    virtual const XMLCh* getContentType() const;
+
+    inline XMLSize_t getSize() const;
+
 private :
     // -----------------------------------------------------------------------
     //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
     BinMemInputStream(const BinMemInputStream&);
-    BinMemInputStream& operator=(const BinMemInputStream&); 
+    BinMemInputStream& operator=(const BinMemInputStream&);
     // -----------------------------------------------------------------------
     //  Private data members
     //
@@ -126,8 +101,8 @@ private :
     // -----------------------------------------------------------------------
     const XMLByte*  fBuffer;
     BufOpts         fBufOpt;
-    unsigned int    fCapacity;
-    unsigned int    fCurIndex;
+    XMLSize_t       fCapacity;
+    XMLSize_t       fCurIndex;
     MemoryManager*  fMemoryManager;
 };
 
@@ -144,12 +119,12 @@ inline void BinMemInputStream::reset()
 // ---------------------------------------------------------------------------
 //  BinMemInputStream: Implementation of the input stream interface
 // ---------------------------------------------------------------------------
-inline unsigned int BinMemInputStream::curPos() const
+inline XMLFilePos BinMemInputStream::curPos() const
 {
     return fCurIndex;
 }
 
-inline unsigned int BinMemInputStream::getSize() const
+inline XMLSize_t BinMemInputStream::getSize() const
 {
     return fCapacity;
 }

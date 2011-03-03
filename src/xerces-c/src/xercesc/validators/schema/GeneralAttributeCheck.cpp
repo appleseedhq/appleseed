@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,16 +20,16 @@
 // ---------------------------------------------------------------------------
 #include <xercesc/validators/schema/GeneralAttributeCheck.hpp>
 #include <xercesc/validators/schema/SchemaSymbols.hpp>
+#include <xercesc/validators/schema/TraverseSchema.hpp>
+#include <xercesc/validators/datatype/DatatypeValidatorFactory.hpp>
+#include <xercesc/dom/DOMNamedNodeMap.hpp>
+#include <xercesc/framework/XMLErrorCodes.hpp>
+#include <xercesc/framework/psvi/XSAnnotation.hpp>
 #include <xercesc/util/XMLString.hpp>
 #include <xercesc/util/XMLUniDefs.hpp>
 #include <xercesc/util/Janitor.hpp>
-#include <xercesc/dom/DOMNamedNodeMap.hpp>
-#include <xercesc/framework/XMLErrorCodes.hpp>
-#include <xercesc/validators/schema/TraverseSchema.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
-#include <xercesc/util/XMLRegisterCleanup.hpp>
 #include <xercesc/util/XMLInitializer.hpp>
-#include <xercesc/validators/datatype/DatatypeValidatorFactory.hpp>
 #include <xercesc/util/OutOfMemoryException.hpp>
 
 XERCES_CPP_NAMESPACE_BEGIN
@@ -53,25 +53,6 @@ static const XMLCh fgUnbounded[] =
     chLatin_e, chLatin_d, chNull
 };
 
-static const XMLCh fgLocal[] =
-{
-    chLatin_l, chLatin_o, chLatin_c, chLatin_a, chLatin_l, chNull
-};
-
-static const XMLCh fgGlobal[] =
-{
-    chLatin_g, chLatin_l, chLatin_o, chLatin_b, chLatin_a, chLatin_l, chNull
-};
-
-
-// ---------------------------------------------------------------------------
-//  Static local data
-// ---------------------------------------------------------------------------
-static bool sGeneralAttCheckMutexRegistered = false;
-static XMLMutex* sGeneralAttCheckMutex = 0;
-static XMLRegisterCleanup sGeneralAttCheckCleanup;
-
-
 // ---------------------------------------------------------------------------
 //  Static member data initialization
 // ---------------------------------------------------------------------------
@@ -81,77 +62,38 @@ DatatypeValidator*                GeneralAttributeCheck::fNonNegIntDV = 0;
 DatatypeValidator*                GeneralAttributeCheck::fBooleanDV = 0;
 DatatypeValidator*                GeneralAttributeCheck::fAnyURIDV = 0;
 
-void XMLInitializer::initializeGeneralAttrCheckMap()
+void XMLInitializer::initializeGeneralAttributeCheck()
 {
-    GeneralAttributeCheck *obj = new GeneralAttributeCheck();
-    delete obj;
+    GeneralAttributeCheck::initialize ();
 }
 
-
-// ---------------------------------------------------------------------------
-//  GeneralAttributeCheck: Constructors and Destructor
-// ---------------------------------------------------------------------------
-GeneralAttributeCheck::GeneralAttributeCheck(MemoryManager* const manager)
-    : fMemoryManager(manager)
-    , fValidationContext(0)
-    , fIDValidator(manager)
+void XMLInitializer::terminateGeneralAttributeCheck()
 {
-    mapElements();
+    delete GeneralAttributeCheck::fFacetsMap;
+    delete GeneralAttributeCheck::fAttMap;
+
+    GeneralAttributeCheck::fAttMap = 0;
+    GeneralAttributeCheck::fFacetsMap = 0;
+
+    GeneralAttributeCheck::fNonNegIntDV = 0;
+    GeneralAttributeCheck::fBooleanDV = 0;
+    GeneralAttributeCheck::fAnyURIDV = 0;
 }
 
-GeneralAttributeCheck::~GeneralAttributeCheck()
+void GeneralAttributeCheck::initialize()
 {
-}
+    // Set up validators.
+    //
+    DatatypeValidatorFactory dvFactory;
 
-
-// ---------------------------------------------------------------------------
-//  GeneralAttributeCheck: Setup methods
-// ---------------------------------------------------------------------------
-void GeneralAttributeCheck::setUpValidators() {
-
-    DatatypeValidatorFactory dvFactory(fMemoryManager);
-
-    dvFactory.expandRegistryToFullSchemaSet();
     fNonNegIntDV = dvFactory.getDatatypeValidator(SchemaSymbols::fgDT_NONNEGATIVEINTEGER);
     fBooleanDV = dvFactory.getDatatypeValidator(SchemaSymbols::fgDT_BOOLEAN);
     fAnyURIDV = dvFactory.getDatatypeValidator(SchemaSymbols::fgDT_ANYURI);
 
-    // TO DO - add remaining valdiators
-}
+    // TODO - add remaining valdiators
 
-void GeneralAttributeCheck::mapElements()
-{
-    if (!sGeneralAttCheckMutexRegistered)
-    {
-        if (!sGeneralAttCheckMutex)
-        {
-            XMLMutexLock lock(XMLPlatformUtils::fgAtomicMutex);
-
-            if (!sGeneralAttCheckMutex)
-                sGeneralAttCheckMutex = new XMLMutex(XMLPlatformUtils::fgMemoryManager);
-        }
-
-        // Use a faux scope to synchronize while we do this
-        {
-            XMLMutexLock lock(sGeneralAttCheckMutex);
-
-            // If we got here first, then register it and set the registered flag
-            if (!sGeneralAttCheckMutexRegistered)
-            {
-                // initialize
-                setUpValidators();
-                mapAttributes();
-
-                // register for cleanup at Termination.
-                sGeneralAttCheckCleanup.registerCleanup(GeneralAttributeCheck::reinitGeneralAttCheck);
-                sGeneralAttCheckMutexRegistered = true;
-            }
-        }
-    }
-}
-
-void GeneralAttributeCheck::mapAttributes() {
-
+    // Map attributes.
+    //
     fAttMap = new ValueHashTableOf<unsigned short>(A_Count);
 
     fAttMap->put((void*)SchemaSymbols::fgATT_ABSTRACT, A_Abstract);
@@ -190,6 +132,7 @@ void GeneralAttributeCheck::mapAttributes() {
     fAttMap->put((void*)SchemaSymbols::fgATT_XPATH, A_XPath);
 
     fFacetsMap = new ValueHashTableOf<unsigned short>(13);
+
     fFacetsMap->put((void*) SchemaSymbols::fgELT_MINEXCLUSIVE, E_MinExclusive);
     fFacetsMap->put((void*) SchemaSymbols::fgELT_MININCLUSIVE, E_MinInclusive);
     fFacetsMap->put((void*) SchemaSymbols::fgELT_MAXEXCLUSIVE, E_MaxExclusive);
@@ -204,22 +147,17 @@ void GeneralAttributeCheck::mapAttributes() {
     fFacetsMap->put((void*) SchemaSymbols::fgELT_PATTERN, E_Pattern);
 }
 
+// ---------------------------------------------------------------------------
+//  GeneralAttributeCheck: Constructors and Destructor
+// ---------------------------------------------------------------------------
+GeneralAttributeCheck::GeneralAttributeCheck(MemoryManager* const manager)
+    : fMemoryManager(manager)
+    , fIDValidator(manager)
+{
+}
 
-// -----------------------------------------------------------------------
-//  Notification that lazy data has been deleted
-// -----------------------------------------------------------------------
-void
-GeneralAttributeCheck::reinitGeneralAttCheck() {
-
-    delete sGeneralAttCheckMutex;
-    sGeneralAttCheckMutex = 0;
-    sGeneralAttCheckMutexRegistered = false;
-
-    delete fAttMap;
-    delete fFacetsMap;
-	
-    fAttMap = fFacetsMap = 0;
-    fNonNegIntDV = fBooleanDV = fAnyURIDV = 0;
+GeneralAttributeCheck::~GeneralAttributeCheck()
+{
 }
 
 // ---------------------------------------------------------------------------
@@ -249,14 +187,13 @@ GeneralAttributeCheck::checkAttributes(const DOMElement* const elem,
         );
     }
 
-    const XMLCh*     contextStr = (isTopLevel) ? fgGlobal : fgLocal;
     DOMNamedNodeMap* eltAttrs = elem->getAttributes();
-    int              attrCount = eltAttrs->getLength();
+    const XMLSize_t  attrCount = eltAttrs->getLength();
     XMLByte          attList[A_Count];
 
     memset(attList, 0, sizeof(attList));
 
-    for (int i = 0; i < attrCount; i++) {
+    for (XMLSize_t i = 0; i < attrCount; i++) {
 
         DOMNode*     attribute = eltAttrs->item(i);
         const XMLCh* attName = attribute->getNodeName();
@@ -290,7 +227,8 @@ GeneralAttributeCheck::checkAttributes(const DOMElement* const elem,
                 XMLString::equals(elemName, SchemaSymbols::fgELT_DOCUMENTATION)) {
 
                 schema->reportSchemaError(elem, XMLUni::fgXMLErrDomain,
-                    XMLErrs::AttributeDisallowed, attName, contextStr, elemName);
+                                          isTopLevel?XMLErrs::AttributeDisallowedGlobal:XMLErrs::AttributeDisallowedLocal, 
+                                          attName, elemName);
             }
             else if (nonXSAttList)
             {
@@ -314,7 +252,8 @@ GeneralAttributeCheck::checkAttributes(const DOMElement* const elem,
         catch(...) {
 
             schema->reportSchemaError(elem, XMLUni::fgXMLErrDomain,
-                XMLErrs::AttributeDisallowed, attName, contextStr, elemName);
+                                      isTopLevel?XMLErrs::AttributeDisallowedGlobal:XMLErrs::AttributeDisallowedLocal, 
+                                      attName, elemName);
             bContinue=true;
         }
         if(bContinue)
@@ -334,7 +273,8 @@ GeneralAttributeCheck::checkAttributes(const DOMElement* const elem,
         }
         else {
             schema->reportSchemaError(elem, XMLUni::fgXMLErrDomain,
-                XMLErrs::AttributeDisallowed, attName, contextStr, elemName);
+                                      isTopLevel?XMLErrs::AttributeDisallowedGlobal:XMLErrs::AttributeDisallowedLocal, 
+                                      attName, elemName);
         }
     }
 
@@ -344,8 +284,9 @@ GeneralAttributeCheck::checkAttributes(const DOMElement* const elem,
     for (unsigned int j=0; j < A_Count; j++) {
 
         if ((fgElemAttTable[elemContext][j] & Att_Required) && attList[j] == 0) {
-            schema->reportSchemaError(elem, XMLUni::fgXMLErrDomain, XMLErrs::AttributeRequired,
-                                      fAttNames[j], contextStr, elemName);
+            schema->reportSchemaError(elem, XMLUni::fgXMLErrDomain, 
+                                      isTopLevel?XMLErrs::AttributeRequiredGlobal:XMLErrs::AttributeRequiredLocal, 
+                                      fAttNames[j], elemName);
         }
     }
 }
@@ -360,7 +301,7 @@ void GeneralAttributeCheck::validate(const DOMElement* const elem,
     bool isInvalid = false;
     DatatypeValidator* dv = 0;
 
-    fValidationContext = schema->fSchemaInfo->getValidationContext();
+    ValidationContext* fValidationContext = schema->fSchemaInfo->getValidationContext();
     switch (dvIndex) {
     case DV_Form:
         if (!XMLString::equals(attValue, SchemaSymbols::fgATTVAL_QUALIFIED)
@@ -794,7 +735,7 @@ unsigned short GeneralAttributeCheck::fgElemAttTable[GeneralAttributeCheck::E_Co
   { 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 0, 34, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0},
   { 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 0, 34, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0},
   { 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 0, 34, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0},
-  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 34, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0},
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 34, 0, 0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0},
   { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0},
   { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 34, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
   { 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 34, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},

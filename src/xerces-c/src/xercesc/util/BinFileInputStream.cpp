@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: BinFileInputStream.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: BinFileInputStream.cpp 670359 2008-06-22 13:43:45Z borisk $
  */
 
 
@@ -68,7 +68,7 @@ BinFileInputStream::~BinFileInputStream()
 // ---------------------------------------------------------------------------
 //  BinFileInputStream: Getter methods
 // ---------------------------------------------------------------------------
-unsigned int BinFileInputStream::getSize() const
+XMLFilePos BinFileInputStream::getSize() const
 {
     return XMLPlatformUtils::fileSize(fSource, fMemoryManager);
 }
@@ -86,20 +86,25 @@ void BinFileInputStream::reset()
 // ---------------------------------------------------------------------------
 //  BinFileInputStream: Implementation of the input stream interface
 // ---------------------------------------------------------------------------
-unsigned int BinFileInputStream::curPos() const
+XMLFilePos BinFileInputStream::curPos() const
 {
     return XMLPlatformUtils::curFilePos(fSource, fMemoryManager);
 }
 
-unsigned int
+XMLSize_t
 BinFileInputStream::readBytes(          XMLByte* const  toFill
-                                , const unsigned int    maxToRead)
+                                , const XMLSize_t       maxToRead)
 {
     //
     //  Read up to the maximum bytes requested. We return the number
     //  actually read.
     //
     return XMLPlatformUtils::readFileBuffer(fSource, maxToRead, toFill, fMemoryManager);
+}
+
+const XMLCh* BinFileInputStream::getContentType() const
+{
+    return 0;
 }
 
 XERCES_CPP_NAMESPACE_END

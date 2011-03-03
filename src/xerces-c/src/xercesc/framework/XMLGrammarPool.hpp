@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XMLGrammarPool.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLGrammarPool.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-#if !defined(XMLGRAMMARPOOL_HPP)
-#define XMLGRAMMARPOOL_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XMLGRAMMARPOOL_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLGRAMMARPOOL_HPP
 
 #include <xercesc/util/PlatformUtils.hpp>
 #include <xercesc/util/RefHashTableOf.hpp>
@@ -174,21 +174,6 @@ public :
     /***
       * Return an XSModel derived from the components of all SchemaGrammars
       * in the grammar pool.  If the pool is locked, this should
-      * be a thread-safe operation.  It should return null if and only if
-      * the pool is empty.
-      *
-      * Calling getXSModel() on an unlocked grammar pool may result in the
-      * creation of a new XSModel with the old XSModel being deleted.  The
-      * function will return a different address for the XSModel if it has
-      * changed.
-      * 
-      * @deprecated (shouldn't use address to determine if XSModel changed)
-      */
-    virtual XSModel *getXSModel() = 0;
-
-    /***
-      * Return an XSModel derived from the components of all SchemaGrammars
-      * in the grammar pool.  If the pool is locked, this should
       * be a thread-safe operation.
       *
       * NOTE: The function should NEVER return NULL.  If there are no grammars in
@@ -198,14 +183,8 @@ public :
       * creation of a new XSModel with the old XSModel being deleted.
       * The bool parameter will indicate if the XSModel was changed.
       *     
-      * For source code compatibility, default implementation is to say
-      * XSModelWasChanged.
       */
-    virtual XSModel *getXSModel(bool& XSModelWasChanged)
-    {
-        XSModelWasChanged = true;
-        return getXSModel();
-    }
+    virtual XSModel *getXSModel(bool& XSModelWasChanged) = 0;
 	
     // @}
 

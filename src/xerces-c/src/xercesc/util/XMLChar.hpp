@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XMLChar.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLChar.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#if !defined(XMLCHAR_HPP)
-#define XMLCHAR_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XMLCHAR_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLCHAR_HPP
 
 #include <xercesc/util/XMLUniDefs.hpp>
 
@@ -51,25 +51,25 @@ public:
     static bool isAllSpaces
     (
         const   XMLCh* const    toCheck
-        , const unsigned int    count
+        , const XMLSize_t       count
     );
 
     static bool containsWhiteSpace
     (
         const   XMLCh* const    toCheck
-        , const unsigned int    count
+        , const XMLSize_t       count
     );
 
     static bool isValidNmtoken
     (
         const   XMLCh*        const    toCheck
-      , const   unsigned int           count
+      , const   XMLSize_t              count
     );
 
     static bool isValidName
     (
         const   XMLCh* const    toCheck
-        , const unsigned int    count
+        , const XMLSize_t       count
     );
 
     static bool isValidName
@@ -80,13 +80,13 @@ public:
     static bool isValidNCName
     (
         const   XMLCh* const    toCheck
-        , const unsigned int    count
+        , const XMLSize_t       count
     );
 
     static bool isValidQName
     (
         const   XMLCh* const    toCheck
-        , const unsigned int    count
+        , const XMLSize_t       count
     );
 
     // -----------------------------------------------------------------------
@@ -135,7 +135,7 @@ private:
     //      code and then hard coded into the cpp file for speed.
     //
     //  fNEL
-    //      Flag to respresents whether NEL and LSEP newline recognition is enabled
+    //      Flag to represents whether NEL and LSEP newline recognition is enabled
     //      or disabled
     // -----------------------------------------------------------------------
     static XMLByte  fgCharCharsTable1_0[0x10000];
@@ -257,25 +257,25 @@ public:
     static bool isAllSpaces
     (
         const   XMLCh* const    toCheck
-        , const unsigned int    count
+        , const XMLSize_t       count
     );
 
     static bool containsWhiteSpace
     (
         const   XMLCh* const    toCheck
-        , const unsigned int    count
+        , const XMLSize_t       count
     );
 
     static bool isValidNmtoken
     (
         const   XMLCh*        const    toCheck
-      , const   unsigned int           count
+      , const   XMLSize_t              count
     );
 
     static bool isValidName
     (
         const   XMLCh* const    toCheck
-        , const unsigned int    count
+        , const XMLSize_t       count
     );
 
     static bool isValidName
@@ -286,13 +286,13 @@ public:
     static bool isValidNCName
     (
         const   XMLCh* const    toCheck
-        , const unsigned int    count
+        , const XMLSize_t       count
     );
 
     static bool isValidQName
     (
         const   XMLCh* const    toCheck
-        , const unsigned int    count
+        , const XMLSize_t       count
     );
 
     // -----------------------------------------------------------------------

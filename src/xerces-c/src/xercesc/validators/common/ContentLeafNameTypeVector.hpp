@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: ContentLeafNameTypeVector.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: ContentLeafNameTypeVector.hpp 676911 2008-07-15 13:27:32Z amassari $
  */
 
-
-#if !defined(CONTENTLEAFNAMETYPEVECTOR_HPP)
-#define CONTENTLEAFNAMETYPEVECTOR_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_CONTENTLEAFNAMETYPEVECTOR_HPP)
+#define XERCESC_INCLUDE_GUARD_CONTENTLEAFNAMETYPEVECTOR_HPP
 
 #include <xercesc/validators/common/ContentSpecNode.hpp>
 #include <xercesc/framework/MemoryManager.hpp>
@@ -47,7 +46,7 @@ public :
     (
         QName** const                     qName
       , ContentSpecNode::NodeTypes* const types
-      , const unsigned int                count
+      , const XMLSize_t                   count
       , MemoryManager* const              manager = XMLPlatformUtils::fgMemoryManager
     );
 
@@ -58,10 +57,10 @@ public :
     // -----------------------------------------------------------------------
     //  Getter methods
     // -----------------------------------------------------------------------
-    QName* getLeafNameAt(const unsigned int pos) const;
+    QName* getLeafNameAt(const XMLSize_t pos) const;
 
-    const ContentSpecNode::NodeTypes getLeafTypeAt(const unsigned int pos) const;
-    const unsigned int getLeafCount() const;
+    ContentSpecNode::NodeTypes getLeafTypeAt(const XMLSize_t pos) const;
+    XMLSize_t getLeafCount() const;
 
     // -----------------------------------------------------------------------
     //  Setter methods
@@ -70,7 +69,7 @@ public :
     (
         QName** const                      qName
       , ContentSpecNode::NodeTypes* const  types
-      , const unsigned int                       count
+      , const XMLSize_t                    count
     );
 
     // -----------------------------------------------------------------------
@@ -87,7 +86,7 @@ private :
     //  helper methods
     // -----------------------------------------------------------------------
     void cleanUp();
-    void init(const unsigned int);
+    void init(const XMLSize_t size);
 
     // -----------------------------------------------------------------------
     //  Private Data Members
@@ -96,7 +95,7 @@ private :
     MemoryManager*                fMemoryManager;
     QName**                       fLeafNames;
     ContentSpecNode::NodeTypes   *fLeafTypes;
-    unsigned int                  fLeafCount;
+    XMLSize_t                     fLeafCount;
 };
 
 inline void ContentLeafNameTypeVector::cleanUp()
@@ -105,7 +104,7 @@ inline void ContentLeafNameTypeVector::cleanUp()
 	fMemoryManager->deallocate(fLeafTypes); //delete [] fLeafTypes;
 }
 
-inline void ContentLeafNameTypeVector::init(const unsigned int size)
+inline void ContentLeafNameTypeVector::init(const XMLSize_t size)
 {
     fLeafNames = (QName**) fMemoryManager->allocate(size * sizeof(QName*));//new QName*[size];
     fLeafTypes = (ContentSpecNode::NodeTypes *) fMemoryManager->allocate

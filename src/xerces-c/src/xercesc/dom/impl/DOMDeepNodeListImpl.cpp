@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMDeepNodeListImpl.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMDeepNodeListImpl.cpp 678381 2008-07-21 10:15:01Z borisk $
  */
 
 #include "DOMDeepNodeListImpl.hpp"
@@ -58,10 +58,12 @@ DOMDeepNodeListImpl::DOMDeepNodeListImpl(const DOMNode *rootNode,
     , fMatchAllURI(false)
     , fMatchURIandTagname(true)
 {
-    fTagName = ((DOMDocumentImpl *)(castToNodeImpl(rootNode)->getOwnerDocument()))->getPooledString(localName);
+    DOMDocumentImpl* doc = (DOMDocumentImpl *)castToNodeImpl(rootNode)->getOwnerDocument();
+
+    fTagName = doc->getPooledString(localName);
     fMatchAll = XMLString::equals(fTagName, kAstr);
     fMatchAllURI = XMLString::equals(namespaceURI, kAstr);
-    fNamespaceURI = ((DOMDocumentImpl *)(castToNodeImpl(rootNode)->getOwnerDocument()))->getPooledString(namespaceURI);
+    fNamespaceURI = doc->getPooledString(namespaceURI);
 }
 
 
@@ -215,4 +217,3 @@ DOMNode *DOMDeepNodeListImpl::nextMatchingElementAfter(DOMNode *current)
 }
 
 XERCES_CPP_NAMESPACE_END
-

@@ -1,5 +1,3 @@
-#ifndef DOMNodeListImpl_HEADER_GUARD_
-#define DOMNodeListImpl_HEADER_GUARD_
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -7,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,8 +16,11 @@
  */
 
 /*
- * $Id: DOMNodeListImpl.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMNodeListImpl.hpp 676911 2008-07-15 13:27:32Z amassari $
  */
+
+#if !defined(XERCESC_INCLUDE_GUARD_DOMNODELISTIMPL_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMNODELISTIMPL_HPP
 
 //
 //  This file is part of the internal implementation of the C++ XML DOM.
@@ -46,28 +47,27 @@
 
 XERCES_CPP_NAMESPACE_BEGIN
 
-
+class DOMParentNode;
 class DOMNode;
 
 class CDOM_EXPORT DOMNodeListImpl: public DOMNodeList
 {
-private:
-    DOMNode   *fNode;
+protected:
+    DOMParentNode   *fNode;
 
+private:
     // Unused, and unimplemented constructors, operators, etc.
     DOMNodeListImpl();
     DOMNodeListImpl(const DOMNodeListImpl & other);
     DOMNodeListImpl & operator = (const DOMNodeListImpl & other);
 
 public:
-    DOMNodeListImpl(DOMNode *node);
+    DOMNodeListImpl(DOMParentNode *node);
     virtual             ~DOMNodeListImpl();
-    virtual DOMNode *  item(XMLSize_t index) const;
-    virtual XMLSize_t getLength() const;
+    virtual DOMNode *    item(XMLSize_t index) const;
+    virtual XMLSize_t    getLength() const;
 };
 
 XERCES_CPP_NAMESPACE_END
 
 #endif
-
-

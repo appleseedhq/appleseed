@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMProcessingInstructionImpl.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMProcessingInstructionImpl.cpp 678381 2008-07-21 10:15:01Z borisk $
  */
 
 #include "DOMProcessingInstructionImpl.hpp"
@@ -43,11 +43,11 @@ DOMProcessingInstructionImpl::DOMProcessingInstructionImpl(DOMDocument *ownerDoc
 DOMProcessingInstructionImpl::DOMProcessingInstructionImpl(
                                         const DOMProcessingInstructionImpl &other,
                                         bool /*deep*/)
-    : DOMProcessingInstruction(other), 
-      fNode(other.fNode), 
-      fChild(other.fChild), 
+    : DOMProcessingInstruction(other),
+      fNode(other.fNode),
+      fChild(other.fChild),
       fCharacterData(other.fCharacterData),
-      fTarget(other.fTarget), 
+      fTarget(other.fTarget),
       fBaseURI(other.fBaseURI)
 {
     fNode.setIsLeafNode(true);
@@ -61,7 +61,7 @@ DOMProcessingInstructionImpl::~DOMProcessingInstructionImpl()
 
 DOMNode *DOMProcessingInstructionImpl::cloneNode(bool deep) const
 {
-    DOMNode* newNode = new (getOwnerDocument(), DOMDocumentImpl::PROCESSING_INSTRUCTION_OBJECT) DOMProcessingInstructionImpl(*this, deep);
+    DOMNode* newNode = new (getOwnerDocument(), DOMMemoryManager::PROCESSING_INSTRUCTION_OBJECT) DOMProcessingInstructionImpl(*this, deep);
     fNode.callUserDataHandlers(DOMUserDataHandler::NODE_CLONED, this, newNode);
     return newNode;
 }
@@ -73,7 +73,7 @@ const XMLCh * DOMProcessingInstructionImpl::getNodeName() const
 }
 
 
-short DOMProcessingInstructionImpl::getNodeType() const {
+DOMNode::NodeType DOMProcessingInstructionImpl::getNodeType() const {
     return DOMNode::PROCESSING_INSTRUCTION_NODE;
 }
 
@@ -103,7 +103,7 @@ void DOMProcessingInstructionImpl::release()
     if (doc) {
         fNode.callUserDataHandlers(DOMUserDataHandler::NODE_DELETED, 0, 0);
         fCharacterData.releaseBuffer();
-        doc->release(this, DOMDocumentImpl::PROCESSING_INSTRUCTION_OBJECT);
+        doc->release(this, DOMMemoryManager::PROCESSING_INSTRUCTION_OBJECT);
     }
     else {
         // shouldn't reach here
@@ -132,9 +132,10 @@ DOMProcessingInstruction *DOMProcessingInstructionImpl::splitText(XMLSize_t offs
     if (offset > len)
         throw DOMException(DOMException::INDEX_SIZE_ERR, 0,  GetDOMNodeMemoryManager);
 
+    DOMDocumentImpl *doc = (DOMDocumentImpl *)getOwnerDocument();
     DOMProcessingInstruction *newText =
-                getOwnerDocument()->createProcessingInstruction(fTarget,
-                        this->substringData(offset, len - offset));
+      doc->createProcessingInstruction(
+        fTarget, this->substringData(offset, len - offset));
 
     DOMNode *parent = getParentNode();
     if (parent != 0)
@@ -142,8 +143,8 @@ DOMProcessingInstruction *DOMProcessingInstructionImpl::splitText(XMLSize_t offs
 
     fCharacterData.fDataBuf->chop(offset);
 
-    if (this->getOwnerDocument() != 0) {
-        Ranges* ranges = ((DOMDocumentImpl *)this->getOwnerDocument())->getRanges();
+    if (doc != 0) {
+        Ranges* ranges = doc->getRanges();
         if (ranges != 0) {
             XMLSize_t sz = ranges->size();
             if (sz != 0) {
@@ -189,13 +190,13 @@ DOMProcessingInstruction *DOMProcessingInstructionImpl::splitText(XMLSize_t offs
            void*            DOMProcessingInstructionImpl::setUserData(const XMLCh* key, void* data, DOMUserDataHandler* handler)
                                                                                                   {return fNode.setUserData(key, data, handler); }
            void*            DOMProcessingInstructionImpl::getUserData(const XMLCh* key) const     {return fNode.getUserData(key); }
-           short            DOMProcessingInstructionImpl::compareTreePosition(const DOMNode* other) const {return fNode.compareTreePosition(other); }
+           short            DOMProcessingInstructionImpl::compareDocumentPosition(const DOMNode* other) const {return fNode.compareDocumentPosition(other); }
            const XMLCh*     DOMProcessingInstructionImpl::getTextContent() const                  {return fNode.getTextContent(); }
            void             DOMProcessingInstructionImpl::setTextContent(const XMLCh* textContent){fNode.setTextContent(textContent); }
-           const XMLCh*     DOMProcessingInstructionImpl::lookupNamespacePrefix(const XMLCh* namespaceURI, bool useDefault) const  {return fNode.lookupNamespacePrefix(namespaceURI, useDefault); }
+           const XMLCh*     DOMProcessingInstructionImpl::lookupPrefix(const XMLCh* namespaceURI) const  {return fNode.lookupPrefix(namespaceURI); }
            bool             DOMProcessingInstructionImpl::isDefaultNamespace(const XMLCh* namespaceURI) const {return fNode.isDefaultNamespace(namespaceURI); }
            const XMLCh*     DOMProcessingInstructionImpl::lookupNamespaceURI(const XMLCh* prefix) const  {return fNode.lookupNamespaceURI(prefix); }
-           DOMNode*         DOMProcessingInstructionImpl::getInterface(const XMLCh* feature)      {return fNode.getInterface(feature); }
+           void*            DOMProcessingInstructionImpl::getFeature(const XMLCh* feature, const XMLCh* version) const {return fNode.getFeature(feature, version); }
 
 //
 //   Delegation of CharacerData functions.
@@ -212,4 +213,3 @@ DOMProcessingInstruction *DOMProcessingInstructionImpl::splitText(XMLSize_t offs
 
 
 XERCES_CPP_NAMESPACE_END
-

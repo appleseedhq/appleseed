@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: DFAContentModel.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DFAContentModel.hpp 677705 2008-07-17 20:15:32Z amassari $
  */
 
-#if !defined(DFACONTENTMODEL_HPP)
-#define DFACONTENTMODEL_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_DFACONTENTMODEL_HPP)
+#define XERCESC_INCLUDE_GUARD_DFACONTENTMODEL_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 #include <xercesc/util/ArrayIndexOutOfBoundsException.hpp>
@@ -31,6 +31,7 @@ XERCES_CPP_NAMESPACE_BEGIN
 
 class ContentSpecNode;
 class CMLeaf;
+class CMRepeatingLeaf;
 class CMNode;
 class CMStateSet;
 
@@ -72,20 +73,24 @@ public:
     // -----------------------------------------------------------------------
     //  Implementation of the virtual content model interface
     // -----------------------------------------------------------------------
-    virtual int validateContent
+    virtual bool validateContent
     (
         QName** const         children
-      , const unsigned int    childCount
-      , const unsigned int    emptyNamespaceId
+      , XMLSize_t             childCount
+      , unsigned int          emptyNamespaceId
+      , XMLSize_t*            indexFailingChild
+      , MemoryManager*  const manager = XMLPlatformUtils::fgMemoryManager
     ) const;
 
-    virtual int validateContentSpecial
+    virtual bool validateContentSpecial
     (
         QName** const           children
-      , const unsigned int      childCount
-      , const unsigned int      emptyNamespaceId
+      , XMLSize_t               childCount
+      , unsigned int            emptyNamespaceId
       , GrammarResolver*  const pGrammarResolver
       , XMLStringPool*    const pStringPool
+      , XMLSize_t*              indexFailingChild
+      , MemoryManager*    const manager = XMLPlatformUtils::fgMemoryManager
     ) const;
 
     virtual void checkUniqueParticleAttribution
@@ -100,8 +105,16 @@ public:
 
     virtual ContentLeafNameTypeVector* getContentLeafNameTypeVector() const ;
 
-    virtual unsigned int getNextState(const unsigned int currentState,
-                                      const unsigned int elementIndex) const;
+    virtual unsigned int getNextState(unsigned int currentState,
+                                      XMLSize_t    elementIndex) const;
+
+    virtual bool handleRepetitions( const QName* const curElem,
+                                    unsigned int curState,
+                                    unsigned int currentLoop,
+                                    unsigned int& nextState,
+                                    unsigned int& nextLoop,
+                                    XMLSize_t elementIndex,
+                                    SubstitutionGroupComparator * comparator) const;
 
 private :
     // -----------------------------------------------------------------------
@@ -116,15 +129,19 @@ private :
     //  Private helper methods
     // -----------------------------------------------------------------------
     void buildDFA(ContentSpecNode* const curNode);
-    CMNode* buildSyntaxTree(ContentSpecNode* const curNode);
-    void calcFollowList(CMNode* const curNode);
+    CMNode* buildSyntaxTree(ContentSpecNode* const curNode, unsigned int& curIndex);
     unsigned int* makeDefStateList() const;
-    int postTreeBuildInit
-    (
-                CMNode* const   nodeCur
-        , const unsigned int    curIndex
-    );
+    unsigned int countLeafNodes(ContentSpecNode* const curNode);
 
+    class Occurence : public XMemory
+    {
+    public:
+        Occurence(int minOcc, int maxOcc, int eltIndex);
+
+        int minOccurs;
+        int maxOccurs;
+        int elemIndex;
+    };
 
     // -----------------------------------------------------------------------
     //  Private data members
@@ -197,35 +214,40 @@ private :
     //      fTransTableSize is the number of valid entries in the transition
     //      table, and in the other related tables such as fFinalStateFlags.
     //
+    //  fCountingStates
+    //      This is the table holding the minOccurs/maxOccurs for elements
+    //      that can be repeated a finite number of times.
+    //
     //  fDTD
     //      Boolean to allow DTDs to validate even with namespace support.
     //
     //  fIsMixed
     //      DFA ContentModel with mixed PCDATA.
     // -----------------------------------------------------------------------
-    QName**                 fElemMap;
-    ContentSpecNode::NodeTypes  *fElemMapType;
-    unsigned int            fElemMapSize;
-    bool                    fEmptyOk;
-    unsigned int            fEOCPos;
-    bool*                   fFinalStateFlags;
-    CMStateSet**            fFollowList;
-    CMNode*                 fHeadNode;
-    unsigned int            fLeafCount;
-    CMLeaf**                fLeafList;
-    ContentSpecNode::NodeTypes  *fLeafListType;
-    unsigned int**          fTransTable;
-    unsigned int            fTransTableSize;
-    bool                    fDTD;
-    bool                    fIsMixed;
-    ContentLeafNameTypeVector *fLeafNameTypeVector;
-    MemoryManager*             fMemoryManager;
+    QName**                     fElemMap;
+    ContentSpecNode::NodeTypes* fElemMapType;
+    unsigned int                fElemMapSize;
+    bool                        fEmptyOk;
+    unsigned int                fEOCPos;
+    bool*                       fFinalStateFlags;
+    CMStateSet**                fFollowList;
+    CMNode*                     fHeadNode;
+    unsigned int                fLeafCount;
+    CMLeaf**                    fLeafList;
+    ContentSpecNode::NodeTypes* fLeafListType;
+    unsigned int**              fTransTable;
+    unsigned int                fTransTableSize;
+    Occurence**                 fCountingStates;
+    bool                        fDTD;
+    bool                        fIsMixed;
+    ContentLeafNameTypeVector * fLeafNameTypeVector;
+    MemoryManager*              fMemoryManager;
 };
 
 
 inline unsigned int
-DFAContentModel::getNextState(const unsigned int currentState,
-                              const unsigned int elementIndex) const {
+DFAContentModel::getNextState(unsigned int currentState,
+                              XMLSize_t    elementIndex) const {
 
     if (currentState == XMLContentModel::gInvalidTrans) {
         return XMLContentModel::gInvalidTrans;
@@ -236,6 +258,14 @@ DFAContentModel::getNextState(const unsigned int currentState,
     }
 
     return fTransTable[currentState][elementIndex];
+}
+
+inline
+DFAContentModel::Occurence::Occurence(int minOcc, int maxOcc, int eltIndex)
+{
+    minOccurs = minOcc;
+    maxOccurs = maxOcc;
+    elemIndex = eltIndex;
 }
 
 XERCES_CPP_NAMESPACE_END

@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: XSAXMLScanner.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XSAXMLScanner.hpp 676911 2008-07-15 13:27:32Z amassari $
  */
 
-
-#if !defined(XSAXMLSCANNER_HPP)
-#define XSAXMLSCANNER_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XSAXMLSCANNER_HPP)
+#define XERCESC_INCLUDE_GUARD_XSAXMLSCANNER_HPP
 
 #include <xercesc/internal/SGXMLScanner.hpp>
 
@@ -85,7 +84,7 @@ private :
     // -----------------------------------------------------------------------
     //  Private helper methods
     // -----------------------------------------------------------------------
-    void scanRawAttrListforNameSpaces(int attCount);
+    void scanRawAttrListforNameSpaces(XMLSize_t attCount);
     void switchGrammar(const XMLCh* const newGrammarNameSpace, bool laxValidate);
 };
 

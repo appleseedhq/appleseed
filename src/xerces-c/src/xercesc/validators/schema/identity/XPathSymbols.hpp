@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XPathSymbols.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XPathSymbols.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-#if !defined(XPATHSYMBOLS_HPP)
-#define XPATHSYMBOLS_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XPATHSYMBOLS_HPP)
+#define XERCESC_INCLUDE_GUARD_XPATHSYMBOLS_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 

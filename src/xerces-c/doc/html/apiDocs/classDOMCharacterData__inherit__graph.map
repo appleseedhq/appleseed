@@ -1,4 +1,0 @@
-<area shape="rect" href="$classDOMComment.html" title="This interface inherits from CharacterData and represents the content of a comment..." alt="" coords="5,161,125,188">
-<area shape="rect" href="$classDOMText.html" title="The DOMText interface inherits from DOMCharacterData and represents the textual content..." alt="" coords="149,161,229,188">
-<area shape="rect" href="$classDOMNode.html" title="The DOMNode interface is the primary datatype for the entire Document Object Model..." alt="" coords="83,7,171,33">
-<area shape="rect" href="$classDOMCDATASection.html" title="CDATA sections are used to escape blocks of text containing characters that would..." alt="" coords="115,239,264,265">

@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: ValidationContextImpl.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: ValidationContextImpl.cpp 903149 2010-01-26 09:58:40Z borisk $
  */
 
 
@@ -27,7 +27,9 @@
 #include <xercesc/framework/XMLRefInfo.hpp>
 #include <xercesc/validators/DTD/DTDEntityDecl.hpp>
 #include <xercesc/validators/datatype/InvalidDatatypeValueException.hpp>
+#include <xercesc/validators/schema/NamespaceScope.hpp>
 #include <xercesc/internal/ElemStack.hpp>
+#include <xercesc/internal/XMLScanner.hpp>
 
 XERCES_CPP_NAMESPACE_BEGIN
 
@@ -48,6 +50,8 @@ ValidationContextImpl::ValidationContextImpl(MemoryManager* const manager)
 ,fToCheckIdRefList(true)
 ,fValidatingMemberType(0)
 ,fElemStack(0)
+,fScanner(0)
+,fNamespaceScope(0)
 {
     fIdRefList = new (fMemoryManager) RefHashTableOf<XMLRefInfo>(109, fMemoryManager);
 }
@@ -127,7 +131,7 @@ void ValidationContextImpl::addIdRef(const XMLCh * const content)
 }
 
 void ValidationContextImpl::toCheckIdRefList(bool toCheck)
-{ 
+{
     fToCheckIdRefList = toCheck;
 }
 
@@ -148,7 +152,7 @@ const NameIdPool<DTDEntityDecl>* ValidationContextImpl::setEntityDeclPool(const 
     return tempPool;
 
 }
-           
+
 void ValidationContextImpl::checkEntity(const XMLCh * const content) const
 {
 
@@ -165,7 +169,7 @@ void ValidationContextImpl::checkEntity(const XMLCh * const content) const
         }
 
     }
-    else 
+    else
     {
         ThrowXMLwithMemMgr1
         (
@@ -178,18 +182,36 @@ void ValidationContextImpl::checkEntity(const XMLCh * const content) const
 
 }
 
-/* QName 
+/* QName
  */
-bool ValidationContextImpl::isPrefixUnknown(XMLCh* prefix) {     
+bool ValidationContextImpl::isPrefixUnknown(XMLCh* prefix) {
     bool unknown = false;
     if (XMLString::equals(prefix, XMLUni::fgXMLNSString)) {
-        return true;                
-    }            
+        return true;
+    }
     else if (!XMLString::equals(prefix, XMLUni::fgXMLString)) {
-        unsigned int uriId = fElemStack->mapPrefixToURI(prefix, (ElemStack::MapModes) ElemStack::Mode_Element, unknown);                
-    }                
+        if(fElemStack && !fElemStack->isEmpty())
+            fElemStack->mapPrefixToURI(prefix, unknown);
+        else if(fNamespaceScope)
+            unknown = (fNamespaceScope->getNamespaceForPrefix(prefix)==fNamespaceScope->getEmptyNamespaceId());
+    }
     return unknown;
 }
 
-XERCES_CPP_NAMESPACE_END
+const XMLCh* ValidationContextImpl::getURIForPrefix(XMLCh* prefix) {
+    bool unknown = false;
+    unsigned int uriId = 0;
+    if(fElemStack)
+        uriId = fElemStack->mapPrefixToURI(prefix, unknown);
+    else if(fNamespaceScope)
+    {
+      uriId = fNamespaceScope->getNamespaceForPrefix(prefix);
+      unknown = uriId == fNamespaceScope->getEmptyNamespaceId();
+    }
+    if (!unknown)
+        return fScanner->getURIText(uriId);
 
+    return XMLUni::fgZeroLenString;
+}
+
+XERCES_CPP_NAMESPACE_END

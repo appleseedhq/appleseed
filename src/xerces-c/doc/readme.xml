@@ -20,14 +20,14 @@
 
 <s1 title="&XercesCFullName;">
 
-    <s2 title="&XercesCName; Version &XercesCVersion;">
+    <s2 title="&XercesCName; Version &XercesC3Version;">
 
         <p>&XercesCName; is a validating XML parser written in a portable subset of
         C++.   &XercesCName; makes it easy to give your application the ability to read and write
         <jump href="http://www.w3.org/XML/">XML</jump> data.    A shared
         library is provided for parsing, generating, manipulating, and validating XML documents
         using the DOM, SAX, and SAX2 APIs. For an introduction to programming
-        with &XercesCName; refer to the <jump href="program.html">Programming
+        with &XercesCName; refer to the <jump href="program-&XercesC3Series;.html">Programming
         Guide</jump>.</p>
 
         <p>&XercesCName; is faithful to the
@@ -81,17 +81,17 @@
                    XML Schema Part 1: Structure</jump>, W3C Recommendation 2 May 2001</li>
                <li><jump href="http://www.w3.org/TR/2001/REC-xmlschema-2-20010502/">
                    XML Schema Part 2: Datatypes</jump>, W3C Recommendation 2 May 2001</li>
+               <li><jump href="http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407">
+            	   DOM Level 3.0 Core Specification</jump>, W3C Recommendation 7 April 2004</li>
+               <li><jump href="http://www.w3.org/TR/2004/REC-DOM-Level-3-LS-20040407">
+            	   DOM Level 3.0 Load and Save Specification</jump>, W3C Recommendation 7 April 2004<br/>
+	               See <jump href="program-dom-&XercesC3Series;.html#DOM3">DOM Level 3 Support</jump> for detail.</li>
+               <li><jump href="http://www.w3.org/TR/2006/REC-xinclude-20061115/">
+            	   XML Inclusions (XInclude) 1.0 (Second Edition)</jump>, W3C Recommendation 15 November 2006</li>
+               <li><jump href="http://www.w3.org/TR/2008/REC-ElementTraversal-20081222/">
+            	   Element Traversal Specification</jump>, W3C Recommendation 22 December 2008</li>
             </ul>
-            <li>Contains a partial implementation of the
-            <jump href="http://www.w3.org/TR/DOM-Level-3-Core/">
-            DOM Level 3.0 Core Specification</jump>, Version 1.0 W3C Working Draft 26 February 2003
-            and
-            <jump href="http://www.w3.org/TR/DOM-Level-3-LS/">
-            Document Object Model (DOM) Level 3 Load and Save Specification</jump>,
-            Version 1.0 W3C Working Draft 26 February 2003.
-            This implementation is experimental.
-            See <jump href="dom3.html">DOM Level 3 Support</jump> for detail.</li>
-            <li>Source code, samples, and documentation is provided</li>
+            <li>Source code, samples, and documentation are provided</li>
             <li>Programmatic generation and validation of XML</li>
             <li>Pluggable catalogs, validators and encodings</li>
             <li>High performance</li>
@@ -99,34 +99,10 @@
         </ul>
     </s2>
 
-    <s2 title="Platforms with Binaries">
-
-      <p>Precompiled binaries are available for the following platforms
-         and compilers:</p>
-
-      &build-winunix-supported-platforms;
-	</s2>
-
-    <s2 title="Other Platforms and Compilers">
-        <ul>
-            <li>MS Visual C++ 6.0</li>
-            <li>GCC 3.2.x</li>
-            <li>Solaris 8, 9</li>
-            <li>AIX 5.1, 5.2</li>
-            <li>OS/390</li>
-            <li>AS/400</li>
-            <li>FreeBSD</li>
-            <li>SGI IRIX</li>
-            <li>OS/2</li>
-            <li>PTX</li>
-            <li>UnixWare</li>
-        </ul>
-    </s2>
-
-    <s2 title='License Information'>
-       <p>The &XercesCName; Version &XercesCVersion; is available in both source distribution and
+    <s2 title="License Information">
+       <p>The &XercesCName; Version &XercesC3Version; is available in both source distribution and
           binary distribution.   &XercesCName; is made available under the
-          <jump href='http://www.apache.org/licenses/LICENSE-2.0.html'>Apache Software License, Version 2.0</jump>.
+          <jump href="http://www.apache.org/licenses/LICENSE-2.0.html">Apache Software License, Version 2.0</jump>.
        </p>
     </s2>
 

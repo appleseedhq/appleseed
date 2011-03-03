@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: ASCIIRangeFactory.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: ASCIIRangeFactory.cpp 678879 2008-07-22 20:05:05Z amassari $
  */
 
 // ---------------------------------------------------------------------------
@@ -68,7 +68,7 @@ void ASCIIRangeFactory::buildRanges(RangeTokenMap *rangeTokMap) {
 
     rangeTokMap->setRangeToken(fgASCIISpace, tok);
 
-    tok = (RangeToken*) RangeToken::complementRanges(tok, tokFactory);
+    tok = RangeToken::complementRanges(tok, tokFactory);
 
     // Build the internal map.
     tok->createMap();
@@ -84,7 +84,7 @@ void ASCIIRangeFactory::buildRanges(RangeTokenMap *rangeTokMap) {
 
     rangeTokMap->setRangeToken(fgASCIIDigit, tok);
 
-    tok = (RangeToken*) RangeToken::complementRanges(tok, tokFactory);
+    tok = RangeToken::complementRanges(tok, tokFactory);
 
     // Build the internal map.
     tok->createMap();
@@ -101,7 +101,7 @@ void ASCIIRangeFactory::buildRanges(RangeTokenMap *rangeTokMap) {
     tok->createMap();
     rangeTokMap->setRangeToken(fgASCIIWord, tok);
 
-    tok = (RangeToken*) RangeToken::complementRanges(tok, tokFactory);
+    tok = RangeToken::complementRanges(tok, tokFactory);
     // Build the internal map.
     tok->createMap();
     rangeTokMap->setRangeToken(fgASCIIWord, tok , true);
@@ -116,7 +116,7 @@ void ASCIIRangeFactory::buildRanges(RangeTokenMap *rangeTokMap) {
 
     rangeTokMap->setRangeToken(fgASCIIXDigit, tok);
 
-    tok = (RangeToken*) RangeToken::complementRanges(tok, tokFactory);
+    tok = RangeToken::complementRanges(tok, tokFactory);
     // Build the internal map.
     tok->createMap();
     rangeTokMap->setRangeToken(fgASCIIXDigit, tok , true);
@@ -128,7 +128,7 @@ void ASCIIRangeFactory::buildRanges(RangeTokenMap *rangeTokMap) {
     tok->createMap();
     rangeTokMap->setRangeToken(fgASCII, tok);
 
-    tok = (RangeToken*) RangeToken::complementRanges(tok, tokFactory);
+    tok = RangeToken::complementRanges(tok, tokFactory);
     // Build the internal map.
     tok->createMap();
     rangeTokMap->setRangeToken(fgASCII, tok , true);

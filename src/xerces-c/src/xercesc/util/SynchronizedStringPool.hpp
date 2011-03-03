@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: SynchronizedStringPool.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: SynchronizedStringPool.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-#if !defined(SYNCHRONIZEDSTRINGPOOL_HPP)
-#define SYNCHRONIZEDSTRINGPOOL_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_SYNCHRONIZEDSTRINGPOOL_HPP)
+#define XERCESC_INCLUDE_GUARD_SYNCHRONIZEDSTRINGPOOL_HPP
 
 #include <xercesc/framework/MemoryManager.hpp>
 #include <xercesc/util/StringPool.hpp>
@@ -30,11 +30,11 @@ XERCES_CPP_NAMESPACE_BEGIN
 
 //
 //  This class provides a synchronized string pool implementation.
-//  This will necessarily be slower than the regular StringPool, so it
+//  This will necessarily be slower than the regular XMLStringPool, so it
 //  should only be used when updates need to be made in a thread-safe
 //  way.  Updates will be made on datastructures local to this object;
 //  all queries that don't involve mutation will first be directed at
-//  the StringPool implementation with which this object is
+//  the XMLStringPool implementation with which this object is
 //  constructed.
 class XMLUTIL_EXPORT XMLSynchronizedStringPool : public XMLStringPool
 {

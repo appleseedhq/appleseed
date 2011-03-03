@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: SchemaSymbols.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: SchemaSymbols.cpp 802804 2009-08-10 14:21:48Z amassari $
  */
 
 
@@ -53,6 +53,7 @@ const XMLCh SchemaSymbols::fgURI_SCHEMAFORSCHEMA[] =
     chLatin_c, chLatin_h, chLatin_e, chLatin_m, chLatin_a, chNull
 };
 
+// deprecated (typo)
 const XMLCh SchemaSymbols::fgXSI_SCHEMALOCACTION[] =
 {
     chLatin_s, chLatin_c, chLatin_h, chLatin_e, chLatin_m, chLatin_a,
@@ -60,7 +61,24 @@ const XMLCh SchemaSymbols::fgXSI_SCHEMALOCACTION[] =
     chLatin_o, chLatin_n, chNull
 };
 
+// deprecated (typo)
 const XMLCh SchemaSymbols::fgXSI_NONAMESPACESCHEMALOCACTION[] =
+{
+    chLatin_n, chLatin_o, chLatin_N, chLatin_a, chLatin_m, chLatin_e,
+    chLatin_s, chLatin_p, chLatin_a, chLatin_c, chLatin_e, chLatin_S,
+    chLatin_c, chLatin_h, chLatin_e, chLatin_m, chLatin_a, chLatin_L,
+    chLatin_o, chLatin_c, chLatin_a, chLatin_t, chLatin_i, chLatin_o,
+    chLatin_n, chNull
+};
+
+const XMLCh SchemaSymbols::fgXSI_SCHEMALOCATION[] =
+{
+    chLatin_s, chLatin_c, chLatin_h, chLatin_e, chLatin_m, chLatin_a,
+    chLatin_L, chLatin_o, chLatin_c, chLatin_a, chLatin_t, chLatin_i,
+    chLatin_o, chLatin_n, chNull
+};
+
+const XMLCh SchemaSymbols::fgXSI_NONAMESPACESCHEMALOCATION[] =
 {
     chLatin_n, chLatin_o, chLatin_N, chLatin_a, chLatin_m, chLatin_e,
     chLatin_s, chLatin_p, chLatin_a, chLatin_c, chLatin_e, chLatin_S,

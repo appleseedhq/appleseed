@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: HexBin.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: HexBin.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#ifndef HEXBIN_HPP
-#define HEXBIN_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_HEXBIN_HPP)
+#define XERCESC_INCLUDE_GUARD_HEXBIN_HPP
 
 #include <xercesc/util/PlatformUtils.hpp>
 
@@ -56,14 +56,14 @@ public :
      /**
      * get canonical representation
      *
-     * Caller is responsible for the proper deallcation
+     * Caller is responsible for the proper deallocation
      * of the string returned.
-     * 
+     *
      * @param hexData A string containing the HexBinary
      * @param manager The MemoryManager to use to allocate the string
      *
      * return: the canonical representation of the HexBinary
-     *         if it is a valid HexBinary, 
+     *         if it is a valid HexBinary,
      *         0 otherwise
      */
 
@@ -73,44 +73,17 @@ public :
                     ,       MemoryManager*  const manager = XMLPlatformUtils::fgMemoryManager
                   );
 
-    /**
-     * Decodes HexBinary data into XMLCh
-     *
-     * NOTE: The returned buffer is dynamically allocated and is the
-     * responsibility of the caller to delete it when not longer needed.
-     * You can call XMLString::release to release this returned buffer.
-     *
-     * If a memory manager is provided, ask the memory manager to de-allocate
-     * the returned buffer.
-     *
-     * @param hexData HexBinary data in XMLCh stream.
-     * @param manager client provided memory manager
-     * @return Decoded binary data in XMLCh stream,
-     *      or NULL if input data can not be decoded.
-     * @see   XMLString::release(XMLCh**)
-     * @deprecated use decodeToXMLByte instead.
-     */
-
-    static XMLCh* decode(
-                         const XMLCh*          const    hexData
-                       ,       MemoryManager*  const    manager = XMLPlatformUtils::fgMemoryManager
-                        );
-
    /**
      * Decodes HexBinary data into XMLByte
      *
      * NOTE: The returned buffer is dynamically allocated and is the
      * responsibility of the caller to delete it when not longer needed.
-     * You can call XMLString::release to release this returned buffer.
-     *
-     * If a memory manager is provided, ask the memory manager to de-allocate
-     * the returned buffer.
+     * Use the memory manager to release the returned buffer.
      *
      * @param hexData HexBinary data in XMLCh stream.
      * @param manager client provided memory manager
      * @return Decoded binary data in XMLByte stream,
      *      or NULL if input data can not be decoded.
-     * @see   XMLString::release(XMLByte**)
      */
     static XMLByte* decodeToXMLByte(
                          const XMLCh*          const    hexData
@@ -126,9 +99,7 @@ private :
     //  Helper methods
     // -----------------------------------------------------------------------
 
-    static void init();
-
-    static bool isHex(const XMLCh& octect);
+    static bool isHex(const XMLCh& octet);
 
     // -----------------------------------------------------------------------
     //  Unimplemented constructors and operators
@@ -142,15 +113,14 @@ private :
     //
     //  isInitialized
     //
-    //     set once hexNumberTable is initalized.
+    //     set once hexNumberTable is initialized.
     //
     //  hexNumberTable
     //
     //     arrany holding valid hexNumber character.
     //
     // -----------------------------------------------------------------------
-    static bool       isInitialized;
-    static XMLByte    hexNumberTable[];
+    static const XMLByte    hexNumberTable[];
 };
 
 XERCES_CPP_NAMESPACE_END

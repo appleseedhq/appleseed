@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: BlockRangeFactory.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: BlockRangeFactory.cpp 678879 2008-07-22 20:05:05Z amassari $
  */
 
 // ---------------------------------------------------------------------------
@@ -251,7 +251,7 @@ const XMLCh fgBlockNames[][50] =
     { chLatin_I, chLatin_s, chLatin_B, chLatin_y, chLatin_z, chLatin_a, chLatin_n, chLatin_t, chLatin_i, chLatin_n, chLatin_e,
       chLatin_M, chLatin_u, chLatin_s, chLatin_i, chLatin_c, chLatin_a, chLatin_l,
       chLatin_S, chLatin_y, chLatin_m, chLatin_b, chLatin_o, chLatin_l, chLatin_s, chNull },
-    { chLatin_M, chLatin_u, chLatin_s, chLatin_i, chLatin_c, chLatin_a, chLatin_l,
+    { chLatin_I, chLatin_s, chLatin_M, chLatin_u, chLatin_s, chLatin_i, chLatin_c, chLatin_a, chLatin_l,
       chLatin_S, chLatin_y, chLatin_m, chLatin_b, chLatin_o, chLatin_l, chLatin_s, chNull },
     { chLatin_I, chLatin_s, chLatin_M, chLatin_a, chLatin_t, chLatin_h, chLatin_e,
       chLatin_m, chLatin_a, chLatin_t, chLatin_i, chLatin_c, chLatin_a, chLatin_l,
@@ -338,7 +338,7 @@ void BlockRangeFactory::buildRanges(RangeTokenMap *rangeTokMap) {
         // Build the internal map.
         tok->createMap();
         rangeTokMap->setRangeToken(fgBlockNames[i], tok);
-        tok = (RangeToken*) RangeToken::complementRanges(tok, tokFactory);
+        tok = RangeToken::complementRanges(tok, tokFactory);
         // Build the internal map.
         tok->createMap();
         rangeTokMap->setRangeToken(fgBlockNames[i], tok , true);
@@ -355,7 +355,7 @@ void BlockRangeFactory::initializeKeywordMap(RangeTokenMap *rangeTokMap) {
     if (fKeywordsInitialized)
         return;
 
-	for (int i=0; i< BLOCKNAMESIZE; i++) {
+    for (int i=0; i< BLOCKNAMESIZE; i++) {
         rangeTokMap->addKeywordMap(fgBlockNames[i], fgBlockCategory);
     }
 

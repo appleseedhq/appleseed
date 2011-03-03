@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XMLAttr.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLAttr.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#if !defined(XMLATTR_HPP)
-#define XMLATTR_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XMLATTR_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLATTR_HPP
 
 #include <xercesc/util/PlatformUtils.hpp>
 #include <xercesc/util/QName.hpp>
@@ -169,12 +169,12 @@ public:
     //@{
 
     /**
-      * This methode returns the attribute name in a QName format.
+      * This method returns the attribute name in a QName format.
       */
     QName* getAttName() const;
 
     /**
-      * This method gets a const pointer tot he name of the attribute. The
+      * This method gets a const pointer to the name of the attribute. The
       * form of this name is defined by the validator in use.
       */
     const XMLCh* getName() const;
@@ -216,18 +216,6 @@ public:
       * mapped to. If namespaces are not on, then its value is meaningless.
       */
     unsigned int getURIId() const;
-
-    /**
-     * @return the uri part of DOM Level 3 TypeInfo
-     * @deprecated
-     */
-    const XMLCh* getValidatingTypeURI() const;
-
-    /**
-     * @return the name part of DOM Level 3 TypeInfo
-     * @deprecated
-     */
-    const XMLCh* getValidatingTypeName() const;
 
     //@}
 
@@ -369,24 +357,6 @@ public:
       */
     void setURIId(const unsigned int uriId);
 
-    /**
-      * This method will update the datatype validator that was used
-      * to assess the validity of the value of this attribute.
-      * @param datatypeValidator        DatatypeValidator used to assess the validity
-      *             of this attribute's value
-      * @deprecated
-      */
-    void setDatatypeValidator(DatatypeValidator * datatypeValidator);
-
-    /**
-      * This method will define whether the attribute was
-      * validated by an XML Schema
-      * @param isSchema     true indicates that this attribute was validated
-      *         by an XML Schema; false indicates otherwise
-      * @deprecated
-      */
-    void setSchemaValidated(const bool isSchema);
-
     //@}
 
 
@@ -426,22 +396,13 @@ private :
     //
     //  fMemoryManager
     //      The memory manager used for dynamic memory allocation/deallocation
-    //  fDatatypeValidator
-    //      The validator used to validate the value of this attribute.
-    //      The attribute does not own this object, and it is only
-    //      used in the calculation of DOMTypeInfo information.
-    //  fIsSchemaValidated
-    //      whether this attribute was validated by an XML Schema
-    //
     // -----------------------------------------------------------------------
     bool                fSpecified;
     XMLAttDef::AttTypes fType;
-    unsigned int        fValueBufSz;
+    XMLSize_t           fValueBufSz;
     XMLCh*              fValue;
     QName*              fAttName;
-    MemoryManager*      fMemoryManager;
-    DatatypeValidator * fDatatypeValidator;
-    bool                fIsSchemaValidated;
+    MemoryManager*      fMemoryManager;   
 };
 
 // ---------------------------------------------------------------------------
@@ -491,34 +452,6 @@ inline unsigned int XMLAttr::getURIId() const
     return fAttName->getURI();
 }
 
-inline const XMLCh* XMLAttr::getValidatingTypeName() const
-{
-    if(fIsSchemaValidated)
-    {
-        if(!fDatatypeValidator || fDatatypeValidator->getAnonymous())
-            return 0; 
-        return fDatatypeValidator->getTypeLocalName();
-    }
-    else
-    {
-        return XMLAttDef::getAttTypeString(fType, fMemoryManager);
-    }
-}
-
-inline const XMLCh* XMLAttr::getValidatingTypeURI() const
-{
-    if(fIsSchemaValidated)
-    {
-        if(!fDatatypeValidator || fDatatypeValidator->getAnonymous())
-            return 0; 
-        return fDatatypeValidator->getTypeUri();
-    }
-    else
-    {
-        return 0;
-    }
-}
-
 // ---------------------------------------------------------------------------
 //  XMLAttr: Setter methods
 // ---------------------------------------------------------------------------
@@ -527,8 +460,8 @@ inline void XMLAttr::set(const  unsigned int        uriId
                         , const XMLCh* const        attrPrefix
                         , const XMLCh* const        attrValue
                         , const XMLAttDef::AttTypes type
-                        , DatatypeValidator * datatypeValidator 
-                        , const bool isSchema )
+                        , DatatypeValidator * /*datatypeValidator */
+                        , const bool /*isSchema*/ )
 {
     // Set the name info and the value via their respective calls
     fAttName->setName(attrPrefix, attrName, uriId);
@@ -536,18 +469,14 @@ inline void XMLAttr::set(const  unsigned int        uriId
 
     // And store the type
     fType = type;
-
-    // and set up info for DOM type info 
-    fIsSchemaValidated = isSchema;
-    fDatatypeValidator = datatypeValidator;
 }
 
 inline void XMLAttr::set(const  unsigned int        uriId
                         , const XMLCh* const        attrRawName
                         , const XMLCh* const        attrValue
                         , const XMLAttDef::AttTypes type
-                        , DatatypeValidator * datatypeValidator 
-                        , const bool isSchema )
+                        , DatatypeValidator * /*datatypeValidator */
+                        , const bool /*isSchema*/ )
 {
     // Set the name info and the value via their respective calls
     fAttName->setName(attrRawName, uriId);
@@ -555,10 +484,6 @@ inline void XMLAttr::set(const  unsigned int        uriId
 
     // And store the type
     fType = type;
-
-    // and set up info for DOM type info 
-    fIsSchemaValidated = isSchema;
-    fDatatypeValidator = datatypeValidator;
 }
 
 inline void XMLAttr::setType(const XMLAttDef::AttTypes newValue)
@@ -569,16 +494,6 @@ inline void XMLAttr::setType(const XMLAttDef::AttTypes newValue)
 inline void XMLAttr::setSpecified(const bool newValue)
 {
     fSpecified = newValue;
-}
-
-inline void XMLAttr::setDatatypeValidator(DatatypeValidator *datatypeValidator)
-{
-    fDatatypeValidator = datatypeValidator;
-}
-
-inline void XMLAttr::setSchemaValidated(const bool isSchema)
-{
-    fIsSchemaValidated = isSchema;
 }
 
 XERCES_CPP_NAMESPACE_END

@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,7 +24,6 @@
 #include <xercesc/framework/XMLValidityCodes.hpp>
 #include <xercesc/framework/XMLErrorReporter.hpp>
 #include <xercesc/util/XMLMsgLoader.hpp>
-#include <xercesc/util/XMLRegisterCleanup.hpp>
 #include <xercesc/util/XMLInitializer.hpp>
 #include <xercesc/validators/schema/XSDErrorReporter.hpp>
 #include <xercesc/validators/schema/XSDLocator.hpp>
@@ -36,99 +35,27 @@ XERCES_CPP_NAMESPACE_BEGIN
 // ---------------------------------------------------------------------------
 static XMLMsgLoader*  gErrMsgLoader = 0;
 static XMLMsgLoader*  gValidMsgLoader = 0;
-static XMLMutex*      sErrRprtrMutex = 0;
-static XMLRegisterCleanup errRprtrMutexCleanup;
-static XMLRegisterCleanup cleanupErrMsgLoader;
-static XMLRegisterCleanup cleanupValidMsgLoader;
 
-// ---------------------------------------------------------------------------
-//  Local, static functions
-// ---------------------------------------------------------------------------
-static void reinitErrRprtrMutex()
-{
-    delete sErrRprtrMutex;
-    sErrRprtrMutex = 0;
-}
-
-static XMLMutex& getErrRprtrMutex()
-{
-    if (!sErrRprtrMutex)
-    {
-        XMLMutexLock lockInit(XMLPlatformUtils::fgAtomicMutex);
-
-        if (!sErrRprtrMutex)
-        {
-            sErrRprtrMutex = new XMLMutex(XMLPlatformUtils::fgMemoryManager);
-            errRprtrMutexCleanup.registerCleanup(reinitErrRprtrMutex);
-        }
-    }
-
-    return *sErrRprtrMutex;
-}
-
-static void reinitErrMsgLoader()
-{
-	delete gErrMsgLoader;
-	gErrMsgLoader = 0;
-}
-
-static void reinitValidMsgLoader()
-{
-	delete gValidMsgLoader;
-	gValidMsgLoader = 0;
-}
-
-static XMLMsgLoader* getErrMsgLoader()
-{
-    if (!gErrMsgLoader)
-    {
-        XMLMutexLock lock(&getErrRprtrMutex());
-
-        if (!gErrMsgLoader)
-        {
-            gErrMsgLoader = XMLPlatformUtils::loadMsgSet(XMLUni::fgXMLErrDomain);
-
-            if (!gErrMsgLoader)
-                XMLPlatformUtils::panic(PanicHandler::Panic_CantLoadMsgDomain);
-            else
-                cleanupErrMsgLoader.registerCleanup(reinitErrMsgLoader);
-        }
-    }
-
-    return gErrMsgLoader;
-}
-
-
-static XMLMsgLoader* getValidMsgLoader()
-{
-    if (!gValidMsgLoader)
-    {
-        XMLMutexLock lock(&getErrRprtrMutex());
-
-        if (!gValidMsgLoader)
-        {
-            gValidMsgLoader = XMLPlatformUtils::loadMsgSet(XMLUni::fgValidityDomain);
-
-            if (!gValidMsgLoader)
-                XMLPlatformUtils::panic(PanicHandler::Panic_CantLoadMsgDomain);
-            else
-                cleanupValidMsgLoader.registerCleanup(reinitValidMsgLoader);
-        }
-    }
-    return gValidMsgLoader;
-}
-
-void XMLInitializer::initializeXSDErrReporterMsgLoader()
+void XMLInitializer::initializeXSDErrorReporter()
 {
     gErrMsgLoader = XMLPlatformUtils::loadMsgSet(XMLUni::fgXMLErrDomain);
-    if (gErrMsgLoader) {
-        cleanupErrMsgLoader.registerCleanup(reinitErrMsgLoader);
-    }
+
+    if (!gErrMsgLoader)
+      XMLPlatformUtils::panic(PanicHandler::Panic_CantLoadMsgDomain);
 
     gValidMsgLoader = XMLPlatformUtils::loadMsgSet(XMLUni::fgValidityDomain);
-    if (gValidMsgLoader) {
-        cleanupValidMsgLoader.registerCleanup(reinitValidMsgLoader);
-    }
+
+    if (!gValidMsgLoader)
+      XMLPlatformUtils::panic(PanicHandler::Panic_CantLoadMsgDomain);
+}
+
+void XMLInitializer::terminateXSDErrorReporter()
+{
+    delete gErrMsgLoader;
+    gErrMsgLoader = 0;
+
+    delete gValidMsgLoader;
+    gValidMsgLoader = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -157,15 +84,15 @@ void XSDErrorReporter::emitError(const unsigned int toEmit,
     //  Load the message into alocal and replace any tokens found in
     //  the text.
     //
-    const unsigned int msgSize = 1023;
+    const XMLSize_t msgSize = 1023;
     XMLCh errText[msgSize + 1];
-    XMLMsgLoader* msgLoader = getErrMsgLoader();
+    XMLMsgLoader* msgLoader = gErrMsgLoader;
     XMLErrorReporter::ErrTypes errType = XMLErrs::errorType((XMLErrs::Codes) toEmit);
 
     if (XMLString::equals(msgDomain, XMLUni::fgValidityDomain)) {
 
         errType = XMLValid::errorType((XMLValid::Codes) toEmit);
-        msgLoader = getValidMsgLoader();
+        msgLoader = gValidMsgLoader;
     }
 
     if (!msgLoader->loadMsg(toEmit, errText, msgSize))
@@ -200,15 +127,15 @@ void XSDErrorReporter::emitError(const unsigned int toEmit,
     //  Load the message into alocal and replace any tokens found in
     //  the text.
     //
-    const unsigned int maxChars = 2047;
+    const XMLSize_t maxChars = 2047;
     XMLCh errText[maxChars + 1];
-    XMLMsgLoader* msgLoader = getErrMsgLoader();
+    XMLMsgLoader* msgLoader = gErrMsgLoader;
     XMLErrorReporter::ErrTypes errType = XMLErrs::errorType((XMLErrs::Codes) toEmit);
 
     if (XMLString::equals(msgDomain, XMLUni::fgValidityDomain)) {
 
         errType = XMLValid::errorType((XMLValid::Codes) toEmit);
-        msgLoader = getValidMsgLoader();
+        msgLoader = gValidMsgLoader;
     }
 
     if (!msgLoader->loadMsg(toEmit, errText, maxChars, text1, text2, text3, text4, manager))

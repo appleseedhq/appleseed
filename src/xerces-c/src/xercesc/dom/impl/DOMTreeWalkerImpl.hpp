@@ -1,6 +1,3 @@
-#ifndef DOMTreeWalkerImpl_HEADER_GUARD_
-#define DOMTreeWalkerImpl_HEADER_GUARD_
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -8,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,8 +16,11 @@
  */
 
 /*
- * $Id: DOMTreeWalkerImpl.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMTreeWalkerImpl.hpp 671894 2008-06-26 13:29:21Z borisk $
  */
+
+#if !defined(XERCESC_INCLUDE_GUARD_DOMTREEWALKERIMPL_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMTREEWALKERIMPL_HPP
 
 //
 //  This file is part of the internal implementation of the C++ XML DOM.
@@ -37,9 +37,9 @@ XERCES_CPP_NAMESPACE_BEGIN
 
 
 class CDOM_EXPORT DOMTreeWalkerImpl : public DOMTreeWalker {
-    private:
+protected:
         // The whatToShow mask.
-        unsigned long fWhatToShow;
+        DOMNodeFilter::ShowType fWhatToShow;
 
         // The NodeFilter reference.
         DOMNodeFilter* fNodeFilter;
@@ -53,7 +53,7 @@ class CDOM_EXPORT DOMTreeWalkerImpl : public DOMTreeWalker {
         // The expandEntity reference flag.
         bool fExpandEntityReferences;
 
-	public:
+public:
     // Implementation Note: No state is kept except the data above
     // (fWhatToShow, fNodeFilter, fCurrentNode, fRoot) such that
     // setters could be created for these data values and the
@@ -62,7 +62,7 @@ class CDOM_EXPORT DOMTreeWalkerImpl : public DOMTreeWalker {
     /** Public constructor */
     DOMTreeWalkerImpl (
         DOMNode* root,
-        unsigned long whatToShow,
+        DOMNodeFilter::ShowType whatToShow,
         DOMNodeFilter* nodeFilter,
         bool expandEntityRef);
     DOMTreeWalkerImpl (const DOMTreeWalkerImpl& twi);
@@ -72,12 +72,12 @@ class CDOM_EXPORT DOMTreeWalkerImpl : public DOMTreeWalker {
     virtual DOMNode* getRoot ();
 
     // Return the whatToShow value.
-    virtual unsigned long  getWhatToShow ();
+    virtual DOMNodeFilter::ShowType  getWhatToShow ();
 
     // Return the NodeFilter.
     virtual DOMNodeFilter* getFilter ();
 
-	
+
     // Return the current DOMNode.
     virtual DOMNode* getCurrentNode ();
 
@@ -160,7 +160,7 @@ protected:
     // The node is accepted if it passes the whatToShow and the filter.
     short acceptNode (DOMNode* node);
 
-    		
+
 };
 
 XERCES_CPP_NAMESPACE_END

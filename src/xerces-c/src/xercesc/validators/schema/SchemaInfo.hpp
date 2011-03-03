@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: SchemaInfo.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: SchemaInfo.hpp 925236 2010-03-19 14:29:47Z borisk $
  */
 
-#if !defined(SCHEMAINFO_HPP)
-#define SCHEMAINFO_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_SCHEMAINFO_HPP)
+#define XERCESC_INCLUDE_GUARD_SCHEMAINFO_HPP
 
 
 /** When in a <redefine>, type definitions being used (and indeed
@@ -48,8 +48,9 @@ XERCES_CPP_NAMESPACE_BEGIN
 // ---------------------------------------------------------------------------
 //  Forward Declarations
 // ---------------------------------------------------------------------------
+class XMLScanner;
 class ValidationContext;
-
+class NamespaceScope;
 
 class VALIDATORS_EXPORT SchemaInfo : public XMemory
 {
@@ -80,11 +81,11 @@ public:
                const int blockDefault,
                const int finalDefault,
                const int targetNSURI,
-               const int scopeCount,
-               const unsigned int namespaceScopeLevel,
-               XMLCh* const schemaURL,
+               const NamespaceScope* const currNamespaceScope,
+               const XMLCh* const schemaURL,
                const XMLCh* const targetNSURIString,
                const DOMElement* const root,
+               XMLScanner* xmlScanner,
                MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
     ~SchemaInfo();
 
@@ -93,14 +94,13 @@ public:
     //  Getter methods
     // -----------------------------------------------------------------------
     XMLCh*                            getCurrentSchemaURL() const;
-    const XMLCh* const                getTargetNSURIString() const;
+    const XMLCh*                      getTargetNSURIString() const;
     const DOMElement*                 getRoot() const;
     bool                              getProcessed() const;
     int                               getBlockDefault() const;
     int                               getFinalDefault() const;
     int                               getTargetNSURI() const;
-    int                               getScopeCount() const;
-    unsigned int                      getNamespaceScopeLevel() const;
+    NamespaceScope*                   getNamespaceScope() const;
     unsigned short                    getElemAttrDefaultQualified() const;
     BaseRefVectorEnumerator<SchemaInfo>   getImportingListEnumerator() const;
     ValueVectorOf<const DOMElement*>* getRecursingAnonTypes() const;
@@ -112,10 +112,10 @@ public:
     //  Setter methods
     // -----------------------------------------------------------------------
     void setProcessed(const bool aValue = true);
-    void setScopeCount(const int aValue);
     void setBlockDefault(const int aValue);
     void setFinalDefault(const int aValue);
     void setElemAttrDefaultQualified(const unsigned short aValue);
+    void resetRoot ();
 
     // -----------------------------------------------------------------------
     //  Access methods
@@ -134,8 +134,6 @@ public:
     bool circularImportExist(const unsigned int nameSpaceURI);
     bool isFailedRedefine(const DOMElement* const anElem);
     void addFailedRedefine(const DOMElement* const anElem);
-    bool isImportingNS(const int namespaceURI);
-    void addImportedNS(const int namespaceURI);
     void addRecursingType(const DOMElement* const elem, const XMLCh* const name);
 
 private:
@@ -159,16 +157,14 @@ private:
     int                               fBlockDefault;
     int                               fFinalDefault;
     int                               fTargetNSURI;
-    int                               fScopeCount;
-    unsigned int                      fNamespaceScopeLevel;
+    NamespaceScope*                   fNamespaceScope;
     XMLCh*                            fCurrentSchemaURL;
-    const XMLCh*                      fTargetNSURIString;
+    XMLCh*                            fTargetNSURIString;
     const DOMElement*                 fSchemaRootElement;
     RefVectorOf<SchemaInfo>*          fIncludeInfoList;
     RefVectorOf<SchemaInfo>*          fImportedInfoList;
     RefVectorOf<SchemaInfo>*          fImportingInfoList;
     ValueVectorOf<const DOMElement*>* fFailedRedefineList;
-    ValueVectorOf<int>*               fImportedNSList;
     ValueVectorOf<const DOMElement*>* fRecursingAnonTypes;
     ValueVectorOf<const XMLCh*>*      fRecursingTypeNames;
     RefHashTableOf<DOMElement>*       fTopLevelComponents[C_Count];
@@ -201,8 +197,8 @@ inline int SchemaInfo::getFinalDefault() const {
     return fFinalDefault;
 }
 
-inline unsigned int SchemaInfo::getNamespaceScopeLevel() const {
-    return fNamespaceScopeLevel;
+inline NamespaceScope* SchemaInfo::getNamespaceScope() const {
+    return fNamespaceScope;
 }
 
 inline XMLCh* SchemaInfo::getCurrentSchemaURL() const {
@@ -210,7 +206,7 @@ inline XMLCh* SchemaInfo::getCurrentSchemaURL() const {
     return fCurrentSchemaURL;
 }
 
-inline const XMLCh* const SchemaInfo::getTargetNSURIString() const {
+inline const XMLCh* SchemaInfo::getTargetNSURIString() const {
 
     return fTargetNSURIString;
 }
@@ -223,11 +219,6 @@ inline const DOMElement* SchemaInfo::getRoot() const {
 inline int SchemaInfo::getTargetNSURI() const {
 
     return fTargetNSURI;
-}
-
-inline int SchemaInfo::getScopeCount() const {
-
-    return fScopeCount;
 }
 
 inline BaseRefVectorEnumerator<SchemaInfo>
@@ -257,11 +248,6 @@ inline ValueVectorOf<DOMNode*>* SchemaInfo::getNonXSAttList() const
 // ---------------------------------------------------------------------------
 //  Setter methods
 // ---------------------------------------------------------------------------
-inline void SchemaInfo::setScopeCount(const int aValue) {
-
-    fScopeCount = aValue;
-}
-
 inline void SchemaInfo::setBlockDefault(const int aValue) {
 
     fBlockDefault = aValue;
@@ -290,19 +276,14 @@ inline void SchemaInfo::setProcessed(const bool aValue) {
     }*/
 }
 
+inline void SchemaInfo::resetRoot ()
+{
+    fSchemaRootElement = 0;
+}
+
 // ---------------------------------------------------------------------------
 //  SchemaInfo: Access methods
 // ---------------------------------------------------------------------------
-inline void SchemaInfo::addImportedNS(const int namespaceURI) {
-
-    if (!fImportedNSList) {
-        fImportedNSList = new (fMemoryManager) ValueVectorOf<int>(4, fMemoryManager);
-    }
-
-    if (!fImportedNSList->containsElement(namespaceURI))
-        fImportedNSList->addElement(namespaceURI);
-}
-
 inline void SchemaInfo::addSchemaInfo(SchemaInfo* const toAdd,
                                       const ListType aListType) {
 
@@ -314,7 +295,6 @@ inline void SchemaInfo::addSchemaInfo(SchemaInfo* const toAdd,
         if (!fImportedInfoList->containsElement(toAdd)) {
 
             fImportedInfoList->addElement(toAdd);
-            addImportedNS(toAdd->getTargetNSURI());
             toAdd->updateImportingInfo(this);
         }
     }
@@ -329,25 +309,48 @@ inline void SchemaInfo::addSchemaInfo(SchemaInfo* const toAdd,
         if (!fIncludeInfoList->containsElement(toAdd)) {
 
 		    fIncludeInfoList->addElement(toAdd);
-            toAdd->fIncludeInfoList = fIncludeInfoList;
+            //code was originally:
+            //toAdd->fIncludeInfoList = fIncludeInfoList;
+            //however for handling multiple imports this was causing
+            //to schemaInfo's to have the same fIncludeInfoList which they
+            //both owned so when it was deleted it crashed.
+			if (toAdd->fIncludeInfoList) {
+			   if (toAdd->fIncludeInfoList != fIncludeInfoList) {
+                   XMLSize_t size = toAdd->fIncludeInfoList->size();
+                   for (XMLSize_t i=0; i<size; i++) {
+                       if (!fIncludeInfoList->containsElement(toAdd->fIncludeInfoList->elementAt(i))) {
+                            fIncludeInfoList->addElement(toAdd->fIncludeInfoList->elementAt(i));
+                       }
+                   }
+                   size = fIncludeInfoList->size();
+                   for (XMLSize_t j=0; j<size; j++) {
+                       if (!toAdd->fIncludeInfoList->containsElement(fIncludeInfoList->elementAt(j))) {
+                            toAdd->fIncludeInfoList->addElement(fIncludeInfoList->elementAt(j));
+                       }
+                   }
+			   }
+			}
+			else {
+				toAdd->fIncludeInfoList = fIncludeInfoList;
+			}
         }
     }
 }
 
 inline SchemaInfo* SchemaInfo::getImportInfo(const unsigned int namespaceURI) const {
 
-    unsigned int importSize = (fImportedInfoList) ? fImportedInfoList->size() : 0;
+    XMLSize_t importSize = (fImportedInfoList) ? fImportedInfoList->size() : 0;
     SchemaInfo* currInfo = 0;
 
-    for (unsigned int i=0; i < importSize; i++) {
+    for (XMLSize_t i=0; i < importSize; i++) {
 
         currInfo = fImportedInfoList->elementAt(i);
 
         if (currInfo->getTargetNSURI() == (int) namespaceURI)
-            break;
+            return currInfo;
     }
 
-    return currInfo;
+    return 0;
 }
 
 inline ValidationContext* SchemaInfo::getValidationContext() const {
@@ -370,9 +373,9 @@ inline bool SchemaInfo::containsInfo(const SchemaInfo* const toCheck,
 
 inline bool SchemaInfo::circularImportExist(const unsigned int namespaceURI) {
 
-    unsigned int importSize = fImportingInfoList->size();
+    XMLSize_t importSize = fImportingInfoList->size();
 
-    for (unsigned int i=0; i < importSize; i++) {
+    for (XMLSize_t i=0; i < importSize; i++) {
         if (fImportingInfoList->elementAt(i)->getTargetNSURI() == (int) namespaceURI) {
             return true;
         }
@@ -396,14 +399,6 @@ inline void SchemaInfo::addFailedRedefine(const DOMElement* const anElem) {
     }
 
     fFailedRedefineList->addElement(anElem);
-}
-
-inline bool SchemaInfo::isImportingNS(const int namespaceURI) {
-
-    if (!fImportedNSList)
-        return false;
-
-    return (fImportedNSList->containsElement(namespaceURI));
 }
 
 inline void SchemaInfo::addRecursingType(const DOMElement* const elem,
@@ -435,4 +430,3 @@ XERCES_CPP_NAMESPACE_END
 /**
   * End of file SchemaInfo.hpp
   */
-

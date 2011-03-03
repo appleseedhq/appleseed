@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: ICUMsgLoader.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: ICUMsgLoader.cpp 883612 2009-11-24 07:24:53Z borisk $
  */
 
 
@@ -32,7 +32,7 @@
 #include "ICUMsgLoader.hpp"
 #include "unicode/putil.h"
 #include "unicode/uloc.h"
-#include "unicode/udata.h" 
+#include "unicode/udata.h"
 
 #include "string.h"
 #include <stdio.h>
@@ -45,21 +45,19 @@ XERCES_CPP_NAMESPACE_BEGIN
 // ---------------------------------------------------------------------------
 
 /*
- *  Resource Data Reference.  
- * 
+ *  Resource Data Reference.
+ *
  *  The data is packaged as a dll (or .so or whatever, depending on the platform) that exports a data symbol.
- *  The application (thic *.cpp) references that symbol here, and will pass the data address to ICU, which 
+ *  The application (this *.cpp) references that symbol here, and will pass the data address to ICU, which
  *  will then  be able to fetch resources from the data.
  */
+#define ENTRY_POINT xercesc_messages_3_1_dat
+#define BUNDLE_NAME "xercesc_messages_3_1"
 
-#if defined(_WIN32) || defined(WIN32)
-extern "C" void U_IMPORT *XercesMessages2_8_dat;
-#else
-extern "C" void U_IMPORT *XercesMessages2_8_0_dat;
-#endif
+extern "C" void U_IMPORT *ENTRY_POINT;
 
-/* 
- *  Tell ICU where our resource data is located in memory. The data lives in the XercesMessages dll, and we just
+/*
+ *  Tell ICU where our resource data is located in memory. The data lives in the xercesc_nessages dll, and we just
  *  pass the address of an exported symbol from that library to ICU.
  */
 static bool setAppDataOK = false;
@@ -76,11 +74,7 @@ static void setAppData()
     {
         setAppDataDone = true;
         UErrorCode err = U_ZERO_ERROR;
-#if defined(_WIN32) || defined(WIN32)
-        udata_setAppData("XercesMessages2_8", &XercesMessages2_8_dat, &err);
-#else
-        udata_setAppData("XercesMessages2_8_0", &XercesMessages2_8_0_dat, &err);
-#endif        
+        udata_setAppData(BUNDLE_NAME, &ENTRY_POINT, &err);
         if (U_SUCCESS(err))
         {
     	    setAppDataOK = true;
@@ -116,12 +110,12 @@ ICUMsgLoader::ICUMsgLoader(const XMLCh* const  msgDomain)
 
     /***
         Location resolution priority
-         
+
          1. XMLMsgLoader::getNLSHome(), set by user through
             XMLPlatformUtils::Initialize(), which provides user-specified
             location where the message loader shall retrieve error messages.
 
-         2. envrionment var: XERCESC_NLS_HOME
+         2. environment var: XERCESC_NLS_HOME
 
          3. path $XERCESCROOT/msg
     ***/
@@ -151,7 +145,7 @@ ICUMsgLoader::ICUMsgLoader(const XMLCh* const  msgDomain)
                 strcpy(locationBuf, nlsHome);
                 strcat(locationBuf, U_FILE_SEP_STRING);
                 strcat(locationBuf, "msg");
-                strcat(locationBuf, U_FILE_SEP_STRING);                    
+                strcat(locationBuf, U_FILE_SEP_STRING);
             }
             else
             {
@@ -161,19 +155,15 @@ ICUMsgLoader::ICUMsgLoader(const XMLCh* const  msgDomain)
                  ***/
                  setAppData();
             }
-        }    
+        }
     }
 
     /***
 	Open the locale-specific resource bundle
     ***/
-#if defined(_WIN32) || defined(WIN32)
-    strcat(locationBuf, "XercesMessages2_8");
-#else
-    strcat(locationBuf, "XercesMessages2_8_0");
-#endif
+    strcat(locationBuf, BUNDLE_NAME);
     UErrorCode err = U_ZERO_ERROR;
-    uloc_setDefault("en_US", &err);   // in case user-specified locale unavailable
+    uloc_setDefault("root", &err);   // in case user-specified locale unavailable
     err = U_ZERO_ERROR;
     fLocaleBundle = ures_open(locationBuf, XMLMsgLoader::getLocale(), &err);
     if (!U_SUCCESS(err) || fLocaleBundle == NULL)
@@ -183,28 +173,20 @@ ICUMsgLoader::ICUMsgLoader(const XMLCh* const  msgDomain)
     	   try the dll
         ***/
 
-#if defined(_WIN32) || defined(WIN32)
-        if (strcmp(locationBuf, "XercesMessages2_8") !=0 )
-#else
-        if (strcmp(locationBuf, "XercesMessages2_8_0") !=0 )
-#endif        
-        {    	     	   
-            setAppData();        	
+        if (strcmp(locationBuf, BUNDLE_NAME) !=0 )
+        {
+            setAppData();
             err = U_ZERO_ERROR;
-#if defined(_WIN32) || defined(WIN32)            
-            fLocaleBundle = ures_open("XercesMessages2_8", XMLMsgLoader::getLocale(), &err);
-#else
-            fLocaleBundle = ures_open("XercesMessages2_8_0", XMLMsgLoader::getLocale(), &err);
-#endif            
+            fLocaleBundle = ures_open(BUNDLE_NAME, XMLMsgLoader::getLocale(), &err);
             if (!U_SUCCESS(err) || fLocaleBundle == NULL)
             {
                  XMLPlatformUtils::panic(PanicHandler::Panic_CantLoadMsgDomain);
             }
         }
         else
-        {    	     	   
+        {
             XMLPlatformUtils::panic(PanicHandler::Panic_CantLoadMsgDomain);
-        }        
+        }
     }
 
     /***
@@ -217,7 +199,6 @@ ICUMsgLoader::ICUMsgLoader(const XMLCh* const  msgDomain)
     {
         XMLPlatformUtils::panic(PanicHandler::Panic_CantLoadMsgDomain);
     }
-
 }
 
 ICUMsgLoader::~ICUMsgLoader()
@@ -232,7 +213,7 @@ ICUMsgLoader::~ICUMsgLoader()
 // ---------------------------------------------------------------------------
 bool ICUMsgLoader::loadMsg( const   XMLMsgLoader::XMLMsgId  msgToLoad
                           ,         XMLCh* const            toFill
-                          , const   unsigned int            maxChars)
+                          , const   XMLSize_t               maxChars)
 {
     UErrorCode   err = U_ZERO_ERROR;
     int32_t      strLen = 0;
@@ -269,7 +250,7 @@ bool ICUMsgLoader::loadMsg( const   XMLMsgLoader::XMLMsgId  msgToLoad
 
 bool ICUMsgLoader::loadMsg( const   XMLMsgLoader::XMLMsgId  msgToLoad
                             ,       XMLCh* const            toFill
-                            , const unsigned int            maxChars
+                            , const XMLSize_t               maxChars
                             , const XMLCh* const            repText1
                             , const XMLCh* const            repText2
                             , const XMLCh* const            repText3
@@ -288,7 +269,7 @@ bool ICUMsgLoader::loadMsg( const   XMLMsgLoader::XMLMsgId  msgToLoad
 
 bool ICUMsgLoader::loadMsg( const   XMLMsgLoader::XMLMsgId  msgToLoad
                             ,       XMLCh* const            toFill
-                            , const unsigned int            maxChars
+                            , const XMLSize_t               maxChars
                             , const char* const             repText1
                             , const char* const             repText2
                             , const char* const             repText3
@@ -302,7 +283,7 @@ bool ICUMsgLoader::loadMsg( const   XMLMsgLoader::XMLMsgId  msgToLoad
     XMLCh* tmp1 = 0;
     XMLCh* tmp2 = 0;
     XMLCh* tmp3 = 0;
-    XMLCh* tmp4 = 0;    
+    XMLCh* tmp4 = 0;
 
     bool bRet = false;
     if (repText1)

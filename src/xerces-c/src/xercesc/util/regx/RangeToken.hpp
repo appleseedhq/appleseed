@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: RangeToken.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: RangeToken.hpp 678879 2008-07-22 20:05:05Z amassari $
  */
 
-#if !defined(RANGETOKEN_HPP)
-#define RANGETOKEN_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_RANGETOKEN_HPP)
+#define XERCESC_INCLUDE_GUARD_RANGETOKEN_HPP
 
 // ---------------------------------------------------------------------------
 //  Includes
@@ -41,7 +41,7 @@ public:
     // -----------------------------------------------------------------------
     //  Public Constructors and Destructor
     // -----------------------------------------------------------------------
-    RangeToken(const unsigned short tokType,
+    RangeToken(const tokType tkType,
                MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
     ~RangeToken();
 
@@ -72,9 +72,11 @@ public:
     void compactRanges();
     void subtractRanges(RangeToken* const tok);
     void intersectRanges(RangeToken* const tok);
-    static Token* complementRanges(RangeToken* const tok,
+    static RangeToken* complementRanges(RangeToken* const tok,
                                    TokenFactory* const tokFactory,
                                    MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
+
+    bool empty() const;
 
     // -----------------------------------------------------------------------
     //  Match methods
@@ -85,8 +87,7 @@ public:
     //  Creates the map.  This will happen automatically,
     //  necessary.
     // -----------------------------------------------------------------------
-    void
-    createMap();
+    void createMap();
 
 private:
     // -----------------------------------------------------------------------
@@ -130,6 +131,10 @@ inline void RangeToken::createMap()
     }
 }
 
+inline bool RangeToken::empty() const
+{
+    return fElemCount==0; 
+}
 
 XERCES_CPP_NAMESPACE_END
 

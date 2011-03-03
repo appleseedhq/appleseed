@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: SAXParseException.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: SAXParseException.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-
-#ifndef SAXPARSEEXCEPTION_HPP
-#define SAXPARSEEXCEPTION_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_SAXPARSEEXCEPTION_HPP)
+#define XERCESC_INCLUDE_GUARD_SAXPARSEEXCEPTION_HPP
 
 #include <xercesc/sax/SAXException.hpp>
 #include <xercesc/util/XMLExceptMsgs.hpp>
@@ -79,9 +78,9 @@ public:
     * fully before creating the exception.</p>
     *
     * @param message The error or warning message.
-    * @param publicId The public identifer of the entity that generated
+    * @param publicId The public identifier of the entity that generated
     *                 the error or warning.
-    * @param systemId The system identifer of the entity that generated
+    * @param systemId The system identifier of the entity that generated
     *                 the error or warning.
     * @param lineNumber The line number of the end of the text that
     *                   caused the error or warning.
@@ -97,8 +96,8 @@ public:
         , const XMLCh* const    message
         , const XMLCh* const    publicId
         , const XMLCh* const    systemId
-        , const XMLSSize_t      lineNumber
-        , const XMLSSize_t      columnNumber
+        , const XMLFileLoc   lineNumber
+        , const XMLFileLoc   columnNumber
         , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
     );
 
@@ -141,19 +140,19 @@ public:
     *
     * <p>The first column in a line is position 1.</p>
     *
-    * @return An integer representing the column number, or -1
+    * @return An integer representing the column number, or 0
     *         if none is available.
     * @see Locator#getColumnNumber
     */
-    XMLSSize_t getColumnNumber() const;
+    XMLFileLoc getColumnNumber() const;
   /**
     * The line number of the end of the text where the exception occurred.
     *
-    * @return An integer representing the line number, or -1
+    * @return An integer representing the line number, or 0
     *         if none is available.
     * @see Locator#getLineNumber
     */
-    XMLSSize_t getLineNumber() const;
+    XMLFileLoc getLineNumber() const;
   /**
     * Get the public identifier of the entity where the exception occurred.
     *
@@ -180,13 +179,13 @@ private:
 
     /* The original code of the exception. */
     XMLExcepts::Codes fOriginalExceptCode;
-    /* The column in the source text where the error occurred. */
-    XMLSSize_t      fColumnNumber;
-    /* The line in the source text where the error occurred. */
-    XMLSSize_t      fLineNumber;
-    /* The public id of the file where the error occurred. */
+    /* The column in the source text where the error occured. */
+    XMLFileLoc   fColumnNumber;
+    /* The line in the source text where the error occured. */
+    XMLFileLoc   fLineNumber;
+    /* The public id of the file where the error occured. */
     XMLCh*          fPublicId;
-    /* The system id of the file where the error occurred. */
+    /* The system id of the file where the error occured. */
     XMLCh*          fSystemId;
 
 

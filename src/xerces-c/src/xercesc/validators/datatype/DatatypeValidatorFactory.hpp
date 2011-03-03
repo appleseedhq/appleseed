@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: DatatypeValidatorFactory.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DatatypeValidatorFactory.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#if !defined(DATATYPEVALIDATORFACTORY_HPP)
-#define DATATYPEVALIDATORFACTORY_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_DATATYPEVALIDATORFACTORY_HPP)
+#define XERCESC_INCLUDE_GUARD_DATATYPEVALIDATORFACTORY_HPP
 
 /**
  * This class implements a factory of Datatype Validators. Internally the
@@ -33,11 +33,11 @@
  * 9 validators) get initialized in the registry.
  * The initialization process consist of instantiating the Datatype and
  * facets and registering the Datatype into registry table.
- * This implementation uses a Hahtable as a registry. The datatype validators created
+ * This implementation uses a Hashtable as a registry. The datatype validators created
  * by the factory will be deleted by the registry.
  *
  * As the Parser parses an instance document it knows if validation needs
- * to be checked. If no validation is necesary we should not instantiate a
+ * to be checked. If no validation is necessary we should not instantiate a
  * DatatypeValidatorFactory.
  * If validation is needed, we need to instantiate a DatatypeValidatorFactory.
  */
@@ -111,12 +111,7 @@ public:
 
     //@}
 
-    // -----------------------------------------------------------------------
-    // Registry Initialization methods
-    // -----------------------------------------------------------------------
-    /** @name Registry Initialization Functions */
-    //@{
-
+  private:
     /**
      * Initializes registry with primitive and derived Simple types.
      *
@@ -127,12 +122,11 @@ public:
      * datatypes needed by the validator.
      *
      * If we start with Schema's then we initialize to full set of
-     * validators.	
+     * validators.
      */
     void expandRegistryToFullSchemaSet();
 
-    //@}
-
+  public:
     // -----------------------------------------------------------------------
     // Canonical Representation Group
     // -----------------------------------------------------------------------
@@ -209,11 +203,6 @@ public:
       */
     void resetRegistry();
 
-    // -----------------------------------------------------------------------
-    //  Notification that lazy data has been deleted
-    // -----------------------------------------------------------------------
-    static void reinitRegistry();
-
     /***
      * Support for Serialization/De-serialization
      ***/
@@ -243,10 +232,11 @@ private:
     // -----------------------------------------------------------------------
     XERCES_CPP_NAMESPACE_QUALIFIER RefHashTableOf<XERCES_CPP_NAMESPACE_QUALIFIER DatatypeValidator>*        fUserDefinedRegistry;
     static XERCES_CPP_NAMESPACE_QUALIFIER RefHashTableOf<DatatypeValidator>* fBuiltInRegistry;
-    static XERCES_CPP_NAMESPACE_QUALIFIER RefHashTableOf<XMLCanRepGroup>*    fCanRepRegistry;
+    static XERCES_CPP_NAMESPACE_QUALIFIER RefHashTableOf<XMLCanRepGroup, PtrHasher>*    fCanRepRegistry;
     XERCES_CPP_NAMESPACE_QUALIFIER MemoryManager* const fMemoryManager;
 
     friend class XPath2ContextImpl;
+    friend class XMLInitializer;
 };
 
 inline DatatypeValidator*
@@ -293,4 +283,3 @@ XERCES_CPP_NAMESPACE_END
 /**
   * End of file DatatypeValidatorFactory.hpp
   */
-

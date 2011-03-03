@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XSObject.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XSObject.hpp 674012 2008-07-04 11:18:21Z borisk $
  */
 
-#if !defined(XSOBJECT_HPP)
-#define XSOBJECT_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XSOBJECT_HPP)
+#define XERCESC_INCLUDE_GUARD_XSOBJECT_HPP
 
 #include <xercesc/util/PlatformUtils.hpp>
 #include <xercesc/framework/psvi/XSConstants.hpp>
@@ -49,7 +49,7 @@ public:
     //@{
 
     /**
-      * The default constructor 
+      * The default constructor
       *
       * @param  compType
       * @param  xsModel
@@ -75,26 +75,26 @@ public:
     //@{
 
     /**
-     *  The <code>type</code> of this object, i.e. 
-     * <code>ELEMENT_DECLARATION</code>. 
+     *  The <code>type</code> of this object, i.e.
+     * <code>ELEMENT_DECLARATION</code>.
      */
     XSConstants::COMPONENT_TYPE getType() const;
 
     /**
-     * The name of type <code>NCName</code> of this declaration as defined in 
+     * The name of type <code>NCName</code> of this declaration as defined in
      * XML Namespaces.
      */
-    virtual const XMLCh* getName();
+    virtual const XMLCh* getName() const;
 
     /**
-     *  The [target namespace] of this object, or <code>null</code> if it is 
-     * unspecified. 
+     *  The [target namespace] of this object, or <code>null</code> if it is
+     * unspecified.
      */
     virtual const XMLCh* getNamespace();
 
     /**
-     * A namespace schema information item corresponding to the target 
-     * namespace of the component, if it's globally declared; or null 
+     * A namespace schema information item corresponding to the target
+     * namespace of the component, if it's globally declared; or null
      * otherwise.
      */
     virtual XSNamespaceItem *getNamespaceItem();
@@ -105,7 +105,7 @@ public:
       * @return id unique for this type of component within this XSModel or 0
       *     to indicate that this is not supported for this type of component.
       */
-    virtual unsigned int getId() const;
+    virtual XMLSize_t getId() const;
 
     //@}
 
@@ -116,7 +116,7 @@ public:
     /**
       * Set the id to be returned on getId().
       */
-    void setId(unsigned int id);
+    void setId(XMLSize_t id);
     //@}
 
 private:
@@ -139,7 +139,7 @@ protected:
     XSConstants::COMPONENT_TYPE fComponentType;
     XSModel*                    fXSModel;
     MemoryManager*              fMemoryManager;
-    unsigned int                fId;
+    XMLSize_t                   fId;
 };
 
 inline XSConstants::COMPONENT_TYPE XSObject::getType() const

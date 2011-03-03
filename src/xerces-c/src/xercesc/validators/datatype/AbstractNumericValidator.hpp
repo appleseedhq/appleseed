@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: AbstractNumericValidator.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: AbstractNumericValidator.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-#if !defined(ABSTRACT_NUMERIC_VALIDATOR_HPP)
-#define ABSTRACT_NUMERIC_VALIDATOR_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_ABSTRACT_NUMERIC_VALIDATOR_HPP)
+#define XERCESC_INCLUDE_GUARD_ABSTRACT_NUMERIC_VALIDATOR_HPP
 
 #include <xercesc/validators/datatype/AbstractNumericFacetValidator.hpp>
 #include <xercesc/util/RefVectorOf.hpp>

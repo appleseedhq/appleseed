@@ -16,12 +16,12 @@
  */
 
 /*
- * $Id: LocalFileInputSource.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: LocalFileInputSource.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
 
-#if !defined(LOCALFILEINPUTSOURCE_HPP)
-#define LOCALFILEINPUTSOURCE_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_LOCALFILEINPUTSOURCE_HPP)
+#define XERCESC_INCLUDE_GUARD_LOCALFILEINPUTSOURCE_HPP
 
 #include <xercesc/sax/InputSource.hpp>
 

@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: AbstractStringValidator.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: AbstractStringValidator.hpp 695949 2008-09-16 15:57:44Z borisk $
  */
 
-#if !defined(ABSTRACT_STRING_VALIDATOR_HPP)
-#define ABSTRACT_STRING_VALIDATOR_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_ABSTRACT_STRING_VALIDATOR_HPP)
+#define XERCESC_INCLUDE_GUARD_ABSTRACT_STRING_VALIDATOR_HPP
 
 #include <xercesc/validators/datatype/DatatypeValidator.hpp>
 
@@ -110,7 +110,7 @@ protected:
     virtual void checkAdditionalFacet(const XMLCh* const content
                                     , MemoryManager* const manager) const;
 
-    virtual int  getLength(const XMLCh* const content
+    virtual XMLSize_t getLength(const XMLCh* const content
         , MemoryManager* const manager) const;
     
     virtual void checkValueSpace(const XMLCh* const content
@@ -140,11 +140,11 @@ public:
 // Getter methods
 // -----------------------------------------------------------------------
 
-    inline unsigned int         getLength() const;
+    inline XMLSize_t            getLength() const;
 
-    inline unsigned int         getMaxLength() const;
+    inline XMLSize_t            getMaxLength() const;
 
-    inline unsigned int         getMinLength() const;
+    inline XMLSize_t            getMinLength() const;
 
     inline RefArrayVectorOf<XMLCh>*  getEnumeration() const;
 
@@ -153,11 +153,11 @@ protected:
 // Setter methods
 // -----------------------------------------------------------------------
 
-    inline void                 setLength(unsigned int);
+    inline void                 setLength(XMLSize_t);
 
-    inline void                 setMaxLength(unsigned int);
+    inline void                 setMaxLength(XMLSize_t);
 
-    inline void                 setMinLength(unsigned int);
+    inline void                 setMinLength(XMLSize_t);
 
     inline void                 setEnumeration(RefArrayVectorOf<XMLCh>*, bool);
 
@@ -177,9 +177,9 @@ private:
     //  Private data members
     //
     // -----------------------------------------------------------------------
-     unsigned int         fLength;
-     unsigned int         fMaxLength;
-     unsigned int         fMinLength;
+     XMLSize_t            fLength;
+     XMLSize_t            fMaxLength;
+     XMLSize_t            fMinLength;
      bool                 fEnumerationInherited;
      RefArrayVectorOf<XMLCh>*  fEnumeration;
 };
@@ -188,17 +188,17 @@ private:
 // Getter methods
 // -----------------------------------------------------------------------
 
-inline unsigned int AbstractStringValidator::getLength() const
+inline XMLSize_t AbstractStringValidator::getLength() const
 {
     return fLength;
 }
 
-inline unsigned int AbstractStringValidator::getMaxLength() const
+inline XMLSize_t AbstractStringValidator::getMaxLength() const
 {
     return fMaxLength;
 }
 
-inline unsigned int AbstractStringValidator::getMinLength() const
+inline XMLSize_t AbstractStringValidator::getMinLength() const
 {
     return fMinLength;
 }
@@ -212,17 +212,17 @@ inline RefArrayVectorOf<XMLCh>* AbstractStringValidator:: getEnumeration() const
 // Setter methods
 // -----------------------------------------------------------------------
 
-inline void AbstractStringValidator::setLength(unsigned int newLength)
+inline void AbstractStringValidator::setLength(XMLSize_t newLength)
 {
     fLength = newLength;
 }
 
-inline void AbstractStringValidator::setMaxLength(unsigned int newMaxLength)
+inline void AbstractStringValidator::setMaxLength(XMLSize_t newMaxLength)
 {
     fMaxLength = newMaxLength;
 }
 
-inline void AbstractStringValidator::setMinLength(unsigned int newMinLength)
+inline void AbstractStringValidator::setMinLength(XMLSize_t newMinLength)
 {
     fMinLength = newMinLength;
 }

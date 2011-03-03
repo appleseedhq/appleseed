@@ -16,16 +16,17 @@
  */
 
 /*
- * $Id: ValidationContextImpl.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: ValidationContextImpl.hpp 729944 2008-12-29 17:03:32Z amassari $
  */
 
-#if !defined(VALIDATION_CONTEXTIMPL_HPP)
-#define VALIDATION_CONTEXTIMPL_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_VALIDATION_CONTEXTIMPL_HPP)
+#define XERCESC_INCLUDE_GUARD_VALIDATION_CONTEXTIMPL_HPP
 
 #include <xercesc/framework/ValidationContext.hpp>
 
 XERCES_CPP_NAMESPACE_BEGIN
 class ElemStack;
+class NamespaceScope;
 
 class XMLPARSER_EXPORT ValidationContextImpl : public ValidationContext
 {
@@ -91,6 +92,10 @@ public :
       */
     virtual bool isPrefixUnknown(XMLCh* prefix);
     virtual void setElemStack(ElemStack* elemStack);
+    virtual const XMLCh* getURIForPrefix(XMLCh* prefix);
+    virtual void setScanner(XMLScanner* scanner);   
+    virtual void setNamespaceScope(NamespaceScope* nsStack);
+
 
     //@}
   
@@ -123,14 +128,18 @@ private:
     //      will not be accurate unless the type of the most recently-validated
     //      element/attribute is in fact a union datatype.
     //  fElemStack
-    //      Need access to elemstack to look up URI's that are inscope.
+    //      Need access to elemstack to look up URI's that are inscope (while validating an XML).
+    //  fNamespaceScope
+    //      Need access to namespace scope to look up URI's that are inscope (while loading a schema).
     // -----------------------------------------------------------------------
 
     RefHashTableOf<XMLRefInfo>*         fIdRefList;
     const NameIdPool<DTDEntityDecl>*    fEntityDeclPool;
     bool                                fToCheckIdRefList;
     DatatypeValidator *                 fValidatingMemberType;    
-    ElemStack*      fElemStack;
+    ElemStack*                          fElemStack;
+    XMLScanner*                         fScanner;
+    NamespaceScope*                     fNamespaceScope;
 
 };
 
@@ -148,6 +157,14 @@ inline void ValidationContextImpl::setValidatingMemberType(DatatypeValidator * v
 
 inline void ValidationContextImpl::setElemStack(ElemStack* elemStack) {
     fElemStack = elemStack;
+}
+
+inline void ValidationContextImpl::setScanner(XMLScanner* scanner) {
+    fScanner = scanner;
+}
+
+inline void ValidationContextImpl::setNamespaceScope(NamespaceScope* nsStack) {
+    fNamespaceScope = nsStack;
 }
 
 XERCES_CPP_NAMESPACE_END

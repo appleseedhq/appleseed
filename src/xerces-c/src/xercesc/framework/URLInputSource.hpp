@@ -16,13 +16,11 @@
  */
 
 /*
- * $Id: URLInputSource.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: URLInputSource.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-
-
-#if !defined(URLINPUTSOURCE_HPP)
-#define URLINPUTSOURCE_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_URLINPUTSOURCE_HPP)
+#define XERCESC_INCLUDE_GUARD_URLINPUTSOURCE_HPP
 
 #include <xercesc/util/XMLURL.hpp>
 #include <xercesc/sax/InputSource.hpp>
@@ -96,7 +94,7 @@ public :
     );
 
     /**
-     *  This constructor is indentical to the previous one, except that it also
+     *  This constructor is identical to the previous one, except that it also
      *  allows you to set a public id if you want to.
      *
      *  @param  baseId      The base system id URL which provides the base
@@ -184,7 +182,7 @@ public :
 
     /**
      * This method will return a binary input stream derivative that will
-     * parse from the source refered to by the URL system id.
+     * parse from the source referred to by the URL system id.
      */
     BinInputStream* makeStream() const;
 

@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XMLElementDecl.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLElementDecl.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#if !defined(XMLELEMENTDECL_HPP)
-#define XMLELEMENTDECL_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XMLELEMENTDECL_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLELEMENTDECL_HPP
 
 #include <xercesc/framework/XMLAttr.hpp>
 #include <xercesc/framework/XMLAttDefList.hpp>
@@ -76,16 +76,6 @@ class XMLPARSER_EXPORT XMLElementDecl : public XSerializable, public XMemory
         , JustFaultIn
     };
 
-    /**
-     * @deprecated Use of addIfNotFound couldl produce undefined 
-     * behaviour in multithreaded environments.
-     */
-    enum LookupOpts
-    {
-        AddIfNotFound
-        , FailIfNotFound
-    };
-
     enum CharDataOpts
     {
         NoCharData
@@ -130,46 +120,6 @@ class XMLPARSER_EXPORT XMLElementDecl : public XSerializable, public XMemory
     /** @name Virual ElementDecl interface */
     //@{
 
-    /** Find an attribute by name or optionally fault it in.
-      *
-      * The derived class should look up the passed attribute in the list of
-      * of attributes for this element. If namespaces are enabled, then it
-      * should use the uriId/baseName pair, else it should use the qName. The
-      * options allow the caller to indicate whether the attribute should be
-      * defaulted in if not found. If it is defaulted in, then wasAdded should
-      * be set, else it should be cleared. If its not found and the caller does
-      * not want defaulting, then return a null pointer.
-      * Note that, in a multithreaded environment, it is dangerous for a 
-      * caller to invoke this method with options set to AddIfNotFound.
-      *
-      * @param  qName       This is the qName of the attribute, i.e. the actual
-      *                     lexical name found.
-      *
-      * @param  uriId       This is the id of the URI of the namespace to which
-      *                     this attribute mapped. Only valid if namespaces are
-      *                     enabled.
-      *
-      * @param  baseName    This is the base part of the name, i.e. after any
-      *                     prefix.
-      *
-      * @param  prefix      The prefix, if any, of this attribute's name. If
-      *                     this is empty, then uriID is meaningless as well.
-      *
-      * @param  options     Indicates the lookup options.
-      *
-      * @param  wasAdded    Should be set if the attribute is faulted in, else
-      *                     cleared.
-      */
-    virtual XMLAttDef* findAttr
-    (
-        const   XMLCh* const    qName
-        , const unsigned int    uriId
-        , const XMLCh* const    baseName
-        , const XMLCh* const    prefix
-        , const LookupOpts      options
-        ,       bool&           wasAdded
-    )   const = 0;
-
     /** Get a list of attributes defined for this element.
       *
       * The derived class should return a reference to some member object which
@@ -199,15 +149,6 @@ class XMLPARSER_EXPORT XMLElementDecl : public XSerializable, public XMemory
       * that allows the scanner to skip some work if no attributes exist.
       */
     virtual bool hasAttDefs() const = 0;
-
-    /** Reset the flags on the attribute definitions.
-      *
-      * This method is called by the scanner at the beginning of each scan
-      * of a start tag, asking this element decl to reset the 'declared' flag
-      * of each of its attribute defs. This allows the scanner to mark each
-      * one as declared yet or not.
-      */
-    virtual bool resetDefs() = 0;
 
     /** Get a pointer to the content spec node
       *
@@ -346,21 +287,7 @@ class XMLPARSER_EXPORT XMLElementDecl : public XSerializable, public XMemory
       *
       * @return The element decl id of this element declaration.
       */
-    unsigned int getId() const;
-
-
-    /**
-     * @return the uri part of DOM Level 3 TypeInfo
-     * @deprecated
-     */
-    virtual const XMLCh* getDOMTypeInfoUri() const = 0;
-
-    /**
-     * @return the name part of DOM Level 3 TypeInfo
-     * @deprecated
-     */
-    virtual const XMLCh* getDOMTypeInfoName() const = 0;
-
+    XMLSize_t getId() const;
 
     /** Indicate whether this element type has been declared yet
       *
@@ -386,7 +313,7 @@ class XMLPARSER_EXPORT XMLElementDecl : public XSerializable, public XMemory
     /** Get the memory manager
       *
       * This method returns the configurable memory manager used by the
-      * element declaration for dynamic allocation/deacllocation.
+      * element declaration for dynamic allocation/deallocation.
       *
       * @return the memory manager
       */
@@ -444,8 +371,8 @@ class XMLPARSER_EXPORT XMLElementDecl : public XSerializable, public XMemory
       * decl object. As the validator parses its DTD, Schema, etc... it will
       * encounter various references to an element declaration, which will
       * cause the element declaration to either be declared or to be faulted
-      * into the pool in preperation for some future declaration. As it does
-      * so,it will update this field to indicate the current satus of the
+      * into the pool in preparation for some future declaration. As it does
+      * so,it will update this field to indicate the current status of the
       * decl object.
       */
     void setCreateReason(const CreateReasons newReason);
@@ -456,7 +383,7 @@ class XMLPARSER_EXPORT XMLElementDecl : public XSerializable, public XMemory
       * by the grammar which created this object, and will provide this
       * decl object with a unique id within the parse event that created it.
       */
-    void setId(const unsigned int newId);
+    void setId(const XMLSize_t newId);
 
 
     /** Set the element decl to indicate external declaration
@@ -471,7 +398,7 @@ class XMLPARSER_EXPORT XMLElementDecl : public XSerializable, public XMemory
     //  Miscellaneous methods
     // -----------------------------------------------------------------------
 
-    /** @name Miscellenous methods */
+    /** @name Miscellaneous methods */
     //@{
 
     //@}
@@ -535,7 +462,7 @@ private :
     MemoryManager*      fMemoryManager;
     QName*              fElementName;
     CreateReasons       fCreateReason;
-    unsigned int        fId;
+    XMLSize_t           fId;
     bool                fExternalElement;
 };
 
@@ -578,7 +505,7 @@ inline XMLElementDecl::CreateReasons XMLElementDecl::getCreateReason() const
     return fCreateReason;
 }
 
-inline unsigned int XMLElementDecl::getId() const
+inline XMLSize_t XMLElementDecl::getId() const
 {
     return fId;
 }
@@ -609,7 +536,7 @@ XMLElementDecl::setCreateReason(const XMLElementDecl::CreateReasons newReason)
     fCreateReason = newReason;
 }
 
-inline void XMLElementDecl::setId(const unsigned int newId)
+inline void XMLElementDecl::setId(const XMLSize_t newId)
 {
     fId = newId;
 }

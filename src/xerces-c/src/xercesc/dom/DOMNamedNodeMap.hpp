@@ -1,7 +1,3 @@
-#ifndef DOMNamedNodeMap_HEADER_GUARD_
-#define DOMNamedNodeMap_HEADER_GUARD_
-
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -9,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,8 +16,11 @@
  */
 
 /*
- * $Id: DOMNamedNodeMap.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMNamedNodeMap.hpp 671894 2008-06-26 13:29:21Z borisk $
  */
+
+#if !defined(XERCESC_INCLUDE_GUARD_DOMNAMEDNODEMAP_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMNAMEDNODEMAP_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 
@@ -49,11 +48,11 @@ protected:
     //  Hidden constructors
     // -----------------------------------------------------------------------
     /** @name Hidden constructors */
-    //@{    
+    //@{
     DOMNamedNodeMap() {};
     //@}
 
-private:    
+private:
     // -----------------------------------------------------------------------
     // Unimplemented constructors and operators
     // -----------------------------------------------------------------------
@@ -147,7 +146,7 @@ public:
      * 0 to <code>length-1</code> inclusive.
      * @since DOM Level 1
      */
-    virtual XMLSize_t   getLength() const = 0;
+    virtual XMLSize_t getLength() const = 0;
 
     // -----------------------------------------------------------------------
     //  Node methods
@@ -184,7 +183,7 @@ public:
      * @since DOM Level 2
      */
     virtual DOMNode   *getNamedItemNS(const XMLCh *namespaceURI,
-	                                        const XMLCh *localName) const = 0;
+                                      const XMLCh *localName) const = 0;
 
     /**
      * Adds a node using its <CODE>namespaceURI</CODE> and <CODE>localName</CODE>.
@@ -234,7 +233,7 @@ public:
      * @since DOM Level 2
      */
     virtual DOMNode     *removeNamedItemNS(const XMLCh *namespaceURI,
-	                                          const XMLCh *localName) = 0;
+                                           const XMLCh *localName) = 0;
     //@}
 
 };
@@ -244,4 +243,3 @@ public:
 XERCES_CPP_NAMESPACE_END
 
 #endif
-

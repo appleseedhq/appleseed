@@ -1,6 +1,3 @@
-#ifndef DOMElementNSImpl_HEADER_GUARD_
-#define DOMElementNSImpl_HEADER_GUARD_
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -8,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,8 +16,11 @@
  */
 
 /*
- * $Id: DOMElementNSImpl.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMElementNSImpl.hpp 678709 2008-07-22 10:56:56Z borisk $
  */
+
+#if !defined(XERCESC_INCLUDE_GUARD_DOMELEMENTNSIMPL_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMELEMENTNSIMPL_HPP
 
 //
 //  This file is part of the internal implementation of the C++ XML DOM.
@@ -44,19 +44,27 @@ protected:
     const XMLCh * fNamespaceURI;     //namespace URI of this node
     const XMLCh * fLocalName;        //local part of qualified name
     const XMLCh * fPrefix;
-
-private:
     const DOMTypeInfoImpl *fSchemaType;
 
 public:
     DOMElementNSImpl(DOMDocument *ownerDoc, const XMLCh *name);
     DOMElementNSImpl(DOMDocument *ownerDoc, //DOM Level 2
-	const XMLCh *namespaceURI, const XMLCh *qualifiedName);
+                     const XMLCh *namespaceURI,
+                     const XMLCh *qualifiedName);
     DOMElementNSImpl(const DOMElementNSImpl &other, bool deep=false);
+
+    // Fast construction without any checks for name validity. Used in
+    // parsing.
+    //
+    DOMElementNSImpl(DOMDocument *ownerDoc,
+                     const XMLCh *namespaceURI,
+                     const XMLCh *prefix,        // Null or empty - no prefix.
+                     const XMLCh *localName,
+                     const XMLCh *qualifiedName);
 
     virtual DOMNode * cloneNode(bool deep) const;
     virtual bool isSupported(const XMLCh *feature, const XMLCh *version) const;
-    virtual DOMNode * getInterface(const XMLCh* feature);
+    virtual void* getFeature(const XMLCh* feature, const XMLCh* version) const;
 
     //Introduced in DOM Level 2
     virtual const XMLCh *getNamespaceURI() const;
@@ -66,20 +74,19 @@ public:
     virtual void         release();
 
     //Introduced in DOM Level 3
-    virtual const XMLCh *getBaseURI() const;
-    virtual const DOMTypeInfo * getTypeInfo() const;
+    virtual const DOMTypeInfo * getSchemaTypeInfo() const;
 
    // helper function for DOM Level 3 renameNode
    virtual DOMNode* rename(const XMLCh* namespaceURI, const XMLCh* name);
    void setName(const XMLCh* namespaceURI, const XMLCh* name);
 
     //helper function for DOM Level 3 TypeInfo
-    virtual void setTypeInfo(const DOMTypeInfoImpl* typeInfo);
+    virtual void setSchemaTypeInfo(const DOMTypeInfoImpl* typeInfo);
 
 private:
     // -----------------------------------------------------------------------
     // Unimplemented constructors and operators
-    // -----------------------------------------------------------------------    
+    // -----------------------------------------------------------------------
     DOMElementNSImpl & operator = (const DOMElementNSImpl &);
 };
 

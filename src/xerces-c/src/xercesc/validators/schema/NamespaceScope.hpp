@@ -16,15 +16,22 @@
  */
 
 /*
- * $Id: NamespaceScope.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: NamespaceScope.hpp 729944 2008-12-29 17:03:32Z amassari $
  */
 
-#if !defined(NAMESPACESCOPE_HPP)
-#define NAMESPACESCOPE_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_NAMESPACESCOPE_HPP)
+#define XERCESC_INCLUDE_GUARD_NAMESPACESCOPE_HPP
 
 #include <xercesc/util/StringPool.hpp>
 
 XERCES_CPP_NAMESPACE_BEGIN
+
+// Define a pure interface to allow XercesXPath to work on both NamespaceScope and DOMXPathNSResolver
+class VALIDATORS_EXPORT XercesNamespaceResolver
+{
+public:
+    virtual unsigned int getNamespaceForPrefix(const XMLCh* const prefix) const = 0;
+};
 
 //
 // NamespaceScope provides a data structure for mapping namespace prefixes
@@ -32,7 +39,8 @@ XERCES_CPP_NAMESPACE_BEGIN
 // at a particular instant in time.
 //
 
-class VALIDATORS_EXPORT NamespaceScope : public XMemory
+class VALIDATORS_EXPORT NamespaceScope : public XMemory,
+                                         public XercesNamespaceResolver
 {
 public :
     // -----------------------------------------------------------------------
@@ -68,6 +76,7 @@ public :
     //  Constructors and Destructor
     // -----------------------------------------------------------------------
     NamespaceScope(MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
+    NamespaceScope(const NamespaceScope* const initialize, MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
     ~NamespaceScope();
 
 
@@ -83,9 +92,7 @@ public :
     void addPrefix(const XMLCh* const prefixToAdd,
                    const unsigned int uriId);
 
-    unsigned int getNamespaceForPrefix(const XMLCh* const prefixToMap) const;
-    unsigned int getNamespaceForPrefix(const XMLCh* const prefixToMap,
-                                       const int depthLevel) const;
+    virtual unsigned int getNamespaceForPrefix(const XMLCh* const prefixToMap) const;
 
 
     // -----------------------------------------------------------------------
@@ -93,6 +100,7 @@ public :
     // -----------------------------------------------------------------------
     bool isEmpty() const;
     void reset(const unsigned int emptyId);
+    unsigned int getEmptyNamespaceId() const;
 
 
 private :
@@ -137,16 +145,6 @@ private :
     MemoryManager* fMemoryManager;
 };
 
-
-// ---------------------------------------------------------------------------
-//  NamespaceScope: Stack access
-// ---------------------------------------------------------------------------
-inline unsigned int
-NamespaceScope::getNamespaceForPrefix(const XMLCh* const prefixToMap) const {
-
-    return getNamespaceForPrefix(prefixToMap, (int)(fStackTop - 1));
-}
-
 // ---------------------------------------------------------------------------
 //  NamespaceScope: Miscellaneous methods
 // ---------------------------------------------------------------------------
@@ -154,6 +152,12 @@ inline bool NamespaceScope::isEmpty() const
 {
     return (fStackTop == 0);
 }
+
+inline unsigned int NamespaceScope::getEmptyNamespaceId() const
+{
+    return fEmptyNamespaceId;
+}
+
 
 XERCES_CPP_NAMESPACE_END
 

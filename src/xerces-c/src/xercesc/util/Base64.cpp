@@ -15,10 +15,6 @@
  * limitations under the License.
  */
 
-/*
- * $Id: Base64.cpp 568078 2007-08-21 11:43:25Z amassari $
- */
-
 // ---------------------------------------------------------------------------
 //  Includes
 // ---------------------------------------------------------------------------
@@ -47,45 +43,42 @@ const XMLByte Base64::base64Alphabet[] = {
     chLatin_K, chLatin_L, chLatin_M, chLatin_N, chLatin_O,
     chLatin_P, chLatin_Q, chLatin_R, chLatin_S, chLatin_T,
     chLatin_U, chLatin_V, chLatin_W, chLatin_X, chLatin_Y, chLatin_Z,
-	chLatin_a, chLatin_b, chLatin_c, chLatin_d, chLatin_e,
-	chLatin_f, chLatin_g, chLatin_h, chLatin_i, chLatin_j,
-	chLatin_k, chLatin_l, chLatin_m, chLatin_n, chLatin_o,
-	chLatin_p, chLatin_q, chLatin_r, chLatin_s, chLatin_t,
-	chLatin_u, chLatin_v, chLatin_w, chLatin_x, chLatin_y, chLatin_z,
-	chDigit_0, chDigit_1, chDigit_2, chDigit_3, chDigit_4,
-	chDigit_5, chDigit_6, chDigit_7, chDigit_8, chDigit_9,
-	chPlus, chForwardSlash, chNull
+    chLatin_a, chLatin_b, chLatin_c, chLatin_d, chLatin_e,
+    chLatin_f, chLatin_g, chLatin_h, chLatin_i, chLatin_j,
+    chLatin_k, chLatin_l, chLatin_m, chLatin_n, chLatin_o,
+    chLatin_p, chLatin_q, chLatin_r, chLatin_s, chLatin_t,
+    chLatin_u, chLatin_v, chLatin_w, chLatin_x, chLatin_y, chLatin_z,
+    chDigit_0, chDigit_1, chDigit_2, chDigit_3, chDigit_4,
+    chDigit_5, chDigit_6, chDigit_7, chDigit_8, chDigit_9,
+    chPlus, chForwardSlash, chNull
 };
 
 // This is an inverse table for base64 decoding.  So, if
 // base64Alphabet[17] = 'R', then base64Inverse['R'] = 17.
 //
 // For characters not in base64Alphabet then
-// base64Inverse[char] = 0xFF.
-XMLByte Base64::base64Inverse[BASELENGTH] =
+// base64Inverse[ch] = 0xFF.
+const XMLByte Base64::base64Inverse[BASELENGTH] =
 {
-    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
-    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
-    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x3E, 0xFF, 0xFF, 0xFF, 0x3F, 
-    0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
-    0xFF, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 
-    0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
-    0xFF, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 
-    0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F, 0x30, 0x31, 0x32, 0x33, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
-    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
-    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
-    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
-    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
-    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
-    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
-    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x3E, 0xFF, 0xFF, 0xFF, 0x3F,
+    0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E,
+    0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28,
+    0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F, 0x30, 0x31, 0x32, 0x33, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
 };
 
-
 const XMLByte Base64::base64Padding = chEqual;
-
-bool Base64::isInitialized = true;
 
 /***
  *
@@ -101,15 +94,10 @@ bool Base64::isInitialized = true;
  */
 
 static void* getExternalMemory(  MemoryManager* const allocator
-                               , unsigned int const   sizeToAllocate)
+                               , XMLSize_t const   sizeToAllocate)
 {
    return allocator ? allocator->allocate(sizeToAllocate)
        : ::operator new(sizeToAllocate);
-}
-
-static void* getInternalMemory(unsigned int const   sizeToAllocate)
-{
-    return XMLPlatformUtils::fgMemoryManager->allocate(sizeToAllocate);
 }
 
 /***
@@ -151,14 +139,14 @@ static void returnExternalMemory(  MemoryManager* const allocator
 const unsigned int Base64::quadsPerLine = 15;
 
 XMLByte* Base64::encode(const XMLByte* const inputData
-                      , const unsigned int   inputLength
-                      , unsigned int*        outputLength                      
+                      , const XMLSize_t      inputLength
+                      , XMLSize_t*           outputLength                      
                       , MemoryManager* const memMgr)
 {
     if (!inputData || !outputLength)
         return 0;
 
-    int quadrupletCount = ( inputLength + 2 ) / 3;
+    int quadrupletCount = ( (int)inputLength + 2 ) / 3;
     if (quadrupletCount == 0)
         return 0;
 
@@ -170,8 +158,8 @@ XMLByte* Base64::encode(const XMLByte* const inputData
     //
     XMLByte  b1, b2, b3, b4;  // base64 binary codes ( 0..63 )
 
-    unsigned int inputIndex = 0;
-    unsigned int outputIndex = 0;
+    XMLSize_t inputIndex = 0;
+    XMLSize_t outputIndex = 0;
     XMLByte *encodedData = (XMLByte*) getExternalMemory(memMgr, (quadrupletCount*FOURBYTE+lineCount+1) * sizeof(XMLByte));
 
     //
@@ -261,7 +249,7 @@ int Base64::getDataLength(const XMLCh*         const inputData
                         ,       Conformance          conform )
 
 {
-    unsigned int    retLen = 0;
+    XMLSize_t retLen = 0;
     XMLByte* decodedData = decodeToXMLByte(inputData, &retLen, manager, conform);
 
     if ( !decodedData )
@@ -269,12 +257,12 @@ int Base64::getDataLength(const XMLCh*         const inputData
     else
     {
         returnExternalMemory(manager, decodedData);
-        return retLen;
+        return (int)retLen;
     }
 }
 
 XMLByte* Base64::decode(const XMLByte*       const  inputData
-                      ,       unsigned int*         decodedLength
+                      ,       XMLSize_t*            decodedLength
                       ,       MemoryManager* const  memMgr
                       ,       Conformance           conform )
 {
@@ -295,78 +283,32 @@ XMLByte* Base64::decode(const XMLByte*       const  inputData
     return retStr;
 }
 
-XMLCh* Base64::decode(const XMLCh*         const   inputData
-                    ,       unsigned int*          decodedLen
-                    ,       MemoryManager* const   memMgr
-                    ,       Conformance            conform )
-{
-	if (!inputData)
-		return 0;
-
-    /***
-     *  Move input data to a XMLByte buffer
-     */
-	unsigned int srcLen = XMLString::stringLen(inputData);
-    XMLByte *dataInByte = (XMLByte*) getExternalMemory(memMgr, (srcLen+1) * sizeof(XMLByte));
-    ArrayJanitor<XMLByte> janFill(dataInByte, memMgr ? memMgr : XMLPlatformUtils::fgMemoryManager);
-
-    for (unsigned int i = 0; i < srcLen; i++)
-		dataInByte[i] = (XMLByte)inputData[i];
-
-	dataInByte[srcLen] = 0;
-
-    /***
-     * Forward to the actual decoding method to do the decoding
-     */
-	*decodedLen = 0;
-	XMLByte *DecodedBuf = decode(dataInByte, decodedLen, memMgr, conform);
-
-	if (!DecodedBuf)
-		return 0;
-
-    /***
-     * Move decoded data to a XMLCh buffer to return
-     */
-    XMLCh *toRet = (XMLCh*) getExternalMemory(memMgr, (*decodedLen+1) * sizeof(XMLCh));
-               
-    for (unsigned int j = 0; j < *decodedLen; j++)
-		toRet[j] = (XMLCh)DecodedBuf[j];
-
-	toRet[*decodedLen] = 0;
-
-    /***
-     * Release the memory allocated in the actual decoding method
-     */ 
-    returnExternalMemory(memMgr, DecodedBuf);
-
-    return toRet;
-}
 
 XMLByte* Base64::decodeToXMLByte(const XMLCh*         const   inputData
-                    ,       unsigned int*          decodedLen
-                    ,       MemoryManager* const   memMgr
-                    ,       Conformance            conform )
+                                ,      XMLSize_t*             decodedLen
+                                ,      MemoryManager* const   memMgr
+                                ,      Conformance            conform )
 {
-	if (!inputData || !*inputData)
-		return 0;
+    if (!inputData || !*inputData)
+        return 0;
 
     /***
      *  Move input data to a XMLByte buffer
      */
-	unsigned int srcLen = XMLString::stringLen(inputData);
+    XMLSize_t srcLen = XMLString::stringLen(inputData);
     XMLByte *dataInByte = (XMLByte*) getExternalMemory(memMgr, (srcLen+1) * sizeof(XMLByte));
     ArrayJanitor<XMLByte> janFill(dataInByte, memMgr ? memMgr : XMLPlatformUtils::fgMemoryManager);
 
-    for (unsigned int i = 0; i < srcLen; i++)
-		dataInByte[i] = (XMLByte)inputData[i];
+    for (XMLSize_t i = 0; i < srcLen; i++)
+        dataInByte[i] = (XMLByte)inputData[i];
 
-	dataInByte[srcLen] = 0;
+    dataInByte[srcLen] = 0;
 
     /***
      * Forward to the actual decoding method to do the decoding
      */
-	*decodedLen = 0;
-	return decode(dataInByte, decodedLen, memMgr, conform);
+    *decodedLen = 0;
+    return decode(dataInByte, decodedLen, memMgr, conform);
 }
 
 /***
@@ -383,25 +325,25 @@ XMLCh* Base64::getCanonicalRepresentation(const XMLCh*         const   inputData
                                         ,       Conformance            conform)
     
 {
-	if (!inputData || !*inputData) 
-		return 0;
+    if (!inputData || !*inputData) 
+        return 0;
 
     /***
      *  Move input data to a XMLByte buffer
      */
-	unsigned int srcLen = XMLString::stringLen(inputData);
+    XMLSize_t srcLen = XMLString::stringLen(inputData);
     XMLByte *dataInByte = (XMLByte*) getExternalMemory(memMgr, (srcLen+1) * sizeof(XMLByte));
     ArrayJanitor<XMLByte> janFill(dataInByte, memMgr ? memMgr : XMLPlatformUtils::fgMemoryManager);
 
-    for (unsigned int i = 0; i < srcLen; i++)
-		dataInByte[i] = (XMLByte)inputData[i];
+    for (XMLSize_t i = 0; i < srcLen; i++)
+        dataInByte[i] = (XMLByte)inputData[i];
 
-	dataInByte[srcLen] = 0;
+    dataInByte[srcLen] = 0;
 
     /***
      * Forward to the actual decoding method to do the decoding
      */
-	unsigned int decodedLength = 0;
+    XMLSize_t decodedLength = 0;
     XMLByte*     canRepInByte = 0;
     XMLByte*     retStr = decode(
                               dataInByte
@@ -416,13 +358,13 @@ XMLCh* Base64::getCanonicalRepresentation(const XMLCh*         const   inputData
     /***
      * Move canonical representation to a XMLCh buffer to return
      */
-    unsigned int canRepLen = XMLString::stringLen((char*)canRepInByte);
+    XMLSize_t canRepLen = XMLString::stringLen((char*)canRepInByte);
     XMLCh *canRepData = (XMLCh*) getExternalMemory(memMgr, (canRepLen + 1) * sizeof(XMLCh));
                
-    for (unsigned int j = 0; j < canRepLen; j++)
-		canRepData[j] = (XMLCh)canRepInByte[j];
+    for (XMLSize_t j = 0; j < canRepLen; j++)
+        canRepData[j] = (XMLCh)canRepInByte[j];
 
-	canRepData[canRepLen] = 0;
+    canRepData[canRepLen] = 0;
 
     /***
      * Release the memory allocated in the actual decoding method
@@ -482,7 +424,7 @@ XMLCh* Base64::getCanonicalRepresentation(const XMLCh*         const   inputData
  *     The above definition of the lexical space is more restrictive than that given 
  *     in [RFC 2045] as regards whitespace -- this is not an issue in practice. Any 
  *     string compatible with the RFC can occur in an element or attribute validated 
- *     by this type, because the �whiteSpace� facet of this type is fixed to collapse, 
+ *     by this type, because the whiteSpace facet of this type is fixed to collapse, 
  *     which means that all leading and trailing whitespace will be stripped, and all 
  *     internal whitespace collapsed to single space characters, before the above grammar 
  *     is enforced.
@@ -490,7 +432,7 @@ XMLCh* Base64::getCanonicalRepresentation(const XMLCh*         const   inputData
 */
 
 XMLByte* Base64::decode (   const XMLByte*        const   inputData
-                          ,       unsigned int*           decodedLength
+                          ,       XMLSize_t*              decodedLength
                           ,       XMLByte*&               canRepData
                           ,       MemoryManager*  const   memMgr
                           ,       Conformance             conform
@@ -502,12 +444,12 @@ XMLByte* Base64::decode (   const XMLByte*        const   inputData
     //
     // remove all XML whitespaces from the base64Data
     //
-    int inputLength = XMLString::stringLen( (const char*)inputData );
+    XMLSize_t inputLength = XMLString::stringLen( (const char*)inputData );
     XMLByte* rawInputData = (XMLByte*) getExternalMemory(memMgr, (inputLength+1) * sizeof(XMLByte));
     ArrayJanitor<XMLByte> jan(rawInputData, memMgr ? memMgr : XMLPlatformUtils::fgMemoryManager);
 
-    int inputIndex = 0;
-    int rawInputLength = 0;
+    XMLSize_t inputIndex = 0;
+    XMLSize_t rawInputLength = 0;
     bool inWhiteSpace = false;
 
     switch (conform)
@@ -570,7 +512,7 @@ XMLByte* Base64::decode (   const XMLByte*        const   inputData
     if (( rawInputLength % FOURBYTE ) != 0 )
         return 0;
 
-    int quadrupletCount = rawInputLength / FOURBYTE;
+    int quadrupletCount = (int)rawInputLength / FOURBYTE;
     if ( quadrupletCount == 0 )
         return 0;
 
@@ -580,8 +522,8 @@ XMLByte* Base64::decode (   const XMLByte*        const   inputData
     XMLByte  d1, d2, d3, d4;  // base64 characters
     XMLByte  b1, b2, b3, b4;  // base64 binary codes ( 0..64 )
 
-    int rawInputIndex  = 0;
-    int outputIndex    = 0;
+    XMLSize_t rawInputIndex  = 0;
+    XMLSize_t outputIndex    = 0;
     XMLByte *decodedData = (XMLByte*) getExternalMemory(memMgr, (quadrupletCount*3+1) * sizeof(XMLByte));
 
     //
@@ -684,12 +626,6 @@ XMLByte* Base64::decode (   const XMLByte*        const   inputData
     canRepData = rawInputData;
 
     return decodedData;
-}
-
-
-
-void Base64::init()
-{
 }
 
 bool Base64::isData(const XMLByte& octet)

@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: RefVectorOf.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: RefVectorOf.hpp 676911 2008-07-15 13:27:32Z amassari $
  */
 
-#if !defined(REFVECTOROF_HPP)
-#define REFVECTOROF_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_REFVECTOROF_HPP)
+#define XERCESC_INCLUDE_GUARD_REFVECTOROF_HPP
 
 #include <xercesc/util/BaseRefVectorOf.hpp>
 
@@ -36,7 +36,7 @@ public :
     // -----------------------------------------------------------------------
     //  Constructor
     // -----------------------------------------------------------------------
-    RefVectorOf(const unsigned int maxElems,
+    RefVectorOf(const XMLSize_t maxElems,
                 const bool adoptElems = true,
                 MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
 

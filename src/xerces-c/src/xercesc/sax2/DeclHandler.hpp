@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: DeclHandler.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DeclHandler.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-
-#ifndef DECLHANDLER_HPP
-#define DECLHANDLER_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_DECLHANDLER_HPP)
+#define XERCESC_INCLUDE_GUARD_DECLHANDLER_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 
@@ -90,7 +89,7 @@ public:
    /**
     * Report an attribute type declaration.
     *
-    * <p>The Parser will call this method to report each occurence of
+    * <p>The Parser will call this method to report each occurrence of
     * a comment in the XML document.</p>
     *
     * <p>The application must not attempt to read from the array

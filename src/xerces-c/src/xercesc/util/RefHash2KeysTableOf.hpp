@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,39 +16,34 @@
  */
 
 /*
- * $Id: RefHash2KeysTableOf.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: RefHash2KeysTableOf.hpp 883368 2009-11-23 15:28:19Z amassari $
  */
 
+#if !defined(XERCESC_INCLUDE_GUARD_REFHASH2KEYSTABLEOF_HPP)
+#define XERCESC_INCLUDE_GUARD_REFHASH2KEYSTABLEOF_HPP
 
-#if !defined(REFHASH2KEYSTABLEOF_HPP)
-#define REFHASH2KEYSTABLEOF_HPP
 
-
-#include <xercesc/util/HashBase.hpp>
+#include <xercesc/util/Hashers.hpp>
 #include <xercesc/util/IllegalArgumentException.hpp>
 #include <xercesc/util/NoSuchElementException.hpp>
 #include <xercesc/util/RuntimeException.hpp>
-#include <xercesc/util/XMLString.hpp>
-#include <xercesc/util/HashXMLCh.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
 
 XERCES_CPP_NAMESPACE_BEGIN
 
 // This hash table is similar to RefHashTableOf with an additional integer as key2
 
+//  Forward declare the enumerator so it can be our friend.
 //
-//  Forward declare the enumerator so he can be our friend. Can you say
-//  friend? Sure...
-//
-template <class TVal> class RefHash2KeysTableOfEnumerator;
-template <class TVal> struct RefHash2KeysTableBucketElem;
-
+template <class TVal, class THasher = StringHasher>
+class RefHash2KeysTableOfEnumerator;
 
 //
 //  This should really be a nested class, but some of the compilers we
 //  have to support cannot deal with that!
 //
-template <class TVal> struct RefHash2KeysTableBucketElem
+template <class TVal>
+struct RefHash2KeysTableBucketElem
 {
     RefHash2KeysTableBucketElem(void* key1, int key2, TVal* const value, RefHash2KeysTableBucketElem<TVal>* next)
 		: fData(value), fNext(next), fKey1(key1), fKey2(key2)
@@ -56,10 +51,10 @@ template <class TVal> struct RefHash2KeysTableBucketElem
         }
     ~RefHash2KeysTableBucketElem() {};
 
-    TVal*                           fData;
+    TVal*                                fData;
     RefHash2KeysTableBucketElem<TVal>*   fNext;
-	void*							fKey1;
-	int							fKey2;
+    void*                                fKey1;
+    int                                  fKey2;
 
 private:
     // -----------------------------------------------------------------------
@@ -70,35 +65,34 @@ private:
 };
 
 
-template <class TVal> class RefHash2KeysTableOf : public XMemory
+template <class TVal, class THasher = StringHasher>
+class RefHash2KeysTableOf : public XMemory
 {
 public:
     // -----------------------------------------------------------------------
     //  Constructors and Destructor
     // -----------------------------------------------------------------------
-	// backwards compatability - default hasher is HashXMLCh
-    RefHash2KeysTableOf
-    (
-        const unsigned int modulus
-		, MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
-    );
-	// backwards compatability - default hasher is HashXMLCh
-    RefHash2KeysTableOf
-    (
-        const unsigned int modulus
-        , const bool adoptElems
-        , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
-    );
-	// if a hash function is passed in, it will be deleted when the hashtable is deleted.
-	// use a new instance of the hasher class for each hashtable, otherwise one hashtable
-	// may delete the hasher of a different hashtable if both use the same hasher.
-    RefHash2KeysTableOf
-    (
-        const unsigned int modulus
-        , const bool adoptElems
-        , HashBase* hashBase
-        , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
-    );
+
+    RefHash2KeysTableOf(
+      const XMLSize_t modulus,
+      MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
+
+    RefHash2KeysTableOf(
+      const XMLSize_t modulus,
+      const THasher& hasher,
+      MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
+
+    RefHash2KeysTableOf(
+      const XMLSize_t modulus,
+      const bool adoptElems,
+      MemoryManager* const manager =  XMLPlatformUtils::fgMemoryManager);
+
+    RefHash2KeysTableOf(
+      const XMLSize_t modulus,
+      const bool adoptElems,
+      const THasher& hasher,
+      MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
+
     ~RefHash2KeysTableOf();
 
 
@@ -119,7 +113,7 @@ public:
     const TVal* get(const void* const key1, const int key2) const;
 
     MemoryManager* getMemoryManager() const;
-    unsigned int   getHashModulus()   const;
+    XMLSize_t      getHashModulus()   const;
 
     // -----------------------------------------------------------------------
     //  Putters
@@ -130,22 +124,22 @@ private :
     // -----------------------------------------------------------------------
     //  Declare our friends
     // -----------------------------------------------------------------------
-    friend class RefHash2KeysTableOfEnumerator<TVal>;
+    friend class RefHash2KeysTableOfEnumerator<TVal, THasher>;
 
-    
+
 private:
     // -----------------------------------------------------------------------
     //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
-    RefHash2KeysTableOf(const RefHash2KeysTableOf<TVal>&);
-    RefHash2KeysTableOf<TVal>& operator=(const RefHash2KeysTableOf<TVal>&);
+    RefHash2KeysTableOf(const RefHash2KeysTableOf<TVal, THasher>&);
+    RefHash2KeysTableOf<TVal>& operator=(const RefHash2KeysTableOf<TVal, THasher>&);
 
     // -----------------------------------------------------------------------
     //  Private methods
     // -----------------------------------------------------------------------
-    RefHash2KeysTableBucketElem<TVal>* findBucketElem(const void* const key1, const int key2, unsigned int& hashVal);
-    const RefHash2KeysTableBucketElem<TVal>* findBucketElem(const void* const key1, const int key2, unsigned int& hashVal) const;
-    void initialize(const unsigned int modulus);
+    RefHash2KeysTableBucketElem<TVal>* findBucketElem(const void* const key1, const int key2, XMLSize_t& hashVal);
+    const RefHash2KeysTableBucketElem<TVal>* findBucketElem(const void* const key1, const int key2, XMLSize_t& hashVal) const;
+    void initialize(const XMLSize_t modulus);
     void rehash();
 
 
@@ -174,9 +168,9 @@ private:
     MemoryManager*                      fMemoryManager;
     bool                                fAdoptedElems;
     RefHash2KeysTableBucketElem<TVal>** fBucketList;
-    unsigned int                        fHashModulus;
-    unsigned int                        fCount;
-    HashBase*							fHash;
+    XMLSize_t                           fHashModulus;
+    XMLSize_t                           fCount;
+    THasher                             fHasher;
 };
 
 
@@ -185,15 +179,16 @@ private:
 //  An enumerator for a value array. It derives from the basic enumerator
 //  class, so that value vectors can be generically enumerated.
 //
-template <class TVal> class RefHash2KeysTableOfEnumerator : public XMLEnumerator<TVal>, public XMemory
+template <class TVal, class THasher>
+class RefHash2KeysTableOfEnumerator : public XMLEnumerator<TVal>, public XMemory
 {
 public :
     // -----------------------------------------------------------------------
     //  Constructors and Destructor
     // -----------------------------------------------------------------------
-    RefHash2KeysTableOfEnumerator(RefHash2KeysTableOf<TVal>* const toEnum
-        , const bool adopt = false
-        , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
+    RefHash2KeysTableOfEnumerator(RefHash2KeysTableOf<TVal, THasher>* const toEnum
+                                  , const bool adopt = false
+                                  , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
     virtual ~RefHash2KeysTableOfEnumerator();
 
 
@@ -205,7 +200,7 @@ public :
     void Reset();
 
     // -----------------------------------------------------------------------
-    //  New interface 
+    //  New interface
     // -----------------------------------------------------------------------
     void nextElementKey(void*&, int&);
     void setPrimaryKey(const void* key);
@@ -214,8 +209,8 @@ private :
     // -----------------------------------------------------------------------
     //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
-    RefHash2KeysTableOfEnumerator(const RefHash2KeysTableOfEnumerator<TVal>&);
-    RefHash2KeysTableOfEnumerator<TVal>& operator=(const RefHash2KeysTableOfEnumerator<TVal>&);
+    RefHash2KeysTableOfEnumerator(const RefHash2KeysTableOfEnumerator<TVal, THasher>&);
+    RefHash2KeysTableOfEnumerator<TVal, THasher>& operator=(const RefHash2KeysTableOfEnumerator<TVal, THasher>&);
 
     // -----------------------------------------------------------------------
     //  Private methods
@@ -248,8 +243,8 @@ private :
     // -----------------------------------------------------------------------
     bool                                    fAdopted;
     RefHash2KeysTableBucketElem<TVal>*      fCurElem;
-    unsigned int                            fCurHash;
-    RefHash2KeysTableOf<TVal>*              fToEnum;
+    XMLSize_t                               fCurHash;
+    RefHash2KeysTableOf<TVal, THasher>*     fToEnum;
     MemoryManager* const                    fMemoryManager;
     const void*                             fLockPrimaryKey;
 };

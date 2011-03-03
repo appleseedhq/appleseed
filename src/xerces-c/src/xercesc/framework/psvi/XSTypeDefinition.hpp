@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XSTypeDefinition.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XSTypeDefinition.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-#if !defined(XSTYPEDEFINITION_HPP)
-#define XSTYPEDEFINITION_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XSTYPEDEFINITION_HPP)
+#define XERCESC_INCLUDE_GUARD_XSTYPEDEFINITION_HPP
 
 #include <xercesc/framework/psvi/XSObject.hpp>
 
@@ -87,7 +87,7 @@ public:
      * The name of type <code>NCName</code> of this declaration as defined in 
      * XML Namespaces.
      */
-    virtual const XMLCh* getName() = 0;
+    virtual const XMLCh* getName() const = 0;
 
     /**
      *  The [target namespace] of this object, or <code>null</code> if it is 

@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: Wrapper4InputSource.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: Wrapper4InputSource.cpp 471747 2006-11-06 14:31:56Z amassari $
  */
 
 
@@ -76,7 +76,7 @@ const XMLCh* Wrapper4InputSource::getPublicId() const
 // ---------------------------------------------------------------------------
 //  Wrapper4InputSource: Setter methods
 // ---------------------------------------------------------------------------
-void Wrapper4InputSource::setIssueFatalErrorIfNotFound(const bool flag)
+void Wrapper4InputSource::setIssueFatalErrorIfNotFound(bool flag)
 {
     fInputSource->setIssueFatalErrorIfNotFound(flag);
 }
@@ -103,9 +103,9 @@ void Wrapper4InputSource::setSystemId(const XMLCh* const systemId)
 // ---------------------------------------------------------------------------
 //  Wrapper4InputSource: Stream methods
 // ---------------------------------------------------------------------------
-BinInputStream* Wrapper4InputSource::makeStream() const
+InputSource* Wrapper4InputSource::getByteStream() const
 {
-    return fInputSource->makeStream();
+    return fInputSource;
 }
 
 // ---------------------------------------------------------------------------

@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: Token.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: Token.hpp 678879 2008-07-22 20:05:05Z amassari $
  */
 
-#if !defined(TOKEN_HPP)
-#define TOKEN_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_TOKEN_HPP)
+#define XERCESC_INCLUDE_GUARD_TOKEN_HPP
 
 // ---------------------------------------------------------------------------
 //  Includes
@@ -40,92 +40,88 @@ class TokenFactory;
 class XMLUTIL_EXPORT Token : public XMemory
 {
 public:
-	// -----------------------------------------------------------------------
-    //  Public Constructors and Destructor
     // -----------------------------------------------------------------------
-	Token(const unsigned short tokType
-        , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
-        );
-	virtual ~Token();
-
-	// -----------------------------------------------------------------------
     //  Public Constants
     // -----------------------------------------------------------------------
-	// Token types
-	enum {
-		T_CHAR = 0,
-		T_CONCAT = 1,
-		T_UNION = 2,
-		T_CLOSURE = 3,
-		T_RANGE = 4,
-		T_NRANGE = 5,
-		T_PAREN = 6,
-		T_EMPTY = 7,
-		T_ANCHOR = 8,
-		T_NONGREEDYCLOSURE = 9,
-		T_STRING = 10,
-		T_DOT = 11,
-		T_BACKREFERENCE = 12,
-		T_LOOKAHEAD = 20,
-		T_NEGATIVELOOKAHEAD = 21,
-		T_LOOKBEHIND = 22,
-		T_NEGATIVELOOKBEHIND = 23,
-		T_INDEPENDENT = 24,
-		T_MODIFIERGROUP = 25,
-		T_CONDITION = 26
-	};
+    // Token types
+    typedef enum {
+        T_CHAR = 0,
+        T_CONCAT = 1,
+        T_UNION = 2,
+        T_CLOSURE = 3,
+        T_RANGE = 4,
+        T_NRANGE = 5,
+        T_PAREN = 6,
+        T_EMPTY = 7,
+        T_ANCHOR = 8,
+        T_NONGREEDYCLOSURE = 9,
+        T_STRING = 10,
+        T_DOT = 11,
+        T_BACKREFERENCE = 12
+    } tokType;
 
-	static const XMLInt32		UTF16_MAX;
-	static const unsigned short FC_CONTINUE;
-	static const unsigned short FC_TERMINAL;
-	static const unsigned short FC_ANY;
+    // -----------------------------------------------------------------------
+    //  Public Constructors and Destructor
+    // -----------------------------------------------------------------------
+    Token(const tokType tkType
+        , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
+        );
+    virtual ~Token();
 
-	// -----------------------------------------------------------------------
+    static const XMLInt32        UTF16_MAX;
+
+    typedef enum {
+        FC_CONTINUE = 0,
+        FC_TERMINAL = 1,
+        FC_ANY = 2
+    } firstCharacterOptions;
+
+    // -----------------------------------------------------------------------
     //  Getter methods
     // -----------------------------------------------------------------------
-	unsigned short       getTokenType() const;
-	int                  getMinLength() const;
+    tokType              getTokenType() const;
+    XMLSize_t            getMinLength() const;
     int                  getMaxLength() const;
-	virtual Token*       getChild(const int index) const;
-	virtual int          size() const;
+    virtual Token*       getChild(const XMLSize_t index) const;
+    virtual XMLSize_t    size() const;
     virtual int          getMin() const;
     virtual int          getMax() const;
     virtual int          getNoParen() const;
-	virtual int          getReferenceNo() const;
+    virtual int          getReferenceNo() const;
     virtual const XMLCh* getString() const;
-	virtual XMLInt32     getChar() const;
+    virtual XMLInt32     getChar() const;
 
-	// -----------------------------------------------------------------------
+    // -----------------------------------------------------------------------
     //  Setter methods
     // -----------------------------------------------------------------------
-	void setTokenType(const unsigned short tokType);
-	virtual void setMin(const int minVal);
-	virtual void setMax(const int maxVal);
+    void setTokenType(const tokType tokType);
+    virtual void setMin(const int minVal);
+    virtual void setMax(const int maxVal);
 
     // -----------------------------------------------------------------------
     //  Range manipulation methods
     // -----------------------------------------------------------------------
-	virtual void addRange(const XMLInt32 start, const XMLInt32 end);
-	virtual void mergeRanges(const Token *const tok);
-	virtual void sortRanges();
-	virtual void compactRanges();
-	virtual void subtractRanges(RangeToken* const tok);
-	virtual void intersectRanges(RangeToken* const tok);
+    virtual void addRange(const XMLInt32 start, const XMLInt32 end);
+    virtual void mergeRanges(const Token *const tok);
+    virtual void sortRanges();
+    virtual void compactRanges();
+    virtual void subtractRanges(RangeToken* const tok);
+    virtual void intersectRanges(RangeToken* const tok);
 
-	// -----------------------------------------------------------------------
+    // -----------------------------------------------------------------------
     //  Putter methods
     // -----------------------------------------------------------------------
-	virtual void addChild(Token* const child, TokenFactory* const tokFactory);
+    virtual void addChild(Token* const child, TokenFactory* const tokFactory);
 
-	// -----------------------------------------------------------------------
+    // -----------------------------------------------------------------------
     //  Helper methods
     // -----------------------------------------------------------------------
-	int analyzeFirstCharacter(RangeToken* const rangeTok, const int options,
-                              TokenFactory* const tokFactory);
+    firstCharacterOptions analyzeFirstCharacter(RangeToken* const rangeTok, const int options,
+                                                TokenFactory* const tokFactory);
     Token* findFixedString(int options, int& outOptions);
 
 private:
-	// -----------------------------------------------------------------------
+    // -----------------------------------------------------------------------
     //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
     Token(const Token&);
@@ -134,13 +130,13 @@ private:
     // -----------------------------------------------------------------------
     //  Private Helper methods
     // -----------------------------------------------------------------------
-	bool isSet(const int options, const unsigned int flag);
+    bool isSet(const int options, const unsigned int flag);
     bool isShorterThan(Token* const tok);
 
-	// -----------------------------------------------------------------------
+    // -----------------------------------------------------------------------
     //  Private data members
-	// -----------------------------------------------------------------------
-	unsigned short fTokenType;
+    // -----------------------------------------------------------------------
+    tokType fTokenType;
 protected:
     MemoryManager* const    fMemoryManager;
 };
@@ -149,19 +145,19 @@ protected:
 // ---------------------------------------------------------------------------
 //  Token: getter methods
 // ---------------------------------------------------------------------------
-inline unsigned short Token::getTokenType() const {
+inline Token::tokType Token::getTokenType() const {
 
-	return fTokenType;
+    return fTokenType;
 }
 
-inline int Token::size() const {
+inline XMLSize_t Token::size() const {
 
-	return 0;
+    return 0;
 }
 
-inline Token* Token::getChild(const int) const {
+inline Token* Token::getChild(const XMLSize_t) const {
 
-	return 0;
+    return 0;
 }
 
 inline int Token::getMin() const {
@@ -197,22 +193,22 @@ inline XMLInt32 Token::getChar() const {
 // ---------------------------------------------------------------------------
 //  Token: setter methods
 // ---------------------------------------------------------------------------
-inline void Token::setTokenType(const unsigned short tokType) {
-	
-	fTokenType = tokType;
+inline void Token::setTokenType(const Token::tokType tokType) {
+    
+    fTokenType = tokType;
 }
 
 inline void Token::setMax(const int) {
-	// ClosureToken
+    // ClosureToken
 }
 
 inline void Token::setMin(const int) {
-	// ClosureToken
+    // ClosureToken
 }
 
 inline bool Token::isSet(const int options, const unsigned int flag) {
 
-	return (options & flag) == flag;
+    return (options & flag) == flag;
 }
 
 // ---------------------------------------------------------------------------

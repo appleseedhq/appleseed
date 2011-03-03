@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMRangeImpl.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMRangeImpl.cpp 676911 2008-07-15 13:27:32Z amassari $
  */
 
 #include "DOMRangeImpl.hpp"
@@ -604,7 +604,7 @@ short DOMRangeImpl::compareBoundaryPoints(DOMRange::CompareHow how, const DOMRan
 
     DOMNode* pointA;
     DOMNode* pointB;
-    int offsetA, offsetB;
+    XMLSize_t offsetA, offsetB;
 
     switch (how)
     {
@@ -646,7 +646,7 @@ short DOMRangeImpl::compareBoundaryPoints(DOMRange::CompareHow how, const DOMRan
     // case 2: Child C of container A is ancestor of B
     for (DOMNode* node = pointA->getFirstChild(); node != 0; node=node->getNextSibling()) {
         if (isAncestorOf(node, pointB)) {
-            int index = indexOf(node, pointA);
+            XMLSize_t index = indexOf(node, pointA);
             if (offsetA <=  index) return -1;
             return 1;
         }
@@ -654,7 +654,7 @@ short DOMRangeImpl::compareBoundaryPoints(DOMRange::CompareHow how, const DOMRan
     // case 3: Child C of container B is ancestor of A
     for (DOMNode* nd = pointB->getFirstChild(); nd != 0; nd=nd->getNextSibling()) {
         if (isAncestorOf(nd, pointA)) {
-            int index = indexOf(nd, pointB);
+            XMLSize_t index = indexOf(nd, pointB);
             if (index < offsetB ) return -1;
             return 1; //B strictly before A
         }
@@ -894,7 +894,7 @@ const XMLCh* DOMRangeImpl::toString() const
         && type != DOMNode::CDATA_SECTION_NODE
         && type != DOMNode::COMMENT_NODE
         && type != DOMNode::PROCESSING_INSTRUCTION_NODE)) {
-        int i=fEndOffset;
+        int i=(int)fEndOffset;
         stopNode = fEndContainer->getFirstChild();
         while( i>0 && stopNode!=0 ){
             --i;
@@ -1066,14 +1066,14 @@ const DOMNode* DOMRangeImpl::commonAncestorOf(const DOMNode* pointA, const DOMNo
         endV.addElement(node);
     }
 
-    int s = startV.size()-1;
-    int e = endV.size()-1;
+    XMLSize_t s = startV.size();
+    XMLSize_t e = endV.size();
 
     DOMNode* commonAncestor = 0;
 
-    while (s>=0 && e>=0) {
-        if (startV.elementAt(s) == endV.elementAt(e)) {
-            commonAncestor = startV.elementAt(s);
+    while (s>0 && e>0) {
+        if (startV.elementAt(s-1) == endV.elementAt(e-1)) {
+            commonAncestor = startV.elementAt(s-1);
         }
         else  break;
         --s;
@@ -1281,8 +1281,8 @@ DOMDocumentFragment* DOMRangeImpl::traverseSameContainer( int how )
     }
     else {
         // Copy nodes between the start/end offsets.
-        DOMNode* n = getSelectedNode( fStartContainer, fStartOffset );
-        int cnt = fEndOffset - fStartOffset;
+        DOMNode* n = getSelectedNode( fStartContainer, (int)fStartOffset );
+        int cnt = (int)fEndOffset - (int)fStartOffset;
         while( cnt > 0 && n)
         {
             DOMNode* sibling = n->getNextSibling();
@@ -1315,9 +1315,8 @@ DOMDocumentFragment* DOMRangeImpl::traverseCommonStartContainer( DOMNode*endAnce
     if ( frag!=0 )
         frag->appendChild( n );
 
-    int endIdx = indexOf( endAncestor, fStartContainer );
-    int cnt = endIdx - fStartOffset;
-    if ( cnt <=0 )
+    XMLSize_t endIdx = indexOf( endAncestor, fStartContainer );
+    if ( endIdx <= fStartOffset )
     {
         // Collapse to just before the endAncestor, which
         // is partially selected.
@@ -1330,6 +1329,7 @@ DOMDocumentFragment* DOMRangeImpl::traverseCommonStartContainer( DOMNode*endAnce
     }
 
     n = endAncestor->getPreviousSibling();
+    int cnt = (int)endIdx - (int)fStartOffset;
     while( cnt > 0 )
     {
         DOMNode* sibling = n->getPreviousSibling();
@@ -1363,10 +1363,10 @@ DOMDocumentFragment* DOMRangeImpl::traverseCommonEndContainer( DOMNode*startAnce
     DOMNode* n = traverseLeftBoundary( startAncestor, how );
     if ( frag!=0 )
         frag->appendChild( n );
-    int startIdx = indexOf( startAncestor, fEndContainer );
+    XMLSize_t startIdx = indexOf( startAncestor, fEndContainer );
     ++startIdx;  // Because we already traversed it....
 
-    int cnt = fEndOffset - startIdx;
+    int cnt = (int)fEndOffset - (int)startIdx;
     n = startAncestor->getNextSibling();
     while( cnt > 0 )
     {
@@ -1404,11 +1404,11 @@ DOMDocumentFragment* DOMRangeImpl::traverseCommonAncestors( DOMNode*startAncesto
         frag->appendChild( n );
 
     DOMNode*commonParent = startAncestor->getParentNode();
-    int startOffset = indexOf( startAncestor, commonParent );
-    int endOffset = indexOf( endAncestor, commonParent );
+    XMLSize_t startOffset = indexOf( startAncestor, commonParent );
+    XMLSize_t endOffset = indexOf( endAncestor, commonParent );
     ++startOffset;
 
-    int cnt = endOffset - startOffset;
+    int cnt = (int)endOffset - (int)startOffset;
     DOMNode* sibling = startAncestor->getNextSibling();
 
     while( cnt > 0 )
@@ -1469,7 +1469,7 @@ DOMDocumentFragment* DOMRangeImpl::traverseCommonAncestors( DOMNode*startAncesto
  */
 DOMNode* DOMRangeImpl::traverseRightBoundary( DOMNode*root, int how )
 {
-    DOMNode*next = getSelectedNode( fEndContainer, fEndOffset-1 );
+    DOMNode*next = getSelectedNode( fEndContainer, (int)fEndOffset-1 );
     bool isFullySelected = ( next!=fEndContainer );
 
     if ( next==root )
@@ -1548,7 +1548,7 @@ DOMNode* DOMRangeImpl::traverseRightBoundary( DOMNode*root, int how )
  */
 DOMNode* DOMRangeImpl::traverseLeftBoundary( DOMNode*root, int how )
 {
-    DOMNode*next = getSelectedNode( getStartContainer(), getStartOffset() );
+    DOMNode*next = getSelectedNode( getStartContainer(), (int)getStartOffset() );
     bool isFullySelected = ( next!=getStartContainer() );
 
     if ( next==root )
@@ -1666,8 +1666,8 @@ DOMNode* DOMRangeImpl::traverseTextNode( DOMNode*n, bool isLeft, int how )
 
     if ( isLeft )
     {
-        int startLen = XMLString::stringLen(fStartContainer->getNodeValue());
-        int offset = getStartOffset();
+        XMLSize_t startLen = XMLString::stringLen(fStartContainer->getNodeValue());
+        XMLSize_t offset = getStartOffset();
 
         if (offset == 0) {
             if ( how != CLONE_CONTENTS )
@@ -1727,8 +1727,8 @@ DOMNode* DOMRangeImpl::traverseTextNode( DOMNode*n, bool isLeft, int how )
     }
     else
     {
-        int endLen = XMLString::stringLen(fEndContainer->getNodeValue());
-        int offset = getEndOffset();
+        XMLSize_t endLen = XMLString::stringLen(fEndContainer->getNodeValue());
+        XMLSize_t offset = getEndOffset();
 
         if (endLen == offset) {
             if ( how != CLONE_CONTENTS )
@@ -1951,7 +1951,7 @@ void DOMRangeImpl::receiveReplacedText(DOMNode* node)
 *  The  text has already been deleted.
 *  Fix-up any offsets.
 */
-void DOMRangeImpl::updateRangeForDeletedText(DOMNode* node, XMLSize_t offset, int count)
+void DOMRangeImpl::updateRangeForDeletedText(DOMNode* node, XMLSize_t offset, XMLSize_t count)
 {
     if (node == 0) return;
 
@@ -1989,7 +1989,7 @@ void DOMRangeImpl::updateRangeForDeletedText(DOMNode* node, XMLSize_t offset, in
 *  The  text has already beeen inserted.
 *  Fix-up any offsets.
 */
-void DOMRangeImpl::updateRangeForInsertedText(DOMNode* node, XMLSize_t offset, int count)
+void DOMRangeImpl::updateRangeForInsertedText(DOMNode* node, XMLSize_t offset, XMLSize_t count)
 {
     if (node == 0) return;
 

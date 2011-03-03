@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XSAXMLScanner.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XSAXMLScanner.cpp 833045 2009-11-05 13:21:27Z borisk $
  */
 
 
@@ -28,6 +28,7 @@
 #include <xercesc/sax/InputSource.hpp>
 #include <xercesc/framework/XMLEntityHandler.hpp>
 #include <xercesc/framework/XMLDocumentHandler.hpp>
+#include <xercesc/framework/psvi/XSAnnotation.hpp>
 #include <xercesc/validators/schema/SchemaValidator.hpp>
 
 
@@ -77,8 +78,8 @@ void XSAXMLScanner::scanEndTag(bool& gotData)
 
     // Make sure that its the end of the element that we expect
     const XMLCh *elemName = fElemStack.getCurrentSchemaElemName();
-    const ElemStack::StackElem* topElem = fElemStack.popTop(); 
-    if (!fReaderMgr.skippedString(elemName))
+    const ElemStack::StackElem* topElem = fElemStack.popTop();
+    if (!fReaderMgr.skippedStringLong(elemName))
     {
         emitError
         (
@@ -111,12 +112,16 @@ void XSAXMLScanner::scanEndTag(bool& gotData)
     //  this element and let him validate it.
     if (fValidate)
     {
-        int res = fValidator->checkContent
+        XMLSize_t failure;
+        bool res = fValidator->checkContent
         (
-            topElem->fThisElement, topElem->fChildren, topElem->fChildCount
+            topElem->fThisElement
+            , topElem->fChildren
+            , topElem->fChildCount
+            , &failure
         );
 
-        if (res >= 0)
+        if (!res)
         {
             //  One of the elements is not valid for the content. NOTE that
             //  if no children were provided but the content model requires
@@ -131,7 +136,7 @@ void XSAXMLScanner::scanEndTag(bool& gotData)
                     , topElem->fThisElement->getFormattedContentModel()
                 );
             }
-            else if ((unsigned int)res >= topElem->fChildCount)
+            else if (failure >= topElem->fChildCount)
             {
                 fValidator->emitError
                 (
@@ -144,30 +149,30 @@ void XSAXMLScanner::scanEndTag(bool& gotData)
                 fValidator->emitError
                 (
                     XMLValid::ElementNotValidForContent
-                    , topElem->fChildren[res]->getRawName()
+                    , topElem->fChildren[failure]->getRawName()
                     , topElem->fThisElement->getFormattedContentModel()
                 );
-            }            
+            }
         }
     }
 
-    // now we can reset the datatype buffer, since the 
+    // now we can reset the datatype buffer, since the
     // application has had a chance to copy the characters somewhere else
     ((SchemaValidator *)fValidator)->clearDatatypeBuffer();
 
     // If we have a doc handler, tell it about the end tag
     if (fDocHandler)
-    {        
+    {
         if (topElem->fPrefixColonPos != -1)
             fPrefixBuf.set(elemName, topElem->fPrefixColonPos);
         else
-            fPrefixBuf.reset();        
+            fPrefixBuf.reset();
         fDocHandler->endElement
         (
             *topElem->fThisElement
             , uriId
             , isRoot
-            , fPrefixBuf.getRawBuffer()            
+            , fPrefixBuf.getRawBuffer()
         );
     }
 
@@ -199,7 +204,7 @@ bool XSAXMLScanner::scanStartTag(bool& gotData)
     //  in the element name.
     int prefixColonPos;
     if (!fReaderMgr.getQName(fQNameBuf, &prefixColonPos))
-    {       
+    {
         if (fQNameBuf.isEmpty())
             emitError(XMLErrs::ExpectedElementName);
         else
@@ -219,12 +224,12 @@ bool XSAXMLScanner::scanStartTag(bool& gotData)
     //  might be (since we need the element decl in order to do that.)
     const XMLCh* qnameRawBuf = fQNameBuf.getRawBuffer();
     bool isEmpty;
-    unsigned int attCount = rawAttrScan(qnameRawBuf, *fRawAttrList, isEmpty);
+    XMLSize_t attCount = rawAttrScan(qnameRawBuf, *fRawAttrList, isEmpty);
 
     // save the contentleafname and currentscope before addlevel, for later use
     ContentLeafNameTypeVector* cv = 0;
     XMLContentModel* cm = 0;
-    int currentScope = Grammar::TOP_LEVEL_SCOPE;
+    unsigned int currentScope = Grammar::TOP_LEVEL_SCOPE;
     bool laxThisOne = false;
     if (!isRoot)
     {
@@ -262,7 +267,7 @@ bool XSAXMLScanner::scanStartTag(bool& gotData)
     //  Now, since we might have to update the namespace map for this element,
     //  but we don't have the element decl yet, we just tell the element stack
     //  to expand up to get ready.
-    unsigned int elemDepth = fElemStack.addLevel();
+    XMLSize_t elemDepth = fElemStack.addLevel();
     fElemStack.setValidationFlag(fValidate);
     fElemStack.setPrefixColonPos(prefixColonPos);
 
@@ -273,7 +278,7 @@ bool XSAXMLScanner::scanStartTag(bool& gotData)
 
     //  Resolve the qualified name to a URI and name so that we can look up
     //  the element decl for this element. We have now update the prefix to
-    //  namespace map so we should get the correct element now.    
+    //  namespace map so we should get the correct element now.
     unsigned int uriId = resolveQNameWithColon
     (
         qnameRawBuf, fPrefixBuf, ElemStack::Mode_Element, prefixColonPos
@@ -314,7 +319,7 @@ bool XSAXMLScanner::scanStartTag(bool& gotData)
         {
             // if still not found, look in list of undeclared elements
             elemDecl = fElemNonDeclPool->getByKey(
-                nameRawBuf, uriId, Grammar::TOP_LEVEL_SCOPE);
+                nameRawBuf, uriId, (int)Grammar::TOP_LEVEL_SCOPE);
 
             if (!elemDecl)
             {
@@ -324,14 +329,13 @@ bool XSAXMLScanner::scanStartTag(bool& gotData)
                     , SchemaElementDecl::Any, Grammar::TOP_LEVEL_SCOPE
                     , fMemoryManager
                 );
-                elemDecl->setId
-                (
-                    fElemNonDeclPool->put
-                    (
-                        (void*)elemDecl->getBaseName(), uriId
-                        , Grammar::TOP_LEVEL_SCOPE, (SchemaElementDecl*)elemDecl
-                    )
-                );
+
+                elemDecl->setId (fElemNonDeclPool->put(
+                      (void*)elemDecl->getBaseName(),
+                      uriId,
+                      (int)Grammar::TOP_LEVEL_SCOPE,
+                      (SchemaElementDecl*)elemDecl));
+
                 wasAdded = true;
             }
 		}
@@ -339,9 +343,10 @@ bool XSAXMLScanner::scanStartTag(bool& gotData)
 
     //  We do something different here according to whether we found the
     //  element or not.
+    bool bXsiTypeSet= (fValidator)?((SchemaValidator*)fValidator)->getIsXsiTypeSet():false;
     if (wasAdded || !elemDecl->isDeclared())
     {
-        if (laxThisOne) {
+        if (laxThisOne && !bXsiTypeSet) {
             fValidate = false;
             fElemStack.setValidationFlag(fValidate);
         }
@@ -353,10 +358,11 @@ bool XSAXMLScanner::scanStartTag(bool& gotData)
             // faulted-in, was not an element in the grammar pool originally
             elemDecl->setCreateReason(XMLElementDecl::JustFaultIn);
 
-            fValidator->emitError
-            (
-                XMLValid::ElementNotDefined, elemDecl->getFullName()
-            );
+            if(!bXsiTypeSet)
+                fValidator->emitError
+                (
+                    XMLValid::ElementNotDefined, elemDecl->getFullName()
+                );
         }
     }
 
@@ -407,6 +413,7 @@ bool XSAXMLScanner::scanStartTag(bool& gotData)
     }
 
     fElemState[elemDepth] = 0;
+    fElemLoopState[elemDepth] = 0;
     fElemStack.setCurrentGrammar(fGrammar);
 
     //  If this is the first element and we are validating, check the root
@@ -428,7 +435,7 @@ bool XSAXMLScanner::scanStartTag(bool& gotData)
     {
         // clean up after ourselves:
         // clear the map used to detect duplicate attributes
-        fUndeclaredAttrRegistryNS->removeAll();
+        fUndeclaredAttrRegistry->removeAll();
     }
 
     // Since the element may have default values, call start tag now regardless if it is empty or not
@@ -453,8 +460,9 @@ bool XSAXMLScanner::scanStartTag(bool& gotData)
         // If validating, then insure that its legal to have no content
         if (fValidate)
         {
-            const int res = fValidator->checkContent(elemDecl, 0, 0);
-            if (res >= 0)
+            XMLSize_t failure;
+            bool res = fValidator->checkContent(elemDecl, 0, 0, &failure);
+            if (!res)
             {
                 // REVISIT:  in the case of xsi:type, this may
                 // return the wrong string...
@@ -567,6 +575,7 @@ void XSAXMLScanner::scanReset(const InputSource& src)
         , XMLReader::Type_General
         , XMLReader::Source_External
         , fCalculateSrcOfs
+        , fLowWaterMark
     );
 
     if (!newReader) {
@@ -580,13 +589,13 @@ void XSAXMLScanner::scanReset(const InputSource& src)
     fReaderMgr.pushReader(newReader, 0);
 
     // and reset security-related things if necessary:
-    if(fSecurityManager != 0) 
+    if(fSecurityManager != 0)
     {
         fEntityExpansionLimit = fSecurityManager->getEntityExpansionLimit();
         fEntityExpansionCount = 0;
     }
     fElemCount = 0;
-    if (fUIntPoolRowTotal >= 32) 
+    if (fUIntPoolRowTotal >= 32)
     { // 8 KB tied up with validating attributes...
         fAttDefRegistry->removeAll();
         recreateUIntPool();
@@ -597,17 +606,17 @@ void XSAXMLScanner::scanReset(const InputSource& src)
         // though their buckets will still be tied up
         resetUIntPool();
     }
-    fUndeclaredAttrRegistryNS->removeAll();
+    fUndeclaredAttrRegistry->removeAll();
 }
 
 
-void XSAXMLScanner::scanRawAttrListforNameSpaces(int attCount)
+void XSAXMLScanner::scanRawAttrListforNameSpaces(XMLSize_t attCount)
 {
     //  Make an initial pass through the list and find any xmlns attributes or
     //  schema attributes.
     //  When we find one, send it off to be used to update the element stack's
     //  namespace mappings.
-    int index = 0;
+    XMLSize_t index = 0;
     for (index = 0; index < attCount; index++)
     {
         // each attribute has the prefix:suffix="value"
@@ -655,12 +664,25 @@ void XSAXMLScanner::scanRawAttrListforNameSpaces(int attCount)
                 const XMLCh* valuePtr = curPair->getValue();
                 const XMLCh* suffPtr = attName.getLocalPart();
 
-                if (XMLString::equals(suffPtr, SchemaSymbols::fgXSI_TYPE)) {
-                    fXsiType.set(valuePtr);
+                if (XMLString::equals(suffPtr, SchemaSymbols::fgXSI_TYPE)) 
+                {
+                    // normalize the attribute according to schema whitespace facet
+                    DatatypeValidator* tempDV = DatatypeValidatorFactory::getBuiltInRegistry()->get(SchemaSymbols::fgDT_QNAME);
+                    ((SchemaValidator*) fValidator)->normalizeWhiteSpace(tempDV, valuePtr, fXsiType, true);
                 }
-                else if (XMLString::equals(suffPtr, SchemaSymbols::fgATT_NILL)
-                         && XMLString::equals(valuePtr, SchemaSymbols::fgATTVAL_TRUE)) {
-                    ((SchemaValidator*)fValidator)->setNillable(true);
+                else if (XMLString::equals(suffPtr, SchemaSymbols::fgATT_NILL))
+                {
+                    // normalize the attribute according to schema whitespace facet
+                    XMLBuffer& fXsiNil = fBufMgr.bidOnBuffer();
+                    DatatypeValidator* tempDV = DatatypeValidatorFactory::getBuiltInRegistry()->get(SchemaSymbols::fgDT_BOOLEAN);
+                    ((SchemaValidator*) fValidator)->normalizeWhiteSpace(tempDV, valuePtr, fXsiNil, true);
+                    if(XMLString::equals(fXsiNil.getRawBuffer(), SchemaSymbols::fgATTVAL_TRUE))
+                        ((SchemaValidator*)fValidator)->setNillable(true);
+                    else if(XMLString::equals(fXsiNil.getRawBuffer(), SchemaSymbols::fgATTVAL_FALSE))
+                        ((SchemaValidator*)fValidator)->setNillable(false);
+                    else
+                        emitError(XMLErrs::InvalidAttValue, fXsiNil.getRawBuffer(), valuePtr);
+                    fBufMgr.releaseBuffer(fXsiNil);
                 }
             }
         }

@@ -21,7 +21,7 @@
 <s1 title="Sample: PSVIWriter">
 
     <s2 title="PSVIWriter">
-        <p>PSVIWriter shows how to access the PSVI and Schema Component Model 
+        <p>PSVIWriter shows how to access the Post Schema Validation Infoset (PSVI) and Schema Component Model
            information for the parsed document.</p>
 
         <s3 title="Running PSVIWriter">
@@ -48,11 +48,11 @@ Options:
 </source>
           <p>Here is some sample output from PSVWriter (as the output is verbose
              it has been truncated)</p>
-<source>cd &XercesCInstallDir;-linux/samples/data
+<source>cd &XercesC3InstallDir;/samples/data
 PSVIWriter personal.xml
 
-&lt;document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-             xmlns:psv="http://apache.org/xml/2001/PSVInfosetExtension" 
+&lt;document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:psv="http://apache.org/xml/2001/PSVInfosetExtension"
              xmlns="http://www.w3.org/2001/05/XMLInfoset"&gt;
 	&lt;characterEncodingScheme&gt;UTF8&lt;/characterEncodingScheme&gt;
 	&lt;standalone xsi:nil="true"/&gt;
@@ -62,7 +62,7 @@ PSVIWriter personal.xml
 			&lt;content&gt; @version:  &lt;/content&gt;
 		&lt;/comment&gt;
 
-...		
+...
 		</source>
         </s3>
     </s2>

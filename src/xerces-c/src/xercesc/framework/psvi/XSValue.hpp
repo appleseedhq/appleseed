@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XSValue.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XSValue.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#if !defined(XSVALUE_HPP)
-#define XSVALUE_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XSVALUE_HPP)
+#define XERCESC_INCLUDE_GUARD_XSVALUE_HPP
 
 #include <xercesc/util/PlatformUtils.hpp>
 #include <xercesc/util/ValueHashTableOf.hpp>
@@ -93,15 +93,15 @@ public:
             st_NoActVal,
             st_NotSupported,
             st_CantCreateRegEx,
-            st_FOCA0002,        //invalid lexical value 
-            st_FOCA0001,        //input value too large/too small for decimal 
-            st_FOCA0003,        //input value too large for integer 
-            st_FODT0003,        //invalid timezone value 
+            st_FOCA0002,        //invalid lexical value
+            st_FOCA0001,        //input value too large/too small for decimal
+            st_FOCA0003,        //input value too large for integer
+            st_FODT0003,        //invalid timezone value
             st_UnknownType
     };
 
     enum DataGroup {
-            dg_numerics,            
+            dg_numerics,
             dg_datetimes,
             dg_strings
     };
@@ -126,7 +126,7 @@ public:
     /** @name Externalization methods */
     //@{
 
-    /** 
+    /**
       * Validate a given string of the data type specified
       *
       * @param  content    data to be validated
@@ -138,15 +138,15 @@ public:
     static
     bool     validate
              (
-                const XMLCh*          const content    
+                const XMLCh*          const content
               ,       DataType              datatype
               ,       Status&               status
               ,       XMLVersion            version    = ver_10
               ,       MemoryManager*  const manager    = XMLPlatformUtils::fgMemoryManager
              );
 
-    /** 
-      * Get the canonical representation for a given string of the 
+    /**
+      * Get the canonical representation for a given string of the
       * data type specified
       *
       * @param  content    raw data
@@ -159,19 +159,19 @@ public:
     static
     XMLCh*   getCanonicalRepresentation
              (
-                const XMLCh*          const content    
+                const XMLCh*          const content
               ,       DataType              datatype
               ,       Status&               status
               ,       XMLVersion            version    = ver_10
-              ,       bool                  toValidate = true 
+              ,       bool                  toValidate = true
               ,       MemoryManager*  const manager    = XMLPlatformUtils::fgMemoryManager
              );
 
-    /** 
-      * Get the actual value, in the form of XSValue, for a given string of the 
+    /**
+      * Get the actual value, in the form of XSValue, for a given string of the
       * data type specified
       *
-      * Client application is responsible for the deleletion of the XSValue returned.
+      * Client application is responsible for the deletion of the XSValue returned.
       *
       * @param  content    raw data
       * @param  datatype   schema datatype
@@ -183,11 +183,11 @@ public:
     static
     XSValue* getActualValue
              (
-                const XMLCh*          const content    
+                const XMLCh*          const content
               ,       DataType              datatype
               ,       Status&               status
               ,       XMLVersion            version    = ver_10
-              ,       bool                  toValidate = true 
+              ,       bool                  toValidate = true
               ,       MemoryManager*  const manager    = XMLPlatformUtils::fgMemoryManager
              );
 
@@ -202,10 +202,10 @@ public:
     struct XSValue_Data {
 
         DataType f_datatype;
-        
+
         union {
                          bool      f_bool;
-                         char      f_char;                    
+                         char      f_char;
                 unsigned char      f_uchar;
                          short     f_short;
                 unsigned short     f_ushort;
@@ -249,15 +249,6 @@ public:
 
     } fData;
 
-    static
-    void reinitMutex();
-
-    static
-    void reinitRegEx();
-
-    static
-    void reinitRegistry();
-
 private:
 
     typedef union
@@ -269,7 +260,7 @@ private:
     /** @name Constructors */
     //@{
     /**
-      * The default constructor 
+      * The default constructor
       *
       */
     XSValue(
@@ -298,25 +289,25 @@ private:
     static
     bool     validateNumerics
              (
-                const XMLCh*          const content    
+                const XMLCh*          const content
               ,       DataType              datatype
-              ,       Status&               status              
+              ,       Status&               status
               ,       MemoryManager*  const manager
              );
 
     static
     bool     validateDateTimes
              (
-                const XMLCh*          const content    
+                const XMLCh*          const content
               ,       DataType              datatype
-              ,       Status&               status              
+              ,       Status&               status
               ,       MemoryManager*  const manager
              );
 
     static
     bool     validateStrings
              (
-                const XMLCh*          const content    
+                const XMLCh*          const content
               ,       DataType              datatype
               ,       Status&               status
               ,       XMLVersion            version
@@ -326,9 +317,9 @@ private:
     static
     XMLCh*   getCanRepNumerics
              (
-                const XMLCh*          const content    
+                const XMLCh*          const content
               ,       DataType              datatype
-              ,       Status&               status             
+              ,       Status&               status
               ,       bool                  toValidate
               ,       MemoryManager*  const manager
              );
@@ -336,9 +327,9 @@ private:
     static
     XMLCh*   getCanRepDateTimes
              (
-                const XMLCh*          const content    
+                const XMLCh*          const content
               ,       DataType              datatype
-              ,       Status&               status             
+              ,       Status&               status
               ,       bool                  toValidate
               ,       MemoryManager*  const manager
              );
@@ -346,7 +337,7 @@ private:
     static
     XMLCh*   getCanRepStrings
              (
-                const XMLCh*          const content    
+                const XMLCh*          const content
               ,       DataType              datatype
               ,       Status&               status
               ,       XMLVersion            version
@@ -357,9 +348,9 @@ private:
     static
     XSValue*  getActValNumerics
              (
-                const XMLCh*          const content    
+                const XMLCh*          const content
               ,       DataType              datatype
-              ,       Status&               status   
+              ,       Status&               status
               ,       bool                  toValidate
               ,       MemoryManager*  const manager
              );
@@ -367,16 +358,16 @@ private:
     static
     XSValue*  getActValDateTimes
              (
-                const XMLCh*          const content    
+                const XMLCh*          const content
               ,       DataType              datatype
-              ,       Status&               status              
+              ,       Status&               status
               ,       MemoryManager*  const manager
              );
 
     static
     XSValue*  getActValStrings
              (
-                const XMLCh*          const content    
+                const XMLCh*          const content
               ,       DataType              datatype
               ,       Status&               status
               ,       XMLVersion            version
@@ -388,8 +379,8 @@ private:
     bool      getActualNumericValue
               (
                  const XMLCh*         const content
-               ,       Status&               status                                
-               ,       t_value&              retVal                              
+               ,       Status&               status
+               ,       t_value&              retVal
                ,       MemoryManager* const  manager
                ,       DataType              datatype
                );

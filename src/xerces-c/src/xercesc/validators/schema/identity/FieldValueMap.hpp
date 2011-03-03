@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: FieldValueMap.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: FieldValueMap.hpp 708224 2008-10-27 16:02:26Z amassari $
  */
 
-#if !defined(FIELDVALUEMAP_HPP)
-#define FIELDVALUEMAP_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_FIELDVALUEMAP_HPP)
+#define XERCESC_INCLUDE_GUARD_FIELDVALUEMAP_HPP
 
 /**
   * This class maps values associated with fields of an identity constraint
@@ -56,11 +56,11 @@ public:
 	// -----------------------------------------------------------------------
     //  Getter methods
     // -----------------------------------------------------------------------
-    DatatypeValidator* getDatatypeValidatorAt(const unsigned int index) const;
+    DatatypeValidator* getDatatypeValidatorAt(const XMLSize_t index) const;
     DatatypeValidator* getDatatypeValidatorFor(const IC_Field* const key) const;
-    XMLCh* getValueAt(const unsigned int index) const;
+    XMLCh* getValueAt(const XMLSize_t index) const;
     XMLCh* getValueFor(const IC_Field* const key) const;
-    IC_Field* keyAt(const unsigned int index) const;
+    IC_Field* keyAt(const XMLSize_t index) const;
 
 	// -----------------------------------------------------------------------
     //  Setter methods
@@ -71,8 +71,9 @@ public:
 	// -----------------------------------------------------------------------
     //  Helper methods
     // -----------------------------------------------------------------------
-    unsigned int size() const;
-    int indexOf(const IC_Field* const key) const;
+    XMLSize_t size() const;
+    bool indexOf(const IC_Field* const key, XMLSize_t& location) const;
+    void clear();
 
 private:
     // -----------------------------------------------------------------------
@@ -99,7 +100,7 @@ private:
 //  FieldValueMap: Getter methods
 // ---------------------------------------------------------------------------
 inline DatatypeValidator*
-FieldValueMap::getDatatypeValidatorAt(const unsigned int index) const {
+FieldValueMap::getDatatypeValidatorAt(const XMLSize_t index) const {
 
     if (fValidators) {
         return fValidators->elementAt(index);
@@ -111,14 +112,15 @@ FieldValueMap::getDatatypeValidatorAt(const unsigned int index) const {
 inline DatatypeValidator*
 FieldValueMap::getDatatypeValidatorFor(const IC_Field* const key) const {
 
-    if (fValidators) {
-        return fValidators->elementAt(indexOf(key));
+    XMLSize_t location;
+    if (fValidators && indexOf(key, location)) {
+        return fValidators->elementAt(location);
     }
 
     return 0;
 }
 
-inline XMLCh* FieldValueMap::getValueAt(const unsigned int index) const {
+inline XMLCh* FieldValueMap::getValueAt(const XMLSize_t index) const {
 
     if (fValues) {
         return fValues->elementAt(index);
@@ -129,14 +131,15 @@ inline XMLCh* FieldValueMap::getValueAt(const unsigned int index) const {
 
 inline XMLCh* FieldValueMap::getValueFor(const IC_Field* const key) const {
 
-    if (fValues) {
-        return fValues->elementAt(indexOf(key));
+    XMLSize_t location;
+    if (fValues && indexOf(key, location)) {
+        return fValues->elementAt(location);
     }
 
     return 0;
 }
 
-inline IC_Field* FieldValueMap::keyAt(const unsigned int index) const {
+inline IC_Field* FieldValueMap::keyAt(const XMLSize_t index) const {
 
     if (fFields) {
         return fFields->elementAt(index);
@@ -148,7 +151,7 @@ inline IC_Field* FieldValueMap::keyAt(const unsigned int index) const {
 // ---------------------------------------------------------------------------
 //  FieldValueMap: Helper methods
 // ---------------------------------------------------------------------------
-inline unsigned int FieldValueMap::size() const {
+inline XMLSize_t FieldValueMap::size() const {
 
     if (fFields) {
         return fFields->size();
@@ -170,9 +173,10 @@ inline void FieldValueMap::put(IC_Field* const key,
         fValues = new (fMemoryManager) RefArrayVectorOf<XMLCh>(4, true, fMemoryManager);
     }
 
-    int keyIndex = indexOf(key);
+    XMLSize_t keyIndex;
+    bool bFound=indexOf(key, keyIndex);
 
-    if (keyIndex == -1) {
+    if (!bFound) {
 
         fFields->addElement(key);
         fValidators->addElement(dv);

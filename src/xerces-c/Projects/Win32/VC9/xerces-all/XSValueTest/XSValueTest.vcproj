@@ -19,7 +19,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\$(ConfigurationName)"
+			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC9\$(ConfigurationName)"
 			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
@@ -40,16 +40,20 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Debug/XSValueTest.tlb"
+				TypeLibraryName="$(OutDir)\XSValueTest.tlb"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\..\..\..\src"
-				PreprocessorDefinitions="_DEBUG,_CONSOLE,WIN32,_WINDOWS,PLATFORM_WIN32"
+				PreprocessorDefinitions="_DEBUG;_CONSOLE;WIN32;_WINDOWS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
+				TreatWChar_tAsBuiltInType="true"
 				PrecompiledHeaderFile="$(IntDir)\XSValueTest.pch"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\XSValueTest_vc90"
 				WarningLevel="3"
 				DebugInformationFormat="4"
 				CompileAs="0"
@@ -67,13 +71,13 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="xerces-c_2D.lib"
-				OutputFile="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Debug/XSValueTest.exe"
-				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Debug"
+				AdditionalOptions=""
+				AdditionalDependencies="xerces-c_3D.lib"
+				OutputFile="$(OutDir)\XSValueTest.exe"
+				LinkIncremental="2"
+				AdditionalLibraryDirectories="$(OutDir)"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Debug/XSValueTest.pdb"
+				ProgramDatabaseFile="$(OutDir)\XSValueTest.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -102,8 +106,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|x64"
-			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory=".\..\..\..\..\..\Build\Win64\VC9\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -124,19 +128,20 @@
 			<Tool
 				Name="VCMIDLTool"
 				TargetEnvironment="3"
-				TypeLibraryName=".\..\..\..\..\..\Build\Win64\VC8\Debug/XSValueTest.tlb"
+				TypeLibraryName="$(OutDir)\XSValueTest.tlb"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\..\..\..\src"
-				PreprocessorDefinitions="_DEBUG,_CONSOLE,WIN32,_WINDOWS,PLATFORM_WIN32"
+				PreprocessorDefinitions="_DEBUG;_CONSOLE;WIN64;_WINDOWS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
+				TreatWChar_tAsBuiltInType="true"
 				PrecompiledHeaderFile="$(IntDir)\XSValueTest.pch"
 				AssemblerListingLocation="$(IntDir)\"
 				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\XSValueTest_vc90"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 				CompileAs="0"
@@ -154,12 +159,13 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="xerces-c_2D.lib"
-				OutputFile=".\..\..\..\..\..\Build\Win64\VC8\Debug/XSValueTest.exe"
-				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\..\..\..\Build\Win64\VC8\Debug"
+				AdditionalOptions=""
+				AdditionalDependencies="xerces-c_3D.lib"
+				OutputFile="$(OutDir)\XSValueTest.exe"
+				LinkIncremental="2"
+				AdditionalLibraryDirectories="$(OutDir)"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\..\..\..\..\..\Build\Win64\VC8\Debug/XSValueTest.pdb"
+				ProgramDatabaseFile="$(OutDir)\XSValueTest.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -189,7 +195,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\$(ConfigurationName)"
+			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC9\$(ConfigurationName)"
 			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
@@ -210,17 +216,20 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Release/XSValueTest.tlb"
+				TypeLibraryName="$(OutDir)\XSValueTest.tlb"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="2"
 				AdditionalIncludeDirectories="..\..\..\..\..\src"
-				PreprocessorDefinitions="NDEBUG,_CONSOLE,WIN32,_WINDOWS,PLATFORM_WIN32"
+				PreprocessorDefinitions="NDEBUG;_CONSOLE;WIN32;_WINDOWS"
 				StringPooling="true"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				PrecompiledHeaderFile="$(IntDir)\XSValueTest.pch"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\XSValueTest_vc90"
 				WarningLevel="3"
 				CompileAs="0"
 			/>
@@ -237,12 +246,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="xerces-c_2.lib"
-				OutputFile="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Release/XSValueTest.exe"
+				AdditionalOptions=""
+				AdditionalDependencies="xerces-c_3.lib"
+				OutputFile="$(OutDir)\XSValueTest.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Release"
-				ProgramDatabaseFile="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Release/XSValueTest.pdb"
+				AdditionalLibraryDirectories="$(OutDir)"
+				ProgramDatabaseFile="$(OutDir)\XSValueTest.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -271,8 +280,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|x64"
-			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory=".\..\..\..\..\..\Build\Win64\VC9\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -293,20 +302,20 @@
 			<Tool
 				Name="VCMIDLTool"
 				TargetEnvironment="3"
-				TypeLibraryName=".\..\..\..\..\..\Build\Win64\VC8\Release/XSValueTest.tlb"
+				TypeLibraryName="$(OutDir)\XSValueTest.tlb"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="2"
 				AdditionalIncludeDirectories="..\..\..\..\..\src"
-				PreprocessorDefinitions="NDEBUG,_CONSOLE,WIN32,_WINDOWS,PLATFORM_WIN32"
+				PreprocessorDefinitions="NDEBUG;_CONSOLE;WIN64;_WINDOWS"
 				StringPooling="true"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				PrecompiledHeaderFile="$(IntDir)\XSValueTest.pch"
 				AssemblerListingLocation="$(IntDir)\"
 				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\XSValueTest_vc90"
 				WarningLevel="3"
 				CompileAs="0"
 			/>
@@ -323,11 +332,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="xerces-c_2.lib"
-				OutputFile=".\..\..\..\..\..\Build\Win64\VC8\Release/XSValueTest.exe"
+				AdditionalOptions=""
+				AdditionalDependencies="xerces-c_3.lib"
+				OutputFile="$(OutDir)\XSValueTest.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\..\..\..\Build\Win64\VC8\Release"
-				ProgramDatabaseFile=".\..\..\..\..\..\Build\Win64\VC8\Release/XSValueTest.pdb"
+				AdditionalLibraryDirectories="$(OutDir)"
+				ProgramDatabaseFile="$(OutDir)\XSValueTest.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -357,7 +367,7 @@
 		</Configuration>
 		<Configuration
 			Name="Static Debug|Win32"
-			OutputDirectory="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\$(ConfigurationName)"
+			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC9\$(ConfigurationName)"
 			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
@@ -378,16 +388,19 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Static Debug/XSValueTest.tlb"
+				TypeLibraryName="$(OutDir)\XSValueTest.tlb"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\..\..\..\src"
-				PreprocessorDefinitions="_DEBUG,_CONSOLE,WIN32,_WINDOWS,PLATFORM_WIN32,XML_LIBRARY"
+				PreprocessorDefinitions="_DEBUG;_CONSOLE;WIN32;_WINDOWS;XERCES_STATIC_LIBRARY"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
+				RuntimeLibrary="1"
 				PrecompiledHeaderFile="$(IntDir)\XSValueTest.pch"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\XSValueTest_vc90"
 				WarningLevel="3"
 				DebugInformationFormat="4"
 				CompileAs="0"
@@ -405,13 +418,13 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="xerces-c_static_2D.lib"
-				OutputFile="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Static Debug/XSValueTest.exe"
-				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Static Debug"
+				AdditionalOptions=""
+				AdditionalDependencies="xerces-c_static_3D.lib"
+				OutputFile="$(OutDir)\XSValueTest.exe"
+				LinkIncremental="2"
+				AdditionalLibraryDirectories="$(OutDir)"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Static Debug/XSValueTest.pdb"
+				ProgramDatabaseFile="$(OutDir)\XSValueTest.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -440,8 +453,8 @@
 		</Configuration>
 		<Configuration
 			Name="Static Debug|x64"
-			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory=".\..\..\..\..\..\Build\Win64\VC9\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -462,19 +475,19 @@
 			<Tool
 				Name="VCMIDLTool"
 				TargetEnvironment="3"
-				TypeLibraryName=".\..\..\..\..\..\Build\Win64\VC8\Static Debug/XSValueTest.tlb"
+				TypeLibraryName="$(OutDir)\XSValueTest.tlb"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\..\..\..\src"
-				PreprocessorDefinitions="_DEBUG,_CONSOLE,WIN32,_WINDOWS,PLATFORM_WIN32,XML_LIBRARY"
+				PreprocessorDefinitions="_DEBUG;_CONSOLE;WIN64;_WINDOWS;XERCES_STATIC_LIBRARY"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile="$(IntDir)\XSValueTest.pch"
 				AssemblerListingLocation="$(IntDir)\"
 				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\XSValueTest_vc90"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 				CompileAs="0"
@@ -492,12 +505,13 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="xerces-c_static_2D.lib"
-				OutputFile=".\..\..\..\..\..\Build\Win64\VC8\Static Debug/XSValueTest.exe"
-				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\..\..\..\Build\Win64\VC8\Static Debug"
+				AdditionalOptions=""
+				AdditionalDependencies="xerces-c_static_3D.lib"
+				OutputFile="$(OutDir)\XSValueTest.exe"
+				LinkIncremental="2"
+				AdditionalLibraryDirectories="$(OutDir)"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\..\..\..\..\..\Build\Win64\VC8\Static Debug/XSValueTest.pdb"
+				ProgramDatabaseFile="$(OutDir)\XSValueTest.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -527,7 +541,7 @@
 		</Configuration>
 		<Configuration
 			Name="Static Release|Win32"
-			OutputDirectory="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\$(ConfigurationName)"
+			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC9\$(ConfigurationName)"
 			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
@@ -548,17 +562,20 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Static Release/XSValueTest.tlb"
+				TypeLibraryName="$(OutDir)\XSValueTest.tlb"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="2"
 				AdditionalIncludeDirectories="..\..\..\..\..\src"
-				PreprocessorDefinitions="NDEBUG,_CONSOLE,WIN32,_WINDOWS,PLATFORM_WIN32,XML_LIBRARY"
+				PreprocessorDefinitions="NDEBUG;_CONSOLE;WIN32;_WINDOWS;XERCES_STATIC_LIBRARY"
 				StringPooling="true"
-				RuntimeLibrary="2"
+				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				PrecompiledHeaderFile="$(IntDir)\XSValueTest.pch"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\XSValueTest_vc90"
 				WarningLevel="3"
 				CompileAs="0"
 			/>
@@ -575,12 +592,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="xerces-c_static_2.lib"
-				OutputFile="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Static Release/XSValueTest.exe"
+				AdditionalOptions=""
+				AdditionalDependencies="xerces-c_static_3.lib"
+				OutputFile="$(OutDir)\XSValueTest.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Static Release"
-				ProgramDatabaseFile="..\..\..\..\..\..\..\build\win32.vs90\xerces-c\Static Release/XSValueTest.pdb"
+				AdditionalLibraryDirectories="$(OutDir)"
+				ProgramDatabaseFile="$(OutDir)\XSValueTest.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -609,8 +626,8 @@
 		</Configuration>
 		<Configuration
 			Name="Static Release|x64"
-			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory=".\..\..\..\..\..\Build\Win64\VC9\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -631,20 +648,20 @@
 			<Tool
 				Name="VCMIDLTool"
 				TargetEnvironment="3"
-				TypeLibraryName=".\..\..\..\..\..\Build\Win64\VC8\Static Release/XSValueTest.tlb"
+				TypeLibraryName="$(OutDir)\XSValueTest.tlb"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="2"
 				AdditionalIncludeDirectories="..\..\..\..\..\src"
-				PreprocessorDefinitions="NDEBUG,_CONSOLE,WIN32,_WINDOWS,PLATFORM_WIN32,XML_LIBRARY"
+				PreprocessorDefinitions="NDEBUG;_CONSOLE;WIN64;_WINDOWS;XERCES_STATIC_LIBRARY"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				PrecompiledHeaderFile="$(IntDir)\XSValueTest.pch"
 				AssemblerListingLocation="$(IntDir)\"
 				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\XSValueTest_vc90"
 				WarningLevel="3"
 				CompileAs="0"
 			/>
@@ -661,11 +678,360 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="xerces-c_static_2.lib"
-				OutputFile=".\..\..\..\..\..\Build\Win64\VC8\Static Release/XSValueTest.exe"
+				AdditionalOptions=""
+				AdditionalDependencies="xerces-c_static_3.lib"
+				OutputFile="$(OutDir)\XSValueTest.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\..\..\..\Build\Win64\VC8\Static Release"
-				ProgramDatabaseFile=".\..\..\..\..\..\Build\Win64\VC8\Static Release/XSValueTest.pdb"
+				AdditionalLibraryDirectories="$(OutDir)"
+				ProgramDatabaseFile="$(OutDir)\XSValueTest.pdb"
+				SubSystem="1"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="17"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="ICU Debug|Win32"
+			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC9\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TypeLibraryName="$(OutDir)\XSValueTest.tlb"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="..\..\..\..\..\src"
+				PreprocessorDefinitions="_DEBUG;_CONSOLE;WIN32;_WINDOWS"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
+				TreatWChar_tAsBuiltInType="true"
+				PrecompiledHeaderFile="$(IntDir)\XSValueTest.pch"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\XSValueTest_vc90"
+				WarningLevel="3"
+				DebugInformationFormat="4"
+				CompileAs="0"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalOptions=""
+				AdditionalDependencies="xerces-c_3D.lib"
+				OutputFile="$(OutDir)\XSValueTest.exe"
+				LinkIncremental="2"
+				AdditionalLibraryDirectories="$(OutDir)"
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile="$(OutDir)\XSValueTest.pdb"
+				SubSystem="1"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="ICU Debug|x64"
+			OutputDirectory=".\..\..\..\..\..\Build\Win64\VC9\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TargetEnvironment="3"
+				TypeLibraryName="$(OutDir)\XSValueTest.tlb"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="..\..\..\..\..\src"
+				PreprocessorDefinitions="_DEBUG;_CONSOLE;WIN64;_WINDOWS"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
+				TreatWChar_tAsBuiltInType="true"
+				PrecompiledHeaderFile="$(IntDir)\XSValueTest.pch"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\XSValueTest_vc90"
+				WarningLevel="3"
+				DebugInformationFormat="3"
+				CompileAs="0"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalOptions=""
+				AdditionalDependencies="xerces-c_3D.lib"
+				OutputFile="$(OutDir)\XSValueTest.exe"
+				LinkIncremental="2"
+				AdditionalLibraryDirectories="$(OutDir)"
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile="$(OutDir)\XSValueTest.pdb"
+				SubSystem="1"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="17"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="ICU Release|Win32"
+			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC9\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TypeLibraryName="$(OutDir)\XSValueTest.tlb"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				InlineFunctionExpansion="2"
+				AdditionalIncludeDirectories="..\..\..\..\..\src"
+				PreprocessorDefinitions="NDEBUG;_CONSOLE;WIN32;_WINDOWS"
+				StringPooling="true"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
+				PrecompiledHeaderFile="$(IntDir)\XSValueTest.pch"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\XSValueTest_vc90"
+				WarningLevel="3"
+				CompileAs="0"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1033"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalOptions=""
+				AdditionalDependencies="xerces-c_3.lib"
+				OutputFile="$(OutDir)\XSValueTest.exe"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories="$(OutDir)"
+				ProgramDatabaseFile="$(OutDir)\XSValueTest.pdb"
+				SubSystem="1"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="ICU Release|x64"
+			OutputDirectory=".\..\..\..\..\..\Build\Win64\VC9\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TargetEnvironment="3"
+				TypeLibraryName="$(OutDir)\XSValueTest.tlb"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				InlineFunctionExpansion="2"
+				AdditionalIncludeDirectories="..\..\..\..\..\src"
+				PreprocessorDefinitions="NDEBUG;_CONSOLE;WIN64;_WINDOWS"
+				StringPooling="true"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
+				PrecompiledHeaderFile="$(IntDir)\XSValueTest.pch"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\XSValueTest_vc90"
+				WarningLevel="3"
+				CompileAs="0"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1033"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalOptions=""
+				AdditionalDependencies="xerces-c_3.lib"
+				OutputFile="$(OutDir)\XSValueTest.exe"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories="$(OutDir)"
+				ProgramDatabaseFile="$(OutDir)\XSValueTest.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -702,7 +1068,7 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath="..\..\..\..\..\tests\XSValueTest\XSValueTest.cpp"
+				RelativePath="..\..\..\..\..\tests\src\XSValueTest\XSValueTest.cpp"
 				>
 			</File>
 		</Filter>
@@ -711,7 +1077,7 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
-				RelativePath="..\..\..\..\..\tests\XSValueTest\XSValueTest.hpp"
+				RelativePath="..\..\..\..\..\tests\src\XSValueTest\XSValueTest.hpp"
 				>
 			</File>
 		</Filter>

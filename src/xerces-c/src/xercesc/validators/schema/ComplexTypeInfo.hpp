@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: ComplexTypeInfo.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: ComplexTypeInfo.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#if !defined(COMPLEXTYPEINFO_HPP)
-#define COMPLEXTYPEINFO_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_COMPLEXTYPEINFO_HPP)
+#define XERCESC_INCLUDE_GUARD_COMPLEXTYPEINFO_HPP
 
 
 /**
@@ -72,10 +72,10 @@ public:
     int                      getDerivedBy() const;
     int                      getBlockSet() const;
     int                      getFinalSet() const;
-    int                      getScopeDefined() const;
+    unsigned int             getScopeDefined() const;
     unsigned int             getElementId() const;
     int                      getContentType() const;
-    unsigned int             elementCount() const;
+    XMLSize_t                elementCount() const;
     XMLCh*                   getTypeName() const;
     DatatypeValidator*       getBaseDatatypeValidator() const;
     DatatypeValidator*       getDatatypeValidator() const;
@@ -88,8 +88,8 @@ public:
     SchemaAttDef*            getAttDef(const XMLCh* const baseName,
                                        const int uriId);
     XMLAttDefList&           getAttDefList() const;
-    const SchemaElementDecl* elementAt(const unsigned int index) const;
-    SchemaElementDecl*       elementAt(const unsigned int index);
+    const SchemaElementDecl* elementAt(const XMLSize_t index) const;
+    SchemaElementDecl*       elementAt(const XMLSize_t index);
     XMLContentModel*         getContentModel(const bool checkUPA = false);
     const XMLCh*             getFormattedContentModel ()   const;
     XSDLocator*              getLocator() const;
@@ -111,7 +111,7 @@ public:
     void setDerivedBy(const int derivedBy);
     void setBlockSet(const int blockSet);
     void setFinalSet(const int finalSet);
-    void setScopeDefined(const int scopeDefined);
+    void setScopeDefined(const unsigned int scopeDefined);
     void setElementId(const unsigned int elemId);
     void setTypeName(const XMLCh* const typeName);
     void setContentType(const int contentType);
@@ -122,10 +122,6 @@ public:
     void setAttWildCard(SchemaAttDef* const toAdopt);
     void addAttDef(SchemaAttDef* const toAdd);
     void addElement(SchemaElementDecl* const toAdd);
-    /**     
-     * @deprecated; not thread-safe (will not work with shared grammars)
-     */
-    void setContentModel(XMLContentModel* const newModelToAdopt);
     void setLocator(XSDLocator* const aLocator);
 
     /**
@@ -138,16 +134,6 @@ public:
     // -----------------------------------------------------------------------
     bool hasAttDefs() const;
     bool contains(const XMLCh* const attName);
-    XMLAttDef* findAttr
-    (
-        const   XMLCh* const    qName
-        , const unsigned int    uriId
-        , const XMLCh* const    baseName
-        , const XMLCh* const    prefix
-        , const XMLElementDecl::LookupOpts      options
-        ,       bool&           wasAdded
-    )   const;
-    bool resetDefs();
     void checkUniqueParticleAttribution
     (
         SchemaGrammar*    const pGrammar
@@ -159,7 +145,7 @@ public:
     /**
       * Return a singleton that represents 'anyType'
       *
-      * @param emptyNSId the uri id of the empty namespace 
+      * @param emptyNSId the uri id of the empty namespace
       */
     static ComplexTypeInfo* getAnyType(unsigned int emptyNSId);
 
@@ -175,7 +161,7 @@ public:
 
 private:
     // -----------------------------------------------------------------------
-    //  Unimplemented contstructors and operators
+    //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
     ComplexTypeInfo(const ComplexTypeInfo& elemInfo);
     ComplexTypeInfo& operator= (const ComplexTypeInfo& other);
@@ -184,12 +170,11 @@ private:
     //  Private helper methods
     // -----------------------------------------------------------------------
     void faultInAttDefList() const;
-    XMLContentModel* createChildModel(ContentSpecNode* specNode, const bool isMixed);
-    XMLContentModel* makeContentModel(const bool checkUPA = false);
-    XMLContentModel* buildContentModel(ContentSpecNode* const specNode);
+    bool useRepeatingLeafNodes(ContentSpecNode* particle);
+    XMLContentModel* makeContentModel(bool checkUPA = false);
     XMLCh* formatContentModel () const ;
-    ContentSpecNode* expandContentModel(ContentSpecNode* const curNode, const int minOccurs, const int maxOccurs);
-    ContentSpecNode* convertContentSpecTree(ContentSpecNode* const curNode, const bool checkUPA = false);
+    ContentSpecNode* expandContentModel(ContentSpecNode* const curNode, int minOccurs, int maxOccurs, bool bAllowCompactSyntax);
+    ContentSpecNode* convertContentSpecTree(ContentSpecNode* const curNode, bool checkUPA, bool bAllowCompactSyntax);
     void resizeContentSpecOrgURI();
 
     // -----------------------------------------------------------------------
@@ -203,7 +188,7 @@ private:
     int                                fDerivedBy;
     int                                fBlockSet;
     int                                fFinalSet;
-    int                                fScopeDefined;
+    unsigned int                       fScopeDefined;
     int                                fContentType;
 
     unsigned int                       fElementId;
@@ -219,7 +204,7 @@ private:
     ContentSpecNode*                   fContentSpec;
     SchemaAttDef*                      fAttWildCard;
     SchemaAttDefList*                  fAttList;
-    RefVectorOf<SchemaElementDecl>*    fElements;    
+    RefVectorOf<SchemaElementDecl>*    fElements;
     RefHash2KeysTableOf<SchemaAttDef>* fAttDefs;
     XMLContentModel*                   fContentModel;
     XMLCh*                             fFormattedModel;
@@ -228,6 +213,8 @@ private:
     MemoryManager*                     fMemoryManager;
 
     static ComplexTypeInfo*            fAnyType;
+
+    friend class XMLInitializer;
 };
 
 // ---------------------------------------------------------------------------
@@ -268,7 +255,7 @@ inline int ComplexTypeInfo::getFinalSet() const {
     return fFinalSet;
 }
 
-inline int ComplexTypeInfo::getScopeDefined() const {
+inline unsigned int ComplexTypeInfo::getScopeDefined() const {
 
     return fScopeDefined;
 }
@@ -283,7 +270,7 @@ inline int ComplexTypeInfo::getContentType() const {
     return fContentType;
 }
 
-inline unsigned int ComplexTypeInfo::elementCount() const {
+inline XMLSize_t ComplexTypeInfo::elementCount() const {
 
     if (fElements) {
         return fElements->size();
@@ -339,7 +326,7 @@ inline SchemaAttDef* ComplexTypeInfo::getAttDef(const XMLCh* const baseName,
 }
 
 inline SchemaElementDecl*
-ComplexTypeInfo::elementAt(const unsigned int index) {
+ComplexTypeInfo::elementAt(const XMLSize_t index) {
 
     if (!fElements) {
         return 0; // REVISIT - need to throw an exception
@@ -349,7 +336,7 @@ ComplexTypeInfo::elementAt(const unsigned int index) {
 }
 
 inline const SchemaElementDecl*
-ComplexTypeInfo::elementAt(const unsigned int index) const {
+ComplexTypeInfo::elementAt(const XMLSize_t index) const {
 
     if (!fElements) {
         return 0; // REVISIT - need to throw an exception
@@ -423,7 +410,7 @@ inline void ComplexTypeInfo::setFinalSet(const int finalSet) {
     fFinalSet = finalSet;
 }
 
-inline void ComplexTypeInfo::setScopeDefined(const int scopeDefined) {
+inline void ComplexTypeInfo::setScopeDefined(const unsigned int scopeDefined) {
 
     fScopeDefined = scopeDefined;
 }
@@ -443,25 +430,25 @@ inline void ComplexTypeInfo::setTypeName(const XMLCh* const typeName) {
 
     fMemoryManager->deallocate(fTypeName);//delete [] fTypeName;
     fMemoryManager->deallocate(fTypeLocalName);//delete [] fTypeLocalName;
-    fMemoryManager->deallocate(fTypeUri);//delete [] fTypeUri;    
+    fMemoryManager->deallocate(fTypeUri);//delete [] fTypeUri;
 
     if (typeName)
     {
         fTypeName = XMLString::replicate(typeName, fMemoryManager);
 
         int index = XMLString::indexOf(fTypeName, chComma);
-        int length = XMLString::stringLen(fTypeName);
+        XMLSize_t length = XMLString::stringLen(fTypeName);
         fTypeLocalName = (XMLCh*) fMemoryManager->allocate
         (
             (length - index + 1) * sizeof(XMLCh)
         ); //new XMLCh[length - index + 1];
         XMLString::subString(fTypeLocalName, fTypeName, index + 1, length, fMemoryManager);
-        
+
         fTypeUri = (XMLCh*) fMemoryManager->allocate
         (
             (index + 1) * sizeof(XMLCh)
         ); //new XMLCh[index + 1];
-        XMLString::subString(fTypeUri, fTypeName, 0, index, fMemoryManager);        
+        XMLString::subString(fTypeUri, fTypeName, 0, index, fMemoryManager);
     }
     else
     {
@@ -507,22 +494,6 @@ inline void ComplexTypeInfo::setAttWildCard(SchemaAttDef* const toAdopt) {
 
     fAttWildCard = toAdopt;
 }
-
-inline void
-ComplexTypeInfo::setContentModel(XMLContentModel* const newModelToAdopt)
-{
-    delete fContentModel;
-    fContentModel = newModelToAdopt;
-
-    // reset formattedModel
-    if (fFormattedModel)
-    {
-        fMemoryManager->deallocate(fFormattedModel);
-        fFormattedModel = 0;
-    }
-}
-
-
 
 inline void ComplexTypeInfo::setAnonymous() {
     fAnonymous = true;

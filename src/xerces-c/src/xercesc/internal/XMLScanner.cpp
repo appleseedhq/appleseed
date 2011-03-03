@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XMLScanner.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLScanner.cpp 882548 2009-11-20 13:44:14Z borisk $
  */
 
 
@@ -30,7 +30,6 @@
 #include <xercesc/util/RuntimeException.hpp>
 #include <xercesc/util/UnexpectedEOFException.hpp>
 #include <xercesc/util/XMLMsgLoader.hpp>
-#include <xercesc/util/XMLRegisterCleanup.hpp>
 #include <xercesc/util/XMLInitializer.hpp>
 #include <xercesc/framework/LocalFileInputSource.hpp>
 #include <xercesc/framework/URLInputSource.hpp>
@@ -49,93 +48,31 @@ XERCES_CPP_NAMESPACE_BEGIN
 // ---------------------------------------------------------------------------
 //  Local static data
 // ---------------------------------------------------------------------------
-static XMLUInt32       gScannerId;
-static bool            sRegistered = false;
-
+static XMLUInt32       gScannerId = 0;
 static XMLMutex*       sScannerMutex = 0;
-static XMLRegisterCleanup scannerMutexCleanup;
-
 static XMLMsgLoader*   gMsgLoader = 0;
-static XMLRegisterCleanup cleanupMsgLoader;
 
-
-// ---------------------------------------------------------------------------
-//  Local, static functions
-// ---------------------------------------------------------------------------
-
-//  Cleanup for the message loader
-void XMLScanner::reinitMsgLoader()
-{
-	delete gMsgLoader;
-	gMsgLoader = 0;
-}
-
-//  Cleanup for the scanner mutex
-void XMLScanner::reinitScannerMutex()
-{
-    delete sScannerMutex;
-    sScannerMutex = 0;
-    sRegistered = false;
-}
-
-//
-//  We need to fault in this mutex. But, since its used for synchronization
-//  itself, we have to do this the low level way using a compare and swap.
-//
-static XMLMutex& gScannerMutex()
-{
-    if (!sRegistered)
-    {
-        XMLMutexLock lockInit(XMLPlatformUtils::fgAtomicMutex);
-
-        if (!sRegistered)
-        {
-            sScannerMutex = new XMLMutex(XMLPlatformUtils::fgMemoryManager);
-            scannerMutexCleanup.registerCleanup(XMLScanner::reinitScannerMutex);
-            sRegistered = true;
-        }
-    }
-    return *sScannerMutex;
-}
-
-static XMLMsgLoader& gScannerMsgLoader()
-{
-    if (!gMsgLoader)
-    {
-        XMLMutexLock lockInit(&gScannerMutex());
-
-        // If we haven't loaded our message yet, then do that
-        if (!gMsgLoader)
-        {
-            gMsgLoader = XMLPlatformUtils::loadMsgSet(XMLUni::fgXMLErrDomain);
-            if (!gMsgLoader)
-                XMLPlatformUtils::panic(PanicHandler::Panic_CantLoadMsgDomain);
-
-            // Register this object to be cleaned up at termination
-            cleanupMsgLoader.registerCleanup(XMLScanner::reinitMsgLoader);
-        }
-    }
-
-    return *gMsgLoader;
-}
-
-void XMLInitializer::initializeScannerMsgLoader()
+void XMLInitializer::initializeXMLScanner()
 {
     gMsgLoader = XMLPlatformUtils::loadMsgSet(XMLUni::fgXMLErrDomain);
 
-    // Register this object to be cleaned up at termination
-    if (gMsgLoader) {
-        cleanupMsgLoader.registerCleanup(XMLScanner::reinitMsgLoader);
-    }
+    if (!gMsgLoader)
+      XMLPlatformUtils::panic(PanicHandler::Panic_CantLoadMsgDomain);
 
     sScannerMutex = new XMLMutex(XMLPlatformUtils::fgMemoryManager);
-    if (sScannerMutex) {
-        scannerMutexCleanup.registerCleanup(XMLScanner::reinitScannerMutex);
-        sRegistered = true;
-    }
 }
 
+void XMLInitializer::terminateXMLScanner()
+{
+    delete gMsgLoader;
+    gMsgLoader = 0;
 
+    delete sScannerMutex;
+    sScannerMutex = 0;
+}
+
+//
+//
 typedef JanitorMemFunCall<XMLScanner>   CleanupType;
 typedef JanitorMemFunCall<ReaderMgr>    ReaderMgrResetType;
 
@@ -147,6 +84,7 @@ XMLScanner::XMLScanner(XMLValidator* const valToAdopt,
                        GrammarResolver* const grammarResolver,
                        MemoryManager* const manager)
     : fBufferSize(1024 * 1024)
+    , fLowWaterMark (100)
     , fStandardUriConformant(false)
     , fCalculateSrcOfs(false)
     , fDoNamespaces(false)
@@ -163,6 +101,7 @@ XMLScanner::XMLScanner(XMLValidator* const valToAdopt,
     , fToCacheGrammar(false)
     , fUseCachedGrammar(false)
     , fLoadExternalDTD(true)
+    , fLoadSchema(true)
     , fNormalizeData(true)
     , fGenerateSyntheticAnnotations(false)
     , fValidateAnnotations(false)
@@ -170,6 +109,7 @@ XMLScanner::XMLScanner(XMLValidator* const valToAdopt,
     , fIgnoreAnnotations(false)
     , fDisableDefaultEntityResolution(false)
     , fSkipDTDValidation(false)
+    , fHandleMultipleImports(false)
     , fErrorCount(0)
     , fEntityExpansionLimit(0)
     , fEntityExpansionCount(0)
@@ -204,7 +144,7 @@ XMLScanner::XMLScanner(XMLValidator* const valToAdopt,
     , fURIStringPool(0)
     , fRootElemName(0)
     , fExternalSchemaLocation(0)
-    , fExternalNoNamespaceSchemaLocation(0)    
+    , fExternalNoNamespaceSchemaLocation(0)
     , fSecurityManager(0)
     , fXMLVersion(XMLReader::XMLV1_0)
     , fMemoryManager(manager)
@@ -216,7 +156,7 @@ XMLScanner::XMLScanner(XMLValidator* const valToAdopt,
     , fPrefixBuf(1023, manager)
     , fURIBuf(1023, manager)
     , fWSNormalizeBuf(1023, manager)
-    , fElemStack(manager)   
+    , fElemStack(manager)
 {
     CleanupType cleanup(this, &XMLScanner::cleanUp);
 
@@ -245,6 +185,7 @@ XMLScanner::XMLScanner( XMLDocumentHandler* const  docHandler
                           , MemoryManager* const     manager)
 
     : fBufferSize(1024 * 1024)
+    , fLowWaterMark (100)
     , fStandardUriConformant(false)
     , fCalculateSrcOfs(false)
     , fDoNamespaces(false)
@@ -261,6 +202,7 @@ XMLScanner::XMLScanner( XMLDocumentHandler* const  docHandler
     , fToCacheGrammar(false)
     , fUseCachedGrammar(false)
 	, fLoadExternalDTD(true)
+    , fLoadSchema(true)
     , fNormalizeData(true)
     , fGenerateSyntheticAnnotations(false)
     , fValidateAnnotations(false)
@@ -268,6 +210,7 @@ XMLScanner::XMLScanner( XMLDocumentHandler* const  docHandler
     , fIgnoreAnnotations(false)
     , fDisableDefaultEntityResolution(false)
     , fSkipDTDValidation(false)
+    , fHandleMultipleImports(false)
     , fErrorCount(0)
     , fEntityExpansionLimit(0)
     , fEntityExpansionCount(0)
@@ -302,7 +245,7 @@ XMLScanner::XMLScanner( XMLDocumentHandler* const  docHandler
     , fURIStringPool(0)
     , fRootElemName(0)
     , fExternalSchemaLocation(0)
-    , fExternalNoNamespaceSchemaLocation(0)    
+    , fExternalNoNamespaceSchemaLocation(0)
     , fSecurityManager(0)
     , fXMLVersion(XMLReader::XMLV1_0)
     , fMemoryManager(manager)
@@ -339,6 +282,9 @@ XMLScanner::~XMLScanner()
     cleanUp();
 }
 
+void XMLScanner::resetCachedGrammar ()
+{
+}
 
 void XMLScanner::setValidator(XMLValidator* const valToAdopt)
 {
@@ -380,7 +326,6 @@ void XMLScanner::scanDocument(  const   XMLCh* const    systemId)
                     (
                         XMLErrs::XMLException_Fatal
                         , e.getCode()
-                        , e.getType()
                         , e.getMessage()
                     );
                     return;
@@ -395,7 +340,6 @@ void XMLScanner::scanDocument(  const   XMLCh* const    systemId)
                     (
                         XMLErrs::XMLException_Fatal
                         , e.getCode()
-                        , e.getType()
                         , e.getMessage()
                     );
                     return;
@@ -417,7 +361,6 @@ void XMLScanner::scanDocument(  const   XMLCh* const    systemId)
                 (
                     XMLErrs::XMLException_Fatal
                     , e.getCode()
-                    , e.getType()
                     , e.getMessage()
                 );
                 return;
@@ -434,7 +377,6 @@ void XMLScanner::scanDocument(  const   XMLCh* const    systemId)
             (
                 XMLErrs::XMLException_Warning
                 , excToCatch.getCode()
-                , excToCatch.getType()
                 , excToCatch.getMessage()
             );
         else if (excToCatch.getErrorType() >= XMLErrorReporter::ErrType_Fatal)
@@ -442,7 +384,6 @@ void XMLScanner::scanDocument(  const   XMLCh* const    systemId)
             (
                 XMLErrs::XMLException_Fatal
                 , excToCatch.getCode()
-                , excToCatch.getType()
                 , excToCatch.getMessage()
             );
         else
@@ -450,7 +391,6 @@ void XMLScanner::scanDocument(  const   XMLCh* const    systemId)
             (
                 XMLErrs::XMLException_Error
                 , excToCatch.getCode()
-                , excToCatch.getType()
                 , excToCatch.getMessage()
             );
         return;
@@ -486,7 +426,7 @@ bool XMLScanner::scanFirst( const   XMLCh* const    systemId
         //  it has to be fully qualified. If not, then assume we are just
         //  mistaking a file for a URL.
         XMLURL tmpURL(fMemoryManager);
-        if (XMLURL::parse(systemId, tmpURL)) {        
+        if (XMLURL::parse(systemId, tmpURL)) {
             if (tmpURL.isRelative()) {
                 if (!fStandardUriConformant)
                     srcToUse = new (fMemoryManager) LocalFileInputSource(systemId, fMemoryManager);
@@ -499,7 +439,6 @@ bool XMLScanner::scanFirst( const   XMLCh* const    systemId
                     (
                         XMLErrs::XMLException_Fatal
                         , e.getCode()
-                        , e.getType()
                         , e.getMessage()
                     );
                     return false;
@@ -514,7 +453,6 @@ bool XMLScanner::scanFirst( const   XMLCh* const    systemId
                     (
                         XMLErrs::XMLException_Fatal
                         , e.getCode()
-                        , e.getType()
                         , e.getMessage()
                     );
                     return false;
@@ -535,7 +473,6 @@ bool XMLScanner::scanFirst( const   XMLCh* const    systemId
                 (
                     XMLErrs::XMLException_Fatal
                     , e.getCode()
-                    , e.getType()
                     , e.getMessage()
                 );
                 return false;
@@ -552,7 +489,6 @@ bool XMLScanner::scanFirst( const   XMLCh* const    systemId
             (
                 XMLErrs::XMLException_Warning
                 , excToCatch.getCode()
-                , excToCatch.getType()
                 , excToCatch.getMessage()
             );
         else if (excToCatch.getErrorType() >= XMLErrorReporter::ErrType_Fatal)
@@ -560,7 +496,6 @@ bool XMLScanner::scanFirst( const   XMLCh* const    systemId
             (
                 XMLErrs::XMLException_Fatal
                 , excToCatch.getCode()
-                , excToCatch.getType()
                 , excToCatch.getMessage()
             );
         else
@@ -568,7 +503,6 @@ bool XMLScanner::scanFirst( const   XMLCh* const    systemId
             (
                 XMLErrs::XMLException_Error
                 , excToCatch.getCode()
-                , excToCatch.getType()
                 , excToCatch.getMessage()
             );
         return false;
@@ -646,7 +580,6 @@ bool XMLScanner::scanFirst( const   InputSource&    src
                 (
                     XMLErrs::XMLException_Warning
                     , excToCatch.getCode()
-                    , excToCatch.getType()
                     , excToCatch.getMessage()
                 );
             else if (excToCatch.getErrorType() >= XMLErrorReporter::ErrType_Fatal)
@@ -654,7 +587,6 @@ bool XMLScanner::scanFirst( const   InputSource&    src
                 (
                     XMLErrs::XMLException_Fatal
                     , excToCatch.getCode()
-                    , excToCatch.getType()
                     , excToCatch.getMessage()
                 );
             else
@@ -662,7 +594,6 @@ bool XMLScanner::scanFirst( const   InputSource&    src
                 (
                     XMLErrs::XMLException_Error
                     , excToCatch.getCode()
-                    , excToCatch.getType()
                     , excToCatch.getMessage()
                 );
         }
@@ -733,6 +664,7 @@ void XMLScanner::setParseSettings(XMLScanner* const refScanner)
     cacheGrammarFromParse(refScanner->isCachingGrammarFromParse());
     useCachedGrammarInParse(refScanner->isUsingCachedGrammarInParse());
     setLoadExternalDTD(refScanner->getLoadExternalDTD());
+    setLoadSchema(refScanner->getLoadSchema());
     setNormalizeData(refScanner->getNormalizeData());
     setExternalSchemaLocation(refScanner->getExternalSchemaLocation());
     setExternalNoNamespaceSchemaLocation(refScanner->getExternalNoNamespaceSchemaLocation());
@@ -752,7 +684,7 @@ void XMLScanner::commonInit()
     //  We have to do a little init that involves statics, so we have to
     //  use the mutex to protect it.
     {
-        XMLMutexLock lockInit(&gScannerMutex());
+        XMLMutexLock lockInit(sScannerMutex);
 
         // And assign ourselves the next available scanner id
         fScannerId = ++gScannerId;
@@ -767,6 +699,7 @@ void XMLScanner::commonInit()
     //  semantics, i.e. all id refs must refer to elements that exist
     fValidationContext = new (fMemoryManager) ValidationContextImpl(fMemoryManager);
     fValidationContext->setElemStack(&fElemStack);
+    fValidationContext->setScanner(this);
 
     //  Create the GrammarResolver
     //fGrammarResolver = new GrammarResolver();
@@ -775,7 +708,7 @@ void XMLScanner::commonInit()
     fUIntPool = (unsigned int **)fMemoryManager->allocate(sizeof(unsigned int *) *fUIntPoolRowTotal);
     memset(fUIntPool, 0, sizeof(unsigned int *) * fUIntPoolRowTotal);
     fUIntPool[0] = (unsigned int *)fMemoryManager->allocate(sizeof(unsigned int) << 6);
-    memset(fUIntPool[0], 0, sizeof(unsigned int) << 6);    
+    memset(fUIntPool[0], 0, sizeof(unsigned int) << 6);
 
     // Register self as handler for XMLBufferFull events on the CDATA buffer
     fCDataBuf.setFullHandler(this, fBufferSize);
@@ -796,7 +729,7 @@ void XMLScanner::cleanUp()
     fMemoryManager->deallocate(fExternalNoNamespaceSchemaLocation);//delete [] fExternalNoNamespaceSchemaLocation;
     // delete fUIntPool
     if (fUIntPool)
-    {    
+    {
         for (unsigned int i=0; i<=fUIntPoolRow; i++)
         {
             fMemoryManager->deallocate(fUIntPool[i]);
@@ -836,10 +769,10 @@ void XMLScanner::emitError(const XMLErrs::Codes toEmit)
     if (fErrorReporter)
     {
         // Load the message into a local for display
-        const unsigned int msgSize = 1023;
+        const XMLSize_t msgSize = 1023;
         XMLCh errText[msgSize + 1];
 
-        if (!gScannerMsgLoader().loadMsg(toEmit, errText, msgSize))
+        if (!gMsgLoader->loadMsg(toEmit, errText, msgSize))
         {
                 // <TBD> Probably should load a default msg here
         }
@@ -883,10 +816,10 @@ void XMLScanner::emitError( const   XMLErrs::Codes    toEmit
     {
         //  Load the message into alocal and replace any tokens found in
         //  the text.
-        const unsigned int maxChars = 2047;
+        const XMLSize_t maxChars = 2047;
         XMLCh errText[maxChars + 1];
 
-        if (!gScannerMsgLoader().loadMsg(toEmit, errText, maxChars, text1, text2, text3, text4, fMemoryManager))
+        if (!gMsgLoader->loadMsg(toEmit, errText, maxChars, text1, text2, text3, text4, fMemoryManager))
         {
                 // <TBD> Should probably load a default message here
         }
@@ -930,10 +863,10 @@ void XMLScanner::emitError( const   XMLErrs::Codes    toEmit
     {
         //  Load the message into alocal and replace any tokens found in
         //  the text.
-        const unsigned int maxChars = 2047;
+        const XMLSize_t maxChars = 2047;
         XMLCh errText[maxChars + 1];
 
-        if (!gScannerMsgLoader().loadMsg(toEmit, errText, maxChars, text1, text2, text3, text4, fMemoryManager))
+        if (!gMsgLoader->loadMsg(toEmit, errText, maxChars, text1, text2, text3, text4, fMemoryManager))
         {
                 // <TBD> Should probably load a default message here
         }
@@ -978,10 +911,10 @@ void XMLScanner::emitError( const   XMLErrs::Codes      toEmit
     {
         //  Load the message into alocal and replace any tokens found in
         //  the text.
-        const unsigned int maxChars = 2047;
+        const XMLSize_t maxChars = 2047;
         XMLCh errText[maxChars + 1];
 
-        if (!gScannerMsgLoader().loadMsg(toEmit, errText, maxChars, text1, text2, text3, text4, fMemoryManager))
+        if (!gMsgLoader->loadMsg(toEmit, errText, maxChars, text1, text2, text3, text4, fMemoryManager))
         {
                 // <TBD> Should probably load a default message here
         }
@@ -1171,7 +1104,7 @@ void XMLScanner::scanPI()
     if (bbName.getLen() == 3 &&
         (((namePtr[0] == chLatin_x) || (namePtr[0] == chLatin_X)) &&
          ((namePtr[1] == chLatin_m) || (namePtr[1] == chLatin_M)) &&
-         ((namePtr[2] == chLatin_l) || (namePtr[2] == chLatin_L))))   
+         ((namePtr[2] == chLatin_l) || (namePtr[2] == chLatin_L))))
         emitError(XMLErrs::NoPIStartsWithXML);
 
     // If namespaces are enabled, then no colons allowed
@@ -1342,7 +1275,7 @@ void XMLScanner::scanProlog()
 
                     // if reusing grammar, this has been validated already in first scan
                     // skip for performance
-                    if (fValidate && !fGrammar->getValidated()) {
+                    if (fValidate && fGrammar && !fGrammar->getValidated()) {
                         //  validate the DTD scan so far
                         fValidator->preContentValidation(fUseCachedGrammar, true);
                     }
@@ -1451,14 +1384,15 @@ void XMLScanner::scanXMLDecl(const DeclTypes type)
     while (true)
     {
         // Skip any spaces
-        const unsigned int spaceCount = fReaderMgr.skipPastSpaces(true);
+        bool skippedSomething;
+        fReaderMgr.skipPastSpaces(skippedSomething, true);
 
         // If we are looking at a question mark, then break out
         if (fReaderMgr.lookingAtChar(chQuestion))
             break;
 
         // If this is not the first string, then we require the spaces
-        if (!spaceCount && curCount)
+        if (!skippedSomething && curCount)
             emitError(XMLErrs::ExpectedWhitespace);
 
         //  Get characters up to the next whitespace or equal's sign.
@@ -1509,13 +1443,13 @@ void XMLScanner::scanXMLDecl(const DeclTypes type)
                 }
                 else {
             	    if (fXMLVersion != XMLReader::XMLV1_1)
-            	        emitError(XMLErrs::UnsupportedXMLVersion, rawValue);                
+            	        emitError(XMLErrs::UnsupportedXMLVersion, rawValue);
             	}
             }
             else if (XMLString::equals(rawValue, XMLUni::fgVersion1_0)) {
                 if (type == Decl_XML) {
                 	fXMLVersion = XMLReader::XMLV1_0;
-                    fReaderMgr.setXMLVersion(XMLReader::XMLV1_0);                    
+                    fReaderMgr.setXMLVersion(XMLReader::XMLV1_0);
                 }
             }
             else
@@ -1540,11 +1474,11 @@ void XMLScanner::scanXMLDecl(const DeclTypes type)
                 if (buffers[curString]->getLen() == 3 &&
                     (((rawValue[0] == chLatin_y) || (rawValue[0] == chLatin_Y)) &&
                      ((rawValue[1] == chLatin_e) || (rawValue[1] == chLatin_E)) &&
-                     ((rawValue[2] == chLatin_s) || (rawValue[2] == chLatin_S))))   
-                    fStandalone = true;                
+                     ((rawValue[2] == chLatin_s) || (rawValue[2] == chLatin_S))))
+                    fStandalone = true;
                 else if (buffers[curString]->getLen() == 2 &&
                     (((rawValue[0] == chLatin_n) || (rawValue[0] == chLatin_N)) &&
-                     ((rawValue[1] == chLatin_o) || (rawValue[1] == chLatin_O))))   
+                     ((rawValue[1] == chLatin_o) || (rawValue[1] == chLatin_O))))
                     fStandalone = false;
             }
         }
@@ -1748,7 +1682,7 @@ Grammar* XMLScanner::loadGrammar(const   XMLCh* const systemId
             //  mistaking a file for a URL.
             XMLURL tmpURL(fMemoryManager);
 
-            if (XMLURL::parse(systemId, tmpURL)) {            
+            if (XMLURL::parse(systemId, tmpURL)) {
 
                 if (tmpURL.isRelative())
                 {
@@ -1763,7 +1697,6 @@ Grammar* XMLScanner::loadGrammar(const   XMLCh* const systemId
                         (
                             XMLErrs::XMLException_Fatal
                             , e.getCode()
-                            , e.getType()
                             , e.getMessage()
                         );
                         return 0;
@@ -1778,7 +1711,6 @@ Grammar* XMLScanner::loadGrammar(const   XMLCh* const systemId
                         (
                             XMLErrs::XMLException_Fatal
                             , e.getCode()
-                            , e.getType()
                             , e.getMessage()
                         );
                         return 0;
@@ -1786,7 +1718,7 @@ Grammar* XMLScanner::loadGrammar(const   XMLCh* const systemId
                     srcToUse = new (fMemoryManager) URLInputSource(tmpURL, fMemoryManager);
                 }
             }
-            else         
+            else
             {
                 if (!fStandardUriConformant)
                     srcToUse = new (fMemoryManager) LocalFileInputSource(systemId, fMemoryManager);
@@ -1800,7 +1732,6 @@ Grammar* XMLScanner::loadGrammar(const   XMLCh* const systemId
                     (
                         XMLErrs::XMLException_Fatal
                         , e.getCode()
-                        , e.getType()
                         , e.getMessage()
                     );
                     return 0;
@@ -1817,7 +1748,6 @@ Grammar* XMLScanner::loadGrammar(const   XMLCh* const systemId
                 (
                     XMLErrs::XMLException_Warning
                     , excToCatch.getCode()
-                    , excToCatch.getType()
                     , excToCatch.getMessage()
                 );
             else if (excToCatch.getErrorType() >= XMLErrorReporter::ErrType_Fatal)
@@ -1825,7 +1755,6 @@ Grammar* XMLScanner::loadGrammar(const   XMLCh* const systemId
                 (
                     XMLErrs::XMLException_Fatal
                     , excToCatch.getCode()
-                    , excToCatch.getType()
                     , excToCatch.getMessage()
                 );
             else
@@ -1833,7 +1762,6 @@ Grammar* XMLScanner::loadGrammar(const   XMLCh* const systemId
                 (
                     XMLErrs::XMLException_Error
                     , excToCatch.getCode()
-                    , excToCatch.getType()
                     , excToCatch.getMessage()
                 );
                 return 0;
@@ -1896,7 +1824,7 @@ void XMLScanner::checkInternalDTD(bool hasExtSubset
             Janitor<InputSource> janSysIdSrc(sysIdSrc);
             Grammar* grammar = fGrammarResolver->getGrammar(sysIdSrc->getSystemId());
 
-            if (grammar && grammar->getGrammarType() == Grammar::DTDGrammarType) 
+            if (grammar && grammar->getGrammarType() == Grammar::DTDGrammarType)
             {
                 ThrowXMLwithMemMgr(RuntimeException, XMLExcepts::Val_CantHaveIntSS, fMemoryManager);
             }
@@ -1939,16 +1867,17 @@ bool XMLScanner::isLegalToken(const XMLPScanToken& toCheck)
 //  in the input stream. It will return an enumerated value that indicates
 //  what it believes the next XML level token must be. It will eat as many
 //  chars are required to figure out what is next.
-XMLScanner::XMLTokens XMLScanner::senseNextToken(unsigned int& orgReader)
+XMLScanner::XMLTokens XMLScanner::senseNextToken(XMLSize_t& orgReader)
 {
     //  Get the next character and use it to guesstimate what the next token
     //  is going to be. We turn on end of entity exceptions when we do this
     //  in order to catch the scenario where the current entity ended at
     //  the > of some markup.
-    XMLCh nextCh;
+    XMLCh nextCh=0;
 
+    XMLReader* curReader=fReaderMgr.getCurrentReader();
     // avoid setting up the ThrowEOEJanitor if we know that we have data in the current reader
-    if(fReaderMgr.getCurrentReader() && fReaderMgr.getCurrentReader()->charsLeftInBuffer()>0)
+    if(curReader && curReader->charsLeftInBuffer()>0)
         nextCh = fReaderMgr.peekNextChar();
     else
     {
@@ -1956,19 +1885,13 @@ XMLScanner::XMLTokens XMLScanner::senseNextToken(unsigned int& orgReader)
         nextCh = fReaderMgr.peekNextChar();
     }
 
-    //  Check for special chars. Start with the most
-    //  obvious end of file, which should be legal here at top level.
-    if (!nextCh)
-        return Token_EOF;
-
-
-    //  If it's not a '<' we must be in content.
+    //  If it's not a '<' we must be in content (unless it's a EOF)
     //
     //  This includes entity references '&' of some sort. These must
     //  be character data because that's the only place a reference can
     //  occur in content.
     if (nextCh != chOpenAngle)
-        return Token_CharData;
+        return nextCh?Token_CharData:Token_EOF;
 
     //  Ok it had to have been a '<' character. So get it out of the reader
     //  and store the reader number where we saw it, passing it back to the
@@ -1978,42 +1901,42 @@ XMLScanner::XMLTokens XMLScanner::senseNextToken(unsigned int& orgReader)
 
     //  Ok, so lets go through the things that it could be at this point which
     //  are all some form of markup.
-    nextCh = fReaderMgr.peekNextChar();
-
-    if (nextCh == chForwardSlash)
+    switch(fReaderMgr.peekNextChar())
     {
-        fReaderMgr.getNextChar();
-        return Token_EndTag;
-    }
-    else if (nextCh == chBang)
-    {
-        static const XMLCh gCDATAStr[] =
+    case chForwardSlash:
         {
-                chBang, chOpenSquare, chLatin_C, chLatin_D, chLatin_A
-            ,   chLatin_T, chLatin_A, chNull
-        };
-
-        static const XMLCh gCommentString[] =
+            fReaderMgr.getNextChar();
+            return Token_EndTag;
+        }
+    case chBang:
         {
-            chBang, chDash, chDash, chNull
-        };
+            static const XMLCh gCDATAStr[] =
+            {
+                    chBang, chOpenSquare, chLatin_C, chLatin_D, chLatin_A
+                ,   chLatin_T, chLatin_A, chNull
+            };
 
-        if (fReaderMgr.skippedString(gCDATAStr))
-            return Token_CData;
+            static const XMLCh gCommentString[] =
+            {
+                chBang, chDash, chDash, chNull
+            };
 
-        if (fReaderMgr.skippedString(gCommentString))
-            return Token_Comment;
+            if (fReaderMgr.skippedString(gCDATAStr))
+                return Token_CData;
 
-        emitError(XMLErrs::ExpectedCommentOrCDATA);
-        return Token_Unknown;
+            if (fReaderMgr.skippedString(gCommentString))
+                return Token_Comment;
+
+            emitError(XMLErrs::ExpectedCommentOrCDATA);
+            return Token_Unknown;
+        }
+    case chQuestion:
+        {
+            // It must be a PI
+            fReaderMgr.getNextChar();
+            return Token_PI;
+        }
     }
-    else if (nextCh == chQuestion)
-    {
-        // It must be a PI
-        fReaderMgr.getNextChar();
-        return Token_PI;
-    }
-
     //  Assume its an element name, so return with a start tag token. If it
     //  turns out not to be, then it will fail when it cannot get a valid tag.
     return Token_StartTag;
@@ -2041,15 +1964,10 @@ bool XMLScanner::getQuotedString(XMLBuffer& toFill)
     if (!fReaderMgr.skipIfQuote(quoteCh))
         return false;
 
-    while (true)
+	XMLCh nextCh;
+    // Get another char and see if it matches the starting quote char
+    while ((nextCh=fReaderMgr.getNextChar())!=quoteCh)
     {
-        // Get another char
-        const XMLCh nextCh = fReaderMgr.getNextChar();
-
-        // See if it matches the starting quote char
-        if (nextCh == quoteCh)
-            break;
-
         //  We should never get either an end of file null char here. If we
         //  do, just fail. It will be handled more gracefully in the higher
         //  level code that called us.
@@ -2306,17 +2224,30 @@ void XMLScanner::scanComment()
 //  just makes the calling code cleaner by eating whitespace.
 bool XMLScanner::scanEq(bool inDecl)
 {
-    fReaderMgr.skipPastSpaces(inDecl);
-    if (fReaderMgr.skippedChar(chEqual))
+    if(inDecl)
     {
-        fReaderMgr.skipPastSpaces(inDecl);
-        return true;
+        bool skippedSomething;
+        fReaderMgr.skipPastSpaces(skippedSomething, inDecl);
+        if (fReaderMgr.skippedChar(chEqual))
+        {
+            fReaderMgr.skipPastSpaces(skippedSomething, inDecl);
+            return true;
+        }
+    }
+    else
+    {
+        fReaderMgr.skipPastSpaces();
+        if (fReaderMgr.skippedChar(chEqual))
+        {
+            fReaderMgr.skipPastSpaces();
+            return true;
+        }
     }
     return false;
 }
 
 
-unsigned int
+XMLSize_t
 XMLScanner::scanUpToWSOr(XMLBuffer& toFill, const XMLCh chEndChar)
 {
     fReaderMgr.getUpToCharOrWS(toFill, chEndChar);
@@ -2351,7 +2282,7 @@ unsigned int *XMLScanner::getNewUIntPtr()
     fUIntPool[fUIntPoolRow] = (unsigned int *)fMemoryManager->allocate(sizeof(unsigned int) << 6);
     memset(fUIntPool[fUIntPoolRow], 0, sizeof(unsigned int) << 6);
     // point to next element
-    fUIntPoolCol = 1; 
+    fUIntPoolCol = 1;
     return fUIntPool[fUIntPoolRow];
 }
 
@@ -2380,6 +2311,88 @@ void XMLScanner::recreateUIntPool()
     fUIntPool[0] = (unsigned int *)fMemoryManager->allocate(sizeof(unsigned int) << 6);
     memset(fUIntPool[fUIntPoolRow], 0, sizeof(unsigned int) << 6);
     fUIntPool[1] = 0;
+}
+
+unsigned int XMLScanner::resolvePrefix(  const XMLCh* const        prefix
+                                       , const ElemStack::MapModes mode)
+{
+    //
+    //  If the prefix is empty, and we are in attribute mode, then we assign
+    //  it to the empty namespace because the default namespace does not
+    //  apply to attributes.
+    //
+    if (!*prefix)
+    {
+        if(mode == ElemStack::Mode_Attribute)
+            return fEmptyNamespaceId;
+    }
+    //  Watch for the special namespace prefixes. We always map these to
+    //  special URIs. 'xml' gets mapped to the official URI that its defined
+    //  to map to by the NS spec. xmlns gets mapped to a special place holder
+    //  URI that we define (so that it maps to something checkable.)
+    else
+    {
+        if (XMLString::equals(prefix, XMLUni::fgXMLNSString))
+            return fXMLNSNamespaceId;
+        else if (XMLString::equals(prefix, XMLUni::fgXMLString))
+            return fXMLNamespaceId;
+    }
+
+    //  Ask the element stack to search up itself for a mapping for the
+    //  passed prefix.
+    bool unknown;
+    unsigned int uriId = fElemStack.mapPrefixToURI(prefix, unknown);
+
+    // If it was unknown, then the URI was faked in but we have to issue an error
+    if (unknown)
+        emitError(XMLErrs::UnknownPrefix, prefix);
+
+    // check to see if uriId is empty; in XML 1.1 an emptynamespace is okay unless
+    // we are trying to use it.
+    if (*prefix &&
+        mode == ElemStack::Mode_Element &&
+        fXMLVersion != XMLReader::XMLV1_0 &&
+        uriId == fElemStack.getEmptyNamespaceId())
+        emitError(XMLErrs::UnknownPrefix, prefix);
+
+    return uriId;
+}
+
+unsigned int
+XMLScanner::resolveQName(  const XMLCh* const           qName
+                         ,       XMLBuffer&             prefixBuf
+                         , const ElemStack::MapModes    mode
+                         ,       int&                   prefixColonPos)
+{
+    prefixColonPos = XMLString::indexOf(qName, chColon);
+    return resolveQNameWithColon(qName, prefixBuf, mode, prefixColonPos);
+}
+
+unsigned int
+XMLScanner::resolveQNameWithColon(  const XMLCh* const          qName
+                                  ,       XMLBuffer&            prefixBuf
+                                  , const ElemStack::MapModes   mode
+                                  , const int                   prefixColonPos)
+{
+    //  Lets split out the qName into a URI and name buffer first. The URI
+    //  can be empty.
+    if (prefixColonPos == -1)
+    {
+        //  Its all name with no prefix, so put the whole thing into the name
+        //  buffer. Then map the empty string to a URI, since the empty string
+        //  represents the default namespace. This will either return some
+        //  explicit URI which the default namespace is mapped to, or the
+        //  the default global namespace.
+        prefixBuf.reset();
+        return resolvePrefix(XMLUni::fgZeroLenString, mode);
+    }
+    else
+    {
+        //  Copy the chars up to but not including the colon into the prefix
+        //  buffer.
+        prefixBuf.set(qName, prefixColonPos);
+        return resolvePrefix(prefixBuf.getRawBuffer(), mode);
+    }
 }
 
 XERCES_CPP_NAMESPACE_END

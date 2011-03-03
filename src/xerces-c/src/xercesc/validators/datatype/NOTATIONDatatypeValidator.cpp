@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: NOTATIONDatatypeValidator.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: NOTATIONDatatypeValidator.cpp 676911 2008-07-15 13:27:32Z amassari $
  */
 
 // ---------------------------------------------------------------------------
@@ -121,8 +121,8 @@ void NOTATIONDatatypeValidator::checkContent( const XMLCh*             const con
         ArrayJanitor<XMLCh>  jan(normContent, manager);
         normalizeContent(normContent, manager);
 
-        int i=0;
-        int enumLength = getEnumeration()->size();
+        XMLSize_t i=0;
+        XMLSize_t enumLength = getEnumeration()->size();
         for ( ; i < enumLength; i++)
         {
             if (XMLString::equals(normContent, getEnumeration()->elementAt(i)))

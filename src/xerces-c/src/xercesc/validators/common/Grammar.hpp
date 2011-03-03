@@ -16,13 +16,11 @@
  */
 
 /*
- * $Id: Grammar.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: Grammar.hpp 676911 2008-07-15 13:27:32Z amassari $
  */
 
-
-
-#if !defined(GRAMMAR_HPP)
-#define GRAMMAR_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_GRAMMAR_HPP)
+#define XERCESC_INCLUDE_GUARD_GRAMMAR_HPP
 
 #include <limits.h>
 
@@ -52,7 +50,7 @@ public:
     //
     //  TOP_LEVEL_SCOPE - outermost scope level (i.e. global) of a declaration.
     //                    For DTD, all element decls and attribute decls always
-    //                    have TOP_LEVEL_SCOPE.  For schema, it may varies if
+    //                    have TOP_LEVEL_SCOPE.  For schema, it may vary if
     //                    it is inside a complex type.
     //
     //  UNKNOWN_SCOPE   - unknown scope level.  None of the decls should have this.
@@ -98,7 +96,7 @@ public:
         ,       bool&           wasAdded
     ) = 0;
 
-    virtual unsigned int getElemId
+    virtual XMLSize_t getElemId
     (
         const   unsigned int    uriId
         , const XMLCh* const    baseName
@@ -156,13 +154,13 @@ public:
         , const bool            notDeclared = false
     ) = 0;
 
-    virtual unsigned int putElemDecl
+    virtual XMLSize_t putElemDecl
     (
         XMLElementDecl* const elemDecl
         , const bool          notDeclared = false
     )   = 0;
 
-    virtual unsigned int putNotationDecl
+    virtual XMLSize_t putNotationDecl
     (
         XMLNotationDecl* const notationDecl
     )   const=0;

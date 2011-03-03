@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: BlockRangeFactory.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: BlockRangeFactory.hpp 678879 2008-07-22 20:05:05Z amassari $
  */
 
-#if !defined(BLOCKRANGEFACTORY_HPP)
-#define BLOCKRANGEFACTORY_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_BLOCKRANGEFACTORY_HPP)
+#define XERCESC_INCLUDE_GUARD_BLOCKRANGEFACTORY_HPP
 
 // ---------------------------------------------------------------------------
 //  Includes
@@ -41,16 +41,16 @@ public:
     // -----------------------------------------------------------------------
     //  Initialization methods
     // -----------------------------------------------------------------------
-	void initializeKeywordMap(RangeTokenMap *rangeTokMap = 0);
+    void initializeKeywordMap(RangeTokenMap *rangeTokMap = 0);
 
 protected:
     // -----------------------------------------------------------------------
     //  Private Helper methods
     // -----------------------------------------------------------------------
-	void buildRanges(RangeTokenMap *rangeTokMap = 0);
+    void buildRanges(RangeTokenMap *rangeTokMap = 0);
 
 private:
-	// -----------------------------------------------------------------------
+    // -----------------------------------------------------------------------
     //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
     BlockRangeFactory(const BlockRangeFactory&);
@@ -62,5 +62,5 @@ XERCES_CPP_NAMESPACE_END
 #endif
 
 /**
-  *	End file BlockRangeFactory.hpp
+  *    End file BlockRangeFactory.hpp
   */

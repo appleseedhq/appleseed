@@ -32,7 +32,7 @@ XERCES_CPP_NAMESPACE_BEGIN
 //  XMLUTF16Transcoder: Constructors and Destructor
 // ---------------------------------------------------------------------------
 XMLUTF16Transcoder::XMLUTF16Transcoder( const   XMLCh* const    encodingName
-                                        , const unsigned int    blockSize
+                                        , const XMLSize_t       blockSize
                                         , const bool            swapped
                                         , MemoryManager* const manager) :
 
@@ -50,25 +50,20 @@ XMLUTF16Transcoder::~XMLUTF16Transcoder()
 // ---------------------------------------------------------------------------
 //  XMLUTF16Transcoder: Implementation of the transcoder API
 // ---------------------------------------------------------------------------
-unsigned int
+XMLSize_t
 XMLUTF16Transcoder::transcodeFrom(  const   XMLByte* const       srcData
-                                    , const unsigned int         srcCount
+                                    , const XMLSize_t            srcCount
                                     ,       XMLCh* const         toFill
-                                    , const unsigned int         maxChars
-                                    ,       unsigned int&        bytesEaten
+                                    , const XMLSize_t            maxChars
+                                    ,       XMLSize_t&           bytesEaten
                                     ,       unsigned char* const charSizes)
 {
-    // If debugging, make sure that the block size is legal
-    #if defined(XERCES_DEBUG)
-    checkBlockSize(maxChars);
-    #endif
-
     //
     //  Calculate the max chars we can do here. Its the lesser of the
     //  max output chars and the number of chars in the source.
     //
-    const unsigned int srcChars = srcCount / sizeof(UTF16Ch);
-    const unsigned int countToDo = srcChars < maxChars ? srcChars : maxChars;
+    const XMLSize_t srcChars = srcCount / sizeof(UTF16Ch);
+    const XMLSize_t countToDo = srcChars < maxChars ? srcChars : maxChars;
 
     // Look at the source data as UTF16 chars
     const UTF16Ch* asUTF16 = (const UTF16Ch*)srcData;
@@ -88,7 +83,7 @@ XMLUTF16Transcoder::transcodeFrom(  const   XMLByte* const       srcData
         //  that this also handles size conversion as well if XMLCh is not the
         //  same size as UTF16Ch.
         //
-        for (unsigned int index = 0; index < countToDo; index++)
+        for (XMLSize_t index = 0; index < countToDo; index++)
             *outPtr++ = BitOps::swapBytes(*asUTF16++);
     }
      else
@@ -107,7 +102,7 @@ XMLUTF16Transcoder::transcodeFrom(  const   XMLByte* const       srcData
         }
          else
         {
-            for (unsigned int index = 0; index < countToDo; index++)
+            for (XMLSize_t index = 0; index < countToDo; index++)
                 *outPtr++ = XMLCh(*asUTF16++);
         }
     }
@@ -123,26 +118,21 @@ XMLUTF16Transcoder::transcodeFrom(  const   XMLByte* const       srcData
 }
 
 
-unsigned int
+XMLSize_t
 XMLUTF16Transcoder::transcodeTo(const   XMLCh* const    srcData
-                                , const unsigned int    srcCount
+                                , const XMLSize_t       srcCount
                                 ,       XMLByte* const  toFill
-                                , const unsigned int    maxBytes
-                                ,       unsigned int&   charsEaten
+                                , const XMLSize_t       maxBytes
+                                ,       XMLSize_t&      charsEaten
                                 , const UnRepOpts)
 {
-    // If debugging, make sure that the block size is legal
-    #if defined(XERCES_DEBUG)
-    checkBlockSize(maxBytes);
-    #endif
-
     //
     //  Calculate the max chars we can do here. Its the lesser of the
     //  chars that we can fit into the output buffer, and the source
     //  chars available.
     //
-    const unsigned int maxOutChars = maxBytes / sizeof(UTF16Ch);
-    const unsigned int countToDo = srcCount < maxOutChars ? srcCount : maxOutChars;
+    const XMLSize_t maxOutChars = maxBytes / sizeof(UTF16Ch);
+    const XMLSize_t countToDo = srcCount < maxOutChars ? srcCount : maxOutChars;
 
     //
     //  Get a pointer tot he output buffer in the UTF-16 character format
@@ -163,7 +153,7 @@ XMLUTF16Transcoder::transcodeTo(const   XMLCh* const    srcData
         //  that this also handles size conversion as well if XMLCh is not the
         //  same size as UTF16Ch.
         //
-        for (unsigned int index = 0; index < countToDo; index++)
+        for (XMLSize_t index = 0; index < countToDo; index++)
         {
             // To avoid flakey compilers, use a temp
             const UTF16Ch tmpCh = UTF16Ch(*srcPtr++);
@@ -184,7 +174,7 @@ XMLUTF16Transcoder::transcodeTo(const   XMLCh* const    srcData
         }
          else
         {
-            for (unsigned int index = 0; index < countToDo; index++)
+            for (XMLSize_t index = 0; index < countToDo; index++)
                 *outPtr++ = UTF16Ch(*srcPtr++);
         }
     }
@@ -197,7 +187,7 @@ XMLUTF16Transcoder::transcodeTo(const   XMLCh* const    srcData
 }
 
 
-bool XMLUTF16Transcoder::canTranscodeTo(const unsigned int) const
+bool XMLUTF16Transcoder::canTranscodeTo(const unsigned int)
 {
     // We can handle anything
     return true;

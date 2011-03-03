@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: DefaultPanicHandler.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DefaultPanicHandler.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-
-#ifndef DEFAULT_PANICHANDLER_HPP
-#define DEFAULT_PANICHANDLER_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_DEFAULT_PANICHANDLER_HPP)
+#define XERCESC_INCLUDE_GUARD_DEFAULT_PANICHANDLER_HPP
 
 #include <xercesc/util/PanicHandler.hpp>
 #include <xercesc/util/PlatformUtils.hpp>

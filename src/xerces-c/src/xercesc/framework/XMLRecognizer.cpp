@@ -16,7 +16,7 @@
  */
 
 /**
- *  $Id: XMLRecognizer.cpp 568078 2007-08-21 11:43:25Z amassari $
+ *  $Id: XMLRecognizer.cpp 555320 2007-07-11 16:05:13Z amassari $
  */
 
 
@@ -59,12 +59,12 @@ static const XMLCh* gEncodingNameMap[XMLRecognizer::Encodings_Count] =
 //      auto sense. Also included is the length of each sequence.
 // ---------------------------------------------------------------------------
 const char           XMLRecognizer::fgASCIIPre[]  = { 0x3C, 0x3F, 0x78, 0x6D, 0x6C, 0x20 };
-const unsigned int   XMLRecognizer::fgASCIIPreLen = 6;
+const XMLSize_t      XMLRecognizer::fgASCIIPreLen = 6;
 const XMLByte        XMLRecognizer::fgEBCDICPre[] = { 0x4C, 0x6F, 0xA7, 0x94, 0x93, 0x40 };
-const unsigned int   XMLRecognizer::fgEBCDICPreLen = 6;
+const XMLSize_t      XMLRecognizer::fgEBCDICPreLen = 6;
 const XMLByte        XMLRecognizer::fgUTF16BPre[] = { 0x00, 0x3C, 0x00, 0x3F, 0x00, 0x78, 0x00, 0x6D, 0x00, 0x6C, 0x00, 0x20 };
 const XMLByte        XMLRecognizer::fgUTF16LPre[] = { 0x3C, 0x00, 0x3F, 0x00, 0x78, 0x00, 0x6D, 0x00, 0x6C, 0x00, 0x20, 0x00 };
-const unsigned int   XMLRecognizer::fgUTF16PreLen = 12;
+const XMLSize_t      XMLRecognizer::fgUTF16PreLen = 12;
 const XMLByte        XMLRecognizer::fgUCS4BPre[]  =
 {
         0x00, 0x00, 0x00, 0x3C, 0x00, 0x00, 0x00, 0x3F
@@ -77,17 +77,17 @@ const XMLByte        XMLRecognizer::fgUCS4LPre[]  =
     ,   0x78, 0x00, 0x00, 0x00, 0x6D, 0x00, 0x00, 0x00
     ,   0x6C, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00
 };
-const unsigned int   XMLRecognizer::fgUCS4PreLen = 24;
+const XMLSize_t      XMLRecognizer::fgUCS4PreLen = 24;
 
 const char           XMLRecognizer::fgUTF8BOM[] = {(char)0xEF, (char)0xBB, (char)0xBF};
-const unsigned int   XMLRecognizer::fgUTF8BOMLen = 3;
+const XMLSize_t      XMLRecognizer::fgUTF8BOMLen = 3;
 
 // ---------------------------------------------------------------------------
 //  XMLRecognizer: Encoding recognition methods
 // ---------------------------------------------------------------------------
 XMLRecognizer::Encodings
 XMLRecognizer::basicEncodingProbe(  const   XMLByte* const  rawBuffer
-                                    , const unsigned int    rawByteCount)
+                                    , const XMLSize_t       rawByteCount)
 {
     //
     //  As an optimization to check the 90% case, check first for the ASCII
@@ -206,58 +206,50 @@ XMLRecognizer::encodingForName(const XMLCh* const encName)
     //  !!NOTE: Note that we don't handle EBCDIC here because we don't handle
     //  that one ourselves. It is allowed to fall into 'other'.
     //
-   if (encName == XMLUni::fgXMLChEncodingString ||
+    if (encName == XMLUni::fgXMLChEncodingString ||
         !XMLString::compareString(encName, XMLUni::fgXMLChEncodingString))
-   {
+    {
         return XMLRecognizer::XERCES_XMLCH;
-   }
-   else if (!XMLString::compareString(encName, XMLUni::fgUTF8EncodingString)
-    ||  !XMLString::compareString(encName, XMLUni::fgUTF8EncodingString2))
+    }
+    else if (!XMLString::compareString(encName, XMLUni::fgUTF8EncodingString)
+         ||  !XMLString::compareString(encName, XMLUni::fgUTF8EncodingString2))
     {
         return XMLRecognizer::UTF_8;
     }
-     else if (!XMLString::compareString(encName, XMLUni::fgUSASCIIEncodingString)
-          ||  !XMLString::compareString(encName, XMLUni::fgUSASCIIEncodingString2)
-          ||  !XMLString::compareString(encName, XMLUni::fgUSASCIIEncodingString3)
-          ||  !XMLString::compareString(encName, XMLUni::fgUSASCIIEncodingString4))
+    else if (!XMLString::compareString(encName, XMLUni::fgUSASCIIEncodingString)
+         ||  !XMLString::compareString(encName, XMLUni::fgUSASCIIEncodingString2)
+         ||  !XMLString::compareString(encName, XMLUni::fgUSASCIIEncodingString3)
+         ||  !XMLString::compareString(encName, XMLUni::fgUSASCIIEncodingString4))
     {
         return XMLRecognizer::US_ASCII;
     }
-     else if (!XMLString::compareString(encName, XMLUni::fgUTF16LEncodingString)
-          ||  !XMLString::compareString(encName, XMLUni::fgUTF16LEncodingString2))
+    else if (!XMLString::compareString(encName, XMLUni::fgUTF16LEncodingString)
+         ||  !XMLString::compareString(encName, XMLUni::fgUTF16LEncodingString2))
     {
         return XMLRecognizer::UTF_16L;
     }
-     else if (!XMLString::compareString(encName, XMLUni::fgUTF16BEncodingString)
-          ||  !XMLString::compareString(encName, XMLUni::fgUTF16BEncodingString2))
+    else if (!XMLString::compareString(encName, XMLUni::fgUTF16BEncodingString)
+         ||  !XMLString::compareString(encName, XMLUni::fgUTF16BEncodingString2))
     {
         return XMLRecognizer::UTF_16B;
     }
     else if (!XMLString::compareString(encName, XMLUni::fgUTF16EncodingString))
     {
-    #if defined(ENDIANMODE_LITTLE)
-        return XMLRecognizer::UTF_16L;
-    #elif defined(ENDIANMODE_BIG)
-		return XMLRecognizer::UTF_16B;
-    #endif
+        return XMLPlatformUtils::fgXMLChBigEndian?XMLRecognizer::UTF_16B:XMLRecognizer::UTF_16L;
     }
-     else if (!XMLString::compareString(encName, XMLUni::fgUCS4LEncodingString)
-          ||  !XMLString::compareString(encName, XMLUni::fgUCS4LEncodingString2))
+    else if (!XMLString::compareString(encName, XMLUni::fgUCS4LEncodingString)
+         ||  !XMLString::compareString(encName, XMLUni::fgUCS4LEncodingString2))
     {
         return XMLRecognizer::UCS_4L;
     }
-     else if (!XMLString::compareString(encName, XMLUni::fgUCS4BEncodingString)
-          ||  !XMLString::compareString(encName, XMLUni::fgUCS4BEncodingString2))
+    else if (!XMLString::compareString(encName, XMLUni::fgUCS4BEncodingString)
+         ||  !XMLString::compareString(encName, XMLUni::fgUCS4BEncodingString2))
     {
         return XMLRecognizer::UCS_4B;
     }
     else if (!XMLString::compareString(encName, XMLUni::fgUCS4EncodingString))
     {
-    #if defined(ENDIANMODE_LITTLE)
-        return XMLRecognizer::UCS_4L;
-    #elif defined(ENDIANMODE_BIG)
-		return XMLRecognizer::UCS_4B;
-    #endif
+        return XMLPlatformUtils::fgXMLChBigEndian?XMLRecognizer::UCS_4B:XMLRecognizer::UCS_4L;
     }
 
     // Return 'other' since we don't recognizer it

@@ -1,6 +1,3 @@
-#ifndef DOMElementImpl_HEADER_GUARD_
-#define DOMElementImpl_HEADER_GUARD_
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -19,8 +16,11 @@
  */
 
 /*
- * $Id: DOMElementImpl.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMElementImpl.hpp 792236 2009-07-08 17:22:35Z amassari $
  */
+
+#if !defined(XERCESC_INCLUDE_GUARD_DOMELEMENTIMPL_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMELEMENTIMPL_HPP
 
 //
 //  This file is part of the internal implementation of the C++ XML DOM.
@@ -67,9 +67,11 @@ public:
     DOMElementImpl(const DOMElementImpl &other, bool deep=false);
     virtual ~DOMElementImpl();
 
+public:
     // Declare functions from DOMNode.  They all must be implemented by this class
     DOMNODE_FUNCTIONS;
 
+public:
     // Functions introduced on Element...
     virtual const XMLCh*      getAttribute(const XMLCh *name) const;
     virtual DOMAttr*          getAttributeNode(const XMLCh *name) const;
@@ -99,10 +101,10 @@ public:
                                              const XMLCh *localName) const;
 
     //Introduced in DOM level 3
-    virtual void setIdAttribute(const XMLCh* name);
-    virtual void setIdAttributeNS(const XMLCh* namespaceURI, const XMLCh* localName);
-    virtual void setIdAttributeNode(const DOMAttr *idAttr);
-    virtual const DOMTypeInfo * getTypeInfo() const;
+    virtual void setIdAttribute(const XMLCh* name, bool isId);
+    virtual void setIdAttributeNS(const XMLCh* namespaceURI, const XMLCh* localName, bool isId);
+    virtual void setIdAttributeNode(const DOMAttr *idAttr, bool isId);
+    virtual const DOMTypeInfo * getSchemaTypeInfo() const;
 
     // for handling of default attribute
     virtual DOMAttr*          setDefaultAttributeNode(DOMAttr *newAttr);
@@ -112,9 +114,22 @@ public:
     // helper function for DOM Level 3 renameNode
     virtual DOMNode* rename(const XMLCh* namespaceURI, const XMLCh* name);
 
+    // DOMElementTraversal
+    virtual DOMElement *         getFirstElementChild() const;
+    virtual DOMElement *         getLastElementChild() const;
+    virtual DOMElement *         getPreviousElementSibling() const;
+    virtual DOMElement *         getNextElementSibling() const;
+    virtual XMLSize_t            getChildElementCount() const;
+
 protected:
     // default attribute helper functions
     virtual void setupDefaultAttributes();
+
+    // helper function for DOMElementTraversal methods
+    DOMElement* getFirstElementChild(const DOMNode* n) const;
+    DOMElement* getLastElementChild(const DOMNode* n) const;
+    DOMNode* getNextLogicalSibling(const DOMNode* n) const;
+    DOMNode* getPreviousLogicalSibling(const DOMNode* n) const;
 
 private:
     // -----------------------------------------------------------------------

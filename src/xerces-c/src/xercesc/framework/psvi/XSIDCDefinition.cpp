@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XSIDCDefinition.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XSIDCDefinition.cpp 471747 2006-11-06 14:31:56Z amassari $
  */
 
 #include <xercesc/framework/psvi/XSIDCDefinition.hpp>
@@ -71,7 +71,7 @@ XSIDCDefinition::~XSIDCDefinition()
 // ---------------------------------------------------------------------------
 //  XSIDCDefinition: XSObject virtual methods
 // ---------------------------------------------------------------------------
-const XMLCh *XSIDCDefinition::getName() 
+const XMLCh *XSIDCDefinition::getName() const
 {
     return fIdentityConstraint->getIdentityConstraintName();
 }
@@ -92,11 +92,11 @@ XSNamespaceItem *XSIDCDefinition::getNamespaceItem()
 XSIDCDefinition::IC_CATEGORY XSIDCDefinition::getCategory() const
 {
     switch(fIdentityConstraint->getType()) {
-        case IdentityConstraint::UNIQUE:
+        case IdentityConstraint::ICType_UNIQUE:
             return IC_UNIQUE;
-        case IdentityConstraint::KEY:
+        case IdentityConstraint::ICType_KEY:
             return IC_KEY;
-        case IdentityConstraint::KEYREF:
+        case IdentityConstraint::ICType_KEYREF:
             return IC_KEYREF;
         default:
             // REVISIT:

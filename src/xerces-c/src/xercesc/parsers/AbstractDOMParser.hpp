@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: AbstractDOMParser.hpp 568078 2007-08-21 11:43:25Z amassari $
- *
+ * $Id: AbstractDOMParser.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
-#if !defined(ABSTRACTDOMPARSER_HPP)
-#define ABSTRACTDOMPARSER_HPP
+
+#if !defined(XERCESC_INCLUDE_GUARD_ABSTRACTDOMPARSER_HPP)
+#define XERCESC_INCLUDE_GUARD_ABSTRACTDOMPARSER_HPP
 
 #include <xercesc/dom/DOMDocument.hpp>
 #include <xercesc/framework/XMLDocumentHandler.hpp>
@@ -41,6 +41,7 @@ class XMLScanner;
 class XMLValidator;
 class DOMDocumentImpl;
 class DOMDocumentTypeImpl;
+class DOMEntityImpl;
 class DOMElement;
 class GrammarResolver;
 class XMLGrammarPool;
@@ -48,7 +49,7 @@ class PSVIHandler;
 
 /**
   * This class implements the Document Object Model (DOM) interface.
-  * It is used as a base for DOM parsers (i.e. XercesDOMParser, DOMBuilder).
+  * It is used as a base for DOM parsers (i.e. XercesDOMParser, DOMLSParser).
   */
 class PARSERS_EXPORT AbstractDOMParser :
 
@@ -84,7 +85,7 @@ public :
 
 
     // -----------------------------------------------------------------------
-    //  Constructors and Detructor
+    //  Constructors and Destructor
     // -----------------------------------------------------------------------
     /** @name Destructor */
     //@{
@@ -212,7 +213,7 @@ public :
       *			parse operation.
       *
       */
-    int getErrorCount() const;
+    XMLSize_t getErrorCount() const;
 
     /** Get the 'do namespaces' flag
       *
@@ -248,7 +249,7 @@ public :
       *         set validation constraint errors as fatal, false
       *         otherwise.
       *
-      * @see #setValidationContraintFatal
+      * @see #setValidationConstraintFatal
       */
     bool getValidationConstraintFatal() const;
 
@@ -275,7 +276,7 @@ public :
       */
     bool getIncludeIgnorableWhitespace() const;
 
-   /** Get the set of Namespace/SchemaLocation that is specified externaly.
+   /** Get the set of Namespace/SchemaLocation that is specified externally.
       *
       * This method returns the list of Namespace/SchemaLocation that was
       * specified using setExternalSchemaLocation.
@@ -283,7 +284,7 @@ public :
       * The parser owns the returned string, and the memory allocated for
       * the returned string will be destroyed when the parser is deleted.
       *
-      * To ensure assessiblity of the returned information after the parser
+      * To ensure accessibility of the returned information after the parser
       * is deleted, callers need to copy and store the returned information
       * somewhere else.
       *
@@ -296,7 +297,7 @@ public :
       */
     XMLCh* getExternalSchemaLocation() const;
 
-   /** Get the noNamespace SchemaLocation that is specified externaly.
+   /** Get the noNamespace SchemaLocation that is specified externally.
       *
       * This method returns the no target namespace XML Schema Location
       * that was specified using setExternalNoNamespaceSchemaLocation.
@@ -304,7 +305,7 @@ public :
       * The parser owns the returned string, and the memory allocated for
       * the returned string will be destroyed when the parser is deleted.
       *
-      * To ensure assessiblity of the returned information after the parser
+      * To ensure accessibility of the returned information after the parser
       * is deleted, callers need to copy and store the returned information
       * somewhere else.
       *
@@ -317,22 +318,37 @@ public :
       */
     XMLCh* getExternalNoNamespaceSchemaLocation() const;
 
-   /** Get the SecurityManager instance attached to this parser.
+    /** Get the SecurityManager instance attached to this parser.
       *
-      * This method returns the security manager 
+      * This method returns the security manager
       * that was specified using setSecurityManager.
       *
-      * The SecurityManager instance must have been specified by the application; 
+      * The SecurityManager instance must have been specified by the application;
       * this should not be deleted until after the parser has been deleted (or
       * a new SecurityManager instance has been supplied to the parser).
-      * 
-      * @return a pointer to the SecurityManager instance 
+      *
+      * @return a pointer to the SecurityManager instance
       *         specified externally.  A null pointer is returned if nothing
       *         was specified externally.
       *
-      * @see #setSecurityManager(const SecurityManager* const)
+      * @see #setSecurityManager
       */
     SecurityManager* getSecurityManager() const;
+
+    /** Get the raw buffer low water mark for this parser.
+      *
+      * If the number of available bytes in the raw buffer is less than
+      * the low water mark the parser will attempt to read more data before
+      * continuing parsing. By default the value for this parameter is 100
+      * bytes. You may want to set this parameter to 0 if you would like
+      * the parser to parse the available data immediately without
+      * potentially blocking while waiting for more date.
+      *
+      * @return current low water mark
+      *
+      * @see #setSecurityManager
+      */
+    const XMLSize_t& getLowWaterMark() const;
 
     /** Get the 'Loading External DTD' flag
       *
@@ -346,6 +362,19 @@ public :
       * @see #getValidationScheme
       */
     bool getLoadExternalDTD() const;
+
+    /** Get the 'Loading Schema' flag
+      *
+      * This method returns the state of the parser's loading schema
+      * flag.
+      *
+      * @return true, if the parser is currently configured to
+      *         automatically load schemas that are not in the
+      *         grammar pool, false otherwise.
+      *
+      * @see #setLoadSchema
+      */
+    bool getLoadSchema() const;
 
     /** Get the 'create comment node' flag
       *
@@ -401,16 +430,27 @@ public :
     /** Get the 'associate schema info' flag
       *
       * This method returns the flag that specifies whether
-      * the parser is storing schema informations in the element 
+      * the parser is storing schema informations in the element
       * and attribute nodes in the DOM tree being produced.
       *
       * @return  The state of the associate schema info flag.
       * @see #setCreateSchemaInfo
       */
-    bool  getCreateSchemaInfo() const;
+    bool getCreateSchemaInfo() const;
+
+    /** Get the 'do XInclude' flag
+      *
+      * This method returns the flag that specifies whether
+      * the parser will process XInclude nodes
+      * in the DOM tree being produced.
+      *
+      * @return  The state of the 'do XInclude' flag.
+      * @see #setDoXInclude
+      */
+    bool getDoXInclude() const;
 
     /** Get the 'generate synthetic annotations' flag
-      *    
+      *
       * @return true, if the parser is currently configured to
       *         generate synthetic annotations, false otherwise.
       *         A synthetic XSAnnotation is created when a schema
@@ -423,7 +463,7 @@ public :
     bool getGenerateSyntheticAnnotations() const;
 
     /** Get the 'validate annotations' flag
-      *    
+      *
       * @return true, if the parser is currently configured to
       *         validate annotations, false otherwise.
       *
@@ -432,7 +472,7 @@ public :
     bool getValidateAnnotations() const;
 
     /** Get the 'ignore annotations' flag
-      *    
+      *
       * @return true, if the parser is currently configured to
       *         ignore annotations, false otherwise.
       *
@@ -441,7 +481,7 @@ public :
     bool getIgnoreAnnotations() const;
 
     /** Get the 'disable default entity resolution' flag
-      *    
+      *
       * @return true, if the parser is currently configured to
       *         not perform default entity resolution, false otherwise.
       *
@@ -450,7 +490,7 @@ public :
     bool getDisableDefaultEntityResolution() const;
 
     /** Get the 'skip DTD validation' flag
-      *    
+      *
       * @return true, if the parser is currently configured to
       *         skip DTD validation, false otherwise.
       *
@@ -458,6 +498,14 @@ public :
       */
     bool getSkipDTDValidation() const;
 
+    /** Get the 'handle multiple schema imports' flag
+      *
+      * @return true, if the parser is currently configured to
+      *         import multiple schemas with the same namespace, false otherwise.
+      *
+      * @see #setHandleMultipleImports
+      */
+    bool getHandleMultipleImports() const;
     //@}
 
 
@@ -468,7 +516,7 @@ public :
     /** @name Setter methods */
     //@{
     /** set the 'generate synthetic annotations' flag
-      *    
+      *
       * @param newValue The value for specifying whether Synthetic Annotations
       *        should be generated or not.
       *         A synthetic XSAnnotation is created when a schema
@@ -481,7 +529,7 @@ public :
     void setGenerateSyntheticAnnotations(const bool newValue);
 
     /** set the 'validlate annotations' flag
-      *    
+      *
       * @param newValue The value for specifying whether Annotations
       *        should be validated or not.
       *
@@ -525,7 +573,7 @@ public :
 
     /**
       * This method allows users to set the parser's behaviour when it
-      * encounters a validtion constraint error. If set to true, and the
+      * encounters a validation constraint error. If set to true, and the
       * the parser will treat validation error as fatal and will exit depends on the
       * state of "getExitOnFirstFatalError". If false, then it will
       * report the error and continue processing.
@@ -629,7 +677,7 @@ public :
       *
       * Full schema constraint checking includes those checking that may
       * be time-consuming or memory intensive. Currently, particle unique
-      * attribution constraint checking and particle derivation resriction checking
+      * attribution constraint checking and particle derivation restriction checking
       * are controlled by this option.
       *
       * The parser's default state is: false.
@@ -644,7 +692,7 @@ public :
       * This method allows users to enable or disable the parser's identity
       * constraint checks.
       *
-      * <p>By default, the parser does identity constraint checks. 
+      * <p>By default, the parser does identity constraint checks.
       *    The default value is true.</p>
       *
       * @param newState The value specifying whether the parser should
@@ -658,7 +706,7 @@ public :
     /**
       * This method allows the user to specify a list of schemas to use.
       * If the targetNamespace of a schema specified using this method matches
-      * the targetNamespace of a schema occuring in the instance document in
+      * the targetNamespace of a schema occurring in the instance document in
       * the schemaLocation attribute, or if the targetNamespace matches the
       * namespace attribute of the "import" element, the schema specified by the
       * user using this method will be used (i.e., the schemaLocation attribute
@@ -730,6 +778,21 @@ public :
       */
     void setSecurityManager(SecurityManager* const securityManager);
 
+    /** Set the raw buffer low water mark for this parser.
+      *
+      * If the number of available bytes in the raw buffer is less than
+      * the low water mark the parser will attempt to read more data before
+      * continuing parsing. By default the value for this parameter is 100
+      * bytes. You may want to set this parameter to 0 if you would like
+      * the parser to parse the available data immediately without
+      * potentially blocking while waiting for more date.
+      *
+      * @param lwm new low water mark
+      *
+      * @see #getSecurityManager
+      */
+    void setLowWaterMark(XMLSize_t lwm);
+
     /** Set the 'Loading External DTD' flag
       *
       * This method allows users to enable or disable the loading of external DTD.
@@ -747,6 +810,23 @@ public :
       * @see #setValidationScheme
       */
     void setLoadExternalDTD(const bool newState);
+
+    /** Set the 'Loading Schema' flag
+      *
+      * This method allows users to enable or disable the loading of schemas.
+      * When set to false, the parser not attempt to load schemas beyond
+      * querying the grammar pool for them.
+      *
+      * The parser's default state is: true.
+      *
+      * @param newState The value specifying whether schemas should
+      *                 be loaded if they're not found in the grammar
+      *                 pool.
+      *
+      * @see #getLoadSchema
+      * @see #setDoSchema
+      */
+    void setLoadSchema(const bool newState);
 
      /** Set the 'create comment nodes' flag
       *
@@ -816,14 +896,25 @@ public :
 
     /** Set the 'associate schema info' flag
       *
-      * This method allows users to specify whether 
-      * the parser should store schema informations in the element 
+      * This method allows users to specify whether
+      * the parser should store schema informations in the element
       * and attribute nodes in the DOM tree being produced.
       *
-      * @return  The state of the associate schema info flag.
+      * @param newState The state to set
       * @see #getCreateSchemaInfo
       */
     void  setCreateSchemaInfo(const bool newState);
+
+    /** Set the 'do XInclude' flag
+      *
+      * This method allows users to specify whether
+      * the parser should process XInclude nodes
+      * in the DOM tree being produced.
+      *
+      * @param newState The state to set
+      * @see #getDoXInclude
+      */
+    void  setDoXInclude(const bool newState);
 
     /** Set the 'ignore annotation' flag
       *
@@ -843,18 +934,18 @@ public :
       * parser will try to resolve the entity on its own.  When this option
       * is set to true, the parser will not attempt to resolve the entity
       * when the resolveEntity method returns NULL.
-      *    
+      *
       * The parser's default state is false
       *
       * @param newValue The state to set
       *
-      * @see #entityResolver
+      * @see #EntityResolver
       */
     void setDisableDefaultEntityResolution(const bool newValue);
 
     /** Set the 'skip DTD validation' flag
       *
-      * This method gives users the option to skip DTD validation only when 
+      * This method gives users the option to skip DTD validation only when
       * schema validation is on (i.e. when performing validation,  we will
       * ignore the DTD, except for entities, when schema validation is enabled).
       *
@@ -865,6 +956,19 @@ public :
       * @param newValue The state to set
       */
     void setSkipDTDValidation(const bool newValue);
+
+    /** Set the 'handle multiple schema imports' flag
+      *
+      * This method gives users the ability to import multiple schemas that
+      * have the same namespace.
+      *
+      * NOTE: This option is ignored if schema validation is disabled.
+      *
+      * The parser's default state is false
+      *
+      * @param newValue The state to set
+      */
+    void setHandleMultipleImports(const bool newValue);
     //@}
 
 
@@ -939,7 +1043,7 @@ public :
       * the scan of the prolog failed and the token is not going to work on
       * subsequent scanNext() calls.
       *
-      * @param systemId A pointer to a Unicode string represting the path
+      * @param systemId A pointer to a Unicode string representing the path
       *                 to the XML file to be parsed.
       * @param toFill   A token maintaing state information to maintain
       *                 internal consistency between invocation of 'parseNext'
@@ -971,7 +1075,7 @@ public :
       * the scan of the prolog failed and the token is not going to work on
       * subsequent scanNext() calls.
       *
-      * @param systemId A pointer to a regular native string represting
+      * @param systemId A pointer to a regular native string representing
       *                 the path to the XML file to be parsed.
       * @param toFill   A token maintaing state information to maintain
       *                 internal consistency between invocation of 'parseNext'
@@ -1081,7 +1185,7 @@ public :
     // -----------------------------------------------------------------------
     //  Implementation of the PSVIHandler interface.
     // -----------------------------------------------------------------------
-    
+
     /** @name Implementation of the PSVIHandler interface. */
     //@{
 
@@ -1097,14 +1201,14 @@ public :
       */
     virtual void handleElementPSVI
     (
-        const   XMLCh* const            localName 
+        const   XMLCh* const            localName
         , const XMLCh* const            uri
         ,       PSVIElement *           elementInfo
     );
 
     virtual void handlePartialElementPSVI
     (
-        const   XMLCh* const            localName 
+        const   XMLCh* const            localName
         , const XMLCh* const            uri
         ,       PSVIElement *           elementInfo
     );
@@ -1113,7 +1217,7 @@ public :
       * application.  This callback will be made on *all*
       * elements; on elements with no attributes, the final parameter will
       * be null.
-      * @param  localName The name of the element upon which start tag 
+      * @param  localName The name of the element upon which start tag
       *          these attributes were encountered.
       * @param  uri       The namespace to which the element is bound
       * @param  psviAttributes   Object containing the attributes' PSVI properties
@@ -1121,7 +1225,7 @@ public :
       */
     virtual void handleAttributesPSVI
     (
-        const   XMLCh* const            localName 
+        const   XMLCh* const            localName
         , const XMLCh* const            uri
         ,       PSVIAttributeList *     psviAttributes
     );
@@ -1149,7 +1253,7 @@ public :
     virtual void docCharacters
     (
         const   XMLCh* const    chars
-        , const unsigned int    length
+        , const XMLSize_t       length
         , const bool            cdataSection
     );
 
@@ -1248,7 +1352,7 @@ public :
     virtual void ignorableWhitespace
     (
         const   XMLCh* const    chars
-        , const unsigned int    length
+        , const XMLSize_t       length
         , const bool            cdataSection
     );
 
@@ -1299,7 +1403,7 @@ public :
         , const unsigned int            urlId
         , const XMLCh* const            elemPrefix
         , const RefVectorOf<XMLAttr>&   attrList
-        , const unsigned int            attrCount
+        , const XMLSize_t               attrCount
         , const bool                    isEmpty
         , const bool                    isRoot
     );
@@ -1344,30 +1448,6 @@ public :
         , const XMLCh* const    actualEncStr
     );
 
-    /** Receive notification of the name and namespace of the type that validated 
-      * the element corresponding to the most recent endElement event.
-      * This event will be fired immediately after the
-      * endElement() event that signifies the end of the element
-      * to which it applies; no other events will intervene.
-      * This method is <em>EXPERIMENTAL</em> and may change, disappear 
-      * or become pure virtual at any time.
-      *
-      * This corresponds to a part of the information required by DOM Core
-      * level 3's TypeInfo interface.
-      *
-      * @param  typeName        local name of the type that actually validated
-      *                         the content of the element corresponding to the
-      *                         most recent endElement() callback
-      * @param  typeURI         namespace of the type that actually validated
-      *                         the content of the element corresponding to the
-      *                         most recent endElement() callback
-      * @deprecated
-      */
-    virtual void elementTypeInfo
-    (
-        const   XMLCh* const    typeName
-        , const XMLCh* const    typeURI
-    );
     //@}
 
 
@@ -1406,7 +1486,7 @@ public :
     virtual void doctypeWhitespace
     (
         const   XMLCh* const    chars
-        , const unsigned int    length
+        , const XMLSize_t       length
     );
 
     virtual void elementDecl
@@ -1454,76 +1534,29 @@ public :
         , const XMLCh* const    encodingStr
     );
 
-
     //@}
 
+protected:
+    // DOM node creation hooks. Override them if you are using your own
+    // DOM node types.
+    //
+    virtual DOMCDATASection* createCDATASection (const XMLCh*, XMLSize_t);
+    virtual DOMText* createText (const XMLCh*, XMLSize_t);
 
-    // -----------------------------------------------------------------------
-    //  Deprecated Methods
-    // -----------------------------------------------------------------------
-    /** @name Deprecated Methods */
-    //@{
-    /**
-      * This method returns the state of the parser's validation
-      * handling flag which controls whether validation checks
-      * are enforced or not.
-      *
-      * @return true, if the parser is currently configured to
-      *         do validation, false otherwise.
-      *
-      * @see #setDoValidation
-      */
-    bool getDoValidation() const;
+    virtual DOMElement* createElement (const XMLCh* name);
+    virtual DOMElement* createElementNS (const XMLCh* namespaceURI,
+                                         const XMLCh* elemPrefix,
+                                         const XMLCh* localName,
+                                         const XMLCh* qName);
 
-    /**
-      * This method allows users to enable or disable the parser's validation
-      * checks.
-      *
-      * <p>By default, the parser does not to any validation. The default
-      * value is false.</p>
-      *
-      * @param newState The value specifying whether the parser should
-      *                 do validity checks or not against the DTD in the
-      *                 input XML document.
-      *
-      * @see #getDoValidation
-      */
-    void setDoValidation(const bool newState);
+    virtual DOMAttr* createAttr (const XMLCh* name);
+    virtual DOMAttr* createAttrNS (const XMLCh* namespaceURI,
+                                   const XMLCh* elemPrefix,
+                                   const XMLCh* localName,
+                                   const XMLCh* qName);
 
-    /** Get the 'expand entity references' flag.
-      * DEPRECATED Use getCreateEntityReferenceNodes() instead.
-      *
-      * This method returns the state of the parser's expand entity
-      * references flag.
-      *
-      * @return 'true' if the expand entity reference flag is set on
-      *         the parser, 'false' otherwise.
-      *
-      * @see #setExpandEntityReferences
-      * @see #setCreateEntityReferenceNodes
-      * @see #getCreateEntityReferenceNodes
-      */
-    bool getExpandEntityReferences() const;
 
-    /** Set the 'expand entity references' flag
-      *
-      * DEPRECATED.  USE setCreateEntityReferenceNodes instead.
-      * This method allows the user to specify whether the parser should
-      * expand all entity reference nodes. When the 'do expansion' flag is
-      * true, the DOM tree does not have any entity reference nodes. It is
-      * replaced by the sub-tree representing the replacement text of the
-      * entity. When the 'do expansion' flag is false, the DOM tree
-      * contains an extra entity reference node, whose children is the
-      * sub tree of the replacement text.
-      * <p>The default value is 'false'.
-      *
-      * @param expand The new state of the expand entity reference
-      *               flag.
-      * @see #setCreateEntityReferenceNodes
-      */
-    void setExpandEntityReferences(const bool expand);
 
-    //@}
 
 protected :
     // -----------------------------------------------------------------------
@@ -1540,7 +1573,7 @@ protected :
       * @param valToAdopt Pointer to the validator instance to use. The
       *                   parser is responsible for freeing the memory.
       *
-      * @param gramPool   Pointer to the grammar pool instance from 
+      * @param gramPool   Pointer to the grammar pool instance from
       *                   external application (through derivatives).
       *                   The parser does NOT own it.
       *
@@ -1630,9 +1663,6 @@ protected :
     // -----------------------------------------------------------------------
     /** @name Protected helper methods */
     //@{
-    virtual DOMElement* createElementNSNode(const XMLCh *fNamespaceURI,
-                                              const XMLCh *qualifiedName);
-
     void resetPool();
 
     /**
@@ -1678,7 +1708,7 @@ protected:
     //      Indicates whether entity reference nodes should be created.
     //
     //  fIncludeIgnorableWhitespace
-    //      Indicates whether ignorable whiltespace should be added to
+    //      Indicates whether ignorable whitespace should be added to
     //      the DOM tree for validating parsers.
     //
     //  fScanner
@@ -1689,9 +1719,6 @@ protected:
     //      The implementation features that we use to get an implementation
     //      for use in creating the DOMDocument used during parse. If this is
     //      null then the default DOMImplementation is used
-    //
-    //  fNodeStack
-    //      Used to track previous parent nodes during nested element events.
     //
     //  fParseInProgress
     //      Used to prevent multiple entrance to the parser while its doing
@@ -1729,6 +1756,9 @@ protected:
     //  fCreateSchemaInfo
     //      Indicates whether element and attributes will have schema info associated
     //
+	//   fDoXinclude
+	//      A bool used to request that XInlcude processing occur on the
+	//      Document the parser parses.
     // -----------------------------------------------------------------------
     bool                          fCreateEntityReferenceNodes;
     bool                          fIncludeIgnorableWhitespace;
@@ -1737,13 +1767,13 @@ protected:
     bool                          fCreateCommentNodes;
     bool                          fDocumentAdoptedByUser;
     bool                          fCreateSchemaInfo;
+    bool                          fDoXInclude;
     XMLScanner*                   fScanner;
     XMLCh*                        fImplementationFeatures;
     DOMNode*                      fCurrentParent;
     DOMNode*                      fCurrentNode;
-    DOMEntity*                    fCurrentEntity;
+    DOMEntityImpl*                fCurrentEntity;
     DOMDocumentImpl*              fDocument;
-    ValueStackOf<DOMNode*>*       fNodeStack;
     DOMDocumentTypeImpl*          fDocumentType;
     RefVectorOf<DOMDocumentImpl>* fDocumentVector;
     GrammarResolver*              fGrammarResolver;
@@ -1761,10 +1791,6 @@ protected:
 // ---------------------------------------------------------------------------
 //  AbstractDOMParser: Getter methods
 // ---------------------------------------------------------------------------
-inline bool AbstractDOMParser::getExpandEntityReferences() const
-{
-    return !fCreateEntityReferenceNodes;
-}
 inline bool AbstractDOMParser::getCreateEntityReferenceNodes() const
 {
     return fCreateEntityReferenceNodes;
@@ -1809,14 +1835,14 @@ inline bool AbstractDOMParser::getCreateSchemaInfo() const
 {
     return fCreateSchemaInfo;
 }
+
+inline bool AbstractDOMParser::getDoXInclude() const
+{
+    return fDoXInclude;
+}
 // ---------------------------------------------------------------------------
 //  AbstractDOMParser: Setter methods
 // ---------------------------------------------------------------------------
-inline void AbstractDOMParser::setExpandEntityReferences(const bool expand)
-{
-    fCreateEntityReferenceNodes = !expand;
-}
-
 inline void AbstractDOMParser::setCreateEntityReferenceNodes(const bool create)
 {
     fCreateEntityReferenceNodes = create;
@@ -1834,8 +1860,13 @@ inline void AbstractDOMParser::setCreateCommentNodes(const bool create)
 
 inline void AbstractDOMParser::useImplementation(const XMLCh* const implementationFeatures)
 {
-    fMemoryManager->deallocate(fImplementationFeatures); 
-    fImplementationFeatures = XMLString::replicate(implementationFeatures, fMemoryManager); 
+    fMemoryManager->deallocate(fImplementationFeatures);
+    fImplementationFeatures = XMLString::replicate(implementationFeatures, fMemoryManager);
+}
+
+inline void AbstractDOMParser::setDoXInclude(const bool newState)
+{
+    fDoXInclude = newState;
 }
 
 // ---------------------------------------------------------------------------
@@ -1867,6 +1898,3 @@ inline void AbstractDOMParser::setParseInProgress(const bool toSet)
 XERCES_CPP_NAMESPACE_END
 
 #endif
-
-
-

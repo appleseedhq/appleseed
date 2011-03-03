@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: ListDatatypeValidator.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: ListDatatypeValidator.cpp 695949 2008-09-16 15:57:44Z borisk $
  */
 
 // ---------------------------------------------------------------------------
@@ -86,8 +86,8 @@ int ListDatatypeValidator::compare(const XMLCh*     const lValue
     BaseRefVectorOf<XMLCh>* rVector = XMLString::tokenizeString(rValue, manager);
     Janitor<BaseRefVectorOf<XMLCh> > janr(rVector);
 
-    int lNumberOfTokens = lVector->size();
-    int rNumberOfTokens = rVector->size();
+    XMLSize_t lNumberOfTokens = lVector->size();
+    XMLSize_t rNumberOfTokens = rVector->size();
 
     if (lNumberOfTokens < rNumberOfTokens)
         return -1;
@@ -95,7 +95,7 @@ int ListDatatypeValidator::compare(const XMLCh*     const lValue
         return 1;
     else
     { //compare each token
-        for ( int i = 0; i < lNumberOfTokens; i++)
+        for ( XMLSize_t i = 0; i < lNumberOfTokens; i++)
         {
             int returnValue = theItemTypeDTV->compare(lVector->elementAt(i), rVector->elementAt(i), manager);
             if (returnValue != 0)
@@ -168,15 +168,15 @@ void ListDatatypeValidator::checkContent(       BaseRefVectorOf<XMLCh>*       to
     if (asBase)
         return;
 
-    unsigned int tokenNumber = tokenVector->size();
+    XMLSize_t tokenNumber = tokenVector->size();
 
     if (((thisFacetsDefined & DatatypeValidator::FACET_MAXLENGTH) != 0) &&
         (tokenNumber > getMaxLength()))
     {
         XMLCh value1[BUF_LEN+1];
         XMLCh value2[BUF_LEN+1];
-        XMLString::binToText(tokenNumber, value1, BUF_LEN, 10, manager);
-        XMLString::binToText(getMaxLength(), value2, BUF_LEN, 10, manager);
+        XMLString::sizeToText(tokenNumber, value1, BUF_LEN, 10, manager);
+        XMLString::sizeToText(getMaxLength(), value2, BUF_LEN, 10, manager);
 
         ThrowXMLwithMemMgr3(InvalidDatatypeValueException
                 , XMLExcepts::VALUE_GT_maxLen
@@ -191,8 +191,8 @@ void ListDatatypeValidator::checkContent(       BaseRefVectorOf<XMLCh>*       to
     {
         XMLCh value1[BUF_LEN+1];
         XMLCh value2[BUF_LEN+1];
-        XMLString::binToText(tokenNumber, value1, BUF_LEN, 10, manager);
-        XMLString::binToText(getMinLength(), value2, BUF_LEN, 10, manager);
+        XMLString::sizeToText(tokenNumber, value1, BUF_LEN, 10, manager);
+        XMLString::sizeToText(getMinLength(), value2, BUF_LEN, 10, manager);
 
         ThrowXMLwithMemMgr3(InvalidDatatypeValueException
                 , XMLExcepts::VALUE_LT_minLen
@@ -207,8 +207,8 @@ void ListDatatypeValidator::checkContent(       BaseRefVectorOf<XMLCh>*       to
     {
         XMLCh value1[BUF_LEN+1];
         XMLCh value2[BUF_LEN+1];
-        XMLString::binToText(tokenNumber, value1, BUF_LEN, 10, manager);
-        XMLString::binToText(AbstractStringValidator::getLength(), value2, BUF_LEN, 10, manager);
+        XMLString::sizeToText(tokenNumber, value1, BUF_LEN, 10, manager);
+        XMLString::sizeToText(AbstractStringValidator::getLength(), value2, BUF_LEN, 10, manager);
 
         ThrowXMLwithMemMgr3(InvalidDatatypeValueException
                 , XMLExcepts::VALUE_NE_Len
@@ -221,8 +221,8 @@ void ListDatatypeValidator::checkContent(       BaseRefVectorOf<XMLCh>*       to
     if ((thisFacetsDefined & DatatypeValidator::FACET_ENUMERATION) != 0 &&
         (getEnumeration() != 0))
     {
-        int i;
-        int enumLength = getEnumeration()->size();
+        XMLSize_t i;
+        XMLSize_t enumLength = getEnumeration()->size();
 
         for ( i = 0; i < enumLength; i++)
         {
@@ -286,7 +286,7 @@ void ListDatatypeValidator::checkValueSpace(const XMLCh* const
                                             , MemoryManager* const)
 {}
 
-int ListDatatypeValidator::getLength(const XMLCh* const content
+XMLSize_t ListDatatypeValidator::getLength(const XMLCh* const content
                                      , MemoryManager* const manager) const
 {
     BaseRefVectorOf<XMLCh>* tokenVector = XMLString::tokenizeString(content, manager);
@@ -313,8 +313,8 @@ void ListDatatypeValidator::inspectFacetBase(MemoryManager* const manager)
         if ( ((getFacetsDefined() & DatatypeValidator::FACET_ENUMERATION) != 0) &&
              (getEnumeration() !=0)                                              )
         {
-            int i;
-            int enumLength = getEnumeration()->size();
+            XMLSize_t i;
+            XMLSize_t enumLength = getEnumeration()->size();
             try
             {
                 for ( i = 0; i < enumLength; i++)
@@ -322,11 +322,11 @@ void ListDatatypeValidator::inspectFacetBase(MemoryManager* const manager)
                     // ask the itemType for a complete check
                     BaseRefVectorOf<XMLCh>* tempList = XMLString::tokenizeString(getEnumeration()->elementAt(i), manager);
                     Janitor<BaseRefVectorOf<XMLCh> >    jan(tempList);
-                    int tokenNumber = tempList->size();
+                    XMLSize_t tokenNumber = tempList->size();
 
                     try
                     {
-                        for ( int j = 0; j < tokenNumber; j++)
+                        for ( XMLSize_t j = 0; j < tokenNumber; j++)
                             getBaseValidator()->validate(tempList->elementAt(j), (ValidationContext*)0, manager);
                     }
                     catch(const OutOfMemoryException&)
@@ -372,9 +372,9 @@ void ListDatatypeValidator::inheritFacet()
 /***
  * 2.5.1.2 List datatypes   
  *   
- * The canonical-lexical-representation for the ·list· datatype is defined as 
- * the lexical form in which each item in the ·list· has the canonical 
- * lexical representation of its ·itemType·.
+ * The canonical-lexical-representation for the list datatype is defined as 
+ * the lexical form in which each item in the list has the canonical 
+ * lexical representation of its itemType.
  ***/
 const XMLCh* ListDatatypeValidator::getCanonicalRepresentation(const XMLCh*         const rawData
                                                              ,       MemoryManager* const memMgr
@@ -398,7 +398,7 @@ const XMLCh* ListDatatypeValidator::getCanonicalRepresentation(const XMLCh*     
         }
     }
    
-    unsigned int  retBufSize = 2 * XMLString::stringLen(rawData);
+    XMLSize_t retBufSize = 2 * XMLString::stringLen(rawData);
     XMLCh* retBuf = (XMLCh*) toUse->allocate(retBufSize * sizeof(XMLCh));
     retBuf[0] = 0;
     XMLCh* retBufPtr = retBuf;
@@ -409,7 +409,7 @@ const XMLCh* ListDatatypeValidator::getCanonicalRepresentation(const XMLCh*     
         for (unsigned int i = 0; i < tokenVector->size(); i++)
         {
             XMLCh* itemCanRep = (XMLCh*) itemDv->getCanonicalRepresentation(tokenVector->elementAt(i), toUse, false);
-            unsigned int itemLen = XMLString::stringLen(itemCanRep); 
+            XMLSize_t itemLen = XMLString::stringLen(itemCanRep); 
 
             if(retBufPtr+itemLen+2 >= retBuf+retBufSize)
             {

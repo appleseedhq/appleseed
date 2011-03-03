@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: Locator.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: Locator.hpp 672273 2008-06-27 13:57:00Z borisk $
  */
 
-
-#ifndef LOCATOR_HPP
-#define LOCATOR_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_LOCATOR_HPP)
+#define XERCESC_INCLUDE_GUARD_LOCATOR_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 
@@ -97,20 +96,20 @@ public:
     * Return the line number where the current document event ends.
     * Note that this is the line position of the first character
     * after the text associated with the document event.
-    * @return The line number, or -1 if none is available.
+    * @return The line number, or 0 if none is available.
     * @see #getColumnNumber
     */
-    virtual XMLSSize_t getLineNumber() const = 0;
+    virtual XMLFileLoc getLineNumber() const = 0;
 
   /**
     * Return the column number where the current document event ends.
     * Note that this is the column number of the first
     * character after the text associated with the document
     * event.  The first column in a line is position 1.
-    * @return The column number, or -1 if none is available.
+    * @return The column number, or 0 if none is available.
     * @see #getLineNumber
     */
-    virtual XMLSSize_t getColumnNumber() const = 0;
+    virtual XMLFileLoc getColumnNumber() const = 0;
     //@}
 
 private :

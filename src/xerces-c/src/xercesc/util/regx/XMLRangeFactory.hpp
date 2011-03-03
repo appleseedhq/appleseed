@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XMLRangeFactory.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLRangeFactory.hpp 678879 2008-07-22 20:05:05Z amassari $
  */
 
-#if !defined(XMLRANGEFACTORY_HPP)
-#define XMLRANGEFACTORY_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XMLRANGEFACTORY_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLRANGEFACTORY_HPP
 
 // ---------------------------------------------------------------------------
 //  Includes
@@ -41,16 +41,16 @@ public:
     // -----------------------------------------------------------------------
     //  Initialization methods
     // -----------------------------------------------------------------------
-	void initializeKeywordMap(RangeTokenMap *rangeTokMap = 0);
+    void initializeKeywordMap(RangeTokenMap *rangeTokMap = 0);
 
 protected:
     // -----------------------------------------------------------------------
     //  Protected Helper methods
     // -----------------------------------------------------------------------
-	void buildRanges(RangeTokenMap *rangeTokMap = 0);
+    void buildRanges(RangeTokenMap *rangeTokMap = 0);
 
 private:
-	// -----------------------------------------------------------------------
+    // -----------------------------------------------------------------------
     //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
     XMLRangeFactory(const XMLRangeFactory&);
@@ -62,5 +62,5 @@ XERCES_CPP_NAMESPACE_END
 #endif
 
 /**
-  *	End file XMLRangeFactory.hpp
+  *    End file XMLRangeFactory.hpp
   */

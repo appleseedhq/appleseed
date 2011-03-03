@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XMLAttDef.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLAttDef.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#if !defined(ATTDEF_HPP)
-#define ATTDEF_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XMLATTDEF_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLATTDEF_HPP
 
 #include <xercesc/util/PlatformUtils.hpp>
 #include <xercesc/util/XMLString.hpp>
@@ -31,7 +31,7 @@ XERCES_CPP_NAMESPACE_BEGIN
 
 class XMLAttr;
 
-/** Represents the core information of an atribute definition
+/** Represents the core information of an attribute definition
  *
  *  This class defines the basic characteristics of an attribute, no matter
  *  what type of validator is used. If a particular schema associates more
@@ -130,7 +130,7 @@ public:
 
     /** Get a string representation of the passed attribute type enum
       *
-      * This method allows you to get a textual representation of an attriubte
+      * This method allows you to get a textual representation of an attribute
       * type, mostly for debug or display.
       *
       * @param attrType The attribute type value to get the string for.
@@ -208,7 +208,7 @@ public:
       *
       * This method returns the 'default type' of the attribute. Default
       * type in this case refers to the XML concept of a default type for
-      * an attribute, i.e. #FIXED, #IMPLIED, etc...
+      * an attribute, i.e. \#FIXED, \#IMPLIED, etc...
       *
       * @return The default type enum for this attribute type.
       */
@@ -216,7 +216,7 @@ public:
 
     /** Get the enumeration value (if any) of this attribute type
       *
-      * If the attribute is of an enumeration or notatin type, then this
+      * If the attribute is of an enumeration or notation type, then this
       * method will return a const reference to a string that contains the
       * space separated values that can the attribute can have.
       *
@@ -233,28 +233,12 @@ public:
       *
       * @return The pool id of this attribute type.
       */
-    unsigned int getId() const;
-
-    /** Query whether the attribute was explicitly provided.
-      *
-      * When the scanner scans a start tag, it will ask the element decl
-      * object of the element type of that start tag to clear the 'provided'
-      * flag on all its attributes. As the scanner sees explicitly provided
-      * attributes, its turns on this flag to indicate that this attribute
-      * has been provided. In this way, the scanner can catch duplicated
-      * attributes and required attributes that aren't provided, and default
-      * in fixed/default valued attributes that are not explicitly provided.
-      *
-      * @return Returns a boolean value that indicates whether this attribute
-      *         was explicitly provided.
-      * @deprecated
-      */
-    bool getProvided() const;
+    XMLSize_t getId() const;
 
     /** Get the type of this attribute
       *
       * Gets the type of this attribute. This type is represented by an enum
-      * that convers the types of attributes allowed by XML, e.g. CDATA, NMTOKEN,
+      * that converts the types of attributes allowed by XML, e.g. CDATA, NMTOKEN,
       * NOTATION, etc...
       *
       * @return The attribute type enumeration value for this type of
@@ -301,19 +285,6 @@ public:
       */
     MemoryManager* getMemoryManager() const;
 
-
-    /**
-     * @return the uri part of DOM Level 3 TypeInfo
-     * @deprecated
-     */
-    virtual const XMLCh* getDOMTypeInfoUri() const = 0;
-
-    /**
-     * @return the name part of DOM Level 3 TypeInfo
-     * @deprecated
-     */
-    virtual const XMLCh* getDOMTypeInfoName() const = 0;
-
     //@}
 
 
@@ -342,18 +313,7 @@ public:
       *
       * @param  newId The new pool id to set.
       */
-    void setId(const unsigned int newId);
-
-    /** Set or clear the 'provided' flag.
-      *
-      * This method will set or clear the 'provided' flag. This is called
-      * by the scanner as it is scanning a start tag and marking off the
-      * attributes that have been explicitly provided.
-      *
-      * @param  newValue The new provided state to set
-      * @deprecated
-      */
-    void setProvided(const bool newValue);
+    void setId(const XMLSize_t newId);
 
     /** Set the type of this attribute type.
       *
@@ -460,12 +420,6 @@ private :
     //      into the validator's attribute decl pool. It defaults to the
     //      special value XMLAttrDef::fgInvalidAttrId.
     //
-    //  fProvided
-    //      This field is really for use by the scanner. It is used to track
-    //      which of the attributes of an element were provided. Any marked
-    //      as not provided (after scanning the start tag) and having a
-    //      default type of Required, is in error.
-    //
     //  fType
     //      The type of attribute, which is one of the AttTypes values.
     //
@@ -483,10 +437,9 @@ private :
     // -----------------------------------------------------------------------
     DefAttTypes     fDefaultType;
     AttTypes        fType;
-    CreateReasons   fCreateReason;
-    bool            fProvided;
+    CreateReasons   fCreateReason;   
     bool            fExternalAttribute;
-    unsigned int    fId;
+    XMLSize_t       fId;
     XMLCh*          fValue;
     XMLCh*          fEnumeration;
     MemoryManager*  fMemoryManager;
@@ -506,14 +459,9 @@ inline const XMLCh* XMLAttDef::getEnumeration() const
     return fEnumeration;
 }
 
-inline unsigned int XMLAttDef::getId() const
+inline XMLSize_t XMLAttDef::getId() const
 {
     return fId;
-}
-
-inline bool XMLAttDef::getProvided() const
-{
-    return fProvided;
 }
 
 inline XMLAttDef::AttTypes XMLAttDef::getType() const
@@ -557,14 +505,9 @@ inline void XMLAttDef::setEnumeration(const XMLCh* const newValue)
     fEnumeration = XMLString::replicate(newValue, fMemoryManager);
 }
 
-inline void XMLAttDef::setId(const unsigned int newId)
+inline void XMLAttDef::setId(const XMLSize_t newId)
 {
     fId = newId;
-}
-
-inline void XMLAttDef::setProvided(const bool newValue)
-{
-    fProvided = newValue;
 }
 
 inline void XMLAttDef::setType(const XMLAttDef::AttTypes newValue)

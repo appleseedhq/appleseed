@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#if !defined(DOMPSVITYPEINFO_HPP)
-#define DOMPSVITYPEINFO_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_DOMPSVITYPEINFO_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMPSVITYPEINFO_HPP
 
 //------------------------------------------------------------------------------------
 //  Includes
@@ -57,7 +57,7 @@ public:
     enum PSVIProperty
     {
         PSVI_Validity
-        , PSVI_Validitation_Attempted
+        , PSVI_Validation_Attempted
         , PSVI_Type_Definition_Type
         , PSVI_Type_Definition_Name
         , PSVI_Type_Definition_Namespace
@@ -91,7 +91,6 @@ public:
      * Returns the string value of the specified PSVI property associated to a 
      * <code>DOMElement</code> or <code>DOMAttr</code>, or null if not available.
      *
-     * <p><b>"Experimental - subject to change"</b></p>
      *
      * @return the string value of the specified PSVI property associated to a 
      * <code>DOMElement</code> or <code>DOMAttr</code>, or null if not available.
@@ -102,7 +101,6 @@ public:
      * Returns the numeric value of the specified PSVI property associated to a 
      * <code>DOMElement</code> or <code>DOMAttr</code>, or null if not available.
      *
-     * <p><b>"Experimental - subject to change"</b></p>
      *
      * @return the numeric value of the specified PSVI property associated to a 
      * <code>DOMElement</code> or <code>DOMAttr</code>, or null if not available.

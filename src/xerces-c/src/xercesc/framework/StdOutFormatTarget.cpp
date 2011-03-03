@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: StdOutFormatTarget.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: StdOutFormatTarget.cpp 881225 2009-11-17 10:19:57Z borisk $
  */
 
 #include <xercesc/framework/StdOutFormatTarget.hpp>
@@ -28,7 +28,9 @@ StdOutFormatTarget::StdOutFormatTarget()
 {}
 
 StdOutFormatTarget::~StdOutFormatTarget()
-{}
+{
+  flush ();
+}
 
 void StdOutFormatTarget::flush()
 {
@@ -36,15 +38,12 @@ void StdOutFormatTarget::flush()
 }
 
 void StdOutFormatTarget::writeChars(const XMLByte* const  toWrite
-                                  , const unsigned int    count
+                                  , const XMLSize_t       count
                                   , XMLFormatter* const)
 {
-    // Surprisingly, Solaris was the only platform on which
-    // required the char* cast to print out the string correctly.
-    // Without the cast, it was printing the pointer value in hex.
-    // Quite annoying, considering every other platform printed
-    // the string with the explicit cast to char* below.
-    fwrite(toWrite, sizeof(XMLByte), (size_t)count, stdout);
+    XMLSize_t written=fwrite(toWrite, sizeof(XMLByte), count, stdout);
+    if(written!=count)
+        ThrowXML(XMLPlatformUtilsException, XMLExcepts::File_CouldNotWriteToFile);
     fflush(stdout);
 }
 

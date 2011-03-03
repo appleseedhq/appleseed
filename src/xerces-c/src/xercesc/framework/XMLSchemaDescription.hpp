@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: XMLSchemaDescription.hpp 568078 2007-08-21 11:43:25Z amassari $
- *
+ * $Id: XMLSchemaDescription.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-#if !defined(XMLSCHEMADESCRIPTION_HPP)
-#define XMLSCHEMADESCRIPTION_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XMLSCHEMADESCRIPTION_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLSCHEMADESCRIPTION_HPP
 
 #include <xercesc/framework/XMLGrammarDescription.hpp>
 #include <xercesc/util/RefArrayVectorOf.hpp>
@@ -92,7 +91,7 @@ public :
       * getLocationHints
       *
       */	
-    virtual RefArrayVectorOf<XMLCh>*   getLocationHints() const = 0;
+    virtual const RefArrayVectorOf<XMLCh>*   getLocationHints() const = 0;
 
     /**
       * getTriggeringComponent

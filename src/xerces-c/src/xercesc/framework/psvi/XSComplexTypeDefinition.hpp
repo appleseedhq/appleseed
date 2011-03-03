@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XSComplexTypeDefinition.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XSComplexTypeDefinition.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#if !defined(XSCOMPLEXTYPEDEFINITION_HPP)
-#define XSCOMPLEXTYPEDEFINITION_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XSCOMPLEXTYPEDEFINITION_HPP)
+#define XERCESC_INCLUDE_GUARD_XSCOMPLEXTYPEDEFINITION_HPP
 
 #include <xercesc/framework/psvi/XSTypeDefinition.hpp>
 
@@ -160,7 +160,7 @@ public:
 
     /**
      * [prohibited substitutions]: a subset of {extension, restriction}
-     * @param toTest  Extention or restriction constants (see 
+     * @param toTest  Extension or restriction constants (see 
      *   <code>XSObject</code>). 
      * @return True if toTest is a prohibited substitution, otherwise 
      *   false.
@@ -183,7 +183,7 @@ public:
      * The name of type <code>NCName</code> of this declaration as defined in 
      * XML Namespaces.
      */
-    const XMLCh* getName();
+    const XMLCh* getName() const;
 
     /**
      *  The [target namespace] of this object, or <code>null</code> if it is 

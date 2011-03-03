@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,18 +16,20 @@
  */
 
 /*
- * $Id: SGXMLScanner.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: SGXMLScanner.hpp 882548 2009-11-20 13:44:14Z borisk $
  */
 
-
-#if !defined(SGXMLSCANNER_HPP)
-#define SGXMLSCANNER_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_SGXMLSCANNER_HPP)
+#define XERCESC_INCLUDE_GUARD_SGXMLSCANNER_HPP
 
 #include <xercesc/internal/XMLScanner.hpp>
 #include <xercesc/util/KVStringPair.hpp>
 #include <xercesc/util/ValueHashTableOf.hpp>
+#include <xercesc/util/RefHash2KeysTableOf.hpp>
 #include <xercesc/util/RefHash3KeysIdPool.hpp>
+#include <xercesc/util/Hash2KeysSetOf.hpp>
 #include <xercesc/validators/common/Grammar.hpp>
+#include <xercesc/validators/schema/SchemaInfo.hpp>
 #include <xercesc/validators/schema/SchemaElementDecl.hpp>
 
 
@@ -75,13 +77,6 @@ public :
     virtual const XMLCh* getName() const;
     virtual NameIdPool<DTDEntityDecl>* getEntityDeclPool();
     virtual const NameIdPool<DTDEntityDecl>* getEntityDeclPool() const;
-    virtual unsigned int resolveQName
-    (
-        const   XMLCh* const        qName
-        ,       XMLBuffer&          prefixBufToFill
-        , const short               mode
-        ,       int&                prefixColonPos
-    );
     virtual void scanDocument
     (
         const   InputSource&    src
@@ -93,6 +88,8 @@ public :
         , const short           grammarType
         , const bool            toCache = false
     );
+
+    virtual void resetCachedGrammar ();
     virtual Grammar::GrammarType getCurrentGrammarType() const;
 
 protected:
@@ -110,17 +107,17 @@ protected:
     // -----------------------------------------------------------------------
     //  Helper methods
     // -----------------------------------------------------------------------
-    unsigned int buildAttList
+    XMLSize_t buildAttList
     (
         const   RefVectorOf<KVStringPair>&  providedAttrs
-        , const unsigned int                attCount
+        , const XMLSize_t                   attCount
         ,       XMLElementDecl*             elemDecl
         ,       RefVectorOf<XMLAttr>&       toFill
     );
     bool laxElementValidation(QName* element, ContentLeafNameTypeVector* cv,
                               const XMLContentModel* const cm,
-                              const unsigned int parentElemDepth);
-    unsigned int rawAttrScan
+                              const XMLSize_t parentElemDepth);
+    XMLSize_t rawAttrScan
     (
         const   XMLCh* const                elemName
         ,       RefVectorOf<KVStringPair>&  toFill
@@ -131,11 +128,6 @@ protected:
         const   XMLCh* const    attrName
         , const XMLCh* const    attrValue
     );
-    unsigned int resolvePrefix
-    (
-        const   XMLCh* const        prefix
-        , const ElemStack::MapModes mode
-    );
     void resizeElemState();
 
     void updateNSMap
@@ -145,13 +137,6 @@ protected:
         , const int             colonPosition
     );
     void resizeRawAttrColonList();
-    unsigned int resolveQNameWithColon
-    (
-        const   XMLCh* const        qName
-        ,       XMLBuffer&          prefixBufToFill
-        , const short               mode
-        , const int                 prefixColonPos
-    );
     // -----------------------------------------------------------------------
     //  Data members
     //
@@ -167,6 +152,7 @@ protected:
     //      This flag indicates a schema has been seen.
     //
     //  fElemState
+    //  fElemLoopState
     //  fElemStateSize
     //      Stores an element next state from DFA content model - used for
     //      wildcard validation
@@ -179,18 +165,22 @@ protected:
     // fAttDefRegistry
     //      mapping from XMLAttDef instances to the count of the last
     //      start tag where they were utilized.
-    // fUndeclaredAttrRegistryNS
-    //      mapping of namespaceId/localName pairs to the count of the last
-    //      start tag in which they occurred.
-    //  fPSVIAttrList
+    // fUndeclaredAttrRegistry
+    //      set of namespaceId/localName pairs to detect duplicates
+    // fPSVIAttrList
     //      PSVI attribute list implementation that needs to be
     //      filled when a PSVIHandler is registered
+    // fSchemaInfoList
+    //      Transient schema info list that is passed to TraverseSchema instances.
+    // fCachedSchemaInfoList
+    //      Cached Schema info list that is passed to TraverseSchema instances.
     //
     // -----------------------------------------------------------------------
     bool                                    fSeeXsi;
     Grammar::GrammarType                    fGrammarType;
     unsigned int                            fElemStateSize;
     unsigned int*                           fElemState;
+    unsigned int*                           fElemLoopState;
     XMLBuffer                               fContent;
     ValueHashTableOf<XMLCh>*                fEntityTable;
     RefVectorOf<KVStringPair>*              fRawAttrList;
@@ -201,13 +191,15 @@ protected:
     IdentityConstraintHandler*              fICHandler;
     RefHash3KeysIdPool<SchemaElementDecl>*  fElemNonDeclPool;
     unsigned int                            fElemCount;
-    RefHashTableOf<unsigned int>*           fAttDefRegistry;
-    RefHash2KeysTableOf<unsigned int>*      fUndeclaredAttrRegistryNS;
+    RefHashTableOf<unsigned int, PtrHasher>*fAttDefRegistry;
+    Hash2KeysSetOf<StringHasher>*           fUndeclaredAttrRegistry;
     PSVIAttributeList *                     fPSVIAttrList;
     XSModel*                                fModel;
     PSVIElement*                            fPSVIElement;
     ValueStackOf<bool>*                     fErrorStack;
     PSVIElemContext                         fPSVIElemContext;
+    RefHash2KeysTableOf<SchemaInfo>*        fSchemaInfoList;
+    RefHash2KeysTableOf<SchemaInfo>*        fCachedSchemaInfoList;
 
 private :
     // -----------------------------------------------------------------------
@@ -243,7 +235,7 @@ private :
     bool normalizeAttValue
     (
         const   XMLAttDef* const    attDef
-        , const XMLCh* const        attrName 
+        , const XMLCh* const        attrName
         , const XMLCh* const        value
         ,       XMLBuffer&          toFill
     );
@@ -253,15 +245,9 @@ private :
         , const XMLCh* const        value
         ,       XMLBuffer&          toFill
     );
-    unsigned int resolvePrefix
-    (
-        const   XMLCh* const        prefix
-        ,       XMLBuffer&          uriBufToFill
-        , const ElemStack::MapModes mode
-    );
-    void scanRawAttrListforNameSpaces(int attCount);
-    void parseSchemaLocation(const XMLCh* const schemaLocationStr);
-    void resolveSchemaGrammar(const XMLCh* const loc, const XMLCh* const uri);
+    void scanRawAttrListforNameSpaces(XMLSize_t attCount);
+    void parseSchemaLocation(const XMLCh* const schemaLocationStr, bool ignoreLoadSchema = false);
+    void resolveSchemaGrammar(const XMLCh* const loc, const XMLCh* const uri, bool ignoreLoadSchema = false);
     bool switchGrammar(const XMLCh* const newGrammarNameSpace);
     bool anyAttributeValidation(SchemaAttDef* attWildCard,
                                 unsigned int uriId,

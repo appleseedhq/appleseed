@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: MonthDayDatatypeValidator.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: MonthDayDatatypeValidator.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-#if !defined(MONTHDAY_DATATYPE_VALIDATOR_HPP)
-#define MONTHDAY_DATATYPE_VALIDATOR_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_MONTHDAY_DATATYPE_VALIDATOR_HPP)
+#define XERCESC_INCLUDE_GUARD_MONTHDAY_DATATYPE_VALIDATOR_HPP
 
 #include <xercesc/validators/datatype/DateTimeValidator.hpp>
 

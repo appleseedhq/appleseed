@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DecimalDatatypeValidator.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DecimalDatatypeValidator.cpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
 // ---------------------------------------------------------------------------
@@ -341,8 +341,8 @@ void DecimalDatatypeValidator::setEnumeration(MemoryManager* const manager)
     if (!fStrEnumeration)
         return;
 
-    int i = 0;
-    int enumLength = fStrEnumeration->size();
+    XMLSize_t i = 0;
+    XMLSize_t enumLength = fStrEnumeration->size();
 
     DecimalDatatypeValidator *numBase = (DecimalDatatypeValidator*) getBaseValidator();
     if (numBase)
@@ -363,7 +363,7 @@ void DecimalDatatypeValidator::setEnumeration(MemoryManager* const manager)
         }
     }
 #if 0
-// spec says that only base has to checkContent          
+// spec says that only base has to checkContent
     // We put the this->checkContent in a separate loop
     // to not block original message with in that method.
     //
@@ -377,7 +377,7 @@ void DecimalDatatypeValidator::setEnumeration(MemoryManager* const manager)
 
     for ( i = 0; i < enumLength; i++)
     {
-        fEnumeration->insertElementAt(new (manager) XMLBigDecimal(fStrEnumeration->elementAt(i), manager), i);        
+        fEnumeration->insertElementAt(new (manager) XMLBigDecimal(fStrEnumeration->elementAt(i), manager), i);
     }
 
 }
@@ -416,12 +416,12 @@ void DecimalDatatypeValidator::checkContent(const XMLCh*             const conte
         return;
 
     XMLBigDecimal  compareDataValue(content, manager);
-    XMLBigDecimal* compareData = &compareDataValue;        
-        
+    XMLBigDecimal* compareData = &compareDataValue;
+
     if (getEnumeration())
     {
-        int i=0;
-        int enumLength = getEnumeration()->size();
+        XMLSize_t i=0;
+        XMLSize_t enumLength = getEnumeration()->size();
         for ( ; i < enumLength; i++)
         {
             if (compareValues(compareData, (XMLBigDecimal*) getEnumeration()->elementAt(i)) ==0 )
@@ -437,7 +437,7 @@ void DecimalDatatypeValidator::checkContent(const XMLCh*             const conte
     if ( (thisFacetsDefined & DatatypeValidator::FACET_FRACTIONDIGITS) != 0 )
     {
         if ( compareData->getScale() > fFractionDigits )
-        {                
+        {
             XMLCh value1[BUF_LEN+1];
             XMLCh value2[BUF_LEN+1];
             XMLString::binToText(compareData->getScale(), value1, BUF_LEN, 10, manager);
@@ -454,7 +454,7 @@ void DecimalDatatypeValidator::checkContent(const XMLCh*             const conte
     if ( (thisFacetsDefined & DatatypeValidator::FACET_TOTALDIGITS) != 0 )
     {
         if ( compareData->getTotalDigit() > fTotalDigits )
-        {                
+        {
             XMLCh value1[BUF_LEN+1];
             XMLCh value2[BUF_LEN+1];
             XMLString::binToText(compareData->getTotalDigit(), value1, BUF_LEN, 10, manager);
@@ -469,12 +469,12 @@ void DecimalDatatypeValidator::checkContent(const XMLCh*             const conte
 
         /***
          E2-44 totalDigits
-         ... by restricting it to numbers that are expressible as i � 10^-n
+         ... by restricting it to numbers that are expressible as i x 10^-n
          where i and n are integers such that |i| < 10^totalDigits and 0 <= n <= totalDigits.
          ***/
 
-        if ( compareData->getScale() > fTotalDigits )  
-        {                
+        if ( compareData->getScale() > fTotalDigits )
+        {
             XMLCh value1[BUF_LEN+1];
             XMLCh value2[BUF_LEN+1];
             XMLString::binToText(compareData->getScale(), value1, BUF_LEN, 10, manager);
@@ -485,37 +485,37 @@ void DecimalDatatypeValidator::checkContent(const XMLCh*             const conte
                               , value1
                               , value2
                               , manager);
-        }        
+        }
     }
 }
 
 /***
- * 3.2.3 decimal  
+ * 3.2.3 decimal
  *
- * . the preceding optional "+" sign is prohibited. 
- * . The decimal point is required. 
- * . Leading and trailing zeroes are prohibited subject to the following: 
+ * . the preceding optional "+" sign is prohibited.
+ * . The decimal point is required.
+ * . Leading and trailing zeroes are prohibited subject to the following:
  *   there must be at least one digit to the right and to the left of the decimal point which may be a zero.
  *
  *
  *  3.3.13 integer
  *  3.3.16 long
  *  3.3.17 int
- *  3.3.18 short 
+ *  3.3.18 short
  *  3.3.19 byte
  *  3.3.20 nonNegativeInteger
  *  3.3.25 positiveInteger
  *
  *   . the preceding optional "+" sign is prohibited and
  *   . leading zeroes are prohibited.
- *   
+ *
  *
  *  E2-27
  *  3.3.14 nonPositiveInteger
  *
- *   . In the canonical form for zero, the sign must be omitted. 
+ *   . In the canonical form for zero, the sign must be omitted.
  *   . leading zeroes are prohibited.
- *  
+ *
  *  3.3.15 negativeInteger
  *  3.3.21 unsignedLong
  *  3.3.22 unsignedInt
@@ -523,7 +523,7 @@ void DecimalDatatypeValidator::checkContent(const XMLCh*             const conte
  *  3.3.24 unsignedByte
  *
  *  . leading zeroes are prohibited.
- *  
+ *
  *  Summary:
  *  . leading zeros are prohibited for all three groups
  *  . '-' is required for nonPositiveInteger if it is zero
@@ -541,7 +541,7 @@ const XMLCh* DecimalDatatypeValidator::getCanonicalRepresentation(const XMLCh*  
     {
         try
         {
-            temp->checkContent(rawData, 0, false, toUse);   
+            temp->checkContent(rawData, 0, false, toUse);
         }
         catch (...)
         {
@@ -553,13 +553,13 @@ const XMLCh* DecimalDatatypeValidator::getCanonicalRepresentation(const XMLCh*  
     // XMLBigDecimal::getCanonicalRepresentation will handle exceptional cases
     XMLCanRepGroup::CanRepGroup dvType = DatatypeValidatorFactory::getCanRepGroup(temp);
 
-    if ((dvType == XMLCanRepGroup::Decimal_Derivated_signed)   ||
-        (dvType == XMLCanRepGroup::Decimal_Derivated_unsigned) ||
-        (dvType == XMLCanRepGroup::Decimal_Derivated_npi)        )
-    {          
-        return XMLBigInteger::getCanonicalRepresentation(rawData, toUse, dvType == XMLCanRepGroup::Decimal_Derivated_npi);
+    if ((dvType == XMLCanRepGroup::Decimal_Derived_signed)   ||
+        (dvType == XMLCanRepGroup::Decimal_Derived_unsigned) ||
+        (dvType == XMLCanRepGroup::Decimal_Derived_npi)        )
+    {
+        return XMLBigInteger::getCanonicalRepresentation(rawData, toUse, dvType == XMLCanRepGroup::Decimal_Derived_npi);
     }
-    else if (dvType == XMLCanRepGroup::Decimal) 
+    else if (dvType == XMLCanRepGroup::Decimal)
     {
         return XMLBigDecimal::getCanonicalRepresentation(rawData, toUse);
     }
@@ -579,7 +579,7 @@ IMPL_XSERIALIZABLE_TOCREATE(DecimalDatatypeValidator)
 void DecimalDatatypeValidator::serialize(XSerializeEngine& serEng)
 {
     /***
-     * Note: 
+     * Note:
      *
      *     During storing, we need write the specific number
      *     type info before calling base::serialize().
@@ -594,7 +594,7 @@ void DecimalDatatypeValidator::serialize(XSerializeEngine& serEng)
 
     AbstractNumericValidator::serialize(serEng);
 
-    //don't serialize XMLBigDecimal*       
+    //don't serialize XMLBigDecimal*
     if (serEng.isStoring())
     {
         serEng<<fTotalDigits;

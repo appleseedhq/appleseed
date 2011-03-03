@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,22 +16,31 @@
  */
 
 /*
- * $Id: RangeToken.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: RangeToken.cpp 901107 2010-01-20 08:45:02Z borisk $
  */
 
 // ---------------------------------------------------------------------------
 //  Includes
 // ---------------------------------------------------------------------------
+#if HAVE_CONFIG_H
+#    include <config.h>
+#endif
+
 #include <assert.h>
 
 #include <xercesc/util/regx/RangeToken.hpp>
 #include <xercesc/util/regx/TokenFactory.hpp>
 #include <xercesc/util/IllegalArgumentException.hpp>
-
-#if defined(XML_USE_ICU_TRANSCODER) || defined (XML_USE_UNICONV390_TRANSCODER)
-#include <unicode/uchar.h>
-#else
 #include <xercesc/util/XMLUniDefs.hpp>
+
+#if XERCES_USE_TRANSCODER_ICU
+  #include <unicode/uchar.h>
+
+#if (U_ICU_VERSION_MAJOR_NUM > 2) || (U_ICU_VERSION_MAJOR_NUM == 2 && U_ICU_VERSION_MINOR_NUM >=4)
+  #include <unicode/uset.h>
+  #include <xercesc/util/XMLString.hpp>
+  #include <xercesc/util/Janitor.hpp>
+#endif
 #endif
 
 XERCES_CPP_NAMESPACE_BEGIN
@@ -45,9 +54,9 @@ const unsigned int RangeToken::INITIALSIZE = 16;
 // ---------------------------------------------------------------------------
 //  RangeToken: Constructors and Destructors
 // ---------------------------------------------------------------------------
-RangeToken::RangeToken(const unsigned short tokType,
-                       MemoryManager* const manager) 
-    : Token(tokType, manager)
+RangeToken::RangeToken(const Token::tokType tkType,
+                       MemoryManager* const manager)
+    : Token(tkType, manager)
     , fSorted(false)
     , fCompacted(false)
     , fNonMapIndex(0)
@@ -63,6 +72,12 @@ RangeToken::RangeToken(const unsigned short tokType,
 
 RangeToken::~RangeToken() {
 
+    // TODO(dbertoni) This is a temporary hack until we can change the ABI.
+    // See Jira issue XERCESC-1866 for more details.
+    if (fCaseIToken && fCaseIToken->fCaseIToken == this)
+    {
+        fCaseIToken->fCaseIToken = 0;
+    }
     fMemoryManager->deallocate(fMap);//delete [] fMap;
     fMemoryManager->deallocate(fRanges);//delete[] fRanges;
 }
@@ -144,11 +159,69 @@ RangeToken* RangeToken::getCaseInsensitiveToken(TokenFactory* const tokFactory) 
         bool isNRange = (getTokenType() == T_NRANGE) ? true : false;
         RangeToken* lwrToken = tokFactory->createRange(isNRange);
 
+#if XERCES_USE_TRANSCODER_ICU && ((U_ICU_VERSION_MAJOR_NUM > 2) || (U_ICU_VERSION_MAJOR_NUM == 2 && U_ICU_VERSION_MINOR_NUM >=4))
+        UChar* rangeStr=(UChar*)fMemoryManager->allocate(40*fElemCount*sizeof(UChar));
+        ArrayJanitor<UChar> janRange(rangeStr, fMemoryManager);
+        int c=0;
+        rangeStr[c++] = chOpenSquare;
+        for (unsigned int i = 0;  i < fElemCount - 1;  i += 2) {
+            XMLCh buffer[10];
+            XMLSize_t len, j;
+
+            rangeStr[c++] = chBackSlash;
+            rangeStr[c++] = chLatin_U;
+            XMLString::binToText(fRanges[i], buffer, 10, 16, fMemoryManager);
+            len = XMLString::stringLen(buffer);
+            for(j=0;j<(8-len);j++)
+                rangeStr[c++] = chDigit_0;
+            XMLCh* p=buffer;
+            while(*p)
+                rangeStr[c++] = *p++;
+            if(fRanges[i+1]!=fRanges[i])
+            {
+                rangeStr[c++] = chDash;
+                rangeStr[c++] = chBackSlash;
+                rangeStr[c++] = chLatin_U;
+                XMLString::binToText(fRanges[i+1], buffer, 10, 16, fMemoryManager);
+                len = XMLString::stringLen(buffer);
+                for(j=0;j<(8-len);j++)
+                    rangeStr[c++] = chDigit_0;
+                p=buffer;
+                while(*p)
+                    rangeStr[c++] = *p++;
+            }
+        }
+        rangeStr[c++] = chCloseSquare;
+        rangeStr[c++] = chNull;
+        UErrorCode ec=U_ZERO_ERROR;
+        USet* range=uset_openPatternOptions(rangeStr, -1, USET_CASE_INSENSITIVE, &ec);
+        if(range)
+        {
+            ec = U_ZERO_ERROR;
+            uint32_t cbCount=uset_serialize(range, NULL, 0, &ec);
+            uint16_t* buffer=(uint16_t*)fMemoryManager->allocate(cbCount*sizeof(uint16_t));
+            ArrayJanitor<uint16_t> janSet(buffer, fMemoryManager);
+            ec = U_ZERO_ERROR;
+            uset_serialize(range, buffer, cbCount, &ec);
+            USerializedSet serializedSet;
+            uset_getSerializedSet(&serializedSet, buffer, cbCount);
+            int32_t nSets=uset_getSerializedRangeCount(&serializedSet);
+            for(int32_t i=0; i<nSets; i++)
+            {
+                UChar32 start, end;
+                uset_getSerializedRange(&serializedSet, i, &start, &end);
+                lwrToken->addRange(start, end);
+            }
+            // does this release the memory allocated by the set?
+            uset_setSerializedToOne(&serializedSet, 32);
+            uset_close(range);
+        }
+#else
         unsigned int exceptIndex = 0;
 
         for (unsigned int i = 0;  i < fElemCount - 1;  i += 2) {
             for (XMLInt32 ch = fRanges[i];  ch <= fRanges[i + 1];  ++ch) {
-#if defined(XML_USE_ICU_TRANSCODER) || defined (XML_USE_UNICONV390_TRANSCODER)
+#if XERCES_USE_TRANSCODER_ICU
                 const XMLInt32  upperCh = u_toupper(ch);
 
                 if (upperCh != ch)
@@ -215,10 +288,17 @@ RangeToken* RangeToken::getCaseInsensitiveToken(TokenFactory* const tokFactory) 
         }
 
         lwrToken->mergeRanges(this);
+#endif
         lwrToken->compactRanges();
         lwrToken->createMap();
 
         fCaseIToken = lwrToken;
+        // TODO(dbertoni) This is a temporary hack until we can change the ABI.
+        // See Jira issue XERCESC-1866 for more details.
+        // Overload the fCaseIToken data member to be the case-insensitive token
+        // that's caching the case-insensitive one.  We need this because tokens
+        // have varying lifetimes.
+        fCaseIToken->setCaseInsensitiveToken(this);
     }
 
     return fCaseIToken;
@@ -656,7 +736,7 @@ void RangeToken::intersectRanges(RangeToken* const tok) {
   * for RANGE: Creates complement.
   * for NRANGE: Creates the same meaning RANGE.
   */
-Token* RangeToken::complementRanges(RangeToken* const tok,
+RangeToken* RangeToken::complementRanges(RangeToken* const tok,
                                     TokenFactory* const tokFactory,
                                     MemoryManager* const manager) {
 

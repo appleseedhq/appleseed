@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: VecAttributesImpl.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: VecAttributesImpl.hpp 672311 2008-06-27 16:05:01Z borisk $
  */
 
-
-#if !defined(VECATTRIBUTESIMPL_HPP)
-#define VECATTRIBUTESIMPL_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_VECATTRIBUTESIMPL_HPP)
+#define XERCESC_INCLUDE_GUARD_VECATTRIBUTESIMPL_HPP
 
 #include <xercesc/sax2/Attributes.hpp>
 #include <xercesc/framework/XMLAttr.hpp>
@@ -44,22 +43,24 @@ public :
     // -----------------------------------------------------------------------
     //  Implementation of the attributes interface
     // -----------------------------------------------------------------------
-    virtual unsigned int getLength() const ;
+    virtual XMLSize_t getLength() const ;
 
-	virtual const XMLCh* getURI(const unsigned int index) const;
-    virtual const XMLCh* getLocalName(const unsigned int index) const ;
-    virtual const XMLCh* getQName(const unsigned int index) const ;
-    virtual const XMLCh* getType(const unsigned int index) const ;
-    virtual const XMLCh* getValue(const unsigned int index) const ;
+    virtual const XMLCh* getURI(const XMLSize_t index) const;
+    virtual const XMLCh* getLocalName(const XMLSize_t index) const ;
+    virtual const XMLCh* getQName(const XMLSize_t index) const ;
+    virtual const XMLCh* getType(const XMLSize_t index) const ;
+    virtual const XMLCh* getValue(const XMLSize_t index) const ;
 
-	virtual int getIndex(const XMLCh* const uri, const XMLCh* const localPart ) const  ;
-	virtual int getIndex(const XMLCh* const qName ) const  ;
+    virtual bool getIndex(const XMLCh* const uri, const XMLCh* const localPart, XMLSize_t& index) const;
+    virtual int getIndex(const XMLCh* const uri, const XMLCh* const localPart ) const  ;
+    virtual bool getIndex(const XMLCh* const qName, XMLSize_t& index) const;
+    virtual int getIndex(const XMLCh* const qName ) const  ;
 
-	virtual const XMLCh* getType(const XMLCh* const uri, const XMLCh* const localPart ) const  ;
+    virtual const XMLCh* getType(const XMLCh* const uri, const XMLCh* const localPart ) const  ;
     virtual const XMLCh* getType(const XMLCh* const qName) const ;
 
     virtual const XMLCh* getValue(const XMLCh* const qName) const;
-	virtual const XMLCh* getValue(const XMLCh* const uri, const XMLCh* const localPart ) const  ;
+    virtual const XMLCh* getValue(const XMLCh* const uri, const XMLCh* const localPart ) const  ;
 
 
     // -----------------------------------------------------------------------
@@ -67,9 +68,9 @@ public :
     // -----------------------------------------------------------------------
     void setVector
     (
-        const   RefVectorOf<XMLAttr>* const srcVec
-        , const unsigned int                count
-		, const XMLScanner * const		scanner
+          const   RefVectorOf<XMLAttr>* const srcVec
+        , const XMLSize_t                count
+        , const XMLScanner * const		scanner
         , const bool                        adopt = false
     );
 
@@ -97,19 +98,18 @@ private :
     //
     //  fVector
     //      The vector that provides the backing for the list.
-	//
-	//	fScanner
-	//		This is a pointer to the in use Scanner, so that we can resolve
-	//		namespace URIs from UriIds
-	//
-	//	fURIBuffer
-	//		A temporary buffer which is re-used when getting namespace URI's
+    //
+    //	fScanner
+    //		This is a pointer to the in use Scanner, so that we can resolve
+    //		namespace URIs from UriIds
+    //
+    //	fURIBuffer
+    //		A temporary buffer which is re-used when getting namespace URI's
     // -----------------------------------------------------------------------
     bool                        fAdopt;
-    unsigned int                fCount;
+    XMLSize_t                   fCount;
     const RefVectorOf<XMLAttr>* fVector;
-	const XMLScanner *		fScanner ;
-	//XMLBuffer				    fURIBuffer ;
+    const XMLScanner *		fScanner ;
 };
 
 XERCES_CPP_NAMESPACE_END

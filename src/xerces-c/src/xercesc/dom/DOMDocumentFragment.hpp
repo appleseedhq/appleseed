@@ -1,6 +1,3 @@
-#ifndef DOMDocumentFragment_HEADER_GUARD_
-#define DOMDocumentFragment_HEADER_GUARD_
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -19,9 +16,11 @@
  */
 
 /*
- * $Id: DOMDocumentFragment.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMDocumentFragment.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
+#if !defined(XERCESC_INCLUDE_GUARD_DOMDOCUMENTFRAGMENT_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMDOCUMENTFRAGMENT_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 #include <xercesc/dom/DOMNode.hpp>
@@ -39,7 +38,7 @@ XERCES_CPP_NAMESPACE_BEGIN
  * document by moving fragments around. It is desirable to have an object
  * which can hold such fragments and it is quite natural to use a DOMNode for
  * this purpose. While it is true that a <code>DOMDocument</code> object could
- * fulfil this role,  a <code>DOMDocument</code> object can potentially be a
+ * fulfill this role,  a <code>DOMDocument</code> object can potentially be a
  * heavyweight  object, depending on the underlying implementation. What is
  * really needed for this is a very lightweight object.
  * <code>DOMDocumentFragment</code> is such an object.

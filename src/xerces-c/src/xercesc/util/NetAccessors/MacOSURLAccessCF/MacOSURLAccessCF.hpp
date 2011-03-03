@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: MacOSURLAccessCF.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: MacOSURLAccessCF.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-
-#if !defined(MACOSURLACCESSCF_HPP)
-#define MACOSURLACCESSCF_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_MACOSURLACCESSCF_HPP)
+#define XERCESC_INCLUDE_GUARD_MACOSURLACCESSCF_HPP
 
 
 #include <xercesc/util/XercesDefs.hpp>

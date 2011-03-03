@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: YearDatatypeValidator.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: YearDatatypeValidator.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-#if !defined(YEAR_DATATYPE_VALIDATOR_HPP)
-#define YEAR_DATATYPE_VALIDATOR_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_YEAR_DATATYPE_VALIDATOR_HPP)
+#define XERCESC_INCLUDE_GUARD_YEAR_DATATYPE_VALIDATOR_HPP
 
 #include <xercesc/validators/datatype/DateTimeValidator.hpp>
 

@@ -1,6 +1,3 @@
-#ifndef DOMRangeImpl_HEADER_GUARD_
-#define DOMRangeImpl_HEADER_GUARD_
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -19,8 +16,11 @@
  */
 
  /*
- * $Id: DOMRangeImpl.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMRangeImpl.hpp 641193 2008-03-26 08:06:57Z borisk $
  */
+
+#if !defined(XERCESC_INCLUDE_GUARD_DOMRANGEIMPL_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMRANGEIMPL_HPP
 
 //
 //  This file is part of the internal implementation of the C++ XML DOM.
@@ -46,7 +46,7 @@ class       DOMText;
 class       MemoryManager;
 
 class CDOM_EXPORT DOMRangeImpl: public DOMRange {
-private:
+protected:
     enum TraversalType {
         EXTRACT_CONTENTS = 1,
         CLONE_CONTENTS   = 2,
@@ -123,11 +123,11 @@ public:
     void updateSplitInfo(DOMNode* oldNode, DOMNode* startNode, XMLSize_t offset);
     void updateRangeForInsertedNode(DOMNode* node);
     void receiveReplacedText(DOMNode* node);
-    void updateRangeForDeletedText(DOMNode* node, XMLSize_t offset, int count);
-    void updateRangeForInsertedText(DOMNode* node, XMLSize_t offset, int count);
+    void updateRangeForDeletedText(DOMNode* node, XMLSize_t offset, XMLSize_t count);
+    void updateRangeForInsertedText(DOMNode* node, XMLSize_t offset, XMLSize_t count);
     void updateRangeForDeletedNode(DOMNode* node);
 
-private:
+protected:
     //setter functions
     void        setStartContainer(const DOMNode* node);
     void        setStartOffset(XMLSize_t offset) ;
@@ -164,6 +164,7 @@ private:
     DOMNode*    traverseTextNode( DOMNode *n, bool isLeft, int how );
     DOMNode*    getSelectedNode( DOMNode *container, int offset );
 
+private:
     // -----------------------------------------------------------------------
     // Unimplemented constructors and operators
     // -----------------------------------------------------------------------

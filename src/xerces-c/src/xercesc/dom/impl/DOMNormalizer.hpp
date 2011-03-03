@@ -1,6 +1,3 @@
-#ifndef DOMNormalizer_HEADER_GUARD_
-#define DOMNormalizer_HEADER_GUARD_
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -8,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,6 +15,12 @@
  * limitations under the License.
  */
 
+/*
+ * $Id: DOMNormalizer.hpp 676911 2008-07-15 13:27:32Z amassari $
+ */
+
+#if !defined(XERCESC_INCLUDE_GUARD_DOMNORMALIZER_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMNORMALIZER_HPP
 
 //
 //  This file is part of the internal implementation of the C++ XML DOM.
@@ -46,7 +49,7 @@ class DOMNamedNodeMap;
 
 class DOMNormalizer : public XMemory {
 
-    //the following are the data structures maintain the stack of namespace information 
+    //the following are the data structures maintain the stack of namespace information
     class InScopeNamespaces : public XMemory {
         class Scope : public XMemory {
         public:
@@ -66,7 +69,7 @@ class DOMNormalizer : public XMemory {
             Scope& operator= (const Scope& other);
         };
 
-    public:    
+    public:
         InScopeNamespaces(MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
         ~InScopeNamespaces();
         void addOrChangeBinding(const XMLCh *prefix, const XMLCh *uri,
@@ -77,7 +80,7 @@ class DOMNormalizer : public XMemory {
         const XMLCh* getOrDeclarePrefix(const XMLCh* uri);
         const XMLCh* getPrefix(const XMLCh* uri) const;
         const XMLCh* getUri(const XMLCh* prefix) const;
-        int size();
+        XMLSize_t size();
 
     private:
         RefVectorOf<Scope> *fScopes;
@@ -96,17 +99,12 @@ public:
      */
     void normalizeDocument(DOMDocumentImpl *doc);
 
-    // -----------------------------------------------------------------------
-    //  Notification that lazy data has been deleted
-    // -----------------------------------------------------------------------
-	static void reinitNormalizerMutex();
-	static void reinitMsgLoader();
-
 private:
     // unimplemented
     DOMNormalizer ( const DOMNormalizer& toCopy);
     DOMNormalizer& operator= (const DOMNormalizer& other);
 
+protected:
     /**
      * Recursively normalizes a node
      */
@@ -119,7 +117,7 @@ private:
     void namespaceFixUp(DOMElementImpl *ele) const;
 
     /**
-     * Converts an integer to an XMLCh - max 15 digits long. 
+     * Converts an integer to an XMLCh - max 15 digits long.
      */
     const XMLCh * integerToXMLCh(unsigned int i) const;
 
@@ -129,16 +127,16 @@ private:
      * In case prefix is empty will add/update default namespace declaration.
      */
     void addOrChangeNamespaceDecl(const XMLCh* prefix, const XMLCh* uri, DOMElementImpl *element) const;
-    
+
     /**
-     * Adds a custom namespace in the form "NSx" where x is an integer that 
+     * Adds a custom namespace in the form "NSx" where x is an integer that
      * has not yet used in the document
      */
     const XMLCh* addCustomNamespaceDecl(const XMLCh* uri, DOMElementImpl *element) const;
 
 
     /**
-     * Report an error 
+     * Report an error
      */
     void error(const XMLErrs::Codes code, const DOMNode *node) const;
 

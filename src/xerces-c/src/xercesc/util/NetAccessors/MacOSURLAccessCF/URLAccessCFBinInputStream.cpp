@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: URLAccessCFBinInputStream.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: URLAccessCFBinInputStream.cpp 936316 2010-04-21 14:19:58Z borisk $
  */
 
 #include <cstdlib>
@@ -100,8 +100,13 @@ URLAccessCFBinInputStream::URLAccessCFBinInputStream(const XMLURL& urlSource)
                 break;
 
             case kCFURLRemoteHostUnavailableError:
-                ThrowXML1(NetAccessorException,  XMLExcepts::NetAcc_TargetResolution, urlSource.getHost());
+              {
+                if (urlSource.getHost())
+                  ThrowXML1(NetAccessorException, XMLExcepts::NetAcc_TargetResolution, urlSource.getHost());
+                else
+                  ThrowXML1(NetAccessorException, XMLExcepts::File_CouldNotOpenFile, urlText);
                 break;
+              }
 
             case kCFURLUnknownError:
                 ThrowXML1(NetAccessorException, XMLExcepts::NetAcc_ReadSocket, urlText);
@@ -136,9 +141,9 @@ URLAccessCFBinInputStream::~URLAccessCFBinInputStream()
 //	We've already read the data into a dataRef.
 //	Just spoon it out to the caller as they ask for it.
 //
-unsigned int
+XMLSize_t
 URLAccessCFBinInputStream::readBytes(XMLByte* const    toFill
-                                    , const unsigned int    maxToRead)
+                                    , const XMLSize_t  maxToRead)
 {
     //	If we don't have a dataRef, we can't return any data
     if (!mDataRef)
@@ -157,12 +162,19 @@ URLAccessCFBinInputStream::readBytes(XMLByte* const    toFill
     //	Read the appropriate bytes into the user buffer
     CFRange range = CFRangeMake(mBytesProcessed, n);
     CFDataGetBytes(mDataRef, range, reinterpret_cast<UInt8*>(toFill));
-	
+
     //	Update bytes processed
     mBytesProcessed += n;
 
     //	Return the number of bytes delivered
     return n;
+}
+
+const XMLCh* URLAccessCFBinInputStream::getContentType() const
+{
+    // TODO
+    //
+    return 0;
 }
 
 XERCES_CPP_NAMESPACE_END

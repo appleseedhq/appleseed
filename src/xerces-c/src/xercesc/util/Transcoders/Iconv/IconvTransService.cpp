@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,37 +16,42 @@
  */
 
 /*
- * $Id: IconvTransService.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: IconvTransService.cpp 695885 2008-09-16 14:00:19Z borisk $
  */
 
 
 // ---------------------------------------------------------------------------
 //  Includes
 // ---------------------------------------------------------------------------
+
+#if HAVE_CONFIG_H
+#	include <config.h>
+#endif
+
+#if HAVE_WCHAR_H
+#	include <wchar.h>
+#endif
+#if HAVE_WCTYPE_H
+#	include <wctype.h>
+#endif
+
+// Fill in for broken or missing wctype functions on some platforms
+#if !HAVE_TOWUPPER
+#	include <towupper.h>
+#endif
+#if !HAVE_TOWLOWER
+#	include <towlower.h>
+#endif
+
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+
 #include "IconvTransService.hpp"
 #include <xercesc/util/XMLUniDefs.hpp>
 #include <xercesc/util/XMLUni.hpp>
 #include <xercesc/framework/MemoryManager.hpp>
-#include <wchar.h>
 
-#if defined (XML_GCC) || defined (XML_PTX) || defined (XML_IBMVAOS2) || defined(XML_LINUX) || defined (XML_UNIXWARE)
-    #if defined(XML_BEOS)
-        wint_t towlower(wint_t wc) {
-          return ((wc>'A')&&(wc<'Z') ? wc+'a'-'A' : wc);
-        }
-        wint_t towupper(wint_t wc) {
-          return ((wc>'a')&&(wc<'z') ? wc-'a'+'A' : wc);
-        }
-        wint_t iswspace(wint_t wc) {
-          return (wc==(wint_t)' ');
-        }
-    #elif !defined(XML_OPENSERVER)
-        #include <wctype.h>
-    #endif
-#endif
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
 
 XERCES_CPP_NAMESPACE_BEGIN
 
@@ -59,6 +64,10 @@ static const XMLCh  gMyServiceId[] =
     chLatin_I, chLatin_C, chLatin_o, chLatin_n, chLatin_v, chNull
 };
 
+// ---------------------------------------------------------------------------
+// the following is defined by 'man mbrtowc':
+// ---------------------------------------------------------------------------
+static const size_t TRANSCODING_ERROR = (size_t)(-1);
 
 // ---------------------------------------------------------------------------
 //  Local methods
@@ -80,7 +89,7 @@ static unsigned int getWideCharLength(const XMLCh* const src)
 // ---------------------------------------------------------------------------
 //  IconvTransService: Constructors and Destructor
 // ---------------------------------------------------------------------------
-IconvTransService::IconvTransService()
+IconvTransService::IconvTransService(MemoryManager* /* manager */)
 {
 }
 
@@ -114,7 +123,7 @@ int IconvTransService::compareIString(  const   XMLCh* const    comp1
 
 int IconvTransService::compareNIString( const   XMLCh* const    comp1
                                         , const XMLCh* const    comp2
-                                        , const unsigned int    maxChars)
+                                        , const XMLSize_t       maxChars)
 {
     unsigned int  n = 0;
     const XMLCh* cptr1 = comp1;
@@ -152,17 +161,10 @@ const XMLCh* IconvTransService::getId() const
     return gMyServiceId;
 }
 
-
-bool IconvTransService::isSpace(const XMLCh toCheck) const
-{
-    return (iswspace(toCheck) != 0);
-}
-
-
-XMLLCPTranscoder* IconvTransService::makeNewLCPTranscoder()
+XMLLCPTranscoder* IconvTransService::makeNewLCPTranscoder(MemoryManager* manager)
 {
     // Just allocate a new transcoder of our type
-    return new IconvLCPTranscoder;
+    return new (manager) IconvLCPTranscoder;
 }
 
 bool IconvTransService::supportsSrcOfs() const
@@ -177,7 +179,7 @@ bool IconvTransService::supportsSrcOfs() const
 XMLTranscoder*
 IconvTransService::makeNewXMLTranscoder(const   XMLCh* const
                                         ,       XMLTransService::Codes& resValue
-                                        , const unsigned int            
+                                        , const XMLSize_t
                                         ,       MemoryManager* const)
 {
     //
@@ -192,7 +194,8 @@ IconvTransService::makeNewXMLTranscoder(const   XMLCh* const
     return 0;
 }
 
-void IconvTransService::upperCase(XMLCh* const toUpperCase) const
+
+void IconvTransService::upperCase(XMLCh* const toUpperCase)
 {
     XMLCh* outPtr = toUpperCase;
     while (*outPtr)
@@ -202,7 +205,8 @@ void IconvTransService::upperCase(XMLCh* const toUpperCase) const
     }
 }
 
-void IconvTransService::lowerCase(XMLCh* const toLowerCase) const
+
+void IconvTransService::lowerCase(XMLCh* const toLowerCase)
 {
     XMLCh* outPtr = toLowerCase;
     while (*outPtr)
@@ -216,32 +220,40 @@ void IconvTransService::lowerCase(XMLCh* const toLowerCase) const
 // ---------------------------------------------------------------------------
 //  IconvLCPTranscoder: The virtual transcoder API
 // ---------------------------------------------------------------------------
-unsigned int IconvLCPTranscoder::calcRequiredSize(const char* const srcText
+XMLSize_t IconvLCPTranscoder::calcRequiredSize(const char* const srcText
                                                   , MemoryManager* const)
 {
     if (!srcText)
         return 0;
 
-    unsigned int len=0;
-    unsigned int size=strlen(srcText);
-    for( unsigned int i = 0; i < size; ++len )
+    XMLSize_t len = 0;
+    const char *src = srcText;
+#if HAVE_MBRLEN
+    mbstate_t st;
+    memset(&st, 0, sizeof(st));
+#endif
+    for ( ; *src; ++len)
     {
-        unsigned int retVal=::mblen( &srcText[i], MB_CUR_MAX );
-        if( -1 == retVal ) 
+#if HAVE_MBRLEN
+        int l=::mbrlen( src, MB_CUR_MAX, &st );
+#else
+        int l=::mblen( src, MB_CUR_MAX );
+#endif
+        if( l == TRANSCODING_ERROR )
             return 0;
-        i += retVal;
+        src += l;
     }
     return len;
 }
 
 
-unsigned int IconvLCPTranscoder::calcRequiredSize(const XMLCh* const srcText
+XMLSize_t IconvLCPTranscoder::calcRequiredSize(const XMLCh* const srcText
                                                   , MemoryManager* const manager)
 {
     if (!srcText)
         return 0;
 
-    unsigned int  wLent = getWideCharLength(srcText);
+    XMLSize_t     wLent = getWideCharLength(srcText);
     wchar_t       tmpWideCharArr[gTempBuffArraySize];
     wchar_t*      allocatedArray = 0;
     wchar_t*      wideCharBuf = 0;
@@ -255,14 +267,16 @@ unsigned int IconvLCPTranscoder::calcRequiredSize(const XMLCh* const srcText
     else
         wideCharBuf = tmpWideCharArr;
 
-    for (unsigned int i = 0; i < wLent; i++)
+    for (XMLSize_t i = 0; i < wLent; i++)
     {
         wideCharBuf[i] = srcText[i];
     }
     wideCharBuf[wLent] = 0x00;
 
-    const unsigned int retVal = ::wcstombs(NULL, wideCharBuf, 0);
-    manager->deallocate(allocatedArray);//delete [] allocatedArray;
+    const XMLSize_t retVal = ::wcstombs(NULL, wideCharBuf, 0);
+
+    if (allocatedArray)
+      manager->deallocate(allocatedArray);
 
     if (retVal == ~0)
         return 0;
@@ -270,110 +284,9 @@ unsigned int IconvLCPTranscoder::calcRequiredSize(const XMLCh* const srcText
 }
 
 
-char* IconvLCPTranscoder::transcode(const XMLCh* const toTranscode)
-{
-    if (!toTranscode)
-        return 0;
-
-    char* retVal = 0;
-    if (*toTranscode)
-    {
-        unsigned int  wLent = getWideCharLength(toTranscode);
-
-        wchar_t       tmpWideCharArr[gTempBuffArraySize];
-        wchar_t*      allocatedArray = 0;
-        wchar_t*      wideCharBuf = 0;
-
-        if (wLent >= gTempBuffArraySize)
-            wideCharBuf = allocatedArray = new wchar_t[wLent + 1];
-        else
-            wideCharBuf = tmpWideCharArr;
-
-        for (unsigned int i = 0; i < wLent; i++)
-        {
-            wideCharBuf[i] = toTranscode[i];
-        }
-        wideCharBuf[wLent] = 0x00;
-
-        // Calc the needed size.
-        const size_t neededLen = ::wcstombs(NULL, wideCharBuf, 0);
-        if (neededLen == -1)
-        {
-            delete [] allocatedArray;
-            retVal = new char[1];
-            retVal[0] = 0;
-            return retVal;
-        }
-
-        retVal = new char[neededLen + 1];
-        ::wcstombs(retVal, wideCharBuf, neededLen);
-        retVal[neededLen] = 0;
-        delete [] allocatedArray;
-    }
-    else
-    {
-        retVal = new char[1];
-        retVal[0] = 0;
-    }
-    return retVal;
-}
-
-char* IconvLCPTranscoder::transcode(const XMLCh* const toTranscode,
-                                    MemoryManager* const manager)
-{
-    if (!toTranscode)
-        return 0;
-
-    char* retVal = 0;
-    if (*toTranscode)
-    {
-        unsigned int  wLent = getWideCharLength(toTranscode);
-
-        wchar_t       tmpWideCharArr[gTempBuffArraySize];
-        wchar_t*      allocatedArray = 0;
-        wchar_t*      wideCharBuf = 0;
-
-        if (wLent >= gTempBuffArraySize)
-            wideCharBuf = allocatedArray = (wchar_t*) manager->allocate
-            (
-                (wLent + 1) * sizeof(wchar_t)
-            );//new wchar_t[wLent + 1];
-        else
-            wideCharBuf = tmpWideCharArr;
-
-        for (unsigned int i = 0; i < wLent; i++)
-        {
-            wideCharBuf[i] = toTranscode[i];
-        }
-        wideCharBuf[wLent] = 0x00;
-
-        // Calc the needed size.
-        const size_t neededLen = ::wcstombs(NULL, wideCharBuf, 0);
-        if (neededLen == -1)
-        {
-            manager->deallocate(allocatedArray);//delete [] allocatedArray;
-            retVal = (char*) manager->allocate(sizeof(char)); //new char[1];
-            retVal[0] = 0;
-            return retVal;
-        }
-
-        retVal = (char*) manager->allocate((neededLen + 1) * sizeof(char));//new char[neededLen + 1];
-        ::wcstombs(retVal, wideCharBuf, neededLen);
-        retVal[neededLen] = 0;
-        manager->deallocate(allocatedArray);//delete [] allocatedArray;
-    }
-    else
-    {
-        retVal = (char*) manager->allocate(sizeof(char));//new char[1];
-        retVal[0] = 0;
-    }
-    return retVal;
-}
-
-
 bool IconvLCPTranscoder::transcode( const   XMLCh* const    toTranscode
                                     ,       char* const     toFill
-                                    , const unsigned int    maxBytes
+                                    , const XMLSize_t       maxBytes
                                     , MemoryManager* const  manager)
 {
     // Watch for a couple of pyscho corner cases
@@ -416,112 +329,26 @@ bool IconvLCPTranscoder::transcode( const   XMLCh* const    toTranscode
 
     // Ok, go ahead and try the transcoding. If it fails, then ...
     size_t mblen = ::wcstombs(toFill, wideCharBuf, maxBytes);
-    if (mblen == -1)
+    if (mblen == (size_t)-1)
     {
-        manager->deallocate(allocatedArray);//delete [] allocatedArray;
+        if (allocatedArray)
+          manager->deallocate(allocatedArray);
         return false;
     }
 
     // Cap it off just in case
     toFill[mblen] = 0;
-    manager->deallocate(allocatedArray);//delete [] allocatedArray;
+
+    if (allocatedArray)
+      manager->deallocate(allocatedArray);
+
     return true;
-}
-
-
-
-XMLCh* IconvLCPTranscoder::transcode(const char* const toTranscode)
-{
-    if (!toTranscode)
-        return 0;
-
-    XMLCh* retVal = 0;
-    if (*toTranscode)
-    {
-        const unsigned int len = calcRequiredSize(toTranscode);
-        if (len == 0)
-        {
-            retVal = new XMLCh[1];
-            retVal[0] = 0;
-            return retVal;
-        }
-
-        wchar_t       tmpWideCharArr[gTempBuffArraySize];
-        wchar_t*      allocatedArray = 0;
-        wchar_t*      wideCharBuf = 0;
-
-        if (len >= gTempBuffArraySize)
-            wideCharBuf = allocatedArray = new wchar_t[len + 1];
-        else
-            wideCharBuf = tmpWideCharArr;
-
-        ::mbstowcs(wideCharBuf, toTranscode, len);
-        retVal = new XMLCh[len + 1];
-        for (unsigned int i = 0; i < len; i++)
-        {
-            retVal[i] = (XMLCh) wideCharBuf[i];
-        }
-        retVal[len] = 0x00;
-        delete [] allocatedArray;
-    }
-    else
-    {
-        retVal = new XMLCh[1];
-        retVal[0] = 0;
-    }
-    return retVal;
-}
-
-XMLCh* IconvLCPTranscoder::transcode(const char* const toTranscode,
-                                     MemoryManager* const manager)
-{
-    if (!toTranscode)
-        return 0;
-
-    XMLCh* retVal = 0;
-    if (*toTranscode)
-    {
-        const unsigned int len = calcRequiredSize(toTranscode, manager);
-        if (len == 0)
-        {
-            retVal = (XMLCh*) manager->allocate(sizeof(XMLCh)); //new XMLCh[1];
-            retVal[0] = 0;
-            return retVal;
-        }
-
-        wchar_t       tmpWideCharArr[gTempBuffArraySize];
-        wchar_t*      allocatedArray = 0;
-        wchar_t*      wideCharBuf = 0;
-
-        if (len >= gTempBuffArraySize)
-            wideCharBuf = allocatedArray = (wchar_t*) manager->allocate
-            (
-                (len + 1) * sizeof(wchar_t)
-            );//new wchar_t[len + 1];
-        else
-            wideCharBuf = tmpWideCharArr;
-
-        ::mbstowcs(wideCharBuf, toTranscode, len);
-        retVal = (XMLCh*) manager->allocate((len + 1) *sizeof(XMLCh));//new XMLCh[len + 1];
-        for (unsigned int i = 0; i < len; i++)
-        {
-            retVal[i] = (XMLCh) wideCharBuf[i];
-        }
-        retVal[len] = 0x00;
-        manager->deallocate(allocatedArray);//delete [] allocatedArray;
-    }
-    else
-    {
-        retVal = (XMLCh*) manager->allocate(sizeof(XMLCh));//new XMLCh[1];
-        retVal[0] = 0;
-    }
-    return retVal;
 }
 
 
 bool IconvLCPTranscoder::transcode( const   char* const     toTranscode
                                     ,       XMLCh* const    toFill
-                                    , const unsigned int    maxChars
+                                    , const XMLSize_t       maxChars
                                     , MemoryManager* const  manager)
 {
     // Check for a couple of psycho corner cases
@@ -537,7 +364,7 @@ bool IconvLCPTranscoder::transcode( const   char* const     toTranscode
         return true;
     }
 
-    unsigned int len = calcRequiredSize(toTranscode);
+    XMLSize_t     len = calcRequiredSize(toTranscode);
     wchar_t       tmpWideCharArr[gTempBuffArraySize];
     wchar_t*      allocatedArray = 0;
     wchar_t*      wideCharBuf = 0;
@@ -554,21 +381,180 @@ bool IconvLCPTranscoder::transcode( const   char* const     toTranscode
     else
         wideCharBuf = tmpWideCharArr;
 
-    if (::mbstowcs(wideCharBuf, toTranscode, maxChars) == -1)
+    if (::mbstowcs(wideCharBuf, toTranscode, maxChars) == (size_t)-1)
     {
-        manager->deallocate(allocatedArray);//delete [] allocatedArray;
+        if (allocatedArray)
+          manager->deallocate(allocatedArray);
         return false;
     }
 
-    for (unsigned int i = 0; i < len; i++)
+    for (XMLSize_t i = 0; i < len; i++)
     {
         toFill[i] = (XMLCh) wideCharBuf[i];
     }
     toFill[len] = 0x00;
-    manager->deallocate(allocatedArray);//delete [] allocatedArray;
+
+    if (allocatedArray)
+      manager->deallocate(allocatedArray);
+
     return true;
 }
 
+
+template <typename T>
+void reallocString(T *&ref, size_t &size, MemoryManager* const manager, bool releaseOld)
+{
+    T *tmp = (T*)manager->allocate(2 * size * sizeof(T));
+    memcpy(tmp, ref, size * sizeof(T));
+    if (releaseOld) manager->deallocate(ref);
+    ref = tmp;
+    size *= 2;
+}
+
+
+char* IconvLCPTranscoder::transcode(const XMLCh* const toTranscode,
+                                    MemoryManager* const manager)
+{
+    if (!toTranscode)
+        return 0;
+    size_t srcCursor = 0, dstCursor = 0;
+    size_t resultSize = gTempBuffArraySize;
+    char localBuffer[gTempBuffArraySize];
+    char* resultString = localBuffer;
+
+#if HAVE_WCSRTOMBS
+    mbstate_t st;
+    memset(&st, 0, sizeof(st));
+    wchar_t srcBuffer[gTempBuffArraySize];
+    srcBuffer[gTempBuffArraySize - 1] = 0;
+    const wchar_t *src = 0;
+
+    while (toTranscode[srcCursor] || src)
+    {
+        if (src == 0) // copy a piece of the source string into a local
+                      // buffer, converted to wchar_t and NULL-terminated.
+                      // after that, src points to the beginning of the
+                      // local buffer and is used for the call to ::wcsrtombs
+        {
+            size_t i;
+            for (i=0; i<gTempBuffArraySize-1; ++i)
+            {
+                srcBuffer[i] = toTranscode[srcCursor];
+                if (srcBuffer[i] == '\0')
+                    break;
+                ++srcCursor;
+            }
+            src = srcBuffer;
+        }
+
+        size_t len = ::wcsrtombs(resultString + dstCursor, &src, resultSize - dstCursor, &st);
+        if (len == TRANSCODING_ERROR)
+        {
+            dstCursor = 0;
+            break;
+        }
+        dstCursor += len;
+        if (src != 0) // conversion not finished. This *always* means there
+                      // was not enough room in the destination buffer.
+        {
+            reallocString<char>(resultString, resultSize, manager, resultString != localBuffer);
+        }
+    }
+#else
+    while (toTranscode[srcCursor])
+    {
+        char mbBuf[16]; // MB_CUR_MAX is not defined as a constant on some platforms
+        int len = wctomb(mbBuf, toTranscode[srcCursor++]);
+        if (len < 0)
+        {
+            dstCursor = 0;
+            break;
+        }
+        if (dstCursor + len >= resultSize - 1)
+            reallocString<char>(resultString, resultSize, manager, resultString != localBuffer);
+        for (int j=0; j<len; ++j)
+            resultString[dstCursor++] = mbBuf[j];
+    }
+#endif
+
+    if (resultString == localBuffer)
+    {
+        resultString = (char*)manager->allocate((dstCursor + 1) * sizeof(char));
+        memcpy(resultString, localBuffer, dstCursor * sizeof(char));
+    }
+
+    resultString[dstCursor] = '\0';
+    return resultString;
+}
+
+XMLCh* IconvLCPTranscoder::transcode(const char* const toTranscode,
+                                     MemoryManager* const manager)
+{
+    if (!toTranscode)
+        return 0;
+    size_t resultSize = gTempBuffArraySize;
+    size_t srcCursor = 0, dstCursor = 0;
+
+#if HAVE_MBSRTOWCS
+    wchar_t localBuffer[gTempBuffArraySize];
+    wchar_t *tmpString = localBuffer;
+
+    mbstate_t st;
+    memset(&st, 0, sizeof(st));
+    const char *src = toTranscode;
+
+    while(true)
+    {
+        size_t len = ::mbsrtowcs(tmpString + dstCursor, &src, resultSize - dstCursor, &st);
+        if (len == TRANSCODING_ERROR)
+        {
+            dstCursor = 0;
+            break;
+        }
+        dstCursor += len;
+        if (src == 0) // conversion finished
+            break;
+        if (dstCursor >= resultSize - 1)
+            reallocString<wchar_t>(tmpString, resultSize, manager, tmpString != localBuffer);
+    }
+    // make a final copy, converting from wchar_t to XMLCh:
+    XMLCh* resultString = (XMLCh*)manager->allocate((dstCursor + 1) * sizeof(XMLCh));
+    size_t i;
+    for (i=0; i<dstCursor; ++i)
+        resultString[i] = tmpString[i];
+    if (tmpString != localBuffer) // did we allocate something?
+        manager->deallocate(tmpString);
+#else
+    XMLCh localBuffer[gTempBuffArraySize];
+    XMLCh* resultString = localBuffer;
+    size_t srcLen = strlen(toTranscode);
+
+    while(srcLen > srcCursor)
+    {
+        wchar_t wcBuf[1];
+        int len = mbtowc(wcBuf, toTranscode + srcCursor, srcLen - srcCursor);
+        if (len <= 0)
+        {
+            if (len < 0)
+                dstCursor = 0;
+            break;
+        }
+        srcCursor += len;
+        if (dstCursor + 1 >= resultSize - 1)
+            reallocString<XMLCh>(resultString, resultSize, manager, resultString != localBuffer);
+        resultString[dstCursor++] = wcBuf[0];
+    }
+
+    if (resultString == localBuffer)
+    {
+        resultString = (XMLCh*)manager->allocate((dstCursor + 1) * sizeof(XMLCh));
+        memcpy(resultString, localBuffer, dstCursor * sizeof(XMLCh));
+    }
+#endif
+
+    resultString[dstCursor] = L'\0';
+    return resultString;
+}
 
 
 // ---------------------------------------------------------------------------

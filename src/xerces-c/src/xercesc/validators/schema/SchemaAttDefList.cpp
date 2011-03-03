@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: SchemaAttDefList.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: SchemaAttDefList.cpp 679359 2008-07-24 11:15:19Z borisk $
  */
 
 
@@ -56,11 +56,6 @@ SchemaAttDefList::~SchemaAttDefList()
 // ---------------------------------------------------------------------------
 //  SchemaAttDefList: Implementation of the virtual interface
 // ---------------------------------------------------------------------------
-bool SchemaAttDefList::hasMoreElements() const
-{
-    return fEnum->hasMoreElements();
-}
-
 
 bool SchemaAttDefList::isEmpty() const
 {
@@ -68,29 +63,29 @@ bool SchemaAttDefList::isEmpty() const
 }
 
 
-XMLAttDef* SchemaAttDefList::findAttDef(const  unsigned long   uriID
+XMLAttDef* SchemaAttDefList::findAttDef(const  unsigned int uriID
                                     , const XMLCh* const    attName)
 {
    const int colonInd = XMLString::indexOf(attName, chColon);
- 
+
    // An index of 0 is really an error, but the QName class doesn't check for
    // that case either...
    const XMLCh* const localPart = colonInd >= 0 ? attName + colonInd + 1 : attName;
- 
+
    return fList->get((void*)localPart, uriID);
 }
 
 
 const XMLAttDef*
-SchemaAttDefList::findAttDef(  const   unsigned long   uriID
+SchemaAttDefList::findAttDef( const   unsigned int   uriID
                             , const XMLCh* const    attName) const
 {
    const int colonInd = XMLString::indexOf(attName, chColon);
- 
+
    // An index of 0 is really an error, but the QName class doesn't check for
    // that case either...
    const XMLCh* const localPart = colonInd >= 0 ? attName + colonInd + 1 : attName;
- 
+
    return fList->get((void*)localPart, uriID);
 }
 
@@ -113,22 +108,10 @@ SchemaAttDefList::findAttDef( const   XMLCh* const
    return 0;
 }
 
-
-XMLAttDef& SchemaAttDefList::nextElement()
-{
-    return fEnum->nextElement();
-}
-
-
-void SchemaAttDefList::Reset()
-{
-    fEnum->Reset();
-}
-
 /**
  * return total number of attributes in this list
  */
-unsigned int SchemaAttDefList::getAttDefCount() const
+XMLSize_t SchemaAttDefList::getAttDefCount() const
 {
     return fCount;
 }
@@ -136,7 +119,7 @@ unsigned int SchemaAttDefList::getAttDefCount() const
 /**
  * return attribute at the index-th position in the list.
  */
-XMLAttDef &SchemaAttDefList::getAttDef(unsigned int index) 
+XMLAttDef &SchemaAttDefList::getAttDef(XMLSize_t index)
 {
     if(index >= fCount)
         ThrowXMLwithMemMgr(ArrayIndexOutOfBoundsException, XMLExcepts::AttrList_BadIndex, getMemoryManager());
@@ -146,7 +129,7 @@ XMLAttDef &SchemaAttDefList::getAttDef(unsigned int index)
 /**
  * return attribute at the index-th position in the list.
  */
-const XMLAttDef &SchemaAttDefList::getAttDef(unsigned int index) const 
+const XMLAttDef &SchemaAttDefList::getAttDef(XMLSize_t index) const
 {
     if(index >= fCount)
         ThrowXMLwithMemMgr(ArrayIndexOutOfBoundsException, XMLExcepts::AttrList_BadIndex, getMemoryManager());
@@ -172,7 +155,7 @@ void SchemaAttDefList::serialize(XSerializeEngine& serEng)
          *
          ***/
         XTemplateSerializer::storeObject(fList, serEng);
-        serEng << fCount;
+        serEng.writeSize (fCount);
 
         // do not serialize fEnum
     }
@@ -180,18 +163,18 @@ void SchemaAttDefList::serialize(XSerializeEngine& serEng)
     {
         /***
          *
-         * Deserialize RefHash2KeysTableOf<SchemaAttDef>           
+         * Deserialize RefHash2KeysTableOf<SchemaAttDef>
          *
          ***/
         XTemplateSerializer::loadObject(&fList, 29, true, serEng);
 
         // assume empty so we can size fArray just right
-        serEng >> fSize;
+        serEng.readSize (fSize);
         if (!fEnum && fList)
         {
             fEnum = new (getMemoryManager()) RefHash2KeysTableOfEnumerator<SchemaAttDef>(fList, false, getMemoryManager());
         }
-        if(fSize) 
+        if(fSize)
         {
             (getMemoryManager())->deallocate(fArray);
             fArray = (SchemaAttDef **)((getMemoryManager())->allocate( sizeof(SchemaAttDef*) * fSize));
@@ -216,4 +199,3 @@ SchemaAttDefList::SchemaAttDefList(MemoryManager* const manager)
 }
 
 XERCES_CPP_NAMESPACE_END
-

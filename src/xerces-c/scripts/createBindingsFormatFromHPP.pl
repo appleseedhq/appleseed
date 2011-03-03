@@ -20,8 +20,14 @@ my $filename = $ARGV[0];
 open(IN,"< $filename") || die("Couldn't open input file: $filename");
 
 while (<IN>) {
-  if ($_=~/^\s*class\s+[A-Z0-9_]+_EXPORT\s+([^\s]+)/) {
+  if ($_=~/^\s*class\s+[A-Z0-9_]+_EXPORT\s+([^\s]+)\s*[:]\s*public\s([^\s]+)/) {
     $classname = $1;
+    $baseclass = $2;
+    last;
+  }
+  elsif ($_=~/^\s*class\s+[A-Z0-9_]+_EXPORT\s+([^\s]+)/) {
+    $classname = $1;
+    $baseclass = "";
     last;
   }
 }
@@ -33,9 +39,17 @@ print OUT <<"END1";
 <font color="#000000">$filename:</font></h3>
 
 <div id="$classname"><font face="Courier New,Courier"><font size=-1>class
-$classname</font></font>
-<table>
+$classname
 END1
+if ($baseclass ne "") { 
+print OUT <<"END2";
+: public $baseclass
+END2
+}
+print OUT <<"END3";
+</font></font>
+<table>
+END3
 
 while (<IN>) {
   if ($_=~/^\s*public\s*:/) {
@@ -87,6 +101,25 @@ while (<IN>) {
 <td><font face="Courier New,Courier"><font size=-1>$c</font></font></td>
 </tr>
 END
+  } elsif ($_=~/^\s*(static)\s+([^\s\(][^\(]*[^\s\(])\s+([^\s\(]+\(.*)/) {
+    $a=$1;
+    $b=$2;
+    $c=$3;
+    while ($c!~/\)/) {
+      $c.=<IN>;
+    }
+    print OUT <<"END";
+
+<tr ALIGN=LEFT VALIGN=TOP>
+<td></td>
+
+<td><font face="Courier New,Courier"><font size=-1>$a</font></font></td>
+
+<td><font face="Courier New,Courier"><font size=-1>$b</font></font></td>
+
+<td><font face="Courier New,Courier"><font size=-1>$c</font></font></td>
+</tr>
+END
   } elsif ($_=~/^\s*(enum)\s+([^\s]+)\s*{/) {
     print OUT <<"END2";
 
@@ -118,9 +151,9 @@ END3
       if ($_=~/}\s*;/) {
         print OUT <<"END4";
 <tr ALIGN=LEFT VALIGN=TOP>
-<td><font face="Courier New,Courier"><font size=-1>};</font></font></td>
-
 <td></td>
+
+<td><font face="Courier New,Courier"><font size=-1>};</font></font></td>
 
 <td></td>
 
@@ -149,6 +182,7 @@ print OUT <<"END6";
 <td></td>
 </tr>
 </table>
+</div>
 END6
 
 close(OUT);

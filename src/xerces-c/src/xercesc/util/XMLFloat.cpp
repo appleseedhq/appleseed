@@ -16,21 +16,14 @@
  */
 
 /*
- * $Id: XMLFloat.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLFloat.cpp 803857 2009-08-13 12:16:44Z amassari $
  */
 
 // ---------------------------------------------------------------------------
 //  Includes
 // ---------------------------------------------------------------------------
 #include <xercesc/util/XMLFloat.hpp>
-#include <xercesc/util/XMLString.hpp>
-#include <xercesc/util/NumberFormatException.hpp>
-#include <xercesc/util/Janitor.hpp>
-
-#include <string.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <float.h>
+#include <math.h>
 
 XERCES_CPP_NAMESPACE_BEGIN
 
@@ -57,23 +50,29 @@ void XMLFloat::checkBoundary(char* const strValue)
         /**
          *  float related checking
          */
-        if (fValue < (-1) * FLT_MAX)
+
+        // 3.2.4 The basic value space of float consists of the values m × 2^e, where 
+        //    m is an integer whose absolute value is less than 2^24, 
+        //    and e is an integer between -149 and 104, inclusive
+        static const double fltMin = pow(2.0,-149);
+        static const double fltMax = pow(2.0,24) * pow(2.0,104);
+        if (fValue < (-1) * fltMax)
         {
             fType = NegINF;
             fDataConverted = true;
             fDataOverflowed = true;
         }
-        else if (fValue > (-1)*FLT_MIN && fValue < 0)
+        else if (fValue > (-1)*fltMin && fValue < 0)
         {
             fDataConverted = true;
             fValue = 0;
         }
-        else if (fValue > 0 && fValue < FLT_MIN )
+        else if (fValue > 0 && fValue < fltMin )
         {
             fDataConverted = true;
             fValue = 0;
         }
-        else if  (fValue > FLT_MAX)
+        else if  (fValue > fltMax)
         {
             fType = PosINF;
             fDataConverted = true;

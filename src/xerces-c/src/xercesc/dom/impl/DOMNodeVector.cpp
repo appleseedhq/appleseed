@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMNodeVector.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMNodeVector.cpp 678709 2008-07-22 10:56:56Z borisk $
  */
 
 //
@@ -47,11 +47,9 @@ DOMNodeVector::DOMNodeVector(DOMDocument *doc, XMLSize_t size) {
 
 void DOMNodeVector::init(DOMDocument *doc, XMLSize_t size) {
     assert(size > 0);
-    //data = new (doc) DOMNode *[size];
     data = (DOMNode**) ((DOMDocumentImpl *)doc)->allocate(sizeof(DOMNode*) * size);
     assert(data != 0);
-    XMLSize_t i;
-    for (i=0; i<size; i++)
+    for (XMLSize_t i=0; i<size; i++)
         data[i] = 0;
     allocatedSize = size;
     nextFreeSlot = 0;
@@ -73,7 +71,7 @@ void DOMNodeVector::checkSpace() {
     if (nextFreeSlot == allocatedSize) {
         XMLSize_t grow = allocatedSize/2;
         if (grow < 10) grow = 10;
-        XMLSize_t newAllocatedSize = allocatedSize + grow;
+        const XMLSize_t newAllocatedSize = allocatedSize + grow;
         DOMDocument *doc = data[0]->getOwnerDocument();
 
         //DOMNode **newData = new (doc) DOMNode *[newAllocatedSize];
@@ -91,12 +89,11 @@ void DOMNodeVector::checkSpace() {
 
 
 void DOMNodeVector::insertElementAt(DOMNode *elem, XMLSize_t index) {
-	XMLSize_t i;
 
 	assert(index <= nextFreeSlot);
 
 	checkSpace();
-	for (i=nextFreeSlot; i>index; --i) {
+	for (XMLSize_t i=nextFreeSlot; i>index; --i) {
 		data[i] = data[i-1];
 	}
 	data[index] = elem;
@@ -124,4 +121,3 @@ void DOMNodeVector::setElementAt(DOMNode *elem, XMLSize_t index) {
 
 
 XERCES_CPP_NAMESPACE_END
-

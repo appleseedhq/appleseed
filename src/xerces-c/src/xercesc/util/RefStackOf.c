@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: RefStackOf.c 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: RefStackOf.c 676911 2008-07-15 13:27:32Z amassari $
  */
 
 
@@ -33,7 +33,7 @@ XERCES_CPP_NAMESPACE_BEGIN
 //  RefStackOf: Constructors and Destructor
 // ---------------------------------------------------------------------------
 template <class TElem>
-RefStackOf<TElem>::RefStackOf(const unsigned int initElems,
+RefStackOf<TElem>::RefStackOf(const XMLSize_t initElems,
                               const bool adoptElems,
                               MemoryManager* const manager) :
 
@@ -50,11 +50,20 @@ template <class TElem> RefStackOf<TElem>::~RefStackOf()
 //  RefStackOf: Element management methods
 // ---------------------------------------------------------------------------
 template <class TElem> const TElem* RefStackOf<TElem>::
-elementAt(const unsigned int index) const
+elementAt(const XMLSize_t index) const
 {
-    if (index > fVector.size())
+    if (index >= fVector.size())
         ThrowXMLwithMemMgr(ArrayIndexOutOfBoundsException, XMLExcepts::Stack_BadIndex, fVector.getMemoryManager());
     return fVector.elementAt(index);
+}
+
+template <class TElem> TElem* RefStackOf<TElem>::popAt(const XMLSize_t index)
+{
+    if (index >= fVector.size())
+        ThrowXMLwithMemMgr(ArrayIndexOutOfBoundsException, XMLExcepts::Stack_BadIndex, fVector.getMemoryManager());
+
+    // Orphan off the element from the slot in the vector
+    return fVector.orphanElementAt(index);
 }
 
 template <class TElem> void RefStackOf<TElem>::push(TElem* const toPush)
@@ -64,7 +73,7 @@ template <class TElem> void RefStackOf<TElem>::push(TElem* const toPush)
 
 template <class TElem> const TElem* RefStackOf<TElem>::peek() const
 {
-    const int curSize = fVector.size();
+    const XMLSize_t curSize = fVector.size();
     if (curSize == 0)
         ThrowXMLwithMemMgr(EmptyStackException, XMLExcepts::Stack_EmptyStack, fVector.getMemoryManager());
 
@@ -73,7 +82,7 @@ template <class TElem> const TElem* RefStackOf<TElem>::peek() const
 
 template <class TElem> TElem* RefStackOf<TElem>::pop()
 {
-    const int curSize = fVector.size();
+    const XMLSize_t curSize = fVector.size();
     if (curSize == 0)
         ThrowXMLwithMemMgr(EmptyStackException, XMLExcepts::Stack_EmptyStack, fVector.getMemoryManager());
 
@@ -95,12 +104,12 @@ template <class TElem> bool RefStackOf<TElem>::empty()
     return (fVector.size() == 0);
 }
 
-template <class TElem> unsigned int RefStackOf<TElem>::curCapacity()
+template <class TElem> XMLSize_t RefStackOf<TElem>::curCapacity()
 {
     return fVector.curCapacity();
 }
 
-template <class TElem> unsigned int RefStackOf<TElem>::size()
+template <class TElem> XMLSize_t RefStackOf<TElem>::size()
 {
     return fVector.size();
 }

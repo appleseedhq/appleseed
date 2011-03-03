@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: EntityResolver.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: EntityResolver.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-
-#ifndef ENTITYRESOLVER_HPP
-#define ENTITYRESOLVER_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_ENTITYRESOLVER_HPP)
+#define XERCESC_INCLUDE_GUARD_ENTITYRESOLVER_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 
@@ -51,8 +50,8 @@ class InputSource;
   * identifier "http://www.myhost.com/today":</p>
   *
   *<code>
-  *#include <xercesc/sax/EntityResolver.hpp><br>
-  *#include <xercesc/sax/InputSource.hpp><br>
+  *\#include <xercesc/sax/EntityResolver.hpp><br>
+  *\#include <xercesc/sax/InputSource.hpp><br>
   *<br>
   *class MyResolver : public EntityResolver {<br>
   *  public:<br>&nbsp;

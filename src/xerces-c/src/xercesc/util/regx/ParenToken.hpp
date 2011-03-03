@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: ParenToken.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: ParenToken.hpp 678879 2008-07-22 20:05:05Z amassari $
  */
 
-#if !defined(PARENTOKEN_HPP)
-#define PARENTOKEN_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_PARENTOKEN_HPP)
+#define XERCESC_INCLUDE_GUARD_PARENTOKEN_HPP
 
 // ---------------------------------------------------------------------------
 //  Includes
@@ -31,39 +31,39 @@ XERCES_CPP_NAMESPACE_BEGIN
 
 class XMLUTIL_EXPORT ParenToken : public Token {
 public:
-	// -----------------------------------------------------------------------
+    // -----------------------------------------------------------------------
     //  Public Constructors and Destructor
     // -----------------------------------------------------------------------
-	ParenToken(const unsigned short tokType, Token* const tok,
+    ParenToken(const tokType tkType, Token* const tok,
                const int noParen, MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
     ~ParenToken();
 
-	// -----------------------------------------------------------------------
+    // -----------------------------------------------------------------------
     //  Getter methods
     // -----------------------------------------------------------------------
-    int size() const;
-	int getNoParen() const;
-    Token* getChild(const int index) const;
+    XMLSize_t size() const;
+    int getNoParen() const;
+    Token* getChild(const XMLSize_t index) const;
 
 private:
-	// -----------------------------------------------------------------------
+    // -----------------------------------------------------------------------
     //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
     ParenToken(const ParenToken&);
     ParenToken& operator=(const ParenToken&);
 
-	// -----------------------------------------------------------------------
+    // -----------------------------------------------------------------------
     //  Private data members
-	// -----------------------------------------------------------------------
-	int    fNoParen;
-	Token* fChild;
+    // -----------------------------------------------------------------------
+    int    fNoParen;
+    Token* fChild;
 };
 
 
 // ---------------------------------------------------------------------------
 //  ParenToken: getter methods
 // ---------------------------------------------------------------------------
-inline int ParenToken::size() const {
+inline XMLSize_t ParenToken::size() const {
 
     return 1;
 }
@@ -73,7 +73,7 @@ inline int ParenToken::getNoParen() const {
     return fNoParen;
 }
 
-inline Token* ParenToken::getChild(const int) const {
+inline Token* ParenToken::getChild(const XMLSize_t) const {
 
     return fChild;
 }

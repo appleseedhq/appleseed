@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: XMLMsgLoader.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLMsgLoader.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-
-#if !defined(XMLMSGLOADER_HPP)
-#define XMLMSGLOADER_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XMLMSGLOADER_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLMSGLOADER_HPP
 
 #include <xercesc/util/XMemory.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
@@ -71,14 +70,14 @@ public :
     (
         const   XMLMsgId        msgToLoad
         ,       XMLCh* const    toFill
-        , const unsigned int    maxChars
+        , const XMLSize_t       maxChars
     ) = 0;
 
     virtual bool loadMsg
     (
         const   XMLMsgId        msgToLoad
         ,       XMLCh* const    toFill
-        , const unsigned int    maxChars
+        , const XMLSize_t       maxChars
         , const XMLCh* const    repText1
         , const XMLCh* const    repText2 = 0
         , const XMLCh* const    repText3 = 0
@@ -90,7 +89,7 @@ public :
     (
         const   XMLMsgId        msgToLoad
         ,       XMLCh* const    toFill
-        , const unsigned int    maxChars
+        , const XMLSize_t       maxChars
         , const char* const     repText1
         , const char* const     repText2 = 0
         , const char* const     repText3 = 0
@@ -104,7 +103,7 @@ public :
       * This function enables set the locale information which
       * all concrete message loaders shall refer to during instantiation.
       *
-      * Note: for detailed discussion, refer to PlatformUtils::initalize()
+      * Note: for detailed discussion, refer to PlatformUtils::initialize()
       */
     static void           setLocale(const char* const localeToAdopt);
 
@@ -121,7 +120,7 @@ public :
       * This function enables set the NLSHome information which
       * all concrete message loaders shall refer to during instantiation.
       *
-      * Note: for detailed discussion, refer to PlatformUtils::initalize()
+      * Note: for detailed discussion, refer to PlatformUtils::initialize()
       */
     static void           setNLSHome(const char* const nlsHomeToAdopt);
 
@@ -132,22 +131,11 @@ public :
 
     //@}
 
-    // -----------------------------------------------------------------------
-    //  Deprecated: Getter methods
-    // -----------------------------------------------------------------------
-    virtual const XMLCh* getLanguageName() const;
-
-
 protected :
     // -----------------------------------------------------------------------
     //  Hidden Constructors
     // -----------------------------------------------------------------------
     XMLMsgLoader();
-
-    // -----------------------------------------------------------------------
-    //  Deprecated: Protected helper methods
-    // -----------------------------------------------------------------------
-    void setLanguageName(XMLCh* const nameToAdopt);
 
 private :
     // -----------------------------------------------------------------------
@@ -171,7 +159,6 @@ private :
     // -----------------------------------------------------------------------
     static char*    fLocale;
     static char*    fPath;
-    static XMLCh    fLanguage[];
 };
 
 

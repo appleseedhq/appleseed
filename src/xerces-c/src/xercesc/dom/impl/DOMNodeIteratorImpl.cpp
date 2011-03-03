@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMNodeIteratorImpl.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMNodeIteratorImpl.cpp 671894 2008-06-26 13:29:21Z borisk $
  */
 
 //////////////////////////////////////////////////////////////////////
@@ -37,7 +37,7 @@ XERCES_CPP_NAMESPACE_BEGIN
 
 DOMNodeIteratorImpl::DOMNodeIteratorImpl (DOMDocument* doc,
                                     DOMNode* root,
-                                    unsigned long whatToShow,
+                                    DOMNodeFilter::ShowType whatToShow,
                                     DOMNodeFilter* nodeFilter,
                                     bool expandEntityRef)
 :   fRoot(root),
@@ -47,9 +47,9 @@ DOMNodeIteratorImpl::DOMNodeIteratorImpl (DOMDocument* doc,
     fExpandEntityReferences(expandEntityRef),
     fDetached(false),
     fCurrentNode(0),
-    fForward(true)    
+    fForward(true)
 {
-	
+
 }
 
 
@@ -103,7 +103,7 @@ DOMNode* DOMNodeIteratorImpl::getRoot() {
 
 /** Return the whatToShow value */
 
-unsigned long DOMNodeIteratorImpl::getWhatToShow () {
+DOMNodeFilter::ShowType DOMNodeIteratorImpl::getWhatToShow () {
     return fWhatToShow;
 }
 
@@ -173,7 +173,7 @@ DOMNode* DOMNodeIteratorImpl::nextNode () {
 DOMNode* DOMNodeIteratorImpl::previousNode () {
 	if (fDetached)
 		throw DOMException(DOMException::INVALID_STATE_ERR, 0, GetDOMNodeIteratorMemoryManager);
-		
+
     // if the root is 0, or the current node is 0, return 0.
     if (!fRoot || !fCurrentNode) return 0;
 
@@ -252,7 +252,7 @@ DOMNode* DOMNodeIteratorImpl::nextNode (DOMNode* node, bool visitChildren) {
     // only check children if we visit children.
     if (visitChildren) {
         //if hasChildren, return 1st child.
-        if ((fExpandEntityReferences || node->getNodeType()!=DOMNode::ENTITY_REFERENCE_NODE) && 
+        if ((fExpandEntityReferences || node->getNodeType()!=DOMNode::ENTITY_REFERENCE_NODE) &&
             node->hasChildNodes()) {
             result = node->getFirstChild();
             return result;
@@ -306,7 +306,7 @@ DOMNode* DOMNodeIteratorImpl::previousNode (DOMNode* node) {
 
     // if sibling has children, keep getting last child of child.
     if (result->hasChildNodes()) {
-        while ((fExpandEntityReferences || result->getNodeType()!=DOMNode::ENTITY_REFERENCE_NODE) && 
+        while ((fExpandEntityReferences || result->getNodeType()!=DOMNode::ENTITY_REFERENCE_NODE) &&
                result->hasChildNodes()) {
             result = result->getLastChild();
         }
@@ -363,4 +363,3 @@ void DOMNodeIteratorImpl::release()
 }
 
 XERCES_CPP_NAMESPACE_END
-

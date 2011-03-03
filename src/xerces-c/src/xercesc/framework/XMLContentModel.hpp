@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: XMLContentModel.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLContentModel.hpp 677705 2008-07-17 20:15:32Z amassari $
  */
 
-
-#if !defined(CONTENTMODEL_HPP)
-#define CONTENTMODEL_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XMLCONTENTMODEL_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLCONTENTMODEL_HPP
 
 #include <xercesc/util/XMemory.hpp>
 #include <xercesc/util/QName.hpp>
@@ -33,6 +32,7 @@ class GrammarResolver;
 class XMLStringPool;
 class XMLValidator;
 class SchemaGrammar;
+class SubstitutionGroupComparator;
 
 /**
  *  This class defines the abstract interface for all content models. All
@@ -79,20 +79,24 @@ public:
     // -----------------------------------------------------------------------
     //  The virtual content model interface provided by derived classes
     // -----------------------------------------------------------------------
-	virtual int validateContent
+	virtual bool validateContent
     (
         QName** const         children
-      , const unsigned int    childCount
-      , const unsigned int    emptyNamespaceId
+      , XMLSize_t             childCount
+      , unsigned int          emptyNamespaceId
+      , XMLSize_t*            indexFailingChild
+      , MemoryManager*  const manager = XMLPlatformUtils::fgMemoryManager
     ) const = 0;
 
-	virtual int validateContentSpecial
+	virtual bool validateContentSpecial
     (
         QName** const           children
-      , const unsigned int      childCount
-      , const unsigned int      emptyNamespaceId
+      , XMLSize_t               childCount
+      , unsigned int            emptyNamespaceId
       , GrammarResolver*  const pGrammarResolver
       , XMLStringPool*    const pStringPool
+      , XMLSize_t*              indexFailingChild
+      , MemoryManager*    const manager = XMLPlatformUtils::fgMemoryManager
     ) const =0;
 
 	virtual void checkUniqueParticleAttribution
@@ -108,8 +112,16 @@ public:
     virtual ContentLeafNameTypeVector* getContentLeafNameTypeVector()
 	  const = 0;
 
-    virtual unsigned int getNextState(const unsigned int currentState,
-                                      const unsigned int elementIndex) const = 0;
+    virtual unsigned int getNextState(unsigned int currentState,
+                                      XMLSize_t    elementIndex) const = 0;
+
+    virtual bool handleRepetitions( const QName* const curElem,
+                                    unsigned int curState,
+                                    unsigned int currentLoop,
+                                    unsigned int& nextState,
+                                    unsigned int& nextLoop,
+                                    XMLSize_t elementIndex,
+                                    SubstitutionGroupComparator * comparator) const = 0;
 
 protected :
     // -----------------------------------------------------------------------

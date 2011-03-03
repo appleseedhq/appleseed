@@ -1,6 +1,3 @@
-#ifndef DOMEntityReferenceImpl_HEADER_GUARD_
-#define DOMEntityReferenceImpl_HEADER_GUARD_
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -19,8 +16,11 @@
  */
 
 /*
- * $Id: DOMEntityReferenceImpl.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMEntityReferenceImpl.hpp 641193 2008-03-26 08:06:57Z borisk $
  */
+
+#if !defined(XERCESC_INCLUDE_GUARD_DOMENTITYREFERENCEIMPL_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMENTITYREFERENCEIMPL_HPP
 
 //
 //  This file is part of the internal implementation of the C++ XML DOM.
@@ -43,7 +43,7 @@ XERCES_CPP_NAMESPACE_BEGIN
 
 class CDOM_EXPORT DOMEntityReferenceImpl: public DOMEntityReference
 {
-private:
+protected:
     DOMNodeImpl      fNode;
     DOMParentNode    fParent;
     DOMChildNode     fChild;
@@ -59,9 +59,11 @@ public:
     DOMEntityReferenceImpl(const DOMEntityReferenceImpl &other, bool deep=false);
     virtual ~DOMEntityReferenceImpl();
 
+public:
     // Declare all of the functions from DOMNode.
     DOMNODE_FUNCTIONS;
-
+    
+public:
     virtual void setReadOnly(bool readOnly,bool deep);
 
 private:

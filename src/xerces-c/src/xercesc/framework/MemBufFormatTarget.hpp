@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: MemBufFormatTarget.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: MemBufFormatTarget.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#ifndef MemBufFormatTarget_HEADER_GUARD_
-#define MemBufFormatTarget_HEADER_GUARD_
+#if !defined(XERCESC_INCLUDE_GUARD_MEMBUFFORMATTARGET_HPP)
+#define XERCESC_INCLUDE_GUARD_MEMBUFFORMATTARGET_HPP
 
 #include <xercesc/framework/XMLFormatter.hpp>
 
@@ -28,10 +28,10 @@ XERCES_CPP_NAMESPACE_BEGIN
 
 /*
  * The MemBufFormatTarget is a derivative from XMLFormatTarget, which user code
- * may plug into DOMWriter to retrieve the serialized XML stream (from DOM Tree)
+ * may plug into DOMLSSerializer to retrieve the serialized XML stream (from DOM Tree)
  * in a memory buffer.
  *
- * The MemBufFormatTarget is initalized to have a memory buffer of 1023 upon
+ * The MemBufFormatTarget is initialized to have a memory buffer of 1023 upon
  * construction, which grows as needed. The buffer will be deleted when
  * MemBufFormatTarget is destructed; or will be reset when the reset() function
  * is called.
@@ -49,7 +49,7 @@ public:
     //@{
     MemBufFormatTarget
     (
-          int                  initCapacity = 1023
+          XMLSize_t            initCapacity = 1023
         , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
     ) ;
     ~MemBufFormatTarget();
@@ -59,7 +59,7 @@ public:
     //  Implementations of the format target interface
     // -----------------------------------------------------------------------
     virtual void writeChars(const XMLByte* const toWrite
-                          , const unsigned int   count
+                          , const XMLSize_t      count
                           , XMLFormatter* const  formatter);
 
     // -----------------------------------------------------------------------
@@ -81,7 +81,7 @@ public:
      *
      */
     //@}
-    unsigned int getLen() const
+    XMLSize_t getLen() const
     {
         return fIndex;
     }
@@ -105,7 +105,7 @@ private:
     // -----------------------------------------------------------------------
     //  Private helpers
     // -----------------------------------------------------------------------
-    void insureCapacity(const unsigned int extraNeeded);
+    void ensureCapacity(const XMLSize_t extraNeeded);
 
     // -----------------------------------------------------------------------
     //  Private data members
@@ -125,8 +125,8 @@ private:
     // -----------------------------------------------------------------------
     MemoryManager*  fMemoryManager;
     XMLByte*        fDataBuf;
-    unsigned int    fIndex;
-    unsigned int    fCapacity;
+    XMLSize_t       fIndex;
+    XMLSize_t       fCapacity;
 
 };
 

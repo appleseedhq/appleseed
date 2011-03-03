@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMNamedNodeMapImpl.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMNamedNodeMapImpl.cpp 678381 2008-07-21 10:15:01Z borisk $
  */
 
 
@@ -43,7 +43,7 @@ DOMNamedNodeMapImpl::~DOMNamedNodeMapImpl()
 {
 }
 
-bool DOMNamedNodeMapImpl::readOnly() 
+bool DOMNamedNodeMapImpl::readOnly()
 {
     return castToNodeImpl(fOwnerNode)->isReadOnly();
 }
@@ -52,8 +52,8 @@ DOMNamedNodeMapImpl *DOMNamedNodeMapImpl::cloneMap(DOMNode *ownerNod)
 {
     DOMDocumentImpl *doc = (DOMDocumentImpl *)(castToNodeImpl(ownerNod)->getOwnerDocument());
     DOMNamedNodeMapImpl *newmap = new (doc) DOMNamedNodeMapImpl(ownerNod);
-	
-    for(int index=0;index<MAP_SIZE;index++)
+
+    for(XMLSize_t index=0;index<MAP_SIZE;index++)
         if (fBuckets[index] != 0) {
             XMLSize_t size=fBuckets[index]->size();
             newmap->fBuckets[index] = new (doc) DOMNodeVector(doc, size);
@@ -74,7 +74,7 @@ DOMNamedNodeMapImpl *DOMNamedNodeMapImpl::cloneMap(DOMNode *ownerNod)
 XMLSize_t DOMNamedNodeMapImpl::getLength() const
 {
     XMLSize_t count=0;
-    for(int index=0;index<MAP_SIZE;index++)
+    for(XMLSize_t index=0;index<MAP_SIZE;index++)
         count+=(fBuckets[index]==0?0:fBuckets[index]->size());
     return count;
 }
@@ -96,12 +96,12 @@ DOMNode * DOMNamedNodeMapImpl::item(XMLSize_t index) const
 
 DOMNode * DOMNamedNodeMapImpl::getNamedItem(const XMLCh *name) const
 {
-    unsigned int hash=XMLString::hash(name,MAP_SIZE);
+    XMLSize_t hash=XMLString::hash(name,MAP_SIZE);
     if(fBuckets[hash]==0)
         return 0;
 
-    int i = 0;
-    int size = fBuckets[hash]->size();
+    XMLSize_t i = 0;
+    XMLSize_t size = fBuckets[hash]->size();
     for (i = 0; i < size; ++i) {
         DOMNode *n=fBuckets[hash]->elementAt(i);
         if(XMLString::equals(name,n->getNodeName()))
@@ -124,18 +124,20 @@ DOMNode * DOMNamedNodeMapImpl::removeNamedItem(const XMLCh *name)
     if (this->readOnly())
         throw DOMException(
             DOMException::NO_MODIFICATION_ALLOWED_ERR, 0, GetDOMNamedNodeMapMemoryManager);
-    
-    unsigned int hash=XMLString::hash(name,MAP_SIZE);
+
+    XMLSize_t hash=XMLString::hash(name,MAP_SIZE);
     if(fBuckets[hash]==0)
         throw DOMException(DOMException::NOT_FOUND_ERR, 0, GetDOMNamedNodeMapMemoryManager);
 
-    int i = 0;
-    int size = fBuckets[hash]->size();
+    DOMDocument *doc = fOwnerNode->getOwnerDocument();
+
+    XMLSize_t i = 0;
+    XMLSize_t size = fBuckets[hash]->size();
     for (i = 0; i < size; ++i) {
         DOMNode *n=fBuckets[hash]->elementAt(i);
         if(XMLString::equals(name,n->getNodeName())) {
             fBuckets[hash]->removeElementAt(i);
-            castToNodeImpl(n)->fOwnerNode = fOwnerNode->getOwnerDocument();
+            castToNodeImpl(n)->fOwnerNode = doc;
             castToNodeImpl(n)->isOwned(false);
             return n;
         }
@@ -171,17 +173,17 @@ DOMNode * DOMNamedNodeMapImpl::setNamedItem(DOMNode * arg)
     argImpl->isOwned(true);
 
     const XMLCh* name=arg->getNodeName();
-    unsigned int hash=XMLString::hash(name,MAP_SIZE);
+    XMLSize_t hash=XMLString::hash(name,MAP_SIZE);
     if(fBuckets[hash]==0)
         fBuckets[hash] = new (doc) DOMNodeVector(doc, 3);
 
-    int i = 0;
-    int size = fBuckets[hash]->size();
+    XMLSize_t i = 0;
+    XMLSize_t size = fBuckets[hash]->size();
     for (i = 0; i < size; ++i) {
         DOMNode *n=fBuckets[hash]->elementAt(i);
         if(XMLString::equals(name,n->getNodeName())) {
             fBuckets[hash]->setElementAt(arg,i);
-            castToNodeImpl(n)->fOwnerNode = fOwnerNode->getOwnerDocument();
+            castToNodeImpl(n)->fOwnerNode = doc;
             castToNodeImpl(n)->isOwned(false);
             return n;
         }
@@ -195,11 +197,11 @@ void DOMNamedNodeMapImpl::setReadOnly(bool readOnl, bool deep)
 {
     // this->fReadOnly=readOnl;
     if(deep) {
-        for (int index = 0; index < MAP_SIZE; index++) {
+        for (XMLSize_t index = 0; index < MAP_SIZE; index++) {
             if(fBuckets[index]==0)
                 continue;
-            int sz = fBuckets[index]->size();
-            for (int i=0; i<sz; ++i)
+            XMLSize_t sz = fBuckets[index]->size();
+            for (XMLSize_t i=0; i<sz; ++i)
                 castToNodeImpl(fBuckets[index]->elementAt(i))->setReadOnly(readOnl, deep);
         }
     }
@@ -212,12 +214,12 @@ DOMNode *DOMNamedNodeMapImpl::getNamedItemNS(const XMLCh *namespaceURI, const XM
 {
     // the map is indexed using the full name of nodes; to search given a namespace and a local name
     // we have to do a linear search
-    for (int index = 0; index < MAP_SIZE; index++) {
+    for (XMLSize_t index = 0; index < MAP_SIZE; index++) {
         if(fBuckets[index]==0)
             continue;
 
-        int i = 0;
-        int size = fBuckets[index]->size();
+        XMLSize_t i = 0;
+        XMLSize_t size = fBuckets[index]->size();
         for (i = 0; i < size; ++i) {
             DOMNode *n=fBuckets[index]->elementAt(i);
             const XMLCh * nNamespaceURI = n->getNamespaceURI();
@@ -263,12 +265,12 @@ DOMNode * DOMNamedNodeMapImpl::setNamedItemNS(DOMNode *arg)
     const XMLCh* localName=arg->getLocalName();
     // the map is indexed using the full name of nodes; to search given a namespace and a local name
     // we have to do a linear search
-    for (int index = 0; index < MAP_SIZE; index++) {
+    for (XMLSize_t index = 0; index < MAP_SIZE; index++) {
         if(fBuckets[index]==0)
             continue;
 
-        int i = 0;
-        int size = fBuckets[index]->size();
+        XMLSize_t i = 0;
+        XMLSize_t size = fBuckets[index]->size();
         for (i = 0; i < size; ++i) {
             DOMNode *n=fBuckets[index]->elementAt(i);
             const XMLCh * nNamespaceURI = n->getNamespaceURI();
@@ -280,7 +282,7 @@ DOMNode * DOMNamedNodeMapImpl::setNamedItemNS(DOMNode *arg)
                     ||
                     (nLocalName == 0 && XMLString::equals(localName, n->getNodeName()))) {
                     fBuckets[index]->setElementAt(arg,i);
-                    castToNodeImpl(n)->fOwnerNode = fOwnerNode->getOwnerDocument();
+                    castToNodeImpl(n)->fOwnerNode = doc;
                     castToNodeImpl(n)->isOwned(false);
                     return n;
                 }
@@ -306,12 +308,13 @@ DOMNode *DOMNamedNodeMapImpl::removeNamedItemNS(const XMLCh *namespaceURI,
 
     // the map is indexed using the full name of nodes; to search given a namespace and a local name
     // we have to do a linear search
-    for (int index = 0; index < MAP_SIZE; index++) {
+    for (XMLSize_t index = 0; index < MAP_SIZE; index++) {
         if(fBuckets[index]==0)
             continue;
 
-        int i = 0;
-        int size = fBuckets[index]->size();
+        DOMDocument *doc = fOwnerNode->getOwnerDocument();
+        XMLSize_t i = 0;
+        XMLSize_t size = fBuckets[index]->size();
         for (i = 0; i < size; ++i) {
             DOMNode *n=fBuckets[index]->elementAt(i);
             const XMLCh * nNamespaceURI = n->getNamespaceURI();
@@ -323,7 +326,7 @@ DOMNode *DOMNamedNodeMapImpl::removeNamedItemNS(const XMLCh *namespaceURI,
                     ||
                     (nLocalName == 0 && XMLString::equals(localName, n->getNodeName()))) {
                     fBuckets[index]->removeElementAt(i);
-                    castToNodeImpl(n)->fOwnerNode = fOwnerNode->getOwnerDocument();
+                    castToNodeImpl(n)->fOwnerNode = doc;
                     castToNodeImpl(n)->isOwned(false);
                     return n;
                 }
@@ -335,4 +338,3 @@ DOMNode *DOMNamedNodeMapImpl::removeNamedItemNS(const XMLCh *namespaceURI,
 }
 
 XERCES_CPP_NAMESPACE_END
-

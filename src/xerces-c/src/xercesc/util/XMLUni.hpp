@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XMLUni.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLUni.hpp 833045 2009-11-05 13:21:27Z borisk $
  */
 
 
@@ -28,8 +28,8 @@
 //  strings built up as arrays of those constants.
 // ---------------------------------------------------------------------------
 
-#if !defined(XMLUNI_HPP)
-#define XMLUNI_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XMLUNI_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLUNI_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 
@@ -106,6 +106,7 @@ public :
     static const XMLCh fgUCS4EncodingString2[];
     static const XMLCh fgUCS4EncodingString3[];
     static const XMLCh fgUCS4EncodingString4[];
+    static const XMLCh fgUCS4EncodingString5[];
     static const XMLCh fgUCS4BEncodingString[];
     static const XMLCh fgUCS4BEncodingString2[];
     static const XMLCh fgUCS4LEncodingString[];
@@ -195,6 +196,7 @@ public :
     static const XMLCh fgSchemaDateTimeException_Name[];
     static const XMLCh fgXPathException_Name[];
     static const XMLCh fgXSerializationException_Name[];
+    static const XMLCh fgXMLXIncludeException_Name[];
 
     // Numerical String
     static const XMLCh fgNegINFString[];
@@ -210,6 +212,7 @@ public :
     static const XMLCh fgXercesDynamic[];
     static const XMLCh fgXercesSchema[];
     static const XMLCh fgXercesSchemaFullChecking[];
+    static const XMLCh fgXercesLoadSchema[];
     static const XMLCh fgXercesIdentityConstraintChecking[];
     static const XMLCh fgXercesSchemaExternalSchemaLocation[];
     static const XMLCh fgXercesSchemaExternalNoNameSpaceSchemaLocation[];
@@ -231,7 +234,10 @@ public :
     static const XMLCh fgXercesIgnoreAnnotations[];
     static const XMLCh fgXercesDisableDefaultEntityResolution[];
     static const XMLCh fgXercesSkipDTDValidation[];
-
+    static const XMLCh fgXercesEntityResolver[];
+    static const XMLCh fgXercesHandleMultipleImports[];
+    static const XMLCh fgXercesDoXInclude[];
+    static const XMLCh fgXercesLowWaterMark[];
 
     // SAX2 features/properties names
     static const XMLCh fgSAX2CoreValidation[];
@@ -239,23 +245,36 @@ public :
     static const XMLCh fgSAX2CoreNameSpacePrefixes[];
 
     // Introduced in DOM Level 3
-    // DOMBuilder features
+    // DOMLSParser features
     static const XMLCh fgDOMCanonicalForm[];
     static const XMLCh fgDOMCDATASections[];
     static const XMLCh fgDOMComments[];
     static const XMLCh fgDOMCharsetOverridesXMLEncoding[];
+    static const XMLCh fgDOMCheckCharacterNormalization[];
     static const XMLCh fgDOMDatatypeNormalization[];
+    static const XMLCh fgDOMDisallowDoctype[];
+    static const XMLCh fgDOMElementContentWhitespace[];
+    static const XMLCh fgDOMErrorHandler[];
     static const XMLCh fgDOMEntities[];
+    static const XMLCh fgDOMIgnoreUnknownCharacterDenormalization[];
     static const XMLCh fgDOMInfoset[];
     static const XMLCh fgDOMNamespaces[];
     static const XMLCh fgDOMNamespaceDeclarations[];
+    static const XMLCh fgDOMNormalizeCharacters[];
+    static const XMLCh fgDOMResourceResolver[];
+    static const XMLCh fgDOMSchemaLocation[];
+    static const XMLCh fgDOMSchemaType[];
+    static const XMLCh fgDOMSplitCDATASections[];
     static const XMLCh fgDOMSupportedMediatypesOnly[];
+    static const XMLCh fgDOMValidate[];
     static const XMLCh fgDOMValidateIfSchema[];
-    static const XMLCh fgDOMValidation[];
-    static const XMLCh fgDOMWhitespaceInElementContent[];
+    static const XMLCh fgDOMWellFormed[];
+
+    static const XMLCh fgDOMXMLSchemaType[];
+    static const XMLCh fgDOMDTDType[];
 
     // Introduced in DOM Level 3
-    // DOMWriter feature
+    // DOMLSSerializer feature
     static const XMLCh fgDOMWRTCanonicalForm[];
     static const XMLCh fgDOMWRTDiscardDefaultContent[];
     static const XMLCh fgDOMWRTEntities[];
@@ -266,10 +285,13 @@ public :
     static const XMLCh fgDOMWRTWhitespaceInElementContent[];
     static const XMLCh fgDOMWRTBOM[];
     static const XMLCh fgDOMXMLDeclaration[];
+    static const XMLCh fgDOMWRTXercesPrettyPrint[];
 
     // Private interface names
     static const XMLCh fgXercescInterfacePSVITypeInfo[];
     static const XMLCh fgXercescInterfaceDOMDocumentTypeImpl[];
+    static const XMLCh fgXercescInterfaceDOMDocumentImpl[];
+    static const XMLCh fgXercescInterfaceDOMMemoryManager[];
 
     // Locale
     static const char  fgXercescDefaultLocale[];
@@ -296,8 +318,8 @@ public :
     static const XMLCh fgLangPattern[];
 
     static const XMLCh fgBooleanValueSpace[][8];
-    static const unsigned int fgBooleanValueSpaceArraySize;
-        
+    static const XMLSize_t fgBooleanValueSpaceArraySize;
+
 private:
     // -----------------------------------------------------------------------
     //  Unimplemented constructors and operators

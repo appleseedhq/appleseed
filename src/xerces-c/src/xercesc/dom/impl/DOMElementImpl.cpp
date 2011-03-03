@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMElementImpl.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMElementImpl.cpp 901107 2010-01-20 08:45:02Z borisk $
  */
 
 #include "DOMElementImpl.hpp"
@@ -49,19 +49,19 @@ DOMElementImpl::DOMElementImpl(DOMDocument *ownerDoc, const XMLCh *eName)
     fName = docImpl->getPooledString(eName);
     setupDefaultAttributes();
     if (!fDefaultAttributes) {
-        fDefaultAttributes = new (getOwnerDocument()) DOMAttrMapImpl(this);
-        fAttributes = new (getOwnerDocument()) DOMAttrMapImpl(this);
+        fDefaultAttributes = new (docImpl) DOMAttrMapImpl(this);
+        fAttributes = new (docImpl) DOMAttrMapImpl(this);
     }
     else {
-        fAttributes = new (getOwnerDocument()) DOMAttrMapImpl(this, fDefaultAttributes);
+      fAttributes = new (docImpl) DOMAttrMapImpl(this, fDefaultAttributes);
     }
 }
 
 
 DOMElementImpl::DOMElementImpl(const DOMElementImpl &other, bool deep)
     : DOMElement(other),
-      fNode(other.getOwnerDocument()),
-      fParent(other.getOwnerDocument()),
+      fNode (other.fParent.fOwnerDocument),
+      fParent (other.fParent.fOwnerDocument),
       fAttributes(0),
       fDefaultAttributes(0)
 {
@@ -84,14 +84,14 @@ DOMElementImpl::DOMElementImpl(const DOMElementImpl &other, bool deep)
         setupDefaultAttributes();
 
     if (!fDefaultAttributes)
-        fDefaultAttributes = new (getOwnerDocument()) DOMAttrMapImpl(this);
+        fDefaultAttributes = new (fParent.fOwnerDocument) DOMAttrMapImpl(this);
 
     if (!fAttributes) {
         if (!fDefaultAttributes) {
-            fAttributes = new (getOwnerDocument()) DOMAttrMapImpl(this);
+            fAttributes = new (fParent.fOwnerDocument) DOMAttrMapImpl(this);
         }
         else {
-            fAttributes = new (getOwnerDocument()) DOMAttrMapImpl(this, fDefaultAttributes);
+            fAttributes = new (fParent.fOwnerDocument) DOMAttrMapImpl(this, fDefaultAttributes);
         }
     }
 
@@ -105,7 +105,7 @@ DOMElementImpl::~DOMElementImpl()
 
 DOMNode *DOMElementImpl::cloneNode(bool deep) const
 {
-    DOMNode* newNode = new (getOwnerDocument(), DOMDocumentImpl::ELEMENT_OBJECT) DOMElementImpl(*this, deep);
+    DOMNode* newNode = new (fParent.fOwnerDocument, DOMMemoryManager::ELEMENT_OBJECT) DOMElementImpl(*this, deep);
     fNode.callUserDataHandlers(DOMUserDataHandler::NODE_CLONED, this, newNode);
     return newNode;
 }
@@ -118,7 +118,7 @@ const XMLCh * DOMElementImpl::getNodeName() const {
 }
 
 
-short DOMElementImpl::getNodeType() const {
+DOMNode::NodeType DOMElementImpl::getNodeType() const {
     return DOMNode::ELEMENT_NODE;
 }
 
@@ -150,7 +150,7 @@ DOMNamedNodeMap *DOMElementImpl::getAttributes() const
 
 DOMNodeList *DOMElementImpl::getElementsByTagName(const XMLCh *tagname) const
 {
-    DOMDocumentImpl *docImpl = (DOMDocumentImpl *)getOwnerDocument();
+    DOMDocumentImpl *docImpl = (DOMDocumentImpl *)fParent.fOwnerDocument;
     return docImpl->getDeepNodeList(this,tagname);
 }
 
@@ -167,7 +167,7 @@ void DOMElementImpl::removeAttribute(const XMLCh *nam)
         throw DOMException(
              DOMException::NO_MODIFICATION_ALLOWED_ERR, 0, GetDOMNodeMemoryManager);
 
-    XMLSSize_t i = fAttributes->findNamePoint(nam);
+    int i = fAttributes->findNamePoint(nam);
     if (i >= 0)
     {
         DOMNode *att = fAttributes->removeNamedItemAt(i);
@@ -188,7 +188,7 @@ DOMAttr *DOMElementImpl::removeAttributeNode(DOMAttr *oldAttr)
 
     // Since there is no removeAttributeNodeNS, check if this oldAttr has NS or not
     const XMLCh* localName = oldAttr->getLocalName();
-    XMLSSize_t i = 0;
+    int i = 0;
     if (localName)
         i = fAttributes->findNamePoint(oldAttr->getNamespaceURI(), localName);
     else
@@ -222,14 +222,14 @@ void DOMElementImpl::setAttribute(const XMLCh *nam, const XMLCh *val)
     DOMAttr* newAttr = getAttributeNode(nam);
     if (!newAttr)
     {
-        newAttr = this->fNode.getOwnerDocument()->createAttribute(nam);
+        newAttr = fParent.fOwnerDocument->createAttribute(nam);
         fAttributes->setNamedItem(newAttr);
     }
 
     newAttr->setNodeValue(val);
 }
 
-void DOMElementImpl::setIdAttribute(const XMLCh* name)
+void DOMElementImpl::setIdAttribute(const XMLCh* name, bool isId)
 {
     if (fNode.isReadOnly())
         throw DOMException(
@@ -237,13 +237,16 @@ void DOMElementImpl::setIdAttribute(const XMLCh* name)
 
     DOMAttr *attr = getAttributeNode(name);
 
-    if (!attr) 
+    if (!attr)
         throw DOMException(DOMException::NOT_FOUND_ERR, 0, GetDOMNodeMemoryManager);
 
-    ((DOMAttrImpl *)attr)->addAttrToIDNodeMap();
+    if(isId)
+        ((DOMAttrImpl *)attr)->addAttrToIDNodeMap();
+    else
+        ((DOMAttrImpl *)attr)->removeAttrFromIDNodeMap();
 }
 
-void DOMElementImpl::setIdAttributeNS(const XMLCh* namespaceURI, const XMLCh* localName) {
+void DOMElementImpl::setIdAttributeNS(const XMLCh* namespaceURI, const XMLCh* localName, bool isId) {
 
     if (fNode.isReadOnly())
         throw DOMException(
@@ -251,15 +254,17 @@ void DOMElementImpl::setIdAttributeNS(const XMLCh* namespaceURI, const XMLCh* lo
 
     DOMAttr *attr = getAttributeNodeNS(namespaceURI, localName);
 
-    if (!attr) 
+    if (!attr)
         throw DOMException(DOMException::NOT_FOUND_ERR, 0, GetDOMNodeMemoryManager);
 
-    ((DOMAttrImpl *)attr)->addAttrToIDNodeMap();
-
+    if(isId)
+        ((DOMAttrImpl *)attr)->addAttrToIDNodeMap();
+    else
+        ((DOMAttrImpl *)attr)->removeAttrFromIDNodeMap();
 }
 
 
-void DOMElementImpl::setIdAttributeNode(const DOMAttr *idAttr) {
+void DOMElementImpl::setIdAttributeNode(const DOMAttr *idAttr, bool isId) {
 
     if (fNode.isReadOnly())
         throw DOMException(
@@ -269,13 +274,16 @@ void DOMElementImpl::setIdAttributeNode(const DOMAttr *idAttr) {
     const XMLCh* localName = idAttr->getLocalName();
     if (localName)
         attr = getAttributeNodeNS(idAttr->getNamespaceURI(), idAttr->getLocalName());
-    else 
+    else
         attr = getAttributeNode(idAttr->getName());
-    
-    if(!attr) 
+
+    if(!attr)
         throw DOMException(DOMException::NOT_FOUND_ERR, 0, GetDOMNodeMemoryManager);
 
-    ((DOMAttrImpl *)attr)->addAttrToIDNodeMap();
+    if(isId)
+        ((DOMAttrImpl *)attr)->addAttrToIDNodeMap();
+    else
+        ((DOMAttrImpl *)attr)->removeAttrFromIDNodeMap();
 }
 
 
@@ -333,7 +341,7 @@ void DOMElementImpl::setAttributeNS(const XMLCh *fNamespaceURI,
     DOMAttr* newAttr = getAttributeNodeNS(fNamespaceURI, qualifiedName+index);
     if (!newAttr)
     {
-        newAttr = this->fNode.getOwnerDocument()->createAttributeNS(fNamespaceURI, qualifiedName);
+        newAttr = fParent.fOwnerDocument->createAttributeNS(fNamespaceURI, qualifiedName);
         fAttributes->setNamedItemNS(newAttr);
     }
 
@@ -348,7 +356,7 @@ void DOMElementImpl::removeAttributeNS(const XMLCh *fNamespaceURI,
         throw DOMException(
         DOMException::NO_MODIFICATION_ALLOWED_ERR, 0, GetDOMNodeMemoryManager);
 
-    XMLSSize_t i = fAttributes->findNamePoint(fNamespaceURI, fLocalName);
+    int i = fAttributes->findNamePoint(fNamespaceURI, fLocalName);
     if (i >= 0)
     {
         DOMNode *att = fAttributes->removeNamedItemAt(i);
@@ -370,7 +378,7 @@ DOMAttr *DOMElementImpl::setAttributeNodeNS(DOMAttr *newAttr)
         throw DOMException(
             DOMException::NO_MODIFICATION_ALLOWED_ERR, 0, GetDOMNodeMemoryManager);
 
-    if (newAttr -> getOwnerDocument() != this -> getOwnerDocument())
+    if (newAttr -> getOwnerDocument() != fParent.fOwnerDocument)
         throw DOMException(DOMException::WRONG_DOCUMENT_ERR, 0, GetDOMNodeMemoryManager);
 
     // This will throw INUSE if necessary
@@ -383,7 +391,7 @@ DOMAttr *DOMElementImpl::setAttributeNodeNS(DOMAttr *newAttr)
 DOMNodeList *DOMElementImpl::getElementsByTagNameNS(const XMLCh *namespaceURI,
     const XMLCh *localName) const
 {
-    DOMDocumentImpl *docImpl = (DOMDocumentImpl *)getOwnerDocument();
+    DOMDocumentImpl *docImpl = (DOMDocumentImpl *)fParent.fOwnerDocument;
     return docImpl->getDeepNodeList(this, namespaceURI, localName);
 }
 
@@ -416,7 +424,7 @@ DOMAttrMapImpl *DOMElementImpl::getDefaultAttributes() const
 // initially set up the default attribute information based on doctype information
 void DOMElementImpl::setupDefaultAttributes()
 {
-    DOMDocument *tmpdoc = getOwnerDocument();
+    DOMDocument *tmpdoc = fParent.fOwnerDocument;
     if ((fNode.fOwnerNode == 0) || (tmpdoc == 0) || (tmpdoc->getDoctype() == 0))
         return;
 
@@ -424,7 +432,7 @@ void DOMElementImpl::setupDefaultAttributes()
     DOMAttrMapImpl* defAttrs = (eldef == 0) ? 0 : (DOMAttrMapImpl *)(eldef->getAttributes());
 
     if (defAttrs)
-        fDefaultAttributes = new (getOwnerDocument()) DOMAttrMapImpl(this, defAttrs);
+        fDefaultAttributes = new (tmpdoc) DOMAttrMapImpl(this, defAttrs);
 }
 
 DOMAttr * DOMElementImpl::setDefaultAttributeNode(DOMAttr *newAttr)
@@ -451,7 +459,7 @@ DOMAttr *DOMElementImpl::setDefaultAttributeNodeNS(DOMAttr *newAttr)
         throw DOMException(
             DOMException::NO_MODIFICATION_ALLOWED_ERR, 0, GetDOMNodeMemoryManager);
 
-    if (newAttr -> getOwnerDocument() != this -> getOwnerDocument())
+    if (newAttr -> getOwnerDocument() != fParent.fOwnerDocument)
         throw DOMException(DOMException::WRONG_DOCUMENT_ERR, 0, GetDOMNodeMemoryManager);
 
     // This will throw INUSE if necessary
@@ -466,11 +474,21 @@ void DOMElementImpl::release()
     if (fNode.isOwned() && !fNode.isToBeReleased())
         throw DOMException(DOMException::INVALID_ACCESS_ERR,0, GetDOMNodeMemoryManager);
 
-    DOMDocumentImpl* doc = (DOMDocumentImpl*) getOwnerDocument();
+    DOMDocumentImpl* doc = (DOMDocumentImpl*) fParent.fOwnerDocument;
     if (doc) {
         fNode.callUserDataHandlers(DOMUserDataHandler::NODE_DELETED, 0, 0);
+        // release children
         fParent.release();
-        doc->release(this, DOMDocumentImpl::ELEMENT_OBJECT);
+        // release attributes
+        fAttributes->hasDefaults(false);
+        XMLSize_t count;
+        while((count = fAttributes->getLength()) != 0)
+        {
+            DOMNode* attr = fAttributes->removeNamedItemAt(count-1);
+            attr->release();
+        }
+
+        doc->release(this, DOMMemoryManager::ELEMENT_OBJECT);
     }
     else {
         // shouldn't reach here
@@ -482,26 +500,38 @@ const XMLCh* DOMElementImpl::getBaseURI() const
 {
     const XMLCh* baseURI = fNode.fOwnerNode->getBaseURI();
     if (fAttributes) {
-        const XMLCh xmlBaseString[] =
+        const XMLCh baseString[] =
         {
-            chLatin_x, chLatin_m, chLatin_l, chColon, chLatin_b, chLatin_a, chLatin_s, chLatin_e, chNull
+            chLatin_b, chLatin_a, chLatin_s, chLatin_e, chNull
         };
-        DOMNode* attrNode = fAttributes->getNamedItem(xmlBaseString);
+        DOMNode* attrNode = fAttributes->getNamedItemNS(DOMNodeImpl::getXmlURIString(), baseString);
+        if (attrNode==NULL) {
+            const XMLCh xmlBaseString[] =
+            {
+                chLatin_x, chLatin_m, chLatin_l, chColon, chLatin_b, chLatin_a, chLatin_s, chLatin_e, chNull
+            };
+            attrNode = fAttributes->getNamedItem(xmlBaseString);
+        }
         if (attrNode) {
             const XMLCh* uri =  attrNode->getNodeValue();
             if (uri && *uri) {// attribute value is always empty string
-                try {
-                    XMLUri temp(baseURI, ((DOMDocumentImpl *)this->getOwnerDocument())->getMemoryManager());
-                    XMLUri temp2(&temp, uri, ((DOMDocumentImpl *)this->getOwnerDocument())->getMemoryManager());
-                    uri = ((DOMDocumentImpl *)this->getOwnerDocument())->cloneString(temp2.getUriText());
-                }
-                catch(const OutOfMemoryException&)
+                // if there is a base URI for the parent node, use it to resolve relative URI
+                if(baseURI)
                 {
-                    throw;
-                }
-                catch (...){
-                    // REVISIT: what should happen in this case?
-                    return 0;
+                    try {
+                      DOMDocumentImpl* doc = (DOMDocumentImpl *)fParent.fOwnerDocument;
+                      XMLUri temp(baseURI, doc->getMemoryManager());
+                      XMLUri temp2(&temp, uri, doc->getMemoryManager());
+                      uri = doc->cloneString(temp2.getUriText());
+                    }
+                    catch(const OutOfMemoryException&)
+                    {
+                        throw;
+                    }
+                    catch (...){
+                        // REVISIT: what should happen in this case?
+                        return 0;
+                    }
                 }
                 return uri;
             }
@@ -541,13 +571,13 @@ const XMLCh* DOMElementImpl::getBaseURI() const
            void*            DOMElementImpl::setUserData(const XMLCh* key, void* data, DOMUserDataHandler* handler)
                                                                                     {return fNode.setUserData(key, data, handler); }
            void*            DOMElementImpl::getUserData(const XMLCh* key) const     {return fNode.getUserData(key); }
-           short            DOMElementImpl::compareTreePosition(const DOMNode* other) const {return fNode.compareTreePosition(other); }
+           short            DOMElementImpl::compareDocumentPosition(const DOMNode* other) const {return fNode.compareDocumentPosition(other); }
            const XMLCh*     DOMElementImpl::getTextContent() const                  {return fNode.getTextContent(); }
            void             DOMElementImpl::setTextContent(const XMLCh* textContent){fNode.setTextContent(textContent); }
-           const XMLCh*     DOMElementImpl::lookupNamespacePrefix(const XMLCh* namespaceURI, bool useDefault) const  {return fNode.lookupNamespacePrefix(namespaceURI, useDefault); }
+           const XMLCh*     DOMElementImpl::lookupPrefix(const XMLCh* namespaceURI) const  {return fNode.lookupPrefix(namespaceURI); }
            bool             DOMElementImpl::isDefaultNamespace(const XMLCh* namespaceURI) const {return fNode.isDefaultNamespace(namespaceURI); }
            const XMLCh*     DOMElementImpl::lookupNamespaceURI(const XMLCh* prefix) const  {return fNode.lookupNamespaceURI(prefix); }
-           DOMNode*         DOMElementImpl::getInterface(const XMLCh* feature)      {return fNode.getInterface(feature); }
+           void*            DOMElementImpl::getFeature(const XMLCh* feature, const XMLCh* version) const {return fNode.getFeature(feature, version); }
 
 
 
@@ -598,11 +628,14 @@ bool DOMElementImpl::isEqualNode(const DOMNode* arg) const
 
 DOMNode* DOMElementImpl::rename(const XMLCh* namespaceURI, const XMLCh* name)
 {
-    DOMDocumentImpl* doc = (DOMDocumentImpl*) getOwnerDocument();
+    DOMDocumentImpl* doc = (DOMDocumentImpl*) fParent.fOwnerDocument;
 
     if (!namespaceURI || !*namespaceURI) {
         fName = doc->getPooledString(name);
         fAttributes->reconcileDefaultAttributes(getDefaultAttributes());
+
+        // and fire user data NODE_RENAMED event
+        castToNodeImpl(this)->callUserDataHandlers(DOMUserDataHandler::NODE_RENAMED, this, this);
 
         return this;
     }
@@ -644,10 +677,204 @@ DOMNode* DOMElementImpl::rename(const XMLCh* namespaceURI, const XMLCh* name)
     }
 }
 
-const DOMTypeInfo *DOMElementImpl::getTypeInfo() const
+const DOMTypeInfo *DOMElementImpl::getSchemaTypeInfo() const
 {
     return &DOMTypeInfoImpl::g_DtdValidatedElement;
 }
 
-XERCES_CPP_NAMESPACE_END
+// DOMElementTraversal
+DOMElement * DOMElementImpl::getFirstElementChild() const
+{
+    DOMNode* n = getFirstChild();
+    while (n != NULL) {
+        switch (n->getNodeType()) {
+            case DOMNode::ELEMENT_NODE:
+                return (DOMElement*) n;
+            case DOMNode::ENTITY_REFERENCE_NODE:
+                {
+                    DOMElement* e = getFirstElementChild(n);
+                    if (e != NULL)
+                        return e;
+                }
+                break;
+            default:
+                break;
+        }
+        n = n->getNextSibling();
+    }
+    return NULL;
+}
 
+DOMElement * DOMElementImpl::getLastElementChild() const
+{
+    DOMNode* n = getLastChild();
+    while (n != NULL) {
+        switch (n->getNodeType()) {
+            case DOMNode::ELEMENT_NODE:
+                return (DOMElement*) n;
+            case DOMNode::ENTITY_REFERENCE_NODE:
+                {
+                    DOMElement* e = getLastElementChild(n);
+                    if (e != NULL)
+                        return e;
+                }
+                break;
+            default:
+                break;
+        }
+        n = n->getPreviousSibling();
+    }
+    return NULL;
+}
+
+DOMElement * DOMElementImpl::getNextElementSibling() const
+{
+    DOMNode* n = getNextLogicalSibling(this);
+    while (n != NULL) {
+        switch (n->getNodeType()) {
+            case DOMNode::ELEMENT_NODE:
+                return (DOMElement*) n;
+            case DOMNode::ENTITY_REFERENCE_NODE:
+                {
+                    DOMElement* e = getFirstElementChild(n);
+                    if (e != NULL)
+                        return e;
+                }
+                break;
+            default:
+                break;
+        }
+        n = getNextLogicalSibling(n);
+    }
+    return NULL;
+}
+
+DOMElement * DOMElementImpl::getPreviousElementSibling() const
+{
+    DOMNode* n = getPreviousLogicalSibling(this);
+    while (n != NULL) {
+        switch (n->getNodeType()) {
+            case DOMNode::ELEMENT_NODE:
+                return (DOMElement*) n;
+            case DOMNode::ENTITY_REFERENCE_NODE:
+                {
+                    DOMElement* e = getLastElementChild(n);
+                    if (e != NULL)
+                        return e;
+                }
+                break;
+            default:
+                break;
+        }
+        n = getPreviousLogicalSibling(n);
+    }
+    return NULL;
+}
+
+XMLSize_t DOMElementImpl::getChildElementCount() const
+{
+    XMLSize_t count = 0;
+    DOMElement* child = getFirstElementChild();
+    while (child != NULL) {
+        ++count;
+        child = child->getNextElementSibling();
+    }
+    return count;
+}
+
+// Returns the first element node found from a
+// non-recursive in order traversal of the given node.
+DOMElement* DOMElementImpl::getFirstElementChild(const DOMNode* n) const
+{
+    const DOMNode* top = n;
+    while (n != NULL) {
+        if (n->getNodeType() == DOMNode::ELEMENT_NODE) {
+            return (DOMElement*) n;
+        }
+        DOMNode* next = n->getFirstChild();
+        while (next == NULL) {
+            if (top == n) {
+                break;
+            }
+            next = n->getNextSibling();
+            if (next == NULL) {
+                n = n->getParentNode();
+                if (n == NULL || top == n) {
+                    return NULL;
+                }
+            }
+        }
+        n = next;
+    }
+    return NULL;
+}
+
+// Returns the first element node found from a
+// non-recursive reverse order traversal of the given node.
+DOMElement* DOMElementImpl::getLastElementChild(const DOMNode* n) const
+{
+    const DOMNode* top = n;
+    while (n != NULL) {
+        if (n->getNodeType() == DOMNode::ELEMENT_NODE) {
+            return (DOMElement*) n;
+        }
+        DOMNode* next = n->getLastChild();
+        while (next == NULL) {
+            if (top == n) {
+                break;
+            }
+            next = n->getPreviousSibling();
+            if (next == NULL) {
+                n = n->getParentNode();
+                if (n == NULL || top == n) {
+                    return NULL;
+                }
+            }
+        }
+        n = next;
+    }
+    return NULL;
+}
+
+// Returns the next logical sibling with respect to the given node.
+DOMNode* DOMElementImpl::getNextLogicalSibling(const DOMNode* n) const
+{
+    DOMNode* next = n->getNextSibling();
+    // If "n" has no following sibling and its parent is an entity reference node we
+    // need to continue the search through the following siblings of the entity
+    // reference as these are logically siblings of the given node.
+    if (next == NULL) {
+        DOMNode* parent = n->getParentNode();
+        while (parent != NULL && parent->getNodeType() == DOMNode::ENTITY_REFERENCE_NODE) {
+            next = parent->getNextSibling();
+            if (next != NULL) {
+                break;
+            }
+            parent = parent->getParentNode();
+        }
+    }
+    return next;
+}
+
+// Returns the previous logical sibling with respect to the given node.
+DOMNode* DOMElementImpl::getPreviousLogicalSibling(const DOMNode* n) const
+{
+    DOMNode* prev = n->getPreviousSibling();
+    // If "n" has no previous sibling and its parent is an entity reference node we
+    // need to continue the search through the previous siblings of the entity
+    // reference as these are logically siblings of the given node.
+    if (prev == NULL) {
+        DOMNode* parent = n->getParentNode();
+        while (parent != NULL && parent->getNodeType() == DOMNode::ENTITY_REFERENCE_NODE) {
+            prev = parent->getPreviousSibling();
+            if (prev != NULL) {
+                break;
+            }
+            parent = parent->getParentNode();
+        }
+    }
+    return prev;
+}
+
+
+XERCES_CPP_NAMESPACE_END

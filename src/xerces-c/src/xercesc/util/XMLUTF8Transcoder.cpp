@@ -16,7 +16,7 @@
  */
 
 /**
- * $Id: XMLUTF8Transcoder.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLUTF8Transcoder.cpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
 // ---------------------------------------------------------------------------
@@ -98,7 +98,7 @@ static const XMLByte gFirstByteMark[7] =
 //  XMLUTF8Transcoder: Constructors and Destructor
 // ---------------------------------------------------------------------------
 XMLUTF8Transcoder::XMLUTF8Transcoder(const  XMLCh* const    encodingName
-                                    , const unsigned int    blockSize
+                                    , const XMLSize_t       blockSize
                                     , MemoryManager* const  manager)
 :XMLTranscoder(encodingName, blockSize, manager)
 {
@@ -112,22 +112,17 @@ XMLUTF8Transcoder::~XMLUTF8Transcoder()
 // ---------------------------------------------------------------------------
 //  XMLUTF8Transcoder: Implementation of the transcoder API
 // ---------------------------------------------------------------------------
-unsigned int
+XMLSize_t
 XMLUTF8Transcoder::transcodeFrom(const  XMLByte* const          srcData
-                                , const unsigned int            srcCount
+                                , const XMLSize_t               srcCount
                                 ,       XMLCh* const            toFill
-                                , const unsigned int            maxChars
-                                ,       unsigned int&           bytesEaten
+                                , const XMLSize_t               maxChars
+                                ,       XMLSize_t&              bytesEaten
                                 ,       unsigned char* const    charSizes)
 {
     // Watch for pathological scenario. Shouldn't happen, but...
     if (!srcCount || !maxChars)
         return 0;
-
-    // If debugging, make sure that the block size is legal
-    #if defined(XERCES_DEBUG)
-    checkBlockSize(maxChars);
-    #endif
 
     //
     //  Get pointers to our start and end points of the input and output
@@ -152,12 +147,9 @@ XMLUTF8Transcoder::transcodeFrom(const  XMLByte* const          srcData
         {
             // Handle ASCII in groups instead of single character at a time.
             const XMLByte* srcPtr_save = srcPtr;
-            do
-            {
+            const XMLSize_t chunkSize = (srcEnd-srcPtr)<(outEnd-outPtr)?(srcEnd-srcPtr):(outEnd-outPtr);
+            for(XMLSize_t i=0;i<chunkSize && *srcPtr <= 127;++i)
                 *outPtr++ = XMLCh(*srcPtr++);
-            } while ( srcPtr != srcEnd &&
-                      outPtr != outEnd &&
-                      *srcPtr <= 127 );
             memset(sizePtr,1,srcPtr - srcPtr_save);
             sizePtr += srcPtr - srcPtr_save;
             if (srcPtr == srcEnd || outPtr == outEnd)
@@ -355,7 +347,7 @@ XMLUTF8Transcoder::transcodeFrom(const  XMLByte* const          srcData
                 char byte[2] = {*srcPtr,0};
 
                 ThrowXMLwithMemMgr2(UTFDataFormatException
-                                  , XMLExcepts::UTF8_Exceede_BytesLimit
+                                  , XMLExcepts::UTF8_Exceeds_BytesLimit
                                   , byte
                                   , len
                                   , getMemoryManager());
@@ -429,12 +421,12 @@ XMLUTF8Transcoder::transcodeFrom(const  XMLByte* const          srcData
 }
 
 
-unsigned int
+XMLSize_t
 XMLUTF8Transcoder::transcodeTo( const   XMLCh* const    srcData
-                                , const unsigned int    srcCount
+                                , const XMLSize_t       srcCount
                                 ,       XMLByte* const  toFill
-                                , const unsigned int    maxBytes
-                                ,       unsigned int&   charsEaten
+                                , const XMLSize_t       maxBytes
+                                ,       XMLSize_t&      charsEaten
                                 , const UnRepOpts       options)
 {
     // Watch for pathological scenario. Shouldn't happen, but...
@@ -554,7 +546,7 @@ XMLUTF8Transcoder::transcodeTo( const   XMLCh* const    srcData
 }
 
 
-bool XMLUTF8Transcoder::canTranscodeTo(const unsigned int toCheck) const
+bool XMLUTF8Transcoder::canTranscodeTo(const unsigned int toCheck)
 {
     // We can represent anything in the Unicode (with surrogates) range
     return (toCheck <= 0x10FFFF);

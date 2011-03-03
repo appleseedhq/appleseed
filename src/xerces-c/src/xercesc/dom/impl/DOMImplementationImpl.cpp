@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,13 +16,16 @@
  */
 
 /*
- * $Id: DOMImplementationImpl.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMImplementationImpl.cpp 671894 2008-06-26 13:29:21Z borisk $
  */
 
 #include "DOMImplementationImpl.hpp"
 #include "DOMDocumentImpl.hpp"
 #include "DOMDocumentTypeImpl.hpp"
-#include "DOMWriterImpl.hpp"
+#include "DOMLSSerializerImpl.hpp"
+#include "DOMLSInputImpl.hpp"
+#include "DOMLSOutputImpl.hpp"
+#include "DOMImplementationListImpl.hpp"
 
 #include <xercesc/dom/DOMDocument.hpp>
 #include <xercesc/dom/DOMDocumentType.hpp>
@@ -31,20 +34,16 @@
 #include <xercesc/util/XMLInitializer.hpp>
 #include <xercesc/util/XMLUniDefs.hpp>
 #include <xercesc/util/XMLChar.hpp>
-#include <xercesc/util/XMLRegisterCleanup.hpp>
 #include <xercesc/util/XMLStringTokenizer.hpp>
 #include <xercesc/util/XMLDOMMsg.hpp>
 #include <xercesc/util/XMLMsgLoader.hpp>
-#include <xercesc/parsers/DOMBuilderImpl.hpp>
+#include <xercesc/parsers/DOMLSParserImpl.hpp>
 
 XERCES_CPP_NAMESPACE_BEGIN
 
 
 // ------------------------------------------------------------
-//
-//  Static constants.  These are lazily initialized on first usage.
-//                     (Static constructors can not be safely used because
-//                      of order of initialization dependencies.)
+//  Static constants
 // ------------------------------------------------------------
 static const XMLCh  g1_0[] =     // Points to "1.0"
         {chDigit_1, chPeriod, chDigit_0, chNull};
@@ -61,116 +60,42 @@ static const XMLCh  gRange[] =     // Points to "Range"
         {chLatin_R, chLatin_a, chLatin_n, chLatin_g, chLatin_e, chNull};
 static const XMLCh  gLS[] =     // Points to "LS"
         {chLatin_L, chLatin_S, chNull};
+static const XMLCh  gXPath[] =     // Points to "XPath"
+        {chLatin_X, chLatin_P, chLatin_a, chLatin_t, chLatin_h, chNull};
 
 
-// -----------------------------------------------------------------------
-//  Message Loader for DOM
-// -----------------------------------------------------------------------
-static XMLMsgLoader  *sMsgLoader4DOM = 0;   // Points to the singleton instance
-static XMLMutex      *sMutex4DOM = 0;
-static XMLRegisterCleanup mutex4DOMCleanup;
-static XMLRegisterCleanup msgLoader4DOMCleanup;
-
-static void reinitMsgLoader4DOM()
-{
-	delete sMsgLoader4DOM;
-	sMsgLoader4DOM = 0;
-}
-
-static void reinitMutex4DOM()
-{
-	delete sMutex4DOM;
-	sMutex4DOM = 0;
-}
-
-static XMLMutex& getMutex4DOM()
-{
-    if (!sMutex4DOM)
-    {
-        XMLMutexLock lock(XMLPlatformUtils::fgAtomicMutex);
-
-        // If we got here first, then register it and set the registered flag
-        if (!sMutex4DOM)
-        {
-            sMutex4DOM = new XMLMutex(XMLPlatformUtils::fgMemoryManager);
-            mutex4DOMCleanup.registerCleanup(reinitMutex4DOM);
-        }
-    }
-    return *sMutex4DOM;
-}
-
-XMLMsgLoader* DOMImplementationImpl::getMsgLoader4DOM()
-{
-    if (!sMsgLoader4DOM)
-    {
-        XMLMutexLock lock(&getMutex4DOM());
-
-        if (!sMsgLoader4DOM)
-        {
-            sMsgLoader4DOM = XMLPlatformUtils::loadMsgSet(XMLUni::fgXMLDOMMsgDomain);
-
-            if (!sMsgLoader4DOM)
-                XMLPlatformUtils::panic(PanicHandler::Panic_CantLoadMsgDomain);
-            else
-                msgLoader4DOMCleanup.registerCleanup(reinitMsgLoader4DOM);
-        }
-    }
-
-    return sMsgLoader4DOM;
-}
-
-void XMLInitializer::initializeMsgLoader4DOM()
-{
-    sMsgLoader4DOM = XMLPlatformUtils::loadMsgSet(XMLUni::fgXMLDOMMsgDomain);
-    if (sMsgLoader4DOM) {
-        msgLoader4DOMCleanup.registerCleanup(reinitMsgLoader4DOM);
-    }
-}
-
-// -----------------------------------------------------------------------
-//  Singleton DOMImplementationImpl
-// -----------------------------------------------------------------------
-static DOMImplementationImpl    *gDomimp = 0;   // Points to the singleton instance
-                                            //  of DOMImplementation that is returnedreturned
-                                            //  by any call to getImplementation().
-static XMLRegisterCleanup implementationCleanup;
-
-static void reinitImplementation()
-{
-	delete gDomimp;
-	gDomimp = 0;
-}
-
-//  getImplementation()  - Always returns the same singleton instance, which
-//                         is lazily created on the first call.  Note that
-//                         DOM_Implementation must be thread-safe because
-//                         it is common to all DOM documents, and while a single
-//                         document is not thread-safe within itself, we do
-//                         promise that different documents can safely be
-//                         used concurrently by different threads.
-//
-DOMImplementationImpl *DOMImplementationImpl::getDOMImplementationImpl()
-{
-    if (!gDomimp)
-    {
-        XMLMutexLock lock(&getMutex4DOM());
-
-        if (!gDomimp)
-        {
-            gDomimp = new DOMImplementationImpl;
-            implementationCleanup.registerCleanup(reinitImplementation);
-        }
-    }
-
-    return gDomimp;
-}
+static XMLMsgLoader *sMsgLoader = 0;
+static DOMImplementationImpl *gDomimp = 0;
 
 void XMLInitializer::initializeDOMImplementationImpl()
 {
+    sMsgLoader = XMLPlatformUtils::loadMsgSet(XMLUni::fgXMLDOMMsgDomain);
+
+    if (!sMsgLoader)
+      XMLPlatformUtils::panic(PanicHandler::Panic_CantLoadMsgDomain);
+
     gDomimp = new DOMImplementationImpl;
-    if (gDomimp) {
-        implementationCleanup.registerCleanup(reinitImplementation);
-    }
+}
+
+void XMLInitializer::terminateDOMImplementationImpl()
+{
+    delete gDomimp;
+    gDomimp = 0;
+
+    delete sMsgLoader;
+    sMsgLoader = 0;
+}
+
+//
+//
+XMLMsgLoader* DOMImplementationImpl::getMsgLoader4DOM()
+{
+    return sMsgLoader;
+}
+
+DOMImplementationImpl *DOMImplementationImpl::getDOMImplementationImpl()
+{
+    return gDomimp;
 }
 
 // ------------------------------------------------------------
@@ -180,6 +105,10 @@ bool  DOMImplementationImpl::hasFeature(const  XMLCh * feature,  const  XMLCh * 
 {
     if (!feature)
         return false;
+
+    // ignore the + modifier
+    if(*feature==chPlus)
+        feature++;
 
     bool anyVersion = (version == 0 || !*version);
     bool version1_0 = XMLString::equals(version, g1_0);
@@ -207,6 +136,10 @@ bool  DOMImplementationImpl::hasFeature(const  XMLCh * feature,  const  XMLCh * 
         && (anyVersion || version3_0))
         return true;
 
+    if (XMLString::compareIStringASCII(feature, gXPath) == 0
+        && (anyVersion || version3_0))
+        return true;
+
     return false;
 }
 
@@ -228,21 +161,19 @@ DOMDocument *DOMImplementationImpl::createDocument(const XMLCh *namespaceURI,
 	const XMLCh *qualifiedName, DOMDocumentType *doctype,
     MemoryManager* const manager)
 {
-    return new (manager) DOMDocumentImpl(namespaceURI, qualifiedName, doctype, manager);
+    return new (manager) DOMDocumentImpl(namespaceURI, qualifiedName, doctype, this, manager);
 }
 
 
 //Introduced in DOM Level 3
-DOMImplementation* DOMImplementationImpl::getInterface(const XMLCh*){
-    throw DOMException(DOMException::NOT_SUPPORTED_ERR, 0);
-
+void* DOMImplementationImpl::getFeature(const XMLCh*, const XMLCh*) const {
     return 0;
 }
 
 // Non-standard extension
 DOMDocument *DOMImplementationImpl::createDocument(MemoryManager* const manager)
 {
-        return new (manager) DOMDocumentImpl(manager);
+        return new (manager) DOMDocumentImpl(this, manager);
 }
 
 //
@@ -256,54 +187,67 @@ DOMImplementation *DOMImplementation::getImplementation()
 
 bool DOMImplementation::loadDOMExceptionMsg
 (
-    const   DOMException::ExceptionCode  msgToLoad
+      const short                        msgToLoad
     ,       XMLCh* const                 toFill
-    , const unsigned int                 maxChars
+    , const XMLSize_t                    maxChars
 )
 {
-    // load the text, the msgToLoad+XMLDOMMsgs::DOMEXCEPTION_ERRX+msgToLoad is the corresponding XMLDOMMsg Code
-    return DOMImplementationImpl::getMsgLoader4DOM()->loadMsg(XMLDOMMsg::DOMEXCEPTION_ERRX+msgToLoad, toFill, maxChars);
-}
-
-bool DOMImplementation::loadDOMExceptionMsg
-(
-    const   DOMRangeException::RangeExceptionCode  msgToLoad
-    ,       XMLCh* const                           toFill
-    , const unsigned int                           maxChars
-)
-{
-    // load the text, the XMLDOMMsgs::DOMRANGEEXCEPTION_ERRX+msgToLoad is the corresponding XMLDOMMsg Code
-    return DOMImplementationImpl::getMsgLoader4DOM()->loadMsg(XMLDOMMsg::DOMRANGEEXCEPTION_ERRX+msgToLoad, toFill, maxChars);
+  // Figure out which exception range this code is and load the corresponding
+  // message.
+  //
+  if (msgToLoad <= 50)
+  {
+    // DOMException
+    return sMsgLoader->loadMsg(XMLDOMMsg::DOMEXCEPTION_ERRX+msgToLoad, toFill, maxChars);
+  }
+  else if (msgToLoad <= 80)
+  {
+    // DOMXPathException
+    return sMsgLoader->loadMsg(XMLDOMMsg::DOMXPATHEXCEPTION_ERRX+msgToLoad-DOMXPathException::INVALID_EXPRESSION_ERR+1, toFill, maxChars);
+  }
+  else if (msgToLoad <= 110)
+  {
+    // DOMXLSException
+    return sMsgLoader->loadMsg(XMLDOMMsg::DOMLSEXCEPTION_ERRX+msgToLoad-DOMLSException::PARSE_ERR+1, toFill, maxChars);
+  }
+  else
+  {
+    // DOMRangeException
+    return sMsgLoader->loadMsg(XMLDOMMsg::DOMRANGEEXCEPTION_ERRX+msgToLoad-DOMRangeException::BAD_BOUNDARYPOINTS_ERR+1, toFill, maxChars);
+  }
 }
 
 // ------------------------------------------------------------
 // DOMImplementationLS Virtual interface
 // ------------------------------------------------------------
 //Introduced in DOM Level 3
-DOMBuilder* DOMImplementationImpl::createDOMBuilder(const short           mode,
-                                                    const XMLCh* const,
+DOMLSParser* DOMImplementationImpl::createLSParser( const DOMImplementationLSMode   mode,
+                                                    const XMLCh* const     /*schemaType*/,
                                                     MemoryManager* const  manager,
                                                     XMLGrammarPool* const gramPool)
 {
     if (mode == DOMImplementationLS::MODE_ASYNCHRONOUS)
         throw DOMException(DOMException::NOT_SUPPORTED_ERR, 0, manager);
 
-    return new (manager) DOMBuilderImpl(0, manager, gramPool);
+    // TODO: schemaType
+    return new (manager) DOMLSParserImpl(0, manager, gramPool);
 }
 
 
-DOMWriter* DOMImplementationImpl::createDOMWriter(MemoryManager* const manager)
+DOMLSSerializer* DOMImplementationImpl::createLSSerializer(MemoryManager* const manager)
 {
-    return new (manager) DOMWriterImpl(manager);
+    return new (manager) DOMLSSerializerImpl(manager);
 }
 
-DOMInputSource* DOMImplementationImpl::createDOMInputSource()
+DOMLSInput* DOMImplementationImpl::createLSInput(MemoryManager* const manager)
 {
-    throw DOMException(DOMException::NOT_SUPPORTED_ERR, 0);
-
-    return 0;
+    return new (manager) DOMLSInputImpl(manager);
 }
 
+DOMLSOutput* DOMImplementationImpl::createLSOutput(MemoryManager* const manager)
+{
+    return new (manager) DOMLSOutputImpl(manager);
+}
 
 // ------------------------------------------------------------
 // DOMImplementationSource Virtual interface
@@ -335,6 +279,13 @@ DOMImplementation* DOMImplementationImpl::getDOMImplementation(const XMLCh* feat
     return impl;
 }
 
+DOMImplementationList* DOMImplementationImpl::getDOMImplementationList(const XMLCh* features) const
+{
+    DOMImplementationListImpl* list = new DOMImplementationListImpl;
+    DOMImplementation* myImpl=getDOMImplementation(features);
+    if(myImpl)
+        list->add(myImpl);
+    return list;
+}
 
 XERCES_CPP_NAMESPACE_END
-

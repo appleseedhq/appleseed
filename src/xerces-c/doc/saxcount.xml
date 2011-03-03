@@ -26,7 +26,7 @@
 
         <s3 title="Running SAXCount">
 
-          <p>The SAXCount sample parses an XML file and prints out a count of the number of
+          <p>The SAXCount sample parses an XML file and prints out the number of
           elements in the file. To run SAXCount, enter the following </p>
 <source>SAXCount &lt;XML File&gt;</source>
           <p>The following parameters may be set from the command line </p>
@@ -45,7 +45,7 @@ Options:
     -n          Enable namespace processing. Defaults to off.
     -s          Enable schema processing. Defaults to off.
     -f          Enable full schema constraint checking. Defaults to off.
-    -locale=ll_CC specify the locale, default: en_US 
+    -locale=ll_CC specify the locale, default: en_US
     -?          Show this help.
 
   * = Default if not provided explicitly.
@@ -54,7 +54,7 @@ Options:
              <em>-v=never</em> will not use any validation<br/>
              <em>-v=auto</em> will validate if a DOCTYPE declaration or a schema declaration is present in the XML document</p>
           <p>Here is a sample output from SAXCount</p>
-<source>cd &XercesCInstallDir;-linux/samples/data
+<source>cd &XercesC3InstallDir;/samples/data
 SAXCount -v=always personal.xml
 personal.xml: 60 ms (37 elems, 12 attrs, 134 spaces, 134 chars)</source>
           <p>Running SAXCount with the validating parser gives a different result because
@@ -64,7 +64,7 @@ personal.xml: 10 ms (37 elems, 12 attrs, 0 spaces, 268 chars)</source>
           <p>Note that the sum of spaces and characters in both versions is the same.</p>
 
           <note>The time reported by the program may be different depending on your
-          machine processor.</note>
+          processor speed.</note>
         </s3>
 
     </s2>

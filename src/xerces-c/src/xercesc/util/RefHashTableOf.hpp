@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,89 +16,81 @@
  */
 
 /*
- * $Id: RefHashTableOf.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: RefHashTableOf.hpp 679340 2008-07-24 10:28:29Z borisk $
  */
 
+#if !defined(XERCESC_INCLUDE_GUARD_REFHASHTABLEOF_HPP)
+#define XERCESC_INCLUDE_GUARD_REFHASHTABLEOF_HPP
 
-#if !defined(REFHASHTABLEOF_HPP)
-#define REFHASHTABLEOF_HPP
-
-
-#include <xercesc/util/HashBase.hpp>
+#include <xercesc/util/Hashers.hpp>
 #include <xercesc/util/IllegalArgumentException.hpp>
 #include <xercesc/util/NoSuchElementException.hpp>
 #include <xercesc/util/RuntimeException.hpp>
-#include <xercesc/util/XMLString.hpp>
-#include <xercesc/util/HashXMLCh.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
 #include <xercesc/framework/MemoryManager.hpp>
 
 XERCES_CPP_NAMESPACE_BEGIN
 
+//  Forward declare the enumerator so it can be our friend.
 //
-//  Forward declare the enumerator so he can be our friend. Can you say
-//  friend? Sure...
-//
-template <class TVal> class RefHashTableOfEnumerator;
-template <class TVal> struct RefHashTableBucketElem;
-
+template <class TVal, class THasher = StringHasher>
+class RefHashTableOfEnumerator;
 
 //
 //  This should really be a nested class, but some of the compilers we
 //  have to support cannot deal with that!
 //
-template <class TVal> struct RefHashTableBucketElem
+template <class TVal>
+struct RefHashTableBucketElem
 {
-    RefHashTableBucketElem(void* key, TVal* const value, RefHashTableBucketElem<TVal>* next)
-		: fData(value), fNext(next), fKey(key)
-        {
-        }
+  RefHashTableBucketElem(void* key, TVal* const value, RefHashTableBucketElem<TVal>* next)
+      : fData(value), fNext(next), fKey(key)
+  {
+  }
 
-    RefHashTableBucketElem(){};
-    ~RefHashTableBucketElem(){};
+  RefHashTableBucketElem(){};
+  ~RefHashTableBucketElem(){};
 
-    TVal*                           fData;
-    RefHashTableBucketElem<TVal>*   fNext;
-	void*							fKey;
+  TVal*                           fData;
+  RefHashTableBucketElem<TVal>*   fNext;
+  void*                           fKey;
 
 private:
     // -----------------------------------------------------------------------
     //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
-    RefHashTableBucketElem(const RefHashTableBucketElem<TVal>&);
-    RefHashTableBucketElem<TVal>& operator=(const RefHashTableBucketElem<TVal>&);
+  RefHashTableBucketElem(const RefHashTableBucketElem<TVal>&);
+  RefHashTableBucketElem<TVal>& operator=(const RefHashTableBucketElem<TVal>&);
 };
 
 
-template <class TVal> class RefHashTableOf : public XMemory
+template <class TVal, class THasher = StringHasher>
+class RefHashTableOf : public XMemory
 {
 public:
     // -----------------------------------------------------------------------
     //  Constructors and Destructor
     // -----------------------------------------------------------------------
-	// backwards compatability - default hasher is HashXMLCh
-    RefHashTableOf
-    (
-        const unsigned int modulus
-        , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
-    );
-	// backwards compatability - default hasher is HashXMLCh
-    RefHashTableOf
-    (
-        const unsigned int modulus
-        , const bool adoptElems
-        , MemoryManager* const manager =  XMLPlatformUtils::fgMemoryManager
-    );
-	// if a hash function is passed in, it will be deleted when the hashtable is deleted.
-	// use a new instance of the hasher class for each hashtable, otherwise one hashtable
-	// may delete the hasher of a different hashtable if both use the same hasher.
-    RefHashTableOf
-    (
-        const unsigned int modulus
-        , const bool adoptElems
-        , HashBase* hashBase
-        , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
-    );
+    RefHashTableOf(
+      const XMLSize_t modulus,
+      MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
+
+    RefHashTableOf(
+      const XMLSize_t modulus,
+      const THasher& hasher,
+      MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
+
+    RefHashTableOf(
+      const XMLSize_t modulus,
+      const bool adoptElems,
+      MemoryManager* const manager =  XMLPlatformUtils::fgMemoryManager);
+
+    RefHashTableOf(
+      const XMLSize_t modulus,
+      const bool adoptElems,
+      const THasher& hasher,
+      MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
+
     ~RefHashTableOf();
 
 
@@ -110,7 +102,7 @@ public:
     void removeKey(const void* const key);
     void removeAll();
     void cleanup();
-    void reinitialize(HashBase* hashBase);
+    void reinitialize(const THasher& hasher);
     void transferElement(const void* const key1, void* key2);
     TVal* orphanKey(const void* const key);
 
@@ -119,9 +111,9 @@ public:
     // -----------------------------------------------------------------------
     TVal* get(const void* const key);
     const TVal* get(const void* const key) const;
-    MemoryManager* getMemoryManager() const;   
-    unsigned int   getHashModulus()   const;
-    unsigned int   getCount() const;
+    MemoryManager* getMemoryManager() const;
+    XMLSize_t      getHashModulus()   const;
+    XMLSize_t      getCount() const;
 
     // -----------------------------------------------------------------------
     //  Setters
@@ -132,28 +124,28 @@ public:
     // -----------------------------------------------------------------------
     //  Putters
     // -----------------------------------------------------------------------
-	void put(void* key, TVal* const valueToAdopt);
+    void put(void* key, TVal* const valueToAdopt);
 
 
 private :
     // -----------------------------------------------------------------------
     //  Declare our friends
     // -----------------------------------------------------------------------
-    friend class RefHashTableOfEnumerator<TVal>;
+    friend class RefHashTableOfEnumerator<TVal, THasher>;
 
 private:
     // -----------------------------------------------------------------------
     //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
-    RefHashTableOf(const RefHashTableOf<TVal>&);
-    RefHashTableOf<TVal>& operator=(const RefHashTableOf<TVal>&);
+    RefHashTableOf(const RefHashTableOf<TVal, THasher>&);
+    RefHashTableOf<TVal, THasher>& operator=(const RefHashTableOf<TVal, THasher>&);
 
     // -----------------------------------------------------------------------
     //  Private methods
     // -----------------------------------------------------------------------
-    RefHashTableBucketElem<TVal>* findBucketElem(const void* const key, unsigned int& hashVal);
-    const RefHashTableBucketElem<TVal>* findBucketElem(const void* const key, unsigned int& hashVal) const;
-    void initialize(const unsigned int modulus);
+    RefHashTableBucketElem<TVal>* findBucketElem(const void* const key, XMLSize_t& hashVal);
+    const RefHashTableBucketElem<TVal>* findBucketElem(const void* const key, XMLSize_t& hashVal) const;
+    void initialize(const XMLSize_t modulus);
     void rehash();
 
 
@@ -179,10 +171,10 @@ private:
     MemoryManager*                 fMemoryManager;
     bool                           fAdoptedElems;
     RefHashTableBucketElem<TVal>** fBucketList;
-    unsigned int                   fHashModulus;
-    unsigned int                   fInitialModulus;
-    unsigned int                   fCount;
-    HashBase*                      fHash;
+    XMLSize_t                      fHashModulus;
+    XMLSize_t                      fInitialModulus;
+    XMLSize_t                      fCount;
+    THasher                        fHasher;
 };
 
 
@@ -191,18 +183,19 @@ private:
 //  An enumerator for a value array. It derives from the basic enumerator
 //  class, so that value vectors can be generically enumerated.
 //
-template <class TVal> class RefHashTableOfEnumerator : public XMLEnumerator<TVal>, public XMemory
+template <class TVal, class THasher>
+class RefHashTableOfEnumerator : public XMLEnumerator<TVal>, public XMemory
 {
 public :
     // -----------------------------------------------------------------------
     //  Constructors and Destructor
     // -----------------------------------------------------------------------
-    RefHashTableOfEnumerator(RefHashTableOf<TVal>* const toEnum
+    RefHashTableOfEnumerator(RefHashTableOf<TVal, THasher>* const toEnum
         , const bool adopt = false
         , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
     virtual ~RefHashTableOfEnumerator();
 
-    RefHashTableOfEnumerator(const RefHashTableOfEnumerator<TVal>&);
+    RefHashTableOfEnumerator(const RefHashTableOfEnumerator<TVal, THasher>&);
     // -----------------------------------------------------------------------
     //  Enum interface
     // -----------------------------------------------------------------------
@@ -219,7 +212,8 @@ private :
     // -----------------------------------------------------------------------
     //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
-    RefHashTableOfEnumerator<TVal>& operator=(const RefHashTableOfEnumerator<TVal>&);
+    RefHashTableOfEnumerator<TVal, THasher>&
+    operator=(const RefHashTableOfEnumerator<TVal, THasher>&);
 
     // -----------------------------------------------------------------------
     //  Private methods
@@ -238,8 +232,8 @@ private :
     //      This is the current bucket bucket element that we are on.
     //
     //  fCurHash
-    //      The is the current hash buck that we are working on. Once we hit
-    //      the end of the bucket that fCurElem is in, then we have to start
+    //      The current hash buck that we are working on. Once we hit the
+    //      end of the bucket that fCurElem is in, then we have to start
     //      working this one up to the next non-empty bucket.
     //
     //  fToEnum
@@ -247,8 +241,8 @@ private :
     // -----------------------------------------------------------------------
     bool                                  fAdopted;
     RefHashTableBucketElem<TVal>*         fCurElem;
-    unsigned int                          fCurHash;
-    RefHashTableOf<TVal>*                 fToEnum;
+    XMLSize_t                             fCurHash;
+    RefHashTableOf<TVal, THasher>*        fToEnum;
     MemoryManager* const                  fMemoryManager;
 };
 
@@ -259,4 +253,3 @@ XERCES_CPP_NAMESPACE_END
 #endif
 
 #endif
-

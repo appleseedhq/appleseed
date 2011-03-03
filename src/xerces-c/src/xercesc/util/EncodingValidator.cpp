@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: EncodingValidator.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: EncodingValidator.cpp 635560 2008-03-10 14:10:09Z borisk $
  */
 
 // ---------------------------------------------------------------------------
@@ -24,57 +24,22 @@
 // ---------------------------------------------------------------------------
 #include <xercesc/util/EncodingValidator.hpp>
 #include <xercesc/internal/IANAEncodings.hpp>
-#include <xercesc/util/PlatformUtils.hpp>
-#include <xercesc/util/XMLRegisterCleanup.hpp>
 #include <xercesc/util/XMLInitializer.hpp>
 
 XERCES_CPP_NAMESPACE_BEGIN
 
-// ---------------------------------------------------------------------------
-//  Local static data
-// ---------------------------------------------------------------------------
-static XMLMutex* sEncValMutex = 0;
-static XMLRegisterCleanup encValRegistryCleanup;
-static XMLRegisterCleanup instanceCleanup;
-
-// ---------------------------------------------------------------------------
-//  Local, static functions
-// ---------------------------------------------------------------------------
-static void reinitEncValMutex()
-{
-    delete sEncValMutex;
-    sEncValMutex = 0;
-}
-
-static XMLMutex& getEncValMutex()
-{
-    if (!sEncValMutex)
-    {
-        XMLMutexLock lock(XMLPlatformUtils::fgAtomicMutex);
-
-        // If we got here first, then register it and set the registered flag
-        if (!sEncValMutex)
-        {
-            sEncValMutex = new XMLMutex(XMLPlatformUtils::fgMemoryManager);
-            encValRegistryCleanup.registerCleanup(reinitEncValMutex);
-        }
-    }
-    return *sEncValMutex;
-}
+EncodingValidator* EncodingValidator::fInstance = 0;
 
 void XMLInitializer::initializeEncodingValidator()
 {
     EncodingValidator::fInstance = new EncodingValidator();
-    if (EncodingValidator::fInstance) {
-        instanceCleanup.registerCleanup(EncodingValidator::reinitInstance);
-    }
 }
 
-// ---------------------------------------------------------------------------
-//  Static member data initialization
-// ---------------------------------------------------------------------------
-EncodingValidator* EncodingValidator::fInstance = 0;
-
+void XMLInitializer::terminateEncodingValidator()
+{
+    delete EncodingValidator::fInstance;
+    EncodingValidator::fInstance = 0;
+}
 
 // ---------------------------------------------------------------------------
 //  EncodingValidator: Constructors and Destructor
@@ -121,27 +86,7 @@ void EncodingValidator::initializeRegistry() {
 // ---------------------------------------------------------------------------
 EncodingValidator* EncodingValidator::instance()
 {
-    if (!fInstance)
-    {
-        XMLMutexLock lock(&getEncValMutex());
-
-        if (!fInstance)
-        { 
-            fInstance = new EncodingValidator();
-            instanceCleanup.registerCleanup(EncodingValidator::reinitInstance);
-        }
-    }
-
-    return (fInstance);
-}
-
-// -----------------------------------------------------------------------
-//  Notification that lazy data has been deleted
-// -----------------------------------------------------------------------
-void EncodingValidator::reinitInstance() {
-
-	delete fInstance;
-	fInstance = 0;
+    return fInstance;
 }
 
 XERCES_CPP_NAMESPACE_END

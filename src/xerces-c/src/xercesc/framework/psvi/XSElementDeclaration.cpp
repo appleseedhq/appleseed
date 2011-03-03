@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XSElementDeclaration.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XSElementDeclaration.cpp 471747 2006-11-06 14:31:56Z amassari $
  */
 
 #include <xercesc/framework/psvi/XSElementDeclaration.hpp>
@@ -91,7 +91,7 @@ XSElementDeclaration::~XSElementDeclaration()
 // ---------------------------------------------------------------------------
 //  XSElementDeclaration: XSObject virtual methods
 // ---------------------------------------------------------------------------
-const XMLCh *XSElementDeclaration::getName() 
+const XMLCh *XSElementDeclaration::getName() const
 {
     return fSchemaElementDecl->getElementName()->getLocalPart();
 }

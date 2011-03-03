@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: RegxUtil.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: RegxUtil.cpp 678879 2008-07-22 20:05:05Z amassari $
  */
 
 // ---------------------------------------------------------------------------
@@ -30,13 +30,13 @@ XERCES_CPP_NAMESPACE_BEGIN
 XMLCh* RegxUtil::decomposeToSurrogates(XMLInt32 ch,
                                        MemoryManager* const manager) {
 
-	XMLCh* pszStr = (XMLCh*) manager->allocate(3 *  sizeof(XMLCh));//new XMLCh[3];
+    XMLCh* pszStr = (XMLCh*) manager->allocate(3 *  sizeof(XMLCh));//new XMLCh[3];
 
     decomposeToSurrogates(ch, pszStr[0], pszStr[1]);
 
     pszStr[2] = chNull;
 
-	return pszStr;
+    return pszStr;
 }
 
 
@@ -60,8 +60,8 @@ XMLCh* RegxUtil::stripExtendedComment(const XMLCh* const expression,
                 continue;
             }
 
-		    // Skips chracters between '#' and a line end.
-		    if (ch == chPound) {
+            // Skips chracters between '#' and a line end.
+            if (ch == chPound) {
 
                 while (*inPtr) {
 
@@ -75,7 +75,7 @@ XMLCh* RegxUtil::stripExtendedComment(const XMLCh* const expression,
 
             if (ch == chBackSlash && *inPtr) {
 
-			    if ((ch = *inPtr++) == chPound || ch == chHTab || ch == chLF
+                if ((ch = *inPtr++) == chPound || ch == chHTab || ch == chLF
                     || ch == chFF || ch == chCR || ch == chSpace) {
                     *outPtr++ = ch;
                 }

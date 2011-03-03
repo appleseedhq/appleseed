@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XMLUri.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLUri.hpp 557254 2007-07-18 13:28:54Z amassari $
  */
 
-#if !defined(XMLURI_HPP)
-#define XMLURI_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XMLURI_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLURI_HPP
 
 #include <xercesc/util/XMemory.hpp>
 #include <xercesc/util/XMLString.hpp>
@@ -292,12 +292,14 @@ public:
      * Determine whether a given string is a valid URI
      */
     static bool isValidURI( const XMLUri* const baseURI
-                          , const XMLCh* const uriStr);
+                          , const XMLCh* const uriStr
+                          , bool bAllowSpaces=false);
     /**
      * Determine whether a given string is a valid URI
      */
     static bool isValidURI( bool haveBaseURI
-                          , const XMLCh* const uriStr);
+                          , const XMLCh* const uriStr
+                          , bool bAllowSpaces=false);
 
 
     static void normalizeURI(const XMLCh*     const systemURI,
@@ -380,10 +382,10 @@ private:
      * a valid server authority
      */
     static bool isValidServerBasedAuthority(const XMLCh* const host
-                                           , const int hostLen
+                                           , const XMLSize_t hostLen
                                            , const int port
                                            , const XMLCh* const userinfo
-                                           , const int userLen);
+                                           , const XMLSize_t userLen);
                                            
     /**
      * Determines whether the components host, port, and user info
@@ -405,7 +407,7 @@ private:
     * @return true if the given string is a registry based authority
     */
     static bool isValidRegistryBasedAuthority(const XMLCh* const authority
-                                             , const int authLen);
+                                             , const XMLSize_t authLen);
 
    /**
     * Determines whether the given string is a registry based authority.
@@ -445,7 +447,7 @@ private:
      *
      * @return true if the string is a syntactically valid IPv4 address
      */
-     static bool isWellFormedIPv4Address(const XMLCh* const addr, const int length);
+     static bool isWellFormedIPv4Address(const XMLCh* const addr, const XMLSize_t length);
      
     /**
      * Determines whether a string is an IPv6 reference as defined
@@ -460,7 +462,7 @@ private:
      *
      * @return true if the string is a syntactically valid IPv6 reference
      */
-     static bool isWellFormedIPv6Reference(const XMLCh* const addr, const int length);
+     static bool isWellFormedIPv6Reference(const XMLCh* const addr, const XMLSize_t length);
      
     /**
      * Helper function for isWellFormedIPv6Reference which scans the 
@@ -477,7 +479,7 @@ private:
      * @return the index of the next character to scan, or -1 if the
      * string cannot match a valid IPv6 address
      */
-     static int scanHexSequence (const XMLCh* const addr, int index, int end, int& counter);
+     static int scanHexSequence (const XMLCh* const addr, XMLSize_t index, XMLSize_t end, int& counter);
 
     /**
      * Get the indicator as to whether this URI uses the "generic URI"
@@ -548,12 +550,12 @@ private:
      void cleanUp();
 
     static bool isConformantSchemeName(const XMLCh* const scheme,
-                                       const int schemeLen);
-    static bool processScheme(const XMLCh* const uriStr, int& index);
-    static bool processAuthority(const XMLCh* const uriStr, const int authLen);
-    static bool isWellFormedAddress(const XMLCh* const addr, const int addrLen);
-    static bool processPath(const XMLCh* const pathStr, const int pathStrLen,
-                            const bool isSchemePresent);
+                                       const XMLSize_t schemeLen);
+    static bool processScheme(const XMLCh* const uriStr, XMLSize_t& index);
+    static bool processAuthority(const XMLCh* const uriStr, const XMLSize_t authLen);
+    static bool isWellFormedAddress(const XMLCh* const addr, const XMLSize_t addrLen);
+    static bool processPath(const XMLCh* const pathStr, const XMLSize_t pathStrLen,
+                            const bool isSchemePresent, const bool bAllowSpaces=false);
 
     // -----------------------------------------------------------------------
     //  Data members

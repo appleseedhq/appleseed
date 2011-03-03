@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XSIDCDefinition.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XSIDCDefinition.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-#if !defined(XSIDCDEFINITION_HPP)
-#define XSIDCDEFINITION_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XSIDCDEFINITION_HPP)
+#define XERCESC_INCLUDE_GUARD_XSIDCDEFINITION_HPP
 
 #include <xercesc/framework/psvi/XSObject.hpp>
 
@@ -98,7 +98,7 @@ public:
      * The name of type <code>NCName</code> of this declaration as defined in 
      * XML Namespaces.
      */
-    const XMLCh* getName();
+    const XMLCh* getName() const;
 
     /**
      *  The [target namespace] of this object, or <code>null</code> if it is 

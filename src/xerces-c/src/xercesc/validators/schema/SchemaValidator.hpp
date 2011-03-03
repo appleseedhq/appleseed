@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,13 +16,11 @@
  */
 
 /*
- * $Id: SchemaValidator.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: SchemaValidator.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-
-
-#if !defined(SCHEMAVALIDATOR_HPP)
-#define SCHEMAVALIDATOR_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_SCHEMAVALIDATOR_HPP)
+#define XERCESC_INCLUDE_GUARD_SCHEMAVALIDATOR_HPP
 
 #include <xercesc/framework/XMLValidator.hpp>
 #include <xercesc/framework/XMLBuffer.hpp>
@@ -59,11 +57,12 @@ public:
     // -----------------------------------------------------------------------
     //  Implementation of the XMLValidator interface
     // -----------------------------------------------------------------------
-    virtual int checkContent
+    virtual bool checkContent
     (
         XMLElementDecl* const   elemDecl
         , QName** const         children
-        , const unsigned int    childCount
+        , XMLSize_t             childCount
+        , XMLSize_t*            indexFailingChild
     );
 
     virtual void faultInAttr
@@ -110,7 +109,7 @@ public:
     // -----------------------------------------------------------------------
     //  Schema Validator methods
     // -----------------------------------------------------------------------
-    void normalizeWhiteSpace(DatatypeValidator* dV, const XMLCh* const value, XMLBuffer& toFill);
+    void normalizeWhiteSpace(DatatypeValidator* dV, const XMLCh* const value, XMLBuffer& toFill, bool bStandalone = false);
 
     // -----------------------------------------------------------------------
     //  Setter methods
@@ -122,6 +121,7 @@ public:
        , const unsigned int        uriId);
 
     void setNillable(bool isNil);
+    void resetNillable();
     void setErrorReporter(XMLErrorReporter* const errorReporter);
     void setExitOnFirstFatal(const bool newValue);
     void setDatatypeBuffer(const XMLCh* const value);
@@ -135,6 +135,7 @@ public:
     DatatypeValidator *getMostRecentAttrValidator() const;
     bool getErrorOccurred() const;
     bool getIsElemSpecified() const;
+    bool getIsXsiTypeSet() const;
     const XMLCh* getNormalizedValue() const;
 
 private:
@@ -145,7 +146,7 @@ private:
     SchemaValidator& operator=(const SchemaValidator&);
 
     // -----------------------------------------------------------------------
-    //  Element Consitency Checking methods
+    //  Element Consistency Checking methods
     // -----------------------------------------------------------------------
     void checkRefElementConsistency(SchemaGrammar* const currentGrammar,
                                     const ComplexTypeInfo* const curTypeInfo,
@@ -211,6 +212,10 @@ private:
                       const bool toLax = false);
     void checkNSSubset(const ContentSpecNode* const derivedSpecNode,
                        const ContentSpecNode* const baseSpecNode);
+    bool checkNSSubsetChoiceRoot(const ContentSpecNode* const derivedSpecNode,
+                       const ContentSpecNode* const baseSpecNode);
+    bool checkNSSubsetChoice(const ContentSpecNode* const derivedSpecNode,
+                       const ContentSpecNode* const baseSpecNode);
     bool isWildCardEltSubset(const ContentSpecNode* const derivedSpecNode,
                              const ContentSpecNode* const baseSpecNode);
     void checkNSRecurseCheckCardinality(SchemaGrammar* const currentGrammar,
@@ -252,6 +257,8 @@ private:
     //      Store the Schema Type Attribute Value if schema type is specified
     //
     //  fNil
+    //      Indicates if a nil value is acceptable
+    //  fNilFound
     //      Indicates if Nillable has been set
     // -----------------------------------------------------------------------
     //  The following used internally in the validator
@@ -265,6 +272,9 @@ private:
     //
     //  fTrailing
     //      Previous chunk had a trailing space
+    //
+    //  fSeenNonWhiteSpace
+    //      Seen a non-whitespace character in the previous chunk
     //
     //  fSeenId
     //      Indicate if an attribute of ID type has been seen already, reset per element.
@@ -286,10 +296,12 @@ private:
     GrammarResolver*                fGrammarResolver;
     QName*                          fXsiType;
     bool                            fNil;
+    bool                            fNilFound;
     DatatypeValidator*              fCurrentDatatypeValidator;
     XMLBuffer*                      fNotationBuf;
     XMLBuffer                       fDatatypeBuffer;
     bool                            fTrailing;
+    bool                            fSeenNonWhiteSpace;
     bool                            fSeenId;
     XSDErrorReporter                fSchemaErrorReporter;
     ValueStackOf<ComplexTypeInfo*>* fTypeStack;
@@ -316,6 +328,12 @@ inline void SchemaValidator::setXsiType(const XMLCh* const        prefix
 
 inline void SchemaValidator::setNillable(bool isNil) {
     fNil = isNil;
+    fNilFound = true;
+}
+
+inline void SchemaValidator::resetNillable() {
+    fNil = false;
+    fNilFound = false;
 }
 
 inline void SchemaValidator::setExitOnFirstFatal(const bool newValue) {
@@ -342,7 +360,7 @@ inline ComplexTypeInfo* SchemaValidator::getCurrentTypeInfo() const {
     return fTypeStack->peek();
 }
 
-inline DatatypeValidator * SchemaValidator::getCurrentDatatypeValidator() const 
+inline DatatypeValidator * SchemaValidator::getCurrentDatatypeValidator() const
 {
     return fCurrentDatatypeValidator;
 }
@@ -413,6 +431,11 @@ inline bool SchemaValidator::getIsElemSpecified() const
 inline const XMLCh* SchemaValidator::getNormalizedValue() const
 {
     return fDatatypeBuffer.getRawBuffer();
+}
+
+inline bool SchemaValidator::getIsXsiTypeSet() const
+{
+    return (fXsiType!=0);
 }
 
 XERCES_CPP_NAMESPACE_END

@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XMLEntityResolver.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLEntityResolver.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-#ifndef XMLENTITYRESOLVER_HPP
-#define XMLENTITYRESOLVER_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XMLENTITYRESOLVER_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLENTITYRESOLVER_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 #include <xercesc/util/XMemory.hpp>
@@ -59,8 +59,8 @@ class InputSource;
   * identifier "http://www.myhost.com/today":</p>
   *
   *<code>
-  * #include <xercesc/util/XMLEntityResolver.hpp><br>
-  * #include <xercesc/sax/InputSource.hpp><br>
+  * \#include <xercesc/util/XMLEntityResolver.hpp><br>
+  * \#include <xercesc/sax/InputSource.hpp><br>
   *<br>
   *&nbsp;class MyResolver : public XMLEntityResolver {<br>
   *&nbsp;&nbsp;public:<br>

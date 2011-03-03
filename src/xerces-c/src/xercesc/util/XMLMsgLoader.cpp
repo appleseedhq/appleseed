@@ -16,7 +16,7 @@
  */
 
 /*
- *  $Id: XMLMsgLoader.cpp 568078 2007-08-21 11:43:25Z amassari $
+ *  $Id: XMLMsgLoader.cpp 482395 2006-12-04 22:44:40Z dbertoni $
  */
 
 // ---------------------------------------------------------------------------
@@ -31,14 +31,12 @@ XERCES_CPP_NAMESPACE_BEGIN
 
 /***
  *   The PlatformUtils::initialize() would set fLocale
- *   to either a user-privded string or 0
+ *   to either a user-provided string or 0
  *
  ***/
 char* XMLMsgLoader::fLocale = 0;
 
 char* XMLMsgLoader::fPath = 0;
-
-XMLCh XMLMsgLoader::fLanguage[] = {chLatin_e, chLatin_n, chNull};
 
 /***
  *  if localeToAdopt is 0, that is to release memory for
@@ -50,11 +48,11 @@ void  XMLMsgLoader::setLocale(const char* const localeToAdopt)
     /***
      * Release the current setting's memory, if any
      ***/
-	if (fLocale)
-	{
+    if (fLocale)
+    {
         XMLPlatformUtils::fgMemoryManager->deallocate(fLocale);//delete [] fLocale;
-		fLocale = 0;
-	}
+        fLocale = 0;
+    }
 
     /***
      *  
@@ -63,18 +61,16 @@ void  XMLMsgLoader::setLocale(const char* const localeToAdopt)
      *           refer to phttp://oss.software.ibm.com/icu/userguide/locale.html
      *           for details.
      */
-	if (localeToAdopt)
-	{
-		fLocale   = XMLString::replicate(localeToAdopt, XMLPlatformUtils::fgMemoryManager);
-        XMLString::transcode(fLocale, fLanguage, 2, XMLPlatformUtils::fgMemoryManager);
-        fLanguage[2] = 0;
+    if (localeToAdopt && (strlen(localeToAdopt) == 2 || (strlen(localeToAdopt) > 3 && localeToAdopt[2]=='_')))
+    {
+        fLocale   = XMLString::replicate(localeToAdopt, XMLPlatformUtils::fgMemoryManager);                   
     }
 
 }
 
 const char* XMLMsgLoader::getLocale()
 {
-	return fLocale;
+    return fLocale;
 }
 
 /***
@@ -103,24 +99,6 @@ void  XMLMsgLoader::setNLSHome(const char* const nlsHomeToAdopt)
 const char* XMLMsgLoader::getNLSHome()
 {
     return fPath;
-}
-
-// ---------------------------------------------------------------------------
-//  Deprecated
-//
-//     These two methods are deprecated.
-//  
-//     The default implementations for these two methods are provided as is,
-//     any specific derivative may change this as and when necessary.
-//      
-// ---------------------------------------------------------------------------
-const XMLCh* XMLMsgLoader::getLanguageName() const
-{
-    return fLanguage;
-}
-
-void XMLMsgLoader::setLanguageName(XMLCh* const)
-{
 }
 
 XERCES_CPP_NAMESPACE_END

@@ -1,5 +1,3 @@
-#ifndef DOMNotationImpl_HEADER_GUARD_
-#define DOMNotationImpl_HEADER_GUARD_
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,8 +16,11 @@
  */
 
 /*
- * $Id: DOMNotationImpl.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMNotationImpl.hpp 641193 2008-03-26 08:06:57Z borisk $
  */
+
+#if !defined(XERCESC_INCLUDE_GUARD_DOMNOTATIONIMPL_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMNOTATIONIMPL_HPP
 
 //
 //  This file is part of the internal implementation of the C++ XML DOM.
@@ -56,9 +57,11 @@ public:
 
     virtual ~DOMNotationImpl();
 
-     // Declare all of the functions from DOMNode.
+public:
+    // Declare all of the functions from DOMNode.
     DOMNODE_FUNCTIONS;
 
+public:
     //
     // The Public Identifier for this Notation. If no public identifier
     // was specified, this will be null.

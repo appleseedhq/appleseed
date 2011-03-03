@@ -1,6 +1,3 @@
-#ifndef DOMDocumentTraversal_HEADER_GUARD_
-#define DOMDocumentTraversal_HEADER_GUARD_
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -8,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,16 +16,19 @@
  */
 
 /*
- * $Id: DOMDocumentTraversal.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMDocumentTraversal.hpp 671894 2008-06-26 13:29:21Z borisk $
 */
 
+#if !defined(XERCESC_INCLUDE_GUARD_DOMDOCUMENTTRAVERSAL_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMDOCUMENTTRAVERSAL_HPP
+
 #include <xercesc/util/XercesDefs.hpp>
+#include <xercesc/dom/DOMNodeFilter.hpp>
 
 XERCES_CPP_NAMESPACE_BEGIN
 
 
 class DOMNode;
-class DOMNodeFilter;
 class DOMNodeIterator;
 class DOMTreeWalker;
 
@@ -51,7 +51,7 @@ protected:
     //  Hidden constructors
     // -----------------------------------------------------------------------
     /** @name Hidden constructors */
-    //@{    
+    //@{
     DOMDocumentTraversal() {};
     //@}
 
@@ -107,10 +107,10 @@ public:
      * @since DOM Level 2
      */
 
-    virtual DOMNodeIterator *createNodeIterator(DOMNode         *root,
-                                                   unsigned long    whatToShow,
-                                                   DOMNodeFilter* filter,
-                                                   bool             entityReferenceExpansion) = 0;
+    virtual DOMNodeIterator *createNodeIterator(DOMNode* root,
+                                                DOMNodeFilter::ShowType whatToShow,
+                                                DOMNodeFilter* filter,
+                                                bool entityReferenceExpansion) = 0;
     /**
      * Creates a TreeWalker object.   (DOM2)
      *
@@ -141,10 +141,10 @@ public:
      * @since DOM Level 2
      */
 
-    virtual DOMTreeWalker  *createTreeWalker(DOMNode        *root,
-                                               unsigned long     whatToShow,
-                                               DOMNodeFilter  *filter,
-                                               bool              entityReferenceExpansion) = 0;
+    virtual DOMTreeWalker  *createTreeWalker(DOMNode* root,
+                                             DOMNodeFilter::ShowType whatToShow,
+                                             DOMNodeFilter* filter,
+                                             bool entityReferenceExpansion) = 0;
 
     //@}
 };

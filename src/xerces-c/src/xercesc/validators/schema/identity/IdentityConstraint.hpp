@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: IdentityConstraint.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: IdentityConstraint.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#if !defined(IDENTITYCONSTRAINT_HPP)
-#define IDENTITYCONSTRAINT_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_IDENTITYCONSTRAINT_HPP)
+#define XERCESC_INCLUDE_GUARD_IDENTITYCONSTRAINT_HPP
 
 
 /**
@@ -49,10 +49,10 @@ public:
     //  Constants
     // -----------------------------------------------------------------------
     enum ICType {
-        UNIQUE = 0,
-        KEY = 1,
-        KEYREF = 2,
-        UNKNOWN
+        ICType_UNIQUE = 0,
+        ICType_KEY = 1,
+        ICType_KEYREF = 2,
+        ICType_UNKNOWN
     };
 
     // -----------------------------------------------------------------------
@@ -70,7 +70,7 @@ public:
     //  Getter methods
     // -----------------------------------------------------------------------
     virtual short getType() const = 0;
-    int           getFieldCount() const;
+    XMLSize_t     getFieldCount() const;
     XMLCh*        getIdentityConstraintName() const;
     XMLCh*        getElementName() const;
     IC_Selector*  getSelector() const;
@@ -86,8 +86,8 @@ public:
     //  Access methods
     // -----------------------------------------------------------------------
     void addField(IC_Field* const field);
-    const IC_Field* getFieldAt(const unsigned int index) const;
-    IC_Field* getFieldAt(const unsigned int index);
+    const IC_Field* getFieldAt(const XMLSize_t index) const;
+    IC_Field* getFieldAt(const XMLSize_t index);
 
     /***
      * Support for Serialization/De-serialization
@@ -109,7 +109,7 @@ protected:
 
 private:
     // -----------------------------------------------------------------------
-    //  Unimplemented contstructors and operators
+    //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
     IdentityConstraint(const IdentityConstraint& other);
     IdentityConstraint& operator= (const IdentityConstraint& other);
@@ -146,7 +146,7 @@ private:
 // ---------------------------------------------------------------------------
 //  IdentityConstraint: Getter methods
 // ---------------------------------------------------------------------------
-inline int IdentityConstraint::getFieldCount() const {
+inline XMLSize_t IdentityConstraint::getFieldCount() const {
 
     if (fFields) {
         return fFields->size();
@@ -195,7 +195,7 @@ inline void IdentityConstraint::addField(IC_Field* const field) {
     fFields->addElement(field);
 }
 
-inline const IC_Field* IdentityConstraint::getFieldAt(const unsigned int index) const {
+inline const IC_Field* IdentityConstraint::getFieldAt(const XMLSize_t index) const {
 
     if (fFields) {
         return (fFields->elementAt(index));
@@ -204,7 +204,7 @@ inline const IC_Field* IdentityConstraint::getFieldAt(const unsigned int index) 
     return 0;
 }
 
-inline IC_Field* IdentityConstraint::getFieldAt(const unsigned int index) {
+inline IC_Field* IdentityConstraint::getFieldAt(const XMLSize_t index) {
 
     if (fFields) {
         return (fFields->elementAt(index));

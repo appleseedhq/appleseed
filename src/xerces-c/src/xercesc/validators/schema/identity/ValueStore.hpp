@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: ValueStore.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: ValueStore.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#if !defined(VALUESTORE_HPP)
-#define VALUESTORE_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_VALUESTORE_HPP)
+#define XERCESC_INCLUDE_GUARD_VALUESTORE_HPP
 
 /**
   * This class stores values associated to an identity constraint.
@@ -32,7 +32,7 @@
 //  Includes
 // ---------------------------------------------------------------------------
 #include <xercesc/validators/schema/identity/FieldValueMap.hpp>
-#include <xercesc/util/RefVectorOf.hpp>
+#include <xercesc/util/RefHashTableOf.hpp>
 
 XERCES_CPP_NAMESPACE_BEGIN
 
@@ -44,6 +44,30 @@ class IdentityConstraint;
 class XMLScanner;
 class ValueStoreCache;
 
+struct ICValueHasher
+{
+    ICValueHasher(MemoryManager* const manager) : fMemoryManager(manager) {}
+
+    XMLSize_t getHashVal(const void* key, XMLSize_t mod) const;
+    bool equals(const void *const key1, const void *const key2) const;
+
+    // -----------------------------------------------------------------------
+    //  Helper methods
+    // -----------------------------------------------------------------------
+    /**
+      * Returns whether a field associated <DatatypeValidator, String> value
+      * is a duplicate of another associated value.
+      * It is a duplicate only if either of these conditions are true:
+      * - The Datatypes are the same or related by derivation and the values
+      *   are in the same valuespace.
+      * - The datatypes are unrelated and the values are Stringwise identical.
+      */
+    bool isDuplicateOf(DatatypeValidator* const dv1, const XMLCh* const val1,
+                       DatatypeValidator* const dv2, const XMLCh* const val2) const;
+
+
+    MemoryManager* fMemoryManager;
+};
 
 class VALIDATORS_EXPORT ValueStore : public XMemory
 {
@@ -72,18 +96,12 @@ public:
                   DatatypeValidator* const dv,
                   const XMLCh* const value);
     bool contains(const FieldValueMap* const other);
-
-    /**
-      * @deprecated
-      */
-    void addValue(IC_Field* const field, DatatypeValidator* const dv,
-                  const XMLCh* const value);
-
+    void clear();
 
     // -----------------------------------------------------------------------
     //  Document handling methods
     // -----------------------------------------------------------------------
-    void endDcocumentFragment(ValueStoreCache* const valueStoreCache);
+    void endDocumentFragment(ValueStoreCache* const valueStoreCache);
 
     // -----------------------------------------------------------------------
     //  Error reporting methods
@@ -93,35 +111,19 @@ public:
 
 private:
     // -----------------------------------------------------------------------
-    //  Unimplemented contstructors and operators
+    //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
     ValueStore(const ValueStore& other);
     ValueStore& operator= (const ValueStore& other);
 
     // -----------------------------------------------------------------------
-    //  Helper methods
-    // -----------------------------------------------------------------------
-    /**
-      * Returns whether a field associated <DatatypeValidator, String> value
-      * is a duplicate of another associated value.
-      * It is a duplicate only if either of these conditions are true:
-      * - The Datatypes are the same or related by derivation and the values
-      *   are in the same valuespace.
-      * - The datatypes are unrelated and the values are Stringwise identical.
-      */
-    bool isDuplicateOf(DatatypeValidator* const dv1, const XMLCh* const val1,
-                       DatatypeValidator* const dv2, const XMLCh* const val2);
-
-
-    // -----------------------------------------------------------------------
     //  Data
     // -----------------------------------------------------------------------
     bool                        fDoReportError;
-    int                         fValuesCount;
+    XMLSize_t                   fValuesCount;
     IdentityConstraint*         fIdentityConstraint;
     FieldValueMap               fValues;
-    RefVectorOf<FieldValueMap>* fValueTuples;
-    ValueStore*                 fKeyValueStore;
+    RefHashTableOf<FieldValueMap, ICValueHasher>* fValueTuples;
     XMLScanner*                 fScanner; // for error reporting - REVISIT
     MemoryManager*              fMemoryManager;
 };

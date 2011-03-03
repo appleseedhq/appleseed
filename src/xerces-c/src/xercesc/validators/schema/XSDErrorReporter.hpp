@@ -15,8 +15,12 @@
  * limitations under the License.
  */
 
-#if !defined(XSDERRORREPORTER_HPP)
-#define XSDERRORREPORTER_HPP
+/*
+ * $Id: XSDErrorReporter.hpp 527149 2007-04-10 14:56:39Z amassari $
+ */
+
+#if !defined(XERCESC_INCLUDE_GUARD_XSDERRORREPORTER_HPP)
+#define XERCESC_INCLUDE_GUARD_XSDERRORREPORTER_HPP
 
 #include <xercesc/util/XMemory.hpp>
 

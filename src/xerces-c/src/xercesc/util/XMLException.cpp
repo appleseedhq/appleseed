@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XMLException.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLException.cpp 673960 2008-07-04 08:50:12Z borisk $
  */
 
 
@@ -24,10 +24,8 @@
 //  Includes
 // ---------------------------------------------------------------------------
 #include <xercesc/util/XMLException.hpp>
-#include <xercesc/util/Mutexes.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
 #include <xercesc/util/XMLMsgLoader.hpp>
-#include <xercesc/util/XMLRegisterCleanup.hpp>
 #include <xercesc/util/XMLString.hpp>
 #include <xercesc/util/XMLUniDefs.hpp>
 #include <xercesc/util/XMLInitializer.hpp>
@@ -35,75 +33,27 @@
 
 XERCES_CPP_NAMESPACE_BEGIN
 
-// ---------------------------------------------------------------------------
-//  Local, static data
-// ---------------------------------------------------------------------------
 static XMLMsgLoader* sMsgLoader = 0;
-static XMLRegisterCleanup msgLoaderCleanup;
-static bool sScannerMutexRegistered = false;
-static XMLMutex* sMsgMutex = 0;
-static XMLRegisterCleanup msgMutexCleanup;
 
-// ---------------------------------------------------------------------------
-//  Local, static functions
-// ---------------------------------------------------------------------------
-
-//
-//  We need to fault in this mutex. But, since its used for synchronization
-//  itself, we have to do this the low level way using a compare and swap.
-//
-static XMLMutex& gMsgMutex()
+void XMLInitializer::initializeXMLException()
 {
-    if (!sScannerMutexRegistered)
-    {
-        XMLMutexLock lockInit(XMLPlatformUtils::fgAtomicMutex);
+    sMsgLoader = XMLPlatformUtils::loadMsgSet(XMLUni::fgExceptDomain);
 
-        if (!sScannerMutexRegistered)
-        {
-            sMsgMutex = new XMLMutex(XMLPlatformUtils::fgMemoryManager);
-            msgMutexCleanup.registerCleanup(XMLException::reinitMsgMutex);
-            sScannerMutexRegistered = true;
-        }
-    }
+    if (!sMsgLoader)
+      XMLPlatformUtils::panic(PanicHandler::Panic_CantLoadMsgDomain);
+}
 
-    return *sMsgMutex;
+void XMLInitializer::terminateXMLException()
+{
+    delete sMsgLoader;
+    sMsgLoader = 0;
 }
 
 //
-//  This method is a lazy evaluator for the message loader for exception
-//  messages.
 //
 static XMLMsgLoader& gGetMsgLoader()
 {
-    if (!sMsgLoader)
-    {
-        // Lock the message loader mutex and load the text
-	    XMLMutexLock lockInit(&gMsgMutex());
-
-        // Fault it in on first request
-        if (!sMsgLoader)
-        {
-            sMsgLoader = XMLPlatformUtils::loadMsgSet(XMLUni::fgExceptDomain);
-            if (!sMsgLoader)
-                XMLPlatformUtils::panic(PanicHandler::Panic_CantLoadMsgDomain);
-
-            //
-            // Register this XMLMsgLoader for cleanup at Termination.
-            //
-            msgLoaderCleanup.registerCleanup(XMLException::reinitMsgLoader);
-        }
-    }
-
-    // We got it, so return it
     return *sMsgLoader;
-}
-
-void XMLInitializer::initializeExceptionMsgLoader()
-{
-    sMsgLoader = XMLPlatformUtils::loadMsgSet(XMLUni::fgExceptDomain);
-    if (sMsgLoader) {
-        msgLoaderCleanup.registerCleanup(XMLException::reinitMsgLoader);
-    }
 }
 
 // ---------------------------------------------------------------------------
@@ -119,7 +69,7 @@ XMLException::~XMLException()
 // ---------------------------------------------------------------------------
 //  XMLException: Setter methods
 // ---------------------------------------------------------------------------
-void XMLException::setPosition(const char* const file, const unsigned int line)
+void XMLException::setPosition(const char* const file, const XMLFileLoc line)
 {
     fSrcLine = line;
 	fMemoryManager->deallocate(fSrcFile);
@@ -136,23 +86,28 @@ XMLException::XMLException() :
     , fSrcFile(0)
     , fSrcLine(0)
     , fMsg(0)
-    , fMemoryManager(XMLPlatformUtils::fgMemoryManager)
+    , fMemoryManager(
+        XMLPlatformUtils::fgMemoryManager->getExceptionMemoryManager())
 {
 }
 
 
 XMLException::XMLException( const   char* const     srcFile
-                            , const unsigned int    srcLine
+                            , const XMLFileLoc      srcLine
                             , MemoryManager* const  memoryManager) :
 
     fCode(XMLExcepts::NoError)
     , fSrcFile(0)
     , fSrcLine(srcLine)
     , fMsg(0)
-    , fMemoryManager(memoryManager)
+    , fMemoryManager(0)
 {
     if (!memoryManager)
-        fMemoryManager = XMLPlatformUtils::fgMemoryManager;
+      fMemoryManager =
+        XMLPlatformUtils::fgMemoryManager->getExceptionMemoryManager();
+    else
+      fMemoryManager = memoryManager->getExceptionMemoryManager();
+
     fSrcFile = XMLString::replicate(srcFile, fMemoryManager);
 }
 
@@ -163,7 +118,7 @@ XMLException::XMLException(const XMLException& toCopy) :
     , fSrcFile(0)
     , fSrcLine(toCopy.fSrcLine)
     , fMsg(XMLString::replicate(toCopy.fMsg, toCopy.fMemoryManager))
-    , fMemoryManager(toCopy.fMemoryManager)        
+    , fMemoryManager(toCopy.fMemoryManager)
 {
     if (toCopy.fSrcFile) {
         fSrcFile = XMLString::replicate
@@ -219,7 +174,7 @@ void XMLException::loadExceptText(const XMLExcepts::Codes toLoad)
     fCode = toLoad;
 
     // Load up the text into a local buffer
-    const unsigned int msgSize = 2047;
+    const XMLSize_t msgSize = 2047;
     XMLCh errText[msgSize + 1];
 
     // load the text
@@ -249,7 +204,7 @@ XMLException::loadExceptText(const  XMLExcepts::Codes toLoad
     fCode = toLoad;
 
     // Load up the text into a local buffer
-    const unsigned int msgSize = 4095;
+    const XMLSize_t msgSize = 4095;
     XMLCh errText[msgSize + 1];
 
     // load the text
@@ -279,7 +234,7 @@ XMLException::loadExceptText(const  XMLExcepts::Codes toLoad
     fCode = toLoad;
 
     // Load up the text into a local buffer
-    const unsigned int msgSize = 4095;
+    const XMLSize_t msgSize = 4095;
     XMLCh errText[msgSize + 1];
 
     // load the text
@@ -295,25 +250,6 @@ XMLException::loadExceptText(const  XMLExcepts::Codes toLoad
 
     // We got the text so replicate it into the message member
     fMsg = XMLString::replicate(errText, fMemoryManager);
-}
-
-// -----------------------------------------------------------------------
-//  Reinitialise the message mutex
-// -----------------------------------------------------------------------
-void XMLException::reinitMsgMutex()
-{
-    delete sMsgMutex;
-    sMsgMutex = 0;
-    sScannerMutexRegistered = false;
-}
-
-// -----------------------------------------------------------------------
-//  Reinitialise the message loader
-// -----------------------------------------------------------------------
-void XMLException::reinitMsgLoader()
-{
-    delete sMsgLoader;
-    sMsgLoader = 0;
 }
 
 XERCES_CPP_NAMESPACE_END

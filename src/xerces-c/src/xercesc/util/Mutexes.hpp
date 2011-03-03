@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: Mutexes.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: Mutexes.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-
-#if !defined(MUTEXES_HPP)
-#define MUTEXES_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_MUTEXES_HPP)
+#define XERCESC_INCLUDE_GUARD_MUTEXES_HPP
 
 #include <xercesc/util/XMemory.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
@@ -61,12 +60,15 @@ private :
     //      The raw mutex handle. Its just a void pointer so we do not
     //      pass judgement on its value at all. We just pass it into the
     //      platform utilities methods which knows what's really in it.
+    // fManager
+    //      The MemoryManager that this XMLMutex was initialized with.
     // -----------------------------------------------------------------------
-    void*   fHandle;
+    void*          fHandle;
+    MemoryManager* fManager;
 
 
     // -----------------------------------------------------------------------
-    //  Sun PlatformUtils needs acess to fHandle to initialize the
+    //  Sun PlatformUtils needs access to fHandle to initialize the
     //  atomicOpsMutex at startup.
     // -----------------------------------------------------------------------
     friend class XMLPlatformUtils;

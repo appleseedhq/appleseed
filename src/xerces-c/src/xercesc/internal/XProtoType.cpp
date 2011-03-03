@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XProtoType.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XProtoType.cpp 834826 2009-11-11 10:03:53Z borisk $
  */
 
 // ---------------------------------------------------------------------------
@@ -36,8 +36,8 @@ XERCES_CPP_NAMESPACE_BEGIN
  ***/
 void XProtoType::store(XSerializeEngine& serEng) const
 {
-    int strLen = XMLString::stringLen((char*)fClassName);
-	serEng << strLen;
+    XMLSize_t strLen = XMLString::stringLen((char*)fClassName);
+	serEng << (unsigned long)strLen;
 	serEng.write(fClassName, strLen * sizeof(XMLByte));
 }
 
@@ -58,16 +58,16 @@ void XProtoType::load(XSerializeEngine& serEng
     }
 
     // read and check class name length
-    int      inNameLen = XMLString::stringLen((char*)inName); 
-    int      classNameLen = 0;
-    serEng >> classNameLen;
+    XMLSize_t inNameLen = XMLString::stringLen((char*)inName); 
+    XMLSize_t classNameLen = 0;
+    serEng >> (unsigned long&)classNameLen;
 
 	if (classNameLen != inNameLen)
     {
         XMLCh value1[17];
         XMLCh value2[17];
-        XMLString::binToText(inNameLen,    value1, 16, 10, manager);
-        XMLString::binToText(classNameLen, value2, 16, 10, manager);
+        XMLString::sizeToText(inNameLen,    value1, 16, 10, manager);
+        XMLString::sizeToText(classNameLen, value2, 16, 10, manager);
 
         ThrowXMLwithMemMgr2(XSerializationException
                 , XMLExcepts::XSer_ProtoType_NameLen_Dif
@@ -86,14 +86,18 @@ void XProtoType::load(XSerializeEngine& serEng
         //we don't have class name exceed this length in xerces
         XMLCh name1[256];
         XMLCh name2[256];
-        XMLString::transcode((char*)inName,    name1, 255, manager);
-        XMLString::transcode((char*)className, name2, 255, manager);
+        XMLCh *tmp = XMLString::transcode((char*)inName, manager);
+        XMLString::copyNString(name1, tmp, 255);
+        manager->deallocate(tmp);
+        tmp = XMLString::transcode((char*)className, manager);
+        XMLString::copyNString(name2, tmp, 255);
+        manager->deallocate(tmp);
 
         ThrowXMLwithMemMgr2(XSerializationException
                 , XMLExcepts::XSer_ProtoType_Name_Dif
                 , name1
                 , name2
-                , manager);  
+                , manager);
     }
 
     return;

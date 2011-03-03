@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: ContentHandler.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: ContentHandler.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-
-#ifndef CONTENTHANDLER_HPP
-#define CONTENTHANDLER_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_CONTENTHANDLER_HPP)
+#define XERCESC_INCLUDE_GUARD_CONTENTHANDLER_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 
@@ -104,7 +103,7 @@ public:
     virtual void characters
     (
         const   XMLCh* const    chars
-        , const unsigned int    length
+        , const XMLSize_t       length
     ) = 0;
 
   /**
@@ -129,7 +128,7 @@ public:
     * startElement() event for every endElement() event (even when the
     * element is empty).</p>
     *
-    * @param uri The URI of the asscioated namespace for this element
+    * @param uri The URI of the associated namespace for this element
 	* @param localname The local part of the element name
 	* @param qname The QName of this element
     * @exception SAXException Any SAX exception, possibly
@@ -168,7 +167,7 @@ public:
     virtual void ignorableWhitespace
     (
         const   XMLCh* const    chars
-        , const unsigned int    length
+        , const XMLSize_t       length
     ) = 0;
 
   /**
@@ -248,9 +247,9 @@ public:
     *
     * <p>Note that the attribute list provided will
     * contain only attributes with explicit values (specified or
-    * defaulted): #IMPLIED attributes will be omitted.</p>
+    * defaulted): \#IMPLIED attributes will be omitted.</p>
     *
-    * @param uri The URI of the asscioated namespace for this element
+    * @param uri The URI of the associated namespace for this element
 	* @param localname The local part of the element name
 	* @param qname The QName of this element
     * @param attrs The attributes attached to the element, if any.

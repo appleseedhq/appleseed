@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XMLResourceIdentifier.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLResourceIdentifier.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-#ifndef XMLRESOURCEIDENTIFIER_HPP
-#define XMLRESOURCEIDENTIFIER_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XMLRESOURCEIDENTIFIER_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLRESOURCEIDENTIFIER_HPP
 
 XERCES_CPP_NAMESPACE_BEGIN
 
@@ -65,8 +65,8 @@ class Locator;
   * identifier "http://www.myhost.com/today":</p>
   *
   *<code>
-  * #include <xercesc/util/XMLEntityResolver.hpp><br>
-  * #include <xercesc/sax/InputSource.hpp><br>
+  * \#include <xercesc/util/XMLEntityResolver.hpp><br>
+  * \#include <xercesc/sax/InputSource.hpp><br>
   *<br>
   *&nbsp;class MyResolver : public XMLEntityResolver {<br>
   *&nbsp;&nbsp;public:<br>

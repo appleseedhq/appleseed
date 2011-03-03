@@ -1,5 +1,3 @@
-#ifndef DOMDocumentFragmentImpl_HEADER_GUARD_
-#define DOMDocumentFragmentImpl_HEADER_GUARD_
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,8 +16,11 @@
  */
 
 /*
- * $Id: DOMDocumentFragmentImpl.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMDocumentFragmentImpl.hpp 641193 2008-03-26 08:06:57Z borisk $
  */
+
+#if !defined(XERCESC_INCLUDE_GUARD_DOMDOCUMENTFRAGMENTIMPL_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMDOCUMENTFRAGMENTIMPL_HPP
 
 //
 //  This file is part of the internal implementation of the C++ XML DOM.
@@ -39,19 +40,16 @@ XERCES_CPP_NAMESPACE_BEGIN
 
 
 class CDOM_EXPORT DOMDocumentFragmentImpl: public DOMDocumentFragment {
-private:
+protected:
     DOMNodeImpl     fNode;
     DOMParentNode   fParent;
 
-
-
 protected:
     DOMDocumentFragmentImpl(DOMDocument *);
-
-private:
     DOMDocumentFragmentImpl(const DOMDocumentFragmentImpl &other, bool deep);
     friend class DOMDocumentImpl;
 
+private:
     // -----------------------------------------------------------------------
     // Unimplemented constructors and operators
     // -----------------------------------------------------------------------
@@ -60,6 +58,7 @@ private:
 public:
     virtual ~DOMDocumentFragmentImpl();
 
+public:
     // Declare all of the functions from DOMNode.
     DOMNODE_FUNCTIONS;
 };

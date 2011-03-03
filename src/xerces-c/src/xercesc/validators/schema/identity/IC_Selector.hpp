@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: IC_Selector.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: IC_Selector.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#if !defined(IC_SELECTOR_HPP)
-#define IC_SELECTOR_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_IC_SELECTOR_HPP)
+#define XERCESC_INCLUDE_GUARD_IC_SELECTOR_HPP
 
 
 // ---------------------------------------------------------------------------
@@ -76,7 +76,7 @@ public:
 
 private:
     // -----------------------------------------------------------------------
-    //  Unimplemented contstructors and operators
+    //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
     IC_Selector(const IC_Selector& other);
     IC_Selector& operator= (const IC_Selector& other);
@@ -102,14 +102,17 @@ public:
     // -----------------------------------------------------------------------
     //  XMLDocumentHandler methods
     // -----------------------------------------------------------------------
-    void startDocumentFragment();
-    void startElement(const XMLElementDecl& elemDecl,
-                      const unsigned int urlId,
-                      const XMLCh* const elemPrefix,
-		              const RefVectorOf<XMLAttr>& attrList,
-                      const unsigned int attrCount);
-    void endElement(const XMLElementDecl& elemDecl,
-                    const XMLCh* const elemContent);
+    virtual void startDocumentFragment();
+    virtual void startElement(const XMLElementDecl& elemDecl,
+                              const unsigned int urlId,
+                              const XMLCh* const elemPrefix,
+		                      const RefVectorOf<XMLAttr>& attrList,
+                              const XMLSize_t attrCount,
+                              ValidationContext* validationContext = 0);
+    virtual void endElement(const XMLElementDecl& elemDecl,
+                            const XMLCh* const elemContent,
+                            ValidationContext* validationContext = 0,
+                            DatatypeValidator* actualValidator = 0);
 
 private:
     // -----------------------------------------------------------------------
@@ -122,7 +125,7 @@ private:
                     MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
 
     // -----------------------------------------------------------------------
-    //  Unimplemented contstructors and operators
+    //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
     SelectorMatcher(const SelectorMatcher& other);
     SelectorMatcher& operator= (const SelectorMatcher& other);

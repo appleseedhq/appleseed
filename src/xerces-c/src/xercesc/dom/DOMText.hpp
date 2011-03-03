@@ -1,6 +1,3 @@
-#ifndef DOMText_HEADER_GUARD_
-#define DOMText_HEADER_GUARD_
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -19,8 +16,11 @@
  */
 
 /*
- * $Id: DOMText.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMText.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
+
+#if !defined(XERCESC_INCLUDE_GUARD_DOMTEXT_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMTEXT_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 #include <xercesc/dom/DOMCharacterData.hpp>
@@ -110,34 +110,26 @@ public:
     /** @name Functions introduced in DOM Level 3 */
     //@{
     /**
-     * Returns whether this text node contains whitespace in element content,
-     * often abusively called "ignorable whitespace".  An implementation can
-     * only return <code>true</code> if, one way or another, it has access
-     * to the relevant information (e.g., the DTD or schema).
+     * Returns whether this text node contains element content whitespace,
+     * often abusively called "ignorable whitespace". The text node is determined 
+     * to contain whitespace in element content during the load of the document 
+     * or if validation occurs while using <code>DOMDocument::normalizeDocument()</code>.
      *
-     * <p><b>"Experimental - subject to change"</b></p>
-     *
-     * <br> This attribute represents the property [element content
-     * whitespace] defined in .
      * @since DOM Level 3
      */
-    virtual bool     getIsWhitespaceInElementContent() const = 0;
+    virtual bool     getIsElementContentWhitespace() const = 0;
 
     /**
      * Returns all text of <code>DOMText</code> nodes logically-adjacent text
      * nodes to this node, concatenated in document order.
      *
-     * <p><b>"Experimental - subject to change"</b></p>
-     *
      * @since DOM Level 3
      */
-    virtual const XMLCh* getWholeText() = 0;
+    virtual const XMLCh* getWholeText() const = 0;
 
     /**
      * Substitutes the a specified text for the text of the current node and
      * all logically-adjacent text nodes.
-     *
-     * <p><b>"Experimental - subject to change"</b></p>
      *
      * <br>This method returns the node in the hierarchy which received the
      * replacement text, which is null if the text was empty or is the
@@ -155,6 +147,7 @@ public:
      * method must fail before performing any modification of the document,
      * raising a <code>DOMException</code> with the code
      * <code>NO_MODIFICATION_ALLOWED_ERR</code>.
+     *
      * @param content The content of the replacing <code>DOMText</code> node.
      * @return The <code>DOMText</code> node created with the specified content.
      * @exception DOMException

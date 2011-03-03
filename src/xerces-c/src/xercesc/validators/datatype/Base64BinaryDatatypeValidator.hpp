@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: Base64BinaryDatatypeValidator.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: Base64BinaryDatatypeValidator.hpp 695949 2008-09-16 15:57:44Z borisk $
  */
 
-#if !defined(BASE64BINARY_DATATYPEVALIDATOR_HPP)
-#define BASE64BINARY_DATATYPEVALIDATOR_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_BASE64BINARY_DATATYPEVALIDATOR_HPP)
+#define XERCESC_INCLUDE_GUARD_BASE64BINARY_DATATYPEVALIDATOR_HPP
 
 #include <xercesc/validators/datatype/AbstractStringValidator.hpp>
 
@@ -74,7 +74,7 @@ protected:
     virtual void checkValueSpace(const XMLCh* const content
                             , MemoryManager* const manager);
 
-    virtual int  getLength(const XMLCh* const content
+    virtual XMLSize_t getLength(const XMLCh* const content
                        , MemoryManager* const manager) const;
 
     virtual void normalizeEnumeration(MemoryManager* const manager);

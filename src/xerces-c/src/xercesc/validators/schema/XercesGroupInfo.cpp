@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XercesGroupInfo.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XercesGroupInfo.cpp 471747 2006-11-06 14:31:56Z amassari $
  */
 
 // ---------------------------------------------------------------------------
@@ -35,7 +35,7 @@ XERCES_CPP_NAMESPACE_BEGIN
 // ---------------------------------------------------------------------------
 XercesGroupInfo::XercesGroupInfo(MemoryManager* const manager)
     : fCheckElementConsistency(true)
-    , fScope(-1)
+    , fScope(Grammar::TOP_LEVEL_SCOPE)
     , fNameId(0)
     , fNamespaceId(0)
     , fContentSpec(0)
@@ -50,7 +50,7 @@ XercesGroupInfo::XercesGroupInfo(unsigned int groupNameId,
                                  unsigned int groupNamespaceId,
                                  MemoryManager* const manager)
     : fCheckElementConsistency(true)
-    , fScope(-1)
+    , fScope(Grammar::TOP_LEVEL_SCOPE)
     , fNameId(groupNameId)
     , fNamespaceId(groupNamespaceId)
     , fContentSpec(0)

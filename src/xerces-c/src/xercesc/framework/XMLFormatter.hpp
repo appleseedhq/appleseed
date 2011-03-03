@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XMLFormatter.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLFormatter.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#if !defined(XMLFORMATTER_HPP)
-#define XMLFORMATTER_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XMLFORMATTER_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLFORMATTER_HPP
 
 #include <xercesc/util/PlatformUtils.hpp>
 
@@ -44,7 +44,7 @@ public:
     // -----------------------------------------------------------------------
     //  Class types
     // -----------------------------------------------------------------------
-    /** @name Public Contants */
+    /** @name Public Constants */
     //@{
     /**
      * EscapeFlags - Different styles of escape flags to control various formatting.
@@ -166,11 +166,11 @@ public:
     /** @name Constructor and Destructor */
     //@{
     /**
-     * @param outEncoding the encoding for the formatted content
-     * @param docVersion  
-     * @param target      the formatTarget where the formatted content is written to
-     * @param escapeFlags the escape style for certain character
-     * @param unrepFlags  the reaction to unrepresentable character
+     * @param outEncoding the encoding for the formatted content.
+     * @param docVersion  the document version.
+     * @param target      the formatTarget where the formatted content is written to.
+     * @param escapeFlags the escape style for certain character.
+     * @param unrepFlags  the reaction to unrepresentable character.
      * @param manager     Pointer to the memory manager to be used to
      *                    allocate objects.
      */
@@ -211,7 +211,7 @@ public:
         , const UnRepFlags              unrepFlags = UnRep_Fail
         ,       MemoryManager* const    manager = XMLPlatformUtils::fgMemoryManager
     );
-    
+
     ~XMLFormatter();
     //@}
 
@@ -231,7 +231,7 @@ public:
     void formatBuf
     (
         const   XMLCh* const    toFormat
-        , const unsigned int    count
+        , const XMLSize_t       count
         , const EscapeFlags     escapeFlags = DefaultEscape
         , const UnRepFlags      unrepFlags = DefaultUnRep
     );
@@ -250,7 +250,7 @@ public:
     );
 
     void writeBOM(const XMLByte* const toFormat
-                , const unsigned int   count);
+                , const XMLSize_t      count);
 
     //@}
 
@@ -266,9 +266,14 @@ public:
     const XMLCh* getEncodingName() const;
 
     /**
-     * @return return the transcoder used internally for transcoding the formatter conent
+     * @return return constant transcoder used internally for transcoding the formatter conent
      */
     inline const XMLTranscoder*   getTranscoder() const;
+
+    /**
+     * @return return the transcoder used internally for transcoding the formatter content
+     */
+    inline XMLTranscoder*   getTranscoder();
 
    //@}
 
@@ -312,7 +317,6 @@ public:
     );
     //@}
 
-
     // -----------------------------------------------------------------------
     //  Getter methods
     // -----------------------------------------------------------------------
@@ -350,25 +354,25 @@ private :
     // -----------------------------------------------------------------------
     //  Private helper methods
     // -----------------------------------------------------------------------
-    const XMLByte* getCharRef(unsigned int & count, 
-                              XMLByte*      &ref, 
-                              const XMLCh *  stdRef);  
- 
+    const XMLByte* getCharRef(XMLSize_t     &count,
+                              XMLByte*      &ref,
+                              const XMLCh *  stdRef);
+
     void writeCharRef(const XMLCh &toWrite);
-    void writeCharRef(unsigned long toWrite);
+    void writeCharRef(XMLSize_t toWrite);
 
     bool inEscapeList(const XMLFormatter::EscapeFlags escStyle
                     , const XMLCh                     toCheck);
-                              
 
-    unsigned int handleUnEscapedChars(const XMLCh *                  srcPtr, 
-                                      const unsigned int             count, 
-                                      const UnRepFlags               unrepFlags);
+
+    XMLSize_t handleUnEscapedChars(const XMLCh *      srcPtr,
+                                   const XMLSize_t    count,
+                                   const UnRepFlags   unrepFlags);
 
     void specialFormat
     (
         const   XMLCh* const    toFormat
-        , const unsigned int    count
+        , const XMLSize_t       count
         , const EscapeFlags     escapeFlags
     );
 
@@ -421,15 +425,15 @@ private :
     XMLTranscoder*              fXCoder;
     XMLByte                     fTmpBuf[kTmpBufSize + 4];
     XMLByte*                    fAposRef;
-    unsigned int                fAposLen;
+    XMLSize_t                   fAposLen;
     XMLByte*                    fAmpRef;
-    unsigned int                fAmpLen;
+    XMLSize_t                   fAmpLen;
     XMLByte*                    fGTRef;
-    unsigned int                fGTLen;
+    XMLSize_t                   fGTLen;
     XMLByte*                    fLTRef;
-    unsigned int                fLTLen;
+    XMLSize_t                   fLTLen;
     XMLByte*                    fQuoteRef;
-    unsigned int                fQuoteLen;
+    XMLSize_t                   fQuoteLen;
     bool                        fIsXML11;
     MemoryManager*              fMemoryManager;
 };
@@ -450,7 +454,7 @@ public:
     virtual void writeChars
     (
           const XMLByte* const      toWrite
-        , const unsigned int        count
+        , const XMLSize_t           count
         ,       XMLFormatter* const formatter
     ) = 0;
 
@@ -481,6 +485,11 @@ inline const XMLCh* XMLFormatter::getEncodingName() const
 }
 
 inline const XMLTranscoder* XMLFormatter::getTranscoder() const
+{
+    return fXCoder;
+}
+
+inline XMLTranscoder* XMLFormatter::getTranscoder()
 {
     return fXCoder;
 }

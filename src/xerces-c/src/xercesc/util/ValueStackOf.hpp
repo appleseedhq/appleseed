@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: ValueStackOf.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: ValueStackOf.hpp 676911 2008-07-15 13:27:32Z amassari $
  */
 
-#if !defined(VALUESTACKOF_HPP)
-#define VALUESTACKOF_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_VALUESTACKOF_HPP)
+#define XERCESC_INCLUDE_GUARD_VALUESTACKOF_HPP
 
 #include <xercesc/util/EmptyStackException.hpp>
 #include <xercesc/util/ValueVectorOf.hpp>
@@ -42,7 +42,7 @@ public :
     // -----------------------------------------------------------------------
     ValueStackOf
     (
-          const unsigned int fInitCapacity
+          const XMLSize_t fInitCapacity
           , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
           , const bool toCallDestructor = false
     );
@@ -62,8 +62,8 @@ public :
     //  Getter methods
     // -----------------------------------------------------------------------
     bool empty();
-    unsigned int curCapacity();
-    unsigned int size();
+    XMLSize_t curCapacity();
+    XMLSize_t size();
 
 
 private :
@@ -141,7 +141,7 @@ private :
     //      inside of it.
     // -----------------------------------------------------------------------
     bool                    fAdopted;
-    unsigned int            fCurIndex;
+    XMLSize_t               fCurIndex;
     ValueVectorOf<TElem>*   fVector;
     ValueStackOf<TElem>*    fToEnum;
 };

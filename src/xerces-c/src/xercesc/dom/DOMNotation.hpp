@@ -1,6 +1,3 @@
-#ifndef DOMNotation_HEADER_GUARD_
-#define DOMNotation_HEADER_GUARD_
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -19,8 +16,11 @@
  */
 
 /*
- * $Id: DOMNotation.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMNotation.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
+
+#if !defined(XERCESC_INCLUDE_GUARD_DOMNOTATION_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMNOTATION_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 #include <xercesc/dom/DOMNode.hpp>

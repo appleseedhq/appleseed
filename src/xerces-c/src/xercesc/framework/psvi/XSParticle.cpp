@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XSParticle.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XSParticle.cpp 674012 2008-07-04 11:18:21Z borisk $
  */
 
 #include <xercesc/framework/psvi/XSParticle.hpp>
@@ -32,13 +32,15 @@ XERCES_CPP_NAMESPACE_BEGIN
 XSParticle::XSParticle(TERM_TYPE            termType,
                        XSModel* const       xsModel,
                        XSObject* const      particleTerm,
-                       int                  minOccurs,
-                       int                  maxOccurs,
+                       XMLSize_t            minOccurs,
+                       XMLSize_t            maxOccurs,
+                       bool                 unbounded,
                        MemoryManager* const manager)
     : XSObject(XSConstants::PARTICLE, xsModel, manager)
     , fTermType(termType)
     , fMinOccurs(minOccurs)
     , fMaxOccurs(maxOccurs)
+    , fUnbounded (unbounded)
     , fTerm(particleTerm)
 {
 }
@@ -77,5 +79,3 @@ XSWildcard *XSParticle::getWildcardTerm()
 }
 
 XERCES_CPP_NAMESPACE_END
-
-

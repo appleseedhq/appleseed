@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: BinMemOutputStream.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: BinMemOutputStream.cpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
 #include <xercesc/internal/BinMemOutputStream.hpp>
@@ -25,7 +25,7 @@
 
 XERCES_CPP_NAMESPACE_BEGIN
 
-BinMemOutputStream::BinMemOutputStream( int                  initCapacity
+BinMemOutputStream::BinMemOutputStream( XMLSize_t            initCapacity
                                       , MemoryManager* const manager)
 : fMemoryManager(manager)
 , fDataBuf(0)
@@ -48,12 +48,12 @@ BinMemOutputStream::~BinMemOutputStream()
 }
 
 void BinMemOutputStream::writeBytes( const XMLByte*     const      toGo
-                                   , const unsigned int            maxToWrite)
+                                   , const XMLSize_t               maxToWrite)
 {
 
     if (maxToWrite) 
     {
-        insureCapacity(maxToWrite);
+        ensureCapacity(maxToWrite);
         memcpy(&fDataBuf[fIndex], toGo, maxToWrite * sizeof(XMLByte));
         fIndex += maxToWrite;
     }
@@ -78,12 +78,12 @@ void BinMemOutputStream::reset()
     }
 }
 
-unsigned int BinMemOutputStream::curPos() const
+XMLFilePos BinMemOutputStream::curPos() const
 {
     return fIndex;
 }
 
-unsigned int BinMemOutputStream::getSize() const
+XMLFilePos BinMemOutputStream::getSize() const
 {
     return fCapacity;
 }
@@ -91,14 +91,14 @@ unsigned int BinMemOutputStream::getSize() const
 // ---------------------------------------------------------------------------
 //  BinMemOutputStream: Private helper methods
 // ---------------------------------------------------------------------------
-void BinMemOutputStream::insureCapacity(const unsigned int extraNeeded)
+void BinMemOutputStream::ensureCapacity(const XMLSize_t extraNeeded)
 {
     // If we can handle it, do nothing yet
     if (fIndex + extraNeeded < fCapacity)
         return;
 
     // Oops, not enough room. Calc new capacity and allocate new buffer
-    const unsigned int newCap = (unsigned int)((fIndex + extraNeeded) * 2);
+    const XMLSize_t newCap = ((fIndex + extraNeeded) * 2);
     XMLByte* newBuf = (XMLByte*) fMemoryManager->allocate
     (
         (newCap+4) * sizeof(XMLByte)

@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /**
- * $Id: DOMDeepNodeListPool.c 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMDeepNodeListPool.c 883368 2009-11-23 15:28:19Z amassari $
  */
 
 
@@ -37,14 +37,13 @@ XERCES_CPP_NAMESPACE_BEGIN
 // ---------------------------------------------------------------------------
 //  DOMDeepNodeListPool: Constructors and Destructor
 // ---------------------------------------------------------------------------
-template <class TVal>
-DOMDeepNodeListPool<TVal>::DOMDeepNodeListPool( const XMLSize_t modulus
+template <class TVal, class THasher>
+DOMDeepNodeListPool<TVal, THasher>::DOMDeepNodeListPool( const XMLSize_t modulus
                                               , const bool adoptElems
                                               , const XMLSize_t initSize) :
-	 fAdoptedElems(adoptElems)
+    fAdoptedElems(adoptElems)
     , fBucketList(0)
     , fHashModulus(modulus)
-    , fHash(0)
     , fIdPtrs(0)
     , fIdPtrsCount(initSize)
     , fIdCounter(0)
@@ -52,12 +51,6 @@ DOMDeepNodeListPool<TVal>::DOMDeepNodeListPool( const XMLSize_t modulus
 {
     initialize(modulus);
 
-    // create default hasher
-#if defined (XML_GCC_VERSION) && (XML_GCC_VERSION < 29600)
-    fHash = new HashPtr();
-#else
-    fHash = new (fMemoryManager) HashPtr();
-#endif
     //
     //  Allocate the initial id pointers array. We don't have to zero them
     //  out since the fIdCounter value tells us which ones are valid. The
@@ -70,23 +63,21 @@ DOMDeepNodeListPool<TVal>::DOMDeepNodeListPool( const XMLSize_t modulus
     fIdPtrs[0] = 0;
 }
 
-template <class TVal>
-DOMDeepNodeListPool<TVal>::DOMDeepNodeListPool( const XMLSize_t modulus
+template <class TVal, class THasher>
+DOMDeepNodeListPool<TVal, THasher>::DOMDeepNodeListPool( const XMLSize_t modulus
                                               , const bool adoptElems
-                                              , HashBase* hashBase
+                                              , const THasher& hasher
                                               , const XMLSize_t initSize) :
-	 fAdoptedElems(adoptElems)
+    fAdoptedElems(adoptElems)
     , fBucketList(0)
     , fHashModulus(modulus)
-    , fHash(0)
     , fIdPtrs(0)
     , fIdPtrsCount(initSize)
     , fIdCounter(0)
     , fMemoryManager(XMLPlatformUtils::fgMemoryManager)
+    , fHasher(hasher)
 {
     initialize(modulus);
-    // set hasher
-    fHash = hashBase;
 
     //
     //  Allocate the initial id pointers array. We don't have to zero them
@@ -100,26 +91,18 @@ DOMDeepNodeListPool<TVal>::DOMDeepNodeListPool( const XMLSize_t modulus
     fIdPtrs[0] = 0;
 }
 
-template <class TVal>
-DOMDeepNodeListPool<TVal>::DOMDeepNodeListPool( const XMLSize_t modulus
+template <class TVal, class THasher>
+DOMDeepNodeListPool<TVal, THasher>::DOMDeepNodeListPool( const XMLSize_t modulus
                                               , const XMLSize_t initSize) :
-	 fAdoptedElems(true)
+    fAdoptedElems(true)
     , fBucketList(0)
     , fHashModulus(modulus)
-    , fHash(0)
     , fIdPtrs(0)
     , fIdPtrsCount(initSize)
     , fIdCounter(0)
     , fMemoryManager(XMLPlatformUtils::fgMemoryManager)
 {
     initialize(modulus);
-
-    // create default hasher
-#if defined (XML_GCC_VERSION) && (XML_GCC_VERSION < 29600)
-    fHash = new HashPtr();
-#else
-    fHash = new (fMemoryManager) HashPtr();
-#endif    
 
     //
     //  Allocate the initial id pointers array. We don't have to zero them
@@ -133,8 +116,8 @@ DOMDeepNodeListPool<TVal>::DOMDeepNodeListPool( const XMLSize_t modulus
     fIdPtrs[0] = 0;
 }
 
-template <class TVal>
-void DOMDeepNodeListPool<TVal>::initialize(const XMLSize_t modulus)
+template <class TVal, class THasher>
+void DOMDeepNodeListPool<TVal, THasher>::initialize(const XMLSize_t modulus)
 {
 	if (modulus == 0)
         ThrowXMLwithMemMgr(IllegalArgumentException, XMLExcepts::HshTbl_ZeroModulus, fMemoryManager);
@@ -149,22 +132,22 @@ void DOMDeepNodeListPool<TVal>::initialize(const XMLSize_t modulus)
         fBucketList[index] = 0;
 }
 
-template <class TVal> DOMDeepNodeListPool<TVal>::~DOMDeepNodeListPool()
+template <class TVal, class THasher>
+DOMDeepNodeListPool<TVal, THasher>::~DOMDeepNodeListPool()
 {
     removeAll();
 
     // Then delete the bucket list & hasher & id pointers list
     fMemoryManager->deallocate(fIdPtrs);//delete [] fIdPtrs;
     fMemoryManager->deallocate(fBucketList);//delete [] fBucketList;
-    delete fHash;
 }
 
 
 // ---------------------------------------------------------------------------
 //  DOMDeepNodeListPool: Element management
 // ---------------------------------------------------------------------------
-template <class TVal>
-bool DOMDeepNodeListPool<TVal>::isEmpty() const
+template <class TVal, class THasher>
+bool DOMDeepNodeListPool<TVal, THasher>::isEmpty() const
 {
     // Just check the bucket list for non-empty elements
     for (XMLSize_t buckInd = 0; buckInd < fHashModulus; buckInd++)
@@ -175,8 +158,8 @@ bool DOMDeepNodeListPool<TVal>::isEmpty() const
     return true;
 }
 
-template <class TVal>
-bool DOMDeepNodeListPool<TVal>::containsKey( const void* const key1
+template <class TVal, class THasher>
+bool DOMDeepNodeListPool<TVal, THasher>::containsKey( const void* const key1
                                            , const XMLCh* const key2
                                            , const XMLCh* const key3) const
 {
@@ -185,8 +168,8 @@ bool DOMDeepNodeListPool<TVal>::containsKey( const void* const key1
     return (findIt != 0);
 }
 
-template <class TVal>
-void DOMDeepNodeListPool<TVal>::removeAll()
+template <class TVal, class THasher>
+void DOMDeepNodeListPool<TVal, THasher>::removeAll()
 {
     if (fIdCounter == 0) return;
 
@@ -224,14 +207,14 @@ void DOMDeepNodeListPool<TVal>::removeAll()
     fIdCounter = 0;
 }
 
-template <class TVal> void DOMDeepNodeListPool<TVal>::cleanup()
+template <class TVal, class THasher>
+void DOMDeepNodeListPool<TVal, THasher>::cleanup()
 {
     removeAll();
 
     // Then delete the bucket list & hasher & id pointers list
     fMemoryManager->deallocate(fIdPtrs);//delete [] fIdPtrs;
     fMemoryManager->deallocate(fBucketList);//delete [] fBucketList;
-    delete fHash;
 }
 
 
@@ -239,8 +222,9 @@ template <class TVal> void DOMDeepNodeListPool<TVal>::cleanup()
 // ---------------------------------------------------------------------------
 //  DOMDeepNodeListPool: Getters
 // ---------------------------------------------------------------------------
-template <class TVal> TVal*
-DOMDeepNodeListPool<TVal>::getByKey(const void* const key1, const XMLCh* const key2, const XMLCh* const key3)
+template <class TVal, class THasher>
+TVal*
+DOMDeepNodeListPool<TVal, THasher>::getByKey(const void* const key1, const XMLCh* const key2, const XMLCh* const key3)
 {
     XMLSize_t hashVal;
     DOMDeepNodeListPoolTableBucketElem<TVal>* findIt = findBucketElem(key1, key2, key3, hashVal);
@@ -249,8 +233,9 @@ DOMDeepNodeListPool<TVal>::getByKey(const void* const key1, const XMLCh* const k
     return findIt->fData;
 }
 
-template <class TVal> const TVal*
-DOMDeepNodeListPool<TVal>::getByKey(const void* const key1, const XMLCh* const key2, const XMLCh* const key3) const
+template <class TVal, class THasher>
+const TVal*
+DOMDeepNodeListPool<TVal, THasher>::getByKey(const void* const key1, const XMLCh* const key2, const XMLCh* const key3) const
 {
     XMLSize_t hashVal;
     const DOMDeepNodeListPoolTableBucketElem<TVal>* findIt = findBucketElem(key1, key2, key3, hashVal);
@@ -259,8 +244,9 @@ DOMDeepNodeListPool<TVal>::getByKey(const void* const key1, const XMLCh* const k
     return findIt->fData;
 }
 
-template <class TVal> TVal*
-DOMDeepNodeListPool<TVal>::getById(const XMLSize_t elemId)
+template <class TVal, class THasher>
+TVal*
+DOMDeepNodeListPool<TVal, THasher>::getById(const XMLSize_t elemId)
 {
     // If its either zero or beyond our current id, its an error
     if (!elemId || (elemId > fIdCounter))
@@ -269,8 +255,9 @@ DOMDeepNodeListPool<TVal>::getById(const XMLSize_t elemId)
     return fIdPtrs[elemId];
 }
 
-template <class TVal> const TVal*
-DOMDeepNodeListPool<TVal>::getById(const XMLSize_t elemId) const
+template <class TVal, class THasher>
+const TVal*
+DOMDeepNodeListPool<TVal, THasher>::getById(const XMLSize_t elemId) const
 {
     // If its either zero or beyond our current id, its an error
     if (!elemId || (elemId > fIdCounter))
@@ -282,8 +269,9 @@ DOMDeepNodeListPool<TVal>::getById(const XMLSize_t elemId) const
 // ---------------------------------------------------------------------------
 //  DOMDeepNodeListPool: Putters
 // ---------------------------------------------------------------------------
-template <class TVal> XMLSize_t
-DOMDeepNodeListPool<TVal>::put(void* key1, XMLCh* key2, XMLCh* key3, TVal* const valueToAdopt)
+template <class TVal, class THasher>
+XMLSize_t
+DOMDeepNodeListPool<TVal, THasher>::put(void* key1, XMLCh* key2, XMLCh* key3, TVal* const valueToAdopt)
 {
     // First see if the key exists already
     XMLSize_t hashVal;
@@ -366,11 +354,12 @@ DOMDeepNodeListPool<TVal>::put(void* key1, XMLCh* key2, XMLCh* key3, TVal* const
 // ---------------------------------------------------------------------------
 //  DOMDeepNodeListPool: Private methods
 // ---------------------------------------------------------------------------
-template <class TVal> DOMDeepNodeListPoolTableBucketElem<TVal>* DOMDeepNodeListPool<TVal>::
+template <class TVal, class THasher>
+DOMDeepNodeListPoolTableBucketElem<TVal>* DOMDeepNodeListPool<TVal, THasher>::
 findBucketElem(const void* const key1, const XMLCh* const key2, const XMLCh* const key3, XMLSize_t& hashVal)
 {
     // Hash the key
-    hashVal = fHash->getHashVal(key1, fHashModulus, fMemoryManager);
+    hashVal = fHasher.getHashVal(key1, fHashModulus);
     assert(hashVal < fHashModulus);
 
     // Search that bucket for the key
@@ -379,7 +368,7 @@ findBucketElem(const void* const key1, const XMLCh* const key2, const XMLCh* con
     {
         //key2 and key3 are XMLCh*, compareString takes null pointer vs zero len string the same
         //but we need them to be treated as different keys in this case
-        if (fHash->equals(key1, curElem->fKey1) && (XMLString::equals(key2, curElem->fKey2)) && (XMLString::equals(key3, curElem->fKey3))) {
+        if (fHasher.equals(key1, curElem->fKey1) && (XMLString::equals(key2, curElem->fKey2)) && (XMLString::equals(key3, curElem->fKey3))) {
             if (!key2 || !curElem->fKey2) {
                 if (key2 || curElem->fKey2) {
                     curElem = curElem->fNext;
@@ -401,20 +390,21 @@ findBucketElem(const void* const key1, const XMLCh* const key2, const XMLCh* con
     return 0;
 }
 
-template <class TVal> const DOMDeepNodeListPoolTableBucketElem<TVal>* DOMDeepNodeListPool<TVal>::
+template <class TVal, class THasher>
+const DOMDeepNodeListPoolTableBucketElem<TVal>* DOMDeepNodeListPool<TVal, THasher>::
 findBucketElem(const void* const key1, const XMLCh* const key2, const XMLCh* const key3, XMLSize_t& hashVal) const
 {
     // Hash the key
-    hashVal = fHash->getHashVal(key1, fHashModulus, fMemoryManager);
+    hashVal = fHasher.getHashVal(key1, fHashModulus);
     assert(hashVal < fHashModulus);
-    
+
     // Search that bucket for the key
     const DOMDeepNodeListPoolTableBucketElem<TVal>* curElem = fBucketList[hashVal];
     while (curElem)
     {
         //key2 and key3 are XMLCh*, compareString takes null pointer vs zero len string the same
         //but we need them to be treated as different keys in this case
-        if (fHash->equals(key1, curElem->fKey1) && (XMLString::equals(key2, curElem->fKey2)) && (XMLString::equals(key3, curElem->fKey3))) {
+        if (fHasher.equals(key1, curElem->fKey1) && (XMLString::equals(key2, curElem->fKey2)) && (XMLString::equals(key3, curElem->fKey3))) {
             if (!key2 || !curElem->fKey2) {
                 if (key2 || curElem->fKey2) {
                     curElem = curElem->fNext;
@@ -436,4 +426,3 @@ findBucketElem(const void* const key1, const XMLCh* const key2, const XMLCh* con
 }
 
 XERCES_CPP_NAMESPACE_END
-

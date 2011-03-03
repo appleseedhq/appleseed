@@ -16,11 +16,11 @@
  */
 
 /*
- *  $Id: XMLRecognizer.hpp 568078 2007-08-21 11:43:25Z amassari $
+ *  $Id: XMLRecognizer.hpp 555320 2007-07-11 16:05:13Z amassari $
  */
 
-#if !defined(XMLRECOGNIZER_HPP)
-#define XMLRECOGNIZER_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XMLRECOGNIZER_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLRECOGNIZER_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
@@ -46,9 +46,7 @@ public :
     //  the exact encoding, just the rough family that would let us scan
     //  the XML/TextDecl to find the encoding string.
     //
-    //  The 'L's and 'B's stand for little or big endian. We conditionally
-    //  create versions that will automatically map to the local UTF-16 and
-    //  UCS-4 endian modes.
+    //  The 'L's and 'B's stand for little or big endian. 
     //
     //  OtherEncoding means that its some transcoder based encoding, i.e. not
     //  one of the ones that we do internally. Its a special case and should
@@ -72,14 +70,6 @@ public :
         , Encodings_Max = XERCES_XMLCH
 
         , OtherEncoding = 999
-
-        #if defined(ENDIANMODE_BIG)
-        , Def_UTF16     = UTF_16B
-        , Def_UCS4      = UCS_4B
-        #else
-        , Def_UTF16     = UTF_16L
-        , Def_UCS4      = UCS_4L
-        #endif
     };
 
 
@@ -90,17 +80,17 @@ public :
     //  auto sense, and their lengths.
     // -----------------------------------------------------------------------
     static const char           fgASCIIPre[];
-    static const unsigned int   fgASCIIPreLen;
+    static const XMLSize_t      fgASCIIPreLen;
     static const XMLByte        fgEBCDICPre[];
-    static const unsigned int   fgEBCDICPreLen;
+    static const XMLSize_t      fgEBCDICPreLen;
     static const XMLByte        fgUTF16BPre[];
     static const XMLByte        fgUTF16LPre[];
-    static const unsigned int   fgUTF16PreLen;
+    static const XMLSize_t      fgUTF16PreLen;
     static const XMLByte        fgUCS4BPre[];
     static const XMLByte        fgUCS4LPre[];
-    static const unsigned int   fgUCS4PreLen;
+    static const XMLSize_t      fgUCS4PreLen;
     static const char           fgUTF8BOM[];
-    static const unsigned int   fgUTF8BOMLen;
+    static const XMLSize_t      fgUTF8BOMLen;
 
 
     // -----------------------------------------------------------------------
@@ -109,7 +99,7 @@ public :
     static Encodings basicEncodingProbe
     (
         const   XMLByte* const      rawBuffer
-        , const unsigned int        rawByteCount
+        , const XMLSize_t           rawByteCount
     );
 
     static Encodings encodingForName

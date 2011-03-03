@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: CharToken.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: CharToken.cpp 678879 2008-07-22 20:05:05Z amassari $
  */
 
 // ---------------------------------------------------------------------------
@@ -29,8 +29,8 @@ XERCES_CPP_NAMESPACE_BEGIN
 // ---------------------------------------------------------------------------
 //  Token: Constructors and Destructors
 // ---------------------------------------------------------------------------
-CharToken::CharToken(const unsigned short tokType, const XMLInt32 ch, MemoryManager* const manager)
-    : Token(tokType, manager)
+CharToken::CharToken(const Token::tokType tkType, const XMLInt32 ch, MemoryManager* const manager)
+    : Token(tkType, manager)
     , fCharData(ch)
 {
 
@@ -44,5 +44,5 @@ CharToken::~CharToken() {
 XERCES_CPP_NAMESPACE_END
 
 /**
-  *	End of file CharToken.cpp
+  *    End of file CharToken.cpp
   */

@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /**
- * $Id: XMLFormatter.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLFormatter.cpp 901107 2010-01-20 08:45:02Z borisk $
  */
 
 
@@ -100,17 +100,17 @@ bool XMLFormatter::inEscapeList(const XMLFormatter::EscapeFlags escStyle
     /***
      *  XML1.1
      *
-     *  Finally, there is considerable demand to define a standard representation of 
-     *  arbitrary Unicode characters in XML documents. Therefore, XML 1.1 allows the 
-     *  use of character references to the control characters #x1 through #x1F, 
-     *  most of which are forbidden in XML 1.0. For reasons of robustness, however, 
+     *  Finally, there is considerable demand to define a standard representation of
+     *  arbitrary Unicode characters in XML documents. Therefore, XML 1.1 allows the
+     *  use of character references to the control characters #x1 through #x1F,
+     *  most of which are forbidden in XML 1.0. For reasons of robustness, however,
      *  these characters still cannot be used directly in documents.
-     *  In order to improve the robustness of character encoding detection, the 
-     *  additional control characters #x7F through #x9F, which were freely allowed in 
-     *  XML 1.0 documents, now must also appear only as character references. 
-     *  (Whitespace characters are of course exempt.) The minor sacrifice of backward 
-     *  compatibility is considered not significant. 
-     *  Due to potential problems with APIs, #x0 is still forbidden both directly and 
+     *  In order to improve the robustness of character encoding detection, the
+     *  additional control characters #x7F through #x9F, which were freely allowed in
+     *  XML 1.0 documents, now must also appear only as character references.
+     *  (Whitespace characters are of course exempt.) The minor sacrifice of backward
+     *  compatibility is considered not significant.
+     *  Due to potential problems with APIs, #x0 is still forbidden both directly and
      *  as a character reference.
      *
     ***/
@@ -120,10 +120,10 @@ bool XMLFormatter::inEscapeList(const XMLFormatter::EscapeFlags escStyle
         if ( XMLChar1_1::isControlChar(toCheck, 0) &&
             !XMLChar1_1::isWhitespace(toCheck, 0)   )
         {
-            return true;    
+            return true;
         }
         else
-        {    
+        {
             return false;
         }
     }
@@ -148,17 +148,17 @@ XMLFormatter::XMLFormatter( const   char* const             outEncoding
     , fOutEncoding(0)
     , fTarget(target)
     , fUnRepFlags(unrepFlags)
-    , fXCoder(0)  
+    , fXCoder(0)
     , fAposRef(0)
     , fAposLen(0)
-    , fAmpRef(0)    
-    , fAmpLen(0)    
+    , fAmpRef(0)
+    , fAmpLen(0)
     , fGTRef(0)
     , fGTLen(0)
     , fLTRef(0)
     , fLTLen(0)
     , fQuoteRef(0)
-    , fQuoteLen(0) 
+    , fQuoteLen(0)
     , fIsXML11(false)
     , fMemoryManager(manager)
 {
@@ -203,17 +203,17 @@ XMLFormatter::XMLFormatter( const   XMLCh* const            outEncoding
     , fOutEncoding(0)
     , fTarget(target)
     , fUnRepFlags(unrepFlags)
-    , fXCoder(0)  
+    , fXCoder(0)
     , fAposRef(0)
     , fAposLen(0)
-    , fAmpRef(0)    
-    , fAmpLen(0)    
+    , fAmpRef(0)
+    , fAmpLen(0)
     , fGTRef(0)
     , fGTLen(0)
     , fLTRef(0)
     , fLTLen(0)
     , fQuoteRef(0)
-    , fQuoteLen(0) 
+    , fQuoteLen(0)
     , fIsXML11(false)
     , fMemoryManager(manager)
 {
@@ -254,17 +254,17 @@ XMLFormatter::XMLFormatter( const   char* const             outEncoding
     , fOutEncoding(0)
     , fTarget(target)
     , fUnRepFlags(unrepFlags)
-    , fXCoder(0)  
+    , fXCoder(0)
     , fAposRef(0)
     , fAposLen(0)
-    , fAmpRef(0)    
-    , fAmpLen(0)    
+    , fAmpRef(0)
+    , fAmpLen(0)
     , fGTRef(0)
     , fGTLen(0)
     , fLTRef(0)
     , fLTLen(0)
     , fQuoteRef(0)
-    , fQuoteLen(0) 
+    , fQuoteLen(0)
     , fIsXML11(false)
     , fMemoryManager(manager)
 {
@@ -311,17 +311,17 @@ XMLFormatter::XMLFormatter( const   XMLCh* const            outEncoding
     , fOutEncoding(0)
     , fTarget(target)
     , fUnRepFlags(unrepFlags)
-    , fXCoder(0)  
+    , fXCoder(0)
     , fAposRef(0)
     , fAposLen(0)
-    , fAmpRef(0)    
-    , fAmpLen(0)    
+    , fAmpRef(0)
+    , fAmpLen(0)
     , fGTRef(0)
     , fGTLen(0)
     , fLTRef(0)
     , fLTLen(0)
     , fQuoteRef(0)
-    , fQuoteLen(0) 
+    , fQuoteLen(0)
     , fIsXML11(false)
     , fMemoryManager(manager)
 {
@@ -374,7 +374,7 @@ XMLFormatter::~XMLFormatter()
 // ---------------------------------------------------------------------------
 void
 XMLFormatter::formatBuf(const   XMLCh* const    toFormat
-                        , const unsigned int    count
+                        , const XMLSize_t       count
                         , const EscapeFlags     escapeFlags
                         , const UnRepFlags      unrepFlags)
 {
@@ -409,18 +409,18 @@ XMLFormatter::formatBuf(const   XMLCh* const    toFormat
     if (actualEsc == NoEscapes)
     {
         //
-        //  Just do a whole buffer at a time into the temp buffer, cap 
-        //  it off, and send it to the target. 
+        //  Just do a whole buffer at a time into the temp buffer, cap
+        //  it off, and send it to the target.
         //
         if (srcPtr < endPtr)
-           srcPtr += handleUnEscapedChars(srcPtr, endPtr - srcPtr, actualUnRep); 
+           srcPtr += handleUnEscapedChars(srcPtr, endPtr - srcPtr, actualUnRep);
     }
      else
     {
         //
-        //  Escape chars that require it according tot he scale flags 
-        //  we were given. For the others, try to accumulate them and 
-        //  format them in as big as bulk as we can. 
+        //  Escape chars that require it according tot he scale flags
+        //  we were given. For the others, try to accumulate them and
+        //  format them in as big as bulk as we can.
         //
         while (srcPtr < endPtr)
         {
@@ -438,8 +438,8 @@ XMLFormatter::formatBuf(const   XMLCh* const    toFormat
             //  out.
             //
             if (tmpPtr > srcPtr)
-               srcPtr += handleUnEscapedChars(srcPtr, tmpPtr - srcPtr,  
-                                              actualUnRep); 
+               srcPtr += handleUnEscapedChars(srcPtr, tmpPtr - srcPtr,
+                                              actualUnRep);
 
              else if (tmpPtr < endPtr)
             {
@@ -447,30 +447,30 @@ XMLFormatter::formatBuf(const   XMLCh* const    toFormat
                 //  Ok, so we've hit a char that must be escaped. So do
                 //  this one specially.
                 //
-                const XMLByte * theChars;                
-                switch (*srcPtr) { 
+                const XMLByte * theChars;
+                switch (*srcPtr) {
                     case chAmpersand :
-                        theChars = getCharRef(fAmpLen, fAmpRef, gAmpRef); 
+                        theChars = getCharRef(fAmpLen, fAmpRef, gAmpRef);
                         fTarget->writeChars(theChars, fAmpLen, this);
                         break;
 
                     case chSingleQuote :
-                        theChars = getCharRef(fAposLen, fAposRef, gAposRef); 
+                        theChars = getCharRef(fAposLen, fAposRef, gAposRef);
                         fTarget->writeChars(theChars, fAposLen, this);
                         break;
 
                     case chDoubleQuote :
-                        theChars = getCharRef(fQuoteLen, fQuoteRef, gQuoteRef); 
+                        theChars = getCharRef(fQuoteLen, fQuoteRef, gQuoteRef);
                         fTarget->writeChars(theChars, fQuoteLen, this);
                         break;
 
                     case chCloseAngle :
-                        theChars = getCharRef(fGTLen, fGTRef, gGTRef); 
+                        theChars = getCharRef(fGTLen, fGTRef, gGTRef);
                         fTarget->writeChars(theChars, fGTLen, this);
                         break;
 
                     case chOpenAngle :
-                        theChars = getCharRef(fLTLen, fLTRef, gLTRef); 
+                        theChars = getCharRef(fLTLen, fLTRef, gLTRef);
                         fTarget->writeChars(theChars, fLTLen, this);
                         break;
 
@@ -486,11 +486,11 @@ XMLFormatter::formatBuf(const   XMLCh* const    toFormat
 }
 
 
-unsigned int 
-XMLFormatter::handleUnEscapedChars(const XMLCh *                  srcPtr, 
-                                   const unsigned int             oCount, 
-                                   const UnRepFlags               actualUnRep) 
-{ 
+XMLSize_t
+XMLFormatter::handleUnEscapedChars(const XMLCh *                  srcPtr,
+                                   const XMLSize_t                oCount,
+                                   const UnRepFlags               actualUnRep)
+{
    //
    //  Use that to figure out what I should pass to the transcoder. If we
    //  are doing character references or failing for unrepresentable chars,
@@ -501,36 +501,36 @@ XMLFormatter::handleUnEscapedChars(const XMLCh *                  srcPtr,
    const XMLTranscoder::UnRepOpts unRepOpts = (actualUnRep == UnRep_Replace)
                                              ? XMLTranscoder::UnRep_RepChar
                                              : XMLTranscoder::UnRep_Throw;
-                                             	
-   unsigned int charsEaten; 
-   unsigned int count = oCount; 
- 
-   while (count) { 
-      const unsigned srcChars  
-         = count > kTmpBufSize ? kTmpBufSize : count; 
- 
-      const unsigned int outBytes  
-         = fXCoder->transcodeTo(srcPtr, srcChars,  
-                                fTmpBuf, kTmpBufSize, 
-                                charsEaten, unRepOpts); 
- 
-      if (outBytes) { 
-         fTmpBuf[outBytes]     = 0; fTmpBuf[outBytes + 1] = 0; 
-         fTmpBuf[outBytes + 2] = 0; fTmpBuf[outBytes + 3] = 0; 
-         fTarget->writeChars(fTmpBuf, outBytes, this); 
-      } 
- 
-      srcPtr += charsEaten; 
-      count  -= charsEaten; 
-   } 
-    
-   return oCount; // This should be an assertion that count == 0. 
-} 
- 
- 
+
+   XMLSize_t charsEaten;
+   XMLSize_t count = oCount;
+
+   while (count) {
+     const XMLSize_t srcChars = (count > XMLSize_t (kTmpBufSize))
+       ? XMLSize_t (kTmpBufSize) : count;
+
+      const XMLSize_t outBytes
+         = fXCoder->transcodeTo(srcPtr, srcChars,
+                                fTmpBuf, kTmpBufSize,
+                                charsEaten, unRepOpts);
+
+      if (outBytes) {
+         fTmpBuf[outBytes]     = 0; fTmpBuf[outBytes + 1] = 0;
+         fTmpBuf[outBytes + 2] = 0; fTmpBuf[outBytes + 3] = 0;
+         fTarget->writeChars(fTmpBuf, outBytes, this);
+      }
+
+      srcPtr += charsEaten;
+      count  -= charsEaten;
+   }
+
+   return oCount; // This should be an assertion that count == 0.
+}
+
+
 XMLFormatter& XMLFormatter::operator<<(const XMLCh* const toFormat)
 {
-    const unsigned int len = XMLString::stringLen(toFormat);
+    const XMLSize_t len = XMLString::stringLen(toFormat);
     formatBuf(toFormat, len);
     return *this;
 }
@@ -552,9 +552,9 @@ XMLFormatter& XMLFormatter::operator<<(const XMLCh toFormat)
  * "0x000x000xFF0xFE"
  **/
 void XMLFormatter::writeBOM(const XMLByte* const toFormat
-                          , const unsigned int   count)
+                          , const XMLSize_t      count)
 {
-    fTarget->writeChars(toFormat, count, this);    
+    fTarget->writeChars(toFormat, count, this);
 }
 
 // ---------------------------------------------------------------------------
@@ -569,7 +569,7 @@ void XMLFormatter::writeCharRef(const XMLCh &toWrite)
 
     // Build a char ref for the current char
     XMLString::binToText(toWrite, &tmpBuf[3], 8, 16, fMemoryManager);
-    const unsigned int bufLen = XMLString::stringLen(tmpBuf);
+    const XMLSize_t bufLen = XMLString::stringLen(tmpBuf);
     tmpBuf[bufLen] = chSemiColon;
     tmpBuf[bufLen+1] = chNull;
 
@@ -581,16 +581,16 @@ void XMLFormatter::writeCharRef(const XMLCh &toWrite)
 
 }
 
-void XMLFormatter::writeCharRef(unsigned long toWrite)
+void XMLFormatter::writeCharRef(XMLSize_t toWrite)
 {
-    XMLCh tmpBuf[32];
+    XMLCh tmpBuf[64];
     tmpBuf[0] = chAmpersand;
     tmpBuf[1] = chPound;
     tmpBuf[2] = chLatin_x;
 
     // Build a char ref for the current char
-    XMLString::binToText(toWrite, &tmpBuf[3], 8, 16, fMemoryManager);
-    const unsigned int bufLen = XMLString::stringLen(tmpBuf);
+    XMLString::sizeToText(toWrite, &tmpBuf[3], 32, 16, fMemoryManager);
+    const XMLSize_t bufLen = XMLString::stringLen(tmpBuf);
     tmpBuf[bufLen] = chSemiColon;
     tmpBuf[bufLen+1] = chNull;
 
@@ -603,36 +603,36 @@ void XMLFormatter::writeCharRef(unsigned long toWrite)
 }
 
 
-const XMLByte* XMLFormatter::getCharRef(unsigned int & count, 
-                                        XMLByte*       &ref, 
-                                        const XMLCh *  stdRef) 
+const XMLByte* XMLFormatter::getCharRef(XMLSize_t     &count,
+                                        XMLByte*      &ref,
+                                        const XMLCh *  stdRef)
 {
-   if (!ref) { 
+   if (!ref) {
 
-       unsigned int charsEaten;
-       const unsigned int outBytes = 
-           fXCoder->transcodeTo(stdRef, XMLString::stringLen(stdRef), 
-                                fTmpBuf, kTmpBufSize, charsEaten, 
-                                XMLTranscoder::UnRep_Throw); 
+       XMLSize_t charsEaten;
+       const XMLSize_t outBytes =
+           fXCoder->transcodeTo(stdRef, XMLString::stringLen(stdRef),
+                                fTmpBuf, kTmpBufSize, charsEaten,
+                                XMLTranscoder::UnRep_Throw);
 
-       fTmpBuf[outBytes] = 0; 
+       fTmpBuf[outBytes] = 0;
        fTmpBuf[outBytes + 1] = 0;
-       fTmpBuf[outBytes + 2] = 0; 
+       fTmpBuf[outBytes + 2] = 0;
        fTmpBuf[outBytes + 3] = 0;
 
        ref = (XMLByte*) fMemoryManager->allocate
        (
            (outBytes + 4) * sizeof(XMLByte)
-       );//new XMLByte[outBytes + 4]; 
-       memcpy(ref, fTmpBuf, outBytes + 4); 
-       count = outBytes; 
+       );//new XMLByte[outBytes + 4];
+       memcpy(ref, fTmpBuf, outBytes + 4);
+       count = outBytes;
    }
 
-   return ref; 
+   return ref;
 }
 
 void XMLFormatter::specialFormat(const  XMLCh* const    toFormat
-                                , const unsigned int    count
+                                , const XMLSize_t       count
                                 , const EscapeFlags     escapeFlags)
 {
     //
@@ -673,7 +673,7 @@ void XMLFormatter::specialFormat(const  XMLCh* const    toFormat
         }
          else
         {
- 
+
             //  We hit something unrepresentable. So continue forward doing
             //  char refs until we hit something representable again or the
             //  end of input.
@@ -681,12 +681,12 @@ void XMLFormatter::specialFormat(const  XMLCh* const    toFormat
             while (srcPtr < endPtr)
             {
                 if ((*srcPtr & 0xFC00) == 0xD800) {
-                    // we have encountered a surrogate, need to recombine before printing out					  
-                    // use writeCharRef that takes unsigned long to get values larger than
+                    // we have encountered a surrogate, need to recombine before printing out
+                    // use writeCharRef that takes XMLSize_t to get values larger than
                     // hex 0xFFFF printed.
                     tmpPtr = srcPtr;
                     tmpPtr++; // point at low surrogate
-                    writeCharRef((unsigned long) (0x10000+((*srcPtr-0xD800)<<10)+*tmpPtr-0xDC00));
+                    writeCharRef((XMLSize_t) (0x10000+((*srcPtr-0xD800)<<10)+*tmpPtr-0xDC00));
                     srcPtr++; // advance to low surrogate (will advance again below)
                 }
                 else {
@@ -703,4 +703,3 @@ void XMLFormatter::specialFormat(const  XMLCh* const    toFormat
 }
 
 XERCES_CPP_NAMESPACE_END
-

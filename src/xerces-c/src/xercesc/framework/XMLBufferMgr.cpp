@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /**
- * $Id: XMLBufferMgr.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLBufferMgr.cpp 673679 2008-07-03 13:50:10Z borisk $
  */
 
 
@@ -40,14 +40,14 @@ XMLBufferMgr::XMLBufferMgr(MemoryManager* const manager) :
 {
     // Allocate the buffer list and zero it out
     fBufList = (XMLBuffer**) fMemoryManager->allocate(fBufCount * sizeof(XMLBuffer*)); // new XMLBuffer*[fBufCount];
-    for (unsigned int index = 0; index < fBufCount; index++)
+    for (XMLSize_t index = 0; index < fBufCount; index++)
         fBufList[index] = 0;
 }
 
 XMLBufferMgr::~XMLBufferMgr()
 {
     // Delete any buffers that got allocated
-    for (unsigned int index = 0; index < fBufCount; index++)
+    for (XMLSize_t index = 0; index < fBufCount; index++)
         delete fBufList[index];
 
     // And then the buffer list
@@ -64,7 +64,7 @@ XMLBuffer& XMLBufferMgr::bidOnBuffer()
     //  Look for a buffer that is not in use. If we hit a null entry, then
     //  we have to add one.
     //
-    for (unsigned int index = 0; index < fBufCount; index++)
+    for (XMLSize_t index = 0; index < fBufCount; index++)
     {
         // No more buffers available, so create one and take it
         if (!fBufList[index])
@@ -97,7 +97,7 @@ XMLBuffer& XMLBufferMgr::bidOnBuffer()
 void XMLBufferMgr::releaseBuffer(XMLBuffer& toRelease)
 {
     // Look for this buffer in the list
-    for (unsigned int index = 0; index < fBufCount; index++)
+    for (XMLSize_t index = 0; index < fBufCount; index++)
     {
         if (fBufList[index] == &toRelease)
         {
@@ -112,4 +112,3 @@ void XMLBufferMgr::releaseBuffer(XMLBuffer& toRelease)
 }
 
 XERCES_CPP_NAMESPACE_END
-

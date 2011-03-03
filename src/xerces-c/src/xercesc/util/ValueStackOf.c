@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: ValueStackOf.c 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: ValueStackOf.c 676911 2008-07-15 13:27:32Z amassari $
  */
 
 
@@ -34,7 +34,7 @@ XERCES_CPP_NAMESPACE_BEGIN
 //  ValueStackOf: Constructors and Destructor
 // ---------------------------------------------------------------------------
 template <class TElem>
-ValueStackOf<TElem>::ValueStackOf(const unsigned int fInitCapacity,
+ValueStackOf<TElem>::ValueStackOf(const XMLSize_t fInitCapacity,
                                   MemoryManager* const manager,
                                   const bool toCallDestructor) :
 
@@ -57,7 +57,7 @@ template <class TElem> void ValueStackOf<TElem>::push(const TElem& toPush)
 
 template <class TElem> const TElem& ValueStackOf<TElem>::peek() const
 {
-    const int curSize = fVector.size();
+    const XMLSize_t curSize = fVector.size();
     if (curSize == 0)
         ThrowXMLwithMemMgr(EmptyStackException, XMLExcepts::Stack_EmptyStack, fVector.getMemoryManager());
 
@@ -66,7 +66,7 @@ template <class TElem> const TElem& ValueStackOf<TElem>::peek() const
 
 template <class TElem> TElem ValueStackOf<TElem>::pop()
 {
-    const int curSize = fVector.size();
+    const XMLSize_t curSize = fVector.size();
     if (curSize == 0)
         ThrowXMLwithMemMgr(EmptyStackException, XMLExcepts::Stack_EmptyStack, fVector.getMemoryManager());
 
@@ -89,12 +89,12 @@ template <class TElem> bool ValueStackOf<TElem>::empty()
     return (fVector.size() == 0);
 }
 
-template <class TElem> unsigned int ValueStackOf<TElem>::curCapacity()
+template <class TElem> XMLSize_t ValueStackOf<TElem>::curCapacity()
 {
     return fVector.curCapacity();
 }
 
-template <class TElem> unsigned int ValueStackOf<TElem>::size()
+template <class TElem> XMLSize_t ValueStackOf<TElem>::size()
 {
     return fVector.size();
 }

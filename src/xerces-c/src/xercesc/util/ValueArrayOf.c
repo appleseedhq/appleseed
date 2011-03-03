@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: ValueArrayOf.c 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: ValueArrayOf.c 932887 2010-04-11 13:04:59Z borisk $
  */
 
 
@@ -31,10 +31,10 @@
 XERCES_CPP_NAMESPACE_BEGIN
 
 // ---------------------------------------------------------------------------
-//  ValueArrayOf: Contructors and Destructor
+//  ValueArrayOf: Constructors and Destructor
 // ---------------------------------------------------------------------------
 template <class TElem>
-ValueArrayOf<TElem>::ValueArrayOf(const unsigned int size,
+ValueArrayOf<TElem>::ValueArrayOf(const XMLSize_t size,
                                   MemoryManager* const manager) :
 
     fSize(size)
@@ -46,7 +46,7 @@ ValueArrayOf<TElem>::ValueArrayOf(const unsigned int size,
 
 template <class TElem>
 ValueArrayOf<TElem>::ValueArrayOf( const TElem* values
-                                 , const unsigned int size
+                                 , const XMLSize_t size
                                  , MemoryManager* const manager) :
 
     fSize(size)
@@ -54,7 +54,7 @@ ValueArrayOf<TElem>::ValueArrayOf( const TElem* values
     , fMemoryManager(manager)
 {
     fArray = (TElem*) fMemoryManager->allocate(fSize * sizeof(TElem)); //new TElem[fSize];
-    for (unsigned int index = 0; index < fSize; index++)
+    for (XMLSize_t index = 0; index < fSize; index++)
         fArray[index] = values[index];
 }
 
@@ -66,7 +66,7 @@ ValueArrayOf<TElem>::ValueArrayOf(const ValueArrayOf<TElem>& source) :
     , fMemoryManager(source.fMemoryManager)
 {
     fArray = (TElem*) fMemoryManager->allocate(fSize * sizeof(TElem)); //new TElem[fSize];
-    for (unsigned int index = 0; index < fSize; index++)
+    for (XMLSize_t index = 0; index < fSize; index++)
         fArray[index] = source.fArray[index];
 }
 
@@ -80,7 +80,7 @@ template <class TElem> ValueArrayOf<TElem>::~ValueArrayOf()
 //  ValueArrayOf: Public operators
 // ---------------------------------------------------------------------------
 template <class TElem> TElem& ValueArrayOf<TElem>::
-operator[](const unsigned int index)
+operator[](const XMLSize_t index)
 {
     if (index >= fSize)
         ThrowXMLwithMemMgr(ArrayIndexOutOfBoundsException, XMLExcepts::Array_BadIndex, fMemoryManager);
@@ -88,7 +88,7 @@ operator[](const unsigned int index)
 }
 
 template <class TElem> const TElem& ValueArrayOf<TElem>::
-operator[](const unsigned int index) const
+operator[](const XMLSize_t index) const
 {
     if (index >= fSize)
         ThrowXMLwithMemMgr(ArrayIndexOutOfBoundsException, XMLExcepts::Array_BadIndex, fMemoryManager);
@@ -110,7 +110,7 @@ operator=(const ValueArrayOf<TElem>& toAssign)
     }
 
     // Copy over the source elements
-    for (unsigned int index = 0; index < fSize; index++)
+    for (XMLSize_t index = 0; index < fSize; index++)
         fArray[index] = toAssign.fArray[index];
 
     return *this;
@@ -125,7 +125,7 @@ operator==(const ValueArrayOf<TElem>& toCompare) const
     if (fSize != toCompare.fSize)
         return false;
 
-    for (unsigned int index = 0; index < fSize; index++)
+    for (XMLSize_t index = 0; index < fSize; index++)
     {
         if (fArray[index] != toCompare.fArray[index])
             return false;
@@ -144,17 +144,17 @@ operator!=(const ValueArrayOf<TElem>& toCompare) const
 // ---------------------------------------------------------------------------
 //  ValueArrayOf: Copy operations
 // ---------------------------------------------------------------------------
-template <class TElem> unsigned int ValueArrayOf<TElem>::
+template <class TElem> XMLSize_t ValueArrayOf<TElem>::
 copyFrom(const ValueArrayOf<TElem>& srcArray)
 {
     //
     //  Copy over as many of the source elements as will fit into
     //  this array.
     //
-    const unsigned int count = fSize < srcArray.fSize ?
+    const XMLSize_t count = fSize < srcArray.fSize ?
                                 fSize : srcArray.fSize;
 
-    for (unsigned int index = 0; index < count; index++)
+    for (XMLSize_t index = 0; index < count; index++)
         fArray[index] = srcArray.fArray[index];
 
     return count;
@@ -164,7 +164,7 @@ copyFrom(const ValueArrayOf<TElem>& srcArray)
 // ---------------------------------------------------------------------------
 //  ValueArrayOf: Getter methods
 // ---------------------------------------------------------------------------
-template <class TElem> unsigned int ValueArrayOf<TElem>::
+template <class TElem> XMLSize_t ValueArrayOf<TElem>::
 length() const
 {
     return fSize;
@@ -181,7 +181,7 @@ rawData() const
 //  ValueArrayOf: Miscellaneous methods
 // ---------------------------------------------------------------------------
 template <class TElem> void ValueArrayOf<TElem>::
-resize(const unsigned int newSize)
+resize(const XMLSize_t newSize)
 {
     if (newSize == fSize)
         return;
@@ -196,14 +196,14 @@ resize(const unsigned int newSize)
     ); //new TElem[newSize];
 
     // Copy the existing values
-    unsigned int index = 0;
+    XMLSize_t index = 0;
     for (; index < fSize; index++)
         newArray[index] = fArray[index];
 
     for (; index < newSize; index++)
         newArray[index] = TElem(0);
 
-    // Delete the old array and udpate our members
+    // Delete the old array and update our members
     fMemoryManager->deallocate(fArray); //delete [] fArray;
     fArray = newArray;
     fSize = newSize;

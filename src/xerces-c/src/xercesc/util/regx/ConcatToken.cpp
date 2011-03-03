@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: ConcatToken.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: ConcatToken.cpp 678879 2008-07-22 20:05:05Z amassari $
  */
 
 // ---------------------------------------------------------------------------
@@ -45,5 +45,5 @@ ConcatToken::~ConcatToken() {
 XERCES_CPP_NAMESPACE_END
 
 /**
-  *	End of file ConcatToken.cpp
+  *    End of file ConcatToken.cpp
   */

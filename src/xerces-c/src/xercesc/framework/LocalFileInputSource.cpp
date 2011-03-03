@@ -120,8 +120,8 @@ LocalFileInputSource::LocalFileInputSource(const XMLCh* const filePath,
     {
         XMLCh* curDir = XMLPlatformUtils::getCurrentDirectory(manager);
 
-        int    curDirLen = XMLString::stringLen(curDir);
-        int    filePathLen = XMLString::stringLen(filePath);
+        XMLSize_t curDirLen = XMLString::stringLen(curDir);
+        XMLSize_t filePathLen = XMLString::stringLen(filePath);
         XMLCh* fullDir = (XMLCh*) manager->allocate
         (
             (curDirLen + filePathLen + 2) * sizeof(XMLCh)

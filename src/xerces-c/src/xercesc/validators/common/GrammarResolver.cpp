@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: GrammarResolver.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id $
  */
 
 #include <xercesc/validators/common/GrammarResolver.hpp>
@@ -24,7 +24,8 @@
 #include <xercesc/validators/schema/SchemaGrammar.hpp>
 #include <xercesc/validators/schema/XMLSchemaDescriptionImpl.hpp>
 #include <xercesc/validators/DTD/XMLDTDDescriptionImpl.hpp>
-#include <xercesc/internal/XMLGrammarPoolImpl.hpp>
+#include <xercesc/framework/XMLGrammarPoolImpl.hpp>
+#include <xercesc/framework/psvi/XSAnnotation.hpp>
 
 XERCES_CPP_NAMESPACE_BEGIN
 
@@ -103,7 +104,6 @@ GrammarResolver::getDatatypeValidator(const XMLCh* const uriStr,
         if (!fDataTypeReg) {
 
             fDataTypeReg = new (fMemoryManager) DatatypeValidatorFactory(fMemoryManager);
-            fDataTypeReg->expandRegistryToFullSchemaSet();
         }
 
         dv = fDataTypeReg->getDatatypeValidator(localPartStr);

@@ -1,5 +1,0 @@
-<area shape="rect" href="$classXMemory.html" title="This class makes it possible to override the C++ memory management by adding new/delete..." alt="" coords="5,7,88,33">
-<area shape="rect" href="$classParser.html" title="Basic interface for SAX (Simple API for XML) parsers." alt="" coords="112,7,176,33">
-<area shape="rect" href="$classXMLDocumentHandler.html" title="This abstract class provides the interface for the scanner to return XML document..." alt="" coords="200,7,368,33">
-<area shape="rect" href="$classXMLErrorReporter.html" title="This abstract class defines a callback mechanism for the scanner." alt="" coords="392,7,531,33">
-<area shape="rect" href="$classXMLEntityHandler.html" title="This abstract class is a callback mechanism for the scanner." alt="" coords="555,7,693,33">

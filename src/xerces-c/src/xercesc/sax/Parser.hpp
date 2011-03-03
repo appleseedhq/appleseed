@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: Parser.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: Parser.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-#ifndef PARSER_HPP
-#define PARSER_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_PARSER_HPP)
+#define XERCESC_INCLUDE_GUARD_PARSER_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 
@@ -199,7 +199,7 @@ public:
     *            wrapping another exception.
     * @exception XMLException An exception from the parser or client
     *            handler code.
-    * @see #parse(InputSource)
+    * @see #parse(const InputSource&)
     */
     virtual void parse
     (
@@ -223,7 +223,7 @@ public:
     *            wrapping another exception.
     * @exception XMLException An exception from the parser or client
     *            handler code.
-    * @see #parse(InputSource)
+    * @see #parse(const InputSource&)
     */
     virtual void parse
     (

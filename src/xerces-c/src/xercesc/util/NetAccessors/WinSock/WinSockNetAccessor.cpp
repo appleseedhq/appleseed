@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: WinSockNetAccessor.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: WinSockNetAccessor.cpp 635984 2008-03-11 15:54:37Z borisk $
  */
 
 
@@ -26,7 +26,6 @@
 
 #include <xercesc/util/XMLUniDefs.hpp>
 #include <xercesc/util/XMLUni.hpp>
-#include <xercesc/util/XMLString.hpp>
 #include <xercesc/util/XMLExceptMsgs.hpp>
 #include <xercesc/util/NetAccessors/WinSock/BinHTTPURLInputStream.hpp>
 #include <xercesc/util/NetAccessors/WinSock/WinSockNetAccessor.hpp>
@@ -49,7 +48,7 @@ WinSockNetAccessor::WinSockNetAccessor()
 WinSockNetAccessor::~WinSockNetAccessor()
 {
     // Cleanup code for the WinSock library here.
-	BinHTTPURLInputStream::Cleanup();
+    BinHTTPURLInputStream::Cleanup();
 }
 
 

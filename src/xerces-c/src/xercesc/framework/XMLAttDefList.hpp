@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XMLAttDefList.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLAttDefList.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#if !defined(XMLATTDEFLIST_HPP)
-#define XMLATTDEFLIST_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XMLATTDEFLIST_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLATTDEFLIST_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 #include <xercesc/util/XMemory.hpp>
@@ -64,19 +64,15 @@ public:
     //  The virtual interface
     // -----------------------------------------------------------------------
 
-    /** 
-     * @deprecated This method is not thread-safe.
-     */
-    virtual bool hasMoreElements() const = 0;
     virtual bool isEmpty() const = 0;
     virtual XMLAttDef* findAttDef
     (
-        const   unsigned long       uriID
+        const   unsigned int        uriID
         , const XMLCh* const        attName
     ) = 0;
     virtual const XMLAttDef* findAttDef
     (
-        const   unsigned long       uriID
+        const   unsigned int        uriID
         , const XMLCh* const        attName
     )   const = 0;
     virtual XMLAttDef* findAttDef
@@ -89,31 +85,21 @@ public:
         const   XMLCh* const        attURI
         , const XMLCh* const        attName
     )   const = 0;
-
-    /** 
-     * @deprecated This method is not thread-safe.
-     */
-    virtual XMLAttDef& nextElement() = 0;
-
-    /** 
-     * @deprecated This method is not thread-safe.
-     */
-    virtual void Reset() = 0;
 
     /**
      * return total number of attributes in this list
      */
-    virtual unsigned int getAttDefCount() const = 0;
+    virtual XMLSize_t getAttDefCount() const = 0;
 
     /**
      * return attribute at the index-th position in the list.
      */
-    virtual XMLAttDef &getAttDef(unsigned int index) = 0;
+    virtual XMLAttDef &getAttDef(XMLSize_t index) = 0;
 
     /**
      * return attribute at the index-th position in the list.
      */
-    virtual const XMLAttDef &getAttDef(unsigned int index) const = 0;
+    virtual const XMLAttDef &getAttDef(XMLSize_t index) const = 0;
 
     /***
      * Support for Serialization/De-serialization
@@ -131,7 +117,7 @@ public:
     /** Get the memory manager
       *
       * This method returns the configurable memory manager used by the
-      * element declaration for dynamic allocation/deacllocation.
+      * element declaration for dynamic allocation/deallocation.
       *
       * @return the memory manager
       */

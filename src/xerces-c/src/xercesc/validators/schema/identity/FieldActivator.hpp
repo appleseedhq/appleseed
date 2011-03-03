@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: FieldActivator.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: FieldActivator.hpp 679340 2008-07-24 10:28:29Z borisk $
  */
 
-#if !defined(FIELDACTIVATOR_HPP)
-#define FIELDACTIVATOR_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_FIELDACTIVATOR_HPP)
+#define XERCESC_INCLUDE_GUARD_FIELDACTIVATOR_HPP
 
 /**
   * This class is responsible for activating fields within a specific scope;
@@ -98,10 +98,10 @@ private:
     // -----------------------------------------------------------------------
     //  Data
     // -----------------------------------------------------------------------
-    ValueStoreCache*        fValueStoreCache;
-    XPathMatcherStack*      fMatcherStack;
-    ValueHashTableOf<bool>* fMayMatch;
-    MemoryManager*          fMemoryManager;
+    ValueStoreCache*                   fValueStoreCache;
+    XPathMatcherStack*                 fMatcherStack;
+    ValueHashTableOf<bool, PtrHasher>* fMayMatch;
+    MemoryManager*                     fMemoryManager;
 };
 
 
@@ -139,4 +139,3 @@ XERCES_CPP_NAMESPACE_END
 /**
   * End of file FieldActivator.hpp
   */
-

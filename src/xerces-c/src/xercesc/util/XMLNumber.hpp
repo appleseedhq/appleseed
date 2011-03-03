@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XMLNumber.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLNumber.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-#ifndef XMLNUMBER_HPP
-#define XMLNUMBER_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XMLNUMBER_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLNUMBER_HPP
 
 #include <xercesc/internal/XSerializable.hpp>
 #include <xercesc/util/XMemory.hpp>
@@ -48,16 +48,6 @@ public:
     };
 
     virtual ~XMLNumber();
-
-    /**
-     *  Deprecated: please use getRawData
-     *
-     *  Return string representation of the decimal value.
-     *  A decimal point will be included as necessary,
-     *  the caller of this method is responsible for the
-     *  de-allocation of the memory.
-     */
-    virtual XMLCh*     toString() const = 0;
     
 	/**
 	 *  Return string representation of the decimal value.

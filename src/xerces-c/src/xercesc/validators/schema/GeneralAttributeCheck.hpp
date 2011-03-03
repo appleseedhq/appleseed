@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: GeneralAttributeCheck.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: GeneralAttributeCheck.hpp 729944 2008-12-29 17:03:32Z amassari $
  */
 
-#if !defined(GENERALATTRIBUTECHECK_HPP)
-#define GENERALATTRIBUTECHECK_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_GENERALATTRIBUTECHECK_HPP)
+#define XERCESC_INCLUDE_GUARD_GENERALATTRIBUTECHECK_HPP
 
 /**
   * A general purpose class to check for valid values of attributes, as well
@@ -188,15 +188,6 @@ public:
     unsigned short getFacetId(const XMLCh* const facetName, MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
 
     // -----------------------------------------------------------------------
-    //  Setter methods
-    // -----------------------------------------------------------------------
-
-    //deprecated
-    void setIDRefList(RefHashTableOf<XMLRefInfo>* const refList);
-
-    inline void setValidationContext(ValidationContext* const);
-
-    // -----------------------------------------------------------------------
     //  Validation methods
     // -----------------------------------------------------------------------
     void checkAttributes(const DOMElement* const elem,
@@ -205,24 +196,12 @@ public:
                          const bool isTopLevel = false,
                          ValueVectorOf<DOMNode*>* const nonXSAttList = 0);
 
-    // -----------------------------------------------------------------------
-    //  Notification that lazy data has been deleted
-    // -----------------------------------------------------------------------
-	static void reinitGeneralAttCheck();
-
 private:
     // -----------------------------------------------------------------------
     //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
     GeneralAttributeCheck(const GeneralAttributeCheck&);
     GeneralAttributeCheck& operator=(const GeneralAttributeCheck&);
-
-    // -----------------------------------------------------------------------
-    //  Setup methods
-    // -----------------------------------------------------------------------
-    void setUpValidators();
-    void mapElements();
-    void mapAttributes();
 
     // -----------------------------------------------------------------------
     //  Validation methods
@@ -251,8 +230,12 @@ private:
     static unsigned short                    fgElemAttTable[E_Count][A_Count];
     static const XMLCh*                      fAttNames[A_Count];
     MemoryManager*                           fMemoryManager;
-    ValidationContext*                       fValidationContext;
     IDDatatypeValidator                      fIDValidator;
+
+private:
+    static void initialize();
+
+    friend class XMLInitializer;
 };
 
 
@@ -263,20 +246,6 @@ inline unsigned short
 GeneralAttributeCheck::getFacetId(const XMLCh* const facetName, MemoryManager* const manager) {
 
     return fFacetsMap->get(facetName, manager);
-}
-
-// ---------------------------------------------------------------------------
-//  GeneralAttributeCheck: Setter methods
-// ---------------------------------------------------------------------------
-inline void GeneralAttributeCheck::setValidationContext(ValidationContext* const newValidationContext)
-{
-    fValidationContext = newValidationContext;
-}
-
-inline void
-GeneralAttributeCheck::setIDRefList(RefHashTableOf<XMLRefInfo>* const refList) {
-
-    fValidationContext->setIdRefList(refList);
 }
 
 XERCES_CPP_NAMESPACE_END

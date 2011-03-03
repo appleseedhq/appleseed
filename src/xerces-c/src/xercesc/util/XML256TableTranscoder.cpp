@@ -40,24 +40,19 @@ XML256TableTranscoder::~XML256TableTranscoder()
 // ---------------------------------------------------------------------------
 //  XML256TableTranscoder: Implementation of the transcoder API
 // ---------------------------------------------------------------------------
-unsigned int
+XMLSize_t
 XML256TableTranscoder::transcodeFrom(const  XMLByte* const       srcData
-                                    , const unsigned int         srcCount
+                                    , const XMLSize_t            srcCount
                                     ,       XMLCh* const         toFill
-                                    , const unsigned int         maxChars
-                                    ,       unsigned int&        bytesEaten
+                                    , const XMLSize_t            maxChars
+                                    ,       XMLSize_t&           bytesEaten
                                     ,       unsigned char* const charSizes)
 {
-    // If debugging, make sure that the block size is legal
-    #if defined(XERCES_DEBUG)
-    checkBlockSize(maxChars);
-    #endif
-
     //
     //  Calculate the max chars we can do here. Its the lesser of the
     //  max output chars and the number of chars in the source.
     //
-    const unsigned int countToDo = srcCount < maxChars ? srcCount : maxChars;
+    const XMLSize_t countToDo = srcCount < maxChars ? srcCount : maxChars;
 
     //
     //  Loop through the count we have to do and map each char via the
@@ -88,24 +83,19 @@ XML256TableTranscoder::transcodeFrom(const  XMLByte* const       srcData
 }
 
 
-unsigned int
+XMLSize_t
 XML256TableTranscoder::transcodeTo( const   XMLCh* const    srcData
-                                    , const unsigned int    srcCount
+                                    , const XMLSize_t       srcCount
                                     ,       XMLByte* const  toFill
-                                    , const unsigned int    maxBytes
-                                    ,       unsigned int&   charsEaten
+                                    , const XMLSize_t       maxBytes
+                                    ,       XMLSize_t&      charsEaten
                                     , const UnRepOpts       options)
 {
-    // If debugging, make sure that the block size is legal
-    #if defined(XERCES_DEBUG)
-    checkBlockSize(maxBytes);
-    #endif
-
     //
     //  Calculate the max chars we can do here. Its the lesser of the
     //  max output chars and the number of chars in the source.
     //
-    const unsigned int countToDo = srcCount < maxBytes ? srcCount : maxBytes;
+    const XMLSize_t countToDo = srcCount < maxBytes ? srcCount : maxBytes;
 
     //
     //  Loop through the count we have to do and map each char via the
@@ -121,7 +111,7 @@ XML256TableTranscoder::transcodeTo( const   XMLCh* const    srcData
         //  Get the next src char out to a temp, then do a binary search
         //  of the 'to' table for this entry.
         //
-        if ((nextOut = xlatOneTo(*srcPtr)))
+        if ((nextOut = xlatOneTo(*srcPtr))!=0)
         {
             *outPtr++ = nextOut;
             srcPtr++;
@@ -159,7 +149,7 @@ XML256TableTranscoder::transcodeTo( const   XMLCh* const    srcData
 }
 
 
-bool XML256TableTranscoder::canTranscodeTo(const unsigned int toCheck) const
+bool XML256TableTranscoder::canTranscodeTo(const unsigned int toCheck)
 {
     return (xlatOneTo(toCheck) != 0);
 }
@@ -170,10 +160,10 @@ bool XML256TableTranscoder::canTranscodeTo(const unsigned int toCheck) const
 // ---------------------------------------------------------------------------
 XML256TableTranscoder::
 XML256TableTranscoder(  const   XMLCh* const                     encodingName
-                        , const unsigned int                     blockSize
+                        , const XMLSize_t                        blockSize
                         , const XMLCh* const                     fromTable
                         , const XMLTransService::TransRec* const toTable
-                        , const unsigned int                     toTableSize
+                        , const XMLSize_t                        toTableSize
                         , MemoryManager* const                   manager) :
 
     XMLTranscoder(encodingName, blockSize, manager)
@@ -189,12 +179,12 @@ XML256TableTranscoder(  const   XMLCh* const                     encodingName
 // ---------------------------------------------------------------------------
 XMLByte XML256TableTranscoder::xlatOneTo(const XMLCh toXlat) const
 {
-    unsigned int    lowOfs = 0;
-    unsigned int    hiOfs = fToSize - 1;
+    XMLSize_t lowOfs = 0;
+    XMLSize_t hiOfs = fToSize - 1;
     do
     {
         // Calc the mid point of the low and high offset.
-        const unsigned int midOfs = ((hiOfs - lowOfs) / 2) + lowOfs;
+        const XMLSize_t midOfs = ((hiOfs - lowOfs) / 2) + lowOfs;
 
         //
         //  If our test char is greater than the mid point char, then

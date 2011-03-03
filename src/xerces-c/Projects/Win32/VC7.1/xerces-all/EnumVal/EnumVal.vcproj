@@ -13,8 +13,8 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\Release"
-			IntermediateDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\Release\obj"
+			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
@@ -22,29 +22,29 @@
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="2"
 				ImproveFloatingPointConsistency="TRUE"
-				OptimizeForProcessor="2"
+				OptimizeForProcessor="0"
 				AdditionalIncludeDirectories="..\..\..\..\..\src"
-				PreprocessorDefinitions="NDEBUG,_CONSOLE,WIN32,_WINDOWS,PLATFORM_WIN32"
+				PreprocessorDefinitions="NDEBUG;_CONSOLE;WIN32;_WINDOWS"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
-				DisableLanguageExtensions="TRUE"
-				PrecompiledHeaderFile=".\..\..\..\..\..\Build\Win32\VC7.1\Release\obj/EnumVal.pch"
-				AssemblerListingLocation=".\..\..\..\..\..\Build\Win32\VC7.1\Release\obj/"
-				ObjectFile=".\..\..\..\..\..\Build\Win32\VC7.1\Release\obj/"
-				ProgramDataBaseFileName=".\..\..\..\..\..\Build\Win32\VC7.1\Release\obj/"
+				DisableLanguageExtensions="FALSE"
+				PrecompiledHeaderFile="$(IntDir)\EnumVal.pch"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\EnumVal_vc71.pdb"
 				WarningLevel="3"
 				CompileAs="0"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="xerces-c_2.lib"
-				OutputFile=".\..\..\..\..\..\Build\Win32\VC7.1\Release/EnumVal.exe"
+				AdditionalOptions=""
+				AdditionalDependencies="xerces-c_3.lib"
+				OutputFile="$(OutDir)\EnumVal.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\..\..\..\Build\Win32\VC7.1\Release"
-				ProgramDatabaseFile=".\..\..\..\..\..\Build\Win32\VC7.1\Release/EnumVal.pdb"
+				AdditionalLibraryDirectories="$(OutDir)"
+				ProgramDatabaseFile="$(OutDir)\EnumVal.pdb"
 				SubSystem="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -72,8 +72,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\Debug"
-			IntermediateDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\Debug\obj"
+			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
@@ -81,15 +81,16 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				ImproveFloatingPointConsistency="TRUE"
-				OptimizeForProcessor="2"
+				OptimizeForProcessor="0"
 				AdditionalIncludeDirectories="..\..\..\..\..\src"
-				PreprocessorDefinitions="_DEBUG,_CONSOLE,WIN32,_WINDOWS,PLATFORM_WIN32"
+				PreprocessorDefinitions="_DEBUG;_CONSOLE;WIN32;_WINDOWS"
 				RuntimeLibrary="3"
-				DisableLanguageExtensions="TRUE"
-				PrecompiledHeaderFile=".\..\..\..\..\..\Build\Win32\VC7.1\Debug\obj/EnumVal.pch"
-				AssemblerListingLocation=".\..\..\..\..\..\Build\Win32\VC7.1\Debug\obj/"
-				ObjectFile=".\..\..\..\..\..\Build\Win32\VC7.1\Debug\obj/"
-				ProgramDataBaseFileName=".\..\..\..\..\..\Build\Win32\VC7.1\Debug\obj/"
+				DisableLanguageExtensions="FALSE"
+				TreatWChar_tAsBuiltInType="FALSE"
+				PrecompiledHeaderFile="$(IntDir)\EnumVal.pch"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\EnumVal_vc71.pdb"
 				WarningLevel="3"
 				DebugInformationFormat="4"
 				CompileAs="0"/>
@@ -97,13 +98,13 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="xerces-c_2D.lib"
-				OutputFile=".\..\..\..\..\..\Build\Win32\VC7.1\Debug/EnumVal.exe"
+				AdditionalOptions=""
+				AdditionalDependencies="xerces-c_3D.lib"
+				OutputFile="$(OutDir)\EnumVal.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\..\..\..\Build\Win32\VC7.1\Debug"
+				AdditionalLibraryDirectories="$(OutDir)"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\..\..\..\..\..\Build\Win32\VC7.1\Debug/EnumVal.pdb"
+				ProgramDatabaseFile="$(OutDir)\EnumVal.pdb"
 				SubSystem="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -131,8 +132,8 @@
 		</Configuration>
 		<Configuration
 			Name="Static Release|Win32"
-			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\StaticRelease"
-			IntermediateDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\StaticRelease\obj"
+			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
@@ -140,29 +141,29 @@
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="2"
 				ImproveFloatingPointConsistency="TRUE"
-				OptimizeForProcessor="2"
+				OptimizeForProcessor="0"
 				AdditionalIncludeDirectories="..\..\..\..\..\src"
-				PreprocessorDefinitions="NDEBUG,_CONSOLE,WIN32,_WINDOWS,PLATFORM_WIN32,XML_LIBRARY"
+				PreprocessorDefinitions="NDEBUG;_CONSOLE;WIN32;_WINDOWS;XERCES_STATIC_LIBRARY"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="TRUE"
-				DisableLanguageExtensions="TRUE"
-				PrecompiledHeaderFile=".\..\..\..\..\..\Build\Win32\VC7.1\StaticRelease\obj/EnumVal.pch"
-				AssemblerListingLocation=".\..\..\..\..\..\Build\Win32\VC7.1\StaticRelease\obj/"
-				ObjectFile=".\..\..\..\..\..\Build\Win32\VC7.1\StaticRelease\obj/"
-				ProgramDataBaseFileName=".\..\..\..\..\..\Build\Win32\VC7.1\StaticRelease\obj/"
+				DisableLanguageExtensions="FALSE"
+				PrecompiledHeaderFile="$(IntDir)\EnumVal.pch"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\EnumVal_vc71.pdb"
 				WarningLevel="3"
 				CompileAs="0"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="xerces-c_static_2.lib"
-				OutputFile=".\..\..\..\..\..\Build\Win32\VC7.1\StaticRelease/EnumVal.exe"
+				AdditionalOptions=""
+				AdditionalDependencies="xerces-c_static_3.lib"
+				OutputFile="$(OutDir)\EnumVal.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\..\..\..\Build\Win32\VC7.1\StaticRelease"
-				ProgramDatabaseFile=".\..\..\..\..\..\Build\Win32\VC7.1\StaticRelease/EnumVal.pdb"
+				AdditionalLibraryDirectories="$(OutDir)"
+				ProgramDatabaseFile="$(OutDir)\EnumVal.pdb"
 				SubSystem="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -190,8 +191,8 @@
 		</Configuration>
 		<Configuration
 			Name="Static Debug|Win32"
-			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\StaticDebug"
-			IntermediateDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\StaticDebug\obj"
+			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
@@ -199,15 +200,15 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				ImproveFloatingPointConsistency="TRUE"
-				OptimizeForProcessor="2"
+				OptimizeForProcessor="0"
 				AdditionalIncludeDirectories="..\..\..\..\..\src"
-				PreprocessorDefinitions="_DEBUG,_CONSOLE,WIN32,_WINDOWS,PLATFORM_WIN32,XML_LIBRARY"
+				PreprocessorDefinitions="_DEBUG;_CONSOLE;WIN32;_WINDOWS;XERCES_STATIC_LIBRARY"
 				RuntimeLibrary="1"
-				DisableLanguageExtensions="TRUE"
-				PrecompiledHeaderFile=".\..\..\..\..\..\Build\Win32\VC7.1\StaticDebug\obj/EnumVal.pch"
-				AssemblerListingLocation=".\..\..\..\..\..\Build\Win32\VC7.1\StaticDebug\obj/"
-				ObjectFile=".\..\..\..\..\..\Build\Win32\VC7.1\StaticDebug\obj/"
-				ProgramDataBaseFileName=".\..\..\..\..\..\Build\Win32\VC7.1\StaticDebug\obj/"
+				DisableLanguageExtensions="FALSE"
+				PrecompiledHeaderFile="$(IntDir)\EnumVal.pch"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\EnumVal_vc71.pdb"
 				WarningLevel="3"
 				DebugInformationFormat="4"
 				CompileAs="0"/>
@@ -215,13 +216,13 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="xerces-c_static_2D.lib"
-				OutputFile=".\..\..\..\..\..\Build\Win32\VC7.1\StaticDebug/EnumVal.exe"
+				AdditionalOptions=""
+				AdditionalDependencies="xerces-c_static_3D.lib"
+				OutputFile="$(OutDir)\EnumVal.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\..\..\..\Build\Win32\VC7.1\StaticDebug"
+				AdditionalLibraryDirectories="$(OutDir)"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\..\..\..\..\..\Build\Win32\VC7.1\StaticDebug/EnumVal.pdb"
+				ProgramDatabaseFile="$(OutDir)\EnumVal.pdb"
 				SubSystem="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -247,12 +248,131 @@
 			<Tool
 				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
+		<Configuration
+			Name="ICU Debug|Win32"
+			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
+			ConfigurationType="1"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				ImproveFloatingPointConsistency="TRUE"
+				OptimizeForProcessor="0"
+				AdditionalIncludeDirectories="..\..\..\..\..\src"
+				PreprocessorDefinitions="_DEBUG;_CONSOLE;WIN32;_WINDOWS"
+				RuntimeLibrary="3"
+				DisableLanguageExtensions="FALSE"
+				TreatWChar_tAsBuiltInType="FALSE"
+				PrecompiledHeaderFile="$(IntDir)\EnumVal.pch"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\EnumVal_vc71.pdb"
+				WarningLevel="3"
+				DebugInformationFormat="4"
+				CompileAs="0"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalOptions=""
+				AdditionalDependencies="xerces-c_3D.lib"
+				OutputFile="$(OutDir)\EnumVal.exe"
+				LinkIncremental="2"
+				AdditionalLibraryDirectories="$(OutDir)"
+				GenerateDebugInformation="TRUE"
+				ProgramDatabaseFile="$(OutDir)\EnumVal.pdb"
+				SubSystem="1"/>
+			<Tool
+				Name="VCMIDLTool"
+				TypeLibraryName=".\..\..\..\..\..\Build\Win32\VC7.1\Debug/EnumVal.tlb"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="ICU Release|Win32"
+			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
+			ConfigurationType="1"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			<Tool
+				Name="VCCLCompilerTool"
+				InlineFunctionExpansion="2"
+				ImproveFloatingPointConsistency="TRUE"
+				OptimizeForProcessor="0"
+				AdditionalIncludeDirectories="..\..\..\..\..\src"
+				PreprocessorDefinitions="NDEBUG;_CONSOLE;WIN32;_WINDOWS"
+				StringPooling="TRUE"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="TRUE"
+				DisableLanguageExtensions="FALSE"
+				PrecompiledHeaderFile="$(IntDir)\EnumVal.pch"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\EnumVal_vc71.pdb"
+				WarningLevel="3"
+				CompileAs="0"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalOptions=""
+				AdditionalDependencies="xerces-c_3.lib"
+				OutputFile="$(OutDir)\EnumVal.exe"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories="$(OutDir)"
+				ProgramDatabaseFile="$(OutDir)\EnumVal.pdb"
+				SubSystem="1"/>
+			<Tool
+				Name="VCMIDLTool"
+				TypeLibraryName=".\..\..\..\..\..\Build\Win32\VC7.1\Release/EnumVal.tlb"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1033"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
 	</Configurations>
 	<References>
 	</References>
 	<Files>
 		<File
-			RelativePath="..\..\..\..\..\samples\EnumVal\EnumVal.cpp">
+			RelativePath="..\..\..\..\..\samples\src\EnumVal\EnumVal.cpp">
 		</File>
 	</Files>
 	<Globals>

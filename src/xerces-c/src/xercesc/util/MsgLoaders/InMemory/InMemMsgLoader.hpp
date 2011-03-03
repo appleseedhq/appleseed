@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: InMemMsgLoader.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: InMemMsgLoader.hpp 570552 2007-08-28 19:57:36Z amassari $
  */
 
-
-#if !defined(INMEMMSGLOADER_HPP)
-#define INMEMMSGLOADER_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_INMEMMSGLOADER_HPP)
+#define XERCESC_INCLUDE_GUARD_INMEMMSGLOADER_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 #include <xercesc/util/XMLMsgLoader.hpp>
@@ -51,14 +50,14 @@ public :
     (
         const   XMLMsgLoader::XMLMsgId  msgToLoad
         ,       XMLCh* const            toFill
-        , const unsigned int            maxChars
+        , const XMLSize_t               maxChars
     );
 
     virtual bool loadMsg
     (
         const   XMLMsgLoader::XMLMsgId  msgToLoad
         ,       XMLCh* const            toFill
-        , const unsigned int            maxChars
+        , const XMLSize_t               maxChars
         , const XMLCh* const            repText1
         , const XMLCh* const            repText2 = 0
         , const XMLCh* const            repText3 = 0
@@ -70,7 +69,7 @@ public :
     (
         const   XMLMsgLoader::XMLMsgId  msgToLoad
         ,       XMLCh* const            toFill
-        , const unsigned int            maxChars
+        , const XMLSize_t               maxChars
         , const char* const             repText1
         , const char* const             repText2 = 0
         , const char* const             repText3 = 0

@@ -16,13 +16,11 @@
  */
 
 /*
- * $Id: DTDValidator.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DTDValidator.hpp 676911 2008-07-15 13:27:32Z amassari $
  */
 
-
-
-#if !defined(DTDVALIDATOR_HPP)
-#define DTDVALIDATOR_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_DTDVALIDATOR_HPP)
+#define XERCESC_INCLUDE_GUARD_DTDVALIDATOR_HPP
 
 #include <xercesc/util/NameIdPool.hpp>
 #include <xercesc/framework/XMLValidator.hpp>
@@ -52,11 +50,12 @@ public:
     // -----------------------------------------------------------------------
     //  Implementation of the XMLValidator interface
     // -----------------------------------------------------------------------
-    virtual int checkContent
+    virtual bool checkContent
     (
         XMLElementDecl* const   elemDecl
         , QName** const         children
-        , const unsigned int    childCount
+        , XMLSize_t             childCount
+        , XMLSize_t*            indexFailingChild
     );
 
     virtual void faultInAttr

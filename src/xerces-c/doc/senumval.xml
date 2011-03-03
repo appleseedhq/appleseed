@@ -21,7 +21,7 @@
 <s1 title="Sample: SEnumVal">
 
     <s2 title="SEnumVal">
-        <p>SEnumVal shows how to enumerate the markup decls in a Schema Grammar.</p>
+        <p>SEnumVal shows how to enumerate the markup declarations in a Schema Grammar.</p>
 
         <s3 title="Running SEnumVal">
           <p>This program parses the specified XML file, then shows how to
@@ -35,7 +35,7 @@ contents of the Schema Grammar. Essentially, shows how one can
 access the Schema information stored in internal data structures.
 </source>
           <p>Here is a sample output from SEnumVal</p>
-<source>cd &XercesCInstallDir;-linux/samples/data
+<source>cd &XercesC3InstallDir;/samples/data
 SEnumVal personal-schema.xml
 
 Name:                   personnel
@@ -73,7 +73,7 @@ Facets:
         Default Type:   #DEFAULT
         Value:                  false
         Base Datatype:          string
-Enumeration:		
+Enumeration:
 	    true
 	    false
 

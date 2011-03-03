@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /**
- * $Id: XMLEntityDecl.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLEntityDecl.cpp 679359 2008-07-24 11:15:19Z borisk $
  */
 
 
@@ -42,6 +42,7 @@ XMLEntityDecl::XMLEntityDecl(MemoryManager* const manager) :
     , fPublicId(0)
     , fSystemId(0)
     , fBaseURI(0)
+    , fIsExternal(false)
     , fMemoryManager(manager)
 {
 }
@@ -57,6 +58,7 @@ XMLEntityDecl::XMLEntityDecl(const XMLCh* const entName,
     , fPublicId(0)
     , fSystemId(0)
     , fBaseURI(0)
+    , fIsExternal(false)
     , fMemoryManager(manager)
 {
     fName = XMLString::replicate(entName, fMemoryManager);
@@ -75,6 +77,7 @@ XMLEntityDecl::XMLEntityDecl(const  XMLCh* const   entName
     , fPublicId(0)
     , fSystemId(0)
     , fBaseURI(0)
+    , fIsExternal(false)
     , fMemoryManager(manager)
 {
     CleanupType cleanup(this, &XMLEntityDecl::cleanUp);
@@ -105,6 +108,7 @@ XMLEntityDecl::XMLEntityDecl(const  XMLCh* const   entName
     , fPublicId(0)
     , fSystemId(0)
     , fBaseURI(0)
+    , fIsExternal(false)
     , fMemoryManager(manager)
 {
     CleanupType cleanup(this, &XMLEntityDecl::cleanUp);
@@ -169,27 +173,28 @@ void XMLEntityDecl::serialize(XSerializeEngine& serEng)
 
     if (serEng.isStoring())
     {
-        serEng<<fId;
-        serEng<<fValueLen;
+        serEng.writeSize (fId);
+        serEng.writeSize (fValueLen);
         serEng.writeString(fValue);
         serEng.writeString(fName);
         serEng.writeString(fNotationName);
         serEng.writeString(fPublicId);
         serEng.writeString(fSystemId);
         serEng.writeString(fBaseURI);
+        serEng<<fIsExternal;
     }
     else
     {
-        serEng>>fId;
-        serEng>>fValueLen;
+        serEng.readSize (fId);
+        serEng.readSize (fValueLen);
         serEng.readString(fValue);
         serEng.readString(fName);
         serEng.readString(fNotationName);
         serEng.readString(fPublicId);
         serEng.readString(fSystemId);
         serEng.readString(fBaseURI);
+        serEng>>fIsExternal;
     }
 }
 
 XERCES_CPP_NAMESPACE_END
-

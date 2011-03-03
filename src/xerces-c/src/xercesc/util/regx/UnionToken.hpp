@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: UnionToken.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: UnionToken.hpp 678879 2008-07-22 20:05:05Z amassari $
  */
 
-#if !defined(UNIONTOKEN_HPP)
-#define UNIONTOKEN_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_UNIONTOKEN_HPP)
+#define XERCESC_INCLUDE_GUARD_UNIONTOKEN_HPP
 
 // ---------------------------------------------------------------------------
 //  Includes
@@ -32,52 +32,52 @@ XERCES_CPP_NAMESPACE_BEGIN
 
 class XMLUTIL_EXPORT UnionToken : public Token {
 public:
-	// -----------------------------------------------------------------------
+    // -----------------------------------------------------------------------
     //  Public Constructors and Destructor
     // -----------------------------------------------------------------------
-	UnionToken(const unsigned short tokType
+    UnionToken(const tokType tkType
         , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
     ~UnionToken();
 
-	// -----------------------------------------------------------------------
+    // -----------------------------------------------------------------------
     //  Getter methods
     // -----------------------------------------------------------------------
-    int size() const;
-    Token* getChild(const int index) const;
+    XMLSize_t size() const;
+    Token* getChild(const XMLSize_t index) const;
 
-	// -----------------------------------------------------------------------
+    // -----------------------------------------------------------------------
     //  Children manipulation methods
     // -----------------------------------------------------------------------
     void addChild(Token* const child, TokenFactory* const tokFactory);
 
 private:
-	// -----------------------------------------------------------------------
+    // -----------------------------------------------------------------------
     //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
     UnionToken(const UnionToken&);
     UnionToken& operator=(const UnionToken&);
 
-	// -----------------------------------------------------------------------
+    // -----------------------------------------------------------------------
     //  Private Constants
     // -----------------------------------------------------------------------
-	static const unsigned short INITIALSIZE;
+    static const unsigned short INITIALSIZE;
 
-	// -----------------------------------------------------------------------
+    // -----------------------------------------------------------------------
     //  Private data members
-	// -----------------------------------------------------------------------
-	RefVectorOf<Token>* fChildren;
+    // -----------------------------------------------------------------------
+    RefVectorOf<Token>* fChildren;
 };
 
 
 // ---------------------------------------------------------------------------
 //  UnionToken: getter methods
 // ---------------------------------------------------------------------------
-inline int UnionToken::size() const {
+inline XMLSize_t UnionToken::size() const {
 
     return fChildren == 0 ? 0 : fChildren->size();
 }
 
-inline Token* UnionToken::getChild(const int index) const {
+inline Token* UnionToken::getChild(const XMLSize_t index) const {
 
     return fChildren->elementAt(index);
 }

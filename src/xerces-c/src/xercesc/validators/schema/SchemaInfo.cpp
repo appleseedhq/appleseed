@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: SchemaInfo.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: SchemaInfo.cpp 925236 2010-03-19 14:29:47Z borisk $
  */
 
 // ---------------------------------------------------------------------------
@@ -25,6 +25,7 @@
 #include <xercesc/validators/schema/SchemaInfo.hpp>
 #include <xercesc/validators/schema/XUtil.hpp>
 #include <xercesc/validators/schema/SchemaSymbols.hpp>
+#include <xercesc/validators/schema/NamespaceScope.hpp>
 #include <xercesc/util/XMLString.hpp>
 #include <xercesc/internal/ValidationContextImpl.hpp>
 
@@ -37,11 +38,11 @@ SchemaInfo::SchemaInfo(const unsigned short elemAttrDefaultQualified,
                        const int blockDefault,
                        const int finalDefault,
                        const int targetNSURI,
-                       const int scopeCount,
-                       const unsigned int namespaceScopeLevel,
-                       XMLCh* const schemaURL,
+                       const NamespaceScope* const currNamespaceScope,
+                       const XMLCh* const schemaURL,
                        const XMLCh* const targetNSURIString,
                        const DOMElement* const root,
+                       XMLScanner* xmlScanner,
                        MemoryManager* const manager)
     : fAdoptInclude(false)
     , fProcessed(false)
@@ -49,16 +50,12 @@ SchemaInfo::SchemaInfo(const unsigned short elemAttrDefaultQualified,
     , fBlockDefault(blockDefault)
     , fFinalDefault(finalDefault)
     , fTargetNSURI(targetNSURI)
-    , fScopeCount(scopeCount)
-    , fNamespaceScopeLevel(namespaceScopeLevel)
-    , fCurrentSchemaURL(schemaURL)
-    , fTargetNSURIString(targetNSURIString)
+    , fNamespaceScope(0)
     , fSchemaRootElement(root)
     , fIncludeInfoList(0)
     , fImportedInfoList(0)
     , fImportingInfoList(0)
     , fFailedRedefineList(0)
-    , fImportedNSList(0)
     , fRecursingAnonTypes(0)
     , fRecursingTypeNames(0)
     , fNonXSAttList(0)
@@ -70,37 +67,44 @@ SchemaInfo::SchemaInfo(const unsigned short elemAttrDefaultQualified,
 	memset(
          fTopLevelComponents,
          0,
-         sizeof(fTopLevelComponents[0]) * C_Count);    
+         sizeof(fTopLevelComponents[0]) * C_Count);
     memset(
          fLastTopLevelComponent,
          0,
-         sizeof(fLastTopLevelComponent[0]) * C_Count);    
-    
+         sizeof(fLastTopLevelComponent[0]) * C_Count);
+
     fNonXSAttList = new (fMemoryManager) ValueVectorOf<DOMNode*>(2, fMemoryManager);
     fValidationContext = new (fMemoryManager) ValidationContextImpl(fMemoryManager);
+    fNamespaceScope = new (fMemoryManager) NamespaceScope(currNamespaceScope, fMemoryManager);
+    fCurrentSchemaURL = XMLString::replicate(schemaURL, fMemoryManager);
+	fTargetNSURIString = XMLString::replicate(targetNSURIString, fMemoryManager);
+
+    fValidationContext->setScanner (xmlScanner);
+    fValidationContext->setNamespaceScope(fNamespaceScope);
 }
 
 
 SchemaInfo::~SchemaInfo()
 {
     fMemoryManager->deallocate(fCurrentSchemaURL);//delete [] fCurrentSchemaURL;
+	fMemoryManager->deallocate(fTargetNSURIString);
     delete fImportedInfoList;
 
     if (fAdoptInclude)
         delete fIncludeInfoList;
 
-    delete fImportingInfoList;  
-    delete fImportedNSList;
+    delete fImportingInfoList;
     delete fFailedRedefineList;
     delete fRecursingAnonTypes;
-    delete fRecursingTypeNames;   
+    delete fRecursingTypeNames;
 
     for (unsigned int i = 0; i < C_Count; i++) {
         delete fTopLevelComponents[i];
     }
 
-    delete fNonXSAttList;  
-    delete fValidationContext;    
+    delete fNonXSAttList;
+    delete fValidationContext;
+    delete fNamespaceScope;
 }
 
 // ---------------------------------------------------------------------------
@@ -112,14 +116,17 @@ SchemaInfo::getTopLevelComponent(const unsigned short compCategory,
                                  const XMLCh* const name,
                                  SchemaInfo** enclosingSchema) {
 
+    if (fSchemaRootElement == 0)
+      return 0;
+
     SchemaInfo* currentInfo = this;
     DOMElement* child = getTopLevelComponent(compCategory, compName, name);
 
     if (child == 0) {
 
-        unsigned int listSize = (fIncludeInfoList) ? fIncludeInfoList->size() : 0;
+        XMLSize_t listSize = (fIncludeInfoList) ? fIncludeInfoList->size() : 0;
 
-        for (unsigned int i=0; i < listSize; i++) {
+        for (XMLSize_t i=0; i < listSize; i++) {
 
             currentInfo = fIncludeInfoList->elementAt(i);
 
@@ -145,8 +152,8 @@ SchemaInfo::getTopLevelComponent(const unsigned short compCategory,
                                  const XMLCh* const compName,
                                  const XMLCh* const name) {
 
-    if (compCategory >= C_Count)
-        return 0;
+    if (fSchemaRootElement == 0 || compCategory >= C_Count)
+      return 0;
 
     DOMElement* child = XUtil::getFirstChildElement(fSchemaRootElement);
 
@@ -225,9 +232,9 @@ void SchemaInfo::updateImportingInfo(SchemaInfo* const importingInfo) {
         fImportingInfoList->addElement(importingInfo);
     }
 
-    unsigned int listSize = importingInfo->fImportingInfoList->size();
+    XMLSize_t listSize = importingInfo->fImportingInfoList->size();
 
-    for (unsigned int i=0; i < listSize; i++) {
+    for (XMLSize_t i=0; i < listSize; i++) {
 
         SchemaInfo* tmpInfo = importingInfo->fImportingInfoList->elementAt(i);
 
@@ -242,5 +249,3 @@ XERCES_CPP_NAMESPACE_END
 /**
   * End of file SchemaInfo.cpp
   */
-
-

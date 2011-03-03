@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XMLCanRepGroup.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLCanRepGroup.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#if !defined(XMLCANREPGROUP_HPP)
-#define XMLCANREPGROUP_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XMLCANREPGROUP_HPP)
+#define XERCESC_INCLUDE_GUARD_XMLCANREPGROUP_HPP
 
 #include <xercesc/util/PlatformUtils.hpp>
 
@@ -36,9 +36,9 @@ public:
         DateTime,
         Time,
         Decimal,
-        Decimal_Derivated_signed,
-        Decimal_Derivated_unsigned,
-        Decimal_Derivated_npi,
+        Decimal_Derived_signed,
+        Decimal_Derived_unsigned,
+        Decimal_Derived_npi,
         String
     };
 

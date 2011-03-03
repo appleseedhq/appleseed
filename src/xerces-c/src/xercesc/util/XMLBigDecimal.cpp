@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XMLBigDecimal.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLBigDecimal.cpp 557254 2007-07-18 13:28:54Z amassari $
  */
 
 // ---------------------------------------------------------------------------
@@ -101,7 +101,7 @@ void XMLBigDecimal::cleanUp()
 void XMLBigDecimal::setDecimalValue(const XMLCh* const strValue)
 {
     fScale = fTotalDigits = 0;
-    unsigned int valueLen = XMLString::stringLen(strValue);
+    XMLSize_t valueLen = XMLString::stringLen(strValue);
 
     if (valueLen > fRawDataLen)
     {
@@ -148,7 +148,7 @@ XMLCh* XMLBigDecimal::getCanonicalRepresentation(const XMLCh*         const rawD
 
 
     //Extra space reserved in case strLen is zero
-    int    strLen = XMLString::stringLen(retBuf);
+    XMLSize_t strLen = XMLString::stringLen(retBuf);
     XMLCh* retBuffer = (XMLCh*) memMgr->allocate( (strLen + 4) * sizeof(XMLCh));
 
     if ( (sign == 0) || (totalDigits == 0))
@@ -269,7 +269,7 @@ void  XMLBigDecimal::parseDecimal(const XMLCh* const toParse
             if (!dotSignFound)
             {
                 dotSignFound = true;
-                fractDigits = endPtr - startPtr - 1;
+                fractDigits = (int)(endPtr - startPtr - 1);
                 startPtr++;
                 continue;
             }
@@ -495,7 +495,7 @@ void XMLBigDecimal::serialize(XSerializeEngine& serEng)
         XMLCh* intvalStr;
         serEng.readString(intvalStr);
         ArrayJanitor<XMLCh> intvalName(intvalStr, serEng.getMemoryManager());
-        unsigned int intvalStrLen = XMLString::stringLen(intvalStr);
+        XMLSize_t intvalStrLen = XMLString::stringLen(intvalStr);
 
         if (fRawData)
             fMemoryManager->deallocate(fRawData);

@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: ContentSpecNode.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: ContentSpecNode.cpp 933155 2010-04-12 09:07:02Z amassari $
  */
 
 
@@ -100,7 +100,16 @@ static void formatNode( const   ContentSpecNode* const      curNode
             if (curNode->getElement()->getURI() == XMLElementDecl::fgPCDataElemId)
                 bufToFill.append(XMLElementDecl::fgPCDataElemName);
             else
+            {
                 bufToFill.append(curNode->getElement()->getRawName());
+                // show the + and * modifiers also when we have a non-infinite number of repetitions
+                if(curNode->getMinOccurs()==0 && (curNode->getMaxOccurs()==-1 || curNode->getMaxOccurs()>1))
+                    bufToFill.append(chAsterisk);
+                else if(curNode->getMinOccurs()==0 && curNode->getMaxOccurs()==1)
+                    bufToFill.append(chQuestion);
+                else if(curNode->getMinOccurs()==1 && (curNode->getMaxOccurs()==-1 || curNode->getMaxOccurs()>1))
+                    bufToFill.append(chPlus);
+            }
             break;
 
         case ContentSpecNode::ZeroOrOne :
@@ -131,27 +140,33 @@ static void formatNode( const   ContentSpecNode* const      curNode
             break;
 
         case ContentSpecNode::Choice :
-            if (parentType != curType)
+            if ((parentType & 0x0f) != (curType & 0x0f))
                 bufToFill.append(chOpenParen);
             formatNode(first, curType, bufToFill);
-            bufToFill.append(chPipe);
-            formatNode(second, curType, bufToFill);
-            if (parentType != curType)
+            if(second!=NULL)
+            {
+                bufToFill.append(chPipe);
+                formatNode(second, curType, bufToFill);
+            }
+            if ((parentType & 0x0f) != (curType & 0x0f))
                 bufToFill.append(chCloseParen);
             break;
 
         case ContentSpecNode::Sequence :
-            if (parentType != curType)
+            if ((parentType & 0x0f) != (curType & 0x0f))
                 bufToFill.append(chOpenParen);
             formatNode(first, curType, bufToFill);
-            bufToFill.append(chComma);
-            formatNode(second, curType, bufToFill);
-            if (parentType != curType)
+            if(second!=NULL)
+            {
+                bufToFill.append(chComma);
+                formatNode(second, curType, bufToFill);
+            }
+            if ((parentType & 0x0f) != (curType & 0x0f))
                 bufToFill.append(chCloseParen);
             break;
 
         case ContentSpecNode::All :
-            if (parentType != curType)
+            if ((parentType & 0x0f) != (curType & 0x0f))
 			{
                 bufToFill.append(chLatin_A);
                 bufToFill.append(chLatin_l);
@@ -161,7 +176,7 @@ static void formatNode( const   ContentSpecNode* const      curNode
             formatNode(first, curType, bufToFill);
             bufToFill.append(chComma);
             formatNode(second, curType, bufToFill);
-            if (parentType != curType)
+            if ((parentType & 0x0f) != (curType & 0x0f))
                 bufToFill.append(chCloseParen);
             break;
     }

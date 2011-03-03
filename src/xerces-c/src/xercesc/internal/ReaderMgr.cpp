@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: ReaderMgr.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: ReaderMgr.cpp 833045 2009-11-05 13:21:27Z borisk $
  */
 
 // ---------------------------------------------------------------------------
@@ -118,16 +118,13 @@ void ReaderMgr::getSpaces(XMLBuffer& toFill)
     // Reset the buffer before we start
     toFill.reset();
 
-    while (true)
+    //
+    //  Get all the spaces from the current reader. If it returns true,
+    //  it hit a non-space and we are done. Else we have to pop a reader
+    //  and keep going.
+    //
+    while (!fCurReader->getSpaces(toFill))
     {
-        //
-        //  Get all the spaces from the current reader. If it returns true,
-        //  it hit a non-space and we are done. Else we have to pop a reader
-        //  and keep going.
-        //
-        if (fCurReader->getSpaces(toFill))
-            break;
-
         // We wore that one out, so lets pop a reader and try again
         if (!popReader())
             break;
@@ -146,11 +143,8 @@ void ReaderMgr::getUpToCharOrWS(XMLBuffer& toFill, const XMLCh toCheck)
     //  up all of its data. Else it returned because something matched, and
     //  we are done.
     //
-    while (true)
+    while (!fCurReader->getUpToCharOrWS(toFill, toCheck))
     {
-        if (fCurReader->getUpToCharOrWS(toFill, toCheck))
-            break;
-
         // We ate that one up, lets try to pop another. If not, break out
         if (!popReader())
             break;
@@ -246,42 +240,47 @@ bool ReaderMgr::skipIfQuote(XMLCh& chGotten)
     return false;
 }
 
-
-bool ReaderMgr::skipPastSpaces(bool inDecl)
+void ReaderMgr::skipPastSpaces(bool& skippedSomething, bool inDecl /* = false */)
 {
-    bool skippedSomething = false;
-    bool tmpFlag;
-    while (true)
+    // we rely on the fact that fCurReader->skipSpaces will NOT reset the flag to false, but only
+    // set it to true if a space is found
+    skippedSomething = false;
+    //
+    //  Skip all the spaces in the current reader. If it returned because
+    //  it hit a non-space, break out. Else we have to pop another entity
+    //  and keep going.
+    //
+    while (!fCurReader->skipSpaces(skippedSomething, inDecl))
     {
-        //
-        //  Skip all the spaces in the current reader. If it returned because
-        //  it hit a non-space, break out. Else we have to pop another entity
-        //  and keep going.
-        //
-        if (fCurReader->skipSpaces(tmpFlag, inDecl))
-            break;
-
-        if (tmpFlag)
-            skippedSomething = true;
-
-        // Try to pop another enitity. If we can't then we are done
+        // Try to pop another entity. If we can't then we are done
         if (!popReader())
             break;
     }
-    return (tmpFlag || skippedSomething);
+}
+
+void ReaderMgr::skipPastSpaces()
+{
+    // we are not using it, so we don't care to initialize it
+    bool tmpFlag;
+    //
+    //  Skip all the spaces in the current reader. If it returned because
+    //  it hit a non-space, break out. Else we have to pop another entity
+    //  and keep going.
+    //
+    while (!fCurReader->skipSpaces(tmpFlag, false))
+    {
+        // Try to pop another entity. If we can't then we are done
+        if (!popReader())
+            break;
+    }
 }
 
 void ReaderMgr::skipQuotedString(const XMLCh quoteCh)
 {
     XMLCh nextCh;
-    while (true)
+    // If we get an end of file char, then return
+    while ((nextCh = getNextChar())!=0)
     {
-        nextCh = getNextChar();
-
-        // If we get an end of file char, then return
-        if (!nextCh)
-            break;
-
         // If we get the quote char, then break out
         if (nextCh == quoteCh)
             break;
@@ -292,13 +291,9 @@ void ReaderMgr::skipQuotedString(const XMLCh quoteCh)
 XMLCh ReaderMgr::skipUntilIn(const XMLCh* const listToSkip)
 {
     XMLCh nextCh;
-    while (true)
+    // If we get an end of file char, then return
+    while ((nextCh = peekNextChar())!=0)
     {
-        nextCh = peekNextChar();
-
-        if (!nextCh)
-            break;
-
         if (XMLString::indexOf(listToSkip, nextCh) != -1)
             break;
 
@@ -312,13 +307,9 @@ XMLCh ReaderMgr::skipUntilIn(const XMLCh* const listToSkip)
 XMLCh ReaderMgr::skipUntilInOrWS(const XMLCh* const listToSkip)
 {
     XMLCh nextCh;
-    while (true)
+    // If we get an end of file char, then return
+    while ((nextCh = peekNextChar())!=0)
     {
-        nextCh = peekNextChar();
-
-        if (!nextCh)
-            break;
-
         if (fCurReader->isWhitespace(nextCh))
             break;
 
@@ -352,7 +343,7 @@ bool ReaderMgr::atEOF() const
 //  entities have been incorrectly left on the stack due to syntax errors.
 //  It just cleans back the stack, and sends no entity events.
 //
-void ReaderMgr::cleanStackBackTo(const unsigned int readerNum)
+void ReaderMgr::cleanStackBackTo(const XMLSize_t readerNum)
 {
     //
     //  Just start popping readers until we find the one with the indicated
@@ -374,11 +365,12 @@ void ReaderMgr::cleanStackBackTo(const unsigned int readerNum)
 
 
 XMLReader* ReaderMgr::createReader( const   InputSource&        src
-                                    , const bool                
+                                    , const bool
                                     , const XMLReader::RefFrom  refFrom
                                     , const XMLReader::Types    type
                                     , const XMLReader::Sources  source
-                                    , const bool                calcSrcOfs)
+                                    , const bool                calcSrcOfs
+                                    ,       XMLSize_t           lowWaterMark)
 {
     //
     //  Ask the input source to create us an input stream. The particular
@@ -418,6 +410,7 @@ XMLReader* ReaderMgr::createReader( const   InputSource&        src
                 , source
                 , false
                 , calcSrcOfs
+                , lowWaterMark
                 , fXMLVersion
                 , fMemoryManager
                 );
@@ -434,6 +427,7 @@ XMLReader* ReaderMgr::createReader( const   InputSource&        src
                 , source
                 , false
                 , calcSrcOfs
+                , lowWaterMark
                 , fXMLVersion
                 , fMemoryManager
                 );
@@ -464,9 +458,10 @@ XMLReader* ReaderMgr::createReader( const   XMLCh* const        sysId
                                     , const XMLReader::Sources  source
                                     ,       InputSource*&       srcToFill
                                     , const bool                calcSrcOfs
+                                    ,       XMLSize_t           lowWaterMark
                                     , const bool                disableDefaultEntityResolution)
 {
-    //Normalize sysId 
+    //Normalize sysId
     XMLBuffer normalizedSysId(1023, fMemoryManager);
     if(sysId)
         XMLString::removeChar(sysId, 0xFFFF, normalizedSysId);
@@ -515,7 +510,7 @@ XMLReader* ReaderMgr::createReader( const   XMLCh* const        sysId
 
 // Keep this #if 0 block as it was exposing a threading problem on AIX.
 // Got rid of the problem by changing XMLURL to not throw malformedurl
-// exceptions.        
+// exceptions.
 #if 0
         try
         {
@@ -567,14 +562,14 @@ XMLReader* ReaderMgr::createReader( const   XMLCh* const        sysId
                 );
             }
             else
-                ThrowXMLwithMemMgr(MalformedURLException, XMLExcepts::URL_MalformedURL, fMemoryManager);            
+                ThrowXMLwithMemMgr(MalformedURLException, XMLExcepts::URL_MalformedURL, fMemoryManager);
         }
         else
         {
             if (fStandardUriConformant && urlTmp.hasInvalidChar())
                 ThrowXMLwithMemMgr(MalformedURLException, XMLExcepts::URL_MalformedURL, fMemoryManager);
             srcToFill = new (fMemoryManager) URLInputSource(urlTmp, fMemoryManager);
-        }        
+        }
 #endif
     }
 
@@ -593,6 +588,7 @@ XMLReader* ReaderMgr::createReader( const   XMLCh* const        sysId
         , type
         , source
         , calcSrcOfs
+        , lowWaterMark
     );
 
     // Either way, we can release the input source now
@@ -617,12 +613,12 @@ XMLReader* ReaderMgr::createReader( const   XMLCh* const        baseURI
                                     , const XMLReader::Sources  source
                                     ,       InputSource*&       srcToFill
                                     , const bool                calcSrcOfs
+                                    ,       XMLSize_t           lowWaterMark
                                     , const bool                disableDefaultEntityResolution)
 {
-    //Normalize sysId 
+    //Normalize sysId
     XMLBuffer normalizedSysId(1023, fMemoryManager);
-    if(sysId)
-        XMLString::removeChar(sysId, 0xFFFF, normalizedSysId);
+    XMLString::removeChar(sysId, 0xFFFF, normalizedSysId);
     const XMLCh* normalizedURI = normalizedSysId.getRawBuffer();
 
     // Create a buffer for expanding the system id
@@ -687,14 +683,14 @@ XMLReader* ReaderMgr::createReader( const   XMLCh* const        baseURI
                 );
             }
             else
-                ThrowXMLwithMemMgr(MalformedURLException, XMLExcepts::URL_MalformedURL, fMemoryManager);            
+                ThrowXMLwithMemMgr(MalformedURLException, XMLExcepts::URL_MalformedURL, fMemoryManager);
         }
         else
         {
             if (fStandardUriConformant && urlTmp.hasInvalidChar())
                 ThrowXMLwithMemMgr(MalformedURLException, XMLExcepts::URL_MalformedURL, fMemoryManager);
             srcToFill = new (fMemoryManager) URLInputSource(urlTmp, fMemoryManager);
-        }        
+        }
     }
 
     // Put a janitor on the input source
@@ -712,6 +708,7 @@ XMLReader* ReaderMgr::createReader( const   XMLCh* const        baseURI
         , type
         , source
         , calcSrcOfs
+        , lowWaterMark
     );
 
     // Either way, we can release the input source now
@@ -732,9 +729,10 @@ ReaderMgr::createIntEntReader(  const   XMLCh* const        sysId
                                 , const XMLReader::RefFrom  refFrom
                                 , const XMLReader::Types    type
                                 , const XMLCh* const        dataBuf
-                                , const unsigned int        dataLen
+                                , const XMLSize_t           dataLen
                                 , const bool                copyBuf
-                                , const bool                calcSrcOfs)
+                                , const bool                calcSrcOfs
+                                ,       XMLSize_t           lowWaterMark)
 {
     //
     //  This one is easy, we just create an input stream for the data and
@@ -766,6 +764,7 @@ ReaderMgr::createIntEntReader(  const   XMLCh* const        sysId
         , XMLReader::Source_Internal
         , false
         , calcSrcOfs
+        , lowWaterMark
         , fXMLVersion
         , fMemoryManager
     );
@@ -803,7 +802,7 @@ XMLEntityDecl* ReaderMgr::getCurrentEntity()
 }
 
 
-unsigned int ReaderMgr::getReaderDepth() const
+XMLSize_t ReaderMgr::getReaderDepth() const
 {
     // If the stack doesn't exist, its obviously zero
     if (!fEntityStack)
@@ -814,7 +813,7 @@ unsigned int ReaderMgr::getReaderDepth() const
     //  reader. So if there is no current reader and none on the stack,
     //  its zero, else its some non-zero value.
     //
-    unsigned int retVal = fEntityStack->size();
+    XMLSize_t retVal = fEntityStack->size();
     if (fCurReader)
         retVal++;
     return retVal;
@@ -881,9 +880,9 @@ bool ReaderMgr::pushReader(         XMLReader* const        reader
     //
     if (entity && fEntityStack)
     {
-        const unsigned int count = fEntityStack->size();
+        const XMLSize_t count = fEntityStack->size();
         const XMLCh* const theName = entity->getName();
-        for (unsigned int index = 0; index < count; index++)
+        for (XMLSize_t index = 0; index < count; index++)
         {
             const XMLEntityDecl* curDecl = fEntityStack->elementAt(index);
             if (curDecl)
@@ -973,7 +972,7 @@ const XMLCh* ReaderMgr::getSystemId() const
     return getLastExtEntity(theEntity)->getSystemId();
 }
 
-XMLSSize_t ReaderMgr::getColumnNumber() const
+XMLFileLoc ReaderMgr::getColumnNumber() const
 {
     if (!fReaderStack && !fCurReader)
         return 0;
@@ -982,7 +981,7 @@ XMLSSize_t ReaderMgr::getColumnNumber() const
     return getLastExtEntity(theEntity)->getColumnNumber();
 }
 
-XMLSSize_t ReaderMgr::getLineNumber() const
+XMLFileLoc ReaderMgr::getLineNumber() const
 {
     if (!fReaderStack && !fCurReader)
         return 0;
@@ -1015,7 +1014,7 @@ ReaderMgr::getLastExtEntity(const XMLEntityDecl*& itsEntity) const
     const XMLEntityDecl* curEntity = fCurEntity;
     if (curEntity && !curEntity->isExternal())
     {
-        unsigned int index = fReaderStack->size();
+        XMLSize_t index = fReaderStack->size();
         if (index)
         {
             while (true)
@@ -1066,7 +1065,7 @@ bool ReaderMgr::popReader()
     //
     XMLEntityDecl* prevEntity = fCurEntity;
     const bool prevReaderThrowAtEnd = fCurReader->getThrowAtEnd();
-    const unsigned int readerNum = fCurReader->getReaderNum();
+    const XMLSize_t readerNum = fCurReader->getReaderNum();
 
     //
     //  Delete the current reader and pop a new reader and entity off
@@ -1080,7 +1079,7 @@ bool ReaderMgr::popReader()
     //  If there was a previous entity, and either the fThrowEOE flag is set
     //  or reader was marked as such, then throw an end of entity.
     //
-    if (prevEntity && fThrowEOE || prevReaderThrowAtEnd)
+    if (prevEntity && (fThrowEOE || prevReaderThrowAtEnd))
         throw EndOfEntityException(prevEntity, readerNum);
 
     while (true)

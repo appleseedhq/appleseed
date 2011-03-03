@@ -15,8 +15,12 @@
  * limitations under the License.
  */
 
-#if !defined(REFARRAYVECTOROF_HPP)
-#define REFARRAYVECTOROF_HPP
+/*
+ * $Id: RefArrayVectorOf.hpp 676911 2008-07-15 13:27:32Z amassari $
+ */
+
+#if !defined(XERCESC_INCLUDE_GUARD_REFARRAYVECTOROF_HPP)
+#define XERCESC_INCLUDE_GUARD_REFARRAYVECTOROF_HPP
 
 #include <xercesc/util/BaseRefVectorOf.hpp>
 
@@ -32,7 +36,7 @@ public :
     // -----------------------------------------------------------------------
     //  Constructor
     // -----------------------------------------------------------------------
-    RefArrayVectorOf( const unsigned int   maxElems
+    RefArrayVectorOf( const XMLSize_t      maxElems
                     , const bool           adoptElems = true
                     , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
 
@@ -44,9 +48,9 @@ public :
     // -----------------------------------------------------------------------
     //  Element management
     // -----------------------------------------------------------------------
-    void setElementAt(TElem* const toSet, const unsigned int setAt);
+    void setElementAt(TElem* const toSet, const XMLSize_t setAt);
     void removeAllElements();
-    void removeElementAt(const unsigned int removeAt);
+    void removeElementAt(const XMLSize_t removeAt);
     void removeLastElement();
     void cleanup();
 private:

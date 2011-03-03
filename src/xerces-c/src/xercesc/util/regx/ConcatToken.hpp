@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: ConcatToken.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: ConcatToken.hpp 678879 2008-07-22 20:05:05Z amassari $
  */
 
-#if !defined(CONCATTOKEN_HPP)
-#define CONCATTOKEN_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_CONCATTOKEN_HPP)
+#define XERCESC_INCLUDE_GUARD_CONCATTOKEN_HPP
 
 // ---------------------------------------------------------------------------
 //  Includes
@@ -31,45 +31,45 @@ XERCES_CPP_NAMESPACE_BEGIN
 
 class XMLUTIL_EXPORT ConcatToken : public Token {
 public:
-	// -----------------------------------------------------------------------
+    // -----------------------------------------------------------------------
     //  Public Constructors and Destructor
     // -----------------------------------------------------------------------
-	ConcatToken(Token* const tok1, Token* const tok2
+    ConcatToken(Token* const tok1, Token* const tok2
         , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
-	~ConcatToken();
+    ~ConcatToken();
 
-	// -----------------------------------------------------------------------
+    // -----------------------------------------------------------------------
     //  Getter methods
     // -----------------------------------------------------------------------
-	Token* getChild(const int index) const;
-	int    size() const;
+    Token* getChild(const XMLSize_t index) const;
+    XMLSize_t size() const;
 
 private:
-	// -----------------------------------------------------------------------
+    // -----------------------------------------------------------------------
     //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
     ConcatToken(const ConcatToken&);
     ConcatToken& operator=(const ConcatToken&);
 
-	// -----------------------------------------------------------------------
+    // -----------------------------------------------------------------------
     //  Private data members
-	// -----------------------------------------------------------------------
-	Token* fChild1;
-	Token* fChild2;
+    // -----------------------------------------------------------------------
+    Token* fChild1;
+    Token* fChild2;
 };
 
 
 // ---------------------------------------------------------------------------
 //  StringToken: getter methods
 // ---------------------------------------------------------------------------
-inline int ConcatToken::size() const {
+inline XMLSize_t ConcatToken::size() const {
 
-	return 2;
+    return 2;
 }
 
-inline Token* ConcatToken::getChild(const int index) const {
+inline Token* ConcatToken::getChild(const XMLSize_t index) const {
 
-	return index == 0 ? fChild1 : fChild2;
+    return index == 0 ? fChild1 : fChild2;
 }
 
 XERCES_CPP_NAMESPACE_END

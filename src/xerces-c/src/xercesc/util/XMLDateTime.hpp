@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,17 +16,18 @@
  */
 
 /*
- * $Id: XMLDateTime.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLDateTime.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#ifndef XML_DATETIME_HPP
-#define XML_DATETIME_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XML_DATETIME_HPP)
+#define XERCESC_INCLUDE_GUARD_XML_DATETIME_HPP
 
 #include <xercesc/util/XMLNumber.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
 #include <xercesc/util/XMLString.hpp>
 #include <xercesc/util/XMLUniDefs.hpp>
 #include <xercesc/util/SchemaDateTimeException.hpp>
+#include <xercesc/util/XMLChar.hpp>
 
 XERCES_CPP_NAMESPACE_BEGIN
 
@@ -80,13 +81,6 @@ public:
     // Implementation of Abstract Interface
     // -----------------------------------------------------------------------
 
-    /**
-     *
-     *  Deprecated: please use getRawData
-     *
-     */
-    virtual XMLCh*        toString() const;
-    
     virtual XMLCh*        getRawData() const;
 
     virtual const XMLCh*  getFormattedString() const;
@@ -136,7 +130,7 @@ public:
                                 , bool                    );
 
     static int            compareOrder(const XMLDateTime* const
-                                     , const XMLDateTime* const);                                    
+                                     , const XMLDateTime* const);
 
     /***
      * Support for Serialization/De-serialization
@@ -187,7 +181,7 @@ private:
     inline  void          copy(const XMLDateTime&);
 
     // allow multiple parsing
-    inline  void          initParser();
+    inline  bool          initParser();
 
     inline  bool          isNormalized()               const;
 
@@ -201,7 +195,7 @@ private:
 
     void                  getYearMonth();
 
-    void                  getTimeZone(const int);
+    void                  getTimeZone(const XMLSize_t);
 
     void                  parseTimeZone();
 
@@ -209,19 +203,19 @@ private:
     // locator and converter
     // -----------------------------------------------------------------------
 
-    int                   findUTCSign(const int start);
+    int                   findUTCSign(const XMLSize_t start);
 
-    int                   indexOf(const int start
-                                , const int end
+    int                   indexOf(const XMLSize_t start
+                                , const XMLSize_t end
                                 , const XMLCh ch)     const;
 
-    int                   parseInt(const int start
-                                 , const int end)     const;
+    int                   parseInt(const XMLSize_t start
+                                 , const XMLSize_t end)     const;
 
-    int                   parseIntYear(const int end) const;
+    int                   parseIntYear(const XMLSize_t end) const;
 
-    double                parseMiliSecond(const int start
-                                        , const int end) const;
+    double                parseMiliSecond(const XMLSize_t start
+                                        , const XMLSize_t end) const;
 
     // -----------------------------------------------------------------------
     // validator and normalizer
@@ -231,7 +225,7 @@ private:
 
     void                  normalize();
 
-    void                  fillString(XMLCh*& ptr, int value, int expLen) const;
+    void                  fillString(XMLCh*& ptr, int value, XMLSize_t expLen) const;
 
     int                   fillYearString(XMLCh*& ptr, int value) const;
 
@@ -262,11 +256,11 @@ private:
 
     int          fValue[TOTAL_SIZE];
     int          fTimeZone[TIMEZONE_ARRAYSIZE];
-    int          fStart;
-    int          fEnd;
-    int          fBufferMaxLen;
+    XMLSize_t    fStart;
+    XMLSize_t    fEnd;
+    XMLSize_t    fBufferMaxLen;
 
-    double       fMiliSecond;
+    double       fMilliSecond;
     bool         fHasTime;
 
     XMLCh*       fBuffer;
@@ -280,8 +274,15 @@ inline void XMLDateTime::setBuffer(const XMLCh* const aString)
     reset();
 
     fEnd = XMLString::stringLen(aString);
+
+    for (; fEnd > 0; fEnd--)
+    {
+        if (!XMLChar1_0::isWhitespace(aString[fEnd - 1]))
+            break;
+    }
+
     if (fEnd > 0) {
-    
+
         if (fEnd > fBufferMaxLen)
         {
             fMemoryManager->deallocate(fBuffer);
@@ -289,7 +290,8 @@ inline void XMLDateTime::setBuffer(const XMLCh* const aString)
             fBuffer = (XMLCh*) fMemoryManager->allocate((fBufferMaxLen+1) * sizeof(XMLCh));
         }
 
-        memcpy(fBuffer, aString, (fEnd+1) * sizeof(XMLCh));
+        memcpy(fBuffer, aString, (fEnd) * sizeof(XMLCh));
+        fBuffer[fEnd] = '\0';
     }
 }
 
@@ -298,7 +300,7 @@ inline void XMLDateTime::reset()
     for ( int i=0; i < TOTAL_SIZE; i++ )
         fValue[i] = 0;
 
-    fMiliSecond   = 0;
+    fMilliSecond   = 0;
     fHasTime      = false;
     fTimeZone[hh] = fTimeZone[mm] = 0;
     fStart = fEnd = 0;
@@ -312,7 +314,7 @@ inline void XMLDateTime::copy(const XMLDateTime& rhs)
     for ( int i = 0; i < TOTAL_SIZE; i++ )
         fValue[i] = rhs.fValue[i];
 
-    fMiliSecond   = rhs.fMiliSecond;
+    fMilliSecond   = rhs.fMilliSecond;
     fHasTime      = rhs.fHasTime;
     fTimeZone[hh] = rhs.fTimeZone[hh];
     fTimeZone[mm] = rhs.fTimeZone[mm];
@@ -332,23 +334,15 @@ inline void XMLDateTime::copy(const XMLDateTime& rhs)
     }
 }
 
-inline void XMLDateTime::assertBuffer() const
+inline bool XMLDateTime::initParser()
 {
-    if ( ( !fBuffer )            ||
-         ( fBuffer[0] == chNull ) )
-    {
-        ThrowXMLwithMemMgr(SchemaDateTimeException
-               , XMLExcepts::DateTime_Assert_Buffer_Fail
-               , fMemoryManager);
-    }
+    if (!fBuffer || fBuffer[0] == chNull)
+        return false;
 
-}
-
-inline void XMLDateTime::initParser()
-{
-    assertBuffer();
     fStart = 0;   // to ensure scan from the very first beginning
-                  // in case the pointer is updated accidentally by someone else.
+                  // in case the pointer is updated accidentally by
+                  // someone else.
+    return true;
 }
 
 inline bool XMLDateTime::isNormalized() const

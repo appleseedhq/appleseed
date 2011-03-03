@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: UnicodeRangeFactory.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: UnicodeRangeFactory.cpp 678879 2008-07-22 20:05:05Z amassari $
  */
 
 // ---------------------------------------------------------------------------
@@ -34,54 +34,46 @@ XERCES_CPP_NAMESPACE_BEGIN
 // ---------------------------------------------------------------------------
 //  Local data
 // ---------------------------------------------------------------------------
-const int            UNICATEGSIZE     = 37;
-const unsigned short CHAR_LETTER      = 30;
-const unsigned short CHAR_MARK        = 31;
-const unsigned short CHAR_NUMBER      = 32;
-const unsigned short CHAR_SEPARATOR   = 33;
-const unsigned short CHAR_OTHER       = 34;
-const unsigned short CHAR_PUNCTUATION = 35;
-const unsigned short CHAR_SYMBOL      = 36;
 
 const XMLCh uniCategNames[][3] =
 {
-    {chLatin_C, chLatin_n, chNull},
-    {chLatin_L, chLatin_u, chNull},
-    {chLatin_L, chLatin_l, chNull},
-    {chLatin_L, chLatin_t, chNull},
-    {chLatin_L, chLatin_m, chNull},
-    {chLatin_L, chLatin_o, chNull},
-    {chLatin_M, chLatin_n, chNull},
-    {chLatin_M, chLatin_e, chNull},
-    {chLatin_M, chLatin_c, chNull},
-    {chLatin_N, chLatin_d, chNull},
-    {chLatin_N, chLatin_l, chNull},
-    {chLatin_N, chLatin_o, chNull},
-    {chLatin_Z, chLatin_s, chNull},
-    {chLatin_Z, chLatin_l, chNull},
-    {chLatin_Z, chLatin_p, chNull},
-    {chLatin_C, chLatin_c, chNull},
-    {chLatin_C, chLatin_f, chNull},
-    {chLatin_C, chLatin_o, chNull},
-    {chLatin_C, chLatin_s, chNull},
-    {chLatin_P, chLatin_d, chNull},
-    {chLatin_P, chLatin_s, chNull},
-    {chLatin_P, chLatin_e, chNull},
-    {chLatin_P, chLatin_c, chNull},
-    {chLatin_P, chLatin_o, chNull},
-    {chLatin_S, chLatin_m, chNull},
-    {chLatin_S, chLatin_c, chNull},
-    {chLatin_S, chLatin_k, chNull},
-    {chLatin_S, chLatin_o, chNull},
-    {chLatin_P, chLatin_i, chNull},
-    {chLatin_P, chLatin_f, chNull},
-    {chLatin_L, chNull},
-    {chLatin_M, chNull},
-    {chLatin_N, chNull},
-    {chLatin_Z, chNull},
-    {chLatin_C, chNull},
-    {chLatin_P, chNull},
-    {chLatin_S, chNull},
+    {chLatin_C, chLatin_n, chNull},     // UNASSIGNED
+    {chLatin_L, chLatin_u, chNull},     // UPPERCASE_LETTER
+    {chLatin_L, chLatin_l, chNull},     // LOWERCASE_LETTER
+    {chLatin_L, chLatin_t, chNull},     // TITLECASE_LETTER
+    {chLatin_L, chLatin_m, chNull},     // MODIFIER_LETTER
+    {chLatin_L, chLatin_o, chNull},     // OTHER_LETTER
+    {chLatin_M, chLatin_n, chNull},     // NON_SPACING_MARK
+    {chLatin_M, chLatin_e, chNull},     // ENCLOSING_MARK
+    {chLatin_M, chLatin_c, chNull},     // COMBINING_SPACING_MARK
+    {chLatin_N, chLatin_d, chNull},     // DECIMAL_DIGIT_NUMBER
+    {chLatin_N, chLatin_l, chNull},     // LETTER_NUMBER
+    {chLatin_N, chLatin_o, chNull},     // OTHER_NUMBER
+    {chLatin_Z, chLatin_s, chNull},     // SPACE_SEPARATOR
+    {chLatin_Z, chLatin_l, chNull},     // LINE_SEPARATOR
+    {chLatin_Z, chLatin_p, chNull},     // PARAGRAPH_SEPARATOR
+    {chLatin_C, chLatin_c, chNull},     // CONTROL
+    {chLatin_C, chLatin_f, chNull},     // FORMAT
+    {chLatin_C, chLatin_o, chNull},     // PRIVATE_USE
+    {chLatin_C, chLatin_s, chNull},     // SURROGATE
+    {chLatin_P, chLatin_d, chNull},     // DASH_PUNCTUATION
+    {chLatin_P, chLatin_s, chNull},     // START_PUNCTUATION
+    {chLatin_P, chLatin_e, chNull},     // END_PUNCTUATION
+    {chLatin_P, chLatin_c, chNull},     // CONNECTOR_PUNCTUATION
+    {chLatin_P, chLatin_o, chNull},     // OTHER_PUNCTUATION
+    {chLatin_S, chLatin_m, chNull},     // MATH_SYMBOL
+    {chLatin_S, chLatin_c, chNull},     // CURRENCY_SYMBOL
+    {chLatin_S, chLatin_k, chNull},     // MODIFIER_SYMBOL
+    {chLatin_S, chLatin_o, chNull},     // OTHER_SYMBOL
+    {chLatin_P, chLatin_i, chNull},     // INITIAL_PUNCTUATION
+    {chLatin_P, chLatin_f, chNull},     // FINAL_PUNCTUATION
+    {chLatin_L, chNull},                // CHAR_LETTER
+    {chLatin_M, chNull},                // CHAR_MARK
+    {chLatin_N, chNull},                // CHAR_NUMBER
+    {chLatin_Z, chNull},                // CHAR_SEPARATOR
+    {chLatin_C, chNull},                // CHAR_OTHER
+    {chLatin_P, chNull},                // CHAR_PUNCTUATION
+    {chLatin_S, chNull},                // CHAR_SYMBOL
 };
 
 // ---------------------------------------------------------------------------
@@ -108,7 +100,7 @@ void UnicodeRangeFactory::buildRanges(RangeTokenMap *rangeTokMap) {
     }
 
     TokenFactory* tokFactory = rangeTokMap->getTokenFactory();
-	RangeToken* ranges[UNICATEGSIZE];
+    RangeToken* ranges[UNICATEGSIZE];
     RangeToken* tok;
 
     for (int i=0; i < UNICATEGSIZE; i++) {
@@ -127,7 +119,7 @@ void UnicodeRangeFactory::buildRanges(RangeTokenMap *rangeTokMap) {
     ranges[XMLUniCharacter::UNASSIGNED]->addRange(0x10000, Token::UTF16_MAX);
 
     for (int k=0; k < UNICATEGSIZE; k++) {
-        tok = (RangeToken*) RangeToken::complementRanges(ranges[k], tokFactory);
+        tok = RangeToken::complementRanges(ranges[k], tokFactory);
         // build the internal map.
         tok->createMap();
         rangeTokMap->setRangeToken(uniCategNames[k], ranges[k]);
@@ -166,15 +158,15 @@ void UnicodeRangeFactory::buildRanges(RangeTokenMap *rangeTokMap) {
     tok->createMap();
     rangeTokMap->setRangeToken(fgUniIsWord, tok);
 
-    tok = (RangeToken*) RangeToken::complementRanges(tok, tokFactory);
+    tok = RangeToken::complementRanges(tok, tokFactory);
     // build the internal map.
     tok->createMap();
     rangeTokMap->setRangeToken(fgUniIsWord, tok , true);
 
     // Create assigned range
-    tok = (RangeToken*)RangeToken::complementRanges(
+    tok = RangeToken::complementRanges(
                 ranges[XMLUniCharacter::UNASSIGNED],
-		        tokFactory,
+                tokFactory,
                 tokFactory->getMemoryManager());
     // build the internal map.
     tok->createMap();
@@ -189,7 +181,7 @@ void UnicodeRangeFactory::buildRanges(RangeTokenMap *rangeTokMap) {
     tok->createMap();
     rangeTokMap->setRangeToken(fgUniIsSpace, tok);
 
-    tok = (RangeToken*) RangeToken::complementRanges(tok, tokFactory);
+    tok = RangeToken::complementRanges(tok, tokFactory);
     // build the internal map.
     tok->createMap();
     rangeTokMap->setRangeToken(fgUniIsSpace, tok , true);
@@ -217,7 +209,7 @@ void UnicodeRangeFactory::initializeKeywordMap(RangeTokenMap *rangeTokMap) {
     if (fKeywordsInitialized)
         return;
 
-	for (int k=0; k < UNICATEGSIZE; k++) {
+    for (int k=0; k < UNICATEGSIZE; k++) {
         rangeTokMap->addKeywordMap(uniCategNames[k], fgUnicodeCategory);
     }
 

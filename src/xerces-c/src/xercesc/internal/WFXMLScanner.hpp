@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: WFXMLScanner.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: WFXMLScanner.hpp 810580 2009-09-02 15:52:22Z amassari $
  */
 
-
-#if !defined(WFXMLSCANNER_HPP)
-#define WFXMLSCANNER_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_WFXMLSCANNER_HPP)
+#define XERCESC_INCLUDE_GUARD_WFXMLSCANNER_HPP
 
 #include <xercesc/internal/XMLScanner.hpp>
 #include <xercesc/util/ValueHashTableOf.hpp>
@@ -63,13 +62,6 @@ public :
     virtual const XMLCh* getName() const;
     virtual NameIdPool<DTDEntityDecl>* getEntityDeclPool();
     virtual const NameIdPool<DTDEntityDecl>* getEntityDeclPool() const;
-    virtual unsigned int resolveQName
-    (
-        const   XMLCh* const        qName
-        ,       XMLBuffer&          prefixBufToFill
-        , const short               mode
-        ,       int&                prefixColonPos
-    );
     virtual void scanDocument
     (
         const   InputSource&    src
@@ -113,11 +105,6 @@ private :
     // -----------------------------------------------------------------------
     void commonInit();
     void cleanUp();
-    unsigned int resolvePrefix
-    (
-        const   XMLCh* const        prefix
-        , const ElemStack::MapModes mode
-    );
 
     // -----------------------------------------------------------------------
     //  Private scanning methods
@@ -150,7 +137,7 @@ private :
     unsigned int                       fElementIndex;
     RefVectorOf<XMLElementDecl>*       fElements;
     ValueHashTableOf<XMLCh>*           fEntityTable;
-    ValueVectorOf<unsigned int>*       fAttrNameHashList;
+    ValueVectorOf<XMLSize_t>*          fAttrNameHashList;
     ValueVectorOf<XMLAttr*>*           fAttrNSList;
     RefHashTableOf<XMLElementDecl>*    fElementLookup;  
 };

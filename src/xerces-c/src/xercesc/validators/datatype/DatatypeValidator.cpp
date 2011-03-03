@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DatatypeValidator.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DatatypeValidator.cpp 555320 2007-07-11 16:05:13Z amassari $
  */
 
 
@@ -130,8 +130,8 @@ void DatatypeValidator::setTypeName(const XMLCh* const name, const XMLCh* const 
 
     if (name || uri) {
 
-        unsigned int nameLen = XMLString::stringLen(name);
-        unsigned int uriLen = XMLString::stringLen(uri);
+        XMLSize_t nameLen = XMLString::stringLen(name);
+        XMLSize_t uriLen = XMLString::stringLen(uri);
 
         fTypeName = (XMLCh*) fMemoryManager->allocate
         (
@@ -166,7 +166,7 @@ void DatatypeValidator::setTypeName(const XMLCh* const typeName)
 
     if (typeName)
     {
-        unsigned int nameLen = XMLString::stringLen(typeName);
+        XMLSize_t nameLen = XMLString::stringLen(typeName);
         int commaOffset = XMLString::indexOf(typeName, chComma);
 
         fTypeName = (XMLCh*) fMemoryManager->allocate

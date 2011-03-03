@@ -1,6 +1,3 @@
-#ifndef XSDElementNSImpl_HEADER_GUARD_
-#define XSDElementNSImpl_HEADER_GUARD_
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -8,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,8 +16,11 @@
  */
 
 /*
- * $Id: XSDElementNSImpl.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XSDElementNSImpl.hpp 672232 2008-06-27 10:16:38Z borisk $
  */
+
+#if !defined(XERCESC_INCLUDE_GUARD_XSDELEMENTNSIMPL_HPP)
+#define XERCESC_INCLUDE_GUARD_XSDELEMENTNSIMPL_HPP
 
 //
 //  This file is part of the internal implementation of the C++ XML DOM.
@@ -41,8 +41,8 @@ XERCES_CPP_NAMESPACE_BEGIN
 
 class CDOM_EXPORT XSDElementNSImpl: public DOMElementNSImpl {
 protected:
-    XMLSSize_t fLineNo;     //Line number
-    XMLSSize_t fColumnNo;   //Column number
+    XMLFileLoc fLineNo;     //Line number
+    XMLFileLoc fColumnNo;   //Column number
 
 
 public:
@@ -50,19 +50,19 @@ public:
     XSDElementNSImpl(DOMDocument *ownerDoc, //DOM Level 2
 	                 const XMLCh *namespaceURI,
                      const XMLCh *qualifiedName,
-                     const XMLSSize_t lineNo,
-                     const XMLSSize_t columnNo);
+                     const XMLFileLoc lineNo,
+                     const XMLFileLoc columnNo);
     XSDElementNSImpl(const XSDElementNSImpl &other, bool deep=false);
 
     virtual DOMNode * cloneNode(bool deep) const;
 
-    XMLSSize_t getLineNo() const   { return fLineNo;   }
-    XMLSSize_t getColumnNo() const { return fColumnNo; }
+    XMLFileLoc getLineNo() const   { return fLineNo;   }
+    XMLFileLoc getColumnNo() const { return fColumnNo; }
 
 private:
     // -----------------------------------------------------------------------
     //  Unimplemented constructors and operators
-    // -----------------------------------------------------------------------    
+    // -----------------------------------------------------------------------
     XSDElementNSImpl& operator=(const XSDElementNSImpl&);
 };
 

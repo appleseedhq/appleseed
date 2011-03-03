@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: InvalidDatatypeValueException.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: InvalidDatatypeValueException.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-
-#if !defined(INVALIDDATATYPEVALUEEXCEPTION_HPP)
-#define INVALIDDATATYPEVALUEEXCEPTION_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_INVALIDDATATYPEVALUEEXCEPTION_HPP)
+#define XERCESC_INCLUDE_GUARD_INVALIDDATATYPEVALUEEXCEPTION_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 #include <xercesc/util/XMLException.hpp>

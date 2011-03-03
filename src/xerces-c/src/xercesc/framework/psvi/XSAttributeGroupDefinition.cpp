@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XSAttributeGroupDefinition.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XSAttributeGroupDefinition.cpp 471747 2006-11-06 14:31:56Z amassari $
  */
 
 #include <xercesc/framework/psvi/XSAttributeGroupDefinition.hpp>
@@ -55,7 +55,7 @@ XSAttributeGroupDefinition::~XSAttributeGroupDefinition()
 }
 
 // XSObject methods
-const XMLCh *XSAttributeGroupDefinition::getName() 
+const XMLCh *XSAttributeGroupDefinition::getName() const
 {
     return fXSModel->getURIStringPool()->getValueForId(fXercesAttGroupInfo->getNameId());        
 }

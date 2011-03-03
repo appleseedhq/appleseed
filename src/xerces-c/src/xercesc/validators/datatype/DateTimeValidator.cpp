@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DateTimeValidator.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DateTimeValidator.cpp 676911 2008-07-15 13:27:32Z amassari $
  */
 
 // ---------------------------------------------------------------------------
@@ -181,8 +181,8 @@ void DateTimeValidator::checkContent(const XMLCh*             const content
     if ((thisFacetsDefined & DatatypeValidator::FACET_ENUMERATION) != 0 &&
         (getEnumeration() != 0))
     {
-        int i=0;
-        int enumLength = getEnumeration()->size();
+        XMLSize_t i=0;
+        XMLSize_t enumLength = getEnumeration()->size();
         for ( ; i < enumLength; i++)
         {
             if (compareValues(dateTime, getEnumeration()->elementAt(i)) == XMLDateTime::EQUAL)
@@ -262,11 +262,11 @@ void DateTimeValidator::setEnumeration(MemoryManager* const)
     if (!fStrEnumeration)
         return;
 
-    int enumLength = fStrEnumeration->size();
+    XMLSize_t enumLength = fStrEnumeration->size();
     fEnumeration = new (fMemoryManager) RefVectorOf<XMLNumber>(enumLength, true, fMemoryManager);
     fEnumerationInherited = false;
 
-    for ( int i = 0; i < enumLength; i++)
+    for ( XMLSize_t i = 0; i < enumLength; i++)
         fEnumeration->insertElementAt(parse(fStrEnumeration->elementAt(i), fMemoryManager), i);
 
 }

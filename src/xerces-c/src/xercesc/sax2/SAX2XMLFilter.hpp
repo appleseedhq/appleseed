@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: SAX2XMLFilter.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: SAX2XMLFilter.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-#ifndef SAX2XMLFilter_HPP
-#define SAX2XMLFilter_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_SAX2XMLFILTER_HPP)
+#define XERCESC_INCLUDE_GUARD_SAX2XMLFILTER_HPP
 
 #include <xercesc/sax2/SAX2XMLReader.hpp>
 

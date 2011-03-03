@@ -1,7 +1,7 @@
 // This file is generated, don't edit it!!
 
-#if !defined(ERRHEADER_XMLDOMMsg)
-#define ERRHEADER_XMLDOMMsg
+#if !defined(XERCESC_INCLUDE_GUARD_ERRHEADER_XMLDOMMsg)
+#define XERCESC_INCLUDE_GUARD_ERRHEADER_XMLDOMMsg
 
 #include <xercesc/framework/XMLErrorReporter.hpp>
 #include <xercesc/util/XercesDefs.hpp>
@@ -33,17 +33,28 @@ public :
       , NAMESPACE_ERR                      = 16
       , INVALID_ACCESS_ERR                 = 17
       , VALIDATION_ERR                     = 18
-      , DOMRANGEEXCEPTION_ERRX             = 19
-      , BAD_BOUNDARYPOINTS_ERR             = 20
-      , INVALID_NODE_TYPE_ERR              = 21
-      , Writer_NestedCDATA                 = 22
-      , Writer_NotRepresentChar            = 23
-      , Writer_NotRecognizedType           = 24
-      , F_HighBounds                       = 25
-      , W_LowBounds                        = 26
-      , W_HighBounds                       = 27
-      , E_LowBounds                        = 28
-      , E_HighBounds                       = 29
+      , TYPE_MISMATCH_ERR                  = 19
+      , DOMRANGEEXCEPTION_ERRX             = 20
+      , BAD_BOUNDARYPOINTS_ERR             = 21
+      , INVALID_NODE_TYPE_ERR              = 22
+      , DOMLSEXCEPTION_ERRX                = 23
+      , PARSE_ERR                          = 24
+      , SERIALIZE_ERR                      = 25
+      , DOMXPATHEXCEPTION_ERRX             = 26
+      , INVALID_EXPRESSION_ERR             = 27
+      , TYPE_ERR                           = 28
+      , NO_RESULT_ERR                      = 29
+      , Writer_NestedCDATA                 = 30
+      , Writer_NotRepresentChar            = 31
+      , Writer_NotRecognizedType           = 32
+      , LSParser_ParseInProgress           = 33
+      , LSParser_ParsingAborted            = 34
+      , LSParser_ParsingFailed             = 35
+      , F_HighBounds                       = 36
+      , W_LowBounds                        = 37
+      , W_HighBounds                       = 38
+      , E_LowBounds                        = 39
+      , E_HighBounds                       = 40
     };
 
     static bool isFatal(const XMLDOMMsg::Codes toCheck)

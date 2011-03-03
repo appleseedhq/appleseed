@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMNodeIDMap.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMNodeIDMap.cpp 678144 2008-07-19 12:08:55Z borisk $
  */
 
 #include "DOMAttrImpl.hpp"
@@ -30,12 +30,12 @@
 XERCES_CPP_NAMESPACE_BEGIN
 
 
-static const int gPrimes[] = {997, 9973, 99991, 999983, 0 };  // To do - add a few more.
+static const XMLSize_t gPrimes[] = {997, 9973, 99991, 999983, 0 };  // To do - add a few more.
 
 static const float gMaxFill = 0.8f;   // The maximum fraction of the total
                                     // table entries to consume before exanding.
 
-DOMNodeIDMap::DOMNodeIDMap(int initialSize, DOMDocument *doc)
+DOMNodeIDMap::DOMNodeIDMap(XMLSize_t initialSize, DOMDocument *doc)
 : fNumEntries(0)
 , fDoc(doc)
 {
@@ -50,7 +50,7 @@ DOMNodeIDMap::DOMNodeIDMap(int initialSize, DOMDocument *doc)
         }
     }
 
-    fSize = gPrimes[fSizeIndex];    
+    fSize = gPrimes[fSizeIndex];
     fMaxEntries = (XMLSize_t)(float(fSize) * gMaxFill);
 
     //fTable = new (fDoc) DOMAttr*[fSize];
@@ -78,7 +78,8 @@ void DOMNodeIDMap::add(DOMAttr *attr)
 	//
 	if (fNumEntries >= fMaxEntries)
 		growTable();
-    fNumEntries++;
+
+        fNumEntries++;
 
 	//
 	// Hash the value string from the ID attribute being added to the table
@@ -86,7 +87,7 @@ void DOMNodeIDMap::add(DOMAttr *attr)
 	//      An initial hash of zero would cause the rehash to fail.
 	//
 	const XMLCh *id=attr->getValue();
-    XMLSize_t initalHash = XMLString::hash(id, fSize-1, ((DOMDocumentImpl *)fDoc)->getMemoryManager());
+        XMLSize_t initalHash = XMLString::hash(id, fSize-1);
 	initalHash++;
 	XMLSize_t currentHash = initalHash;
 
@@ -96,12 +97,8 @@ void DOMNodeIDMap::add(DOMAttr *attr)
 	//   the table is only filled by the parser from valid documents, which
 	//   can not have duplicates.  Behavior of invalid docs is not defined.
 	//
-    while (true)
+    while (fTable[currentHash]!=0 && fTable[currentHash]!=(DOMAttr *)-1)
 	{
-		DOMAttr *tableSlot = fTable[currentHash];
-		if (tableSlot == 0 ||
-			tableSlot == (DOMAttr *)-1)
-			break;
 		currentHash += initalHash;  // rehash
         if (currentHash >= fSize)
             currentHash = currentHash % fSize;
@@ -123,22 +120,16 @@ void DOMNodeIDMap::remove(DOMAttr *attr)
 	//      An initial hash of zero would cause the rehash to fail.
 	//
 	const XMLCh *id=attr->getValue();
-    XMLSize_t initalHash = XMLString::hash(id, fSize-1, ((DOMDocumentImpl *)fDoc)->getMemoryManager());
+        XMLSize_t initalHash = XMLString::hash(id, fSize-1);
 	initalHash++;
 	XMLSize_t currentHash = initalHash;
 
 	//
 	// Loop looking for a slot pointing to an attr with this id.
     //
-    while (true)
+	DOMAttr *tableSlot;
+    while ((tableSlot= fTable[currentHash])!=0)
 	{
-		DOMAttr *tableSlot = fTable[currentHash];
-		if (tableSlot == 0)
-        {
-            // There is no matching entry in the table
-            return;
-        }
-
         if (tableSlot == attr)
         {
             //  Found the attribute.  Set the slot to -1 to indicate
@@ -153,7 +144,7 @@ void DOMNodeIDMap::remove(DOMAttr *attr)
         if (currentHash >= fSize)
             currentHash = currentHash % fSize;
     }
-
+    // There is no matching entry in the table
 }
 
 
@@ -162,23 +153,16 @@ DOMAttr *DOMNodeIDMap::find(const XMLCh *id)
     //
     //  Get the hashcode for the supplied string.
     //
-	XMLSize_t initalHash = XMLString::hash(id, fSize-1, ((DOMDocumentImpl *)fDoc)->getMemoryManager());
+    XMLSize_t initalHash = XMLString::hash(id, fSize-1);
 	initalHash++;
 	XMLSize_t currentHash = initalHash;
 
 	//
 	// Loop looking for a slot pointing to an attr with this id.
     //
-    while (true)
+	DOMAttr *tableSlot;
+    while ((tableSlot= fTable[currentHash])!=0)
 	{
-		DOMAttr *tableSlot = fTable[currentHash];
-		if (tableSlot == 0)
-        {
-            // There is no matching entry in the table
-            return 0;
-        }
-
-
         if ((tableSlot != (DOMAttr *)-1) && XMLString::equals(tableSlot->getValue(), id))
             return tableSlot;
 
@@ -186,7 +170,8 @@ DOMAttr *DOMNodeIDMap::find(const XMLCh *id)
         if (currentHash >= fSize)
             currentHash = currentHash % fSize;
     }
-    return 0;  // Never gets here, but keeps some compilers happy.
+    // There is no matching entry in the table
+    return 0;
 }
 
 
@@ -243,5 +228,3 @@ void DOMNodeIDMap::growTable()
 
 
 XERCES_CPP_NAMESPACE_END
-
-

@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: ValidationContext.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: ValidationContext.hpp 729944 2008-12-29 17:03:32Z amassari $
  */
 
-#if !defined(VALIDATION_CONTEXT_HPP)
-#define VALIDATION_CONTEXT_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_VALIDATION_CONTEXT_HPP)
+#define XERCESC_INCLUDE_GUARD_VALIDATION_CONTEXT_HPP
 
 #include <xercesc/util/PlatformUtils.hpp>
 #include <xercesc/util/RefHashTableOf.hpp>
@@ -33,6 +33,8 @@ class XMLRefInfo;
 class DTDEntityDecl;
 class DatatypeValidator;
 class ElemStack;
+class NamespaceScope;
+class XMLScanner;
 
 class XMLPARSER_EXPORT ValidationContext : public XMemory
 {
@@ -94,6 +96,10 @@ public :
       */
     virtual bool isPrefixUnknown(XMLCh* /* prefix */) { return true; };
     virtual void setElemStack(ElemStack* /* elemStack */) {};
+    virtual const XMLCh* getURIForPrefix(XMLCh* /*prefix */) { return 0; };
+    virtual void setScanner(XMLScanner* /* scanner */) { };
+    virtual void setNamespaceScope(NamespaceScope* /* nsStack */) { };
+
     //@}
 
    

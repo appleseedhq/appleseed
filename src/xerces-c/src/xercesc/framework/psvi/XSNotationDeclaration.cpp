@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XSNotationDeclaration.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XSNotationDeclaration.cpp 471747 2006-11-06 14:31:56Z amassari $
  */
 
 #include <xercesc/framework/psvi/XSNotationDeclaration.hpp>
@@ -49,7 +49,7 @@ XSNotationDeclaration::~XSNotationDeclaration()
 // ---------------------------------------------------------------------------
 //  XSNotationDeclaration: XSModel virtual methods
 // ---------------------------------------------------------------------------
-const XMLCh *XSNotationDeclaration::getName()
+const XMLCh *XSNotationDeclaration::getName() const
 {
     return fXMLNotationDecl->getName();
 }

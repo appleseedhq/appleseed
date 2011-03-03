@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,83 +16,34 @@
  */
 
 /*
- * $Id: XMLValidator.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XMLValidator.cpp 635560 2008-03-10 14:10:09Z borisk $
  */
 
 // ---------------------------------------------------------------------------
 //  Includes
 // ---------------------------------------------------------------------------
 #include <xercesc/framework/XMLValidator.hpp>
-#include <xercesc/util/Mutexes.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
 #include <xercesc/util/XMLInitializer.hpp>
 #include <xercesc/util/XMLMsgLoader.hpp>
-#include <xercesc/util/XMLRegisterCleanup.hpp>
 #include <xercesc/internal/XMLScanner.hpp>
 
 XERCES_CPP_NAMESPACE_BEGIN
 
-// ---------------------------------------------------------------------------
-//  Local static functions
-// ---------------------------------------------------------------------------
-
-static XMLMutex* sMsgMutex = 0;
-static XMLRegisterCleanup msgLoaderCleanup;
-
 static XMLMsgLoader* sMsgLoader = 0;
-static XMLRegisterCleanup validatorMutexCleanup;
 
-//
-//  We need to fault in this mutex. But, since its used for synchronization
-//  itself, we have to do this the low level way using a compare and swap.
-//
-static XMLMutex& gValidatorMutex()
-{
-    if (!sMsgMutex)
-    {
-        XMLMutexLock lockInit(XMLPlatformUtils::fgAtomicMutex);
-
-        if (!sMsgMutex)
-        {
-            sMsgMutex = new (XMLPlatformUtils::fgMemoryManager) XMLMutex(XMLPlatformUtils::fgMemoryManager);
-            validatorMutexCleanup.registerCleanup(XMLValidator::reinitMsgMutex);
-        }
-    }
-
-    return *sMsgMutex;
-}
-
-static XMLMsgLoader& getMsgLoader()
-{
-    if (!sMsgLoader)
-    {
-	    // Lock the mutex
-	    XMLMutexLock lockInit(&gValidatorMutex());
-
-        if (!sMsgLoader)
-		{
-		    sMsgLoader = XMLPlatformUtils::loadMsgSet(XMLUni::fgValidityDomain);
-		    if (!sMsgLoader)
-			    XMLPlatformUtils::panic(PanicHandler::Panic_CantLoadMsgDomain);
-
-            //
-            // Register this XMLMsgLoader for cleanup at Termination.
-            //
-            msgLoaderCleanup.registerCleanup(XMLValidator::reinitMsgLoader);
-        }
-    }
-
-    return *sMsgLoader;
-}
-
-void XMLInitializer::initializeValidatorMsgLoader()
+void XMLInitializer::initializeXMLValidator()
 {
     sMsgLoader = XMLPlatformUtils::loadMsgSet(XMLUni::fgValidityDomain);
 
-    // Register this XMLMsgLoader for cleanup at Termination.
-    if (sMsgLoader) {
-        msgLoaderCleanup.registerCleanup(XMLValidator::reinitMsgLoader);
-    }
+    if (!sMsgLoader)
+      XMLPlatformUtils::panic(PanicHandler::Panic_CantLoadMsgDomain);
+}
+
+void XMLInitializer::terminateXMLValidator()
+{
+    delete sMsgLoader;
+    sMsgLoader = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -114,13 +65,13 @@ void XMLValidator::emitError(const XMLValid::Codes toEmit)
     if (fErrorReporter)
     {
         // Load the message into a local for display
-        const unsigned int msgSize = 1023;
+        const XMLSize_t msgSize = 1023;
         XMLCh errText[msgSize + 1];
 
         // load the text
-		if (!getMsgLoader().loadMsg(toEmit, errText, msgSize))
-		{
-			// <TBD> Probably should load a default msg here
+        if (!sMsgLoader->loadMsg(toEmit, errText, msgSize))
+        {
+          // <TBD> Probably should load a default msg here
         }
 
         //
@@ -172,13 +123,13 @@ void XMLValidator::emitError(const  XMLValid::Codes toEmit
         //  Load the message into alocal and replace any tokens found in
         //  the text.
         //
-        const unsigned int maxChars = 2047;
+        const XMLSize_t maxChars = 2047;
         XMLCh errText[maxChars + 1];
 
         // load the text
-		if (!getMsgLoader().loadMsg(toEmit, errText, maxChars, text1, text2, text3, text4, fScanner->getMemoryManager()))
-		{
-			// <TBD> Should probably load a default message here
+        if (!sMsgLoader->loadMsg(toEmit, errText, maxChars, text1, text2, text3, text4, fScanner->getMemoryManager()))
+        {
+          // <TBD> Should probably load a default message here
         }
 
         //
@@ -230,13 +181,13 @@ void XMLValidator::emitError(const  XMLValid::Codes toEmit
         //  Load the message into alocal and replace any tokens found in
         //  the text.
         //
-        const unsigned int maxChars = 2047;
+        const XMLSize_t maxChars = 2047;
         XMLCh errText[maxChars + 1];
 
         // load the text
-		if (!getMsgLoader().loadMsg(toEmit, errText, maxChars, text1, text2, text3, text4, fScanner->getMemoryManager()))
-		{
-			// <TBD> Should probably load a default message here
+        if (!sMsgLoader->loadMsg(toEmit, errText, maxChars, text1, text2, text3, text4, fScanner->getMemoryManager()))
+        {
+          // <TBD> Should probably load a default message here
         }
 
         //
@@ -289,13 +240,13 @@ void XMLValidator::emitError(const  XMLValid::Codes toEmit
         //  Load the message into alocal and replace any tokens found in
         //  the text.
         //
-        const unsigned int maxChars = 2047;
+        const XMLSize_t maxChars = 2047;
         XMLCh errText[maxChars + 1];
 
         // load the text
-		if (!getMsgLoader().loadMsg(toEmit, errText, maxChars, text1, text2, text3, text4, fScanner->getMemoryManager()))
-		{
-			// <TBD> Should probably load a default message here
+        if (!sMsgLoader->loadMsg(toEmit, errText, maxChars, text1, text2, text3, text4, fScanner->getMemoryManager()))
+        {
+          // <TBD> Should probably load a default message here
         }
 
         //
@@ -340,24 +291,6 @@ XMLValidator::XMLValidator(XMLErrorReporter* const errReporter) :
     , fReaderMgr(0)
     , fScanner(0)
 {
-}
-
-// -----------------------------------------------------------------------
-//  Notification that lazy data has been deleted
-// -----------------------------------------------------------------------
-void XMLValidator::reinitMsgMutex()
-{
-    delete sMsgMutex;
-    sMsgMutex = 0;
-}
-
-// -----------------------------------------------------------------------
-//  Reinitialise the message loader
-// -----------------------------------------------------------------------
-void XMLValidator::reinitMsgLoader()
-{
-	delete sMsgLoader;
-	sMsgLoader = 0;
 }
 
 XERCES_CPP_NAMESPACE_END

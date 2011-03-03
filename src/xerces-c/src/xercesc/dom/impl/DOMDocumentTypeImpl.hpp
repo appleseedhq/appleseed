@@ -1,6 +1,3 @@
-#ifndef DOMDocumentTypeImpl_HEADER_GUARD_
-#define DOMDocumentTypeImpl_HEADER_GUARD_
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -19,8 +16,11 @@
  */
 
 /*
- * $Id: DOMDocumentTypeImpl.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMDocumentTypeImpl.hpp 641193 2008-03-26 08:06:57Z borisk $
  */
+
+#if !defined(XERCESC_INCLUDE_GUARD_DOMDOCUMENTTYPEIMPL_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMDOCUMENTTYPEIMPL_HPP
 
 //
 //  This file is part of the internal implementation of the C++ XML DOM.
@@ -45,7 +45,7 @@ XERCES_CPP_NAMESPACE_BEGIN
 class DOMNamedNodeMapImpl;
 
 class CDOM_EXPORT DOMDocumentTypeImpl: public DOMDocumentType {
-private:
+protected:
     DOMNodeImpl          fNode;
     DOMParentNode        fParent;
     DOMChildNode         fChild;
@@ -77,9 +77,11 @@ public:
     DOMDocumentTypeImpl(const DOMDocumentTypeImpl &other, bool heap, bool deep=false);
     virtual ~DOMDocumentTypeImpl();
 
+public:
     // Declare all of the functions from DOMNode.
     DOMNODE_FUNCTIONS;
 
+public:
     virtual void setOwnerDocument(DOMDocument *doc);
     virtual DOMNamedNodeMap * getEntities() const;
     virtual const XMLCh *       getName() const;

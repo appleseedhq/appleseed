@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XSConstants.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XSConstants.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-#if !defined(XSCONSTANTS_HPP)
-#define XSCONSTANTS_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XSCONSTANTS_HPP)
+#define XERCESC_INCLUDE_GUARD_XSCONSTANTS_HPP
 
 #include <xercesc/util/RefVectorOf.hpp>
 #include <xercesc/util/RefArrayVectorOf.hpp>

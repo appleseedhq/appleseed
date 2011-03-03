@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: AttributeList.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: AttributeList.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#ifndef ATTRIBUTELIST_HPP
-#define ATTRIBUTELIST_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_ATTRIBUTELIST_HPP)
+#define XERCESC_INCLUDE_GUARD_ATTRIBUTELIST_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 
@@ -39,7 +39,7 @@ XERCES_CPP_NAMESPACE_BEGIN
   * helper class provides a convenient constructor for doing so).
   *
   * An AttributeList includes only attributes that have been
-  * specified or defaulted: #IMPLIED attributes will not be included.
+  * specified or defaulted: \#IMPLIED attributes will not be included.
   *
   * There are two ways for the SAX application to obtain information
   * from the AttributeList.  First, it can iterate through the entire
@@ -47,7 +47,7 @@ XERCES_CPP_NAMESPACE_BEGIN
   *
   * <code>
   * public void startElement (String name, AttributeList atts) {<br>
-  * &nbsp;for (int i = 0; i < atts.getLength(); i++) {<br>
+  * &nbsp;for (XMLSize_t i = 0; i < atts.getLength(); i++) {<br>
   * &nbsp;&nbsp;String name = atts.getName(i);<br>
   * &nbsp;&nbsp;String type = atts.getType(i);<br>
   * &nbsp;&nbsp;String value = atts.getValue(i);<br>
@@ -108,14 +108,14 @@ public:
     *
     * @return The number of attributes in the list.
     */
-    virtual unsigned int getLength() const = 0;
+    virtual XMLSize_t getLength() const = 0;
 
   /**
     * Return the name of an attribute in this list (by position).
     *
     * The names must be unique: the SAX parser shall not include the
     * same attribute twice.  Attributes without values (those declared
-    * #IMPLIED without a value specified in the start tag) will be
+    * \#IMPLIED without a value specified in the start tag) will be
     * omitted from the list.
     *
     * If the attribute name has a namespace prefix, the prefix
@@ -126,7 +126,7 @@ public:
     *         if the index is out of range.
     * @see #getLength
     */
-    virtual const XMLCh* getName(const unsigned int index) const = 0;
+    virtual const XMLCh* getName(const XMLSize_t index) const = 0;
 
   /**
     * Return the type of an attribute in the list (by position).
@@ -137,7 +137,7 @@ public:
     *
     * If the parser has not read a declaration for the attribute,
     * or if the parser does not report attribute types, then it must
-    * return the value "CDATA" as stated in the XML 1.0 Recommentation
+    * return the value "CDATA" as stated in the XML 1.0 Recommendation
     * (clause 3.3.3, "Attribute-Value Normalization").
     *
     * For an enumerated attribute that is not a notation, the
@@ -147,9 +147,9 @@ public:
     * @return The attribute type as a string, or
     *         null if the index is out of range.
     * @see #getLength
-    * @see #getType(String)
+    * @see #getType
     */
-    virtual const XMLCh* getType(const unsigned int index) const = 0;
+    virtual const XMLCh* getType(const XMLSize_t index) const = 0;
 
   /**
     * Return the value of an attribute in the list (by position).
@@ -162,16 +162,15 @@ public:
     * @return The attribute value as a string, or
     *         null if the index is out of range.
     * @see #getLength
-    * @see #getValue(XMLCh*)
-    * @see #getValue(char *)
+    * @see #getValue
     */
-    virtual const XMLCh* getValue(const unsigned int index) const = 0;
+    virtual const XMLCh* getValue(const XMLSize_t index) const = 0;
 
   /**
     * Return the type of an attribute in the list (by name).
     *
     * The return value is the same as the return value for
-    * getType(int).
+    * getType(XMLSize_t).
     *
     * If the attribute name has a namespace prefix in the document,
     * the application must include the prefix here.
@@ -179,7 +178,7 @@ public:
     * @param name The name of the attribute.
     * @return The attribute type as a string, or null if no
     *         such attribute exists.
-    * @see #getType(int)
+    * @see #getType
     */
     virtual const XMLCh* getType(const XMLCh* const name) const = 0;
 
@@ -187,7 +186,7 @@ public:
     * Return the value of an attribute in the list (by name).
     *
     * The return value is the same as the return value for
-    * getValue(int).
+    * getValue(XMLSize_t).
     *
     * If the attribute name has a namespace prefix in the document,
     * the application must include the prefix here.
@@ -195,8 +194,7 @@ public:
     * @param name The name of the attribute in the list.
     * @return The attribute value as a string, or null if
     *         no such attribute exists.
-    * @see #getValue(int)
-    * @see #getValue(char *)
+    * @see #getValue
     */
     virtual const XMLCh* getValue(const XMLCh* const name) const = 0;
 
@@ -204,7 +202,7 @@ public:
     * Return the value of an attribute in the list (by name).
     *
     * The return value is the same as the return value for
-    * getValue(int).
+    * getValue(XMLSize_t).
     *
     * If the attribute name has a namespace prefix in the document,
     * the application must include the prefix here.
@@ -212,8 +210,7 @@ public:
     * @param name The name of the attribute in the list.
     * @return The attribute value as a string, or null if
     *         no such attribute exists.
-    * @see #getValue(int)
-    * @see #getValue(XMLCh*)
+    * @see #getValue
     */
     virtual const XMLCh* getValue(const char* const name) const = 0;
     //@}

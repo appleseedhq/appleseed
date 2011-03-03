@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: NameIdPool.c 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: NameIdPool.c 883368 2009-11-23 15:28:19Z amassari $
  */
 
 
@@ -36,45 +36,20 @@
 XERCES_CPP_NAMESPACE_BEGIN
 
 // ---------------------------------------------------------------------------
-//  NameIdPoolBucketElem: Constructors and Destructor
-// ---------------------------------------------------------------------------
-template <class TElem> NameIdPoolBucketElem<TElem>::
-NameIdPoolBucketElem(TElem* const                           value
-                    , NameIdPoolBucketElem<TElem>* const    next) :
-    fData(value)
-    , fNext(next)
-{
-}
-
-template <class TElem> NameIdPoolBucketElem<TElem>::~NameIdPoolBucketElem()
-{
-    // Nothing to do
-}
-
-
-// ---------------------------------------------------------------------------
 //  NameIdPool: Constructors and Destructor
 // ---------------------------------------------------------------------------
 template <class TElem>
-NameIdPool<TElem>::NameIdPool( const unsigned int hashModulus
-                             , const unsigned int initSize
+NameIdPool<TElem>::NameIdPool( const XMLSize_t      hashModulus
+                             , const XMLSize_t      initSize
                              , MemoryManager* const manager) :
     fMemoryManager(manager)
-    , fBucketList(0)
     , fIdPtrs(0)
     , fIdPtrsCount(initSize)
     , fIdCounter(0)
-    , fHashModulus(hashModulus)
+    , fBucketList(hashModulus, manager)
 {
-    if (!fHashModulus)
+    if (!hashModulus)
         ThrowXMLwithMemMgr(IllegalArgumentException, XMLExcepts::Pool_ZeroModulus, fMemoryManager);
-
-    // Allocate the bucket list and zero them
-    fBucketList = (NameIdPoolBucketElem<TElem>**) fMemoryManager->allocate
-    (
-        fHashModulus * sizeof(NameIdPoolBucketElem<TElem>*)
-    ); //new NameIdPoolBucketElem<TElem>*[fHashModulus];
-    memset(fBucketList, 0, sizeof(fBucketList[0]) * fHashModulus);
 
     //
     //  Allocate the initial id pointers array. We don't have to zero them
@@ -86,7 +61,7 @@ NameIdPool<TElem>::NameIdPool( const unsigned int hashModulus
     fIdPtrs = (TElem**) fMemoryManager->allocate
     (
         fIdPtrsCount * sizeof(TElem*)
-    ); //new TElem*[fIdPtrsCount];
+    );
     fIdPtrs[0] = 0;
 }
 
@@ -97,22 +72,18 @@ template <class TElem> NameIdPool<TElem>::~NameIdPool()
     //  up when we clean the bucket lists.
     //
     fMemoryManager->deallocate(fIdPtrs); //delete [] fIdPtrs;
-
-    // Remove all elements then delete the bucket list
-    removeAll();
-    fMemoryManager->deallocate(fBucketList); //delete [] fBucketList;
 }
 
 
 // ---------------------------------------------------------------------------
 //  NameIdPool: Element management
 // ---------------------------------------------------------------------------
-template <class TElem> bool
-NameIdPool<TElem>::containsKey(const XMLCh* const key) const
+template <class TElem>
+inline bool NameIdPool<TElem>::
+containsKey(const XMLCh* const key) const
 {
-    unsigned int hashVal;
-    const NameIdPoolBucketElem<TElem>* findIt = findBucketElem(key, hashVal);
-    return (findIt != 0);
+    if (fIdCounter == 0) return false;
+    return fBucketList.containsKey(key);
 }
 
 
@@ -120,27 +91,7 @@ template <class TElem> void NameIdPool<TElem>::removeAll()
 {
     if (fIdCounter == 0) return;
 
-    // Clean up the buckets first
-    for (unsigned int buckInd = 0; buckInd < fHashModulus; buckInd++)
-    {
-        NameIdPoolBucketElem<TElem>* curElem = fBucketList[buckInd];
-        NameIdPoolBucketElem<TElem>* nextElem;
-        while (curElem)
-        {
-            // Save the next element before we hose this one
-            nextElem = curElem->fNext;
-
-            delete curElem->fData;
-            // destructor is empty...
-            // curElem->~NameIdPoolBucketElem();
-            fMemoryManager->deallocate(curElem);
-
-            curElem = nextElem;
-        }
-
-        // Empty out the bucket
-        fBucketList[buckInd] = 0;
-    }
+    fBucketList.removeAll();
 
     // Reset the id counter
     fIdCounter = 0;
@@ -150,28 +101,25 @@ template <class TElem> void NameIdPool<TElem>::removeAll()
 // ---------------------------------------------------------------------------
 //  NameIdPool: Getters
 // ---------------------------------------------------------------------------
-template <class TElem> TElem*
-NameIdPool<TElem>::getByKey(const XMLCh* const key)
+template <class TElem>
+inline TElem* NameIdPool<TElem>::
+getByKey(const XMLCh* const key)
 {
-    unsigned int hashVal;
-    NameIdPoolBucketElem<TElem>* findIt = findBucketElem(key, hashVal);
-    if (!findIt)
-        return 0;
-    return findIt->fData;
+    if (fIdCounter == 0) return 0;
+    return fBucketList.get(key);
 }
 
-template <class TElem> const TElem*
-NameIdPool<TElem>::getByKey(const XMLCh* const key) const
+template <class TElem>
+inline const TElem* NameIdPool<TElem>::
+getByKey(const XMLCh* const key) const
 {
-    unsigned int hashVal;
-    const NameIdPoolBucketElem<TElem>* findIt = findBucketElem(key, hashVal);
-    if (!findIt)
-        return 0;
-    return findIt->fData;
+    if (fIdCounter == 0) return 0;
+    return fBucketList.get(key);
 }
 
-template <class TElem> TElem*
-NameIdPool<TElem>::getById(const unsigned int elemId)
+template <class TElem>
+inline TElem* NameIdPool<TElem>::
+getById(const XMLSize_t elemId)
 {
     // If its either zero or beyond our current id, its an error
     if (!elemId || (elemId > fIdCounter))
@@ -181,7 +129,8 @@ NameIdPool<TElem>::getById(const unsigned int elemId)
 }
 
 template <class TElem>
-const TElem* NameIdPool<TElem>::getById(const unsigned int elemId) const
+inline const TElem* NameIdPool<TElem>::
+getById(const XMLSize_t elemId) const
 {
     // If its either zero or beyond our current id, its an error
     if (!elemId || (elemId > fIdCounter))
@@ -191,7 +140,7 @@ const TElem* NameIdPool<TElem>::getById(const unsigned int elemId) const
 }
 
 template <class TElem>
-MemoryManager* NameIdPool<TElem>::getMemoryManager() const
+inline MemoryManager* NameIdPool<TElem>::getMemoryManager() const
 {
     return fMemoryManager;
 }
@@ -200,11 +149,10 @@ MemoryManager* NameIdPool<TElem>::getMemoryManager() const
 //  NameIdPool: Setters
 // ---------------------------------------------------------------------------
 template <class TElem>
-unsigned int NameIdPool<TElem>::put(TElem* const elemToAdopt)
+XMLSize_t NameIdPool<TElem>::put(TElem* const elemToAdopt)
 {
     // First see if the key exists already. If so, its an error
-    unsigned int hashVal;
-    if (findBucketElem(elemToAdopt->getKey(), hashVal))
+    if(containsKey(elemToAdopt->getKey()))
     {
         ThrowXMLwithMemMgr1
         (
@@ -215,11 +163,7 @@ unsigned int NameIdPool<TElem>::put(TElem* const elemToAdopt)
         );
     }
 
-    // Create a new bucket element and add it to the appropriate list
-    NameIdPoolBucketElem<TElem>* newBucket =
-        new (fMemoryManager->allocate(sizeof(NameIdPoolBucketElem<TElem>)))
-        NameIdPoolBucketElem<TElem>(elemToAdopt,fBucketList[hashVal]);
-    fBucketList[hashVal] = newBucket;
+    fBucketList.put((void*)elemToAdopt->getKey(), elemToAdopt);
 
     //
     //  Give this new one the next available id and add to the pointer list.
@@ -228,7 +172,7 @@ unsigned int NameIdPool<TElem>::put(TElem* const elemToAdopt)
     if (fIdCounter + 1 == fIdPtrsCount)
     {
         // Create a new count 1.5 times larger and allocate a new array
-        unsigned int newCount = (unsigned int)(fIdPtrsCount * 1.5);
+        XMLSize_t newCount = (XMLSize_t)(fIdPtrsCount * 1.5);
         TElem** newArray = (TElem**) fMemoryManager->allocate
         (
             newCount * sizeof(TElem*)
@@ -242,7 +186,7 @@ unsigned int NameIdPool<TElem>::put(TElem* const elemToAdopt)
         fIdPtrs = newArray;
         fIdPtrsCount = newCount;
     }
-    const unsigned int retId = ++fIdCounter;
+    const XMLSize_t retId = ++fIdCounter;
     fIdPtrs[retId] = elemToAdopt;
 
     // Set the id on the passed element
@@ -251,52 +195,6 @@ unsigned int NameIdPool<TElem>::put(TElem* const elemToAdopt)
     // Return the id that we gave to this element
     return retId;
 }
-
-
-// ---------------------------------------------------------------------------
-//  NameIdPool: Private methods
-// ---------------------------------------------------------------------------
-template <class TElem>
-NameIdPoolBucketElem<TElem>* NameIdPool<TElem>::
-findBucketElem(const XMLCh* const key, unsigned int& hashVal)
-{
-    // Hash the key
-    hashVal = XMLString::hash(key, fHashModulus, fMemoryManager);
-
-    assert(hashVal < fHashModulus);        
-
-    // Search that bucket for the key
-    NameIdPoolBucketElem<TElem>* curElem = fBucketList[hashVal];
-    while (curElem)
-    {
-        if (XMLString::equals(key, curElem->fData->getKey()))
-            return curElem;
-        curElem = curElem->fNext;
-    }
-    return 0;
-}
-
-template <class TElem>
-const NameIdPoolBucketElem<TElem>* NameIdPool<TElem>::
-findBucketElem(const XMLCh* const key, unsigned int& hashVal) const
-{
-    // Hash the key
-    hashVal = XMLString::hash(key, fHashModulus, fMemoryManager);
-
-    assert(hashVal < fHashModulus);
-
-    // Search that bucket for the key
-    const NameIdPoolBucketElem<TElem>* curElem = fBucketList[hashVal];
-    while (curElem)
-    {
-        if (XMLString::equals(key, curElem->fData->getKey()))
-            return curElem;
-
-        curElem = curElem->fNext;
-    }
-    return 0;
-}
-
 
 
 // ---------------------------------------------------------------------------
@@ -311,7 +209,7 @@ NameIdPoolEnumerator(NameIdPool<TElem>* const toEnum
     , fToEnum(toEnum)
     , fMemoryManager(manager)
 {
-        Reset();
+    Reset();
 }
 
 template <class TElem> NameIdPoolEnumerator<TElem>::
@@ -378,7 +276,7 @@ template <class TElem> void NameIdPoolEnumerator<TElem>::Reset()
     fCurIndex = fToEnum->fIdCounter ? 1:0;
 }
 
-template <class TElem> int NameIdPoolEnumerator<TElem>::size() const
+template <class TElem> XMLSize_t NameIdPoolEnumerator<TElem>::size() const
 {
     return fToEnum->fIdCounter;
 }

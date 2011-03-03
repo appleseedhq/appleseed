@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: BinFileOutputStream.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: BinFileOutputStream.hpp 553915 2007-07-06 14:57:08Z amassari $
  */
 
-#if !defined(BINFILEOUTPUTSTREAM_HPP)
-#define BINFILEOUTPUTSTREAM_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_BINFILEOUTPUTSTREAM_HPP)
+#define XERCESC_INCLUDE_GUARD_BINFILEOUTPUTSTREAM_HPP
 
 #include <xercesc/framework/BinOutputStream.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
@@ -52,19 +52,19 @@ public :
     //  Getter methods
     // -----------------------------------------------------------------------
     bool getIsOpen() const;
-    unsigned int getSize() const;
+    XMLFilePos getSize() const;
     void reset();
 
 
     // -----------------------------------------------------------------------
     //  Implementation of the input stream interface
     // -----------------------------------------------------------------------
-    virtual unsigned int curPos() const;
+    virtual XMLFilePos curPos() const;
 
     virtual void writeBytes
     (
           const XMLByte* const      toGo
-        , const unsigned int        maxToWrite
+        , const XMLSize_t        maxToWrite
     );
 
 

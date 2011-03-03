@@ -18,7 +18,7 @@
 
 <!DOCTYPE s1 SYSTEM "sbk:/style/dtd/document.dtd">
 
-<s1 title="SAX1 Programming Guide">
+<s1 title="SAX Programming Guide">
 
     <anchor name="UsingSAX1API"/>
     <s2 title="Using the SAX API">
@@ -36,11 +36,11 @@
         commonly used handler classes are DocumentHandler which is
         called when XML constructs are recognized, and ErrorHandler
         which is called when an error occurs. The header files for the
-        various SAX handler classes are in
-        '&lt;&XercesCInstallDir;>/include/xercesc/sax'</p>
+        various SAX handler classes are in the <code>xercesc/sax/</code>
+        directory.</p>
 
-      <p>As a convenience, &XercesCName; provides the class
-        HandlerBase, which is a single class which is publicly derived
+      <p>As a convenience, &XercesCName; provides
+        HandlerBase, a single class which is publicly derived
         from all the Handler classes. HandlerBase's default
         implementation of the handler callback methods is to do
         nothing. A convenient way to get started with &XercesCName; is
@@ -63,7 +63,9 @@ public:
       <p>This is the implementation file MySAXHandler.cpp:</p>
 
 <source>#include "MySAXHandler.hpp"
-#include &lt;iostream.h>
+#include &lt;iostream>
+
+using namespace std;
 
 MySAXHandler::MySAXHandler()
 {
@@ -83,11 +85,12 @@ void MySAXHandler::fatalError(const SAXParseException&amp; exception)
     cout &lt;&lt; "Fatal Error: " &lt;&lt; message
          &lt;&lt; " at line: " &lt;&lt; exception.getLineNumber()
          &lt;&lt; endl;
+    XMLString::release(&amp;message);
 }</source>
 
       <p>The XMLCh and AttributeList types are supplied by
-        &XercesCName; and are documented in the include
-        files. Examples of their usage appear in the source code to
+        &XercesCName; and are documented in the API reference.
+        Examples of their usage appear in the source code for
         the sample applications.</p>
     </s2>
 
@@ -95,7 +98,7 @@ void MySAXHandler::fatalError(const SAXParseException&amp; exception)
     <s2 title="SAXParser">
         <anchor name="ConstructParser"/>
         <s3 title="Constructing a SAXParser">
-          <p>In order to use &XercesCName; to parse XML files, you will
+          <p>In order to use &XercesCName; SAX to parse XML files, you will
             need to create an instance of the SAXParser class. The example
             below shows the code you need in order to create an instance
             of SAXParser. The DocumentHandler and ErrorHandler instances
@@ -107,13 +110,10 @@ void MySAXHandler::fatalError(const SAXParseException&amp; exception)
     #include &lt;xercesc/sax/HandlerBase.hpp>
     #include &lt;xercesc/util/XMLString.hpp>
 
-    #if defined(XERCES_NEW_IOSTREAMS)
     #include &lt;iostream>
-    #else
-    #include &lt;iostream.h>
-    #endif
 
-    XERCES_CPP_NAMESPACE_USE
+    using namespace std;
+    using namespace xercesc;
 
     int main (int argc, char* args[]) {
 
@@ -173,7 +173,7 @@ void MySAXHandler::fatalError(const SAXParseException&amp; exception)
            of the features below are set using the "setter" methods (e.g. <code>setDoNamespaces</code>),
            and are queried using the corresponding "getter" methods (e.g. <code>getDoNamespaces</code>).
            The following only gives you a quick summary of supported features.  Please
-           refer to <jump href="api.html">API Documentation</jump> for complete detail.
+           refer to <jump href="api-&XercesC3Series;.html">API Documentation</jump> for complete detail.
            </p>
            <p>None of these features can be modified in the middle of a parse, or an exception will be thrown.</p>
 
@@ -190,23 +190,6 @@ void MySAXHandler::fatalError(const SAXParseException&amp; exception)
                 <link anchor="validation-dynamic">setValidationScheme</link>
                 </td></tr>
             </table>
-            <p/>
-
-            <anchor name="validation"/>
-            <table>
-                <tr><th colspan="2"><em>void setDoValidation(const bool)</em> (deprecated) <br/>
-                please use <link anchor="validation-dynamic">setValidationScheme</link>.
-                </th></tr>
-                <tr><th><em>true:</em></th><td> Report all validation errors. </td></tr>
-                <tr><th><em>false:</em></th><td> Do not report validation errors. </td></tr>
-                <tr><th><em>default:</em></th><td> see the default of
-                <link anchor="validation-dynamic">setValidationScheme</link>.
-                </td></tr>
-                <tr><th><em>see:</em></th><td>
-                <link anchor="validation-dynamic">setValidationScheme</link>
-                </td></tr>
-            </table>
-
             <p/>
 
             <anchor name="validation-dynamic"/>
@@ -252,6 +235,20 @@ void MySAXHandler::fatalError(const SAXParseException&amp; exception)
                 <tr><th><em>note:</em></th><td> This feature checks the Schema grammar itself for
                 additional errors that are time-consuming or memory intensive. It does <em>not</em> affect the
                 level of checking performed on document instances that use Schema grammars. </td></tr>
+                <tr><th><em>see:</em></th><td>
+                <link anchor="schema">setDoSchema</link>
+                </td></tr>
+            </table>
+
+            <p/>
+
+            <anchor name="load-schema"/>
+            <table>
+                <tr><th colspan="2"><em>void setLoadSchema(const bool)</em></th></tr>
+                <tr><th><em>true:</em></th><td> Load the schema. </td></tr>
+                <tr><th><em>false:</em></th><td> Don't load the schema if it wasn't found in the grammar pool. </td></tr>
+                <tr><th><em>default:</em></th><td> true </td></tr>
+                <tr><th><em>note:</em></th><td> This feature is ignored and no schemas are loaded if schema processing is disabled. </td></tr>
                 <tr><th><em>see:</em></th><td>
                 <link anchor="schema">setDoSchema</link>
                 </td></tr>
@@ -367,20 +364,20 @@ void MySAXHandler::fatalError(const SAXParseException&amp; exception)
                 <tr><th colspan="2"><em>void setIdentityConstraintChecking(const bool);</em></th></tr>
                 <tr><th><em>true:</em></th><td> Enable identity constraint checking. </td></tr>
                 <tr><th><em>false:</em></th><td> Disable identity constraint checking. </td></tr>
-                <tr><th><em>default:</em></th><td> true </td></tr>                
+                <tr><th><em>default:</em></th><td> true </td></tr>
             </table>
             <p/>
-            
+
             <anchor name="GenerateSyntheticAnnotations"/>
             <table>
                 <tr><th colspan="2"><em>void setGenerateSyntheticAnnotations(const bool);</em></th></tr>
-                <tr><th><em>true:</em></th><td> Enable generation of synthetic annotations.  A synthetic annotation will be 
+                <tr><th><em>true:</em></th><td> Enable generation of synthetic annotations.  A synthetic annotation will be
                 generated when a schema component has non-schema attributes but no child annotation. </td></tr>
                 <tr><th><em>false:</em></th><td> Disable generation of synthetic annotations. </td></tr>
-                <tr><th><em>default:</em></th><td> false </td></tr>                
+                <tr><th><em>default:</em></th><td> false </td></tr>
             </table>
             <p/>
-            
+
             <anchor name="XercesValidateAnnotations"/>
             <table>
                 <tr><th colspan="2"><em>setValidateAnnotation</em></th></tr>
@@ -389,53 +386,63 @@ void MySAXHandler::fatalError(const SAXParseException&amp; exception)
                 <tr><th><em>default:</em></th><td> false </td></tr>
                 <tr><th><em>note:</em></th><td> Each annotation is validated independently. </td></tr>
             </table>
-            <p/>               
-            
+            <p/>
+
             <anchor name="IgnoreAnnotations"/>
             <table>
                 <tr><th colspan="2"><em>setIgnoreAnnotations</em></th></tr>
                 <tr><th><em>true:</em></th><td> Do not generate XSAnnotations when traversing a schema.</td></tr>
                 <tr><th><em>false:</em></th><td> Generate XSAnnotations when traversing a schema.</td></tr>
-                <tr><th><em>default:</em></th><td> false </td></tr>                
+                <tr><th><em>default:</em></th><td> false </td></tr>
             </table>
-            <p/>    
-            
+            <p/>
+
             <anchor name="DisableDefaultEntityResolution"/>
             <table>
                 <tr><th colspan="2"><em>setDisableDefaultEntityResolution</em></th></tr>
                 <tr><th><em>true:</em></th><td> The parser will not attempt to resolve the entity when the resolveEntity method returns NULL.</td></tr>
                 <tr><th><em>false:</em></th><td> The parser will attempt to resolve the entity when the resolveEntity method returns NULL.</td></tr>
-                <tr><th><em>default:</em></th><td> false </td></tr>                
+                <tr><th><em>default:</em></th><td> false </td></tr>
             </table>
             <p/>
-            
+
             <anchor name="SkipDTDValidation"/>
             <table>
                 <tr><th colspan="2"><em>setSkipDTDValidation</em></th></tr>
                 <tr><th><em>true:</em></th><td> When schema validation is on the parser will ignore the DTD, except for entities.</td></tr>
                 <tr><th><em>false:</em></th><td> The parser will not ignore DTDs when validating.</td></tr>
-                <tr><th><em>default:</em></th><td> false </td></tr>                
+                <tr><th><em>default:</em></th><td> false </td></tr>
                 <tr><th><em>see:</em></th><td>
-                <link anchor="schema">DoSchema</link></td></tr>                
+                <link anchor="schema">DoSchema</link></td></tr>
             </table>
-            <p/>                                                
+            <p/>
 
 			<anchor name="XercesIgnoreCachedDTD"/>
-            <table>            
+            <table>
                 <tr><th colspan="2"><em>setIgnoreCachedDTD</em></th></tr>
-                <tr><th><em>true:</em></th><td> Ignore a cached DTD when an XML document contains both an 
+                <tr><th><em>true:</em></th><td> Ignore a cached DTD when an XML document contains both an
                 								internal and external DTD, and the use cached grammar from parse option
                 								is enabled. Currently, we do not allow using cached DTD grammar when an
                 								internal subset is present in the document. This option will only affect
-                								the behavior of the parser when an internal and external DTD both exist 
+                								the behavior of the parser when an internal and external DTD both exist
                 								in a document (i.e. no effect if document has no internal subset).</td></tr>
                 <tr><th><em>false:</em></th><td> Don't ignore cached DTD. </td></tr>
-                <tr><th><em>default:</em></th><td> false </td></tr>                
+                <tr><th><em>default:</em></th><td> false </td></tr>
                 <tr><th><em>see:</em></th><td>
                 <link anchor="use-cached">useCachedGrammarInParse</link></td></tr>
             </table>
             <p/>
-                        
+
+            <anchor name="XercesHandleMultipleImports"/>
+            <table>
+                <tr><th colspan="2"><em>setHandleMultipleImports</em></th></tr>
+                <tr><th><em>true:</em></th><td> During schema validation allow multiple schemas with the same namespace
+                                                to be imported.</td></tr>
+                <tr><th><em>false:</em></th><td> Don't import multiple schemas with the same namespace. </td></tr>
+                <tr><th><em>default:</em></th><td> false </td></tr>
+            </table>
+            <p/>
+
             <table>
                 <tr><th colspan="2"><em>void setExternalSchemaLocation(const XMLCh* const)</em></th></tr>
                 <tr><th><em>Description</em></th><td> The XML Schema Recommendation explicitly states that
@@ -485,7 +492,7 @@ void MySAXHandler::fatalError(const SAXParseException&amp; exception)
                             Users can use the predefined constants defined in XMLUni directly (fgWFXMLScanner, fgDGXMLScanner,
                             fgSGXMLScanner, or fgIGXMLScanner) or a string that matches the value of one of those constants.</td></tr>
                 <tr><th><em>Value Type</em></th><td> XMLCh* </td></tr>
-                <tr><th><em>note: </em></th><td> See <jump href="program-others.html#UseSpecificScanner">Use Specific Scanner</jump>
+                <tr><th><em>note: </em></th><td> See <jump href="program-others-&XercesC3Series;.html#UseSpecificScanner">Use Specific Scanner</jump>
                 for more programming details. </td></tr>
             </table>
 
@@ -495,7 +502,7 @@ void MySAXHandler::fatalError(const SAXParseException&amp; exception)
                 <tr><th
                 colspan="2"><em>setSecurityManager(Security Manager * const)</em></th></tr>
                 <tr><th><em>Description</em></th>
-                <td> 
+                <td>
                     Certain valid XML and XML Schema constructs can force a
                     processor to consume more system resources than an
                     application may wish.  In fact, certain features could
@@ -503,10 +510,10 @@ void MySAXHandler::fatalError(const SAXParseException&amp; exception)
                     denial-of-service attack.  This property allows
                     applications to impose limits on the amount of
                     resources the processor will consume while processing
-                    these constructs.  
+                    these constructs.
                 </td></tr>
                 <tr><th><em>Value</em></th>
-                <td> 
+                <td>
                     An instance of the SecurityManager class (see
                     <code>xercesc/util/SecurityManager</code>).  This
                     class's documentation describes the particular limits
@@ -524,15 +531,36 @@ void MySAXHandler::fatalError(const SAXParseException&amp; exception)
                     performed.
                 </td></tr>
                 <tr><th><em>Value Type</em></th><td> SecurityManager* </td></tr>
-            </table>                
-            
+            </table>
+
             <p/>
-                        
-            <table>            
+
+            <table>
+                <tr><th
+                colspan="2"><em>setLowWaterMark(XMLSize_t)</em></th></tr>
+                <tr><th><em>Description</em></th>
+                <td>
+                    If the number of available bytes in the raw buffer is less than
+                    the low water mark the parser will attempt to read more data before
+                    continuing parsing. By default the value for this parameter is 100
+                    bytes. You may want to set this parameter to 0 if you would like
+                    the parser to parse the available data immediately without
+                    potentially blocking while waiting for more date.
+                </td></tr>
+                <tr><th><em>Value</em></th>
+                <td>
+                    New low water mark.
+                </td></tr>
+                <tr><th><em>Value Type</em></th><td> XMLSize_t </td></tr>
+            </table>
+
+            <p/>
+
+            <table>
                 <tr><th
                 colspan="2"><em>setInputBufferSize(const size_t bufferSize)</em></th></tr>
                 <tr><th><em>Description</em></th>
-                <td> 
+                <td>
                     Set maximum input buffer size.
                     This method allows users to limit the size of buffers used in parsing
                     XML character data. The effect of setting this size is to limit the
@@ -540,7 +568,7 @@ void MySAXHandler::fatalError(const SAXParseException&amp; exception)
                     The parser's default input buffer size is 1 megabyte.
                 </td></tr>
                 <tr><th><em>Value</em></th>
-                <td> 
+                <td>
                     The maximum input buffer size
                 </td></tr>
                 <tr><th><em>Value Type</em></th><td> XMLCh* </td></tr>

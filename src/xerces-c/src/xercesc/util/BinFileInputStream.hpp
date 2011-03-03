@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: BinFileInputStream.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: BinFileInputStream.hpp 670359 2008-06-22 13:43:45Z borisk $
  */
 
-#if !defined(BINFILEINPUTSTREAM_HPP)
-#define BINFILEINPUTSTREAM_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_BINFILEINPUTSTREAM_HPP)
+#define XERCESC_INCLUDE_GUARD_BINFILEINPUTSTREAM_HPP
 
 #include <xercesc/util/BinInputStream.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
@@ -58,28 +58,29 @@ public :
     //  Getter methods
     // -----------------------------------------------------------------------
     bool getIsOpen() const;
-    unsigned int getSize() const;
+    XMLFilePos getSize() const;
     void reset();
 
 
     // -----------------------------------------------------------------------
     //  Implementation of the input stream interface
     // -----------------------------------------------------------------------
-    virtual unsigned int curPos() const;
+    virtual XMLFilePos curPos() const;
 
-    virtual unsigned int readBytes
+    virtual XMLSize_t readBytes
     (
                 XMLByte* const      toFill
-        , const unsigned int        maxToRead
+        , const XMLSize_t           maxToRead
     );
 
+    virtual const XMLCh* getContentType() const;
 
 private :
     // -----------------------------------------------------------------------
     //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
     BinFileInputStream(const BinFileInputStream&);
-    BinFileInputStream& operator=(const BinFileInputStream&);   
+    BinFileInputStream& operator=(const BinFileInputStream&);
 
     // -----------------------------------------------------------------------
     //  Private data members

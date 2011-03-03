@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XSDElementNSImpl.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XSDElementNSImpl.cpp 678381 2008-07-21 10:15:01Z borisk $
  */
 #include <xercesc/util/XMLUniDefs.hpp>
 #include <xercesc/dom/DOMException.hpp>
@@ -38,8 +38,8 @@ XSDElementNSImpl::XSDElementNSImpl(DOMDocument *ownerDoc, const XMLCh *nam) :
 XSDElementNSImpl::XSDElementNSImpl(DOMDocument *ownerDoc,
                                    const XMLCh *namespaceURI,
                                    const XMLCh *qualifiedName,
-                                   const XMLSSize_t lineNo,
-                                   const XMLSSize_t columnNo) :
+                                   const XMLFileLoc lineNo,
+                                   const XMLFileLoc columnNo) :
     DOMElementNSImpl(ownerDoc, namespaceURI, qualifiedName)
     , fLineNo(lineNo)
     , fColumnNo(columnNo)
@@ -54,11 +54,10 @@ XSDElementNSImpl::XSDElementNSImpl(const XSDElementNSImpl &other, bool deep) :
 }
 
 DOMNode * XSDElementNSImpl::cloneNode(bool deep) const {
-    DOMNode* newNode = new (getOwnerDocument()) XSDElementNSImpl(*this, deep);
+    DOMNode* newNode = new (fParent.fOwnerDocument) XSDElementNSImpl(*this, deep);
     fNode.callUserDataHandlers(DOMUserDataHandler::NODE_CLONED, this, newNode);
     return newNode;
 }
 
 
 XERCES_CPP_NAMESPACE_END
-

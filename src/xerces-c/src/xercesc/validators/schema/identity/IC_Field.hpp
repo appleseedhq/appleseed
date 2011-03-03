@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: IC_Field.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: IC_Field.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#if !defined(IC_FIELD_HPP)
-#define IC_FIELD_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_IC_FIELD_HPP)
+#define XERCESC_INCLUDE_GUARD_IC_FIELD_HPP
 
 
 // ---------------------------------------------------------------------------
@@ -61,19 +61,6 @@ public:
     XercesXPath* getXPath() const { return fXPath; }
     IdentityConstraint* getIdentityConstraint() const { return fIdentityConstraint; }
 
-    /**
-      * @deprecated
-      */
-    bool getMayMatch() const { return false; }
-
-    // -----------------------------------------------------------------------
-    //  Setter methods
-    // -----------------------------------------------------------------------
-    /**
-      * @deprecated
-      */
-    void setMayMatch(const bool) {}
-
     // -----------------------------------------------------------------------
     //  Factory methods
     // -----------------------------------------------------------------------
@@ -84,12 +71,6 @@ public:
         , MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager
     );
 
-    /**
-      * @deprecated
-      */
-    XPathMatcher* createMatcher(ValueStore* const valueStore,
-                                MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
-
     /***
      * Support for Serialization/De-serialization
      ***/
@@ -99,7 +80,7 @@ public:
 
 private:
     // -----------------------------------------------------------------------
-    //  Unimplemented contstructors and operators
+    //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
     IC_Field(const IC_Field& other);
     IC_Field& operator= (const IC_Field& other);
@@ -143,7 +124,7 @@ private:
                  MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
 
     // -----------------------------------------------------------------------
-    //  Unimplemented contstructors and operators
+    //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
     FieldMatcher(const FieldMatcher& other);
     FieldMatcher& operator= (const FieldMatcher& other);

@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: OpFactory.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: OpFactory.hpp 678879 2008-07-22 20:05:05Z amassari $
  */
 
-#if !defined(OPFACTORY_HPP)
-#define OPFACTORY_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_OPFACTORY_HPP)
+#define XERCESC_INCLUDE_GUARD_OPFACTORY_HPP
 
 // ---------------------------------------------------------------------------
 //  Includes
@@ -40,7 +40,6 @@ class ChildOp;
 class RangeOp;
 class StringOp;
 class ModifierOp;
-class ConditionOp;
 class Token;
 
 /*
@@ -54,44 +53,34 @@ class Token;
 class XMLUTIL_EXPORT OpFactory : public XMemory
 {
 public:
-	// -----------------------------------------------------------------------
+    // -----------------------------------------------------------------------
     //  Constructors and destructors
     // -----------------------------------------------------------------------
-	OpFactory(MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
+    OpFactory(MemoryManager* const manager = XMLPlatformUtils::fgMemoryManager);
     ~OpFactory();
 
     // -----------------------------------------------------------------------
     //  Factory methods
     // -----------------------------------------------------------------------
     Op* createDotOp();
-	CharOp* createCharOp(XMLInt32 data);
-	CharOp* createAnchorOp(XMLInt32 data);
-	CharOp* createCaptureOp(int number, const Op* const next);
-	UnionOp* createUnionOp(int size);
-	ChildOp* createClosureOp(int id);
-	ChildOp* createNonGreedyClosureOp();
-	ChildOp* createQuestionOp(bool nonGreedy);
-	RangeOp* createRangeOp(const Token* const token);
-	ChildOp* createLookOp(const short type, const Op* const next,
-                          const Op* const branch);
-	CharOp* createBackReferenceOp(int refNo);
-	StringOp* createStringOp(const XMLCh* const literal);
-	ChildOp* createIndependentOp(const Op* const next,
-								 const Op* const branch);
-	ModifierOp* createModifierOp(const Op* const next, const Op* const branch,
-								 const int add, const int mask);
-	ConditionOp* createConditionOp(const Op* const next, const int ref,
-                                   const Op* const conditionFlow,
-                                   const Op* const yesFlow,
-                                   const Op* const noFlow);
+    CharOp* createCharOp(XMLInt32 data);
+    CharOp* createAnchorOp(XMLInt32 data);
+    CharOp* createCaptureOp(int number, const Op* const next);
+    UnionOp* createUnionOp(XMLSize_t size);
+    ChildOp* createClosureOp(int id);
+    ChildOp* createNonGreedyClosureOp();
+    ChildOp* createQuestionOp(bool nonGreedy);
+    RangeOp* createRangeOp(const Token* const token);
+    CharOp* createBackReferenceOp(int refNo);
+    StringOp* createStringOp(const XMLCh* const literal);
 
     // -----------------------------------------------------------------------
     //  Reset methods
     // -----------------------------------------------------------------------
-	/*
-	 *	Remove all created Op objects from Vector
-	 */
-	void reset();
+    /*
+     *    Remove all created Op objects from Vector
+     */
+    void reset();
 
 private:
     // -----------------------------------------------------------------------
@@ -115,7 +104,7 @@ private:
 // ---------------------------------------------------------------------------
 inline void OpFactory::reset() {
 
-	fOpVector->removeAllElements();
+    fOpVector->removeAllElements();
 }
 
 XERCES_CPP_NAMESPACE_END
@@ -123,5 +112,5 @@ XERCES_CPP_NAMESPACE_END
 #endif
 
 /**
-  *	End file OpFactory
+  *    End file OpFactory
   */

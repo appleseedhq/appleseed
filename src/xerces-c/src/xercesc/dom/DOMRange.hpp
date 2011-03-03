@@ -1,6 +1,3 @@
-#ifndef DOMRange_HEADER_GUARD_
-#define DOMRange_HEADER_GUARD_
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -19,8 +16,11 @@
  */
 
 /*
- * $Id: DOMRange.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMRange.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
+
+#if !defined(XERCESC_INCLUDE_GUARD_DOMRANGE_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMRANGE_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 
@@ -69,7 +69,7 @@ public:
     // -----------------------------------------------------------------------
     //  Class Types
     // -----------------------------------------------------------------------
-    /** @name Public Contants */
+    /** @name Public Constants */
     //@{
     /**
      * Constants CompareHow.

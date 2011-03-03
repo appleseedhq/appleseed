@@ -1,6 +1,3 @@
-#ifndef DOMNodeList_HEADER_GUARD_
-#define DOMNodeList_HEADER_GUARD_
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -8,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,8 +16,11 @@
  */
 
 /*
- * $Id: DOMNodeList.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: DOMNodeList.hpp 671894 2008-06-26 13:29:21Z borisk $
  */
+
+#if !defined(XERCESC_INCLUDE_GUARD_DOMNODELIST_HPP)
+#define XERCESC_INCLUDE_GUARD_DOMNODELIST_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 
@@ -48,7 +48,7 @@ protected:
     //  Hidden constructors
     // -----------------------------------------------------------------------
     /** @name Hidden constructors */
-    //@{    
+    //@{
     DOMNodeList() {};
     //@}
 
@@ -110,5 +110,3 @@ public:
 XERCES_CPP_NAMESPACE_END
 
 #endif
-
-

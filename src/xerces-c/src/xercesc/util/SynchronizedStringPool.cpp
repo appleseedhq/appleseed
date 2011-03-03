@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: SynchronizedStringPool.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: SynchronizedStringPool.cpp 903137 2010-01-26 09:26:28Z borisk $
  */
 
 
@@ -56,26 +56,37 @@ unsigned int XMLSynchronizedStringPool::addOrFind(const XMLCh* const newString)
         return id;
     // might have to add it to our own table.
     // synchronize this bit
-    {
-        XMLMutexLock lockInit(&fMutex);
-        id = XMLStringPool::addOrFind(newString);
-        return id+fConstPool->getStringCount();
-    }
+    unsigned int constCount = fConstPool->getStringCount();
+    XMLMutexLock lockInit(&fMutex);
+    id = XMLStringPool::addOrFind(newString);
+    return id+constCount;
 }
 
 bool XMLSynchronizedStringPool::exists(const XMLCh* const newString) const
 {
     if(fConstPool->exists(newString))
         return true;
+
+    XMLMutexLock lockInit(&const_cast<XMLSynchronizedStringPool*>(this)->fMutex);
     return XMLStringPool::exists(newString);
 }
 
 bool XMLSynchronizedStringPool::exists(const unsigned int id) const
 {
-    if (!id || (id >= fCurId+fConstPool->getStringCount()))
+    if (!id)
         return false;
 
-    return true;
+    // First see if this id belongs to the const pool.
+    //
+    unsigned int constCount = fConstPool->getStringCount();
+
+    if (id <= constCount)
+      return true;
+
+    // The rest needs to be synchronized.
+    //
+    XMLMutexLock lockInit(&const_cast<XMLSynchronizedStringPool*>(this)->fMutex);
+    return id < fCurId + constCount;
 }
 
 void XMLSynchronizedStringPool::flushAll()
@@ -90,8 +101,11 @@ unsigned int XMLSynchronizedStringPool::getId(const XMLCh* const toFind) const
     unsigned int retVal = fConstPool->getId(toFind);
     if(retVal)
         return retVal;
+
     // make sure we return a truly unique id
-    return XMLStringPool::getId(toFind)+fConstPool->getStringCount();
+    unsigned int constCount = fConstPool->getStringCount();
+    XMLMutexLock lockInit(&const_cast<XMLSynchronizedStringPool*>(this)->fMutex);
+    return XMLStringPool::getId(toFind)+constCount;
 }
 
 
@@ -99,12 +113,17 @@ const XMLCh* XMLSynchronizedStringPool::getValueForId(const unsigned int id) con
 {
     if (id <= fConstPool->getStringCount())
         return fConstPool->getValueForId(id);
-    return XMLStringPool::getValueForId(id-fConstPool->getStringCount());
+
+    unsigned int constCount = fConstPool->getStringCount();
+    XMLMutexLock lockInit(&const_cast<XMLSynchronizedStringPool*>(this)->fMutex);
+    return XMLStringPool::getValueForId(id-constCount);
 }
 
 unsigned int XMLSynchronizedStringPool::getStringCount() const
 {
-    return fCurId+fConstPool->getStringCount()-1;
+    unsigned int constCount = fConstPool->getStringCount();
+    XMLMutexLock lockInit(&const_cast<XMLSynchronizedStringPool*>(this)->fMutex);
+    return fCurId+constCount-1;
 }
 
 XERCES_CPP_NAMESPACE_END

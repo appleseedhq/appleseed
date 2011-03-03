@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XSerializable.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XSerializable.hpp 527149 2007-04-10 14:56:39Z amassari $
  */
 
-#if !defined(XSERIALIZABLE_HPP)
-#define XSERIALIZABLE_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XSERIALIZABLE_HPP)
+#define XERCESC_INCLUDE_GUARD_XSERIALIZABLE_HPP
 
 #include <xercesc/internal/XSerializeEngine.hpp>
 #include <xercesc/internal/XProtoType.hpp>

@@ -4,6 +4,7 @@
 	Version="7.10"
 	Name="XercesLib"
 	ProjectGUID="{152CE948-F659-4206-A50A-1D2B9658EF96}"
+	RootNamespace="XercesLib"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -13,8 +14,8 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\Release"
-			IntermediateDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\Release\obj"
+			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -23,15 +24,17 @@
 				Name="VCCLCompilerTool"
 				Optimization="1"
 				InlineFunctionExpansion="2"
+				OptimizeForProcessor="0"
 				AdditionalIncludeDirectories="..\..\..\..\..\src"
-				PreprocessorDefinitions="NDEBUG;PLATFORM_WIN32;_CRTDBG_MAP_ALLOC;PROJ_XMLPARSER;PROJ_XMLUTIL;PROJ_PARSERS;PROJ_SAX4C;PROJ_SAX2;PROJ_DOM;PROJ_VALIDATORS;XML_SINGLEDLL;WIN32;_WINDOWS;XML_USE_WIN32_TRANSCODER;XML_USE_WIN32_MSGLOADER;XML_USE_NETACCESSOR_WINSOCK"
+				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;XERCES_BUILDING_LIBRARY;XERCES_USE_TRANSCODER_WINDOWS;XERCES_USE_WIN32_MSGLOADER;XERCES_USE_NETACCESSOR_WINSOCK;XERCES_USE_FILEMGR_WINDOWS;XERCES_USE_MUTEXMGR_WINDOWS;XERCES_PATH_DELIMITER_BACKSLASH;HAVE_STRICMP;HAVE_STRNICMP;HAVE_LIMITS_H;HAVE_SYS_TIMEB_H;HAVE_FTIME;HAVE_WCSUPR;HAVE_WCSLWR;HAVE_WCSICMP;HAVE_WCSNICMP"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
-				PrecompiledHeaderFile=".\..\..\..\..\..\Build\Win32\VC7.1\Release\obj/XercesLib.pch"
-				AssemblerListingLocation=".\..\..\..\..\..\Build\Win32\VC7.1\Release\obj/"
-				ObjectFile=".\..\..\..\..\..\Build\Win32\VC7.1\Release\obj/"
-				ProgramDataBaseFileName=".\..\..\..\..\..\Build\Win32\VC7.1\Release\obj/"
+				DisableLanguageExtensions="FALSE"
+				PrecompiledHeaderFile="$(IntDir)\XercesLib.pch"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\XercesLib_vc71.pdb"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 				CompileAs="0"/>
@@ -39,27 +42,27 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
+				AdditionalOptions=""
 				AdditionalDependencies="ws2_32.lib advapi32.lib "
-				OutputFile="..\..\..\..\..\Build\Win32\VC7.1\Release\xerces-c_2_8.dll"
-				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\..\..\..\Build\Win32\VC7.1\Release"
+				OutputFile="$(OutDir)\xerces-c_3_1.dll"
+				LinkIncremental="0"
+				AdditionalLibraryDirectories="$(OutDir)"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\..\..\..\..\..\Build\Win32\VC7.1\Release\xerces-c_2_8.fullpdb"
-				StripPrivateSymbols=".\..\..\..\..\..\Build\Win32\VC7.1\Release\xerces-c_2_8.pdb"
+				ProgramDatabaseFile="$(OutDir)\xerces-c_3_1.fullpdb"
+				StripPrivateSymbols="$(OutDir)\xerces-c_3_1.pdb"
 				GenerateMapFile="TRUE"
-				MapFileName=".\..\..\..\..\..\Build\Win32\VC7.1\Release\obj/xerces-c_2_8.map"
+				MapFileName="$(IntDir)\xerces-c_3_1.map"
 				SubSystem="2"
 				OptimizeReferences="2"
 				SetChecksum="TRUE"
 				BaseAddress="0x12000000"
-				ImportLibrary="..\..\..\..\..\Build\Win32\VC7.1\Release/xerces-c_2.lib"/>
+				ImportLibrary="$(OutDir)\xerces-c_3.lib"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="NDEBUG"
 				MkTypLibCompatible="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\..\..\..\Build\Win32\VC7.1\Release/XercesLib.tlb"/>
+				TypeLibraryName="$(OutDir)\XercesLib.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -83,21 +86,24 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\Debug"
-			IntermediateDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\Debug\obj"
+			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				OptimizeForProcessor="0"
 				AdditionalIncludeDirectories="..\..\..\..\..\src"
-				PreprocessorDefinitions="_CRTDBG_MAP_ALLOC;PROJ_SAX2;_DEBUG;PROJ_XMLPARSER;PROJ_XMLUTIL;PROJ_PARSERS;PROJ_SAX4C;PROJ_DOM;PROJ_VALIDATORS;XML_SINGLEDLL;WIN32;_WINDOWS;XML_USE_WIN32_TRANSCODER;XML_USE_WIN32_MSGLOADER;XML_USE_NETACCESSOR_WINSOCK"
+				PreprocessorDefinitions="_CRTDBG_MAP_ALLOC;_DEBUG;WIN32;_WINDOWS;XERCES_BUILDING_LIBRARY;XERCES_USE_TRANSCODER_WINDOWS;XERCES_USE_WIN32_MSGLOADER;XERCES_USE_NETACCESSOR_WINSOCK;XERCES_USE_FILEMGR_WINDOWS;XERCES_USE_MUTEXMGR_WINDOWS;XERCES_PATH_DELIMITER_BACKSLASH;HAVE_STRICMP;HAVE_STRNICMP;HAVE_LIMITS_H;HAVE_SYS_TIMEB_H;HAVE_FTIME;HAVE_WCSUPR;HAVE_WCSLWR;HAVE_WCSICMP;HAVE_WCSNICMP"
 				RuntimeLibrary="3"
-				PrecompiledHeaderFile=".\..\..\..\..\..\Build\Win32\VC7.1\Debug\obj/XercesLib.pch"
-				AssemblerListingLocation=".\..\..\..\..\..\Build\Win32\VC7.1\Debug\obj/"
-				ObjectFile=".\..\..\..\..\..\Build\Win32\VC7.1\Debug\obj/"
-				ProgramDataBaseFileName=".\..\..\..\..\..\Build\Win32\VC7.1\Debug\obj/"
+				DisableLanguageExtensions="FALSE"
+				TreatWChar_tAsBuiltInType="FALSE"
+				PrecompiledHeaderFile="$(IntDir)\XercesLib.pch"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\XercesLib_vc71.pdb"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 				CompileAs="0"/>
@@ -105,23 +111,23 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
+				AdditionalOptions=""
 				AdditionalDependencies="ws2_32.lib advapi32.lib "
-				OutputFile="..\..\..\..\..\Build\Win32\VC7.1\Debug/xerces-c_2_8D.dll"
-				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\..\..\..\Build\Win32\VC7.1\Debug"
+				OutputFile="$(OutDir)\xerces-c_3_1D.dll"
+				LinkIncremental="0"
+				AdditionalLibraryDirectories="$(OutDir)"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\..\..\..\..\..\Build\Win32\VC7.1\Debug/xerces-c_2_8D.pdb"
+				ProgramDatabaseFile="$(OutDir)\xerces-c_3_1D.pdb"
 				SubSystem="2"
 				SetChecksum="TRUE"
 				BaseAddress="0x12000000"
-				ImportLibrary="..\..\..\..\..\Build\Win32\VC7.1\Debug/xerces-c_2D.lib"/>
+				ImportLibrary="$(OutDir)\xerces-c_3D.lib"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="_DEBUG"
 				MkTypLibCompatible="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\..\..\..\Build\Win32\VC7.1\Debug/XercesLib.tlb"/>
+				TypeLibraryName="$(OutDir)\XercesLib.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -145,8 +151,8 @@
 		</Configuration>
 		<Configuration
 			Name="Static Release|Win32"
-			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\StaticRelease"
-			IntermediateDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\StaticRelease\obj"
+			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
@@ -154,27 +160,30 @@
 				Name="VCCLCompilerTool"
 				Optimization="1"
 				InlineFunctionExpansion="2"
+				OptimizeForProcessor="0"
 				AdditionalIncludeDirectories="..\..\..\..\..\src"
-				PreprocessorDefinitions="NDEBUG;PLATFORM_WIN32;_CRTDBG_MAP_ALLOC;PROJ_XMLPARSER;PROJ_XMLUTIL;PROJ_PARSERS;PROJ_SAX4C;PROJ_SAX2;PROJ_DOM;PROJ_VALIDATORS;WIN32;_WINDOWS;XML_USE_WIN32_TRANSCODER;XML_USE_INMEM_MESSAGELOADER;XML_USE_NETACCESSOR_WINSOCK;XML_LIBRARY"
+				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;XERCES_STATIC_LIBRARY;XERCES_BUILDING_LIBRARY;XERCES_USE_TRANSCODER_WINDOWS;XERCES_USE_MSGLOADER_INMEMORY;XERCES_USE_NETACCESSOR_WINSOCK;XERCES_USE_FILEMGR_WINDOWS;XERCES_USE_MUTEXMGR_WINDOWS;XERCES_PATH_DELIMITER_BACKSLASH;HAVE_STRICMP;HAVE_STRNICMP;HAVE_LIMITS_H;HAVE_SYS_TIMEB_H;HAVE_FTIME;HAVE_WCSUPR;HAVE_WCSLWR;HAVE_WCSICMP;HAVE_WCSNICMP"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
-				PrecompiledHeaderFile=".\..\..\..\..\..\Build\Win32\VC7.1\StaticRelease\obj/XercesLib.pch"
-				AssemblerListingLocation=".\..\..\..\..\..\Build\Win32\VC7.1\StaticRelease\obj/"
-				ObjectFile=".\..\..\..\..\..\Build\Win32\VC7.1\StaticRelease\obj/"
-				ProgramDataBaseFileName=".\..\..\..\..\..\Build\Win32\VC7.1\StaticRelease\obj/"
+				DisableLanguageExtensions="FALSE"
+				PrecompiledHeaderFile="$(IntDir)\XercesLib.pch"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(OutDir)\XercesLib_vc71.pdb"
 				WarningLevel="3"
+				DebugInformationFormat="3"
 				CompileAs="0"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="..\..\..\..\..\Build\Win32\VC7.1\StaticRelease/xerces-c_static_2.lib"/>
+				OutputFile="$(OutDir)\xerces-c_static_3.lib"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="NDEBUG"
 				MkTypLibCompatible="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\..\..\..\Build\Win32\VC7.1\StaticRelease/XercesLib.tlb"/>
+				TypeLibraryName="$(OutDir)\XercesLib.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -196,21 +205,23 @@
 		</Configuration>
 		<Configuration
 			Name="Static Debug|Win32"
-			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\StaticDebug"
-			IntermediateDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\StaticDebug\obj"
+			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				OptimizeForProcessor="0"
 				AdditionalIncludeDirectories="..\..\..\..\..\src"
-				PreprocessorDefinitions="_CRTDBG_MAP_ALLOC;PROJ_SAX2;_DEBUG;PROJ_XMLPARSER;PROJ_XMLUTIL;PROJ_PARSERS;PROJ_SAX4C;PROJ_DOM;PROJ_VALIDATORS;WIN32;_WINDOWS;XML_USE_WIN32_TRANSCODER;XML_USE_INMEM_MESSAGELOADER;XML_USE_NETACCESSOR_WINSOCK;XML_LIBRARY"
+				PreprocessorDefinitions="_CRTDBG_MAP_ALLOC;_DEBUG;WIN32;_WINDOWS;XERCES_STATIC_LIBRARY;XERCES_BUILDING_LIBRARY;XERCES_USE_TRANSCODER_WINDOWS;XERCES_USE_MSGLOADER_INMEMORY;XERCES_USE_NETACCESSOR_WINSOCK;XERCES_USE_FILEMGR_WINDOWS;XERCES_USE_MUTEXMGR_WINDOWS;XERCES_PATH_DELIMITER_BACKSLASH;HAVE_STRICMP;HAVE_STRNICMP;HAVE_LIMITS_H;HAVE_SYS_TIMEB_H;HAVE_FTIME;HAVE_WCSUPR;HAVE_WCSLWR;HAVE_WCSICMP;HAVE_WCSNICMP"
 				RuntimeLibrary="1"
-				PrecompiledHeaderFile=".\..\..\..\..\..\Build\Win32\VC7.1\StaticDebug\obj/XercesLib.pch"
-				AssemblerListingLocation=".\..\..\..\..\..\Build\Win32\VC7.1\StaticDebug\obj/"
-				ObjectFile=".\..\..\..\..\..\Build\Win32\VC7.1\StaticDebug\obj/"
-				ProgramDataBaseFileName=".\..\..\..\..\..\Build\Win32\VC7.1\StaticDebug\obj/"
+				DisableLanguageExtensions="FALSE"
+				PrecompiledHeaderFile="$(IntDir)\XercesLib.pch"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(OutDir)\xerces-c_static_3D.pdb"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 				CompileAs="0"/>
@@ -218,13 +229,13 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="..\..\..\..\..\Build\Win32\VC7.1\StaticDebug/xerces-c_static_2D.lib"/>
+				OutputFile="$(OutDir)\xerces-c_static_3D.lib"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="_DEBUG"
 				MkTypLibCompatible="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\..\..\..\Build\Win32\VC7.1\StaticDebug/XercesLib.tlb"/>
+				TypeLibraryName="$(OutDir)\XercesLib.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -244,6 +255,143 @@
 			<Tool
 				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
+		<Configuration
+			Name="ICU Debug|Win32"
+			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				OptimizeForProcessor="0"
+				AdditionalIncludeDirectories="..\..\..\..\..\src"
+				PreprocessorDefinitions="_CRTDBG_MAP_ALLOC;_DEBUG;WIN32;_WINDOWS;XERCES_BUILDING_LIBRARY;XERCES_USE_TRANSCODER_ICU;XERCES_USE_WIN32_MSGLOADER;XERCES_USE_NETACCESSOR_WINSOCK;XERCES_USE_FILEMGR_WINDOWS;XERCES_USE_MUTEXMGR_WINDOWS;XERCES_PATH_DELIMITER_BACKSLASH;HAVE_STRICMP;HAVE_STRNICMP;HAVE_LIMITS_H;HAVE_SYS_TIMEB_H;HAVE_FTIME;HAVE_WCSUPR;HAVE_WCSLWR;HAVE_WCSICMP;HAVE_WCSNICMP"
+				RuntimeLibrary="3"
+				DisableLanguageExtensions="FALSE"
+				TreatWChar_tAsBuiltInType="FALSE"
+				PrecompiledHeaderFile="$(IntDir)\XercesLib.pch"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\XercesLib_vc71.pdb"
+				WarningLevel="3"
+				DebugInformationFormat="3"
+				CompileAs="0"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalOptions=""
+				AdditionalDependencies="ws2_32.lib advapi32.lib icuuc.lib"
+				OutputFile="$(OutDir)\xerces-c_3_1D.dll"
+				LinkIncremental="0"
+				AdditionalLibraryDirectories="$(OutDir)"
+				GenerateDebugInformation="TRUE"
+				ProgramDatabaseFile="$(OutDir)\xerces-c_3_1D.pdb"
+				SubSystem="2"
+				SetChecksum="TRUE"
+				BaseAddress="0x12000000"
+				ImportLibrary="$(OutDir)\xerces-c_3D.lib"/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName="$(OutDir)\XercesLib.tlb"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="ICU Release|Win32"
+			OutputDirectory=".\..\..\..\..\..\Build\Win32\VC7.1\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\obj\$(ProjectName)"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			WholeProgramOptimization="TRUE">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="1"
+				InlineFunctionExpansion="2"
+				OptimizeForProcessor="0"
+				AdditionalIncludeDirectories="..\..\..\..\..\src"
+				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;XERCES_BUILDING_LIBRARY;XERCES_USE_TRANSCODER_ICU;XERCES_USE_WIN32_MSGLOADER;XERCES_USE_NETACCESSOR_WINSOCK;XERCES_USE_FILEMGR_WINDOWS;XERCES_USE_MUTEXMGR_WINDOWS;XERCES_PATH_DELIMITER_BACKSLASH;HAVE_STRICMP;HAVE_STRNICMP;HAVE_LIMITS_H;HAVE_SYS_TIMEB_H;HAVE_FTIME;HAVE_WCSUPR;HAVE_WCSLWR;HAVE_WCSICMP;HAVE_WCSNICMP"
+				StringPooling="TRUE"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="TRUE"
+				DisableLanguageExtensions="FALSE"
+				PrecompiledHeaderFile="$(IntDir)\XercesLib.pch"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\XercesLib_vc71.pdb"
+				WarningLevel="3"
+				DebugInformationFormat="3"
+				CompileAs="0"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalOptions=""
+				AdditionalDependencies="ws2_32.lib advapi32.lib icuuc.lib"
+				OutputFile="$(OutDir)\xerces-c_3_1.dll"
+				LinkIncremental="0"
+				AdditionalLibraryDirectories="$(OutDir)"
+				GenerateDebugInformation="TRUE"
+				ProgramDatabaseFile="$(OutDir)\xerces-c_3_1.fullpdb"
+				StripPrivateSymbols="$(OutDir)\xerces-c_3_1.pdb"
+				GenerateMapFile="TRUE"
+				MapFileName="$(IntDir)\xerces-c_3_1.map"
+				SubSystem="2"
+				OptimizeReferences="2"
+				SetChecksum="TRUE"
+				BaseAddress="0x12000000"
+				ImportLibrary="$(OutDir)\xerces-c_3.lib"/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName="$(OutDir)\XercesLib.tlb"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1033"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
 	</Configurations>
 	<References>
 	</References>
@@ -253,9 +401,6 @@
 			Filter=".cpp,.hpp">
 			<File
 				RelativePath="..\..\..\..\..\src\xercesc\util\ArrayIndexOutOfBoundsException.hpp">
-			</File>
-			<File
-				RelativePath="..\..\..\..\..\src\xercesc\util\AutoSense.hpp">
 			</File>
 			<File
 				RelativePath="..\..\..\..\..\src\xercesc\util\Base64.cpp">
@@ -315,22 +460,11 @@
 				RelativePath="..\..\..\..\..\src\xercesc\util\FlagJanitor.hpp">
 			</File>
 			<File
-				RelativePath="..\..\..\..\..\src\xercesc\util\HashBase.hpp">
+				RelativePath="..\..\..\..\..\src\xercesc\util\Hash2KeysSetOf.hpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\..\src\xercesc\util\HashCMStateSet.hpp">
-			</File>
-			<File
-				RelativePath="..\..\..\..\..\src\xercesc\util\HashPtr.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\..\..\src\xercesc\util\HashPtr.hpp">
-			</File>
-			<File
-				RelativePath="..\..\..\..\..\src\xercesc\util\HashXMLCh.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\..\..\src\xercesc\util\HashXMLCh.hpp">
+				RelativePath="..\..\..\..\..\src\xercesc\util\Hashers.hpp">
 			</File>
 			<File
 				RelativePath="..\..\..\..\..\src\xercesc\util\HeaderDummy.cpp">
@@ -394,6 +528,12 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\..\src\xercesc\util\PlatformUtils.hpp">
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\src\xercesc\util\PSVIUni.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\src\xercesc\util\PSVIUni.hpp">
 			</File>
 			<File
 				RelativePath="..\..\..\..\..\src\xercesc\util\QName.cpp">
@@ -468,6 +608,57 @@
 				RelativePath="..\..\..\..\..\src\xercesc\util\ValueVectorOf.hpp">
 			</File>
 			<File
+				RelativePath="..\..\..\..\..\src\xercesc\util\Xerces_autoconf_config.hpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="echo copy &quot;$(InputDir)$(InputName).msvc.hpp&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;copy &quot;$(InputDir)$(InputName).msvc.hpp&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;"
+						AdditionalDependencies="$(InputDir)\$(InputName).msvc.hpp"
+						Outputs="$(InputPath)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="echo copy &quot;$(InputDir)$(InputName).msvc.hpp&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;copy &quot;$(InputDir)$(InputName).msvc.hpp&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;"
+						AdditionalDependencies="$(InputDir)\$(InputName).msvc.hpp"
+						Outputs="$(InputPath)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Static Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="echo copy &quot;$(InputDir)$(InputName).msvc.hpp&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;copy &quot;$(InputDir)$(InputName).msvc.hpp&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;"
+						AdditionalDependencies="$(InputDir)\$(InputName).msvc.hpp"
+						Outputs="$(InputPath)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Static Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="echo copy &quot;$(InputDir)$(InputName).msvc.hpp&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;copy &quot;$(InputDir)$(InputName).msvc.hpp&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;"
+						AdditionalDependencies="$(InputDir)\$(InputName).msvc.hpp"
+						Outputs="$(InputPath)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ICU Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="echo copy &quot;$(InputDir)$(InputName).msvc.hpp&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;copy &quot;$(InputDir)$(InputName).msvc.hpp&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;"
+						AdditionalDependencies="$(InputDir)\$(InputName).msvc.hpp"
+						Outputs="$(InputPath)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ICU Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="echo copy &quot;$(InputDir)$(InputName).msvc.hpp&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;copy &quot;$(InputDir)$(InputName).msvc.hpp&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;"
+						AdditionalDependencies="$(InputDir)\$(InputName).msvc.hpp"
+						Outputs="$(InputPath)"/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="..\..\..\..\..\src\xercesc\util\XercesDefs.hpp">
 			</File>
 			<File
@@ -532,9 +723,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\..\src\xercesc\util\XMLDateTime.hpp">
-			</File>
-			<File
-				RelativePath="..\..\..\..\..\src\xercesc\util\XMLDeleterFor.hpp">
 			</File>
 			<File
 				RelativePath="..\..\..\..\..\src\xercesc\util\XMLDOMMsg.hpp">
@@ -630,10 +818,10 @@
 				RelativePath="..\..\..\..\..\src\xercesc\util\XMLStringTokenizer.hpp">
 			</File>
 			<File
-				RelativePath="..\..\..\..\..\src\xercesc\util\XMLUCS4Transcoder.hpp">
+				RelativePath="..\..\..\..\..\src\xercesc\util\XMLUCS4Transcoder.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\..\..\src\xercesc\util\XMLUCSTranscoder.cpp">
+				RelativePath="..\..\..\..\..\src\xercesc\util\XMLUCS4Transcoder.hpp">
 			</File>
 			<File
 				RelativePath="..\..\..\..\..\src\xercesc\util\XMLUni.cpp">
@@ -675,49 +863,6 @@
 				RelativePath="..\..\..\..\..\src\xercesc\util\XMLWin1252Transcoder.hpp">
 			</File>
 			<Filter
-				Name="Win32"
-				Filter=".cpp,.hpp">
-				<File
-					RelativePath="..\..\..\..\..\src\xercesc\util\Platforms\Win32\resource.h">
-				</File>
-				<File
-					RelativePath="..\..\..\..\..\src\xercesc\util\Platforms\Win32\Win32Defs.hpp">
-				</File>
-				<File
-					RelativePath="..\..\..\..\..\src\xercesc\util\Platforms\Win32\Win32PlatformUtils.cpp">
-					<FileConfiguration
-						Name="Release|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							DisableLanguageExtensions="FALSE"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							DisableLanguageExtensions="FALSE"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Static Release|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							DisableLanguageExtensions="FALSE"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Static Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							DisableLanguageExtensions="FALSE"/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="..\..\..\..\..\src\xercesc\util\XMLRegisterCleanup.cpp">
-				</File>
-				<File
-					RelativePath="..\..\..\..\..\src\xercesc\util\XMLRegisterCleanup.hpp">
-				</File>
-			</Filter>
-			<Filter
 				Name="MsgLoaders"
 				Filter=".cpp,.hpp">
 				<File
@@ -730,6 +875,18 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCLCompilerTool"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="ICU Debug|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCLCompilerTool"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="ICU Release|Win32"
 						ExcludedFromBuild="TRUE">
 						<Tool
 							Name="VCCLCompilerTool"/>
@@ -749,34 +906,76 @@
 						<Tool
 							Name="VCCustomBuildTool"/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="ICU Debug|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCustomBuildTool"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="ICU Release|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCustomBuildTool"/>
+					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\..\..\..\..\src\xercesc\util\MsgLoaders\Win32\Win32MsgLoader.cpp">
+					RelativePath="..\..\..\..\..\src\xercesc\util\MsgLoaders\Win32\resource.h">
+				</File>
+				<File
+					RelativePath="..\..\..\..\..\src\xercesc\util\MsgLoaders\Win32\Version.rc">
 					<FileConfiguration
 						Name="Release|Win32">
 						<Tool
-							Name="VCCLCompilerTool"
-							DisableLanguageExtensions="FALSE"/>
+							Name="VCResourceCompilerTool"
+							AdditionalIncludeDirectories="..\..\..\..\..\src\xercesc\util\MsgLoaders\Win32;$(NoInherit)"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug|Win32">
 						<Tool
-							Name="VCCLCompilerTool"
-							DisableLanguageExtensions="FALSE"/>
+							Name="VCResourceCompilerTool"
+							AdditionalIncludeDirectories="..\..\..\..\..\src\xercesc\util\MsgLoaders\Win32;$(NoInherit)"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Static Release|Win32"
 						ExcludedFromBuild="TRUE">
 						<Tool
-							Name="VCCLCompilerTool"
-							DisableLanguageExtensions="FALSE"/>
+							Name="VCResourceCompilerTool"
+							AdditionalIncludeDirectories="..\..\..\..\..\src\xercesc\util\MsgLoaders\Win32;$(NoInherit)"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Static Debug|Win32"
 						ExcludedFromBuild="TRUE">
 						<Tool
-							Name="VCCLCompilerTool"
-							DisableLanguageExtensions="FALSE"/>
+							Name="VCResourceCompilerTool"
+							AdditionalIncludeDirectories="..\..\..\..\..\src\xercesc\util\MsgLoaders\Win32;$(NoInherit)"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="ICU Debug|Win32">
+						<Tool
+							Name="VCResourceCompilerTool"
+							AdditionalIncludeDirectories="..\..\..\..\..\src\xercesc\util\MsgLoaders\Win32;$(NoInherit)"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="ICU Release|Win32">
+						<Tool
+							Name="VCResourceCompilerTool"
+							AdditionalIncludeDirectories="..\..\..\..\..\src\xercesc\util\MsgLoaders\Win32;$(NoInherit)"/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\..\..\..\..\src\xercesc\util\MsgLoaders\Win32\Win32MsgLoader.cpp">
+					<FileConfiguration
+						Name="Static Release|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCLCompilerTool"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Static Debug|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCLCompilerTool"/>
 					</FileConfiguration>
 				</File>
 				<File
@@ -802,11 +1001,53 @@
 						<Tool
 							Name="VCCustomBuildTool"/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="ICU Debug|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCustomBuildTool"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="ICU Release|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCustomBuildTool"/>
+					</FileConfiguration>
 				</File>
 			</Filter>
 			<Filter
 				Name="Transcoders"
 				Filter=".cpp,.hpp">
+				<File
+					RelativePath="..\..\..\..\..\src\xercesc\util\Transcoders\ICU\ICUTransService.cpp">
+					<FileConfiguration
+						Name="Release|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCLCompilerTool"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCLCompilerTool"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Static Release|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCLCompilerTool"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Static Debug|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCLCompilerTool"/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\..\..\..\..\src\xercesc\util\Transcoders\ICU\ICUTransService.hpp">
+				</File>
 				<File
 					RelativePath="..\..\..\..\..\src\xercesc\util\Transcoders\Win32\Win32TransService.cpp">
 					<FileConfiguration
@@ -833,6 +1074,20 @@
 							Name="VCCLCompilerTool"
 							DisableLanguageExtensions="FALSE"/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="ICU Debug|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCLCompilerTool"
+							DisableLanguageExtensions="FALSE"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="ICU Release|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCLCompilerTool"
+							DisableLanguageExtensions="FALSE"/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\..\..\..\src\xercesc\util\Transcoders\Win32\Win32TransService.hpp">
@@ -842,61 +1097,19 @@
 				Name="NetAccessors"
 				Filter=".cpp,.hpp">
 				<File
+					RelativePath="..\..\..\..\..\src\xercesc\util\NetAccessors\BinHTTPInputStreamCommon.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\..\src\xercesc\util\NetAccessors\BinHTTPInputStreamCommon.hpp">
+				</File>
+				<File
 					RelativePath="..\..\..\..\..\src\xercesc\util\NetAccessors\WinSock\BinHTTPURLInputStream.cpp">
-					<FileConfiguration
-						Name="Release|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							DisableLanguageExtensions="FALSE"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							DisableLanguageExtensions="FALSE"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Static Release|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							DisableLanguageExtensions="FALSE"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Static Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							DisableLanguageExtensions="FALSE"/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\..\..\..\src\xercesc\util\NetAccessors\WinSock\BinHTTPURLInputStream.hpp">
 				</File>
 				<File
 					RelativePath="..\..\..\..\..\src\xercesc\util\NetAccessors\WinSock\WinSockNetAccessor.cpp">
-					<FileConfiguration
-						Name="Release|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							DisableLanguageExtensions="FALSE"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							DisableLanguageExtensions="FALSE"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Static Release|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							DisableLanguageExtensions="FALSE"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Static Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							DisableLanguageExtensions="FALSE"/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\..\..\..\src\xercesc\util\NetAccessors\WinSock\WinSockNetAccessor.hpp">
@@ -942,22 +1155,10 @@
 					RelativePath="..\..\..\..\..\src\xercesc\util\regx\ConcatToken.hpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\..\src\xercesc\util\regx\ConditionToken.cpp">
-				</File>
-				<File
-					RelativePath="..\..\..\..\..\src\xercesc\util\regx\ConditionToken.hpp">
-				</File>
-				<File
 					RelativePath="..\..\..\..\..\src\xercesc\util\regx\Match.cpp">
 				</File>
 				<File
 					RelativePath="..\..\..\..\..\src\xercesc\util\regx\Match.hpp">
-				</File>
-				<File
-					RelativePath="..\..\..\..\..\src\xercesc\util\regx\ModifierToken.cpp">
-				</File>
-				<File
-					RelativePath="..\..\..\..\..\src\xercesc\util\regx\ModifierToken.hpp">
 				</File>
 				<File
 					RelativePath="..\..\..\..\..\src\xercesc\util\regx\Op.cpp">
@@ -1068,6 +1269,26 @@
 					RelativePath="..\..\..\..\..\src\xercesc\util\regx\XMLUniCharacter.hpp">
 				</File>
 			</Filter>
+			<Filter
+				Name="FileManager"
+				Filter="">
+				<File
+					RelativePath="..\..\..\..\..\src\xercesc\util\FileManagers\WindowsFileMgr.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\..\src\xercesc\util\FileManagers\WindowsFileMgr.hpp">
+				</File>
+			</Filter>
+			<Filter
+				Name="MutexManager"
+				Filter="">
+				<File
+					RelativePath="..\..\..\..\..\src\xercesc\util\MutexManagers\WindowsMutexMgr.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\..\src\xercesc\util\MutexManagers\WindowsMutexMgr.hpp">
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="framework"
@@ -1121,10 +1342,10 @@
 				RelativePath="..\..\..\..\..\src\xercesc\framework\ValidationContext.hpp">
 			</File>
 			<File
-				RelativePath="..\..\..\..\..\src\xercesc\framework\Wrapper4DOMInputSource.cpp">
+				RelativePath="..\..\..\..\..\src\xercesc\framework\Wrapper4DOMLSInput.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\..\..\src\xercesc\framework\Wrapper4DOMInputSource.hpp">
+				RelativePath="..\..\..\..\..\src\xercesc\framework\Wrapper4DOMLSInput.hpp">
 			</File>
 			<File
 				RelativePath="..\..\..\..\..\src\xercesc\framework\Wrapper4InputSource.cpp">
@@ -1205,6 +1426,12 @@
 				RelativePath="..\..\..\..\..\src\xercesc\framework\XMLGrammarDescription.cpp">
 			</File>
 			<File
+				RelativePath="..\..\..\..\..\src\xercesc\framework\XMLGrammarPoolImpl.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\src\xercesc\framework\XMLGrammarPoolImpl.hpp">
+			</File>
+			<File
 				RelativePath="..\..\..\..\..\src\xercesc\framework\XMLNotationDecl.cpp">
 			</File>
 			<File
@@ -1227,6 +1454,9 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\..\src\xercesc\framework\XMLSchemaDescription.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\src\xercesc\framework\XMLSchemaDescription.hpp">
 			</File>
 			<File
 				RelativePath="..\..\..\..\..\src\xercesc\framework\XMLValidator.cpp">
@@ -1447,12 +1677,6 @@
 				RelativePath="..\..\..\..\..\src\xercesc\internal\IGXMLScanner2.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\..\..\src\xercesc\internal\MemoryManagerArrayImpl.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\..\..\src\xercesc\internal\MemoryManagerArrayImpl.hpp">
-			</File>
-			<File
 				RelativePath="..\..\..\..\..\src\xercesc\internal\MemoryManagerImpl.cpp">
 			</File>
 			<File
@@ -1493,12 +1717,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\..\src\xercesc\internal\WFXMLScanner.hpp">
-			</File>
-			<File
-				RelativePath="..\..\..\..\..\src\xercesc\internal\XMLGrammarPoolImpl.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\..\..\src\xercesc\internal\XMLGrammarPoolImpl.hpp">
 			</File>
 			<File
 				RelativePath="..\..\..\..\..\src\xercesc\internal\XMLInternalErrorHandler.hpp">
@@ -1602,10 +1820,10 @@
 				RelativePath="..\..\..\..\..\src\xercesc\parsers\AbstractDOMParser.hpp">
 			</File>
 			<File
-				RelativePath="..\..\..\..\..\src\xercesc\parsers\DOMBuilderImpl.cpp">
+				RelativePath="..\..\..\..\..\src\xercesc\parsers\DOMLSParserImpl.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\..\..\src\xercesc\parsers\DOMBuilderImpl.hpp">
+				RelativePath="..\..\..\..\..\src\xercesc\parsers\DOMLSParserImpl.hpp">
 			</File>
 			<File
 				RelativePath="..\..\..\..\..\src\xercesc\parsers\SAX2XMLFilterImpl.cpp">
@@ -1658,6 +1876,9 @@
 				</File>
 				<File
 					RelativePath="..\..\..\..\..\src\xercesc\validators\common\CMLeaf.hpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\..\src\xercesc\validators\common\CMRepeatingLeaf.hpp">
 				</File>
 				<File
 					RelativePath="..\..\..\..\..\src\xercesc\validators\common\CMNode.hpp">
@@ -2240,9 +2461,6 @@
 				RelativePath="..\..\..\..\..\src\xercesc\dom\DOMAttr.hpp">
 			</File>
 			<File
-				RelativePath="..\..\..\..\..\src\xercesc\dom\DOMBuilder.hpp">
-			</File>
-			<File
 				RelativePath="..\..\..\..\..\src\xercesc\dom\DOMCDATASection.hpp">
 			</File>
 			<File
@@ -2279,9 +2497,6 @@
 				RelativePath="..\..\..\..\..\src\xercesc\dom\DOMEntityReference.hpp">
 			</File>
 			<File
-				RelativePath="..\..\..\..\..\src\xercesc\dom\DOMEntityResolver.hpp">
-			</File>
-			<File
 				RelativePath="..\..\..\..\..\src\xercesc\dom\DOMError.hpp">
 			</File>
 			<File
@@ -2297,6 +2512,9 @@
 				RelativePath="..\..\..\..\..\src\xercesc\dom\DOMImplementation.hpp">
 			</File>
 			<File
+				RelativePath="..\..\..\..\..\src\xercesc\dom\DOMImplementationList.hpp">
+			</File>
+			<File
 				RelativePath="..\..\..\..\..\src\xercesc\dom\DOMImplementationLS.hpp">
 			</File>
 			<File
@@ -2306,10 +2524,34 @@
 				RelativePath="..\..\..\..\..\src\xercesc\dom\DOMImplementationSource.hpp">
 			</File>
 			<File
-				RelativePath="..\..\..\..\..\src\xercesc\dom\DOMInputSource.hpp">
+				RelativePath="..\..\..\..\..\src\xercesc\dom\DOMLocator.hpp">
 			</File>
 			<File
-				RelativePath="..\..\..\..\..\src\xercesc\dom\DOMLocator.hpp">
+				RelativePath="..\..\..\..\..\src\xercesc\dom\DOMLSException.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\src\xercesc\dom\DOMLSException.hpp">
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\src\xercesc\dom\DOMLSInput.hpp">
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\src\xercesc\dom\DOMLSOutput.hpp">
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\src\xercesc\dom\DOMLSParser.hpp">
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\src\xercesc\dom\DOMLSParserFilter.hpp">
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\src\xercesc\dom\DOMLSResourceResolver.hpp">
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\src\xercesc\dom\DOMLSSerializer.hpp">
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\src\xercesc\dom\DOMLSSerializerFilter.hpp">
 			</File>
 			<File
 				RelativePath="..\..\..\..\..\src\xercesc\dom\DOMNamedNodeMap.hpp">
@@ -2342,6 +2584,9 @@
 				RelativePath="..\..\..\..\..\src\xercesc\dom\DOMRangeException.hpp">
 			</File>
 			<File
+				RelativePath="..\..\..\..\..\src\xercesc\dom\DOMStringList.hpp">
+			</File>
+			<File
 				RelativePath="..\..\..\..\..\src\xercesc\dom\DOMText.hpp">
 			</File>
 			<File
@@ -2352,12 +2597,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\..\src\xercesc\dom\DOMUserDataHandler.hpp">
-			</File>
-			<File
-				RelativePath="..\..\..\..\..\src\xercesc\dom\DOMWriter.hpp">
-			</File>
-			<File
-				RelativePath="..\..\..\..\..\src\xercesc\dom\DOMWriterFilter.hpp">
 			</File>
 			<File
 				RelativePath="..\..\..\..\..\src\xercesc\dom\DOMXPathEvaluator.hpp">
@@ -2495,7 +2734,13 @@
 					RelativePath="..\..\..\..\..\src\xercesc\dom\impl\DOMImplementationImpl.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\..\src\xercesc\dom\impl\DOMImplementationimpl.hpp">
+					RelativePath="..\..\..\..\..\src\xercesc\dom\impl\DOMImplementationImpl.hpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\..\src\xercesc\dom\impl\DOMImplementationListImpl.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\..\src\xercesc\dom\impl\DOMImplementationListImpl.hpp">
 				</File>
 				<File
 					RelativePath="..\..\..\..\..\src\xercesc\dom\impl\DOMImplementationRegistry.cpp">
@@ -2505,6 +2750,24 @@
 				</File>
 				<File
 					RelativePath="..\..\..\..\..\src\xercesc\dom\impl\DOMLocatorImpl.hpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\..\src\xercesc\dom\impl\DOMLSInputImpl.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\..\src\xercesc\dom\impl\DOMLSInputImpl.hpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\..\src\xercesc\dom\impl\DOMLSOutputImpl.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\..\src\xercesc\dom\impl\DOMLSOutputImpl.hpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\..\src\xercesc\dom\impl\DOMLSSerializerImpl.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\..\src\xercesc\dom\impl\DOMLSSerializerImpl.hpp">
 				</File>
 				<File
 					RelativePath="..\..\..\..\..\src\xercesc\dom\impl\DOMNamedNodeMapImpl.cpp">
@@ -2573,6 +2836,12 @@
 					RelativePath="..\..\..\..\..\src\xercesc\dom\impl\DOMRangeImpl.hpp">
 				</File>
 				<File
+					RelativePath="..\..\..\..\..\src\xercesc\dom\impl\DOMStringListImpl.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\..\src\xercesc\dom\impl\DOMStringListImpl.hpp">
+				</File>
+				<File
 					RelativePath="..\..\..\..\..\src\xercesc\dom\impl\DOMStringPool.cpp">
 				</File>
 				<File
@@ -2597,10 +2866,22 @@
 					RelativePath="..\..\..\..\..\src\xercesc\dom\impl\DOMTypeInfoImpl.hpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\..\src\xercesc\dom\impl\DOMWriterImpl.cpp">
+					RelativePath="..\..\..\..\..\src\xercesc\dom\impl\DOMXPathExpressionImpl.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\..\..\src\xercesc\dom\impl\DOMWriterImpl.hpp">
+					RelativePath="..\..\..\..\..\src\xercesc\dom\impl\DOMXPathExpressionImpl.hpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\..\src\xercesc\dom\impl\DOMXPathNSResolverImpl.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\..\src\xercesc\dom\impl\DOMXPathNSResolverImpl.hpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\..\src\xercesc\dom\impl\DOMXPathResultImpl.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\..\src\xercesc\dom\impl\DOMXPathResultImpl.hpp">
 				</File>
 				<File
 					RelativePath="..\..\..\..\..\src\xercesc\dom\impl\XSDElementNSImpl.cpp">
@@ -2610,35 +2891,28 @@
 				</File>
 			</Filter>
 		</Filter>
-		<File
-			RelativePath="..\..\..\..\..\src\xercesc\util\Platforms\Win32\Version.rc">
-			<FileConfiguration
-				Name="Release|Win32">
-				<Tool
-					Name="VCResourceCompilerTool"
-					AdditionalIncludeDirectories="..\..\..\..\..\src\xercesc\util\Platforms\Win32;$(NoInherit)"/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Debug|Win32">
-				<Tool
-					Name="VCResourceCompilerTool"
-					AdditionalIncludeDirectories="..\..\..\..\..\src\xercesc\util\Platforms\Win32;$(NoInherit)"/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Static Release|Win32"
-				ExcludedFromBuild="TRUE">
-				<Tool
-					Name="VCResourceCompilerTool"
-					AdditionalIncludeDirectories="..\..\..\..\..\src\xercesc\util\Platforms\Win32;$(NoInherit)"/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Static Debug|Win32"
-				ExcludedFromBuild="TRUE">
-				<Tool
-					Name="VCResourceCompilerTool"
-					AdditionalIncludeDirectories="..\..\..\..\..\src\xercesc\util\Platforms\Win32;$(NoInherit)"/>
-			</FileConfiguration>
-		</File>
+		<Filter
+			Name="xinclude"
+			Filter="">
+			<File
+				RelativePath="..\..\..\..\..\src\xercesc\xinclude\XIncludeDOMDocumentProcessor.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\src\xercesc\xinclude\XIncludeDOMDocumentProcessor.hpp">
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\src\xercesc\xinclude\XIncludeLocation.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\src\xercesc\xinclude\XIncludeLocation.hpp">
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\src\xercesc\xinclude\XIncludeUtils.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\src\xercesc\xinclude\XIncludeUtils.hpp">
+			</File>
+		</Filter>
 	</Files>
 	<Globals>
 	</Globals>

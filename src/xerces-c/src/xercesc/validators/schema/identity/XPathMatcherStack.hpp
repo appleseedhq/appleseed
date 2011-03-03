@@ -16,11 +16,11 @@
  */
 
 /*
- * $Id: XPathMatcherStack.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: XPathMatcherStack.hpp 932887 2010-04-11 13:04:59Z borisk $
  */
 
-#if !defined(XPATHMATCHERSTACK_HPP)
-#define XPATHMATCHERSTACK_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_XPATHMATCHERSTACK_HPP)
+#define XERCESC_INCLUDE_GUARD_XPATHMATCHERSTACK_HPP
 
 
 // ---------------------------------------------------------------------------
@@ -42,9 +42,9 @@ public:
 	// -----------------------------------------------------------------------
     //  Getter methods
     // -----------------------------------------------------------------------
-    XPathMatcher* getMatcherAt(const unsigned int index) const;
-    unsigned int  getMatcherCount() const;
-    unsigned int  size() const;
+    XPathMatcher* getMatcherAt(const XMLSize_t index) const;
+    XMLSize_t     getMatcherCount() const;
+    XMLSize_t     size() const;
 
 	// -----------------------------------------------------------------------
     //  Access methods
@@ -69,7 +69,7 @@ private:
     void cleanUp();
 
     // -----------------------------------------------------------------------
-    //  Unimplemented contstructors and operators
+    //  Unimplemented constructors and operators
     // -----------------------------------------------------------------------
     XPathMatcherStack(const XPathMatcherStack& other);
     XPathMatcherStack& operator= (const XPathMatcherStack& other);
@@ -85,18 +85,18 @@ private:
 // ---------------------------------------------------------------------------
 //  XPathMatcherStack: Getter methods
 // ---------------------------------------------------------------------------
-inline unsigned int XPathMatcherStack::size() const {
+inline XMLSize_t XPathMatcherStack::size() const {
 
     return fContextStack->size();
 }
 
-inline unsigned int XPathMatcherStack::getMatcherCount() const {
+inline XMLSize_t XPathMatcherStack::getMatcherCount() const {
 
     return fMatchersCount;
 }
 
 inline XPathMatcher*
-XPathMatcherStack::getMatcherAt(const unsigned int index) const {
+XPathMatcherStack::getMatcherAt(const XMLSize_t index) const {
 
     return fMatchers->elementAt(index);
 }

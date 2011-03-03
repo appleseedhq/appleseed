@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: BinFileOutputStream.cpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: BinFileOutputStream.cpp 553915 2007-07-06 14:57:08Z amassari $
  */
 
 
@@ -58,7 +58,7 @@ BinFileOutputStream::BinFileOutputStream(const char*    const fileName
 // ---------------------------------------------------------------------------
 //  BinFileOutputStream: Getter methods
 // ---------------------------------------------------------------------------
-unsigned int BinFileOutputStream::getSize() const
+XMLFilePos BinFileOutputStream::getSize() const
 {
     return XMLPlatformUtils::fileSize(fSource, fMemoryManager);
 }
@@ -76,14 +76,14 @@ void BinFileOutputStream::reset()
 // ---------------------------------------------------------------------------
 //  BinFileOutputStream: Implementation of the input stream interface
 // ---------------------------------------------------------------------------
-unsigned int BinFileOutputStream::curPos() const
+XMLFilePos BinFileOutputStream::curPos() const
 {
     return XMLPlatformUtils::curFilePos(fSource, fMemoryManager);
 }
 
 
 void BinFileOutputStream::writeBytes( const XMLByte* const  toGo
-                                    , const unsigned int    maxToWrite)
+                                    , const XMLSize_t       maxToWrite)
 {
     //
     //  Write up to the maximum bytes requested. 

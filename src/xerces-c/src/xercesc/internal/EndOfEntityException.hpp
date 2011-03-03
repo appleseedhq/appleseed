@@ -16,12 +16,11 @@
  */
 
 /*
- * $Id: EndOfEntityException.hpp 568078 2007-08-21 11:43:25Z amassari $
+ * $Id: EndOfEntityException.hpp 676911 2008-07-15 13:27:32Z amassari $
  */
 
-
-#if !defined(ENDOFENTITYEXCEPTION_HPP)
-#define ENDOFENTITYEXCEPTION_HPP
+#if !defined(XERCESC_INCLUDE_GUARD_ENDOFENTITYEXCEPTION_HPP)
+#define XERCESC_INCLUDE_GUARD_ENDOFENTITYEXCEPTION_HPP
 
 #include <xercesc/util/XercesDefs.hpp>
 
@@ -44,7 +43,7 @@ public:
     //  Constructors and Destructor
     // -----------------------------------------------------------------------
     EndOfEntityException(       XMLEntityDecl*  entityThatEnded
-                        , const unsigned int    readerNum) :
+                        , const XMLSize_t       readerNum) :
 
         fEntity(entityThatEnded)
         , fReaderNum(readerNum)
@@ -68,7 +67,7 @@ public:
     // -----------------------------------------------------------------------
     XMLEntityDecl& getEntity();
     const XMLEntityDecl& getEntity() const;
-    unsigned int getReaderNum() const;
+    XMLSize_t getReaderNum() const;
 
 
 private :
@@ -90,7 +89,7 @@ private :
     //      ended.
     // -----------------------------------------------------------------------
     XMLEntityDecl*  fEntity;
-    unsigned int    fReaderNum;
+    XMLSize_t       fReaderNum;
 };
 
 
@@ -107,7 +106,7 @@ inline const XMLEntityDecl& EndOfEntityException::getEntity() const
     return *fEntity;
 }
 
-inline unsigned int EndOfEntityException::getReaderNum() const
+inline XMLSize_t EndOfEntityException::getReaderNum() const
 {
     return fReaderNum;
 }
