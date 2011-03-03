@@ -80,6 +80,7 @@ link_against_common_static_libraries(appleseed.shared)
 
 target_link_libraries(appleseed.shared
     appleseed
+    ${Boost_LIBRARIES}
 )
 
 

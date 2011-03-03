@@ -32,7 +32,7 @@
 #
 
 if(WIN32 AND MSVC)
-    include(config.win32-vs90.txt)
+    include(config.win32-vs100.txt)
 elseif(APPLE)
     include(config.mac32-gcc4.txt)
 else()
@@ -41,15 +41,27 @@ endif()
 
 
 #
+# Boost Libraries.
+#
+
+set(Boost_MULTITHREADED TRUE)
+set(Boost_USE_STATIC_LIBS TRUE)
+
+find_package(Boost 1.44 REQUIRED date_time filesystem regex thread)
+
+include_directories(${Boost_INCLUDE_DIRS})
+link_directories(${Boost_LIBRARY_DIRS})
+
+
+#
 # Include Paths.
 #
 
 include_directories(
     appleseed
-    boost
     libpng
-    openexr/vc/vc9/include                  # change to openexr/include
-    openexr/vc/vc9/include/openexr          # change to openexr/include/openexr
+    openexr/include
+    openexr/include/openexr
     STANN/include
     xerces-c/src
     zlib

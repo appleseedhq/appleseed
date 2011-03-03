@@ -363,6 +363,7 @@ link_against_common_static_libraries(appleseed.studio)
 target_link_libraries(appleseed.studio
     appleseed
     appleseed.shared
+    ${Boost_LIBRARIES}
     ${QT_LIBRARIES}
     ${OPENGL_LIBRARY}
 )

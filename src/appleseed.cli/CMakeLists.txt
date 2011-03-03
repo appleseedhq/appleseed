@@ -107,6 +107,7 @@ link_against_common_static_libraries(appleseed.cli)
 target_link_libraries(appleseed.cli
     appleseed
     appleseed.shared
+    ${Boost_LIBRARIES}
 )
 
 

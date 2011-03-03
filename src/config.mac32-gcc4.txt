@@ -88,20 +88,6 @@ macro(link_against_common_static_libraries target)
         LINK_FLAGS "-framework Cocoa"
     )
 
-    # Boost C++ Libraries.
-    target_link_libraries(${target}
-        debug       ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/boost/lib/libboost_date_time-xgcc40-mt-sd-1_39.a
-        debug       ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/boost/lib/libboost_filesystem-xgcc40-mt-sd-1_39.a
-        debug       ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/boost/lib/libboost_regex-xgcc40-mt-sd-1_39.a
-        debug       ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/boost/lib/libboost_system-xgcc40-mt-sd-1_39.a
-        debug       ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/boost/lib/libboost_thread-xgcc40-mt-sd-1_39.a
-        optimized   ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/boost/lib/libboost_date_time-xgcc40-mt-s-1_39.a
-        optimized   ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/boost/lib/libboost_filesystem-xgcc40-mt-s-1_39.a
-        optimized   ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/boost/lib/libboost_regex-xgcc40-mt-s-1_39.a
-        optimized   ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/boost/lib/libboost_system-xgcc40-mt-s-1_39.a
-        optimized   ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/boost/lib/libboost_thread-xgcc40-mt-s-1_39.a
-    )
-
     # OpenEXR.
     target_link_libraries(${target}
         ${CMAKE_SOURCE_DIR}/build/mac32.xcode24/openexr/libHalf.a

@@ -28,7 +28,7 @@
 
 
 #
-# Microsoft Visual Studio 2008 (9.0) on Windows, generating 32-bit binaries.
+# Microsoft Visual Studio 2010 (10.0) on Windows, generating 32-bit binaries.
 #
 
 
@@ -39,15 +39,14 @@
 # All configurations.
 set(preprocessor_definitions_common
     WIN32
-    XML_LIBRARY                             # allow static linking against Xerces-C
     _CRT_SECURE_NO_WARNINGS
     _USRDLL
     _WINDOWS
+    XERCES_STATIC_LIBRARY                   # link statically to Xerces-C
 )
 
 # Debug configuration.
 set(preprocessor_definitions_debug
-    _HAS_ITERATOR_DEBUGGING=0
 )
 
 # Release configuration.
@@ -62,6 +61,7 @@ set(preprocessor_definitions_release
 
 # All configurations.
 set(compiler_flags_common
+    /MP                                     # Multi-processor Compilation
     /WX                                     # Treat Warnings As Errors
     /GF                                     # Enable String Pooling
     /wd4290                                 # Disable warning C4290: C++ exception specification ignored except to indicate a function is not __declspec(nothrow)
@@ -107,6 +107,7 @@ set(compiler_flags_ship
 )
 set(exe_linker_flags_ship
     /LTCG                                   # Use Link Time Code Generation
+    /INCREMENTAL:NO                         # Disable Incremental Linking
 )
 set(shared_lib_linker_flags_ship
     ${exe_linker_flags_ship}
@@ -125,45 +126,38 @@ set(shared_lib_linker_flags_profile
 # Static Libraries.
 #
 
-# Boost C++ Libraries.
-# We only provide the search path for the Boost libraries, since on Windows,
-# they link themselves through #pragma statements. Note that this instruction
-# needs to appear before any targets that needs it, thus it is not included
-# in the link_against_common_static_libraries() macro below.
-link_directories(${CMAKE_SOURCE_DIR}/build/win32.vs90/boost/lib)
-
 macro(link_against_common_static_libraries target)
 
     # OpenEXR.
     target_link_libraries(${target}
-        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/Half/Debug/Half.lib
-        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/Iex/Debug/Iex.lib
-        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/IlmImf/Debug/IlmImf.lib
-        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/IlmThread/Debug/IlmThread.lib
-        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/Imath/Debug/Imath.lib
-        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/Half/Release/Half.lib
-        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/Iex/Release/Iex.lib
-        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/IlmImf/Release/IlmImf.lib
-        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/IlmThread/Release/IlmThread.lib
-        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs90/openexr/Imath/Release/Imath.lib
+        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs100/openexr/Half/Debug/Half.lib
+        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs100/openexr/Iex/Debug/Iex.lib
+        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs100/openexr/IlmImf/Debug/IlmImf.lib
+        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs100/openexr/IlmThread/Debug/IlmThread.lib
+        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs100/openexr/Imath/Debug/Imath.lib
+        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs100/openexr/Half/Release/Half.lib
+        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs100/openexr/Iex/Release/Iex.lib
+        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs100/openexr/IlmImf/Release/IlmImf.lib
+        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs100/openexr/IlmThread/Release/IlmThread.lib
+        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs100/openexr/Imath/Release/Imath.lib
     )
 
     # zlib.
     target_link_libraries(${target}
-        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs90/zlib/Win32_LIB_ASM_Debug/zlibd.lib
-        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs90/zlib/Win32_LIB_ASM_Release/zlib.lib
+        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs100/zlib/Debug/zlib.lib
+        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs100/zlib/Release/zlib.lib
     )
 
     # libpng.
     target_link_libraries(${target}
-        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs90/libpng/Win32_LIB_ASM_Debug/libpngd.lib
-        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs90/libpng/Win32_LIB_ASM_Release/libpng.lib
+        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs100/libpng/Debug/libpng.lib
+        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs100/libpng/Release/libpng.lib
     )
 
     # Xerces-C.
     target_link_libraries(${target}
-        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs90/xerces-c/Static\ Debug/xerces-c_static_2D.lib
-        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs90/xerces-c/Static\ Release/xerces-c_static_2.lib
+        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs100/xerces-c/Static\ Debug/xerces-c_static_3D.lib
+        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs100/xerces-c/Static\ Release/xerces-c_static_3.lib
     )
 
 endmacro()
