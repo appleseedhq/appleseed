@@ -36,7 +36,10 @@
 // boost headers.
 #include "boost/smart_ptr/detail/spinlock.hpp"
 #include "boost/thread/mutex.hpp"
+#pragma warning (push)
+#pragma warning (disable : 4244)    // conversion from '__int64' to 'long', possible loss of data
 #include "boost/thread/thread.hpp"
+#pragma warning (pop)
 
 //
 // On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL

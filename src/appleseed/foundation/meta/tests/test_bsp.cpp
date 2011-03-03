@@ -296,6 +296,9 @@ TEST_SUITE(Foundation_Math_BSP_Intersector)
 #define TRAVERSAL_STATISTICS
 #endif
 
+#pragma warning (push)
+#pragma warning (disable : 4723)    // potential divide by 0
+
     TEST_CASE_WITH_FIXTURE(Intersect_GivenRayEmbeddedInSplitPlane_VisitsBothLeaves, Fixture)
     {
         Ray3d ray(Vector3d(0.0, 0.0, 1.0), Vector3d(0.0, 0.0, -1.0));
@@ -325,6 +328,8 @@ TEST_SUITE(Foundation_Math_BSP_Intersector)
         EXPECT_EQ(1, m_leaf_visitor.get_visited_leaf_count());
         EXPECT_FEQ(1.0 - 0.7, m_leaf_visitor.get_closest_hit());
     }
+
+#pragma warning (pop)
 
 #undef TRAVERSAL_STATISTICS
 }

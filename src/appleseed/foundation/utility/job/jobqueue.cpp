@@ -164,7 +164,7 @@ JobQueue::JobInfo JobQueue::acquire_scheduled_job()
 
     // Bail out if there is no scheduled jobs.
     if (impl->m_scheduled_jobs.empty())
-        return JobInfo(0, impl->m_running_jobs.end());
+        return JobInfo(static_cast<IJob*>(0), impl->m_running_jobs.end());
 
     // Extract the next scheduled job.
     IJob* job = impl->m_scheduled_jobs.front();
