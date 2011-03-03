@@ -54,6 +54,7 @@
 
 #if (defined _WIN32 || defined _WIN64) && defined _MSC_VER
 // suppress exception specification warnings
+#pragma warning(push)
 #pragma warning(disable:4290)
 #endif
 
@@ -3246,6 +3247,11 @@ operator * (const Vec3<S> &v, const Matrix44<T> &m)
 
     return Vec3<S> (x / w, y / w, z / w);
 }
+
+
+#if (defined _WIN32 || defined _WIN64) && defined _MSC_VER
+#pragma warning(pop)
+#endif
 
 } // namespace Imath
 

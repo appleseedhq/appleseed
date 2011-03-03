@@ -136,6 +136,7 @@ namespace Imath {
 
 #if (defined _WIN32 || defined _WIN64) && defined _MSC_VER
 // Disable MS VC++ warnings about conversion from double to float
+#pragma warning(push)
 #pragma warning(disable:4244)
 #endif
 
@@ -894,7 +895,7 @@ Euler<T>::makeNear (const Euler<T> &target)
 }
 
 #if (defined _WIN32 || defined _WIN64) && defined _MSC_VER
-#pragma warning(default:4244)
+#pragma warning(pop)
 #endif
 
 } // namespace Imath

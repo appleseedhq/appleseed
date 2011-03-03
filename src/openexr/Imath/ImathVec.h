@@ -51,6 +51,7 @@
 
 #if (defined _WIN32 || defined _WIN64) && defined _MSC_VER
 // suppress exception specification warnings
+#pragma warning(push)
 #pragma warning(disable:4290)
 #endif
 
@@ -1418,7 +1419,7 @@ operator * (T a, const Vec3<T> &v)
 
 
 #if (defined _WIN32 || defined _WIN64) && defined _MSC_VER
-#pragma warning(default:4290)
+#pragma warning(pop)
 #endif
 
 } // namespace Imath
