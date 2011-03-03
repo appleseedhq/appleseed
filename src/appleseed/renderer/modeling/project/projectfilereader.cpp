@@ -668,7 +668,7 @@ namespace
         // Receive notification of character data inside an element.
         virtual void characters(
             const XMLCh* const  chars,
-            const unsigned int  length)
+            const XMLSize_t     length)
         {
             get_vector(transcode(chars), m_values, m_info);
         }
@@ -919,7 +919,7 @@ namespace
         // Receive notification of character data inside an element.
         virtual void characters(
             const XMLCh* const  chars,
-            const unsigned int  length)
+            const XMLSize_t     length)
         {
             get_vector(transcode(chars), m_values, m_info);
         }

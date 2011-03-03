@@ -140,7 +140,7 @@ class IElementHandler
     // Receive notification of character data inside an element.
     virtual void characters(
         const XMLCh* const          chars,
-        const unsigned int          length) = 0;
+        const XMLSize_t             length) = 0;
 
     // Receive notification of the start of a child element.
     virtual void start_child_element(
@@ -175,7 +175,7 @@ class ElementHandlerBase
     // Receive notification of character data inside an element.
     virtual void characters(
         const XMLCh* const          chars,
-        const unsigned int          length);
+        const XMLSize_t             length);
 
     // Receive notification of the start of a child element.
     virtual void start_child_element(
@@ -254,7 +254,7 @@ class SAX2ContentHandler
     // Receive notification of character data inside an element.
     virtual void characters(
         const XMLCh* const                          chars,
-        const unsigned int                          length);
+        const XMLSize_t                             length);
 
   private:
     typedef IElementHandler<ElementID> ElementHandlerType;
@@ -365,7 +365,7 @@ void ElementHandlerBase<ElementID>::end_element()
 template <typename ElementID>
 void ElementHandlerBase<ElementID>::characters(
     const XMLCh* const          chars,
-    const unsigned int          length)
+    const XMLSize_t             length)
 {
 }
 
@@ -484,7 +484,7 @@ void SAX2ContentHandler<ElementID>::endElement(
 template <typename ElementID>
 void SAX2ContentHandler<ElementID>::characters(
     const XMLCh* const                          chars,
-    const unsigned int                          length)
+    const XMLSize_t                             length)
 {
     assert(!m_handler_stack.empty());
 
