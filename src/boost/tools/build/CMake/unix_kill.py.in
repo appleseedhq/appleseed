@@ -1,6 +1,0 @@
-import os, signal
-def kill_subprocess(pid):
-    os.kill(pid, signal.SIGKILL)
-    os.waitpid(-1, os.WNOHANG)
-    
-

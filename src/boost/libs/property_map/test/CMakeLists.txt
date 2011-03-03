@@ -1,5 +1,0 @@
-boost_additional_test_dependencies(property_map BOOST_DEPENDS test concept_check any)
-
-boost_test_compile(property_map_cc)
-
-boost_test_run(dynamic_properties_test)

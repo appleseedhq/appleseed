@@ -1,3 +1,0 @@
-boost_additional_test_dependencies(pool BOOST_DEPENDS test)
-
-boost_test_run(test_pool_alloc DEPENDS boost_test_exec_monitor)

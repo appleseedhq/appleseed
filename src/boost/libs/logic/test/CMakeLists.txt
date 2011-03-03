@@ -1,6 +1,0 @@
-boost_additional_test_dependencies(logic BOOST_DEPENDS test)
-
-
-boost_test_run(tribool_test)
-boost_test_run(tribool_rename_test)
-boost_test_run(tribool_io_test)

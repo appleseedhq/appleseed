@@ -1,4 +1,0 @@
-# This simple Jamrules file is used for the Boost.Build test project.
-
-# The testing framework itself gets no boost-Jambase
-BOOST_JAMBASE = empty.jam ;
