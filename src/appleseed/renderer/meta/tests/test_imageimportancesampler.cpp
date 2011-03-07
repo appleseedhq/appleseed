@@ -106,7 +106,11 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
         if (file == 0)
             return auto_ptr<Image>(0);
 
-        fread(image->pixel(0, 0), 3, width * height, file);
+        const size_t pixel_count = width * height;
+
+        if (fread(image->pixel(0, 0), 3, pixel_count, file) != pixel_count)
+            return auto_ptr<Image>(0);
+
         fclose(file);
 
         return image;

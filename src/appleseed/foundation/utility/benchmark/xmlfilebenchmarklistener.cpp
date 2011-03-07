@@ -144,7 +144,8 @@ void XMLFileBenchmarkListener::write(
     fprintf(
         impl->m_file,
         "%s<message>%s</message>\n",
-        impl->m_indenter.c_str());
+        impl->m_indenter.c_str(),
+        message);
 }
 
 void XMLFileBenchmarkListener::write(

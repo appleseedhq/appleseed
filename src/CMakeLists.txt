@@ -35,6 +35,8 @@ if(WIN32 AND MSVC)
     include(config.win32-vs100.txt)
 elseif(APPLE)
     include(config.mac32-gcc4.txt)
+elseif(CMAKE_SYSTEM_NAME MATCHES Linux)
+    include(config.linux64-gcc4.txt)
 else()
     message(FATAL_ERROR "Unsupported platform/compiler, edit ${CMAKE_CURRENT_LIST_FILE} to add support for it.")
 endif()
@@ -47,7 +49,7 @@ endif()
 set(Boost_MULTITHREADED TRUE)
 set(Boost_USE_STATIC_LIBS TRUE)
 
-find_package(Boost 1.44 REQUIRED date_time filesystem regex thread)
+find_package(Boost 1.44 REQUIRED date_time filesystem regex system thread)
 
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
@@ -75,6 +77,7 @@ include_directories(
 # All configurations.
 set(preprocessor_definitions_common
     ${preprocessor_definitions_common}
+    BOOST_FILESYSTEM_VERSION=2              # TODO: port code to Boost.Filesystem version 3 (Boost >= 1.44)
 )
 
 # Debug configuration.

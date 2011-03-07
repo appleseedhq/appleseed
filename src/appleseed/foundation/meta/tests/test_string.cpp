@@ -150,7 +150,7 @@ TEST_SUITE(Foundation_Utility_String)
 
     TEST_CASE(ToString_GivenNonNullCString_ReturnsCorrespondingString)
     {
-        char* s = "bunny";
+        char s[] = "bunny";
         EXPECT_EQ("bunny", to_string(s));
     }
 

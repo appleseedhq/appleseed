@@ -105,7 +105,8 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Query)
                 return false;
 
             size_t point_count;
-            fscanf(file, FMT_SIZE_T, &point_count);
+            if (fscanf(file, FMT_SIZE_T, &point_count) != 1)
+                return false;
 
             points.resize(point_count);
 
@@ -347,17 +348,17 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Query)
     struct ParticlesFixture
       : public FixtureBase<AnswerSize>
     {
-        typedef FixtureBase<AnswerSize> FixtureBase;
+        typedef FixtureBase<AnswerSize> FixtureBaseType;
 
         ParticlesFixture()
-          : FixtureBase("particles_k" + to_string(AnswerSize))
+          : FixtureBaseType("particles_k" + to_string(AnswerSize))
         {
 /*
             load_points_from_text_file("data/test_knn_points.txt", m_points);
             write_points_to_binary_file("data/test_knn_particles.bin", m_points);
 */
-            load_points_from_binary_file("data/test_knn_particles.bin", FixtureBase::m_points);
-            FixtureBase::prepare();
+            load_points_from_binary_file("data/test_knn_particles.bin", FixtureBaseType::m_points);
+            FixtureBaseType::prepare();
         }
     };
 
@@ -365,17 +366,17 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Query)
     struct PhotonMapFixture
       : public FixtureBase<AnswerSize>
     {
-        typedef FixtureBase<AnswerSize> FixtureBase;
+        typedef FixtureBase<AnswerSize> FixtureBaseType;
 
         PhotonMapFixture()
-          : FixtureBase("photons_k" + to_string(AnswerSize))
+          : FixtureBaseType("photons_k" + to_string(AnswerSize))
         {
 /*
             load_points_from_toxic_photon_map("data/test_knn_gally_gpm.bin", m_points);
             write_points_to_binary_file("data/test_knn_photons.bin", m_points);
 */
-            load_points_from_binary_file("data/test_knn_photons.bin", FixtureBase::m_points);
-            FixtureBase::prepare();
+            load_points_from_binary_file("data/test_knn_photons.bin", FixtureBaseType::m_points);
+            FixtureBaseType::prepare();
         }
     };
 

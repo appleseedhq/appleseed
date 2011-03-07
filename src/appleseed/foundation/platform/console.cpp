@@ -91,7 +91,6 @@ struct Console::Impl
     WORD m_default_attributes[NumDevices];
 };
 
-// Constructor.
 Console::Console()
   : impl(new Impl())
 {
@@ -103,13 +102,11 @@ Console::Console()
     impl->m_default_attributes[StdErr] = info.wAttributes;
 }
 
-// Destructor.
 Console::~Console()
 {
     delete impl;
 }
 
-// Set the text color.
 void Console::set_text_color(
     const Device    device,
     const Color     color)
@@ -129,7 +126,6 @@ void Console::set_text_color(
     }
 }
 
-// Reset the text color to the default value.
 void Console::reset_text_color(
     const Device    device)
 {
@@ -180,28 +176,24 @@ namespace
     }
 }
 
-// Constructor.
 Console::Console()
   : impl(0)
 {
 }
 
-// Destructor.
 Console::~Console()
 {
 }
 
-// Set the text color.
 void Console::set_text_color(
     const Device    device,
     const Color     color)
 {
     if (color == DefaultColor)
          fprintf(get_device_file(device), "\x1b[0m");
-    else fprintf(get_device_file(device), get_ansi_color_code(color));
+    else fprintf(get_device_file(device), "%s", get_ansi_color_code(color));
 }
 
-// Reset the text color to the default value.
 void Console::reset_text_color(
     const Device    device)
 {

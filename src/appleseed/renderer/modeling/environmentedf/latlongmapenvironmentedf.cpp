@@ -232,12 +232,12 @@ namespace
             Alpha       m_exitance_alpha;   // unused
         };
 
-        typedef ImageImportanceSampler<double, ImageSampler> ImageImportanceSampler;
+        typedef ImageImportanceSampler<double, ImageSampler> ImageImportanceSamplerType;
 
-        size_t                              m_importance_map_width;
-        size_t                              m_importance_map_height;
-        double                              m_probability_scale;
-        auto_ptr<ImageImportanceSampler>    m_importance_sampler;
+        size_t                                  m_importance_map_width;
+        size_t                                  m_importance_map_height;
+        double                                  m_probability_scale;
+        auto_ptr<ImageImportanceSamplerType>    m_importance_sampler;
 
         // Compute the spherical coordinates of a given direction.
         static void unit_vector_to_angles(
@@ -337,7 +337,7 @@ namespace
                 get_name());
 
             m_importance_sampler.reset(
-                new ImageImportanceSampler(
+                new ImageImportanceSamplerType(
                     m_importance_map_width,
                     m_importance_map_height,
                     sampler));

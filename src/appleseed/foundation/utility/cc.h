@@ -26,42 +26,15 @@
 // THE SOFTWARE.
 //
 
-// appleseed.foundation headers.
-#include "foundation/math/cdf.h"
-#include "foundation/math/rng.h"
-#include "foundation/utility/benchmark.h"
+#ifndef APPLESEED_FOUNDATION_UTILITY_CC_H
+#define APPLESEED_FOUNDATION_UTILITY_CC_H
 
-// Standard headers.
-#include <cassert>
-
-BENCHMARK_SUITE(Foundation_Math_CDF)
+namespace foundation
 {
-    using namespace foundation;
-    using namespace std;
 
-    struct Fixture
-    {
-        typedef CDF<int, double> CDFType;
+// Define a 32-bit character constant in a portable manner.
+#define CC32(a, b, c, d) (((a) << 24) | ((b) << 16) | ((c) << 8) | (d))
 
-        CDFType m_cdf;
-        double  m_x;
+}       // namespace foundation
 
-        Fixture()
-          : m_x(0.0)
-        {
-            MersenneTwister rng;
-
-            for (size_t i = 0; i < 1000; ++i)
-                m_cdf.insert(i, rand_double1(rng));
-
-            assert(m_cdf.valid());
-
-            m_cdf.prepare();
-        }
-    };
-
-    BENCHMARK_CASE_WITH_FIXTURE(DoublePrecisionSampling, Fixture)
-    {
-        m_x += m_cdf.sample(0.5).second;
-    }
-}
+#endif  // !APPLESEED_FOUNDATION_UTILITY_CC_H

@@ -1,0 +1,134 @@
+
+#
+# This source file is part of appleseed.
+# Visit http://appleseedhq.net/ for additional information and resources.
+#
+# This software is released under the MIT license.
+#
+# Copyright (c) 2010-2011 Francois Beaune
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+
+
+#
+# gcc 4.x.x on Linux, generating 64-bit binaries.
+#
+
+
+#
+# Preprocessor Definitions.
+#
+
+# All configurations.
+set(preprocessor_definitions_common
+)
+
+# Debug configuration.
+set(preprocessor_definitions_debug
+)
+
+# Release configuration.
+set(preprocessor_definitions_release
+)
+
+
+#
+# Compilation/Linking Flags.
+#
+
+# All configurations.
+set(compiler_flags_common
+    -Werror                                 # Treat Warnings As Errors
+)
+set(exe_linker_flags_common
+    -Werror                                 # Treat Warnings As Errors
+)
+set(shared_lib_linker_flags_common
+    -Werror                                 # Treat Warnings As Errors
+)
+
+# Debug configuration.
+
+# Release configuration.
+set(compiler_flags_release
+    -O3                                     # Maximum optimization
+)
+
+# Ship configuration.
+
+# Profile configuration.
+
+
+#
+# Static Libraries.
+#
+
+macro(link_against_common_static_libraries target)
+
+    # Platform.
+    target_link_libraries(${target}
+        -lpthread
+        -licuuc
+    )
+
+    # OpenEXR.
+    target_link_libraries(${target}
+        ${CMAKE_SOURCE_DIR}/build/linux64.gcc4/openexr/libHalf.a
+        ${CMAKE_SOURCE_DIR}/build/linux64.gcc4/openexr/libIex.a
+        ${CMAKE_SOURCE_DIR}/build/linux64.gcc4/openexr/libIlmImf.a
+        ${CMAKE_SOURCE_DIR}/build/linux64.gcc4/openexr/libIlmThread.a
+        ${CMAKE_SOURCE_DIR}/build/linux64.gcc4/openexr/libImath.a
+    )
+
+    # zlib.
+    target_link_libraries(${target}
+        ${CMAKE_SOURCE_DIR}/build/linux64.gcc4/zlib/libz.a
+    )
+
+    # libpng.
+    target_link_libraries(${target}
+        ${CMAKE_SOURCE_DIR}/build/linux64.gcc4/libpng/libpng.a
+    )
+
+    # Xerces-C.
+    target_link_libraries(${target}
+        ${CMAKE_SOURCE_DIR}/build/linux64.gcc4/xerces-c/libxerces-c.a
+    )
+
+endmacro()
+
+
+#
+# Copy a target binary to the sandbox.
+#
+
+macro(get_sandbox_bin_path path)
+    set(${path} ${PROJECT_SOURCE_DIR}/sandbox/bin/${CMAKE_BUILD_TYPE}/)
+endmacro()
+
+macro(add_copy_target_to_sandbox_command target)
+    get_target_property(target_path ${target} LOCATION)
+    get_sandbox_bin_path(sandbox_path)
+
+    add_custom_command(TARGET ${target} POST_BUILD
+        COMMAND mkdir -p ${sandbox_path}
+        COMMAND cp ${target_path} ${sandbox_path}
+    )
+endmacro()

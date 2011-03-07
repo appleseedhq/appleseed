@@ -40,7 +40,7 @@
 #include <QDesktopWidget>
 #include <QKeySequence>
 #include <QRect>
-#include <QShortCut>
+#include <QShortcut>
 #include <QString>
 #include <Qt>
 

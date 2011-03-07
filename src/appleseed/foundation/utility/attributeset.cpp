@@ -29,6 +29,9 @@
 // Interface header.
 #include "attributeset.h"
 
+// Standard headers.
+#include <cstring>
+
 using namespace std;
 
 namespace foundation
@@ -38,14 +41,12 @@ namespace foundation
 // AttributeSet class implementation.
 //
 
-// Destructor.
 AttributeSet::~AttributeSet()
 {
     for (size_t i = 0; i < m_channels.size(); ++i)
         delete m_channels[i];
 }
 
-// Create a new attribute channel.
 AttributeSet::ChannelID AttributeSet::create_channel(
     const string&       name,
     const NumericTypeID type,
@@ -63,7 +64,6 @@ AttributeSet::ChannelID AttributeSet::create_channel(
     return m_channels.size() - 1;
 }
 
-// Find a given attribute channel.
 AttributeSet::ChannelID AttributeSet::find_channel(const char* name) const
 {
     assert(name);

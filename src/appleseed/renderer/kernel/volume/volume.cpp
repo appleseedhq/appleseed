@@ -29,6 +29,9 @@
 // Interface header.
 #include "volume.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/cc.h"
+
 // Standard headers.
 #include <cstdio>
 
@@ -129,7 +132,7 @@ auto_ptr<VoxelGrid> read_fluid_file(
     }
 
     // Check the validity of the file header.
-    if (header.m_id != 'FLD3')
+    if (header.m_id != CC32('F', 'L', 'D', '3'))
     {
         fclose(file);
         return auto_ptr<VoxelGrid>(0);

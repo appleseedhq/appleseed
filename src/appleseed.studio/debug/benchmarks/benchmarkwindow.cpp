@@ -50,7 +50,7 @@
 #include <QKeySequence>
 #include <QList>
 #include <QPushButton>
-#include <QShortCut>
+#include <QShortcut>
 #include <QStringList>
 #include <Qt>
 #include <QTreeWidget>

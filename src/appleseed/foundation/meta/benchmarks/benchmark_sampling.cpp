@@ -46,11 +46,11 @@ BENCHMARK_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
     struct Fixture
     {
         typedef MersenneTwister RNG;
-        typedef QMCSamplingContext<RNG> QMCSamplingContext;
+        typedef QMCSamplingContext<RNG> QMCSamplingContextType;
 
-        RNG                 m_rng;
-        QMCSamplingContext  m_context;
-        Vector2d            m_v;
+        RNG                     m_rng;
+        QMCSamplingContextType  m_context;
+        Vector2d                m_v;
 
         Fixture()
           : m_context(m_rng, 2, SampleCount)

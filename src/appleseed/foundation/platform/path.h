@@ -35,8 +35,10 @@
 #endif
 
 // Platform headers.
-#ifdef __APPLE__
+#if defined __APPLE__
 #include <sys/param.h>
+#elif defined __linux__
+#include <linux/limits.h> 
 #endif
 
 //
@@ -72,6 +74,10 @@ namespace foundation
 // Mac OS X.
 #elif defined __APPLE__
 #define FOUNDATION_MAX_PATH_LENGTH  MAXPATHLEN
+
+// Linux.
+#elif defined __linux__
+#define FOUNDATION_MAX_PATH_LENGTH  PATH_MAX
 
 // Unsupported platform.
 #else

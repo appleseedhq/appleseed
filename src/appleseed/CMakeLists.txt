@@ -616,6 +616,7 @@ set(foundation_utility_sources
     foundation/utility/cache.h
     foundation/utility/cameracontroller.h
     foundation/utility/casts.h
+    foundation/utility/cc.h
     foundation/utility/commandlineparser.h
     foundation/utility/countof.h
     foundation/utility/filter.h

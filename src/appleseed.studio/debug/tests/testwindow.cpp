@@ -44,7 +44,7 @@
 #include <QKeySequence>
 #include <QMetaType>
 #include <QPushButton>
-#include <QShortCut>
+#include <QShortcut>
 #include <QStringList>
 #include <Qt>
 #include <QTreeWidget>

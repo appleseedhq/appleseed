@@ -34,6 +34,12 @@
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/indenter.h"
 
+// Standard headers.
+#include <cassert>
+#include <cstdio>
+
+using namespace std;
+
 namespace foundation
 {
 
@@ -79,7 +85,6 @@ namespace
     }
 };
 
-// Write a settings file to disk.
 bool SettingsFileWriter::write(
     const char*         filename,
     const Dictionary&   settings)
