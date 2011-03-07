@@ -71,7 +71,7 @@ class MultiModelCollectionItem
     virtual void add_item(Entity* entity);
 
   private:
-    typedef CollectionItem<Entity, ParentEntity> CollectionItem;
+    typedef CollectionItem<Entity, ParentEntity> CollectionItemType;
 
     virtual void slot_create();
 };
@@ -88,7 +88,7 @@ MultiModelCollectionItem<Entity, ParentEntity>::MultiModelCollectionItem(
     ParentEntity&                   parent,
     ProjectBuilder&                 project_builder)
   : ItemBase(class_uid, title)
-  , CollectionItem(parent, project_builder)
+  , CollectionItemType(parent, project_builder)
 {
 }
 
@@ -98,8 +98,8 @@ void MultiModelCollectionItem<Entity, ParentEntity>::add_item(Entity* entity)
     addChild(
         new MultiModelEntityItem<Entity, ParentEntity>(
             entity,
-            CollectionItem::m_parent,
-            CollectionItem::m_project_builder));
+            CollectionItemType::m_parent,
+            CollectionItemType::m_project_builder));
 }
 
 template <typename Entity, typename ParentEntity>
@@ -114,17 +114,17 @@ void MultiModelCollectionItem<Entity, ParentEntity>::slot_create()
     const std::string name_suggestion =
         get_name_suggestion(
             EntityTraits::get_entity_type_name(),
-            EntityTraits::get_entity_container(CollectionItem::m_parent));
+            EntityTraits::get_entity_container(CollectionItemType::m_parent));
 
     typedef typename EntityTraits::FactoryRegistrarType FactoryRegistrarType;
 
     std::auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
         new MultiModelEntityEditorFormFactory<FactoryRegistrarType>(
-            CollectionItem::m_project_builder.template get_factory_registrar<Entity>(),
+            CollectionItemType::m_project_builder.template get_factory_registrar<Entity>(),
             name_suggestion));
 
     std::auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
-        new EntityBrowser<ParentEntity>(CollectionItem::m_parent));
+        new EntityBrowser<ParentEntity>(CollectionItemType::m_parent));
 
     open_entity_editor(
         QTreeWidgetItem::treeWidget(),

@@ -30,21 +30,13 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/collectionitem.h"
 #include "mainwindow/project/itembase.h"
-#include "mainwindow/project/itemtypemap.h"
 
 // Qt headers.
 #include <QObject>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class ColorCollectionItem; } }
-namespace appleseed { namespace studio { class LightCollectionItem; } }
-namespace appleseed { namespace studio { class ObjectCollectionItem; } }
-namespace appleseed { namespace studio { class ObjectInstanceCollectionItem; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
-namespace appleseed { namespace studio { class TextureCollectionItem; } }
-namespace appleseed { namespace studio { class TextureInstanceCollectionItem; } }
 namespace renderer  { class Assembly; }
 namespace renderer  { class ColorEntity; }
 namespace renderer  { class BSDF; }
@@ -69,9 +61,11 @@ class AssemblyItem
 
   public:
     AssemblyItem(
-        renderer::Scene&            scene,
-        renderer::Assembly&         assembly,
-        ProjectBuilder&             project_builder);
+        renderer::Scene&    scene,
+        renderer::Assembly& assembly,
+        ProjectBuilder&     project_builder);
+
+    ~AssemblyItem();
 
     virtual QMenu* get_single_item_context_menu() const;
 
@@ -87,37 +81,8 @@ class AssemblyItem
     void add_item(renderer::ObjectInstance* object_instance);
 
   private:
-    renderer::Scene&                m_scene;
-    ProjectBuilder&                 m_project_builder;
-    renderer::Assembly&             m_assembly;
-
-    ColorCollectionItem*            m_color_collection_item;
-    TextureCollectionItem*          m_texture_collection_item;
-    TextureInstanceCollectionItem*  m_texture_instance_collection_item;
-    CollectionItem<
-        renderer::BSDF,
-        renderer::Assembly>*        m_bsdf_collection_item;
-    CollectionItem<
-        renderer::EDF,
-        renderer::Assembly>*        m_edf_collection_item;
-    CollectionItem<
-        renderer::SurfaceShader,
-        renderer::Assembly>*        m_surface_shader_collection_item;
-    CollectionItem<
-        renderer::Material,
-        renderer::Assembly>*        m_material_collection_item;
-    LightCollectionItem*            m_light_collection_item;
-    ObjectCollectionItem*           m_object_collection_item;
-    ObjectInstanceCollectionItem*   m_object_instance_collection_item;
-
-    template <typename EntityContainer>
-    typename ItemTypeMap<EntityContainer>::T* add_collection_item(EntityContainer& entities);
-
-    template <typename Entity, typename EntityContainer>
-    CollectionItem<Entity, renderer::Assembly>* add_single_model_collection_item(EntityContainer& entities);
-
-    template <typename Entity, typename EntityContainer>
-    CollectionItem<Entity, renderer::Assembly>* add_multi_model_collection_item(EntityContainer& entities);
+    struct Impl;
+    Impl* impl;
 
   private slots:
     void slot_instantiate();

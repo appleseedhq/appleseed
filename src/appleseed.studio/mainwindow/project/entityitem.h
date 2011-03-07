@@ -68,7 +68,7 @@ class EntityItem
   private:
     friend class EntityCreatorBase;
 
-    typedef EntityItemBase<Entity> EntityItemBase;
+    typedef EntityItemBase<Entity> EntityItemBaseType;
 
     void edit(const foundation::Dictionary& values);
 };
@@ -83,7 +83,7 @@ EntityItem<Entity, ParentEntity>::EntityItem(
     Entity*                 entity,
     ParentEntity&           parent,
     ProjectBuilder&         project_builder)
-  : EntityItemBase(entity)
+  : EntityItemBaseType(entity)
   , m_parent(parent)
   , m_project_builder(project_builder)
 {
@@ -101,7 +101,7 @@ void EntityItem<Entity, ParentEntity>::slot_edit_accepted(foundation::Dictionary
 template <typename Entity, typename ParentEntity>
 void EntityItem<Entity, ParentEntity>::slot_delete()
 {
-    m_project_builder.remove_entity(EntityItemBase::m_entity, m_parent);
+    m_project_builder.remove_entity(EntityItemBaseType::m_entity, m_parent);
 
     delete this;
 }
@@ -109,13 +109,13 @@ void EntityItem<Entity, ParentEntity>::slot_delete()
 template <typename Entity, typename ParentEntity>
 void EntityItem<Entity, ParentEntity>::edit(const foundation::Dictionary& values)
 {
-    EntityItemBase::m_entity =
+    EntityItemBaseType::m_entity =
         m_project_builder.replace_entity(
-            EntityItemBase::m_entity,
+            EntityItemBaseType::m_entity,
             m_parent,
             values);
 
-    EntityItemBase::update_title();
+    EntityItemBaseType::update_title();
 
     qobject_cast<QWidget*>(QObject::sender())->close();
 }
