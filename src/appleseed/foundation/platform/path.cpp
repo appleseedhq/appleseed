@@ -38,8 +38,10 @@
 #include "boost/filesystem/operations.hpp"
 
 // Platform headers.
-#ifdef __APPLE__
+#if defined __APPLE__
 #include <mach-o/dyld.h>
+#elif defined __linux__
+#include <unistd.h>
 #endif
 
 // Standard headers.
@@ -57,48 +59,45 @@ namespace foundation
 // Path class implementation.
 //
 
-// Return the path to the application's executable.
 const char* Path::get_executable_path()
 {
-// Windows.
-#if defined _WIN32
-
-    static char path[MAX_PATH + 1];
+    static char path[FOUNDATION_MAX_PATH_LENGTH + 1];
     static bool path_initialized = false;
 
     if (!path_initialized)
     {
+// Windows.
+#if defined _WIN32
+
 	    const DWORD result =
             GetModuleFileName(
 		        GetModuleHandle(NULL),
 		        path,
 		        sizeof(path));
         assert(result);
-        path_initialized = true;
-    }
-
-    return path;
 
 // Mac OS X.
 #elif defined __APPLE__
 
-    static char path[MAXPATHLEN + 1];
-    static bool path_initialized = false;
-
-    if (!path_initialized)
-    {
         uint32 path_len = MAXPATHLEN;
         const int result = _NSGetExecutablePath(path, &path_len);
         assert(result == 0);
+
+// Linux.
+#elif defined __linux__
+
+        ssize_t result = readlink("/proc/self/exe", path, sizeof(path));
+        assert(result > 0);
+        path[result] = '\0';
+
+#endif
+
         path_initialized = true;
     }
 
     return path;
-
-#endif
 }
 
-// Return the path to the directory containing the application's executable.
 const char* Path::get_executable_directory()
 {
     static char path[FOUNDATION_MAX_PATH_LENGTH + 1];

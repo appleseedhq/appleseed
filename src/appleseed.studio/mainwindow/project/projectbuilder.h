@@ -31,6 +31,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/assemblycollectionitem.h"
+#include "mainwindow/project/assemblyitem.h"
 #include "mainwindow/project/multimodelentityeditorformfactory.h"
 #include "mainwindow/project/projecttree.h"
 
@@ -240,7 +241,7 @@ foundation::auto_release_ptr<Entity> ProjectBuilder::create_entity(
 {
     typedef typename renderer::EntityTraits<Entity>::FactoryRegistrarType FactoryRegistrarType;
     typedef typename FactoryRegistrarType::FactoryType FactoryType;
-    typedef typename MultiModelEntityEditorFormFactory<FactoryRegistrarType> EntityEditorFormFactoryType;
+    typedef MultiModelEntityEditorFormFactory<FactoryRegistrarType> EntityEditorFormFactoryType;
 
     const std::string name = get_entity_name(values);
     const std::string model = values.get<std::string>(EntityEditorFormFactoryType::ModelParameter);

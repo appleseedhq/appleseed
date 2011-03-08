@@ -156,6 +156,19 @@ class FOUNDATIONDLL Compiler
 
 #define FOUNDATION_EMPTY
 
+
+//
+// As of version 2010, Visual C++ doesn't provide the va_copy() macro
+// introduced in C99. On Windows (32-bit and 64-bit) it is sufficient
+// to use assignment between va_list variables.
+//
+
+#ifdef _MSC_VER
+#ifndef va_copy
+#define va_copy(dst, src) ((dst) = (src))
+#endif
+#endif
+
 }       // namespace foundation
 
 #endif  // !APPLESEED_FOUNDATION_PLATFORM_COMPILER_H
