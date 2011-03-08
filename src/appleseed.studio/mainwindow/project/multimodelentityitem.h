@@ -62,12 +62,12 @@ class MultiModelEntityItem
         ProjectBuilder&     project_builder);
 
   private:
-    typedef EntityItem<Entity, ParentEntity> EntityItem;
-    typedef typename renderer::EntityTraits<Entity> EntityTraits;
+    typedef EntityItem<Entity, ParentEntity> EntityItemType;
+    typedef typename renderer::EntityTraits<Entity> EntityTraitsType;
 
     typedef MultiModelEntityEditorFormFactory<
-        typename EntityTraits::FactoryRegistrarType
-    > MultiModelEntityEditorFormFactory;
+        typename EntityTraitsType::FactoryRegistrarType
+    > MultiModelEntityEditorFormFactoryType;
 
     virtual void slot_edit();
 };
@@ -82,7 +82,7 @@ MultiModelEntityItem<Entity, ParentEntity>::MultiModelEntityItem(
     Entity*                 entity,
     ParentEntity&           parent,
     ProjectBuilder&         project_builder)
-  : EntityItem(entity, parent, project_builder)
+  : EntityItemType(entity, parent, project_builder)
 {
 }
 
@@ -91,20 +91,20 @@ void MultiModelEntityItem<Entity, ParentEntity>::slot_edit()
 {
     const std::string window_title =
         std::string("Edit ") +
-        EntityTraits::get_human_readable_entity_type_name();
+        EntityTraitsType::get_human_readable_entity_type_name();
 
     std::auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
-        new MultiModelEntityEditorFormFactory(
-            EntityItem::m_project_builder.template get_factory_registrar<Entity>(),
-            EntityItem::m_entity->get_name()));
+        new MultiModelEntityEditorFormFactoryType(
+            EntityItemType::m_project_builder.template get_factory_registrar<Entity>(),
+            EntityItemType::m_entity->get_name()));
 
     std::auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
-        new EntityBrowser<ParentEntity>(EntityItem::m_parent));
+        new EntityBrowser<ParentEntity>(EntityItemType::m_parent));
 
-    foundation::Dictionary values = EntityItem::m_entity->get_parameters();
+    foundation::Dictionary values = EntityItemType::m_entity->get_parameters();
     values.insert(
-        MultiModelEntityEditorFormFactory::ModelParameter,
-        EntityItem::m_entity->get_model());
+        MultiModelEntityEditorFormFactoryType::ModelParameter,
+        EntityItemType::m_entity->get_model());
 
     open_entity_editor(
         QTreeWidgetItem::treeWidget(),

@@ -30,6 +30,7 @@
 #include "logger.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/platform/snprintf.h"
 #include "foundation/platform/thread.h"
 #include "foundation/utility/log/logtargetbase.h"
@@ -54,7 +55,7 @@ namespace foundation
 
 namespace
 {
-    const size_t InitialBufferSize = 10;            // in bytes
+    const size_t InitialBufferSize = 1024;          // in bytes
     const size_t MaxBufferSize = 1024 * 1024;       // in bytes
 }
 
@@ -68,7 +69,6 @@ struct Logger::Impl
     vector<char>        m_message_buffer;
 };
 
-// Constructor.
 Logger::Logger()
   : impl(new Impl())
 {
@@ -76,13 +76,11 @@ Logger::Logger()
     impl->m_message_buffer.resize(InitialBufferSize);
 }
 
-// Destructor.
 Logger::~Logger()
 {
     delete impl;
 }
 
-// Enable/disable logging.
 void Logger::set_enabled(const bool enabled)
 {
     boost::mutex::scoped_lock lock(impl->m_mutex);
@@ -90,7 +88,6 @@ void Logger::set_enabled(const bool enabled)
     impl->m_enabled = enabled;
 }
 
-// Add a log target.
 void Logger::add_target(LogTargetBase* target)
 {
     assert(target);
@@ -99,7 +96,6 @@ void Logger::add_target(LogTargetBase* target)
     impl->m_targets.push_back(target);
 }
 
-// Remove a log target.
 void Logger::remove_target(LogTargetBase* target)
 {
     assert(target);
@@ -110,7 +106,7 @@ void Logger::remove_target(LogTargetBase* target)
 
 namespace
 {
-    void write_to_buffer(
+    bool write_to_buffer(
         vector<char>&   buffer,
         const size_t    max_buffer_size,
         const char*     format,
@@ -118,28 +114,30 @@ namespace
     {
         while (true)
         {
+            va_list argptr_copy;
+            va_copy(argptr_copy, argptr);
+
             const size_t buffer_size = buffer.size();
 
             const int result =
-                portable_vsnprintf(&buffer[0], buffer_size, format, argptr);
+                portable_vsnprintf(&buffer[0], buffer_size, format, argptr_copy);
 
             if (result < 0)
-                break;
+                return false;
 
             const size_t needed_buffer_size = static_cast<size_t>(result) + 1;
 
             if (needed_buffer_size <= buffer_size)
-                break;
+                return true;
 
             if (buffer_size >= max_buffer_size)
-                break;
+                return false;
 
             buffer.resize(min(needed_buffer_size, max_buffer_size));
         }
     }
 }
 
-// Write a message.
 void Logger::write(
     const LogMessage::Category  category,
     const char*                 file,

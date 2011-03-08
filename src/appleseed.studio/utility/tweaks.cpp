@@ -33,7 +33,7 @@
 #include <QGridLayout>
 #include <QKeySequence>
 #include <QMessageBox>
-#include <QShortCut>
+#include <QShortcut>
 #include <QSpacerItem>
 #include <QWidget>
 
