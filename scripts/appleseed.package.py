@@ -28,12 +28,13 @@
 #
 
 # Package builder settings.
-VersionString = "1.2"
+VersionString = "1.3"
 SettingsFileName = "appleseed.package.configuration.xml"
 
 # Imports.
 from xml.etree.ElementTree import ElementTree
 from distutils import archive_util, dir_util
+from stat import *
 import glob
 import os
 import platform
@@ -292,9 +293,9 @@ class WindowsPackageBuilder(PackageBuilder):
         dir_util.copy_tree(self.settings.platform_runtime_path, "appleseed/bin/Microsoft.VC90.CRT")
 
     def copy_qt_framework(self, framework_name):
-        src_path = os.path.join(self.settings.qt_runtime_path, framework_name + "4" + ".dll")
+        src_filepath = os.path.join(self.settings.qt_runtime_path, framework_name + "4" + ".dll")
         dst_path = os.path.join("appleseed", "bin")
-        shutil.copy(src_path, dst_path)
+        shutil.copy(src_filepath, dst_path)
 
 
 #
@@ -345,10 +346,49 @@ class MacPackageBuilder(PackageBuilder):
 
     def copy_qt_framework(self, framework_name):
         framework_path = os.path.join(framework_name + ".framework", "Versions", "4")
-        src_path = os.path.join(self.settings.qt_runtime_path, framework_path, framework_name)
+        src_filepath = os.path.join(self.settings.qt_runtime_path, framework_path, framework_name)
         dest_path = os.path.join("appleseed", "bin", framework_path)
         os.makedirs(dest_path)
-        shutil.copy(src_path, dest_path)
+        shutil.copy(src_filepath, dest_path)
+
+
+#
+# Linux package builder.
+#
+
+class LinuxPackageBuilder(PackageBuilder):
+    def alterate_stage(self):
+        self.add_dependencies_to_stage()
+
+    def add_dependencies_to_stage(self):
+        progress("Linux-specific: adding dependencies to staging directory")
+        self.copy_qt_library("QtCore")
+        self.copy_qt_library("QtGui")
+        self.copy_qt_library("QtOpenGL")
+        self.copy_png_library()
+        self.copy_run_scripts()
+
+    def copy_qt_library(self, library_name):
+        library_filename = "lib" + library_name + ".so.4"
+        src_filepath = os.path.join(self.settings.qt_runtime_path, library_filename)
+        dest_path = os.path.join("appleseed", "bin")
+        shutil.copy(src_filepath, dest_path)
+
+    def copy_png_library(self):
+        library_filename = "libpng15.so.15"
+        src_filepath = os.path.join("/usr/local/lib", library_filename)
+        dest_path = os.path.join("appleseed", "bin")
+        shutil.copy(src_filepath, dest_path)
+        self.make_executable(os.path.join(dest_path, library_filename))
+
+    def make_executable(self, filepath):
+        mode = os.stat(filepath)[ST_MODE]
+        mode |= S_IXUSR | S_IXGRP | S_IXOTH
+        os.chmod(filepath, mode)
+
+    def copy_run_scripts(self):
+        dest_path = os.path.join("appleseed", "bin")
+        shutil.copy("run-appleseed.sh", dest_path)
 
 
 #
@@ -369,9 +409,12 @@ def main():
         package_builder = WindowsPackageBuilder(settings, package_info)
     elif os.name == "posix" and platform.mac_ver()[0] != "":
         package_builder = MacPackageBuilder(settings, package_info)
+    elif os.name == "posix" and platform.mac_ver()[0] == "":
+        package_builder = LinuxPackageBuilder(settings, package_info)
     else:
         fatal("unsupported platform")
 
     package_builder.build_package()
 
 main()
+
