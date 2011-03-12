@@ -75,6 +75,12 @@ namespace foundation
    Real versions are due to Isaku Wada, 2002/01/09 added.
 */
 
+const int MersenneTwister::N;
+const int MersenneTwister::M;
+const uint32 MersenneTwister::MATRIX_A;
+const uint32 MersenneTwister::UPPER_MASK;
+const uint32 MersenneTwister::LOWER_MASK;
+
 MersenneTwister::MersenneTwister(const uint32 seed)
 {
     init_state(seed);

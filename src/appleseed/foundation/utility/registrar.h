@@ -92,7 +92,7 @@ void Registrar<T>::insert(const std::string& name, std::auto_ptr<T> item)
         m_items.erase(i);
     }
 
-    m_items.insert(i, std::make_pair(name, item.release()));
+    m_items.insert(std::make_pair(name, item.release()));
 }
 
 template <typename T>
