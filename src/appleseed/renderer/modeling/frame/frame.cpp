@@ -413,6 +413,37 @@ namespace
             }
         }
 
+        TEST_CASE(ClearImage_Given4x4Image_FillsImageWithGivenValue)
+        {
+            const Color4f Expected(42.0f);
+
+            Image image(4, 4, 2, 2, 4, PixelFormatFloat);
+            clear_image(image, Expected);
+
+            const CanvasProperties& props = image.properties();
+
+            for (size_t ty = 0; ty < props.m_tile_count_y; ++ty)
+            {
+                for (size_t tx = 0; tx < props.m_tile_count_x; ++tx)
+                {
+                    const Tile& tile = image.tile(tx, ty);
+                    const size_t tile_width = tile.get_width();
+                    const size_t tile_height = tile.get_height();
+
+                    for (size_t y = 0; y < tile_height; ++y)
+                    {
+                        for (size_t x = 0; x < tile_width; ++x)
+                        {
+                            Color4f value;
+                            tile.get_pixel(x, y, value);
+
+                            EXPECT_EQ(Expected, value);
+                        }
+                    }
+                }
+            }
+        }
+
         TEST_CASE(AccumulateLuminance_Given4x4ImageFilledWithZeroes_ReturnsZero)
         {
             Image image(4, 4, 2, 2, 4, PixelFormatFloat);
