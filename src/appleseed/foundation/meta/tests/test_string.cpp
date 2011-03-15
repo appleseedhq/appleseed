@@ -124,29 +124,74 @@ TEST_SUITE(Foundation_Utility_String)
         EXPECT_EQ("42", to_string<uint64>(42));
     }
 
+#if defined ARCH32
+#define ZERO_PTR            0x00000000
+#define ZERO_PTR_STR        "0x00000000"
+#define DEADBEEF_PTR        0xDEADBEEF
+#define DEADBEEF_PTR_STR    "0xDEADBEEF"
+#elif defined ARCH64
+#define ZERO_PTR            0x0000000000000000
+#define ZERO_PTR_STR        "0x0000000000000000"
+#define DEADBEEF_PTR        0xDEADBEEFDEAFBABE
+#define DEADBEEF_PTR_STR    "0xDEADBEEFDEAFBABE"
+#else
+#error Cannot determine machine architecture.
+#endif
+
     TEST_CASE(ToString_GivenNonNullVoidPointer_ReturnsCorrespondingString)
     {
-        void* ptr = reinterpret_cast<void*>(0xDEADBEEF);
-        EXPECT_EQ("0xDEADBEEF", to_string(ptr));
+        void* ptr = reinterpret_cast<void*>(DEADBEEF_PTR);
+        EXPECT_EQ(DEADBEEF_PTR_STR, to_string(ptr));
     }
 
     TEST_CASE(ToString_GivenNonNullConstVoidPointer_ReturnsCorrespondingString)
     {
-        const void* ptr = reinterpret_cast<const void*>(0xDEADBEEF);
-        EXPECT_EQ("0xDEADBEEF", to_string(ptr));
+        const void* ptr = reinterpret_cast<const void*>(DEADBEEF_PTR);
+        EXPECT_EQ(DEADBEEF_PTR_STR, to_string(ptr));
     }
 
     TEST_CASE(ToString_GivenNullVoidPointer_ReturnsCorrespondingString)
     {
-        void* ptr = 0;
-        EXPECT_EQ("0x00000000", to_string(ptr));
+        void* ptr = ZERO_PTR;
+        EXPECT_EQ(ZERO_PTR_STR, to_string(ptr));
     }
 
     TEST_CASE(ToString_GivenNullConstVoidPointer_ReturnsCorrespondingString)
     {
-        const void* ptr = 0;
-        EXPECT_EQ("0x00000000", to_string(ptr));
+        const void* ptr = ZERO_PTR;
+        EXPECT_EQ(ZERO_PTR_STR, to_string(ptr));
     }
+
+    struct Foo { int dummy; };
+
+    TEST_CASE(ToString_GivenNonNullClassPointer_ReturnsCorrespondingString)
+    {
+        Foo* ptr = reinterpret_cast<Foo*>(DEADBEEF_PTR);
+        EXPECT_EQ(DEADBEEF_PTR_STR, to_string(ptr));
+    }
+
+    TEST_CASE(ToString_GivenNonNullConstClassPointer_ReturnsCorrespondingString)
+    {
+        const Foo* ptr = reinterpret_cast<const Foo*>(DEADBEEF_PTR);
+        EXPECT_EQ(DEADBEEF_PTR_STR, to_string(ptr));
+    }
+
+    TEST_CASE(ToString_GivenNullClassPointer_ReturnsCorrespondingString)
+    {
+        Foo* ptr = ZERO_PTR;
+        EXPECT_EQ(ZERO_PTR_STR, to_string(ptr));
+    }
+
+    TEST_CASE(ToString_GivenNullConstClassPointer_ReturnsCorrespondingString)
+    {
+        const Foo* ptr = ZERO_PTR;
+        EXPECT_EQ(ZERO_PTR_STR, to_string(ptr));
+    }
+
+#undef ZERO_PTR
+#undef ZERO_PTR_STR
+#undef DEADBEEF_PTR
+#undef DEADBEEF_PTR_STR
 
     TEST_CASE(ToString_GivenNonNullCString_ReturnsCorrespondingString)
     {
@@ -170,32 +215,6 @@ TEST_SUITE(Foundation_Utility_String)
     {
         const char* s = 0;
         EXPECT_EQ("<null>", to_string(s));
-    }
-
-    struct Foo { int dummy; };
-
-    TEST_CASE(ToString_GivenNonNullClassPointer_ReturnsCorrespondingString)
-    {
-        Foo* ptr = reinterpret_cast<Foo*>(0xDEADBEEF);
-        EXPECT_EQ("0xDEADBEEF", to_string(ptr));
-    }
-
-    TEST_CASE(ToString_GivenNonNullConstClassPointer_ReturnsCorrespondingString)
-    {
-        const Foo* ptr = reinterpret_cast<const Foo*>(0xDEADBEEF);
-        EXPECT_EQ("0xDEADBEEF", to_string(ptr));
-    }
-
-    TEST_CASE(ToString_GivenNullClassPointer_ReturnsCorrespondingString)
-    {
-        Foo* ptr = 0;
-        EXPECT_EQ("0x00000000", to_string(ptr));
-    }
-
-    TEST_CASE(ToString_GivenNullConstClassPointer_ReturnsCorrespondingString)
-    {
-        const Foo* ptr = 0;
-        EXPECT_EQ("0x00000000", to_string(ptr));
     }
 
     TEST_CASE(StringToInt8)
