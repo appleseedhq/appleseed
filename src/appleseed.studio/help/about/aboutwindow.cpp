@@ -60,10 +60,11 @@ AboutWindow::AboutWindow(QWidget* parent)
     setWindowFlags(
         Qt::Dialog |
         Qt::CustomizeWindowHint |
-        Qt::MSWindowsFixedSizeDialogHint |
         Qt::WindowCloseButtonHint);
 
     set_version_string();
+
+    setFixedSize(width(), sizeHint().height());
 
     connect(m_ui->dialogbuttonbox, SIGNAL(accepted()), this, SLOT(close()));
 
