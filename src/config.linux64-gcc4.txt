@@ -80,15 +80,14 @@ set(compiler_flags_release
 # Static Libraries.
 #
 
-macro(link_against_common_static_libraries target)
-
-    # Platform.
+macro(link_against_platform target)
     target_link_libraries(${target}
         -lpthread
         -licuuc
     )
+endmacro()
 
-    # OpenEXR.
+macro(link_against_openexr target)
     target_link_libraries(${target}
         ${CMAKE_SOURCE_DIR}/build/linux64.gcc4/openexr/libHalf.a
         ${CMAKE_SOURCE_DIR}/build/linux64.gcc4/openexr/libIex.a
@@ -96,22 +95,24 @@ macro(link_against_common_static_libraries target)
         ${CMAKE_SOURCE_DIR}/build/linux64.gcc4/openexr/libIlmThread.a
         ${CMAKE_SOURCE_DIR}/build/linux64.gcc4/openexr/libImath.a
     )
+endmacro()
 
-    # zlib.
+macro(link_against_zlib target)
     target_link_libraries(${target}
         ${CMAKE_SOURCE_DIR}/build/linux64.gcc4/zlib/libz.a
     )
+endmacro()
 
-    # libpng.
+macro(link_against_libpng target)
     target_link_libraries(${target}
         ${CMAKE_SOURCE_DIR}/build/linux64.gcc4/libpng/libpng.a
     )
+endmacro()
 
-    # Xerces-C.
+macro(link_against_xercesc target)
     target_link_libraries(${target}
         ${CMAKE_SOURCE_DIR}/build/linux64.gcc4/xerces-c/libxerces-c.a
     )
-
 endmacro()
 
 

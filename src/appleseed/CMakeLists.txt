@@ -1367,7 +1367,11 @@ append_custom_preprocessor_definitions(appleseed
 # Static Libraries.
 #
 
-link_against_common_static_libraries(appleseed)
+link_against_platform(appleseed)
+link_against_openexr(appleseed)
+link_against_zlib(appleseed)
+link_against_libpng(appleseed)
+link_against_xercesc(appleseed)
 
 target_link_libraries(appleseed
     ${Boost_LIBRARIES}

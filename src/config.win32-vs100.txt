@@ -126,9 +126,10 @@ set(shared_lib_linker_flags_profile
 # Static Libraries.
 #
 
-macro(link_against_common_static_libraries target)
+macro(link_against_platform target)
+endmacro()
 
-    # OpenEXR.
+macro(link_against_openexr target)
     target_link_libraries(${target}
         debug       ${CMAKE_SOURCE_DIR}/build/win32.vs100/openexr/Half/Debug/Half.lib
         debug       ${CMAKE_SOURCE_DIR}/build/win32.vs100/openexr/Iex/Debug/Iex.lib
@@ -141,25 +142,27 @@ macro(link_against_common_static_libraries target)
         optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs100/openexr/IlmThread/Release/IlmThread.lib
         optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs100/openexr/Imath/Release/Imath.lib
     )
+endmacro()
 
-    # zlib.
+macro(link_against_zlib target)
     target_link_libraries(${target}
         debug       ${CMAKE_SOURCE_DIR}/build/win32.vs100/zlib/Debug/zlib.lib
         optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs100/zlib/Release/zlib.lib
     )
+endmacro()
 
-    # libpng.
+macro(link_against_libpng target)
     target_link_libraries(${target}
         debug       ${CMAKE_SOURCE_DIR}/build/win32.vs100/libpng/Debug/libpng.lib
         optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs100/libpng/Release/libpng.lib
     )
+endmacro()
 
-    # Xerces-C.
+macro(link_against_xercesc target)
     target_link_libraries(${target}
         debug       ${CMAKE_SOURCE_DIR}/build/win32.vs100/xerces-c/Static\ Debug/xerces-c_static_3D.lib
         optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs100/xerces-c/Static\ Release/xerces-c_static_3.lib
     )
-
 endmacro()
 
 

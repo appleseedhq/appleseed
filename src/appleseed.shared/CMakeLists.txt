@@ -76,8 +76,6 @@ append_custom_preprocessor_definitions(appleseed.shared
 # Static Libraries.
 #
 
-link_against_common_static_libraries(appleseed.shared)
-
 target_link_libraries(appleseed.shared
     appleseed
     ${Boost_LIBRARIES}

@@ -358,7 +358,7 @@ apply_preprocessor_definitions(appleseed.studio)
 # Static Libraries.
 #
 
-link_against_common_static_libraries(appleseed.studio)
+link_against_platform(appleseed.studio)
 
 target_link_libraries(appleseed.studio
     appleseed

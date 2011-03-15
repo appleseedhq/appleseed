@@ -102,7 +102,7 @@ apply_preprocessor_definitions(appleseed.cli)
 # Static Libraries.
 #
 
-link_against_common_static_libraries(appleseed.cli)
+link_against_platform(appleseed.cli)
 
 target_link_libraries(appleseed.cli
     appleseed
