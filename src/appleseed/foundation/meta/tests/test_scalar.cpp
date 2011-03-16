@@ -170,6 +170,51 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_EQ(static_cast<int>(+1.5f), truncate<int>(+1.5f));
     }
 
+    TEST_CASE(Round_Given0_Returns0)
+    {
+        EXPECT_EQ(0, round<int>(0.0));
+    }
+
+    TEST_CASE(Round_Given3_Returns3)
+    {
+        EXPECT_EQ(3, round<int>(3.0));
+    }
+
+    TEST_CASE(Round_Given3Dot1_Returns3)
+    {
+        EXPECT_EQ(3, round<int>(3.1));
+    }
+
+    TEST_CASE(Round_Given3Dot5_Returns4)
+    {
+        EXPECT_EQ(4, round<int>(3.5));
+    }
+
+    TEST_CASE(Round_Given3Dot9_Returns4)
+    {
+        EXPECT_EQ(4, round<int>(3.9));
+    }
+
+    TEST_CASE(Round_GivenMinus3_ReturnsMinus3)
+    {
+        EXPECT_EQ(-3, round<int>(-3.0));
+    }
+
+    TEST_CASE(Round_GivenMinus3Dot1_ReturnsMinus3)
+    {
+        EXPECT_EQ(-3, round<int>(-3.1));
+    }
+
+    TEST_CASE(Round_GivenMinus3Dot5_ReturnsMinus4)
+    {
+        EXPECT_EQ(-4, round<int>(-3.5));
+    }
+
+    TEST_CASE(Round_GivenMinus3Dot9_ReturnsMinus4)
+    {
+        EXPECT_EQ(-4, round<int>(-3.9));
+    }
+
     TEST_CASE(TestSmoothStep)
     {
         EXPECT_EQ(0.0, smoothstep(10.0, 20.0,  0.0));

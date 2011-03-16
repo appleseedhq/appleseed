@@ -142,6 +142,11 @@ T normalize_angle(const T angle);
 template <typename Int> Int truncate(const float x);
 template <typename Int> Int truncate(const double x);
 
+// Round x to the nearest integer with Round Half Away from Zero tie breaking rule.
+// Reference: http://en.wikipedia.org/wiki/Rounding#Round_half_away_from_zero.
+template <typename Int, typename T>
+Int round(const T x);
+
 // linearstep() returns 0 for x < a, 1 for x > b, and generates
 // a linear transition from 0 to 1 between x = a and x = b.
 template <typename T>
@@ -214,14 +219,12 @@ bool fz(
 // Conversion operations implementation.
 //
 
-// Convert an angle from degrees to radians.
 template <typename T>
 inline T deg_to_rad(const T angle)
 {
     return angle * T(Pi / 180.0);
 }
 
-// Convert an angle from radians to degrees.
 template <typename T>
 inline T rad_to_deg(const T angle)
 {
@@ -233,32 +236,31 @@ inline T rad_to_deg(const T angle)
 // Arithmetic operations implementation.
 //
 
-// Return the absolute value of the argument.
 template <typename T>
 inline T abs(const T x)
 {
     return x < T(0) ? -x : x;
 }
 
-// Return the square of the argument.
 template <typename T>
 inline T square(const T x)
 {
     return x * x;
 }
 
-// Runtime integer exponentiation of the form x^p.
 template <typename T>
 inline T pow_int(const T x, size_t p)
 {
     // todo: implement exponentiation by squaring for large values of p.
     // Reference: http://en.wikipedia.org/wiki/Exponentiation_by_squaring.
+
     T y = 1;
-    while (p--) y *= x;
+
+    while (p--)
+        y *= x;
+
     return y;
 }
-
-// Return the smallest power of 2 larger than a given integer x (x > 0).
 
 template <typename T>
 inline T next_pow2(T x)
@@ -301,14 +303,12 @@ inline uint64 next_pow2<uint64>(uint64 x)
     return x + 1;
 }
 
-// Return true if a given integer x is a power of 2.
 template <typename T>
 inline bool is_pow2(const T x)
 {
     return (x & (x - 1)) == 0;
 }
 
-// Return the base-2 logarithm of a given integer.
 template <typename T>
 inline T log2(T x)
 {
@@ -322,7 +322,6 @@ inline T log2(T x)
     return n;
 }
 
-// Return the factorial of a given integer.
 template <typename T>
 inline T factorial(T x)
 {
@@ -339,7 +338,6 @@ inline T factorial(T x)
     return fac;
 }
 
-// Clamp the argument to [min, max].
 template <typename T>
 inline T clamp(const T x, const T min, const T max)
 {
@@ -349,7 +347,6 @@ inline T clamp(const T x, const T min, const T max)
            x;
 }
 
-// Clamp the argument to [0,1].
 template <typename T>
 inline T saturate(const T x)
 {
@@ -358,7 +355,6 @@ inline T saturate(const T x)
            x;
 }
 
-// Wrap the argument back to [0,1].
 template <typename T>
 inline T wrap(const T x)
 {
@@ -366,7 +362,6 @@ inline T wrap(const T x)
     return y < T(0.0) ? y + T(1.0) : y;
 }
 
-// Normalize an angle into [0, 2*Pi].
 template <typename T>
 inline T normalize_angle(const T angle)
 {
@@ -374,7 +369,6 @@ inline T normalize_angle(const T angle)
     return a < T(0.0) ? a + T(TwoPi) : a;
 }
 
-// Return the integer part of a floating-point value.
 template <typename Int>
 inline Int truncate(const float x)
 {
@@ -384,6 +378,7 @@ inline Int truncate(const float x)
     return static_cast<Int>(x);
 #endif
 }
+
 template <typename Int>
 inline Int truncate(const double x)
 {
@@ -394,8 +389,14 @@ inline Int truncate(const double x)
 #endif
 }
 
-// linearstep() returns 0 for x < a, 1 for x > b, and generates
-// a linear transition from 0 to 1 between x = a and x = b.
+template <typename Int, typename T>
+inline Int round(const T x)
+{
+    return x < T(0.0)
+        ? truncate<Int>(x - T(0.5))
+        : truncate<Int>(x + T(0.5));
+}
+
 template <typename T>
 inline T linearstep(const T a, const T b, const T x)
 {
@@ -405,10 +406,6 @@ inline T linearstep(const T a, const T b, const T x)
            (x - a) / (b - a);
 }
 
-// smoothstep() returns 0 for x < a, 1 for x > b, and generates
-// a smooth, C-infinite transition from 0 to 1 between x = a and
-// x = b. The function has zero first derivatives at both x = a
-// and x = b.
 template <typename T>
 inline T smoothstep(const T a, const T b, const T x)
 {
@@ -421,8 +418,6 @@ inline T smoothstep(const T a, const T b, const T x)
     return y * y * (T(3.0) - y - y);
 }
 
-// mix() returns a for x < 0, b for x > 1, and performs a linear
-// blend between values a and b when x is between 0 and 1.
 template <typename T, typename U>
 inline T mix(const T a, const T b, const U x)
 {
@@ -431,16 +426,12 @@ inline T mix(const T a, const T b, const U x)
            lerp(a, b, x);
 }
 
-// lerp() returns the linear interpolation (1 - x) * a + x * b.
 template <typename T, typename U>
 inline T lerp(const T a, const T b, const U x)
 {
     return a + x * (b - a);
 }
 
-// fit() remaps a variable x from the range [min_x, max_x] to the
-// range [min_y, max_y]. When x is outside the [min_x, max_x] range,
-// a linear extrapolation outside the [min_y, max_y] range is used.
 template <typename T>
 inline T fit(
     const T x,
@@ -460,8 +451,6 @@ inline T fit(
 //
 // Robust floating-point tests implementation.
 //
-
-// Approximate equality tests.
 
 namespace scalar_impl
 {
@@ -497,7 +486,7 @@ namespace scalar_impl
             (lhs / rhs) < (T(1.0) + eps);
     }
 
-}   // namespace scalar_impl
+}
 
 inline bool feq(
     const int       lhs,
@@ -522,8 +511,6 @@ inline bool feq(
 {
     return scalar_impl::feq<double>(lhs, rhs, eps);
 }
-
-// Approximate zero tests.
 
 inline bool fz(
     const int       lhs,
