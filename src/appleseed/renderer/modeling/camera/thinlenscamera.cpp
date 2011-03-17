@@ -188,7 +188,7 @@ namespace
         double              m_focal_length;         // focal length, in meters
         double              m_f_stop;               // f-stop
         bool                m_autofocus_enabled;    // is autofocus enabled?
-        Vector2d            m_autofocus_target;     // autofocus target on film plane in [0.5,0.5)^2
+        Vector2d            m_autofocus_target;     // autofocus target on film plane in NDC
         double              m_focal_distance;       // focal distance, in meters
         double              m_lens_radius;          // radius of the lens, in meters, in local space
 
@@ -237,7 +237,7 @@ namespace
                 const Vector3d camera_direction =
                     m_transform.transform_vector_to_parent(Vector3d(0.0, 0.0, -1.0));
                 m_focal_distance = dot(v, camera_direction);
-                RENDERER_LOG_DEBUG(
+                RENDERER_LOG_INFO(
                     "camera \"%s\": autofocus sets focal distance to %f %s",
                     get_name(),
                     m_focal_distance,
@@ -247,7 +247,7 @@ namespace
             {
                 // Focus at infinity.
                 m_focal_distance = 1.0e38;
-                RENDERER_LOG_DEBUG(
+                RENDERER_LOG_INFO(
                     "camera \"%s\": autofocus sets focal distance to infinity",
                     get_name());
             }
