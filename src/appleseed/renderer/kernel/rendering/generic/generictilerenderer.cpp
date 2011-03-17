@@ -86,7 +86,6 @@ namespace
             // Generate pixel ordering.
             vector<size_t> ordering;
             ordering.reserve(num_pixels);
-//          linear_ordering(ordering, num_pixels);
             hilbert_ordering(
                 ordering,
                 properties.m_tile_width,
@@ -105,17 +104,20 @@ namespace
                 m_pixel_ordering[i].y = static_cast<uint16>(y);
             }
 
-            // Initialize the pixel sampler.
-            m_pixel_sampler.initialize(m_params.m_max_samples);
-
             // Compute the approximate size of one side of the subpixel grid inside a pixel.
             m_sqrt_max_samples =
-                static_cast<size_t>(sqrt(
-                    static_cast<double>(m_params.m_max_samples)));
+                round<size_t>(sqrt(static_cast<double>(m_params.m_max_samples)));
+            RENDERER_LOG_INFO(
+                "effective subpixel grid size: " FMT_SIZE_T "x" FMT_SIZE_T,
+                m_sqrt_max_samples,
+                m_sqrt_max_samples);
+
+            // Initialize the pixel sampler.
+            m_pixel_sampler.initialize(m_sqrt_max_samples);
 
             m_rcp_sample_canvas_width = 1.0 / (properties.m_canvas_width * m_sqrt_max_samples);
             m_rcp_sample_canvas_height = 1.0 / (properties.m_canvas_height * m_sqrt_max_samples);
-            m_rcp_sample_count = 1.0f / m_params.m_max_samples;
+            m_rcp_sample_count = 1.0f / (m_sqrt_max_samples * m_sqrt_max_samples);
         }
 
         virtual void release()

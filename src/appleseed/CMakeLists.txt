@@ -984,6 +984,7 @@ set(renderer_meta_tests_sources
     renderer/meta/tests/test_lightsampler.cpp
     renderer/meta/tests/test_paramarray.cpp
     renderer/meta/tests/test_pinholecamera.cpp
+    renderer/meta/tests/test_pixelsampler.cpp
     renderer/meta/tests/test_projectfilereader.cpp
     renderer/meta/tests/test_samplecounter.cpp
 )

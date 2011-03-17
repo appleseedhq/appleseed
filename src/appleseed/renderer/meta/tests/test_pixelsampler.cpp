@@ -26,51 +26,49 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "pixelsampler.h"
+// appleseed.renderer headers.
+#include "renderer/kernel/rendering/generic/pixelsampler.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/scalar.h"
+#include "foundation/math/vector.h"
+#include "foundation/utility/test.h"
+
+// Standard headers.
+#include <cstddef>
 
 using namespace foundation;
+using namespace renderer;
+using namespace std;
 
-namespace renderer
+TEST_SUITE(Rendering_Generic_PixelSampler)
 {
-
-//
-// PixelSampler class implementation.
-//
-
-void PixelSampler::initialize(const size_t sqrt_sample_count)
-{
-    m_rcp_sqrt_sample_count = 1.0 / sqrt_sample_count;
-
-    const size_t sample_count = sqrt_sample_count * sqrt_sample_count;
-    m_log_period = log2(sample_count * 32);
-
-    if (m_log_period > 16)
-        m_log_period = 16;
-
-    m_period = 1 << m_log_period;
-    m_sigma.resize(m_period);
-
-    // Precompute the first N values of 2^N * radical_inverse_base2(0..N-1).
-    for (size_t i = 0; i < m_period; ++i)
+    struct Fixture
     {
-        size_t b = m_period;
-        size_t x = 0;
+        PixelSampler m_sampler;
 
-        for (size_t n = i; n; n >>= 1)
+        Fixture()
         {
-            b >>= 1;
-            x += (n & 1) * b;
+            // 2x2 samples per pixels.
+            m_sampler.initialize(2);
         }
+    };
 
-        m_sigma[i] = x;
+    TEST_CASE_WITH_FIXTURE(Sample_SubPixelAtTopLeftCorner, Fixture)
+    {
+        Vector2d sample_position;
+        size_t initial_instance;
+        m_sampler.sample(0, 0, sample_position, initial_instance);
+
+        EXPECT_EQ(Vector2d(0.0), sample_position);
     }
 
-    m_rcp_period = 1.0 / m_period;
-    m_period_mask = m_period - 1;
-}
+    TEST_CASE_WITH_FIXTURE(Sample_SubPixelAtBottomRightCorner, Fixture)
+    {
+        // Assume a 32x32 pixels image with 2x2 samples per pixels.
+        Vector2d sample_position;
+        size_t initial_instance;
+        m_sampler.sample(32 * 2 - 1, 32 * 2 - 1, sample_position, initial_instance);
 
-}   // namespace renderer
+        EXPECT_EQ(Vector2d(31.9921875), sample_position);
+    }
+}
