@@ -125,9 +125,15 @@ void BTDFWrapper<Base>::sample(
 
     if (adjoint)
     {
-        const double cos_ig = foundation::dot(incoming, geometric_normal);
-        const double cos_og = foundation::dot(outgoing, geometric_normal);
-        value *= static_cast<float>(cos_ig / cos_og);
+        const double cos_on = std::abs(foundation::dot(outgoing, shading_basis.get_normal()));
+        const double cos_ig = std::abs(foundation::dot(incoming, geometric_normal));
+        const double cos_og = std::abs(foundation::dot(outgoing, geometric_normal));
+        value *= static_cast<float>(cos_on * cos_ig / cos_og);
+    }
+    else
+    {
+        const double cos_in = std::abs(foundation::dot(incoming, shading_basis.get_normal()));
+        value *= static_cast<float>(cos_in);
     }
 }
 
@@ -156,9 +162,15 @@ void BTDFWrapper<Base>::evaluate(
 
     if (adjoint)
     {
-        const double cos_ig = foundation::dot(incoming, geometric_normal);
-        const double cos_og = foundation::dot(outgoing, geometric_normal);
-        value *= static_cast<float>(cos_ig / cos_og);
+        const double cos_on = std::abs(foundation::dot(outgoing, shading_basis.get_normal()));
+        const double cos_ig = std::abs(foundation::dot(incoming, geometric_normal));
+        const double cos_og = std::abs(foundation::dot(outgoing, geometric_normal));
+        value *= static_cast<float>(cos_on * cos_ig / cos_og);
+    }
+    else
+    {
+        const double cos_in = std::abs(foundation::dot(incoming, shading_basis.get_normal()));
+        value *= static_cast<float>(cos_in);
     }
 }
 

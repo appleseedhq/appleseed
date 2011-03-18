@@ -142,8 +142,15 @@ void BRDFWrapper<Base>::sample(
 
     if (adjoint)
     {
+        const double cos_on = std::abs(foundation::dot(outgoing, shading_normal));
         const double cos_ig = foundation::dot(incoming, geometric_normal);
-        value *= static_cast<float>(cos_ig / cos_og);
+        assert(cos_ig > 0.0);
+        value *= static_cast<float>(cos_on * cos_ig / cos_og);
+    }
+    else
+    {
+        const double cos_in = std::abs(foundation::dot(incoming, shading_normal));
+        value *= static_cast<float>(cos_in);
     }
 }
 
@@ -189,7 +196,15 @@ void BRDFWrapper<Base>::evaluate(
         value);
 
     if (adjoint)
-        value *= static_cast<float>(cos_ig / cos_og);
+    {
+        const double cos_on = std::abs(foundation::dot(outgoing, shading_normal));
+        value *= static_cast<float>(cos_on * cos_ig / cos_og);
+    }
+    else
+    {
+        const double cos_in = std::abs(foundation::dot(incoming, shading_normal));
+        value *= static_cast<float>(cos_in);
+    }
 }
 
 template <typename Base>

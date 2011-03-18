@@ -151,7 +151,7 @@ void compute_direct_lighting(
         // clamp the geometric term g if it is too small, and in particular we
         // allow it to be exactly zero, which will result in a variance spike.
         const double cos_on = dot(sample_outgoing, sample_input_params.m_shading_normal);
-        const double g = (cos_in * cos_on) / sample_square_distance;
+        const double g = cos_on / sample_square_distance;
         assert(g >= 0.0);
 
         // Compute the probability density with respect to surface area

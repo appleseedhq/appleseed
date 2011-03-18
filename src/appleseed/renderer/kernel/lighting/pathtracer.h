@@ -249,15 +249,6 @@ size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
         if (!(bsdf_mode & ScatteringModesMask))
             break;
 
-        // Multiply the BSDF value by |cos(theta)|.
-        assert(foundation::is_normalized(incoming));
-        const double cos_in =
-            std::abs(
-                foundation::dot(
-                    incoming,
-                    shading_point_ptr->get_shading_normal()));
-        bsdf_value *= static_cast<float>(cos_in);
-
         // Update the path throughput.
         throughput *= bsdf_value;
 

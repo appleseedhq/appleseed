@@ -137,7 +137,7 @@ namespace
                     : mis_power2(bsdf_sample_count * bsdf_prob, env_sample_count * env_prob);
 
             // Add the contribution of this sample to the illumination.
-            const double weight = transmission * cos_in * mis_weight;
+            const double weight = transmission * mis_weight;
             env_value *= static_cast<float>(weight);
             env_value *= bsdf_value;
             radiance += env_value;
@@ -235,7 +235,7 @@ namespace
                 mis_power2(env_sample_count * env_prob, bsdf_sample_count * bsdf_prob);
 
             // Add the contribution of this sample to the illumination.
-            const double weight = transmission * cos_in * mis_weight;
+            const double weight = transmission * mis_weight;
             env_value *= static_cast<float>(weight);
             env_value *= bsdf_value;
             radiance += env_value;

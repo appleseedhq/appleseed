@@ -92,7 +92,7 @@ class RENDERERDLL BSDF
         const foundation::Vector3d& s,                          // sample in [0,1)^3
         const foundation::Vector3d& outgoing,                   // world space outgoing direction, unit-length
         foundation::Vector3d&       incoming,                   // world space incoming direction, unit-length
-        Spectrum&                   value,                      // BSDF value divided by PDF value
+        Spectrum&                   value,                      // BSDF value / PDF value * |cos(incoming, normal)|
         double&                     probability,                // PDF value
         Mode&                       mode) const = 0;            // scattering mode
 
@@ -104,7 +104,7 @@ class RENDERERDLL BSDF
         const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
         const foundation::Vector3d& outgoing,                   // world space outgoing direction, unit-length
         const foundation::Vector3d& incoming,                   // world space incoming direction, unit-length
-        Spectrum&                   value) const = 0;           // BSDF value for this pair of directions
+        Spectrum&                   value) const = 0;           // BSDF value * |cos(incoming, normal)|
 
     // Evaluate the PDF for a given pair of directions.
     virtual double evaluate_pdf(
