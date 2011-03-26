@@ -152,6 +152,11 @@ class PoolAllocator
     {
     }
 
+    void operator=(const PoolAllocator& rhs)
+    {
+        m_fallback_alloc = rhs.m_fallback_alloc;
+    }
+
     pointer address(reference x) const
     {
         return &x;
@@ -193,8 +198,6 @@ class PoolAllocator
   private:
     template <typename, size_t, typename>
     friend class PoolAllocator;
-
-    void operator=(const PoolAllocator&);
 
     typedef impl::Pool<sizeof(value_type), PageSize> Pool;
 
