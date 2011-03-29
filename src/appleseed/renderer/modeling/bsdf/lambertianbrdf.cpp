@@ -89,7 +89,6 @@ namespace
             {
                 m_uniform_reflectance = true;
 
-                // Precompute the value of the BRDF.
                 const InputValues* values = static_cast<const InputValues*>(data);
                 m_brdf_value = values->m_reflectance;
                 m_brdf_value *= static_cast<float>(1.0 / Pi);
@@ -136,7 +135,7 @@ namespace
             value *= static_cast<float>(1.0 / wi.y);
 
             // Compute the probability density of the sampled direction.
-            probability = wi.y * (1.0 / Pi);
+            probability = wi.y * RcpPi;
             assert(probability > 0.0);
 
             // Set the scattering mode.
@@ -186,7 +185,7 @@ namespace
             if (cos_in <= 0.0 || cos_on <= 0.0)
                 return 0.0;
 
-            return cos_in * (1.0 / Pi);
+            return cos_in * RcpPi;
         }
 
       private:
