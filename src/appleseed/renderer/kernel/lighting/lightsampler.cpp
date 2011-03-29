@@ -418,9 +418,12 @@ void LightSampler::sample_emitting_triangle(
     // Set the world space geometric normal.
     sample.m_input_params.m_geometric_normal = triangle.m_geometric_normal;
 
-    // Set the remaining fields.
+    // Set the EDF.
     sample.m_edf = triangle.m_edf;
-    sample.m_probability = triangle_prob * triangle.m_rcp_area;
+
+    // Compute the probability of choosing this sample.
+    assert(feq(triangle_prob * triangle.m_rcp_area, m_rcp_total_emissive_area));
+    sample.m_probability = m_rcp_total_emissive_area;
 }
 
 }   // namespace renderer
