@@ -87,16 +87,13 @@ namespace
         {
             assert(is_normalized(geometric_normal));
 
-            // Compute emission direction.
-            outgoing = sample_hemisphere_cosine(s);
-            outgoing = shading_basis.transform_to_parent(outgoing);
+            const Vector3d wo = sample_hemisphere_uniform(s);
+            outgoing = shading_basis.transform_to_parent(wo);
 
-            // Compute value.
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_exitance;
 
-            // Compute probability.
-            probability = 1.0 / Pi;
+            probability = RcpTwoPi;
         }
 
         virtual void evaluate(
@@ -122,7 +119,10 @@ namespace
             assert(is_normalized(geometric_normal));
             assert(is_normalized(outgoing));
 
-            return 1.0 / Pi;
+            const Vector3d& shading_normal = shading_basis.get_normal();
+            const double cos_on = dot(outgoing, shading_normal);
+
+            return cos_on > 0.0 ? RcpTwoPi : 0.0;
         }
 
       private:
