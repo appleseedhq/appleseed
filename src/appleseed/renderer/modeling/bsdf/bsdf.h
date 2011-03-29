@@ -45,9 +45,16 @@ namespace renderer
 //
 // Bidirectional Scattering Distribution Function (BSDF).
 //
-// All direction vectors are unit-length and pointing outward.
-// All vectors are expressed in world space.
-// All probability densities are measured with respect to solid angle.
+// Conventions:
+//
+//   * All direction vectors are unit-length and pointing outward.
+//   * All vectors are expressed in world space.
+//   * All probability densities are measured with respect to solid angle.
+//   * When the adjoint flag is false, the BSDF characterizes the light flow.
+//     When the adjoint flag is true, the BSDF characterizes the importance flow.
+//   * Regardless of the adjoint flag, light and importance always flow from the
+//     incoming direction to the outgoing direction.
+//   * The incoming direction is always the "sampled" direction.
 //
 
 class RENDERERDLL BSDF
