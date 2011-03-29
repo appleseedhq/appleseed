@@ -139,14 +139,14 @@ namespace
                 const Intersector&          intersector,
                 TextureCache&               texture_cache,
                 SampleVector&               samples,
-                const Spectrum&             emitted_radiance)
+                const Spectrum&             initial_alpha)
               : m_camera(*scene.get_camera())
               , m_lighting_conditions(lighting_conditions)
               , m_intersector(intersector)
               , m_texture_cache(texture_cache)
               , m_samples(samples)
               , m_sample_count(0)
-              , m_radiance(emitted_radiance)
+              , m_alpha(initial_alpha)
             {
             }
 
@@ -158,7 +158,7 @@ namespace
             void visit_vertex(
                 SamplingContext&            sampling_context,
                 const ShadingPoint&         shading_point,
-                const Vector3d&             outgoing,
+                const Vector3d&             outgoing,           // in this context, toward the light
                 const BSDF*                 bsdf,
                 const void*                 bsdf_data,
                 const BSDF::Mode            bsdf_mode,
@@ -166,18 +166,24 @@ namespace
                 const Spectrum&             throughput)
             {
                 // Retrieve the world space position of this vertex.
-                const Vector3d& vertex_position = shading_point.get_point();
+                const Vector3d& vertex_position_world = shading_point.get_point();
 
-                // Compute the position of this vertex on the image plane.
-                // todo: implement proper ray/camera intersection.
-                const Vector2d sample_position_ndc = m_camera.project(vertex_position);
-                const Vector3d sample_position =
-                    m_camera.get_transform().transform_point_to_parent(Vector3d(0.0));
+                // Transform the vertex position to camera space.
+                const Vector3d vertex_position_camera =
+                    m_camera.get_transform().transform_point_to_local(vertex_position_world);
 
-                // Reject vertices not belonging on the image plane of the camera.
+                // Compute the position of the vertex on the image plane.
+                const Vector2d sample_position_ndc = m_camera.project(vertex_position_camera);
+
+                // Reject vertices that don't belong on the image plane of the camera.
                 if (sample_position_ndc[0] < 0.0 || sample_position_ndc[0] >= 1.0 ||
                     sample_position_ndc[1] < 0.0 || sample_position_ndc[1] >= 1.0)
                     return;
+
+                // Compute the world space position of the camera.
+                // todo: precompute.
+                const Vector3d camera_position_world =
+                    m_camera.get_transform().transform_point_to_parent(Vector3d(0.0));
 
                 // Compute the transmission factor between this vertex and the camera.
                 const ShadingContext shading_context(m_intersector, m_texture_cache);
@@ -185,33 +191,73 @@ namespace
                     compute_transmission_between(
                         sampling_context,
                         shading_context,
-                        vertex_position,
-                        sample_position,
+                        vertex_position_world,
+                        camera_position_world,
                         &shading_point);
 
                 // Reject vertices not directly visible from the camera.
                 if (transmission == 0.0)
                     return;
 
-                // Update the path radiance.
-                m_radiance *= throughput;
+                // Compute the vertex-to-camera direction vector.
+                Vector3d vertex_to_camera = camera_position_world - vertex_position_world;
+                const double square_distance = square_norm(vertex_to_camera);
+                vertex_to_camera /= sqrt(square_distance);
 
-                // Shade this vertex.
-                ShadingResult shading_result;
-                shading_result.m_color_space = ColorSpaceSpectral;
-                shading_result.m_color = m_radiance;
-                shading_result.m_alpha = Alpha(1.0);
-                shading_result.transform_to_linear_rgb(m_lighting_conditions);
+                const Vector3d& shading_normal = shading_point.get_shading_normal();
+                Vector3d geometric_normal = shading_point.get_geometric_normal();
+
+                if (dot(shading_normal, geometric_normal) < 0.0)
+                    geometric_normal = -geometric_normal;
+
+                // Evaluate the BSDF at the vertex position.
+                Spectrum bsdf_value;
+                bsdf->evaluate(
+                    bsdf_data,
+                    true,
+                    geometric_normal,
+                    shading_point.get_shading_basis(),
+                    outgoing,                           // outgoing
+                    vertex_to_camera,                   // incoming
+                    bsdf_value);
+
+                // Hardcoded parameters for the Cornell Box scene.
+                const double ImagePlaneWidth = 0.025;   // in meters
+                const double ImagePlaneHeight = 0.025;  // in meters
+                const double FocalLength = 0.035;       // in meters
+
+                // Compute the square distance between the center of pixel and the camera position.
+                const Vector3d camera_direction =
+                    m_camera.get_transform().transform_vector_to_parent(Vector3d(0.0, 0.0, -1.0));
+                assert(is_normalized(camera_direction));
+                const double cos_theta = abs(dot(-vertex_to_camera, camera_direction));
+                const double dist_pixel_to_camera = FocalLength / cos_theta;
+
+                // Compute the flux-to-radiance factor.
+                const double flux_to_radiance = square(dist_pixel_to_camera / cos_theta) / (ImagePlaneWidth * ImagePlaneHeight);
+
+                // Compute the geometric term:
+                //  * we already know that visibility is 1
+                //  * cos(vertex_to_camera, shading_normal) is already accounted for in bsdf_value.
+                const double g = cos_theta / square_distance;
+                assert(g >= 0.0);
+
+                // Update the particle weight.
+                m_alpha *= throughput;
+
+                // Compute the contribution of this sample to the pixel.
+                Spectrum radiance = m_alpha;
+                radiance *= bsdf_value;
+                radiance *= static_cast<float>(transmission * g * flux_to_radiance);
 
                 // Create a sample for this vertex.
                 Sample sample;
                 sample.m_position = sample_position_ndc;
-                sample.m_color[0] = shading_result.m_color[0];
-                sample.m_color[1] = shading_result.m_color[1];
-                sample.m_color[2] = shading_result.m_color[2];
-                sample.m_color[3] = shading_result.m_alpha[0];
+                sample.m_color.rgb() =
+                    ciexyz_to_linear_rgb(
+                        spectrum_to_ciexyz<float>(m_lighting_conditions, radiance));
+                sample.m_color[3] = 1.0f;
                 m_samples.push_back(sample);
-
                 ++m_sample_count;
             }
 
@@ -229,7 +275,7 @@ namespace
             TextureCache&               m_texture_cache;
             SampleVector&               m_samples;
             size_t                      m_sample_count;     // the number of samples added to m_samples
-            Spectrum                    m_radiance;
+            Spectrum                    m_alpha;            // flux of the current particle (in W)
         };
 
         const Parameters                m_params;
@@ -247,8 +293,8 @@ namespace
         LightSampleVector               m_light_samples;
 
         virtual size_t generate_samples(
-            const size_t                    sequence_index,
-            SampleVector&                   samples)
+            const size_t                sequence_index,
+            SampleVector&               samples)
         {
             // Create a sampling context.
             SamplingContext sampling_context(
@@ -261,10 +307,8 @@ namespace
             const Vector2d s = sampling_context.next_vector2<2>();
 
             // Get one light sample.
-            // todo: enhance light sampler with a method to generate a single light sample.
-            clear_keep_memory(m_light_samples);
-            m_light_sampler.sample(sampling_context, 1, m_light_samples);
-            const LightSample& light_sample = m_light_samples[0];
+            LightSample light_sample;
+            m_light_sampler.sample(sampling_context, light_sample);
 
             // Evaluate the input values of the EDF of this light sample.
             InputEvaluator edf_input_evaluator(m_texture_cache);
@@ -275,7 +319,7 @@ namespace
 
             // Sample the EDF.
             Vector3d emission_direction;
-            Spectrum emitted_radiance;
+            Spectrum initial_alpha;
             double emission_direction_probability;
             light_sample.m_edf->sample(
                 edf_data,
@@ -283,8 +327,12 @@ namespace
                 Basis3d(light_sample.m_input_params.m_shading_normal),
                 s,
                 emission_direction,
-                emitted_radiance,
+                initial_alpha,
                 emission_direction_probability);
+
+            // Compute the initial particle weight.
+            initial_alpha /=
+                static_cast<float>(light_sample.m_probability * emission_direction_probability);
 
             // Build the light ray.
             const ShadingRay light_ray(
@@ -306,7 +354,7 @@ namespace
                 m_intersector,
                 m_texture_cache,
                 samples,
-                emitted_radiance);
+                initial_alpha);
             PathTracer path_tracer(
                 path_visitor,
                 m_params.m_minimum_path_length);
