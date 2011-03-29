@@ -91,7 +91,7 @@ namespace
 
                 const InputValues* values = static_cast<const InputValues*>(data);
                 m_brdf_value = values->m_reflectance;
-                m_brdf_value *= static_cast<float>(1.0 / Pi);
+                m_brdf_value *= static_cast<float>(RcpPi);
             }
         }
 
@@ -191,12 +191,12 @@ namespace
       private:
         struct InputValues
         {
-            Spectrum    m_reflectance;          // diffuse reflectance
+            Spectrum    m_reflectance;          // diffuse reflectance (albedo, technically)
             Alpha       m_reflectance_alpha;    // alpha channel of diffuse reflectance
         };
 
         bool            m_uniform_reflectance;
-        Spectrum        m_brdf_value;           // precomputed value of the BRDF
+        Spectrum        m_brdf_value;           // precomputed value of the BRDF (albedo/Pi)
     };
 
     typedef BRDFWrapper<LambertianBRDFImpl> LambertianBRDF;
