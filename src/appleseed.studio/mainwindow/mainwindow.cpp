@@ -351,8 +351,6 @@ void MainWindow::on_project_change()
 
 void MainWindow::update_workspace()
 {
-    assert(!m_rendering_manager.is_rendering());
-
     update_window_title();
     enable_disable_widgets(false);
 }
