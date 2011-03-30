@@ -81,7 +81,6 @@ namespace studio {
 // MainWindow class implementation.
 //
 
-// Constructor.
 MainWindow::MainWindow(QWidget* parent)
   : QMainWindow(parent)
   , m_ui(new Ui::MainWindow())
@@ -111,7 +110,6 @@ MainWindow::MainWindow(QWidget* parent)
     showMaximized();
 }
 
-// Destructor.
 MainWindow::~MainWindow()
 {
     delete m_ui;
@@ -343,6 +341,14 @@ bool MainWindow::can_close_project()
     return false;
 }
 
+void MainWindow::on_project_change()
+{
+    recreate_render_widgets();
+    update_workspace();
+    update_project_explorer();
+    m_status_bar.clear();
+}
+
 void MainWindow::update_workspace()
 {
     assert(!m_rendering_manager.is_rendering());
@@ -446,7 +452,7 @@ void MainWindow::enable_disable_menu_items(const bool rendering)
     m_action_stop_rendering->setEnabled(allow_stopping_rendering);
 }
 
-void MainWindow::on_project_change()
+void MainWindow::recreate_render_widgets()
 {
     remove_render_widgets();
 
@@ -576,29 +582,23 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
     if (!can_close_project())
     {
-        update_workspace();
         event->ignore();
         return;
     }
 
-    // At this point, we're closing the application.
-
-    on_project_change();
+    m_project_manager.close_project();
 
     event->accept();
 }
 
 void MainWindow::slot_new_project()
 {
-    if (can_close_project())
-    {
-        m_project_manager.create_project();
+    if (!can_close_project())
+        return;
 
-        on_project_change();
-    }
+    m_project_manager.create_project();
 
-    update_workspace();
-    update_project_explorer();
+    on_project_change();
 }
 
 namespace
@@ -638,46 +638,27 @@ namespace
 
 void MainWindow::slot_open_project()
 {
-    if (can_close_project())
+    if (!can_close_project())
+        return;
+
+    QFileDialog::Options options;
+    QString selected_filter;
+
+    QString filepath =
+        QFileDialog::getOpenFileName(
+            this,
+            "Open...",
+            "",
+            get_project_filter_string(),
+            &selected_filter,
+            options);
+
+    filepath = normalize_filepath(filepath);
+
+    if (!filepath.isEmpty())
     {
-        QFileDialog::Options options;
-        QString selected_filter;
-
-        QString filepath =
-            QFileDialog::getOpenFileName(
-                this,
-                "Open...",
-                "",
-                get_project_filter_string(),
-                &selected_filter,
-                options);
-
-        filepath = normalize_filepath(filepath);
-
-        if (!filepath.isEmpty())
-        {
-            const bool successful =
-                m_project_manager.load_project(filepath.toAscii().constData());
-
-            if (successful)
-            {
-                on_project_change();
-                update_workspace();
-                update_project_explorer();
-            }
-            else
-            {
-                show_project_file_loading_failed_message_box(this, filepath);
-            }
-        }
-    }
-}
-
-void MainWindow::slot_open_cornellbox_builtin_project()
-{
-    if (can_close_project())
-    {
-        const bool successful = m_project_manager.load_builtin_project("cornell_box");
+        const bool successful =
+            m_project_manager.load_project(filepath.toAscii().constData());
 
         if (successful)
         {
@@ -685,12 +666,26 @@ void MainWindow::slot_open_cornellbox_builtin_project()
         }
         else
         {
-            show_builtin_project_loading_failed_message_box(this, "cornell_box");
+            show_project_file_loading_failed_message_box(this, filepath);
         }
     }
+}
 
-    update_workspace();
-    update_project_explorer();
+void MainWindow::slot_open_cornellbox_builtin_project()
+{
+    if (!can_close_project())
+        return;
+
+    const bool successful = m_project_manager.load_builtin_project("cornell_box");
+
+    if (successful)
+    {
+        on_project_change();
+    }
+    else
+    {
+        show_builtin_project_loading_failed_message_box(this, "cornell_box");
+    }
 }
 
 void MainWindow::slot_reload_project()
@@ -698,33 +693,34 @@ void MainWindow::slot_reload_project()
     assert(m_project_manager.is_project_open());
     assert(m_project_manager.get_project()->has_path());
 
-    if (can_close_project())
+    if (!can_close_project())
+        return;
+
+    const bool successful = m_project_manager.reload_project();
+
+    if (successful)
     {
-        const bool successful = m_project_manager.reload_project();
-
-        if (successful)
-        {
-            on_project_change();
-        }
-        else
-        {
-            show_project_file_loading_failed_message_box(
-                this,
-                m_project_manager.get_project()->get_path());
-        }
+        on_project_change();
     }
-
-    update_workspace();
-    update_project_explorer();
+    else
+    {
+        show_project_file_loading_failed_message_box(
+            this,
+            m_project_manager.get_project()->get_path());
+    }
 }
 
 void MainWindow::slot_save_project()
 {
     assert(m_project_manager.is_project_open());
 
-    if (m_project_manager.get_project()->has_path())
-        m_project_manager.save_project();
-    else slot_save_project_as();
+    if (!m_project_manager.get_project()->has_path())
+    {
+        slot_save_project_as();
+        return;
+    }
+
+    m_project_manager.save_project();
 
     update_workspace();
 }

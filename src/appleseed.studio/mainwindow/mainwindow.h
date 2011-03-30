@@ -153,6 +153,7 @@ class MainWindow
     static QString get_project_filter_string();
 
     bool can_close_project();
+    void on_project_change();
 
     void update_workspace();
     void update_project_explorer();
@@ -161,8 +162,7 @@ class MainWindow
     void enable_disable_widgets(const bool rendering);
     void enable_disable_menu_items(const bool rendering);
 
-    void on_project_change();
-
+    void recreate_render_widgets();
     void remove_render_widgets();
     void add_render_widgets();
     void add_render_widget(

@@ -82,7 +82,7 @@ class ProjectManager
     // A project must be open.
     bool save_project_as(const std::string& filepath);
 
-    // Close the current project.
+    // If a project is currently open, close it.
     void close_project();
 
     // Return the current project, or 0 if there is no project is open.
