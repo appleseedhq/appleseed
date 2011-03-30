@@ -55,12 +55,12 @@ class StatusBar
 
     void set_text(const std::string& text);
 
-    void start_rendering_time_display(RenderingTimer* timer);
+    void start_rendering_time_display(RenderingTimer* rendering_timer);
 
     void stop_rendering_time_display();
 
   private:
-    RenderingTimer* m_timer;
+    RenderingTimer* m_rendering_timer;
     int             m_timer_id;
 
     virtual void timerEvent(QTimerEvent* event);
