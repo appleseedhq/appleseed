@@ -148,7 +148,9 @@ bool CameraController::handle_mouse_button_press_event(const QMouseEvent* event)
     switch (event->button())
     {
       case Qt::LeftButton:
-        m_controller.begin_drag(ControllerType::Tumble, position);
+        m_controller.begin_drag(
+            (event->modifiers() & Qt::AltModifier) ? ControllerType::Track : ControllerType::Tumble,
+            position);
         return true;
 
       case Qt::MidButton:
