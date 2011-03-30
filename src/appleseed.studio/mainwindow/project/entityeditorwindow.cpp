@@ -291,7 +291,8 @@ Dictionary EntityEditorWindow::get_values() const
         const string name = definition.get<string>("name");
         const string value = m_widget_proxies.find(name)->second->get();
 
-        values.insert(name, value);
+        if (!value.empty())
+            values.insert(name, value);
     }
 
     return values;
