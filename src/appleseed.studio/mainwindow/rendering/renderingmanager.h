@@ -117,7 +117,7 @@ class RenderingManager
 
     virtual void timerEvent(QTimerEvent* event);
 
-    void print_rendering_time();
+    void print_final_rendering_time();
     void print_average_luminance();
     void archive_frame_to_disk();
 

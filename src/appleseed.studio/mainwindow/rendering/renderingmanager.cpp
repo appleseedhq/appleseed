@@ -220,7 +220,7 @@ void RenderingManager::timerEvent(QTimerEvent* event)
     else QObject::timerEvent(event);
 }
 
-void RenderingManager::print_rendering_time()
+void RenderingManager::print_final_rendering_time()
 {
     const double rendering_time = m_rendering_timer.get_seconds();
     const string rendering_time_string = pretty_time(rendering_time, 3);
@@ -280,7 +280,7 @@ void RenderingManager::slot_rendering_end()
 
     m_render_widget->update();
 
-    print_rendering_time();
+    print_final_rendering_time();
     print_average_luminance();
     archive_frame_to_disk();
 
