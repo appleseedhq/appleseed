@@ -80,8 +80,10 @@ auto_release_ptr<Project> DefaultProjectFactory::create()
 
     {
         // Create a pinhole camera.
+        // Film dimensions are 0.980 in × 0.735 in (24.892 mm x 18.669 mm).
+        // Reference: http://en.wikipedia.org/wiki/Aspect_ratio_(image).
         ParamArray params;
-        params.insert("film_dimensions", "0.036 0.024");
+        params.insert("film_dimensions", "0.024892 0.018669");
         params.insert("focal_length", "0.035");
         auto_release_ptr<Camera> camera(
             PinholeCameraFactory().create(
@@ -101,7 +103,7 @@ auto_release_ptr<Project> DefaultProjectFactory::create()
         // Create a frame.
         ParamArray params;
         params.insert("camera", scene->get_camera()->get_name());
-        params.insert("resolution", "512 512");
+        params.insert("resolution", "640 480");
         params.insert("color_space", "srgb");
         auto_ptr<Frame> frame(new Frame("beauty", params));
 
