@@ -131,7 +131,7 @@ double compute_fast_ambient_occlusion(
     const SamplingContext&          sampling_context,
     const AOVoxelTreeIntersector&   intersector,
     const foundation::Vector3d&     point,
-    const foundation::Vector3d&     geometic_normal,
+    const foundation::Vector3d&     geometric_normal,
     const foundation::Basis3d&      basis,
     const double                    max_distance,
     const size_t                    sample_count,

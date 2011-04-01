@@ -50,7 +50,7 @@ double compute_ambient_occlusion(
     const SamplingContext&  sampling_context,
     const Intersector&      intersector,
     const Vector3d&         point,
-    const Vector3d&         geometic_normal,
+    const Vector3d&         geometric_normal,
     const Basis3d&          shading_basis,
     const double            max_distance,
     const size_t            sample_count,
@@ -80,7 +80,7 @@ double compute_ambient_occlusion(
         ao_ray.m_dir = shading_basis.transform_to_parent(ao_ray.m_dir);
 
         // Don't cast rays on or below the geometric surface.
-        if (dot(ao_ray.m_dir, geometic_normal) <= 0.0)
+        if (dot(ao_ray.m_dir, geometric_normal) <= 0.0)
             continue;
 
         // Count the number of computed samples.

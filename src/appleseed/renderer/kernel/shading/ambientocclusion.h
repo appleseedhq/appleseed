@@ -52,7 +52,7 @@ double compute_ambient_occlusion(
     const SamplingContext&          sampling_context,
     const Intersector&              intersector,
     const foundation::Vector3d&     point,              // world space point
-    const foundation::Vector3d&     geometic_normal,    // world space geometric normal, unit-length
+    const foundation::Vector3d&     geometric_normal,   // world space geometric normal, unit-length
     const foundation::Basis3d&      shading_basis,      // world space orthonormal basis around shading normal
     const double                    max_distance,
     const size_t                    sample_count,
