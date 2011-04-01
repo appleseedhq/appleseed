@@ -98,7 +98,7 @@ namespace
             // Set color space to spectral.
             shading_result.m_color_space = ColorSpaceSpectral;
 
-            // Set color and alpha channels.
+            // Set color channel.
             shading_result.m_color = values.m_color;
 
             // Set alpha channel to full opacity.
