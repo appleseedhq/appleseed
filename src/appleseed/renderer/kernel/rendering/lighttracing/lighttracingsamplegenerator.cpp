@@ -306,6 +306,10 @@ namespace
             // Generate a uniform sample in [0,1)^2 that will be used to sample the EDF.
             const Vector2d s = sampling_context.next_vector2<2>();
 
+            // todo: there are possible correlation artifacts since the sampling_context
+            // object is forked twice from there: once by the light sampler and once by
+            // the path tracer.
+
             // Get one light sample.
             LightSample light_sample;
             m_light_sampler.sample(sampling_context, light_sample);
