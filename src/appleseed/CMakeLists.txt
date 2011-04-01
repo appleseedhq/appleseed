@@ -1276,6 +1276,8 @@ set(renderer_modeling_surfaceshader_sources
     renderer/modeling/surfaceshader/constantsurfaceshader.h
     renderer/modeling/surfaceshader/diagnosticsurfaceshader.cpp
     renderer/modeling/surfaceshader/diagnosticsurfaceshader.h
+    renderer/modeling/surfaceshader/fastsubsurfacescatteringsurfaceshader.cpp
+    renderer/modeling/surfaceshader/fastsubsurfacescatteringsurfaceshader.h
     renderer/modeling/surfaceshader/isurfaceshaderfactory.h
     renderer/modeling/surfaceshader/physicalsurfaceshader.cpp
     renderer/modeling/surfaceshader/physicalsurfaceshader.h
