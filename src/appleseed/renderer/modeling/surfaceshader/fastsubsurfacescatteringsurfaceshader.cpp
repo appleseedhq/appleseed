@@ -50,7 +50,9 @@
 #include "foundation/math/basis.h"
 #include "foundation/math/sampling.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/dictionaryarray.h"
+#include "foundation/utility/foreach.h"
 
 // Standard headers.
 #include <algorithm>
@@ -60,6 +62,7 @@
 #include <memory>
 
 // Forward declarations.
+namespace renderer  { class Scene; }
 namespace renderer  { class TextureCache; }
 
 using namespace foundation;
@@ -89,6 +92,8 @@ namespace
             const char*             name,
             const ParamArray&       params)
           : SurfaceShader(params)
+          , m_light_samples(m_params.get_required<size_t>("light_samples", 1))
+          , m_occlusion_samples(m_params.get_required<size_t>("occlusion_samples", 1))
         {
             set_name(name);
 
@@ -146,50 +151,65 @@ namespace
                     shading_point.get_point(),
                     reverse_geometric_normal,
                     reverse_shading_basis,
-                    8,
+                    m_occlusion_samples,
                     &shading_point);
             assert(avg_distance >= 0.0);
 
             // Compute normalized thickness in [0, 1].
             const double thickness = min(avg_distance / values.m_scale, 1.0);
 
-            // Get one light sample.
-            LightSample light_sample;
-            m_light_sampler->sample(sampling_context, light_sample);
-
-            // Compute lighting.
-            const Vector3d camera_vec = normalize(-shading_point.get_ray().m_dir);                                      // toward camera
-            const Vector3d light_vec = normalize(light_sample.m_input_params.m_point - shading_point.get_point());      // toward light
-            const Vector3d distorted_light_vec = normalize(light_vec + values.m_distortion * reverse_shading_normal);   // normalize() not strictly necessary
-            const double dot_lv = saturate(dot(camera_vec, -distorted_light_vec));
-            const double view_dep = pow(dot_lv, values.m_power);
-            const double contribution = (values.m_ambient_sss + values.m_view_dep_sss * view_dep) * (1.0 - thickness);
-
-            // Evaluate the input values of the EDF.
-            InputEvaluator edf_input_evaluator(shading_context.get_texture_cache());
-            const void* edf_data =
-                edf_input_evaluator.evaluate(
-                    light_sample.m_edf->get_inputs(),
-                    light_sample.m_input_params);
-
-            // Evaluate the EDF.
-            Spectrum edf_value;
-            light_sample.m_edf->evaluate(
-                edf_data,
-                light_sample.m_input_params.m_geometric_normal,
-                Basis3d(light_sample.m_input_params.m_shading_normal),
-                -light_vec,
-                edf_value);
-
-            // Compute final color.
+            // Initialize the shading result to opaque black.
             shading_result.m_color_space = ColorSpaceSpectral;
-            shading_result.m_color = values.m_albedo;
-            shading_result.m_color *= edf_value;
-            shading_result.m_color *= static_cast<float>(contribution);
+            shading_result.m_color.set(0.0f);
             shading_result.m_alpha.set(1.0f);
+
+            // Sample the light sources.
+            LightSampleVector light_samples;
+            m_light_sampler->sample(sampling_context, m_light_samples, light_samples);
+
+            const Vector3d camera_vec = normalize(-shading_point.get_ray().m_dir);                                          // toward camera
+
+            for (const_each<LightSampleVector> i = light_samples; i; ++i)
+            {
+                // Compute the contribution of this light sample.
+                const LightSample& light_sample = *i;
+                const Vector3d light_vec = normalize(light_sample.m_input_params.m_point - shading_point.get_point());      // toward light
+                const Vector3d distorted_light_vec = normalize(light_vec + values.m_distortion * reverse_shading_normal);   // normalize() not strictly necessary
+                const double dot_lv = saturate(dot(camera_vec, -distorted_light_vec));
+                const double view_dep = pow(dot_lv, values.m_power);
+                const double contribution = (values.m_ambient_sss + values.m_view_dep_sss * view_dep) * (1.0 - thickness);
+
+                // Evaluate the input values of the EDF.
+                InputEvaluator edf_input_evaluator(shading_context.get_texture_cache());
+                const void* edf_data =
+                    edf_input_evaluator.evaluate(
+                        light_sample.m_edf->get_inputs(),
+                        light_sample.m_input_params);
+
+                // Evaluate the EDF.
+                Spectrum edf_value;
+                light_sample.m_edf->evaluate(
+                    edf_data,
+                    light_sample.m_input_params.m_geometric_normal,
+                    Basis3d(light_sample.m_input_params.m_shading_normal),
+                    -light_vec,
+                    edf_value);
+
+                // Compute and accumulate the contribution of this light sample.
+                Spectrum result = values.m_albedo;
+                result *= edf_value;
+                result *= static_cast<float>(contribution);
+                shading_result.m_color += result;
+            }
+
+            // Normalize the result.
+            if (light_samples.size() > 1)
+                shading_result.m_color /= static_cast<float>(light_samples.size());
         }
 
       private:
+        const size_t            m_light_samples;
+        const size_t            m_occlusion_samples;
         auto_ptr<LightSampler>  m_light_sampler;
 
         struct InputValues
@@ -338,6 +358,26 @@ DictionaryArray FastSubSurfaceScatteringSurfaceShaderFactory::get_widget_definit
         widget.insert("entity_types", entity_types);
         widget.insert("use", "required");
         widget.insert("default", "");
+        definitions.push_back(widget);
+    }
+
+    {
+        Dictionary widget;
+        widget.insert("name", "light_samples");
+        widget.insert("label", "Light Samples");
+        widget.insert("widget", "text_box");
+        widget.insert("use", "required");
+        widget.insert("default", "1");
+        definitions.push_back(widget);
+    }
+
+    {
+        Dictionary widget;
+        widget.insert("name", "occlusion_samples");
+        widget.insert("label", "Occlusion Samples");
+        widget.insert("widget", "text_box");
+        widget.insert("use", "required");
+        widget.insert("default", "1");
         definitions.push_back(widget);
     }
 
