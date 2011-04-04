@@ -100,6 +100,7 @@ namespace
             m_inputs.declare("scale", InputFormatScalar);
             m_inputs.declare("ambient_sss", InputFormatScalar);
             m_inputs.declare("view_dep_sss", InputFormatScalar);
+            m_inputs.declare("diffuse", InputFormatScalar);
             m_inputs.declare("power", InputFormatScalar);
             m_inputs.declare("distortion", InputFormatScalar);
             m_inputs.declare("albedo", InputFormatSpectrum);
@@ -134,29 +135,30 @@ namespace
                 shading_point.get_input_params(),
                 &values);
             
-            // Compute reversed normals.
-            const Vector3d reverse_geometric_normal = -shading_point.get_geometric_normal();
-            const Vector3d reverse_shading_normal = -shading_point.get_shading_normal();
-            const Basis3d reverse_shading_basis(reverse_shading_normal);
+            // Retrieve intersection point and shading normal.
+            const Vector3d& point = shading_point.get_point();
+            const Vector3d& shading_normal = shading_point.get_shading_normal();
+            const Vector3d inv_shading_normal = -shading_normal;
 
             // todo: there are possible correlation artifacts since the sampling_context
             // object is forked twice from there: once to compute the average occluder
             // distance sampler and once by the light sampler.
 
-            // Compute average occluder distance.
+            // Compute the average occluder distance.
             const double avg_distance =
                 compute_average_distance(
                     sampling_context,
                     shading_context.get_intersector(),
-                    shading_point.get_point(),
-                    reverse_geometric_normal,
-                    reverse_shading_basis,
+                    point,
+                    -shading_point.get_geometric_normal(),
+                    Basis3d(inv_shading_normal),
                     m_occlusion_samples,
                     &shading_point);
             assert(avg_distance >= 0.0);
 
-            // Compute normalized thickness in [0, 1].
-            const double thickness = min(avg_distance / values.m_scale, 1.0);
+            // Compute the total SSS contribution.
+            const double K = 2.99573227;                                                                                    // -ln(0.05)
+            const double sss_contrib = exp(-(avg_distance / values.m_scale) * K);
 
             // Initialize the shading result to opaque black.
             shading_result.m_color_space = ColorSpaceSpectral;
@@ -171,13 +173,18 @@ namespace
 
             for (const_each<LightSampleVector> i = light_samples; i; ++i)
             {
-                // Compute the contribution of this light sample.
+                // Fetch the light sample.
                 const LightSample& light_sample = *i;
-                const Vector3d light_vec = normalize(light_sample.m_input_params.m_point - shading_point.get_point());      // toward light
-                const Vector3d distorted_light_vec = normalize(light_vec + values.m_distortion * reverse_shading_normal);   // normalize() not strictly necessary
-                const double dot_lv = saturate(dot(camera_vec, -distorted_light_vec));
-                const double view_dep = pow(dot_lv, values.m_power);
-                const double contribution = (values.m_ambient_sss + values.m_view_dep_sss * view_dep) * (1.0 - thickness);
+                const Vector3d light_vec = normalize(light_sample.m_input_params.m_point - point);                          // toward light
+
+                // Compute the contribution of this light sample.
+                const Vector3d distorted_light_vec = normalize(light_vec + values.m_distortion * inv_shading_normal);       // normalize() not strictly necessary
+                const double dot_nl = saturate(dot(shading_normal, light_vec));                                             // dot(N, L): diffuse lighting
+                const double dot_vl = saturate(dot(camera_vec, -distorted_light_vec));                                      // dot(V, -L): view-dependent SSS
+                const double view_dep = pow(dot_vl, values.m_power);
+                const double sample_contrib =
+                    (values.m_ambient_sss + view_dep * values.m_view_dep_sss) * sss_contrib +                               // subsurface scattering
+                    dot_nl * values.m_diffuse;                                                                              // diffuse lighting
 
                 // Evaluate the input values of the EDF.
                 InputEvaluator edf_input_evaluator(shading_context.get_texture_cache());
@@ -198,7 +205,7 @@ namespace
                 // Compute and accumulate the contribution of this light sample.
                 Spectrum result = values.m_albedo;
                 result *= edf_value;
-                result *= static_cast<float>(contribution);
+                result *= static_cast<float>(sample_contrib);
                 shading_result.m_color += result;
             }
 
@@ -214,9 +221,10 @@ namespace
 
         struct InputValues
         {
-            double      m_scale;
+            double      m_scale;            // distance at which light absorption reaches 95%
             double      m_ambient_sss;
             double      m_view_dep_sss;
+            double      m_diffuse;
             double      m_power;
             double      m_distortion;
             Spectrum    m_albedo;
@@ -320,6 +328,16 @@ DictionaryArray FastSubSurfaceScatteringSurfaceShaderFactory::get_widget_definit
         Dictionary widget;
         widget.insert("name", "view_dep_sss");
         widget.insert("label", "View-Dependent SSS");
+        widget.insert("widget", "text_box");
+        widget.insert("use", "required");
+        widget.insert("default", "0.0");
+        definitions.push_back(widget);
+    }
+
+    {
+        Dictionary widget;
+        widget.insert("name", "diffuse");
+        widget.insert("label", "Diffuse Lighting");
         widget.insert("widget", "text_box");
         widget.insert("use", "required");
         widget.insert("default", "0.0");
