@@ -69,7 +69,7 @@ const char* Appleseed::get_lib_version()
 
 const char* Appleseed::get_lib_maturity_level()
 {
-    static const char* LibMaturityLevelToken = "alpha-4";
+    static const char* LibMaturityLevelToken = "alpha-5";
     return LibMaturityLevelToken;
 }
 
