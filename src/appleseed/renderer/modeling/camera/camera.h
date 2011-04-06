@@ -36,6 +36,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
+#include "foundation/utility/implptr.h"
 
 // Forward declarations.
 namespace renderer      { class Intersector; }
@@ -64,6 +65,12 @@ class RENDERERDLL Camera
     // Get the camera transformation.
     virtual const foundation::Transformd& get_transform() const = 0;
 
+    // Get the film dimensions (in meters).
+    const foundation::Vector2d& get_film_dimensions() const;
+
+    // Get the focal length (in meters).
+    double get_focal_length() const;
+
     // This method is called once before rendering each frame.
     virtual void on_frame_begin(
         const Project&              project,
@@ -90,17 +97,20 @@ class RENDERERDLL Camera
         const foundation::Vector3d& point) const = 0;   // point in camera space
 
   protected:
-    // Utility function to retrieve the film dimensions from renderer::Entity::m_params.
-    foundation::Vector2d get_film_dimensions() const;
+    struct Impl;
+    foundation::impl_ptr<Impl, false> impl;
 
-    // Utility function to retrieve the focal length from a parameter array.
-    double get_focal_length(const double film_width) const;
+    // Utility function to retrieve the film dimensions from the entity parameters.
+    foundation::Vector2d extract_film_dimensions() const;
 
-    // Utility function to retrieve the f-stop value from a parameter array.
-    double get_f_stop() const;
+    // Utility function to retrieve the focal length from the entity parameters.
+    double extract_focal_length(const double film_width) const;
 
-    // Utility function to retrieve the focal distance from a parameter array.
-    void get_focal_distance(
+    // Utility function to retrieve the f-stop value from the entity parameters.
+    double extract_f_stop() const;
+
+    // Utility function to retrieve the focal distance from the entity parameters.
+    void extract_focal_distance(
         bool&                       autofocus_enabled,
         foundation::Vector2d&       autofocus_target,
         double&                     focal_distance) const;

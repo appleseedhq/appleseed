@@ -73,10 +73,10 @@ namespace
             set_name(name);
 
             m_film_dimensions = get_film_dimensions();
-            m_focal_length = get_focal_length(m_film_dimensions[0]);
-            m_f_stop = get_f_stop();
+            m_focal_length = get_focal_length();
+            m_f_stop = extract_f_stop();
 
-            get_focal_distance(
+            extract_focal_distance(
                 m_autofocus_enabled,
                 m_autofocus_target,
                 m_focal_distance);

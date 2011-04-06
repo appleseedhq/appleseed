@@ -61,7 +61,7 @@ namespace
             set_name(name);
 
             m_film_dimensions = get_film_dimensions();
-            m_focal_length = get_focal_length(m_film_dimensions[0]);
+            m_focal_length = get_focal_length();
 
             m_rcp_film_width = 1.0 / m_film_dimensions[0];
             m_rcp_film_height = 1.0 / m_film_dimensions[1];

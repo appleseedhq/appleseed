@@ -148,6 +148,9 @@ namespace
               , m_sample_count(0)
               , m_alpha(initial_alpha)
             {
+                const Vector2d& film_dimensions = m_camera.get_film_dimensions();
+                m_rcp_film_area = 1.0 / (film_dimensions[0] * film_dimensions[1]);
+                m_focal_length = m_camera.get_focal_length();
             }
 
             size_t get_sample_count() const
@@ -221,20 +224,15 @@ namespace
                     vertex_to_camera,                   // incoming
                     bsdf_value);
 
-                // Hardcoded parameters for the Cornell Box scene.
-                const double ImagePlaneWidth = 0.025;   // in meters
-                const double ImagePlaneHeight = 0.025;  // in meters
-                const double FocalLength = 0.035;       // in meters
-
                 // Compute the square distance between the center of pixel and the camera position.
                 const Vector3d camera_direction =
                     m_camera.get_transform().transform_vector_to_parent(Vector3d(0.0, 0.0, -1.0));
                 assert(is_normalized(camera_direction));
                 const double cos_theta = abs(dot(-vertex_to_camera, camera_direction));
-                const double dist_pixel_to_camera = FocalLength / cos_theta;
+                const double dist_pixel_to_camera = m_focal_length / cos_theta;
 
                 // Compute the flux-to-radiance factor.
-                const double flux_to_radiance = square(dist_pixel_to_camera / cos_theta) / (ImagePlaneWidth * ImagePlaneHeight);
+                const double flux_to_radiance = square(dist_pixel_to_camera / cos_theta) * m_rcp_film_area;
 
                 // Compute the geometric term:
                 //  * we already know that visibility is 1
@@ -273,6 +271,8 @@ namespace
             const LightingConditions&   m_lighting_conditions;
             const Intersector&          m_intersector;
             TextureCache&               m_texture_cache;
+            double                      m_rcp_film_area;
+            double                      m_focal_length;
             SampleVector&               m_samples;
             size_t                      m_sample_count;     // the number of samples added to m_samples
             Spectrum                    m_alpha;            // flux of the current particle (in W)

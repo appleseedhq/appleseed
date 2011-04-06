@@ -47,9 +47,28 @@ namespace
     const UniqueID g_class_uid = new_guid();
 }
 
+struct Camera::Impl
+{
+    Vector2d    m_film_dimensions;      // film dimensions, in meters
+    double      m_focal_length;         // focal length, in meters
+};
+
 Camera::Camera(const ParamArray& params)
   : Entity(g_class_uid, params)
+  , impl(new Impl())
 {
+    impl->m_film_dimensions = extract_film_dimensions();
+    impl->m_focal_length = extract_focal_length(impl->m_film_dimensions[0]);
+}
+
+const Vector2d& Camera::get_film_dimensions() const
+{
+    return impl->m_film_dimensions;
+}
+
+double Camera::get_focal_length() const
+{
+    return impl->m_focal_length;
 }
 
 void Camera::on_frame_begin(
@@ -63,7 +82,7 @@ void Camera::on_frame_end(
 {
 }
 
-Vector2d Camera::get_film_dimensions() const
+Vector2d Camera::extract_film_dimensions() const
 {
     const Vector2d DefaultFilmDimensions(0.025, 0.025);     // in meters
 
@@ -123,7 +142,7 @@ namespace
     }
 }
 
-double Camera::get_focal_length(const double film_width) const
+double Camera::extract_focal_length(const double film_width) const
 {
     const double DefaultFocalLength = 0.035;    // in meters
     const double DefaultHFov = 54.0;            // in degrees
@@ -162,14 +181,14 @@ double Camera::get_focal_length(const double film_width) const
     }
 }
 
-double Camera::get_f_stop() const
+double Camera::extract_f_stop() const
 {
     const double DefaultFStop = 8.0;
 
     return get_greater_than_zero("f_stop", DefaultFStop);
 }
 
-void Camera::get_focal_distance(
+void Camera::extract_focal_distance(
     bool&               autofocus_enabled,
     Vector2d&           autofocus_target,
     double&             focal_distance) const
