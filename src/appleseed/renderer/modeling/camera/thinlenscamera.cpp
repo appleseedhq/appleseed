@@ -180,7 +180,6 @@ namespace
 
       private:
         // Order of data members impacts performance, preserve it.
-        uint32              m_pad;                  // for alignment -- todo: omit in 64-bit builds?
         Transformd          m_transform;            // camera transformation
 
         // Parameters.
