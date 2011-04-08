@@ -119,6 +119,12 @@ Vector<T, N> faceforward(
     const Vector<T, N>& n,
     const Vector<T, N>& i);
 
+// Return v if it is in the same hemisphere as ref, -v otherwise.
+template <typename T, size_t N>
+Vector<T, N> flip_to_same_hemisphere(
+    const Vector<T, N>& v,
+    const Vector<T, N>& ref);
+
 // Return the reflection vector given an incoming vector i and a unit-length normal vector n.
 template <typename T, size_t N>
 Vector<T, N> reflect(
@@ -584,6 +590,14 @@ inline Vector<T, N> faceforward(
     const Vector<T, N>& i)
 {
     return dot(n, i) < T(0.0) ? n : -n;
+}
+
+template <typename T, size_t N>
+inline Vector<T, N> flip_to_same_hemisphere(
+    const Vector<T, N>& v,
+    const Vector<T, N>& ref)
+{
+    return dot(v, ref) < T(0.0) ? -v : v;
 }
 
 template <typename T, size_t N>
