@@ -272,11 +272,10 @@ namespace
 
                 // Retrieve the shading and geometric normals at the vertex.
                 const Vector3d& shading_normal = shading_point.get_shading_normal();
-                Vector3d geometric_normal = shading_point.get_geometric_normal();
-
-                // Make sure the geometric normal is in the same hemisphere as the shading normal.
-                if (dot(shading_normal, geometric_normal) < 0.0)
-                    geometric_normal = -geometric_normal;
+                const Vector3d geometric_normal =
+                    flip_to_same_hemisphere(
+                        shading_point.get_geometric_normal(),
+                        shading_normal);
 
                 // Evaluate the BSDF at the vertex position.
                 Spectrum bsdf_value;
@@ -377,6 +376,11 @@ namespace
             LightSample light_sample;
             m_light_sampler.sample(sampling_context, light_sample);
 
+            // Make sure the geometric normal of the light sample is in the same hemisphere as the shading normal.
+            light_sample.m_input_params.m_geometric_normal =
+                flip_to_same_hemisphere(
+                    light_sample.m_input_params.m_geometric_normal,
+                    light_sample.m_input_params.m_shading_normal);
 
             // Evaluate the input values of the EDF of this light sample.
             InputEvaluator edf_input_evaluator(m_texture_cache);
