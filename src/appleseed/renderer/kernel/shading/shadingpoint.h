@@ -194,7 +194,7 @@ class ShadingPoint
     mutable foundation::Vector3d    m_back_point;               // hit point refined to back, in assembly instance space
 
     // Cache the source geometry, fetching it if necessary.
-    inline void cache_source_geometry() const;
+    void cache_source_geometry() const;
 
     // Fetch the source geometry.
     void fetch_source_geometry() const;

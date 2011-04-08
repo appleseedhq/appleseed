@@ -30,13 +30,13 @@
 #include "shadingpoint.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/intersection/intersector.h"
 #include "renderer/modeling/object/iregion.h"
 #include "renderer/modeling/object/object.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/intersection.h"
 #include "foundation/utility/attributeset.h"
-#include "foundation/utility/casts.h"
 
 using namespace foundation;
 using namespace std;
@@ -135,59 +135,6 @@ void ShadingPoint::fetch_source_geometry() const
     m_n2 = tess.m_vertex_normals[triangle.m_n2];
 }
 
-namespace
-{
-    // Robustly offset a given point along a given vector.
-    inline Vector3d offset(const Vector3d& p, Vector3d n)
-    {
-        const double Threshold = 1.0e-25;
-        const int EpsLut[2] = { 8, -8 };
-
-        // Check whether any of the components of p is close to zero, in absolute value.
-        const bool small_x = std::abs(p.x) < Threshold;
-        const bool small_y = std::abs(p.y) < Threshold;
-        const bool small_z = std::abs(p.z) < Threshold;
-
-        // If it is the case, we need n to be normalized.
-        if (small_x || small_y || small_z)
-            n = normalize(n);
-
-        Vector3d res;
-
-        // Offset X component.
-        if (small_x)
-            res.x = p.x + n.x * Threshold;
-        else
-        {
-            uint64 ix = binary_cast<uint64>(p.x);
-            ix += EpsLut[(ix ^ binary_cast<uint64>(n.x)) >> 63];
-            res.x = binary_cast<double>(ix);
-        }
-
-        // Offset Y component.
-        if (small_y)
-            res.y = p.y + n.y * Threshold;
-        else
-        {
-            uint64 iy = binary_cast<uint64>(p.y);
-            iy += EpsLut[(iy ^ binary_cast<uint64>(n.y)) >> 63];
-            res.y = binary_cast<double>(iy);
-        }
-
-        // Offset Z component.
-        if (small_z)
-            res.z = p.z + n.z * Threshold;
-        else
-        {
-            uint64 iz = binary_cast<uint64>(p.z);
-            iz += EpsLut[(iz ^ binary_cast<uint64>(n.z)) >> 63];
-            res.z = binary_cast<double>(iz);
-        }
-
-        return res;
-    }
-}
-
 void ShadingPoint::refine_and_offset() const
 {
     assert(hit());
@@ -218,8 +165,8 @@ void ShadingPoint::refine_and_offset() const
     m_asm_geo_normal = faceforward(m_asm_geo_normal, local_ray.m_dir);
 
     // Compute the offset points.
-    m_front_point = offset(local_ray.m_org, m_asm_geo_normal);
-    m_back_point = offset(local_ray.m_org, -m_asm_geo_normal);
+    m_front_point = Intersector::offset(local_ray.m_org, m_asm_geo_normal);
+    m_back_point = Intersector::offset(local_ray.m_org, -m_asm_geo_normal);
 
     // The refined intersection points are now available.
     m_members |= ShadingPoint::HasRefinedPoints;

@@ -36,9 +36,11 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/intersection.h"
+#include "foundation/utility/casts.h"
 #include "foundation/utility/string.h"
 
 using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
@@ -80,7 +82,6 @@ namespace
     }
 }
 
-// Constructor.
 Intersector::Intersector(
     const TraceContext& trace_context,
     const bool          print_statistics,
@@ -105,7 +106,6 @@ Intersector::Intersector(
     }
 }
 
-// Destructor.
 Intersector::~Intersector()
 {
     if (m_print_statistics)
@@ -142,7 +142,55 @@ Intersector::~Intersector()
     }
 }
 
-// Trace a world space ray through the scene.
+Vector3d Intersector::offset(const Vector3d& p, Vector3d n)
+{
+    const double Threshold = 1.0e-25;
+    const int EpsLut[2] = { 8, -8 };
+
+    // Check whether any of the components of p is close to zero, in absolute value.
+    const bool small_x = abs(p.x) < Threshold;
+    const bool small_y = abs(p.y) < Threshold;
+    const bool small_z = abs(p.z) < Threshold;
+
+    // If it is the case, we need n to be normalized.
+    if (small_x || small_y || small_z)
+        n = normalize(n);
+
+    Vector3d res;
+
+    // Offset X component.
+    if (small_x)
+        res.x = p.x + n.x * Threshold;
+    else
+    {
+        uint64 ix = binary_cast<uint64>(p.x);
+        ix += EpsLut[(ix ^ binary_cast<uint64>(n.x)) >> 63];
+        res.x = binary_cast<double>(ix);
+    }
+
+    // Offset Y component.
+    if (small_y)
+        res.y = p.y + n.y * Threshold;
+    else
+    {
+        uint64 iy = binary_cast<uint64>(p.y);
+        iy += EpsLut[(iy ^ binary_cast<uint64>(n.y)) >> 63];
+        res.y = binary_cast<double>(iy);
+    }
+
+    // Offset Z component.
+    if (small_z)
+        res.z = p.z + n.z * Threshold;
+    else
+    {
+        uint64 iz = binary_cast<uint64>(p.z);
+        iz += EpsLut[(iz ^ binary_cast<uint64>(n.z)) >> 63];
+        res.z = binary_cast<double>(iz);
+    }
+
+    return res;
+}
+
 bool Intersector::trace(
     const ShadingRay&   ray,
     ShadingPoint&       shading_point,
@@ -203,7 +251,6 @@ bool Intersector::trace(
     return shading_point.hit();
 }
 
-// Trace a world space ray through the scene.
 bool Intersector::trace_probe(
     const ShadingRay&   ray,
     const ShadingPoint* parent_shading_point) const

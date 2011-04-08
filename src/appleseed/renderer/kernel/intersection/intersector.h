@@ -65,13 +65,18 @@ class Intersector
     // Destructor.
     ~Intersector();
 
+    // Offset a point away from a surface represented by its normal.
+    static foundation::Vector3d offset(
+        const foundation::Vector3d& p,
+        foundation::Vector3d        n);
+
     // Trace a world space ray through the scene.
     bool trace(
         const ShadingRay&           ray,
         ShadingPoint&               shading_point,
         const ShadingPoint*         parent_shading_point = 0) const;
 
-    // Trace a world space ray through the scene.
+    // Trace a world space probe ray through the scene.
     bool trace_probe(
         const ShadingRay&           ray,
         const ShadingPoint*         parent_shading_point = 0) const;
@@ -110,15 +115,14 @@ class Intersector
 // Intersector class implementation.
 //
 
-// Return true if a given point is occluded from another given point.
 inline bool Intersector::occluded(
     const foundation::Vector3d&     origin,
     const foundation::Vector3d&     target,
     const ShadingPoint*             parent_shading_point) const
 {
-    // Construct the visibility ray.
     // todo: get rid of this epsilon.
     const double Eps = 1.0e-6;
+
     const ShadingRay visibility_ray(
         origin,
         target - origin,
@@ -127,7 +131,6 @@ inline bool Intersector::occluded(
         0.0f,               // ray time
         ~0);                // ray flags
 
-    // Cast the visibility ray.
     return trace_probe(visibility_ray, parent_shading_point);
 }
 
