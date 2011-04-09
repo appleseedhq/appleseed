@@ -84,6 +84,18 @@ namespace
           : m_params(params)
           , m_light_sampler(light_sampler)
         {
+            RENDERER_LOG_DEBUG(
+                "path tracing settings:\n"
+                "  next event est.  %s\n"
+                "  min path length  %s\n"
+                "  dl samples       %s\n"
+                "  ibl bsdf samples %s\n"
+                "  ibl env samples  %s",
+                m_params.m_next_event_estimation ? "on" : "off",
+                pretty_uint(m_params.m_minimum_path_length).c_str(),
+                pretty_uint(m_params.m_dl_sample_count).c_str(),
+                pretty_uint(m_params.m_ibl_bsdf_sample_count).c_str(),
+                pretty_uint(m_params.m_ibl_env_sample_count).c_str());
         }
 
         ~PTLightingEngine()
