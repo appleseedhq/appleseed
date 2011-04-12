@@ -93,11 +93,18 @@
     </output>
     <configurations>
         <configuration name="final" base="base_final">
+            <parameters name="generic_sample_renderer">
+                <parameter name="report_self_intersections" value="true" />
+            </parameters>
             <parameters name="generic_tile_renderer">
                 <parameter name="max_samples" value="1" />
                 <parameter name="min_samples" value="1" />
             </parameters>
         </configuration>
-        <configuration name="interactive" base="base_interactive" />
+        <configuration name="interactive" base="base_interactive">
+            <parameters name="generic_sample_renderer">
+                <parameter name="report_self_intersections" value="true" />
+            </parameters>
+        </configuration>
     </configurations>
 </project>
