@@ -70,7 +70,8 @@ class PathTracer
         SamplingContext&        sampling_context,
         const Intersector&      intersector,
         TextureCache&           texture_cache,
-        const ShadingRay&       ray);
+        const ShadingRay&       ray,
+        const ShadingPoint*     parent_shading_point = 0);
 
     size_t trace(
         SamplingContext&        sampling_context,
@@ -104,10 +105,11 @@ inline size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
     SamplingContext&            sampling_context,
     const Intersector&          intersector,
     TextureCache&               texture_cache,
-    const ShadingRay&           ray)
+    const ShadingRay&           ray,
+    const ShadingPoint*         parent_shading_point)
 {
     ShadingPoint shading_point;
-    intersector.trace(ray, shading_point);
+    intersector.trace(ray, shading_point, parent_shading_point);
 
     return
         trace(

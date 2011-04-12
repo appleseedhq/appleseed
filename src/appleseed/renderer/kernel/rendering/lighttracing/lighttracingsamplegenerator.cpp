@@ -86,7 +86,6 @@ namespace
           , m_params(params)
           , m_scene(scene)
           , m_frame(frame)
-          , m_lighting_conditions(frame.get_lighting_conditions())
           , m_light_sampler(light_sampler)
           , m_intersector(trace_context, true, m_params.m_report_self_intersections)
           , m_texture_cache(scene, m_params.m_texture_cache_size)
@@ -135,13 +134,13 @@ namespace
           public:
             PathVisitor(
                 const Scene&                scene,
-                const LightingConditions&   lighting_conditions,
+                const Frame&                frame,
                 const Intersector&          intersector,
                 TextureCache&               texture_cache,
                 SampleVector&               samples,
                 const Spectrum&             initial_alpha)
               : m_camera(*scene.get_camera())
-              , m_lighting_conditions(lighting_conditions)
+              , m_lighting_conditions(frame.get_lighting_conditions())
               , m_shading_context(intersector, texture_cache)
               , m_samples(samples)
               , m_sample_count(0)
@@ -217,14 +216,7 @@ namespace
                 radiance *= static_cast<float>(transmission * g * flux_to_radiance);
 
                 // Create a sample for this vertex.
-                Sample sample;
-                sample.m_position = sample_position_ndc;
-                sample.m_color.rgb() =
-                    ciexyz_to_linear_rgb(
-                        spectrum_to_ciexyz<float>(m_lighting_conditions, radiance));
-                sample.m_color[3] = 1.0f;
-                m_samples.push_back(sample);
-                ++m_sample_count;
+                emit_sample(sample_position_ndc, radiance);
             }
 
             void visit_vertex(
@@ -310,14 +302,7 @@ namespace
                 radiance *= static_cast<float>(transmission * g * flux_to_radiance);
 
                 // Create a sample for this vertex.
-                Sample sample;
-                sample.m_position = sample_position_ndc;
-                sample.m_color.rgb() =
-                    ciexyz_to_linear_rgb(
-                        spectrum_to_ciexyz<float>(m_lighting_conditions, radiance));
-                sample.m_color[3] = 1.0f;
-                m_samples.push_back(sample);
-                ++m_sample_count;
+                emit_sample(sample_position_ndc, radiance);
             }
 
             void visit_environment(
@@ -331,6 +316,7 @@ namespace
             const Camera&               m_camera;
             const LightingConditions&   m_lighting_conditions;
             const ShadingContext        m_shading_context;
+
             Vector3d                    m_camera_position;      // camera position in world space
             Vector3d                    m_camera_direction;     // camera direction (gaze) in world space
             double                      m_rcp_film_area;
@@ -338,6 +324,18 @@ namespace
             SampleVector&               m_samples;
             size_t                      m_sample_count;         // the number of samples added to m_samples
             Spectrum                    m_alpha;                // flux of the current particle (in W)
+
+            void emit_sample(const Vector2d& position_ndc, const Spectrum& radiance)
+            {
+                Sample sample;
+                sample.m_position = position_ndc;
+                sample.m_color.rgb() =
+                    ciexyz_to_linear_rgb(
+                        spectrum_to_ciexyz<float>(m_lighting_conditions, radiance));
+                sample.m_color[3] = 1.0f;
+                m_samples.push_back(sample);
+                ++m_sample_count;
+            }
         };
 
         const Parameters                m_params;
@@ -345,7 +343,6 @@ namespace
 
         const Scene&                    m_scene;
         const Frame&                    m_frame;
-        const LightingConditions&       m_lighting_conditions;
 
         const LightSampler&             m_light_sampler;
         Intersector                     m_intersector;
@@ -406,25 +403,36 @@ namespace
             initial_alpha /=
                 static_cast<float>(light_sample.m_probability * emission_direction_probability);
 
+            // Manufacture a ShadingPoint object at the position of the light sample.
+            // It will be used to avoid self-intersections.
+            const EmittingTriangle& emitting_triangle =
+                m_light_sampler.get_emitting_triangle(light_sample.m_triangle_index);
+            ShadingPoint parent_shading_point;
+            m_intersector.manufacture_hit(
+                parent_shading_point,
+                ShadingRay(light_sample.m_input_params.m_point, emission_direction, 0.0, 0.0, 0.0f, ~0),
+                emitting_triangle.m_assembly_instance_uid,
+                emitting_triangle.m_object_instance_index,
+                emitting_triangle.m_region_index,
+                emitting_triangle.m_triangle_index,
+                emitting_triangle.m_triangle_support_plane);
+
             // Build the light ray.
             const ShadingRay light_ray(
-                Intersector::offset(
-                    light_sample.m_input_params.m_point,
-                    light_sample.m_input_params.m_geometric_normal),
+                light_sample.m_input_params.m_point,
                 emission_direction,
                 0.0f,
                 ~0);
 
+            // Build a path tracer.
             typedef PathTracer<
                 PathVisitor,
                 BSDF::Diffuse | BSDF::Glossy | BSDF::Specular,
                 true                    // adjoint
             > PathTracer;
-
-            // Build a path tracer.
             PathVisitor path_visitor(
                 m_scene,
-                m_lighting_conditions,
+                m_frame,
                 m_intersector,
                 m_texture_cache,
                 samples,
@@ -444,7 +452,8 @@ namespace
                     sampling_context,
                     m_intersector,
                     m_texture_cache,
-                    light_ray);
+                    light_ray,
+                    &parent_shading_point);
 
             // Update path statistics.
             ++m_stats.m_path_count;

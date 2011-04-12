@@ -142,53 +142,70 @@ Intersector::~Intersector()
     }
 }
 
-Vector3d Intersector::offset(const Vector3d& p, Vector3d n)
+Vector3d Intersector::refine(
+    const TriangleSupportPlaneType& support_plane,
+    const Vector3d&                 point,
+    const Vector3d&                 direction)
 {
+    Vector3d result = point;
+
+    const size_t RefinementSteps = 2;
+
+    for (size_t i = 0; i < RefinementSteps; ++i)
+    {
+        const double t = support_plane.intersect(result, direction);
+        result += t * direction;
+    }
+
+    return result;
+}
+
+void Intersector::offset(
+    const Vector3d&     p,
+    Vector3d            n,
+    Vector3d&           front,
+    Vector3d&           back)
+{
+    //
+    // Reference:
+    //
+    //   Quasi-Monte Carlo light transport simulation by efficient ray tracing
+    //   http://vts.uni-ulm.de/docs/2008/6265/vts_6265_8393.pdf
+    //
+
+    // Offset parameters.
     const double Threshold = 1.0e-25;
     const int EpsLut[2] = { 8, -8 };
 
-    // Check whether any of the components of p is close to zero, in absolute value.
-    const bool small_x = abs(p.x) < Threshold;
-    const bool small_y = abs(p.y) < Threshold;
-    const bool small_z = abs(p.z) < Threshold;
+    // Check which components of p are close to the origin.
+    const bool is_small[3] =
+    {
+        abs(p[0]) < Threshold,
+        abs(p[1]) < Threshold,
+        abs(p[2]) < Threshold
+    };
 
-    // If it is the case, we need n to be normalized.
-    if (small_x || small_y || small_z)
+    // If any of the components of p is close to the origin, we need to normalize n.
+    if (is_small[0] | is_small[1] | is_small[2])
         n = normalize(n);
 
-    Vector3d res;
-
-    // Offset X component.
-    if (small_x)
-        res.x = p.x + n.x * Threshold;
-    else
+    // Compute the offset points.
+    for (size_t i = 0; i < 3; ++i)
     {
-        uint64 ix = binary_cast<uint64>(p.x);
-        ix += EpsLut[(ix ^ binary_cast<uint64>(n.x)) >> 63];
-        res.x = binary_cast<double>(ix);
+        if (is_small[i])
+        {
+            const double shift = n[i] * Threshold;
+            front[i] = p[i] + shift;
+            back[i] = p[i] - shift;
+        }
+        else
+        {
+            const uint64 pi = binary_cast<uint64>(p[i]);
+            const int shift = EpsLut[(pi ^ binary_cast<uint64>(n[i])) >> 63];
+            front[i] = binary_cast<double>(pi + shift);
+            back[i] = binary_cast<double>(pi - shift);
+        }
     }
-
-    // Offset Y component.
-    if (small_y)
-        res.y = p.y + n.y * Threshold;
-    else
-    {
-        uint64 iy = binary_cast<uint64>(p.y);
-        iy += EpsLut[(iy ^ binary_cast<uint64>(n.y)) >> 63];
-        res.y = binary_cast<double>(iy);
-    }
-
-    // Offset Z component.
-    if (small_z)
-        res.z = p.z + n.z * Threshold;
-    else
-    {
-        uint64 iz = binary_cast<uint64>(p.z);
-        iz += EpsLut[(iz ^ binary_cast<uint64>(n.z)) >> 63];
-        res.z = binary_cast<double>(iz);
-    }
-
-    return res;
 }
 
 bool Intersector::trace(
@@ -294,6 +311,27 @@ bool Intersector::trace_probe(
         );
 
     return visitor.hit();
+}
+
+void Intersector::manufacture_hit(
+    ShadingPoint&                   shading_point,
+    const ShadingRay&               shading_ray,
+    const UniqueID                  assembly_instance_uid,
+    const size_t                    object_instance_index,
+    const size_t                    region_index,
+    const size_t                    triangle_index,
+    const TriangleSupportPlaneType& triangle_support_plane) const
+{
+    shading_point.m_region_kit_cache = &m_region_kit_cache;
+    shading_point.m_tess_cache = &m_tess_cache;
+    shading_point.m_scene = &m_trace_context.get_scene();
+    shading_point.m_ray = shading_ray;
+    shading_point.m_hit = true;
+    shading_point.m_asm_instance_uid = assembly_instance_uid;
+    shading_point.m_object_instance_index = object_instance_index;
+    shading_point.m_region_index = region_index;
+    shading_point.m_triangle_index = triangle_index;
+    shading_point.m_triangle_support_plane = triangle_support_plane;
 }
 
 }   // namespace renderer

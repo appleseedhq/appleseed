@@ -58,34 +58,52 @@ class Intersector
   public:
     // Constructor, binds the intersector to a given trace context.
     Intersector(
-        const TraceContext&         trace_context,
-        const bool                  print_statistics = false,
-        const bool                  report_self_intersections = false);
+        const TraceContext&             trace_context,
+        const bool                      print_statistics = false,
+        const bool                      report_self_intersections = false);
 
     // Destructor.
     ~Intersector();
 
+    // Refine the location of a point on a surface.
+    static foundation::Vector3d refine(
+        const TriangleSupportPlaneType& support_plane,
+        const foundation::Vector3d&     point,
+        const foundation::Vector3d&     direction);     // incoming or outgoing direction
+
     // Offset a point away from a surface represented by its normal.
-    static foundation::Vector3d offset(
-        const foundation::Vector3d& p,
-        foundation::Vector3d        n);
+    static void offset(
+        const foundation::Vector3d&     p,
+        foundation::Vector3d            n,
+        foundation::Vector3d&           front,
+        foundation::Vector3d&           back);
 
     // Trace a world space ray through the scene.
     bool trace(
-        const ShadingRay&           ray,
-        ShadingPoint&               shading_point,
-        const ShadingPoint*         parent_shading_point = 0) const;
+        const ShadingRay&               ray,
+        ShadingPoint&                   shading_point,
+        const ShadingPoint*             parent_shading_point = 0) const;
 
     // Trace a world space probe ray through the scene.
     bool trace_probe(
-        const ShadingRay&           ray,
-        const ShadingPoint*         parent_shading_point = 0) const;
+        const ShadingRay&               ray,
+        const ShadingPoint*             parent_shading_point = 0) const;
 
     // Return true if a given point is occluded from another given point.
     bool occluded(
-        const foundation::Vector3d& origin,
-        const foundation::Vector3d& target,
-        const ShadingPoint*         parent_shading_point = 0) const;
+        const foundation::Vector3d&     origin,
+        const foundation::Vector3d&     target,
+        const ShadingPoint*             parent_shading_point = 0) const;
+
+    // Manufacture a hit "by hand".
+    void manufacture_hit(
+        ShadingPoint&                   shading_point,
+        const ShadingRay&               shading_ray,
+        const foundation::UniqueID      assembly_instance_uid,
+        const size_t                    object_instance_index,
+        const size_t                    region_index,
+        const size_t                    triangle_index,
+        const TriangleSupportPlaneType& triangle_support_plane) const;
 
   private:
     const TraceContext&                             m_trace_context;

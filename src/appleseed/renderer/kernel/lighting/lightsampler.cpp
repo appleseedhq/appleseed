@@ -61,33 +61,6 @@ namespace renderer
 {
 
 //
-// LightSampler::EmittingTriangle class implementation.
-//
-
-LightSampler::EmittingTriangle::EmittingTriangle(
-    const Vector3d&         v0,
-    const Vector3d&         v1,
-    const Vector3d&         v2,
-    const Vector3d&         n0,
-    const Vector3d&         n1,
-    const Vector3d&         n2,
-    const Vector3d&         geometric_normal,
-    const double            rcp_area,
-    const EDF*              edf)
-  : m_v0(v0)
-  , m_v1(v1)
-  , m_v2(v2)
-  , m_n0(n0)
-  , m_n1(n1)
-  , m_n2(n2)
-  , m_geometric_normal(geometric_normal)
-  , m_rcp_area(rcp_area)
-  , m_edf(edf)
-{
-}
-
-
-//
 // LightSampler class implementation.
 //
 
@@ -206,24 +179,26 @@ void LightSampler::collect_emitting_triangles(
     const Assembly&         assembly)
 {
     // Loop over the object instances of the assembly.
-    for (const_each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
+    const size_t object_instance_count = assembly.object_instances().size();
+    for (size_t object_instance_index = 0; object_instance_index < object_instance_count; ++object_instance_index)
     {
         // Retrieve the object instance.
-        const ObjectInstance& object_instance = *i;
+        const ObjectInstance* object_instance = assembly.object_instances().get(object_instance_index);
 
         // Retrieve the material indices of the object instance.
-        const MaterialIndexArray& material_indices = object_instance.get_material_indices();
+        const MaterialIndexArray& material_indices = object_instance->get_material_indices();
 
         // Skip object instances without light emitting materials.
         if (!has_emitting_materials(assembly.materials(), material_indices))
             continue;
 
         // Compute the object space to world space transformation.
-        const Transformd& transform =
-            assembly_instance.get_transform() * object_instance.get_transform();
+        const Transformd& object_instance_transform = object_instance->get_transform();
+        const Transformd& assembly_instance_transform = assembly_instance.get_transform();
+        const Transformd global_transform = assembly_instance_transform * object_instance_transform;
 
         // Retrieve the object.
-        Object* object = assembly.objects().get(object_instance.get_object_index());
+        Object* object = assembly.objects().get(object_instance->get_object_index());
         assert(object);
 
         // Retrieve the region kit of the object.
@@ -265,10 +240,20 @@ void LightSampler::collect_emitting_triangles(
                 const GVector3& v1_os = tess->m_vertices[triangle.m_v1];
                 const GVector3& v2_os = tess->m_vertices[triangle.m_v2];
 
+                // Transform triangle vertices to assembly space.
+                const GVector3 v0_as = object_instance_transform.transform_point_to_parent(v0_os);
+                const GVector3 v1_as = object_instance_transform.transform_point_to_parent(v1_os);
+                const GVector3 v2_as = object_instance_transform.transform_point_to_parent(v2_os);
+
+                // Compute the support plane of the hit triangle in assembly space.
+                const GTriangleType triangle_geometry(v0_as, v1_as, v2_as);
+                TriangleSupportPlaneType triangle_support_plane;
+                triangle_support_plane.initialize(TriangleType(triangle_geometry));
+
                 // Transform triangle vertices to world space.
-                const Vector3d v0(transform.transform_point_to_parent(v0_os));
-                const Vector3d v1(transform.transform_point_to_parent(v1_os));
-                const Vector3d v2(transform.transform_point_to_parent(v2_os));
+                const Vector3d v0(assembly_instance_transform.transform_point_to_parent(v0_as));
+                const Vector3d v1(assembly_instance_transform.transform_point_to_parent(v1_as));
+                const Vector3d v2(assembly_instance_transform.transform_point_to_parent(v2_as));
 
                 // Compute the geometric normal to the triangle and the area of the triangle.
                 Vector3d geometric_normal = cross(v1 - v0, v2 - v0);
@@ -290,19 +275,29 @@ void LightSampler::collect_emitting_triangles(
                 const GVector3& n2_os = tess->m_vertex_normals[triangle.m_n2];
 
                 // Transform vertex normals to world space.
-                const Vector3d n0(normalize(transform.transform_normal_to_parent(n0_os)));
-                const Vector3d n1(normalize(transform.transform_normal_to_parent(n1_os)));
-                const Vector3d n2(normalize(transform.transform_normal_to_parent(n2_os)));
+                const Vector3d n0(normalize(global_transform.transform_normal_to_parent(n0_os)));
+                const Vector3d n1(normalize(global_transform.transform_normal_to_parent(n1_os)));
+                const Vector3d n2(normalize(global_transform.transform_normal_to_parent(n2_os)));
+
+                const size_t emitting_triangle_index = m_lights.size() + m_emitting_triangles.size();
 
                 // Copy the triangle into the array of emitting triangles.
-                const size_t emitting_triangle_index = m_lights.size() + m_emitting_triangles.size();
-                m_emitting_triangles.push_back(
-                    EmittingTriangle(
-                        v0, v1, v2,
-                        n0, n1, n2,
-                        geometric_normal,
-                        rcp_area,
-                        material->get_edf()));
+                EmittingTriangle emitting_triangle;
+                emitting_triangle.m_assembly_instance_uid = assembly_instance.get_uid();
+                emitting_triangle.m_object_instance_index = object_instance_index;
+                emitting_triangle.m_region_index = region_index;
+                emitting_triangle.m_triangle_index = triangle_index;
+                emitting_triangle.m_v0 = v0;
+                emitting_triangle.m_v1 = v1;
+                emitting_triangle.m_v2 = v2;
+                emitting_triangle.m_n0 = n0;
+                emitting_triangle.m_n1 = n1;
+                emitting_triangle.m_n2 = n2;
+                emitting_triangle.m_geometric_normal = geometric_normal;
+                emitting_triangle.m_triangle_support_plane = triangle_support_plane;
+                emitting_triangle.m_rcp_area = rcp_area;
+                emitting_triangle.m_edf = material->get_edf();
+                m_emitting_triangles.push_back(emitting_triangle);
 
                 // Insert the triangle into the CDF.
                 m_light_cdf.insert(emitting_triangle_index, area);
@@ -391,8 +386,8 @@ void LightSampler::sample_emitting_triangle(
     const double            triangle_prob,
     LightSample&            sample) const
 {
-    // Fetch the emitting triangle.
-    const EmittingTriangle& triangle = m_emitting_triangles[triangle_index];
+    // Set the triangle index.
+    sample.m_triangle_index = triangle_index;
 
     // Uniformly sample the surface of the triangle.
     const Vector3d bary = sample_triangle_uniform(s);
@@ -400,6 +395,9 @@ void LightSampler::sample_emitting_triangle(
     // Set the barycentric coordinates.
     sample.m_input_params.m_uv[0] = bary[0];
     sample.m_input_params.m_uv[1] = bary[1];
+
+    // Fetch the emitting triangle.
+    const EmittingTriangle& triangle = m_emitting_triangles[triangle_index];
 
     // Compute the world space position of the sample.
     sample.m_input_params.m_point =

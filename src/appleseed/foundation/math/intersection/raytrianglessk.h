@@ -123,7 +123,9 @@ struct TriangleSSKSupportPlane
 
     void initialize(const TriangleSSK<T>& triangle);
 
-    ValueType intersect(const RayType& ray) const;
+    ValueType intersect(
+        const VectorType&   org,
+        const VectorType&   dir) const;
 };
 
 
@@ -131,11 +133,11 @@ struct TriangleSSKSupportPlane
 // TriangleSSK class implementation.
 //
 
-// Constructors.
 template <typename T>
 inline TriangleSSK<T>::TriangleSSK()
 {
 }
+
 template <typename T>
 inline TriangleSSK<T>::TriangleSSK(
     const VectorType&       v0,
@@ -174,7 +176,6 @@ inline TriangleSSK<T>::TriangleSSK(
     m_e1v = e1[v] * rcp_nw;
 }
 
-// Construct a triangle from another triangle of a different type.
 template <typename T>
 template <typename U>
 FORCE_INLINE TriangleSSK<T>::TriangleSSK(const TriangleSSK<U>& rhs)
@@ -413,11 +414,11 @@ FORCE_INLINE bool TriangleSSK<double>::intersect(const RayType& ray) const
 // TriangleSSKSupportPlane class implementation.
 //
 
-// Constructors.
 template <typename T>
 inline TriangleSSKSupportPlane<T>::TriangleSSKSupportPlane()
 {
 }
+
 template <typename T>
 inline TriangleSSKSupportPlane<T>::TriangleSSKSupportPlane(const TriangleSSK<T>& triangle)
 {
@@ -434,7 +435,9 @@ inline void TriangleSSKSupportPlane<T>::initialize(const TriangleSSK<T>& triangl
 }
 
 template <typename T>
-inline T TriangleSSKSupportPlane<T>::intersect(const RayType& ray) const
+inline T TriangleSSKSupportPlane<T>::intersect(
+    const VectorType&       org,
+    const VectorType&       dir) const
 {
     // Retrieve indices.
     const size_t k = m_ci;
@@ -442,12 +445,12 @@ inline T TriangleSSKSupportPlane<T>::intersect(const RayType& ray) const
     const size_t j = 3 - i - k;
 
     // Retrieve ray origin and direction.
-    const ValueType ou = ray.m_org[i];
-    const ValueType ov = ray.m_org[j];
-    const ValueType ow = ray.m_org[k];
-    const ValueType du = ray.m_dir[i];
-    const ValueType dv = ray.m_dir[j];
-    const ValueType dw = ray.m_dir[k];
+    const ValueType ou = org[i];
+    const ValueType ov = org[j];
+    const ValueType ow = org[k];
+    const ValueType du = dir[i];
+    const ValueType dv = dir[j];
+    const ValueType dw = dir[k];
 
     // Calculate and return t parameter.
     const ValueType det = du * m_nu + dv * m_nv + dw;

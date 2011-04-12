@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
+#include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/modeling/input/inputparams.h"
 
 // appleseed.foundation headers.
@@ -52,14 +53,34 @@ namespace renderer
 {
 
 //
+// Light-emitting triangle.
+//
+
+struct EmittingTriangle
+{
+    foundation::UniqueID        m_assembly_instance_uid;
+    size_t                      m_object_instance_index;
+    size_t                      m_region_index;
+    size_t                      m_triangle_index;
+    foundation::Vector3d        m_v0, m_v1, m_v2;               // world space vertices of the triangle
+    foundation::Vector3d        m_n0, m_n1, m_n2;               // world space vertex normals
+    foundation::Vector3d        m_geometric_normal;             // world space geometric normal, unit-length
+    TriangleSupportPlaneType    m_triangle_support_plane;       // support plane of the triangle in assembly space
+    double                      m_rcp_area;                     // world space triangle area reciprocal
+    const EDF*                  m_edf;
+};
+
+
+//
 // Light sample.
 //
 
 struct LightSample
 {
-    InputParams     m_input_params;     // parameters for input evaluation
-    const EDF*      m_edf;
-    double          m_probability;      // probability of this sample to be chosen
+    size_t                      m_triangle_index;               // index of the emitting triangle, ~size_t(0) if none
+    InputParams                 m_input_params;                 // parameters for input evaluation
+    const EDF*                  m_edf;                          // EDF at the position of the light sample
+    double                      m_probability;                  // probability of this sample to be chosen
 };
 
 typedef std::vector<LightSample> LightSampleVector;
@@ -89,28 +110,10 @@ class LightSampler
     // Compute the probability density in area measure of a given light sample.
     double evaluate_pdf(const ShadingPoint& result) const;
 
+    // Retrieve a light-emitting triangle.
+    const EmittingTriangle& get_emitting_triangle(const size_t triangle_index) const;
+
   private:
-    struct EmittingTriangle
-    {
-        foundation::Vector3d    m_v0, m_v1, m_v2;           // world space vertices of the triangle
-        foundation::Vector3d    m_n0, m_n1, m_n2;           // world space vertex normals
-        foundation::Vector3d    m_geometric_normal;         // world space geometric normal, unit-length
-        double                  m_rcp_area;                 // world space triangle area reciprocal
-        const EDF*              m_edf;
-
-        // Constructor.
-        EmittingTriangle(
-            const foundation::Vector3d&     v0,
-            const foundation::Vector3d&     v1,
-            const foundation::Vector3d&     v2,
-            const foundation::Vector3d&     n0,
-            const foundation::Vector3d&     n1,
-            const foundation::Vector3d&     n2,
-            const foundation::Vector3d&     geometric_normal,
-            const double                    rcp_area,
-            const EDF*                      edf);
-    };
-
     typedef std::vector<const Light*> LightVector;
     typedef std::vector<EmittingTriangle> EmittingTriangleVector;
     typedef foundation::CDF<size_t, double> LightCDF;
@@ -163,7 +166,6 @@ class LightSampler
 // LightSampler class implementation.
 //
 
-// Compute the probability density in area measure of a given light sample.
 inline double LightSampler::evaluate_pdf(const ShadingPoint& /*result*/) const
 {
     //
@@ -187,6 +189,12 @@ inline double LightSampler::evaluate_pdf(const ShadingPoint& /*result*/) const
     //
 
     return m_rcp_total_emissive_area;
+}
+
+inline const EmittingTriangle& LightSampler::get_emitting_triangle(const size_t triangle_index) const
+{
+    assert(triangle_index < m_emitting_triangles.size());
+    return m_emitting_triangles[triangle_index];
 }
 
 }       // namespace renderer

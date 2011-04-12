@@ -103,7 +103,9 @@ struct TriangleMTSupportPlane
 
     void initialize(const TriangleMT<T>& triangle);
 
-    ValueType intersect(const RayType& ray) const;
+    ValueType intersect(
+        const VectorType&   org,
+        const VectorType&   dir) const;
 };
 
 
@@ -111,11 +113,11 @@ struct TriangleMTSupportPlane
 // TriangleMT class implementation.
 //
 
-// Constructors.
 template <typename T>
 inline TriangleMT<T>::TriangleMT()
 {
 }
+
 template <typename T>
 inline TriangleMT<T>::TriangleMT(
     const VectorType&       v0,
@@ -127,7 +129,6 @@ inline TriangleMT<T>::TriangleMT(
 {
 }
 
-// Construct a triangle from another triangle of a different type.
 template <typename T>
 template <typename U>
 FORCE_INLINE TriangleMT<T>::TriangleMT(const TriangleMT<U>& rhs)
@@ -272,11 +273,11 @@ FORCE_INLINE bool TriangleMT<T>::intersect(const RayType& ray) const
 // TriangleMTSupportPlane class implementation.
 //
 
-// Constructors.
 template <typename T>
 inline TriangleMTSupportPlane<T>::TriangleMTSupportPlane()
 {
 }
+
 template <typename T>
 inline TriangleMTSupportPlane<T>::TriangleMTSupportPlane(const TriangleMT<T>& triangle)
 {
@@ -292,11 +293,13 @@ inline void TriangleMTSupportPlane<T>::initialize(const TriangleMT<T>& triangle)
 }
 
 template <typename T>
-inline T TriangleMTSupportPlane<T>::intersect(const RayType& ray) const
+inline T TriangleMTSupportPlane<T>::intersect(
+    const VectorType&       org,
+    const VectorType&       dir) const
 {
     const VectorType n = cross(m_edge1, m_edge2);
-    const VectorType u = m_v0 - ray.m_org;
-    return dot(u, n) / dot(ray.m_dir, n);
+    const VectorType u = m_v0 - org;
+    return dot(u, n) / dot(dir, n);
 }
 
 }       // namespace foundation

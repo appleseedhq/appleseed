@@ -143,30 +143,30 @@ void ShadingPoint::refine_and_offset() const
     // Cache the source geometry.
     cache_source_geometry();
 
-    // Transform the ray to assembly instance space.
+    // Compute the location of the intersection point in assembly instance space.
     ShadingRay::RayType local_ray =
         m_assembly_instance->get_transform().transform_to_local(m_ray);
-
-    // Compute the refined intersection point.
     local_ray.m_org += local_ray.m_tmax * local_ray.m_dir;
-    const size_t RefinementSteps = 2;
-    for (size_t i = 0; i < RefinementSteps; ++i)
-    {
-        const double t = m_triangle_support_plane.intersect(local_ray);
-        local_ray.m_org += t * local_ray.m_dir;
-    }
 
-    // Retrieve the object instance space to assembly instance space transform.
-    const Transformd& transform = m_object_instance->get_transform();
+    // Refine the location of the intersection point.
+    local_ray.m_org =
+        Intersector::refine(
+            m_triangle_support_plane,
+            local_ray.m_org,
+            local_ray.m_dir);
 
-    // Compute the assembly instance space geometric normal to the hit triangle.
+    // Compute the geometric normal to the hit triangle in assembly instance space.
+    // Note that it doesn't need to be normalized at this point.
     m_asm_geo_normal = Vector3d(cross(m_v1 - m_v0, m_v2 - m_v0));
-    m_asm_geo_normal = transform.transform_normal_to_parent(m_asm_geo_normal);
+    m_asm_geo_normal = m_object_instance->get_transform().transform_normal_to_parent(m_asm_geo_normal);
     m_asm_geo_normal = faceforward(m_asm_geo_normal, local_ray.m_dir);
 
-    // Compute the offset points.
-    m_front_point = Intersector::offset(local_ray.m_org, m_asm_geo_normal);
-    m_back_point = Intersector::offset(local_ray.m_org, -m_asm_geo_normal);
+    // Compute the offset points in assembly instance space.
+    Intersector::offset(
+        local_ray.m_org,
+        m_asm_geo_normal,
+        m_front_point,
+        m_back_point);
 
     // The refined intersection points are now available.
     m_members |= ShadingPoint::HasRefinedPoints;
