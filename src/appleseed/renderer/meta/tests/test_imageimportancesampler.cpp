@@ -29,6 +29,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 #include "renderer/kernel/lighting/imageimportancesampler.h"
+#include "renderer/utility/testutils.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
@@ -38,15 +39,12 @@
 #include "foundation/math/qmc.h"
 #include "foundation/utility/test.h"
 
-// Standard headers.
-#include <cstdio>
+using namespace foundation;
+using namespace renderer;
+using namespace std;
 
 TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
 {
-    using namespace foundation;
-    using namespace renderer;
-    using namespace std;
-
     class HorizontalGradientSampler
     {
       public:
@@ -85,35 +83,6 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
         const double pdf = importance_sampler.get_pdf(x, y);
 
         EXPECT_FEQ(prob_xy, pdf);
-    }
-
-    auto_ptr<Image> load_raw_image(
-        const string&   filename,
-        const size_t    width,
-        const size_t    height)
-    {
-        auto_ptr<Image> image(
-            new Image(
-                width,
-                height,
-                width,
-                height,
-                3,
-                PixelFormatUInt8));
-
-        FILE* file = fopen(filename.c_str(), "rb");
-
-        if (file == 0)
-            return auto_ptr<Image>(0);
-
-        const size_t pixel_count = width * height;
-
-        if (fread(image->pixel(0, 0), 3, pixel_count, file) != pixel_count)
-            return auto_ptr<Image>(0);
-
-        fclose(file);
-
-        return image;
     }
 
     class ImageSampler

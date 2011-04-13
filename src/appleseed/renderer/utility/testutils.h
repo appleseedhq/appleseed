@@ -34,9 +34,10 @@
 #include "renderer/modeling/entity/entity.h"
 
 // Forward declarations.
-namespace renderer  { class Assembly; }
-namespace renderer  { class Project; }
-namespace renderer  { class Scene; }
+namespace foundation    { class Image; }
+namespace renderer      { class Assembly; }
+namespace renderer      { class Project; }
+namespace renderer      { class Scene; }
 
 namespace renderer
 {
@@ -95,6 +96,11 @@ class RENDERERDLL DummyEntityFactory
   public:
     static foundation::auto_release_ptr<DummyEntity> create(const char* name);
 };
+
+std::auto_ptr<foundation::Image> load_raw_image(
+    const std::string&  filename,
+    const size_t        width,
+    const size_t        height);
 
 }       // namespace renderer
 

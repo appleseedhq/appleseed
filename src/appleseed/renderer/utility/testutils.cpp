@@ -38,6 +38,13 @@
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/textureinstance.h"
 
+// appleseed.foundation headers.
+#include "foundation/image/image.h"
+#include "foundation/image/pixel.h"
+
+// Standard headers.
+#include <cstdio>
+
 using namespace foundation;
 using namespace std;
 
@@ -136,6 +143,38 @@ void DummyEntity::release()
 auto_release_ptr<DummyEntity> DummyEntityFactory::create(const char* name)
 {
     return auto_release_ptr<DummyEntity>(new DummyEntity(name));
+}
+
+
+//
+// load_raw_image() function implementation.
+//
+
+auto_ptr<Image> load_raw_image(
+    const string&   filename,
+    const size_t    width,
+    const size_t    height)
+{
+    auto_ptr<Image> image(
+        new Image(
+            width,
+            height,
+            width,
+            height,
+            3,
+            PixelFormatUInt8));
+
+    FILE* file = fopen(filename.c_str(), "rb");
+
+    if (file == 0)
+        return auto_ptr<Image>(0);
+
+    const size_t pixel_count = width * height;
+    const size_t read = fread(image->pixel(0, 0), 3, pixel_count, file);
+
+    fclose(file);
+
+    return read == pixel_count ? image : auto_ptr<Image>(0);
 }
 
 }   // namespace renderer
