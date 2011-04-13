@@ -34,6 +34,7 @@
 #include "foundation/platform/types.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstddef>
@@ -219,25 +220,26 @@ typedef Color<double,   4> Color4d;
 // N-dimensional color implementation.
 //
 
-// Constructors.
 template <typename T, size_t N>
 inline Color<T, N>::Color()
 {
 }
+
 template <typename T, size_t N>
 inline Color<T, N>::Color(const ValueType* rhs)
 {
     assert(rhs);
+
     for (size_t i = 0; i < N; ++i)
         m_comp[i] = rhs[i];
 }
+
 template <typename T, size_t N>
 inline Color<T, N>::Color(const ValueType val)
 {
     set(val);
 }
 
-// Construct a color from another color of a different type.
 template <typename T, size_t N>
 template <typename U>
 inline Color<T, N>::Color(const Color<U, N>& rhs)
@@ -246,7 +248,6 @@ inline Color<T, N>::Color(const Color<U, N>& rhs)
         m_comp[i] = static_cast<ValueType>(rhs.m_comp[i]);
 }
 
-// Set all components to a given value.
 template <typename T, size_t N>
 inline void Color<T, N>::set(const ValueType val)
 {
@@ -254,13 +255,13 @@ inline void Color<T, N>::set(const ValueType val)
         m_comp[i] = val;
 }
 
-// Unchecked array subscripting.
 template <typename T, size_t N>
 inline T& Color<T, N>::operator[](const size_t i)
 {
     assert(i < Components);
     return m_comp[i];
 }
+
 template <typename T, size_t N>
 inline const T& Color<T, N>::operator[](const size_t i) const
 {
@@ -268,276 +269,339 @@ inline const T& Color<T, N>::operator[](const size_t i) const
     return m_comp[i];
 }
 
-// Exact inequality and equality tests.
 template <typename T, size_t N>
 inline bool operator!=(const Color<T, N>& lhs, const Color<T, N>& rhs)
 {
     for (size_t i = 0; i < N; ++i)
+    {
         if (lhs[i] != rhs[i])
             return true;
+    }
+
     return false;
 }
+
 template <typename T, size_t N>
 inline bool operator==(const Color<T, N>& lhs, const Color<T, N>& rhs)
 {
     return !(lhs != rhs);
 }
 
-// Approximate equality tests.
 template <typename T, size_t N>
 inline bool feq(const Color<T, N>& lhs, const Color<T, N>& rhs)
 {
     for (size_t i = 0; i < N; ++i)
+    {
         if (!feq(lhs[i], rhs[i]))
             return false;
+    }
+
     return true;
 }
+
 template <typename T, size_t N>
 inline bool feq(const Color<T, N>& lhs, const Color<T, N>& rhs, const T eps)
 {
     for (size_t i = 0; i < N; ++i)
+    {
         if (!feq(lhs[i], rhs[i], eps))
             return false;
+    }
+
     return true;
 }
 
-// Approximate zero tests.
 template <typename T, size_t N>
 inline bool fz(const Color<T, N>& v)
 {
     for (size_t i = 0; i < N; ++i)
+    {
         if (!fz(v[i]))
             return false;
+    }
+
     return true;
 }
+
 template <typename T, size_t N>
 inline bool fz(const Color<T, N>& v, const T eps)
 {
     for (size_t i = 0; i < N; ++i)
+    {
         if (!fz(v[i], eps))
             return false;
+    }
+
     return true;
 }
 
-// Color arithmetic.
 template <typename T, size_t N>
 inline Color<T, N> operator+(const Color<T, N>& lhs, const Color<T, N>& rhs)
 {
     Color<T, N> col;
+
     for (size_t i = 0; i < N; ++i)
         col[i] = lhs[i] + rhs[i];
+
     return col;
 }
+
 template <typename T, size_t N>
 inline Color<T, N> operator-(const Color<T, N>& lhs, const Color<T, N>& rhs)
 {
     Color<T, N> col;
+
     for (size_t i = 0; i < N; ++i)
         col[i] = lhs[i] - rhs[i];
+
     return col;
 }
+
 template <typename T, size_t N>
 inline Color<T, N> operator-(const Color<T, N>& lhs)
 {
     Color<T, N> col;
+
     for (size_t i = 0; i < N; ++i)
         col[i] = -lhs[i];
+
     return col;
 }
+
 template <typename T, size_t N>
 inline Color<T, N> operator*(const Color<T, N>& lhs, const T rhs)
 {
     Color<T, N> col;
+
     for (size_t i = 0; i < N; ++i)
         col[i] = lhs[i] * rhs;
+
     return col;
 }
+
 template <typename T, size_t N>
 inline Color<T, N> operator*(const T lhs, const Color<T, N>& rhs)
 {
     return rhs * lhs;
 }
+
 template <typename T, size_t N>
 inline Color<T, N> operator*(const Color<T, N>& lhs, const Color<T, N>& rhs)
 {
     Color<T, N> col;
+
     for (size_t i = 0; i < N; ++i)
         col[i] = lhs[i] * rhs[i];
+
     return col;
 }
+
 template <typename T, size_t N>
 inline Color<T, N> operator/(const Color<T, N>& lhs, const T rhs)
 {
     return lhs * (T(1.0) / rhs);
 }
+
 template <typename T, size_t N>
 inline Color<T, N> operator/(const Color<T, N>& lhs, const Color<T, N>& rhs)
 {
     Color<T, N> col;
+
     for (size_t i = 0; i < N; ++i)
         col[i] = lhs[i] / rhs[i];
+
     return col;
 }
+
 template <typename T, size_t N>
 inline Color<T, N>& operator+=(Color<T, N>& lhs, const Color<T, N>& rhs)
 {
     for (size_t i = 0; i < N; ++i)
         lhs[i] += rhs[i];
+
     return lhs;
 }
+
 template <typename T, size_t N>
 inline Color<T, N>& operator-=(Color<T, N>& lhs, const Color<T, N>& rhs)
 {
     for (size_t i = 0; i < N; ++i)
         lhs[i] -= rhs[i];
+
     return lhs;
 }
+
 template <typename T, size_t N>
 inline Color<T, N>& operator*=(Color<T, N>& lhs, const T rhs)
 {
     for (size_t i = 0; i < N; ++i)
         lhs[i] *= rhs;
+
     return lhs;
 }
+
 template <typename T, size_t N>
 inline Color<T, N>& operator*=(Color<T, N>& lhs, const Color<T, N>& rhs)
 {
     for (size_t i = 0; i < N; ++i)
         lhs[i] *= rhs[i];
+
     return lhs;
 }
+
 template <typename T, size_t N>
 inline Color<T, N>& operator/=(Color<T, N>& lhs, const T rhs)
 {
     return lhs *= (T(1.0) / rhs);
 }
+
 template <typename T, size_t N>
 inline Color<T, N>& operator/=(Color<T, N>& lhs, const Color<T, N>& rhs)
 {
     for (size_t i = 0; i < N; ++i)
         lhs[i] /= rhs[i];
+
     return lhs;
 }
 
-// Clamp the argument to [min, max].
 template <typename T, size_t N>
 inline Color<T, N> clamp(const Color<T, N>& c, const T min, const T max)
 {
     Color<T, N> col;
+
     for (size_t i = 0; i < N; ++i)
         col[i] = clamp(c[i], min, max);
+
     return col;
 }
 
-// Clamp the argument to [0,1].
 template <typename T, size_t N>
 inline Color<T, N> saturate(const Color<T, N>& c)
 {
     Color<T, N> col;
+
     for (size_t i = 0; i < N; ++i)
         col[i] = saturate(c[i]);
+
     return col;
 }
 
-// Return the smallest or largest signed component of a color.
 template <typename T, size_t N>
 inline T min_value(const Color<T, N>& c)
 {
     T value = c[0];
+
     for (size_t i = 1; i < N; ++i)
     {
         if (value > c[i])
             value = c[i];
     }
+
     return value;
 }
+
 template <typename T, size_t N>
 inline T max_value(const Color<T, N>& c)
 {
     T value = c[0];
+
     for (size_t i = 1; i < N; ++i)
     {
         if (value < c[i])
             value = c[i];
     }
+
     return value;
 }
 
-// Return the index of the smallest or largest signed component of a color.
 template <typename T, size_t N>
 inline size_t min_index(const Color<T, N>& c)
 {
     size_t index = 0;
     T value = c[0];
+
     for (size_t i = 1; i < N; ++i)
     {
         const T x = c[i];
+
         if (value > x)
         {
             value = x;
             index = i;
         }
     }
+
     return index;
 }
+
 template <typename T, size_t N>
 inline size_t max_index(const Color<T, N>& c)
 {
     size_t index = 0;
     T value = c[0];
+
     for (size_t i = 1; i < N; ++i)
     {
         const T x = c[i];
+
         if (value < x)
         {
             value = x;
             index = i;
         }
     }
+
     return index;
 }
 
-// Return the index of the smallest or largest component of a color, in absolute value.
 template <typename T, size_t N>
 inline size_t min_abs_index(const Color<T, N>& c)
 {
     size_t index = 0;
     T value = std::abs(c[0]);
+
     for (size_t i = 1; i < N; ++i)
     {
         const T x = std::abs(c[i]);
+
         if (value > x)
         {
             value = x;
             index = i;
         }
     }
+
     return index;
 }
+
 template <typename T, size_t N>
 inline size_t max_abs_index(const Color<T, N>& c)
 {
     size_t index = 0;
     T value = std::abs(c[0]);
+
     for (size_t i = 1; i < N; ++i)
     {
         const T x = std::abs(c[i]);
+
         if (value < x)
         {
             value = x;
             index = i;
         }
     }
+
     return index;
 }
 
-// Return the average value of a color.
 template <typename T, size_t N>
 inline T average_value(const Color<T, N>& c)
 {
     T average = c[0];
+
     for (size_t i = 1; i < N; ++i)
         average += c[i];
+
     return average * (T(1.0) / N);
 }
 
@@ -546,11 +610,11 @@ inline T average_value(const Color<T, N>& c)
 // RGB color implementation.
 //
 
-// Constructors.
 template <typename T>
 inline Color<T, 3>::Color()
 {
 }
+
 template <typename T>
 inline Color<T, 3>::Color(const ValueType* rhs)
 {
@@ -559,6 +623,7 @@ inline Color<T, 3>::Color(const ValueType* rhs)
     g = rhs[1];
     b = rhs[2];
 }
+
 template <typename T>
 inline Color<T, 3>::Color(const ValueType val)
   : r(val)
@@ -566,6 +631,7 @@ inline Color<T, 3>::Color(const ValueType val)
   , b(val)
 {
 }
+
 template <typename T>
 inline Color<T, 3>::Color(
     const ValueType r_,
@@ -577,7 +643,6 @@ inline Color<T, 3>::Color(
 {
 }
 
-// Construct a color from another color of a different type.
 template <typename T>
 template <typename U>
 inline Color<T, 3>::Color(const Color<U, 3>& rhs)
@@ -587,20 +652,19 @@ inline Color<T, 3>::Color(const Color<U, 3>& rhs)
 {
 }
 
-// Set all components to a given value.
 template <typename T>
 inline void Color<T, 3>::set(const ValueType val)
 {
     r = g = b = val;
 }
 
-// Unchecked array subscripting.
 template <typename T>
 inline T& Color<T, 3>::operator[](const size_t i)
 {
     assert(i < Components);
     return (&r)[i];
 }
+
 template <typename T>
 inline const T& Color<T, 3>::operator[](const size_t i) const
 {
@@ -613,11 +677,11 @@ inline const T& Color<T, 3>::operator[](const size_t i) const
 // RGBA color implementation.
 //
 
-// Constructors.
 template <typename T>
 inline Color<T, 4>::Color()
 {
 }
+
 template <typename T>
 inline Color<T, 4>::Color(const ValueType* rhs)
 {
@@ -627,6 +691,7 @@ inline Color<T, 4>::Color(const ValueType* rhs)
     b = rhs[2];
     a = rhs[3];
 }
+
 template <typename T>
 inline Color<T, 4>::Color(const ValueType val)
   : r(val)
@@ -635,6 +700,7 @@ inline Color<T, 4>::Color(const ValueType val)
   , a(val)
 {
 }
+
 template <typename T>
 inline Color<T, 4>::Color(
     const ValueType r_,
@@ -648,7 +714,6 @@ inline Color<T, 4>::Color(
 {
 }
 
-// Construct a color from another color of a different type.
 template <typename T>
 template <typename U>
 inline Color<T, 4>::Color(const Color<U, 4>& rhs)
@@ -659,32 +724,31 @@ inline Color<T, 4>::Color(const Color<U, 4>& rhs)
 {
 }
 
-// Set all components to a given value.
 template <typename T>
 inline void Color<T, 4>::set(const ValueType val)
 {
     r = g = b = a = val;
 }
 
-// Access the color as a 3-component color.
 template <typename T>
 inline Color<T, 3>& Color<T, 4>::rgb()
 {
     return *reinterpret_cast<Color<T, 3>*>(&r);
 }
+
 template <typename T>
 inline const Color<T, 3>& Color<T, 4>::rgb() const
 {
     return *reinterpret_cast<const Color<T, 3>*>(&r);
 }
 
-// Unchecked array subscripting.
 template <typename T>
 inline T& Color<T, 4>::operator[](const size_t i)
 {
     assert(i < Components);
     return (&r)[i];
 }
+
 template <typename T>
 inline const T& Color<T, 4>::operator[](const size_t i) const
 {
@@ -693,5 +757,37 @@ inline const T& Color<T, 4>::operator[](const size_t i) const
 }
 
 }       // namespace foundation
+
+
+//
+// Overload std::min() and std::max() for component-wise min/max operations on colors.
+//
+
+namespace std
+{
+
+template <typename T, size_t N>
+inline foundation::Color<T, N> min(const foundation::Color<T, N>& lhs, const foundation::Color<T, N>& rhs)
+{
+    foundation::Color<T, N> col;
+
+    for (size_t i = 0; i < N; ++i)
+        col[i] = min(lhs[i], rhs[i]);
+
+    return col;
+}
+
+template <typename T, size_t N>
+inline foundation::Color<T, N> max(const foundation::Color<T, N>& lhs, const foundation::Color<T, N>& rhs)
+{
+    foundation::Color<T, N> col;
+
+    for (size_t i = 0; i < N; ++i)
+        col[i] = max(lhs[i], rhs[i]);
+
+    return col;
+}
+
+}       // namespace std
 
 #endif  // !APPLESEED_FOUNDATION_IMAGE_COLOR_H

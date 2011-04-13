@@ -34,11 +34,11 @@
 // Standard headers.
 #include <cmath>
 
+using namespace foundation;
+using namespace std;
+
 TEST_SUITE(Foundation_Math_Vector)
 {
-    using namespace foundation;
-    using namespace std;
-
     typedef Vector<double, 2> Vec2;
     typedef Vector<double, 3> Vec3;
     typedef Vector<double, 5> Vec5;
@@ -291,6 +291,22 @@ TEST_SUITE(Foundation_Math_Vector)
         EXPECT_EQ(Vec3(0.0, 1.0, 1.0), saturate(Vec3(-1.0, 2.0, 3.0)));
     }
 
+    TEST_CASE(TestMin)
+    {
+        const Vec2 a(2.0, -4.0);
+        const Vec2 b(-3.0, -2.0);
+
+        EXPECT_EQ(Vec2(-3.0, -4.0), min(a, b));
+    }
+
+    TEST_CASE(TestMax)
+    {
+        const Vec2 a(2.0, -4.0);
+        const Vec2 b(-3.0, -2.0);
+
+        EXPECT_EQ(Vec2(2.0, -2.0), max(a, b));
+    }
+
     TEST_CASE(TestMinValue)
     {
         EXPECT_EQ(1.0, min_value(Vec3(1.0, 2.0, 3.0)));
@@ -336,9 +352,6 @@ TEST_SUITE(Foundation_Math_Vector)
 
 TEST_SUITE(Foundation_Math_Vector2)
 {
-    using namespace foundation;
-    using namespace std;
-
     typedef Vector<double, 2> Vec2;
 
     TEST_CASE(ConstructVectorWithArrayOfValues)
@@ -384,9 +397,6 @@ TEST_SUITE(Foundation_Math_Vector2)
 
 TEST_SUITE(Foundation_Math_Vector3)
 {
-    using namespace foundation;
-    using namespace std;
-
     typedef Vector<double, 3> Vec3;
 
     TEST_CASE(ConstructVectorWithArrayOfValues)
@@ -442,9 +452,6 @@ TEST_SUITE(Foundation_Math_Vector3)
 
 TEST_SUITE(Foundation_Math_Vector4)
 {
-    using namespace foundation;
-    using namespace std;
-
     typedef Vector<double, 4> Vec4;
 
     TEST_CASE(ConstructVectorWithArrayOfValues)

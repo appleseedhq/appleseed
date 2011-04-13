@@ -28,10 +28,30 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
+#include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
+
+using namespace foundation;
+using namespace std;
 
 TEST_SUITE(Foundation_Image_Color)
 {
+    TEST_CASE(TestMin)
+    {
+        const Color3d a(2.0, -4.0, 1.0);
+        const Color3d b(-3.0, -2.0, 0.0);
+
+        EXPECT_EQ(Color3d(-3.0, -4.0, 0.0), min(a, b));
+    }
+
+    TEST_CASE(TestMax)
+    {
+        const Color3d a(2.0, -4.0, 1.0);
+        const Color3d b(-3.0, -2.0, 0.0);
+
+        EXPECT_EQ(Color3d(2.0, -2.0, 1.0), max(a, b));
+    }
+
     TEST_CASE(TestAverageValue)
     {
         EXPECT_FEQ(0.0, average_value(Color4d(0.0, 0.0, 0.0, 0.0)));

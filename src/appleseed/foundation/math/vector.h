@@ -33,6 +33,7 @@
 #include "foundation/math/scalar.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstddef>
@@ -994,5 +995,37 @@ inline const T& Vector<T, 4>::operator[](const size_t i) const
 }
 
 }       // namespace foundation
+
+
+//
+// Overload std::min() and std::max() for component-wise min/max operations on vectors.
+//
+
+namespace std
+{
+
+template <typename T, size_t N>
+inline foundation::Vector<T, N> min(const foundation::Vector<T, N>& lhs, const foundation::Vector<T, N>& rhs)
+{
+    foundation::Vector<T, N> vec;
+
+    for (size_t i = 0; i < N; ++i)
+        vec[i] = min(lhs[i], rhs[i]);
+
+    return vec;
+}
+
+template <typename T, size_t N>
+inline foundation::Vector<T, N> max(const foundation::Vector<T, N>& lhs, const foundation::Vector<T, N>& rhs)
+{
+    foundation::Vector<T, N> vec;
+
+    for (size_t i = 0; i < N; ++i)
+        vec[i] = max(lhs[i], rhs[i]);
+
+    return vec;
+}
+
+}       // namespace std
 
 #endif  // !APPLESEED_FOUNDATION_MATH_VECTOR_H

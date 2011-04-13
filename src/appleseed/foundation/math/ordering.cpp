@@ -35,6 +35,7 @@
 #include "foundation/math/vector.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cassert>
 
 using namespace foundation;
@@ -47,7 +48,6 @@ namespace foundation
 // 2D ordering generators implementation.
 //
 
-// Generate a linear ordering.
 void linear_ordering(
     vector<size_t>&     ordering,
     const size_t        size)
@@ -56,7 +56,6 @@ void linear_ordering(
         ordering.push_back(i);
 }
 
-// Generate a spiral ordering.
 void spiral_ordering(
     vector<size_t>&     ordering,
     const size_t        size_x,
@@ -90,8 +89,7 @@ namespace
         }
         else
         {
-            // Insert this tile into the tile array if it lies
-            // inside the boundaries of the frame.
+            // Insert this tile into the tile array if it's inside the boundaries of the frame.
             assert(size == 1);
             assert(point.x >= 0);
             assert(point.y >= 0);
@@ -101,17 +99,14 @@ namespace
     }
 }
 
-// Generate a Hilbert curve ordering.
 void hilbert_ordering(
     vector<size_t>&     ordering,
     const size_t        size_x,
     const size_t        size_y)
 {
-    // This implementation of the Hilbert curve algorithm only
-    // works on a square grid whose size is a power of two.
+    // This Hilbert curve generator only works on a square grid whose size is a power of two.
     const size_t root_size = next_pow2(max(size_x, size_y));
 
-    // Generate the Hilbert curve.
     hilbert(
         ordering,
         static_cast<int>(size_x),
