@@ -320,10 +320,20 @@ namespace
                 Color4f linear_rgba;
                 tile.get_pixel(x, y, linear_rgba);
 
-                const float lum =
-                    luminance(clamp_to_zero(linear_rgba.rgb()));
+                // Extract the RGB part (ignore the alpha channel).
+                const Color3f linear_rgb = linear_rgba.rgb();
 
-                assert(lum >= 0.0f);
+                // Skip pixels containing NaN values.
+                if (linear_rgb[0] != linear_rgb[0] ||
+                    linear_rgb[1] != linear_rgb[1] ||
+                    linear_rgb[2] != linear_rgb[2])
+                    continue;
+
+                // Compute the Rec. 709 relative luminance of this pixel.
+                const float lum = luminance(clamp_to_zero(linear_rgb));
+
+                // It should no longer be possible to have NaN at this point.
+                assert(lum == lum);
 
                 accumulated_luminance += static_cast<double>(lum);
             }
