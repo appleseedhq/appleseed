@@ -400,8 +400,10 @@ namespace
                 emission_direction_probability);
 
             // Compute the initial particle weight.
-            initial_alpha /=
-                static_cast<float>(light_sample.m_probability * emission_direction_probability);
+            initial_alpha *=
+                static_cast<float>(
+                    dot(emission_direction, light_sample.m_input_params.m_shading_normal)
+                        / (light_sample.m_probability * emission_direction_probability));
 
             // Manufacture a ShadingPoint object at the position of the light sample.
             // It will be used to avoid self-intersections.
