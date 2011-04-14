@@ -92,7 +92,7 @@ namespace
             const Project&          project,
             const Intersector&      intersector)
         {
-            // Precompute the origin of the rays.
+            // Precompute the rays origin in world space.
             const Transformd::MatrixType& mat = m_transform.get_local_to_parent();
             m_ray_org.x = mat[ 3];
             m_ray_org.y = mat[ 7];
