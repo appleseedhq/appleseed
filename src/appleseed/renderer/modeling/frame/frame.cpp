@@ -298,14 +298,6 @@ bool Frame::archive(
 
 namespace
 {
-    inline Color3f clamp_to_zero(const Color3f& c)
-    {
-        return Color3f(
-            max(c[0], 0.0f),
-            max(c[1], 0.0f),
-            max(c[2], 0.0f));
-    }
-
     double accumulate_luminance(const Tile& tile)
     {
         double accumulated_luminance = 0.0;
@@ -330,7 +322,7 @@ namespace
                     continue;
 
                 // Compute the Rec. 709 relative luminance of this pixel.
-                const float lum = luminance(clamp_to_zero(linear_rgb));
+                const float lum = luminance(max(linear_rgb, Color3f(0.0)));
 
                 // It should no longer be possible to have NaN at this point.
                 assert(lum == lum);
@@ -372,13 +364,6 @@ namespace
 
     TEST_SUITE(Renderer_Modeling_Frame_Details)
     {
-        TEST_CASE(ClampToZero_GivenColorWithNegativeValues_ReplacesNegativeValuesWithZeroes)
-        {
-            const Color3f result = clamp_to_zero(Color3f(-1.0f, -0.0f, 1.0f));
-
-            EXPECT_EQ(Color3f(0.0f, -0.0f, 1.0f), result);
-        }
-
         TEST_CASE(AccumulateLuminance_Given2x2TileFilledWithZeroes_ReturnsZero)
         {
             Tile tile(2, 2, 4, PixelFormatFloat);
