@@ -39,6 +39,7 @@
 #include "renderer/modeling/scene/textureinstance.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 #include "foundation/image/pixel.h"
 
@@ -147,7 +148,7 @@ auto_release_ptr<DummyEntity> DummyEntityFactory::create(const char* name)
 
 
 //
-// load_raw_image() function implementation.
+// RAW image I/O function implementation.
 //
 
 auto_ptr<Image> load_raw_image(
@@ -175,6 +176,23 @@ auto_ptr<Image> load_raw_image(
     fclose(file);
 
     return read == pixel_count ? image : auto_ptr<Image>(0);
+}
+
+bool save_raw_image(
+    const string&   filename,
+    const Image&    image)
+{
+    FILE* file = fopen(filename.c_str(), "wb");
+
+    if (file == 0)
+        return false;
+
+    const CanvasProperties& props = image.properties();
+    const size_t written = fwrite(image.pixel(0, 0), 3, props.m_pixel_count, file);
+
+    fclose(file);
+
+    return written == props.m_pixel_count;
 }
 
 }   // namespace renderer
