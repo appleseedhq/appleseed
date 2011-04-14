@@ -53,7 +53,7 @@ using namespace std;
 
 // Define this symbol to break execution into the debugger
 // when a specific pixel is about to be rendered.
-//#define RENDERER_PIXEL_BREAKPOINT Vector<size_t, 2>(511, 511)
+// #define RENDERER_PIXEL_BREAKPOINT Vector<size_t, 2>(0, 0)
 
 namespace renderer
 {
