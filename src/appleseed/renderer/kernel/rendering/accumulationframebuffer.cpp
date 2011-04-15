@@ -55,7 +55,6 @@ AccumulationFramebuffer::AccumulationFramebuffer(
 void AccumulationFramebuffer::render_to_frame(Frame& frame)
 {
     Spinlock::ScopedLock lock(m_spinlock);
-
     do_render_to_frame(frame);
 }
 
@@ -64,7 +63,6 @@ void AccumulationFramebuffer::try_render_to_frame(Frame& frame)
     if (m_spinlock.try_lock())
     {
         do_render_to_frame(frame);
-
         m_spinlock.unlock();
     }
 }
@@ -72,9 +70,7 @@ void AccumulationFramebuffer::try_render_to_frame(Frame& frame)
 void AccumulationFramebuffer::clear_no_lock()
 {
     m_sample_count = 0;
-
     m_timer_frequency = m_timer.frequency();
-
     m_last_time = m_timer.read();
     m_last_sample_count = 0;
 }
@@ -82,7 +78,6 @@ void AccumulationFramebuffer::clear_no_lock()
 void AccumulationFramebuffer::do_render_to_frame(Frame& frame)
 {
     develop_to_frame(frame);
-
     print_statistics(frame);
 }
 

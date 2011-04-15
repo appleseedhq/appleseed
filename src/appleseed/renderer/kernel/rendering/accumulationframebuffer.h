@@ -66,7 +66,7 @@ class AccumulationFramebuffer
         const size_t    sample_count,
         const Sample    samples[]) = 0;
 
-    // Thread-safe.
+    // Develop the framebuffer to a frame. Thread-safe.
     void render_to_frame(Frame& frame);
 
     // Like render_to_frame() but won't do anything if the framebuffer
