@@ -68,19 +68,23 @@ namespace
       public:
         ProgressiveFrameRenderer(
             Frame&                          frame,
-            AccumulationFramebuffer&        framebuffer,
             ISampleGeneratorFactory*        generator_factory,
             ITileCallbackFactory*           callback_factory,
             const ParamArray&               params)
           : m_frame(frame)
-          , m_framebuffer(framebuffer)
           , m_params(params)
           , m_sample_counter(m_params.m_max_sample_count)
         {
             // We must have a generator factory, but it's OK not to have a callback factory.
             assert(generator_factory);
 
-            // Create and initialize job manager.
+            // Create an accumulation framebuffer.
+            m_framebuffer.reset(
+                generator_factory->create_accumulation_framebuffer(
+                    frame.properties().m_canvas_width,
+                    frame.properties().m_canvas_height));
+
+            // Create and initialize the job manager.
             m_job_manager.reset(
                 new JobManager(
                     global_logger(),
@@ -133,7 +137,7 @@ namespace
             assert(!m_job_queue.has_scheduled_or_running_jobs());
 
             m_abort_switch.clear();
-            m_framebuffer.clear();
+            m_framebuffer->clear();
             m_sample_counter.clear();
 
             // Reset sample generators.
@@ -146,7 +150,7 @@ namespace
                 m_job_queue.schedule(
                     new SampleGeneratorJob(
                         m_frame,
-                        m_framebuffer,
+                        *m_framebuffer.get(),
                         m_sample_generators[i],
                         m_sample_counter,
                         m_tile_callbacks[i],
@@ -192,7 +196,7 @@ namespace
         };
 
         Frame&                              m_frame;
-        AccumulationFramebuffer&            m_framebuffer;
+        auto_ptr<AccumulationFramebuffer>   m_framebuffer;
         const Parameters                    m_params;
 
         JobQueue                            m_job_queue;
@@ -213,12 +217,10 @@ namespace
 
 ProgressiveFrameRendererFactory::ProgressiveFrameRendererFactory(
     Frame&                      frame,
-    AccumulationFramebuffer&    framebuffer,
     ISampleGeneratorFactory*    generator_factory,
     ITileCallbackFactory*       callback_factory,
     const ParamArray&           params)
   : m_frame(frame)
-  , m_framebuffer(framebuffer)
   , m_generator_factory(generator_factory)  
   , m_callback_factory(callback_factory)
   , m_params(params)
@@ -235,7 +237,6 @@ IFrameRenderer* ProgressiveFrameRendererFactory::create()
     return
         new ProgressiveFrameRenderer(
             m_frame,
-            m_framebuffer,
             m_generator_factory,
             m_callback_factory,
             m_params);
@@ -243,7 +244,6 @@ IFrameRenderer* ProgressiveFrameRendererFactory::create()
 
 IFrameRenderer* ProgressiveFrameRendererFactory::create(
     Frame&                      frame,
-    AccumulationFramebuffer&    framebuffer,
     ISampleGeneratorFactory*    generator_factory,
     ITileCallbackFactory*       callback_factory,
     const ParamArray&           params)
@@ -251,7 +251,6 @@ IFrameRenderer* ProgressiveFrameRendererFactory::create(
     return
         new ProgressiveFrameRenderer(
             frame,
-            framebuffer,
             generator_factory,
             callback_factory,
             params);

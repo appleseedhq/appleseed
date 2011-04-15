@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/rendering/isamplerenderer.h"
+#include "renderer/kernel/rendering/localaccumulationframebuffer.h"
 #include "renderer/kernel/rendering/sample.h"
 #include "renderer/kernel/rendering/samplegeneratorbase.h"
 #include "renderer/kernel/shading/shadingresult.h"
@@ -158,6 +159,16 @@ ISampleGenerator* GenericSampleGeneratorFactory::create(
             m_sample_renderer_factory,
             generator_index,
             generator_count);
+}
+
+AccumulationFramebuffer* GenericSampleGeneratorFactory::create_accumulation_framebuffer(
+    const size_t            canvas_width,
+    const size_t            canvas_height)
+{
+    return
+        new LocalAccumulationFramebuffer(
+            canvas_width,
+            canvas_height);
 }
 
 }   // namespace renderer

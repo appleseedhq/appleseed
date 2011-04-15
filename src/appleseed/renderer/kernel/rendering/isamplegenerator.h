@@ -76,6 +76,11 @@ class DLLSYMBOL ISampleGeneratorFactory
     virtual ISampleGenerator* create(
         const size_t                generator_index,
         const size_t                generator_count) = 0;
+
+    // Create an accumulation framebuffer that fit this sample generator.
+    virtual AccumulationFramebuffer* create_accumulation_framebuffer(
+        const size_t                canvas_width,
+        const size_t                canvas_height) = 0;
 };
 
 }       // namespace renderer

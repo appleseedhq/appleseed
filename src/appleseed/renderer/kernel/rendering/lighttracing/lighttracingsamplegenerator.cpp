@@ -124,11 +124,8 @@ namespace
 
             SampleGeneratorBase::generate_samples(sample_count, framebuffer, abort_switch);
 
-            // todo: ugly, find a better way.
-            GlobalAccumulationFramebuffer* fb = dynamic_cast<GlobalAccumulationFramebuffer*>(&framebuffer);
-            if (fb)
-                fb->increment_sample_count(m_light_sample_count);
-            else RENDERER_LOG_WARNING("wrong framebuffer type used in conjunction with light tracer");
+            GlobalAccumulationFramebuffer& fb = static_cast<GlobalAccumulationFramebuffer&>(framebuffer);
+            fb.increment_sample_count(m_light_sample_count);
         }
 
       private:
@@ -550,6 +547,16 @@ ISampleGenerator* LightTracingSampleGeneratorFactory::create(
             generator_index,
             generator_count,
             m_params);
+}
+
+AccumulationFramebuffer* LightTracingSampleGeneratorFactory::create_accumulation_framebuffer(
+    const size_t            canvas_width,
+    const size_t            canvas_height)
+{
+    return
+        new GlobalAccumulationFramebuffer(
+            canvas_width,
+            canvas_height);
 }
 
 }   // namespace renderer

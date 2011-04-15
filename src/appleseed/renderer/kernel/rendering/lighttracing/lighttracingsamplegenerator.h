@@ -40,6 +40,7 @@
 #include <cstddef>
 
 // Forward declarations.
+namespace renderer      { class AccumulationFramebuffer; }
 namespace renderer      { class Frame; }
 namespace renderer      { class LightSampler; }
 namespace renderer      { class Scene; }
@@ -67,6 +68,11 @@ class DLLSYMBOL LightTracingSampleGeneratorFactory
     virtual ISampleGenerator* create(
         const size_t            generator_index,
         const size_t            generator_count);
+
+    // Create an accumulation framebuffer that fit this sample generator.
+    virtual AccumulationFramebuffer* create_accumulation_framebuffer(
+        const size_t            canvas_width,
+        const size_t            canvas_height);
 
   private:
     const Scene&                m_scene;
