@@ -56,7 +56,7 @@ GlobalAccumulationFramebuffer::GlobalAccumulationFramebuffer(
         new Tile(
             m_width,
             m_height,
-            4,
+            3,
             PixelFormatFloat));
 
     clear();
@@ -68,7 +68,7 @@ void GlobalAccumulationFramebuffer::clear()
 
     AccumulationFramebuffer::clear_no_lock();
 
-    m_tile->clear(Color4f(0.0));
+    m_tile->clear(Color3f(0.0));
 }
 
 void GlobalAccumulationFramebuffer::store_samples(
@@ -91,7 +91,7 @@ void GlobalAccumulationFramebuffer::store_samples(
         const size_t x = truncate<size_t>(fx);
         const size_t y = truncate<size_t>(fy);
 
-        add_pixel(x, y, sample_ptr->m_color);
+        add_pixel(x, y, sample_ptr->m_color.rgb());
 
         ++sample_ptr;
     }
@@ -105,9 +105,9 @@ void GlobalAccumulationFramebuffer::develop_to_frame(Frame& frame) const
 
     assert(frame_props.m_canvas_width == m_width);
     assert(frame_props.m_canvas_height == m_height);
-    assert(frame_props.m_channel_count == 4);
+    assert(frame_props.m_channel_count == 3);
 
-    const float scale = static_cast<float>(m_pixel_count) / m_sample_count;
+    const float scale = 1.0f / m_sample_count;
 
     for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
     {
@@ -138,12 +138,16 @@ void GlobalAccumulationFramebuffer::develop_to_tile(
     {
         for (size_t x = 0; x < tile_width; ++x)
         {
-            Color4f color =
+            Color4f color;
+            
+            color.rgb() =
                 get_pixel(
                     origin_x + x,
                     origin_y + y);
 
-            color *= scale;
+            color.rgb() *= scale;
+
+            color.a = 1.0f;
 
             tile.set_pixel(x, y, color);
         }

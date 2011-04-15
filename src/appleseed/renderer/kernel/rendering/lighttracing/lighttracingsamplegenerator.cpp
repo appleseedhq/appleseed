@@ -69,6 +69,14 @@ namespace
     //
     // LightTracingSampleGenerator class implementation.
     //
+    // References:
+    //
+    //   Monte Carlo Light Tracing With Direct Computation Of Pixel Intensities
+    //   http://graphics.cs.kuleuven.be/publications/MCLTWDCOPI/
+    //
+    //   Robust Monte Carlo Methods For Light Transport Simulation
+    //   http://graphics.stanford.edu/papers/veach_thesis/thesis.pdf
+    //
 
     class LightTracingSampleGenerator
       : public SampleGeneratorBase
@@ -144,16 +152,18 @@ namespace
               , m_shading_context(intersector, texture_cache)
               , m_samples(samples)
               , m_sample_count(0)
-              , m_alpha(initial_alpha)
+              , m_initial_alpha(initial_alpha)
             {
                 // Compute the world space position and direction of the camera.
                 m_camera_position = m_camera.get_transform().transform_point_to_parent(Vector3d(0.0));
                 m_camera_direction = m_camera.get_transform().transform_vector_to_parent(Vector3d(0.0, 0.0, -1.0));
                 assert(is_normalized(m_camera_direction));
 
-                // Compute the area (in m^2) of the camera film.
+                // Compute the reciprocal of the area of a single pixel.
+                const size_t pixel_count = frame.properties().m_pixel_count;
                 const Vector2d& film_dimensions = m_camera.get_film_dimensions();
-                m_rcp_film_area = 1.0 / (film_dimensions[0] * film_dimensions[1]);
+                const double film_area = film_dimensions[0] * film_dimensions[1];
+                m_rcp_pixel_area = pixel_count / film_area;
 
                 // Cache the focal length.
                 m_focal_length = m_camera.get_focal_length();
@@ -171,6 +181,10 @@ namespace
                 // Transform the vertex position to camera space.
                 const Vector3d vertex_position_camera =
                     m_camera.get_transform().transform_point_to_local(vertex_position_world);
+
+                // Reject vertices behind the image plane.
+                if (vertex_position_camera.z > -m_camera.get_focal_length())
+                    return;
 
                 // Compute the position of the vertex on the image plane.
                 const Vector2d sample_position_ndc = m_camera.project(vertex_position_camera);
@@ -203,7 +217,7 @@ namespace
                 const double dist_pixel_to_camera = m_focal_length / cos_theta;
 
                 // Compute the flux-to-radiance factor.
-                const double flux_to_radiance = square(dist_pixel_to_camera / cos_theta) * m_rcp_film_area;
+                const double flux_to_radiance = square(dist_pixel_to_camera / cos_theta) * m_rcp_pixel_area;
 
                 // Compute the geometric term:
                 //  * we already know that visibility is 1
@@ -212,7 +226,7 @@ namespace
                 assert(g >= 0.0);
 
                 // Compute the contribution of this sample to the pixel.
-                Spectrum radiance = m_alpha;
+                Spectrum radiance = m_initial_alpha;
                 radiance *= static_cast<float>(transmission * g * flux_to_radiance);
 
                 // Create a sample for this vertex.
@@ -235,6 +249,10 @@ namespace
                 // Transform the vertex position to camera space.
                 const Vector3d vertex_position_camera =
                     m_camera.get_transform().transform_point_to_local(vertex_position_world);
+
+                // Reject vertices behind the image plane.
+                if (vertex_position_camera.z > -m_camera.get_focal_length())
+                    return;
 
                 // Compute the position of the vertex on the image plane.
                 const Vector2d sample_position_ndc = m_camera.project(vertex_position_camera);
@@ -285,7 +303,7 @@ namespace
                 const double dist_pixel_to_camera = m_focal_length / cos_theta;
 
                 // Compute the flux-to-radiance factor.
-                const double flux_to_radiance = square(dist_pixel_to_camera / cos_theta) * m_rcp_film_area;
+                const double flux_to_radiance = square(dist_pixel_to_camera / cos_theta) * m_rcp_pixel_area;
 
                 // Compute the geometric term:
                 //  * we already know that visibility is 1
@@ -293,11 +311,9 @@ namespace
                 const double g = cos_theta / square_distance;
                 assert(g >= 0.0);
 
-                // Update the particle weight.
-                m_alpha *= throughput;
-
                 // Compute the contribution of this sample to the pixel.
-                Spectrum radiance = m_alpha;
+                Spectrum radiance = m_initial_alpha;
+                radiance *= throughput;
                 radiance *= bsdf_value;
                 radiance *= static_cast<float>(transmission * g * flux_to_radiance);
 
@@ -310,6 +326,7 @@ namespace
                 const Vector3d&             outgoing,
                 const Spectrum&             throughput)
             {
+                // todo: implement.
             }
 
           private:
@@ -317,13 +334,13 @@ namespace
             const LightingConditions&   m_lighting_conditions;
             const ShadingContext        m_shading_context;
 
+            const Spectrum              m_initial_alpha;        // initial particle flux (in W)
             Vector3d                    m_camera_position;      // camera position in world space
             Vector3d                    m_camera_direction;     // camera direction (gaze) in world space
-            double                      m_rcp_film_area;
-            double                      m_focal_length;
+            double                      m_rcp_pixel_area;       // reciprocal of the area of a single pixel (in m^-2)
+            double                      m_focal_length;         // camera's focal length (in m)
             SampleVector&               m_samples;
             size_t                      m_sample_count;         // the number of samples added to m_samples
-            Spectrum                    m_alpha;                // flux of the current particle (in W)
 
             void emit_sample(const Vector2d& position_ndc, const Spectrum& radiance)
             {

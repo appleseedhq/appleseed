@@ -70,9 +70,9 @@ class GlobalAccumulationFramebuffer
     void add_pixel(
         const size_t                    x,
         const size_t                    y,
-        const foundation::Color4f&      color);
+        const foundation::Color3f&      color);
 
-    foundation::Color4f get_pixel(
+    foundation::Color3f get_pixel(
         const size_t                    x,
         const size_t                    y) const;
 
@@ -95,20 +95,20 @@ class GlobalAccumulationFramebuffer
 inline void GlobalAccumulationFramebuffer::add_pixel(
     const size_t                        x,
     const size_t                        y,
-    const foundation::Color4f&          color)
+    const foundation::Color3f&          color)
 {
-    foundation::Color4f* pixel =
-        reinterpret_cast<foundation::Color4f*>(m_tile->pixel(x, y));
+    foundation::Color3f* pixel =
+        reinterpret_cast<foundation::Color3f*>(m_tile->pixel(x, y));
 
     *pixel += color;
 }
 
-inline foundation::Color4f GlobalAccumulationFramebuffer::get_pixel(
+inline foundation::Color3f GlobalAccumulationFramebuffer::get_pixel(
     const size_t                        x,
     const size_t                        y) const
 {
-    const foundation::Color4f* pixel =
-        reinterpret_cast<const foundation::Color4f*>(m_tile->pixel(x, y));
+    const foundation::Color3f* pixel =
+        reinterpret_cast<const foundation::Color3f*>(m_tile->pixel(x, y));
 
     return *pixel;
 }

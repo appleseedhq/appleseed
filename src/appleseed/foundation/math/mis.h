@@ -42,6 +42,7 @@ namespace foundation
 //
 // Reference:
 //
+//   Robust Monte Carlo Methods For Light Transport Simulation
 //   http://graphics.stanford.edu/papers/veach_thesis/thesis.pdf
 //
 
