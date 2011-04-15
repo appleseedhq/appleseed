@@ -205,7 +205,7 @@ namespace
                 m_path_radiance.set(0.0f);
             }
 
-            void visit_vertex(
+            bool visit_vertex(
                 SamplingContext&        sampling_context,
                 const ShadingPoint&     shading_point,
                 const Vector3d&         outgoing,
@@ -334,6 +334,9 @@ namespace
                         m_path_radiance += emitted_radiance;
                     }
                 }
+
+                // Proceed with this path.
+                return true;
             }
 
             void visit_environment(

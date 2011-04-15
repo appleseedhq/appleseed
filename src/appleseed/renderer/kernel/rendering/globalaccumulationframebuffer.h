@@ -35,6 +35,7 @@
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/image/tile.h"
+#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cstddef>
@@ -63,6 +64,9 @@ class GlobalAccumulationFramebuffer
     virtual void store_samples(
         const size_t    sample_count,
         const Sample    samples[]);
+
+    // Increment the number of samples used for pixel values renormalization. Thread-safe.
+    void increment_sample_count(const foundation::uint64 delta_sample_count);
 
   private:
     std::auto_ptr<foundation::Tile>     m_tile;

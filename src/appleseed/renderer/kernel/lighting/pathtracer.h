@@ -218,15 +218,18 @@ size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
         const foundation::Vector3d outgoing = normalize(-ray.m_dir);
 
         // Compute radiance contribution at this vertex.
-        m_path_visitor.visit_vertex(
-            sampling_context,
-            *shading_point_ptr,
-            outgoing,
-            bsdf,
-            bsdf_data,
-            bsdf_mode,
-            bsdf_prob,
-            throughput);
+        const bool proceed =
+            m_path_visitor.visit_vertex(
+                sampling_context,
+                *shading_point_ptr,
+                outgoing,
+                bsdf,
+                bsdf_data,
+                bsdf_mode,
+                bsdf_prob,
+                throughput);
+        if (!proceed)
+            break;
 
         // Generate a uniform sample in [0,1)^4.
         sampling_context = sampling_context.split(4, 1);

@@ -35,6 +35,8 @@
 #include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/kernel/lighting/transmission.h"
 #include "renderer/kernel/intersection/intersector.h"
+#include "renderer/kernel/rendering/accumulationframebuffer.h"
+#include "renderer/kernel/rendering/globalaccumulationframebuffer.h"
 #include "renderer/kernel/rendering/sample.h"
 #include "renderer/kernel/rendering/samplegeneratorbase.h"
 #include "renderer/kernel/shading/shadingcontext.h"
@@ -54,9 +56,11 @@
 #include "foundation/math/qmc.h"
 #include "foundation/math/rng.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/memory.h"
 
 // Forward declarations.
+namespace foundation    { class AbortSwitch; }
 namespace foundation    { class LightingConditions; }
 
 using namespace foundation;
@@ -83,13 +87,13 @@ namespace
     {
       public:
         LightTracingSampleGenerator(
-            const Scene&            scene,
-            const Frame&            frame,
-            const TraceContext&     trace_context,
-            const LightSampler&     light_sampler,
-            const size_t            generator_index,
-            const size_t            generator_count,
-            const ParamArray&       params)
+            const Scene&                scene,
+            const Frame&                frame,
+            const TraceContext&         trace_context,
+            const LightSampler&         light_sampler,
+            const size_t                generator_index,
+            const size_t                generator_count,
+            const ParamArray&           params)
           : SampleGeneratorBase(generator_index, generator_count)
           , m_params(params)
           , m_scene(scene)
@@ -109,6 +113,22 @@ namespace
         {
             SampleGeneratorBase::reset();
             m_rng = MersenneTwister();
+        }
+
+        virtual void generate_samples(
+            const size_t                sample_count,
+            AccumulationFramebuffer&    framebuffer,
+            AbortSwitch&                abort_switch)
+        {
+            m_light_sample_count = 0;
+
+            SampleGeneratorBase::generate_samples(sample_count, framebuffer, abort_switch);
+
+            // todo: ugly, find a better way.
+            GlobalAccumulationFramebuffer* fb = dynamic_cast<GlobalAccumulationFramebuffer*>(&framebuffer);
+            if (fb)
+                fb->increment_sample_count(m_light_sample_count);
+            else RENDERER_LOG_WARNING("wrong framebuffer type used in conjunction with light tracer");
         }
 
       private:
@@ -233,7 +253,7 @@ namespace
                 emit_sample(sample_position_ndc, radiance);
             }
 
-            void visit_vertex(
+            bool visit_vertex(
                 SamplingContext&            sampling_context,
                 const ShadingPoint&         shading_point,
                 const Vector3d&             outgoing,           // in this context, toward the light
@@ -243,6 +263,9 @@ namespace
                 const double                bsdf_prob,
                 const Spectrum&             throughput)
             {
+                if (shading_point.get_material()->get_edf())
+                    return false;   // terminate this path
+
                 // Retrieve the world space position of this vertex.
                 const Vector3d& vertex_position_world = shading_point.get_point();
 
@@ -252,7 +275,7 @@ namespace
 
                 // Reject vertices behind the image plane.
                 if (vertex_position_camera.z > -m_camera.get_focal_length())
-                    return;
+                    return true;    // proceed with this path
 
                 // Compute the position of the vertex on the image plane.
                 const Vector2d sample_position_ndc = m_camera.project(vertex_position_camera);
@@ -260,7 +283,7 @@ namespace
                 // Reject vertices that don't belong on the image plane of the camera.
                 if (sample_position_ndc[0] < 0.0 || sample_position_ndc[0] >= 1.0 ||
                     sample_position_ndc[1] < 0.0 || sample_position_ndc[1] >= 1.0)
-                    return;
+                    return true;    // proceed with this path
 
                 // Compute the transmission factor between this vertex and the camera.
                 // Prevent self-intersections by letting the ray originate from the camera.
@@ -273,7 +296,7 @@ namespace
 
                 // Reject vertices not directly visible from the camera.
                 if (transmission == 0.0)
-                    return;
+                    return true;    // proceed with this path
 
                 // Compute the vertex-to-camera direction vector.
                 Vector3d vertex_to_camera = m_camera_position - vertex_position_world;
@@ -319,6 +342,9 @@ namespace
 
                 // Create a sample for this vertex.
                 emit_sample(sample_position_ndc, radiance);
+
+                // Proceed with this path.
+                return true;
             }
 
             void visit_environment(
@@ -367,6 +393,8 @@ namespace
 
         MersenneTwister                 m_rng;
         LightSampleVector               m_light_samples;
+
+        uint64                          m_light_sample_count;
 
         virtual size_t generate_samples(
             const size_t                sequence_index,
@@ -473,6 +501,7 @@ namespace
                     m_texture_cache,
                     light_ray,
                     &parent_shading_point);
+            ++m_light_sample_count;
 
             // Update path statistics.
             ++m_stats.m_path_count;

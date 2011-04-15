@@ -95,8 +95,12 @@ void GlobalAccumulationFramebuffer::store_samples(
 
         ++sample_ptr;
     }
+}
 
-    m_sample_count += sample_count;
+void GlobalAccumulationFramebuffer::increment_sample_count(const uint64 delta_sample_count)
+{
+    Spinlock::ScopedLock lock(m_spinlock);
+    m_sample_count += delta_sample_count;
 }
 
 void GlobalAccumulationFramebuffer::develop_to_frame(Frame& frame) const
