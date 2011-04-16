@@ -109,7 +109,7 @@ void GlobalAccumulationFramebuffer::develop_to_frame(Frame& frame) const
 
     assert(frame_props.m_canvas_width == m_width);
     assert(frame_props.m_canvas_height == m_height);
-    assert(frame_props.m_channel_count == 3);
+    assert(frame_props.m_channel_count == 4);
 
     const float scale = 1.0f / m_sample_count;
 
