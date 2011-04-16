@@ -228,7 +228,6 @@
         </configuration>
         <configuration name="interactive" base="base_interactive">
             <parameter name="sample_generator" value="lighttracing" />
-            <parameter name="accumulation_framebuffer" value="global" />
         </configuration>
     </configurations>
 </project>

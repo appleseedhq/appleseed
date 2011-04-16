@@ -229,7 +229,6 @@
         </configuration>
         <configuration name="interactive" base="base_interactive">
             <parameter name="lighting_engine" value="drt" />
-            <parameter name="accumulation_framebuffer" value="local" />
         </configuration>
     </configurations>
 </project>

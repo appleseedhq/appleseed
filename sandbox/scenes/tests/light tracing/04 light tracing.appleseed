@@ -95,7 +95,6 @@
         <configuration name="final" base="base_final" />
         <configuration name="interactive" base="base_interactive">
             <parameter name="sample_generator" value="lighttracing" />
-            <parameter name="accumulation_framebuffer" value="global" />
             <parameters name="lighttracing_sample_generator">
                 <parameter name="report_self_intersections" value="true" />
             </parameters>
