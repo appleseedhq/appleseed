@@ -94,8 +94,7 @@ void AccumulationFramebuffer::print_statistics(const Frame& frame)
         const double average_luminance = frame.compute_average_luminance();
 
         RENDERER_LOG_INFO(
-            "%s samples in the progressive framebuffer (%s samples/pixel, %s samples/second, "
-            "average luminance is %s)",
+            "%s samples (%s samples/pixel, %s samples/second, avg. luminance %s)",
             pretty_uint(m_sample_count).c_str(),
             pretty_ratio(m_sample_count, static_cast<uint64>(m_pixel_count)).c_str(),
             pretty_ratio(static_cast<double>(rendered_samples), elapsed_seconds).c_str(),
