@@ -193,7 +193,8 @@ namespace
 
             void visit_light_vertex(
                 SamplingContext&            sampling_context,
-                const Vector3d&             vertex_position_world)
+                const LightSample&          light_sample,
+                const Spectrum&             light_particle_flux)
             {
                 Vector2d sample_position_ndc;
                 double transmission;
@@ -203,7 +204,7 @@ namespace
                 const bool visible =
                     vertex_visible_to_camera(
                         sampling_context,    
-                        vertex_position_world,
+                        light_sample.m_input_params.m_point,
                         sample_position_ndc,
                         transmission,
                         vertex_to_camera,
@@ -218,12 +219,12 @@ namespace
                 const double flux_to_radiance = square(dist_pixel_to_camera / cos_theta) * m_rcp_pixel_area;
 
                 // Compute the geometric term.
-                // cos(vertex_to_camera, shading_normal) is already accounted for in bsdf_value.
-                const double g = transmission * cos_theta / square_distance;
+                const double cos_alpha = abs(dot(vertex_to_camera, light_sample.m_input_params.m_shading_normal));
+                const double g = transmission * cos_alpha * cos_theta / square_distance;
                 assert(g >= 0.0);
 
                 // Store the contribution of this path vertex.
-                Spectrum radiance = m_initial_alpha;
+                Spectrum radiance = light_particle_flux;
                 radiance *= static_cast<float>(g * flux_to_radiance);
                 emit_sample(sample_position_ndc, radiance);
             }
@@ -302,7 +303,7 @@ namespace
                 const Vector3d&             outgoing,
                 const Spectrum&             throughput)
             {
-                // todo: implement.
+                // The particle escapes.
             }
 
           private:
@@ -410,6 +411,7 @@ namespace
             // the path tracer.
 
             // Get one light sample.
+            // todo: handle environment lighting.
             LightSample light_sample;
             m_light_sampler.sample(sampling_context, light_sample);
 
@@ -428,22 +430,23 @@ namespace
 
             // Sample the EDF.
             Vector3d emission_direction;
-            Spectrum initial_alpha;
-            double emission_direction_probability;
+            Spectrum edf_value;
+            double edf_prob;
             light_sample.m_edf->sample(
                 edf_data,
                 light_sample.m_input_params.m_geometric_normal,
                 Basis3d(light_sample.m_input_params.m_shading_normal),
                 s,
                 emission_direction,
-                initial_alpha,
-                emission_direction_probability);
+                edf_value,
+                edf_prob);
 
             // Compute the initial particle weight.
+            Spectrum initial_alpha = edf_value;
             initial_alpha *=
                 static_cast<float>(
                     dot(emission_direction, light_sample.m_input_params.m_shading_normal)
-                        / (light_sample.m_probability * emission_direction_probability));
+                        / (light_sample.m_probability * edf_prob));
 
             // Manufacture a ShadingPoint object at the position of the light sample.
             // It will be used to avoid self-intersections.
@@ -484,9 +487,12 @@ namespace
                 m_params.m_minimum_path_length);
 
             // Handle the light vertex separately.
+            Spectrum light_particle_flux = edf_value;       // todo: only works for diffuse EDF? What we need is the light exitance
+            light_particle_flux /= static_cast<float>(light_sample.m_probability);
             path_visitor.visit_light_vertex(
                 sampling_context,
-                light_sample.m_input_params.m_point);
+                light_sample,
+                light_particle_flux);
 
             // Trace the light path.
             const size_t path_length =
