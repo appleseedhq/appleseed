@@ -16,26 +16,26 @@
             </transform>
         </camera>
         <assembly name="assembly">
-            <color name="white">
+            <color name="gray">
                 <parameter name="color_space" value="linear_rgb" />
                 <values>
-                    1.000000
+                    0.300000
                 </values>
             </color>
-            <bsdf name="lambertian_white_brdf" model="lambertian_brdf">
-                <parameter name="reflectance" value="white" />
+            <bsdf name="lambertian_gray_brdf" model="lambertian_brdf">
+                <parameter name="reflectance" value="gray" />
             </bsdf>
-            <edf name="diffuse_white_edf" model="diffuse_edf">
-                <parameter name="exitance" value="white" />
+            <edf name="diffuse_gray_edf" model="diffuse_edf">
+                <parameter name="exitance" value="gray" />
             </edf>
             <surface_shader name="physical_surface_shader" model="physical_surface_shader" />
             <material name="floor_material" model="generic_material">
-                <parameter name="bsdf" value="lambertian_white_brdf" />
+                <parameter name="bsdf" value="lambertian_gray_brdf" />
                 <parameter name="surface_shader" value="physical_surface_shader" />
             </material>
             <material name="light_material" model="generic_material">
-                <parameter name="bsdf" value="lambertian_white_brdf" />
-                <parameter name="edf" value="diffuse_white_edf" />
+                <parameter name="bsdf" value="lambertian_gray_brdf" />
+                <parameter name="edf" value="diffuse_gray_edf" />
                 <parameter name="surface_shader" value="physical_surface_shader" />
             </material>
             <object name="light tracing" model="mesh_object">
@@ -43,16 +43,21 @@
             </object>
             <object_instance name="light tracing.floor_inst" object="light tracing.floor">
                 <transform>
-                    <rotation axis="1 0 0" angle="45" />
+                    <matrix>
+                        1.000000000000000 0.000000000000000 0.000000000000000 0.000000000000000
+                        0.000000000000000 1.000000000000000 0.000000000000000 0.000000000000000
+                        0.000000000000000 0.000000000000000 1.000000000000000 0.000000000000000
+                        0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
+                    </matrix>
                 </transform>
                 <assign_material slot="0" material="floor_material" />
             </object_instance>
             <object_instance name="light tracing.light_inst" object="light tracing.light">
                 <transform>
                     <matrix>
-                        1.000000000000000 0.000000000000000 0.000000000000000 0.000000000000000
+                        2.000000000000000 0.000000000000000 0.000000000000000 0.000000000000000
                         0.000000000000000 1.000000000000000 0.000000000000000 0.000000000000000
-                        0.000000000000000 0.000000000000000 1.000000000000000 0.000000000000000
+                        0.000000000000000 0.000000000000000 2.000000000000000 0.000000000000000
                         0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
                     </matrix>
                 </transform>
