@@ -64,7 +64,7 @@ TEST_SUITE(Foundation_Math_Frustum_Pyramid3)
         EXPECT_EQ(OriginalB, b);
     }
 
-    TEST_CASE(Clip_GivenSegmentFullyInsideNegativeHalfSpace_ReturnsTrueAndLeavesSegmentUnchanged)
+    TEST_CASE(Clip_GivenSegmentFullyInsideNegativeHalfSpaceTowardPlane_ReturnsTrueAndLeavesSegmentUnchanged)
     {
         const Vector3d N(1.0, 0.0, 0.0);
         const Vector3d OriginalA(-2.0, 0.0, 0.0);
@@ -78,7 +78,35 @@ TEST_SUITE(Foundation_Math_Frustum_Pyramid3)
         EXPECT_EQ(OriginalB, b);
     }
 
-    TEST_CASE(Clip_GivenSegmentFullyInsidePositiveHalfSpace_ReturnsFalseAndLeavesSegmentUnchanged)
+    TEST_CASE(Clip_GivenSegmentFullyInsideNegativeHalfSpaceAwayFromPlane_ReturnsTrueAndLeavesSegmentUnchanged)
+    {
+        const Vector3d N(1.0, 0.0, 0.0);
+        const Vector3d OriginalA(-1.0, 0.0, 0.0);
+        const Vector3d OriginalB(-2.0, 0.0, 0.0);
+
+        Vector3d a = OriginalA, b = OriginalB;
+        const bool inside = Pyramid3d::clip(N, a, b);
+
+        EXPECT_TRUE(inside);
+        EXPECT_EQ(OriginalA, a);
+        EXPECT_EQ(OriginalB, b);
+    }
+
+    TEST_CASE(Clip_GivenSegmentFullyInsidePositiveHalfSpaceTowardPlane_ReturnsFalseAndLeavesSegmentUnchanged)
+    {
+        const Vector3d N(1.0, 0.0, 0.0);
+        const Vector3d OriginalA(2.0, 0.0, 0.0);
+        const Vector3d OriginalB(1.0, 0.0, 0.0);
+
+        Vector3d a = OriginalA, b = OriginalB;
+        const bool inside = Pyramid3d::clip(N, a, b);
+
+        EXPECT_FALSE(inside);
+        EXPECT_EQ(OriginalA, a);
+        EXPECT_EQ(OriginalB, b);
+    }
+
+    TEST_CASE(Clip_GivenSegmentFullyInsidePositiveHalfSpaceAwayFromPlane_ReturnsFalseAndLeavesSegmentUnchanged)
     {
         const Vector3d N(1.0, 0.0, 0.0);
         const Vector3d OriginalA(1.0, 0.0, 0.0);

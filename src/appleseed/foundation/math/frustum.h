@@ -136,24 +136,24 @@ inline bool Pyramid3<T>::clip(
 {
     assert(is_normalized(n));
 
-    const VectorType u = b - a;
-    const ValueType dot_un = dot(u, n);
     const ValueType dot_an = dot(a, n);
+    const ValueType dot_bn = dot(b, n);
 
-    if (dot_un == ValueType(0.0))
-        return dot_an <= ValueType(0.0);
-
-    const ValueType t = -dot_an / dot_un;
-
-    if (t < ValueType(0.0))
+    if (dot_an > ValueType(0.0) && dot_bn > ValueType(0.0))
         return false;
 
-    if (t > ValueType(1.0))
+    if (dot_an <= ValueType(0.0) && dot_bn <= ValueType(0.0))
         return true;
 
-    if (dot_an < ValueType(0.0))
-        b = a + t * u;
-    else a += t * u;
+    if (dot_an == dot_bn)
+        return dot_an <= ValueType(0.0);
+
+    const ValueType t = dot_an / (dot_an - dot_bn);
+    const VectorType hit = a + t * (b - a);
+
+    if (dot_an > ValueType(0.0))
+        a = hit;
+    else b = hit;
 
     return true;
 }
