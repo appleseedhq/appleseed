@@ -233,6 +233,7 @@ set(foundation_math_sources
     foundation/math/fastmath.h
     foundation/math/fp.h
     foundation/math/fresnel.h
+    foundation/math/frustum.h
     foundation/math/hash.h
     foundation/math/intersection.h
     foundation/math/knn.h
@@ -359,6 +360,7 @@ set(foundation_meta_tests_sources
     foundation/meta/tests/test_filter.cpp
     foundation/meta/tests/test_fp.cpp
     foundation/meta/tests/test_fresnel.cpp
+    foundation/meta/tests/test_frustum.cpp
     foundation/meta/tests/test_image.cpp
     foundation/meta/tests/test_implptr.cpp
     foundation/meta/tests/test_intersection.cpp
