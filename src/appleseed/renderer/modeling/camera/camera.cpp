@@ -51,6 +51,7 @@ struct Camera::Impl
 {
     Vector2d    m_film_dimensions;      // film dimensions, in meters
     double      m_focal_length;         // focal length, in meters
+    Pyramid3d   m_view_pyramid;
 };
 
 Camera::Camera(const ParamArray& params)
@@ -59,6 +60,8 @@ Camera::Camera(const ParamArray& params)
 {
     impl->m_film_dimensions = extract_film_dimensions();
     impl->m_focal_length = extract_focal_length(impl->m_film_dimensions[0]);
+
+    compute_view_pyramid();
 }
 
 const Vector2d& Camera::get_film_dimensions() const
@@ -69,6 +72,11 @@ const Vector2d& Camera::get_film_dimensions() const
 double Camera::get_focal_length() const
 {
     return impl->m_focal_length;
+}
+
+const Pyramid3d& Camera::get_view_pyramid() const
+{
+    return impl->m_view_pyramid;
 }
 
 void Camera::on_frame_begin(
@@ -266,6 +274,30 @@ double Camera::get_greater_than_zero(
     }
 
     return value;
+}
+
+void Camera::compute_view_pyramid()
+{
+    const double focal_length = impl->m_focal_length;
+    const double half_fw = impl->m_film_dimensions[0] / 2.0;
+    const double half_fh = impl->m_film_dimensions[1] / 2.0;
+    Pyramid3d& pyramid = impl->m_view_pyramid;
+
+    pyramid.set_plane(
+        Pyramid3d::TopPlane,
+        normalize(Vector3d(0.0, focal_length, half_fh)));
+
+    pyramid.set_plane(
+        Pyramid3d::BottomPlane,
+        normalize(Vector3d(0.0, -focal_length, half_fh)));
+
+    pyramid.set_plane(
+        Pyramid3d::LeftPlane,
+        normalize(Vector3d(-focal_length, 0.0, half_fw)));
+
+    pyramid.set_plane(
+        Pyramid3d::RightPlane,
+        normalize(Vector3d(focal_length, 0.0, half_fw)));
 }
 
 }   // namespace renderer

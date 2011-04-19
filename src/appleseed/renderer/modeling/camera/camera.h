@@ -35,6 +35,7 @@
 #include "renderer/modeling/entity/entity.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/frustum.h"
 #include "foundation/math/transform.h"
 #include "foundation/utility/implptr.h"
 
@@ -70,6 +71,9 @@ class RENDERERDLL Camera
 
     // Get the focal length (in meters).
     double get_focal_length() const;
+
+    // Get the view pyramid of the camera.
+    const foundation::Pyramid3d& get_view_pyramid() const;
 
     // This method is called once before rendering each frame.
     virtual void on_frame_begin(
@@ -122,6 +126,8 @@ class RENDERERDLL Camera
     double get_greater_than_zero(
         const char*                 name,
         const double                default_value) const;
+
+    void compute_view_pyramid();
 };
 
 }       // namespace renderer

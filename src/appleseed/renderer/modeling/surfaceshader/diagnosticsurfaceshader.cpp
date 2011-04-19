@@ -42,6 +42,7 @@
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
 #include "foundation/math/distance.h"
+#include "foundation/math/frustum.h"
 #include "foundation/math/hash.h"
 #include "foundation/math/minmax.h"
 #include "foundation/math/scalar.h"
@@ -293,56 +294,57 @@ void DiagnosticSurfaceShader::evaluate(
       // Wireframe.
       case Wireframe:
         {
-            // Retrieve the camera.
-            const Scene& scene = shading_point.get_scene();
-            const Camera& camera = *scene.get_camera();
-            
-            // Retrieve the camera transformation.
-            const Transformd& camera_transform = camera.get_transform();
-
-            // Retrieve world space triangle vertices.
-            const Vector3d& v0 = shading_point.get_vertex(0);
-            const Vector3d& v1 = shading_point.get_vertex(1);
-            const Vector3d& v2 = shading_point.get_vertex(2);
-
-            // Transform triangle vertices to camera space.
-            const Vector3d v0_cs = camera_transform.transform_point_to_local(v0);
-            const Vector3d v1_cs = camera_transform.transform_point_to_local(v1);
-            const Vector3d v2_cs = camera_transform.transform_point_to_local(v2);
-
-            // Project triangle vertices to film space.
-            const Vector2d v0_fs = camera.project(v0_cs);
-            const Vector2d v1_fs = camera.project(v1_cs);
-            const Vector2d v2_fs = camera.project(v2_cs);
-
-            // Retrieve world space intersection point.
-            const Vector3d& point = shading_point.get_point();
-
-            // Transform intersection point to camera space.
-            const Vector3d point_cs = camera_transform.transform_point_to_local(point);
-
-            // Project intersection point to film space.
-            const Vector2d point_fs = camera.project(point_cs);
-
-            // Compute film space distance from intersection point to triangle edges.
-            const double d0 = square_distance_point_segment(point_fs, v0_fs, v1_fs);
-            const double d1 = square_distance_point_segment(point_fs, v1_fs, v2_fs);
-            const double d2 = square_distance_point_segment(point_fs, v2_fs, v0_fs);
-
             // Film space thickness of the wires.
             const double SquareWireThickness = square(0.0005);
 
-            if (min(d0, d1, d2) < SquareWireThickness)
+            // Initialize the shading result to the background color.
+            shading_result.m_color[0] = 0.0f;
+            shading_result.m_color[1] = 0.0f;
+            shading_result.m_color[2] = 0.8f;
+
+            // Retrieve the camera.
+            const Scene& scene = shading_point.get_scene();
+            const Camera& camera = *scene.get_camera();
+            const Transformd& camera_transform = camera.get_transform();
+            const Pyramid3d& view_pyramid = camera.get_view_pyramid();
+
+            // Compute the film space coordinates of the intersection point.
+            const Vector3d& point = shading_point.get_point();
+            const Vector3d point_cs = camera_transform.transform_point_to_local(point);
+            const Vector2d point_fs = camera.project(point_cs);
+
+            // Compute the camera space coordinates of the triangle vertices.
+            Vector3d v_cs[3];
+            v_cs[0] = camera_transform.transform_point_to_local(shading_point.get_vertex(0));
+            v_cs[1] = camera_transform.transform_point_to_local(shading_point.get_vertex(1));
+            v_cs[2] = camera_transform.transform_point_to_local(shading_point.get_vertex(2));
+
+            // Loop over the triangle edges.
+            for (size_t i = 0; i < 3; ++i)
             {
-                shading_result.m_color[0] = 1.0f;
-                shading_result.m_color[1] = 1.0f;
-                shading_result.m_color[2] = 1.0f;
-            }
-            else
-            {
-                shading_result.m_color[0] = 0.0f;
-                shading_result.m_color[1] = 0.0f;
-                shading_result.m_color[2] = 0.8f;
+                // Compute the end points of this edge.
+                const size_t j = (i + 1) % 3;
+                Vector3d vi_cs = v_cs[i];
+                Vector3d vj_cs = v_cs[j];
+
+                // Clip the edge against the view pyramid.
+                if (!view_pyramid.clip(vi_cs, vj_cs))
+                    continue;
+
+                // Transform the edge to film space.
+                const Vector2d vi_fs = camera.project(vi_cs);
+                const Vector2d vj_fs = camera.project(vj_cs);
+
+                // Compute the film space distance from the intersection point to the edge.
+                const double d = square_distance_point_segment(point_fs, vi_fs, vj_fs);
+
+                if (d < SquareWireThickness)
+                {
+                    shading_result.m_color[0] = 1.0f;
+                    shading_result.m_color[1] = 1.0f;
+                    shading_result.m_color[2] = 1.0f;
+                    break;
+                }
             }
         }
         break;
