@@ -88,21 +88,15 @@ namespace
             const ShadingPoint&     shading_point,
             ShadingResult&          shading_result) const
         {
-            // Evaluate the inputs.
             InputValues values;
             m_inputs.evaluate(
                 shading_context.get_texture_cache(),
                 shading_point.get_input_params(),
                 &values);
 
-            // Set color space to spectral.
             shading_result.m_color_space = ColorSpaceSpectral;
-
-            // Set color channel.
             shading_result.m_color = values.m_color;
-
-            // Set alpha channel to full opacity.
-            shading_result.m_alpha = Alpha(1.0);
+            shading_result.m_alpha = values.m_alpha;
         }
 
         virtual void evaluate_alpha_mask(
@@ -111,14 +105,12 @@ namespace
             const ShadingPoint&     shading_point,
             Alpha&                  alpha) const
         {
-            // Evaluate the inputs.
             InputValues values;
             m_inputs.evaluate(
                 texture_cache,
                 shading_point.get_input_params(),
                 &values);
 
-            // Set alpha channel.
             alpha = values.m_alpha;
         }
 
