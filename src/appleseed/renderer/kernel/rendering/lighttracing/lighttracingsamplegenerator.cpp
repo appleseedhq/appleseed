@@ -104,6 +104,19 @@ namespace
         {
         }
 
+        ~LightTracingSampleGenerator()
+        {
+            RENDERER_LOG_DEBUG(
+                "light tracing statistics:\n"
+                "  paths            %s\n"
+                "  path length      avg %.1f  min %s  max %s  dev %.1f\n",
+                pretty_uint(m_stats.m_path_count).c_str(),
+                m_stats.m_path_length.get_avg(),
+                pretty_uint(m_stats.m_path_length.get_min()).c_str(),
+                pretty_uint(m_stats.m_path_length.get_max()).c_str(),
+                m_stats.m_path_length.get_dev());
+        }
+
         virtual void release()
         {
             delete this;
@@ -145,7 +158,7 @@ namespace
 
         struct Statistics
         {
-            size_t              m_path_count;
+            uint64              m_path_count;
             Population<size_t>  m_path_length;
 
             Statistics()

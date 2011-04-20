@@ -156,7 +156,7 @@ namespace
 
         struct Statistics
         {
-            size_t              m_path_count;               // number of paths
+            uint64              m_path_count;               // number of paths
             Population<size_t>  m_ray_tree_depth;           // ray tree depth
 
             Statistics()
