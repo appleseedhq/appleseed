@@ -63,6 +63,9 @@ class RENDERERDLL ColorEntity
     // Return the color values.
     const ColorValueArray& get_values() const;
 
+    // Return the alpha values.
+    const ColorValueArray& get_alpha() const;
+
     // Return the color space of this color.
     foundation::ColorSpace get_color_space() const;
 
@@ -79,14 +82,22 @@ class RENDERERDLL ColorEntity
     struct Impl;
     Impl* impl;
 
-    // Constructor.
+    // Constructors.
     ColorEntity(
         const char*             name,
         const ParamArray&       params,
         const ColorValueArray&  values);
+    ColorEntity(
+        const char*             name,
+        const ParamArray&       params,
+        const ColorValueArray&  values,
+        const ColorValueArray&  alpha);
     
     // Destructor.
     ~ColorEntity();
+
+    void extract_parameters();
+    void check_validity();
 };
 
 
@@ -102,6 +113,11 @@ class RENDERERDLL ColorEntityFactory
         const char*             name,
         const ParamArray&       params,
         const ColorValueArray&  values);
+    static foundation::auto_release_ptr<ColorEntity> create(
+        const char*             name,
+        const ParamArray&       params,
+        const ColorValueArray&  values,
+        const ColorValueArray&  alpha);
 };
 
 }       // namespace renderer

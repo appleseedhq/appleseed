@@ -334,6 +334,7 @@ namespace
 
     enum ProjectElementID
     {
+        ElementAlpha,
         ElementAssembly,
         ElementAssemblyInstance,
         ElementAssignMaterial,
@@ -937,7 +938,7 @@ namespace
 
 
     //
-    // <color> element handler.
+    // <color> and <alpha> elements handler.
     //
 
     class ColorElementHandler
@@ -956,6 +957,35 @@ namespace
             ParametrizedElementHandler::start_element(attrs);
             m_color_entity.reset();
             m_name = get_value(attrs, "name");
+            m_values.clear();
+            m_alpha.clear();
+        }
+
+        // Receive notification of the end of an element.
+        virtual void end_element()
+        {
+            try
+            {
+                m_color_entity =
+                    m_alpha.empty()
+                        ? ColorEntityFactory::create(
+                            m_name.c_str(),
+                            m_params,
+                            m_values)
+                        : ColorEntityFactory::create(
+                            m_name.c_str(),
+                            m_params,
+                            m_values,
+                            m_alpha);
+            }
+            catch (const ExceptionDictionaryItemNotFound& e)
+            {
+                RENDERER_LOG_ERROR(
+                    "while defining color \"%s\": required parameter \"%s\" missing",
+                    m_name.c_str(),
+                    e.string());
+                m_info.get_event_counters().signal_error();
+            }
         }
 
         // Receive notification of the end of a child element.
@@ -966,26 +996,11 @@ namespace
             switch (element)
             {
               case ElementValues:
-                {
-                    ValuesElementHandler* values_handler =
-                        static_cast<ValuesElementHandler*>(handler);
-                    try
-                    {
-                        m_color_entity =
-                            ColorEntityFactory::create(
-                                m_name.c_str(),
-                                m_params,
-                                values_handler->get_values());
-                    }
-                    catch (const ExceptionDictionaryItemNotFound& e)
-                    {
-                        RENDERER_LOG_ERROR(
-                            "while defining color \"%s\": required parameter \"%s\" missing",
-                            m_name.c_str(),
-                            e.string());
-                        m_info.get_event_counters().signal_error();
-                    }
-                }
+                m_values = static_cast<ValuesElementHandler*>(handler)->get_values();
+                break;
+
+              case ElementAlpha:
+                m_alpha = static_cast<ValuesElementHandler*>(handler)->get_values();
                 break;
 
               default:
@@ -1004,6 +1019,8 @@ namespace
         ElementInfo&                    m_info;
         auto_release_ptr<ColorEntity>   m_color_entity;
         string                          m_name;
+        ColorValueArray                 m_values;
+        ColorValueArray                 m_alpha;
     };
 
 
@@ -2816,6 +2833,7 @@ namespace
         ContentHandler(Project* project, ElementInfo& element_info)
           : m_element_info(element_info)
         {
+            register_factory_helper<ValuesElementHandler>("alpha", ElementAlpha);
             register_factory_helper<AssemblyElementHandler>("assembly", ElementAssembly);
             register_factory_helper<AssemblyInstanceElementHandler>("assembly_instance", ElementAssemblyInstance);
             register_factory_helper<AssignMaterialElementHandler>("assign_material", ElementAssignMaterial);

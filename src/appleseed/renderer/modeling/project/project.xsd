@@ -96,18 +96,7 @@
                                                         </xsd:complexContent>
                                                     </xsd:complexType>
                                                 </xsd:element>
-                                                <xsd:element name="color">
-                                                    <xsd:complexType>
-                                                        <xsd:complexContent>
-                                                            <xsd:extension base="parameterSet">
-                                                                <xsd:sequence>
-                                                                    <xsd:element name="values"/>
-                                                                </xsd:sequence>
-                                                                <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                                            </xsd:extension>
-                                                        </xsd:complexContent>
-                                                    </xsd:complexType>
-                                                </xsd:element>
+                                                <xsd:element ref="color"/>
                                                 <xsd:element name="edf">
                                                     <xsd:complexType>
                                                         <xsd:complexContent>
@@ -180,26 +169,8 @@
                                                         </xsd:complexContent>
                                                     </xsd:complexType>
                                                 </xsd:element>
-                                                <xsd:element name="texture">
-                                                    <xsd:complexType>
-                                                        <xsd:complexContent>
-                                                            <xsd:extension base="parameterSet">
-                                                                <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                                                <xsd:attribute name="model" type="xsd:string" use="required"/>
-                                                            </xsd:extension>
-                                                        </xsd:complexContent>
-                                                    </xsd:complexType>
-                                                </xsd:element>
-                                                <xsd:element name="texture_instance">
-                                                    <xsd:complexType>
-                                                        <xsd:complexContent>
-                                                            <xsd:extension base="parameterSet">
-                                                                <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                                                <xsd:attribute name="texture" type="xsd:string" use="required"/>
-                                                            </xsd:extension>
-                                                        </xsd:complexContent>
-                                                    </xsd:complexType>
-                                                </xsd:element>
+                                                <xsd:element ref="texture"/>
+                                                <xsd:element ref="texture_instance"/>
                                             </xsd:choice>
                                             <xsd:attribute name="name" type="xsd:string" use="required"/>
                                         </xsd:extension>
@@ -232,18 +203,7 @@
                                     </xsd:complexContent>
                                 </xsd:complexType>
                             </xsd:element>
-                            <xsd:element name="color">
-                                <xsd:complexType>
-                                    <xsd:complexContent>
-                                        <xsd:extension base="parameterSet">
-                                            <xsd:sequence>
-                                                <xsd:element name="values"/>
-                                            </xsd:sequence>
-                                            <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                        </xsd:extension>
-                                    </xsd:complexContent>
-                                </xsd:complexType>
-                            </xsd:element>
+                            <xsd:element ref="color"/>
                             <xsd:element name="environment">
                                 <xsd:complexType>
                                     <xsd:complexContent>
@@ -274,26 +234,8 @@
                                     </xsd:complexContent>
                                 </xsd:complexType>
                             </xsd:element>
-                            <xsd:element name="texture">
-                                <xsd:complexType>
-                                    <xsd:complexContent>
-                                        <xsd:extension base="parameterSet">
-                                            <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                            <xsd:attribute name="model" type="xsd:string" use="required"/>
-                                        </xsd:extension>
-                                    </xsd:complexContent>
-                                </xsd:complexType>
-                            </xsd:element>
-                            <xsd:element name="texture_instance">
-                                <xsd:complexType>
-                                    <xsd:complexContent>
-                                        <xsd:extension base="parameterSet">
-                                            <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                            <xsd:attribute name="texture" type="xsd:string" use="required"/>
-                                        </xsd:extension>
-                                    </xsd:complexContent>
-                                </xsd:complexType>
-                            </xsd:element>
+                            <xsd:element ref="texture"/>
+                            <xsd:element ref="texture_instance"/>
                         </xsd:choice>
                     </xsd:complexType>
                 </xsd:element>
@@ -330,6 +272,39 @@
                     </xsd:complexType>
                 </xsd:element>
             </xsd:all>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="color">
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="parameterSet">
+                    <xsd:sequence>
+                        <xsd:element name="values"/>
+                        <xsd:element name="alpha" minOccurs="0"/>
+                    </xsd:sequence>
+                    <xsd:attribute name="name" type="xsd:string" use="required"/>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="texture_instance">
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="parameterSet">
+                    <xsd:attribute name="name" type="xsd:string" use="required"/>
+                    <xsd:attribute name="texture" type="xsd:string" use="required"/>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="texture">
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="parameterSet">
+                    <xsd:attribute name="name" type="xsd:string" use="required"/>
+                    <xsd:attribute name="model" type="xsd:string" use="required"/>
+                </xsd:extension>
+            </xsd:complexContent>
         </xsd:complexType>
     </xsd:element>
 </xsd:schema>

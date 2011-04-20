@@ -68,6 +68,7 @@ class ColorSource
 
     double                                  m_scalar;
     Spectrum                                m_spectrum;
+    Alpha                                   m_alpha;
 };
 
 
@@ -75,12 +76,12 @@ class ColorSource
 // ColorSource class implementation.
 //
 
-// Evaluate the source.
 inline void ColorSource::evaluate_uniform(
     double&                 scalar)
 {
     scalar = m_scalar;
 }
+
 inline void ColorSource::evaluate_uniform(
     foundation::Color3f&    linear_rgb,
     Alpha&                  alpha)
@@ -90,14 +91,15 @@ inline void ColorSource::evaluate_uniform(
             foundation::spectrum_to_ciexyz<float>(
                 m_lighting_conditions,
                 m_spectrum));
-    alpha.set(1.0f);
+    alpha = m_alpha;
 }
+
 inline void ColorSource::evaluate_uniform(
     Spectrum&               spectrum,
     Alpha&                  alpha)
 {
     spectrum = m_spectrum;
-    alpha.set(1.0f);
+    alpha = m_alpha;
 }
 
 }       // namespace renderer

@@ -103,17 +103,16 @@ namespace
     }
 }
 
-// Constructor.
 ColorSource::ColorSource(const ColorEntity& color_entity)
   : Source(true)
   , m_lighting_conditions(          // todo: this should be user-settable
         IlluminantCIED65,
         XYZCMFCIE196410Deg)
 {
+    // Retrieve the color values.
     const ColorSpace color_space = color_entity.get_color_space();
     const ColorValueArray& values = color_entity.get_values();
     const size_t value_count = values.size();
-
     if (color_space == ColorSpaceSpectral)
     {
         if (value_count > 0)
@@ -171,10 +170,14 @@ ColorSource::ColorSource(const ColorEntity& color_entity)
         }
     }
 
-    // Apply multiplier.
+    // Apply the multiplier to the color values.
     const float multiplier = color_entity.get_multiplier();
     m_scalar *= multiplier;
     m_spectrum *= multiplier;
+
+    // Store the alpha values.
+    const ColorValueArray& alpha = color_entity.get_alpha();
+    m_alpha[0] = alpha.size() == 1 ? alpha[0] : 0.0f;
 }
 
 }   // namespace renderer

@@ -52,6 +52,7 @@ DEFINE_ARRAY(ColorValueArray);
 struct ColorEntity::Impl
 {
     ColorValueArray     m_values;
+    ColorValueArray     m_alpha;
     ColorSpace          m_color_space;
     Vector2f            m_wavelength_range;
     float               m_multiplier;
@@ -84,7 +85,36 @@ ColorEntity::ColorEntity(
     set_name(name);
 
     impl->m_values = values;
+    impl->m_alpha.push_back(1.0f);
 
+    extract_parameters();
+    check_validity();
+}
+
+ColorEntity::ColorEntity(
+    const char*             name,
+    const ParamArray&       params,
+    const ColorValueArray&  values,
+    const ColorValueArray&  alpha)
+  : Entity(g_class_uid, params)
+  , impl(new Impl())
+{
+    set_name(name);
+
+    impl->m_values = values;
+    impl->m_alpha = alpha;
+
+    extract_parameters();
+    check_validity();
+}
+
+ColorEntity::~ColorEntity()
+{
+    delete impl;
+}
+
+void ColorEntity::extract_parameters()
+{
     // Retrieve the color space.
     const string color_space = m_params.get_required<string>("color_space", "linear_rgb");
     if (color_space == "linear_rgb")
@@ -137,30 +167,28 @@ ColorEntity::ColorEntity(
 
     // Retrieve multiplier.
     impl->m_multiplier = m_params.get_optional<float>("multiplier", 1.0f);
+}
 
+void ColorEntity::check_validity()
+{
     // Check the number of color values.
     if (impl->m_color_space == ColorSpaceSpectral)
     {
-        if (values.empty())
+        if (impl->m_values.empty())
         {
             RENDERER_LOG_ERROR("1 or more values required for \"spectral\" color space, got 0");
         }
     }
     else
     {
-        if (values.size() != 1 && values.size() != 3)
+        if (impl->m_values.size() != 1 && impl->m_values.size() != 3)
         {
             RENDERER_LOG_ERROR(
                 "1 or 3 values required for \"%s\" color space, got " FMT_SIZE_T,
                 color_space_name(impl->m_color_space),
-                values.size());
+                impl->m_values.size());
         }
     }
-}
-
-ColorEntity::~ColorEntity()
-{
-    delete impl;
 }
 
 void ColorEntity::release()
@@ -171,6 +199,11 @@ void ColorEntity::release()
 const ColorValueArray& ColorEntity::get_values() const
 {
     return impl->m_values;
+}
+
+const ColorValueArray& ColorEntity::get_alpha() const
+{
+    return impl->m_alpha;
 }
 
 ColorSpace ColorEntity::get_color_space() const
@@ -202,6 +235,17 @@ auto_release_ptr<ColorEntity> ColorEntityFactory::create(
     return
         auto_release_ptr<ColorEntity>(
             new ColorEntity(name, params, values));
+}
+
+auto_release_ptr<ColorEntity> ColorEntityFactory::create(
+    const char*             name,
+    const ParamArray&       params,
+    const ColorValueArray&  values,
+    const ColorValueArray&  alpha)
+{
+    return
+        auto_release_ptr<ColorEntity>(
+            new ColorEntity(name, params, values, alpha));
 }
 
 }   // namespace renderer
