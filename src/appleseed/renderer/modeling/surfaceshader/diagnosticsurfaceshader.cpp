@@ -167,6 +167,7 @@ void DiagnosticSurfaceShader::evaluate(
         shading_result.m_color[0] = 1.0f;
         shading_result.m_color[1] = 1.0f;
         shading_result.m_color[2] = 1.0f;
+        shading_result.m_alpha = Alpha(1.0);
         break;
 
       // Shade according to barycentric coordinates.
@@ -177,6 +178,7 @@ void DiagnosticSurfaceShader::evaluate(
             shading_result.m_color[0] = static_cast<float>(w);
             shading_result.m_color[1] = static_cast<float>(bary[0]);
             shading_result.m_color[2] = static_cast<float>(bary[1]);
+            shading_result.m_alpha = Alpha(1.0);
         }
         break;
 
@@ -188,6 +190,7 @@ void DiagnosticSurfaceShader::evaluate(
             shading_result.m_color[0] = static_cast<float>(w);
             shading_result.m_color[1] = static_cast<float>(uv0[0]);
             shading_result.m_color[2] = static_cast<float>(uv0[1]);
+            shading_result.m_alpha = Alpha(1.0);
         }
         break;
 
@@ -196,6 +199,7 @@ void DiagnosticSurfaceShader::evaluate(
         normal_to_color(
             shading_point.get_geometric_normal(),
             shading_result.m_color);
+        shading_result.m_alpha = Alpha(1.0);
         break;
 
       // Shade according to the shading normal.
@@ -203,6 +207,7 @@ void DiagnosticSurfaceShader::evaluate(
         normal_to_color(
             shading_point.get_shading_normal(),
             shading_result.m_color);
+        shading_result.m_alpha = Alpha(1.0);
         break;
 
       // Assign an unique color to each assembly instance.
@@ -210,6 +215,7 @@ void DiagnosticSurfaceShader::evaluate(
         integer_to_color(
             shading_point.get_assembly_instance_uid(),
             shading_result.m_color);
+        shading_result.m_alpha = Alpha(1.0);
         break;
 
       // Assign an unique color to each object instance.
@@ -219,6 +225,7 @@ void DiagnosticSurfaceShader::evaluate(
                 static_cast<uint32>(shading_point.get_assembly_instance_uid()),
                 static_cast<uint32>(shading_point.get_object_instance_index()));
             integer_to_color(h, shading_result.m_color);
+            shading_result.m_alpha = Alpha(1.0);
         }
         break;
 
@@ -230,6 +237,7 @@ void DiagnosticSurfaceShader::evaluate(
                 static_cast<uint32>(shading_point.get_object_instance_index()),
                 static_cast<uint32>(shading_point.get_region_index()));
             integer_to_color(h, shading_result.m_color);
+            shading_result.m_alpha = Alpha(1.0);
         }
         break;
 
@@ -242,6 +250,7 @@ void DiagnosticSurfaceShader::evaluate(
                 static_cast<uint32>(shading_point.get_region_index()),
                 static_cast<uint32>(shading_point.get_triangle_index()));
             integer_to_color(h, shading_result.m_color);
+            shading_result.m_alpha = Alpha(1.0);
         }
         break;
 
@@ -265,6 +274,7 @@ void DiagnosticSurfaceShader::evaluate(
                 shading_result.m_color[1] = 0.0f;
                 shading_result.m_color[2] = 1.0f;
             }
+            shading_result.m_alpha = Alpha(1.0);
         }
         break;
 
@@ -288,6 +298,7 @@ void DiagnosticSurfaceShader::evaluate(
             shading_result.m_color[0] = accessibility;
             shading_result.m_color[1] = accessibility;
             shading_result.m_color[2] = accessibility;
+            shading_result.m_alpha = Alpha(1.0);
         }
         break;
 
@@ -301,6 +312,7 @@ void DiagnosticSurfaceShader::evaluate(
             shading_result.m_color[0] = 0.0f;
             shading_result.m_color[1] = 0.0f;
             shading_result.m_color[2] = 0.8f;
+            shading_result.m_alpha = Alpha(0.5);
 
             // Retrieve the camera.
             const Scene& scene = shading_point.get_scene();
@@ -343,6 +355,7 @@ void DiagnosticSurfaceShader::evaluate(
                     shading_result.m_color[0] = 1.0f;
                     shading_result.m_color[1] = 1.0f;
                     shading_result.m_color[2] = 1.0f;
+                    shading_result.m_alpha = Alpha(1.0);
                     break;
                 }
             }
@@ -355,11 +368,9 @@ void DiagnosticSurfaceShader::evaluate(
         shading_result.m_color[0] = 1.0f;
         shading_result.m_color[1] = 0.0f;
         shading_result.m_color[2] = 1.0f;
+        shading_result.m_alpha = Alpha(1.0);
         break;
     }
-
-    // Set alpha channel to full opacity.
-    shading_result.m_alpha = Alpha(1.0);
 }
 
 void DiagnosticSurfaceShader::extract_parameters()
