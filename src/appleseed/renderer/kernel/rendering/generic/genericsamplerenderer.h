@@ -34,6 +34,7 @@
 #include "renderer/kernel/rendering/isamplerenderer.h"
 
 // Forward declarations.
+namespace renderer  { class Frame; }
 namespace renderer  { class ILightingEngineFactory; }
 namespace renderer  { class Scene; }
 namespace renderer  { class ShadingEngine; }
@@ -53,6 +54,7 @@ class RENDERERDLL GenericSampleRendererFactory
     // Constructor.
     GenericSampleRendererFactory(
         const Scene&            scene,
+        const Frame&            frame,
         const TraceContext&     trace_context,
         ILightingEngineFactory* lighting_engine_factory,
         ShadingEngine&          shading_engine,
@@ -67,6 +69,7 @@ class RENDERERDLL GenericSampleRendererFactory
     // Return a new generic sample renderer instance.
     static ISampleRenderer* create(
         const Scene&            scene,
+        const Frame&            frame,
         const TraceContext&     trace_context,
         ILightingEngineFactory* lighting_engine_factory,
         ShadingEngine&          shading_engine,
@@ -74,6 +77,7 @@ class RENDERERDLL GenericSampleRendererFactory
 
   private:
     const Scene&                m_scene;
+    const Frame&                m_frame;
     const TraceContext&         m_trace_context;
     ILightingEngineFactory*     m_lighting_engine_factory;
     ShadingEngine&              m_shading_engine;

@@ -209,6 +209,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         sample_renderer_factory.reset(
             new GenericSampleRendererFactory(
                 scene,
+                frame,
                 m_project.get_trace_context(),
                 lighting_engine_factory.get(),
                 shading_engine,
