@@ -494,16 +494,16 @@ void MainWindow::add_render_widget(
     RenderWidget* render_widget = new RenderWidget(width, height);
 
     // Encapsulate the render widget into another widget that adds a margin around it.
-    QWidget* render_widget_container = new QWidget();
-    render_widget_container->setLayout(new QGridLayout());
-    render_widget_container->layout()->setSizeConstraint(QLayout::SetFixedSize);
-    render_widget_container->layout()->setMargin(20);
-    render_widget_container->layout()->addWidget(render_widget);
+    QWidget* render_widget_wrapper = new QWidget();
+    render_widget_wrapper->setLayout(new QGridLayout());
+    render_widget_wrapper->layout()->setSizeConstraint(QLayout::SetFixedSize);
+    render_widget_wrapper->layout()->setContentsMargins(20, 20, 20, 20);
+    render_widget_wrapper->layout()->addWidget(render_widget);
 
     // Wrap the render widget with a scroll area.
     QScrollArea* scroll_area = new QScrollArea();
     scroll_area->setAlignment(Qt::AlignCenter);
-    scroll_area->setWidget(render_widget_container);
+    scroll_area->setWidget(render_widget_wrapper);
 
     // Associate a zoom handler to the scroll area / render widget.
     m_render_widgets[label.toStdString()] =

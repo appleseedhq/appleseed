@@ -51,7 +51,7 @@ class WidgetZoomHandler
   public:
     WidgetZoomHandler(
         QScrollArea*    scroll_area,
-        QWidget*        widget,
+        QWidget*        content_widget,
         const int       content_width,
         const int       content_height);
 
@@ -59,7 +59,7 @@ class WidgetZoomHandler
 
   private:
     QScrollArea*        m_scroll_area;
-    QWidget*            m_widget;
+    QWidget*            m_content_widget;
     const int           m_content_width;
     const int           m_content_height;
     double              m_min_scale_factor;
@@ -77,9 +77,7 @@ class WidgetZoomHandler
 
     void compute_min_max_scale_factors();
     void multiply_scale_factor(const double multiplier);
-    void apply_scale_factor(const double multiplier);
-    void set_widget_size() const;
-    void adjust_scrollbar(QScrollBar* scrollbar, const double multiplier) const;
+    void apply_scale_factor();
 };
 
 }       // namespace studio

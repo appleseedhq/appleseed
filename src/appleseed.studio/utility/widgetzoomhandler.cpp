@@ -35,6 +35,7 @@
 // Qt headers.
 #include <QEvent>
 #include <QKeyEvent>
+#include <QLayout>
 #include <QScrollArea>
 #include <QScrollBar>
 #include <QWidget>
@@ -51,7 +52,7 @@ namespace studio {
 
 namespace
 {
-    const double ScaleFactorMultiplier = 1.2;
+    const double ScaleFactorMultiplier = 1.25;
 
     const double MinWidgetSize = 1.0;           // in pixels
     const double MaxWidgetSize = 65536.0;       // in pixels
@@ -62,11 +63,11 @@ namespace
 
 WidgetZoomHandler::WidgetZoomHandler(
     QScrollArea*    scroll_area,
-    QWidget*        widget,
+    QWidget*        content_widget,
     const int       content_width,
     const int       content_height)
   : m_scroll_area(scroll_area)
-  , m_widget(widget)
+  , m_content_widget(content_widget)
   , m_content_width(content_width)
   , m_content_height(content_height)
   , m_scale_factor(1.0)
@@ -157,11 +158,8 @@ void WidgetZoomHandler::zoom_out()
 
 void WidgetZoomHandler::reset_zoom()
 {
-    const double rcp_scale_factor = 1.0 / m_scale_factor;
-
     m_scale_factor = 1.0;
-
-    apply_scale_factor(rcp_scale_factor);
+    apply_scale_factor();
 }
 
 void WidgetZoomHandler::compute_min_max_scale_factors()
@@ -183,41 +181,52 @@ void WidgetZoomHandler::compute_min_max_scale_factors()
 
 void WidgetZoomHandler::multiply_scale_factor(const double multiplier)
 {
-    const double old_scale_factor = m_scale_factor;
+    m_scale_factor =
+        clamp(
+            m_scale_factor * multiplier,
+            m_min_scale_factor,
+            m_max_scale_factor);
 
-    m_scale_factor *= multiplier;
-    m_scale_factor = clamp(m_scale_factor, m_min_scale_factor, m_max_scale_factor);
-
-    const double applied_scale_factor = m_scale_factor / old_scale_factor;
-
-    apply_scale_factor(applied_scale_factor);
+    apply_scale_factor();
 }
 
-void WidgetZoomHandler::apply_scale_factor(const double multiplier)
+namespace
 {
-    set_widget_size();
-    adjust_scrollbar(m_scroll_area->horizontalScrollBar(), multiplier);
-    adjust_scrollbar(m_scroll_area->verticalScrollBar(), multiplier);
+    double get_slider_center(const QScrollBar* scrollbar)
+    {
+        return scrollbar->value() + static_cast<double>(scrollbar->pageStep()) / 2;
+    }
+
+    void set_slider_center(QScrollBar* scrollbar, const double center)
+    {
+        scrollbar->setValue(static_cast<int>(center - static_cast<double>(scrollbar->pageStep()) / 2));
+    }
 }
 
-void WidgetZoomHandler::set_widget_size() const
+void WidgetZoomHandler::apply_scale_factor()
 {
-    const int width = truncate<int>(m_content_width * m_scale_factor);
-    const int height = truncate<int>(m_content_height * m_scale_factor);
+    const double h_slider_center = get_slider_center(m_scroll_area->horizontalScrollBar());
+    const double v_slider_center = get_slider_center(m_scroll_area->verticalScrollBar());
 
-    m_widget->setFixedSize(width, height);
-}
+    const int old_widget_width = m_scroll_area->widget()->width();
+    const int old_widget_height = m_scroll_area->widget()->height();
 
-void WidgetZoomHandler::adjust_scrollbar(QScrollBar* scrollbar, const double multiplier) const
-{
-    const double slider_start = scrollbar->value();
-    const double slider_length = scrollbar->pageStep();
-    const double slider_center = slider_start + slider_length / 2;
+    m_content_widget->setFixedSize(
+        static_cast<int>(m_content_width * m_scale_factor),
+        static_cast<int>(m_content_height * m_scale_factor));
 
-    const double new_slider_center = multiplier * slider_center;
-    const double new_slider_start = new_slider_center - slider_length / 2;
+    // Make sure the size of the scrollarea widget is up-to-date.
+    if (m_scroll_area->widget()->layout())
+        m_scroll_area->widget()->layout()->activate();
 
-    scrollbar->setValue(static_cast<int>(new_slider_start));
+    const int new_widget_width = m_scroll_area->widget()->width();
+    const int new_widget_height = m_scroll_area->widget()->height();
+
+    const double actual_h_multiplier = static_cast<double>(m_scroll_area->widget()->width()) / old_widget_width;
+    const double actual_v_multiplier = static_cast<double>(m_scroll_area->widget()->height()) / old_widget_height;
+
+    set_slider_center(m_scroll_area->horizontalScrollBar(), actual_h_multiplier * h_slider_center);
+    set_slider_center(m_scroll_area->verticalScrollBar(), actual_v_multiplier * v_slider_center);
 }
 
 }   // namespace studio
