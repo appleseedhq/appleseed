@@ -380,8 +380,6 @@ TEST_SUITE(Foundation_Math_MatrixNN)
 
         typedef Matrix<double, 3, 3> Mat33;
 
-        // Note: Visual C++ 8.0 generates incorrect code if the epsilon parameter is omitted.
-//      EXPECT_FEQ(Matrix3d(Expected), inverse(Matrix3d(Values)), default_eps<T>());
         EXPECT_FEQ(Matrix3d(Expected), inverse(Matrix3d(Values)));
     }
 
@@ -394,14 +392,10 @@ TEST_SUITE(Foundation_Math_MatrixNN)
             7.0, 8.0, 9.0
         };
 
-        EXPECT_EXCEPTION(
-            ExceptionSingularMatrix,
-            {
-                // Note: Visual C++ 8.0 generates incorrect code if the epsilon parameter is omitted.
-//              inverse(Matrix<double, 3, 3>(Values), default_eps<T>());
-                inverse(Matrix<double, 3, 3>(Values));
-            }
-        );
+        EXPECT_EXCEPTION(ExceptionSingularMatrix,
+        {
+            inverse(Matrix<double, 3, 3>(Values));
+        });
     }
 }
 

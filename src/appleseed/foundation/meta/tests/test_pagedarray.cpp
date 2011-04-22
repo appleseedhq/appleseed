@@ -95,12 +95,10 @@ TEST_SUITE(Foundation_Utility_Containers_PagedArray)
 
     TEST_CASE_WITH_FIXTURE(TestExceptionCheckedAccessOutOfBounds, FixturePagedArrayWithThreeElements)
     {
-        EXPECT_EXCEPTION(
-            PagedArrayType::ExceptionOutOfRange,
-            {
-                array.at(3);
-            }
-        );
+        EXPECT_EXCEPTION(PagedArrayType::ExceptionOutOfRange,
+        {
+            array.at(3);
+        });
     }
 
     TEST_CASE_WITH_FIXTURE(TestResizeToSameSize, FixturePagedArrayWithThreeElements)

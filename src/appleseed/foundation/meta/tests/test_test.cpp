@@ -358,21 +358,17 @@ TEST_SUITE(Foundation_Utility_Test_Assertions)
 
     TEST_CASE(FoundationExpectExceptionSucceeds)
     {
-        EXPECT_EXCEPTION(
-            Exception,
-            {
-                throw Exception();
-            }
-        );
+        EXPECT_EXCEPTION(Exception,
+        {
+            throw Exception();
+        });
     }
 
     TEST_CASE(FoundationExpectExceptionFails)
     {
-        EXPECT_EXCEPTION(
-            Exception,
-            {
-            }
-        );
+        EXPECT_EXCEPTION(Exception,
+        {
+        });
     }
 
     TEST_CASE(TestThrowsUnexpectedException)

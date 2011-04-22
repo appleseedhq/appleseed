@@ -36,17 +36,15 @@ TEST_SUITE(Foundation_Utility_Otherwise)
 
     TEST_CASE(TestThrowOtherwiseMacro)
     {
-        EXPECT_EXCEPTION(
-            SwitchException,
+        EXPECT_EXCEPTION(SwitchException,
+        {
+            switch (1)
             {
-                switch (1)
-                {
-                  case 0:
-                    break;
+                case 0:
+                  break;
 
-                  throw_otherwise;
-                }
+                throw_otherwise;
             }
-        );
+        });
     }
 }
