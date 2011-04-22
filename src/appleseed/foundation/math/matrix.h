@@ -576,7 +576,7 @@ inline Matrix<T, M, K> operator*(
             res[res_index] = T(0.0);
             for (size_t i = 0; i < N; ++i)
             {
-                res[res_index] += lhs[r * K + i] * rhs[c + i * M];
+                res[res_index] += lhs[r * N + i] * rhs[i * K + c];
             }
             ++res_index;
         }
