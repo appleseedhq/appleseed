@@ -382,11 +382,11 @@ typedef Matrix<double, 4, 4> Matrix4d;
 // MxN matrix class implementation.
 //
 
-// Constructors.
 template <typename T, size_t M, size_t N>
 inline Matrix<T, M, N>::Matrix()
 {
 }
+
 template <typename T, size_t M, size_t N>
 inline Matrix<T, M, N>::Matrix(const ValueType* rhs)
 {
@@ -394,6 +394,7 @@ inline Matrix<T, M, N>::Matrix(const ValueType* rhs)
     for (size_t i = 0; i < Components; ++i)
         m_comp[i] = rhs[i];
 }
+
 template <typename T, size_t M, size_t N>
 inline Matrix<T, M, N>::Matrix(const ValueType val)
 {
@@ -401,7 +402,6 @@ inline Matrix<T, M, N>::Matrix(const ValueType val)
         m_comp[i] = val;
 }
 
-// Construct a matrix from another matrix of a different type.
 template <typename T, size_t M, size_t N>
 template <typename U>
 inline Matrix<T, M, N>::Matrix(const Matrix<U, M, N>& rhs)
@@ -410,13 +410,13 @@ inline Matrix<T, M, N>::Matrix(const Matrix<U, M, N>& rhs)
         m_comp[i] = static_cast<ValueType>(rhs[i]);
 }
 
-// Unchecked array subscripting.
 template <typename T, size_t M, size_t N>
 inline T& Matrix<T, M, N>::operator[](const size_t i)
 {
     assert(i < Components);
     return m_comp[i];
 }
+
 template <typename T, size_t M, size_t N>
 inline const T& Matrix<T, M, N>::operator[](const size_t i) const
 {
@@ -424,7 +424,6 @@ inline const T& Matrix<T, M, N>::operator[](const size_t i) const
     return m_comp[i];
 }
 
-// Unchecked Fortran-style subscripting (0-based).
 template <typename T, size_t M, size_t N>
 inline T& Matrix<T, M, N>::operator()(const size_t row, const size_t col)
 {
@@ -432,6 +431,7 @@ inline T& Matrix<T, M, N>::operator()(const size_t row, const size_t col)
     assert(col < Columns);
     return m_comp[row * Columns + col];
 }
+
 template <typename T, size_t M, size_t N>
 inline const T& Matrix<T, M, N>::operator()(const size_t row, const size_t col) const
 {
@@ -440,128 +440,161 @@ inline const T& Matrix<T, M, N>::operator()(const size_t row, const size_t col) 
     return m_comp[row * Columns + col];
 }
 
-// Exact inequality and equality tests.
 template <typename T, size_t M, size_t N>
 inline bool operator!=(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs)
 {
     for (size_t i = 0; i < lhs.Components; ++i)
+    {
         if (lhs[i] != rhs[i])
             return true;
+    }
+
     return false;
 }
+
 template <typename T, size_t M, size_t N>
 inline bool operator==(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs)
 {
     return !(lhs != rhs);
 }
 
-// Approximate equality tests.
 template <typename T, size_t M, size_t N>
 inline bool feq(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs)
 {
     for (size_t i = 0; i < lhs.Components; ++i)
+    {
         if (!feq(lhs[i], rhs[i]))
             return false;
+    }
+
     return true;
 }
+
 template <typename T, size_t M, size_t N>
 inline bool feq(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs, const T eps)
 {
     for (size_t i = 0; i < lhs.Components; ++i)
+    {
         if (!feq(lhs[i], rhs[i], eps))
             return false;
+    }
+
     return true;
 }
 
-// Approximate zero tests.
 template <typename T, size_t M, size_t N>
 inline bool fz(const Matrix<T, M, N>& v)
 {
     for (size_t i = 0; i < v.Components; ++i)
+    {
         if (!fz(v[i]))
             return false;
+    }
+
     return true;
 }
+
 template <typename T, size_t M, size_t N>
 inline bool fz(const Matrix<T, M, N>& v, const T eps)
 {
     for (size_t i = 0; i < v.Components; ++i)
+    {
         if (!fz(v[i], eps))
             return false;
+    }
+
     return true;
 }
 
-// Matrix arithmetic.
 template <typename T, size_t M, size_t N>
 inline Matrix<T, M, N> operator+(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs)
 {
     Matrix<T, M, N> mat;
+
     for (size_t i = 0; i < lhs.Components; ++i)
         mat[i] = lhs[i] + rhs[i];
+
     return mat;
 }
+
 template <typename T, size_t M, size_t N>
 inline Matrix<T, M, N> operator-(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs)
 {
     Matrix<T, M, N> mat;
+
     for (size_t i = 0; i < lhs.Components; ++i)
         mat[i] = lhs[i] - rhs[i];
+
     return mat;
 }
+
 template <typename T, size_t M, size_t N>
 inline Matrix<T, M, N> operator-(const Matrix<T, M, N>& lhs)
 {
     Matrix<T, M, N> mat;
+
     for (size_t i = 0; i < lhs.Components; ++i)
         mat[i] = -lhs[i];
+
     return mat;
 }
+
 template <typename T, size_t M, size_t N>
 inline Matrix<T, M, N> operator*(const Matrix<T, M, N>& lhs, const T rhs)
 {
     Matrix<T, M, N> mat;
+
     for (size_t i = 0; i < lhs.Components; ++i)
         mat[i] = lhs[i] * rhs;
+
     return mat;
 }
+
 template <typename T, size_t M, size_t N>
 inline Matrix<T, M, N> operator*(const T lhs, const Matrix<T, M, N>& rhs)
 {
     return rhs * lhs;
 }
+
 template <typename T, size_t M, size_t N>
 inline Matrix<T, M, N> operator/(const Matrix<T, M, N>& lhs, const T rhs)
 {
     return lhs * (T(1.0) / rhs);
 }
+
 template <typename T, size_t M, size_t N>
 inline Matrix<T, M, N>& operator+=(Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs)
 {
     for (size_t i = 0; i < lhs.Components; ++i)
         lhs[i] += rhs[i];
+
     return lhs;
 }
+
 template <typename T, size_t M, size_t N>
 inline Matrix<T, M, N>& operator-=(Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs)
 {
     for (size_t i = 0; i < lhs.Components; ++i)
         lhs[i] -= rhs[i];
+
     return lhs;
 }
+
 template <typename T, size_t M, size_t N>
 inline Matrix<T, M, N>& operator*=(Matrix<T, M, N>& lhs, const T rhs)
 {
     for (size_t i = 0; i < lhs.Components; ++i)
         lhs[i] *= rhs;
+
     return lhs;
 }
+
 template <typename T, size_t M, size_t N>
 inline Matrix<T, M, N>& operator/=(Matrix<T, M, N>& lhs, const T rhs)
 {
     return lhs *= (T(1.0) / rhs);
 }
 
-// Matrix-matrix multiplication (MxN * NxK = MxK).
 template <typename T, size_t M, size_t N, size_t K>
 inline Matrix<T, M, K> operator*(
     const Matrix<T, M, N>&  lhs,
@@ -569,22 +602,25 @@ inline Matrix<T, M, K> operator*(
 {
     Matrix<T, M, K> res;
     size_t res_index = 0;
+
     for (size_t r = 0; r < M; ++r)
     {
         for (size_t c = 0; c < K; ++c)
         {
             res[res_index] = T(0.0);
+
             for (size_t i = 0; i < N; ++i)
             {
                 res[res_index] += lhs[r * N + i] * rhs[i * K + c];
             }
+
             ++res_index;
         }
     }
+
     return res;
 }
 
-// 3x3 matrix multiplication.
 template <typename T>
 inline Matrix<T, 3, 3> operator*(
     const Matrix<T, 3, 3>&  lhs,
@@ -610,7 +646,6 @@ inline Matrix<T, 3, 3> operator*(
     return res;
 }
 
-// 4x4 matrix multiplication.
 template <typename T>
 inline Matrix<T, 4, 4> operator*(
     const Matrix<T, 4, 4>&  lhs,
@@ -739,23 +774,23 @@ inline Matrix<double, 4, 4> operator*(
 
 #endif  // APPLESEED_FOUNDATION_USE_SSE
 
-// Matrix-vector multiplication (MxN * Nx1 = Mx1).
 template <typename T, size_t M, size_t N>
 inline Vector<T, M> operator*(
     const Matrix<T, M, N>&  lhs,
     const Vector<T, N>&     rhs)
 {
     Vector<T, M> res;
+
     for (size_t r = 0; r < M; ++r)
     {
         res[r] = T(0.0);
         for (size_t c = 0; c < N; ++c)
             res[r] += lhs(r, c) * rhs[c];
     }
+
     return res;
 }
 
-// 4x4 matrix-vector multiplication.
 template <typename T>
 inline Vector<T, 4> operator*(
     const Matrix<T, 4, 4>&  lhs,
@@ -804,23 +839,23 @@ inline Vector<double, 4> operator*(
 
 #endif  // APPLESEED_FOUNDATION_USE_SSE
 
-// Vector-matrix multiplication (1xM * MxN = 1xN).
 template <typename T, size_t M, size_t N>
 inline Vector<T, N> operator*(
     const Vector<T, M>&     lhs,
     const Matrix<T, M, N>&  rhs)
 {
     Vector<T, N> res;
+
     for (size_t c = 0; c < N; ++c)
     {
         res[c] = T(0.0);
         for (size_t r = 0; r < M; ++r)
             res[c] += lhs[r] * rhs(r, c);
     }
+
     return res;
 }
 
-// 4x4 vector-matrix multiplication.
 template <typename T>
 inline Vector<T, 4> operator*(
     const Vector<T, 4>&     lhs,
@@ -831,17 +866,19 @@ inline Vector<T, 4> operator*(
     return rhs * lhs;
 }
 
-// Matrix transposition.
 template <typename T, size_t M, size_t N>
 inline Matrix<T, N, M> transpose(const Matrix<T, M, N>& mat)
 {
     // todo: reimplement for better performances.
+
     Matrix<T, N, M> res;
+
     for (size_t r = 0; r < M; ++r)
     {
         for (size_t c = 0; c < N; ++c)
             res(c, r) = mat(r, c);
     }
+
     return res;
 }
 
@@ -850,11 +887,11 @@ inline Matrix<T, N, M> transpose(const Matrix<T, M, N>& mat)
 // NxN matrix class implementation.
 //
 
-// Constructors.
 template <typename T, size_t N>
 inline Matrix<T, N, N>::Matrix()
 {
 }
+
 template <typename T, size_t N>
 inline Matrix<T, N, N>::Matrix(const ValueType* rhs)
 {
@@ -862,6 +899,7 @@ inline Matrix<T, N, N>::Matrix(const ValueType* rhs)
     for (size_t i = 0; i < Components; ++i)
         m_comp[i] = rhs[i];
 }
+
 template <typename T, size_t N>
 inline Matrix<T, N, N>::Matrix(const ValueType val)
 {
@@ -869,7 +907,6 @@ inline Matrix<T, N, N>::Matrix(const ValueType val)
         m_comp[i] = val;
 }
 
-// Construct a matrix from another matrix of a different type.
 template <typename T, size_t N>
 template <typename U>
 inline Matrix<T, N, N>::Matrix(const Matrix<U, N, N>& rhs)
@@ -878,23 +915,24 @@ inline Matrix<T, N, N>::Matrix(const Matrix<U, N, N>& rhs)
         m_comp[i] = static_cast<ValueType>(rhs[i]);
 }
 
-// Return the NxN identity matrix.
 template <typename T, size_t N>
 inline Matrix<T, N, N> Matrix<T, N, N>::identity()
 {
     MatrixType mat(T(0.0));
+
     for (size_t i = 0; i < N; ++i)
         mat(i, i) = T(1.0);
+
     return mat;
 }
 
-// Unchecked array subscripting.
 template <typename T, size_t N>
 inline T& Matrix<T, N, N>::operator[](const size_t i)
 {
     assert(i < Components);
     return m_comp[i];
 }
+
 template <typename T, size_t N>
 inline const T& Matrix<T, N, N>::operator[](const size_t i) const
 {
@@ -902,7 +940,6 @@ inline const T& Matrix<T, N, N>::operator[](const size_t i) const
     return m_comp[i];
 }
 
-// Unchecked Fortran-style subscripting (0-based).
 template <typename T, size_t N>
 inline T& Matrix<T, N, N>::operator()(const size_t row, const size_t col)
 {
@@ -910,6 +947,7 @@ inline T& Matrix<T, N, N>::operator()(const size_t row, const size_t col)
     assert(col < Columns);
     return m_comp[row * Columns + col];
 }
+
 template <typename T, size_t N>
 inline const T& Matrix<T, N, N>::operator()(const size_t row, const size_t col) const
 {
@@ -918,17 +956,17 @@ inline const T& Matrix<T, N, N>::operator()(const size_t row, const size_t col) 
     return m_comp[row * Columns + col];
 }
 
-// Matrix trace.
 template <typename T, size_t N>
 inline T trace(const Matrix<T, N, N>& mat)
 {
     T sum = T(0.0);
+
     for (size_t i = 0; i < N; ++i)
         sum += mat(i, i);
+
     return sum;
 }
 
-// Matrix determinant.
 template <typename T, size_t N>
 inline T det(const Matrix<T, N, N>& mat)
 {
@@ -936,7 +974,6 @@ inline T det(const Matrix<T, N, N>& mat)
     return T(0.0);
 }
 
-// Matrix inversion using Gauss-Jordan elimination with partial pivoting.
 template <typename T, size_t N>
 Matrix<T, N, N> inverse(
     const Matrix<T, N, N>&  mat,
@@ -1006,7 +1043,7 @@ Matrix<T, N, N> inverse(
                 const T x = m(r, i);
                 for (size_t c = 0; c < 2 * N; ++c)
                     m(r, c) -= x * m(i, c);
-//              assert(feq(m(r, i), T(0.0)));   // often subject to numerical inaccuracies
+//              assert(feq(m(r, i), T(0.0)));   // subject to numerical instability
             }
         }
     }
@@ -1035,11 +1072,11 @@ Matrix<T, N, N> inverse(
 // 3x3 matrix class implementation.
 //
 
-// Constructors.
 template <typename T>
 inline Matrix<T, 3, 3>::Matrix()
 {
 }
+
 template <typename T>
 inline Matrix<T, 3, 3>::Matrix(const ValueType* rhs)
 {
@@ -1047,6 +1084,7 @@ inline Matrix<T, 3, 3>::Matrix(const ValueType* rhs)
     for (size_t i = 0; i < Components; ++i)
         m_comp[i] = rhs[i];
 }
+
 template <typename T>
 inline Matrix<T, 3, 3>::Matrix(const ValueType val)
 {
@@ -1054,7 +1092,6 @@ inline Matrix<T, 3, 3>::Matrix(const ValueType val)
         m_comp[i] = val;
 }
 
-// Construct a matrix from another matrix of a different type.
 template <typename T>
 template <typename U>
 inline Matrix<T, 3, 3>::Matrix(const Matrix<U, 3, 3>& rhs)
@@ -1063,7 +1100,6 @@ inline Matrix<T, 3, 3>::Matrix(const Matrix<U, 3, 3>& rhs)
         m_comp[i] = static_cast<ValueType>(rhs[i]);
 }
 
-// Return the 3x3 identity matrix.
 template <typename T>
 inline Matrix<T, 3, 3> Matrix<T, 3, 3>::identity()
 {
@@ -1074,7 +1110,6 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::identity()
     return mat;
 }
 
-// Build canonical transformation matrices.
 template <typename T>
 inline Matrix<T, 3, 3> Matrix<T, 3, 3>::scaling(const Vector<T, 3>& s)
 {
@@ -1084,6 +1119,7 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::scaling(const Vector<T, 3>& s)
     mat[8] = s.z;
     return mat;
 }
+
 template <typename T>
 inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation_x(const ValueType angle)
 {
@@ -1097,6 +1133,7 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation_x(const ValueType angle)
     mat[8] =  cos_angle;
     return mat;
 }
+
 template <typename T>
 inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation_y(const ValueType angle)
 {
@@ -1110,6 +1147,7 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation_y(const ValueType angle)
     mat[8] =  cos_angle;
     return mat;
 }
+
 template <typename T>
 inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation_z(const ValueType angle)
 {
@@ -1124,7 +1162,6 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation_z(const ValueType angle)
     return mat;
 }
 
-// Build a rotation matrix from Euler angles.
 template <typename T>
 inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation(
     const ValueType         yaw,
@@ -1155,7 +1192,6 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation(
     return mat;
 }
 
-// Build a rotation matrix from an axis and an angle.
 template <typename T>
 inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation(
     const Vector<T, 3>&     axis,
@@ -1187,7 +1223,6 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation(
     return mat;
 }
 
-// Build a rotation matrix from a unit quaternion.
 template <typename T>
 inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation(
     const Quaternion<T>&    q)
@@ -1232,7 +1267,6 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation(
     return mat;
 }
 
-// Extract Euler angles from a rotation matrix.
 template <typename T>
 inline void Matrix<T, 3, 3>::extract_euler_angles(
     ValueType&              yaw,
@@ -1255,7 +1289,6 @@ inline void Matrix<T, 3, 3>::extract_euler_angles(
     }
 }
 
-// Extract a unit quaternion from a rotation matrix.
 template <typename T>
 inline Quaternion<T> Matrix<T, 3, 3>::extract_unit_quaternion() const
 {
@@ -1311,13 +1344,13 @@ inline Quaternion<T> Matrix<T, 3, 3>::extract_unit_quaternion() const
     }
 }
 
-// Unchecked array subscripting.
 template <typename T>
 inline T& Matrix<T, 3, 3>::operator[](const size_t i)
 {
     assert(i < Components);
     return m_comp[i];
 }
+
 template <typename T>
 inline const T& Matrix<T, 3, 3>::operator[](const size_t i) const
 {
@@ -1325,7 +1358,6 @@ inline const T& Matrix<T, 3, 3>::operator[](const size_t i) const
     return m_comp[i];
 }
 
-// Unchecked Fortran-style subscripting (0-based).
 template <typename T>
 inline T& Matrix<T, 3, 3>::operator()(const size_t row, const size_t col)
 {
@@ -1333,6 +1365,7 @@ inline T& Matrix<T, 3, 3>::operator()(const size_t row, const size_t col)
     assert(col < Columns);
     return m_comp[row * Columns + col];
 }
+
 template <typename T>
 inline const T& Matrix<T, 3, 3>::operator()(const size_t row, const size_t col) const
 {
@@ -1341,7 +1374,6 @@ inline const T& Matrix<T, 3, 3>::operator()(const size_t row, const size_t col) 
     return m_comp[row * Columns + col];
 }
 
-// Rotate a given vector by a given angle around a given axis.
 template <typename T>
 inline Vector<T, 3> rotate(
     const Vector<T, 3>&     v,
@@ -1356,11 +1388,11 @@ inline Vector<T, 3> rotate(
 // 4x4 matrix class implementation.
 //
 
-// Constructors.
 template <typename T>
 inline Matrix<T, 4, 4>::Matrix()
 {
 }
+
 template <typename T>
 inline Matrix<T, 4, 4>::Matrix(const ValueType* rhs)
 {
@@ -1368,6 +1400,7 @@ inline Matrix<T, 4, 4>::Matrix(const ValueType* rhs)
     for (size_t i = 0; i < Components; ++i)
         m_comp[i] = rhs[i];
 }
+
 template <typename T>
 inline Matrix<T, 4, 4>::Matrix(const ValueType val)
 {
@@ -1375,7 +1408,6 @@ inline Matrix<T, 4, 4>::Matrix(const ValueType val)
         m_comp[i] = val;
 }
 
-// Construct a matrix from another matrix of a different type.
 template <typename T>
 template <typename U>
 inline Matrix<T, 4, 4>::Matrix(const Matrix<U, 4, 4>& rhs)
@@ -1384,7 +1416,6 @@ inline Matrix<T, 4, 4>::Matrix(const Matrix<U, 4, 4>& rhs)
         m_comp[i] = static_cast<ValueType>(rhs[i]);
 }
 
-// Return the 4x4 identity matrix.
 template <typename T>
 inline Matrix<T, 4, 4> Matrix<T, 4, 4>::identity()
 {
@@ -1396,7 +1427,6 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::identity()
     return mat;
 }
 
-// Build canonical transformation matrices.
 template <typename T>
 inline Matrix<T, 4, 4> Matrix<T, 4, 4>::translation(const Vector<T, 3>& v)
 {
@@ -1406,6 +1436,7 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::translation(const Vector<T, 3>& v)
     mat[11] = v.z;
     return mat;
 }
+
 template <typename T>
 inline Matrix<T, 4, 4> Matrix<T, 4, 4>::scaling(const Vector<T, 3>& s)
 {
@@ -1416,6 +1447,7 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::scaling(const Vector<T, 3>& s)
     mat[15] = T(1.0);
     return mat;
 }
+
 template <typename T>
 inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation_x(const ValueType angle)
 {
@@ -1430,6 +1462,7 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation_x(const ValueType angle)
     mat[15] =  T(1.0);
     return mat;
 }
+
 template <typename T>
 inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation_y(const ValueType angle)
 {
@@ -1444,6 +1477,7 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation_y(const ValueType angle)
     mat[15] =  T(1.0);
     return mat;
 }
+
 template <typename T>
 inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation_z(const ValueType angle)
 {
@@ -1459,7 +1493,6 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation_z(const ValueType angle)
     return mat;
 }
 
-// Build a rotation matrix from Euler angles.
 template <typename T>
 inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation(
     const ValueType         yaw,
@@ -1502,7 +1535,6 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation(
     return mat;
 }
 
-// Build a rotation matrix from an axis and an angle.
 template <typename T>
 inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation(
     const Vector<T, 3>&     axis,
@@ -1543,7 +1575,6 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation(
     return mat;
 }
 
-// Build a rotation matrix from a unit quaternion.
 template <typename T>
 inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation(
     const Quaternion<T>&    q)
@@ -1597,7 +1628,6 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation(
     return mat;
 }
 
-// Build a look-at transformation matrix.
 template <typename T>
 inline Matrix<T, 4, 4> Matrix<T, 4, 4>::lookat(
     const Vector<T, 3>&     origin,
@@ -1647,7 +1677,6 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::lookat(
     return mat;
 }
 
-// Extract Euler angles from a rotation matrix.
 template <typename T>
 inline void Matrix<T, 4, 4>::extract_euler_angles(
     ValueType&              yaw,
@@ -1670,7 +1699,6 @@ inline void Matrix<T, 4, 4>::extract_euler_angles(
     }
 }
 
-// Extract a unit quaternion from a rotation matrix.
 template <typename T>
 inline Quaternion<T> Matrix<T, 4, 4>::extract_unit_quaternion() const
 {
@@ -1724,13 +1752,13 @@ inline Quaternion<T> Matrix<T, 4, 4>::extract_unit_quaternion() const
     }
 }
 
-// Unchecked array subscripting.
 template <typename T>
 inline T& Matrix<T, 4, 4>::operator[](const size_t i)
 {
     assert(i < Components);
     return m_comp[i];
 }
+
 template <typename T>
 inline const T& Matrix<T, 4, 4>::operator[](const size_t i) const
 {
@@ -1738,7 +1766,6 @@ inline const T& Matrix<T, 4, 4>::operator[](const size_t i) const
     return m_comp[i];
 }
 
-// Unchecked Fortran-style subscripting (0-based).
 template <typename T>
 inline T& Matrix<T, 4, 4>::operator()(const size_t row, const size_t col)
 {
@@ -1746,6 +1773,7 @@ inline T& Matrix<T, 4, 4>::operator()(const size_t row, const size_t col)
     assert(col < Columns);
     return m_comp[row * Columns + col];
 }
+
 template <typename T>
 inline const T& Matrix<T, 4, 4>::operator()(const size_t row, const size_t col) const
 {
