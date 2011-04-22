@@ -125,6 +125,13 @@ void MersenneTwister::init_state(const uint32 seed)
     }
 }
 
+namespace
+{
+    const uint32 MATRIX_A   = 0x9908b0dfUL;     // constant vector a
+    const uint32 UPPER_MASK = 0x80000000UL;     // most significant w-r bits
+    const uint32 LOWER_MASK = 0x7fffffffUL;     // least significant r bits
+}
+
 void MersenneTwister::update_state()
 {
     /* generate N words at one time */

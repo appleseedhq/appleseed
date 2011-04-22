@@ -73,11 +73,7 @@ class FOUNDATIONDLL MersenneTwister
 
   private:
     // Period parameters.
-    static const int N = 624;
-    static const int M = 397;
-    static const uint32 MATRIX_A   = 0x9908b0dfUL;  // constant vector a
-    static const uint32 UPPER_MASK = 0x80000000UL;  // most significant w-r bits
-    static const uint32 LOWER_MASK = 0x7fffffffUL;  // least significant r bits
+    enum { N = 624, M = 397 };
 
     uint32  mt[N];  // state vector
     int     mti;    // current index in state vector

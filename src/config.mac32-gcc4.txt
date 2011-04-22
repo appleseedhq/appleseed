@@ -83,7 +83,7 @@ set(compiler_flags_release
 
 macro(link_against_platform target)
     set_target_properties(${target} PROPERTIES
-        LINK_FLAGS "-framework Cocoa"
+        LINK_FLAGS "-framework Cocoa -lcurl"
     )
 endmacro()
 
