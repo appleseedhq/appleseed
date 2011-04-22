@@ -395,8 +395,8 @@ void DiagnosticSurfaceShader::extract_parameters()
     if (impl->m_shading_mode == AmbientOcclusion)
     {
         const ParamArray& ao_params = m_params.child("ambient_occlusion");
-        impl->m_ao_max_distance = ao_params.get_required<double>("max_distance", 1.0);
-        impl->m_ao_samples = ao_params.get_required<size_t>("samples", 16);
+        impl->m_ao_max_distance = ao_params.get_optional<double>("max_distance", 1.0);
+        impl->m_ao_samples = ao_params.get_optional<size_t>("samples", 16);
     }
 }
 

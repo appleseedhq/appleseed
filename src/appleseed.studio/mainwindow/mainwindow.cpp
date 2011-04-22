@@ -202,14 +202,14 @@ void MainWindow::build_override_shading_menu_item()
                 0,
                 QApplication::UnicodeUTF8));
 
-        const int shortcut_counter = i + 1;
+        const int shortcut_number = i + 1;
 
-        if (shortcut_counter <= 9)
+        if (shortcut_number <= 9)
         {
             const QString shortcut =
                 QApplication::translate(
                     objectName().toAscii(),
-                    QString::fromAscii("Ctrl+Shift+%1").arg(shortcut_counter).toAscii(),
+                    QString::fromAscii("Ctrl+Shift+%1").arg(shortcut_number).toAscii(),
                     0,
                     QApplication::UnicodeUTF8);
 
