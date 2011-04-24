@@ -418,6 +418,26 @@ const char* DiagnosticSurfaceShaderFactory::get_human_readable_model() const
 DictionaryArray DiagnosticSurfaceShaderFactory::get_widget_definitions() const
 {
     DictionaryArray definitions;
+
+    Dictionary model_items;
+
+    for (int i = 0; i < DiagnosticSurfaceShader::ShadingModeCount; ++i)
+    {
+        const char* shading_mode_value = DiagnosticSurfaceShader::ShadingModeNames[i].m_key;
+        const char* shading_mode_name = DiagnosticSurfaceShader::ShadingModeNames[i].m_value;
+        model_items.insert(shading_mode_name, shading_mode_value);
+    }
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "mode")
+            .insert("label", "Mode")
+            .insert("widget", "dropdown_list")
+            .insert("dropdown_items", model_items)
+            .insert("use", "required")
+            .insert("default", "coverage")
+            .insert("on_change", "rebuild_form"));
+
     return definitions;
 }
 
