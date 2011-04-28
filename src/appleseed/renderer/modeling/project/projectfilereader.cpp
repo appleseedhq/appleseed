@@ -167,14 +167,13 @@ namespace
 
     //
     // A set of objects that is passed to all element handlers.
-    // todo: rename to ParseContext.
     //
 
-    class ElementInfo
+    class ParseContext
     {
       public:
         // Constructor.
-        ElementInfo(
+        ParseContext(
             Project&        project,
             EventCounters&  event_counters)
           : m_project(project)
@@ -210,7 +209,7 @@ namespace
 
     double get_scalar(
         const string&       text,
-        ElementInfo&        info)
+        ParseContext&       context)
     {
         try
         {
@@ -219,14 +218,14 @@ namespace
         catch (const ExceptionStringConversionError&)
         {
             RENDERER_LOG_ERROR("expected scalar value, got \"%s\"", text.c_str());
-            info.get_event_counters().signal_error();
+            context.get_event_counters().signal_error();
             return 0.0;
         }
     }
 
     Vector3d get_vector3(
         const string&       text,
-        ElementInfo&        info)
+        ParseContext&       context)
     {
         Vector3d vec;
         bool succeeded = false;
@@ -252,7 +251,7 @@ namespace
         if (!succeeded)
         {
             RENDERER_LOG_ERROR("invalid vector format");
-            info.get_event_counters().signal_error();
+            context.get_event_counters().signal_error();
             vec = Vector3d(0.0);
         }
 
@@ -263,7 +262,7 @@ namespace
     void get_vector(
         const string&       text,
         Vec&                values,
-        ElementInfo&        info)
+        ParseContext&       context)
     {
         try
         {
@@ -272,7 +271,7 @@ namespace
         catch (const ExceptionStringConversionError&)
         {
             RENDERER_LOG_ERROR("invalid vector format");
-            info.get_event_counters().signal_error();
+            context.get_event_counters().signal_error();
             values.clear();
         }
     }
@@ -284,7 +283,7 @@ namespace
         const string&                   model,
         const string&                   name,
         const ParamArray&               params,
-        ElementInfo&                    info)
+        ParseContext&                   context)
     {
         try
         {
@@ -302,7 +301,7 @@ namespace
                     type.c_str(),
                     name.c_str(),
                     model.c_str());
-                info.get_event_counters().signal_error();
+                context.get_event_counters().signal_error();
             }
         }
         catch (const ExceptionDictionaryItemNotFound& e)
@@ -312,7 +311,7 @@ namespace
                 type.c_str(),
                 name.c_str(),
                 e.string());
-            info.get_event_counters().signal_error();
+            context.get_event_counters().signal_error();
         }
         catch (const ExceptionUnknownEntity& e)
         {
@@ -321,7 +320,7 @@ namespace
                 type.c_str(),
                 name.c_str(),
                 e.string());
-            info.get_event_counters().signal_error();
+            context.get_event_counters().signal_error();
         }
 
         return auto_release_ptr<Entity>(0);
@@ -381,8 +380,8 @@ namespace
     {
       public:
         // Constructor.
-        explicit ParameterElementHandler(ElementInfo& info)
-          : m_info(info)
+        explicit ParameterElementHandler(ParseContext& context)
+          : m_context(context)
         {
         }
 
@@ -407,7 +406,7 @@ namespace
         }
 
       private:
-        ElementInfo&    m_info;
+        ParseContext&   m_context;
         string          m_name;
         string          m_value;
     };
@@ -445,8 +444,8 @@ namespace
     {
       public:
         // Constructor.
-        explicit ParametersElementHandler(ElementInfo& info)
-          : m_info(info)
+        explicit ParametersElementHandler(ParseContext& context)
+          : m_context(context)
         {
         }
 
@@ -471,7 +470,7 @@ namespace
         }
 
       private:
-        ElementInfo&    m_info;
+        ParseContext&   m_context;
         string          m_name;
     };
 
@@ -528,8 +527,8 @@ namespace
     {
       public:
         // Constructor.
-        explicit EntityElementHandler(const string& entity_type, ElementInfo& info)
-          : m_info(info)
+        explicit EntityElementHandler(const string& entity_type, ParseContext& context)
+          : m_context(context)
           , m_entity_type(entity_type)
         {
         }
@@ -553,7 +552,7 @@ namespace
                     m_model,
                     m_name,
                     m_params,
-                    m_info);
+                    m_context);
         }
 
         // Retrieve the entity.
@@ -563,7 +562,7 @@ namespace
         }
 
       private:
-        ElementInfo&                    m_info;
+        ParseContext&                   m_context;
         const EntityFactoryRegistrar    m_registrar;
         const string                    m_entity_type;
         auto_release_ptr<Entity>        m_entity;
@@ -581,8 +580,8 @@ namespace
     {
       public:
         // Constructor.
-        explicit LookAtElementHandler(ElementInfo& info)
-          : m_info(info)
+        explicit LookAtElementHandler(ParseContext& context)
+          : m_context(context)
         {
         }
 
@@ -591,9 +590,9 @@ namespace
         {
             m_matrix = Matrix4d::identity();
 
-            const Vector3d origin = get_vector3(get_value(attrs, "origin"), m_info);
-            const Vector3d target = get_vector3(get_value(attrs, "target"), m_info);
-            const Vector3d up = get_vector3(get_value(attrs, "up"), m_info);
+            const Vector3d origin = get_vector3(get_value(attrs, "origin"), m_context);
+            const Vector3d target = get_vector3(get_value(attrs, "target"), m_context);
+            const Vector3d up = get_vector3(get_value(attrs, "up"), m_context);
 
             if (norm(origin - target) > 0.0 &&
                 norm(up) > 0.0 &&
@@ -612,7 +611,7 @@ namespace
                     origin[0], origin[1], origin[2],
                     target[0], target[1], target[2],
                     up[0], up[1], up[2]);
-                m_info.get_event_counters().signal_error();
+                m_context.get_event_counters().signal_error();
             }
         }
 
@@ -623,7 +622,7 @@ namespace
         }
 
       private:
-        ElementInfo&    m_info;
+        ParseContext&   m_context;
         Matrix4d        m_matrix;
     };
 
@@ -637,8 +636,8 @@ namespace
     {
       public:
         // Constructor.
-        explicit MatrixElementHandler(ElementInfo& info)
-          : m_info(info)
+        explicit MatrixElementHandler(ParseContext& context)
+          : m_context(context)
         {
         }
 
@@ -662,7 +661,7 @@ namespace
                 RENDERER_LOG_ERROR(
                     "while defining <matrix> element: expected 16 scalar coefficients, got " FMT_SIZE_T,
                     m_values.size());
-                m_info.get_event_counters().signal_error();
+                m_context.get_event_counters().signal_error();
             }
         }
 
@@ -671,7 +670,7 @@ namespace
             const XMLCh* const  chars,
             const XMLSize_t     length)
         {
-            get_vector(transcode(chars), m_values, m_info);
+            get_vector(transcode(chars), m_values, m_context);
         }
 
         // Retrieve the transformation matrix.
@@ -681,7 +680,7 @@ namespace
         }
 
       private:
-        ElementInfo&    m_info;
+        ParseContext&   m_context;
         Matrix4d        m_matrix;
         vector<double>  m_values;
     };
@@ -696,8 +695,8 @@ namespace
     {
       public:
         // Constructor.
-        explicit RotationElementHandler(ElementInfo& info)
-          : m_info(info)
+        explicit RotationElementHandler(ParseContext& context)
+          : m_context(context)
         {
         }
 
@@ -706,8 +705,8 @@ namespace
         {
             m_matrix = Matrix4d::identity();
 
-            const Vector3d axis = get_vector3(get_value(attrs, "axis"), m_info);
-            const double angle = get_scalar(get_value(attrs, "angle"), m_info);
+            const Vector3d axis = get_vector3(get_value(attrs, "axis"), m_context);
+            const double angle = get_scalar(get_value(attrs, "angle"), m_context);
 
             if (norm(axis) > 0.0)
             {
@@ -716,7 +715,7 @@ namespace
             else
             {
                 RENDERER_LOG_ERROR("while defining <rotation> element: the rotation axis cannot be null");
-                m_info.get_event_counters().signal_error();
+                m_context.get_event_counters().signal_error();
             }
         }
 
@@ -727,7 +726,7 @@ namespace
         }
 
       private:
-        ElementInfo&    m_info;
+        ParseContext&   m_context;
         Matrix4d        m_matrix;
     };
 
@@ -741,15 +740,15 @@ namespace
     {
       public:
         // Constructor.
-        explicit ScalingElementHandler(ElementInfo& info)
-          : m_info(info)
+        explicit ScalingElementHandler(ParseContext& context)
+          : m_context(context)
         {
         }
 
         // Receive notification of the start of an element.
         virtual void start_element(const Attributes& attrs)
         {
-            const Vector3d value = get_vector3(get_value(attrs, "value"), m_info);
+            const Vector3d value = get_vector3(get_value(attrs, "value"), m_context);
             m_matrix = Matrix4d::scaling(value);
         }
 
@@ -760,7 +759,7 @@ namespace
         }
 
       private:
-        ElementInfo&    m_info;
+        ParseContext&   m_context;
         Matrix4d        m_matrix;
     };
 
@@ -774,15 +773,15 @@ namespace
     {
       public:
         // Constructor.
-        explicit TranslationElementHandler(ElementInfo& info)
-          : m_info(info)
+        explicit TranslationElementHandler(ParseContext& context)
+          : m_context(context)
         {
         }
 
         // Receive notification of the start of an element.
         virtual void start_element(const Attributes& attrs)
         {
-            const Vector3d value = get_vector3(get_value(attrs, "value"), m_info);
+            const Vector3d value = get_vector3(get_value(attrs, "value"), m_context);
             m_matrix = Matrix4d::translation(value);
         }
 
@@ -793,7 +792,7 @@ namespace
         }
 
       private:
-        ElementInfo&    m_info;
+        ParseContext&   m_context;
         Matrix4d        m_matrix;
     };
 
@@ -807,8 +806,8 @@ namespace
     {
       public:
         // Constructor.
-        explicit TransformElementHandler(ElementInfo& info)
-          : m_info(info)
+        explicit TransformElementHandler(ParseContext& context)
+          : m_context(context)
         {
         }
 
@@ -828,7 +827,7 @@ namespace
             catch (const ExceptionSingularMatrix&)
             {
                 RENDERER_LOG_ERROR("while defining <transform> element: the transformation matrix is singular");
-                m_info.get_event_counters().signal_error();
+                m_context.get_event_counters().signal_error();
                 m_transform = Transformd(Matrix4d::identity());
             }
         }
@@ -891,7 +890,7 @@ namespace
         }
 
       private:
-        ElementInfo&    m_info;
+        ParseContext&   m_context;
         Matrix4d        m_matrix;
         Transformd      m_transform;
     };
@@ -906,8 +905,8 @@ namespace
     {
       public:
         // Constructor.
-        explicit ValuesElementHandler(ElementInfo& info)
-          : m_info(info)
+        explicit ValuesElementHandler(ParseContext& context)
+          : m_context(context)
         {
         }
 
@@ -922,7 +921,7 @@ namespace
             const XMLCh* const  chars,
             const XMLSize_t     length)
         {
-            get_vector(transcode(chars), m_values, m_info);
+            get_vector(transcode(chars), m_values, m_context);
         }
 
         // Retrieve the values.
@@ -932,7 +931,7 @@ namespace
         }
 
       private:
-        ElementInfo&    m_info;
+        ParseContext&   m_context;
         ColorValueArray m_values;
     };
 
@@ -946,8 +945,8 @@ namespace
     {
       public:
         // Constructor.
-        explicit ColorElementHandler(ElementInfo& info)
-          : m_info(info)
+        explicit ColorElementHandler(ParseContext& context)
+          : m_context(context)
         {
         }
 
@@ -984,7 +983,7 @@ namespace
                     "while defining color \"%s\": required parameter \"%s\" missing",
                     m_name.c_str(),
                     e.string());
-                m_info.get_event_counters().signal_error();
+                m_context.get_event_counters().signal_error();
             }
         }
 
@@ -1016,7 +1015,7 @@ namespace
         }
 
       private:
-        ElementInfo&                    m_info;
+        ParseContext&                   m_context;
         auto_release_ptr<ColorEntity>   m_color_entity;
         string                          m_name;
         ColorValueArray                 m_values;
@@ -1033,8 +1032,8 @@ namespace
     {
       public:
         // Constructor.
-        explicit TextureElementHandler(ElementInfo& info)
-          : m_info(info)
+        explicit TextureElementHandler(ParseContext& context)
+          : m_context(context)
         {
         }
 
@@ -1061,7 +1060,7 @@ namespace
                         factory->create(
                             m_name.c_str(),
                             m_params,
-                            m_info.get_project().get_search_paths());
+                            m_context.get_project().get_search_paths());
                 }
                 else
                 {
@@ -1069,7 +1068,7 @@ namespace
                         "while defining texture \"%s\": invalid model \"%s\"",
                         m_name.c_str(),
                         m_model.c_str());
-                    m_info.get_event_counters().signal_error();
+                    m_context.get_event_counters().signal_error();
                 }
             }
             catch (const ExceptionDictionaryItemNotFound& e)
@@ -1078,7 +1077,7 @@ namespace
                     "while defining texture \"%s\": required parameter \"%s\" missing",
                     m_name.c_str(),
                     e.string());
-                m_info.get_event_counters().signal_error();
+                m_context.get_event_counters().signal_error();
             }
         }
 
@@ -1090,7 +1089,7 @@ namespace
 
       private:
         const TextureFactoryRegistrar   m_texture_factory_registrar;
-        ElementInfo&                    m_info;
+        ParseContext&                   m_context;
         auto_release_ptr<Texture>       m_texture;
         string                          m_name;
         string                          m_model;
@@ -1106,8 +1105,8 @@ namespace
     {
       public:
         // Constructor.
-        explicit TextureInstanceElementHandler(ElementInfo& info)
-          : m_info(info)
+        explicit TextureInstanceElementHandler(ParseContext& context)
+          : m_context(context)
           , m_textures(0)
         {
         }
@@ -1149,7 +1148,7 @@ namespace
                         "while defining texture instance \"%s\": required parameter \"%s\" missing",
                         m_name.c_str(),
                         e.string());
-                    m_info.get_event_counters().signal_error();
+                    m_context.get_event_counters().signal_error();
                 }
             }
             else
@@ -1158,7 +1157,7 @@ namespace
                     "while defining texture instance \"%s\": the texture \"%s\" does not exist",
                     m_name.c_str(),
                     m_texture.c_str());
-                m_info.get_event_counters().signal_error();
+                m_context.get_event_counters().signal_error();
             }
         }
 
@@ -1169,7 +1168,7 @@ namespace
         }
 
       private:
-        ElementInfo&                        m_info;
+        ParseContext&                       m_context;
         const TextureContainer*             m_textures;
         auto_release_ptr<TextureInstance>   m_texture_instance;
         string                              m_name;
@@ -1186,8 +1185,8 @@ namespace
     {
       public:
         // Constructor.
-        explicit BSDFElementHandler(ElementInfo& info)
-          : EntityElementHandler<BSDF, BSDFFactoryRegistrar>("bsdf", info)
+        explicit BSDFElementHandler(ParseContext& context)
+          : EntityElementHandler<BSDF, BSDFFactoryRegistrar>("bsdf", context)
         {
         }
     };
@@ -1202,8 +1201,8 @@ namespace
     {
       public:
         // Constructor.
-        explicit EDFElementHandler(ElementInfo& info)
-          : EntityElementHandler<EDF, EDFFactoryRegistrar>("edf", info)
+        explicit EDFElementHandler(ParseContext& context)
+          : EntityElementHandler<EDF, EDFFactoryRegistrar>("edf", context)
         {
         }
     };
@@ -1218,8 +1217,8 @@ namespace
     {
       public:
         // Constructor.
-        explicit SurfaceShaderElementHandler(ElementInfo& info)
-          : EntityElementHandler<SurfaceShader, SurfaceShaderFactoryRegistrar>("surface shader", info)
+        explicit SurfaceShaderElementHandler(ParseContext& context)
+          : EntityElementHandler<SurfaceShader, SurfaceShaderFactoryRegistrar>("surface shader", context)
         {
         }
     };
@@ -1234,8 +1233,8 @@ namespace
     {
       public:
         // Constructor.
-        explicit EnvironmentElementHandler(ElementInfo& info)
-          : m_info(info)
+        explicit EnvironmentElementHandler(ParseContext& context)
+          : m_context(context)
           , m_environment_edfs(0)
           , m_environment_shaders(0)
         {
@@ -1282,7 +1281,7 @@ namespace
                         "while defining environment \"%s\": invalid model \"%s\"",
                         m_name.c_str(),
                         m_model.c_str());
-                    m_info.get_event_counters().signal_error();
+                    m_context.get_event_counters().signal_error();
                 }
             }
             catch (const ExceptionUnknownEntity& e)
@@ -1291,7 +1290,7 @@ namespace
                     "while defining environment \"%s\": unknown entity \"%s\"",
                     m_name.c_str(),
                     e.string());
-                m_info.get_event_counters().signal_error();
+                m_context.get_event_counters().signal_error();
             }
         }
 
@@ -1302,7 +1301,7 @@ namespace
         }
 
       private:
-        ElementInfo&                        m_info;
+        ParseContext&                       m_context;
         const EnvironmentEDFContainer*      m_environment_edfs;
         const EnvironmentShaderContainer*   m_environment_shaders;
         auto_release_ptr<Environment>       m_environment;
@@ -1320,8 +1319,8 @@ namespace
     {
       public:
         // Constructor.
-        explicit EnvironmentEDFElementHandler(ElementInfo& info)
-          : EntityElementHandler<EnvironmentEDF, EnvironmentEDFFactoryRegistrar>("environment edf", info)
+        explicit EnvironmentEDFElementHandler(ParseContext& context)
+          : EntityElementHandler<EnvironmentEDF, EnvironmentEDFFactoryRegistrar>("environment edf", context)
         {
         }
     };
@@ -1336,8 +1335,8 @@ namespace
     {
       public:
         // Constructor.
-        explicit EnvironmentShaderElementHandler(ElementInfo& info)
-          : EntityElementHandler<EnvironmentShader, EnvironmentShaderFactoryRegistrar>("environment shader", info)
+        explicit EnvironmentShaderElementHandler(ParseContext& context)
+          : EntityElementHandler<EnvironmentShader, EnvironmentShaderFactoryRegistrar>("environment shader", context)
         {
         }
     };
@@ -1352,8 +1351,8 @@ namespace
     {
       public:
         // Constructor.
-        explicit LightElementHandler(ElementInfo& info)
-          : m_info(info)
+        explicit LightElementHandler(ParseContext& context)
+          : m_context(context)
           , m_edfs(0)
         {
         }
@@ -1396,7 +1395,7 @@ namespace
                         "while defining light \"%s\": invalid model \"%s\"",
                         m_name.c_str(),
                         m_model.c_str());
-                    m_info.get_event_counters().signal_error();
+                    m_context.get_event_counters().signal_error();
                 }
             }
             catch (const ExceptionDictionaryItemNotFound& e)
@@ -1405,7 +1404,7 @@ namespace
                     "while defining light \"%s\": required parameter \"%s\" missing",
                     m_name.c_str(),
                     e.string());
-                m_info.get_event_counters().signal_error();
+                m_context.get_event_counters().signal_error();
             }
             catch (const ExceptionUnknownEntity& e)
             {
@@ -1413,7 +1412,7 @@ namespace
                     "while defining light \"%s\": unknown entity \"%s\"",
                     m_name.c_str(),
                     e.string());
-                m_info.get_event_counters().signal_error();
+                m_context.get_event_counters().signal_error();
             }
         }
 
@@ -1445,7 +1444,7 @@ namespace
         }
 
       private:
-        ElementInfo&                m_info;
+        ParseContext&               m_context;
         const EDFContainer*         m_edfs;
         auto_release_ptr<Light>     m_light;
         string                      m_name;
@@ -1463,8 +1462,8 @@ namespace
     {
       public:
         // Constructor.
-        explicit MaterialElementHandler(ElementInfo& info)
-          : m_info(info)
+        explicit MaterialElementHandler(ParseContext& context)
+          : m_context(context)
           , m_bsdfs(0)
           , m_edfs(0)
           , m_surface_shaders(0)
@@ -1511,7 +1510,7 @@ namespace
                         "while defining material \"%s\": invalid model \"%s\"",
                         m_name.c_str(),
                         m_model.c_str());
-                    m_info.get_event_counters().signal_error();
+                    m_context.get_event_counters().signal_error();
                 }
             }
             catch (const ExceptionDictionaryItemNotFound& e)
@@ -1520,7 +1519,7 @@ namespace
                     "while defining material \"%s\": required parameter \"%s\" missing",
                     m_name.c_str(),
                     e.string());
-                m_info.get_event_counters().signal_error();
+                m_context.get_event_counters().signal_error();
             }
             catch (const ExceptionUnknownEntity& e)
             {
@@ -1528,7 +1527,7 @@ namespace
                     "while defining material \"%s\": unknown entity \"%s\"",
                     m_name.c_str(),
                     e.string());
-                m_info.get_event_counters().signal_error();
+                m_context.get_event_counters().signal_error();
             }
         }
 
@@ -1539,7 +1538,7 @@ namespace
         }
 
       private:
-        ElementInfo&                        m_info;
+        ParseContext&                       m_context;
         const BSDFContainer*                m_bsdfs;
         const EDFContainer*                 m_edfs;
         const SurfaceShaderContainer*       m_surface_shaders;
@@ -1558,8 +1557,8 @@ namespace
     {
       public:
         // Constructor.
-        explicit CameraElementHandler(ElementInfo& info)
-          : m_info(info)
+        explicit CameraElementHandler(ParseContext& context)
+          : m_context(context)
         {
         }
 
@@ -1591,7 +1590,7 @@ namespace
                         "while defining camera \"%s\": invalid model \"%s\"",
                         m_name.c_str(),
                         m_model.c_str());
-                    m_info.get_event_counters().signal_error();
+                    m_context.get_event_counters().signal_error();
                 }
             }
             catch (const ExceptionDictionaryItemNotFound& e)
@@ -1600,7 +1599,7 @@ namespace
                     "while defining camera \"%s\": required parameter \"%s\" missing",
                     m_name.c_str(),
                     e.string());
-                m_info.get_event_counters().signal_error();
+                m_context.get_event_counters().signal_error();
             }
         }
 
@@ -1633,7 +1632,7 @@ namespace
 
       private:
         const CameraFactoryRegistrar    m_camera_factory_registrar;
-        ElementInfo&                    m_info;
+        ParseContext&                   m_context;
         auto_release_ptr<Camera>        m_camera;
         string                          m_name;
         string                          m_model;
@@ -1652,8 +1651,8 @@ namespace
         typedef vector<Object*> ObjectVector;
 
         // Constructor.
-        explicit ObjectElementHandler(ElementInfo& info)
-          : m_info(info)
+        explicit ObjectElementHandler(ParseContext& context)
+          : m_context(context)
         {
         }
 
@@ -1676,7 +1675,7 @@ namespace
                     // Retrieve the name of the mesh file.
                     const string filename = m_params.get<string>("filename");
                     const string qualified_filename =
-                        m_info.get_project().get_search_paths().qualify(filename);
+                        m_context.get_project().get_search_paths().qualify(filename);
 
                     // Read the mesh file.
                     MeshObjectArray object_array =
@@ -1701,7 +1700,7 @@ namespace
                         "while defining object \"%s\": invalid model \"%s\"",
                         m_name.c_str(),
                         m_model.c_str());
-                    m_info.get_event_counters().signal_error();
+                    m_context.get_event_counters().signal_error();
                 }
             }
             catch (const ExceptionDictionaryItemNotFound& e)
@@ -1710,7 +1709,7 @@ namespace
                     "while defining object \"%s\": required parameter \"%s\" missing",
                     m_name.c_str(),
                     e.string());
-                m_info.get_event_counters().signal_error();
+                m_context.get_event_counters().signal_error();
             }
         }
 
@@ -1721,7 +1720,7 @@ namespace
         }
 
       private:
-        ElementInfo&    m_info;
+        ParseContext&   m_context;
         ObjectVector    m_objects;
         string          m_name;
         string          m_model;
@@ -1737,8 +1736,8 @@ namespace
     {
       public:
         // Constructor.
-        explicit AssignMaterialElementHandler(ElementInfo& info)
-          : m_info(info)
+        explicit AssignMaterialElementHandler(ParseContext& context)
+          : m_context(context)
         {
         }
 
@@ -1755,7 +1754,7 @@ namespace
                 RENDERER_LOG_ERROR(
                     "while assigning material: slot must be an integer >= 0, got \"%s\"",
                     slot_string.c_str());
-                m_info.get_event_counters().signal_error();
+                m_context.get_event_counters().signal_error();
                 m_slot = 0;
             }
             m_material = get_value(attrs, "material");
@@ -1774,7 +1773,7 @@ namespace
         }
 
       private:
-        ElementInfo&    m_info;
+        ParseContext&   m_context;
         size_t          m_slot;
         string          m_material;
     };
@@ -1789,8 +1788,8 @@ namespace
     {
       public:
         // Constructor.
-        explicit ObjectInstanceElementHandler(ElementInfo& info)
-          : m_info(info)
+        explicit ObjectInstanceElementHandler(ParseContext& context)
+          : m_context(context)
           , m_objects(0)
           , m_materials(0)
         {
@@ -1838,7 +1837,7 @@ namespace
                     "while defining object instance \"%s\": the object \"%s\" does not exist",
                     m_name.c_str(),
                     m_object.c_str());
-                m_info.get_event_counters().signal_error();
+                m_context.get_event_counters().signal_error();
             }
         }
 
@@ -1877,7 +1876,7 @@ namespace
                                 "while defining object instance \"%s\": the material \"%s\" does not exist",
                                 m_name.c_str(),
                                 material_name.c_str());
-                            m_info.get_event_counters().signal_error();
+                            m_context.get_event_counters().signal_error();
                         }
                     }
                     else
@@ -1888,7 +1887,7 @@ namespace
                             m_name.c_str(),
                             MaxMaterialSlots - 1,
                             material_slot);
-                        m_info.get_event_counters().signal_error();
+                        m_context.get_event_counters().signal_error();
                     }
                 }
                 break;
@@ -1914,7 +1913,7 @@ namespace
         }
 
       private:
-        ElementInfo&                        m_info;
+        ParseContext&                       m_context;
         const ObjectContainer*              m_objects;
         const MaterialContainer*            m_materials;
         auto_release_ptr<ObjectInstance>    m_object_instance;
@@ -1934,8 +1933,8 @@ namespace
     {
       public:
         // Constructor.
-        explicit AssemblyElementHandler(ElementInfo& info)
-          : m_info(info)
+        explicit AssemblyElementHandler(ParseContext& context)
+          : m_context(context)
         {
         }
 
@@ -2158,7 +2157,7 @@ namespace
         }
 
       private:
-        ElementInfo&                m_info;
+        ParseContext&               m_context;
         auto_release_ptr<Assembly>  m_assembly;
         string                      m_name;
         BSDFContainer               m_bsdfs;
@@ -2183,8 +2182,8 @@ namespace
     {
       public:
         // Constructor.
-        explicit AssemblyInstanceElementHandler(ElementInfo& info)
-          : m_info(info)
+        explicit AssemblyInstanceElementHandler(ParseContext& context)
+          : m_context(context)
           , m_assemblies(0)
         {
         }
@@ -2225,7 +2224,7 @@ namespace
                     "while defining assembly instance \"%s\": the assembly \"%s\" does not exist",
                     m_name.c_str(),
                     m_assembly.c_str());
-                m_info.get_event_counters().signal_error();
+                m_context.get_event_counters().signal_error();
             }
         }
 
@@ -2257,7 +2256,7 @@ namespace
         }
 
       private:
-        ElementInfo&                        m_info;
+        ParseContext&                       m_context;
         const AssemblyContainer*            m_assemblies;
         auto_release_ptr<AssemblyInstance>  m_assembly_instance;
         string                              m_name;
@@ -2275,8 +2274,8 @@ namespace
     {
       public:
         // Constructor.
-        explicit SceneElementHandler(ElementInfo& info)
-          : m_info(info)
+        explicit SceneElementHandler(ParseContext& context)
+          : m_context(context)
         {
         }
 
@@ -2418,7 +2417,7 @@ namespace
                         if (m_scene->get_camera())
                         {
                             RENDERER_LOG_WARNING("support for multiple cameras is not implemented yet");
-                            m_info.get_event_counters().signal_warning();
+                            m_context.get_event_counters().signal_warning();
                         }
                         m_scene->set_camera(camera);
                     }
@@ -2435,7 +2434,7 @@ namespace
                         if (m_scene->get_environment())
                         {
                             RENDERER_LOG_ERROR("cannot define multiple environments");
-                            m_info.get_event_counters().signal_error();
+                            m_context.get_event_counters().signal_error();
                         }
                         m_scene->set_environment(environment);
                     }
@@ -2494,7 +2493,7 @@ namespace
         }
 
       private:
-        ElementInfo&    m_info;
+        ParseContext&   m_context;
         auto_ptr<Scene> m_scene;
     };
 
@@ -2508,8 +2507,8 @@ namespace
     {
       public:
         // Constructor.
-        explicit FrameElementHandler(ElementInfo& info)
-          : m_info(info)
+        explicit FrameElementHandler(ParseContext& context)
+          : m_context(context)
         {
         }
 
@@ -2537,7 +2536,7 @@ namespace
         }
 
       private:
-        ElementInfo&    m_info;
+        ParseContext&   m_context;
         auto_ptr<Frame> m_frame;
         string          m_name;
     };
@@ -2552,8 +2551,8 @@ namespace
     {
       public:
         // Constructor.
-        OutputElementHandler(ElementInfo& info)
-          : m_info(info)
+        OutputElementHandler(ParseContext& context)
+          : m_context(context)
           , m_project(0)
         {
         }
@@ -2586,7 +2585,7 @@ namespace
         }
 
       private:
-        ElementInfo&    m_info;
+        ParseContext&   m_context;
         Project*        m_project;
     };
 
@@ -2600,8 +2599,8 @@ namespace
     {
       public:
         // Constructor.
-        explicit ConfigurationElementHandler(ElementInfo& info)
-          : m_info(info)
+        explicit ConfigurationElementHandler(ParseContext& context)
+          : m_context(context)
           , m_project(0)
         {
         }
@@ -2647,7 +2646,7 @@ namespace
                         "while defining configuration \"%s\": the configuration \"%s\" does not exist",
                         m_configuration->get_name(),
                         m_base_name.c_str());
-                    m_info.get_event_counters().signal_error();
+                    m_context.get_event_counters().signal_error();
                 }
             }
         }
@@ -2659,7 +2658,7 @@ namespace
         }
 
       private:
-        ElementInfo&                    m_info;
+        ParseContext&                   m_context;
         Project*                        m_project;
         auto_release_ptr<Configuration> m_configuration;
         string                          m_name;
@@ -2676,8 +2675,8 @@ namespace
     {
       public:
         // Constructor.
-        ConfigurationsElementHandler(ElementInfo& info)
-          : m_info(info)
+        ConfigurationsElementHandler(ParseContext& context)
+          : m_context(context)
           , m_project(0)
         {
         }
@@ -2733,7 +2732,7 @@ namespace
         }
 
       private:
-        ElementInfo&    m_info;
+        ParseContext&   m_context;
         Project*        m_project;
     };
 
@@ -2747,8 +2746,8 @@ namespace
     {
       public:
         // Constructor.
-        ProjectElementHandler(ElementInfo& info, Project* project)
-          : m_info(info)
+        ProjectElementHandler(ParseContext& context, Project* project)
+          : m_context(context)
           , m_project(project)
         {
         }
@@ -2817,7 +2816,7 @@ namespace
         }
 
       private:
-        ElementInfo&    m_info;
+        ParseContext&   m_context;
         Project*        m_project;
     };
 
@@ -2830,8 +2829,8 @@ namespace
       : public SAX2ContentHandler<ProjectElementID>
     {
       public:
-        ContentHandler(Project* project, ElementInfo& element_info)
-          : m_element_info(element_info)
+        ContentHandler(Project* project, ParseContext& context)
+          : m_context(context)
         {
             register_factory_helper<ValuesElementHandler>("alpha", ElementAlpha);
             register_factory_helper<AssemblyElementHandler>("assembly", ElementAssembly);
@@ -2867,22 +2866,22 @@ namespace
             register_factory_helper<ValuesElementHandler>("values", ElementValues);
 
             auto_ptr<IElementHandlerFactory<ProjectElementID> > factory(
-                new ProjectElementHandlerFactory(m_element_info, project));
+                new ProjectElementHandlerFactory(m_context, project));
 
             register_factory("project", ElementProject, factory);
         }
 
       private:
-        ElementInfo& m_element_info;
+        ParseContext& m_context;
 
         struct ProjectElementHandlerFactory
           : public IElementHandlerFactory<ProjectElementID>
         {
-            ElementInfo&    m_element_info;
+            ParseContext&   m_context;
             Project*        m_project;
 
-            ProjectElementHandlerFactory(ElementInfo& element_info, Project* project)
-              : m_element_info(element_info)
+            ProjectElementHandlerFactory(ParseContext& context, Project* project)
+              : m_context(context)
               , m_project(project)
             {
             }
@@ -2890,7 +2889,7 @@ namespace
             virtual auto_ptr<ElementHandlerType> create()
             {
                 return auto_ptr<ElementHandlerType>(
-                    new ProjectElementHandler(m_element_info, m_project));
+                    new ProjectElementHandler(m_context, m_project));
             }
         };
 
@@ -2898,17 +2897,16 @@ namespace
         struct GenericElementHandlerFactory
           : public IElementHandlerFactory<ProjectElementID>
         {
-            ElementInfo&    m_element_info;
+            ParseContext&   m_context;
 
-            explicit GenericElementHandlerFactory(ElementInfo& element_info)
-              : m_element_info(element_info)
+            explicit GenericElementHandlerFactory(ParseContext& context)
+              : m_context(context)
             {
             }
 
             virtual auto_ptr<ElementHandlerType> create()
             {
-                return auto_ptr<ElementHandlerType>(
-                    new ElementHandler(m_element_info));
+                return auto_ptr<ElementHandlerType>(new ElementHandler(m_context));
             }
         };
 
@@ -2916,8 +2914,7 @@ namespace
         void register_factory_helper(const string& name, const ProjectElementID id)
         {
             auto_ptr<IElementHandlerFactory<ProjectElementID> > factory(
-                new GenericElementHandlerFactory<ElementHandler>(
-                    m_element_info));
+                new GenericElementHandlerFactory<ElementHandler>(m_context));
 
             register_factory(name, id, factory);
         }
@@ -2987,11 +2984,11 @@ auto_release_ptr<Project> ProjectFileReader::load_project_file(
             event_counters));
 
     // Create the content handler.
-    ElementInfo element_info(project.ref(), event_counters);
+    ParseContext context(project.ref(), event_counters);
     auto_ptr<ContentHandler> content_handler(
         new ContentHandler(
             project.get(),
-            element_info));
+            context));
 
     // Create the parser.
     auto_ptr<SAX2XMLReader> parser(XMLReaderFactory::createXMLReader());
