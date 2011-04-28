@@ -762,19 +762,16 @@ struct OBJMeshFileReader::Impl
 
 };
 
-// Constructor.
 OBJMeshFileReader::OBJMeshFileReader(const Options options)
   : impl(new Impl(options))
 {
 }
 
-// Destructor.
 OBJMeshFileReader::~OBJMeshFileReader()
 {
     delete impl;
 }
 
-// Read an OBJ mesh file.
 void OBJMeshFileReader::read(
     const string&       filename,
     IMeshBuilder&       builder)
@@ -782,6 +779,7 @@ void OBJMeshFileReader::read(
     OBJMeshBuilderAdaptor adaptor(builder);
     read(filename, adaptor);
 }
+
 void OBJMeshFileReader::read(
     const string&       filename,
     IOBJMeshBuilder&    builder)
