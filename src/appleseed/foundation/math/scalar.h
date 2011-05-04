@@ -132,11 +132,11 @@ T clamp(const T x, const T min, const T max);
 template <typename T>
 T saturate(const T x);
 
-// Wrap the argument back to [0,1].
+// Wrap the argument back to [0,1).
 template <typename T>
 T wrap(const T x);
 
-// Normalize an angle into [0, 2*Pi].
+// Normalize an angle into [0, 2*Pi).
 template <typename T>
 T normalize_angle(const T angle);
 
@@ -148,6 +148,10 @@ template <typename Int> Int truncate(const double x);
 // Reference: http://en.wikipedia.org/wiki/Rounding#Round_half_away_from_zero.
 template <typename Int, typename T>
 Int round(const T x);
+
+// Compute a % n or fmod(a, n) and always return a non-negative value.
+template <typename T>
+T mod(const T a, const T n);
 
 // linearstep() returns 0 for x < a, 1 for x > b, and generates
 // a linear transition from 0 to 1 between x = a and x = b.
@@ -394,9 +398,28 @@ inline Int truncate(const double x)
 template <typename Int, typename T>
 inline Int round(const T x)
 {
-    return x < T(0.0)
-        ? truncate<Int>(x - T(0.5))
-        : truncate<Int>(x + T(0.5));
+    return truncate<Int>(x < T(0.0) ? x - T(0.5) : x + T(0.5));
+}
+
+template <typename T>
+inline T mod(const T a, const T n)
+{
+    const T m = a % n;
+    return m < 0 ? n + m : m;
+}
+
+template <>
+inline float mod(const float a, const float n)
+{
+    const float m = std::fmod(a, n);
+    return m < 0.0f ? n + m : m;
+}
+
+template <>
+inline double mod(const double a, const double n)
+{
+    const double m = std::fmod(a, n);
+    return m < 0.0 ? n + m : m;
 }
 
 template <typename T>

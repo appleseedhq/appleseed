@@ -159,6 +159,41 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_EQ(120, factorial(5));
     }
 
+    TEST_CASE(Wrap_Given0_Returns0)
+    {
+        EXPECT_EQ(0.0, wrap(0.0));
+    }
+
+    TEST_CASE(Wrap_Given0Dot5_Returns0Dot5)
+    {
+        EXPECT_EQ(0.5, wrap(0.5));
+    }
+
+    TEST_CASE(Wrap_Given1_Returns0)
+    {
+        EXPECT_EQ(0.0, wrap(1.0));
+    }
+
+    TEST_CASE(Wrap_Given1Dot5_Returns0Dot5)
+    {
+        EXPECT_EQ(0.5, wrap(1.5));
+    }
+
+    TEST_CASE(Wrap_GivenMinus0Dot5_Returns0Dot5)
+    {
+        EXPECT_EQ(0.5, wrap(-0.5));
+    }
+
+    TEST_CASE(Wrap_GivenMinus1_Returns0)
+    {
+        EXPECT_EQ(0.0, wrap(-1.0));
+    }
+
+    TEST_CASE(Wrap_GivenMinus1Dot5_Returns0Dot5)
+    {
+        EXPECT_EQ(0.5, wrap(-1.5));
+    }
+
     TEST_CASE(TestTruncate)
     {
         EXPECT_EQ(static_cast<int>(-1.5f), truncate<int>(-1.5f));
@@ -213,6 +248,61 @@ TEST_SUITE(Foundation_Math_Scalar)
     TEST_CASE(Round_GivenMinus3Dot9_ReturnsMinus4)
     {
         EXPECT_EQ(-4, round<int>(-3.9));
+    }
+
+    TEST_CASE(Mod_Given0Mod3_Returns0)
+    {
+        EXPECT_EQ(0, mod(0, 3));
+    }
+
+    TEST_CASE(Mod_Given1Mod3_Returns1)
+    {
+        EXPECT_EQ(1, mod(1, 3));
+    }
+
+    TEST_CASE(Mod_Given2Mod3_Returns2)
+    {
+        EXPECT_EQ(2, mod(2, 3));
+    }
+
+    TEST_CASE(Mod_Given3Mod3_Returns0)
+    {
+        EXPECT_EQ(0, mod(3, 3));
+    }
+
+    TEST_CASE(Mod_Given4Mod3_Returns1)
+    {
+        EXPECT_EQ(1, mod(4, 3));
+    }
+
+    TEST_CASE(Mod_GivenMinus1Mod3_Returns2)
+    {
+        EXPECT_EQ(2, mod(-1, 3));
+    }
+
+    TEST_CASE(Mod_GivenMinus2Mod3_Returns1)
+    {
+        EXPECT_EQ(1, mod(-2, 3));
+    }
+
+    TEST_CASE(Mod_GivenMinus3Mod3_Returns0)
+    {
+        EXPECT_EQ(0, mod(-3, 3));
+    }
+
+    TEST_CASE(Mod_GivenMinus4Mod3_Returns2)
+    {
+        EXPECT_EQ(2, mod(-4, 3));
+    }
+
+    TEST_CASE(Mod_Given0Dot5Mod2_Returns0Dot5)
+    {
+        EXPECT_EQ(0.5, mod(0.5, 2.0));
+    }
+
+    TEST_CASE(Mod_GivenMinus0Dot5Mod2_Returns1Dot5)
+    {
+        EXPECT_EQ(1.5, mod(-0.5, 2.0));
     }
 
     TEST_CASE(TestSmoothStep)
