@@ -33,6 +33,7 @@
 #include "foundation/image/color.h"
 #include "foundation/image/spectrum.h"
 #include "foundation/math/fastmath.h"
+#include "foundation/math/scalar.h"
 #include "foundation/math/spline.h"
 #include "foundation/platform/compiler.h"
 #ifdef APPLESEED_FOUNDATION_USE_SSE
@@ -47,6 +48,56 @@
 
 namespace foundation
 {
+
+//
+// HSV <-> linear RGB transformations.
+//
+// Reference:
+//
+//   http://en.wikipedia.org/wiki/HLS_color_space
+//
+// Note:
+//
+//   If hsv is a three-component color expressed in the HSV color space, then:
+//
+//     hsv[0] is the Hue in [0, 360)
+//     hsv[1] is the Saturation in [0, 1]
+//     hsv[2] is the Value in [0, 1]
+//
+
+// Convert a color from the HSV color space to the linear RGB color space.
+template <typename T>
+Color<T, 3> hsv_to_linear_rgb(const Color<T, 3>& hsv);
+
+// Convert a color from the linear RGB color space to the HSV color space.
+template <typename T>
+Color<T, 3> linear_rgb_to_hsv(const Color<T, 3>& linear_rgb);
+
+
+//
+// HSL <-> linear RGB transformations.
+//
+// Reference:
+//
+//   http://en.wikipedia.org/wiki/HLS_color_space
+//
+// Note:
+//
+//   If hsl is a three-component color expressed in the HSL color space, then:
+//
+//     hsl[0] is the Hue in [0, 360)
+//     hsl[1] is the Saturation in [0, 1]
+//     hsl[2] is the Lightness in [0, 1]
+//
+
+// Convert a color from the HSL color space to the linear RGB color space.
+template <typename T>
+Color<T, 3> hsl_to_linear_rgb(const Color<T, 3>& hsl);
+
+// Convert a color from the linear RGB color space to the HSL color space.
+template <typename T>
+Color<T, 3> linear_rgb_to_hsl(const Color<T, 3>& linear_rgb);
+
 
 //
 // CIE XYZ <-> linear RGB transformations.
@@ -239,6 +290,120 @@ void spectrum_to_spectrum(
     const T                     output_wavelength[],
     T                           output_spectrum[],
     T                           working_storage[] = 0);
+
+
+//
+// HSV <-> linear RGB transformations implementation.
+//
+
+template <typename T>
+inline Color<T, 3> hsv_to_linear_rgb(const Color<T, 3>& hsv)
+{
+    // Compute chroma.
+    const T c = hsv[1] * hsv[2];
+
+    // Compute value.
+    Color<T, 3> linear_rgb(hsv[2] - c);
+
+    // Compute RGB color.
+    const T hprime = hsv[0] * T(1.0 / 60.0);
+    const T x = c * (T(1.0) - std::abs(mod(hprime, T(2.0)) - T(1.0)));
+    switch (truncate<int>(hprime))
+    {
+      case 0: linear_rgb[0] += c; linear_rgb[1] += x; break;
+      case 1: linear_rgb[0] += x; linear_rgb[1] += c; break;
+      case 2: linear_rgb[1] += c; linear_rgb[2] += x; break;
+      case 3: linear_rgb[1] += x; linear_rgb[2] += c; break;
+      case 4: linear_rgb[0] += x; linear_rgb[2] += c; break;
+      case 5: linear_rgb[0] += c; linear_rgb[2] += x; break;
+      assert_otherwise;
+    }
+
+    return linear_rgb;
+}
+
+template <typename T>
+inline Color<T, 3> linear_rgb_to_hsv(const Color<T, 3>& linear_rgb)
+{
+    // Compute chroma.
+    const T max_val = max_value(linear_rgb);
+    const T min_val = min_value(linear_rgb);
+    const T c = max_val - min_val;
+    
+    // Special case for zero chroma.
+    if (c == T(0.0))
+        return Color<T, 3>(0.0);
+
+    // Compute hue.
+    const T hprime =
+        max_val == linear_rgb[0] ? mod((linear_rgb[1] - linear_rgb[2]) / c, T(6.0)) :
+        max_val == linear_rgb[1] ? (linear_rgb[2] - linear_rgb[0]) / c + T(2.0) :
+                                   (linear_rgb[0] - linear_rgb[1]) / c + T(4.0);
+    const T hue = hprime * T(60.0);
+
+    // Compute saturation and value.
+    const T saturation = c / max_val;
+    const T value = max_val;
+
+    return Color<T, 3>(hue, saturation, value);
+}
+
+
+//
+// HSL <-> linear RGB transformations implementation.
+//
+
+template <typename T>
+inline Color<T, 3> hsl_to_linear_rgb(const Color<T, 3>& hsl)
+{
+    // Compute chroma.
+    const T c = hsl[1] * (T(1.0) - std::abs(hsl[2] + hsl[2] - T(1.0)));
+
+    // Compute lightness.
+    Color<T, 3> linear_rgb(hsl[2] - T(0.5) * c);
+
+    // Compute RGB color.
+    const T hprime = hsl[0] * T(1.0 / 60.0);
+    const T x = c * (T(1.0) - std::abs(mod(hprime, T(2.0)) - T(1.0)));
+    switch (truncate<int>(hprime))
+    {
+      case 0: linear_rgb[0] += c; linear_rgb[1] += x; break;
+      case 1: linear_rgb[0] += x; linear_rgb[1] += c; break;
+      case 2: linear_rgb[1] += c; linear_rgb[2] += x; break;
+      case 3: linear_rgb[1] += x; linear_rgb[2] += c; break;
+      case 4: linear_rgb[0] += x; linear_rgb[2] += c; break;
+      case 5: linear_rgb[0] += c; linear_rgb[2] += x; break;
+      assert_otherwise;
+    }
+
+    return linear_rgb;
+}
+
+template <typename T>
+inline Color<T, 3> linear_rgb_to_hsl(const Color<T, 3>& linear_rgb)
+{
+    // Compute chroma.
+    const T max_val = max_value(linear_rgb);
+    const T min_val = min_value(linear_rgb);
+    const T c = max_val - min_val;
+    
+    // Special case for zero chroma.
+    if (c == T(0.0))
+        return Color<T, 3>(0.0);
+
+    // Compute hue.
+    const T hprime =
+        max_val == linear_rgb[0] ? mod((linear_rgb[1] - linear_rgb[2]) / c, T(6.0)) :
+        max_val == linear_rgb[1] ? (linear_rgb[2] - linear_rgb[0]) / c + T(2.0) :
+                                   (linear_rgb[0] - linear_rgb[1]) / c + T(4.0);
+    const T hue = hprime * T(60.0);
+
+    // Compute lightness and saturation.
+    const T lightness = T(0.5) * (min_val + max_val);
+    const T saturation = c / (T(1.0) - std::abs(lightness + lightness - T(1.0)));
+
+    return Color<T, 3>(hue, saturation, lightness);
+}
 
 
 //

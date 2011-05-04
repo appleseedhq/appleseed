@@ -37,10 +37,50 @@
 // Standard headers.
 #include <cstddef>
 
+using namespace foundation;
+using namespace std;
+
 TEST_SUITE(Foundation_Image_ColorSpace)
 {
-    using namespace foundation;
-    using namespace std;
+    TEST_CASE(TestHSVToLinearRGBConversion)
+    {
+        EXPECT_FEQ(Color3d(0.0, 0.0, 0.0), hsv_to_linear_rgb(Color3d(0.0, 0.0, 0.0)));
+        EXPECT_FEQ(Color3d(1.0, 0.0, 0.0), hsv_to_linear_rgb(Color3d(0.0, 1.0, 1.0)));
+        EXPECT_FEQ(Color3d(0.75, 0.75, 0.0), hsv_to_linear_rgb(Color3d(60.0, 1.0, 0.75)));
+        EXPECT_FEQ(Color3d(0.0, 0.5, 0.0), hsv_to_linear_rgb(Color3d(120.0, 1.0, 0.5)));
+        EXPECT_FEQ(Color3d(0.5, 0.5, 1.0), hsv_to_linear_rgb(Color3d(240.0, 0.5, 1.0)));
+        EXPECT_FEQ(Color3d(0.75, 0.25, 0.75), hsv_to_linear_rgb(Color3d(300.0, 2.0/3.0, 0.75)));
+    }
+
+    TEST_CASE(TestLinearRGBToHSVConversion)
+    {
+        EXPECT_FEQ(Color3d(0.0, 0.0, 0.0), linear_rgb_to_hsv(Color3d(0.0, 0.0, 0.0)));
+        EXPECT_FEQ(Color3d(0.0, 1.0, 1.0), linear_rgb_to_hsv(Color3d(1.0, 0.0, 0.0)));
+        EXPECT_FEQ(Color3d(60.0, 1.0, 0.75), linear_rgb_to_hsv(Color3d(0.75, 0.75, 0.0)));
+        EXPECT_FEQ(Color3d(120.0, 1.0, 0.5), linear_rgb_to_hsv(Color3d(0.0, 0.5, 0.0)));
+        EXPECT_FEQ(Color3d(240.0, 0.5, 1.0), linear_rgb_to_hsv(Color3d(0.5, 0.5, 1.0)));
+        EXPECT_FEQ(Color3d(300.0, 2.0/3.0, 0.75), linear_rgb_to_hsv(Color3d(0.75, 0.25, 0.75)));
+    }
+
+    TEST_CASE(TestHSLToLinearRGBConversion)
+    {
+        EXPECT_FEQ(Color3d(0.0, 0.0, 0.0), hsl_to_linear_rgb(Color3d(0.0, 0.0, 0.0)));
+        EXPECT_FEQ(Color3d(1.0, 0.0, 0.0), hsl_to_linear_rgb(Color3d(0.0, 1.0, 0.5)));
+        EXPECT_FEQ(Color3d(0.75, 0.75, 0.0), hsl_to_linear_rgb(Color3d(60.0, 1.0, 0.375)));
+        EXPECT_FEQ(Color3d(0.0, 0.5, 0.0), hsl_to_linear_rgb(Color3d(120.0, 1.0, 0.25)));
+        EXPECT_FEQ(Color3d(0.5, 0.5, 1.0), hsl_to_linear_rgb(Color3d(240.0, 1.0, 0.75)));
+        EXPECT_FEQ(Color3d(0.75, 0.25, 0.75), hsl_to_linear_rgb(Color3d(300.0, 0.5, 0.5)));
+    }
+
+    TEST_CASE(TestLinearRGBToHSLConversion)
+    {
+        EXPECT_FEQ(Color3d(0.0, 0.0, 0.0), linear_rgb_to_hsl(Color3d(0.0, 0.0, 0.0)));
+        EXPECT_FEQ(Color3d(0.0, 1.0, 0.5), linear_rgb_to_hsl(Color3d(1.0, 0.0, 0.0)));
+        EXPECT_FEQ(Color3d(60.0, 1.0, 0.375), linear_rgb_to_hsl(Color3d(0.75, 0.75, 0.0)));
+        EXPECT_FEQ(Color3d(120.0, 1.0, 0.25), linear_rgb_to_hsl(Color3d(0.0, 0.5, 0.0)));
+        EXPECT_FEQ(Color3d(240.0, 1.0, 0.75), linear_rgb_to_hsl(Color3d(0.5, 0.5, 1.0)));
+        EXPECT_FEQ(Color3d(300.0, 0.5, 0.5), linear_rgb_to_hsl(Color3d(0.75, 0.25, 0.75)));
+    }
 
     TEST_CASE(TestCIEXYZToLinearRGBConversion)
     {
