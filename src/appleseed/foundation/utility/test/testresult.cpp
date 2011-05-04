@@ -36,7 +36,6 @@ namespace foundation
 // TestResult class implementation.
 //
 
-// Constructor.
 TestResult::TestResult()
   : m_suite_execution_count(0)
   , m_suite_failure_count(0)
@@ -47,61 +46,66 @@ TestResult::TestResult()
 {
 }
 
-// Report and retrieve test suite execution metrics.
 void TestResult::signal_suite_execution()
 {
     ++m_suite_execution_count;
 }
+
 void TestResult::signal_suite_failure()
 {
     ++m_suite_failure_count;
 }
+
 size_t TestResult::get_suite_execution_count() const
 {
     return m_suite_execution_count;
 }
+
 size_t TestResult::get_suite_failure_count() const
 {
     return m_suite_failure_count;
 }
 
-// Report and retrieve test case execution metrics.
 void TestResult::signal_case_execution()
 {
     ++m_case_execution_count;
 }
+
 void TestResult::signal_case_failure()
 {
     ++m_case_failure_count;
 }
+
 size_t TestResult::get_case_execution_count() const
 {
     return m_case_execution_count;
 }
+
 size_t TestResult::get_case_failure_count() const
 {
     return m_case_failure_count;
 }
 
-// Report and retrieve assertion execution metrics.
 void TestResult::signal_assertion_execution()
 {
     ++m_assertion_execution_count;
 }
+
 void TestResult::signal_assertion_failure()
 {
     ++m_assertion_failure_count;
 }
+
 size_t TestResult::get_assertion_execution_count() const
 {
     return m_assertion_execution_count;
 }
+
 size_t TestResult::get_assertion_failure_count() const
 {
     return m_assertion_failure_count;
 }
 
-// Merge another test result into this one.
 void TestResult::merge(const TestResult& rhs)
 {
     m_suite_execution_count += rhs.m_suite_execution_count;
