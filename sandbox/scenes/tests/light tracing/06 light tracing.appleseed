@@ -114,9 +114,7 @@
         </frame>
     </output>
     <configurations>
-        <configuration name="final" base="base_final">
-            <parameter name="sample_generator" value="lighttracing" />
-        </configuration>
+        <configuration name="final" base="base_final"/>
         <configuration name="interactive" base="base_interactive">
             <parameter name="sample_generator" value="lighttracing" />
             <parameters name="lighttracing_sample_generator">
