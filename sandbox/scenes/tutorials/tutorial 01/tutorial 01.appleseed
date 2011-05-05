@@ -3,32 +3,29 @@
 <project>
     <scene>
         <camera name="camera" model="pinhole_camera">
-            <parameter name="controller_target" value="0.799713 8.73126 2.71691" />
+            <parameter name="controller_target" value="2.17893 9.16596 1.27839" />
             <parameter name="film_dimensions" value="0.024892 0.018669" />
             <parameter name="focal_length" value="0.035" />
             <transform>
                 <matrix>
-                    -0.583990615286731 -0.224475415508297 0.780106242180771 39.277572036290096
-                    0.000000000000000 0.961005530383700 0.276529149588145 22.370743945992068
-                    -0.811760408776522 0.161490428212697 -0.561218210982728 -24.964545544649727
+                    -0.604657024082775 -0.089935471997246 0.791392124110415 39.957095737265860
+                    0.000000000000000 0.993604614059918 0.112915326323936 14.556123891321166
+                    -0.796485959215454 0.068275045188367 -0.600790009052385 -27.401123890889608
                     0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
                 </matrix>
             </transform>
         </camera>
         <assembly name="assembly">
-            <object name="ceiling.ceiling" model="mesh_object">
-                <parameter name="__common_base_name" value="ceiling" />
-                <parameter name="filename" value="ceiling.ceiling.obj" />
+            <object name="floor" model="mesh_object">
+                <parameter name="filename" value="floor.obj" />
             </object>
-            <object name="floor.floor" model="mesh_object">
-                <parameter name="__common_base_name" value="floor" />
-                <parameter name="filename" value="floor.floor.obj" />
+            <object name="killeroo" model="mesh_object">
+                <parameter name="filename" value="killeroo.obj" />
             </object>
-            <object name="killeroo.killeroo" model="mesh_object">
-                <parameter name="__common_base_name" value="killeroo" />
-                <parameter name="filename" value="killeroo.killeroo.obj" />
+            <object name="light" model="mesh_object">
+                <parameter name="filename" value="light.obj" />
             </object>
-            <object_instance name="ceiling.ceiling_inst" object="ceiling.ceiling.ceiling.ceiling">
+            <object_instance name="floor.floor_inst" object="floor.floor">
                 <transform>
                     <matrix>
                         1.000000000000000 0.000000000000000 0.000000000000000 0.000000000000000
@@ -38,7 +35,7 @@
                     </matrix>
                 </transform>
             </object_instance>
-            <object_instance name="floor.floor_inst" object="floor.floor.floor.floor">
+            <object_instance name="killeroo.killeroo_inst" object="killeroo.killeroo">
                 <transform>
                     <matrix>
                         1.000000000000000 0.000000000000000 0.000000000000000 0.000000000000000
@@ -48,7 +45,7 @@
                     </matrix>
                 </transform>
             </object_instance>
-            <object_instance name="killeroo.killeroo_inst" object="killeroo.killeroo.killeroo.killeroo">
+            <object_instance name="light.light_inst" object="light.light">
                 <transform>
                     <matrix>
                         1.000000000000000 0.000000000000000 0.000000000000000 0.000000000000000
