@@ -63,20 +63,7 @@ const char* Appleseed::get_lib_name()
 
 const char* Appleseed::get_lib_version()
 {
-    static const char* LibVersionToken = "1.1.0-UNOFFICIAL";
-    return LibVersionToken;
-}
-
-const char* Appleseed::get_lib_maturity_level()
-{
-    static const char* LibMaturityLevelToken = "alpha-5";
-    return LibMaturityLevelToken;
-}
-
-size_t Appleseed::get_lib_build_number()
-{
-    static const size_t LibBuildNumberToken = 7618;
-    return LibBuildNumberToken;
+    return APPLESEED_VERSION_STRING;
 }
 
 const char* Appleseed::get_lib_configuration()
@@ -108,13 +95,10 @@ namespace
         {
             sprintf(
                 m_value, 
-                "%s version %s %s (build " FMT_SIZE_T ")",
+                "%s version %s",
                 Appleseed::get_lib_name(),
-                Appleseed::get_lib_version(),
-                Appleseed::get_lib_maturity_level(),
-                Appleseed::get_lib_build_number());
+                Appleseed::get_lib_version());
         }
-
     };
 
     SyntheticVersionString s_synthetic_version_string;

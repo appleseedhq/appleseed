@@ -43,6 +43,18 @@ endif()
 
 
 #
+# Extract git tag.
+#
+
+exec_program(
+    ${git_command}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ARGS "describe --long"
+    OUTPUT_VARIABLE git_tag
+)
+
+
+#
 # Boost Libraries.
 #
 
@@ -78,19 +90,20 @@ include_directories(
 set(preprocessor_definitions_common
     ${preprocessor_definitions_common}
     BOOST_FILESYSTEM_VERSION=2              # TODO: port code to Boost.Filesystem version 3 (Boost >= 1.44)
+    APPLESEED_VERSION_STRING="${git_tag}"
 )
 if(CMAKE_SIZEOF_VOID_P MATCHES 4)
-set(preprocessor_definitions_common
-    ${preprocessor_definitions_common}
-    ARCH32
+    set(preprocessor_definitions_common
+        ${preprocessor_definitions_common}
+        ARCH32
 )
 elseif(CMAKE_SIZEOF_VOID_P MATCHES 8)
-set(preprocessor_definitions_common
-    ${preprocessor_definitions_common}
-    ARCH64
+    set(preprocessor_definitions_common
+        ${preprocessor_definitions_common}
+        ARCH64
 )
 else()
-message(FATAL_ERROR "Cannot determine pointer size")
+    message(FATAL_ERROR "Cannot determine pointer size")
 endif()
 
 # Debug configuration.

@@ -228,14 +228,12 @@ void CommandLine::print_version_information(SuperLogger& logger) const
 {
     LOG_INFO(
         logger,
-        "appleseed.cli version %s %s, build " FMT_SIZE_T ", %s configuration\n"
+        "appleseed.cli version %s, %s configuration\n"
         "compiled on %s at %s using %s version %s\n"
         "copyright (c) 2010-2011 francois beaune.\n"
         "this software is released under the MIT license (http://www.opensource.org/licenses/mit-license.php).\n"
         "visit http://appleseedhq.net/ for additional information and resources.",
         Appleseed::get_lib_version(),
-        Appleseed::get_lib_maturity_level(),
-        Appleseed::get_lib_build_number(),
         Appleseed::get_lib_configuration(),
         Appleseed::get_lib_compilation_date(),
         Appleseed::get_lib_compilation_time(),

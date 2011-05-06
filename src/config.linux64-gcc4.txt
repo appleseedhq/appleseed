@@ -33,6 +33,13 @@
 
 
 #
+# Tools.
+#
+
+set(git_command "git")
+
+
+#
 # Preprocessor Definitions.
 #
 

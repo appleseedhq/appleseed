@@ -32,9 +32,6 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
-// Standard headers.
-#include <cstddef>
-
 //
 // On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
 // and to __declspec(dllimport) when building an application using the DLL.
@@ -58,8 +55,7 @@ namespace foundation
 {
 
 //
-// The Appleseed class provides information about the appleseed library,
-// such as the version or build numbers.
+// The Appleseed class provides information about the appleseed library.
 //
 
 class FOUNDATIONDLL Appleseed
@@ -70,24 +66,9 @@ class FOUNDATIONDLL Appleseed
     static const char* get_lib_name();
 
     // Return the version string of the library.
-    // The version string strictly follows the pattern generation.release.patch
-    // where generation is the generation number, release is the release number
-    // withing that generation, and patch is the patch number or bug fix within
-    // this release. generation and release numbers start at 1, patch number
-    // starts at 0. The initial version is thus 1.1.0.
     static const char* get_lib_version();
 
-    // Return the maturity level of the library.
-    // Amongst possible values are "pre-alpha", "alpha", "beta", etc.
-    static const char* get_lib_maturity_level();
-
-    // Return the build number of the library.
-    // Build numbers are guaranteed to be strictly increasing over time.
-    // The first build number is 1.
-    static size_t get_lib_build_number();
-
-    // Return the configuration of the library.
-    // Amongst possible values are "Debug", "Release", etc.
+    // Return the configuration of the library: "Debug", "Release", etc.
     static const char* get_lib_configuration();
 
     // Return the compilation date of the library.
