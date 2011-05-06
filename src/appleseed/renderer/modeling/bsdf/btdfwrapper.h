@@ -39,15 +39,16 @@ namespace renderer
 {
 
 //
-// The BTDFWrapper class wraps a BTDF with domain validity checks.
+// The BTDFWrapper class wraps a BTDF implementation with domain validity checks
+// and takes care of correcting for the use of shading normals in the adjoint case.
 //
 
-template <typename Base>
+template <typename BTDFImpl>
 class BTDFWrapper
-  : public Base
+  : public BTDFImpl
 {
   public:
-    typedef typename Base::Mode Mode;
+    typedef typename BTDFImpl::Mode Mode;
 
     BTDFWrapper(
         const char*                     name,
@@ -87,16 +88,16 @@ class BTDFWrapper
 // BTDFWrapper class implementation.
 //
 
-template <typename Base>
-BTDFWrapper<Base>::BTDFWrapper(
+template <typename BTDFImpl>
+BTDFWrapper<BTDFImpl>::BTDFWrapper(
     const char*                         name,
     const ParamArray&                   params)
-  : Base(name, params)
+  : BTDFImpl(name, params)
 {
 }
 
-template <typename Base>
-void BTDFWrapper<Base>::sample(
+template <typename BTDFImpl>
+void BTDFWrapper<BTDFImpl>::sample(
     const void*                         data,
     const bool                          adjoint,
     const foundation::Vector3d&         geometric_normal,
@@ -111,7 +112,7 @@ void BTDFWrapper<Base>::sample(
     assert(foundation::is_normalized(geometric_normal));
     assert(foundation::is_normalized(outgoing));
 
-    Base::sample(
+    BTDFImpl::sample(
         data,
         adjoint,
         geometric_normal,
@@ -137,8 +138,8 @@ void BTDFWrapper<Base>::sample(
     }
 }
 
-template <typename Base>
-void BTDFWrapper<Base>::evaluate(
+template <typename BTDFImpl>
+void BTDFWrapper<BTDFImpl>::evaluate(
     const void*                         data,
     const bool                          adjoint,
     const foundation::Vector3d&         geometric_normal,
@@ -151,7 +152,7 @@ void BTDFWrapper<Base>::evaluate(
     assert(foundation::is_normalized(outgoing));
     assert(foundation::is_normalized(incoming));
 
-    Base::evaluate(
+    BTDFImpl::evaluate(
         data,
         adjoint,
         geometric_normal,
@@ -174,8 +175,8 @@ void BTDFWrapper<Base>::evaluate(
     }
 }
 
-template <typename Base>
-double BTDFWrapper<Base>::evaluate_pdf(
+template <typename BTDFImpl>
+double BTDFWrapper<BTDFImpl>::evaluate_pdf(
     const void*                         data,
     const foundation::Vector3d&         geometric_normal,
     const foundation::Basis3d&          shading_basis,
@@ -187,7 +188,7 @@ double BTDFWrapper<Base>::evaluate_pdf(
     assert(foundation::is_normalized(incoming));
 
     const double probability =
-        Base::evaluate_pdf(
+        BTDFImpl::evaluate_pdf(
             data,
             geometric_normal,
             shading_basis,

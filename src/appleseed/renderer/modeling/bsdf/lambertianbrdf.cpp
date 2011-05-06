@@ -95,7 +95,7 @@ namespace
             }
         }
 
-        virtual void sample(
+        FORCE_INLINE virtual void sample(
             const void*         data,
             const bool          adjoint,
             const Vector3d&     geometric_normal,
@@ -142,7 +142,7 @@ namespace
             mode = Diffuse;
         }
 
-        virtual void evaluate(
+        FORCE_INLINE virtual void evaluate(
             const void*         data,
             const bool          adjoint,
             const Vector3d&     geometric_normal,
@@ -171,7 +171,7 @@ namespace
             }
         }
 
-        virtual double evaluate_pdf(
+        FORCE_INLINE virtual double evaluate_pdf(
             const void*         data,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,

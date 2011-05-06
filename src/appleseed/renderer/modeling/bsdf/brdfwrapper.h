@@ -39,15 +39,16 @@ namespace renderer
 {
 
 //
-// The BRDFWrapper class wraps a BRDF with domain validity checks.
+// The BRDFWrapper class wraps a BRDF implementation with domain validity checks
+// and takes care of correcting for the use of shading normals in the adjoint case.
 //
 
-template <typename Base>
+template <typename BRDFImpl>
 class BRDFWrapper
-  : public Base
+  : public BRDFImpl
 {
   public:
-    typedef typename Base::Mode Mode;
+    typedef typename BRDFImpl::Mode Mode;
 
     BRDFWrapper(
         const char*                     name,
@@ -87,16 +88,16 @@ class BRDFWrapper
 // BRDFWrapper class implementation.
 //
 
-template <typename Base>
-BRDFWrapper<Base>::BRDFWrapper(
+template <typename BRDFImpl>
+BRDFWrapper<BRDFImpl>::BRDFWrapper(
     const char*                         name,
     const ParamArray&                   params)
-  : Base(name, params)
+  : BRDFImpl(name, params)
 {
 }
 
-template <typename Base>
-void BRDFWrapper<Base>::sample(
+template <typename BRDFImpl>
+void BRDFWrapper<BRDFImpl>::sample(
     const void*                         data,
     const bool                          adjoint,
     const foundation::Vector3d&         geometric_normal,
@@ -116,7 +117,7 @@ void BRDFWrapper<Base>::sample(
     const double cos_ng = foundation::dot(shading_normal, geometric_normal);
     if (cos_ng <= 0.0)
     {
-        mode = Base::None;
+        mode = BRDFImpl::None;
         return;
     }
 
@@ -124,11 +125,11 @@ void BRDFWrapper<Base>::sample(
     const double cos_og = foundation::dot(outgoing, geometric_normal);
     if (cos_og <= 0.0)
     {
-        mode = Base::None;
+        mode = BRDFImpl::None;
         return;
     }
 
-    Base::sample(
+    BRDFImpl::sample(
         data,
         adjoint,
         geometric_normal,
@@ -154,8 +155,8 @@ void BRDFWrapper<Base>::sample(
     }
 }
 
-template <typename Base>
-void BRDFWrapper<Base>::evaluate(
+template <typename BRDFImpl>
+void BRDFWrapper<BRDFImpl>::evaluate(
     const void*                         data,
     const bool                          adjoint,
     const foundation::Vector3d&         geometric_normal,
@@ -186,7 +187,7 @@ void BRDFWrapper<Base>::evaluate(
         return;
     }
 
-    Base::evaluate(
+    BRDFImpl::evaluate(
         data,
         adjoint,
         geometric_normal,
@@ -207,8 +208,8 @@ void BRDFWrapper<Base>::evaluate(
     }
 }
 
-template <typename Base>
-double BRDFWrapper<Base>::evaluate_pdf(
+template <typename BRDFImpl>
+double BRDFWrapper<BRDFImpl>::evaluate_pdf(
     const void*                         data,
     const foundation::Vector3d&         geometric_normal,
     const foundation::Basis3d&          shading_basis,
@@ -232,7 +233,7 @@ double BRDFWrapper<Base>::evaluate_pdf(
         return 0.0;
 
     const double probability =
-        Base::evaluate_pdf(
+        BRDFImpl::evaluate_pdf(
             data,
             geometric_normal,
             shading_basis,
