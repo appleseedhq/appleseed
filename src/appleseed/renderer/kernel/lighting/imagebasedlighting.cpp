@@ -68,13 +68,10 @@ namespace
         Spectrum&                   radiance,
         const ShadingPoint*         parent_shading_point)
     {
-        // Initialize radiance.
         radiance.set(0.0f);
 
-        // Create a sampling context.
         sampling_context = sampling_context.split(3, bsdf_sample_count);
 
-        // Compute direct illumination from this set of light samples.
         for (size_t i = 0; i < bsdf_sample_count; ++i)
         {
             // Generate a uniform sample in [0,1)^3.
@@ -167,13 +164,10 @@ namespace
         Spectrum&                   radiance,
         const ShadingPoint*         parent_shading_point)
     {
-        // Initialize radiance.
         radiance.set(0.0f);
 
-        // Create a sampling context.
         sampling_context = sampling_context.split(2, env_sample_count);
 
-        // Compute direct illumination from this set of light samples.
         for (size_t i = 0; i < env_sample_count; ++i)
         {
             // Generate a uniform sample in [0,1)^2.
@@ -269,7 +263,7 @@ void compute_image_based_lighting(
     assert(is_normalized(geometric_normal));
     assert(is_normalized(outgoing));
 
-    // Sample the BSDF.
+    // Compute IBL by sampling the BSDF.
     compute_ibl_bsdf_sampling(
         sampling_context,
         shading_context,
@@ -285,7 +279,7 @@ void compute_image_based_lighting(
         radiance,
         parent_shading_point);
 
-    // Sample the environment.
+    // Compute IBL by sampling the environment.
     Spectrum radiance_env_sampling;
     compute_ibl_environment_sampling(
         sampling_context,
