@@ -135,8 +135,6 @@ namespace
       private:
         struct Parameters
         {
-            const size_t        m_max_reflection_depth;     // maximum reflection depth
-            const size_t        m_max_refraction_depth;     // maximum refraction depth
             const size_t        m_minimum_path_length;      // minimum path length before Russian Roulette is used
             const size_t        m_dl_sample_count;          // number of samples used to estimate direct illumination
             const size_t        m_ibl_bsdf_sample_count;    // number of samples (in BSDF sampling) used to estimate IBL
@@ -144,9 +142,7 @@ namespace
 
             // Constructor, extract parameters.
             explicit Parameters(const ParamArray& params)
-              : m_max_reflection_depth  ( params.get_optional<size_t>("max_reflection_depth", 8) )
-              , m_max_refraction_depth  ( params.get_optional<size_t>("max_refraction_depth", 8) )
-              , m_minimum_path_length   ( params.get_optional<size_t>("minimum_path_length", 3) )
+              : m_minimum_path_length   ( params.get_optional<size_t>("minimum_path_length", 3) )
               , m_dl_sample_count       ( params.get_optional<size_t>("dl_samples", 1) )
               , m_ibl_bsdf_sample_count ( params.get_optional<size_t>("ibl_bsdf_samples", 2) )
               , m_ibl_env_sample_count  ( params.get_optional<size_t>("ibl_env_samples", 2) )
