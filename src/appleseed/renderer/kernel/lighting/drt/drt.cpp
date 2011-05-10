@@ -249,6 +249,9 @@ namespace
 
                 if (edf)
                 {
+                    // Handle light sources visible either directly or through
+                    // specular/glossy reflections and refractions.
+
                     // Evaluate the input values of the EDF (if any).
                     InputEvaluator edf_input_evaluator(m_texture_cache);
                     const void* edf_data =
