@@ -279,9 +279,10 @@ namespace
 
                         // Compute the probability density with respect to surface area
                         // of the direction obtained through sampling of the BSDF.
-                        double px = bsdf_prob;
-                        px *= max(dot(outgoing, shading_normal), 0.0);
-                        px /= square(distance);
+                        const double px =
+                              bsdf_prob
+                            * max(dot(outgoing, shading_normal), 0.0)
+                            / square(distance);
 
                         // Multiply the emitted radiance by the MIS weight.
                         const double mis_weight = mis_power2(px, sample_probability);
