@@ -156,15 +156,15 @@ void compute_direct_lighting(
 
         // Compute the probability density with respect to surface area
         // of choosing this light sample through sampling of the BSDF.
-        double py =
-            bsdf.evaluate_pdf(
-                bsdf_data,
-                geometric_normal,
-                shading_basis,
-                outgoing,
-                incoming);
-        py *= dot(sample_outgoing, sample_input_params.m_geometric_normal);
-        py /= sample_square_distance;
+        const double py =
+              bsdf.evaluate_pdf(
+                  bsdf_data,
+                  geometric_normal,
+                  shading_basis,
+                  outgoing,
+                  incoming)
+            * dot(sample_outgoing, sample_input_params.m_geometric_normal)
+            / sample_square_distance;
 
         // Compute the MIS weight.
         const double mis_weight = mis_power2(sample.m_probability, py);
