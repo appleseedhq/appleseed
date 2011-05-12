@@ -306,44 +306,60 @@ void LightSampler::collect_emitting_triangles(
     }
 }
 
-void LightSampler::sample(
+bool LightSampler::sample(
+    const Vector3d&         s,
+    LightSample&            sample) const
+{
+    // No light source in the scene.
+    if (!m_light_cdf.valid())
+        return false;
+
+    sample_emitters(s, sample);
+
+    return true;
+}
+
+bool LightSampler::sample(
     SamplingContext&        sampling_context,
     LightSample&            sample) const
 {
     // No light source in the scene.
     if (!m_light_cdf.valid())
-        return;
+        return false;
 
     sampling_context = sampling_context.split(3, 1);
 
-    next_sample(sampling_context, sample);
+    sample_emitters(sampling_context.next_vector2<3>(), sample);
+
+    return true;
 }
 
-void LightSampler::sample(
+bool LightSampler::sample(
     SamplingContext&        sampling_context,
     const size_t            sample_count,
     LightSampleVector&      samples) const
 {
     // No light source in the scene.
     if (!m_light_cdf.valid())
-        return;
+        return false;
 
     sampling_context = sampling_context.split(3, sample_count);
 
     for (size_t i = 0; i < sample_count; ++i)
     {
         LightSample sample;
-        next_sample(sampling_context, sample);
+        sample_emitters(sampling_context.next_vector2<3>(), sample);
         samples.push_back(sample);
     }
+
+    return true;
 }
 
-void LightSampler::next_sample(
-    SamplingContext&        sampling_context,
+void LightSampler::sample_emitters(
+    const Vector3d&         s,
     LightSample&            sample) const
 {
     // Sample the set of emitters (lights and emitting triangles).
-    const Vector3d s = sampling_context.next_vector2<3>();
     const LightCDF::ItemWeightPair result = m_light_cdf.sample(s[0]);
     const size_t emitter_index = result.first;
     const double emitter_prob = result.second;

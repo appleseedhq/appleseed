@@ -96,16 +96,20 @@ class LightSampler
   public:
     // Constructor.
     explicit LightSampler(
-        const Scene&            scene);
+        const Scene&                    scene);
 
     // Sample the set of emitters.
-    void sample(
-        SamplingContext&        sampling_context,
-        LightSample&            sample) const;
-    void sample(
-        SamplingContext&        sampling_context,
-        const size_t            sample_count,
-        LightSampleVector&      samples) const;
+    // Return true if one or more samples could be taken, false otherwise.
+    bool sample(
+        const foundation::Vector3d&     s,
+        LightSample&                    sample) const;
+    bool sample(
+        SamplingContext&                sampling_context,
+        LightSample&                    sample) const;
+    bool sample(
+        SamplingContext&                sampling_context,
+        const size_t                    sample_count,
+        LightSampleVector&              samples) const;
 
     // Compute the probability density in area measure of a given light sample.
     double evaluate_pdf(const ShadingPoint& result) const;
@@ -141,9 +145,9 @@ class LightSampler
         const AssemblyInstance&         assembly_instance,
         const Assembly&                 assembly);
 
-    // Compute the next sample.
-    void next_sample(
-        SamplingContext&                sampling_context,
+    // Sample the set of emitters.
+    void sample_emitters(
+        const foundation::Vector3d&     s,
         LightSample&                    sample) const;
 
     // Sample a given light.
