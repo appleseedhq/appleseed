@@ -98,6 +98,8 @@ namespace
             if (mode == BSDF::None)
                 continue;
 
+            // todo: deliberately ignore specular mode to avoid double contribution?
+
             // Cull samples behind the shading surface.
             assert(is_normalized(incoming));
             const double cos_in = dot(incoming, shading_basis.get_normal());
@@ -131,7 +133,9 @@ namespace
             const double mis_weight =
                 bsdf_prob < 0.0
                     ? 1.0
-                    : mis_power2(bsdf_sample_count * bsdf_prob, env_sample_count * env_prob);
+                    : mis_power2(
+                          bsdf_sample_count * bsdf_prob,
+                          env_sample_count * env_prob);
 
             // Add the contribution of this sample to the illumination.
             env_value *= static_cast<float>(transmission * mis_weight);
@@ -183,7 +187,6 @@ namespace
                 incoming,
                 env_value,
                 env_prob);
-            env_value /= static_cast<float>(env_prob);
 
             // Cull samples behind the shading surface.
             assert(is_normalized(incoming));
@@ -214,20 +217,22 @@ namespace
                 outgoing,
                 incoming,
                 bsdf_value);
-
-            // Compute MIS weight.
             const double bsdf_prob =
-                bsdf.evaluate_pdf(
+                bsdf.evaluate_pdf(      // todo: BSDF::evaluate() should return the probability
                     bsdf_data,
                     geometric_normal,
                     shading_basis,
                     outgoing,
                     incoming);
+
+            // Compute MIS weight.
             const double mis_weight =
-                mis_power2(env_sample_count * env_prob, bsdf_sample_count * bsdf_prob);
+                mis_power2(
+                    env_sample_count * env_prob,
+                    bsdf_sample_count * bsdf_prob);
 
             // Add the contribution of this sample to the illumination.
-            env_value *= static_cast<float>(transmission * mis_weight);
+            env_value *= static_cast<float>(transmission / env_prob * mis_weight);
             env_value *= bsdf_value;
             radiance += env_value;
         }
