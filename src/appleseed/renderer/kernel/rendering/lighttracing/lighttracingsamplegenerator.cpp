@@ -412,21 +412,15 @@ namespace
             // Create a sampling context.
             SamplingContext sampling_context(
                 m_rng,
-                2,                      // number of dimensions
-                0,                      // number of samples
+                3,                      // number of dimensions
+                1,                      // number of samples
                 sequence_index);        // initial instance number
 
-            // Generate a uniform sample in [0,1)^2 that will be used to sample the EDF.
-            const Vector2d s = sampling_context.next_vector2<2>();
-
-            // todo: there are possible correlation artifacts since the sampling_context
-            // object is forked twice from there: once by the light sampler and once by
-            // the path tracer.
-
-            // Get one light sample.
+            // Sample the light sources.
             // todo: handle environment lighting.
             LightSample light_sample;
-            m_light_sampler.sample(sampling_context, light_sample);
+            if (!m_light_sampler.sample(sampling_context.next_vector2<3>(), light_sample))
+                return 0;
 
             // Make sure the geometric normal of the light sample is in the same hemisphere as the shading normal.
             light_sample.m_input_params.m_geometric_normal =
@@ -442,6 +436,7 @@ namespace
                     light_sample.m_input_params);
 
             // Sample the EDF.
+            sampling_context = sampling_context.split(2, 1);
             Vector3d emission_direction;
             Spectrum edf_value;
             double edf_prob;
@@ -449,7 +444,7 @@ namespace
                 edf_data,
                 light_sample.m_input_params.m_geometric_normal,
                 Basis3d(light_sample.m_input_params.m_shading_normal),
-                s,
+                sampling_context.next_vector2<2>(),
                 emission_direction,
                 edf_value,
                 edf_prob);
