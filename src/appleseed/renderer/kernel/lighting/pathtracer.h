@@ -174,10 +174,13 @@ size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
             alpha_mask);
 
         // Handle alpha masking.
-        const double cutoff_prob = 1.0 - alpha_mask[0];
-        if (cutoff_prob > 0.0)
+        if (alpha_mask[0] < 1.0)
         {
-            if (sampling_context.next_double1() >= 1.0 - cutoff_prob)
+            // Generate a uniform sample in [0,1).
+            sampling_context = sampling_context.split(1, 1);
+            const double s = sampling_context.next_double2();
+
+            if (s >= alpha_mask[0])
             {
                 // Construct a ray that continues in the same direction as the incoming ray.
                 const ShadingRay cutoff_ray(
