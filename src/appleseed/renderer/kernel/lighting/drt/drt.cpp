@@ -111,7 +111,6 @@ namespace
             PathVisitor path_visitor(
                 m_params,
                 m_light_sampler,
-                m_light_samples,
                 shading_context,
                 shading_point.get_scene(),
                 radiance);
@@ -136,14 +135,13 @@ namespace
         struct Parameters
         {
             const size_t        m_minimum_path_length;      // minimum path length before Russian Roulette is used
-            const size_t        m_dl_sample_count;          // number of samples used to estimate direct illumination
-            const size_t        m_ibl_bsdf_sample_count;    // number of samples (in BSDF sampling) used to estimate IBL
-            const size_t        m_ibl_env_sample_count;     // number of samples (in environment sampling) used to estimate IBL
+            const size_t        m_dl_light_sample_count;    // number of light samples used to estimate direct illumination
+            const size_t        m_ibl_bsdf_sample_count;    // number of BSDF samples used to estimate IBL
+            const size_t        m_ibl_env_sample_count;     // number of environment samples used to estimate IBL
 
-            // Constructor, extract parameters.
             explicit Parameters(const ParamArray& params)
               : m_minimum_path_length   ( params.get_optional<size_t>("minimum_path_length", 3) )
-              , m_dl_sample_count       ( params.get_optional<size_t>("dl_samples", 1) )
+              , m_dl_light_sample_count ( params.get_optional<size_t>("dl_light_samples", 1) )
               , m_ibl_bsdf_sample_count ( params.get_optional<size_t>("ibl_bsdf_samples", 2) )
               , m_ibl_env_sample_count  ( params.get_optional<size_t>("ibl_env_samples", 2) )
             {
@@ -167,13 +165,11 @@ namespace
             PathVisitor(
                 const Parameters&       params,
                 const LightSampler&     light_sampler,
-                LightSampleVector&      light_samples,
                 const ShadingContext&   shading_context,
                 const Scene&            scene,
                 Spectrum&               path_radiance)
               : m_params(params)
               , m_light_sampler(light_sampler)
-              , m_light_samples(light_samples)
               , m_shading_context(shading_context)
               , m_texture_cache(shading_context.get_texture_cache())
               , m_path_radiance(path_radiance)
@@ -201,31 +197,27 @@ namespace
                 const Material* material = shading_point.get_material();
                 const InputParams& input_params = shading_point.get_input_params();
 
-                // Generate light samples.
-                clear_keep_memory(m_light_samples);
-                m_light_sampler.sample(
-                    sampling_context,
-                    m_params.m_dl_sample_count,
-                    m_light_samples);
-
                 // Compute direct lighting.
                 Spectrum vertex_radiance;
-                compute_direct_lighting(
+                compute_direct_lighting_light_sampling(
                     sampling_context,
                     m_shading_context,
+                    m_light_sampler,
                     point,
                     geometric_normal,
                     shading_basis,
                     outgoing,
                     *bsdf,
                     bsdf_data,
-                    m_light_samples,
+                    1,
+                    m_params.m_dl_light_sample_count,
                     vertex_radiance,
                     &shading_point);
 
                 if (m_env_edf)
                 {
                     // Compute image-based lighting.
+                    // todo: only sample the environment!
                     Spectrum ibl_radiance;
                     compute_image_based_lighting(
                         sampling_context,
@@ -249,10 +241,7 @@ namespace
 
                 if (edf)
                 {
-                    // Handle light sources visible either directly or through
-                    // specular/glossy reflections and refractions.
-
-                    // Evaluate the input values of the EDF (if any).
+                    // Evaluate the input values of the EDF.
                     InputEvaluator edf_input_evaluator(m_texture_cache);
                     const void* edf_data =
                         edf_input_evaluator.evaluate(
@@ -268,24 +257,26 @@ namespace
                         outgoing,
                         emitted_radiance);
 
-                    const double distance = shading_point.get_distance();
-
-                    if (bsdf_mode != BSDF::Specular && distance > 0.0)
+                    // Multiple importance sampling.
+                    const double square_distance = square(shading_point.get_distance());
+                    if (bsdf_mode != BSDF::Specular && square_distance > 0.0)
                     {
-                        // Compute the probability density with respect to surface area
-                        // of choosing this point through sampling of the light sources.
-                        const double sample_probability =
-                            m_light_sampler.evaluate_pdf(shading_point);
-
-                        // Compute the probability density with respect to surface area
-                        // of the direction obtained through sampling of the BSDF.
-                        const double px =
+                        // Transform bsdf_prob to surface area measure (Veach: 8.2.2.2 eq. 8.10).
+                        const double bsdf_point_prob =
                               bsdf_prob
                             * max(dot(outgoing, shading_normal), 0.0)
-                            / square(distance);
+                            / square_distance;
 
-                        // Multiply the emitted radiance by the MIS weight.
-                        const double mis_weight = mis_power2(px, sample_probability);
+                        // Compute the probability density wrt. surface area of choosing this point
+                        // by sampling the light sources.
+                        const double light_point_prob =
+                            m_light_sampler.evaluate_pdf(shading_point);
+
+                        // Apply MIS.
+                        const double mis_weight =
+                            mis_power2(
+                                bsdf_point_prob,
+                                m_params.m_dl_light_sample_count * light_point_prob);
                         emitted_radiance *= static_cast<float>(mis_weight);
                     }
 
@@ -310,7 +301,6 @@ namespace
           private:
             const Parameters&       m_params;
             const LightSampler&     m_light_sampler;
-            LightSampleVector&      m_light_samples;
             const ShadingContext&   m_shading_context;
             TextureCache&           m_texture_cache;
             const EnvironmentEDF*   m_env_edf;
@@ -320,7 +310,6 @@ namespace
         const Parameters        m_params;
         Statistics              m_stats;
         const LightSampler&     m_light_sampler;
-        LightSampleVector       m_light_samples;
     };
 }
 

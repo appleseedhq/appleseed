@@ -31,13 +31,13 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
-#include "renderer/kernel/lighting/lightsampler.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
 
 // Forward declarations.
 namespace renderer      { class BSDF; }
+namespace renderer      { class LightSampler; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
 
@@ -45,19 +45,68 @@ namespace renderer
 {
 
 //
-// Compute the direct lighting at a given point in space.
+// Compute direct lighting at a given point in space.
 //
 
-void compute_direct_lighting(
+// Compute direct lighting via BSDF sampling.
+void compute_direct_lighting_bsdf_sampling(
     SamplingContext&                sampling_context,
     const ShadingContext&           shading_context,
+    const LightSampler&             light_sampler,
     const foundation::Vector3d&     point,              // world space point
     const foundation::Vector3d&     geometric_normal,   // world space geometric normal, unit-length
     const foundation::Basis3d&      shading_basis,      // world space orthonormal basis around shading normal
     const foundation::Vector3d&     outgoing,           // world space outgoing direction, unit-length
     const BSDF&                     bsdf,
     const void*                     bsdf_data,
-    const LightSampleVector&        samples,
+    const size_t                    bsdf_sample_count,
+    const size_t                    light_sample_count,
+    Spectrum&                       radiance,
+    const ShadingPoint*             parent_shading_point = 0);
+
+// Compute direct lighting via light sampling.
+void compute_direct_lighting_light_sampling(
+    SamplingContext&                sampling_context,
+    const ShadingContext&           shading_context,
+    const LightSampler&             light_sampler,
+    const foundation::Vector3d&     point,              // world space point
+    const foundation::Vector3d&     geometric_normal,   // world space geometric normal, unit-length
+    const foundation::Basis3d&      shading_basis,      // world space orthonormal basis around shading normal
+    const foundation::Vector3d&     outgoing,           // world space outgoing direction, unit-length
+    const BSDF&                     bsdf,
+    const void*                     bsdf_data,
+    const size_t                    bsdf_sample_count,
+    const size_t                    light_sample_count,
+    Spectrum&                       radiance,
+    const ShadingPoint*             parent_shading_point = 0);
+
+// Compute direct lighting using a single BSDF/light sample and multiple importance sampling.
+void compute_direct_lighting_single_sample(
+    SamplingContext&                sampling_context,
+    const ShadingContext&           shading_context,
+    const LightSampler&             light_sampler,
+    const foundation::Vector3d&     point,              // world space point
+    const foundation::Vector3d&     geometric_normal,   // world space geometric normal, unit-length
+    const foundation::Basis3d&      shading_basis,      // world space orthonormal basis around shading normal
+    const foundation::Vector3d&     outgoing,           // world space outgoing direction, unit-length
+    const BSDF&                     bsdf,
+    const void*                     bsdf_data,
+    Spectrum&                       radiance,
+    const ShadingPoint*             parent_shading_point = 0);
+
+// Compute direct lighting using multiple importance sampling.
+void compute_direct_lighting(
+    SamplingContext&                sampling_context,
+    const ShadingContext&           shading_context,
+    const LightSampler&             light_sampler,
+    const foundation::Vector3d&     point,              // world space point
+    const foundation::Vector3d&     geometric_normal,   // world space geometric normal, unit-length
+    const foundation::Basis3d&      shading_basis,      // world space orthonormal basis around shading normal
+    const foundation::Vector3d&     outgoing,           // world space outgoing direction, unit-length
+    const BSDF&                     bsdf,
+    const void*                     bsdf_data,
+    const size_t                    bsdf_sample_count,
+    const size_t                    light_sample_count,
     Spectrum&                       radiance,
     const ShadingPoint*             parent_shading_point = 0);
 
