@@ -164,8 +164,8 @@ namespace
               : m_next_event_estimation ( params.get_optional<bool>("next_event_estimation", true) )
               , m_minimum_path_length   ( params.get_optional<size_t>("minimum_path_length", 3) )
               , m_dl_light_sample_count ( params.get_optional<size_t>("dl_light_samples", 1) )
-              , m_ibl_bsdf_sample_count ( params.get_optional<size_t>("ibl_bsdf_samples", 2) )
-              , m_ibl_env_sample_count  ( params.get_optional<size_t>("ibl_env_samples", 2) )
+              , m_ibl_bsdf_sample_count ( params.get_optional<size_t>("ibl_bsdf_samples", 1) )
+              , m_ibl_env_sample_count  ( params.get_optional<size_t>("ibl_env_samples", 1) )
             {
             }
         };
@@ -252,7 +252,6 @@ namespace
                     if (m_env_edf)
                     {
                         // Compute image-based lighting.
-                        // todo: only sample the environment!
                         Spectrum ibl_radiance;
                         compute_image_based_lighting(
                             sampling_context,
