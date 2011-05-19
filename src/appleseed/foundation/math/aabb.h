@@ -120,6 +120,9 @@ class AABB
     T half_surface_area() const;
     T surface_area() const;
 
+    // Compute the 2^N corner points of the bounding box.
+    void compute_corners(VectorType* corners) const;
+
     // Return true if the bounding box contains a given point.
     bool contains(const VectorType& v) const;
 
@@ -157,21 +160,20 @@ typedef AABB<double, 4> AABB4d;
 // N-dimensional axis-aligned bounding box class and operations.
 //
 
-// Constructors.
 template <typename T, size_t N>
 inline AABB<T, N>::AABB()
 {
 }
+
 template <typename T, size_t N>
 inline AABB<T, N>::AABB(
-    const VectorType& min_,             // lower bound
-    const VectorType& max_)             // upper bound
+    const VectorType& min_,
+    const VectorType& max_)
   : min(min_)
   , max(max_)
 {
 }
 
-// Construct a bounding box from another bounding box of a different type.
 template <typename T, size_t N>
 template <typename U>
 inline AABB<T, N>::AABB(const AABB<U, N>& rhs)
@@ -180,7 +182,6 @@ inline AABB<T, N>::AABB(const AABB<U, N>& rhs)
 {
 }
 
-// Return an invalidated bounding box.
 template <typename T, size_t N>
 inline AABB<T, N> AABB<T, N>::invalid()
 {
@@ -189,7 +190,6 @@ inline AABB<T, N> AABB<T, N>::invalid()
     return bbox;
 }
 
-// Return the ratio of the extent of a to the extent of b.
 template <typename T, size_t N>
 inline T AABB<T, N>::extent_ratio(const AABBType& a, const AABBType& b)
 {
@@ -204,13 +204,13 @@ inline T AABB<T, N>::extent_ratio(const AABBType& a, const AABBType& b)
     return ratio;
 }
 
-// Unchecked array subscripting.
 template <typename T, size_t N>
 inline Vector<T, N>& AABB<T, N>::operator[](const size_t i)
 {
     assert(i < 2);
     return (&min)[i];
 }
+
 template <typename T, size_t N>
 inline const Vector<T, N>& AABB<T, N>::operator[](const size_t i) const
 {
@@ -218,7 +218,6 @@ inline const Vector<T, N>& AABB<T, N>::operator[](const size_t i) const
     return (&min)[i];
 }
 
-// Invalidate the bounding box (give it a negative volume).
 template <typename T, size_t N>
 inline void AABB<T, N>::invalidate()
 {
@@ -229,7 +228,6 @@ inline void AABB<T, N>::invalidate()
     }
 }
 
-// Insert a point or another bounding box into the bounding box.
 template <typename T, size_t N>
 inline void AABB<T, N>::insert(const VectorType& v)
 {
@@ -239,6 +237,7 @@ inline void AABB<T, N>::insert(const VectorType& v)
         max[i] = std::max(max[i], v[i]);
     }
 }
+
 template <typename T, size_t N>
 inline void AABB<T, N>::insert(const AABBType& b)
 {
@@ -249,16 +248,15 @@ inline void AABB<T, N>::insert(const AABBType& b)
     }
 }
 
-// Grow the bounding box by a fixed amount in every dimension.
 template <typename T, size_t N>
 inline void AABB<T, N>::grow(const VectorType& v)
 {
     assert(is_valid());
+
     min -= v;
     max += v;
 }
 
-// Robustly grow the bounding box by a given epsilon factor.
 template <typename T, size_t N>
 inline void AABB<T, N>::robust_grow(const ValueType eps)
 {
@@ -282,8 +280,6 @@ inline void AABB<T, N>::robust_grow(const ValueType eps)
     }
 }
 
-// Return true if the extent of the bounding box is positive or
-// null along all dimensions.
 template <typename T, size_t N>
 inline bool AABB<T, N>::is_valid() const
 {
@@ -297,8 +293,6 @@ inline bool AABB<T, N>::is_valid() const
     return true;
 }
 
-// Return the rank of the bounding box (the number of dimensions
-// along which the bounding box has a strictly positive extent).
 template <typename T, size_t N>
 inline size_t AABB<T, N>::rank() const
 {
@@ -315,39 +309,42 @@ inline size_t AABB<T, N>::rank() const
     return r;
 }
 
-// Compute the center of the bounding box.
 template <typename T, size_t N>
 inline Vector<T, N> AABB<T, N>::center() const
 {
     assert(is_valid());
+
     return ValueType(0.5) * (min + max);
 }
 
-// Compute the extent of the bounding box.
 template <typename T, size_t N>
 inline Vector<T, N> AABB<T, N>::extent() const
 {
     assert(is_valid());
+
     return max - min;
 }
 
-// Return the volume of the bounding box.
 template <typename T, size_t N>
 T AABB<T, N>::volume() const
 {
     assert(is_valid());
+
     const VectorType e = max - min;
+
     return e[0] * e[1] * e[2];
 }
 
-// Return the surface area of the bounding box.
 template <typename T, size_t N>
 inline T AABB<T, N>::half_surface_area() const
 {
     assert(is_valid());
+
     const VectorType e = max - min;
+
     return e[0] * e[1] + e[0] * e[2] + e[1] * e[2];
 }
+
 template <typename T, size_t N>
 inline T AABB<T, N>::surface_area() const
 {
@@ -355,7 +352,23 @@ inline T AABB<T, N>::surface_area() const
     return h + h;
 }
 
-// Return true if the bounding box contains a given point.
+template <typename T, size_t N>
+void AABB<T, N>::compute_corners(VectorType* corners) const
+{
+    assert(is_valid());
+    assert(corners);
+
+    for (size_t i = 0; i < 1 << N; ++i)
+    {
+        VectorType p;
+
+        for (size_t d = 0; d < N; ++d)
+            p[d] = i & (1 << d) ? max[d] : min[d];
+
+        corners[i] = p;
+    }
+}
+
 template <typename T, size_t N>
 inline bool AABB<T, N>::contains(const VectorType& v) const
 {
@@ -370,7 +383,6 @@ inline bool AABB<T, N>::contains(const VectorType& v) const
     return true;
 }
 
-// Return true if the bounding box overlaps another given bounding box.
 template <typename T, size_t N>
 inline bool AABB<T, N>::overlaps(const AABBType& b) const
 {
@@ -385,12 +397,12 @@ inline bool AABB<T, N>::overlaps(const AABBType& b) const
     return true;
 }
 
-// Exact inequality and equality tests.
 template <typename T, size_t N>
 inline bool operator!=(const AABB<T, N>& lhs, const AABB<T, N>& rhs)
 {
     return lhs.min != rhs.min || lhs.max != rhs.max;
 }
+
 template <typename T, size_t N>
 inline bool operator==(const AABB<T, N>& lhs, const AABB<T, N>& rhs)
 {

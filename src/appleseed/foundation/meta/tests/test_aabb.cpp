@@ -272,6 +272,40 @@ TEST_SUITE(Foundation_Math_AABB)
         EXPECT_FEQ(5.0 * 7.0 + 5.0 * 9.0 + 7.0 * 9.0, bbox.half_surface_area()); 
     }
 
+    TEST_CASE(TestSurfaceArea)
+    {
+        const AABB3d bbox(
+            Vector3d(-1.0, -2.0, -3.0),
+            Vector3d(4.0, 5.0, 6.0));
+
+        EXPECT_FEQ(2.0 * (5.0 * 7.0 + 5.0 * 9.0 + 7.0 * 9.0), bbox.surface_area()); 
+    }
+
+    TEST_CASE(TestComputeCorners)
+    {
+        const AABB3d bbox(
+            Vector3d(-1.0, -2.0, -3.0),
+            Vector3d(4.0, 5.0, 6.0));
+
+        const Vector3d Sentinel(12.34, 56.78, 90.12);
+
+        Vector3d corners[9];
+        corners[8] = Sentinel;
+
+        bbox.compute_corners(corners);
+
+        EXPECT_EQ(Vector3d(-1.0, -2.0, -3.0), corners[0]);
+        EXPECT_EQ(Vector3d( 4.0, -2.0, -3.0), corners[1]);
+        EXPECT_EQ(Vector3d(-1.0,  5.0, -3.0), corners[2]);
+        EXPECT_EQ(Vector3d( 4.0,  5.0, -3.0), corners[3]);
+        EXPECT_EQ(Vector3d(-1.0, -2.0,  6.0), corners[4]);
+        EXPECT_EQ(Vector3d( 4.0, -2.0,  6.0), corners[5]);
+        EXPECT_EQ(Vector3d(-1.0,  5.0,  6.0), corners[6]);
+        EXPECT_EQ(Vector3d( 4.0,  5.0,  6.0), corners[7]);
+
+        EXPECT_EQ(Sentinel, corners[8]);
+    }
+
     TEST_CASE(TestContainsOnRank0AABB)
     {
         const AABB3d bbox(
