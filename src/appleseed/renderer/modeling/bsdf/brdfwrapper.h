@@ -145,7 +145,6 @@ void BRDFWrapper<BRDFImpl>::sample(
     {
         const double cos_on = std::abs(foundation::dot(outgoing, shading_normal));
         const double cos_ig = foundation::dot(incoming, geometric_normal);
-        assert(cos_ig > 0.0);
         value *= static_cast<float>(cos_on * cos_ig / cos_og);
     }
     else
