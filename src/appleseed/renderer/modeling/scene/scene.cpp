@@ -32,6 +32,10 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/environment/environment.h"
+#include "renderer/modeling/scene/assemblyinstance.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/foreach.h"
 
 using namespace foundation;
 using namespace std;
@@ -140,6 +144,30 @@ AssemblyContainer& Scene::assemblies() const
 AssemblyInstanceContainer& Scene::assembly_instances() const
 {
     return impl->m_assembly_instances;
+}
+
+double Scene::compute_radius() const
+{
+    double square_radius = 0.0;
+
+    for (const_each<AssemblyInstanceContainer> i = impl->m_assembly_instances; i; ++i)
+    {
+        const AssemblyInstance& inst = *i;
+        const GAABB3 inst_bbox = inst.compute_parent_bbox();
+
+        GVector3 corners[8];
+        inst_bbox.compute_corners(corners);
+
+        for (size_t j = 0; j < 8; ++j)
+        {
+            const double square_distance = square_norm(corners[i]);
+
+            if (square_radius < square_distance)
+                square_radius = square_distance;
+        }
+    }
+
+    return sqrt(square_radius);
 }
 
 }   // namespace renderer

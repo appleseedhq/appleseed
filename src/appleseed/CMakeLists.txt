@@ -990,6 +990,7 @@ set(renderer_meta_tests_sources
     renderer/meta/tests/test_pixelsampler.cpp
     renderer/meta/tests/test_projectfilereader.cpp
     renderer/meta/tests/test_samplecounter.cpp
+    renderer/meta/tests/test_scene.cpp
 )
 list(APPEND appleseed_sources
     ${renderer_meta_tests_sources}

@@ -100,6 +100,9 @@ class RENDERERDLL Scene
     // Access the assembly instances.
     AssemblyInstanceContainer& assembly_instances() const;
 
+    // Compute and return the scene radius.
+    double compute_radius() const;
+
   private:
     // Private implementation.
     struct Impl;
