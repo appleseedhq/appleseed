@@ -98,6 +98,9 @@ class LightSampler
     explicit LightSampler(
         const Scene&                    scene);
 
+    // Return true if the scene has at least one light or emitting triangle.
+    bool has_lights() const;
+
     // Sample the set of emitters.
     // Return true if one or more samples could be taken, false otherwise.
     bool sample(
@@ -169,6 +172,11 @@ class LightSampler
 //
 // LightSampler class implementation.
 //
+
+inline bool LightSampler::has_lights() const
+{
+    return m_light_cdf.valid();
+}
 
 inline double LightSampler::evaluate_pdf(const ShadingPoint& /*result*/) const
 {
