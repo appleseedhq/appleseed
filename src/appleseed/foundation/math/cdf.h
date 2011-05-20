@@ -114,35 +114,30 @@ class CDF
 // CDF class implementation.
 //
 
-// Constructor.
 template <typename Item, typename Weight>
 inline CDF<Item, Weight>::CDF()
   : m_weight_sum(0.0)
 {
 }
 
-// Return true if the CDF is empty.
 template <typename Item, typename Weight>
 inline bool CDF<Item, Weight>::empty() const
 {
     return m_items.empty();
 }
 
-// Return true if the CDF has at least one item with a positive weight.
 template <typename Item, typename Weight>
 inline bool CDF<Item, Weight>::valid() const
 {
     return m_weight_sum > Weight(0.0);
 }
 
-// Return the sum of the weight of all inserted items.
 template <typename Item, typename Weight>
 inline Weight CDF<Item, Weight>::weight() const
 {
     return m_weight_sum;
 }
 
-// Remove all items from the CDF.
 template <typename Item, typename Weight>
 inline void CDF<Item, Weight>::clear()
 {
@@ -151,14 +146,12 @@ inline void CDF<Item, Weight>::clear()
     m_weight_sum = Weight(0.0);
 }
 
-// Allocate memory for a given number of items.
 template <typename Item, typename Weight>
 inline void CDF<Item, Weight>::reserve(const size_t count)
 {
     m_items.reserve(count);
 }
 
-// Insert an item with a given non-negative weight.
 template <typename Item, typename Weight>
 inline void CDF<Item, Weight>::insert(const Item& item, const Weight weight)
 {
@@ -169,7 +162,6 @@ inline void CDF<Item, Weight>::insert(const Item& item, const Weight weight)
     m_weight_sum += weight;
 }
 
-// Access the i'th item.
 template <typename Item, typename Weight>
 inline const std::pair<Item, Weight>& CDF<Item, Weight>::operator[](const size_t i) const
 {
@@ -178,33 +170,33 @@ inline const std::pair<Item, Weight>& CDF<Item, Weight>::operator[](const size_t
     return m_items[i];
 }
 
-// Prepare the CDF for sampling.
 template <typename Item, typename Weight>
 void CDF<Item, Weight>::prepare()
 {
     assert(valid());
 
+    const size_t item_count = m_items.size();
+
     // Normalize weights so that they add up to 1.0.
     const Weight rcp_weight_sum = Weight(1.0) / m_weight_sum;
-    for (size_t i = 0; i < m_items.size(); ++i)
+    for (size_t i = 0; i < item_count; ++i)
         m_items[i].second *= rcp_weight_sum;
 
     // Compute the distribution function.
-    m_densities.reserve(m_items.size());
+    m_densities.resize(item_count);
     Weight cumulated_weight = Weight(0.0);
-    for (size_t i = 0; i < m_items.size() - 1; ++i)
+    for (size_t i = 0; i < item_count - 1; ++i)
     {
         cumulated_weight += m_items[i].second;
-        m_densities.push_back(cumulated_weight);
+        m_densities[i] = cumulated_weight;
     }
-    m_densities.push_back(Weight(1.0));
+    m_densities[item_count - 1] = Weight(1.0);
 }
 
-// Sample the CDF. x is in [0,1).
 template <typename Item, typename Weight>
 inline std::pair<Item, Weight> CDF<Item, Weight>::sample(const Weight x) const
 {
-    assert(!m_densities.empty());
+    assert(!m_densities.empty());   // implies valid() == true
     assert(x >= Weight(0.0));
     assert(x < Weight(1.0));
 
