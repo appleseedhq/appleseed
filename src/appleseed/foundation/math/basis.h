@@ -89,18 +89,17 @@ typedef Basis3<double> Basis3d;
 // Basis3 class implementation.
 //
 
-// Constructors.
 template <typename T>
 inline Basis3<T>::Basis3()
 {
 }
+
 template <typename T>
 inline Basis3<T>::Basis3(const VectorType& normal)
 {
     build(normal);
 }
 
-// Construct an orthonormal basis for a given unit-length normal vector.
 template <typename T>
 inline void Basis3<T>::build(const VectorType& normal)
 {
@@ -174,31 +173,30 @@ inline void Basis3<T>::build(const VectorType& normal)
     assert(feq(cross(m_u, m_n), m_v));
 }
 
-// Transform a 3D vector from parent space to local space.
 template <typename T>
 inline Vector<T, 3> Basis3<T>::transform_to_local(const VectorType& v) const
 {
     return Vector<T, 3>(dot(v, m_u), dot(v, m_n), dot(v, m_v));
 }
 
-// Transform a 3D vector from local space to parent space.
 template <typename T>
 inline Vector<T, 3> Basis3<T>::transform_to_parent(const VectorType& v) const
 {
     return v[0] * m_u + v[1] * m_n + v[2] * m_v;
 }
 
-// Retrieve the individual basis vectors.
 template <typename T>
 inline const Vector<T, 3>& Basis3<T>::get_normal() const
 {
     return m_n;
 }
+
 template <typename T>
 inline const Vector<T, 3>& Basis3<T>::get_tangent_u() const
 {
     return m_u;
 }
+
 template <typename T>
 inline const Vector<T, 3>& Basis3<T>::get_tangent_v() const
 {
