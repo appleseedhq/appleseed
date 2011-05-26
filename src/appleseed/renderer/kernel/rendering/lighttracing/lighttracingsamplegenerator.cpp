@@ -47,6 +47,8 @@
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/edf/edf.h"
+#include "renderer/modeling/environment/environment.h"
+#include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/input/inputevaluator.h"
 
@@ -97,11 +99,15 @@ namespace
           : SampleGeneratorBase(generator_index, generator_count)
           , m_params(params)
           , m_scene(scene)
+          , m_safe_scene_radius(scene.compute_radius() * (1.0 + 1.0e-3))
+          , m_disk_point_prob(1.0 / (Pi * square(m_safe_scene_radius)))
           , m_frame(frame)
           , m_light_sampler(light_sampler)
           , m_intersector(trace_context, true, m_params.m_report_self_intersections)
           , m_texture_cache(scene, m_params.m_texture_cache_size)
         {
+            const Environment* environment = scene.get_environment();
+            m_env_edf = environment ? environment->get_environment_edf() : 0;
         }
 
         ~LightTracingSampleGenerator()
@@ -392,18 +398,29 @@ namespace
             }
         };
 
+        typedef PathTracer<
+            PathVisitor,
+            BSDF::Diffuse | BSDF::Glossy | BSDF::Specular,
+            true    // adjoint
+        > PathTracer;
+
         const Parameters                m_params;
         Statistics                      m_stats;
 
         const Scene&                    m_scene;
         const Frame&                    m_frame;
 
+        const EnvironmentEDF*           m_env_edf;
+
+        // Preserve order.
+        const double                    m_safe_scene_radius;    // radius of the scene's bounding sphere + small safety margin
+        const double                    m_disk_point_prob;
+
         const LightSampler&             m_light_sampler;
         Intersector                     m_intersector;
         TextureCache                    m_texture_cache;
 
         MersenneTwister                 m_rng;
-        LightSampleVector               m_light_samples;
 
         uint64                          m_light_sample_count;
 
@@ -411,18 +428,31 @@ namespace
             const size_t                sequence_index,
             SampleVector&               samples)
         {
-            // Create a sampling context.
-            SamplingContext sampling_context(
-                m_rng,
-                3,                      // number of dimensions
-                1,                      // number of samples
-                sequence_index);        // initial instance number
+            SamplingContext sampling_context(m_rng, 0, 0, sequence_index);
 
+            size_t sample_count = 0;
+
+            if (m_light_sampler.has_lights())
+                sample_count += generate_light_sample(sampling_context, samples);
+
+            if (m_env_edf)
+                sample_count += generate_environment_sample(sampling_context, samples);
+
+            ++m_light_sample_count;
+
+            return sample_count;
+        }
+
+        size_t generate_light_sample(
+            SamplingContext&            sampling_context,
+            SampleVector&               samples)
+        {
             // Sample the light sources.
-            // todo: handle environment lighting.
+            sampling_context = sampling_context.split(3, 1);
             LightSample light_sample;
-            if (!m_light_sampler.sample(sampling_context.next_vector2<3>(), light_sample))
-                return 0;
+            const bool got_sample =
+                m_light_sampler.sample(sampling_context.next_vector2<3>(), light_sample);
+            assert(got_sample);
 
             // Make sure the geometric normal of the light sample is in the same hemisphere as the shading normal.
             light_sample.m_input_params.m_geometric_normal =
@@ -479,12 +509,7 @@ namespace
                 0.0f,
                 ~0);
 
-            // Build a path tracer.
-            typedef PathTracer<
-                PathVisitor,
-                BSDF::Diffuse | BSDF::Glossy | BSDF::Specular,
-                true    // adjoint
-            > PathTracer;
+            // Build the path tracer.
             PathVisitor path_visitor(
                 m_scene,
                 m_frame,
@@ -512,7 +537,74 @@ namespace
                     m_texture_cache,
                     light_ray,
                     &parent_shading_point);
-            ++m_light_sample_count;
+
+            // Update path statistics.
+            ++m_stats.m_path_count;
+            m_stats.m_path_length.insert(path_length);
+
+            // Return the number of samples generated when tracing this light path.
+            return path_visitor.get_sample_count();
+        }
+
+        size_t generate_environment_sample(
+            SamplingContext&            sampling_context,
+            SampleVector&               samples)
+        {
+            // Sample the environment.
+            sampling_context = sampling_context.split(2, 1);
+            InputEvaluator env_edf_input_evaluator(m_texture_cache);
+            Vector3d outgoing;
+            Spectrum env_edf_value;
+            double env_edf_prob;
+            m_env_edf->sample(
+                env_edf_input_evaluator,
+                sampling_context.next_vector2<2>(),
+                outgoing,               // points toward the environment
+                env_edf_value,
+                env_edf_prob);
+
+            // Compute the center of the tangent disk.
+            const Vector3d disk_center = m_safe_scene_radius * outgoing;
+
+            // Uniformly sample the tangent disk.
+            sampling_context = sampling_context.split(2, 1);
+            const Vector2d disk_point =
+                m_safe_scene_radius *
+                sample_disk_uniform(sampling_context.next_vector2<2>());
+
+            // Compute the origin of the light ray.
+            const Basis3d basis(-outgoing);
+            const Vector3d ray_origin =
+                disk_center +
+                disk_point[0] * basis.get_tangent_u() +
+                disk_point[1] * basis.get_tangent_v();
+
+            // Compute the initial particle weight.
+            Spectrum initial_alpha = env_edf_value;
+            initial_alpha /= static_cast<float>(m_disk_point_prob * env_edf_prob);
+
+            // Build the light ray.
+            const ShadingRay light_ray(ray_origin, -outgoing, 0.0f, ~0);
+
+            // Build the path tracer.
+            PathVisitor path_visitor(
+                m_scene,
+                m_frame,
+                m_intersector,
+                m_texture_cache,
+                samples,
+                initial_alpha);
+            PathTracer path_tracer(
+                path_visitor,
+                m_params.m_minimum_path_length);
+
+            // Trace the light path.
+            const size_t path_length =
+                path_tracer.trace(
+                    sampling_context,
+                    m_intersector,
+                    m_texture_cache,
+                    light_ray);
 
             // Update path statistics.
             ++m_stats.m_path_count;
