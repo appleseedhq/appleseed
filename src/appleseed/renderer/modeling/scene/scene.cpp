@@ -160,7 +160,7 @@ double Scene::compute_radius() const
 
         for (size_t j = 0; j < 8; ++j)
         {
-            const double square_distance = square_norm(corners[i]);
+            const double square_distance = square_norm(corners[j]);
 
             if (square_radius < square_distance)
                 square_radius = square_distance;

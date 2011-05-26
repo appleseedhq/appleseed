@@ -93,12 +93,14 @@ TEST_SUITE(Renderer_Modeling_Scene_Scene)
             AssemblyInstanceFactory::create(
                 "assembly_inst",
                 *assembly,
-                Transformd(Matrix4d::scaling(Vector3d(10.0)))));
+                Transformd(
+                    Matrix4d::translation(Vector3d(1.0)) *
+                    Matrix4d::scaling(Vector3d(10.0)))));
 
         scene.assemblies().insert(assembly);
 
         const double radius = scene.compute_radius();
 
-        EXPECT_FEQ(10.0 * sqrt(3.0), radius);
+        EXPECT_FEQ(10.0 * sqrt(3.0) + sqrt(3.0), radius);
     }
 }
