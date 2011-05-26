@@ -252,9 +252,6 @@ namespace
                 const double                bsdf_prob,
                 const Spectrum&             throughput)
             {
-                if (shading_point.get_material()->get_edf())
-                    return false;   // terminate this path
-
                 Vector2d sample_position_ndc;
                 double transmission;
                 Vector3d vertex_to_camera;
