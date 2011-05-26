@@ -174,15 +174,16 @@ Color<T, 3> transform_color(
 
 //
 // Compute the relative luminance of a linear RGB triplet as defined
-// in the Rec. 709:
+// in the ITU-R Recommendation BT.709 (Rec. 709):
 //
-//   Y = 0.2126 R + 0.7152 G + 0.0722 B.
+//   Y = 0.212671 R + 0.715160 G + 0.072169 B
 //
 // This is equivalent to transforming the linear RGB triplet to the
-// CIE XYZ color space, and keeping the Y component.
+// CIE XYZ color space and keeping the Y component.
 //
 // References:
 //
+//   http://en.wikipedia.org/wiki/Rec._709
 //   http://en.wikipedia.org/wiki/Luminance_(relative)
 //
 
