@@ -30,7 +30,12 @@
 #include "exrimagefilereader.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exceptionnotimplemented.h"
+#include "foundation/image/canvasproperties.h"
+#include "foundation/image/image.h"
+#include "foundation/image/progressiveexrimagefilereader.h"
+
+// Standard headers.
+#include <memory>
 
 using namespace std;
 
@@ -41,13 +46,40 @@ namespace foundation
 // EXRImageFileReader class implementation.
 //
 
-// Read an OpenEXR image file.
-void EXRImageFileReader::read(
+Image* EXRImageFileReader::read(
     const string&       filename,
-    ICanvas&            image,
-    ImageAttributes&    image_attributes)
+    ImageAttributes*    image_attributes)
 {
-    throw ExceptionNotImplemented();
+    ProgressiveEXRImageFileReader reader(32, 32);
+    reader.open(filename.c_str());
+
+    CanvasProperties props;
+    reader.read_canvas_properties(props);
+
+    if (image_attributes)
+        reader.read_image_attributes(*image_attributes);
+
+    auto_ptr<Image> image(
+        new Image(
+            props.m_canvas_width,
+            props.m_canvas_height,
+            props.m_tile_width,
+            props.m_tile_height,
+            props.m_channel_count,
+            props.m_pixel_format));
+
+    for (size_t tile_y = 0; tile_y < props.m_tile_count_y; ++tile_y)
+    {
+        for (size_t tile_x = 0; tile_x < props.m_tile_count_x; ++tile_x)
+        {
+            auto_ptr<Tile> tile(reader.read_tile(tile_x, tile_y));
+            image->set_tile(tile_x, tile_y, tile.release());
+        }
+    }
+
+    reader.close();
+
+    return image.release();
 }
 
 }   // namespace foundation

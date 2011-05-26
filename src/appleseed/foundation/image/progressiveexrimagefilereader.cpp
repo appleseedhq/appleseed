@@ -85,7 +85,6 @@ struct ProgressiveEXRImageFileReader::Impl
     size_t                      m_last_tile_y;
 };
 
-// Constructors.
 ProgressiveEXRImageFileReader::ProgressiveEXRImageFileReader(Logger* logger)
   : impl(new Impl())
 {
@@ -93,6 +92,7 @@ ProgressiveEXRImageFileReader::ProgressiveEXRImageFileReader(Logger* logger)
     impl->m_default_tile_width = 64;
     impl->m_default_tile_height = 16;
 }
+
 ProgressiveEXRImageFileReader::ProgressiveEXRImageFileReader(
     const size_t        default_tile_width,
     const size_t        default_tile_height)
@@ -102,6 +102,7 @@ ProgressiveEXRImageFileReader::ProgressiveEXRImageFileReader(
     impl->m_default_tile_width = default_tile_width;
     impl->m_default_tile_height = default_tile_height;
 }
+
 ProgressiveEXRImageFileReader::ProgressiveEXRImageFileReader(
     Logger*             logger,
     const size_t        default_tile_width,
@@ -113,7 +114,6 @@ ProgressiveEXRImageFileReader::ProgressiveEXRImageFileReader(
     impl->m_default_tile_height = default_tile_height;
 }
 
-// Destructor.
 ProgressiveEXRImageFileReader::~ProgressiveEXRImageFileReader()
 {
     if (is_open())
@@ -122,7 +122,6 @@ ProgressiveEXRImageFileReader::~ProgressiveEXRImageFileReader()
     delete impl;
 }
 
-// Open an OpenEXR image file.
 void ProgressiveEXRImageFileReader::open(const char* filename)
 {
     assert(filename);
@@ -256,7 +255,6 @@ void ProgressiveEXRImageFileReader::open(const char* filename)
     }
 }
 
-// Close the image file.
 void ProgressiveEXRImageFileReader::close()
 {
     assert(is_open());
@@ -267,7 +265,6 @@ void ProgressiveEXRImageFileReader::close()
     clear_release_memory(impl->m_scanlines);
 }
 
-// Return true if an image file is currently open.
 bool ProgressiveEXRImageFileReader::is_open() const
 {
     return impl->m_is_tiled
@@ -275,7 +272,6 @@ bool ProgressiveEXRImageFileReader::is_open() const
         : impl->m_scanline_file.get() != 0;
 }
 
-// Read canvas properties.
 void ProgressiveEXRImageFileReader::read_canvas_properties(
     CanvasProperties&   props)
 {
@@ -283,7 +279,6 @@ void ProgressiveEXRImageFileReader::read_canvas_properties(
     props = impl->m_props;
 }
 
-// Read image attributes.
 void ProgressiveEXRImageFileReader::read_image_attributes(
     ImageAttributes&    attrs)
 {
@@ -291,7 +286,6 @@ void ProgressiveEXRImageFileReader::read_image_attributes(
     throw ExceptionNotImplemented();
 }
 
-// Read an image tile. Returns a newly allocated tile.
 Tile* ProgressiveEXRImageFileReader::read_tile(
     const size_t        tile_x,
     const size_t        tile_y)

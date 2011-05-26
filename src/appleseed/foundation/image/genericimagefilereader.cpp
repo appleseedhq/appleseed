@@ -50,11 +50,9 @@ namespace foundation
 // GenericImageFileReader class implementation.
 //
 
-// Read an image file.
-void GenericImageFileReader::read(
+Image* GenericImageFileReader::read(
     const string&       filename,
-    ICanvas&            image,
-    ImageAttributes&    image_attributes)
+    ImageAttributes*    image_attributes)
 {
     // Extract the extension of the image filename.
     const filesystem::path filepath(filename);
@@ -69,10 +67,7 @@ void GenericImageFileReader::read(
     else throw ExceptionUnknownFileTypeError();
 
     // Read the image file.
-    image_file_reader->read(
-        filename,
-        image,
-        image_attributes);
+    return image_file_reader->read(filename, image_attributes);
 }
 
 }   // namespace foundation

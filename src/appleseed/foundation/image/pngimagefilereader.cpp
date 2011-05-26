@@ -41,13 +41,12 @@ namespace foundation
 // PNGImageFileReader class implementation.
 //
 
-// Read a PNG image file.
-void PNGImageFileReader::read(
+Image* PNGImageFileReader::read(
     const string&       filename,
-    ICanvas&            image,
-    ImageAttributes&    image_attributes)
+    ImageAttributes*    image_attributes)
 {
     throw ExceptionNotImplemented();
+    return 0;
 }
 
 }   // namespace foundation
