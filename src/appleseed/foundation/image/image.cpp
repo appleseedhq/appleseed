@@ -45,7 +45,6 @@ namespace foundation
 // Image class implementation.
 //
 
-// Constructor.
 Image::Image(
     const size_t        image_width,
     const size_t        image_height,
@@ -73,7 +72,6 @@ Image::Image(
         m_tiles[i] = 0;
 }
 
-// Copy constructor.
 Image::Image(const Image& rhs)
   : m_props(rhs.m_props)
 {
@@ -90,7 +88,6 @@ Image::Image(const Image& rhs)
     }
 }
 
-// Destructor.
 Image::~Image()
 {
     for (size_t i = 0; i < m_props.m_tile_count; ++i)
@@ -99,7 +96,6 @@ Image::~Image()
     delete [] m_tiles;
 }
 
-// Direct access to a given tile.
 Tile& Image::tile(
     const size_t        tile_x,
     const size_t        tile_y)
@@ -108,6 +104,7 @@ Tile& Image::tile(
         const_cast<Tile&>(
             const_cast<const Image*>(this)->tile(tile_x, tile_y));
 }
+
 const Tile& Image::tile(
     const size_t        tile_x,
     const size_t        tile_y) const
@@ -129,6 +126,18 @@ const Tile& Image::tile(
     }
 
     return *m_tiles[tile_index];
+}
+
+void Image::set_tile(
+    const size_t        tile_x,
+    const size_t        tile_y,
+    Tile*               tile)
+{
+    const size_t tile_index = tile_y * m_props.m_tile_count_x + tile_x;
+
+    delete m_tiles[tile_index];
+
+    m_tiles[tile_index] = tile;
 }
 
 }   // namespace foundation

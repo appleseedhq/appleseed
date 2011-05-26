@@ -98,6 +98,13 @@ class FOUNDATIONDLL Image
         const size_t        tile_x,
         const size_t        tile_y) const;
 
+    // Set a given tile. Ownership of the tile is transfered to the Image class.
+    // If a tile already exists at the given coordinates, it gets replaced.
+    void set_tile(
+        const size_t        tile_x,
+        const size_t        tile_y,
+        Tile*               tile);
+
   protected:
     CanvasProperties        m_props;            // canvas properties
     Tile**                  m_tiles;            // tile array
@@ -108,7 +115,6 @@ class FOUNDATIONDLL Image
 // Image class implementation.
 //
 
-// Access canvas properties.
 inline const CanvasProperties& Image::properties() const
 {
     return m_props;
