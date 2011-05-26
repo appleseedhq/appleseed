@@ -106,8 +106,14 @@ namespace
             assert(is_normalized(geometric_normal));
             assert(is_normalized(outgoing));
 
-            const InputValues* values = static_cast<const InputValues*>(data);
-            value = values->m_exitance;
+            const double cos_on = dot(outgoing, shading_basis.get_normal());
+
+            if (cos_on > 0.0)
+            {
+                const InputValues* values = static_cast<const InputValues*>(data);
+                value = values->m_exitance;
+            }
+            else value.set(0.0f);
         }
 
         virtual double evaluate_pdf(
@@ -119,8 +125,7 @@ namespace
             assert(is_normalized(geometric_normal));
             assert(is_normalized(outgoing));
 
-            const Vector3d& shading_normal = shading_basis.get_normal();
-            const double cos_on = dot(outgoing, shading_normal);
+            const double cos_on = dot(outgoing, shading_basis.get_normal());
 
             return cos_on > 0.0 ? cos_on * RcpPi : 0.0;
         }

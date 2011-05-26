@@ -226,13 +226,17 @@ namespace
                 if (!visible)
                     return;
 
+                // Lights are one-sided.
+                const double cos_alpha = dot(vertex_to_camera, light_sample.m_input_params.m_shading_normal);
+                if (cos_alpha <= 0.0)
+                    return;
+
                 // Compute the flux-to-radiance conversion factor.
                 const double cos_theta = abs(dot(-vertex_to_camera, m_camera_direction));
                 const double dist_pixel_to_camera = m_focal_length / cos_theta;
                 const double flux_to_radiance = square(dist_pixel_to_camera / cos_theta) * m_rcp_pixel_area;
 
                 // Compute the geometric term.
-                const double cos_alpha = abs(dot(vertex_to_camera, light_sample.m_input_params.m_shading_normal));
                 const double g = transmission * cos_alpha * cos_theta / square_distance;
                 assert(g >= 0.0);
 
@@ -288,6 +292,7 @@ namespace
                     bsdf_value);
 
                 // Compute the flux-to-radiance conversion factor.
+                // todo: abs() or unary minus redundant.
                 const double cos_theta = abs(dot(-vertex_to_camera, m_camera_direction));
                 const double dist_pixel_to_camera = m_focal_length / cos_theta;
                 const double flux_to_radiance = square(dist_pixel_to_camera / cos_theta) * m_rcp_pixel_area;

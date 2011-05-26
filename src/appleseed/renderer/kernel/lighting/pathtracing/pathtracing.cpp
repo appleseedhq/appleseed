@@ -219,8 +219,8 @@ namespace
                 const Material* material = shading_point.get_material();
                 const InputParams& input_params = shading_point.get_input_params();
 
-                // Retrieve the EDF.
                 const EDF* edf = material->get_edf();
+                const double cos_on = dot(outgoing, shading_normal);
 
                 // Evaluate the input values of the EDF (if any).
                 InputEvaluator edf_input_evaluator(m_texture_cache);
@@ -270,7 +270,7 @@ namespace
                         vertex_radiance += ibl_radiance;
                     }
 
-                    if (edf)
+                    if (edf && cos_on > 0.0)
                     {
                         // Compute the emitted radiance.
                         Spectrum emitted_radiance;
@@ -286,15 +286,11 @@ namespace
                         if (bsdf_mode != BSDF::Specular && square_distance > 0.0)
                         {
                             // Transform bsdf_prob to surface area measure (Veach: 8.2.2.2 eq. 8.10).
-                            const double bsdf_point_prob =
-                                  bsdf_prob
-                                * max(dot(outgoing, shading_normal), 0.0)
-                                / square_distance;
+                            const double bsdf_point_prob = bsdf_prob * cos_on / square_distance;
 
                             // Compute the probability density wrt. surface area of choosing this point
                             // by sampling the light sources.
-                            const double light_point_prob =
-                                m_light_sampler.evaluate_pdf(shading_point);
+                            const double light_point_prob = m_light_sampler.evaluate_pdf(shading_point);
 
                             // Apply MIS.
                             const double mis_weight =
@@ -313,7 +309,7 @@ namespace
                 }
                 else
                 {
-                    if (edf)
+                    if (edf && cos_on > 0.0)
                     {
                         // Compute the emitted radiance.
                         Spectrum emitted_radiance;

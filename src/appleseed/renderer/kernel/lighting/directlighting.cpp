@@ -219,6 +219,11 @@ void compute_direct_lighting_light_sampling(
         if (cos_in <= 0.0)
             continue;
 
+        // Cull samples on lights emitting in the wrong direction.
+        double cos_on = dot(-incoming, sample.m_input_params.m_shading_normal);
+        if (cos_on <= 0.0)
+            continue;
+
         // Compute the square distance between the light sample and the shading point.
         const double sample_square_distance = square_norm(incoming);
         const double rcp_sample_square_distance = 1.0 / sample_square_distance;
@@ -227,16 +232,7 @@ void compute_direct_lighting_light_sampling(
         // Normalize the incoming direction.
         incoming *= rcp_sample_distance;
         cos_in *= rcp_sample_distance;
-
-        // Compute the outgoing direction of the light sample.
-        const Vector3d sample_outgoing = -incoming;
-
-        // Compute properly oriented surface normals at the position of the light sample.
-        InputParams sample_input_params = sample.m_input_params;
-        sample_input_params.m_shading_normal =
-            faceforward(sample_input_params.m_shading_normal, incoming);
-        sample_input_params.m_geometric_normal =
-            faceforward(sample_input_params.m_geometric_normal, incoming);
+        cos_on *= rcp_sample_distance;
 
         // Compute the transmission factor between the light sample and the shading point.
         const double transmission =
@@ -244,7 +240,7 @@ void compute_direct_lighting_light_sampling(
                 sampling_context,
                 shading_context,
                 point,
-                sample_input_params.m_point,
+                sample.m_input_params.m_point,
                 parent_shading_point);
 
         // Discard occluded samples.
@@ -274,27 +270,26 @@ void compute_direct_lighting_light_sampling(
         const void* edf_data =
             edf_input_evaluator.evaluate(
                 sample.m_edf->get_inputs(),
-                sample_input_params);
+                sample.m_input_params);
 
         // Evaluate the EDF.
         Spectrum edf_value;
         sample.m_edf->evaluate(
             edf_data,
-            sample_input_params.m_geometric_normal,
-            Basis3d(sample_input_params.m_shading_normal),
-            sample_outgoing,
+            sample.m_input_params.m_geometric_normal,
+            Basis3d(sample.m_input_params.m_shading_normal),
+            -incoming,
             edf_value);
         const double edf_prob =
             sample.m_edf->evaluate_pdf(     // todo: EDF::evaluate() should return the probability
                 edf_data,
-                sample_input_params.m_geometric_normal,
-                Basis3d(sample_input_params.m_shading_normal),
-                sample_outgoing);
+                sample.m_input_params.m_geometric_normal,
+                Basis3d(sample.m_input_params.m_shading_normal),
+                -incoming);
 
         // Compute the geometric term. To keep the estimator unbiased, we don't
         // clamp the geometric term g if it is too small, and in particular we
         // allow it to be exactly zero, which will result in a variance spike.
-        const double cos_on = dot(sample_outgoing, sample_input_params.m_shading_normal);
         const double g = cos_on / sample_square_distance;
         assert(g >= 0.0);
 
@@ -452,6 +447,11 @@ void compute_direct_lighting_single_sample(
         if (cos_in <= 0.0)
             return;
 
+        // Cull samples on lights emitting in the wrong direction.
+        double cos_on = dot(-incoming, sample.m_input_params.m_shading_normal);
+        if (cos_on <= 0.0)
+            return;
+
         // Compute the square distance between the light sample and the shading point.
         const double sample_square_distance = square_norm(incoming);
         const double rcp_sample_square_distance = 1.0 / sample_square_distance;
@@ -460,16 +460,7 @@ void compute_direct_lighting_single_sample(
         // Normalize the incoming direction.
         incoming *= rcp_sample_distance;
         cos_in *= rcp_sample_distance;
-
-        // Compute the outgoing direction of the light sample.
-        const Vector3d sample_outgoing = -incoming;
-
-        // Compute properly oriented surface normals at the position of the light sample.
-        InputParams sample_input_params = sample.m_input_params;
-        sample_input_params.m_shading_normal =
-            faceforward(sample_input_params.m_shading_normal, incoming);
-        sample_input_params.m_geometric_normal =
-            faceforward(sample_input_params.m_geometric_normal, incoming);
+        cos_on *= rcp_sample_distance;
 
         // Compute the transmission factor between the light sample and the shading point.
         const double transmission =
@@ -477,7 +468,7 @@ void compute_direct_lighting_single_sample(
                 sampling_context,
                 shading_context,
                 point,
-                sample_input_params.m_point,
+                sample.m_input_params.m_point,
                 parent_shading_point);
 
         // Discard occluded samples.
@@ -507,27 +498,26 @@ void compute_direct_lighting_single_sample(
         const void* edf_data =
             edf_input_evaluator.evaluate(
                 sample.m_edf->get_inputs(),
-                sample_input_params);
+                sample.m_input_params);
 
         // Evaluate the EDF.
         Spectrum edf_value;
         sample.m_edf->evaluate(
             edf_data,
-            sample_input_params.m_geometric_normal,
-            Basis3d(sample_input_params.m_shading_normal),
-            sample_outgoing,
+            sample.m_input_params.m_geometric_normal,
+            Basis3d(sample.m_input_params.m_shading_normal),
+            -incoming,
             edf_value);
         const double edf_prob =
             sample.m_edf->evaluate_pdf(     // todo: EDF::evaluate() should return the probability
                 edf_data,
-                sample_input_params.m_geometric_normal,
-                Basis3d(sample_input_params.m_shading_normal),
-                sample_outgoing);
+                sample.m_input_params.m_geometric_normal,
+                Basis3d(sample.m_input_params.m_shading_normal),
+                -incoming);
 
         // Compute the geometric term. To keep the estimator unbiased, we don't
         // clamp the geometric term g if it is too small, and in particular we
         // allow it to be exactly zero, which will result in a variance spike.
-        const double cos_on = dot(sample_outgoing, sample_input_params.m_shading_normal);
         const double g = cos_on / sample_square_distance;
         assert(g >= 0.0);
 
