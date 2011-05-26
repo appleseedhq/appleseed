@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/environmentedf/constantenvironmentedf.h"
+#include "renderer/modeling/environmentedf/constanthemisphereenvironmentedf.h"
 #include "renderer/modeling/environmentedf/gradientenvironmentedf.h"
 #include "renderer/modeling/environmentedf/latlongmapenvironmentedf.h"
 #include "renderer/modeling/environmentedf/mirrorballmapenvironmentedf.h"
@@ -55,6 +56,7 @@ EnvironmentEDFFactoryRegistrar::EnvironmentEDFFactoryRegistrar()
   : impl(new Impl())
 {
     register_factory(auto_ptr<FactoryType>(new ConstantEnvironmentEDFFactory()));
+    register_factory(auto_ptr<FactoryType>(new ConstantHemisphereEnvironmentEDFFactory()));
     register_factory(auto_ptr<FactoryType>(new GradientEnvironmentEDFFactory()));
     register_factory(auto_ptr<FactoryType>(new LatLongMapEnvironmentEDFFactory()));
     register_factory(auto_ptr<FactoryType>(new MirrorBallMapEnvironmentEDFFactory()));

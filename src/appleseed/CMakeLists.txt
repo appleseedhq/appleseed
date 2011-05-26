@@ -1106,6 +1106,8 @@ source_group("renderer\\modeling\\environment" FILES
 set(renderer_modeling_environmentedf_sources
     renderer/modeling/environmentedf/constantenvironmentedf.cpp
     renderer/modeling/environmentedf/constantenvironmentedf.h
+    renderer/modeling/environmentedf/constanthemisphereenvironmentedf.cpp
+    renderer/modeling/environmentedf/constanthemisphereenvironmentedf.h
     renderer/modeling/environmentedf/environmentedf.cpp
     renderer/modeling/environmentedf/environmentedf.h
     renderer/modeling/environmentedf/environmentedffactoryregistrar.cpp
