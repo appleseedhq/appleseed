@@ -3,65 +3,54 @@
 <project>
     <scene>
         <camera name="camera" model="pinhole_camera">
-            <parameter name="controller_target" value="-0.0222427 1.00665 0" />
+            <parameter name="controller_target" value="0.0252387 0.64161 -0.0877702" />
             <parameter name="film_dimensions" value="0.024892 0.018669" />
-            <parameter name="focal_length" value="0.035" />
+            <parameter name="focal_length" value="0.01" />
             <transform>
                 <matrix>
-                    1.000000000000000 0.000000000000000 0.000000000000000 0.000000000000000
-                    0.000000000000000 1.000000000000000 0.000000000000000 0.500000000000000
-                    0.000000000000000 0.000000000000000 1.000000000000000 2.700000000000000
+                    0.657155551108254 -0.183761479142861 -0.731011833304246 -0.459528961184870
+                    0.000000000000000 0.969826860355129 -0.243794710635227 0.479938646141873
+                    0.753754987809439 0.160211047424770 0.637327104896262 0.334870832658719
                     0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
                 </matrix>
             </transform>
         </camera>
         <assembly name="assembly">
-            <color name="red">
+            <color name="white">
                 <parameter name="color_space" value="linear_rgb" />
                 <values>
-                    0.6 0.0 0.0
-                </values>
-            </color>
-            <color name="blue">
-                <parameter name="color_space" value="linear_rgb" />
-                <values>
-                    0.0 0.0 0.6
+                    1.000000
                 </values>
             </color>
             <color name="gray">
                 <parameter name="color_space" value="linear_rgb" />
                 <values>
-                    0.300000
+                    0.950000
                 </values>
             </color>
+            <bsdf name="lambertian_white_brdf" model="lambertian_brdf">
+                <parameter name="reflectance" value="white" />
+            </bsdf>
             <bsdf name="lambertian_gray_brdf" model="lambertian_brdf">
                 <parameter name="reflectance" value="gray" />
             </bsdf>
-            <edf name="diffuse_red_edf" model="diffuse_edf">
-                <parameter name="exitance" value="red" />
-            </edf>
-            <edf name="diffuse_blue_edf" model="diffuse_edf">
-                <parameter name="exitance" value="blue" />
+            <edf name="diffuse_white_edf" model="diffuse_edf">
+                <parameter name="exitance" value="white" />
             </edf>
             <surface_shader name="physical_surface_shader" model="physical_surface_shader" />
-            <material name="floor_material" model="generic_material">
+            <material name="walls_material" model="generic_material">
                 <parameter name="bsdf" value="lambertian_gray_brdf" />
                 <parameter name="surface_shader" value="physical_surface_shader" />
             </material>
-            <material name="red_light_material" model="generic_material">
+            <material name="light_material" model="generic_material">
                 <parameter name="bsdf" value="lambertian_gray_brdf" />
-                <parameter name="edf" value="diffuse_red_edf" />
+                <parameter name="edf" value="diffuse_white_edf" />
                 <parameter name="surface_shader" value="physical_surface_shader" />
             </material>
-            <material name="blue_light_material" model="generic_material">
-                <parameter name="bsdf" value="lambertian_gray_brdf" />
-                <parameter name="edf" value="diffuse_blue_edf" />
-                <parameter name="surface_shader" value="physical_surface_shader" />
-            </material>
-            <object name="light tracing" model="mesh_object">
-                <parameter name="filename" value="light tracing.obj" />
+            <object name="box" model="mesh_object">
+                <parameter name="filename" value="box.obj" />
             </object>
-            <object_instance name="light tracing.floor_inst" object="light tracing.floor">
+            <object_instance name="box.walls_inst" object="box.walls">
                 <transform>
                     <matrix>
                         1.000000000000000 0.000000000000000 0.000000000000000 0.000000000000000
@@ -70,29 +59,18 @@
                         0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
                     </matrix>
                 </transform>
-                <assign_material slot="0" material="floor_material" />
+                <assign_material slot="0" material="walls_material" />
             </object_instance>
-            <object_instance name="light tracing.red_light_inst" object="light tracing.light">
+            <object_instance name="box.light_inst" object="box.light">
                 <transform>
                     <matrix>
-                        0.800000000000000 0.000000000000000 0.000000000000000 -0.300000000000000
+                        1.000000000000000 0.000000000000000 0.000000000000000 0.000000000000000
                         0.000000000000000 1.000000000000000 0.000000000000000 0.000000000000000
-                        0.000000000000000 0.000000000000000 0.800000000000000 0.000000000000000
+                        0.000000000000000 0.000000000000000 1.000000000000000 0.000000000000000
                         0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
                     </matrix>
                 </transform>
-                <assign_material slot="0" material="red_light_material" />
-            </object_instance>
-            <object_instance name="light tracing.blue_light_inst" object="light tracing.light">
-                <transform>
-                    <matrix>
-                        0.500000000000000 0.000000000000000 0.000000000000000 0.500000000000000
-                        0.000000000000000 0.300000000000000 0.000000000000000 0.000000000000000
-                        0.000000000000000 0.000000000000000 0.500000000000000 0.000000000000000
-                        0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
-                    </matrix>
-                </transform>
-                <assign_material slot="0" material="blue_light_material" />
+                <assign_material slot="0" material="light_material" />
             </object_instance>
         </assembly>
         <assembly_instance name="assembly_inst" assembly="assembly">
@@ -114,7 +92,7 @@
         </frame>
     </output>
     <configurations>
-        <configuration name="final" base="base_final"/>
+        <configuration name="final" base="base_final" />
         <configuration name="interactive" base="base_interactive">
             <parameter name="sample_generator" value="lighttracing" />
             <parameters name="lighttracing_sample_generator">

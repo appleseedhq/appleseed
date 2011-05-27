@@ -41,17 +41,6 @@
             <object name="light tracing" model="mesh_object">
                 <parameter name="filename" value="light tracing.obj" />
             </object>
-            <object_instance name="light tracing.floor_inst" object="light tracing.floor">
-                <transform>
-                    <matrix>
-                        1.000000000000000 0.000000000000000 0.000000000000000 0.000000000000000
-                        0.000000000000000 1.000000000000000 0.000000000000000 0.000000000000000
-                        0.000000000000000 0.000000000000000 1.000000000000000 0.000000000000000
-                        0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
-                    </matrix>
-                </transform>
-                <assign_material slot="0" material="floor_material" />
-            </object_instance>
             <object_instance name="light tracing.light_inst" object="light tracing.light">
                 <transform>
                     <matrix>

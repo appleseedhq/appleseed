@@ -16,6 +16,18 @@
             </transform>
         </camera>
         <assembly name="assembly">
+            <color name="red">
+                <parameter name="color_space" value="linear_rgb" />
+                <values>
+                    0.6 0.0 0.0
+                </values>
+            </color>
+            <color name="blue">
+                <parameter name="color_space" value="linear_rgb" />
+                <values>
+                    0.0 0.0 0.6
+                </values>
+            </color>
             <color name="gray">
                 <parameter name="color_space" value="linear_rgb" />
                 <values>
@@ -25,24 +37,29 @@
             <bsdf name="lambertian_gray_brdf" model="lambertian_brdf">
                 <parameter name="reflectance" value="gray" />
             </bsdf>
-            <edf name="diffuse_gray_edf" model="diffuse_edf">
-                <parameter name="exitance" value="gray" />
+            <edf name="diffuse_red_edf" model="diffuse_edf">
+                <parameter name="exitance" value="red" />
+            </edf>
+            <edf name="diffuse_blue_edf" model="diffuse_edf">
+                <parameter name="exitance" value="blue" />
             </edf>
             <surface_shader name="physical_surface_shader" model="physical_surface_shader" />
             <material name="floor_material" model="generic_material">
                 <parameter name="bsdf" value="lambertian_gray_brdf" />
                 <parameter name="surface_shader" value="physical_surface_shader" />
             </material>
-            <material name="light_material" model="generic_material">
+            <material name="red_light_material" model="generic_material">
                 <parameter name="bsdf" value="lambertian_gray_brdf" />
-                <parameter name="edf" value="diffuse_gray_edf" />
+                <parameter name="edf" value="diffuse_red_edf" />
+                <parameter name="surface_shader" value="physical_surface_shader" />
+            </material>
+            <material name="blue_light_material" model="generic_material">
+                <parameter name="bsdf" value="lambertian_gray_brdf" />
+                <parameter name="edf" value="diffuse_blue_edf" />
                 <parameter name="surface_shader" value="physical_surface_shader" />
             </material>
             <object name="light tracing" model="mesh_object">
                 <parameter name="filename" value="light tracing.obj" />
-            </object>
-            <object name="sphere" model="mesh_object">
-                <parameter name="filename" value="sphere.obj" />
             </object>
             <object_instance name="light tracing.floor_inst" object="light tracing.floor">
                 <transform>
@@ -55,27 +72,27 @@
                 </transform>
                 <assign_material slot="0" material="floor_material" />
             </object_instance>
-            <object_instance name="light tracing.light_inst" object="light tracing.light">
+            <object_instance name="light tracing.red_light_inst" object="light tracing.light">
                 <transform>
                     <matrix>
-                        1.000000000000000 0.000000000000000 0.000000000000000 0.000000000000000
+                        0.800000000000000 0.000000000000000 0.000000000000000 -0.300000000000000
                         0.000000000000000 1.000000000000000 0.000000000000000 0.000000000000000
-                        0.000000000000000 0.000000000000000 1.000000000000000 0.000000000000000
+                        0.000000000000000 0.000000000000000 0.800000000000000 0.000000000000000
                         0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
                     </matrix>
                 </transform>
-                <assign_material slot="0" material="light_material" />
+                <assign_material slot="0" material="red_light_material" />
             </object_instance>
-            <object_instance name="sphere.sphere_inst" object="sphere.sphere">
+            <object_instance name="light tracing.blue_light_inst" object="light tracing.light">
                 <transform>
                     <matrix>
-                        1.000000000000000 0.000000000000000 0.000000000000000 0.000000000000000
-                        0.000000000000000 1.000000000000000 0.000000000000000 0.000000000000000
-                        0.000000000000000 0.000000000000000 1.000000000000000 0.000000000000000
+                        0.500000000000000 0.000000000000000 0.000000000000000 0.500000000000000
+                        0.000000000000000 0.300000000000000 0.000000000000000 0.000000000000000
+                        0.000000000000000 0.000000000000000 0.500000000000000 0.000000000000000
                         0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
                     </matrix>
                 </transform>
-                <assign_material slot="0" material="floor_material" />
+                <assign_material slot="0" material="blue_light_material" />
             </object_instance>
         </assembly>
         <assembly_instance name="assembly_inst" assembly="assembly">
