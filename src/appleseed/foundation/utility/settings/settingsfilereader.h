@@ -31,10 +31,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/utility/log.h"
 
 // Forward declarations.
 namespace foundation    { class Dictionary; }
-namespace foundation    { class Logger; }
 
 //
 // On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
@@ -67,7 +67,7 @@ class FOUNDATIONDLL SettingsFileReader
 {
   public:
     // Constructor.
-    explicit SettingsFileReader(Logger& logger);
+    explicit SettingsFileReader(Logger& logger = Logger());
 
     // Read a settings file from disk.
     // Return false if reading or parsing the file failed.

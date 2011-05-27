@@ -31,7 +31,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/log.h"
 #include "foundation/utility/xercesc.h"
 
 // Xerces-C++ headers.
@@ -53,7 +52,6 @@ namespace foundation
 // SettingsFileReader class implementation.
 //
 
-// Constructor.
 SettingsFileReader::SettingsFileReader(Logger& logger)
   : m_logger(logger)
 {
@@ -105,7 +103,6 @@ namespace
     }
 }
 
-// Read a settings file from disk.
 bool SettingsFileReader::read(
     const char*     settings_filename,
     const char*     schema_filename,
