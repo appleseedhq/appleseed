@@ -26,15 +26,14 @@
 // THE SOFTWARE.
 //
 
-// appleseed.renderer headers.
-#include "renderer/utility/testutils.h"
-
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
+#include "foundation/image/genericimagefilereader.h"
 #include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
+#include "foundation/math/rng.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
@@ -43,80 +42,85 @@
 #include <memory>
 
 using namespace foundation;
-using namespace renderer;
 using namespace std;
 
 TEST_SUITE(CompareImages)
 {
-    struct ExceptionNonMatchingImageSizes
-      : public Exception
+    static const Color3f IsoLumBlue(0.0f, 0.0f, 1.0f);                                              // sRGB
+    static const Color3f Red(1.0f, 0.0f, 0.0f);                                                     // linear RGB
+    static const float IsoLumRedComp = luminance(srgb_to_linear_rgb(IsoLumBlue)) / luminance(Red);  // linear RGB
+    static const Color3f IsoLumRed = linear_rgb_to_srgb(Color3f(IsoLumRedComp, 0.0f, 0.0f));        // sRGB
+    
+    TEST_CASE(CheckPointsIsoluminance)
     {
-    };
+        const size_t W = 256;
+        const size_t H = 256;
+
+        auto_ptr<Image> output(new Image(W, H, 32, 32, 3, PixelFormatFloat));
+
+        MersenneTwister rng;
+
+        for (size_t i = 0; i < W * H; ++i)
+        {
+            const size_t x = rand_int1(rng, 0, W - 1);
+            const size_t y = rand_int1(rng, 0, H - 1);
+            output->set_pixel(x, y, saturate(i % 2 ? IsoLumRed : IsoLumBlue));
+        }
+
+        GenericImageFileWriter writer;
+        writer.write("output/test_compareimages_checkpointsisoluminance.png", *output.get());
+    }
+
+    struct ExceptionNonMatchingImageCharacteristics : public Exception {};
+    struct ExceptionUnsupportedChannelCount : Exception {};
+
+    template <typename T, size_t N>
+    Color<T, N> abs_diff(const Color<T, N>& lhs, const Color<T, N>& rhs)
+    {
+        Color<T, N> result;
+
+        for (size_t i = 0; i < N; ++i)
+            result[i] = abs(lhs[i] - rhs[i]);
+
+        return result;
+    }
 
     struct IPixelOp
     {
         virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const = 0;
     };
 
-    struct ColorSubstractPixelOp : public IPixelOp
+    struct ColorDifference : public IPixelOp
+    {
+        virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const
+        {
+            return abs_diff(lhs, rhs);
+        }
+    };
+
+    struct ColorRatio : public IPixelOp
     {
         virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const
         {
             Color3f result;
 
-            for (size_t i = 0; i < 3; ++i)
-                result[i] = abs(lhs[i] - rhs[i]);
-
-            return result;
-        }
-    };
-
-    struct LuminanceSubstractPixelOp : public IPixelOp
-    {
-        virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const
-        {
-            const float result = luminance(lhs) - luminance(rhs);
-            return
-                result > 0.0f
-                    ? Color3f(result, 0.0f, 0.0f)       // red = positive
-                    : Color3f(0.0f, 0.0f, -result);     // blue = negative
-        }
-    };
-
-    struct SignDifferencePixelOp : public IPixelOp
-    {
-        const float m_threshold;
-
-        SignDifferencePixelOp(const float threshold = 0.0f)
-          : m_threshold(threshold)
-        {
-        }
-
-        virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const
-        {
-            const float diff = luminance(lhs) - luminance(rhs);
-
-            return
-                diff > m_threshold ? Color3f(1.0f, 0.0f, 0.0f) :    // red = positive
-                diff < -m_threshold ? Color3f(0.0f, 0.0f, 1.0f) :   // blue = negative
-                Color3f(0.0f);                                      // black = insignificant
-        }
-    };
-
-    struct ColorDividePixelOp : public IPixelOp
-    {
-        virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const
-        {
-            Color3f result;
-
-            for (size_t i = 0; i < 3; ++i)
+            for (size_t i = 0; i < result.Components; ++i)
                 result[i] = lhs[i] == rhs[i] ? 1.0f : lhs[i] / rhs[i];
 
             return result;
         }
     };
 
-    struct LuminanceDividePixelOp : public IPixelOp
+    struct LuminanceDifference : public IPixelOp
+    {
+        virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const
+        {
+            const float result = luminance(lhs) - luminance(rhs);
+            return result > 0.0f ? IsoLumRed : IsoLumBlue;
+        }
+    };
+
+    struct LuminanceRatio : public IPixelOp
     {
         virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const
         {
@@ -127,14 +131,57 @@ TEST_SUITE(CompareImages)
         }
     };
 
+    struct LuminanceDifferenceSign : public IPixelOp
+    {
+        const float m_threshold;
+
+        LuminanceDifferenceSign(const float threshold = 0.0f)
+          : m_threshold(threshold)
+        {
+        }
+
+        virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const
+        {
+            const float diff = luminance(lhs) - luminance(rhs);
+            return
+                diff > m_threshold ? IsoLumRed :
+                diff < -m_threshold ? IsoLumBlue :
+                Color3f(0.0f);
+        }
+    };
+
+    struct MaximumComponentDifferenceSign : public IPixelOp
+    {
+        const float m_threshold;
+
+        MaximumComponentDifferenceSign(const float threshold = 0.0f)
+          : m_threshold(threshold)
+        {
+        }
+
+        virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const
+        {
+            const Color3f delta = lhs - rhs;
+            const float diff = delta[max_abs_index(delta)];
+            return
+                diff > m_threshold ? IsoLumRed :
+                diff < -m_threshold ? IsoLumBlue :
+                Color3f(0.0f);
+        }
+    };
+
     auto_ptr<Image> compare(const Image& lhs, const Image& rhs, const IPixelOp& op)
     {
         const CanvasProperties& lhs_props = lhs.properties();
         const CanvasProperties& rhs_props = rhs.properties();
 
         if (lhs_props.m_canvas_width != rhs_props.m_canvas_width ||
-            lhs_props.m_canvas_height != rhs_props.m_canvas_height)
-            throw ExceptionNonMatchingImageSizes();
+            lhs_props.m_canvas_height != rhs_props.m_canvas_height ||
+            lhs_props.m_channel_count != rhs_props.m_channel_count)
+            throw ExceptionNonMatchingImageCharacteristics();
+
+        if (lhs_props.m_channel_count != 4)
+            throw ExceptionUnsupportedChannelCount();
 
         auto_ptr<Image> output(new Image(lhs));
 
@@ -142,13 +189,15 @@ TEST_SUITE(CompareImages)
         {
             for (size_t x = 0; x < lhs_props.m_canvas_width; ++x)
             {
-                Color3f lhs_color;
+                Color4f lhs_color;
                 lhs.get_pixel(x, y, lhs_color);
                 
-                Color3f rhs_color;
+                Color4f rhs_color;
                 rhs.get_pixel(x, y, rhs_color);
 
-                const Color3f result = op(lhs_color, rhs_color);
+                Color4f result;
+                result.rgb() = op(lhs_color.rgb(), rhs_color.rgb());
+                result.a = 1.0f;
 
                 output->set_pixel(x, y, saturate(result));
             }
@@ -158,27 +207,28 @@ TEST_SUITE(CompareImages)
     }
 
 #if 0
+
     TEST_CASE(Compare)
     {
-        const size_t Width = 512;
-        const size_t Height = 512;
-
-        auto_ptr<Image> left_image = load_raw_image("first.raw", Width, Height);
-        auto_ptr<Image> right_image = load_raw_image("second.raw", Width, Height);
+        GenericImageFileReader reader;
+        auto_ptr<Image> left_image(reader.read("../images/autosave/autosave.20110526.142530.000.exr"));
+        auto_ptr<Image> right_image(reader.read("../images/autosave/autosave.20110527.083229.000.exr"));
 
         ASSERT_TRUE(left_image.get());
         ASSERT_TRUE(right_image.get());
 
-        // ColorSubstractPixelOp op;
-        // LuminanceSubstractPixelOp op;
-        SignDifferencePixelOp op;
-        // ColorDividePixelOp op;
-        // LuminanceDividePixelOp op;
+        // ColorDifference op;
+        // ColorRatio op;
+        // LuminanceDifference op;
+        // LuminanceRatio op;
+        // LuminanceDifferenceSign op(1.0e-3f);
+        MaximumComponentDifferenceSign op(1.0e-9f);
 
         auto_ptr<Image> result = compare(*left_image.get(), *right_image.get(), op);
 
         GenericImageFileWriter writer;
-        writer.write("result.png", *result.get());
+        writer.write("output/test_compareimages_result.png", *result.get());
     }
+
 #endif
 }
