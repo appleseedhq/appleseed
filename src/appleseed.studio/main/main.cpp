@@ -33,11 +33,12 @@
 #include "application/application.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/appleseed.h"
 #include "foundation/platform/path.h"
 #include "foundation/utility/preprocessor.h"
 
 // Qt headers.
-#include <QtGui/QApplication>
+#include <QApplication>
 #include <QMessageBox>
 #include <QString>
 #include <QTextStream>
@@ -207,6 +208,11 @@ namespace
 int main(int argc, char *argv[])
 {
     QApplication application(argc, argv);
+
+    QApplication::setOrganizationName("appleseedhq");
+    QApplication::setOrganizationDomain("appleseedhq.net");
+    QApplication::setApplicationName("appleseed.studio");
+    QApplication::setApplicationVersion(Appleseed::get_lib_version());
 
     check_installation();
 
