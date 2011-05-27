@@ -49,7 +49,7 @@ class TestRunnerThread
   public:
     // Constructor.
     TestRunnerThread(
-        const foundation::TestSuiteRepository&  m_repository,
+        const foundation::TestSuiteRepository&  repository,
         TestOutputWidgetDecorator*              output_widget,
         TestResultWidgetDecorator*              result_widget);
 
