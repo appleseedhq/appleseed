@@ -33,11 +33,57 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/test.h"
 
+// Standard headers.
+#include <string>
+
 using namespace foundation;
 using namespace renderer;
+using namespace std;
 
 TEST_SUITE(Renderer_Global_ParamArray)
 {
+    TEST_CASE(GetPath_GivenItemName_ReturnsItemValue)
+    {
+        ParamArray params;
+        params.insert("x", 42);
+
+        const char* value = params.get_path("x");
+
+        EXPECT_EQ("42", string(value));
+    }
+
+    TEST_CASE(GetPath_GivenParentNameAndItemName_ReturnsItemValue)
+    {
+        ParamArray params;
+        params.push("parent").insert("x", 42);
+
+        const char* value = params.get_path("parent.x");
+
+        EXPECT_EQ("42", string(value));
+    }
+
+    TEST_CASE(GetPath_GivenInvalidItemName_ThrowsExceptionDictionaryItemNotFound)
+    {
+        ParamArray params;
+        params.insert("x", 42);
+
+        EXPECT_EXCEPTION(ExceptionDictionaryItemNotFound,
+        {
+            const char* value = params.get_path("y");
+        });
+    }
+
+    TEST_CASE(GetPath_GivenInvalidParentName_ThrowsExceptionDictionaryItemNotFound)
+    {
+        ParamArray params;
+        params.push("parent").insert("x", 42);
+
+        EXPECT_EXCEPTION(ExceptionDictionaryItemNotFound,
+        {
+            const char* value = params.get_path("other.x");
+        });
+    }
+
     TEST_CASE(Merge_GivenOneIntInSourceAndOneIntInDestWithDifferentNames_InsertsDestIntIntoSource)
     {
         ParamArray dst;

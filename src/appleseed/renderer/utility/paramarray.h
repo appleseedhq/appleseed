@@ -61,9 +61,6 @@ class RENDERERDLL ParamArray
 
     // Insert an item into the dictionary.
     template <typename T> ParamArray& insert(const char* key, const T& value);
-    ParamArray& insert_path(const char* path, const char* value);
-    template <typename T> ParamArray& insert_path(const char* path, const T& value);
-    template <typename T> ParamArray& insert_path(const std::string& path, const T& value);
 
     //
     // Retrieve the value of a required parameter.
@@ -88,7 +85,29 @@ class RENDERERDLL ParamArray
     //
 
     template <typename T>
-    T get_optional(const char* name, const T& default_value) const;
+    T get_optional(const char* name, const T& default_value = T()) const;
+
+    //
+    // Insert an item through a given hierarchy, creating branches as needed.
+    //
+    // For instance, insert_path("a.b.c", 12) will insert the value 12 with key 'c'
+    // inside a dictionary named 'b' itself contained inside a dictionary named 'a'.
+    //
+
+    ParamArray& insert_path(const char* path, const char* value);
+    template <typename T> ParamArray& insert_path(const char* path, const T& value);
+    template <typename T> ParamArray& insert_path(const std::string& path, const T& value);
+
+    // Retrieve an item in a given hierarchy.
+    const char* get_path(const char* path) const;
+
+    // Like get_required() but given a path instead of a key.
+    template <typename T>
+    T get_path_required(const char* path, const T& default_value) const;
+
+    // Like get_optional() but given a path instead of a key.
+    template <typename T>
+    T get_path_optional(const char* path, const T& default_value = T()) const;
 
     // Return a child set of parameters, or create it if it doesn't exist.
     ParamArray& push(const char* name);
@@ -104,6 +123,12 @@ class RENDERERDLL ParamArray
     template <typename T>
     T get_helper(
         const char*     name,
+        const T&        default_value,
+        const bool      required) const;
+
+    template <typename T>
+    T get_path_helper(
+        const char*     path,
         const T&        default_value,
         const bool      required) const;
 };
@@ -128,6 +153,18 @@ inline ParamArray& ParamArray::insert(const char* key, const ParamArray& value)
 }
 
 template <typename T>
+inline T ParamArray::get_required(const char* name, const T& default_value) const
+{
+    return get_helper(name, default_value, true);
+}
+
+template <typename T>
+inline T ParamArray::get_optional(const char* name, const T& default_value) const
+{
+    return get_helper(name, default_value, false);
+}
+
+template <typename T>
 inline ParamArray& ParamArray::insert_path(const char* path, const T& value)
 {
     return insert_path(path, foundation::to_string(value).c_str());
@@ -140,15 +177,15 @@ inline ParamArray& ParamArray::insert_path(const std::string& path, const T& val
 }
 
 template <typename T>
-inline T ParamArray::get_required(const char* name, const T& default_value) const
+inline T ParamArray::get_path_required(const char* path, const T& default_value) const
 {
-    return get_helper(name, default_value, true);
+    return get_path_helper(path, default_value, true);
 }
 
 template <typename T>
-inline T ParamArray::get_optional(const char* name, const T& default_value) const
+inline T ParamArray::get_path_optional(const char* path, const T& default_value) const
 {
-    return get_helper(name, default_value, false);
+    return get_path_helper(path, default_value, false);
 }
 
 template <typename T>
@@ -179,6 +216,40 @@ T ParamArray::get_helper(
             "invalid value \"%s\" for parameter \"%s\", using default value \"%s\"",
             get(name),
             name,
+            foundation::to_string(default_value).c_str());
+    }
+
+    return default_value;
+}
+
+template <typename T>
+T ParamArray::get_path_helper(
+    const char*     path,
+    const T&        default_value,
+    const bool      required) const
+{
+    assert(path);
+
+    try
+    {
+        return foundation::from_string<T>(get_path(path));
+    }
+    catch (const foundation::ExceptionDictionaryItemNotFound&)
+    {
+        if (required)
+        {
+            RENDERER_LOG_ERROR(
+                "parameter \"%s\" not found, using default value \"%s\"",
+                path,
+                foundation::to_string(default_value).c_str());
+        }
+    }
+    catch (const foundation::ExceptionStringConversionError&)
+    {
+        RENDERER_LOG_ERROR(
+            "invalid value \"%s\" for parameter \"%s\", using default value \"%s\"",
+            get_path(path),
+            path,
             foundation::to_string(default_value).c_str());
     }
 

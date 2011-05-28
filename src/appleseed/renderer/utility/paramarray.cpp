@@ -48,6 +48,8 @@ namespace renderer
 
 namespace
 {
+    static const char* PartSeparator = ".";
+
     const ParamArray empty_param_array;
 }
 
@@ -77,26 +79,42 @@ ParamArray& ParamArray::insert_path(const char* path, const char* value)
     assert(value);
 
     vector<string> parts;
-    tokenize(path, ".", parts);
+    tokenize(path, PartSeparator, parts);
+
+    assert(!parts.empty());
 
     Dictionary* leaf = this;
 
-    if (parts.size() > 1)
+    for (size_t i = 0; i < parts.size() - 1; ++i)
     {
-        for (size_t i = 0; i < parts.size() - 1; ++i)
-        {
-            const string& part = parts[i];
+        const string& part = parts[i];
 
-            if (!leaf->dictionaries().exist(part))
-                leaf->insert(part, Dictionary());
+        if (!leaf->dictionaries().exist(part))
+            leaf->insert(part, Dictionary());
 
-            leaf = &leaf->dictionary(part);
-        }
+        leaf = &leaf->dictionary(part);
     }
 
     leaf->insert(parts.back(), value);
 
     return *this;
+}
+
+const char* ParamArray::get_path(const char* path) const
+{
+    assert(path);
+
+    vector<string> parts;
+    tokenize(path, PartSeparator, parts);
+
+    assert(!parts.empty());
+
+    const Dictionary* leaf = this;
+
+    for (size_t i = 0; i < parts.size() - 1; ++i)
+        leaf = &leaf->dictionary(parts[i]);
+
+    return leaf->get(parts.back().c_str());
 }
 
 ParamArray& ParamArray::push(const char* name)
