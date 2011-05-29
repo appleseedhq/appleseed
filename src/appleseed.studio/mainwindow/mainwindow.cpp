@@ -34,6 +34,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/logwidget.h"
+#include "utility/interop.h"
 #include "utility/tweaks.h"
 
 // appleseed.shared headers.
@@ -663,7 +664,7 @@ void MainWindow::slot_open_project()
         QFileDialog::getOpenFileName(
             this,
             "Open...",
-            QString::fromStdString(m_settings.get_path_optional<string>(SettingsKey)),
+            m_settings.get_path_optional<QString>(SettingsKey),
             get_project_filter_string(),
             &selected_filter,
             options);
