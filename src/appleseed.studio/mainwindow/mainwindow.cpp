@@ -675,7 +675,7 @@ void MainWindow::slot_open_project()
 
     if (!filepath.isEmpty())
     {
-        m_settings.insert_path(SettingsKey, path.parent_path().string());
+        m_settings.insert_path(SettingsKey, path.parent_path().external_directory_string());
 
         const bool successful =
             m_project_manager.load_project(filepath.toAscii().constData());
