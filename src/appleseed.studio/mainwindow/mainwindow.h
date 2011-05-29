@@ -61,8 +61,8 @@
 #include <string>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class LogWidget; } }
-namespace Ui { class MainWindow; }
+namespace appleseed     { namespace studio { class LogWidget; } }
+namespace Ui            { class MainWindow; }
 
 namespace appleseed {
 namespace studio {
@@ -97,10 +97,10 @@ class MainWindow
     StatusBar                           m_status_bar;
     std::auto_ptr<QtLogTarget>          m_log_target;
 
+    renderer::ParamArray                m_settings;
+
     std::auto_ptr<TestWindow>           m_test_window;
     std::auto_ptr<BenchmarkWindow>      m_benchmark_window;
-
-    renderer::ParamArray                m_settings;
 
     ProjectManager                      m_project_manager;
     std::auto_ptr<ProjectExplorer>      m_project_explorer;
@@ -147,6 +147,7 @@ class MainWindow
     void build_menu_items_connections();
 
     void load_settings();
+    void save_settings();
 
     void print_library_information();
 

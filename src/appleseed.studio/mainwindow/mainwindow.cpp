@@ -272,9 +272,22 @@ void MainWindow::load_settings()
     const filesystem::path schema_file_path = root_path / "schemas/settings.xsd";
 
     SettingsFileReader reader(global_logger());
+
     reader.read(
         settings_file_path.file_string().c_str(),
         schema_file_path.file_string().c_str(),
+        m_settings);
+}
+
+void MainWindow::save_settings()
+{
+    const filesystem::path root_path(Application::get_root_path());
+    const filesystem::path settings_file_path = root_path / "settings/appleseed.studio.xml";
+
+    SettingsFileWriter writer;
+
+    writer.write(
+        settings_file_path.file_string().c_str(),
         m_settings);
 }
 
@@ -586,6 +599,8 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
     m_project_manager.close_project();
 
+    save_settings();
+
     event->accept();
 }
 
@@ -639,6 +654,8 @@ void MainWindow::slot_open_project()
     if (!can_close_project())
         return;
 
+    static const char* SettingsKey = "ui.mainwindow.openfiledialog.lastdirectory";
+
     QFileDialog::Options options;
     QString selected_filter;
 
@@ -646,15 +663,19 @@ void MainWindow::slot_open_project()
         QFileDialog::getOpenFileName(
             this,
             "Open...",
-            "",
+            QString::fromStdString(m_settings.get_path_optional<string>(SettingsKey)),
             get_project_filter_string(),
             &selected_filter,
             options);
 
-    filepath = normalize_filepath(filepath);
+    const filesystem::path path(filepath.toStdString());
+
+    filepath = QString::fromStdString(path.file_string());
 
     if (!filepath.isEmpty())
     {
+        m_settings.insert_path(SettingsKey, path.parent_path().string());
+
         const bool successful =
             m_project_manager.load_project(filepath.toAscii().constData());
 
