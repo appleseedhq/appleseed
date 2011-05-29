@@ -631,7 +631,7 @@ namespace
         msgbox.setText("Failed to load the project file " + filepath + ".");
         msgbox.setInformativeText(
             "The project file may be invalid or corrupted. "
-            "Please look to the Log window for details.");
+            "Please look at the Log window for details.");
         msgbox.setStandardButtons(QMessageBox::Ok);
         msgbox.exec();
     }
@@ -644,7 +644,7 @@ namespace
         msgbox.setText("Failed to load the built-in project '" + name + "'.");
         msgbox.setInformativeText(
             "The project may be invalid or corrupted. "
-            "Please look to the Log window for details.");
+            "Please look at the Log window for details.");
         msgbox.setStandardButtons(QMessageBox::Ok);
         msgbox.exec();
     }
