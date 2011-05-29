@@ -42,6 +42,26 @@ using namespace std;
 
 TEST_SUITE(Renderer_Global_ParamArray)
 {
+    TEST_CASE(InsertPath_GivenItemName_InsertsItem)
+    {
+        ParamArray params;
+        params.insert_path("x", 42);
+
+        const char* value = params.strings().get("x");
+
+        EXPECT_EQ("42", string(value));
+    }
+
+    TEST_CASE(InsertPath_GivenParentNameAndItemName_InsertsItem)
+    {
+        ParamArray params;
+        params.insert_path("parent.x", 42);
+
+        const char* value = params.dictionaries().get("parent").strings().get("x");
+
+        EXPECT_EQ("42", string(value));
+    }
+
     TEST_CASE(GetPath_GivenItemName_ReturnsItemValue)
     {
         ParamArray params;
