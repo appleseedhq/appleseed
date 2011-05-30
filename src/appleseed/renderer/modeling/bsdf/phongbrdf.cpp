@@ -96,7 +96,8 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
-            Spectrum&           value) const
+            Spectrum&           value,
+            double*             probability) const
         {
             throw ExceptionNotImplemented();
         }

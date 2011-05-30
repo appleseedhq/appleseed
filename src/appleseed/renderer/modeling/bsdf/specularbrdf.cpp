@@ -123,9 +123,13 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
-            Spectrum&           value) const
+            Spectrum&           value,
+            double*             probability) const
         {
             value.set(0.0f);
+
+            if (probability)
+                *probability = 0.0;
         }
 
         FORCE_INLINE virtual double evaluate_pdf(

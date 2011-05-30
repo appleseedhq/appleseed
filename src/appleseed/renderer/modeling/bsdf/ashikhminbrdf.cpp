@@ -302,7 +302,8 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
-            Spectrum&           value) const
+            Spectrum&           value,
+            double*             probability) const
         {
             const Vector3d& shading_normal = shading_basis.get_normal();
 
@@ -312,6 +313,8 @@ namespace
             if (cos_in <= 0.0 || cos_on <= 0.0)
             {
                 value.set(0.0f);
+                if (probability)
+                    *probability = 0.0;
                 return;
             }
 
@@ -322,6 +325,8 @@ namespace
             if (!get_rval(rval, values))
             {
                 value.set(0.0f);
+                if (probability)
+                    *probability = 0.0;
                 return;
             }
 
@@ -357,6 +362,24 @@ namespace
             // Return the sum of the glossy and diffuse components.
             value = glossy;
             value += diffuse;
+
+            if (probability)
+            {
+                // Evaluate the PDF of the glossy component (equation 8).
+                const double pdf_glossy = num / cos_oh;
+                assert(pdf_glossy >= 0.0);
+
+                // Evaluate the PDF of the diffuse component.
+                const double pdf_diffuse = cos_in * (1.0 / Pi);
+                assert(pdf_diffuse >= 0.0);
+
+                // Evaluate the final PDF. Note that the probability might be zero,
+                // e.g. if m_pd is zero (the BSDF has no diffuse component) and
+                // pdf_glossy is also zero (because of numerical imprecision: the
+                // value of pdf_glossy depends on the value of pdf_h, which might
+                // end up being zero if cos_hn is small and exp is very high).
+                *probability = rval.m_pd * pdf_diffuse + rval.m_pg * pdf_glossy;
+            }
         }
 
         FORCE_INLINE virtual double evaluate_pdf(

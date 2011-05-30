@@ -73,7 +73,8 @@ class BRDFWrapper
         const foundation::Basis3d&      shading_basis,
         const foundation::Vector3d&     outgoing,
         const foundation::Vector3d&     incoming,
-        Spectrum&                       value) const;
+        Spectrum&                       value,
+        double*                         probability = 0) const;
 
     virtual double evaluate_pdf(
         const void*                     data,
@@ -162,7 +163,8 @@ void BRDFWrapper<BRDFImpl>::evaluate(
     const foundation::Basis3d&          shading_basis,
     const foundation::Vector3d&         outgoing,
     const foundation::Vector3d&         incoming,
-    Spectrum&                           value) const
+    Spectrum&                           value,
+    double*                             probability) const
 {
     assert(foundation::is_normalized(geometric_normal));
     assert(foundation::is_normalized(outgoing));
@@ -193,7 +195,10 @@ void BRDFWrapper<BRDFImpl>::evaluate(
         shading_basis,
         outgoing,
         incoming,
-        value);
+        value,
+        probability);
+
+    assert(probability == 0 || *probability >= 0.0);
 
     if (adjoint)
     {

@@ -111,7 +111,8 @@ class RENDERERDLL BSDF
         const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
         const foundation::Vector3d& outgoing,                   // world space outgoing direction, unit-length
         const foundation::Vector3d& incoming,                   // world space incoming direction, unit-length
-        Spectrum&                   value) const = 0;           // BSDF value * |cos(incoming, normal)|
+        Spectrum&                   value,                      // BSDF value * |cos(incoming, normal)|
+        double*                     probability = 0) const = 0; // PDF value
 
     // Evaluate the PDF for a given pair of directions.
     virtual double evaluate_pdf(

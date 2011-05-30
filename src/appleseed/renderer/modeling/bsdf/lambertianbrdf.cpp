@@ -149,7 +149,8 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
-            Spectrum&           value) const
+            Spectrum&           value,
+            double*             probability) const
         {
             // No reflection in or below the shading surface.
             const Vector3d& shading_normal = shading_basis.get_normal();
@@ -158,6 +159,8 @@ namespace
             if (cos_in <= 0.0 || cos_on <= 0.0)
             {
                 value.set(0.0f);
+                if (probability)
+                    *probability = 0.0;
                 return;
             }
 
@@ -169,6 +172,9 @@ namespace
                 value = values->m_reflectance;
                 value *= static_cast<float>(1.0 / Pi);
             }
+
+            if (probability)
+                *probability = cos_in * RcpPi;
         }
 
         FORCE_INLINE virtual double evaluate_pdf(

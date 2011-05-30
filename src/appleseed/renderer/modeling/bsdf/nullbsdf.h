@@ -82,9 +82,13 @@ class NullBSDF
         const foundation::Basis3d&      shading_basis,
         const foundation::Vector3d&     outgoing,
         const foundation::Vector3d&     incoming,
-        Spectrum&                       value) const
+        Spectrum&                       value,
+        double*                         probability) const
     {
         value.set(0.0f);
+
+        if (probability)
+            *probability = 0.0;
     }
 
     virtual double evaluate_pdf(
