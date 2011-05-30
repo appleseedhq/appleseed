@@ -282,11 +282,11 @@ void compute_direct_lighting_light_sampling(
         // Compute the geometric term. To keep the estimator unbiased, we don't
         // clamp the geometric term g if it is too small, and in particular we
         // allow it to be exactly zero, which will result in a variance spike.
-        const double g = cos_on / sample_square_distance;
+        const double g = cos_on * rcp_sample_square_distance;
         assert(g >= 0.0);
 
         // Transform bsdf_prob to surface area measure (Veach: 8.2.2.2 eq. 8.10).
-        const double bsdf_point_prob = bsdf_prob * cos_in * rcp_sample_square_distance;
+        const double bsdf_point_prob = bsdf_prob * cos_on * rcp_sample_square_distance;
 
         // Compute MIS weight.
         const double mis_weight =
@@ -502,11 +502,11 @@ void compute_direct_lighting_single_sample(
         // Compute the geometric term. To keep the estimator unbiased, we don't
         // clamp the geometric term g if it is too small, and in particular we
         // allow it to be exactly zero, which will result in a variance spike.
-        const double g = cos_on / sample_square_distance;
+        const double g = cos_on * rcp_sample_square_distance;
         assert(g >= 0.0);
 
         // Transform bsdf_prob to surface area measure (Veach: 8.2.2.2 eq. 8.10).
-        const double bsdf_point_prob = bsdf_prob * cos_in * rcp_sample_square_distance;
+        const double bsdf_point_prob = bsdf_prob * cos_on * rcp_sample_square_distance;
 
         // Compute the combined PDF using MIS balance heuristic.
         const double mis_pdf = 0.5 * (sample.m_probability + bsdf_point_prob);
