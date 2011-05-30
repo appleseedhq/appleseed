@@ -137,18 +137,14 @@ void compute_direct_lighting_bsdf_sampling(
 
         // Evaluate emitted radiance.
         Spectrum edf_value;
+        double edf_prob;
         edf->evaluate(
             edf_data,
             light_shading_point.get_geometric_normal(),
             light_shading_point.get_shading_basis(),
             -incoming,
-            edf_value);
-        const double edf_prob =
-            edf->evaluate_pdf(      // todo: EDF::evaluate() should return the probability
-                edf_data,
-                light_shading_point.get_geometric_normal(),
-                light_shading_point.get_shading_basis(),
-                -incoming);
+            edf_value,
+            edf_prob);
 
         // Multiple importance sampling.
         const double square_distance = square(light_shading_point.get_distance());
@@ -274,18 +270,14 @@ void compute_direct_lighting_light_sampling(
 
         // Evaluate the EDF.
         Spectrum edf_value;
+        double edf_prob;
         sample.m_edf->evaluate(
             edf_data,
             sample.m_input_params.m_geometric_normal,
             Basis3d(sample.m_input_params.m_shading_normal),
             -incoming,
-            edf_value);
-        const double edf_prob =
-            sample.m_edf->evaluate_pdf(     // todo: EDF::evaluate() should return the probability
-                edf_data,
-                sample.m_input_params.m_geometric_normal,
-                Basis3d(sample.m_input_params.m_shading_normal),
-                -incoming);
+            edf_value,
+            edf_prob);
 
         // Compute the geometric term. To keep the estimator unbiased, we don't
         // clamp the geometric term g if it is too small, and in particular we
@@ -397,18 +389,14 @@ void compute_direct_lighting_single_sample(
 
         // Evaluate emitted radiance.
         Spectrum edf_value;
+        double edf_prob;
         edf->evaluate(
             edf_data,
             light_shading_point.get_geometric_normal(),
             light_shading_point.get_shading_basis(),
             -incoming,
-            edf_value);
-        const double edf_prob =
-            edf->evaluate_pdf(      // todo: EDF::evaluate() should return the probability
-                edf_data,
-                light_shading_point.get_geometric_normal(),
-                light_shading_point.get_shading_basis(),
-                -incoming);
+            edf_value,
+            edf_prob);
 
         // Multiple importance sampling.
         const double square_distance = square(light_shading_point.get_distance());
@@ -502,18 +490,14 @@ void compute_direct_lighting_single_sample(
 
         // Evaluate the EDF.
         Spectrum edf_value;
+        double edf_prob;
         sample.m_edf->evaluate(
             edf_data,
             sample.m_input_params.m_geometric_normal,
             Basis3d(sample.m_input_params.m_shading_normal),
             -incoming,
-            edf_value);
-        const double edf_prob =
-            sample.m_edf->evaluate_pdf(     // todo: EDF::evaluate() should return the probability
-                edf_data,
-                sample.m_input_params.m_geometric_normal,
-                Basis3d(sample.m_input_params.m_shading_normal),
-                -incoming);
+            edf_value,
+            edf_prob);
 
         // Compute the geometric term. To keep the estimator unbiased, we don't
         // clamp the geometric term g if it is too small, and in particular we

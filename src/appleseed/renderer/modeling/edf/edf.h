@@ -88,6 +88,13 @@ class RENDERERDLL EDF
         const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
         const foundation::Vector3d& outgoing,                   // world space emission direction, unit-length
         Spectrum&                   value) const = 0;           // EDF value for this direction
+    virtual void evaluate(
+        const void*                 data,                       // input values
+        const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
+        const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
+        const foundation::Vector3d& outgoing,                   // world space emission direction, unit-length
+        Spectrum&                   value,                      // EDF value for this direction
+        double&                     probability) const = 0;     // PDF value
 
     // Evaluate the PDF for a given emission direction.
     virtual double evaluate_pdf(

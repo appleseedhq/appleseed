@@ -116,6 +116,32 @@ namespace
             else value.set(0.0f);
         }
 
+        virtual void evaluate(
+            const void*         data,
+            const Vector3d&     geometric_normal,
+            const Basis3d&      shading_basis,
+            const Vector3d&     outgoing,
+            Spectrum&           value,
+            double&             probability) const
+        {
+            assert(is_normalized(geometric_normal));
+            assert(is_normalized(outgoing));
+
+            const double cos_on = dot(outgoing, shading_basis.get_normal());
+
+            if (cos_on > 0.0)
+            {
+                const InputValues* values = static_cast<const InputValues*>(data);
+                value = values->m_exitance;
+                probability = cos_on * RcpPi;
+            }
+            else
+            {
+                value.set(0.0f);
+                probability = 0.0;
+            }
+        }
+
         virtual double evaluate_pdf(
             const void*         data,
             const Vector3d&     geometric_normal,
