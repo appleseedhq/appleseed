@@ -211,8 +211,8 @@ TEST_SUITE(CompareImages)
     TEST_CASE(Compare)
     {
         GenericImageFileReader reader;
-        auto_ptr<Image> left_image(reader.read("../images/autosave/autosave.20110526.142530.000.exr"));
-        auto_ptr<Image> right_image(reader.read("../images/autosave/autosave.20110527.083229.000.exr"));
+        auto_ptr<Image> left_image(reader.read("../images/autosave/autosave.XXXXXXXX.XXXXXX.XXX.exr"));
+        auto_ptr<Image> right_image(reader.read("../images/autosave/autosave.XXXXXXXX.XXXXXX.XXX.exr"));
 
         ASSERT_TRUE(left_image.get());
         ASSERT_TRUE(right_image.get());
@@ -221,7 +221,7 @@ TEST_SUITE(CompareImages)
         // ColorRatio op;
         // LuminanceDifference op;
         // LuminanceRatio op;
-        // LuminanceDifferenceSign op(1.0e-3f);
+        // LuminanceDifferenceSign op(1.0e-9f);
         MaximumComponentDifferenceSign op(1.0e-9f);
 
         auto_ptr<Image> result = compare(*left_image.get(), *right_image.get(), op);
