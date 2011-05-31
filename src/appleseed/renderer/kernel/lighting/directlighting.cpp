@@ -248,6 +248,7 @@ void compute_direct_lighting_light_sampling(
 
         // Evaluate the BSDF.
         Spectrum bsdf_value;
+        double bsdf_prob;
         bsdf.evaluate(
             bsdf_data,
             false,              // adjoint
@@ -255,14 +256,8 @@ void compute_direct_lighting_light_sampling(
             shading_basis,
             outgoing,
             incoming,
-            bsdf_value);
-        const double bsdf_prob =
-            bsdf.evaluate_pdf(      // todo: BSDF::evaluate() should return the probability
-                bsdf_data,
-                geometric_normal,
-                shading_basis,
-                outgoing,
-                incoming);
+            bsdf_value,
+            &bsdf_prob);
 
         // Evaluate the input values of the EDF.
         InputEvaluator edf_input_evaluator(shading_context.get_texture_cache());
@@ -471,6 +466,7 @@ void compute_direct_lighting_single_sample(
 
         // Evaluate the BSDF.
         Spectrum bsdf_value;
+        double bsdf_prob;
         bsdf.evaluate(
             bsdf_data,
             false,              // adjoint
@@ -478,14 +474,8 @@ void compute_direct_lighting_single_sample(
             shading_basis,
             outgoing,
             incoming,
-            bsdf_value);
-        const double bsdf_prob =
-            bsdf.evaluate_pdf(      // todo: BSDF::evaluate() should return the probability
-                bsdf_data,
-                geometric_normal,
-                shading_basis,
-                outgoing,
-                incoming);
+            bsdf_value,
+            &bsdf_prob);
 
         // Evaluate the input values of the EDF.
         InputEvaluator edf_input_evaluator(shading_context.get_texture_cache());
