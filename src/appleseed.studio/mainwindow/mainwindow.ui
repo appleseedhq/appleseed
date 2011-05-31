@@ -122,7 +122,9 @@
     <property name="title">
      <string>&amp;Tools</string>
     </property>
-    <addaction name="action_tools_options"/>
+    <addaction name="action_tools_settings"/>
+    <addaction name="action_tools_save_settings"/>
+    <addaction name="action_tools_reload_settings"/>
    </widget>
    <widget class="QMenu" name="menu_help">
     <property name="title">
@@ -216,9 +218,6 @@
            <attribute name="headerVisible">
             <bool>false</bool>
            </attribute>
-           <attribute name="headerVisible">
-            <bool>false</bool>
-           </attribute>
            <column>
             <property name="text">
              <string notr="true">1</string>
@@ -244,9 +243,6 @@
            <property name="allColumnsShowFocus">
             <bool>true</bool>
            </property>
-           <attribute name="headerVisible">
-            <bool>false</bool>
-           </attribute>
            <attribute name="headerVisible">
             <bool>false</bool>
            </attribute>
@@ -354,9 +350,9 @@
     <string>&amp;About...</string>
    </property>
   </action>
-  <action name="action_tools_options">
+  <action name="action_tools_settings">
    <property name="text">
-    <string>&amp;Options...</string>
+    <string>&amp;Settings...</string>
    </property>
   </action>
   <action name="action_diagnostics_override_shading_no_override">
@@ -423,6 +419,16 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="action_tools_reload_settings">
+   <property name="text">
+    <string>&amp;Reload Settings</string>
+   </property>
+  </action>
+  <action name="action_tools_save_settings">
+   <property name="text">
+    <string>S&amp;ave Settings</string>
    </property>
   </action>
  </widget>

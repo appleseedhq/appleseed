@@ -146,9 +146,6 @@ class MainWindow
     void build_connections();
     void build_menu_items_connections();
 
-    void load_settings();
-    void save_settings();
-
     void print_library_information();
 
     static QString get_project_filter_string();
@@ -195,6 +192,9 @@ class MainWindow
     void slot_show_test_window();
     void slot_show_benchmark_window();
     void slot_show_about_window();
+
+    void slot_load_settings();
+    void slot_save_settings();
 };
 
 }       // namespace studio

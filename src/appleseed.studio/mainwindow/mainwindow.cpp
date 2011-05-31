@@ -100,7 +100,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     build_connections();
 
-    load_settings();
+    slot_load_settings();
     print_library_information();
 
     update_workspace();
@@ -262,34 +262,12 @@ void MainWindow::build_menu_items_connections()
     connect(m_ui->action_debug_tests, SIGNAL(triggered()), this, SLOT(slot_show_test_window()));
     connect(m_ui->action_debug_benchmarks, SIGNAL(triggered()), this, SLOT(slot_show_benchmark_window()));
 
+    // Tools menu.
+    connect(m_ui->action_tools_save_settings, SIGNAL(triggered()), this, SLOT(slot_save_settings()));
+    connect(m_ui->action_tools_reload_settings, SIGNAL(triggered()), this, SLOT(slot_load_settings()));
+
     // Help menu.
     connect(m_ui->action_help_about, SIGNAL(triggered()), this, SLOT(slot_show_about_window()));
-}
-
-void MainWindow::load_settings()
-{
-    const filesystem::path root_path(Application::get_root_path());
-    const filesystem::path settings_file_path = root_path / "settings/appleseed.studio.xml";
-    const filesystem::path schema_file_path = root_path / "schemas/settings.xsd";
-
-    SettingsFileReader reader(global_logger());
-
-    reader.read(
-        settings_file_path.file_string().c_str(),
-        schema_file_path.file_string().c_str(),
-        m_settings);
-}
-
-void MainWindow::save_settings()
-{
-    const filesystem::path root_path(Application::get_root_path());
-    const filesystem::path settings_file_path = root_path / "settings/appleseed.studio.xml";
-
-    SettingsFileWriter writer;
-
-    writer.write(
-        settings_file_path.file_string().c_str(),
-        m_settings);
 }
 
 void MainWindow::print_library_information()
@@ -600,7 +578,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
     m_project_manager.close_project();
 
-    save_settings();
+    slot_save_settings();
 
     event->accept();
 }
@@ -828,6 +806,38 @@ void MainWindow::slot_show_about_window()
     about_window->center();
     about_window->showNormal();
     about_window->activateWindow();
+}
+
+void MainWindow::slot_load_settings()
+{
+    const filesystem::path root_path(Application::get_root_path());
+    const filesystem::path settings_file_path = root_path / "settings/appleseed.studio.xml";
+    const filesystem::path schema_file_path = root_path / "schemas/settings.xsd";
+
+    SettingsFileReader reader(global_logger());
+
+    Dictionary settings;
+
+    const bool success =
+        reader.read(
+            settings_file_path.file_string().c_str(),
+            schema_file_path.file_string().c_str(),
+            settings);
+
+    if (success)
+        m_settings = settings;
+}
+
+void MainWindow::slot_save_settings()
+{
+    const filesystem::path root_path(Application::get_root_path());
+    const filesystem::path settings_file_path = root_path / "settings/appleseed.studio.xml";
+
+    SettingsFileWriter writer;
+
+    writer.write(
+        settings_file_path.file_string().c_str(),
+        m_settings);
 }
 
 }   // namespace studio
