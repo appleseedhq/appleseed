@@ -146,6 +146,9 @@ void compute_direct_lighting_bsdf_sampling(
             edf_value,
             edf_prob);
 
+        if (edf_prob == 0.0)
+            continue;
+
         // Multiple importance sampling.
         const double square_distance = square(light_shading_point.get_distance());
         if (square_distance > 0.0)
@@ -153,7 +156,7 @@ void compute_direct_lighting_bsdf_sampling(
             // Transform bsdf_prob to surface area measure (Veach: 8.2.2.2 eq. 8.10).
             const double bsdf_point_prob =
                   bsdf_prob
-                * max(dot(incoming, shading_basis.get_normal()), 0.0)
+                * dot(-incoming, light_shading_point.get_shading_normal())
                 / square_distance;
 
             // Compute the probability density wrt. surface area of choosing this point
@@ -398,6 +401,9 @@ void compute_direct_lighting_single_sample(
             edf_value,
             edf_prob);
 
+        if (edf_prob == 0)
+            return;
+
         // Multiple importance sampling.
         const double square_distance = square(light_shading_point.get_distance());
         if (square_distance > 0.0)
@@ -406,7 +412,7 @@ void compute_direct_lighting_single_sample(
             // this point by sampling the light sources.
             const double light_dir_prob =
                   light_sampler.evaluate_pdf(light_shading_point)
-                / max(dot(incoming, shading_basis.get_normal()), 0.0)
+                / dot(-incoming, light_shading_point.get_shading_normal())
                 * square_distance;
 
             // Apply the MIS balance heuristic.
