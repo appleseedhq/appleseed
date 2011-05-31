@@ -238,9 +238,10 @@ namespace
                     return;
 
                 // Compute the flux-to-radiance conversion factor.
-                const double cos_theta = abs(dot(-vertex_to_camera, m_camera_direction));
-                const double dist_pixel_to_camera = m_focal_length / cos_theta;
-                const double flux_to_radiance = square(dist_pixel_to_camera / cos_theta) * m_rcp_pixel_area;
+                const double cos_theta = abs(dot(vertex_to_camera, m_camera_direction));
+                const double rcp_cos_theta = 1.0 / cos_theta;
+                const double dist_pixel_to_camera = m_focal_length * rcp_cos_theta;
+                const double flux_to_radiance = square(dist_pixel_to_camera * rcp_cos_theta) * m_rcp_pixel_area;
 
                 // Compute the geometric term.
                 const double g = transmission * cos_alpha * cos_theta / square_distance;
@@ -298,10 +299,10 @@ namespace
                     bsdf_value);
 
                 // Compute the flux-to-radiance conversion factor.
-                // todo: abs() or unary minus redundant.
-                const double cos_theta = abs(dot(-vertex_to_camera, m_camera_direction));
-                const double dist_pixel_to_camera = m_focal_length / cos_theta;
-                const double flux_to_radiance = square(dist_pixel_to_camera / cos_theta) * m_rcp_pixel_area;
+                const double cos_theta = abs(dot(vertex_to_camera, m_camera_direction));
+                const double rcp_cos_theta = 1.0 / cos_theta;
+                const double dist_pixel_to_camera = m_focal_length * rcp_cos_theta;
+                const double flux_to_radiance = square(dist_pixel_to_camera * rcp_cos_theta) * m_rcp_pixel_area;
 
                 // Compute the geometric term.
                 // cos(vertex_to_camera, shading_normal) is already accounted for in bsdf_value.
