@@ -77,7 +77,6 @@ class Population
 // Population class implementation.
 //
 
-// Constructor.
 template <typename T>
 inline Population<T>::Population()
   : m_size(0)
@@ -88,7 +87,6 @@ inline Population<T>::Population()
 {
 }
 
-// Insert a new value into the population.
 template <typename T>
 inline void Population<T>::insert(const ValueType& val)
 {
@@ -105,7 +103,7 @@ inline void Population<T>::insert(const ValueType& val)
     // To update the mean value when a new value x is included into the population,
     // we write
     //
-    //   mean_(n+1) = mean_n + delta
+    //   mean_{n+1} = mean_n + delta
     //
     // and solve this equation for delta, which yields
     //
@@ -128,8 +126,10 @@ inline void Population<T>::insert(const ValueType& val)
     if (m_max < val)
         m_max = val;
 
+    const double double_val = static_cast<double>(val);
+
     // Compute residual value.
-    const double residual = double(val) - m_avg;
+    const double residual = double_val - m_avg;
 
     // Compute the new size of the population.
     const size_t new_size = m_size + 1;
@@ -138,7 +138,7 @@ inline void Population<T>::insert(const ValueType& val)
     const double new_avg = m_avg + residual / new_size;
 
     // Update s.
-    m_s += residual * (double(val) - new_avg);
+    m_s += residual * (double_val - new_avg);
 
     // Update the mean value of the population.
     m_avg = new_avg;
@@ -147,29 +147,30 @@ inline void Population<T>::insert(const ValueType& val)
     m_size = new_size;
 }
 
-// Return the size of the population.
 template <typename T>
 inline size_t Population<T>::get_size() const
 {
     return m_size;
 }
 
-// Return various properties of the population defined so far.
 template <typename T>
 inline T Population<T>::get_min() const
 {
     return m_size > 0 ? m_min : ValueType(0);
 }
+
 template <typename T>
 inline T Population<T>::get_max() const
 {
     return m_size > 0 ? m_max : ValueType(0);
 }
+
 template <typename T>
 inline double Population<T>::get_avg() const
 {
     return m_avg;
 }
+
 template <typename T>
 inline double Population<T>::get_dev() const
 {

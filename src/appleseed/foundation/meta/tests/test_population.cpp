@@ -30,10 +30,10 @@
 #include "foundation/math/population.h"
 #include "foundation/utility/test.h"
 
+using namespace foundation;
+
 TEST_SUITE(Foundation_Math_Population)
 {
-    using namespace foundation;
-
     TEST_CASE(TestEmptyPopulation)
     {
         Population<int> pop;
