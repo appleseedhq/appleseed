@@ -173,7 +173,7 @@ namespace
         struct Statistics
         {
             uint64              m_path_count;
-            Population<size_t>  m_path_length;
+            Population<uint64>  m_path_length;
 
             Statistics()
               : m_path_count(0)
