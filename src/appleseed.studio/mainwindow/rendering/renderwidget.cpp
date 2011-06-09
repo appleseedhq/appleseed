@@ -64,7 +64,6 @@ namespace
     const int RefreshRate = 15;     // hertz
 }
 
-// Constructor.
 RenderWidget::RenderWidget(
     const int       width,
     const int       height,
