@@ -35,9 +35,6 @@
 #include "renderer/kernel/rendering/isamplegenerator.h"
 #include "renderer/kernel/rendering/itilecallback.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/memory.h"
-
 // Standard headers.
 #include <algorithm>
 
@@ -54,7 +51,7 @@ namespace renderer
 namespace
 {
     const size_t MinSampleCount     = 1024 * 4;     // minimum number of samples in one pass
-    const size_t MaxSampleCount     = 1024 * 128;   // maximum number of samples in one pass
+    const size_t MaxSampleCount     = 1024 * 64;    // maximum number of samples in one pass
     const size_t MinSamplePassCount = 8;            // number of passes that will stick to the minimum number of samples
     const size_t SampleIncrement    = 1024 * 4;     // number of samples added at each pass
     const bool RoundRobinRender     = false;        // enable/disable Round Robin rendering
@@ -116,7 +113,7 @@ void SampleGeneratorJob::execute(const size_t thread_index)
         m_abort_switch);
 
     if (!RoundRobinRender || m_pass % m_job_count == m_job_index)
-        m_framebuffer.try_render_to_frame(m_frame);
+        m_framebuffer.render_to_frame(m_frame);
 
     if (m_tile_callback)
         m_tile_callback->post_render(m_frame);

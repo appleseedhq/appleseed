@@ -69,9 +69,8 @@ class AccumulationFramebuffer
     // Develop the framebuffer to a frame. Thread-safe.
     void render_to_frame(Frame& frame);
 
-    // Like render_to_frame() but won't do anything if the framebuffer
-    // is locked by another thread. Thread-safe.
-    void try_render_to_frame(Frame& frame);
+    // Thread-safe.
+    void print_statistics(const Frame& frame);
 
   protected:
     const size_t                        m_width;
@@ -90,11 +89,7 @@ class AccumulationFramebuffer
 
     void clear_no_lock();
 
-    void do_render_to_frame(Frame& frame);
-
     virtual void develop_to_frame(Frame& frame) const = 0;
-
-    void print_statistics(const Frame& frame);
 };
 
 

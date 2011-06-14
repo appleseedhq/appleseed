@@ -55,15 +55,32 @@ AccumulationFramebuffer::AccumulationFramebuffer(
 void AccumulationFramebuffer::render_to_frame(Frame& frame)
 {
     Spinlock::ScopedLock lock(m_spinlock);
-    do_render_to_frame(frame);
+
+    develop_to_frame(frame);
 }
 
-void AccumulationFramebuffer::try_render_to_frame(Frame& frame)
+void AccumulationFramebuffer::print_statistics(const Frame& frame)
 {
-    if (m_spinlock.try_lock())
+    Spinlock::ScopedLock lock(m_spinlock);
+
+    const uint64 time = m_timer.read();
+    const uint64 elapsed_ticks = time - m_last_time;
+    const double elapsed_seconds = static_cast<double>(elapsed_ticks) / m_timer_frequency;
+
+    if (elapsed_seconds >= 2.0)
     {
-        do_render_to_frame(frame);
-        m_spinlock.unlock();
+        const uint64 rendered_samples = m_sample_count - m_last_sample_count;
+        const double average_luminance = frame.compute_average_luminance();
+
+        RENDERER_LOG_INFO(
+            "%s samples, %s samples/pixel, %s samples/second, avg. luminance %s",
+            pretty_uint(m_sample_count).c_str(),
+            pretty_ratio(m_sample_count, static_cast<uint64>(m_pixel_count)).c_str(),
+            pretty_ratio(static_cast<double>(rendered_samples), elapsed_seconds).c_str(),
+            pretty_scalar(average_luminance, 6).c_str());
+
+        m_last_sample_count = m_sample_count;
+        m_last_time = time;
     }
 }
 
@@ -73,36 +90,6 @@ void AccumulationFramebuffer::clear_no_lock()
     m_timer_frequency = m_timer.frequency();
     m_last_time = m_timer.read();
     m_last_sample_count = 0;
-}
-
-void AccumulationFramebuffer::do_render_to_frame(Frame& frame)
-{
-    develop_to_frame(frame);
-    print_statistics(frame);
-}
-
-void AccumulationFramebuffer::print_statistics(const Frame& frame)
-{
-    const uint64 time = m_timer.read();
-    const uint64 elapsed_ticks = time - m_last_time;
-    const double elapsed_seconds = static_cast<double>(elapsed_ticks) / m_timer_frequency;
-
-    if (elapsed_seconds >= 1.0)
-    {
-        const uint64 rendered_samples = m_sample_count - m_last_sample_count;
-
-        const double average_luminance = frame.compute_average_luminance();
-
-        RENDERER_LOG_INFO(
-            "%s samples (%s samples/pixel, %s samples/second, avg. luminance %s)",
-            pretty_uint(m_sample_count).c_str(),
-            pretty_ratio(m_sample_count, static_cast<uint64>(m_pixel_count)).c_str(),
-            pretty_ratio(static_cast<double>(rendered_samples), elapsed_seconds).c_str(),
-            pretty_scalar(average_luminance, 6).c_str());
-
-        m_last_sample_count = m_sample_count;
-        m_last_time = time;
-    }
 }
 
 }   // namespace renderer

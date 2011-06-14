@@ -40,12 +40,14 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
+#include "foundation/platform/thread.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/job.h"
 
 // Standard headers.
 #include <vector>
 
+using namespace boost;
 using namespace foundation;
 using namespace std;
 
@@ -163,6 +165,14 @@ namespace
 
             // Start job execution.
             m_job_manager->start();
+
+            // Create and start a thread to print statistics.
+            m_statistics_func.reset(
+                new StatisticsFunc(
+                    m_frame,
+                    *m_framebuffer.get(),
+                    m_abort_switch));
+            m_statistics_thread.reset(new thread(*m_statistics_func.get()));
         }
 
         virtual void stop_rendering()
@@ -174,6 +184,9 @@ namespace
 
             // Delete all non-executed jobs.
             m_job_queue.clear_scheduled_jobs();
+
+            // Make sure the thread that prints statistics is terminated.
+            m_statistics_thread->join();
         }
 
         virtual bool is_rendering() const
@@ -196,8 +209,10 @@ namespace
         };
 
         Frame&                              m_frame;
-        auto_ptr<AccumulationFramebuffer>   m_framebuffer;
         const Parameters                    m_params;
+        SampleCounter                       m_sample_counter;
+
+        auto_ptr<AccumulationFramebuffer>   m_framebuffer;
 
         JobQueue                            m_job_queue;
         auto_ptr<JobManager>                m_job_manager;
@@ -206,7 +221,34 @@ namespace
         SampleGeneratorVector               m_sample_generators;
         TileCallbackVector                  m_tile_callbacks;
 
-        SampleCounter                       m_sample_counter;
+        struct StatisticsFunc
+        {
+            Frame&                          m_frame;
+            AccumulationFramebuffer&        m_framebuffer;
+            AbortSwitch&                    m_abort_switch;
+
+            StatisticsFunc(
+                Frame&                      frame,
+                AccumulationFramebuffer&    framebuffer,
+                AbortSwitch&                abort_switch)
+              : m_frame(frame)
+              , m_framebuffer(framebuffer)
+              , m_abort_switch(abort_switch)
+            {
+            }
+
+            void operator()()
+            {
+                while (!m_abort_switch.is_aborted())
+                {
+                    m_framebuffer.print_statistics(m_frame);
+                    sleep(200);
+                }
+            }
+        };
+
+        auto_ptr<StatisticsFunc>            m_statistics_func;
+        auto_ptr<thread>                    m_statistics_thread;
     };
 }
 
