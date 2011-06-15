@@ -56,7 +56,7 @@ class MapleFile
     };
 
     // Constructor, opens the file for writing.
-    MapleFile(
+    explicit MapleFile(
         const std::string&  filename);
 
     // Destructor, closes the file.
