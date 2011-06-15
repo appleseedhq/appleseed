@@ -44,24 +44,20 @@ namespace foundation
 // MapleFile class implementation.
 //
 
-// Constructor, opens the file for writing.
-MapleFile::MapleFile(
-    const string&   filename)
+MapleFile::MapleFile(const string& filename)
 {
     m_file = fopen(filename.c_str(), "wt");
+
     if (m_file == 0)
         throw ExceptionIOError();
 }
 
-// Destructor, closes the file.
 MapleFile::~MapleFile()
 {
     fclose(m_file);
 }
 
-// Print an arbitrary string with formatting.
-void MapleFile::print(
-    const char*     format, ...)
+void MapleFile::print(const char* format, ...)
 {
     // Size in bytes of the temporary text buffer.
     static const size_t BufferSize = 4096;
@@ -76,20 +72,16 @@ void MapleFile::print(
     fprintf(m_file, "%s", text);
 }
 
-// Issue a restart command.
 void MapleFile::restart()
 {
     print("restart:\n");
 }
 
-// Issue a with() command to load a package.
-void MapleFile::with(
-    const string&   package)
+void MapleFile::with(const string& package)
 {
     print("with(%s):\n", package.c_str());
 }
 
-// Issue a plot() command to plot a function.
 void MapleFile::plot(
     const string&   variable1,
     const string&   color1,
@@ -101,6 +93,7 @@ void MapleFile::plot(
         color1.c_str(),
         legend1.c_str());
 }
+
 void MapleFile::plot(
     const string&   variable1,
     const string&   color1,
@@ -118,6 +111,7 @@ void MapleFile::plot(
         legend1.c_str(),
         legend2.c_str());
 }
+
 void MapleFile::plot(
     const string&   variable1,
     const string&   color1,

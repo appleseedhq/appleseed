@@ -56,22 +56,19 @@ class MapleFile
     };
 
     // Constructor, opens the file for writing.
-    explicit MapleFile(
-        const std::string&  filename);
+    explicit MapleFile(const std::string& filename);
 
     // Destructor, closes the file.
     ~MapleFile();
 
     // Print an arbitrary string with formatting.
-    void print(
-        const char*         format, ...);
+    void print(const char* format, ...);
 
     // Issue a restart command.
     void restart();
 
     // Issue a with() command to load a package.
-    void with(
-        const std::string&  package);
+    void with(const std::string& package);
 
     // Define an array of 2D vectors.
     template <typename T>
