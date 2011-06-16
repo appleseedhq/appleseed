@@ -687,6 +687,7 @@ set(renderer_api_sources
     renderer/api/color.h
     renderer/api/edf.h
     renderer/api/entity.h
+    renderer/api/environment.h
     renderer/api/environmentedf.h
     renderer/api/environmentshader.h
     renderer/api/frame.h
