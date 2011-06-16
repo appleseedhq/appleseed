@@ -102,8 +102,7 @@ class MapleFile
         const std::string&  legend3);
 
   private:
-    std::FILE*  m_file;
-    bool        m_io_error;
+    std::FILE* m_file;
 };
 
 
