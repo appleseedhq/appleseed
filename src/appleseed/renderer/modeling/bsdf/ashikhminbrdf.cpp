@@ -170,7 +170,6 @@ namespace
 
                 // Compute the incoming direction in local space.
                 const Vector3d wi = sample_hemisphere_cosine(Vector2d(s[0], s[1]));
-                assert(wi.y >= 0.0);
 
                 // Transform the incoming direction to parent space.
                 incoming = shading_basis.transform_to_parent(wi);
