@@ -46,10 +46,10 @@ namespace renderer
 //
 
 template <>
-struct EntityTraits<renderer::SurfaceShader>
+struct EntityTraits<SurfaceShader>
 {
-    typedef renderer::SurfaceShaderContainer ContainerType;
-    typedef renderer::SurfaceShaderFactoryRegistrar FactoryRegistrarType;
+    typedef SurfaceShaderContainer ContainerType;
+    typedef SurfaceShaderFactoryRegistrar FactoryRegistrarType;
 
     static const char* get_entity_type_name()                           { return "surface_shader"; }
     static const char* get_human_readable_entity_type_name()            { return "Surface Shader"; }

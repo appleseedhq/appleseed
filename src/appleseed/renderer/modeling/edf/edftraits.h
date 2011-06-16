@@ -46,10 +46,10 @@ namespace renderer
 //
 
 template <>
-struct EntityTraits<renderer::EDF>
+struct EntityTraits<EDF>
 {
-    typedef renderer::EDFContainer ContainerType;
-    typedef renderer::EDFFactoryRegistrar FactoryRegistrarType;
+    typedef EDFContainer ContainerType;
+    typedef EDFFactoryRegistrar FactoryRegistrarType;
 
     static const char* get_entity_type_name()                           { return "edf"; }
     static const char* get_human_readable_entity_type_name()            { return "EDF"; }

@@ -46,10 +46,10 @@ namespace renderer
 //
 
 template <>
-struct EntityTraits<renderer::EnvironmentShader>
+struct EntityTraits<EnvironmentShader>
 {
-    typedef renderer::EnvironmentShaderContainer ContainerType;
-    typedef renderer::EnvironmentShaderFactoryRegistrar FactoryRegistrarType;
+    typedef EnvironmentShaderContainer ContainerType;
+    typedef EnvironmentShaderFactoryRegistrar FactoryRegistrarType;
 
     static const char* get_entity_type_name()                           { return "environment_shader"; }
     static const char* get_human_readable_entity_type_name()            { return "Environment Shader"; }

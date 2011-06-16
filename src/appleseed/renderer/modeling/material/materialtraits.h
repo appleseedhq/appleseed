@@ -45,10 +45,10 @@ namespace renderer
 //
 
 template <>
-struct EntityTraits<renderer::Material>
+struct EntityTraits<Material>
 {
-    typedef renderer::MaterialContainer ContainerType;
-    typedef renderer::MaterialFactory FactoryType;
+    typedef MaterialContainer ContainerType;
+    typedef MaterialFactory FactoryType;
 
     static const char* get_entity_type_name()                           { return "material"; }
     static const char* get_human_readable_entity_type_name()            { return "Material"; }

@@ -46,10 +46,10 @@ namespace renderer
 //
 
 template <>
-struct EntityTraits<renderer::BSDF>
+struct EntityTraits<BSDF>
 {
-    typedef renderer::BSDFContainer ContainerType;
-    typedef renderer::BSDFFactoryRegistrar FactoryRegistrarType;
+    typedef BSDFContainer ContainerType;
+    typedef BSDFFactoryRegistrar FactoryRegistrarType;
 
     static const char* get_entity_type_name()                           { return "bsdf"; }
     static const char* get_human_readable_entity_type_name()            { return "BSDF"; }
