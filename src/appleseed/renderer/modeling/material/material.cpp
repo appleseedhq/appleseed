@@ -64,6 +64,11 @@ void Material::release()
     delete this;
 }
 
+const char* Material::get_model() const
+{
+    return MaterialFactory::get_model();
+}
+
 void Material::bind_entities(
     const SurfaceShaderContainer&   surface_shaders,
     const BSDFContainer&            bsdfs,
@@ -78,11 +83,6 @@ void Material::bind_entities(
     m_bsdf = get_optional_entity<BSDF>(bsdfs, m_params, "bsdf");
 
     m_edf = get_optional_entity<EDF>(edfs, m_params, "edf");
-}
-
-const char* Material::get_model() const
-{
-    return MaterialFactory::get_model();
 }
 
 

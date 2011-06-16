@@ -54,13 +54,13 @@ class RENDERERDLL Material
     // Delete this instance.
     virtual void release();
 
+    // Return a string identifying the model of this material.
+    const char* get_model() const;
+
     void bind_entities(
         const SurfaceShaderContainer&   surface_shaders,
         const BSDFContainer&            bsdfs,
         const EDFContainer&             edfs);
-
-    // Return a string identifying the model of this material.
-    const char* get_model() const;
 
     // Return the surface shader of this material.
     const SurfaceShader& get_surface_shader() const;
