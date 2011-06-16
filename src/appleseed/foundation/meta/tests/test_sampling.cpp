@@ -35,6 +35,7 @@
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
 #include "foundation/utility/testutils.h"
+#include "foundation/utility/vpythonfile.h"
 
 // Standard headers.
 #include <cstddef>
@@ -105,8 +106,6 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
 
 TEST_SUITE(Foundation_Math_Sampling_RQMCSamplingContext)
 {
-    using namespace foundation;
-
     typedef MersenneTwister RNG;
     typedef RQMCSamplingContext<RNG> RQMCSamplingContext;
     typedef RQMCSamplingContext::VectorType VectorType;
@@ -230,32 +229,84 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext_DirectIlluminationSimulat
 
 TEST_SUITE(Foundation_Math_Sampling_Mappings)
 {
-    template <typename SamplingFunction>
-    void draw_sampling_function(const string& filename, SamplingFunction& sampling_function)
+    template <typename Vec>
+    Vector3d to_vector3d(const Vec& v);
+
+    template <>
+    Vector3d to_vector3d(const Vector2d& v)
     {
-        const Vector2d Center(0.5, 0.5);
-        const double Radius = 0.3;
-        const size_t N = 256;
+        return Vector3d(v.x, 0.0, v.y);
+    }
 
-        vector<Vector2d> points;
+    template <>
+    Vector3d to_vector3d(const Vector3d& v)
+    {
+        return v;
+    }
 
-        for (size_t i = 0; i < N; ++i)
+    template <typename SamplingFunction>
+    void visualize_function(
+        const string&       filename,
+        SamplingFunction&   function,
+        const size_t        point_count)
+    {
+        vector<Vector3d> points(point_count);
+
+        for (size_t i = 0; i < point_count; ++i)
         {
             const size_t Bases[] = { 2 };
-            const Vector2d s = hammersley_sequence<double, 2>(Bases, i, N);
-            points.push_back(Center + Radius * sampling_function(s));
+            const Vector2d s = hammersley_sequence<double, 2>(Bases, i, point_count);
+            points[i] = to_vector3d(function(s));
         }
 
-        write_point_cloud_image(filename, points);
+        VPythonFile file(filename);
+        file.draw_points(points.size(), &points.front());
     }
 
-    TEST_CASE(Test_SampleDiskUniform)
+    TEST_CASE(SampleSphereUniform_GenerateVPythonProgram)
     {
-        draw_sampling_function("output/test_sampling_sample_disk_uniform.png", sample_disk_uniform<double>);
+        visualize_function("output/test_sampling_sample_sphere_uniform.py", sample_sphere_uniform<double>, 1024);
     }
 
-    TEST_CASE(Test_SampleDiskUniformAlt)
+    TEST_CASE(SampleHemisphereUniform_GenerateVPythonProgram)
     {
-        draw_sampling_function("output/test_sampling_sample_disk_uniform_alt.png", sample_disk_uniform_alt<double>);
+        visualize_function("output/test_sampling_sample_hemisphere_uniform.py", sample_hemisphere_uniform<double>, 512);
+    }
+
+    template <typename T>
+    Vector<T, 3> sample_hemisphere_cosine_power_1(const Vector<T, 2>& s)
+    {
+        return sample_hemisphere_cosine(s);
+    }
+
+    TEST_CASE(SampleHemisphereCosinePower1_GenerateVPythonProgram)
+    {
+        visualize_function("output/test_sampling_sample_hemisphere_cosine_power_1.py", sample_hemisphere_cosine_power_1<double>, 512);
+    }
+
+    template <typename T>
+    Vector<T, 3> sample_hemisphere_cosine_power_10(const Vector<T, 2>& s)
+    {
+        return sample_hemisphere_cosine(s, T(10.0));
+    }
+
+    TEST_CASE(SampleHemisphereCosinePower10_GenerateVPythonProgram)
+    {
+        visualize_function("output/test_sampling_sample_hemisphere_cosine_power_10.py", sample_hemisphere_cosine_power_10<double>, 512);
+    }
+
+    TEST_CASE(SampleDiskUniform_GenerateVPythonProgram)
+    {
+        visualize_function("output/test_sampling_sample_disk_uniform.py", sample_disk_uniform<double>, 256);
+    }
+
+    TEST_CASE(SampleDiskUniformAlt_GenerateVPythonProgram)
+    {
+        visualize_function("output/test_sampling_sample_disk_uniform_alt.py", sample_disk_uniform_alt<double>, 256);
+    }
+
+    TEST_CASE(SampleTriangleUniform_GenerateVPythonProgram)
+    {
+        visualize_function("output/test_sampling_sample_triangle_uniform.py", sample_triangle_uniform<double>, 256);
     }
 }
