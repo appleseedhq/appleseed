@@ -657,6 +657,8 @@ set(foundation_utility_sources
     foundation/utility/uid.cpp
     foundation/utility/uid.h
     foundation/utility/version.h
+    foundation/utility/vpythonfile.cpp
+    foundation/utility/vpythonfile.h
     foundation/utility/xercesc.cpp
     foundation/utility/xercesc.h
 )
