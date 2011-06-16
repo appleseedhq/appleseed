@@ -118,7 +118,7 @@ inline Vector<T, 3> sample_sphere_uniform(const Vector<T, 2>& s)
     assert(s[0] >= T(0.0) && s[0] < T(1.0));
     assert(s[1] >= T(0.0) && s[1] < T(1.0));
 
-    const T u = T(2.0) * T(Pi) * s[0];
+    const T u = T(TwoPi) * s[0];
     const T v = T(2.0) * std::sqrt(s[1] * (T(1.0) - s[1]));
 
     Vector<T, 3> d;
@@ -137,12 +137,13 @@ inline Vector<T, 3> sample_hemisphere_uniform(const Vector<T, 2>& s)
     assert(s[0] >= T(0.0) && s[0] < T(1.0));
     assert(s[1] >= T(0.0) && s[1] < T(1.0));
 
-    const T u = T(2.0) * T(Pi) * s[0];
-    const T v = std::sqrt(T(1.0) - s[1] * s[1]);
+    const T s1 = T(1.0) - s[1];
+    const T u = T(TwoPi) * s[0];
+    const T v = std::sqrt(T(1.0) - s1 * s1);
 
     Vector<T, 3> d;
     d.x = std::cos(u) * v;
-    d.y = s[1];
+    d.y = s1;
     d.z = std::sin(u) * v;
 
     assert(is_normalized(d));
@@ -156,12 +157,12 @@ inline Vector<T, 3> sample_hemisphere_cosine(const Vector<T, 2>& s)
     assert(s[0] >= T(0.0) && s[0] < T(1.0));
     assert(s[1] >= T(0.0) && s[1] < T(1.0));
 
-    const T u = T(2.0) * T(Pi) * s[0];
-    const T v = std::sqrt(T(1.0) - s[1]);
+    const T u = T(TwoPi) * s[0];
+    const T v = std::sqrt(s[1]);
 
     Vector<T, 3> d;
     d.x = std::cos(u) * v;
-    d.y = std::sqrt(s[1]);
+    d.y = std::sqrt(T(1.0) - s[1]);
     d.z = std::sin(u) * v;
 
     assert(is_normalized(d));
@@ -176,13 +177,14 @@ inline Vector<T, 3> sample_hemisphere_cosine(const Vector<T, 2>& s, const T n)
     assert(s[1] >= T(0.0) && s[1] < T(1.0));
     assert(n >= T(0.0));
 
-    const T u = T(2.0) * T(Pi) * s[0];
+    const T s1 = T(1.0) - s[1];
+    const T u = T(TwoPi) * s[0];
     const T v = T(1.0) / (n + T(1.0));
-    const T w = std::sqrt(T(1.0) - std::pow(s[1], T(2.0) * v));
+    const T w = std::sqrt(T(1.0) - std::pow(s1, T(2.0) * v));
 
     Vector<T, 3> d;
     d.x = std::cos(u) * w;
-    d.y = std::pow(s[1], v);
+    d.y = std::pow(s1, v);
     d.z = std::sin(u) * w;
 
     assert(is_normalized(d));

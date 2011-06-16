@@ -27,6 +27,7 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/math/fp.h"
 #include "foundation/math/qmc.h"
 #include "foundation/math/rng.h"
 #include "foundation/math/sampling.h"
@@ -229,6 +230,36 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext_DirectIlluminationSimulat
 
 TEST_SUITE(Foundation_Math_Sampling_Mappings)
 {
+    TEST_CASE(SampleHemisphereUniform_GivenZeroZero_ReturnsSampleWithYComponentGreaterThanZero)
+    {
+        EXPECT_GT(0.0, sample_hemisphere_uniform(Vector2d(0.0)).y);
+    }
+
+    TEST_CASE(SampleHemisphereUniform_GivenAlmostOneOne_ReturnsSampleWithYComponentGreaterThanZero)
+    {
+        EXPECT_GT(0.0, sample_hemisphere_uniform(Vector2d(shift(1.0, -1))).y);
+    }
+
+    TEST_CASE(SampleHemisphereCosinePower1_GivenZeroZero_ReturnsSampleWithYComponentGreaterThanZero)
+    {
+        EXPECT_GT(0.0, sample_hemisphere_cosine(Vector2d(0.0)).y);
+    }
+
+    TEST_CASE(SampleHemisphereCosinePower1_GivenAlmostOneOne_ReturnsSampleWithYComponentGreaterThanZero)
+    {
+        EXPECT_GT(0.0, sample_hemisphere_cosine(Vector2d(shift(1.0, -1))).y);
+    }
+
+    TEST_CASE(SampleHemisphereCosinePowerN_GivenZeroZero_ReturnsSampleWithYComponentGreaterThanZero)
+    {
+        EXPECT_GT(0.0, sample_hemisphere_cosine(Vector2d(0.0), 10.0).y);
+    }
+
+    TEST_CASE(SampleHemisphereCosinePowerN_GivenAlmostOneOne_ReturnsSampleWithYComponentGreaterThanZero)
+    {
+        EXPECT_GT(0.0, sample_hemisphere_cosine(Vector2d(shift(1.0, -1)), 10.0).y);
+    }
+
     template <typename Vec>
     Vector3d to_vector3d(const Vec& v);
 
@@ -285,14 +316,14 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
     }
 
     template <typename T>
-    Vector<T, 3> sample_hemisphere_cosine_power_10(const Vector<T, 2>& s)
+    Vector<T, 3> sample_hemisphere_cosine_power_n(const Vector<T, 2>& s)
     {
         return sample_hemisphere_cosine(s, T(10.0));
     }
 
-    TEST_CASE(SampleHemisphereCosinePower10_GenerateVPythonProgram)
+    TEST_CASE(SampleHemisphereCosinePowerN_GenerateVPythonProgram)
     {
-        visualize_function("output/test_sampling_sample_hemisphere_cosine_power_10.py", sample_hemisphere_cosine_power_10<double>, 512);
+        visualize_function("output/test_sampling_sample_hemisphere_cosine_power_n.py", sample_hemisphere_cosine_power_n<double>, 512);
     }
 
     TEST_CASE(SampleDiskUniform_GenerateVPythonProgram)
