@@ -138,8 +138,7 @@ void InputBinder::build_scene_symbol_table(
         insert_entities(symbols, scene.environment_edfs(), SymbolTable::SymbolEnvironmentEDF);
         insert_entities(symbols, scene.environment_shaders(), SymbolTable::SymbolEnvironmentShader);
 
-        if (scene.get_environment())
-            symbols.insert(scene.get_environment()->get_name(), SymbolTable::SymbolEnvironment);
+        symbols.insert(scene.get_environment()->get_name(), SymbolTable::SymbolEnvironment);
 
         insert_entities(symbols, scene.assemblies(), SymbolTable::SymbolAssembly);
         insert_entities(symbols, scene.assembly_instances(), SymbolTable::SymbolAssemblyInstance);
@@ -204,6 +203,11 @@ void InputBinder::bind_scene_entities_inputs(
             environment_shader.get_parameters(),
             environment_shader.get_inputs());
     }
+
+    // Bind environment inputs.
+    scene.get_environment()->bind_entities(
+        scene.environment_edfs(),
+        scene.environment_shaders());
 }
 
 void InputBinder::bind_assembly_entities_inputs(

@@ -67,7 +67,18 @@ class RENDERERDLL ProjectFileReader
         const char*             project_name,
         EventCounters&          event_counters) const;
 
+    // Finish loading a project.
+    void postprocess_project(
+        const Project&          project,
+        EventCounters&          event_counters) const;
+
+    // Check the validity of a project.
     void validate_project(
+        const Project&          project,
+        EventCounters&          event_counters) const;
+
+    // Add missing entities to a valid project.
+    void complete_project(
         const Project&          project,
         EventCounters&          event_counters) const;
 

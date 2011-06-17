@@ -89,6 +89,9 @@ MultiModelEntityItem<Entity, ParentEntity>::MultiModelEntityItem(
 template <typename Entity, typename ParentEntity>
 void MultiModelEntityItem<Entity, ParentEntity>::slot_edit()
 {
+    if (!allows_editing())
+        return;
+
     const std::string window_title =
         std::string("Edit ") +
         EntityTraitsType::get_human_readable_entity_type_name();

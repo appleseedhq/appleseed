@@ -55,8 +55,8 @@ ProjectManager::ProjectManager()
 
 void ProjectManager::create_project()
 {
-    m_project = DefaultProjectFactory::create();
-    m_dirty_flag = false;
+    const bool result = load_builtin_project("default");
+    assert(result);
 }
 
 bool ProjectManager::load_project(const string& filepath)

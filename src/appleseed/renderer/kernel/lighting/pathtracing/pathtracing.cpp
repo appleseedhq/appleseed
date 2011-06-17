@@ -194,11 +194,9 @@ namespace
               , m_light_sampler(light_sampler)
               , m_shading_context(shading_context)
               , m_texture_cache(shading_context.get_texture_cache())
+              , m_env_edf(scene.get_environment()->get_environment_edf())
               , m_path_radiance(path_radiance)
             {
-                const Environment* environment = scene.get_environment();
-                m_env_edf = environment ? environment->get_environment_edf() : 0;
-
                 m_path_radiance.set(0.0f);
             }
 
@@ -338,29 +336,20 @@ namespace
                 if (m_params.m_next_event_estimation)
                     return;
 
-                const Scene& scene = shading_point.get_scene();
+                if (m_env_edf)
+                {
+                    // Evaluate the environment EDF.
+                    InputEvaluator input_evaluator(m_texture_cache);
+                    Spectrum environment_radiance;
+                    m_env_edf->evaluate(
+                        input_evaluator,
+                        -outgoing,
+                        environment_radiance);
 
-                // Retrieve the environment, do nothing if there is none.
-                const Environment* environment = scene.get_environment();
-                if (!environment)
-                    return;
-
-                // Retrieve the environment EDF, do nothing if there is none.
-                const EnvironmentEDF* env_edf = environment->get_environment_edf();
-                if (!env_edf)
-                    return;
-
-                // Evaluate the environment EDF.
-                InputEvaluator input_evaluator(m_texture_cache);
-                Spectrum environment_radiance;
-                env_edf->evaluate(
-                    input_evaluator,
-                    -outgoing,
-                    environment_radiance);
-
-                // Update the path radiance.
-                environment_radiance *= throughput;
-                m_path_radiance += environment_radiance;
+                    // Update the path radiance.
+                    environment_radiance *= throughput;
+                    m_path_radiance += environment_radiance;
+                }
             }
 
           private:

@@ -109,11 +109,8 @@ void ShadingEngine::shade_environment(
 {
     // Retrieve the environment shader of the scene.
     const Scene& scene = shading_point.get_scene();
-    const Environment* environment = scene.get_environment();
     const EnvironmentShader* environment_shader =
-        environment
-            ? environment->get_environment_shader()
-            : 0;
+        scene.get_environment()->get_environment_shader();
 
     if (environment_shader)
     {

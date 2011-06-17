@@ -57,6 +57,22 @@ struct EntityTraits<EDF>
 
     template <typename ParentEntity>
     static ContainerType& get_entity_container(ParentEntity& parent)    { return parent.edfs(); }
+
+    template <typename ParentEntity>
+    static void insert_entity(
+        foundation::auto_release_ptr<EDF>   entity,
+        ParentEntity&                       parent)
+    {
+        get_entity_container(parent).insert(entity);
+    }
+
+    template <typename ParentEntity>
+    static void remove_entity(
+        EDF*                                entity,
+        ParentEntity&                       parent)
+    {
+        get_entity_container(parent).remove(entity);
+    }
 };
 
 }       // namespace renderer

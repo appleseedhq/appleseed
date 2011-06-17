@@ -58,6 +58,12 @@ class ItemBase
 
     foundation::UniqueID get_class_uid() const;
 
+    void set_allow_editing(const bool allow);
+    bool allows_editing() const;
+
+    void set_allow_deletion(const bool allow);
+    bool allows_deletion() const;
+
     void set_title(const QString& title);
 
     virtual QMenu* get_single_item_context_menu() const;
@@ -72,7 +78,9 @@ class ItemBase
     ItemBase();
 
   private:
-    foundation::UniqueID m_class_uid;
+    foundation::UniqueID    m_class_uid;
+    bool                    m_allow_editing;
+    bool                    m_allow_deletion;
 };
 
 }       // namespace studio

@@ -44,16 +44,22 @@ namespace appleseed {
 namespace studio {
 
 ItemBase::ItemBase()
+  : m_allow_editing(true)
+  , m_allow_deletion(true)
 {
 }
 
 ItemBase::ItemBase(const UniqueID class_uid)
   : m_class_uid(class_uid)
+  , m_allow_editing(true)
+  , m_allow_deletion(true)
 {
 }
 
 ItemBase::ItemBase(const UniqueID class_uid, const QString& title)
   : m_class_uid(class_uid)
+  , m_allow_editing(true)
+  , m_allow_deletion(true)
 {
     set_title(title);
 }
@@ -61,6 +67,26 @@ ItemBase::ItemBase(const UniqueID class_uid, const QString& title)
 UniqueID ItemBase::get_class_uid() const
 {
     return m_class_uid;
+}
+
+void ItemBase::set_allow_editing(const bool allow)
+{
+    m_allow_editing = allow;
+}
+
+bool ItemBase::allows_editing() const
+{
+    return m_allow_editing;
+}
+
+void ItemBase::set_allow_deletion(const bool allow)
+{
+    m_allow_deletion = allow;
+}
+
+bool ItemBase::allows_deletion() const
+{
+    return m_allow_deletion;
 }
 
 void ItemBase::set_title(const QString& title)

@@ -34,6 +34,7 @@
 #include "mainwindow/project/assemblyinstancecollectionitem.h"
 #include "mainwindow/project/collectionitem.h"
 #include "mainwindow/project/colorcollectionitem.h"
+#include "mainwindow/project/environmentitem.h"
 #include "mainwindow/project/itemtypemap.h"
 #include "mainwindow/project/multimodelcollectionitem.h"
 #include "mainwindow/project/texturecollectionitem.h"
@@ -42,8 +43,6 @@
 // appleseed.renderer headers.
 #include "renderer/api/color.h"
 #include "renderer/api/entity.h"
-#include "renderer/api/environmentedf.h"
-#include "renderer/api/environmentshader.h"
 #include "renderer/api/project.h"
 #include "renderer/api/texture.h"
 
@@ -54,6 +53,9 @@
 #include <QTreeWidget>
 
 // Forward declarations.
+namespace renderer  { class Environment; }
+namespace renderer  { class EnvironmentEDF; }
+namespace renderer  { class EnvironmentShader; }
 namespace renderer  { class Scene; }
 
 using namespace foundation;
@@ -65,6 +67,8 @@ namespace studio {
 struct ProjectTree::Impl
 {
     QTreeWidget*                                m_tree_widget;
+
+    EnvironmentItem*                            m_environment_item;
     ColorCollectionItem*                        m_color_collection_item;
     TextureCollectionItem*                      m_texture_collection_item;
     TextureInstanceCollectionItem*              m_texture_instance_collection_item;
@@ -111,6 +115,24 @@ struct ProjectTree::Impl
 
         return item;
     }
+
+    EnvironmentItem* add_environment_item(
+        Scene&              scene,
+        Environment*        environment,
+        ProjectBuilder&     project_builder)
+    {
+        EnvironmentItem* item =
+            new EnvironmentItem(
+                environment,
+                scene,
+                project_builder);
+
+        item->set_allow_deletion(false);
+
+        m_tree_widget->addTopLevelItem(item);
+
+        return item;
+    }
 };
 
 ProjectTree::ProjectTree(QTreeWidget* tree_widget)
@@ -127,6 +149,12 @@ ProjectTree::~ProjectTree()
 void ProjectTree::initialize(Project& project, ProjectBuilder& project_builder)
 {
     Scene& scene = *project.get_scene();
+
+    impl->m_environment_item =
+        impl->add_environment_item(
+            scene,
+            scene.get_environment(),
+            project_builder);
 
     impl->m_color_collection_item =
         impl->add_collection_item(

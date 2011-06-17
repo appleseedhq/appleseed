@@ -57,6 +57,22 @@ struct EntityTraits<SurfaceShader>
 
     template <typename ParentEntity>
     static ContainerType& get_entity_container(ParentEntity& parent)    { return parent.surface_shaders(); }
+
+    template <typename ParentEntity>
+    static void insert_entity(
+        foundation::auto_release_ptr<SurfaceShader> entity,
+        ParentEntity&                               parent)
+    {
+        get_entity_container(parent).insert(entity);
+    }
+
+    template <typename ParentEntity>
+    static void remove_entity(
+        SurfaceShader*                              entity,
+        ParentEntity&                               parent)
+    {
+        get_entity_container(parent).remove(entity);
+    }
 };
 
 }       // namespace renderer

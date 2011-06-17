@@ -122,7 +122,6 @@ namespace
       : public ErrorLogger
     {
       public:
-        // Constructor.
         ErrorLoggerAndCounter(
             const string&   input_filename,
             EventCounters&  event_counters)
@@ -131,20 +130,17 @@ namespace
         {
         }
 
-        // Reset the error handler object on its reuse.
         virtual void resetErrors()
         {
             m_event_counters.clear();
         }
 
-        // Receive notification of a warning.
         virtual void warning(const SAXParseException& e)
         {
             ErrorLogger::warning(e);
             m_event_counters.signal_warning();
         }
 
-        // Receive notification of a recoverable error.
         virtual void error(const SAXParseException& e)
         {
             ErrorLogger::error(e);
@@ -152,7 +148,6 @@ namespace
             throw e;    // terminate parsing
         }
 
-        // Receive notification of a non-recoverable error.
         virtual void fatalError(const SAXParseException& e)
         {
             ErrorLogger::fatalError(e);
@@ -172,7 +167,6 @@ namespace
     class ParseContext
     {
       public:
-        // Constructor.
         ParseContext(
             Project&        project,
             EventCounters&  event_counters)
@@ -379,13 +373,11 @@ namespace
       : public ElementHandlerBase
     {
       public:
-        // Constructor.
         explicit ParameterElementHandler(ParseContext& context)
           : m_context(context)
         {
         }
 
-        // Receive notification of the start of an element.
         virtual void start_element(const Attributes& attrs)
         {
             // We need to fully qualify the call to get_value().
@@ -393,13 +385,11 @@ namespace
             m_value = ElementHandlerBase::get_value(attrs, "value");
         }
 
-        // Retrieve the name of the parameter.
         const string& get_name() const
         {
             return m_name;
         }
 
-        // Retrieve the value of the parameter.
         const string& get_value() const
         {
             return m_value;
@@ -422,10 +412,8 @@ namespace
       public:
         typedef IElementHandler<ProjectElementID> ElementHandlerType;
 
-        // Receive notification of the start of an element.
         virtual void start_element(const Attributes& attrs);
 
-        // Receive notification of the end of a child element.
         virtual void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler);
@@ -443,13 +431,11 @@ namespace
       : public ParametrizedElementHandler
     {
       public:
-        // Constructor.
         explicit ParametersElementHandler(ParseContext& context)
           : m_context(context)
         {
         }
 
-        // Receive notification of the start of an element.
         virtual void start_element(const Attributes& attrs)
         {
             ParametrizedElementHandler::start_element(attrs);
@@ -457,13 +443,11 @@ namespace
             m_params.clear();
         }
 
-        // Retrieve the name of the parameter set.
         const string& get_name() const
         {
             return m_name;
         }
 
-        // Retrieve the parameter set.
         const ParamArray& get_parameters() const
         {
             return m_params;
@@ -479,13 +463,11 @@ namespace
     // ParametrizedElementHandler class implementation.
     //
 
-    // Receive notification of the start of an element.
     void ParametrizedElementHandler::start_element(const Attributes& attrs)
     {
         m_params.clear();
     }
 
-    // Receive notification of the end of a child element.
     void ParametrizedElementHandler::end_child_element(
         const ProjectElementID      element,
         ElementHandlerType*         handler)
@@ -526,14 +508,12 @@ namespace
       : public ParametrizedElementHandler
     {
       public:
-        // Constructor.
-        explicit EntityElementHandler(const string& entity_type, ParseContext& context)
+        EntityElementHandler(const string& entity_type, ParseContext& context)
           : m_context(context)
           , m_entity_type(entity_type)
         {
         }
 
-        // Receive notification of the start of an element.
         virtual void start_element(const Attributes& attrs)
         {
             ParametrizedElementHandler::start_element(attrs);
@@ -542,7 +522,6 @@ namespace
             m_model = get_value(attrs, "model");
         }
 
-        // Receive notification of the end of an element.
         virtual void end_element()
         {
             m_entity =
@@ -555,7 +534,6 @@ namespace
                     m_context);
         }
 
-        // Retrieve the entity.
         auto_release_ptr<Entity> get_entity()
         {
             return m_entity;
@@ -579,13 +557,11 @@ namespace
       : public ElementHandlerBase
     {
       public:
-        // Constructor.
         explicit LookAtElementHandler(ParseContext& context)
           : m_context(context)
         {
         }
 
-        // Receive notification of the start of an element.
         virtual void start_element(const Attributes& attrs)
         {
             m_matrix = Matrix4d::identity();
@@ -615,7 +591,6 @@ namespace
             }
         }
 
-        // Retrieve the lookat matrix.
         const Matrix4d& get_matrix() const
         {
             return m_matrix;
@@ -635,20 +610,17 @@ namespace
       : public ElementHandlerBase
     {
       public:
-        // Constructor.
         explicit MatrixElementHandler(ParseContext& context)
           : m_context(context)
         {
         }
 
-        // Receive notification of the start of an element.
         virtual void start_element(const Attributes& attrs)
         {
             m_matrix = Matrix4d::identity();
             clear_keep_memory(m_values);
         }
 
-        // Receive notification of the end of an element.
         virtual void end_element()
         {
             if (m_values.size() == 16)
@@ -665,7 +637,6 @@ namespace
             }
         }
 
-        // Receive notification of character data inside an element.
         virtual void characters(
             const XMLCh* const  chars,
             const XMLSize_t     length)
@@ -673,7 +644,6 @@ namespace
             get_vector(transcode(chars), m_values, m_context);
         }
 
-        // Retrieve the transformation matrix.
         const Matrix4d& get_matrix() const
         {
             return m_matrix;
@@ -694,13 +664,11 @@ namespace
       : public ElementHandlerBase
     {
       public:
-        // Constructor.
         explicit RotationElementHandler(ParseContext& context)
           : m_context(context)
         {
         }
 
-        // Receive notification of the start of an element.
         virtual void start_element(const Attributes& attrs)
         {
             m_matrix = Matrix4d::identity();
@@ -719,7 +687,6 @@ namespace
             }
         }
 
-        // Retrieve the rotation matrix.
         const Matrix4d& get_matrix() const
         {
             return m_matrix;
@@ -739,20 +706,17 @@ namespace
       : public ElementHandlerBase
     {
       public:
-        // Constructor.
         explicit ScalingElementHandler(ParseContext& context)
           : m_context(context)
         {
         }
 
-        // Receive notification of the start of an element.
         virtual void start_element(const Attributes& attrs)
         {
             const Vector3d value = get_vector3(get_value(attrs, "value"), m_context);
             m_matrix = Matrix4d::scaling(value);
         }
 
-        // Retrieve the scaling matrix.
         const Matrix4d& get_matrix() const
         {
             return m_matrix;
@@ -772,20 +736,17 @@ namespace
       : public ElementHandlerBase
     {
       public:
-        // Constructor.
         explicit TranslationElementHandler(ParseContext& context)
           : m_context(context)
         {
         }
 
-        // Receive notification of the start of an element.
         virtual void start_element(const Attributes& attrs)
         {
             const Vector3d value = get_vector3(get_value(attrs, "value"), m_context);
             m_matrix = Matrix4d::translation(value);
         }
 
-        // Retrieve the translation matrix.
         const Matrix4d& get_matrix() const
         {
             return m_matrix;
@@ -805,19 +766,16 @@ namespace
       : public ElementHandlerBase
     {
       public:
-        // Constructor.
         explicit TransformElementHandler(ParseContext& context)
           : m_context(context)
         {
         }
 
-        // Receive notification of the start of an element.
         virtual void start_element(const Attributes& attrs)
         {
             m_matrix = Matrix4d::identity();
         }
 
-        // Receive notification of the end of an element.
         virtual void end_element()
         {
             try
@@ -832,7 +790,6 @@ namespace
             }
         }
 
-        // Receive notification of the end of a child element.
         virtual void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler)
@@ -883,7 +840,6 @@ namespace
             }
         }
 
-        // Retrieve the transformation.
         const Transformd& get_transform() const
         {
             return m_transform;
@@ -904,19 +860,16 @@ namespace
       : public ElementHandlerBase
     {
       public:
-        // Constructor.
         explicit ValuesElementHandler(ParseContext& context)
           : m_context(context)
         {
         }
 
-        // Receive notification of the start of an element.
         virtual void start_element(const Attributes& attrs)
         {
             m_values.clear();
         }
 
-        // Receive notification of character data inside an element.
         virtual void characters(
             const XMLCh* const  chars,
             const XMLSize_t     length)
@@ -924,7 +877,6 @@ namespace
             get_vector(transcode(chars), m_values, m_context);
         }
 
-        // Retrieve the values.
         const ColorValueArray& get_values() const
         {
             return m_values;
@@ -944,13 +896,11 @@ namespace
       : public ParametrizedElementHandler
     {
       public:
-        // Constructor.
         explicit ColorElementHandler(ParseContext& context)
           : m_context(context)
         {
         }
 
-        // Receive notification of the start of an element.
         virtual void start_element(const Attributes& attrs)
         {
             ParametrizedElementHandler::start_element(attrs);
@@ -960,7 +910,6 @@ namespace
             m_alpha.clear();
         }
 
-        // Receive notification of the end of an element.
         virtual void end_element()
         {
             try
@@ -987,7 +936,6 @@ namespace
             }
         }
 
-        // Receive notification of the end of a child element.
         virtual void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler)
@@ -1008,7 +956,6 @@ namespace
             }
         }
 
-        // Retrieve the color entity.
         auto_release_ptr<ColorEntity> get_color_entity()
         {
             return m_color_entity;
@@ -1031,13 +978,11 @@ namespace
       : public ParametrizedElementHandler
     {
       public:
-        // Constructor.
         explicit TextureElementHandler(ParseContext& context)
           : m_context(context)
         {
         }
 
-        // Receive notification of the start of an element.
         virtual void start_element(const Attributes& attrs)
         {
             ParametrizedElementHandler::start_element(attrs);
@@ -1046,7 +991,6 @@ namespace
             m_model = get_value(attrs, "model");
         }
 
-        // Receive notification of the end of an element.
         virtual void end_element()
         {
             try
@@ -1081,7 +1025,6 @@ namespace
             }
         }
 
-        // Retrieve the texture.
         auto_release_ptr<Texture> get_texture()
         {
             return m_texture;
@@ -1104,20 +1047,17 @@ namespace
       : public ParametrizedElementHandler
     {
       public:
-        // Constructor.
         explicit TextureInstanceElementHandler(ParseContext& context)
           : m_context(context)
           , m_textures(0)
         {
         }
 
-        // Set the texture container.
         void set_texture_container(const TextureContainer* textures)
         {
             m_textures = textures;
         }
 
-        // Receive notification of the start of an element.
         virtual void start_element(const Attributes& attrs)
         {
             ParametrizedElementHandler::start_element(attrs);
@@ -1126,7 +1066,6 @@ namespace
             m_texture = get_value(attrs, "texture");
         }
 
-        // Receive notification of the end of an element.
         virtual void end_element()
         {
             assert(m_textures);
@@ -1161,7 +1100,6 @@ namespace
             }
         }
 
-        // Retrieve the texture instance.
         auto_release_ptr<TextureInstance> get_texture_instance()
         {
             return m_texture_instance;
@@ -1184,7 +1122,6 @@ namespace
       : public EntityElementHandler<BSDF, BSDFFactoryRegistrar>
     {
       public:
-        // Constructor.
         explicit BSDFElementHandler(ParseContext& context)
           : EntityElementHandler<BSDF, BSDFFactoryRegistrar>("bsdf", context)
         {
@@ -1200,7 +1137,6 @@ namespace
       : public EntityElementHandler<EDF, EDFFactoryRegistrar>
     {
       public:
-        // Constructor.
         explicit EDFElementHandler(ParseContext& context)
           : EntityElementHandler<EDF, EDFFactoryRegistrar>("edf", context)
         {
@@ -1216,7 +1152,6 @@ namespace
       : public EntityElementHandler<SurfaceShader, SurfaceShaderFactoryRegistrar>
     {
       public:
-        // Constructor.
         explicit SurfaceShaderElementHandler(ParseContext& context)
           : EntityElementHandler<SurfaceShader, SurfaceShaderFactoryRegistrar>("surface shader", context)
         {
@@ -1232,24 +1167,11 @@ namespace
       : public ParametrizedElementHandler
     {
       public:
-        // Constructor.
         explicit EnvironmentElementHandler(ParseContext& context)
           : m_context(context)
-          , m_environment_edfs(0)
-          , m_environment_shaders(0)
         {
         }
 
-        // Set the entity containers.
-        void set_containers(
-            const EnvironmentEDFContainer*      environment_edfs,
-            const EnvironmentShaderContainer*   environment_shaders)
-        {
-            m_environment_edfs = environment_edfs;
-            m_environment_shaders = environment_shaders;
-        }
-
-        // Receive notification of the start of an element.
         virtual void start_element(const Attributes& attrs)
         {
             ParametrizedElementHandler::start_element(attrs);
@@ -1258,43 +1180,20 @@ namespace
             m_model = get_value(attrs, "model");
         }
 
-        // Receive notification of the end of an element.
         virtual void end_element()
         {
-            assert(m_environment_edfs);
-            assert(m_environment_shaders);
-
-            try
-            {
-                if (m_model == EnvironmentFactory::get_model())
-                {
-                    m_environment =
-                        EnvironmentFactory::create(
-                            m_name.c_str(),
-                            m_params,
-                            *m_environment_edfs,
-                            *m_environment_shaders);
-                }
-                else
-                {
-                    RENDERER_LOG_ERROR(
-                        "while defining environment \"%s\": invalid model \"%s\"",
-                        m_name.c_str(),
-                        m_model.c_str());
-                    m_context.get_event_counters().signal_error();
-                }
-            }
-            catch (const ExceptionUnknownEntity& e)
+            if (m_model == EnvironmentFactory::get_model())
+                m_environment = EnvironmentFactory::create(m_name.c_str(), m_params);
+            else
             {
                 RENDERER_LOG_ERROR(
-                    "while defining environment \"%s\": unknown entity \"%s\"",
+                    "while defining environment \"%s\": invalid model \"%s\"",
                     m_name.c_str(),
-                    e.string());
+                    m_model.c_str());
                 m_context.get_event_counters().signal_error();
             }
         }
 
-        // Retrieve the environment.
         auto_release_ptr<Environment> get_environment()
         {
             return m_environment;
@@ -1302,8 +1201,6 @@ namespace
 
       private:
         ParseContext&                       m_context;
-        const EnvironmentEDFContainer*      m_environment_edfs;
-        const EnvironmentShaderContainer*   m_environment_shaders;
         auto_release_ptr<Environment>       m_environment;
         string                              m_name;
         string                              m_model;
@@ -1318,7 +1215,6 @@ namespace
       : public EntityElementHandler<EnvironmentEDF, EnvironmentEDFFactoryRegistrar>
     {
       public:
-        // Constructor.
         explicit EnvironmentEDFElementHandler(ParseContext& context)
           : EntityElementHandler<EnvironmentEDF, EnvironmentEDFFactoryRegistrar>("environment edf", context)
         {
@@ -1334,7 +1230,6 @@ namespace
       : public EntityElementHandler<EnvironmentShader, EnvironmentShaderFactoryRegistrar>
     {
       public:
-        // Constructor.
         explicit EnvironmentShaderElementHandler(ParseContext& context)
           : EntityElementHandler<EnvironmentShader, EnvironmentShaderFactoryRegistrar>("environment shader", context)
         {
@@ -1350,20 +1245,17 @@ namespace
       : public ParametrizedElementHandler
     {
       public:
-        // Constructor.
         explicit LightElementHandler(ParseContext& context)
           : m_context(context)
           , m_edfs(0)
         {
         }
 
-        // Set the EDF container.
         void set_edf_container(const EDFContainer* edfs)
         {
             m_edfs = edfs;
         }
 
-        // Receive notification of the start of an element.
         virtual void start_element(const Attributes& attrs)
         {
             ParametrizedElementHandler::start_element(attrs);
@@ -1373,7 +1265,6 @@ namespace
             m_transform = Transformd(Matrix4d::identity());
         }
 
-        // Receive notification of the end of an element.
         virtual void end_element()
         {    
             assert(m_edfs);
@@ -1416,7 +1307,6 @@ namespace
             }
         }
 
-        // Receive notification of the end of a child element.
         virtual void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler)
@@ -1437,7 +1327,6 @@ namespace
             }
         }
 
-        // Retrieve the light.
         auto_release_ptr<Light> get_light()
         {
             return m_light;
@@ -1461,27 +1350,11 @@ namespace
       : public ParametrizedElementHandler
     {
       public:
-        // Constructor.
         explicit MaterialElementHandler(ParseContext& context)
           : m_context(context)
-          , m_bsdfs(0)
-          , m_edfs(0)
-          , m_surface_shaders(0)
         {
         }
 
-        // Set the entity containers.
-        void set_containers(
-            const BSDFContainer*            bsdfs,
-            const EDFContainer*             edfs,
-            const SurfaceShaderContainer*   surface_shaders)
-        {
-            m_bsdfs = bsdfs;
-            m_edfs = edfs;
-            m_surface_shaders = surface_shaders;
-        }
-
-        // Receive notification of the start of an element.
         virtual void start_element(const Attributes& attrs)
         {
             ParametrizedElementHandler::start_element(attrs);
@@ -1490,48 +1363,20 @@ namespace
             m_model = get_value(attrs, "model");
         }
 
-        // Receive notification of the end of an element.
         virtual void end_element()
         {    
-            assert(m_bsdfs);
-            assert(m_edfs);
-            assert(m_surface_shaders);
-
-            try
-            {
-                if (m_model == MaterialFactory::get_model())
-                {
-                    m_material =
-                        MaterialFactory::create(m_name.c_str(), m_params);
-                }
-                else
-                {
-                    RENDERER_LOG_ERROR(
-                        "while defining material \"%s\": invalid model \"%s\"",
-                        m_name.c_str(),
-                        m_model.c_str());
-                    m_context.get_event_counters().signal_error();
-                }
-            }
-            catch (const ExceptionDictionaryItemNotFound& e)
+            if (m_model == MaterialFactory::get_model())
+                m_material = MaterialFactory::create(m_name.c_str(), m_params);
+            else
             {
                 RENDERER_LOG_ERROR(
-                    "while defining material \"%s\": required parameter \"%s\" missing",
+                    "while defining material \"%s\": invalid model \"%s\"",
                     m_name.c_str(),
-                    e.string());
-                m_context.get_event_counters().signal_error();
-            }
-            catch (const ExceptionUnknownEntity& e)
-            {
-                RENDERER_LOG_ERROR(
-                    "while defining material \"%s\": unknown entity \"%s\"",
-                    m_name.c_str(),
-                    e.string());
+                    m_model.c_str());
                 m_context.get_event_counters().signal_error();
             }
         }
 
-        // Retrieve the material.
         auto_release_ptr<Material> get_material()
         {
             return m_material;
@@ -1539,9 +1384,6 @@ namespace
 
       private:
         ParseContext&                       m_context;
-        const BSDFContainer*                m_bsdfs;
-        const EDFContainer*                 m_edfs;
-        const SurfaceShaderContainer*       m_surface_shaders;
         auto_release_ptr<Material>          m_material;
         string                              m_name;
         string                              m_model;
@@ -1556,13 +1398,11 @@ namespace
       : public ParametrizedElementHandler
     {
       public:
-        // Constructor.
         explicit CameraElementHandler(ParseContext& context)
           : m_context(context)
         {
         }
 
-        // Receive notification of the start of an element.
         virtual void start_element(const Attributes& attrs)
         {
             ParametrizedElementHandler::start_element(attrs);
@@ -1572,7 +1412,6 @@ namespace
             m_transform = Transformd(Matrix4d::identity());
         }
 
-        // Receive notification of the end of an element.
         virtual void end_element()
         {
             try
@@ -1603,7 +1442,6 @@ namespace
             }
         }
 
-        // Receive notification of the end of a child element.
         virtual void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler)
@@ -1624,7 +1462,6 @@ namespace
             }
         }
 
-        // Retrieve the camera.
         auto_release_ptr<Camera> get_camera()
         {
             return m_camera;
@@ -1650,13 +1487,11 @@ namespace
       public:
         typedef vector<Object*> ObjectVector;
 
-        // Constructor.
         explicit ObjectElementHandler(ParseContext& context)
           : m_context(context)
         {
         }
 
-        // Receive notification of the start of an element.
         virtual void start_element(const Attributes& attrs)
         {
             ParametrizedElementHandler::start_element(attrs);
@@ -1665,7 +1500,6 @@ namespace
             m_model = get_value(attrs, "model");
         }
 
-        // Receive notification of the end of an element.
         virtual void end_element()
         {
             try
@@ -1713,7 +1547,6 @@ namespace
             }
         }
 
-        // Retrieve the objects.
         const ObjectVector& get_objects() const
         {
             return m_objects;
@@ -1735,13 +1568,11 @@ namespace
       : public ElementHandlerBase
     {
       public:
-        // Constructor.
         explicit AssignMaterialElementHandler(ParseContext& context)
           : m_context(context)
         {
         }
 
-        // Receive notification of the start of an element.
         virtual void start_element(const Attributes& attrs)
         {
             const string slot_string = get_value(attrs, "slot");
@@ -1760,13 +1591,11 @@ namespace
             m_material = get_value(attrs, "material");
         }
 
-        // Retrieve the slot to which assign the material.
         size_t get_material_slot() const
         {
             return m_slot;
         }
 
-        // Retrieve the name of the material.
         const string& get_material_name() const
         {
             return m_material;
@@ -1787,7 +1616,6 @@ namespace
       : public ParametrizedElementHandler
     {
       public:
-        // Constructor.
         explicit ObjectInstanceElementHandler(ParseContext& context)
           : m_context(context)
           , m_objects(0)
@@ -1795,7 +1623,6 @@ namespace
         {
         }
 
-        // Set the entity containers.
         void set_containers(
             const ObjectContainer*          objects,
             const MaterialContainer*        materials)
@@ -1804,7 +1631,6 @@ namespace
             m_materials = materials;
         }
 
-        // Receive notification of the start of an element.
         virtual void start_element(const Attributes& attrs)
         {
             ParametrizedElementHandler::start_element(attrs);
@@ -1815,7 +1641,6 @@ namespace
             m_object = get_value(attrs, "object");
         }
 
-        // Receive notification of the end of an element.
         virtual void end_element()
         {
             assert(m_objects);
@@ -1841,7 +1666,6 @@ namespace
             }
         }
 
-        // Receive notification of the end of a child element.
         virtual void end_child_element(
             const ProjectElementID          element,
             ElementHandlerType*             handler)
@@ -1906,7 +1730,6 @@ namespace
             }
         }
 
-        // Retrieve the object instance.
         auto_release_ptr<ObjectInstance> get_object_instance()
         {
             return m_object_instance;
@@ -1932,13 +1755,11 @@ namespace
       : public ParametrizedElementHandler
     {
       public:
-        // Constructor.
         explicit AssemblyElementHandler(ParseContext& context)
           : m_context(context)
         {
         }
 
-        // Receive notification of the start of an element.
         virtual void start_element(const Attributes& attrs)
         {
             ParametrizedElementHandler::start_element(attrs);
@@ -1956,7 +1777,6 @@ namespace
             m_texture_instances.clear();
         }
 
-        // Receive notification of the end of an element.
         virtual void end_element()
         {
             m_assembly = AssemblyFactory::create(m_name.c_str(), m_params);
@@ -1972,7 +1792,6 @@ namespace
             m_assembly->texture_instances().swap(m_texture_instances);
         }
 
-        // Receive notification of the start of a child element.
         virtual void start_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler)
@@ -1997,11 +1816,6 @@ namespace
                 break;
 
               case ElementMaterial:
-                {
-                    MaterialElementHandler* material_handler =
-                        static_cast<MaterialElementHandler*>(handler);
-                    material_handler->set_containers(&m_bsdfs, &m_edfs, &m_surface_shaders);
-                }
                 break;
 
               case ElementObject:
@@ -2035,7 +1849,6 @@ namespace
             }
         }
 
-        // Receive notification of the end of a child element.
         virtual void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler)
@@ -2150,7 +1963,6 @@ namespace
             }
         }
 
-        // Retrieve the assembly.
         auto_release_ptr<Assembly> get_assembly()
         {
             return m_assembly;
@@ -2181,20 +1993,17 @@ namespace
       : public ParametrizedElementHandler
     {
       public:
-        // Constructor.
         explicit AssemblyInstanceElementHandler(ParseContext& context)
           : m_context(context)
           , m_assemblies(0)
         {
         }
 
-        // Set the assembly container.
         void set_assembly_container(const AssemblyContainer* assemblies)
         {
             m_assemblies = assemblies;
         }
 
-        // Receive notification of the start of an element.
         virtual void start_element(const Attributes& attrs)
         {
             ParametrizedElementHandler::start_element(attrs);
@@ -2204,7 +2013,6 @@ namespace
             m_transform = Transformd(Matrix4d::identity());
         }
 
-        // Receive notification of the end of an element.
         virtual void end_element()
         {
             assert(m_assemblies);
@@ -2228,7 +2036,6 @@ namespace
             }
         }
 
-        // Receive notification of the end of a child element.
         virtual void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler)
@@ -2249,7 +2056,6 @@ namespace
             }
         }
 
-        // Retrieve the assembly instance.
         auto_release_ptr<AssemblyInstance> get_assembly_instance()
         {
             return m_assembly_instance;
@@ -2273,19 +2079,16 @@ namespace
       : public ElementHandlerBase
     {
       public:
-        // Constructor.
         explicit SceneElementHandler(ParseContext& context)
           : m_context(context)
         {
         }
 
-        // Receive notification of the start of an element.
         virtual void start_element(const Attributes& attrs)
         {
             m_scene.reset(new Scene());
         }
 
-        // Receive notification of the end of an element.
         virtual void end_element()
         {
             // Compute the bounding box of the scene.
@@ -2307,7 +2110,6 @@ namespace
             }
         }
 
-        // Receive notification of the start of a child element.
         virtual void start_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler)
@@ -2334,13 +2136,6 @@ namespace
                 break;
 
               case ElementEnvironment:
-                {
-                    EnvironmentElementHandler* env_handler =
-                        static_cast<EnvironmentElementHandler*>(handler);
-                    env_handler->set_containers(
-                        &m_scene->environment_edfs(),
-                        &m_scene->environment_shaders());
-                }
                 break;
 
               case ElementEnvironmentEDF:
@@ -2364,7 +2159,6 @@ namespace
             }
         }
 
-        // Receive notification of the end of a child element.
         virtual void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler)
@@ -2410,8 +2204,7 @@ namespace
                 {
                     CameraElementHandler* camera_handler =
                         static_cast<CameraElementHandler*>(handler);
-                    auto_release_ptr<Camera> camera =
-                        camera_handler->get_camera();
+                    auto_release_ptr<Camera> camera = camera_handler->get_camera();
                     if (camera.get())
                     {
                         if (m_scene->get_camera())
@@ -2486,7 +2279,6 @@ namespace
             }
         }
 
-        // Retrieve the scene.
         auto_ptr<Scene> get_scene()
         {
             return m_scene;
@@ -2506,13 +2298,11 @@ namespace
       : public ParametrizedElementHandler
     {
       public:
-        // Constructor.
         explicit FrameElementHandler(ParseContext& context)
           : m_context(context)
         {
         }
 
-        // Receive notification of the start of an element.
         virtual void start_element(const Attributes& attrs)
         {
             ParametrizedElementHandler::start_element(attrs);
@@ -2520,16 +2310,11 @@ namespace
             m_name = get_value(attrs, "name");
         }
 
-        // Receive notification of the end of an element.
         virtual void end_element()
         {    
-            m_frame.reset(
-                new Frame(
-                    m_name.c_str(),
-                    m_params));
+            m_frame.reset(new Frame(m_name.c_str(), m_params));
         }
 
-        // Retrieve the frame.
         auto_ptr<Frame> get_frame()
         {
             return m_frame;
@@ -2550,20 +2335,17 @@ namespace
       : public ElementHandlerBase
     {
       public:
-        // Constructor.
-        OutputElementHandler(ParseContext& context)
+        explicit OutputElementHandler(ParseContext& context)
           : m_context(context)
           , m_project(0)
         {
         }
 
-        // Set the current project.
         void set_project(Project* project)
         {
             m_project = project;
         }
 
-        // Receive notification of the end of a child element.
         virtual void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler)
@@ -2598,20 +2380,17 @@ namespace
       : public ParametrizedElementHandler
     {
       public:
-        // Constructor.
         explicit ConfigurationElementHandler(ParseContext& context)
           : m_context(context)
           , m_project(0)
         {
         }
 
-        // Set the current project.
         void set_project(Project* project)
         {
             m_project = project;
         }
 
-        // Receive notification of the start of an element.
         virtual void start_element(const Attributes& attrs)
         {
             ParametrizedElementHandler::start_element(attrs);
@@ -2620,7 +2399,6 @@ namespace
             m_base_name = get_value(attrs, "base");
         }
 
-        // Receive notification of the end of an element.
         virtual void end_element()
         {    
             assert(m_project);
@@ -2651,7 +2429,6 @@ namespace
             }
         }
 
-        // Retrieve the configuration.
         auto_release_ptr<Configuration> get_configuration()
         {
             return m_configuration;
@@ -2674,20 +2451,17 @@ namespace
       : public ElementHandlerBase
     {
       public:
-        // Constructor.
-        ConfigurationsElementHandler(ParseContext& context)
+        explicit ConfigurationsElementHandler(ParseContext& context)
           : m_context(context)
           , m_project(0)
         {
         }
 
-        // Set the current project.
         void set_project(Project* project)
         {
             m_project = project;
         }
 
-        // Receive notification of the start of a child element.
         virtual void start_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler)
@@ -2708,7 +2482,6 @@ namespace
             }
         }
 
-        // Receive notification of the end of a child element.
         virtual void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler)
@@ -2745,14 +2518,12 @@ namespace
       : public ElementHandlerBase
     {
       public:
-        // Constructor.
         ProjectElementHandler(ParseContext& context, Project* project)
           : m_context(context)
           , m_project(project)
         {
         }
 
-        // Receive notification of the start of a child element.
         virtual void start_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler)
@@ -2784,7 +2555,6 @@ namespace
             }
         }
 
-        // Receive notification of the end of a child element.
         virtual void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler)
@@ -2939,14 +2709,12 @@ auto_release_ptr<Project> ProjectFileReader::read(
             schema_filename,
             event_counters));
 
-    if (project.get() && !event_counters.has_errors())
-        validate_project(project.ref(), event_counters);
+    if (project.get())
+        postprocess_project(project.ref(), event_counters);
 
     print_loading_results(project_filename, false, event_counters);
 
-    return event_counters.has_errors()
-        ? auto_release_ptr<Project>(0)
-        : project;
+    return event_counters.has_errors() ? auto_release_ptr<Project>(0) : project;
 }
 
 auto_release_ptr<Project> ProjectFileReader::load_builtin(
@@ -2958,14 +2726,12 @@ auto_release_ptr<Project> ProjectFileReader::load_builtin(
     auto_release_ptr<Project> project(
         construct_builtin_project(project_name, event_counters));
 
-    if (project.get() && !event_counters.has_errors())
-        validate_project(project.ref(), event_counters);
+    if (project.get())
+        postprocess_project(project.ref(), event_counters);
 
     print_loading_results(project_name, true, event_counters);
 
-    return event_counters.has_errors()
-        ? auto_release_ptr<Project>(0)
-        : project;
+    return event_counters.has_errors() ? auto_release_ptr<Project>(0) : project;
 }
 
 auto_release_ptr<Project> ProjectFileReader::load_project_file(
@@ -3047,6 +2813,17 @@ auto_release_ptr<Project> ProjectFileReader::construct_builtin_project(
     }
 }
 
+void ProjectFileReader::postprocess_project(
+    const Project&          project,
+    EventCounters&          event_counters) const
+{
+    if (!event_counters.has_errors())
+        validate_project(project, event_counters);
+
+    if (!event_counters.has_errors())
+        complete_project(project, event_counters);
+}
+
 void ProjectFileReader::validate_project(
     const Project&          project,
     EventCounters&          event_counters) const
@@ -3057,20 +2834,20 @@ void ProjectFileReader::validate_project(
         // Make sure the scene contains a camera.
         if (project.get_scene()->get_camera() == 0)
         {
-            RENDERER_LOG_ERROR("the scene does not contain any camera");
+            RENDERER_LOG_ERROR("the scene does not define any camera");
             event_counters.signal_error();
         }
     }
     else
     {
-        RENDERER_LOG_ERROR("the project does not contain a scene");
+        RENDERER_LOG_ERROR("the project does not define a scene");
         event_counters.signal_error();
     }
 
     // Make sure the project contains at least one output frame.
     if (project.get_frame() == 0)
     {
-        RENDERER_LOG_ERROR("the project does not contain any frame");
+        RENDERER_LOG_ERROR("the project does not define any frame");
         event_counters.signal_error();
     }
 
@@ -3084,6 +2861,19 @@ void ProjectFileReader::validate_project(
     {
         RENDERER_LOG_ERROR("the project must define an \"interactive\" configuration");
         event_counters.signal_error();
+    }
+}
+
+void ProjectFileReader::complete_project(
+    const Project&          project,
+    EventCounters&          event_counters) const
+{
+    // Add a default environment if the project doesn't define any.
+    if (project.get_scene()->get_environment() == 0)
+    {
+        auto_release_ptr<Environment> environment(
+            EnvironmentFactory::create("environment", ParamArray()));
+        project.get_scene()->set_environment(environment);
     }
 }
 

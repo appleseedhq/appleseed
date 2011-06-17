@@ -172,11 +172,9 @@ namespace
               , m_light_sampler(light_sampler)
               , m_shading_context(shading_context)
               , m_texture_cache(shading_context.get_texture_cache())
+              , m_env_edf(scene.get_environment()->get_environment_edf())
               , m_path_radiance(path_radiance)
             {
-                const Environment* environment = scene.get_environment();
-                m_env_edf = environment ? environment->get_environment_edf() : 0;
-
                 m_path_radiance.set(0.0f);
             }
 

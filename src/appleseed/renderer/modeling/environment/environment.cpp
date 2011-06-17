@@ -29,6 +29,10 @@
 // Interface header.
 #include "environment.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/containers/dictionaryarray.h"
+
 using namespace foundation;
 using namespace std;
 
@@ -45,74 +49,29 @@ namespace
 }
 
 Environment::Environment(
-    const char*                         name)
-  : Entity(g_class_uid)
-{
-    set_name(name);
-
-    m_environment_edf = 0;
-    m_environment_shader = 0;
-}
-
-Environment::Environment(
     const char*                         name,
-    const EnvironmentEDF*               environment_edf)
-  : Entity(g_class_uid)
-{
-    set_name(name);
-
-    m_environment_edf = environment_edf;
-    m_environment_shader = 0;
-}
-
-Environment::Environment(
-    const char*                         name,
-    const EnvironmentShader*            environment_shader)
-  : Entity(g_class_uid)
-{
-    set_name(name);
-
-    m_environment_edf = 0;
-    m_environment_shader = environment_shader;
-}
-
-Environment::Environment(
-    const char*                         name,
-    const EnvironmentEDF*               environment_edf,
-    const EnvironmentShader*            environment_shader)
-  : Entity(g_class_uid)
-{
-    set_name(name);
-
-    m_environment_edf = environment_edf;
-    m_environment_shader = environment_shader;
-}
-
-Environment::Environment(
-    const char*                         name,
-    const ParamArray&                   params,
-    const EnvironmentEDFContainer&      environment_edfs,
-    const EnvironmentShaderContainer&   environment_shaders)
+    const ParamArray&                   params)
   : Entity(g_class_uid, params)
+  , m_environment_edf(0)
+  , m_environment_shader(0)
 {
     set_name(name);
-
-    m_environment_edf =
-        get_optional_entity<EnvironmentEDF>(
-            environment_edfs,
-            params,
-            "environment_edf");
-
-    m_environment_shader =
-        get_optional_entity<EnvironmentShader>(
-            environment_shaders,
-            params,
-            "environment_shader");
 }
 
 void Environment::release()
 {
     delete this;
+}
+
+void Environment::bind_entities(
+    const EnvironmentEDFContainer&      environment_edfs,
+    const EnvironmentShaderContainer&   environment_shaders)
+{
+    m_environment_edf =
+        get_optional_entity<EnvironmentEDF>(environment_edfs, m_params, "environment_edf");
+
+    m_environment_shader =
+        get_optional_entity<EnvironmentShader>(environment_shaders, m_params, "environment_shader");
 }
 
 const char* Environment::get_model() const
@@ -130,60 +89,34 @@ const char* EnvironmentFactory::get_model()
     return "generic_environment";
 }
 
-auto_release_ptr<Environment> EnvironmentFactory::create(
-    const char*                         name)
+DictionaryArray EnvironmentFactory::get_widget_definitions()
 {
-    return auto_release_ptr<Environment>(new Environment(name));
+    DictionaryArray definitions;
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "environment_edf")
+            .insert("label", "Environment EDF")
+            .insert("widget", "entity_picker")
+            .insert("entity_types", Dictionary().insert("environment_edf", "Environment EDFs"))
+            .insert("use", "optional"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "environment_shader")
+            .insert("label", "Environment Shader")
+            .insert("widget", "entity_picker")
+            .insert("entity_types", Dictionary().insert("environment_shader", "Environment Shaders"))
+            .insert("use", "optional"));
+
+    return definitions;
 }
 
 auto_release_ptr<Environment> EnvironmentFactory::create(
     const char*                         name,
-    const EnvironmentEDF*               environment_edf)
+    const ParamArray&                   params)
 {
-    return
-        auto_release_ptr<Environment>(
-            new Environment(
-                name,
-                environment_edf));
-}
-
-auto_release_ptr<Environment> EnvironmentFactory::create(
-    const char*                         name,
-    const EnvironmentShader*            environment_shader)
-{
-    return
-        auto_release_ptr<Environment>(
-            new Environment(
-                name,
-                environment_shader));
-}
-
-auto_release_ptr<Environment> EnvironmentFactory::create(
-    const char*                         name,
-    const EnvironmentEDF*               environment_edf,
-    const EnvironmentShader*            environment_shader)
-{
-    return
-        auto_release_ptr<Environment>(
-            new Environment(
-                name,
-                environment_edf,
-                environment_shader));
-}
-
-auto_release_ptr<Environment> EnvironmentFactory::create(
-    const char*                         name,
-    const ParamArray&                   params,
-    const EnvironmentEDFContainer&      environment_edfs,
-    const EnvironmentShaderContainer&   environment_shaders)
-{
-    return
-        auto_release_ptr<Environment>(
-            new Environment(
-                name,
-                params,
-                environment_edfs,
-                environment_shaders));
+    return auto_release_ptr<Environment>(new Environment(name, params));
 }
 
 }   // namespace renderer

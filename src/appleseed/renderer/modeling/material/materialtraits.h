@@ -56,6 +56,22 @@ struct EntityTraits<Material>
 
     template <typename ParentEntity>
     static ContainerType& get_entity_container(ParentEntity& parent)    { return parent.materials(); }
+
+    template <typename ParentEntity>
+    static void insert_entity(
+        foundation::auto_release_ptr<Material>  entity,
+        ParentEntity&                           parent)
+    {
+        get_entity_container(parent).insert(entity);
+    }
+
+    template <typename ParentEntity>
+    static void remove_entity(
+        Material*                               entity,
+        ParentEntity&                           parent)
+    {
+        get_entity_container(parent).remove(entity);
+    }
 };
 
 }       // namespace renderer

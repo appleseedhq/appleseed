@@ -99,15 +99,14 @@ namespace
           : SampleGeneratorBase(generator_index, generator_count)
           , m_params(params)
           , m_scene(scene)
+          , m_frame(frame)
+          , m_env_edf(scene.get_environment()->get_environment_edf())
           , m_safe_scene_radius(scene.compute_radius() * (1.0 + 1.0e-3))
           , m_disk_point_prob(1.0 / (Pi * square(m_safe_scene_radius)))
-          , m_frame(frame)
           , m_light_sampler(light_sampler)
           , m_intersector(trace_context, true, m_params.m_report_self_intersections)
           , m_texture_cache(scene, m_params.m_texture_cache_size)
         {
-            const Environment* environment = scene.get_environment();
-            m_env_edf = environment ? environment->get_environment_edf() : 0;
         }
 
         ~LightTracingSampleGenerator()

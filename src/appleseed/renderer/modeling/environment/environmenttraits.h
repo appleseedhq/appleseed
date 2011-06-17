@@ -26,11 +26,48 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_ENVIRONMENT_H
-#define APPLESEED_RENDERER_API_ENVIRONMENT_H
+#ifndef APPLESEED_RENDERER_MODELING_ENVIRONMENT_ENVIRONMENTTRAITS_H
+#define APPLESEED_RENDERER_MODELING_ENVIRONMENT_ENVIRONMENTTRAITS_H
 
-// API headers.
-#include "renderer/modeling/environment/environment.h"
-#include "renderer/modeling/environment/environmenttraits.h"
+// appleseed.renderer headers.
+#include "renderer/global/global.h"
+#include "renderer/modeling/entity/entitytraits.h"
 
-#endif  // !APPLESEED_RENDERER_API_ENVIRONMENT_H
+// Forward declarations.
+namespace renderer  { class Environment; }
+
+namespace renderer
+{
+
+//
+// Environment entity traits.
+//
+
+template <>
+struct EntityTraits<Environment>
+{
+    typedef EnvironmentFactory FactoryType;
+
+    static const char* get_entity_type_name()                   { return "environment"; }
+    static const char* get_human_readable_entity_type_name()    { return "Environment"; }
+
+    template <typename ParentEntity>
+    static void insert_entity(
+        foundation::auto_release_ptr<Environment>   entity,
+        ParentEntity&                               parent)
+    {
+        parent.set_environment(entity);
+    }
+
+    template <typename ParentEntity>
+    static void remove_entity(
+        Environment*                                entity,
+        ParentEntity&                               parent)
+    {
+        parent.set_environment(foundation::auto_release_ptr<Environment>(0));
+    }
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_ENVIRONMENT_ENVIRONMENTTRAITS_H

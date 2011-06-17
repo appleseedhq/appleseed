@@ -26,11 +26,22 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_ENVIRONMENT_H
-#define APPLESEED_RENDERER_API_ENVIRONMENT_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENVIRONMENTITEM_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENVIRONMENTITEM_H
 
-// API headers.
-#include "renderer/modeling/environment/environment.h"
-#include "renderer/modeling/environment/environmenttraits.h"
+// appleseed.studio headers.
+#include "mainwindow/project/singlemodelentityitem.h"
 
-#endif  // !APPLESEED_RENDERER_API_ENVIRONMENT_H
+// Forward declarations.
+namespace renderer  { class Environment; }
+namespace renderer  { class Scene; }
+
+namespace appleseed {
+namespace studio {
+
+typedef SingleModelEntityItem<renderer::Environment, renderer::Scene> EnvironmentItem;
+
+}       // namespace studio
+}       // namespace appleseed
+
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENVIRONMENTITEM_H

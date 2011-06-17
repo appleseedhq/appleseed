@@ -1098,6 +1098,7 @@ source_group("renderer\\modeling\\entity" FILES
 set(renderer_modeling_environment_sources
     renderer/modeling/environment/environment.cpp
     renderer/modeling/environment/environment.h
+    renderer/modeling/environment/environmenttraits.h
 )
 list(APPEND appleseed_sources
     ${renderer_modeling_environment_sources}

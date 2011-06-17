@@ -57,6 +57,22 @@ struct EntityTraits<BSDF>
 
     template <typename ParentEntity>
     static ContainerType& get_entity_container(ParentEntity& parent)    { return parent.bsdfs(); }
+
+    template <typename ParentEntity>
+    static void insert_entity(
+        foundation::auto_release_ptr<BSDF>  entity,
+        ParentEntity&                       parent)
+    {
+        get_entity_container(parent).insert(entity);
+    }
+
+    template <typename ParentEntity>
+    static void remove_entity(
+        BSDF*                               entity,
+        ParentEntity&                       parent)
+    {
+        get_entity_container(parent).remove(entity);
+    }
 };
 
 }       // namespace renderer

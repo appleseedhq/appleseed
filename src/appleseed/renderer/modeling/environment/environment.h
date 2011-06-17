@@ -35,6 +35,7 @@
 #include "renderer/modeling/scene/containers.h"
 
 // Forward declarations.
+namespace foundation    { class DictionaryArray; }
 namespace renderer      { class EnvironmentEDF; }
 namespace renderer      { class EnvironmentShader; }
 
@@ -55,6 +56,10 @@ class RENDERERDLL Environment
     // Return a string identifying the model of this environment.
     const char* get_model() const;
 
+    void bind_entities(
+        const EnvironmentEDFContainer&      environment_edfs,
+        const EnvironmentShaderContainer&   environment_shaders);
+
     // Return the EDF of this environment, or 0 if the environment doesn't have one.
     const EnvironmentEDF* get_environment_edf() const;
 
@@ -67,24 +72,10 @@ class RENDERERDLL Environment
     const EnvironmentEDF*       m_environment_edf;
     const EnvironmentShader*    m_environment_shader;
 
-    // Constructors.
-    Environment(
-        const char*                         name);
+    // Constructor.
     Environment(
         const char*                         name,
-        const EnvironmentEDF*               environment_edf);
-    Environment(
-        const char*                         name,
-        const EnvironmentShader*            environment_shader);
-    Environment(
-        const char*                         name,
-        const EnvironmentEDF*               environment_edf,
-        const EnvironmentShader*            environment_shader);
-    Environment(
-        const char*                         name,
-        const ParamArray&                   params,
-        const EnvironmentEDFContainer&      environment_edfs,
-        const EnvironmentShaderContainer&   environment_shaders);
+        const ParamArray&                   params);
 };
 
 
@@ -98,24 +89,13 @@ class RENDERERDLL EnvironmentFactory
     // Return a string identifying this environment model.
     static const char* get_model();
 
+    // Return a set of widget definitions for this environment model.
+    static foundation::DictionaryArray get_widget_definitions();
+
     // Create a new environment.
     static foundation::auto_release_ptr<Environment> create(
-        const char*                         name);
-    static foundation::auto_release_ptr<Environment> create(
         const char*                         name,
-        const EnvironmentEDF*               environment_edf);
-    static foundation::auto_release_ptr<Environment> create(
-        const char*                         name,
-        const EnvironmentShader*            environment_shader);
-    static foundation::auto_release_ptr<Environment> create(
-        const char*                         name,
-        const EnvironmentEDF*               environment_edf,
-        const EnvironmentShader*            environment_shader);
-    static foundation::auto_release_ptr<Environment> create(
-        const char*                         name,
-        const ParamArray&                   params,
-        const EnvironmentEDFContainer&      environment_edfs,
-        const EnvironmentShaderContainer&   environment_shaders);
+        const ParamArray&                   params);
 };
 
 
@@ -123,13 +103,11 @@ class RENDERERDLL EnvironmentFactory
 // Environment class implementation.
 //
 
-// Return the EDF of this environment, or 0 if the environment doesn't have one.
 inline const EnvironmentEDF* Environment::get_environment_edf() const
 {
     return m_environment_edf;
 }
 
-// Return the shader of this environment, or 0 if the environment doesn't have one.
 inline const EnvironmentShader* Environment::get_environment_shader() const
 {
     return m_environment_shader;

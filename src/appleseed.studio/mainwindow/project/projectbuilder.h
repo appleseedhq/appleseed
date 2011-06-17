@@ -39,6 +39,7 @@
 #include "renderer/api/bsdf.h"
 #include "renderer/api/edf.h"
 #include "renderer/api/entity.h"
+#include "renderer/api/environment.h"
 #include "renderer/api/environmentedf.h"
 #include "renderer/api/environmentshader.h"
 #include "renderer/api/material.h"
@@ -199,7 +200,7 @@ void ProjectBuilder::insert_entity(
 
     add_item(entity.get(), parent);
 
-    renderer::EntityTraits<Entity>::get_entity_container(parent).insert(entity);
+    renderer::EntityTraits<Entity>::insert_entity(entity, parent);
 
     notify_project_modification();
 }
@@ -209,7 +210,7 @@ void ProjectBuilder::remove_entity(
     Entity*                             entity,
     ParentEntity&                       parent) const
 {
-    renderer::EntityTraits<Entity>::get_entity_container(parent).remove(entity);
+    renderer::EntityTraits<Entity>::remove_entity(entity, parent);
 
     notify_project_modification();
 }
@@ -220,14 +221,14 @@ Entity* ProjectBuilder::replace_entity(
     ParentEntity&                       parent,
     const foundation::Dictionary&       values) const
 {
-    renderer::EntityTraits<Entity>::get_entity_container(parent).remove(old_entity);
+    renderer::EntityTraits<Entity>::remove_entity(old_entity, parent);
 
     foundation::auto_release_ptr<Entity> new_entity(
         create_entity<Entity, ParentEntity>(parent, values));
 
     Entity* new_entity_ptr = new_entity.get();
 
-    renderer::EntityTraits<Entity>::get_entity_container(parent).insert(new_entity);
+    renderer::EntityTraits<Entity>::insert_entity(new_entity, parent);
 
     notify_project_modification();
 
@@ -268,6 +269,19 @@ inline foundation::auto_release_ptr<renderer::Material> ProjectBuilder::create_e
     clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter);
 
     return renderer::MaterialFactory::create(name.c_str(), clean_values);
+}
+
+template <>
+inline foundation::auto_release_ptr<renderer::Environment> ProjectBuilder::create_entity(
+    renderer::Scene&                    scene,
+    const foundation::Dictionary&       values) const
+{
+    const std::string name = get_entity_name(values);
+
+    foundation::Dictionary clean_values(values);
+    clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter);
+
+    return renderer::EnvironmentFactory::create(name.c_str(), clean_values);
 }
 
 template <typename Entity>
