@@ -38,6 +38,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
 #include "foundation/math/sampling.h"
+#include "foundation/utility/containers/dictionaryarray.h"
 
 // Forward declarations.
 namespace renderer  { class Project; }

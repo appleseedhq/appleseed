@@ -32,10 +32,8 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/edf/iedffactory.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/containers/dictionaryarray.h"
-
 // Forward declarations.
+namespace foundation    { class DictionaryArray; }
 namespace renderer      { class EDF; }
 
 namespace renderer
