@@ -33,6 +33,7 @@
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
+#include "renderer/utility/bbox.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
@@ -144,6 +145,14 @@ AssemblyContainer& Scene::assemblies() const
 AssemblyInstanceContainer& Scene::assembly_instances() const
 {
     return impl->m_assembly_instances;
+}
+
+GAABB3 Scene::compute_bbox() const
+{
+    return
+        compute_parent_bbox<GAABB3>(
+            impl->m_assembly_instances.begin(),
+            impl->m_assembly_instances.end());
 }
 
 double Scene::compute_radius() const

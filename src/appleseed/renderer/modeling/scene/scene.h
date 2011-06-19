@@ -100,7 +100,10 @@ class RENDERERDLL Scene
     // Access the assembly instances.
     AssemblyInstanceContainer& assembly_instances() const;
 
-    // Compute and return the scene radius.
+    // Compute and return the bounding box of the scene.
+    GAABB3 compute_bbox() const;
+
+    // Compute and return the radius of the scene.
     double compute_radius() const;
 
   private:
