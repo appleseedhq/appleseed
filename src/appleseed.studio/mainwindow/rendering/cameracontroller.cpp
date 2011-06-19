@@ -32,7 +32,6 @@
 // appleseed.renderer headers.
 #include "renderer/api/camera.h"
 #include "renderer/api/scene.h"
-#include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
@@ -115,10 +114,7 @@ void CameraController::configure_controller(const Scene* scene)
     else
     {
         // Otherwise, if the scene is not empty, use its center as the target position.
-        const GAABB3 scene_bbox =
-            compute_parent_bbox<GAABB3>(
-                scene->assembly_instances().begin(),
-                scene->assembly_instances().end());
+        const GAABB3 scene_bbox = scene->compute_bbox();
         if (scene_bbox.is_valid())
             m_controller.set_target(Vector3d(scene_bbox.center()));
     }
