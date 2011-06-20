@@ -32,10 +32,8 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/camera/icamerafactory.h"
 
-// appleseed.foundation headers.
-#include "foundation/math/transform.h"
-
 // Forward declarations.
+namespace foundation    { class DictionaryArray; }
 namespace renderer      { class Camera; }
 
 namespace renderer
@@ -50,13 +48,18 @@ class RENDERERDLL ThinLensCameraFactory
 {
   public:
     // Return a string identifying this camera model.
-    static const char* get_model();
+    virtual const char* get_model() const;
+
+    // Return a human-readable string identifying this camera model.
+    virtual const char* get_human_readable_model() const;
+
+    // Return a set of widget definitions for this camera model.
+    virtual foundation::DictionaryArray get_widget_definitions() const;
 
     // Create a new camera instance.
     virtual foundation::auto_release_ptr<Camera> create(
-        const char*                     name,
-        const ParamArray&               params,
-        const foundation::Transformd&   transform) const;
+        const char*         name,
+        const ParamArray&   params) const;
 };
 
 }       // namespace renderer

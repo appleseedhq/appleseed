@@ -86,10 +86,7 @@ auto_release_ptr<Project> DefaultProjectFactory::create()
         params.insert("film_dimensions", "0.024892 0.018669");
         params.insert("focal_length", "0.035");
         auto_release_ptr<Camera> camera(
-            PinholeCameraFactory().create(
-                "camera",
-                params,
-                Transformd(Matrix4d::identity())));
+            PinholeCameraFactory().create("camera", params));
 
         // Attach the camera to the scene.
         scene->set_camera(camera);

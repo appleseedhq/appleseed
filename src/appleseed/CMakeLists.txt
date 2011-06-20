@@ -1035,6 +1035,7 @@ set(renderer_modeling_camera_sources
     renderer/modeling/camera/camera.h
     renderer/modeling/camera/camerafactoryregistrar.cpp
     renderer/modeling/camera/camerafactoryregistrar.h
+    renderer/modeling/camera/cameratraits.h
     renderer/modeling/camera/icamerafactory.h
     renderer/modeling/camera/pinholecamera.cpp
     renderer/modeling/camera/pinholecamera.h

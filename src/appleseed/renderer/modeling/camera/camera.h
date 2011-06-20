@@ -40,6 +40,7 @@
 #include "foundation/utility/implptr.h"
 
 // Forward declarations.
+namespace foundation    { class DictionaryArray; }
 namespace renderer      { class Intersector; }
 namespace renderer      { class Project; }
 
@@ -55,7 +56,9 @@ class RENDERERDLL Camera
 {
   public:
     // Constructor.
-    explicit Camera(const ParamArray& params);
+    Camera(
+        const char*         name,
+        const ParamArray&   params);
 
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
@@ -128,6 +131,19 @@ class RENDERERDLL Camera
         const double                default_value) const;
 
     void compute_view_pyramid();
+};
+
+
+//
+// An incomplete factory class whose main purpose is to factorize the code
+// common to all camera models.
+//
+
+class RENDERERDLL CameraFactory
+{
+  public:
+    // Return a set of widget definitions common to all camera models.
+    static foundation::DictionaryArray get_widget_definitions();
 };
 
 }       // namespace renderer

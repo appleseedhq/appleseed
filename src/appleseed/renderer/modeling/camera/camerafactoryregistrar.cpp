@@ -42,9 +42,7 @@ using namespace std;
 namespace renderer
 {
 
-//
-// CameraFactoryRegistrar class implementation.
-//
+DEFINE_ARRAY(CameraFactoryArray);
 
 struct CameraFactoryRegistrar::Impl
 {
@@ -54,13 +52,24 @@ struct CameraFactoryRegistrar::Impl
 CameraFactoryRegistrar::CameraFactoryRegistrar()
   : impl(new Impl())
 {
-    impl->m_registrar.insert(
-        PinholeCameraFactory::get_model(),
-        auto_ptr<ICameraFactory>(new PinholeCameraFactory()));
+    register_factory(auto_ptr<FactoryType>(new PinholeCameraFactory()));
+    register_factory(auto_ptr<FactoryType>(new ThinLensCameraFactory()));
+}
 
-    impl->m_registrar.insert(
-        ThinLensCameraFactory::get_model(),
-        auto_ptr<ICameraFactory>(new ThinLensCameraFactory()));
+void CameraFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
+{
+    const string model = factory->get_model();
+    impl->m_registrar.insert(model, factory);
+}
+
+CameraFactoryArray CameraFactoryRegistrar::get_factories() const
+{
+    FactoryArrayType factories;
+
+    for (const_each<Registrar<FactoryType>::Items> i = impl->m_registrar.items(); i; ++i)
+        factories.push_back(i->second);
+
+    return factories;
 }
 
 const CameraFactoryRegistrar::FactoryType* CameraFactoryRegistrar::lookup(const char* name) const

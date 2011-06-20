@@ -26,42 +26,22 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_CAMERA_PINHOLECAMERA_H
-#define APPLESEED_RENDERER_MODELING_CAMERA_PINHOLECAMERA_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_CAMERAITEM_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_CAMERAITEM_H
 
-// appleseed.renderer headers.
-#include "renderer/modeling/camera/icamerafactory.h"
+// appleseed.studio headers.
+#include "mainwindow/project/multimodelentityitem.h"
 
 // Forward declarations.
-namespace foundation    { class DictionaryArray; }
-namespace renderer      { class Camera; }
+namespace renderer  { class Camera; }
+namespace renderer  { class Scene; }
 
-namespace renderer
-{
+namespace appleseed {
+namespace studio {
 
-//
-// Pinhole camera factory.
-//
+typedef MultiModelEntityItem<renderer::Camera, renderer::Scene> CameraItem;
 
-class RENDERERDLL PinholeCameraFactory
-  : public ICameraFactory
-{
-  public:
-    // Return a string identifying this camera model.
-    virtual const char* get_model() const;
+}       // namespace studio
+}       // namespace appleseed
 
-    // Return a human-readable string identifying this camera model.
-    virtual const char* get_human_readable_model() const;
-
-    // Return a set of widget definitions for this camera model.
-    virtual foundation::DictionaryArray get_widget_definitions() const;
-
-    // Create a new camera instance.
-    virtual foundation::auto_release_ptr<Camera> create(
-        const char*         name,
-        const ParamArray&   params) const;
-};
-
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_CAMERA_PINHOLECAMERA_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_CAMERAITEM_H

@@ -32,6 +32,7 @@
 // API headers.
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/camera/camerafactoryregistrar.h"
+#include "renderer/modeling/camera/cameratraits.h"
 #include "renderer/modeling/camera/icamerafactory.h"
 #include "renderer/modeling/camera/pinholecamera.h"
 #include "renderer/modeling/camera/thinlenscamera.h"

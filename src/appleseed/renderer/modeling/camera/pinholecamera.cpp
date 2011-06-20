@@ -32,6 +32,10 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/camera/camera.h"
 
+// appleseed.foundation headers.
+#include "foundation/math/transform.h"
+#include "foundation/utility/containers/dictionaryarray.h"
+
 // Forward declarations.
 namespace renderer  { class Project; }
 
@@ -47,19 +51,18 @@ namespace
     // Pinhole camera.
     //
 
+    const char* Model = "pinhole_camera";
+
     class PinholeCamera
       : public Camera
     {
       public:
         PinholeCamera(
             const char*             name,
-            const ParamArray&       params,
-            const Transformd&       transform)
-          : Camera(params)
-          , m_transform(transform)
+            const ParamArray&       params)
+          : Camera(name, params)
+          , m_transform(Transformd::identity())
         {
-            set_name(name);
-
             m_film_dimensions = get_film_dimensions();
             m_focal_length = get_focal_length();
 
@@ -74,7 +77,7 @@ namespace
 
         virtual const char* get_model() const
         {
-            return PinholeCameraFactory::get_model();
+            return Model;
         }
 
         virtual void set_transform(const Transformd& transform)
@@ -156,19 +159,28 @@ namespace
 // PinholeCameraFactory class implementation.
 //
 
-const char* PinholeCameraFactory::get_model()
+const char* PinholeCameraFactory::get_model() const
 {
-    return "pinhole_camera";
+    return Model;
+}
+
+const char* PinholeCameraFactory::get_human_readable_model() const
+{
+    return "Pinhole Camera";
+}
+
+DictionaryArray PinholeCameraFactory::get_widget_definitions() const
+{
+    DictionaryArray definitions = CameraFactory::get_widget_definitions();
+
+    return definitions;
 }
 
 auto_release_ptr<Camera> PinholeCameraFactory::create(
     const char*         name,
-    const ParamArray&   params,
-    const Transformd&   transform) const
+    const ParamArray&   params) const
 {
-    return
-        auto_release_ptr<Camera>(
-            new PinholeCamera(name, params, transform));
+    return auto_release_ptr<Camera>(new PinholeCamera(name, params));
 }
 
 }   // namespace renderer

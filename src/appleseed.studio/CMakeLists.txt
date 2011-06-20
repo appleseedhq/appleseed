@@ -110,6 +110,7 @@ set(mainwindow_project_sources
     mainwindow/project/assemblyinstancecollectionitem.h
     mainwindow/project/assemblyitem.cpp
     mainwindow/project/assemblyitem.h
+    mainwindow/project/cameraitem.h
     mainwindow/project/collectionitem.h
     mainwindow/project/collectionitembase.h
     mainwindow/project/colorcollectionitem.cpp

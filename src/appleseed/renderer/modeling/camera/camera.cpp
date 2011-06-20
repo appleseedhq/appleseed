@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
+#include "foundation/utility/containers/dictionaryarray.h"
 
 using namespace foundation;
 using namespace std;
@@ -54,10 +55,14 @@ struct Camera::Impl
     Pyramid3d   m_view_pyramid;
 };
 
-Camera::Camera(const ParamArray& params)
+Camera::Camera(
+    const char*         name,
+    const ParamArray&   params)
   : Entity(g_class_uid, params)
   , impl(new Impl())
 {
+    set_name(name);
+
     impl->m_film_dimensions = extract_film_dimensions();
     impl->m_focal_length = extract_focal_length(impl->m_film_dimensions[0]);
 
@@ -281,6 +286,7 @@ void Camera::compute_view_pyramid()
     const double focal_length = impl->m_focal_length;
     const double half_fw = impl->m_film_dimensions[0] / 2.0;
     const double half_fh = impl->m_film_dimensions[1] / 2.0;
+
     Pyramid3d& pyramid = impl->m_view_pyramid;
 
     pyramid.set_plane(
@@ -298,6 +304,53 @@ void Camera::compute_view_pyramid()
     pyramid.set_plane(
         Pyramid3d::RightPlane,
         normalize(Vector3d(focal_length, 0.0, half_fw)));
+}
+
+
+//
+// CameraFactory class implementation.
+//
+
+DictionaryArray CameraFactory::get_widget_definitions()
+{
+    DictionaryArray definitions;
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "film_dimensions")
+            .insert("label", "Film Dimensions")
+            .insert("widget", "text_box")
+            .insert("use", "required"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "film_width")
+            .insert("label", "Film Width")
+            .insert("widget", "text_box")
+            .insert("use", "required"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "film_height")
+            .insert("label", "Film Height")
+            .insert("widget", "text_box")
+            .insert("use", "required"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "focal_length")
+            .insert("label", "Focal Length")
+            .insert("widget", "text_box")
+            .insert("use", "required"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "horizontal_fov")
+            .insert("label", "Horizontal FOV")
+            .insert("widget", "text_box")
+            .insert("use", "required"));
+
+    return definitions;
 }
 
 }   // namespace renderer

@@ -1421,7 +1421,8 @@ namespace
 
                 if (factory)
                 {
-                    m_camera = factory->create(m_name.c_str(), m_params, m_transform);
+                    m_camera = factory->create(m_name.c_str(), m_params);
+                    m_camera->set_transform(m_transform);
                 }
                 else
                 {

@@ -1003,12 +1003,11 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         params.insert("film_dimensions", "0.025 0.025");
         params.insert("focal_length", "0.035");
         auto_release_ptr<Camera> camera(
-            PinholeCameraFactory().create(
-                "camera",
-                params,
-                Transformd(
-                      Matrix4d::translation(Vector3d(0.278f, 0.273f, -0.800f))
-                    * Matrix4d::rotation_y(Pi))));
+            PinholeCameraFactory().create("camera", params));
+        camera->set_transform(
+            Transformd(
+                  Matrix4d::translation(Vector3d(0.278f, 0.273f, -0.800f))
+                * Matrix4d::rotation_y(Pi)));
 
         // Attach the camera to the scene.
         scene->set_camera(camera);

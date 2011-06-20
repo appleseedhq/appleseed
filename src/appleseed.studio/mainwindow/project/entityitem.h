@@ -113,7 +113,7 @@ template <typename Entity, typename ParentEntity>
 void EntityItem<Entity, ParentEntity>::edit(const foundation::Dictionary& values)
 {
     EntityItemBaseType::m_entity =
-        m_project_builder.replace_entity(
+        m_project_builder.edit_entity(
             EntityItemBaseType::m_entity,
             m_parent,
             values);

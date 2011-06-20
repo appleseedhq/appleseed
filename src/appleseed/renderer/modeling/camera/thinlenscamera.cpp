@@ -38,6 +38,8 @@
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionnotimplemented.h"
 #include "foundation/math/sampling.h"
+#include "foundation/math/transform.h"
+#include "foundation/utility/containers/dictionaryarray.h"
 #include "foundation/utility/string.h"
 
 using namespace foundation;
@@ -59,19 +61,18 @@ namespace
     //   http://en.wikipedia.org/wiki/Autofocus
     //
 
+    const char* Model = "thinlens_camera";
+
     class ThinLensCamera
       : public Camera
     {
       public:
         ThinLensCamera(
             const char*         name,
-            const ParamArray&   params,
-            const Transformd&   transform)
-          : Camera(params)
-          , m_transform(transform)
+            const ParamArray&   params)
+          : Camera(name, params)
+          , m_transform(Transformd::identity())
         {
-            set_name(name);
-
             m_film_dimensions = get_film_dimensions();
             m_focal_length = get_focal_length();
             m_f_stop = extract_f_stop();
@@ -96,7 +97,7 @@ namespace
 
         virtual const char* get_model() const
         {
-            return ThinLensCameraFactory::get_model();
+            return Model;
         }
 
         virtual void set_transform(const Transformd& transform)
@@ -259,19 +260,49 @@ namespace
 // ThinLensCameraFactory class implementation.
 //
 
-const char* ThinLensCameraFactory::get_model()
+const char* ThinLensCameraFactory::get_model() const
 {
-    return "thinlens_camera";
+    return Model;
+}
+
+const char* ThinLensCameraFactory::get_human_readable_model() const
+{
+    return "Thin Lens Camera";
+}
+
+DictionaryArray ThinLensCameraFactory::get_widget_definitions() const
+{
+    DictionaryArray definitions = CameraFactory::get_widget_definitions();
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "f_stop")
+            .insert("label", "F-number")
+            .insert("widget", "text_box")
+            .insert("use", "required"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "focal_distance")
+            .insert("label", "Focal Distance")
+            .insert("widget", "text_box")
+            .insert("use", "required"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "autofocus_target")
+            .insert("label", "Autofocus Target")
+            .insert("widget", "text_box")
+            .insert("use", "required"));
+
+    return definitions;
 }
 
 auto_release_ptr<Camera> ThinLensCameraFactory::create(
     const char*         name,
-    const ParamArray&   params,
-    const Transformd&   transform) const
+    const ParamArray&   params) const
 {
-    return
-        auto_release_ptr<Camera>(
-            new ThinLensCamera(name, params, transform));
+    return auto_release_ptr<Camera>(new ThinLensCamera(name, params));
 }
 
 }   // namespace renderer

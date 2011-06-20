@@ -34,6 +34,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
+#include "foundation/utility/containers/array.h"
 #include "foundation/utility/implptr.h"
 
 // Forward declarations.
@@ -41,6 +42,13 @@ namespace renderer      { class ICameraFactory; }
 
 namespace renderer
 {
+
+//
+// An array of camera factories.
+//
+
+DECLARE_ARRAY(CameraFactoryArray, ICameraFactory*);
+
 
 //
 // Camera factory registrar.
@@ -51,9 +59,16 @@ class RENDERERDLL CameraFactoryRegistrar
 {
   public:
     typedef ICameraFactory FactoryType;
+    typedef CameraFactoryArray FactoryArrayType;
 
     // Constructor.
     CameraFactoryRegistrar();
+
+    // Register a camera factory.
+    void register_factory(std::auto_ptr<FactoryType> factory);
+
+    // Retrieve the registered factories.
+    FactoryArrayType get_factories() const;
 
     // Lookup a factory by name.
     const FactoryType* lookup(const char* name) const;

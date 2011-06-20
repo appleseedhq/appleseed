@@ -26,42 +26,49 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_CAMERA_PINHOLECAMERA_H
-#define APPLESEED_RENDERER_MODELING_CAMERA_PINHOLECAMERA_H
+#ifndef APPLESEED_RENDERER_MODELING_CAMERA_CAMERATRAITS_H
+#define APPLESEED_RENDERER_MODELING_CAMERA_CAMERATRAITS_H
 
 // appleseed.renderer headers.
-#include "renderer/modeling/camera/icamerafactory.h"
+#include "renderer/global/global.h"
+#include "renderer/modeling/entity/entitytraits.h"
 
 // Forward declarations.
-namespace foundation    { class DictionaryArray; }
-namespace renderer      { class Camera; }
+namespace renderer  { class Camera; }
+namespace renderer  { class CameraFactoryRegistrar; }
 
 namespace renderer
 {
 
 //
-// Pinhole camera factory.
+// Camera entity traits.
 //
 
-class RENDERERDLL PinholeCameraFactory
-  : public ICameraFactory
+template <>
+struct EntityTraits<Camera>
 {
-  public:
-    // Return a string identifying this camera model.
-    virtual const char* get_model() const;
+    typedef CameraFactoryRegistrar FactoryRegistrarType;
 
-    // Return a human-readable string identifying this camera model.
-    virtual const char* get_human_readable_model() const;
+    static const char* get_entity_type_name()                   { return "camera"; }
+    static const char* get_human_readable_entity_type_name()    { return "Camera"; }
 
-    // Return a set of widget definitions for this camera model.
-    virtual foundation::DictionaryArray get_widget_definitions() const;
+    template <typename ParentEntity>
+    static void insert_entity(
+        foundation::auto_release_ptr<Camera>        entity,
+        ParentEntity&                               parent)
+    {
+        parent.set_camera(entity);
+    }
 
-    // Create a new camera instance.
-    virtual foundation::auto_release_ptr<Camera> create(
-        const char*         name,
-        const ParamArray&   params) const;
+    template <typename ParentEntity>
+    static void remove_entity(
+        Camera*                                     entity,
+        ParentEntity&                               parent)
+    {
+        parent.set_camera(foundation::auto_release_ptr<Camera>(0));
+    }
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_CAMERA_PINHOLECAMERA_H
+#endif  // !APPLESEED_RENDERER_MODELING_CAMERA_CAMERATRAITS_H

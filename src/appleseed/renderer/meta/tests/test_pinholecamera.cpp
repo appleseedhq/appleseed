@@ -50,8 +50,7 @@ TEST_SUITE(Renderer_Modeling_Camera_PinholeCamera)
                 "camera",
                 ParamArray().insert("film_width", "0.025")
                             .insert("film_height", "0.025")
-                            .insert("focal_length", "0.035"),
-                Transformd::identity()));
+                            .insert("focal_length", "0.035")));
 
         const Vector2d projected = camera->project(Vector3d(0.0, 0.0, -1.0));
 

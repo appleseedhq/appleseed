@@ -37,6 +37,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
+#include "renderer/api/camera.h"
 #include "renderer/api/edf.h"
 #include "renderer/api/entity.h"
 #include "renderer/api/environment.h"
@@ -94,7 +95,7 @@ class ProjectBuilder
         ParentEntity&                       parent) const;
 
     template <typename Entity, typename ParentEntity>
-    Entity* replace_entity(
+    Entity* edit_entity(
         Entity*                             old_entity,
         ParentEntity&                       parent,
         const foundation::Dictionary&       values) const;
@@ -124,6 +125,7 @@ class ProjectBuilder
     renderer::Project&                              m_project;
     ProjectTree&                                    m_project_tree;
 
+    renderer::CameraFactoryRegistrar                m_camera_factory_registrar;
     renderer::BSDFFactoryRegistrar                  m_bsdf_factory_registrar;
     renderer::EDFFactoryRegistrar                   m_edf_factory_registrar;
     renderer::SurfaceShaderFactoryRegistrar         m_surface_shader_factory_registrar;
@@ -154,6 +156,13 @@ class ProjectBuilder
 //
 // ProjectBuilder class implementation.
 //
+
+template <>
+inline const renderer::EntityTraits<renderer::Camera>::FactoryRegistrarType&
+ProjectBuilder::get_factory_registrar<renderer::Camera>() const
+{
+    return m_camera_factory_registrar;
+}
 
 template <>
 inline const renderer::EntityTraits<renderer::BSDF>::FactoryRegistrarType&
@@ -216,7 +225,7 @@ void ProjectBuilder::remove_entity(
 }
 
 template <typename Entity, typename ParentEntity>
-Entity* ProjectBuilder::replace_entity(
+Entity* ProjectBuilder::edit_entity(
     Entity*                             old_entity,
     ParentEntity&                       parent,
     const foundation::Dictionary&       values) const
@@ -229,6 +238,31 @@ Entity* ProjectBuilder::replace_entity(
     Entity* new_entity_ptr = new_entity.get();
 
     renderer::EntityTraits<Entity>::insert_entity(new_entity, parent);
+
+    notify_project_modification();
+
+    return new_entity_ptr;
+}
+
+// Specialize edit_entity() for cameras because we need to carry over
+// the camera's transformation when we replace one camera by another.
+template <>
+inline renderer::Camera* ProjectBuilder::edit_entity(
+    renderer::Camera*                   old_entity,
+    renderer::Scene&                    parent,
+    const foundation::Dictionary&       values) const
+{
+    const foundation::Transformd camera_transform = old_entity->get_transform();
+
+    renderer::EntityTraits<renderer::Camera>::remove_entity(old_entity, parent);
+
+    foundation::auto_release_ptr<renderer::Camera> new_entity(
+        create_entity<renderer::Camera, renderer::Scene>(parent, values));
+    new_entity->set_transform(camera_transform);
+
+    renderer::Camera* new_entity_ptr = new_entity.get();
+
+    renderer::EntityTraits<renderer::Camera>::insert_entity(new_entity, parent);
 
     notify_project_modification();
 

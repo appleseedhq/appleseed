@@ -32,10 +32,8 @@
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 
-// appleseed.foundation headers.
-#include "foundation/math/transform.h"
-
 // Forward declarations.
+namespace foundation    { class DictionaryArray; }
 namespace renderer      { class Camera; }
 
 namespace renderer
@@ -52,11 +50,19 @@ class RENDERERDLL ICameraFactory
     // Destructor.
     virtual ~ICameraFactory() {}
 
+    // Return a string identifying this camera model.
+    virtual const char* get_model() const = 0;
+
+    // Return a human-readable string identifying this camera model.
+    virtual const char* get_human_readable_model() const = 0;
+
+    // Return a set of widget definitions for this camera model.
+    virtual foundation::DictionaryArray get_widget_definitions() const = 0;
+
     // Create a new camera instance.
     virtual foundation::auto_release_ptr<Camera> create(
-        const char*                     name,
-        const ParamArray&               params,
-        const foundation::Transformd&   transform) const = 0;
+        const char*         name,
+        const ParamArray&   params) const = 0;
 };
 
 }       // namespace renderer

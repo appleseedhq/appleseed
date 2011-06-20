@@ -32,6 +32,7 @@
 // appleseed.studio headers.
 #include "mainwindow/project/assemblycollectionitem.h"
 #include "mainwindow/project/assemblyinstancecollectionitem.h"
+#include "mainwindow/project/cameraitem.h"
 #include "mainwindow/project/collectionitem.h"
 #include "mainwindow/project/colorcollectionitem.h"
 #include "mainwindow/project/environmentitem.h"
@@ -41,6 +42,7 @@
 #include "mainwindow/project/textureinstancecollectionitem.h"
 
 // appleseed.renderer headers.
+#include "renderer/api/camera.h"
 #include "renderer/api/color.h"
 #include "renderer/api/entity.h"
 #include "renderer/api/project.h"
@@ -68,6 +70,7 @@ struct ProjectTree::Impl
 {
     QTreeWidget*                                m_tree_widget;
 
+    CameraItem*                                 m_camera_item;
     EnvironmentItem*                            m_environment_item;
     ColorCollectionItem*                        m_color_collection_item;
     TextureCollectionItem*                      m_texture_collection_item;
@@ -76,6 +79,42 @@ struct ProjectTree::Impl
     CollectionItem<EnvironmentShader, Scene>*   m_environment_shader_collection_item;
     AssemblyCollectionItem*                     m_assembly_collection_item;
     AssemblyInstanceCollectionItem*             m_assembly_instance_collection_item;
+
+    CameraItem* add_camera_item(
+        Scene&              scene,
+        Camera*             camera,
+        ProjectBuilder&     project_builder)
+    {
+        CameraItem* item =
+            new CameraItem(
+                camera,
+                scene,
+                project_builder);
+
+        item->set_allow_deletion(false);
+
+        m_tree_widget->addTopLevelItem(item);
+
+        return item;
+    }
+
+    EnvironmentItem* add_environment_item(
+        Scene&              scene,
+        Environment*        environment,
+        ProjectBuilder&     project_builder)
+    {
+        EnvironmentItem* item =
+            new EnvironmentItem(
+                environment,
+                scene,
+                project_builder);
+
+        item->set_allow_deletion(false);
+
+        m_tree_widget->addTopLevelItem(item);
+
+        return item;
+    }
 
     template <typename EntityContainer>
     typename ItemTypeMap<EntityContainer>::T* add_collection_item(
@@ -115,24 +154,6 @@ struct ProjectTree::Impl
 
         return item;
     }
-
-    EnvironmentItem* add_environment_item(
-        Scene&              scene,
-        Environment*        environment,
-        ProjectBuilder&     project_builder)
-    {
-        EnvironmentItem* item =
-            new EnvironmentItem(
-                environment,
-                scene,
-                project_builder);
-
-        item->set_allow_deletion(false);
-
-        m_tree_widget->addTopLevelItem(item);
-
-        return item;
-    }
 };
 
 ProjectTree::ProjectTree(QTreeWidget* tree_widget)
@@ -149,6 +170,12 @@ ProjectTree::~ProjectTree()
 void ProjectTree::initialize(Project& project, ProjectBuilder& project_builder)
 {
     Scene& scene = *project.get_scene();
+
+    impl->m_camera_item =
+        impl->add_camera_item(
+            scene,
+            scene.get_camera(),
+            project_builder);
 
     impl->m_environment_item =
         impl->add_environment_item(
