@@ -46,19 +46,22 @@ namespace
     const UniqueID g_class_uid = new_guid();
 }
 
-BSDF::BSDF(const ParamArray& params)
+BSDF::BSDF(
+    const char*         name,
+    const ParamArray&   params)
   : ConnectableEntity(g_class_uid, params)
 {
+    set_name(name);
 }
 
 void BSDF::on_frame_begin(
-    const Project&  project,
-    const void*     data)
+    const Project&      project,
+    const void*         data)
 {
 }
 
 void BSDF::on_frame_end(
-    const Project&  project)
+    const Project&      project)
 {
 }
 

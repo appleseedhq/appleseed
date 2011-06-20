@@ -63,11 +63,10 @@ namespace
         AOSurfaceShader(
             const char*             name,
             const ParamArray&       params)
-          : SurfaceShader(params)
+          : SurfaceShader(name, params)
           , m_samples(m_params.get_required<size_t>("samples", 16))
           , m_max_distance(m_params.get_required<double>("max_distance", 1.0))
         {
-            set_name(name);
         }
 
         virtual void release()

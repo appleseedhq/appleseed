@@ -43,9 +43,12 @@ namespace
     const UniqueID g_class_uid = new_guid();
 }
 
-EnvironmentShader::EnvironmentShader(const ParamArray& params)
+EnvironmentShader::EnvironmentShader(
+    const char*         name,
+    const ParamArray&   params)
   : ConnectableEntity(g_class_uid, params)
 {
+    set_name(name);
 }
 
 void EnvironmentShader::on_frame_begin(const Project& project)

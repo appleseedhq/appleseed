@@ -122,13 +122,11 @@ namespace
         LatLongMapEnvironmentEDF(
             const char*         name,
             const ParamArray&   params)
-          : EnvironmentEDF(params)
+          : EnvironmentEDF(name, params)
           , m_importance_map_width(0)
           , m_importance_map_height(0)
           , m_probability_scale(0.0)
         {
-            set_name(name);
-
             m_inputs.declare("exitance", InputFormatSpectrum);
         }
 

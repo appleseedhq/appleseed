@@ -109,10 +109,9 @@ struct MeshObject::Impl
 MeshObject::MeshObject(
     const char*         name,
     const ParamArray&   params)
-  : Object(params)
+  : Object(name, params)
   , impl(new Impl())
 {
-    set_name(name);
 }
 
 MeshObject::~MeshObject()

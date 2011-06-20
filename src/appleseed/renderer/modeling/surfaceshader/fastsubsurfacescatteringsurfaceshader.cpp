@@ -91,12 +91,10 @@ namespace
         FastSubSurfaceScatteringSurfaceShader(
             const char*             name,
             const ParamArray&       params)
-          : SurfaceShader(params)
+          : SurfaceShader(name, params)
           , m_light_samples(m_params.get_required<size_t>("light_samples", 1))
           , m_occlusion_samples(m_params.get_required<size_t>("occlusion_samples", 1))
         {
-            set_name(name);
-
             m_inputs.declare("scale", InputFormatScalar);
             m_inputs.declare("ambient_sss", InputFormatScalar);
             m_inputs.declare("view_dep_sss", InputFormatScalar);

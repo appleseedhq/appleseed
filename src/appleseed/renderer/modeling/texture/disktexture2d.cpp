@@ -62,10 +62,9 @@ namespace
             const char*         name,
             const ParamArray&   params,
             const SearchPaths&  search_paths)
-          : Texture(params)
+          : Texture(name, params)
           , m_reader(&global_logger())
         {
-            set_name(name);
             extract_parameters(search_paths);
         }
 

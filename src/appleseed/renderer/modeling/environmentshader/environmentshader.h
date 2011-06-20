@@ -50,7 +50,9 @@ class RENDERERDLL EnvironmentShader
 {
   public:
     // Constructor.
-    explicit EnvironmentShader(const ParamArray& params);
+    EnvironmentShader(
+        const char*                 name,
+        const ParamArray&           params);
 
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;

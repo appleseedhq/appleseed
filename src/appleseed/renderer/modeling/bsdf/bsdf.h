@@ -62,7 +62,9 @@ class RENDERERDLL BSDF
 {
   public:
     // Constructor.
-    explicit BSDF(const ParamArray& params);
+    BSDF(
+        const char*                 name,
+        const ParamArray&           params);
 
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;

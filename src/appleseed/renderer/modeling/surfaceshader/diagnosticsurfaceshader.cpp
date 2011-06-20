@@ -134,10 +134,9 @@ const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingMod
 DiagnosticSurfaceShader::DiagnosticSurfaceShader(
     const char*             name,
     const ParamArray&       params)
-  : SurfaceShader(params)
+  : SurfaceShader(name, params)
   , impl(new Impl())
 {
-    set_name(name);
     extract_parameters();
 }
 

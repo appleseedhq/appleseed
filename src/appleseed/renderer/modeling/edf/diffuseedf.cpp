@@ -60,10 +60,8 @@ namespace
         DiffuseEDF(
             const char*         name,
             const ParamArray&   params)
-          : EDF(params)
+          : EDF(name, params)
         {
-            set_name(name);
-
             m_inputs.declare("exitance", InputFormatSpectrum);
         }
 

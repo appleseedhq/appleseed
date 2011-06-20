@@ -83,12 +83,10 @@ namespace
         AshikhminBRDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(params)
+          : BSDF(name, params)
           , m_uniform_reflectance(false)
           , m_uniform_shininess(false)
         {
-            set_name(name);
-
             m_inputs.declare("diffuse_reflectance", InputFormatSpectrum);
             m_inputs.declare("glossy_reflectance", InputFormatSpectrum);
             m_inputs.declare("shininess_u", InputFormatScalar);

@@ -43,9 +43,12 @@ namespace
     const UniqueID g_class_uid = new_guid();
 }
 
-Object::Object(const ParamArray& params)
+Object::Object(
+    const char*         name,
+    const ParamArray&   params)
   : Entity(g_class_uid, params)
 {
+    set_name(name);
 }
 
 }   // namespace renderer

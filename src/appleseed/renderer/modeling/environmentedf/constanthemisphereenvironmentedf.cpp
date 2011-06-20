@@ -61,10 +61,8 @@ namespace
         ConstantHemisphereEnvironmentEDF(
             const char*         name,
             const ParamArray&   params)
-          : EnvironmentEDF(params)
+          : EnvironmentEDF(name, params)
         {
-            set_name(name);
-
             m_inputs.declare("upper_hemi_exitance", InputFormatSpectrum);
             m_inputs.declare("lower_hemi_exitance", InputFormatSpectrum);
         }

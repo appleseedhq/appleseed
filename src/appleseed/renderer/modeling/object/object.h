@@ -49,7 +49,9 @@ class RENDERERDLL Object
 {
   public:
     // Constructor.
-    explicit Object(const ParamArray& params);
+    Object(
+        const char*         name,
+        const ParamArray&   params);
 
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;

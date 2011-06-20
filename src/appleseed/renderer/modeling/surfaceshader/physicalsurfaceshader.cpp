@@ -67,11 +67,9 @@ namespace
         PhysicalSurfaceShader(
             const char*             name,
             const ParamArray&       params)
-          : SurfaceShader(params)
+          : SurfaceShader(name, params)
           , m_has_alpha_mask(false)
         {
-            set_name(name);
-
             m_inputs.declare("alpha_mask", InputFormatSpectrum, true);
         }
 

@@ -56,15 +56,13 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
     {
       public:
         HorizontalGradientTexture(const char* name)
-          : Texture(ParamArray())
+          : Texture(name, ParamArray())
           , m_props(
                 5, 5,
                 5, 5,
                 3,
                 PixelFormatFloat)
         {
-            set_name(name);
-
             m_tile.reset(
                 new Tile(
                     m_props.m_canvas_width,

@@ -52,7 +52,9 @@ class RENDERERDLL Texture
 {
   public:
     // Constructor.
-    explicit Texture(const ParamArray& params);
+    Texture(
+        const char*         name,
+        const ParamArray&   params);
 
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;

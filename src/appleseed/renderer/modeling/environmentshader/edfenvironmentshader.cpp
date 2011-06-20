@@ -57,11 +57,10 @@ namespace
         EDFEnvironmentShader(
             const char*             name,
             const ParamArray&       params)
-          : EnvironmentShader(params)
+          : EnvironmentShader(name, params)
           , m_env_edf_name(m_params.get_required<string>("environment_edf", ""))
           , m_env_edf(0)
         {
-            set_name(name);
         }
 
         virtual void release()

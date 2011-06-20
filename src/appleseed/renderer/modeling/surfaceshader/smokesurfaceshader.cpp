@@ -84,10 +84,9 @@ namespace
         SmokeSurfaceShader(
             const char*             name,
             const ParamArray&       params)
-          : SurfaceShader(params)
+          : SurfaceShader(name, params)
           , m_first_frame(true)
         {
-            set_name(name);
             extract_parameters();
         }
 

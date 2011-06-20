@@ -71,11 +71,10 @@ namespace
         VoxelAOSurfaceShader(
             const char*             name,
             const ParamArray&       params)
-          : SurfaceShader(params)
+          : SurfaceShader(name, params)
           , m_last_geometry_version_id(InvalidVersionID)
           , m_last_asm_inst_version_id(InvalidVersionID)
         {
-            set_name(name);
             extract_parameters();
         }
 

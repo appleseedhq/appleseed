@@ -45,9 +45,8 @@ class NullBSDF
 {
   public:
     NullBSDF()
-      : BSDF(ParamArray())
+      : BSDF("null_bsdf", ParamArray())
     {
-        set_name("null_bsdf");
     }
 
     virtual void release()

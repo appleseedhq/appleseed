@@ -64,11 +64,9 @@ namespace
         LambertianBRDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(params)
+          : BSDF(name, params)
           , m_uniform_reflectance(false)
         {
-            set_name(name);
-
             m_inputs.declare("reflectance", InputFormatSpectrum);
         }
 

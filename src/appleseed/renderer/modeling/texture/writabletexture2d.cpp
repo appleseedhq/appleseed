@@ -61,10 +61,9 @@ namespace
             const char*         name,
             const ParamArray&   params,
             const SearchPaths&  search_paths)
-          : Texture(params)
+          : Texture(name, params)
           , m_props_defined(false)
         {
-            set_name(name);
         }
 
         virtual void release()

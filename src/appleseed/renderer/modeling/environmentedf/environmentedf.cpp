@@ -47,9 +47,12 @@ namespace
     const UniqueID g_class_uid = new_guid();
 }
 
-EnvironmentEDF::EnvironmentEDF(const ParamArray& params)
+EnvironmentEDF::EnvironmentEDF(
+    const char*         name,
+    const ParamArray&   params)
   : ConnectableEntity(g_class_uid, params)
 {
+    set_name(name);
 }
 
 void EnvironmentEDF::on_frame_begin(const Project& project)

@@ -43,9 +43,12 @@ namespace
     const UniqueID g_class_uid = new_guid();
 }
 
-SurfaceShader::SurfaceShader(const ParamArray& params)
+SurfaceShader::SurfaceShader(
+    const char*         name,
+    const ParamArray&   params)
   : ConnectableEntity(g_class_uid, params)
 {
+    set_name(name);
 }
 
 void SurfaceShader::on_frame_begin(const Project& project)

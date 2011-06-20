@@ -43,19 +43,22 @@ namespace
     const UniqueID g_class_uid = new_guid();
 }
 
-EDF::EDF(const ParamArray& params)
+EDF::EDF(
+    const char*         name,
+    const ParamArray&   params)
   : ConnectableEntity(g_class_uid, params)
 {
+    set_name(name);
 }
 
 void EDF::on_frame_begin(
-    const Project&  project,
-    const void*     data)
+    const Project&      project,
+    const void*         data)
 {
 }
 
 void EDF::on_frame_end(
-    const Project&  project)
+    const Project&      project)
 {
 }
 

@@ -43,9 +43,12 @@ namespace
     const UniqueID g_class_uid = new_guid();
 }
 
-Texture::Texture(const ParamArray& params)
+Texture::Texture(
+    const char*         name,
+    const ParamArray&   params)
   : Entity(g_class_uid, params)
 {
+    set_name(name);
 }
 
 }   // namespace renderer

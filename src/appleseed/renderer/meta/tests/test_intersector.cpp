@@ -53,7 +53,7 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
     {
       public:
         BoundingBoxObject()
-          : Object(ParamArray())
+          : Object("boundingbox_object", ParamArray())
           , m_bbox(GAABB3::VectorType(-1.0), GAABB3::VectorType(1.0))
           , m_lazy_region_kit(&m_region_kit)
         {
@@ -66,7 +66,7 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
 
         virtual const char* get_model() const
         {
-            return "BoundingBoxObject";
+            return "boundingbox_object";
         }
 
         virtual const GAABB3& get_local_bbox() const

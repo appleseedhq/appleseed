@@ -61,10 +61,8 @@ namespace
         GradientEnvironmentEDF(
             const char*         name,
             const ParamArray&   params)
-          : EnvironmentEDF(params)
+          : EnvironmentEDF(name, params)
         {
-            set_name(name);
-
             m_inputs.declare("horizon_exitance", InputFormatSpectrum);
             m_inputs.declare("zenith_exitance", InputFormatSpectrum);
         }

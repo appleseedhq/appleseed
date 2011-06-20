@@ -60,9 +60,8 @@ namespace
         PhongBRDF(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(params)
+          : BSDF(name, params)
         {
-            set_name(name);
         }
 
         virtual void release()

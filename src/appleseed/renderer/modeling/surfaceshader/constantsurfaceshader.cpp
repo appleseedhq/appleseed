@@ -65,10 +65,8 @@ namespace
         ConstantSurfaceShader(
             const char*             name,
             const ParamArray&       params)
-          : SurfaceShader(params)
+          : SurfaceShader(name, params)
         {
-            set_name(name);
-
             m_inputs.declare("color", InputFormatSpectrum);
         }
 

@@ -52,7 +52,9 @@ class RENDERERDLL SurfaceShader
 {
   public:
     // Constructor.
-    explicit SurfaceShader(const ParamArray& params);
+    SurfaceShader(
+        const char*             name,
+        const ParamArray&       params);
 
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;

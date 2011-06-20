@@ -61,10 +61,8 @@ namespace
         ConstantEnvironmentEDF(
             const char*         name,
             const ParamArray&   params)
-          : EnvironmentEDF(params)
+          : EnvironmentEDF(name, params)
         {
-            set_name(name);
-
             m_inputs.declare("exitance", InputFormatSpectrum);
         }
 
