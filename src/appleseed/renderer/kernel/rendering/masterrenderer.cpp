@@ -67,6 +67,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
+#include "foundation/core/exceptions/stringexception.h"
 #include "foundation/utility/foreach.h"
 
 // Standard headers.
@@ -109,6 +110,11 @@ void MasterRenderer::render()
     try
     {
         do_render();
+    }
+    catch (const StringException& e)
+    {
+        m_renderer_controller->on_rendering_abort();
+        RENDERER_LOG_ERROR("rendering failed: %s: %s", e.what(), e.string());
     }
     catch (const Exception& e)
     {
