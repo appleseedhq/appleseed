@@ -59,16 +59,13 @@ class EntityItem
         ProjectBuilder&     project_builder);
 
   protected:
+    typedef EntityItemBase<Entity> EntityItemBaseType;
+
     ParentEntity&           m_parent;
     ProjectBuilder&         m_project_builder;
 
     virtual void slot_edit_accepted(foundation::Dictionary values);
     virtual void slot_delete();
-
-  private:
-    friend class EntityCreatorBase;
-
-    typedef EntityItemBase<Entity> EntityItemBaseType;
 
     void edit(const foundation::Dictionary& values);
 };
