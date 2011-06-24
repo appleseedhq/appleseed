@@ -39,7 +39,6 @@
 #include "foundation/utility/string.h"
 
 // Standard headers.
-#include <cstring>
 #include <string>
 
 namespace foundation
@@ -125,15 +124,30 @@ namespace foundation
 
 
 //
-// Expect exact equality of arrays of objects.
+// Expect exact equality of C arrays of objects.
 //
 
 #define FOUNDATION_EXPECT_ARRAY_EQ_IMPL(expected, expr, stop)                           \
     do {                                                                                \
         case_result.signal_assertion_execution();                                       \
                                                                                         \
-        if (countof(expected) != countof(expr) ||                                       \
-            std::memcmp((expected), (expr), sizeof(expected)))                          \
+        const size_t expected_count__ = countof(expected);                              \
+        const size_t expr_count__ = countof(expr);                                      \
+                                                                                        \
+        bool are_equal__ = expected_count__ == expr_count__;                            \
+        if (are_equal__)                                                                \
+        {                                                                               \
+            for (size_t i__ = 0; i__ < expected_count__; ++i__)                         \
+            {                                                                           \
+                if (!((expr)[i__] == (expected)[i__]))                                  \
+                {                                                                       \
+                    are_equal__ = false;                                                \
+                    break;                                                              \
+                }                                                                       \
+            }                                                                           \
+        }                                                                               \
+                                                                                        \
+        if (!are_equal__)                                                               \
         {                                                                               \
             case_result.signal_assertion_failure();                                     \
                                                                                         \
@@ -169,7 +183,17 @@ namespace foundation
     do {                                                                                \
         case_result.signal_assertion_execution();                                       \
                                                                                         \
-        if (std::memcmp((expected), (expr), count * sizeof((expected)[0])))             \
+        bool are_equal__ = true;                                                        \
+        for (size_t i__ = 0; i__ < count; ++i__)                                        \
+        {                                                                               \
+            if (!((expr)[i__] == (expected)[i__]))                                      \
+            {                                                                           \
+                are_equal__ = false;                                                    \
+                break;                                                                  \
+            }                                                                           \
+        }                                                                               \
+                                                                                        \
+        if (!are_equal__)                                                               \
         {                                                                               \
             case_result.signal_assertion_failure();                                     \
                                                                                         \
@@ -271,6 +295,104 @@ namespace foundation
 
 
 //
+// Expect approximate floating-point equality of C arrays of objects.
+//
+
+#define FOUNDATION_EXPECT_ARRAY_FEQ_IMPL(expected, expr, stop)                          \
+    do {                                                                                \
+        case_result.signal_assertion_execution();                                       \
+                                                                                        \
+        const size_t expected_count__ = countof(expected);                              \
+        const size_t expr_count__ = countof(expr);                                      \
+                                                                                        \
+        bool are_equal__ = expected_count__ == expr_count__;                            \
+        if (are_equal__)                                                                \
+        {                                                                               \
+            for (size_t i__ = 0; i__ < expected_count__; ++i__)                         \
+            {                                                                           \
+                if (!feq((expr)[i__], (expected)[i__]))                                 \
+                {                                                                       \
+                    are_equal__ = false;                                                \
+                    break;                                                              \
+                }                                                                       \
+            }                                                                           \
+        }                                                                               \
+                                                                                        \
+        if (!are_equal__)                                                               \
+        {                                                                               \
+            case_result.signal_assertion_failure();                                     \
+                                                                                        \
+            foundation::TestListenerHelper::write(                                      \
+                test_listener,                                                          \
+                current_test_suite__(),                                                 \
+                *this,                                                                  \
+                __FILE__,                                                               \
+                __LINE__,                                                               \
+                foundation::TestMessage::AssertionFailure,                              \
+                "expected: %s == %s\n"                                                  \
+                "received: %s == %s",                                                   \
+                #expr, foundation::to_string((expected), countof(expected)).c_str(),    \
+                #expr, foundation::to_string((expr), countof(expr)).c_str());           \
+                                                                                        \
+            if (stop)                                                                   \
+                throw foundation::ExceptionAssertionFailure();                          \
+        }                                                                               \
+    } while (0)
+
+#define EXPECT_ARRAY_FEQ(expected, expr)                                                \
+    FOUNDATION_EXPECT_ARRAY_FEQ_IMPL(expected, expr, false)
+
+#define ASSERT_ARRAY_FEQ(expected, expr)                                                \
+    FOUNDATION_EXPECT_ARRAY_FEQ_IMPL(expected, expr, true)
+
+
+//
+// Expect approximate floating-point equality of sequences of objects.
+//
+
+#define FOUNDATION_EXPECT_SEQUENCE_FEQ_IMPL(count, expected, expr, stop)                \
+    do {                                                                                \
+        case_result.signal_assertion_execution();                                       \
+                                                                                        \
+        bool are_equal__ = true;                                                        \
+        for (size_t i__ = 0; i__ < count; ++i__)                                        \
+        {                                                                               \
+            if (!feq((expr)[i__], (expected)[i__]))                                     \
+            {                                                                           \
+                are_equal__ = false;                                                    \
+                break;                                                                  \
+            }                                                                           \
+        }                                                                               \
+                                                                                        \
+        if (!are_equal__)                                                               \
+        {                                                                               \
+            case_result.signal_assertion_failure();                                     \
+                                                                                        \
+            foundation::TestListenerHelper::write(                                      \
+                test_listener,                                                          \
+                current_test_suite__(),                                                 \
+                *this,                                                                  \
+                __FILE__,                                                               \
+                __LINE__,                                                               \
+                foundation::TestMessage::AssertionFailure,                              \
+                "expected: %s == %s\n"                                                  \
+                "received: %s == %s",                                                   \
+                #expr, foundation::to_string((expected), count).c_str(),                \
+                #expr, foundation::to_string((expr), count).c_str());                   \
+                                                                                        \
+            if (stop)                                                                   \
+                throw foundation::ExceptionAssertionFailure();                          \
+        }                                                                               \
+    } while (0)
+
+#define EXPECT_SEQUENCE_FEQ(count, expected, expr)                                      \
+    FOUNDATION_EXPECT_SEQUENCE_FEQ_IMPL(count, expected, expr, false)
+
+#define ASSERT_SEQUENCE_FEQ(count, expected, expr)                                      \
+    FOUNDATION_EXPECT_SEQUENCE_FEQ_IMPL(count, expected, expr, true)
+
+
+//
 // Expect approximate floating-point equality with custom epsilon value.
 //
 
@@ -287,6 +409,104 @@ namespace foundation
 
 #define ASSERT_FEQ_EPS(expected, expr, eps)                                             \
     FOUNDATION_EXPECT_FEQ_EPS_IMPL(expected, expr, eps, true)
+
+
+//
+// Expect approximate floating-point equality of C arrays of objects with custom epsilon value.
+//
+
+#define FOUNDATION_EXPECT_ARRAY_FEQ_EPS_IMPL(expected, expr, eps, stop)                 \
+    do {                                                                                \
+        case_result.signal_assertion_execution();                                       \
+                                                                                        \
+        const size_t expected_count__ = countof(expected);                              \
+        const size_t expr_count__ = countof(expr);                                      \
+                                                                                        \
+        bool are_equal__ = expected_count__ == expr_count__;                            \
+        if (are_equal__)                                                                \
+        {                                                                               \
+            for (size_t i__ = 0; i__ < expected_count__; ++i__)                         \
+            {                                                                           \
+                if (!feq((expr)[i__], (expected)[i__], (eps)))                          \
+                {                                                                       \
+                    are_equal__ = false;                                                \
+                    break;                                                              \
+                }                                                                       \
+            }                                                                           \
+        }                                                                               \
+                                                                                        \
+        if (!are_equal__)                                                               \
+        {                                                                               \
+            case_result.signal_assertion_failure();                                     \
+                                                                                        \
+            foundation::TestListenerHelper::write(                                      \
+                test_listener,                                                          \
+                current_test_suite__(),                                                 \
+                *this,                                                                  \
+                __FILE__,                                                               \
+                __LINE__,                                                               \
+                foundation::TestMessage::AssertionFailure,                              \
+                "expected: %s == %s\n"                                                  \
+                "received: %s == %s",                                                   \
+                #expr, foundation::to_string((expected), countof(expected)).c_str(),    \
+                #expr, foundation::to_string((expr), countof(expr)).c_str());           \
+                                                                                        \
+            if (stop)                                                                   \
+                throw foundation::ExceptionAssertionFailure();                          \
+        }                                                                               \
+    } while (0)
+
+#define EXPECT_ARRAY_FEQ_EPS(expected, expr, eps)                                       \
+    FOUNDATION_EXPECT_ARRAY_FEQ_EPS_IMPL(expected, expr, eps, false)
+
+#define ASSERT_ARRAY_FEQ_EPS(expected, expr, eps)                                       \
+    FOUNDATION_EXPECT_ARRAY_FEQ_EPS_IMPL(expected, expr, eps, true)
+
+
+//
+// Expect approximate floating-point equality of sequences of objects with custom epsilon value.
+//
+
+#define FOUNDATION_EXPECT_SEQUENCE_FEQ_EPS_IMPL(count, expected, expr, eps, stop)       \
+    do {                                                                                \
+        case_result.signal_assertion_execution();                                       \
+                                                                                        \
+        bool are_equal__ = true;                                                        \
+        for (size_t i__ = 0; i__ < count; ++i__)                                        \
+        {                                                                               \
+            if (!feq((expr)[i__], (expected)[i__], (eps)))                              \
+            {                                                                           \
+                are_equal__ = false;                                                    \
+                break;                                                                  \
+            }                                                                           \
+        }                                                                               \
+                                                                                        \
+        if (!are_equal__)                                                               \
+        {                                                                               \
+            case_result.signal_assertion_failure();                                     \
+                                                                                        \
+            foundation::TestListenerHelper::write(                                      \
+                test_listener,                                                          \
+                current_test_suite__(),                                                 \
+                *this,                                                                  \
+                __FILE__,                                                               \
+                __LINE__,                                                               \
+                foundation::TestMessage::AssertionFailure,                              \
+                "expected: %s == %s\n"                                                  \
+                "received: %s == %s",                                                   \
+                #expr, foundation::to_string((expected), count).c_str(),                \
+                #expr, foundation::to_string((expr), count).c_str());                   \
+                                                                                        \
+            if (stop)                                                                   \
+                throw foundation::ExceptionAssertionFailure();                          \
+        }                                                                               \
+    } while (0)
+
+#define EXPECT_SEQUENCE_FEQ_EPS(count, expected, expr, eps)                             \
+    FOUNDATION_EXPECT_SEQUENCE_FEQ_EPS_IMPL(count, expected, expr, eps, false)
+
+#define ASSERT_SEQUENCE_FEQ_EPS(count, expected, expr, eps)                             \
+    FOUNDATION_EXPECT_SEQUENCE_FEQ_EPS_IMPL(count, expected, expr, eps, true)
 
 
 //

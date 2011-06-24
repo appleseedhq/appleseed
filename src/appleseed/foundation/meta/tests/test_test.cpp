@@ -32,7 +32,7 @@
 // Standard headers.
 #include <cstddef>
 
-#undef FOUNDATION_ENABLE_ASSERTIONS_UNIT_TESTS
+#undef FOUNDATION_ENABLE_FALSE_ASSERTIONS_CHECKS
 
 using namespace foundation;
 
@@ -146,7 +146,7 @@ TEST_SUITE(Foundation_Utility_Test_TestSuiteRepository)
         EXPECT_EQ(1, suite_count);
     }
 
-    TEST_CASE(GetSuite_GivenTestSuiteRepositoryWithOneSuite_ReturnsSuite)
+    TEST_CASE(GetSuite_GivenTestSuiteRepositoryWithOneSuite_ReturnsTestSuite)
     {
         TestSuiteRepository repository;
         FakeTestSuite expected_suite;
@@ -234,41 +234,46 @@ TEST_SUITE(Foundation_Utility_Test_TestSuite)
     }
 }
 
-#ifdef FOUNDATION_ENABLE_ASSERTIONS_UNIT_TESTS
-
 TEST_SUITE(Foundation_Utility_Test_Assertions)
 {
-    TEST_CASE(FoundationExpectTrueSucceeds)
+    TEST_CASE(ExpectTrue_GivenTrue_Succeeds)
     {
         EXPECT_TRUE(true);
     }
 
-    TEST_CASE(FoundationExpectTrueFails)
+#ifdef FOUNDATION_ENABLE_FALSE_ASSERTIONS_CHECKS
+    TEST_CASE(ExpectTrue_GivenFalse_Fails)
     {
         EXPECT_TRUE(false);
     }
+#endif
 
-    TEST_CASE(FoundationExpectFalseSucceeds)
+    TEST_CASE(ExpectFalse_GivenFalse_Succeeds)
     {
         EXPECT_FALSE(false);
     }
 
-    TEST_CASE(FoundationExpectFalseFails)
+#ifdef FOUNDATION_ENABLE_FALSE_ASSERTIONS_CHECKS
+    TEST_CASE(ExpectFalse_GivenTrue_Fails)
     {
         EXPECT_FALSE(true);
     }
+#endif
 
-    TEST_CASE(FoundationExpectEqSucceeds)
+    TEST_CASE(ExpectEq_GivenEqualValues_Succeeds)
     {
         EXPECT_EQ(42, 42);
     }
 
-    TEST_CASE(FoundationExpectEqFails)
+#ifdef FOUNDATION_ENABLE_FALSE_ASSERTIONS_CHECKS
+    TEST_CASE(ExpectEq_GivenDifferentValues_Fails)
     {
         EXPECT_EQ(42, 0);
     }
+#endif
 
-    TEST_CASE(FoundationExpectEq_ExpectingNonNullCStringButGivenNullCString_Fails)
+#ifdef FOUNDATION_ENABLE_FALSE_ASSERTIONS_CHECKS
+    TEST_CASE(ExpectEq_ExpectingNonNullCStringButGivenNullCString_Fails)
     {
         const char* Expected = "bunny";
         const char* Obtained = 0;
@@ -276,15 +281,16 @@ TEST_SUITE(Foundation_Utility_Test_Assertions)
         EXPECT_EQ(Expected, Obtained);
     }
 
-    TEST_CASE(FoundationExpectEq_ExpectingNullCStringButGivenNonNullCString_Fails)
+    TEST_CASE(ExpectEq_ExpectingNullCStringButGivenNonNullCString_Fails)
     {
         const char* Expected = 0;
         const char* Obtained = "bunny";
 
         EXPECT_EQ(Expected, Obtained);
     }
+#endif
 
-    TEST_CASE(FoundationExpectArrayEqSucceeds)
+    TEST_CASE(ExpectArrayEq_GivenEqualArrays_Succeeds)
     {
         const int Expected[] = { 1, 2, 3 };
         const int Array[] = { 1, 2, 3 };
@@ -292,7 +298,8 @@ TEST_SUITE(Foundation_Utility_Test_Assertions)
         EXPECT_ARRAY_EQ(Expected, Array);
     }
 
-    TEST_CASE(FoundationExpectArrayEq1Fails)
+#ifdef FOUNDATION_ENABLE_FALSE_ASSERTIONS_CHECKS
+    TEST_CASE(ExpectArrayEq_GivenArraysOfSameSizeButDifferentContent_Fails)
     {
         const int Expected[] = { 1, 2, 3 };
         const int Array[] = { 1, 2, 0 };
@@ -300,15 +307,16 @@ TEST_SUITE(Foundation_Utility_Test_Assertions)
         EXPECT_ARRAY_EQ(Expected, Array);
     }
 
-    TEST_CASE(FoundationExpectArrayEq2Fails)
+    TEST_CASE(ExpectArrayEq_GivenArraysOfDifferentSizes_Fails)
     {
         const int Expected[] = { 1, 2, 3 };
         const int Array[] = { 1, 2 };
 
         EXPECT_ARRAY_EQ(Expected, Array);
     }
+#endif
 
-    TEST_CASE(FoundationExpectSequenceEqSucceeds)
+    TEST_CASE(ExpectSequenceEq_GivenEqualArrays_Succeeds)
     {
         const int Expected[] = { 1, 2, 3 };
         const int Array[] = { 1, 2, 3 };
@@ -316,47 +324,99 @@ TEST_SUITE(Foundation_Utility_Test_Assertions)
         EXPECT_SEQUENCE_EQ(3, Expected, Array);
     }
 
-    TEST_CASE(FoundationExpectSequenceEqFails)
+#ifdef FOUNDATION_ENABLE_FALSE_ASSERTIONS_CHECKS
+    TEST_CASE(ExpectSequenceEq_GivenDifferentArrays_Fails)
     {
         const int Expected[] = { 1, 2, 3 };
         const int Array[] = { 1, 2, 0 };
 
         EXPECT_SEQUENCE_EQ(3, Expected, Array);
     }
+#endif
 
-    TEST_CASE(FoundationExpectNeqSucceeds)
+    TEST_CASE(ExpectNeq_GivenDifferentValues_Succeeds)
     {
         EXPECT_NEQ(42, 0);
     }
 
-    TEST_CASE(FoundationExpectNeqFails)
+#ifdef FOUNDATION_ENABLE_FALSE_ASSERTIONS_CHECKS
+    TEST_CASE(ExpectNeq_GivenEqualValues_Fails)
     {
         EXPECT_NEQ(42, 42);
     }
+#endif
 
-    TEST_CASE(FoundationExpectFeqSucceeds)
+    TEST_CASE(ExpectFeq_GivenEqualValues_Succeeds)
     {
         EXPECT_FEQ(42.0, 42.0);
     }
 
-    TEST_CASE(FoundationExpectFeqFails)
+#ifdef FOUNDATION_ENABLE_FALSE_ASSERTIONS_CHECKS
+    TEST_CASE(ExpectFeq_GivenDifferentValues_Fails)
     {
         EXPECT_FEQ(42.0, 0.0);
     }
+#endif
 
-    TEST_CASE(FoundationExpectFneqSucceeds)
+    TEST_CASE(ExpectArrayFeq_GivenEqualArrays_Succeeds)
+    {
+        const double Expected[] = { 1.0, 2.0, 3.0 };
+        const double Array[] = { 1.0, 2.0, 3.0 };
+
+        EXPECT_ARRAY_FEQ(Expected, Array);
+    }
+
+#ifdef FOUNDATION_ENABLE_FALSE_ASSERTIONS_CHECKS
+    TEST_CASE(ExpectArrayFeq_GivenArraysOfSameSizeButDifferentContent_Fails)
+    {
+        const double Expected[] = { 1.0, 2.0, 3.0 };
+        const double Array[] = { 1.0, 2.0, 0.0 };
+
+        EXPECT_ARRAY_FEQ(Expected, Array);
+    }
+
+    TEST_CASE(ExpectArrayFeq_GivenArraysOfDifferentSizes_Fails)
+    {
+        const double Expected[] = { 1.0, 2.0, 3.0 };
+        const double Array[] = { 1.0, 2.0 };
+
+        EXPECT_ARRAY_FEQ(Expected, Array);
+    }
+#endif
+
+    TEST_CASE(ExpectSequenceFeq_GivenEqualArrays_Succeeds)
+    {
+        const double Expected[] = { 1.0, 2.0, 3.0 };
+        const double Array[] = { 1.0, 2.0, 3.0 };
+
+        EXPECT_SEQUENCE_FEQ(3, Expected, Array);
+    }
+
+#ifdef FOUNDATION_ENABLE_FALSE_ASSERTIONS_CHECKS
+    TEST_CASE(ExpectSequenceFeq_GivenDifferentArrays_Fails)
+    {
+        const double Expected[] = { 1.0, 2.0, 3.0 };
+        const double Array[] = { 1.0, 2.0, 0.0 };
+
+        EXPECT_SEQUENCE_FEQ(3, Expected, Array);
+    }
+#endif
+
+    TEST_CASE(ExpectFneq_GivenDifferentValues_Succeeds)
     {
         EXPECT_FNEQ(42.0, 0.0);
     }
 
-    TEST_CASE(FoundationExpectFneqFails)
+#ifdef FOUNDATION_ENABLE_FALSE_ASSERTIONS_CHECKS
+    TEST_CASE(ExpectFneq_GivenEqualValues_Fails)
     {
         EXPECT_FNEQ(42.0, 42.0);
     }
+#endif
 
     struct Exception {};
 
-    TEST_CASE(FoundationExpectExceptionSucceeds)
+    TEST_CASE(ExpectException_GivenCodeThatThrowsExpectedException_Succeeds)
     {
         EXPECT_EXCEPTION(Exception,
         {
@@ -364,17 +424,17 @@ TEST_SUITE(Foundation_Utility_Test_Assertions)
         });
     }
 
-    TEST_CASE(FoundationExpectExceptionFails)
+#ifdef FOUNDATION_ENABLE_FALSE_ASSERTIONS_CHECKS
+    TEST_CASE(ExpectException_GivenCodeThatDoesNotThrowExpectedException_Fails)
     {
         EXPECT_EXCEPTION(Exception,
         {
         });
     }
 
-    TEST_CASE(TestThrowsUnexpectedException)
+    TEST_CASE(Test_GivenCodeThatThrowsUnexpectedException_Fails)
     {
         throw Exception();
     }
+#endif
 }
-
-#endif  // FOUNDATION_ENABLE_ASSERTIONS_UNIT_TESTS
