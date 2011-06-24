@@ -264,7 +264,7 @@ namespace impl
     template <typename T, bool IsPointer>
     struct ToString;
 
-    // General case.
+    // General non-pointer case.
     template <typename T>
     struct ToString<T, false>
     {
@@ -276,7 +276,7 @@ namespace impl
         }
     };
 
-    // Pointers.
+    // Pointer case.
     template <typename T>
     struct ToString<T, true>
     {
@@ -294,10 +294,18 @@ namespace impl
     };
 }
 
+// General entry-point.
 template <typename T>
 std::string to_string(const T& value)
 {
     return impl::ToString<T, IsPointer<T>::R>::to_string(value);
+}
+
+// Handle booleans separately.
+template <>
+inline std::string to_string(const bool& value)
+{
+    return value ? "true" : "false";
 }
 
 // Handle 8-bit integers as integers, not as characters.

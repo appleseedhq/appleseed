@@ -37,88 +37,70 @@
 #include <string>
 #include <vector>
 
+using namespace foundation;
+using namespace std;
+
 TEST_SUITE(Foundation_Utility_String)
 {
-    using namespace foundation;
-    using namespace std;
-
-    TEST_CASE(ToStringHandlesEmptyArray)
-    {
-        const int array[3] = { 1, 2, 3 };
-        EXPECT_EQ("", to_string(array, 0));
-    }
-
-    TEST_CASE(ToStringHandlesEmptyArrayWithCustomSeparator)
-    {
-        const int array[3] = { 1, 2, 3 };
-        EXPECT_EQ("", to_string(array, 0, "x"));
-    }
-
-    TEST_CASE(ToStringHandlesNonEmptyArray)
-    {
-        const int array[3] = { 1, 2, 3 };
-        EXPECT_EQ("1 2 3", to_string(array, 3));
-    }
-
-    TEST_CASE(ToStringHandlesNonEmptyArrayWithCustomSeparator)
-    {
-        const int array[3] = { 1, 2, 3 };
-        EXPECT_EQ("1x2x3", to_string(array, 3, "x"));
-    }
-
-    TEST_CASE(ToString_GivenNullInteger_ReturnsCorrespondingString)
+    TEST_CASE(ToString_GivenZeroAsInt_ReturnsCorrespondingString)
     {
         const int n = 0;
         EXPECT_EQ("0", to_string(n));
     }
 
-    TEST_CASE(Int8ToString)
+    TEST_CASE(ToString_GivenBoolValues_ReturnsCorrespondingStrings)
+    {
+        EXPECT_EQ("true", to_string(true));
+        EXPECT_EQ("false", to_string(false));
+    }
+
+    TEST_CASE(ToString_GivenInt8Values_ReturnsCorrespondingStrings)
     {
         EXPECT_EQ("0", to_string<int8>(0));
         EXPECT_EQ("42", to_string<int8>(42));
         EXPECT_EQ("-1", to_string<int8>(-1));
     }
 
-    TEST_CASE(Int16ToString)
+    TEST_CASE(ToString_GivenInt16Values_ReturnsCorrespondingStrings)
     {
         EXPECT_EQ("0", to_string<int16>(0));
         EXPECT_EQ("42", to_string<int16>(42));
         EXPECT_EQ("-1", to_string<int16>(-1));
     }
 
-    TEST_CASE(Int32ToString)
+    TEST_CASE(ToString_GivenInt32Values_ReturnsCorrespondingStrings)
     {
         EXPECT_EQ("0", to_string<int32>(0));
         EXPECT_EQ("42", to_string<int32>(42));
         EXPECT_EQ("-1", to_string<int32>(-1));
     }
 
-    TEST_CASE(Int64ToString)
+    TEST_CASE(ToString_GivenInt64Values_ReturnsCorrespondingStrings)
     {
         EXPECT_EQ("0", to_string<int64>(0));
         EXPECT_EQ("42", to_string<int64>(42));
         EXPECT_EQ("-1", to_string<int64>(-1));
     }
 
-    TEST_CASE(UInt8ToString)
+    TEST_CASE(ToString_GivenUInt8Values_ReturnsCorrespondingStrings)
     {
         EXPECT_EQ("0", to_string<uint8>(0));
         EXPECT_EQ("42", to_string<uint8>(42));
     }
 
-    TEST_CASE(UInt16ToString)
+    TEST_CASE(ToString_GivenUInt16Values_ReturnsCorrespondingStrings)
     {
         EXPECT_EQ("0", to_string<uint16>(0));
         EXPECT_EQ("42", to_string<uint16>(42));
     }
 
-    TEST_CASE(UInt32ToString)
+    TEST_CASE(ToString_GivenUInt32Values_ReturnsCorrespondingStrings)
     {
         EXPECT_EQ("0", to_string<uint32>(0));
         EXPECT_EQ("42", to_string<uint32>(42));
     }
 
-    TEST_CASE(UInt64ToString)
+    TEST_CASE(ToString_GivenUInt64Values_ReturnsCorrespondingStrings)
     {
         EXPECT_EQ("0", to_string<uint64>(0));
         EXPECT_EQ("42", to_string<uint64>(42));
@@ -217,53 +199,77 @@ TEST_SUITE(Foundation_Utility_String)
         EXPECT_EQ("<null>", to_string(s));
     }
 
-    TEST_CASE(StringToInt8)
+    TEST_CASE(ToString_GivenEmptyArray_ReturnsEmptyString)
+    {
+        const int array[3] = { 1, 2, 3 };
+        EXPECT_EQ("", to_string(array, 0));
+    }
+
+    TEST_CASE(ToString_GivenEmptyArrayWithCustomSeparator_ReturnsEmptyString)
+    {
+        const int array[3] = { 1, 2, 3 };
+        EXPECT_EQ("", to_string(array, 0, ";"));
+    }
+
+    TEST_CASE(ToString_GivenNonEmptyArray_ReturnsCorrespondingString)
+    {
+        const int array[3] = { 1, 2, 3 };
+        EXPECT_EQ("1 2 3", to_string(array, 3));
+    }
+
+    TEST_CASE(ToString_GivenNonEmptyArrayWithCustomSeparator_ReturnsCorrespondingString)
+    {
+        const int array[3] = { 1, 2, 3 };
+        EXPECT_EQ("1;2;3", to_string(array, 3, ";"));
+    }
+
+    TEST_CASE(FromString_GivenStrings_ReturnsCorrespondingInt8Values)
     {
         EXPECT_EQ(0, from_string<int8>("0"));
         EXPECT_EQ(42, from_string<int8>("42"));
         EXPECT_EQ(-1, from_string<int8>("-1"));
     }
 
-    TEST_CASE(StringToInt16)
+    TEST_CASE(FromString_GivenStrings_ReturnsCorrespondingInt16Values)
     {
         EXPECT_EQ(0, from_string<int16>("0"));
         EXPECT_EQ(42, from_string<int16>("42"));
         EXPECT_EQ(-1, from_string<int16>("-1"));
     }
 
-    TEST_CASE(StringToInt32)
+    TEST_CASE(FromString_GivenStrings_ReturnsCorrespondingInt32Values)
     {
         EXPECT_EQ(0, from_string<int32>("0"));
         EXPECT_EQ(42, from_string<int32>("42"));
         EXPECT_EQ(-1, from_string<int32>("-1"));
     }
 
-    TEST_CASE(StringToInt64)
+    TEST_CASE(FromString_GivenStrings_ReturnsCorrespondingInt64Values)
     {
         EXPECT_EQ(0, from_string<int64>("0"));
         EXPECT_EQ(42, from_string<int64>("42"));
         EXPECT_EQ(-1, from_string<int64>("-1"));
     }
 
-    TEST_CASE(StringToUInt8)
+    TEST_CASE(FromString_GivenStrings_ReturnsCorrespondingUInt8Values)
     {
         EXPECT_EQ(0, from_string<uint8>("0"));
         EXPECT_EQ(42, from_string<uint8>("42"));
     }
 
-    TEST_CASE(StringToUInt16)
+    TEST_CASE(FromString_GivenStrings_ReturnsCorrespondingUInt16Values)
     {
         EXPECT_EQ(0, from_string<uint16>("0"));
         EXPECT_EQ(42, from_string<uint16>("42"));
     }
 
-    TEST_CASE(StringToUInt32)
+    TEST_CASE(FromString_GivenStrings_ReturnsCorrespondingUInt32Values)
     {
         EXPECT_EQ(0, from_string<uint32>("0"));
         EXPECT_EQ(42, from_string<uint32>("42"));
     }
 
-    TEST_CASE(StringToUInt64)
+    TEST_CASE(FromString_GivenStrings_ReturnsCorrespondingUInt64Values)
     {
         EXPECT_EQ(0, from_string<uint64>("0"));
         EXPECT_EQ(42, from_string<uint64>("42"));
