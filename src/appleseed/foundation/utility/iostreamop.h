@@ -35,15 +35,14 @@
 #include "foundation/math/matrix.h"
 #include "foundation/math/ray.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cstddef>
 #include <iostream>
+#include <string>
 #include <vector>
-
-// Forward declarations.
-namespace foundation    { class DoubleArray; }
-namespace foundation    { class FloatArray; }
 
 namespace foundation
 {
@@ -163,6 +162,44 @@ template <typename Allocator>
 std::ostream& operator<<(std::ostream& s, const std::vector<const char*, Allocator>& vector)
 {
     return iostreamop_impl::write_sequence_quotes(s, vector, vector.size());
+}
+
+namespace iostreamop_impl
+{
+    template <typename ArrayType>
+    std::istream& read_array(std::istream& s, ArrayType& array)
+    {
+        std::string token;
+
+        while (s >> token)
+            array.push_back(from_string<typename ArrayType::value_type>(token));
+
+        // Clear the fail bit, reaching eof is not an error.
+        if (s.eof())
+            s.clear(s.rdstate() & ~std::ios::failbit);
+
+        return s;
+    }
+}
+
+inline std::ostream& operator<<(std::ostream& s, const FloatArray& array)
+{
+    return iostreamop_impl::write_sequence(s, array, array.size());
+}
+
+inline std::istream& operator>>(std::istream& s, FloatArray& array)
+{
+    return iostreamop_impl::read_array(s, array);
+}
+
+inline std::ostream& operator<<(std::ostream& s, const DoubleArray& array)
+{
+    return iostreamop_impl::write_sequence(s, array, array.size());
+}
+
+inline std::istream& operator>>(std::istream& s, DoubleArray& array)
+{
+    return iostreamop_impl::read_array(s, array);
 }
 
 template <typename T, size_t N>

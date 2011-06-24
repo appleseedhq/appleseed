@@ -76,6 +76,45 @@ TEST_SUITE(Foundation_Utility_IOStreamOp)
         });
     }
 
+    TEST_CASE(ReadFloatArray_GivenEmptyStream_DoNotSetFailBitOnStream)
+    {
+        stringstream sstr;
+
+        FloatArray array;
+        sstr >> array;
+
+        EXPECT_FALSE(sstr.fail());
+    }
+
+    TEST_CASE(ReadFloatArray_GivenThreeFloatValues_DoNotSetFailBitOnStream)
+    {
+        stringstream sstr;
+        sstr << "1 -2.2 3e-1";
+
+        FloatArray array;
+        sstr >> array;
+
+        EXPECT_FALSE(sstr.fail());
+    }
+
+    TEST_CASE(ReadFloatArray_GivenInvalidValue_DoNotSetFailBitOnStream)
+    {
+        stringstream sstr;
+        sstr << "1.1 hello";
+
+        try
+        {
+            FloatArray array;
+            sstr >> array;
+        }
+        catch (const ExceptionStringConversionError&)
+        {
+            // We were expecting this exception.
+        }
+
+        EXPECT_FALSE(sstr.fail());
+    }
+
     TEST_CASE(ReadDoubleArray_GivenEmptyStream_ReturnsEmptyArray)
     {
         stringstream sstr;

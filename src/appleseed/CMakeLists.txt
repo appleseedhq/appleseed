@@ -628,7 +628,6 @@ set(foundation_utility_sources
     foundation/utility/foreach.h
     foundation/utility/implptr.h
     foundation/utility/indenter.h
-    foundation/utility/iostreamop.cpp
     foundation/utility/iostreamop.h
     foundation/utility/iterators.h
     foundation/utility/job.h
