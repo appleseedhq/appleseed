@@ -223,6 +223,14 @@ TEST_SUITE(Foundation_Utility_String)
         EXPECT_EQ("1;2;3", to_string(array, 3, ";"));
     }
 
+    TEST_CASE(FromString_GivenEmptyString_ThrowsExceptionStringConversionError)
+    {
+        EXPECT_EXCEPTION(ExceptionStringConversionError,
+        {
+            from_string<int>("");
+        });
+    }
+
     TEST_CASE(FromString_GivenStrings_ReturnsCorrespondingInt8Values)
     {
         EXPECT_EQ(0, from_string<int8>("0"));
