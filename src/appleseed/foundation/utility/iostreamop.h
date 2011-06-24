@@ -41,11 +41,15 @@
 #include <iostream>
 #include <vector>
 
+// Forward declarations.
+namespace foundation    { class DoubleArray; }
+namespace foundation    { class FloatArray; }
+
 namespace foundation
 {
 
 //
-// iostream operators for common objects.
+// I/O of common types from/to C++ streams.
 //
 
 // std::vector.
@@ -57,6 +61,12 @@ template <typename Allocator>
 std::ostream& operator<<(std::ostream& s, const std::vector<char*, Allocator>& vector);
 template <typename Allocator>
 std::ostream& operator<<(std::ostream& s, const std::vector<const char*, Allocator>& vector);
+
+// foundation::Array.
+std::ostream& operator<<(std::ostream& s, const FloatArray& array);
+std::istream& operator>>(std::istream& s, FloatArray& array);
+std::ostream& operator<<(std::ostream& s, const DoubleArray& array);
+std::istream& operator>>(std::istream& s, DoubleArray& array);
 
 // foundation::Vector.
 template <typename T, size_t N>
@@ -95,7 +105,6 @@ std::istream& operator>>(std::istream& s, Ray<T, N>& ray);
 
 namespace iostreamop_impl
 {
-
     template <typename Sequence>
     std::ostream& write_sequence(std::ostream& s, const Sequence& sequence, const size_t n)
     {
@@ -130,80 +139,80 @@ namespace iostreamop_impl
 
         return s;
     }
+}
 
-}   // namespace iostreamop_impl
-
-// std::vector.
 template <typename Type, typename Allocator>
 std::ostream& operator<<(std::ostream& s, const std::vector<Type, Allocator>& vector)
 {
     return iostreamop_impl::write_sequence(s, vector, vector.size());
 }
+
 template <typename Allocator>
 std::ostream& operator<<(std::ostream& s, const std::vector<std::string, Allocator>& vector)
 {
     return iostreamop_impl::write_sequence_quotes(s, vector, vector.size());
 }
+
 template <typename Allocator>
 std::ostream& operator<<(std::ostream& s, const std::vector<char*, Allocator>& vector)
 {
     return iostreamop_impl::write_sequence_quotes(s, vector, vector.size());
 }
+
 template <typename Allocator>
 std::ostream& operator<<(std::ostream& s, const std::vector<const char*, Allocator>& vector)
 {
     return iostreamop_impl::write_sequence_quotes(s, vector, vector.size());
 }
 
-// foundation::Vector.
 template <typename T, size_t N>
 std::ostream& operator<<(std::ostream& s, const Vector<T, N>& vector)
 {
     return iostreamop_impl::write_sequence(s, vector, N);
 }
+
 template <typename T, size_t N>
 std::istream& operator>>(std::istream& s, Vector<T, N>& vector)
 {
     return iostreamop_impl::read_sequence(s, vector, N);
 }
 
-// foundation::Matrix.
 template <typename T, size_t M, size_t N>
 std::ostream& operator<<(std::ostream& s, const Matrix<T, M, N>& matrix)
 {
     return iostreamop_impl::write_sequence(s, matrix, M * N);
 }
+
 template <typename T, size_t M, size_t N>
 std::istream& operator>>(std::istream& s, Matrix<T, M, N>& matrix)
 {
     return iostreamop_impl::read_sequence(s, matrix, M * N);
 }
 
-// foundation::Color.
 template <typename T, size_t N>
 std::ostream& operator<<(std::ostream& s, const Color<T, N>& color)
 {
     return iostreamop_impl::write_sequence(s, color, N);
 }
+
 template <typename T, size_t N>
 std::istream& operator>>(std::istream& s, Color<T, N>& color)
 {
     return iostreamop_impl::read_sequence(s, color, N);
 }
 
-// foundation::RegularSpectrum.
 template <typename T, size_t N>
 std::ostream& operator<<(std::ostream& s, const RegularSpectrum<T, N>& spectrum)
 {
     return iostreamop_impl::write_sequence(s, spectrum, N);
 }
+
 template <typename T, size_t N>
 std::istream& operator>>(std::istream& s, RegularSpectrum<T, N>& spectrum)
 {
     return iostreamop_impl::read_sequence(s, spectrum, N);
 }
 
-// foundation::Ray.
 template <typename T, size_t N>
 std::ostream& operator<<(std::ostream& s, const Ray<T, N>& ray)
 {
@@ -213,6 +222,7 @@ std::ostream& operator<<(std::ostream& s, const Ray<T, N>& ray)
     s << ray.m_tmax;
     return s;
 }
+
 template <typename T, size_t N>
 std::istream& operator>>(std::istream& s, Ray<T, N>& ray)
 {
