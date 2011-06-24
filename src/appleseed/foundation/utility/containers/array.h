@@ -63,7 +63,6 @@ namespace foundation
 // The array can be passed safely across DLL boundaries.
 //
 
-// Declare the array.
 #define DECLARE_ARRAY(ArrayName, ArrayType)                             \
     class FOUNDATIONDLL ArrayName                                       \
     {                                                                   \
@@ -115,22 +114,22 @@ namespace foundation
         Impl* impl;                                                     \
     }
 
-// Define the array.
 #define DEFINE_ARRAY(ArrayName)                                         \
     struct ArrayName::Impl                                              \
       : public std::vector<value_type>                                  \
     {                                                                   \
     };                                                                  \
                                                                         \
-    /* Constructors. */                                                 \
     ArrayName::ArrayName()                                              \
       : impl(new Impl())                                                \
     {                                                                   \
     }                                                                   \
+                                                                        \
     ArrayName::ArrayName(const ArrayName& rhs)                          \
       : impl(new Impl(*rhs.impl))                                       \
     {                                                                   \
     }                                                                   \
+                                                                        \
     ArrayName::ArrayName(                                               \
         const size_type     size,                                       \
         const value_type*   values)                                     \
@@ -145,61 +144,53 @@ namespace foundation
             size * sizeof(value_type));                                 \
     }                                                                   \
                                                                         \
-    /* Destructor. */                                                   \
     ArrayName::~ArrayName()                                             \
     {                                                                   \
         delete impl;                                                    \
     }                                                                   \
                                                                         \
-    /* Assignment operator. */                                          \
     ArrayName& ArrayName::operator=(const ArrayName& rhs)               \
     {                                                                   \
         *impl = *rhs.impl;                                              \
         return *this;                                                   \
     }                                                                   \
                                                                         \
-    /* Returns the size of the vector. */                               \
     ArrayName::size_type ArrayName::size() const                        \
     {                                                                   \
         return impl->size();                                            \
     }                                                                   \
                                                                         \
-    /* Tests if the vector is empty. */                                 \
     bool ArrayName::empty() const                                       \
     {                                                                   \
         return impl->empty();                                           \
     }                                                                   \
                                                                         \
-    /* Clears the vector. */                                            \
     void ArrayName::clear()                                             \
     {                                                                   \
         impl->clear();                                                  \
     }                                                                   \
                                                                         \
-    /* Reserves memory for a given number of elements. */               \
     void ArrayName::reserve(const size_type count)                      \
     {                                                                   \
         impl->reserve(count);                                           \
     }                                                                   \
                                                                         \
-    /* Specifies a new size for a vector. */                            \
     void ArrayName::resize(const size_type new_size)                    \
     {                                                                   \
         impl->resize(new_size);                                         \
     }                                                                   \
                                                                         \
-    /* Adds an element to the end of the vector. */                     \
     void ArrayName::push_back(const value_type& val)                    \
     {                                                                   \
         impl->push_back(val);                                           \
     }                                                                   \
                                                                         \
-    /* Returns the vector element at a specified position. */           \
     ArrayName::reference                                                \
     ArrayName::operator[](const size_type pos)                          \
     {                                                                   \
         return (*impl)[pos];                                            \
     }                                                                   \
+                                                                        \
     ArrayName::const_reference                                          \
     ArrayName::operator[](const size_type pos) const                    \
     {                                                                   \
@@ -208,8 +199,7 @@ namespace foundation
 
 
 //
-// Utility function to convert between an array and a std::vector.
-// Works both ways.
+// Utility function to convert between an array and a std::vector (works both ways).
 //
 
 template <typename U, typename V>
