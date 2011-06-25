@@ -50,6 +50,9 @@ using namespace std;
 namespace renderer
 {
 
+// If defined, draw each pixel with a shade of gray proportional to the number of samples it contains.
+#undef DEBUG_DISPLAY_SAMPLE_COUNT
+
 LocalAccumulationFramebuffer::LocalAccumulationFramebuffer(
     const size_t    width,
     const size_t    height)
@@ -148,12 +151,26 @@ void LocalAccumulationFramebuffer::develop_to_tile(
     {
         for (size_t x = 0; x < tile_width; ++x)
         {
+#ifdef DEBUG_DISPLAY_SAMPLE_COUNT
+
+            const AccumulationPixel* pixel =
+                reinterpret_cast<const AccumulationPixel*>(
+                    m_tile->pixel(origin_x + x, origin_y + y));
+
+            const float c = saturate(static_cast<float>(pixel->m_count) / 20.0f);
+
+            tile.set_pixel(x, y, Color4f(c, c, c, 1.0f));
+
+#else
+
             const Color4f color =
                 get_pixel(
                     origin_x + x,
                     origin_y + y);
 
             tile.set_pixel(x, y, color);
+
+#endif
         }
     }
 }
