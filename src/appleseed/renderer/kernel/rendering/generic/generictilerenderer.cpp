@@ -51,10 +51,6 @@
 using namespace foundation;
 using namespace std;
 
-// Define this symbol to break execution into the debugger
-// when a specific pixel is about to be rendered.
-// #define DEBUG_BREAK_AT_PIXEL Vector<size_t, 2>(0, 0)
-
 namespace renderer
 {
 
@@ -67,6 +63,10 @@ namespace
     //
     //   http://keithp.com/~keithp/porterduff/p253-porter.pdf
     //
+
+    // Define this symbol to break execution into the debugger
+    // when a specific pixel is about to be rendered.
+    // #define DEBUG_BREAK_AT_PIXEL Vector<size_t, 2>(0, 0)
 
     class GenericTileRenderer
       : public ITileRenderer
