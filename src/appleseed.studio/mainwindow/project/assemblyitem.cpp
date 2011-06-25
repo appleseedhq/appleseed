@@ -31,7 +31,6 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/collectionitem.h"
-#include "mainwindow/project/colorcollectionitem.h"
 #include "mainwindow/project/itemtypemap.h"
 #include "mainwindow/project/lightcollectionitem.h"
 #include "mainwindow/project/multimodelcollectionitem.h"
@@ -79,10 +78,10 @@ struct AssemblyItem::Impl
 {
     AssemblyItem*                               m_assembly_item;
     Scene&                                      m_scene;
-    ProjectBuilder&                             m_project_builder;
     Assembly&                                   m_assembly;
+    ProjectBuilder&                             m_project_builder;
 
-    ColorCollectionItem*                        m_color_collection_item;
+    CollectionItem<ColorEntity, Assembly>*      m_color_collection_item;
     TextureCollectionItem*                      m_texture_collection_item;
     TextureInstanceCollectionItem*              m_texture_instance_collection_item;
     CollectionItem<BSDF, Assembly>*             m_bsdf_collection_item;
@@ -103,7 +102,7 @@ struct AssemblyItem::Impl
       , m_assembly(assembly)
       , m_project_builder(project_builder)
     {
-        m_color_collection_item = add_collection_item(assembly.colors());
+        m_color_collection_item = add_single_model_collection_item<ColorEntity>(assembly.colors());
         m_texture_collection_item = add_collection_item(assembly.textures());
         m_texture_instance_collection_item = add_collection_item(assembly.texture_instances());
         m_bsdf_collection_item = add_multi_model_collection_item<BSDF>(assembly.bsdfs());

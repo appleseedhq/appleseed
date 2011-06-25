@@ -33,6 +33,9 @@
 #include "renderer/global/global.h"
 #include "renderer/modeling/entity/entitytraits.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
+
 // Forward declarations.
 namespace renderer  { class Environment; }
 
@@ -50,6 +53,11 @@ struct EntityTraits<Environment>
 
     static const char* get_entity_type_name()                   { return "environment"; }
     static const char* get_human_readable_entity_type_name()    { return "Environment"; }
+
+    static foundation::Dictionary get_entity_values(Environment* entity)
+    {
+        return entity->get_parameters();
+    }
 
     template <typename ParentEntity>
     static void insert_entity(

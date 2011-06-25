@@ -35,7 +35,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
-#include "foundation/utility/containers/array.h"
+#include "foundation/utility/containers/specializedarrays.h"
+
+// Forward declarations.
+namespace foundation    { class DictionaryArray; }
 
 namespace renderer
 {
@@ -44,7 +47,7 @@ namespace renderer
 // An array of color values.
 //
 
-DECLARE_ARRAY(ColorValueArray, float);
+typedef foundation::FloatArray ColorValueArray;
 
 
 //
@@ -85,6 +88,9 @@ class RENDERERDLL ColorEntity
     // Constructors.
     ColorEntity(
         const char*             name,
+        const ParamArray&       params);
+    ColorEntity(
+        const char*             name,
         const ParamArray&       params,
         const ColorValueArray&  values);
     ColorEntity(
@@ -97,6 +103,7 @@ class RENDERERDLL ColorEntity
     ~ColorEntity();
 
     void extract_parameters();
+    void extract_values();
     void check_validity();
 };
 
@@ -108,7 +115,13 @@ class RENDERERDLL ColorEntity
 class RENDERERDLL ColorEntityFactory
 {
   public:
+    // Return a set of widget definitions for this color entity model.
+    static foundation::DictionaryArray get_widget_definitions();
+
     // Create a new color entity.
+    static foundation::auto_release_ptr<ColorEntity> create(
+        const char*             name,
+        const ParamArray&       params);
     static foundation::auto_release_ptr<ColorEntity> create(
         const char*             name,
         const ParamArray&       params,

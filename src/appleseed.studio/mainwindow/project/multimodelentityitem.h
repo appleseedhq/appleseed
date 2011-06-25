@@ -104,7 +104,9 @@ void MultiModelEntityItem<Entity, ParentEntity>::slot_edit()
     std::auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
         new EntityBrowser<ParentEntity>(EntityItemType::m_parent));
 
-    foundation::Dictionary values = EntityItemType::m_entity->get_parameters();
+    foundation::Dictionary values =
+        EntityTraitsType::get_entity_values(EntityItemType::m_entity);
+
     values.insert(
         MultiModelEntityEditorFormFactoryType::ModelParameter,
         EntityItemType::m_entity->get_model());

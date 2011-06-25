@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SURFACESHADER_SURFACESHADERTRAITS_H
-#define APPLESEED_RENDERER_MODELING_SURFACESHADER_SURFACESHADERTRAITS_H
+#ifndef APPLESEED_RENDERER_MODELING_COLOR_COLORTRAITS_H
+#define APPLESEED_RENDERER_MODELING_COLOR_COLORTRAITS_H
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
@@ -38,37 +38,39 @@
 #include "foundation/utility/containers/dictionary.h"
 
 // Forward declarations.
-namespace renderer  { class SurfaceShader; }
-namespace renderer  { class SurfaceShaderFactoryRegistrar; }
+namespace renderer  { class ColorEntity; }
 
 namespace renderer
 {
 
 //
-// Surface shader entity traits.
+// Color entity traits.
 //
 
 template <>
-struct EntityTraits<SurfaceShader>
+struct EntityTraits<ColorEntity>
 {
-    typedef SurfaceShaderContainer ContainerType;
-    typedef SurfaceShaderFactoryRegistrar FactoryRegistrarType;
+    typedef ColorContainer ContainerType;
+    typedef ColorEntityFactory FactoryType;
 
-    static const char* get_entity_type_name()                           { return "surface_shader"; }
-    static const char* get_human_readable_entity_type_name()            { return "Surface Shader"; }
-    static const char* get_human_readable_collection_type_name()        { return "Surface Shaders"; }
+    static const char* get_entity_type_name()                           { return "color"; }
+    static const char* get_human_readable_entity_type_name()            { return "Color"; }
+    static const char* get_human_readable_collection_type_name()        { return "Colors"; }
 
     template <typename ParentEntity>
-    static ContainerType& get_entity_container(ParentEntity& parent)    { return parent.surface_shaders(); }
+    static ContainerType& get_entity_container(ParentEntity& parent)    { return parent.colors(); }
 
-    static foundation::Dictionary get_entity_values(SurfaceShader* entity)
+    static foundation::Dictionary get_entity_values(ColorEntity* entity)
     {
-        return entity->get_parameters();
+        foundation::Dictionary values = entity->get_parameters();
+        values.insert("color", entity->get_values());
+        values.insert("alpha", entity->get_alpha());
+        return values;
     }
 
     template <typename ParentEntity>
     static void insert_entity(
-        foundation::auto_release_ptr<SurfaceShader> entity,
+        foundation::auto_release_ptr<ColorEntity>   entity,
         ParentEntity&                               parent)
     {
         get_entity_container(parent).insert(entity);
@@ -76,7 +78,7 @@ struct EntityTraits<SurfaceShader>
 
     template <typename ParentEntity>
     static void remove_entity(
-        SurfaceShader*                              entity,
+        ColorEntity*                                entity,
         ParentEntity&                               parent)
     {
         get_entity_container(parent).remove(entity);
@@ -85,4 +87,4 @@ struct EntityTraits<SurfaceShader>
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_SURFACESHADER_SURFACESHADERTRAITS_H
+#endif  // !APPLESEED_RENDERER_MODELING_COLOR_COLORTRAITS_H

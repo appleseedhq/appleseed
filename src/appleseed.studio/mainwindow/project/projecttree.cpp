@@ -34,16 +34,15 @@
 #include "mainwindow/project/assemblyinstancecollectionitem.h"
 #include "mainwindow/project/cameraitem.h"
 #include "mainwindow/project/collectionitem.h"
-#include "mainwindow/project/colorcollectionitem.h"
 #include "mainwindow/project/environmentitem.h"
 #include "mainwindow/project/itemtypemap.h"
 #include "mainwindow/project/multimodelcollectionitem.h"
+#include "mainwindow/project/singlemodelcollectionitem.h"
 #include "mainwindow/project/texturecollectionitem.h"
 #include "mainwindow/project/textureinstancecollectionitem.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/camera.h"
-#include "renderer/api/color.h"
 #include "renderer/api/entity.h"
 #include "renderer/api/project.h"
 #include "renderer/api/texture.h"
@@ -55,6 +54,7 @@
 #include <QTreeWidget>
 
 // Forward declarations.
+namespace renderer  { class ColorEntity; }
 namespace renderer  { class Environment; }
 namespace renderer  { class EnvironmentEDF; }
 namespace renderer  { class EnvironmentShader; }
@@ -72,13 +72,72 @@ struct ProjectTree::Impl
 
     CameraItem*                                 m_camera_item;
     EnvironmentItem*                            m_environment_item;
-    ColorCollectionItem*                        m_color_collection_item;
+    CollectionItem<ColorEntity, Scene>*         m_color_collection_item;
     TextureCollectionItem*                      m_texture_collection_item;
     TextureInstanceCollectionItem*              m_texture_instance_collection_item;
     CollectionItem<EnvironmentEDF, Scene>*      m_environment_edf_collection_item;
     CollectionItem<EnvironmentShader, Scene>*   m_environment_shader_collection_item;
     AssemblyCollectionItem*                     m_assembly_collection_item;
     AssemblyInstanceCollectionItem*             m_assembly_instance_collection_item;
+
+    template <typename EntityContainer>
+    typename ItemTypeMap<EntityContainer>::T* add_collection_item(
+        Scene&              scene,
+        EntityContainer&    entities,
+        ProjectBuilder&     project_builder)
+    {
+        typedef typename ItemTypeMap<EntityContainer>::T ItemType;
+
+        ItemType* item =
+            new ItemType(
+                scene,
+                entities,
+                project_builder);
+
+        m_tree_widget->addTopLevelItem(item);
+
+        return item;
+    }
+
+    template <typename Entity, typename EntityContainer>
+    CollectionItem<Entity, Scene>* add_single_model_collection_item(
+        Scene&              scene,
+        EntityContainer&    entities,
+        ProjectBuilder&     project_builder)
+    {
+        CollectionItem<Entity, Scene>* item =
+            new SingleModelCollectionItem<Entity, Scene>(
+                new_guid(),
+                EntityTraits<Entity>::get_human_readable_collection_type_name(),
+                scene,
+                project_builder);
+
+        item->add_items(entities);
+
+        m_tree_widget->addTopLevelItem(item);
+
+        return item;
+    }
+
+    template <typename Entity, typename EntityContainer>
+    CollectionItem<Entity, Scene>* add_multi_model_collection_item(
+        Scene&              scene,
+        EntityContainer&    entities,
+        ProjectBuilder&     project_builder)
+    {
+        CollectionItem<Entity, Scene>* item =
+            new MultiModelCollectionItem<Entity, Scene>(
+                new_guid(),
+                EntityTraits<Entity>::get_human_readable_collection_type_name(),
+                scene,
+                project_builder);
+
+        item->add_items(entities);
+
+        m_tree_widget->addTopLevelItem(item);
+
+        return item;
+    }
 
     CameraItem* add_camera_item(
         Scene&              scene,
@@ -115,45 +174,6 @@ struct ProjectTree::Impl
 
         return item;
     }
-
-    template <typename EntityContainer>
-    typename ItemTypeMap<EntityContainer>::T* add_collection_item(
-        Scene&              scene,
-        EntityContainer&    entities,
-        ProjectBuilder&     project_builder)
-    {
-        typedef typename ItemTypeMap<EntityContainer>::T ItemType;
-
-        ItemType* item =
-            new ItemType(
-                scene,
-                entities,
-                project_builder);
-
-        m_tree_widget->addTopLevelItem(item);
-
-        return item;
-    }
-
-    template <typename Entity, typename EntityContainer>
-    CollectionItem<Entity, Scene>* add_multi_model_collection_item(
-        Scene&              scene,
-        EntityContainer&    entities,
-        ProjectBuilder&     project_builder)
-    {
-        CollectionItem<Entity, Scene>* item =
-            new MultiModelCollectionItem<Entity, Scene>(
-                new_guid(),
-                EntityTraits<Entity>::get_human_readable_collection_type_name(),
-                scene,
-                project_builder);
-
-        item->add_items(entities);
-
-        m_tree_widget->addTopLevelItem(item);
-
-        return item;
-    }
 };
 
 ProjectTree::ProjectTree(QTreeWidget* tree_widget)
@@ -184,7 +204,7 @@ void ProjectTree::initialize(Project& project, ProjectBuilder& project_builder)
             project_builder);
 
     impl->m_color_collection_item =
-        impl->add_collection_item(
+        impl->add_single_model_collection_item<ColorEntity>(
             scene,
             scene.colors(),
             project_builder);

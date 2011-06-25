@@ -32,18 +32,15 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/color/wavelengths.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/containers/dictionaryarray.h"
+
 using namespace foundation;
 using namespace std;
 
 namespace renderer
 {
-
-//
-// ColorValueArray class implementation.
-//
-
-DEFINE_ARRAY(ColorValueArray);
-
 
 //
 // ColorEntity class implementation.
@@ -77,6 +74,20 @@ namespace
 
 ColorEntity::ColorEntity(
     const char*             name,
+    const ParamArray&       params)
+  : Entity(g_class_uid, params)
+  , impl(new Impl())
+{
+    set_name(name);
+
+    extract_parameters();
+    extract_values();
+
+    check_validity();
+}
+
+ColorEntity::ColorEntity(
+    const char*             name,
     const ParamArray&       params,
     const ColorValueArray&  values)
   : Entity(g_class_uid, params)
@@ -84,10 +95,11 @@ ColorEntity::ColorEntity(
 {
     set_name(name);
 
+    extract_parameters();
+
     impl->m_values = values;
     impl->m_alpha.push_back(1.0f);
 
-    extract_parameters();
     check_validity();
 }
 
@@ -101,10 +113,11 @@ ColorEntity::ColorEntity(
 {
     set_name(name);
 
+    extract_parameters();
+
     impl->m_values = values;
     impl->m_alpha = alpha;
 
-    extract_parameters();
     check_validity();
 }
 
@@ -169,6 +182,19 @@ void ColorEntity::extract_parameters()
     impl->m_multiplier = m_params.get_optional<float>("multiplier", 1.0f);
 }
 
+void ColorEntity::extract_values()
+{
+    ColorValueArray black;
+    black.push_back(0.0f);
+
+    impl->m_values = m_params.get_required("color", black);
+
+    ColorValueArray opaque;
+    opaque.push_back(1.0f);
+
+    impl->m_alpha = m_params.get_optional("alpha", opaque);
+}
+
 void ColorEntity::check_validity()
 {
     // Check the number of color values.
@@ -226,6 +252,69 @@ float ColorEntity::get_multiplier() const
 //
 // ColorEntityFactory class implementation.
 //
+
+DictionaryArray ColorEntityFactory::get_widget_definitions()
+{
+    DictionaryArray definitions;
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "color_space")
+            .insert("label", "Color Space")
+            .insert("widget", "dropdown_list")
+            .insert("dropdown_items",
+                Dictionary()
+                    .insert("Linear RGB", "linear_rgb")
+                    .insert("sRGB", "srgb")
+                    .insert("CIE XYZ", "ciexyz")
+                    .insert("Spectral", "spectral"))
+            .insert("use", "required")
+            .insert("default", "linear_rgb")
+            .insert("on_change", "rebuild_form"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "wavelength_range")
+            .insert("label", "Wavelength Range")
+            .insert("widget", "text_box")
+            .insert("default", "400.0 700.0")
+            .insert("use", "optional"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "color")
+            .insert("label", "Color")
+            .insert("widget", "text_box")
+            .insert("default", "0.0 0.0 0.0")
+            .insert("use", "required"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "alpha")
+            .insert("label", "Alpha")
+            .insert("widget", "text_box")
+            .insert("default", "1.0 1.0 1.0")
+            .insert("use", "optional"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "multiplier")
+            .insert("label", "Multiplier")
+            .insert("widget", "text_box")
+            .insert("default", "1.0")
+            .insert("use", "optional"));
+
+    return definitions;
+}
+
+auto_release_ptr<ColorEntity> ColorEntityFactory::create(
+    const char*             name,
+    const ParamArray&       params)
+{
+    return
+        auto_release_ptr<ColorEntity>(
+            new ColorEntity(name, params));
+}
 
 auto_release_ptr<ColorEntity> ColorEntityFactory::create(
     const char*             name,

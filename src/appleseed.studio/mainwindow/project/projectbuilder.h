@@ -38,6 +38,7 @@
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
 #include "renderer/api/camera.h"
+#include "renderer/api/color.h"
 #include "renderer/api/edf.h"
 #include "renderer/api/entity.h"
 #include "renderer/api/environment.h"
@@ -287,13 +288,26 @@ foundation::auto_release_ptr<Entity> ProjectBuilder::create_entity(
 
     const FactoryRegistrarType& factory_registrar = get_factory_registrar<Entity>();
     const FactoryType* factory = factory_registrar.lookup(model.c_str());
-
     assert(factory);
+
     return factory->create(name.c_str(), clean_values);
 }
 
 template <>
-inline foundation::auto_release_ptr<renderer::Material> ProjectBuilder::create_entity(
+inline foundation::auto_release_ptr<renderer::ColorEntity> ProjectBuilder::create_entity(
+    renderer::Scene&                    scene,
+    const foundation::Dictionary&       values) const
+{
+    const std::string name = get_entity_name(values);
+
+    foundation::Dictionary clean_values(values);
+    clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter);
+
+    return renderer::ColorEntityFactory::create(name.c_str(), clean_values);
+}
+
+template <>
+inline foundation::auto_release_ptr<renderer::ColorEntity> ProjectBuilder::create_entity(
     renderer::Assembly&                 assembly,
     const foundation::Dictionary&       values) const
 {
@@ -302,7 +316,7 @@ inline foundation::auto_release_ptr<renderer::Material> ProjectBuilder::create_e
     foundation::Dictionary clean_values(values);
     clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter);
 
-    return renderer::MaterialFactory::create(name.c_str(), clean_values);
+    return renderer::ColorEntityFactory::create(name.c_str(), clean_values);
 }
 
 template <>
@@ -316,6 +330,19 @@ inline foundation::auto_release_ptr<renderer::Environment> ProjectBuilder::creat
     clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter);
 
     return renderer::EnvironmentFactory::create(name.c_str(), clean_values);
+}
+
+template <>
+inline foundation::auto_release_ptr<renderer::Material> ProjectBuilder::create_entity(
+    renderer::Assembly&                 assembly,
+    const foundation::Dictionary&       values) const
+{
+    const std::string name = get_entity_name(values);
+
+    foundation::Dictionary clean_values(values);
+    clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter);
+
+    return renderer::MaterialFactory::create(name.c_str(), clean_values);
 }
 
 template <typename Entity>

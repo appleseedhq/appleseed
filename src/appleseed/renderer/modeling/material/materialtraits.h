@@ -34,6 +34,9 @@
 #include "renderer/modeling/entity/entitytraits.h"
 #include "renderer/modeling/scene/containers.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
+
 // Forward declarations.
 namespace renderer  { class Material; }
 
@@ -56,6 +59,11 @@ struct EntityTraits<Material>
 
     template <typename ParentEntity>
     static ContainerType& get_entity_container(ParentEntity& parent)    { return parent.materials(); }
+
+    static foundation::Dictionary get_entity_values(Material* entity)
+    {
+        return entity->get_parameters();
+    }
 
     template <typename ParentEntity>
     static void insert_entity(

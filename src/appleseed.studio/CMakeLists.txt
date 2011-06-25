@@ -113,8 +113,6 @@ set(mainwindow_project_sources
     mainwindow/project/cameraitem.h
     mainwindow/project/collectionitem.h
     mainwindow/project/collectionitembase.h
-    mainwindow/project/colorcollectionitem.cpp
-    mainwindow/project/colorcollectionitem.h
     mainwindow/project/entitybrowser.cpp
     mainwindow/project/entitybrowser.h
     mainwindow/project/entitybrowserwindow.cpp

@@ -34,6 +34,9 @@
 #include "renderer/modeling/entity/entitytraits.h"
 #include "renderer/modeling/scene/containers.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
+
 // Forward declarations.
 namespace renderer  { class BSDF; }
 namespace renderer  { class BSDFFactoryRegistrar; }
@@ -57,6 +60,11 @@ struct EntityTraits<BSDF>
 
     template <typename ParentEntity>
     static ContainerType& get_entity_container(ParentEntity& parent)    { return parent.bsdfs(); }
+
+    static foundation::Dictionary get_entity_values(BSDF* entity)
+    {
+        return entity->get_parameters();
+    }
 
     template <typename ParentEntity>
     static void insert_entity(

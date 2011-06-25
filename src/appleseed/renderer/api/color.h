@@ -31,6 +31,7 @@
 
 // API headers.
 #include "renderer/modeling/color/colorentity.h"
+#include "renderer/modeling/color/colortraits.h"
 #include "renderer/modeling/color/wavelengths.h"
 
 #endif  // !APPLESEED_RENDERER_API_COLOR_H
