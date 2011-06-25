@@ -133,7 +133,7 @@ namespace
             mode = Diffuse;
         }
 
-        FORCE_INLINE virtual void evaluate(
+        FORCE_INLINE virtual bool evaluate(
             const void*         data,
             const bool          adjoint,
             const Vector3d&     geometric_normal,
@@ -148,12 +148,7 @@ namespace
             const double cos_in = dot(incoming, shading_normal);
             const double cos_on = dot(outgoing, shading_normal);
             if (cos_in <= 0.0 || cos_on <= 0.0)
-            {
-                value.set(0.0f);
-                if (probability)
-                    *probability = 0.0;
-                return;
-            }
+                return false;
 
             if (m_uniform_reflectance)
                 value = m_brdf_value;
@@ -166,6 +161,8 @@ namespace
 
             if (probability)
                 *probability = cos_in * RcpPi;
+
+            return true;
         }
 
         FORCE_INLINE virtual double evaluate_pdf(

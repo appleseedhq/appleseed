@@ -74,7 +74,7 @@ class NullBSDF
         mode = None;
     }
 
-    virtual void evaluate(
+    virtual bool evaluate(
         const void*                     data,
         const bool                      adjoint,
         const foundation::Vector3d&     geometric_normal,
@@ -84,10 +84,7 @@ class NullBSDF
         Spectrum&                       value,
         double*                         probability) const
     {
-        value.set(0.0f);
-
-        if (probability)
-            *probability = 0.0;
+        return false;
     }
 
     virtual double evaluate_pdf(

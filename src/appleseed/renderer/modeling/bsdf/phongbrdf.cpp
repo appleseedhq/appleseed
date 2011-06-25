@@ -89,7 +89,7 @@ namespace
             throw ExceptionNotImplemented();
         }
 
-        FORCE_INLINE virtual void evaluate(
+        FORCE_INLINE virtual bool evaluate(
             const void*         data,
             const bool          adjoint,
             const Vector3d&     geometric_normal,
@@ -100,6 +100,7 @@ namespace
             double*             probability) const
         {
             throw ExceptionNotImplemented();
+            return false;
         }
 
         FORCE_INLINE virtual double evaluate_pdf(

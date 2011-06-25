@@ -249,15 +249,18 @@ void compute_direct_lighting_light_sampling(
         // Evaluate the BSDF.
         Spectrum bsdf_value;
         double bsdf_prob;
-        bsdf.evaluate(
-            bsdf_data,
-            false,              // adjoint
-            geometric_normal,
-            shading_basis,
-            outgoing,
-            incoming,
-            bsdf_value,
-            &bsdf_prob);
+        const bool bsdf_defined =
+            bsdf.evaluate(
+                bsdf_data,
+                false,              // adjoint
+                geometric_normal,
+                shading_basis,
+                outgoing,
+                incoming,
+                bsdf_value,
+                &bsdf_prob);
+        if (!bsdf_defined)
+            continue;
 
         // Evaluate the input values of the EDF.
         InputEvaluator edf_input_evaluator(shading_context.get_texture_cache());
@@ -467,15 +470,18 @@ void compute_direct_lighting_single_sample(
         // Evaluate the BSDF.
         Spectrum bsdf_value;
         double bsdf_prob;
-        bsdf.evaluate(
-            bsdf_data,
-            false,              // adjoint
-            geometric_normal,
-            shading_basis,
-            outgoing,
-            incoming,
-            bsdf_value,
-            &bsdf_prob);
+        const bool bsdf_defined =
+            bsdf.evaluate(
+                bsdf_data,
+                false,              // adjoint
+                geometric_normal,
+                shading_basis,
+                outgoing,
+                incoming,
+                bsdf_value,
+                &bsdf_prob);
+        if (!bsdf_defined)
+            return;
 
         // Evaluate the input values of the EDF.
         InputEvaluator edf_input_evaluator(shading_context.get_texture_cache());

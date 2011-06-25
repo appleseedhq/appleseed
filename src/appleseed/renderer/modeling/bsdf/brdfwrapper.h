@@ -66,7 +66,7 @@ class BRDFWrapper
         double&                         probability,
         Mode&                           mode) const;
 
-    virtual void evaluate(
+    virtual bool evaluate(
         const void*                     data,
         const bool                      adjoint,
         const foundation::Vector3d&     geometric_normal,
@@ -156,7 +156,7 @@ void BRDFWrapper<BRDFImpl>::sample(
 }
 
 template <typename BRDFImpl>
-void BRDFWrapper<BRDFImpl>::evaluate(
+bool BRDFWrapper<BRDFImpl>::evaluate(
     const void*                         data,
     const bool                          adjoint,
     const foundation::Vector3d&         geometric_normal,
@@ -174,29 +174,27 @@ void BRDFWrapper<BRDFImpl>::evaluate(
     const foundation::Vector3d& shading_normal = shading_basis.get_normal();
     const double cos_ng = foundation::dot(shading_normal, geometric_normal);
     if (cos_ng <= 0.0)
-    {
-        value.set(0.0f);
-        return;
-    }
+        return false;
 
     // No reflection in or below the geometric surface.
     const double cos_ig = foundation::dot(incoming, geometric_normal);
     const double cos_og = foundation::dot(outgoing, geometric_normal);
     if (cos_ig <= 0.0 || cos_og <= 0.0)
-    {
-        value.set(0.0f);
-        return;
-    }
+        return false;
 
-    BRDFImpl::evaluate(
-        data,
-        adjoint,
-        geometric_normal,
-        shading_basis,
-        outgoing,
-        incoming,
-        value,
-        probability);
+    const bool defined =
+        BRDFImpl::evaluate(
+            data,
+            adjoint,
+            geometric_normal,
+            shading_basis,
+            outgoing,
+            incoming,
+            value,
+            probability);
+
+    if (!defined)
+        return false;
 
     assert(probability == 0 || *probability >= 0.0);
 
@@ -210,6 +208,8 @@ void BRDFWrapper<BRDFImpl>::evaluate(
         const double cos_in = std::abs(foundation::dot(incoming, shading_normal));
         value *= static_cast<float>(cos_in);
     }
+
+    return true;
 }
 
 template <typename BRDFImpl>

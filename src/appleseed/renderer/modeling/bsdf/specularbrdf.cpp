@@ -115,7 +115,7 @@ namespace
             mode = Specular;
         }
 
-        FORCE_INLINE virtual void evaluate(
+        FORCE_INLINE virtual bool evaluate(
             const void*         data,
             const bool          adjoint,
             const Vector3d&     geometric_normal,
@@ -125,10 +125,7 @@ namespace
             Spectrum&           value,
             double*             probability) const
         {
-            value.set(0.0f);
-
-            if (probability)
-                *probability = 0.0;
+            return false;
         }
 
         FORCE_INLINE virtual double evaluate_pdf(

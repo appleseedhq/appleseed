@@ -66,7 +66,7 @@ class BTDFWrapper
         double&                         probability,
         Mode&                           mode) const;
 
-    virtual void evaluate(
+    virtual bool evaluate(
         const void*                     data,
         const bool                      adjoint,
         const foundation::Vector3d&     geometric_normal,
@@ -140,7 +140,7 @@ void BTDFWrapper<BTDFImpl>::sample(
 }
 
 template <typename BTDFImpl>
-void BTDFWrapper<BTDFImpl>::evaluate(
+bool BTDFWrapper<BTDFImpl>::evaluate(
     const void*                         data,
     const bool                          adjoint,
     const foundation::Vector3d&         geometric_normal,
@@ -154,15 +154,19 @@ void BTDFWrapper<BTDFImpl>::evaluate(
     assert(foundation::is_normalized(outgoing));
     assert(foundation::is_normalized(incoming));
 
-    BTDFImpl::evaluate(
-        data,
-        adjoint,
-        geometric_normal,
-        shading_basis,
-        outgoing,
-        incoming,
-        value,
-        probability);
+    const bool defined =
+        BTDFImpl::evaluate(
+            data,
+            adjoint,
+            geometric_normal,
+            shading_basis,
+            outgoing,
+            incoming,
+            value,
+            probability);
+
+    if (!defined)
+        return false;
 
     assert(probability == 0 || *probability >= 0.0);
 
@@ -178,6 +182,8 @@ void BTDFWrapper<BTDFImpl>::evaluate(
         const double cos_in = std::abs(foundation::dot(incoming, shading_basis.get_normal()));
         value *= static_cast<float>(cos_in);
     }
+
+    return true;
 }
 
 template <typename BTDFImpl>

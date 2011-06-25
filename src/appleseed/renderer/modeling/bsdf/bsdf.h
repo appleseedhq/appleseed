@@ -106,7 +106,10 @@ class RENDERERDLL BSDF
         Mode&                       mode) const = 0;            // scattering mode
 
     // Evaluate the BSDF for a given pair of directions.
-    virtual void evaluate(
+    // Return true if the BSDF is defined for the given pair of directions,
+    // false otherwise. If false is returned, the BSDF and PDF values
+    // returned by this function are undefined.
+    virtual bool evaluate(
         const void*                 data,                       // input values
         const bool                  adjoint,                    // use the adjoint scattering kernel if true
         const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length

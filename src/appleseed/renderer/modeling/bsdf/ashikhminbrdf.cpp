@@ -293,7 +293,7 @@ namespace
             value /= static_cast<float>(probability);
         }
 
-        FORCE_INLINE virtual void evaluate(
+        FORCE_INLINE virtual bool evaluate(
             const void*         data,
             const bool          adjoint,
             const Vector3d&     geometric_normal,
@@ -309,24 +309,14 @@ namespace
             const double cos_in = dot(incoming, shading_normal);
             const double cos_on = dot(outgoing, shading_normal);
             if (cos_in <= 0.0 || cos_on <= 0.0)
-            {
-                value.set(0.0f);
-                if (probability)
-                    *probability = 0.0;
-                return;
-            }
+                return false;
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
             // Compute (or retrieve precomputed) reflectance-related values.
             RVal rval;
             if (!get_rval(rval, values))
-            {
-                value.set(0.0f);
-                if (probability)
-                    *probability = 0.0;
-                return;
-            }
+                return false;
 
             // Compute (or retrieve precomputed) shininess-related values.
             SVal sval;
@@ -378,6 +368,8 @@ namespace
                 // end up being zero if cos_hn is small and exp is very high).
                 *probability = rval.m_pd * pdf_diffuse + rval.m_pg * pdf_glossy;
             }
+
+            return true;
         }
 
         FORCE_INLINE virtual double evaluate_pdf(
