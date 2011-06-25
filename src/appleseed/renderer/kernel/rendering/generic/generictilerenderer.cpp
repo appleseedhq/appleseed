@@ -53,7 +53,7 @@ using namespace std;
 
 // Define this symbol to break execution into the debugger
 // when a specific pixel is about to be rendered.
-// #define RENDERER_PIXEL_BREAKPOINT Vector<size_t, 2>(0, 0)
+// #define DEBUG_BREAK_AT_PIXEL Vector<size_t, 2>(0, 0)
 
 namespace renderer
 {
@@ -178,13 +178,13 @@ namespace
                     }
                 }
 
-#ifdef RENDERER_PIXEL_BREAKPOINT
+#ifdef DEBUG_BREAK_AT_PIXEL
 
                 // Break in the debugger when this pixel is reached.
-                if (Vector<size_t, 2>(ix, iy) == RENDERER_PIXEL_BREAKPOINT)
+                if (Vector<size_t, 2>(ix, iy) == DEBUG_BREAK_AT_PIXEL)
                     BREAKPOINT();
 
-#endif  // RENDERER_PIXEL_BREAKPOINT
+#endif
 
                 // Initialize the pixel color.
                 Color4f pixel_color(0.0f);

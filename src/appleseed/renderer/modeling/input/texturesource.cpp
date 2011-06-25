@@ -48,8 +48,8 @@ namespace renderer
 // TextureSource class implementation.
 //
 
-// If defined, render each tile with a solid, unique color.
-#undef RENDERER_DISPLAY_TEXTURE_TILES
+// If defined, render each tile with a unique, solid color.
+#undef DEBUG_DISPLAY_TEXTURE_TILES
 
 namespace
 {
@@ -200,7 +200,7 @@ Color4f TextureSource::get_texel(
     assert(tile_x < m_texture_props.m_tile_count_x);
     assert(tile_y < m_texture_props.m_tile_count_y);
 
-#ifdef RENDERER_DISPLAY_TEXTURE_TILES
+#ifdef DEBUG_DISPLAY_TEXTURE_TILES
 
     return
         integer_to_color(
