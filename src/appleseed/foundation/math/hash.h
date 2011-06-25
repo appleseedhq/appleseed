@@ -81,7 +81,6 @@ uint32 mix32(
 // Integer hash functions implementation.
 //
 
-// Hash a 32-bit integer to a 32-bit integer.
 inline uint32 hashint32(uint32 key)
 {
     key = ~key + (key << 15);                   // key = (key << 15) - key - 1;
@@ -92,7 +91,8 @@ inline uint32 hashint32(uint32 key)
     key = key ^ (key >> 16);
     return key;
 }
-inline uint32 hashint32alt(uint32 key)          // same as hashint32(), alternative algorithm
+
+inline uint32 hashint32alt(uint32 key)
 {
     key = (key ^ 61) ^ (key >> 16);
     key = key + (key << 3);
@@ -102,7 +102,6 @@ inline uint32 hashint32alt(uint32 key)          // same as hashint32(), alternat
     return key;
 }
 
-// Hash a 64-bit integer to a 64-bit integer.
 inline uint64 hashint64(uint64 key)
 {
     key = (~key) + (key << 21);                 // key = (key << 21) - key - 1;
@@ -115,7 +114,6 @@ inline uint64 hashint64(uint64 key)
     return key;
 }
 
-// Hash a 64-bit integer to a 32-bit integer.
 inline uint32 hashint64to32(uint64 key)
 {
     key = (~key) + (key << 18);                 // key = (key << 18) - key - 1;
@@ -127,7 +125,6 @@ inline uint32 hashint64to32(uint64 key)
     return static_cast<uint32>(key);
 }
 
-// Mix multiple 32-bit integers into one 32-bit integer.
 inline uint32 mix32(
     const uint32 a,
     const uint32 b)
@@ -136,6 +133,7 @@ inline uint32 mix32(
     const uint32 h1 = h0 + b;                   // h1 = h( a ) + b
     return h1;
 }
+
 inline uint32 mix32(
     const uint32 a,
     const uint32 b,
@@ -146,6 +144,7 @@ inline uint32 mix32(
     const uint32 h2 = h1 + c;                   // h2 = h( b + h( a ) ) + c
     return h2;
 }
+
 inline uint32 mix32(
     const uint32 a,
     const uint32 b,

@@ -700,7 +700,7 @@ std::string format_cache_stats(const Cache& cache);
 // SACache class implementation.
 //
 
-#define FOUNDATION_SACACHE_TEMPLATE_DEF(ReturnType)     \
+#define FOUNDATION_SACACHE_TEMPLATE_DEF(MiddleDecl)     \
     template <                                          \
         typename    Key,                                \
         typename    KeyHasher,                          \
@@ -709,7 +709,7 @@ std::string format_cache_stats(const Cache& cache);
         size_t      Lines_,                             \
         size_t      Ways_                               \
     >                                                   \
-    ReturnType                                          \
+    MiddleDecl                                          \
     SACache<                                            \
         Key,                                            \
         KeyHasher,                                      \
@@ -719,7 +719,6 @@ std::string format_cache_stats(const Cache& cache);
         Ways_                                           \
     >::
 
-// Constructor.
 FOUNDATION_SACACHE_TEMPLATE_DEF(FOUNDATION_EMPTY)
 SACache(
     KeyHasherType&      key_hasher,
@@ -732,7 +731,6 @@ SACache(
     clear();
 }
 
-// Clear the cache.
 FOUNDATION_SACACHE_TEMPLATE_DEF(void)
 clear()
 {
@@ -740,7 +738,6 @@ clear()
         m_lines[i].invalidate(m_invalid_key);
 }
 
-// Get an element from the cache.
 FOUNDATION_SACACHE_TEMPLATE_DEF(inline Element&)
 get(const KeyType& key)
 {
@@ -779,7 +776,6 @@ get(const KeyType& key)
     return entry->m_element;
 }
 
-// Invalidate a cache entry.
 FOUNDATION_SACACHE_TEMPLATE_DEF(inline void)
 invalidate(const KeyType& key)
 {
@@ -800,25 +796,14 @@ invalidate(const KeyType& key)
     }
 }
 
-// Return the size (in bytes) of this object in memory.
 FOUNDATION_SACACHE_TEMPLATE_DEF(inline size_t)
 get_memory_size() const
 {
     return sizeof(*this);
 }
 
-// Check the integrity of the cache.  For debug only.
-template <
-    typename    Key,
-    typename    KeyHasher,
-    typename    Element,
-    typename    ElementSwapper,
-    size_t      Lines_,
-    size_t      Ways_
->
-template <typename IntegrityChecker>
-void SACache<Key, KeyHasher, Element, ElementSwapper, Lines_, Ways_>::
-    check_integrity(IntegrityChecker& checker) const
+FOUNDATION_SACACHE_TEMPLATE_DEF(template <typename IntegrityChecker> void)
+check_integrity(IntegrityChecker& checker) const
 {
     for (size_t i = 0; i < Lines; ++i)
         m_lines[i].check_integrity(checker);
@@ -831,20 +816,19 @@ void SACache<Key, KeyHasher, Element, ElementSwapper, Lines_, Ways_>::
 // LRUCache class implementation.
 //
 
-#define FOUNDATION_LRUCACHE_TEMPLATE_DEF(ReturnType)    \
+#define FOUNDATION_LRUCACHE_TEMPLATE_DEF(MiddleDecl)    \
     template <                                          \
         typename    Key,                                \
         typename    Element,                            \
         typename    ElementSwapper                      \
     >                                                   \
-    ReturnType                                          \
+    MiddleDecl                                          \
     LRUCache<                                           \
         Key,                                            \
         Element,                                        \
         ElementSwapper                                  \
     >::
 
-// Constructor.
 FOUNDATION_LRUCACHE_TEMPLATE_DEF(FOUNDATION_EMPTY)
 LRUCache(ElementSwapperType& element_swapper)
   : m_element_swapper(element_swapper)
@@ -852,7 +836,6 @@ LRUCache(ElementSwapperType& element_swapper)
     clear();
 }
 
-// Clear the cache.
 FOUNDATION_LRUCACHE_TEMPLATE_DEF(void)
 clear()
 {
@@ -862,7 +845,6 @@ clear()
     m_memory_size = 0;
 }
 
-// Get an element from the cache.
 FOUNDATION_LRUCACHE_TEMPLATE_DEF(inline Element&)
 get(const KeyType& key)
 {
@@ -948,7 +930,6 @@ get(const KeyType& key)
     }
 }
 
-// Return the size (in bytes) of this object in memory.
 FOUNDATION_LRUCACHE_TEMPLATE_DEF(inline size_t)
 get_memory_size() const
 {
@@ -957,19 +938,12 @@ get_memory_size() const
         + sizeof(Line) * m_lines.capacity()
         + sizeof(KeyType) * m_index.size()
         + sizeof(IndexEntry*) * m_index.size()
-        + sizeof(size_t) * m_lines.size()           // m_queue.size() == m_lines.size()
+        + sizeof(size_t) * m_lines.size()               // m_queue.size() == m_lines.size()
         + m_memory_size;
 }
 
-// Check the integrity of the cache.  For debug only.
-template <
-    typename    Key,
-    typename    Element,
-    typename    ElementSwapper
->
-template <typename IntegrityChecker>
-void LRUCache<Key, Element, ElementSwapper>::
-    check_integrity(IntegrityChecker& checker) const
+FOUNDATION_LRUCACHE_TEMPLATE_DEF(template <typename IntegrityChecker> void)
+check_integrity(IntegrityChecker& checker) const
 {
     for (size_t i = 0; i < m_lines.size(); ++i)
         checker(m_lines[i].m_key, m_lines[i].m_element);
@@ -982,7 +956,7 @@ void LRUCache<Key, Element, ElementSwapper>::
 // DualStageCache class implementation.
 //
 
-#define FOUNDATION_DSCACHE_TEMPLATE_DEF(ReturnType)     \
+#define FOUNDATION_DSCACHE_TEMPLATE_DEF(MiddleDecl)     \
     template <                                          \
         typename    Key,                                \
         typename    KeyHasher,                          \
@@ -991,7 +965,7 @@ void LRUCache<Key, Element, ElementSwapper>::
         size_t      Lines_,                             \
         size_t      Ways_                               \
     >                                                   \
-    ReturnType                                          \
+    MiddleDecl                                          \
     DualStageCache<                                     \
         Key,                                            \
         KeyHasher,                                      \
@@ -1001,7 +975,6 @@ void LRUCache<Key, Element, ElementSwapper>::
         Ways_                                           \
     >::
 
-// Constructor.
 FOUNDATION_DSCACHE_TEMPLATE_DEF(FOUNDATION_EMPTY)
 DualStageCache(
     KeyHasherType&      key_hasher,
@@ -1014,7 +987,6 @@ DualStageCache(
 {
 }
 
-// Clear the cache.
 FOUNDATION_DSCACHE_TEMPLATE_DEF(void)
 clear()
 {
@@ -1022,14 +994,12 @@ clear()
     m_s1_cache.clear();
 }
 
-// Get an element from the cache.
 FOUNDATION_DSCACHE_TEMPLATE_DEF(inline Element&)
 get(const KeyType& key)
 {
     return m_s0_cache.get(key);
 }
 
-// Return the size (in bytes) of this object in memory.
 FOUNDATION_DSCACHE_TEMPLATE_DEF(inline size_t)
 get_memory_size() const
 {
@@ -1039,7 +1009,6 @@ get_memory_size() const
         + m_s1_cache.get_memory_size();
 }
 
-// Reset the cache performance statistics.
 FOUNDATION_DSCACHE_TEMPLATE_DEF(inline void)
 clear_statistics()
 {
@@ -1047,42 +1016,32 @@ clear_statistics()
     m_s1_cache.clear_statistics();
 }
 
-// Return the number of cache hits/misses in stage-0.
 FOUNDATION_DSCACHE_TEMPLATE_DEF(inline uint64)
 get_stage0_hit_count() const
 {
     return m_s0_cache.get_hit_count();
 }
+
 FOUNDATION_DSCACHE_TEMPLATE_DEF(inline uint64)
 get_stage0_miss_count() const
 {
     return m_s0_cache.get_miss_count();
 }
 
-// Return the number of cache hits/misses in stage-1.
 FOUNDATION_DSCACHE_TEMPLATE_DEF(inline uint64)
 get_stage1_hit_count() const
 {
     return m_s1_cache.get_hit_count();
 }
+
 FOUNDATION_DSCACHE_TEMPLATE_DEF(inline uint64)
 get_stage1_miss_count() const
 {
     return m_s1_cache.get_miss_count();
 }
 
-// Check the integrity of the cache.  For debug only.
-template <
-    typename    Key,
-    typename    KeyHasher,
-    typename    Element,
-    typename    ElementSwapper,
-    size_t      Lines_,
-    size_t      Ways_
->
-template <typename IntegrityChecker>
-void DualStageCache<Key, KeyHasher, Element, ElementSwapper, Lines_, Ways_>::
-    check_integrity(IntegrityChecker& checker) const
+FOUNDATION_DSCACHE_TEMPLATE_DEF(template <typename IntegrityChecker> void)
+check_integrity(IntegrityChecker& checker) const
 {
     m_s0_cache.check_integrity(checker);
     m_s1_cache.check_integrity(checker);
@@ -1095,21 +1054,18 @@ void DualStageCache<Key, KeyHasher, Element, ElementSwapper, Lines_, Ways_>::
 // Utility functions implementation.
 //
 
-// Return the total number of accesses to a given cache.
 template <typename Cache>
 uint64 get_access_count(const Cache& cache)
 {
     return cache.get_hit_count() + cache.get_miss_count();
 }
 
-// Return the hit rate of a given cache.
 template <typename Cache>
 double get_hit_rate(const Cache& cache)
 {
     return static_cast<double>(cache.get_hit_count()) / get_access_count(cache);
 }
 
-// Format cache performance statistics into a string.
 inline std::string format_cache_stats(const uint64 hits, const uint64 misses)
 {
     const uint64 accesses = hits + misses;
@@ -1126,7 +1082,6 @@ inline std::string format_cache_stats(const uint64 hits, const uint64 misses)
     }
 }
 
-// Format performance statistics of a given cache into a string.
 template <typename Cache>
 std::string format_cache_stats(const Cache& cache)
 {

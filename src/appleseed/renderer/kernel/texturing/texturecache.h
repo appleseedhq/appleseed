@@ -135,7 +135,6 @@ class TextureCache
 //  TextureCache class implementation.
 //
 
-// Get a tile from the cache.
 inline foundation::Tile& TextureCache::get(
     const foundation::UniqueID      assembly_uid,
     const size_t                    texture_index,
@@ -160,7 +159,6 @@ inline foundation::Tile& TextureCache::get(
 // TextureCache::TileKey class implementation.
 //
 
-// Return an invalid key.
 inline TextureCache::TileKey TextureCache::TileKey::invalid()
 {
     TileKey key;
@@ -171,7 +169,6 @@ inline TextureCache::TileKey TextureCache::TileKey::invalid()
     return key;
 }
 
-// Comparison operators.
 inline bool TextureCache::TileKey::operator==(const TileKey& rhs) const
 {
     return
@@ -180,6 +177,7 @@ inline bool TextureCache::TileKey::operator==(const TileKey& rhs) const
         m_tile_x == rhs.m_tile_x &&
         m_tile_y == rhs.m_tile_y;
 }
+
 inline bool TextureCache::TileKey::operator<(const TileKey& rhs) const
 {
     return
@@ -197,7 +195,6 @@ inline bool TextureCache::TileKey::operator<(const TileKey& rhs) const
 // TextureCache::TileKeyHasher class implementation.
 //
 
-// Hash a key into an integer.
 inline size_t TextureCache::TileKeyHasher::operator()(const TileKey& key) const
 {
     return foundation::mix32(
