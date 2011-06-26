@@ -65,6 +65,14 @@ class TextureCache
         const size_t                tile_x,
         const size_t                tile_y);
 
+    // Return the number of cache hits/misses in stage-0.
+    foundation::uint64 get_stage0_hit_count() const;
+    foundation::uint64 get_stage0_miss_count() const;
+
+    // Return the number of cache hits/misses in stage-1.
+    foundation::uint64 get_stage1_hit_count() const;
+    foundation::uint64 get_stage1_miss_count() const;
+
   private:
     struct TileKey
     {
@@ -125,9 +133,9 @@ class TextureCache
         2               // number of ways
     > TileCache;
 
-    TileKeyHasher   m_tile_key_hasher;
-    TileSwapper     m_tile_swapper;
-    TileCache       m_tile_cache;
+    TileKeyHasher       m_tile_key_hasher;
+    TileSwapper         m_tile_swapper;
+    TileCache           m_tile_cache;
 };
 
 
@@ -151,7 +159,28 @@ inline foundation::Tile& TextureCache::get(
     // Lookup the tile cache.
     TilePtr tile = m_tile_cache.get(key);
     assert(tile);
+
     return *tile;
+}
+
+inline foundation::uint64 TextureCache::get_stage0_hit_count() const
+{
+    return m_tile_cache.get_stage0_hit_count();
+}
+
+inline foundation::uint64 TextureCache::get_stage0_miss_count() const
+{
+    return m_tile_cache.get_stage0_miss_count();
+}
+
+inline foundation::uint64 TextureCache::get_stage1_hit_count() const
+{
+    return m_tile_cache.get_stage1_hit_count();
+}
+
+inline foundation::uint64 TextureCache::get_stage1_miss_count() const
+{
+    return m_tile_cache.get_stage1_miss_count();
 }
 
 

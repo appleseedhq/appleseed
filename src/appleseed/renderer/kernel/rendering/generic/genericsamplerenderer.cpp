@@ -55,6 +55,11 @@ namespace
     // Generic sample renderer.
     //
 
+    // If defined, the texture cache returns solid tiles whose color depends on whether
+    // the requested tile could be found in the cache or not, and if it was found, at
+    // which level it was found.
+    #undef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCES
+
     class GenericSampleRenderer
       : public ISampleRenderer
     {
@@ -91,6 +96,14 @@ namespace
             const Vector2d&         image_point,        // point in image plane, in NDC
             ShadingResult&          shading_result)
         {
+#ifdef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCES
+
+            const uint64 initial_texcache_s0_hit_count = m_texture_cache.get_stage0_hit_count();
+            const uint64 initial_texcache_s1_hit_count = m_texture_cache.get_stage1_hit_count();
+            const uint64 initial_texcache_s1_miss_count = m_texture_cache.get_stage1_miss_count();
+
+#endif
+
             // Construct a shading context.
             ShadingContext shading_context(
                 m_intersector,
@@ -157,6 +170,41 @@ namespace
                 primary_ray.m_org = shading_point_ptr->get_point();
                 primary_ray.m_tmax = numeric_limits<double>::max();
             }
+
+#ifdef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCES
+
+            const Vector<uint64, 3> texcache_stats(
+                m_texture_cache.get_stage0_hit_count() - initial_texcache_s0_hit_count,
+                m_texture_cache.get_stage1_hit_count() - initial_texcache_s1_hit_count,
+                m_texture_cache.get_stage1_miss_count() - initial_texcache_s1_miss_count);
+
+            if (texcache_stats == Vector<uint64, 3>(0, 0, 0))
+            {
+                // In black: no access to the texture cache.
+                shading_result.set_to_linear_rgba(Color4f(0.0f, 0.0f, 0.0f, 1.0f));
+            }
+            else
+            {
+                switch (max_index(texcache_stats))
+                {
+                  // In green: a majority of stage-0 cache hits.
+                  case 0:
+                    shading_result.set_to_linear_rgba(Color4f(0.0f, 1.0f, 0.0f, 1.0f));
+                    break;
+
+                  // In blue: a majority of stage-0 cache misses and stage-1 cache hits.
+                  case 1:
+                    shading_result.set_to_linear_rgba(Color4f(0.0f, 0.0f, 1.0f, 1.0f));
+                    break;
+
+                  // In red: a majority of stage-0 and stage-1 cache misses.
+                  case 2:
+                    shading_result.set_to_linear_rgba(Color4f(1.0f, 0.0f, 0.0f, 1.0f));
+                    break;
+                }
+            }
+
+#endif
         }
 
       private:
