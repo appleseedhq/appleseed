@@ -59,3 +59,11 @@ TEST_SUITE(Foundation_Image_Color)
         EXPECT_FEQ(2.5, average_value(Color4d(1.0, 2.0, 3.0, 4.0)));
     }
 }
+
+TEST_SUITE(Foundation_Image_Color4)
+{
+    TEST_CASE(Constructor_GivenColor3AndSeparateAlpha)
+    {
+        EXPECT_EQ(Color4d(1.0, 2.0, 3.0, 4.0), Color4d(Color3d(1.0, 2.0, 3.0), 4.0));
+    }
+}

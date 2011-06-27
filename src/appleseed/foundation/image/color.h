@@ -181,11 +181,14 @@ class Color<T, 4>
     Color();                                    // leave all components uninitialized
     explicit Color(const ValueType* rhs);       // initialize with array of 4 scalars
     explicit Color(const ValueType val);        // set all components to 'val'
+    Color(
+        const Color<T, 3>&  rgb,
+        const ValueType     a);
     Color(                                      // set individual components
-        const ValueType r,
-        const ValueType g,
-        const ValueType b,
-        const ValueType a);
+        const ValueType     r,
+        const ValueType     g,
+        const ValueType     b,
+        const ValueType     a);
 
     // Construct a color from another color of a different type.
     template <typename U>
@@ -703,10 +706,21 @@ inline Color<T, 4>::Color(const ValueType val)
 
 template <typename T>
 inline Color<T, 4>::Color(
-    const ValueType r_,
-    const ValueType g_,
-    const ValueType b_,
-    const ValueType a_)
+    const Color<T, 3>&  rgb,
+    const ValueType     a_)
+  : r(rgb.r)
+  , g(rgb.g)
+  , b(rgb.b)
+  , a(a_)
+{
+}
+
+template <typename T>
+inline Color<T, 4>::Color(
+    const ValueType     r_,
+    const ValueType     g_,
+    const ValueType     b_,
+    const ValueType     a_)
   : r(r_)
   , g(g_)
   , b(b_)
