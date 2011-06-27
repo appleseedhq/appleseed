@@ -159,16 +159,7 @@ namespace
                 break;
             }
 
-            // Set the color space to linear RGB.
-            shading_result.m_color_space = ColorSpaceLinearRGB;
-
-            // Set the alpha channel.
-            shading_result.m_alpha = Alpha(volume_opacity);
-
-            // Set the color channels.
-            shading_result.m_color[0] = volume_color[0];
-            shading_result.m_color[1] = volume_color[1];
-            shading_result.m_color[2] = volume_color[2];
+            shading_result.set_to_linear_rgba(Color4f(volume_color, volume_opacity));
         }
 
       private:

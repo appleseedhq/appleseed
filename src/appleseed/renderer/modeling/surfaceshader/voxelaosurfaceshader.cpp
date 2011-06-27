@@ -142,12 +142,6 @@ namespace
             assert(m_voxel_tree.get());
             assert(m_voxel_tree_intersector.get());
 
-            // Set color space to linear RGB.
-            shading_result.m_color_space = ColorSpaceLinearRGB;
-
-            // Set alpha channel to full opacity.
-            shading_result.m_alpha = Alpha(1.0);
-
             const Vector3d& geometric_normal = shading_point.get_geometric_normal();
             Vector3d safe_origin = shading_point.get_point();
 
@@ -201,9 +195,7 @@ namespace
 
                 if (m_enable_diagnostics)
                 {
-                    shading_result.m_color[0] = 0.0f;
-                    shading_result.m_color[1] = 0.0f;
-                    shading_result.m_color[2] = 1.0f;
+                    shading_result.set_to_linear_rgb(Color3f(0.0f, 0.0f, 1.0f));
                     return;
                 }
             }
@@ -227,9 +219,7 @@ namespace
 
                 if (m_enable_diagnostics)
                 {
-                    shading_result.m_color[0] = 1.0f;
-                    shading_result.m_color[1] = 1.0f;
-                    shading_result.m_color[2] = 0.0f;
+                    shading_result.set_to_linear_rgb(Color3f(1.0f, 1.0f, 0.0f));
                     return;
                 }
             }
@@ -275,18 +265,18 @@ namespace
 
                 if (m_enable_diagnostics)
                 {
-                    shading_result.m_color[0] = 1.0f - static_cast<float>(k);
-                    shading_result.m_color[1] = 0.0f;
-                    shading_result.m_color[2] = static_cast<float>(k);
+                    shading_result.set_to_linear_rgb(
+                        Color3f(
+                            1.0f - static_cast<float>(k),
+                            0.0f,
+                            static_cast<float>(k)));
                     return;
                 }
             }
 
             // Return a gray scale value proportional to the accessibility.
             const float accessibility = static_cast<float>(1.0 - occlusion);
-            shading_result.m_color[0] = accessibility;
-            shading_result.m_color[1] = accessibility;
-            shading_result.m_color[2] = accessibility;
+            shading_result.set_to_linear_rgb(Color3f(accessibility));
         }
 
       private:

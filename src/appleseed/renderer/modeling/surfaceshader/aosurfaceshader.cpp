@@ -85,12 +85,6 @@ namespace
             const ShadingPoint&     shading_point,
             ShadingResult&          shading_result) const
         {
-            // Set color space to linear RGB.
-            shading_result.m_color_space = ColorSpaceLinearRGB;
-
-            // Set alpha channel to full opacity.
-            shading_result.m_alpha = Alpha(1.0);
-
             // Compute ambient occlusion.
             const double occlusion =
                 compute_ambient_occlusion(
@@ -105,9 +99,7 @@ namespace
 
             // Return a gray scale value proportional to the accessibility.
             const float accessibility = static_cast<float>(1.0 - occlusion);
-            shading_result.m_color[0] = accessibility;
-            shading_result.m_color[1] = accessibility;
-            shading_result.m_color[2] = accessibility;
+            shading_result.set_to_linear_rgb(Color3f(accessibility));
         }
 
       private:

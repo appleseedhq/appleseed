@@ -57,20 +57,21 @@ namespace renderer
 namespace
 {
     // Utility function to compute a color from a given normal vector.
-    inline void normal_to_color(const Vector3d& n, Spectrum& output)
+    inline Color3f normal_to_color(const Vector3d& n)
     {
         assert(abs(n[0]) <= 1.0);
         assert(abs(n[1]) <= 1.0);
         assert(abs(n[2]) <= 1.0);
 
-        output[0] = static_cast<float>((n[0] + 1.0) * 0.5);
-        output[1] = static_cast<float>((n[1] + 1.0) * 0.5);
-        output[2] = static_cast<float>((n[2] + 1.0) * 0.5);
+        return Color3f(
+            static_cast<float>((n[0] + 1.0) * 0.5),
+            static_cast<float>((n[1] + 1.0) * 0.5),
+            static_cast<float>((n[2] + 1.0) * 0.5));
     }
 
     // Utility function to compute a color from a given integer value.
     template <typename T>
-    inline void integer_to_color(const T i, Spectrum& output)
+    inline Color3f integer_to_color(const T i)
     {
         const uint32 u = static_cast<uint32>(i);    // keep the low 32 bits
 
@@ -78,9 +79,10 @@ namespace
         const uint32 y = hashint32(u + 1);
         const uint32 z = hashint32(u + 2);
 
-        output[0] = static_cast<float>(x) * (1.0f / 4294967295.0f);
-        output[1] = static_cast<float>(y) * (1.0f / 4294967295.0f);
-        output[2] = static_cast<float>(z) * (1.0f / 4294967295.0f);
+        return Color3f(
+            static_cast<float>(x) * (1.0f / 4294967295.0f),
+            static_cast<float>(y) * (1.0f / 4294967295.0f),
+            static_cast<float>(z) * (1.0f / 4294967295.0f));
     }
 }
 
@@ -156,28 +158,22 @@ void DiagnosticSurfaceShader::evaluate(
     const ShadingPoint&     shading_point,
     ShadingResult&          shading_result) const
 {
-    // Set color space to linear RGB.
-    shading_result.m_color_space = ColorSpaceLinearRGB;
-
     switch (impl->m_shading_mode)
     {
       // Shade according to pixel coverage
       case Coverage:
-        shading_result.m_color[0] = 1.0f;
-        shading_result.m_color[1] = 1.0f;
-        shading_result.m_color[2] = 1.0f;
-        shading_result.m_alpha = Alpha(1.0);
+        shading_result.set_to_linear_rgb(Color3f(1.0f));
         break;
 
       // Shade according to barycentric coordinates.
       case Barycentric:
         {
             const Vector2d& bary = shading_point.get_bary();
-            const double w = 1.0 - bary[0] - bary[1];
-            shading_result.m_color[0] = static_cast<float>(w);
-            shading_result.m_color[1] = static_cast<float>(bary[0]);
-            shading_result.m_color[2] = static_cast<float>(bary[1]);
-            shading_result.m_alpha = Alpha(1.0);
+            shading_result.set_to_linear_rgb(
+                Color3f(
+                    static_cast<float>(1.0 - bary[0] - bary[1]),
+                    static_cast<float>(bary[0]),
+                    static_cast<float>(bary[1])));
         }
         break;
 
@@ -185,71 +181,65 @@ void DiagnosticSurfaceShader::evaluate(
       case UV:
         {
             const Vector2d& uv0 = shading_point.get_uv(0);
-            const double w = 1.0 - uv0[0] - uv0[1];
-            shading_result.m_color[0] = static_cast<float>(w);
-            shading_result.m_color[1] = static_cast<float>(uv0[0]);
-            shading_result.m_color[2] = static_cast<float>(uv0[1]);
-            shading_result.m_alpha = Alpha(1.0);
+            shading_result.set_to_linear_rgb(
+                Color3f(
+                    static_cast<float>(1.0 - uv0[0] - uv0[1]),
+                    static_cast<float>(uv0[0]),
+                    static_cast<float>(uv0[1])));
         }
         break;
 
       // Shade according to the geometric normal.
       case GeometricNormal:
-        normal_to_color(
-            shading_point.get_geometric_normal(),
-            shading_result.m_color);
-        shading_result.m_alpha = Alpha(1.0);
+        shading_result.set_to_linear_rgb(
+            normal_to_color(shading_point.get_geometric_normal()));
         break;
 
       // Shade according to the shading normal.
       case ShadingNormal:
-        normal_to_color(
-            shading_point.get_shading_normal(),
-            shading_result.m_color);
-        shading_result.m_alpha = Alpha(1.0);
+        shading_result.set_to_linear_rgb(
+            normal_to_color(shading_point.get_shading_normal()));
         break;
 
       // Assign an unique color to each assembly instance.
       case AssemblyInstances:
-        integer_to_color(
-            shading_point.get_assembly_instance_uid(),
-            shading_result.m_color);
-        shading_result.m_alpha = Alpha(1.0);
+        shading_result.set_to_linear_rgb(
+            integer_to_color(shading_point.get_assembly_instance_uid()));
         break;
 
       // Assign an unique color to each object instance.
       case ObjectInstances:
         {
-            const uint32 h = mix32(
-                static_cast<uint32>(shading_point.get_assembly_instance_uid()),
-                static_cast<uint32>(shading_point.get_object_instance_index()));
-            integer_to_color(h, shading_result.m_color);
-            shading_result.m_alpha = Alpha(1.0);
+            const uint32 h =
+                mix32(
+                    static_cast<uint32>(shading_point.get_assembly_instance_uid()),
+                    static_cast<uint32>(shading_point.get_object_instance_index()));
+            shading_result.set_to_linear_rgb(integer_to_color(h));
         }
         break;
 
       // Assign an unique color to each region.
       case Regions:
         {
-            const uint32 h = mix32(
-                static_cast<uint32>(shading_point.get_assembly_instance_uid()),
-                static_cast<uint32>(shading_point.get_object_instance_index()),
-                static_cast<uint32>(shading_point.get_region_index()));
-            integer_to_color(h, shading_result.m_color);
-            shading_result.m_alpha = Alpha(1.0);
+            const uint32 h =
+                mix32(
+                    static_cast<uint32>(shading_point.get_assembly_instance_uid()),
+                    static_cast<uint32>(shading_point.get_object_instance_index()),
+                    static_cast<uint32>(shading_point.get_region_index()));
+            shading_result.set_to_linear_rgb(integer_to_color(h));
         }
         break;
 
       // Assign an unique color to each triangle.
       case Triangles:
         {
-            const uint32 h = mix32(
-                static_cast<uint32>(shading_point.get_assembly_instance_uid()),
-                static_cast<uint32>(shading_point.get_object_instance_index()),
-                static_cast<uint32>(shading_point.get_region_index()),
-                static_cast<uint32>(shading_point.get_triangle_index()));
-            integer_to_color(h, shading_result.m_color);
-            shading_result.m_alpha = Alpha(1.0);
+            const uint32 h =
+                mix32(
+                    static_cast<uint32>(shading_point.get_assembly_instance_uid()),
+                    static_cast<uint32>(shading_point.get_object_instance_index()),
+                    static_cast<uint32>(shading_point.get_region_index()),
+                    static_cast<uint32>(shading_point.get_triangle_index()));
+            shading_result.set_to_linear_rgb(integer_to_color(h));
         }
         break;
 
@@ -262,18 +252,13 @@ void DiagnosticSurfaceShader::evaluate(
             if (pa_index < material_indices.size())
             {
                 const size_t material_index = material_indices[pa_index];
-                const uint32 h = mix32(
-                    static_cast<uint32>(shading_point.get_assembly_instance_uid()),
-                    static_cast<uint32>(material_index));
-                integer_to_color(h, shading_result.m_color);
+                const uint32 h =
+                    mix32(
+                        static_cast<uint32>(shading_point.get_assembly_instance_uid()),
+                        static_cast<uint32>(material_index));
+                shading_result.set_to_linear_rgb(integer_to_color(h));
             }
-            else
-            {
-                shading_result.m_color[0] = 1.0f;
-                shading_result.m_color[1] = 0.0f;
-                shading_result.m_color[2] = 1.0f;
-            }
-            shading_result.m_alpha = Alpha(1.0);
+            else shading_result.set_to_solid_pink();
         }
         break;
 
@@ -294,10 +279,7 @@ void DiagnosticSurfaceShader::evaluate(
 
             // Return a gray scale value proportional to the accessibility.
             const float accessibility = static_cast<float>(1.0 - occlusion);
-            shading_result.m_color[0] = accessibility;
-            shading_result.m_color[1] = accessibility;
-            shading_result.m_color[2] = accessibility;
-            shading_result.m_alpha = Alpha(1.0);
+            shading_result.set_to_linear_rgb(Color3f(accessibility));
         }
         break;
 
@@ -308,10 +290,7 @@ void DiagnosticSurfaceShader::evaluate(
             const double SquareWireThickness = square(0.0005);
 
             // Initialize the shading result to the background color.
-            shading_result.m_color[0] = 0.0f;
-            shading_result.m_color[1] = 0.0f;
-            shading_result.m_color[2] = 0.8f;
-            shading_result.m_alpha = Alpha(0.5);
+            shading_result.set_to_linear_rgba(Color4f(0.0f, 0.0f, 0.8f, 0.5f));
 
             // Retrieve the camera.
             const Scene& scene = shading_point.get_scene();
@@ -351,10 +330,7 @@ void DiagnosticSurfaceShader::evaluate(
 
                 if (d < SquareWireThickness)
                 {
-                    shading_result.m_color[0] = 1.0f;
-                    shading_result.m_color[1] = 1.0f;
-                    shading_result.m_color[2] = 1.0f;
-                    shading_result.m_alpha = Alpha(1.0);
+                    shading_result.set_to_linear_rgba(Color4f(1.0f));
                     break;
                 }
             }
@@ -364,10 +340,7 @@ void DiagnosticSurfaceShader::evaluate(
       // Invalid shader.
       default:
         assert(false);
-        shading_result.m_color[0] = 1.0f;
-        shading_result.m_color[1] = 0.0f;
-        shading_result.m_color[2] = 1.0f;
-        shading_result.m_alpha = Alpha(1.0);
+        shading_result.clear();
         break;
     }
 }

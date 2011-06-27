@@ -59,13 +59,7 @@ namespace
             const Vector2d&     image_point,
             ShadingResult&      shading_result)
         {
-            shading_result.m_color_space = ColorSpaceLinearRGB;
-
-            shading_result.m_color[0] = 0.0f;
-            shading_result.m_color[1] = 0.0f;
-            shading_result.m_color[2] = 0.0f;
-
-            shading_result.m_alpha.set(0.0f);
+            shading_result.clear();
         }
     };
 }

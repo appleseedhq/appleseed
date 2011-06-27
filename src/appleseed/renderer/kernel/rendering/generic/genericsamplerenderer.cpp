@@ -181,7 +181,7 @@ namespace
             if (texcache_stats == Vector<uint64, 3>(0, 0, 0))
             {
                 // In black: no access to the texture cache.
-                shading_result.set_to_linear_rgba(Color4f(0.0f, 0.0f, 0.0f, 1.0f));
+                shading_result.set_to_linear_rgb(Color3f(0.0f, 0.0f, 0.0f));
             }
             else
             {
@@ -189,17 +189,17 @@ namespace
                 {
                   // In green: a majority of stage-0 cache hits.
                   case 0:
-                    shading_result.set_to_linear_rgba(Color4f(0.0f, 1.0f, 0.0f, 1.0f));
+                    shading_result.set_to_linear_rgb(Color3f(0.0f, 1.0f, 0.0f));
                     break;
 
                   // In blue: a majority of stage-0 cache misses and stage-1 cache hits.
                   case 1:
-                    shading_result.set_to_linear_rgba(Color4f(0.0f, 0.0f, 1.0f, 1.0f));
+                    shading_result.set_to_linear_rgb(Color3f(0.0f, 0.0f, 1.0f));
                     break;
 
                   // In red: a majority of stage-0 and stage-1 cache misses.
                   case 2:
-                    shading_result.set_to_linear_rgba(Color4f(1.0f, 0.0f, 0.0f, 1.0f));
+                    shading_result.set_to_linear_rgb(Color3f(1.0f, 0.0f, 0.0f));
                     break;
                 }
             }

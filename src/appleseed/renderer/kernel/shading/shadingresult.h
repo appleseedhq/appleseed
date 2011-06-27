@@ -51,11 +51,14 @@ class ShadingResult
     Spectrum                m_color;
     Alpha                   m_alpha;
 
-    // Set the shading result to transparent black.
+    // Set the shading result to transparent black in linear RGB.
     void clear();
 
     // Set the shading result to a given linear RGBA value.
-    void set_to_linear_rgba(const foundation::Color4f& linear_rgb);
+    void set_to_linear_rgba(const foundation::Color4f& linear_rgba);
+
+    // Set the shading result to a given fully opaque linear RGB value.
+    void set_to_linear_rgb(const foundation::Color3f& linear_rgb);
 
     // Transform the shading result to a given color space.
     void transform_to_color_space(
@@ -90,7 +93,18 @@ inline void ShadingResult::clear()
     m_alpha.set(0.0f);
 }
 
-inline void ShadingResult::set_to_linear_rgba(const foundation::Color4f& linear_rgb)
+inline void ShadingResult::set_to_linear_rgba(const foundation::Color4f& linear_rgba)
+{
+    m_color_space = foundation::ColorSpaceLinearRGB;
+
+    m_color[0] = linear_rgba[0];
+    m_color[1] = linear_rgba[1];
+    m_color[2] = linear_rgba[2];
+
+    m_alpha.set(linear_rgba[3]);
+}
+
+inline void ShadingResult::set_to_linear_rgb(const foundation::Color3f& linear_rgb)
 {
     m_color_space = foundation::ColorSpaceLinearRGB;
 
@@ -98,18 +112,12 @@ inline void ShadingResult::set_to_linear_rgba(const foundation::Color4f& linear_
     m_color[1] = linear_rgb[1];
     m_color[2] = linear_rgb[2];
 
-    m_alpha.set(linear_rgb[3]);
+    m_alpha.set(1.0f);
 }
 
 inline void ShadingResult::set_to_solid_pink()
 {
-    m_color_space = foundation::ColorSpaceLinearRGB;
-
-    m_color[0] = 1.0f;
-    m_color[1] = 0.0f;
-    m_color[2] = 1.0f;
-
-    m_alpha.set(1.0f);
+    set_to_linear_rgb(foundation::Color3f(1.0f, 0.0f, 1.0f));
 }
 
 }       // namespace renderer
