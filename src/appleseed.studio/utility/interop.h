@@ -26,10 +26,12 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_UTILITY_QTIOSTREAMOP_H
-#define APPLESEED_STUDIO_UTILITY_QTIOSTREAMOP_H
+#ifndef APPLESEED_STUDIO_UTILITY_INTEROP_H
+#define APPLESEED_STUDIO_UTILITY_INTEROP_H
 
 // appleseed.foundation headers.
+#include "foundation/image/color.h"
+#include "foundation/math/scalar.h"
 #include "foundation/utility/string.h"
 
 // Qt headers.
@@ -37,8 +39,104 @@
 #include <QString>
 
 // Standard headers.
+#include <algorithm>
+#include <cstddef>
 #include <iostream>
 #include <string>
+
+namespace appleseed {
+namespace studio {
+
+template <typename T>
+inline int unit_color_component_to_int(const T x)
+{
+    return
+        std::min(
+            255,
+            foundation::truncate<int>(
+                foundation::saturate(x) * T(256.0)));
+}
+
+template <typename T>
+inline T int_to_unit_color_component(const int x)
+{
+    return static_cast<T>(x) * T(1.0 / 255.0);
+}
+
+template <typename T, size_t N>
+QColor color_to_qcolor(const foundation::Color<T, N>& color);
+
+template <typename T>
+inline QColor color_to_qcolor(const foundation::Color<T, 3>& color)
+{
+    return
+        QColor(
+            unit_color_component_to_int(color.r),
+            unit_color_component_to_int(color.g),
+            unit_color_component_to_int(color.b));
+}
+
+template <typename T>
+inline QColor color_to_qcolor(const foundation::Color<T, 4>& color)
+{
+    return
+        QColor(
+            unit_color_component_to_int(color.r),
+            unit_color_component_to_int(color.g),
+            unit_color_component_to_int(color.b),
+            unit_color_component_to_int(color.a));
+}
+
+template <typename T>
+inline foundation::Color<T, 3> qcolor_to_color3(const QColor& color)
+{
+    return
+        foundation::Color<T, 3>(
+            int_to_unit_color_component<T>(color.red()),
+            int_to_unit_color_component<T>(color.green()),
+            int_to_unit_color_component<T>(color.blue()));
+}
+
+template <typename T>
+inline foundation::Color<T, 4> qcolor_to_color4(const QColor& color)
+{
+    return
+        foundation::Color<T, 4>(
+            int_to_unit_color_component<T>(color.red()),
+            int_to_unit_color_component<T>(color.green()),
+            int_to_unit_color_component<T>(color.blue()),
+            int_to_unit_color_component<T>(color.alpha()));
+}
+
+template <typename ColorType>
+ColorType qcolor_to_color(const QColor& color);
+
+template <>
+inline foundation::Color3f qcolor_to_color(const QColor& color)
+{
+    return qcolor_to_color3<float>(color);
+}
+
+template <>
+inline foundation::Color3d qcolor_to_color(const QColor& color)
+{
+    return qcolor_to_color3<double>(color);
+}
+
+template <>
+inline foundation::Color4f qcolor_to_color(const QColor& color)
+{
+    return qcolor_to_color4<float>(color);
+}
+
+template <>
+inline foundation::Color4d qcolor_to_color(const QColor& color)
+{
+    return qcolor_to_color4<double>(color);
+}
+
+}       // namespace studio
+}       // namespace appleseed
 
 namespace foundation
 {
@@ -60,4 +158,4 @@ inline std::ostream& operator<<(std::ostream& s, const QColor& color)
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_STUDIO_UTILITY_QTIOSTREAMOP_H
+#endif  // !APPLESEED_STUDIO_UTILITY_INTEROP_H
