@@ -20,6 +20,10 @@
         <file>widgets/scrollbar_arrow_right_enabled.png</file>
         <file>widgets/scrollbar_arrow_up_disabled.png</file>
         <file>widgets/scrollbar_arrow_up_enabled.png</file>
+        <file>widgets/spinbox_arrow_down_disabled.png</file>
+        <file>widgets/spinbox_arrow_down_enabled.png</file>
+        <file>widgets/spinbox_arrow_up_disabled.png</file>
+        <file>widgets/spinbox_arrow_up_enabled.png</file>
         <file>widgets/menu_arrow_right.png</file>
         <file>widgets/menu_arrow_right_selected.png</file>
         <file>widgets/combobox_arrow_down.png</file>

@@ -674,3 +674,60 @@ QComboBox QAbstractItemView
     border: BORDER_STYLE;
     selection-background-color: HOVER_BACKGROUND_COLOR;
 }
+
+
+/*
+ * QSpinBox.
+ */
+
+QSpinBox
+{
+    border: BORDER_STYLE;
+}
+
+QSpinBox::up-button,
+QSpinBox::down-button
+{
+    background-color: ACTIVE_BACKGROUND_COLOR;
+    border-left: BORDER_STYLE;
+}
+
+QSpinBox::up-button
+{
+    border-bottom: BORDER_STYLE;
+}
+
+QSpinBox::down-button
+{
+    border-top: BORDER_STYLE;
+}
+
+QSpinBox::up-button:hover,
+QSpinBox::down-button:hover
+{
+    background-color: HOVER_BACKGROUND_COLOR;
+    color: HOVER_TEXT_COLOR;
+}
+
+QSpinBox::up-button:pressed,
+QSpinBox::down-button:pressed
+{
+    background-color: SELECTED_BACKGROUND_COLOR;
+    color: SELECTED_TEXT_COLOR;
+}
+
+QSpinBox::up-button:disabled,
+QSpinBox::down-button:disabled
+{
+    color: DISABLED_TEXT_COLOR;
+}
+
+QSpinBox::up-arrow
+{
+    image: url(":/widgets/spinbox_arrow_up_enabled.png");
+}
+
+QSpinBox::down-arrow
+{
+    image: url(":/widgets/spinbox_arrow_down_enabled.png");
+}
