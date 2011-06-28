@@ -46,15 +46,18 @@
 // Qt headers.
 #include <QColor>
 #include <QColorDialog>
+#include <QComboBox>
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QLineEdit>
 #include <QPushButton>
 #include <QShortcut>
 #include <QSignalMapper>
 #include <Qt>
 #include <QToolButton>
+#include <QVariant>
 
 // Standard headers.
 #include <cassert>
@@ -214,12 +217,105 @@ namespace
     }
 }
 
+struct EntityEditorWindow::Impl
+{
+    class LineEditProxy
+      : public IWidgetProxy
+    {
+      public:
+        explicit LineEditProxy(QLineEdit* line_edit)
+          : m_line_edit(line_edit)
+        {
+        }
+
+        virtual void set(const string& value)
+        {
+            m_line_edit->setText(QString::fromStdString(value));
+        }
+
+        virtual string get() const
+        {
+            return m_line_edit->text().toStdString();
+        }
+
+      private:
+        QLineEdit* m_line_edit;
+    };
+
+    class ComboBoxProxy
+      : public IWidgetProxy
+    {
+      public:
+        explicit ComboBoxProxy(QComboBox* combo_box)
+          : m_combo_box(combo_box)
+        {
+        }
+
+        virtual void set(const string& value)
+        {
+            throw ExceptionNotImplemented();
+        }
+
+        virtual string get() const
+        {
+            const QVariant data = m_combo_box->itemData(m_combo_box->currentIndex());
+            return data.value<QString>().toStdString();
+        }
+
+      private:
+        QComboBox* m_combo_box;
+    };
+
+    static Color3d get_color_from_string(const string& s)
+    {
+        return from_string<Color3d>(s);
+    }
+
+    class ColorPickerProxy
+      : public IWidgetProxy
+    {
+      public:
+        explicit ColorPickerProxy(QLineEdit* line_edit, QToolButton* picker_button)
+          : m_line_edit(line_edit)
+          , m_picker_button(picker_button)
+        {
+        }
+
+        virtual void set(const string& value)
+        {
+            m_line_edit->setText(QString::fromStdString(value));
+
+            const QColor color = color_to_qcolor(get_color_from_string(value));
+
+            m_picker_button->setStyleSheet(
+                QString("border: 1px solid rgb(40, 40, 40); background-color: rgb(%1, %2, %3)")
+                    .arg(color.red())
+                    .arg(color.green())
+                    .arg(color.blue()));
+        }
+
+        virtual string get() const
+        {
+            return m_line_edit->text().toStdString();
+        }
+
+      private:
+        QLineEdit*      m_line_edit;
+        QToolButton*    m_picker_button;
+    };
+};
+
 void EntityEditorWindow::create_text_box_input_widget(const Dictionary& definition)
 {
     QLineEdit* line_edit = new QLineEdit(m_ui->scrollarea_contents);
 
+    const string name = definition.get<string>("name");
+
+    IWidgetProxy* widget_proxy = new Impl::LineEditProxy(line_edit);
+    m_widget_proxies[name] = widget_proxy;
+
     if (definition.strings().exist("default"))
-        line_edit->setText(definition.strings().get<QString>("default"));
+        widget_proxy->set(definition.strings().get<string>("default"));
 
     if (should_be_focused(definition))
     {
@@ -228,15 +324,15 @@ void EntityEditorWindow::create_text_box_input_widget(const Dictionary& definiti
     }
 
     m_form_layout->addRow(get_label_text(definition), line_edit);
-
-    const string name = definition.get<string>("name");
-    m_widget_proxies[name] = new LineEditProxy(line_edit);
 }
 
 void EntityEditorWindow::create_dropdown_list_input_widget(const Dictionary& definition)
 {
     QComboBox* combo_box = new QComboBox(m_ui->scrollarea_contents);
     combo_box->setEditable(false);
+
+    const string name = definition.get<string>("name");
+    m_widget_proxies[name] = new Impl::ComboBoxProxy(combo_box);
 
     const StringDictionary& items = definition.dictionaries().get("dropdown_items").strings();
     for (const_each<StringDictionary> i = items; i; ++i)
@@ -259,23 +355,11 @@ void EntityEditorWindow::create_dropdown_list_input_widget(const Dictionary& def
         combo_box->setFocus();
 
     m_form_layout->addRow(get_label_text(definition), combo_box);
-
-    const string name = definition.get<string>("name");
-    m_widget_proxies[name] = new ComboBoxProxy(combo_box);
 }
 
 void EntityEditorWindow::create_entity_picker_input_widget(const Dictionary& definition)
 {
     QLineEdit* line_edit = new QLineEdit(m_ui->scrollarea_contents);
-
-    if (definition.strings().exist("default"))
-        line_edit->setText(definition.strings().get<QString>("default"));
-
-    if (should_be_focused(definition))
-    {
-        line_edit->selectAll();
-        line_edit->setFocus();
-    }
 
     QWidget* button = new QPushButton("Browse", m_ui->scrollarea_contents);
     button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -284,21 +368,11 @@ void EntityEditorWindow::create_entity_picker_input_widget(const Dictionary& def
     const string name = definition.get<string>("name");
     m_entity_picker_signal_mapper->setMapping(button, QString::fromStdString(name));
 
-    QHBoxLayout* layout = new QHBoxLayout();
-    layout->addWidget(line_edit);
-    layout->addWidget(button);
-
-    m_form_layout->addRow(get_label_text(definition), layout);
-
-    m_widget_proxies[name] = new LineEditProxy(line_edit);
-}
-
-void EntityEditorWindow::create_color_picker_input_widget(const Dictionary& definition)
-{
-    QLineEdit* line_edit = new QLineEdit(m_ui->scrollarea_contents);
+    IWidgetProxy* widget_proxy = new Impl::LineEditProxy(line_edit);
+    m_widget_proxies[name] = widget_proxy;
 
     if (definition.strings().exist("default"))
-        line_edit->setText(definition.strings().get<QString>("default"));
+        widget_proxy->set(definition.strings().get<string>("default"));
 
     if (should_be_focused(definition))
     {
@@ -306,20 +380,39 @@ void EntityEditorWindow::create_color_picker_input_widget(const Dictionary& defi
         line_edit->setFocus();
     }
 
-    QWidget* button = new QToolButton(m_ui->scrollarea_contents);
-    button->setStyleSheet(QString("border: 1px solid rgb(40, 40, 40); background-color: rgb(%1, %2, %3)").arg(255).arg(0).arg(255));
-    connect(button, SIGNAL(clicked()), m_color_picker_signal_mapper, SLOT(map()));
-
-    const string name = definition.get<string>("name");
-    m_color_picker_signal_mapper->setMapping(button, QString::fromStdString(name));
-
     QHBoxLayout* layout = new QHBoxLayout();
     layout->addWidget(line_edit);
     layout->addWidget(button);
-
     m_form_layout->addRow(get_label_text(definition), layout);
+}
 
-    m_widget_proxies[name] = new LineEditProxy(line_edit);
+void EntityEditorWindow::create_color_picker_input_widget(const Dictionary& definition)
+{
+    QLineEdit* line_edit = new QLineEdit(m_ui->scrollarea_contents);
+
+    QToolButton* picker_button = new QToolButton(m_ui->scrollarea_contents);
+    connect(picker_button, SIGNAL(clicked()), m_color_picker_signal_mapper, SLOT(map()));
+
+    const string name = definition.get<string>("name");
+    m_color_picker_signal_mapper->setMapping(picker_button, QString::fromStdString(name));
+
+    IWidgetProxy* widget_proxy = new Impl::ColorPickerProxy(line_edit, picker_button);
+    m_widget_proxies[name] = widget_proxy;
+
+    if (definition.strings().exist("default"))
+        widget_proxy->set(definition.strings().get<string>("default"));
+    else widget_proxy->set("1.0 1.0 1.0");
+
+    if (should_be_focused(definition))
+    {
+        line_edit->selectAll();
+        line_edit->setFocus();
+    }
+
+    QHBoxLayout* layout = new QHBoxLayout();
+    layout->addWidget(line_edit);
+    layout->addWidget(picker_button);
+    m_form_layout->addRow(get_label_text(definition), layout);
 }
 
 Dictionary EntityEditorWindow::get_values() const
@@ -419,7 +512,7 @@ void EntityEditorWindow::slot_open_color_picker(const QString& widget_name)
 {
     IWidgetProxy* widget_proxy = m_widget_proxies[widget_name.toStdString()];
 
-    const Color3d initial_color = from_string<Color3d>(widget_proxy->get());
+    const Color3d initial_color = Impl::get_color_from_string(widget_proxy->get());
 
     const QColor new_color =
         QColorDialog::getColor(
@@ -427,7 +520,8 @@ void EntityEditorWindow::slot_open_color_picker(const QString& widget_name)
             this,
             "Pick Color");
 
-    widget_proxy->set(to_string(qcolor_to_color<Color3d>(new_color)));
+    if (new_color.isValid())
+        widget_proxy->set(to_string(qcolor_to_color<Color3d>(new_color)));
 }
 
 void EntityEditorWindow::slot_accept()

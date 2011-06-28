@@ -35,11 +35,8 @@
 #include "foundation/utility/containers/dictionary.h"
 
 // Qt headers.
-#include <QComboBox>
-#include <QLineEdit>
 #include <QObject>
 #include <QString>
-#include <QVariant>
 #include <QWidget>
 
 // Standard headers.
@@ -122,52 +119,7 @@ class EntityEditorWindow
         virtual std::string get() const = 0;
     };
 
-    class LineEditProxy
-      : public IWidgetProxy
-    {
-      public:
-        explicit LineEditProxy(QLineEdit* line_edit)
-          : m_line_edit(line_edit)
-        {
-        }
-
-        virtual void set(const std::string& value)
-        {
-            m_line_edit->setText(QString::fromStdString(value));
-        }
-
-        virtual std::string get() const
-        {
-            return m_line_edit->text().toStdString();
-        }
-
-      private:
-        QLineEdit*  m_line_edit;
-    };
-
-    class ComboBoxProxy
-      : public IWidgetProxy
-    {
-      public:
-        explicit ComboBoxProxy(QComboBox* combo_box)
-          : m_combo_box(combo_box)
-        {
-        }
-
-        virtual void set(const std::string& value)
-        {
-            throw foundation::ExceptionNotImplemented();
-        }
-
-        virtual std::string get() const
-        {
-            const QVariant data = m_combo_box->itemData(m_combo_box->currentIndex());
-            return data.value<QString>().toStdString();
-        }
-
-      private:
-        QComboBox*  m_combo_box;
-    };
+    struct Impl;
 
     typedef std::map<std::string, IWidgetProxy*> WidgetProxyCollection;
 

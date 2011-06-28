@@ -270,7 +270,7 @@ DictionaryArray ColorEntityFactory::get_widget_definitions()
                     .insert("Spectral", "spectral"))
             .insert("use", "required")
             .insert("default", "linear_rgb")
-            .insert("on_change", "rebuild_form"));
+/*          .insert("on_change", "rebuild_form")*/);
 
     definitions.push_back(
         Dictionary()
