@@ -39,7 +39,6 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/nativedrawing.h"
 #include "foundation/image/tile.h"
-#include "foundation/utility/test.h"
 
 // Qt headers.
 #include <Qt>
@@ -82,62 +81,10 @@ RenderWidget::RenderWidget(
     clear(Color4f(0.0f));
 }
 
-namespace
-{
-    int color_float_to_int(const float x)
-    {
-        return min(truncate<int>(saturate(x) * 256.0f), 255);
-    }
-
-    QColor make_qcolor(const Color4f& color)
-    {
-        return QColor(
-            color_float_to_int(color[0]),
-            color_float_to_int(color[1]),
-            color_float_to_int(color[2]),
-            color_float_to_int(color[3]));
-    }
-
-    TEST_SUITE(Studio_Rendering_RenderWidget_Details)
-    {
-        TEST_CASE(ColorFloatToInt_GivenMinusOne_ReturnsZero)
-        {
-            const int result = color_float_to_int(-1.0f);
-            EXPECT_EQ(0, result);
-        }
-
-        TEST_CASE(ColorFloatToInt_GivenZero_ReturnsZero)
-        {
-            const int result = color_float_to_int(0.0f);
-            EXPECT_EQ(0, result);
-        }
-
-        TEST_CASE(ColorFloatToInt_GivenOne_Returns255)
-        {
-            const int result = color_float_to_int(1.0f);
-            EXPECT_EQ(255, result);
-        }
-
-        TEST_CASE(ColorFloatToInt_GivenTwo_Returns255)
-        {
-            const int result = color_float_to_int(2.0f);
-            EXPECT_EQ(255, result);
-        }
-
-        TEST_CASE(MakeQColor_GivenColor4f_ReturnsQColor)
-        {
-            const QColor color = make_qcolor(Color4f(0.25f, 0.5f, 0.75f, 1.0f));
-            EXPECT_EQ(QColor(64, 128, 192, 255), color);
-        }
-    }
-}
-
 void RenderWidget::clear(const Color4f& color)
 {
     m_image_mutex.lock();
-
-    m_image.fill(make_qcolor(color).rgba());
-
+    m_image.fill(color_to_qcolor(color).rgba());
     m_image_mutex.unlock();
 }
 
@@ -219,9 +166,7 @@ void RenderWidget::blit_tile(
     const size_t    tile_y)
 {
     m_image_mutex.lock();
-
     blit_tile_no_lock(frame, tile_x, tile_y);
-
     m_image_mutex.unlock();
 }
 
