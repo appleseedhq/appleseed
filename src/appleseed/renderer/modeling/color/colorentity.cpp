@@ -284,7 +284,7 @@ DictionaryArray ColorEntityFactory::get_widget_definitions()
         Dictionary()
             .insert("name", "color")
             .insert("label", "Color")
-            .insert("widget", "text_box")
+            .insert("widget", "color_picker")
             .insert("default", "0.0 0.0 0.0")
             .insert("use", "required"));
 
