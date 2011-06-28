@@ -268,7 +268,14 @@ struct EntityEditorWindow::Impl
 
     static Color3d get_color_from_string(const string& s)
     {
-        return from_string<Color3d>(s);
+        try
+        {
+            return from_string<Color3d>(s);
+        }
+        catch (const ExceptionStringConversionError&)
+        {
+            return Color3d(0.0);
+        }
     }
 
     class ColorPickerProxy
@@ -288,7 +295,7 @@ struct EntityEditorWindow::Impl
             const QColor color = color_to_qcolor(get_color_from_string(value));
 
             m_picker_button->setStyleSheet(
-                QString("border: 1px solid rgb(40, 40, 40); background-color: rgb(%1, %2, %3)")
+                QString("background-color: rgb(%1, %2, %3)")
                     .arg(color.red())
                     .arg(color.green())
                     .arg(color.blue()));
@@ -391,6 +398,7 @@ void EntityEditorWindow::create_color_picker_input_widget(const Dictionary& defi
     QLineEdit* line_edit = new QLineEdit(m_ui->scrollarea_contents);
 
     QToolButton* picker_button = new QToolButton(m_ui->scrollarea_contents);
+    picker_button->setObjectName("ColorPicker");
     connect(picker_button, SIGNAL(clicked()), m_color_picker_signal_mapper, SLOT(map()));
 
     const string name = definition.get<string>("name");

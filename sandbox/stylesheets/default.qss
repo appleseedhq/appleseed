@@ -368,6 +368,11 @@ QToolButton:pressed
     color: SELECTED_TEXT_COLOR;
 }
 
+QToolButton#ColorPicker
+{
+    border: BORDER_STYLE;
+}
+
 
 /*
  * QDockWidget.
