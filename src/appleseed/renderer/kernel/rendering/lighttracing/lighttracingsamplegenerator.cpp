@@ -402,7 +402,7 @@ namespace
             PathVisitor,
             BSDF::Diffuse | BSDF::Glossy | BSDF::Specular,
             true    // adjoint
-        > PathTracer;
+        > PathTracerType;
 
         const Parameters                m_params;
         Statistics                      m_stats;
@@ -517,7 +517,7 @@ namespace
                 m_texture_cache,
                 samples,
                 initial_alpha);
-            PathTracer path_tracer(
+            PathTracerType path_tracer(
                 path_visitor,
                 m_params.m_minimum_path_length);
 
@@ -594,7 +594,7 @@ namespace
                 m_texture_cache,
                 samples,
                 initial_alpha);
-            PathTracer path_tracer(
+            PathTracerType path_tracer(
                 path_visitor,
                 m_params.m_minimum_path_length);
 

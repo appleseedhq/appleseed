@@ -242,7 +242,7 @@ namespace
                 while (!m_abort_switch.is_aborted())
                 {
                     m_framebuffer.print_statistics(m_frame);
-                    sleep(200);
+                    foundation::sleep(200); // needs full qualification
                 }
             }
         };

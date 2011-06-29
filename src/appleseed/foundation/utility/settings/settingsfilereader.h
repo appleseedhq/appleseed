@@ -67,7 +67,7 @@ class FOUNDATIONDLL SettingsFileReader
 {
   public:
     // Constructor.
-    explicit SettingsFileReader(Logger& logger = Logger());
+    explicit SettingsFileReader(Logger& logger);
 
     // Read a settings file from disk.
     // Return false if reading or parsing the file failed.
