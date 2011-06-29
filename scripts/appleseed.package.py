@@ -28,13 +28,14 @@
 #
 
 # Package builder settings.
-VersionString = "1.3"
+VersionString = "1.4"
 SettingsFileName = "appleseed.package.configuration.xml"
 
 # Imports.
 from xml.etree.ElementTree import ElementTree
 from distutils import archive_util, dir_util
 from stat import *
+from subprocess import *
 import glob
 import os
 import platform
@@ -90,7 +91,7 @@ def copy_glob(input_pattern, output_path):
 
 
 #
-# Settings parser.
+# Settings.
 #
 
 class Settings:
@@ -124,7 +125,7 @@ class Settings:
 
 
 #
-# Package information parser.
+# Package information.
 #
 
 class PackageInfo:
@@ -132,53 +133,23 @@ class PackageInfo:
         self.settings = settings
 
     def load(self):
-        appleseed_file_path = os.path.join(self.settings.appleseed_path, "src", "appleseed", "foundation", "core", "appleseed.cpp")
-        print "Loading package information from " + appleseed_file_path + "..."
-        self.load_values(appleseed_file_path)
+        print "Loading package information..."
+        self.retrieve_git_tag()
         self.build_package_path()
         self.print_summary()
 
-    def load_values(self, appleseed_file_path):
-        text = self.load_text_file(appleseed_file_path)
-        self.version = self.get_string_value(text, "LibVersionToken")
-        self.maturity_level = self.get_string_value(text, "LibMaturityLevelToken")
-        self.build = self.get_numeric_value(text, "LibBuildNumberToken")
-
-    def load_text_file(self, path):
-        try:
-            f = open(path, "r")
-            text = f.read()
-            f.close()
-            return text
-        except IOError:
-            fatal("failed to load file '" + path + "'")
-
-    def get_string_value(self, text, token):
-        p = re.compile(r"\b" + token + r"\b\s*=\s*\"(?P<value>[^\"]*)\"")
-        m = p.search(text)
-        if m:
-            return m.group("value")
-        else:
-            fatal("failed to extract the value of '" + token + "'")
-
-    def get_numeric_value(self, text, token):
-        p = re.compile(r"\b" + token + r"\b\s*=\s*(?P<value>\d+)")
-        m = p.search(text)
-        if m:
-            return m.group("value")
-        else:
-            fatal("failed to extract the value of '" + token + "'")
+    def retrieve_git_tag(self):
+        current_path = pushd(self.settings.appleseed_path)
+        self.version = Popen("git describe --long", stdout=PIPE, shell=True).stdout.read().strip()
+        os.chdir(current_path)
 
     def build_package_path(self):
-        full_version = self.version + "-" + self.maturity_level
-        package_name = "appleseed-" + full_version + "-" + self.settings.platform + ".zip"
-        self.package_path = os.path.join(self.settings.package_output_path, full_version, package_name)
+        package_name = "appleseed-" + self.version + "-" + self.settings.platform + ".zip"
+        self.package_path = os.path.join(self.settings.package_output_path, self.version, package_name)
 
     def print_summary(self):
         print
         print "  Version:                   " + self.version
-        print "  Maturity level:            " + self.maturity_level
-        print "  Build:                     " + self.build
         print "  Package path:              " + self.package_path
         print
 
@@ -290,7 +261,7 @@ class WindowsPackageBuilder(PackageBuilder):
         progress("Windows-specific: adding dependencies to staging directory")
         self.copy_qt_framework("QtCore")
         self.copy_qt_framework("QtGui")
-        dir_util.copy_tree(self.settings.platform_runtime_path, "appleseed/bin/Microsoft.VC90.CRT")
+        dir_util.copy_tree(self.settings.platform_runtime_path, "appleseed/bin/Microsoft.VC100.CRT")
 
     def copy_qt_framework(self, framework_name):
         src_filepath = os.path.join(self.settings.qt_runtime_path, framework_name + "4" + ".dll")
@@ -412,9 +383,8 @@ def main():
     elif os.name == "posix" and platform.mac_ver()[0] == "":
         package_builder = LinuxPackageBuilder(settings, package_info)
     else:
-        fatal("unsupported platform")
+        fatal("unsupported platform: " + os.name)
 
     package_builder.build_package()
 
 main()
-
