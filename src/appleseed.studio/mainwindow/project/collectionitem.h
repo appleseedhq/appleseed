@@ -85,6 +85,9 @@ class CollectionItem
     virtual void slot_create_accepted(foundation::Dictionary values);
 
     void create(const foundation::Dictionary& values);
+
+  private:
+    friend class EntityCreatorBase;
 };
 
 

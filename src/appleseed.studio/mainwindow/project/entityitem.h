@@ -68,6 +68,9 @@ class EntityItem
     virtual void slot_delete();
 
     void edit(const foundation::Dictionary& values);
+
+  private:
+    friend class EntityCreatorBase;
 };
 
 
@@ -98,7 +101,7 @@ void EntityItem<Entity, ParentEntity>::slot_edit_accepted(foundation::Dictionary
 template <typename Entity, typename ParentEntity>
 void EntityItem<Entity, ParentEntity>::slot_delete()
 {
-    if (allows_deletion())
+    if (EntityItemBaseType::allows_deletion())
     {
         m_project_builder.remove_entity(EntityItemBaseType::m_entity, m_parent);
 
