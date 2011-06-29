@@ -75,6 +75,6 @@ TEST_SUITE(Studio_InterOp)
     TEST_CASE(QColorToColor_GivenQColor_ReturnsColor4d)
     {
         const Color4d result = qcolor_to_color<Color4d>(QColor(64, 128, 192, 255));
-        EXPECT_EQ(Color4d(0.25, 0.5, 0.75, 1.0), result);
+        EXPECT_EQ(Color4d(64.0/255, 128.0/255, 192.0/255, 255.0/255), result);
     }
 }
