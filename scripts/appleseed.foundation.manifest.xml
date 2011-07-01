@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Manifest for the generation of the standalone appleseed.foundation library. -->
+
+<manifest>
+    <input root="../src/appleseed/">
+        <file>foundation/core/concepts/*</file>
+        <file>foundation/core/exceptions/*</file>
+
+        <file>foundation/image/color.h</file>
+        <file>foundation/image/colorspace.*</file>
+        <!--<file>foundation/image/pixel.*</file>-->        <!-- requires openexr/half.h -->
+
+        <file>foundation/math/intersection/*</file>
+        <file>foundation/math/knn/*</file>
+        <file>foundation/math/rng/*</file>
+        <file>foundation/math/sampling/*</file>
+        <file>foundation/math/aabb.h</file>
+        <file>foundation/math/area.h</file>
+        <file>foundation/math/basis.h</file>
+        <file>foundation/math/cdf.h</file>
+        <file>foundation/math/combination.h</file>
+        <file>foundation/math/distance.h</file>
+        <file>foundation/math/fastmath.h</file>
+        <file>foundation/math/fp.h</file>
+        <file>foundation/math/frustum.h</file>
+        <file>foundation/math/hash.h</file>
+        <file>foundation/math/matrix.h</file>
+        <file>foundation/math/minmax.h</file>
+        <file>foundation/math/noise.*</file>
+        <file>foundation/math/ordering.*</file>
+        <file>foundation/math/permutation.*</file>
+        <file>foundation/math/primes.*</file>
+        <file>foundation/math/qmc.h</file>
+        <file>foundation/math/quaternion.h</file>
+        <file>foundation/math/ray.h</file>
+        <file>foundation/math/scalar.h</file>
+        <file>foundation/math/spline.h</file>
+        <file>foundation/math/vector.h</file>
+        <file>foundation/math/voxelgrid.h</file>
+
+        <file>foundation/platform/breakpoint.h</file>
+        <file>foundation/platform/compiler.*</file>
+        <!--<file>foundation/platform/defaulttimers.*</file>-->
+        <!--<file>foundation/platform/opengl.h</file>-->
+        <file>foundation/platform/snprintf.h</file>
+        <file>foundation/platform/sse.h</file>
+        <file>foundation/platform/types.h</file>
+
+        <file>foundation/utility/commandlineparser/*</file>
+        <file>foundation/utility/containers/dictionary.*</file>
+        <file>foundation/utility/containers/dictionaryarray.*</file>
+        <file>foundation/utility/containers/pagedarray.h</file>
+        <file>foundation/utility/bufferedfile.*</file>
+        <file>foundation/utility/cache.h</file>
+        <file>foundation/utility/cameracontroller.h</file>
+        <file>foundation/utility/casts.h</file>
+        <file>foundation/utility/cc.h</file>
+        <file>foundation/utility/countof.h</file>
+        <file>foundation/utility/foreach.h</file>
+        <file>foundation/utility/indenter.h</file>
+        <file>foundation/utility/iostreamop.h</file>
+        <file>foundation/utility/iterators.h</file>
+        <file>foundation/utility/makevector.h</file>
+        <file>foundation/utility/memory.*</file>
+        <file>foundation/utility/numerictype.h</file>
+        <file>foundation/utility/otherwise.h</file>
+        <file>foundation/utility/poolallocator.h</file>
+        <file>foundation/utility/string.*</file>
+        <file>foundation/utility/typetraits.h</file>
+        <file>foundation/utility/vpythonfile.*</file>
+    </input>
+    <output>
+        <base_path>appleseed.foundation</base_path>
+        <header>
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2010-2011 Francois Beaune
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Enable SSE extensions.
+#ifndef APPLESEED_FOUNDATION_USE_SSE
+#define APPLESEED_FOUNDATION_USE_SSE
+#endif
+
+</header>
+        <strip type="literal">// appleseed.foundation headers.
+</strip>
+        <strip type="literal">// Interface header.
+</strip>
+        <strip type="literal">// Standard headers.
+</strip>
+        <strip type="literal">// Platform headers.
+</strip>
+        <strip type="literal">
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2010-2011 Francois Beaune
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+</strip>
+        <strip type="literal">//
+// On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
+// and to __declspec(dllimport) when building an application using the DLL.
+// Other platforms don't use this export mechanism and the symbol FOUNDATIONDLL is
+// defined to evaluate to nothing.
+//
+
+#ifndef FOUNDATIONDLL
+#ifdef _WIN32
+#ifdef APPLESEED_FOUNDATION_EXPORTS
+#define FOUNDATIONDLL __declspec(dllexport)
+#else
+#define FOUNDATIONDLL __declspec(dllimport)
+#endif
+#else
+#define FOUNDATIONDLL
+#endif
+#endif
+
+</strip>
+        <strip type="literal">FOUNDATIONDLL </strip>
+        <strip type="regex">^#ifndef APPLESEED_FOUNDATION_[A-Z_]*_H[\r\n]+</strip>
+        <strip type="regex">^#define APPLESEED_FOUNDATION_[A-Z_]*_H[\r\n]+</strip>
+        <strip type="regex">^#endif\s+// !APPLESEED_FOUNDATION_[A-Z_]*_H[\r\n]+</strip>
+    </output>
+    <test>
+        <commandline>cl /c /W3 /wd"4355" /EHsc /D_CRT_SECURE_NO_WARNINGS $cppfile</commandline>
+    </test>
+</manifest>
