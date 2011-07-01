@@ -309,8 +309,8 @@ Tile* ProgressiveEXRImageFileReader::read_tile(
             const int th = static_cast<int>(impl->m_props.m_tile_height);
             range.min.x = impl->m_dw.min.x + ix * tw;
             range.min.y = impl->m_dw.min.y + iy * th;
-            range.max.x = std::min(range.min.x + tw - 1, impl->m_dw.max.x);
-            range.max.y = std::min(range.min.y + th - 1, impl->m_dw.max.y);
+            range.max.x = min(range.min.x + tw - 1, impl->m_dw.max.x);
+            range.max.y = min(range.min.y + th - 1, impl->m_dw.max.y);
         }
 
         // Compute the dimensions of the tile.

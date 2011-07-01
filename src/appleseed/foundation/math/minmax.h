@@ -36,6 +36,14 @@ namespace foundation
 {
 
 //
+// Import std::min() and std::max() into the foundation namespace, otherwise they'll be shadowed.
+//
+
+using std::min;
+using std::max;
+
+
+//
 // Return the lesser of a set of objects.
 //
 
