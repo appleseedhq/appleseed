@@ -39,7 +39,6 @@ from subprocess import *
 import glob
 import os
 import platform
-import re
 import shutil
 import sys
 import zipfile
