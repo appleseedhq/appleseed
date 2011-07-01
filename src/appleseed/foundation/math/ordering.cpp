@@ -105,7 +105,7 @@ void hilbert_ordering(
     const size_t        size_y)
 {
     // This Hilbert curve generator only works on a square grid whose size is a power of two.
-    const size_t root_size = next_pow2(max(size_x, size_y));
+    const size_t root_size = next_pow2(std::max(size_x, size_y));   // needs full qualification
 
     hilbert(
         ordering,
