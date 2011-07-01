@@ -71,7 +71,7 @@
         <file>foundation/utility/vpythonfile.*</file>
     </input>
     <output>
-        <base_path>appleseed.foundation</base_path>
+        <base_path>../archives/releases/appleseed.foundation-1.0/appleseed.foundation</base_path>
         <header>
 //
 // This source file is part of appleseed.
@@ -98,6 +98,10 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+//
+
+//
+// This is appleseed.foundation version 1.0.
 //
 
 // Enable SSE extensions.
