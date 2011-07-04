@@ -28,6 +28,7 @@
 
 # Imports.
 import bpy
+import math
 import os
 
 
@@ -52,6 +53,14 @@ script_name = "blenderseed.py"
 
 def get_version_string():
     return "version " + ".".join(map(str, bl_info["version"]))
+
+
+#
+# Utilities.
+#
+
+def rad_to_deg(rad):
+    return rad * 180.0 / math.pi
 
 
 #
@@ -83,7 +92,7 @@ def write_mesh_object_to_disk(object, filepath):
 
         output_file.close()
     except IOError:
-        # todo: display error.
+        # todo: issue error.
         return
 
 
@@ -95,7 +104,7 @@ class Exporter(bpy.types.Operator):
     bl_idname = "export.appleseed"
     bl_label = "Export to appleseed"
 
-    filepath = StringProperty(subtype='FILE_PATH')
+    filepath = bpy.props.StringProperty(subtype='FILE_PATH')
 
     def execute(self, context):
         self.__export(os.path.splitext(self.filepath)[0] + ".appleseed")
@@ -114,7 +123,7 @@ class Exporter(bpy.types.Operator):
             self.__emit_project()
             self._output_file.close()
         except IOError:
-            # todo: display error.
+            # todo: issue error.
             return
 
     def __emit_file_header(self):
@@ -137,6 +146,11 @@ class Exporter(bpy.types.Operator):
 
     def __emit_camera(self):
         camera = bpy.context.scene.camera
+
+        if camera is None:
+            # todo: emit warning.
+            self.__emit_default_camera()
+            return
 
         film_width = 32.0 / 1000                                # Blender's film width is hardcoded to 32 mm
         aspect_ratio = 640.0 / 480                              # todo: compute
@@ -161,6 +175,14 @@ class Exporter(bpy.types.Operator):
         self.__close_element("transform")
         self.__close_element("camera")
 
+    def __emit_default_camera(self):
+        self.__open_element('camera name="camera" model="pinhole_camera"')
+        self.__emit_parameter("film_width", 0.024892)
+        self.__emit_parameter("film_height", 0.018669)
+        self.__emit_parameter("focal_length", 0.035)
+        self.__close_element("camera")
+        return
+
     def __emit_assembly(self):
         self.__open_element("assembly name=\"assembly\"")
         self.__emit_objects()
@@ -172,6 +194,11 @@ class Exporter(bpy.types.Operator):
                 self.__emit_object(object)
 
     def __emit_object(self, object):
+        # Skip empty mesh objects.
+        if len(object.data.faces) == 0:
+            # todo: issue warning?
+            return
+
         self.__emit_mesh_object(object)
         self.__emit_object_instance(object)
 
@@ -198,8 +225,9 @@ class Exporter(bpy.types.Operator):
         self.__close_element("output")
 
     def __emit_frame(self):
+        camera = bpy.context.scene.camera
         self.__open_element("frame name=\"beauty\"")
-        self.__emit_parameter("camera", bpy.context.scene.camera.name)
+        self.__emit_parameter("camera", "camera" if camera is None else camera.name)
         self.__emit_custom_prop(bpy.context.scene, "resolution", "640 480")
         self.__emit_custom_prop(bpy.context.scene, "color_space", "srgb")
         self.__close_element("frame")
@@ -216,19 +244,29 @@ class Exporter(bpy.types.Operator):
 
     def __emit_transform(self, matrix):
         self.__open_element("transform")
-        self.__emit_matrix(matrix)
+        #self.__emit_matrix(matrix)
+        s = matrix.to_scale()
+        t = matrix.to_translation()
+        rx, ry, rz = map(rad_to_deg, matrix.to_euler())
+        self.__emit_line('<scaling value="{0} {1} {2}" />'.format(s[0], s[2], s[1]))
+        self.__emit_line('<rotation axis="1.0 0.0 0.0" angle="{0}" />'.format(rx))
+        self.__emit_line('<rotation axis="0.0 1.0 0.0" angle="{0}" />'.format(rz))
+        self.__emit_line('<rotation axis="0.0 0.0 1.0" angle="{0}" />'.format(-ry))
+        self.__emit_line('<translation value="{0} {1} {2}" />'.format(t[0], t[2], -t[1]))
         self.__close_element("transform")
 
-    def __emit_matrix(self, matrix):
+    def __emit_matrix(self, m):
+        #
+        # Notes:
+        #   appleseed use premultiplication (x' = M * x), so the translation vector is in the rightmost column;
+        #   in appleseed, Y is up, so a point (x, y, z) in Blender will have coordinates (x, z, -y) in appleseed.
+        #
         self.__open_element("matrix")
-        self.__emit_matrix_values(matrix)
+        self.__emit_line("{0} {1} {2} {3}".format( m[0][0],  m[0][2], -m[0][1],  m[3][0]))
+        self.__emit_line("{0} {1} {2} {3}".format( m[2][0],  m[2][2], -m[2][1],  m[3][2]))
+        self.__emit_line("{0} {1} {2} {3}".format(-m[1][0], -m[1][2], +m[1][1], -m[3][1]))
+        self.__emit_line("{0} {1} {2} {3}".format( m[0][3],  m[1][3],  m[2][3],  m[3][3]))
         self.__close_element("matrix")
-
-    def __emit_matrix_values(self, values):
-        self.__emit_line("{0} {1} {2} {3}".format(values[0][0], values[0][2], -values[0][1], values[3][0]))
-        self.__emit_line("{0} {1} {2} {3}".format(values[1][0], values[1][2], -values[1][1], values[3][2]))
-        self.__emit_line("{0} {1} {2} {3}".format(values[2][0], values[2][2], -values[2][1], -values[3][1]))
-        self.__emit_line("{0} {1} {2} {3}".format(values[0][3], values[2][3], -values[1][3], values[3][3]))
 
     def __emit_custom_prop(self, object, prop_name, default_value):
         value = self.__get_custom_prop(object, prop_name, default_value)
