@@ -262,7 +262,7 @@ class AppleseedExportOperator(bpy.types.Operator):
 
             bpy.data.meshes.remove(mesh)
         except RuntimeError:
-            self.__info("Object " + object.name + " is not convertible to a mesh.")
+            self.__info("Object {0} of type {1} is not convertible to a mesh.".format(object.name, object.type))
 
     def __emit_object(self, object_name, mesh):
         filename = object_name + ".obj"
@@ -270,7 +270,6 @@ class AppleseedExportOperator(bpy.types.Operator):
 
         try:
             write_mesh_object_to_disk(mesh, filepath)
-            return True
         except IOError:
             self.__error("While exporting object " + object_name + ": could not write to " + filepath + ", skipping this object.")
             return False
@@ -278,6 +277,8 @@ class AppleseedExportOperator(bpy.types.Operator):
         self.__open_element('object name="' + object_name + '" model="mesh_object"')
         self.__emit_parameter("filename", filename)
         self.__close_element("object")
+
+        return True
 
     def __emit_object_instance(self, object):
         self.__open_element('object_instance name="' + object.name + '_inst" object="' + object.name + '.0"')
