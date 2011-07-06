@@ -118,10 +118,15 @@ class AppleseedExportOperator(bpy.types.Operator):
 
     filepath = bpy.props.StringProperty(subtype='FILE_PATH')
 
-    # In Blender 2.58 (since revision 36928), it is possible to pass a function to the 'items' argument to create a dynamic list.
+    # In Blender 2.58 (since revision 36928), it is possible to pass a function to the 'items'
+    # argument of bpy.props.EnumProperty to create a dynamic list.
     # See: http://projects.blender.org/scm/viewvc.php?view=rev&root=bf-blender&revision=36928
-    selected_scene = bpy.props.EnumProperty(name="Scene", description="Select the scene to export", items=scene_enumerator)
-    selected_camera = bpy.props.EnumProperty(name="Camera", description="Select the camera to export", items=camera_enumerator)
+    selected_scene = bpy.props.EnumProperty(name="Scene",
+                                            description="Select the scene to export",
+                                            items=scene_enumerator)
+    selected_camera = bpy.props.EnumProperty(name="Camera",
+                                             description="Select the camera to export",
+                                             items=camera_enumerator)
 
     def execute(self, context):
         self.__export(os.path.splitext(self.filepath)[0] + ".appleseed")
@@ -149,7 +154,7 @@ class AppleseedExportOperator(bpy.types.Operator):
             pass
 
         self.__progress("")
-        self.__progress("Starting export of scene {0} to {1}...".format(scene.name, file_path))
+        self.__progress("Starting export of scene '{0}' to {1}...".format(scene.name, file_path))
 
         try:
             self._output_file = open(file_path, "w")
@@ -195,22 +200,20 @@ class AppleseedExportOperator(bpy.types.Operator):
         aspect_ratio = self.__get_frame_aspect_ratio(render)
         focal_length = camera.data.lens / 1000.0                # Blender's camera focal length is expressed in mm
 
-        self.__open_element('camera name="' + camera.name + '" model="pinhole_camera"')
-        self.__emit_parameter("film_width", film_width)
-        self.__emit_parameter("aspect_ratio", aspect_ratio)
-        self.__emit_parameter("focal_length", focal_length)
-        self.__open_element("transform")
-
         origin = camera.matrix_world[3]
         forward = -camera.matrix_world[2]
         up = camera.matrix_world[1]
         target = origin + forward
 
-        origin_str = str(origin[0]) + " " + str(origin[2]) + " " + str(-origin[1])
-        target_str = str(target[0]) + " " + str(target[2]) + " " + str(-target[1])
-        up_str =     str(    up[0]) + " " + str(    up[2]) + " " + str(    -up[1])
-
-        self.__emit_line('<look_at origin="' + origin_str + '" target="' + target_str + '" up="' + up_str + '" />')
+        self.__open_element('camera name="' + camera.name + '" model="pinhole_camera"')
+        self.__emit_parameter("film_width", film_width)
+        self.__emit_parameter("aspect_ratio", aspect_ratio)
+        self.__emit_parameter("focal_length", focal_length)
+        self.__open_element("transform")
+        self.__emit_line('<look_at origin="{0} {1} {2}" target="{3} {4} {5}" up="{6} {7} {8}" />'.format( \
+                         origin[0], origin[2], -origin[1],
+                         target[0], target[2], -target[1],
+                         up[0], up[2], -up[1]))
         self.__close_element("transform")
         self.__close_element("camera")
 
@@ -229,40 +232,78 @@ class AppleseedExportOperator(bpy.types.Operator):
 
     def __emit_objects(self, scene):
         for object in scene.objects:
-            if not object.hide_render:  # skip non-renderable objects
-                if object.type == 'MESH':
-                    self.__emit_mesh_object(object)
+            # Skip irrelevant objects.
+            if object.type in ( 'CAMERA', 'LAMP' ):
+                continue
+
+            # Skip non-renderable objects.
+            if object.hide_render:
+                continue
+
+            # Skip children of dupli objects.
+            if object.parent and object.parent.dupli_type != 'NONE':
+                continue
+
+            # Create dupli list.
+            if object.dupli_type != 'NONE':
+                object.dupli_list_create(scene)
+                instances = [ (dupli.object, dupli.matrix) for dupli in object.dupli_list ]
+            else:
+                instances = [ (object, object.matrix_world) ]
+
+            EnableInstancing = True
+            
+            if EnableInstancing:
+                # Emit object.
+                first_instance = instances[0]
+                if first_instance[0].type == 'MESH':
+                    emitted_mesh_object = self.__emit_mesh_object(first_instance[0], first_instance[0].name)
                 else:
-                    self.__try_emit_non_mesh_object(object, scene)
+                    emitted_mesh_object = self.__try_emit_non_mesh_object(scene, first_instance[0], first_instance[0].name)
 
-    def __emit_mesh_object(self, object):
+                # Emit instances.
+                if emitted_mesh_object:
+                    for index, instance in enumerate(instances):
+                        object_name = first_instance[0].name
+                        instance_name = "{0}_inst.{1}".format(object_name, index)
+                        self.__emit_object_instance(object_name, instance_name, instance[1])
+            else:
+                for index, instance in enumerate(instances):
+                    object_name = "{0}.{1}".format(instance[0].name, index)
+                    instance_name = "{0}_inst".format(object_name)
+                    if instance[0].type == 'MESH':
+                        emitted_mesh_object = self.__emit_mesh_object(instance[0], object_name)
+                    else:
+                        emitted_mesh_object = self.__try_emit_non_mesh_object(scene, instance[0], object_name)
+                    self.__emit_object_instance(object_name, instance_name, instance[1])
+
+            # Clear dupli list.
+            if object.dupli_type != 'NONE':
+                object.dupli_list_clear()
+
+    def __emit_mesh_object(self, object, output_object_name):
         if len(object.data.faces) == 0:
-            self.__info("Skipping mesh object {0} since it has no faces.".format(object.name))
-            return
+            self.__info("Skipping mesh object '{0}' since it has no faces.".format(object.name))
+            return False
+        self.__progress("Exporting mesh object '{0}' as '{1}'...".format(object.name, output_object_name))
+        return self.__emit_object(output_object_name, object.data)
 
-        self.__progress("Exporting mesh object {0}...".format(object.name))
-
-        if self.__emit_object(object.name, object.data):
-            self.__emit_object_instance(object)
-
-    def __try_emit_non_mesh_object(self, object, scene):
+    def __try_emit_non_mesh_object(self, scene, object, output_object_name):
         try:
             mesh = object.to_mesh(scene, True, 'RENDER')
-
             if mesh is None:
-                self.__info("Failed to convert object {0} to a mesh.".format(object.name))
-                return
-
+                self.__info("Failed to convert object '{0}' to a mesh.".format(object.name))
+                return False
             if len(mesh.faces) == 0:
-                self.__info("Skipping object {0} since it has no faces once converted to a mesh.".format(object.name))
-                return
-
-            if self.__emit_object(object.name, mesh):
-                self.__emit_object_instance(object)
-
+                self.__info("Skipping object '{0}' since it has no faces once converted to a mesh.".format(object.name))
+                return False
+            self.__progress("Exporting converted object '{0}' as '{1}'...".format(object.name, output_object_name))
+            emitted_mesh_object = self.__emit_object(output_object_name, mesh)
             bpy.data.meshes.remove(mesh)
+            return emitted_mesh_object
         except RuntimeError:
-            self.__info("Object {0} of type {1} is not convertible to a mesh.".format(object.name, object.type))
+            self.__info("Object '{0}' of type '{1}' is not convertible to a mesh.".format(object.name, object.type))
+            return False
 
     def __emit_object(self, object_name, mesh):
         filename = object_name + ".obj"
@@ -271,7 +312,7 @@ class AppleseedExportOperator(bpy.types.Operator):
         try:
             write_mesh_object_to_disk(mesh, filepath)
         except IOError:
-            self.__error("While exporting object " + object_name + ": could not write to " + filepath + ", skipping this object.")
+            self.__error("While exporting object '{0}': could not write to {1}, skipping this object.".format(object_name, filepath))
             return False
 
         self.__open_element('object name="' + object_name + '" model="mesh_object"')
@@ -280,9 +321,9 @@ class AppleseedExportOperator(bpy.types.Operator):
 
         return True
 
-    def __emit_object_instance(self, object):
-        self.__open_element('object_instance name="' + object.name + '_inst" object="' + object.name + '.0"')
-        self.__emit_transform(object.matrix_world)
+    def __emit_object_instance(self, object_name, instance_name, instance_matrix):
+        self.__open_element('object_instance name="{0}" object="{1}.0"'.format(instance_name, object_name))
+        self.__emit_transform(instance_matrix)
         self.__close_element("object_instance")
 
     def __emit_assembly_instance(self, scene):
@@ -336,21 +377,10 @@ class AppleseedExportOperator(bpy.types.Operator):
         self.__open_element("transform")
         self.__emit_line('<scaling value="{0} {1} {2}" />'.format(s[0], s[2], s[1]))
         self.__emit_line('<rotation axis="1.0 0.0 0.0" angle="{0}" />'.format(rx))
+        self.__emit_line('<rotation axis="0.0 0.0 -1.0" angle="{0}" />'.format(ry))
         self.__emit_line('<rotation axis="0.0 1.0 0.0" angle="{0}" />'.format(rz))
-        self.__emit_line('<rotation axis="0.0 0.0 1.0" angle="{0}" />'.format(-ry))
         self.__emit_line('<translation value="{0} {1} {2}" />'.format(t[0], t[2], -t[1]))
         self.__close_element("transform")
-
-    def __emit_matrix(self, m):
-        # Notes:
-        #   appleseed use premultiplication (x' = M * x), so the translation vector is in the rightmost column;
-        #   in appleseed, Y is up, so a point (x, y, z) in Blender will have coordinates (x, z, -y) in appleseed.
-        self.__open_element("matrix")
-        self.__emit_line("{0} {1} {2} {3}".format( m[0][0],  m[0][2], -m[0][1],  m[3][0]))
-        self.__emit_line("{0} {1} {2} {3}".format( m[2][0],  m[2][2], -m[2][1],  m[3][2]))
-        self.__emit_line("{0} {1} {2} {3}".format(-m[1][0], -m[1][2], +m[1][1], -m[3][1]))
-        self.__emit_line("{0} {1} {2} {3}".format( m[0][3],  m[1][3],  m[2][3],  m[3][3]))
-        self.__close_element("matrix")
 
     def __emit_custom_prop(self, object, prop_name, default_value):
         value = self.__get_custom_prop(object, prop_name, default_value)
