@@ -93,11 +93,16 @@ def object_enumerator(type):
 # Write a mesh object to disk in Wavefront OBJ format.
 #
 
-def get_vector_key(v):
+def get_array2_key(v):
+    return int(v[0] * 1000000), int(v[1] * 1000000)
+
+def get_vector2_key(v):
+    w = v * 1000000
+    return int(w.x), int(w.y)
+
+def get_vector3_key(v):
     w = v * 1000000
     return int(w.x), int(w.y), int(w.z)
-    # The above is a much faster alternative to the classic variant:
-    #   return round(v[0], 6), round(v[1], 6), round(v[2], 6)
 
 def write_mesh_object_to_disk(mesh, filepath):
     output_file = open(filepath, "w")
@@ -107,6 +112,8 @@ def write_mesh_object_to_disk(mesh, filepath):
 
     vertices = mesh.vertices
     faces = mesh.faces
+    uvtex = mesh.uv_textures
+    uvset = uvtex.active.data if uvtex else None
 
     # Write vertices.
     output_file.write("# %d vertices.\n" % len(vertices))
@@ -114,48 +121,79 @@ def write_mesh_object_to_disk(mesh, filepath):
         v = vertex.co
         output_file.write("v %.15f %.15f %.15f\n" % (v.x, v.z, -v.y))
 
-    # Collect and write normals.
+    # Deduplicate and write normals.
+    output_file.write("# Vertex normals.\n")
     normal_indices = {}
     vertex_normal_indices = {}
     face_normal_indices = {}
     current_normal_index = 1
-    output_file.write("# Vertex normals.\n")
     for face_index, face in enumerate(faces):
         if face.use_smooth:
             for vertex_index in face.vertices:
                 vn = vertices[vertex_index].normal
-                vn_key = get_vector_key(vn)
-                if vn_key not in normal_indices:
+                vn_key = get_vector3_key(vn)
+                if vn_key in normal_indices:
+                    vertex_normal_indices[vertex_index] = normal_indices[vn_key]
+                else:
                     output_file.write("vn %.15f %.15f %.15f\n" % (vn.x, vn.z, -vn.y))
                     normal_indices[vn_key] = current_normal_index
                     vertex_normal_indices[vertex_index] = current_normal_index
                     current_normal_index += 1
-                else:
-                    vertex_normal_indices[vertex_index] = normal_indices[vn_key]
+                    
         else:
             vn = face.normal
-            vn_key = get_vector_key(vn)
-            if vn_key not in normal_indices:
+            vn_key = get_vector3_key(vn)
+            if vn_key in normal_indices:
+                face_normal_indices[face_index] = normal_indices[vn_key]
+            else:
                 output_file.write("vn %.15f %.15f %.15f\n" % (vn.x, vn.z, -vn.y))
                 normal_indices[vn_key] = current_normal_index
                 face_normal_indices[face_index] = current_normal_index
                 current_normal_index += 1
-            else:
-                face_normal_indices[face_index] = normal_indices[vn_key]
+
+    # Deduplicate and write texture coordinates.
+    if uvset:
+        output_file.write("# Texture coordinates.\n")
+        vt_indices = {}
+        vertex_texcoord_indices = {}
+        current_vt_index = 1
+        for face_index, face in enumerate(faces):
+            assert len(uvset[face_index].uv) == len(face.vertices)
+            for vt_index, vt in enumerate(uvset[face_index].uv):
+                vertex_index = face.vertices[vt_index]
+                vt_key = get_array2_key(vt)
+                if vt_key in vt_indices:
+                    vertex_texcoord_indices[face_index, vertex_index] = vt_indices[vt_key]
+                else:
+                    output_file.write("vt %.15f %.15f\n" % (vt[0], vt[1]))
+                    vt_indices[vt_key] = current_vt_index
+                    vertex_texcoord_indices[face_index, vertex_index] = current_vt_index
+                    current_vt_index += 1
 
     # Write faces.
     output_file.write("# %d faces.\n" % len(faces))
     for face_index, face in enumerate(faces):
-        vertex_indices = face.vertices
         line = "f"
-        if face.use_smooth:
-            for vertex_index in vertex_indices:
-                normal_index = vertex_normal_indices[vertex_index]
-                line += " %d//%d" % (vertex_index + 1, normal_index)
+        if uvset and len(uvset[face_index].uv) > 0:
+            if face.use_smooth:
+                for vertex_index in face.vertices:
+                    texcoord_index = vertex_texcoord_indices[face_index, vertex_index]
+                    normal_index = vertex_normal_indices[vertex_index]
+                    line += " %d/%d/%d" % (vertex_index + 1, texcoord_index, normal_index)
+            else:
+                normal_index = face_normal_indices[face_index]
+                for vertex_index in face.vertices:
+                    texcoord_index = vertex_texcoord_indices[face_index, vertex_index]
+                    line += " %d/%d/%d" % (vertex_index + 1, texcoord_index, normal_index)
         else:
-            normal_index = face_normal_indices[face_index]
-            for vertex_index in vertex_indices:
-                line += " %d//%d" % (vertex_index + 1, normal_index)
+            if face.use_smooth:
+                for vertex_index in face.vertices:
+                    normal_index = vertex_normal_indices[vertex_index]
+                    line += " %d//%d" % (vertex_index + 1, normal_index)
+            else:
+                normal_index = face_normal_indices[face_index]
+                for vertex_index in face.vertices:
+                    line += " %d//%d" % (vertex_index + 1, normal_index)
         output_file.write(line + "\n")
 
     output_file.close()
@@ -183,7 +221,7 @@ class AppleseedExportOperator(bpy.types.Operator):
 
     def execute(self, context):
         if EnableProfiling:
-            dis.dis(get_vector_key)
+            dis.dis(get_vector3_key)
             cProfile.runctx("self.export()", globals(), locals())
         else: self.export()
         return { 'FINISHED' }
@@ -344,7 +382,7 @@ class AppleseedExportOperator(bpy.types.Operator):
 
     def __emit_object(self, object_name, mesh):
         # Recalculate vertex normals.
-        # todo: make this step optional.
+        # todo: make this step optional?
         mesh.calc_normals()
 
         filename = object_name + ".obj"
