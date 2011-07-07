@@ -58,61 +58,51 @@ namespace
       : public IOBJMeshWalker
     {
       public:
-        // Constructor.
         explicit OBJMeshBuilderWalker(const IMeshWalker& walker)
           : m_walker(walker)
         {
         }
 
-        // Return the name of the mesh.
         virtual string get_name() const
         {
             return m_walker.get_name();
         }
 
-        // Return the number of vertices in the mesh.
         virtual size_t get_vertex_count() const
         {
             return m_walker.get_vertex_count();
         }
 
-        // Return a given vertex from the mesh.
         virtual Vector3d get_vertex(const size_t i) const
         {
             return m_walker.get_vertex(i);
         }
 
-        // Return the number of vertex normals in the mesh.
         virtual size_t get_vertex_normal_count() const
         {
             return m_walker.get_vertex_normal_count();
         }
 
-        // Return a given vertex normal from the mesh.
         virtual Vector3d get_vertex_normal(const size_t i) const
         {
             return m_walker.get_vertex_normal(i);
         }
 
-        // Return the number of texture coordinates in the mesh.
         virtual size_t get_tex_coords_count() const
         {
             return m_walker.get_tex_coords_count();
         }
 
-        // Return a given texture coordinate from the mesh.
         virtual Vector2d get_tex_coords(const size_t i) const
         {
             return m_walker.get_tex_coords(i);
         }
 
-        // Return the number of faces in the mesh.
         virtual size_t get_face_count() const
         {
             return m_walker.get_face_count();
         }
 
-        // Return a given face from the mesh.
         virtual Face get_face(const size_t i) const
         {
             return m_walker.get_face(i);
@@ -141,7 +131,6 @@ namespace
             prefix, v[0], v[1], v[2]);
     }
 
-    // Write vertices.
     void write_vertices(FILE* file, const IOBJMeshWalker& walker)
     {
         const size_t vertex_count = walker.get_vertex_count();
@@ -159,7 +148,6 @@ namespace
         }
     }
 
-    // Write vertex normals.
     void write_vertex_normals(FILE* file, const IOBJMeshWalker& walker)
     {
         const size_t vertex_normal_count = walker.get_vertex_normal_count();
@@ -180,7 +168,6 @@ namespace
         }
     }
 
-    // Write texture coordinates.
     void write_texture_coordinates(FILE* file, const IOBJMeshWalker& walker)
     {
         const size_t tex_coords_count = walker.get_tex_coords_count();
@@ -204,6 +191,7 @@ namespace
     void write_faces_no_vn_no_vt(FILE* file, const IOBJMeshWalker& walker)
     {
         const size_t face_count = walker.get_face_count();
+
         for (size_t i = 0; i < face_count; ++i)
         {
             const IOBJMeshWalker::Face face = walker.get_face(i);
@@ -221,6 +209,7 @@ namespace
     void write_faces_vn_no_vt(FILE* file, const IOBJMeshWalker& walker)
     {
         const size_t face_count = walker.get_face_count();
+
         for (size_t i = 0; i < face_count; ++i)
         {
             const IOBJMeshWalker::Face face = walker.get_face(i);
@@ -238,6 +227,7 @@ namespace
     void write_faces_no_vn_vt(FILE* file, const IOBJMeshWalker& walker)
     {
         const size_t face_count = walker.get_face_count();
+
         for (size_t i = 0; i < face_count; ++i)
         {
             const IOBJMeshWalker::Face face = walker.get_face(i);
@@ -255,6 +245,7 @@ namespace
     void write_faces_vn_vt(FILE* file, const IOBJMeshWalker& walker)
     {
         const size_t face_count = walker.get_face_count();
+
         for (size_t i = 0; i < face_count; ++i)
         {
             const IOBJMeshWalker::Face face = walker.get_face(i);
@@ -269,7 +260,6 @@ namespace
         }
     }
 
-    // Write faces.
     void write_faces(FILE* file, const IOBJMeshWalker& walker)
     {
         const size_t face_count = walker.get_face_count();
@@ -295,7 +285,6 @@ namespace
     }
 }
 
-// Write an OBJ mesh file.
 void OBJMeshFileWriter::write(
     const string&           filename,
     const IMeshWalker&      walker)
@@ -303,12 +292,13 @@ void OBJMeshFileWriter::write(
     OBJMeshBuilderWalker adaptor(walker);
     write(filename, adaptor);
 }
+
 void OBJMeshFileWriter::write(
     const string&           filename,
     const IOBJMeshWalker&   walker)
 {
-    // Open the file for writing.
     FILE* file = fopen(filename.c_str(), "wt");
+
     if (file == 0)
         throw ExceptionIOError();
 
@@ -324,19 +314,11 @@ void OBJMeshFileWriter::write(
         "o %s\n",
         walker.get_name().c_str());
 
-    // Write vertices.
     write_vertices(file, walker);
-
-    // Write vertex normals.
     write_vertex_normals(file, walker);
-
-    // Write texture coordinates.
     write_texture_coordinates(file, walker);
-
-    // Write faces.
     write_faces(file, walker);
 
-    // Close the file.
     fclose(file);
 }
 
