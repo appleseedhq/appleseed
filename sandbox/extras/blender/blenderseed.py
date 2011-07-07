@@ -139,7 +139,6 @@ def write_mesh_object_to_disk(mesh, filepath):
                     normal_indices[vn_key] = current_normal_index
                     vertex_normal_indices[vertex_index] = current_normal_index
                     current_normal_index += 1
-                    
         else:
             vn = face.normal
             vn_key = get_vector3_key(vn)
@@ -170,9 +169,18 @@ def write_mesh_object_to_disk(mesh, filepath):
                     vertex_texcoord_indices[face_index, vertex_index] = current_vt_index
                     current_vt_index += 1
 
+    # Sort the faces by material.
+    sorted_faces = sorted(faces, key=lambda face: face.material_index)
+
     # Write faces.
-    output_file.write("# %d faces.\n" % len(faces))
-    for face_index, face in enumerate(faces):
+    output_file.write("# %d faces.\n" % len(sorted_faces))
+    material_indices = []
+    current_material_index = -1
+    for face_index, face in enumerate(sorted_faces):
+        if current_material_index != face.material_index:
+            current_material_index = face.material_index
+            material_indices.append(current_material_index)
+            output_file.write("o material_%d\n" % current_material_index)
         line = "f"
         if uvset and len(uvset[face_index].uv) > 0:
             if face.use_smooth:
@@ -197,6 +205,8 @@ def write_mesh_object_to_disk(mesh, filepath):
         output_file.write(line + "\n")
 
     output_file.close()
+    
+    return material_indices
 
 
 #
@@ -351,14 +361,16 @@ class AppleseedExportOperator(bpy.types.Operator):
 
             # Emit object.
             first_instance = instances[0]
-            emitted_mesh_object = self.__emit_mesh_object(scene, first_instance[0], first_instance[0].name)
+            emitted_mesh_object, material_indices = \
+                self.__emit_mesh_object(scene, first_instance[0], first_instance[0].name)
 
             # Emit instances.
             if emitted_mesh_object:
                 for index, instance in enumerate(instances):
-                    object_name = first_instance[0].name
-                    instance_name = "{0}_inst.{1}".format(object_name, index)
-                    self.__emit_object_instance(object_name, instance_name, instance[1])
+                    for material_index in material_indices:
+                        object_name = "{0}.material_{1}".format(first_instance[0].name, material_index)
+                        instance_name = "{0}.instance_{1}".format(object_name, index)
+                        self.__emit_object_instance(object_name, instance_name, instance[1])
 
             # Clear dupli list.
             if object.dupli_type != 'NONE':
@@ -369,16 +381,16 @@ class AppleseedExportOperator(bpy.types.Operator):
             mesh = object.to_mesh(scene, True, 'RENDER')
             if mesh is None:
                 self.__info("Object '{0}' of type '{1}' is not convertible to a mesh.".format(object.name, object.type))
-                return False
+                return False, []
             if len(mesh.faces) == 0:
                 self.__info("Skipping object '{0}' since it has no faces once converted to a mesh.".format(object.name))
-                return False
-            emitted_mesh_object = self.__emit_object(output_object_name, mesh)
+                return False, []
+            emitted_mesh_object, material_indices = self.__emit_object(output_object_name, mesh)
             bpy.data.meshes.remove(mesh)
-            return emitted_mesh_object
+            return emitted_mesh_object, material_indices
         except RuntimeError:
             self.__info("Object '{0}' of type '{1}' is not convertible to a mesh.".format(object.name, object.type))
-            return False
+            return False, []
 
     def __emit_object(self, object_name, mesh):
         # Recalculate vertex normals.
@@ -390,24 +402,24 @@ class AppleseedExportOperator(bpy.types.Operator):
 
         try:
             self.__progress("Exporting object '{0}' to {1}...".format(object_name, filename))
-            write_mesh_object_to_disk(mesh, filepath)
+            material_indices = write_mesh_object_to_disk(mesh, filepath)
         except IOError:
             self.__error("While exporting object '{0}': could not write to {1}, skipping this object.".format(object_name, filepath))
-            return False
+            return False, []
 
         self.__open_element('object name="' + object_name + '" model="mesh_object"')
         self.__emit_parameter("filename", filename)
         self.__close_element("object")
 
-        return True
+        return True, material_indices
 
     def __emit_object_instance(self, object_name, instance_name, instance_matrix):
-        self.__open_element('object_instance name="{0}" object="{1}.0"'.format(instance_name, object_name))
+        self.__open_element('object_instance name="{0}" object="{1}"'.format(instance_name, object_name))
         self.__emit_transform(instance_matrix)
         self.__close_element("object_instance")
 
     def __emit_assembly_instance(self, scene):
-        self.__open_element('assembly_instance name="' + scene.name + '_inst" assembly="' + scene.name + '"')
+        self.__open_element('assembly_instance name="' + scene.name + '_instance" assembly="' + scene.name + '"')
         self.__close_element("assembly_instance")
 
     def __emit_output(self, scene):
