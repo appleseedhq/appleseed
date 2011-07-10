@@ -4,74 +4,81 @@
 
 <manifest>
     <input root="../src/appleseed/">
-        <file>foundation/core/concepts/*</file>
-        <file>foundation/core/exceptions/*</file>
+        <files>../../scripts/appleseed.foundation.stubs.*</files>
 
-        <file>foundation/image/color.h</file>
-        <file>foundation/image/colorspace.*</file>
-        <!--<file>foundation/image/pixel.*</file>-->        <!-- requires openexr/half.h -->
+        <files>foundation/core/concepts/*</files>
+        <files>foundation/core/exceptions/*</files>
 
-        <file>foundation/math/intersection/*</file>
-        <file>foundation/math/knn/*</file>
-        <file>foundation/math/rng/*</file>
-        <file>foundation/math/sampling/*</file>
-        <file>foundation/math/aabb.h</file>
-        <file>foundation/math/area.h</file>
-        <file>foundation/math/basis.h</file>
-        <file>foundation/math/cdf.h</file>
-        <file>foundation/math/combination.h</file>
-        <file>foundation/math/distance.h</file>
-        <file>foundation/math/fastmath.h</file>
-        <file>foundation/math/fp.h</file>
-        <file>foundation/math/frustum.h</file>
-        <file>foundation/math/hash.h</file>
-        <file>foundation/math/matrix.h</file>
-        <file>foundation/math/minmax.h</file>
-        <file>foundation/math/noise.*</file>
-        <file>foundation/math/ordering.*</file>
-        <file>foundation/math/permutation.*</file>
-        <file>foundation/math/primes.*</file>
-        <file>foundation/math/qmc.h</file>
-        <file>foundation/math/quaternion.h</file>
-        <file>foundation/math/ray.h</file>
-        <file>foundation/math/scalar.h</file>
-        <file>foundation/math/spline.h</file>
-        <file>foundation/math/vector.h</file>
-        <file>foundation/math/voxelgrid.h</file>
+        <files>foundation/image/color.h</files>
+        <files>foundation/image/colorspace.*</files>
+        <!--<files>foundation/image/pixel.*</files>-->      <!-- requires openexr/half.h -->
 
-        <file>foundation/platform/breakpoint.h</file>
-        <file>foundation/platform/compiler.*</file>
-        <!--<file>foundation/platform/defaulttimers.*</file>-->
-        <!--<file>foundation/platform/opengl.h</file>-->
-        <file>foundation/platform/snprintf.h</file>
-        <file>foundation/platform/sse.h</file>
-        <file>foundation/platform/types.h</file>
+        <files>foundation/math/intersection/*</files>
+        <files>foundation/math/knn/*</files>
+        <files>foundation/math/rng/*</files>
+        <files>foundation/math/sampling/*</files>
+        <files>foundation/math/aabb.h</files>
+        <files>foundation/math/area.h</files>
+        <files>foundation/math/basis.h</files>
+        <files>foundation/math/cdf.h</files>
+        <files>foundation/math/combination.h</files>
+        <files>foundation/math/distance.h</files>
+        <files>foundation/math/fastmath.h</files>
+        <files>foundation/math/fp.h</files>
+        <files>foundation/math/frustum.h</files>
+        <files>foundation/math/hash.h</files>
+        <files>foundation/math/matrix.h</files>
+        <files>foundation/math/minmax.h</files>
+        <files>foundation/math/noise.*</files>
+        <files>foundation/math/ordering.*</files>
+        <files>foundation/math/permutation.*</files>
+        <files>foundation/math/primes.*</files>
+        <files>foundation/math/qmc.h</files>
+        <files>foundation/math/quaternion.h</files>
+        <files>foundation/math/ray.h</files>
+        <files>foundation/math/scalar.h</files>
+        <files>foundation/math/spline.h</files>
+        <files>foundation/math/vector.h</files>
+        <files>foundation/math/voxelgrid.h</files>
 
-        <file>foundation/utility/commandlineparser/*</file>
-        <file>foundation/utility/containers/dictionary.*</file>
-        <file>foundation/utility/containers/dictionaryarray.*</file>
-        <file>foundation/utility/containers/pagedarray.h</file>
-        <file>foundation/utility/bufferedfile.*</file>
-        <file>foundation/utility/cache.h</file>
-        <file>foundation/utility/cameracontroller.h</file>
-        <file>foundation/utility/casts.h</file>
-        <file>foundation/utility/cc.h</file>
-        <file>foundation/utility/countof.h</file>
-        <file>foundation/utility/foreach.h</file>
-        <file>foundation/utility/indenter.h</file>
-        <file>foundation/utility/iostreamop.h</file>
-        <file>foundation/utility/iterators.h</file>
-        <file>foundation/utility/makevector.h</file>
-        <file>foundation/utility/memory.*</file>
-        <file>foundation/utility/numerictype.h</file>
-        <file>foundation/utility/otherwise.h</file>
-        <file>foundation/utility/poolallocator.h</file>
-        <file>foundation/utility/string.*</file>
-        <file>foundation/utility/typetraits.h</file>
-        <file>foundation/utility/vpythonfile.*</file>
+        <files>foundation/platform/breakpoint.h</files>
+        <files>foundation/platform/compiler.*</files>
+        <files>foundation/platform/sse.h</files>
+        <files>foundation/platform/types.h</files>
+
+        <files>foundation/utility/commandlineparser/*</files>
+        <files>foundation/utility/containers/dictionary.*</files>
+        <files>foundation/utility/containers/dictionaryarray.*</files>
+        <files>foundation/utility/containers/pagedarray.h</files>
+        <files>foundation/utility/log/filelogtarget.*</files>
+        <files>foundation/utility/log/filelogtargetbase.*</files>
+        <files>foundation/utility/log/helpers.h</files>
+        <files>foundation/utility/log/logger.h</files>
+        <files>foundation/utility/log/logmessage.*</files>
+        <files>foundation/utility/log/logtargetbase.h</files>
+        <files>foundation/utility/log/openfilelogtarget.*</files>
+        <files>foundation/utility/bufferedfile.*</files>
+        <files>foundation/utility/cache.h</files>
+        <files>foundation/utility/cameracontroller.h</files>
+        <files>foundation/utility/casts.h</files>
+        <files>foundation/utility/cc.h</files>
+        <files>foundation/utility/countof.h</files>
+        <files>foundation/utility/foreach.h</files>
+        <files>foundation/utility/indenter.h</files>
+        <files>foundation/utility/iostreamop.h</files>
+        <files>foundation/utility/iterators.h</files>
+        <files>foundation/utility/makevector.h</files>
+        <files>foundation/utility/memory.*</files>
+        <files>foundation/utility/numerictype.h</files>
+        <files>foundation/utility/otherwise.h</files>
+        <files>foundation/utility/poolallocator.h</files>
+        <files>foundation/utility/string.*</files>
+        <files>foundation/utility/typetraits.h</files>
+        <files>foundation/utility/vpythonfile.*</files>
     </input>
     <output>
-        <base_path>../archives/releases/appleseed.foundation-1.0/appleseed.foundation</base_path>
+        <base_path>../archives/releases/appleseed.foundation-1.1/</base_path>
+        <base_filename>appleseed.foundation</base_filename>
         <header>
 //
 // This source file is part of appleseed.
@@ -101,7 +108,7 @@
 //
 
 //
-// This is appleseed.foundation version 1.0.
+// This is appleseed.foundation version 1.1.
 //
 
 // Enable SSE extensions.
@@ -173,6 +180,8 @@
         <strip type="regex">^#endif\s+// !APPLESEED_FOUNDATION_[A-Z_]*_H[\r\n]+</strip>
     </output>
     <test>
-        <commandline>cl /c /W3 /wd"4355" /EHsc /D_CRT_SECURE_NO_WARNINGS $cppfile</commandline>
+        <commandline>cl /W3 /wd"4355" /EHsc /D_CRT_SECURE_NO_WARNINGS /I"$OutputBasePath" appleseed.foundation.test.cpp</commandline>
+        <commandline>del appleseed.foundation.test.obj</commandline>
+        <commandline>del appleseed.foundation.test.exe</commandline>
     </test>
 </manifest>

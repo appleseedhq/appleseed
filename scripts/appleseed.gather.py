@@ -28,7 +28,7 @@
 #
 
 # Settings.
-VersionString = "1.0"
+VersionString = "1.1"
 
 # Imports.
 import glob
@@ -88,12 +88,13 @@ class Manifest:
 
         # Extract the list of input files.
         self.input_file_paths = []
-        for file_element in tree.findall("input/file"):
-            file_mask = os.path.join(self.input_root_path, file_element.text)
+        for files_element in tree.findall("input/files"):
+            file_mask = os.path.join(self.input_root_path, files_element.text)
             self.input_file_paths.extend(glob.glob(file_mask))
 
-        # Extract the output base path.
+        # Extract the output base path and base filename.
         self.output_base_path = tree.find("output/base_path").text
+        self.output_base_filename = tree.find("output/base_filename").text
 
         # Extract header.
         self.header = tree.find("output/header").text
@@ -108,13 +109,15 @@ class Manifest:
                 self.regexes_to_strip.append(strip_element.text)
 
         # Extract the command line to test-compile the output source file.
-        self.test_command_line = tree.find("test/commandline").text
+        self.test_command_lines = []
+        for command_line_element in tree.findall("test/commandline"):
+            self.test_command_lines.append(command_line_element.text)
 
     def get_output_header_file_path(self):
-        return self.output_base_path + ".h"
+        return os.path.join(self.output_base_path, self.output_base_filename + ".h")
 
     def get_output_source_file_path(self):
-        return self.output_base_path + ".cpp"
+        return os.path.join(self.output_base_path, self.output_base_filename + ".cpp")
 
 
 #
@@ -246,7 +249,7 @@ class FileGenerator:
 
         # Include the header file.
         output_file.write("// Interface header.\n")
-        output_file.write("#include \"" + os.path.basename(self.manifest.output_base_path) + ".h\"\n\n")
+        output_file.write("#include \"" + self.manifest.output_base_filename + ".h\"\n\n")
 
         # Include all the platform headers.
         platform_deps = self.depfinder.gather_platform_deps(source_files)
@@ -291,9 +294,13 @@ class Tester:
     def __init__(self, manifest):
         self.manifest = manifest
 
-    def compile(self, file_path):
-        print "Test-compiling '" + file_path + "'...\n"
-        call(self.manifest.test_command_line.replace("$cppfile", file_path), shell=True)
+    def compile(self):
+        print "Test-compiling...\n"
+        for command_line in self.manifest.test_command_lines:
+            command_line = command_line.replace("$OutputBasePath", self.manifest.output_base_path)
+            command_line = command_line.replace("$OutputHeaderFilePath", self.manifest.get_output_header_file_path())
+            command_line = command_line.replace("$OutputSourceFilePath", self.manifest.get_output_source_file_path())
+            call(command_line, shell=True)
 
 
 #
@@ -314,8 +321,8 @@ def main():
     filegen.generate_output_header_file()
     filegen.generate_output_source_file()
 
-    if len(manifest.test_command_line) > 0:
+    if len(manifest.test_command_lines) > 0:
         tester = Tester(manifest)
-        tester.compile(manifest.get_output_source_file_path())
+        tester.compile()
 
 main()
