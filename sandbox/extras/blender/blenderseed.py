@@ -478,17 +478,29 @@ class AppleseedExportOperator(bpy.types.Operator):
     bl_idname = "appleseed.export"
     bl_label = "Export"
 
+    # The name of the appleseed project file.
     filepath = bpy.props.StringProperty(subtype='FILE_PATH')
 
-    # In Blender 2.58 (since revision 36928), it is possible to pass a function to the 'items'
-    # argument of bpy.props.EnumProperty to create a dynamic list.
-    # See: http://projects.blender.org/scm/viewvc.php?view=rev&root=bf-blender&revision=36928
+    # The scene to export.
     selected_scene = bpy.props.EnumProperty(name="Scene",
                                             description="Select the scene to export",
                                             items=scene_enumerator)
+
+    # The camera to export.
     selected_camera = bpy.props.EnumProperty(name="Camera",
                                              description="Select the camera to export",
                                              items=camera_enumerator)
+
+    # Number of samples per pixels in final frame mode.
+    sample_count = bpy.props.IntProperty(name="Sample Count",
+                                         description="Number of samples per pixels in final frame mode",
+                                         min=1,
+                                         max=4096,
+                                         default=32)
+
+    # Should the mesh files (.obj files) be regenerated?
+    generate_mesh_files = bpy.props.BoolProperty(name="Write Meshes to Disk",
+                                                 default=True)
 
     # Transformation matrix that is applied to all entities of the scene.
     global_matrix = mathutils.Matrix.Scale(0.1, 4)
@@ -658,16 +670,17 @@ class AppleseedExportOperator(bpy.types.Operator):
         # todo: make this step optional?
         mesh.calc_normals()
 
+        filename = object.name + ".obj"
+
         # Export mesh to disk.
-        # todo: make this step optional?
-        try:
-            filename = object.name + ".obj"
-            filepath = os.path.join(os.path.dirname(self.filepath), filename)
-            self.__progress("Exporting object '{0}' to {1}...".format(object.name, filename))
-            write_mesh_to_disk(mesh, filepath)
-        except IOError:
-            self.__error("While exporting object '{0}': could not write to {1}, skipping this object.".format(object.name, filepath))
-            return
+        if self.generate_mesh_files:
+            try:
+                filepath = os.path.join(os.path.dirname(self.filepath), filename)
+                self.__progress("Exporting object '{0}' to {1}...".format(object.name, filename))
+                write_mesh_to_disk(mesh, filepath)
+            except IOError:
+                self.__error("While exporting object '{0}': could not write to {1}, skipping this object.".format(object.name, filepath))
+                return
 
         # Emit object.
         self.__emit_object(object.name, filename)
@@ -705,9 +718,7 @@ class AppleseedExportOperator(bpy.types.Operator):
 
     def __emit_lambertian_brdf(self, material, bsdf_name):
         reflectance_name = "{0}_reflectance".format(bsdf_name)
-
-        reflectance = material.diffuse_color * material.diffuse_intensity
-        self.__emit_color(reflectance_name, reflectance)
+        self.__emit_color(reflectance_name, material.diffuse_color, material.diffuse_intensity)
 
         self.__open_element('bsdf name="{0}" model="lambertian_brdf"'.format(bsdf_name))
         self.__emit_parameter("reflectance", reflectance_name)
@@ -717,11 +728,8 @@ class AppleseedExportOperator(bpy.types.Operator):
         diffuse_reflectance_name = "{0}_diffuse_reflectance".format(bsdf_name)
         glossy_reflectance_name = "{0}_glossy_reflectance".format(bsdf_name)
 
-        diffuse_reflectance = material.diffuse_color * material.diffuse_intensity
-        self.__emit_color(diffuse_reflectance_name, diffuse_reflectance)
-
-        glossy_reflectance = material.specular_color * material.specular_intensity
-        self.__emit_color(glossy_reflectance_name, glossy_reflectance)
+        self.__emit_color(diffuse_reflectance_name, material.diffuse_color, material.diffuse_intensity)
+        self.__emit_color(glossy_reflectance_name, material.specular_color, material.specular_intensity)
 
         self.__open_element('bsdf name="{0}" model="ashikhmin_brdf"'.format(bsdf_name))
         self.__emit_parameter("diffuse_reflectance", diffuse_reflectance_name)
@@ -739,10 +747,11 @@ class AppleseedExportOperator(bpy.types.Operator):
         self.__emit_parameter("surface_shader", "physical_shader")
         self.__close_element("material")
 
-    def __emit_color(self, color_name, color):
-        self.__open_element('color name="{0}"'.format(color_name))
+    def __emit_color(self, name, values, multiplier):
+        self.__open_element('color name="{0}"'.format(name))
         self.__emit_parameter("color_space", "srgb")
-        self.__emit_line("<values>{0} {1} {2}</values>".format(color[0], color[1], color[2]))
+        self.__emit_parameter("multiplier", multiplier)
+        self.__emit_line("<values>{0} {1} {2}</values>".format(values[0], values[1], values[2]))
         self.__close_element("color")
 
     def __emit_object(self, object_name, filename):
@@ -758,9 +767,11 @@ class AppleseedExportOperator(bpy.types.Operator):
 
     def __emit_lights(self, scene):
         filename = "__spherical_light.obj"
-        filepath = os.path.join(os.path.dirname(self.filepath), filename)
-        self.__progress("Emitting built-in object 'spherical_light' to {0}...".format(filename))
-        write_sphere_mesh_to_disk(filepath)
+
+        if self.generate_mesh_files:
+            filepath = os.path.join(os.path.dirname(self.filepath), filename)
+            self.__progress("Emitting built-in object 'spherical_light' to {0}...".format(filename))
+            write_sphere_mesh_to_disk(filepath)
 
         self.__emit_object("__spherical_light", filename)
 
@@ -776,8 +787,7 @@ class AppleseedExportOperator(bpy.types.Operator):
         edf_name = "{0}_edf".format(material_name)
         exitance_name = "{0}_exitance".format(edf_name)
 
-        exitance = lamp.data.energy * lamp.data.color * lamp_energy_multipler
-        self.__emit_color(exitance_name, exitance)
+        self.__emit_color(exitance_name, lamp.data.color, lamp.data.energy * lamp_energy_multipler)
 
         self.__open_element('edf name="{0}" model="diffuse_edf"'.format(edf_name))
         self.__emit_parameter("exitance", exitance_name)
@@ -832,8 +842,8 @@ class AppleseedExportOperator(bpy.types.Operator):
     def __emit_final_configuration(self):
         self.__open_element('configuration name="final" base="base_final"')
         self.__open_element('parameters name="generic_tile_renderer"')
-        self.__emit_parameter("min_samples", "4")       # todo: make user-settable
-        self.__emit_parameter("max_samples", "16")      # todo: make user-settable
+        self.__emit_parameter("min_samples", self.sample_count)
+        self.__emit_parameter("max_samples", self.sample_count)
         self.__close_element('parameters')
         self.__close_element("configuration")
 
