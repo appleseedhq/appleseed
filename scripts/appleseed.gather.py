@@ -50,6 +50,10 @@ def fatal(message):
     print("FATAL: " + message + ", aborting.")
     sys.exit(1)
 
+def safe_make_directory(path):
+    if not os.path.isdir(path):
+        os.makedirs(path)
+
 def stable_unique(seq):
     seen = {}
     result = []
@@ -208,8 +212,8 @@ class FileGenerator:
         output_file_path = self.manifest.get_output_header_file_path()
         print "Generating '" + output_file_path + "'..."
 
-        header_files = self.depfinder.gather_header_files()
-
+        # Open file for writing.
+        safe_make_directory(self.manifest.output_base_path)
         output_file = open(output_file_path, "w")
 
         # Write header.
@@ -221,6 +225,7 @@ class FileGenerator:
         output_file.write("#define " + header_guard_token + "\n\n")
 
         # Include all the platform headers.
+        header_files = self.depfinder.gather_header_files()
         platform_deps = self.depfinder.gather_platform_deps(header_files)
         if len(platform_deps) > 0:
             output_file.write("// Standard and platform headers.\n")
@@ -240,8 +245,8 @@ class FileGenerator:
         output_file_path = self.manifest.get_output_source_file_path()
         print "Generating '" + output_file_path + "'..."
 
-        source_files = self.depfinder.gather_source_files()
-
+        # Open file for writing.
+        safe_make_directory(self.manifest.output_base_path)
         output_file = open(output_file_path, "w")
 
         # Write header.
@@ -252,6 +257,7 @@ class FileGenerator:
         output_file.write("#include \"" + self.manifest.output_base_filename + ".h\"\n\n")
 
         # Include all the platform headers.
+        source_files = self.depfinder.gather_source_files()
         platform_deps = self.depfinder.gather_platform_deps(source_files)
         if len(platform_deps) > 0:
             output_file.write("// Standard and platform headers.\n")
