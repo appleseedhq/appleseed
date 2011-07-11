@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_PARSER_H
-#define APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_PARSER_H
+#ifndef APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_COMMANDLINEPARSER_H
+#define APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_COMMANDLINEPARSER_H
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -51,12 +51,12 @@ namespace foundation
 // Command line parser.
 //
 
-class Parser
+class CommandLineParser
   : public NonCopyable
 {
   public:
     // Constructor.
-    Parser();
+    CommandLineParser();
     
     // Add an option handler.
     void add_option_handler(OptionHandler* handler);
@@ -111,28 +111,28 @@ class Parser
 
 
 //
-// Parser class implementation.
+// CommandLineParser class implementation.
 //
 
-inline Parser::Parser()
+inline CommandLineParser::CommandLineParser()
 {
     // No default option handler.
     m_default_option.m_handler = 0;
 }
 
-inline void Parser::add_option_handler(OptionHandler* handler)
+inline void CommandLineParser::add_option_handler(OptionHandler* handler)
 {
     assert(handler);
     m_handlers.push_back(handler);
 }
 
-inline void Parser::set_default_option_handler(OptionHandler* handler)
+inline void CommandLineParser::set_default_option_handler(OptionHandler* handler)
 {
     assert(handler);
     m_default_option.m_handler = handler;
 }
 
-inline void Parser::print_usage(Logger& logger) const
+inline void CommandLineParser::print_usage(Logger& logger) const
 {
     const size_t max_header_length = get_max_header_length();
 
@@ -168,7 +168,7 @@ inline void Parser::print_usage(Logger& logger) const
     }
 }
 
-inline void Parser::parse(
+inline void CommandLineParser::parse(
     const int       argc,
     const char*     argv[])
 {
@@ -179,12 +179,12 @@ inline void Parser::parse(
     process_options();
 }
 
-inline void Parser::print_messages(Logger& logger)
+inline void CommandLineParser::print_messages(Logger& logger)
 {
     m_messages.print(logger);
 }
 
-inline void Parser::print_recognized_options(Logger& logger)
+inline void CommandLineParser::print_recognized_options(Logger& logger)
 {
     size_t found_options = 0;
 
@@ -218,7 +218,7 @@ inline void Parser::print_recognized_options(Logger& logger)
         LOG_INFO(logger, "  (none)");
 }
 
-inline size_t Parser::get_max_header_length() const
+inline size_t CommandLineParser::get_max_header_length() const
 {
     size_t max_header_length = 0;
 
@@ -249,7 +249,7 @@ inline size_t Parser::get_max_header_length() const
     return max_header_length;
 }
 
-inline OptionHandler* Parser::find_option_handler(const std::string& arg) const
+inline OptionHandler* CommandLineParser::find_option_handler(const std::string& arg) const
 {
     for (const_each<OptionHandlerVector> i = m_handlers; i; ++i)
     {
@@ -265,7 +265,7 @@ inline OptionHandler* Parser::find_option_handler(const std::string& arg) const
     return 0;
 }
 
-inline void Parser::collect_options(
+inline void CommandLineParser::collect_options(
     const int       argc,
     const char*     argv[])
 {
@@ -313,7 +313,7 @@ inline void Parser::collect_options(
     }
 }
 
-inline void Parser::process_options()
+inline void CommandLineParser::process_options()
 {
     for (const_each<OptionVector> i = m_options; i; ++i)
     {
@@ -339,4 +339,4 @@ inline void Parser::process_options()
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_PARSER_H
+#endif  // !APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_COMMANDLINEPARSER_H

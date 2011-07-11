@@ -68,13 +68,11 @@ class FlagOptionHandler
 // FlagOptionHandler class implementation.
 //
 
-// Return the maximum number of values this option can handle.
 inline size_t FlagOptionHandler::get_max_value_count() const
 {
     return 0;
 }
 
-// Parse a vector of values.
 inline void FlagOptionHandler::parse(
     const std::string&  name,
     const StringVector& values,
@@ -95,7 +93,6 @@ inline void FlagOptionHandler::parse(
     m_found = true;
 }
 
-// Print this option to a string.
 inline void FlagOptionHandler::print(std::string& s) const
 {
     // Print the first name of the option.

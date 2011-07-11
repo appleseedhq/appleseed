@@ -97,7 +97,6 @@ class ValueOptionHandler
 // ValueOptionHandler class implementation.
 //
 
-// Constructor.
 template <typename T>
 inline ValueOptionHandler<T>::ValueOptionHandler()
   : m_min_value_count(0)
@@ -105,42 +104,38 @@ inline ValueOptionHandler<T>::ValueOptionHandler()
 {
 }
 
-// Set minimum/maximum number of values.
 template <typename T>
 inline void ValueOptionHandler<T>::set_min_value_count(const size_t min_count)
 {
     m_min_value_count = min_count;
 }
+
 template <typename T>
 inline void ValueOptionHandler<T>::set_max_value_count(const size_t max_count)
 {
     m_max_value_count = max_count;
 }
 
-// Return the string values of this option.
 template <typename T>
 inline const StringVector& ValueOptionHandler<T>::string_values() const
 {
     return m_string_values;
 }
 
-// Return the values of this option.
 template <typename T>
 inline const std::vector<T>& ValueOptionHandler<T>::values() const
 {
     return m_values;
 }
 
-// Return the maximum number of values this option can handle.
 template <typename T>
 inline size_t ValueOptionHandler<T>::get_max_value_count() const
 {
     return m_max_value_count;
 }
 
-// Parse a vector of values.
 template <typename T>
-inline void ValueOptionHandler<T>::parse(
+void ValueOptionHandler<T>::parse(
     const std::string&  name,
     const StringVector& vals,
     MessageList&        messages)
@@ -192,9 +187,8 @@ inline void ValueOptionHandler<T>::parse(
     m_found = true;
 }
 
-// Print this option to a string.
 template <typename T>
-inline void ValueOptionHandler<T>::print(std::string& s) const
+void ValueOptionHandler<T>::print(std::string& s) const
 {
     // Print the first name of the option.
     s += m_names.front() + " ";

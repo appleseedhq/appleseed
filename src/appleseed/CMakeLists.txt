@@ -482,11 +482,11 @@ source_group("foundation\\utility\\benchmark" FILES
 )
 
 set(foundation_utility_commandlineparser_sources
+    foundation/utility/commandlineparser/commandlineparser.h
     foundation/utility/commandlineparser/flagoptionhandler.h
     foundation/utility/commandlineparser/messagelist.cpp
     foundation/utility/commandlineparser/messagelist.h
     foundation/utility/commandlineparser/optionhandler.h
-    foundation/utility/commandlineparser/parser.h
     foundation/utility/commandlineparser/valueoptionhandler.h
 )
 list(APPEND appleseed_sources

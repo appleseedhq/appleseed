@@ -84,7 +84,7 @@ class CommandLine
         SuperLogger&    logger);
 
   private:
-    foundation::Parser  m_parser;
+    foundation::CommandLineParser m_parser;
 
     void print_version_information(SuperLogger& logger) const;
 

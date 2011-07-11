@@ -86,7 +86,7 @@ class OptionHandler
     bool found() const;
 
   protected:
-    friend class Parser;
+    friend class CommandLineParser;
 
     StringVector    m_names;
     std::string     m_description;
@@ -115,44 +115,37 @@ class OptionHandler
 // OptionHandler class implementation.
 //
 
-// Constructor.
 inline OptionHandler::OptionHandler()
   : m_flags(None)
   , m_found(false)
 {
 }
 
-// Add a name for this option.
 inline void OptionHandler::add_name(const std::string& name)
 {
     m_names.push_back(name);
 }
 
-// Set a description of this option.
 inline void OptionHandler::set_description(const std::string& description)
 {
     m_description = description;
 }
 
-// Set the syntax for this option.
 inline void OptionHandler::set_syntax(const std::string& syntax)
 {
     m_syntax = syntax;
 }
 
-// Set the flags for this option.
 inline void OptionHandler::set_flags(const Flags flags)
 {
     m_flags = flags;
 }
 
-// Return true if this option was found on the command line.
 inline bool OptionHandler::found() const
 {
     return m_found;
 }
 
-// Return true if an argument matches any of the name of this option.
 inline bool OptionHandler::match_name(const std::string& arg) const
 {
     for (const_each<StringVector> i = m_names; i; ++i)
@@ -160,6 +153,7 @@ inline bool OptionHandler::match_name(const std::string& arg) const
         if (arg == *i)
             return true;
     }
+
     return false;
 }
 
