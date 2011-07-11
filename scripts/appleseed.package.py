@@ -71,8 +71,8 @@ def safe_delete_directory(path):
         fatal("failed to delete directory '" + path + "'")
 
 def safe_make_directory(path):
-    if not os.path.exists(path):
-        os.mkdir(path)
+    if not os.path.isdir(path):
+        os.makedirs(path)
 
 def pushd(path):
     current_path = os.getcwd()
