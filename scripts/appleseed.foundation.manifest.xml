@@ -77,7 +77,7 @@
         <files>foundation/utility/vpythonfile.*</files>
     </input>
     <output>
-        <base_path>../archives/releases/appleseed.foundation-1.1/</base_path>
+        <base_path>../archives/releases/appleseed.foundation-1.2/</base_path>
         <base_filename>appleseed.foundation</base_filename>
         <header>
 //
@@ -108,7 +108,7 @@
 //
 
 //
-// This is appleseed.foundation version 1.1.
+// This is appleseed.foundation version 1.2.
 //
 
 // Enable SSE extensions.
