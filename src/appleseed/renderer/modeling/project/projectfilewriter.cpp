@@ -274,10 +274,10 @@ namespace
             }
         }
 
-        // Write a <values> element.
-        void write(const ColorValueArray& values)
+        // Write an array of color values.
+        void write(const char* element_name, const ColorValueArray& values)
         {
-            Element element("values", m_file, m_indenter);
+            Element element(element_name, m_file, m_indenter);
             element.write(true);
             write_vector(
                 values,
@@ -335,7 +335,8 @@ namespace
             element.add_attribute("name", color_entity.get_name());
             element.write(true);
             write(color_entity.get_parameters());
-            write(color_entity.get_values());
+            write("values", color_entity.get_values());
+            write("alpha", color_entity.get_alpha());
         }
 
         // Write a <texture> element.
