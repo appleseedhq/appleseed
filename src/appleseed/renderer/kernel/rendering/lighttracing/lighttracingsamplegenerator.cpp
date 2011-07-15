@@ -430,17 +430,17 @@ namespace
         {
             SamplingContext sampling_context(m_rng, 0, 0, sequence_index);
 
-            size_t sample_count = 0;
+            size_t stored_sample_count = 0;
 
             if (m_light_sampler.has_lights())
-                sample_count += generate_light_sample(sampling_context, samples);
+                stored_sample_count += generate_light_sample(sampling_context, samples);
 
             if (m_env_edf)
-                sample_count += generate_environment_sample(sampling_context, samples);
+                stored_sample_count += generate_environment_sample(sampling_context, samples);
 
             ++m_light_sample_count;
 
-            return sample_count;
+            return stored_sample_count;
         }
 
         size_t generate_light_sample(

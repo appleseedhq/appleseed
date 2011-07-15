@@ -74,11 +74,11 @@ void SampleGeneratorBase::generate_samples(
     clear_keep_memory(m_samples);
     m_samples.reserve(sample_count);
 
-    size_t current_sample_count = 0;
+    size_t stored_sample_count = 0;
 
-    while (current_sample_count < sample_count)
+    while (stored_sample_count < sample_count)
     {
-        current_sample_count += generate_samples(m_sequence_index, m_samples);
+        stored_sample_count += generate_samples(m_sequence_index, m_samples);
 
         ++m_sequence_index;
 
@@ -92,8 +92,8 @@ void SampleGeneratorBase::generate_samples(
         }
     }
 
-    if (current_sample_count > 0)
-        framebuffer.store_samples(current_sample_count, &m_samples[0]);
+    if (stored_sample_count > 0)
+        framebuffer.store_samples(stored_sample_count, &m_samples[0]);
 }
 
 }   // namespace renderer
