@@ -28,9 +28,13 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
+#include "foundation/image/color.h"
+#include "foundation/image/genericimagefilewriter.h"
+#include "foundation/image/image.h"
 #include "foundation/math/permutation.h"
 #include "foundation/math/qmc.h"
 #include "foundation/math/rng.h"
+#include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
@@ -41,11 +45,11 @@
 #include <string>
 #include <vector>
 
+using namespace foundation;
+using namespace std;
+
 TEST_SUITE(Foundation_Math_QMC)
 {
-    using namespace foundation;
-    using namespace std;
-
     TEST_CASE(TestFastRadicalInverseBase2)
     {
         EXPECT_FEQ(0.0,     radical_inverse_base2<double>(0));
@@ -281,5 +285,40 @@ TEST_SUITE(Foundation_Math_QMC)
         write_point_cloud_image(
             "output/test_qmc_hammersley_2d_scrambled.png",
             points);
+    }
+
+    TEST_CASE(SampleImagePlaneWithHaltonSequence)
+    {
+        // This test shows that the first W*H points of the Halton sequence in bases
+        // 2 and 3 don't visit all the pixels of a WxH image uniformly: some pixels
+        // won't be visited at all, while some will be visited multiple times.
+
+        const size_t Width = 512;
+        const size_t Height = 512;
+        const size_t SPP = 1;
+        const size_t PixelCount = Width * Height;
+        const size_t SampleCount = PixelCount * SPP;
+        const size_t Bases[] = { 2, 3 };
+
+        Image image(Width, Height, 32, 32, 3, PixelFormatFloat);
+        image.clear(Color3f(0.0f));
+
+        for (size_t i = 0; i < SampleCount; ++i)
+        {
+            const Vector2d s = halton_sequence<double, 2>(Bases, i);
+
+            const size_t x = truncate<size_t>(s[0] * Width);
+            const size_t y = truncate<size_t>(s[1] * Height);
+
+            Color3f c;
+            image.get_pixel(x, y, c);
+
+            c += Color3f(0.2f);
+            c = saturate(c);
+
+            image.set_pixel(x, y, c);
+        }
+
+        GenericImageFileWriter().write("output/test_qmc_sampleimageplanewithhaltonsequence.png", image);
     }
 }
