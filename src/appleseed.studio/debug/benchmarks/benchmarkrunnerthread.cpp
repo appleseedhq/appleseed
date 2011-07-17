@@ -35,6 +35,7 @@
 // appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/benchmark.h"
+#include "foundation/utility/string.h"
 
 // boost headers.
 #include "boost/filesystem/operations.hpp"
@@ -42,10 +43,12 @@
 
 // Standard headers.
 #include <cassert>
+#include <string>
 
 using namespace appleseed::shared;
 using namespace boost;
 using namespace foundation;
+using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -59,10 +62,11 @@ void BenchmarkRunnerThread::run()
     auto_release_ptr<XMLFileBenchmarkListener> xmlfile_listener(
         create_xmlfile_benchmark_listener());
 
+    const string xmlfile_name = "benchmark." + get_time_stamp_string() + ".xml";
     const filesystem::path xmlfile_path =
           filesystem::path(Application::get_tests_root_path())
         / "benchmarks/"
-        / XMLFileBenchmarkListener::generate_file_name();
+        / xmlfile_name;
 
     if (!xmlfile_listener->open(xmlfile_path.string().c_str()))
     {

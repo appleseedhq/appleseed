@@ -32,11 +32,9 @@
 // appleseed.foundation headers.
 #include "foundation/utility/benchmark/benchmarklistenerbase.h"
 #include "foundation/utility/implptr.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cstddef>
-#include <string>
 
 // Forward declarations.
 namespace foundation    { class IBenchmarkCase; }
@@ -110,8 +108,6 @@ class FOUNDATIONDLL XMLFileBenchmarkListener
         const size_t            line,
         const TimingResult&     timing_result);
 
-    static std::string generate_file_name();
-
     bool open(const char* filename);
 
     void close();
@@ -135,16 +131,6 @@ class FOUNDATIONDLL XMLFileBenchmarkListener
 
 // Create an instance of a benchmark listener that outputs to a XML file.
 FOUNDATIONDLL XMLFileBenchmarkListener* create_xmlfile_benchmark_listener();
-
-
-//
-// Implementation.
-//
-
-inline std::string XMLFileBenchmarkListener::generate_file_name()
-{
-    return "benchmark." + get_time_stamp_string() + ".xml";
-}
 
 }       // namespace foundation
 

@@ -182,10 +182,11 @@ namespace
         // Try to add a benchmark listener that outputs to a XML file.
         auto_release_ptr<XMLFileBenchmarkListener> xmlfile_listener(
             create_xmlfile_benchmark_listener());
+        const string xmlfile_name = "benchmark." + get_time_stamp_string() + ".xml";
         const filesystem::path xmlfile_path =
               filesystem::path(Application::get_tests_root_path())
             / "benchmarks/"
-            / XMLFileBenchmarkListener::generate_file_name();
+            / xmlfile_name;
         if (xmlfile_listener->open(xmlfile_path.string().c_str()))
             result.add_listener(xmlfile_listener.get());
         else
