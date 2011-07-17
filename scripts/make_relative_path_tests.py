@@ -11,13 +11,24 @@ def make_relative_path(file_path, base):
     else:
         return file_path
 
-print(make_relative_path("c:\\dir\\file.txt", ""))
-print(make_relative_path("c:/dir/file.txt", ""))
-print(make_relative_path("c:\\dir\\file.txt", "c:\\"))
-print(make_relative_path("c:/dir/file.txt", "c:\\"))
-print(make_relative_path("c:\\dir\\file.txt", "c:/dir"))
-print(make_relative_path("c:/dir/file.txt", "c:\\dir"))
-print(make_relative_path("c:\\dir\\file.txt", "c:/dir/"))
-print(make_relative_path("c:/dir/file.txt", "c:\\dir\\"))
-print(make_relative_path("c:\\dir\\file.txt", "c:/rep"))
-print(make_relative_path("c:/dir/file.txt", "c:\\rep"))
+def expect(expected, received):
+    if expected != received:
+        print("Unit test failed!")
+        print("  Expected: {0}".format(expected))
+        print("  Received: {0}".format(received))
+
+def run_tests():
+    expect("c:\\dir\\file.ext", make_relative_path("c:\\dir\\file.ext", ""))
+    expect("/dir/file.ext", make_relative_path("/dir/file.ext", ""))
+    expect("dir\\file.ext", make_relative_path("c:\\dir\\file.ext", "c:\\"))
+    expect("dir\\file.ext", make_relative_path("/dir/file.ext", "/"))
+    expect("dir\\file.ext", make_relative_path("c:\\dir\\file.ext", "c:/"))
+    expect("dir\\file.ext", make_relative_path("/dir/file.ext", "\\"))
+    expect("file.ext", make_relative_path("c:\\dir\\file.ext", "c:\\dir"))
+    expect("file.ext", make_relative_path("/dir/file.ext", "/dir"))
+    expect("file.ext", make_relative_path("c:\\dir\\file.ext", "c:\\dir\\"))
+    expect("file.ext", make_relative_path("/dir/file.ext", "/dir/"))
+    expect("c:\\dir\\file.ext", make_relative_path("c:\\dir\\file.ext", "c:\\rep"))
+    expect("/dir/file.ext", make_relative_path("/dir/file.ext", "/rep"))
+
+run_tests()
