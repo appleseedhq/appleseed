@@ -29,7 +29,7 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_POOLALLOCATOR_H
 #define APPLESEED_FOUNDATION_UTILITY_POOLALLOCATOR_H
 
-// appleseed headers.
+// appleseed.foundation headers.
 #include "foundation/core/concepts/singleton.h"
 #include "foundation/platform/types.h"
 
