@@ -37,8 +37,6 @@
 #include "foundation/math/permutation.h"
 #include "foundation/math/split.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/timer.h"
-#include "foundation/utility/stopwatch.h"
 
 // Standard headers.
 #include <algorithm>
@@ -63,16 +61,9 @@ class Builder
     explicit Builder(TreeType& tree);
 
     // Build a tree for a given set of points.
-    template <typename Timer>
     void build(
         const VectorType        points[],
         const size_t            count);
-    void build(
-        const VectorType        points[],
-        const size_t            count);
-
-    // Return the construction time.
-    double get_build_time() const;
 
   private:
     typedef typename TreeType::NodeType NodeType;
@@ -94,8 +85,7 @@ class Builder
             const size_t        index) const;
     };
 
-    TreeType&                   m_tree;
-    double                      m_build_time;
+    TreeType& m_tree;
 
     void partition(
         const size_t            parent_node_index,
@@ -120,19 +110,14 @@ typedef Builder<double, 3> Builder3d;
 template <typename T, size_t N>
 inline Builder<T, N>::Builder(TreeType& tree)
   : m_tree(tree)
-  , m_build_time(0.0)
 {
 }
 
 template <typename T, size_t N>
-template <typename Timer>
 void Builder<T, N>::build(
     const VectorType            points[],
     const size_t                count)
 {
-    Stopwatch<Timer> stopwatch;
-    stopwatch.start();
-
     if (count > 0)
     {
         assert(points);
@@ -160,23 +145,6 @@ void Builder<T, N>::build(
             &m_tree.m_indices[0],
             count);
     }
-
-    stopwatch.measure();
-    m_build_time = stopwatch.get_seconds();
-}
-
-template <typename T, size_t N>
-void Builder<T, N>::build(
-    const VectorType            points[],
-    const size_t                count)
-{
-    build<DefaultWallclockTimer>(points, count);
-}
-
-template <typename T, size_t N>
-inline double Builder<T, N>::get_build_time() const
-{
-    return m_build_time;
 }
 
 template <typename T, size_t N>

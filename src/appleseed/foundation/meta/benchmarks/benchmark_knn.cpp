@@ -30,11 +30,13 @@
 #include "foundation/math/knn.h"
 #include "foundation/math/rng.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/timer.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/benchmark.h"
 #include "foundation/utility/bufferedfile.h"
 #include "foundation/utility/log.h"
+#include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -306,10 +308,18 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Query)
 
         void build_tree()
         {
+            Stopwatch<DefaultWallclockTimer> stopwatch;
+            stopwatch.start();
+
             knn::Builder3f builder(m_tree);
             builder.build(&m_points[0], m_points.size());
 
-            knn::TreeStatistics<knn::Tree3f, knn::Builder3f> tree_stats(m_tree, builder);
+            stopwatch.measure();
+
+            knn::TreeStatistics<knn::Tree3f, knn::Builder3f> tree_stats(
+                m_tree,
+                builder,
+                stopwatch.get_seconds());
 
             LOG_DEBUG(m_logger, "tree statistics:");
             tree_stats.print(m_logger);
