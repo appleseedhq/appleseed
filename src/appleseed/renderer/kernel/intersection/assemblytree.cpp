@@ -205,7 +205,6 @@ typedef bvh::TreeStatistics<
 // AssemblyTree class implementation.
 //
 
-// Constructor, builds the tree for a given scene.
 AssemblyTree::AssemblyTree(const Scene& scene)
   : m_scene(scene)
 {
@@ -213,7 +212,6 @@ AssemblyTree::AssemblyTree(const Scene& scene)
     build_assembly_tree();
 }
 
-// Destructor.
 AssemblyTree::~AssemblyTree()
 {
     // Log a progress message.
@@ -337,7 +335,6 @@ void AssemblyTree::create_region_tree(const Assembly& assembly)
         make_pair(assembly.get_uid(), new Lazy<RegionTree>(region_tree_factory)));
 }
 
-// Build the assembly tree.
 void AssemblyTree::build_assembly_tree()
 {
     // Insert all assembly instances of the scene into the tree.
@@ -381,7 +378,6 @@ void AssemblyTree::build_assembly_tree()
 // AssemblyLeafVisitorBase class implementation.
 //
 
-// Transform a ray to the space of an assembly instance.
 void AssemblyLeafVisitorBase::transform_ray_to_assembly_instance_space(
     const AssemblyInstance*             assembly_instance,
     const ShadingPoint*                 parent_shading_point,
@@ -421,7 +417,6 @@ void AssemblyLeafVisitorBase::transform_ray_to_assembly_instance_space(
 // AssemblyLeafVisitor class implementation.
 //
 
-// Visit a leaf.
 bool AssemblyLeafVisitor::visit(
     const vector<UniqueID>&             items,
     const vector<GAABB3>&               bboxes,
@@ -537,7 +532,6 @@ bool AssemblyLeafVisitor::visit(
 // AssemblyLeafProbeVisitor class implementation.
 //
 
-// Visit a leaf.
 bool AssemblyLeafProbeVisitor::visit(
     const vector<UniqueID>&             items,
     const vector<GAABB3>&               bboxes,
