@@ -242,9 +242,7 @@ class FileGenerator:
         header_files = self.depfinder.gather_header_files()
 
         # Report unexpected dependencies.
-        for header_file in header_files:
-            if header_file not in self.manifest.input_file_paths:
-                warning("unexpected dependency: {0}".format(header_file))
+        self.__report_unexpected_deps(header_files)
 
         # Open file for writing.
         safe_make_directory(self.manifest.output_base_path)
@@ -293,6 +291,11 @@ class FileGenerator:
         self.__write_files(output_file, source_files)
 
         output_file.close()
+
+    def __report_unexpected_deps(self, files):
+        for file in files:
+            if file not in self.manifest.input_file_paths:
+                warning("unexpected dependency: {0}".format(file))
 
     def __write_platform_headers(self, output_file, headers):
         if len(headers) > 0:
