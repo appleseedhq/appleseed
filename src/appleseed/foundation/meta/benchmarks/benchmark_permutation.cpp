@@ -97,52 +97,52 @@ BENCHMARK_SUITE(Foundation_Math_Permutation)
         }
     };
 
-    BENCHMARK_CASE_WITH_FIXTURE(BenchmarkSmallItemReorder4Bytes, SmallItemFixture<1>)
+    BENCHMARK_CASE_F(BenchmarkSmallItemReorder4Bytes, SmallItemFixture<1>)
     {
         payload();
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(BenchmarkLargeItemReorder4Bytes, LargeItemFixture<1>)
+    BENCHMARK_CASE_F(BenchmarkLargeItemReorder4Bytes, LargeItemFixture<1>)
     {
         payload();
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(BenchmarkSmallItemReorder8Bytes, SmallItemFixture<2>)
+    BENCHMARK_CASE_F(BenchmarkSmallItemReorder8Bytes, SmallItemFixture<2>)
     {
         payload();
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(BenchmarkLargeItemReorder8Bytes, LargeItemFixture<2>)
+    BENCHMARK_CASE_F(BenchmarkLargeItemReorder8Bytes, LargeItemFixture<2>)
     {
         payload();
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(BenchmarkSmallItemReorder16Bytes, SmallItemFixture<4>)
+    BENCHMARK_CASE_F(BenchmarkSmallItemReorder16Bytes, SmallItemFixture<4>)
     {
         payload();
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(BenchmarkLargeItemReorder16Bytes, LargeItemFixture<4>)
+    BENCHMARK_CASE_F(BenchmarkLargeItemReorder16Bytes, LargeItemFixture<4>)
     {
         payload();
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(BenchmarkSmallItemReorder32Bytes, SmallItemFixture<8>)
+    BENCHMARK_CASE_F(BenchmarkSmallItemReorder32Bytes, SmallItemFixture<8>)
     {
         payload();
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(BenchmarkLargeItemReorder32Bytes, LargeItemFixture<8>)
+    BENCHMARK_CASE_F(BenchmarkLargeItemReorder32Bytes, LargeItemFixture<8>)
     {
         payload();
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(BenchmarkSmallItemReorder64Bytes, SmallItemFixture<16>)
+    BENCHMARK_CASE_F(BenchmarkSmallItemReorder64Bytes, SmallItemFixture<16>)
     {
         payload();
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(BenchmarkLargeItemReorder64Bytes, LargeItemFixture<16>)
+    BENCHMARK_CASE_F(BenchmarkLargeItemReorder64Bytes, LargeItemFixture<16>)
     {
         payload();
     }

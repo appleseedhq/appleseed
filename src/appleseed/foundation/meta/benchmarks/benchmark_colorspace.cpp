@@ -46,12 +46,12 @@ BENCHMARK_SUITE(Foundation_Image_ColorSpace)
         }
     };
 
-    BENCHMARK_CASE_WITH_FIXTURE(LinearRGBTosRGBConversion, Fixture)
+    BENCHMARK_CASE_F(LinearRGBTosRGBConversion, Fixture)
     {
         m_output = linear_rgb_to_srgb(m_input);
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(FastLinearRGBTosRGBConversion, Fixture)
+    BENCHMARK_CASE_F(FastLinearRGBTosRGBConversion, Fixture)
     {
         m_output = fast_linear_rgb_to_srgb(m_input);
     }

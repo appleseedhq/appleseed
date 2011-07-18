@@ -51,7 +51,7 @@ BENCHMARK_SUITE(Foundation_Math_RayInfo)
         }
     };
 
-    BENCHMARK_CASE_WITH_FIXTURE(RayInfo3d, Fixture)
+    BENCHMARK_CASE_F(RayInfo3d, Fixture)
     {
         for (int i = 0; i < 100; ++i)
         {

@@ -118,7 +118,7 @@ TEST_SUITE(Foundation_Math_CDF)
         }
     };
 
-    TEST_CASE_WITH_FIXTURE(Sample_GivenInputEqualToZero_ReturnsItems1, Fixture)
+    TEST_CASE_F(Sample_GivenInputEqualToZero_ReturnsItems1, Fixture)
     {
         const CDF::ItemWeightPair result = m_cdf.sample(0.0);
 
@@ -126,7 +126,7 @@ TEST_SUITE(Foundation_Math_CDF)
         EXPECT_FEQ(0.2, result.second);
     }
 
-    TEST_CASE_WITH_FIXTURE(Sample_GivenInputEqualTo0_2_ReturnsItems2, Fixture)
+    TEST_CASE_F(Sample_GivenInputEqualTo0_2_ReturnsItems2, Fixture)
     {
         const CDF::ItemWeightPair result = m_cdf.sample(0.2);
 
@@ -134,7 +134,7 @@ TEST_SUITE(Foundation_Math_CDF)
         EXPECT_FEQ(0.8, result.second);
     }
 
-    TEST_CASE_WITH_FIXTURE(Sample_GivenInputNearOne_ReturnsItem2, Fixture)
+    TEST_CASE_F(Sample_GivenInputNearOne_ReturnsItem2, Fixture)
     {
         const CDF::ItemWeightPair result = m_cdf.sample(0.99);
 
@@ -142,7 +142,7 @@ TEST_SUITE(Foundation_Math_CDF)
         EXPECT_FEQ(0.8, result.second);
     }
 
-    TEST_CASE_WITH_FIXTURE(Sample_GivenInputOneUlpBeforeOne_ReturnsItem2, Fixture)
+    TEST_CASE_F(Sample_GivenInputOneUlpBeforeOne_ReturnsItem2, Fixture)
     {
         const double almost_one = shift(1.0, -1);
         const CDF::ItemWeightPair result = m_cdf.sample(almost_one);

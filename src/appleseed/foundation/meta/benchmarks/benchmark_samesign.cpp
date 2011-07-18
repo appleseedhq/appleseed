@@ -183,49 +183,49 @@ BENCHMARK_SUITE(SameSign)
         }
     };
 
-    BENCHMARK_CASE_WITH_FIXTURE(EmptyFunction2, Fixture)
+    BENCHMARK_CASE_F(EmptyFunction2, Fixture)
     {
         for (size_t i = 0; i < InvocationCount; ++i)
             m_result ^= empty_function(m_values[i], m_values[i + 1]);
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(EmptyFunction3, Fixture)
+    BENCHMARK_CASE_F(EmptyFunction3, Fixture)
     {
         for (size_t i = 0; i < InvocationCount; ++i)
             m_result ^= empty_function(m_values[i], m_values[i + 1], m_values[i + 2]);
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(SameSignNaive2, Fixture)
+    BENCHMARK_CASE_F(SameSignNaive2, Fixture)
     {
         for (size_t i = 0; i < InvocationCount; ++i)
             m_result ^= same_sign_naive(m_values[i], m_values[i + 1]);
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(SameSignNaive3, Fixture)
+    BENCHMARK_CASE_F(SameSignNaive3, Fixture)
     {
         for (size_t i = 0; i < InvocationCount; ++i)
             m_result ^= same_sign_naive(m_values[i], m_values[i + 1], m_values[i + 2]);
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(SameSignInteger2, Fixture)
+    BENCHMARK_CASE_F(SameSignInteger2, Fixture)
     {
         for (size_t i = 0; i < InvocationCount; ++i)
             m_result ^= same_sign_integer(m_values[i], m_values[i + 1]);
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(SameSignInteger3, Fixture)
+    BENCHMARK_CASE_F(SameSignInteger3, Fixture)
     {
         for (size_t i = 0; i < InvocationCount; ++i)
             m_result ^= same_sign_integer(m_values[i], m_values[i + 1], m_values[i + 2]);
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(SameSignMultiplication2, Fixture)
+    BENCHMARK_CASE_F(SameSignMultiplication2, Fixture)
     {
         for (size_t i = 0; i < InvocationCount; ++i)
             m_result ^= same_sign_multiplication(m_values[i], m_values[i + 1]);
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(SameSignMultiplication3, Fixture)
+    BENCHMARK_CASE_F(SameSignMultiplication3, Fixture)
     {
         for (size_t i = 0; i < InvocationCount; ++i)
             m_result ^= same_sign_multiplication(m_values[i], m_values[i + 1], m_values[i + 2]);
@@ -233,7 +233,7 @@ BENCHMARK_SUITE(SameSign)
 
 #ifdef APPLESEED_FOUNDATION_USE_SSE
 
-    BENCHMARK_CASE_WITH_FIXTURE(SameSignMultiplicationSSE3, Fixture)
+    BENCHMARK_CASE_F(SameSignMultiplicationSSE3, Fixture)
     {
         for (size_t i = 0; i < InvocationCount; ++i)
             m_result ^= same_sign_multiplication_sse(m_values[i], m_values[i + 1], m_values[i + 2]);

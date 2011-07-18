@@ -31,7 +31,7 @@
 
 BENCHMARK_SUITE( )
 {
-    BENCHMARK_CASE_WITH_FIXTURE( )
+    BENCHMARK_CASE_F( )
     {
     }
 }

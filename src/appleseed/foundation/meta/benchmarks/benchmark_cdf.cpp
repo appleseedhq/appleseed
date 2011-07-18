@@ -60,7 +60,7 @@ BENCHMARK_SUITE(Foundation_Math_CDF)
         }
     };
 
-    BENCHMARK_CASE_WITH_FIXTURE(DoublePrecisionSampling, Fixture)
+    BENCHMARK_CASE_F(DoublePrecisionSampling, Fixture)
     {
         m_x += m_cdf.sample(0.5).second;
     }

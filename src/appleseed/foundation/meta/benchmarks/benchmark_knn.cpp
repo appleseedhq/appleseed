@@ -81,15 +81,15 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Answer)
         }
     };
 
-    BENCHMARK_CASE_WITH_FIXTURE(InsertIntoHeap_K5, Fixture<5>)          { insert_into_heap(); }
-    BENCHMARK_CASE_WITH_FIXTURE(InsertIntoHeap_K20, Fixture<20>)        { insert_into_heap(); }
-    BENCHMARK_CASE_WITH_FIXTURE(InsertIntoHeap_K100, Fixture<100>)      { insert_into_heap(); }
-    BENCHMARK_CASE_WITH_FIXTURE(InsertIntoHeap_K500, Fixture<500>)      { insert_into_heap(); }
+    BENCHMARK_CASE_F(InsertIntoHeap_K5, Fixture<5>)         { insert_into_heap(); }
+    BENCHMARK_CASE_F(InsertIntoHeap_K20, Fixture<20>)       { insert_into_heap(); }
+    BENCHMARK_CASE_F(InsertIntoHeap_K100, Fixture<100>)     { insert_into_heap(); }
+    BENCHMARK_CASE_F(InsertIntoHeap_K500, Fixture<500>)     { insert_into_heap(); }
 
-    BENCHMARK_CASE_WITH_FIXTURE(Sort_K5, Fixture<5>)        { m_answer.make_heap(); m_answer.sort(); }
-    BENCHMARK_CASE_WITH_FIXTURE(Sort_K20, Fixture<20>)      { m_answer.make_heap(); m_answer.sort(); }
-    BENCHMARK_CASE_WITH_FIXTURE(Sort_K100, Fixture<100>)    { m_answer.make_heap(); m_answer.sort(); }
-    BENCHMARK_CASE_WITH_FIXTURE(Sort_K500, Fixture<500>)    { m_answer.make_heap(); m_answer.sort(); }
+    BENCHMARK_CASE_F(Sort_K5, Fixture<5>)                   { m_answer.make_heap(); m_answer.sort(); }
+    BENCHMARK_CASE_F(Sort_K20, Fixture<20>)                 { m_answer.make_heap(); m_answer.sort(); }
+    BENCHMARK_CASE_F(Sort_K100, Fixture<100>)               { m_answer.make_heap(); m_answer.sort(); }
+    BENCHMARK_CASE_F(Sort_K500, Fixture<500>)               { m_answer.make_heap(); m_answer.sort(); }
 }
 
 BENCHMARK_SUITE(Foundation_Math_Knn_Query)
@@ -390,15 +390,15 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Query)
         }
     };
 
-    BENCHMARK_CASE_WITH_FIXTURE(Particles_K1, ParticlesFixture<1>)      { run_queries(); }
-    BENCHMARK_CASE_WITH_FIXTURE(Particles_K5, ParticlesFixture<5>)      { run_queries(); }
-    BENCHMARK_CASE_WITH_FIXTURE(Particles_K20, ParticlesFixture<20>)    { run_queries(); }
-    BENCHMARK_CASE_WITH_FIXTURE(Particles_K100, ParticlesFixture<100>)  { run_queries(); }
-    BENCHMARK_CASE_WITH_FIXTURE(Particles_K500, ParticlesFixture<500>)  { run_queries(); }
+    BENCHMARK_CASE_F(Particles_K1, ParticlesFixture<1>)      { run_queries(); }
+    BENCHMARK_CASE_F(Particles_K5, ParticlesFixture<5>)      { run_queries(); }
+    BENCHMARK_CASE_F(Particles_K20, ParticlesFixture<20>)    { run_queries(); }
+    BENCHMARK_CASE_F(Particles_K100, ParticlesFixture<100>)  { run_queries(); }
+    BENCHMARK_CASE_F(Particles_K500, ParticlesFixture<500>)  { run_queries(); }
 
-    BENCHMARK_CASE_WITH_FIXTURE(PhotonMap_K1, PhotonMapFixture<1>)      { run_queries(); }
-    BENCHMARK_CASE_WITH_FIXTURE(PhotonMap_K5, PhotonMapFixture<5>)      { run_queries(); }
-    BENCHMARK_CASE_WITH_FIXTURE(PhotonMap_K20, PhotonMapFixture<20>)    { run_queries(); }
-    BENCHMARK_CASE_WITH_FIXTURE(PhotonMap_K100, PhotonMapFixture<100>)  { run_queries(); }
-    BENCHMARK_CASE_WITH_FIXTURE(PhotonMap_K500, PhotonMapFixture<500>)  { run_queries(); }
+    BENCHMARK_CASE_F(PhotonMap_K1, PhotonMapFixture<1>)      { run_queries(); }
+    BENCHMARK_CASE_F(PhotonMap_K5, PhotonMapFixture<5>)      { run_queries(); }
+    BENCHMARK_CASE_F(PhotonMap_K20, PhotonMapFixture<20>)    { run_queries(); }
+    BENCHMARK_CASE_F(PhotonMap_K100, PhotonMapFixture<100>)  { run_queries(); }
+    BENCHMARK_CASE_F(PhotonMap_K500, PhotonMapFixture<500>)  { run_queries(); }
 }

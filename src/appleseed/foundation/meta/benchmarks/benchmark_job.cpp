@@ -77,12 +77,12 @@ BENCHMARK_SUITE(Foundation_Utility_Job)
         }
     };
 
-    BENCHMARK_CASE_WITH_FIXTURE(SingleThreadedJobExecution, Fixture<1>)
+    BENCHMARK_CASE_F(SingleThreadedJobExecution, Fixture<1>)
     {
         payload();
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(DoubleThreadedJobExecution, Fixture<2>)
+    BENCHMARK_CASE_F(DoubleThreadedJobExecution, Fixture<2>)
     {
         payload();
     }

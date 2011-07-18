@@ -61,13 +61,13 @@ BENCHMARK_SUITE(IntegerDivision)
         }
     };
 
-    BENCHMARK_CASE_WITH_FIXTURE(IntegerDivision, Fixture)
+    BENCHMARK_CASE_F(IntegerDivision, Fixture)
     {
         for (size_t i = 0; i < N; ++i)
             m_result += m_num[i] / m_den[i];
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(MultiplicationByReciprocal, Fixture)
+    BENCHMARK_CASE_F(MultiplicationByReciprocal, Fixture)
     {
         for (size_t i = 0; i < N; ++i)
             m_result += truncate<size_t>(m_num[i] * m_one_over_den[i]);

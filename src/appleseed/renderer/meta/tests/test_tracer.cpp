@@ -208,7 +208,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     {
     };
 
-    TEST_CASE_WITH_FIXTURE(Trace_GivenOriginAndDirection_NoOccluder, Fixture<EmptyScene>)
+    TEST_CASE_F(Trace_GivenOriginAndDirection_NoOccluder, Fixture<EmptyScene>)
     {
         const ShadingPoint& shading_point =
             m_tracer.trace(Vector3d(0.0), Vector3d(1.0, 0.0, 0.0));
@@ -217,7 +217,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         EXPECT_EQ(1.0, m_tracer.get_transmission());
     }
 
-    TEST_CASE_WITH_FIXTURE(TraceBetween_GivenOriginAndTarget_NoOccluder, Fixture<EmptyScene>)
+    TEST_CASE_F(TraceBetween_GivenOriginAndTarget_NoOccluder, Fixture<EmptyScene>)
     {
         const ShadingPoint& shading_point =
             m_tracer.trace_between(Vector3d(0.0, 0.0, 0.0), Vector3d(5.0, 0.0, 0.0));
@@ -235,7 +235,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         }
     };
 
-    TEST_CASE_WITH_FIXTURE(Trace_GivenOriginAndDirection_SingleOpaqueOccluder, Fixture<SceneWithSingleOpaqueOccluder>)
+    TEST_CASE_F(Trace_GivenOriginAndDirection_SingleOpaqueOccluder, Fixture<SceneWithSingleOpaqueOccluder>)
     {
         const ShadingPoint& shading_point =
             m_tracer.trace(Vector3d(0.0), Vector3d(1.0, 0.0, 0.0));
@@ -245,7 +245,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         EXPECT_EQ(0.0, m_tracer.get_transmission());
     }
 
-    TEST_CASE_WITH_FIXTURE(TraceBetween_GivenOriginAndTarget_SingleOpaqueOccluder, Fixture<SceneWithSingleOpaqueOccluder>)
+    TEST_CASE_F(TraceBetween_GivenOriginAndTarget_SingleOpaqueOccluder, Fixture<SceneWithSingleOpaqueOccluder>)
     {
         const ShadingPoint& shading_point =
             m_tracer.trace_between(Vector3d(0.0, 0.0, 0.0), Vector3d(5.0, 0.0, 0.0));
@@ -264,7 +264,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         }
     };
 
-    TEST_CASE_WITH_FIXTURE(Trace_GivenOriginAndDirection_SingleTransparentOccluder, Fixture<SceneWithSingleTransparentOccluder>)
+    TEST_CASE_F(Trace_GivenOriginAndDirection_SingleTransparentOccluder, Fixture<SceneWithSingleTransparentOccluder>)
     {
         const ShadingPoint& shading_point =
             m_tracer.trace(Vector3d(0.0), Vector3d(1.0, 0.0, 0.0));
@@ -273,7 +273,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         EXPECT_FEQ(0.5, m_tracer.get_transmission());
     }
 
-    TEST_CASE_WITH_FIXTURE(TraceBetween_GivenOriginAndTarget_SingleTransparentOccluder, Fixture<SceneWithSingleTransparentOccluder>)
+    TEST_CASE_F(TraceBetween_GivenOriginAndTarget_SingleTransparentOccluder, Fixture<SceneWithSingleTransparentOccluder>)
     {
         const ShadingPoint& shading_point =
             m_tracer.trace_between(Vector3d(0.0, 0.0, 0.0), Vector3d(5.0, 0.0, 0.0));
@@ -292,7 +292,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         }
     };
 
-    TEST_CASE_WITH_FIXTURE(Trace_GivenOriginAndDirection_TransparentThenOpaqueOccluders, Fixture<SceneWithTransparentThenOpaqueOccluders>)
+    TEST_CASE_F(Trace_GivenOriginAndDirection_TransparentThenOpaqueOccluders, Fixture<SceneWithTransparentThenOpaqueOccluders>)
     {
         const ShadingPoint& shading_point =
             m_tracer.trace(Vector3d(0.0), Vector3d(1.0, 0.0, 0.0));
@@ -302,7 +302,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         EXPECT_FEQ(0.0, m_tracer.get_transmission());
     }
 
-    TEST_CASE_WITH_FIXTURE(TraceBetween_GivenOriginAndTarget_TransparentThenOpaqueOccluders_TargetPastOpaqueOccluder, Fixture<SceneWithTransparentThenOpaqueOccluders>)
+    TEST_CASE_F(TraceBetween_GivenOriginAndTarget_TransparentThenOpaqueOccluders_TargetPastOpaqueOccluder, Fixture<SceneWithTransparentThenOpaqueOccluders>)
     {
         const ShadingPoint& shading_point =
             m_tracer.trace_between(Vector3d(0.0, 0.0, 0.0), Vector3d(5.0, 0.0, 0.0));
@@ -312,7 +312,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         EXPECT_FEQ(0.0, m_tracer.get_transmission());
     }
 
-    TEST_CASE_WITH_FIXTURE(TraceBetween_GivenOriginAndTarget_TransparentThenOpaqueOccluders_TargetOnOpaqueOccluder, Fixture<SceneWithTransparentThenOpaqueOccluders>)
+    TEST_CASE_F(TraceBetween_GivenOriginAndTarget_TransparentThenOpaqueOccluders_TargetOnOpaqueOccluder, Fixture<SceneWithTransparentThenOpaqueOccluders>)
     {
         const ShadingPoint& shading_point =
             m_tracer.trace_between(Vector3d(0.0, 0.0, 0.0), Vector3d(4.0, 0.0, 0.0));

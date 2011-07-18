@@ -53,7 +53,7 @@ TEST_SUITE(Rendering_Generic_PixelSampler)
         }
     };
 
-    TEST_CASE_WITH_FIXTURE(Sample_SubPixelAtTopLeftCorner, Fixture)
+    TEST_CASE_F(Sample_SubPixelAtTopLeftCorner, Fixture)
     {
         Vector2d sample_position;
         size_t initial_instance;
@@ -62,7 +62,7 @@ TEST_SUITE(Rendering_Generic_PixelSampler)
         EXPECT_EQ(Vector2d(0.0), sample_position);
     }
 
-    TEST_CASE_WITH_FIXTURE(Sample_SubPixelAtBottomRightCorner, Fixture)
+    TEST_CASE_F(Sample_SubPixelAtBottomRightCorner, Fixture)
     {
         // Assume a 32x32 pixels image with 2x2 samples per pixels.
         Vector2d sample_position;

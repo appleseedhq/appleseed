@@ -60,42 +60,42 @@ BENCHMARK_SUITE(Foundation_Math_Matrix44)
         }
     };
 
-    BENCHMARK_CASE_WITH_FIXTURE(SinglePrecisionMatrixMatrixMultiplication, Fixture<float>)
+    BENCHMARK_CASE_F(SinglePrecisionMatrixMatrixMultiplication, Fixture<float>)
     {
         m_result_mat = m_lhs * m_rhs;
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(DoublePrecisionMatrixMatrixMultiplication, Fixture<double>)
+    BENCHMARK_CASE_F(DoublePrecisionMatrixMatrixMultiplication, Fixture<double>)
     {
         m_result_mat = m_lhs * m_rhs;
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(SinglePrecisionMatrixVectorMultiplication, Fixture<float>)
+    BENCHMARK_CASE_F(SinglePrecisionMatrixVectorMultiplication, Fixture<float>)
     {
         m_result_vec = m_lhs * m_vec;
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(DoublePrecisionMatrixVectorMultiplication, Fixture<double>)
+    BENCHMARK_CASE_F(DoublePrecisionMatrixVectorMultiplication, Fixture<double>)
     {
         m_result_vec = m_lhs * m_vec;
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(SinglePrecisionVectorMatrixMultiplication, Fixture<float>)
+    BENCHMARK_CASE_F(SinglePrecisionVectorMatrixMultiplication, Fixture<float>)
     {
         m_result_vec = m_vec * m_rhs;
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(DoublePrecisionVectorMatrixMultiplication, Fixture<double>)
+    BENCHMARK_CASE_F(DoublePrecisionVectorMatrixMultiplication, Fixture<double>)
     {
         m_result_vec = m_vec * m_rhs;
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(SinglePrecisionMatrixInversion, Fixture<float>)
+    BENCHMARK_CASE_F(SinglePrecisionMatrixInversion, Fixture<float>)
     {
         m_result_mat = inverse(m_lhs);
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(DoublePrecisionMatrixInversion, Fixture<double>)
+    BENCHMARK_CASE_F(DoublePrecisionMatrixInversion, Fixture<double>)
     {
         m_result_mat = inverse(m_lhs);
     }

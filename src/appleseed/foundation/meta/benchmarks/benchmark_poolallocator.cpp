@@ -79,37 +79,37 @@ BENCHMARK_SUITE(Foundation_Utility_PoolAllocator)
     typedef allocator<uint32> DefaultAllocator;
     typedef PoolAllocator<uint32> PoolAllocator;
 
-    BENCHMARK_CASE_WITH_FIXTURE(RepeatedAllocation_PoolAllocator, Fixture<PoolAllocator>)
+    BENCHMARK_CASE_F(RepeatedAllocation_PoolAllocator, Fixture<PoolAllocator>)
     {
         m_allocator.allocate(1);
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(RepeatedAllocationDeallocation_DefaultAllocator, Fixture<DefaultAllocator>)
+    BENCHMARK_CASE_F(RepeatedAllocationDeallocation_DefaultAllocator, Fixture<DefaultAllocator>)
     {
         repeated_allocation_deallocation();
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(RepeatedAllocationDeallocation_PoolAllocator, Fixture<PoolAllocator>)
+    BENCHMARK_CASE_F(RepeatedAllocationDeallocation_PoolAllocator, Fixture<PoolAllocator>)
     {
         repeated_allocation_deallocation();
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(FirstAllocatedFirstDeallocatedBatch_DefaultAllocator, Fixture<DefaultAllocator>)
+    BENCHMARK_CASE_F(FirstAllocatedFirstDeallocatedBatch_DefaultAllocator, Fixture<DefaultAllocator>)
     {
         first_allocated_first_deallocated_batch();
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(FirstAllocatedFirstDeallocatedBatch_PoolAllocator, Fixture<PoolAllocator>)
+    BENCHMARK_CASE_F(FirstAllocatedFirstDeallocatedBatch_PoolAllocator, Fixture<PoolAllocator>)
     {
         first_allocated_first_deallocated_batch();
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(FirstAllocatedLastDeallocatedBatch_DefaultAllocator, Fixture<DefaultAllocator>)
+    BENCHMARK_CASE_F(FirstAllocatedLastDeallocatedBatch_DefaultAllocator, Fixture<DefaultAllocator>)
     {
         first_allocated_last_deallocated_batch();
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(FirstAllocatedLastDeallocatedBatch_PoolAllocator, Fixture<PoolAllocator>)
+    BENCHMARK_CASE_F(FirstAllocatedLastDeallocatedBatch_PoolAllocator, Fixture<PoolAllocator>)
     {
         first_allocated_last_deallocated_batch();
     }

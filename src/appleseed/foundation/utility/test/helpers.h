@@ -133,7 +133,7 @@ namespace foundation
 // Define a test case with fixture.
 //
 
-#define TEST_CASE_WITH_FIXTURE(Name, FixtureName)                                           \
+#define TEST_CASE_F(Name, FixtureName)                                                      \
     struct TestCase##Name                                                                   \
       : public foundation::ITestCase                                                        \
       , public FixtureName                                                                  \

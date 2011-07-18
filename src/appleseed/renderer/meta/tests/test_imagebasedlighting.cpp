@@ -71,7 +71,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
         }
     };
 
-    TEST_CASE_WITH_FIXTURE(ComputeImageBasedLighting_GivenSpecularBRDFAndUniformWhiteEnrironmentEDF_ReturnsOne, Fixture)
+    TEST_CASE_F(ComputeImageBasedLighting_GivenSpecularBRDFAndUniformWhiteEnrironmentEDF_ReturnsOne, Fixture)
     {
         create_color_entity("gray", Spectrum(0.5f));
         create_color_entity("white", Spectrum(1.0f));

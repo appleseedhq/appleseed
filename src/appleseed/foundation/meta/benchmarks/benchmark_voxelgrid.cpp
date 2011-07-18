@@ -81,7 +81,7 @@ BENCHMARK_SUITE(Foundation_Math_VoxelGrid3)
         }
     };
 
-    BENCHMARK_CASE_WITH_FIXTURE(NearestLookup, Fixture)
+    BENCHMARK_CASE_F(NearestLookup, Fixture)
     {
         for (size_t i = 0; i < LookupPointCount; ++i)
         { 
@@ -93,7 +93,7 @@ BENCHMARK_SUITE(Foundation_Math_VoxelGrid3)
         }
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(LinearLookup, Fixture)
+    BENCHMARK_CASE_F(LinearLookup, Fixture)
     {
         for (size_t i = 0; i < LookupPointCount; ++i)
         { 
@@ -105,7 +105,7 @@ BENCHMARK_SUITE(Foundation_Math_VoxelGrid3)
         }
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(QuadraticLookup, Fixture)
+    BENCHMARK_CASE_F(QuadraticLookup, Fixture)
     {
         for (size_t i = 0; i < LookupPointCount; ++i)
         { 

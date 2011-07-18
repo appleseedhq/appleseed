@@ -299,7 +299,7 @@ TEST_SUITE(Foundation_Math_BSP_Intersector)
 #pragma warning (push)
 #pragma warning (disable : 4723)    // potential divide by 0
 
-    TEST_CASE_WITH_FIXTURE(Intersect_GivenRayEmbeddedInSplitPlane_VisitsBothLeaves, Fixture)
+    TEST_CASE_F(Intersect_GivenRayEmbeddedInSplitPlane_VisitsBothLeaves, Fixture)
     {
         Ray3d ray(Vector3d(0.0, 0.0, 1.0), Vector3d(0.0, 0.0, -1.0));
 
@@ -309,7 +309,7 @@ TEST_SUITE(Foundation_Math_BSP_Intersector)
         EXPECT_FEQ(1.0 - 0.7, m_leaf_visitor.get_closest_hit());
     }
 
-    TEST_CASE_WITH_FIXTURE(Intersect_GivenRayPiercingLeftNode_VisitsLeftNode, Fixture)
+    TEST_CASE_F(Intersect_GivenRayPiercingLeftNode_VisitsLeftNode, Fixture)
     {
         Ray3d ray(Vector3d(-0.5, 0.0, 1.0), Vector3d(0.0, 0.0, -1.0));
 
@@ -319,7 +319,7 @@ TEST_SUITE(Foundation_Math_BSP_Intersector)
         EXPECT_FEQ(1.0 - 0.2, m_leaf_visitor.get_closest_hit());
     }
 
-    TEST_CASE_WITH_FIXTURE(Intersect_GivenRayPiercingRightNode_VisitsRightNode, Fixture)
+    TEST_CASE_F(Intersect_GivenRayPiercingRightNode_VisitsRightNode, Fixture)
     {
         Ray3d ray(Vector3d(0.5, 0.0, 1.0), Vector3d(0.0, 0.0, -1.0));
 

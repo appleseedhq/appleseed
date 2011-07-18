@@ -55,7 +55,7 @@ TEST_SUITE(Foundation_Image_Tile)
         }
     };
 
-    TEST_CASE_WITH_FIXTURE(TestProperties, FixtureTile)
+    TEST_CASE_F(TestProperties, FixtureTile)
     {
         EXPECT_EQ(TilePixelFormat, tile.get_pixel_format());
         EXPECT_EQ(TileWidth, tile.get_width());
@@ -64,7 +64,7 @@ TEST_SUITE(Foundation_Image_Tile)
         EXPECT_EQ(TileWidth * TileHeight, tile.get_pixel_count());
     }
 
-    TEST_CASE_WITH_FIXTURE(TestSetAndGetPixel, FixtureTile)
+    TEST_CASE_F(TestSetAndGetPixel, FixtureTile)
     {
         const Color3f PixelColor(0.3f, 0.5f, 0.7f);
         tile.set_pixel(7, 9, PixelColor);
@@ -75,7 +75,7 @@ TEST_SUITE(Foundation_Image_Tile)
         EXPECT_FEQ(PixelColor, c);
     }
 
-    TEST_CASE_WITH_FIXTURE(TestClear, FixtureTile)
+    TEST_CASE_F(TestClear, FixtureTile)
     {
         const Color3f ClearColor(0.2f, 0.4f, 0.6f);
         tile.clear(ClearColor);

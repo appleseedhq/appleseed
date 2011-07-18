@@ -211,7 +211,7 @@ TEST_SUITE(Foundation_Utility_BufferedFile)
         }
     };
 
-    TEST_CASE_WITH_FIXTURE(TestSeekingForwardWhileReading, FileReadingFixture)
+    TEST_CASE_F(TestSeekingForwardWhileReading, FileReadingFixture)
     {
         char buf[100];
         m_file.read(buf, 6);
@@ -220,7 +220,7 @@ TEST_SUITE(Foundation_Utility_BufferedFile)
         EXPECT_EQ("KLMNOPQR", string(buf, 8));
     }
 
-    TEST_CASE_WITH_FIXTURE(TestSeekingBackwardWhileReading, FileReadingFixture)
+    TEST_CASE_F(TestSeekingBackwardWhileReading, FileReadingFixture)
     {
         char buf[100];
         m_file.read(buf, 6);
@@ -229,7 +229,7 @@ TEST_SUITE(Foundation_Utility_BufferedFile)
         EXPECT_EQ("CDEFGHIJ", string(buf, 8));
     }
 
-    TEST_CASE_WITH_FIXTURE(TestSeekingFromBeginningWhileReading, FileReadingFixture)
+    TEST_CASE_F(TestSeekingFromBeginningWhileReading, FileReadingFixture)
     {
         char buf[100];
         m_file.read(buf, 8);
@@ -238,7 +238,7 @@ TEST_SUITE(Foundation_Utility_BufferedFile)
         EXPECT_EQ("CDEFGHIJ", string(buf, 8));
     }
 
-    TEST_CASE_WITH_FIXTURE(TestSeekingFromEndWhileReading, FileReadingFixture)
+    TEST_CASE_F(TestSeekingFromEndWhileReading, FileReadingFixture)
     {
         char buf[100];
         m_file.read(buf, 8);

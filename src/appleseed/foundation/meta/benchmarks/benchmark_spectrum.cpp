@@ -46,22 +46,22 @@ BENCHMARK_SUITE(Foundation_Image_Spectrum31f)
         }
     };
 
-    BENCHMARK_CASE_WITH_FIXTURE(Set, Fixture)
+    BENCHMARK_CASE_F(Set, Fixture)
     {
         m_spectrum1.set(0.0f);
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(InPlaceAddition, Fixture)
+    BENCHMARK_CASE_F(InPlaceAddition, Fixture)
     {
         m_spectrum1 += m_spectrum2;
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(InPlaceMultiplicationByScalar, Fixture)
+    BENCHMARK_CASE_F(InPlaceMultiplicationByScalar, Fixture)
     {
         m_spectrum1 *= 1.1f;
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(InPlaceMultiplicationBySpectrum, Fixture)
+    BENCHMARK_CASE_F(InPlaceMultiplicationBySpectrum, Fixture)
     {
         m_spectrum1 *= m_spectrum2;
     }

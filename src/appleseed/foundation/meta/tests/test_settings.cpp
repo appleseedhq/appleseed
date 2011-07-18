@@ -62,7 +62,7 @@ TEST_SUITE(Foundation_Utility_SettingsFileReader)
         }
     };
 
-    TEST_CASE_WITH_FIXTURE(Read_GivenEmptySettingsFile_ReturnsEmptyDictionary, Fixture)
+    TEST_CASE_F(Read_GivenEmptySettingsFile_ReturnsEmptyDictionary, Fixture)
     {
         const bool succeeded = read("data/test_settings_emptysettingsfile.xml");
         ASSERT_TRUE(succeeded);
@@ -70,7 +70,7 @@ TEST_SUITE(Foundation_Utility_SettingsFileReader)
         EXPECT_TRUE(m_dictionary.empty());
     }
 
-    TEST_CASE_WITH_FIXTURE(Read_GivenSettingsFileWithTwoScalarParameters_ReturnsDictionaryWithTwoScalarParameters, Fixture)
+    TEST_CASE_F(Read_GivenSettingsFileWithTwoScalarParameters_ReturnsDictionaryWithTwoScalarParameters, Fixture)
     {
         const bool succeeded = read("data/test_settings_settingsfilewithtwoscalarparameters.xml");
         ASSERT_TRUE(succeeded);
@@ -81,7 +81,7 @@ TEST_SUITE(Foundation_Utility_SettingsFileReader)
         EXPECT_EQ("foo", m_dictionary.get<string>("y"));
     }
 
-    TEST_CASE_WITH_FIXTURE(Read_GivenSettingsFileWithTwoDictionaryParameters_ReturnsDictionaryWithTwoDictionaryParameters, Fixture)
+    TEST_CASE_F(Read_GivenSettingsFileWithTwoDictionaryParameters_ReturnsDictionaryWithTwoDictionaryParameters, Fixture)
     {
         const bool succeeded = read("data/test_settings_settingsfilewithtwodictionaryparameters.xml");
         ASSERT_TRUE(succeeded);

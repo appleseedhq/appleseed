@@ -55,42 +55,42 @@ BENCHMARK_SUITE(Foundation_Math_QMC)
 
     const size_t Digits = 0x55555555;
 
-    BENCHMARK_CASE_WITH_FIXTURE(SinglePrecisionRadicalInverseBase2, Fixture<float>)
+    BENCHMARK_CASE_F(SinglePrecisionRadicalInverseBase2, Fixture<float>)
     {
         m_x += radical_inverse_base2<float>(Digits);
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(DoublePrecisionRadicalInverseBase2, Fixture<double>)
+    BENCHMARK_CASE_F(DoublePrecisionRadicalInverseBase2, Fixture<double>)
     {
         m_x += radical_inverse_base2<double>(Digits);
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(SinglePrecisionRadicalInverseBase3, Fixture<float>)
+    BENCHMARK_CASE_F(SinglePrecisionRadicalInverseBase3, Fixture<float>)
     {
         m_x += radical_inverse<float>(3, Digits);
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(DoublePrecisionRadicalInverseBase3, Fixture<double>)
+    BENCHMARK_CASE_F(DoublePrecisionRadicalInverseBase3, Fixture<double>)
     {
         m_x += radical_inverse<double>(3, Digits);
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(SinglePrecisionHaltonSequenceBases2And3, Fixture<Vector2f>)
+    BENCHMARK_CASE_F(SinglePrecisionHaltonSequenceBases2And3, Fixture<Vector2f>)
     {
         m_x += halton_sequence<float, 2>(Bases, Digits);
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(DoublePrecisionHaltonSequenceBases2And3, Fixture<Vector2d>)
+    BENCHMARK_CASE_F(DoublePrecisionHaltonSequenceBases2And3, Fixture<Vector2d>)
     {
         m_x += halton_sequence<double, 2>(Bases, Digits);
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(SinglePrecisionHammersleySequenceBases2And3, Fixture<Vector2f>)
+    BENCHMARK_CASE_F(SinglePrecisionHammersleySequenceBases2And3, Fixture<Vector2f>)
     {
         m_x += hammersley_sequence<float, 2>(Bases, 255, 256);
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(DoublePrecisionHammersleySequenceBases2And3, Fixture<Vector2d>)
+    BENCHMARK_CASE_F(DoublePrecisionHammersleySequenceBases2And3, Fixture<Vector2d>)
     {
         m_x += hammersley_sequence<double, 2>(Bases, 255, 256);
     }

@@ -125,7 +125,7 @@ namespace foundation
 // Define a benchmark case with fixture.
 //
 
-#define BENCHMARK_CASE_WITH_FIXTURE(Name, FixtureName)                                      \
+#define BENCHMARK_CASE_F(Name, FixtureName)                                                 \
     struct BenchmarkCase##Name                                                              \
       : public foundation::IBenchmarkCase                                                   \
       , public FixtureName                                                                  \

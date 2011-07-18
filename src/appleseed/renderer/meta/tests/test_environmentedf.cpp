@@ -182,7 +182,7 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
         }
     };
 
-    TEST_CASE_WITH_FIXTURE(CheckConstantEnvironmentEDFConsistency, Fixture)
+    TEST_CASE_F(CheckConstantEnvironmentEDFConsistency, Fixture)
     {
         create_color_entity("blue", Color3f(0.2f, 0.5f, 0.9f));
 
@@ -198,7 +198,7 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
         EXPECT_TRUE(consistent);
     }
 
-    TEST_CASE_WITH_FIXTURE(CheckGradientEnvironmentEDFConsistency, Fixture)
+    TEST_CASE_F(CheckGradientEnvironmentEDFConsistency, Fixture)
     {
         create_color_entity("red", Color3f(1.0f, 0.2f, 0.2f));
         create_color_entity("green", Color3f(0.2f, 1.0f, 0.2f));
@@ -217,7 +217,7 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
         EXPECT_TRUE(consistent);
     }
 
-    TEST_CASE_WITH_FIXTURE(CheckLatLongMapEnvironmentEDFConsistency, Fixture)
+    TEST_CASE_F(CheckLatLongMapEnvironmentEDFConsistency, Fixture)
     {
         const size_t texture_index =
             create_horizontal_gradient_texture("horiz_gradient_texture");
@@ -236,7 +236,7 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
         EXPECT_TRUE(consistent);
     }
 
-    TEST_CASE_WITH_FIXTURE(CheckMirrorBallMapEnvironmentEDFConsistency, Fixture)
+    TEST_CASE_F(CheckMirrorBallMapEnvironmentEDFConsistency, Fixture)
     {
         const size_t texture_index =
             create_horizontal_gradient_texture("horiz_gradient_texture");

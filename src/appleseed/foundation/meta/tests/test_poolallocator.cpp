@@ -86,7 +86,7 @@ TEST_SUITE(Foundation_Utility_PoolAllocator)
         EXPECT_TRUE(a1 != a2);
     }
 
-    TEST_CASE_WITH_FIXTURE(AllocateDeallocateSingleItem, Fixture)
+    TEST_CASE_F(AllocateDeallocateSingleItem, Fixture)
     {
         int* p = m_allocator.allocate(1);
         EXPECT_NEQ(0, p);
@@ -94,7 +94,7 @@ TEST_SUITE(Foundation_Utility_PoolAllocator)
         m_allocator.deallocate(p, 1);
     }
 
-    TEST_CASE_WITH_FIXTURE(AllocateDeallocateArrayOfItems, Fixture)
+    TEST_CASE_F(AllocateDeallocateArrayOfItems, Fixture)
     {
         const size_t N = 10;
 

@@ -293,12 +293,12 @@ TEST_SUITE(Foundation_Utility_Job_JobManager)
         volatile size_t&    m_execution_count;
     };
 
-    TEST_CASE_WITH_FIXTURE(InitialStateIsCorrect, FixtureJobManager)
+    TEST_CASE_F(InitialStateIsCorrect, FixtureJobManager)
     {
         EXPECT_EQ(1, job_manager.get_thread_count());
     }
 
-    TEST_CASE_WITH_FIXTURE(StateAfterJobExecutionIsCorrect, FixtureJobManager)
+    TEST_CASE_F(StateAfterJobExecutionIsCorrect, FixtureJobManager)
     {
         job_queue.schedule(new EmptyJob());
 
@@ -308,7 +308,7 @@ TEST_SUITE(Foundation_Utility_Job_JobManager)
         EXPECT_FALSE(job_queue.has_scheduled_or_running_jobs());
     }
 
-    TEST_CASE_WITH_FIXTURE(JobManagerExecutesJobs, FixtureJobManager)
+    TEST_CASE_F(JobManagerExecutesJobs, FixtureJobManager)
     {
         volatile size_t execution_count = 0;
 
@@ -321,7 +321,7 @@ TEST_SUITE(Foundation_Utility_Job_JobManager)
         EXPECT_EQ(1, execution_count);
     }
 
-    TEST_CASE_WITH_FIXTURE(JobManagerExecutesSubJobs, FixtureJobManager)
+    TEST_CASE_F(JobManagerExecutesSubJobs, FixtureJobManager)
     {
         volatile size_t execution_count = 0;
 

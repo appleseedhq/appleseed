@@ -55,7 +55,7 @@ TEST_SUITE(Foundation_Math_Transform)
         }
     };
 
-    TEST_CASE_WITH_FIXTURE(TransformPointByIdentity, FixtureTransformByIdentity)
+    TEST_CASE_F(TransformPointByIdentity, FixtureTransformByIdentity)
     {
         const Vector3d v(1.0, 2.0, 3.0);
 
@@ -63,7 +63,7 @@ TEST_SUITE(Foundation_Math_Transform)
         EXPECT_FEQ(v, transform.transform_point_to_local(v));
     }
 
-    TEST_CASE_WITH_FIXTURE(TransformVectorByIdentity, FixtureTransformByIdentity)
+    TEST_CASE_F(TransformVectorByIdentity, FixtureTransformByIdentity)
     {
         const Vector3d v(1.0, 2.0, 3.0);
 
@@ -71,7 +71,7 @@ TEST_SUITE(Foundation_Math_Transform)
         EXPECT_FEQ(v, transform.transform_vector_to_local(v));
     }
 
-    TEST_CASE_WITH_FIXTURE(TransformNormalByIdentity, FixtureTransformByIdentity)
+    TEST_CASE_F(TransformNormalByIdentity, FixtureTransformByIdentity)
     {
         const Vector3d v(1.0, 2.0, 3.0);
 
@@ -79,7 +79,7 @@ TEST_SUITE(Foundation_Math_Transform)
         EXPECT_FEQ(v, transform.transform_normal_to_local(v));
     }
 
-    TEST_CASE_WITH_FIXTURE(TransformRayByIdentity, FixtureTransformByIdentity)
+    TEST_CASE_F(TransformRayByIdentity, FixtureTransformByIdentity)
     {
         const Ray3d r(
             Vector3d(1.0, 2.0, 3.0),
@@ -101,7 +101,7 @@ TEST_SUITE(Foundation_Math_Transform)
         }
     };
 
-    TEST_CASE_WITH_FIXTURE(TransformPointByTranslation, FixtureTransformByTranslation)
+    TEST_CASE_F(TransformPointByTranslation, FixtureTransformByTranslation)
     {
         const Vector3d v(1.0, 2.0, 3.0);
 
@@ -109,7 +109,7 @@ TEST_SUITE(Foundation_Math_Transform)
         EXPECT_FEQ(Vector3d(-9.0, -18.0, -27.0), transform.transform_point_to_local(v));
     }
 
-    TEST_CASE_WITH_FIXTURE(TransformVectorByTranslation, FixtureTransformByTranslation)
+    TEST_CASE_F(TransformVectorByTranslation, FixtureTransformByTranslation)
     {
         const Vector3d v(1.0, 2.0, 3.0);
 
@@ -117,7 +117,7 @@ TEST_SUITE(Foundation_Math_Transform)
         EXPECT_FEQ(v, transform.transform_vector_to_local(v));
     }
 
-    TEST_CASE_WITH_FIXTURE(TransformNormalByTranslation, FixtureTransformByTranslation)
+    TEST_CASE_F(TransformNormalByTranslation, FixtureTransformByTranslation)
     {
         const Vector3d v(1.0, 2.0, 3.0);
 
@@ -125,7 +125,7 @@ TEST_SUITE(Foundation_Math_Transform)
         EXPECT_FEQ(v, transform.transform_normal_to_local(v));
     }
 
-    TEST_CASE_WITH_FIXTURE(TransformRayByTranslation, FixtureTransformByTranslation)
+    TEST_CASE_F(TransformRayByTranslation, FixtureTransformByTranslation)
     {
         const Ray3d r(
             Vector3d(1.0, 2.0, 3.0),
@@ -147,7 +147,7 @@ TEST_SUITE(Foundation_Math_Transform)
         }
     };
 
-    TEST_CASE_WITH_FIXTURE(TransformPointByRotation, FixtureTransformByRotation)
+    TEST_CASE_F(TransformPointByRotation, FixtureTransformByRotation)
     {
         const Vector3d v(2.0, 2.0, 3.0);
 
@@ -155,7 +155,7 @@ TEST_SUITE(Foundation_Math_Transform)
         EXPECT_FEQ(Vector3d(2.0, -2.0, 3.0), transform.transform_point_to_local(v));
     }
 
-    TEST_CASE_WITH_FIXTURE(TransformVectorByRotation, FixtureTransformByRotation)
+    TEST_CASE_F(TransformVectorByRotation, FixtureTransformByRotation)
     {
         const Vector3d v(2.0, 2.0, 3.0);
 
@@ -163,7 +163,7 @@ TEST_SUITE(Foundation_Math_Transform)
         EXPECT_FEQ(Vector3d(2.0, -2.0, 3.0), transform.transform_vector_to_local(v));
     }
 
-    TEST_CASE_WITH_FIXTURE(TransformNormalByRotation, FixtureTransformByRotation)
+    TEST_CASE_F(TransformNormalByRotation, FixtureTransformByRotation)
     {
         const Vector3d v(2.0, 2.0, 3.0);
 
@@ -171,7 +171,7 @@ TEST_SUITE(Foundation_Math_Transform)
         EXPECT_FEQ(Vector3d(2.0, -2.0, 3.0), transform.transform_normal_to_local(v));
     }
 
-    TEST_CASE_WITH_FIXTURE(TransformRayByRotation, FixtureTransformByRotation)
+    TEST_CASE_F(TransformRayByRotation, FixtureTransformByRotation)
     {
         const Ray3d r(
             Vector3d(2.0, 2.0, 3.0),

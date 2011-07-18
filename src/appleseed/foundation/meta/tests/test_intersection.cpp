@@ -442,7 +442,7 @@ TEST_SUITE(Foundation_Math_Intersection_RayTriangleMT)
 {
     typedef RayTriangleFixture<TriangleMT<double> > Fixture;
 
-    TEST_CASE_WITH_FIXTURE(Intersect_GivenRayWithTMinEqualToHitDistance_ReturnsTrue, Fixture)
+    TEST_CASE_F(Intersect_GivenRayWithTMinEqualToHitDistance_ReturnsTrue, Fixture)
     {
         const Ray3d ray(Vector3d(-0.2, 1.0, 0.2), Vector3d(0.0, -1.0, 0.0), 1.0, 10.0);
 
@@ -451,7 +451,7 @@ TEST_SUITE(Foundation_Math_Intersection_RayTriangleMT)
         ASSERT_TRUE(hit);
     }
 
-    TEST_CASE_WITH_FIXTURE(Intersect_GivenRayWithTMaxEqualToHitDistance_ReturnsFalse, Fixture)
+    TEST_CASE_F(Intersect_GivenRayWithTMaxEqualToHitDistance_ReturnsFalse, Fixture)
     {
         const Ray3d ray(Vector3d(-0.2, 1.0, 0.2), Vector3d(0.0, -1.0, 0.0), 0.0, 1.0);
 
@@ -460,7 +460,7 @@ TEST_SUITE(Foundation_Math_Intersection_RayTriangleMT)
         ASSERT_FALSE(hit);
     }
 
-    TEST_CASE_WITH_FIXTURE(Intersect_GivenRayWithTMinEqualToHitDistance_ReturnsHit, Fixture)
+    TEST_CASE_F(Intersect_GivenRayWithTMinEqualToHitDistance_ReturnsHit, Fixture)
     {
         const Ray3d ray(Vector3d(-0.2, 1.0, 0.2), Vector3d(0.0, -1.0, 0.0), 1.0, 10.0);
 
@@ -471,7 +471,7 @@ TEST_SUITE(Foundation_Math_Intersection_RayTriangleMT)
         EXPECT_FEQ(1.0, t);
     }
 
-    TEST_CASE_WITH_FIXTURE(Intersect_GivenRayWithTMaxEqualToHitDistance_ReturnsNoHit, Fixture)
+    TEST_CASE_F(Intersect_GivenRayWithTMaxEqualToHitDistance_ReturnsNoHit, Fixture)
     {
         const Ray3d ray(Vector3d(-0.2, 1.0, 0.2), Vector3d(0.0, -1.0, 0.0), 0.0, 1.0);
 
@@ -481,7 +481,7 @@ TEST_SUITE(Foundation_Math_Intersection_RayTriangleMT)
         ASSERT_FALSE(hit);
     }
 
-    TEST_CASE_WITH_FIXTURE(Intersect_GivenRayHittingDiagonalOfQuad_ReturnsHit, Fixture)
+    TEST_CASE_F(Intersect_GivenRayHittingDiagonalOfQuad_ReturnsHit, Fixture)
     {
         const Ray3d ray(Vector3d(0.0, 1.0, 0.0), Vector3d(0.0, -1.0, 0.0));
 
@@ -499,7 +499,7 @@ TEST_SUITE(Foundation_Math_Intersection_RayTriangleSSK)
 {
     typedef RayTriangleFixture<TriangleSSK<double> > Fixture;
 
-    TEST_CASE_WITH_FIXTURE(Intersect_GivenRayWithTMinEqualToHitDistance_ReturnsTrue, Fixture)
+    TEST_CASE_F(Intersect_GivenRayWithTMinEqualToHitDistance_ReturnsTrue, Fixture)
     {
         const Ray3d ray(Vector3d(-0.2, 1.0, 0.2), Vector3d(0.0, -1.0, 0.0), 1.0, 10.0);
 
@@ -508,7 +508,7 @@ TEST_SUITE(Foundation_Math_Intersection_RayTriangleSSK)
         ASSERT_TRUE(hit);
     }
 
-    TEST_CASE_WITH_FIXTURE(Intersect_GivenRayWithTMaxEqualToHitDistance_ReturnsFalse, Fixture)
+    TEST_CASE_F(Intersect_GivenRayWithTMaxEqualToHitDistance_ReturnsFalse, Fixture)
     {
         const Ray3d ray(Vector3d(-0.2, 1.0, 0.2), Vector3d(0.0, -1.0, 0.0), 0.0, 1.0);
 
@@ -517,7 +517,7 @@ TEST_SUITE(Foundation_Math_Intersection_RayTriangleSSK)
         ASSERT_FALSE(hit);
     }
 
-    TEST_CASE_WITH_FIXTURE(Intersect_GivenRayWithTMinEqualToHitDistance_ReturnsHit, Fixture)
+    TEST_CASE_F(Intersect_GivenRayWithTMinEqualToHitDistance_ReturnsHit, Fixture)
     {
         const Ray3d ray(Vector3d(-0.2, 1.0, 0.2), Vector3d(0.0, -1.0, 0.0), 1.0, 10.0);
 
@@ -528,7 +528,7 @@ TEST_SUITE(Foundation_Math_Intersection_RayTriangleSSK)
         EXPECT_FEQ(1.0, t);
     }
 
-    TEST_CASE_WITH_FIXTURE(Intersect_GivenRayWithTMaxEqualToHitDistance_ReturnsNoHit, Fixture)
+    TEST_CASE_F(Intersect_GivenRayWithTMaxEqualToHitDistance_ReturnsNoHit, Fixture)
     {
         const Ray3d ray(Vector3d(-0.2, 1.0, 0.2), Vector3d(0.0, -1.0, 0.0), 0.0, 1.0);
 
@@ -538,7 +538,7 @@ TEST_SUITE(Foundation_Math_Intersection_RayTriangleSSK)
         ASSERT_FALSE(hit);
     }
 
-    TEST_CASE_WITH_FIXTURE(Intersect_GivenRayHittingDiagonalOfQuad_ReturnsHit, Fixture)
+    TEST_CASE_F(Intersect_GivenRayHittingDiagonalOfQuad_ReturnsHit, Fixture)
     {
         const Ray3d ray(Vector3d(0.0, 1.0, 0.0), Vector3d(0.0, -1.0, 0.0));
 

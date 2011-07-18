@@ -59,7 +59,7 @@ TEST_SUITE(Foundation_Utility_Containers_PagedArray)
         }
     };
 
-    TEST_CASE_WITH_FIXTURE(TestInsertion, FixturePagedArrayWithThreeElements)
+    TEST_CASE_F(TestInsertion, FixturePagedArrayWithThreeElements)
     {
         EXPECT_FALSE(array.empty());
         EXPECT_EQ(3, array.size());
@@ -79,21 +79,21 @@ TEST_SUITE(Foundation_Utility_Containers_PagedArray)
             EXPECT_EQ(address[i], &array[i]);
     }
 
-    TEST_CASE_WITH_FIXTURE(TestArraySubscripting, FixturePagedArrayWithThreeElements)
+    TEST_CASE_F(TestArraySubscripting, FixturePagedArrayWithThreeElements)
     {
         EXPECT_EQ(10, array[0]);
         EXPECT_EQ(20, array[1]);
         EXPECT_EQ(30, array[2]);
     }
 
-    TEST_CASE_WITH_FIXTURE(TestExceptionCheckedAccessWithinBounds, FixturePagedArrayWithThreeElements)
+    TEST_CASE_F(TestExceptionCheckedAccessWithinBounds, FixturePagedArrayWithThreeElements)
     {
         EXPECT_EQ(10, array.at(0));
         EXPECT_EQ(20, array.at(1));
         EXPECT_EQ(30, array.at(2));
     }
 
-    TEST_CASE_WITH_FIXTURE(TestExceptionCheckedAccessOutOfBounds, FixturePagedArrayWithThreeElements)
+    TEST_CASE_F(TestExceptionCheckedAccessOutOfBounds, FixturePagedArrayWithThreeElements)
     {
         EXPECT_EXCEPTION(PagedArrayType::ExceptionOutOfRange,
         {
@@ -101,14 +101,14 @@ TEST_SUITE(Foundation_Utility_Containers_PagedArray)
         });
     }
 
-    TEST_CASE_WITH_FIXTURE(TestResizeToSameSize, FixturePagedArrayWithThreeElements)
+    TEST_CASE_F(TestResizeToSameSize, FixturePagedArrayWithThreeElements)
     {
         array.resize(3);
 
         EXPECT_EQ(3, array.size());
     }
 
-    TEST_CASE_WITH_FIXTURE(TestResizeToLargerSize, FixturePagedArrayWithThreeElements)
+    TEST_CASE_F(TestResizeToLargerSize, FixturePagedArrayWithThreeElements)
     {
         array.resize(5, 555);
 

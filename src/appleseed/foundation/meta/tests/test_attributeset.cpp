@@ -48,12 +48,12 @@ TEST_SUITE(Foundation_Utility_AttributeSet)
         }
     };
 
-    TEST_CASE_WITH_FIXTURE(TestFindChannel, FixtureTestAttributeSet)
+    TEST_CASE_F(TestFindChannel, FixtureTestAttributeSet)
     {
         EXPECT_EQ(uv_id, attributes.find_channel("uv"));
     }
 
-    TEST_CASE_WITH_FIXTURE(TestPushAttribute, FixtureTestAttributeSet)
+    TEST_CASE_F(TestPushAttribute, FixtureTestAttributeSet)
     {
         const Vector2f UV(0.2f, 0.4f);
         const size_t index = attributes.push_attribute(uv_id, UV);
@@ -61,7 +61,7 @@ TEST_SUITE(Foundation_Utility_AttributeSet)
         EXPECT_EQ(0, index);
     }
 
-    TEST_CASE_WITH_FIXTURE(TestGetAttributeCount, FixtureTestAttributeSet)
+    TEST_CASE_F(TestGetAttributeCount, FixtureTestAttributeSet)
     {
         const Vector2f UV(0.2f, 0.4f);
         attributes.push_attribute(uv_id, UV);
@@ -69,7 +69,7 @@ TEST_SUITE(Foundation_Utility_AttributeSet)
         EXPECT_EQ(1, attributes.get_attribute_count(uv_id));
     }
 
-    TEST_CASE_WITH_FIXTURE(TestGetAttribute, FixtureTestAttributeSet)
+    TEST_CASE_F(TestGetAttribute, FixtureTestAttributeSet)
     {
         const Vector2f RefUV(0.2f, 0.4f);
         const size_t index = attributes.push_attribute(uv_id, RefUV);
@@ -80,7 +80,7 @@ TEST_SUITE(Foundation_Utility_AttributeSet)
         EXPECT_EQ(RefUV, uv);
     }
 
-    TEST_CASE_WITH_FIXTURE(TestSetAttribute, FixtureTestAttributeSet)
+    TEST_CASE_F(TestSetAttribute, FixtureTestAttributeSet)
     {
         const Vector2f RefUV(0.2f, 0.4f);
         attributes.set_attribute(uv_id, 3, RefUV);

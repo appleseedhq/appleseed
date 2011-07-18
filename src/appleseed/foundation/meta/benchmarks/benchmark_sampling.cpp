@@ -58,7 +58,7 @@ BENCHMARK_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
         }
     };
 
-    BENCHMARK_CASE_WITH_FIXTURE(BenchmarkNextVector2, Fixture)
+    BENCHMARK_CASE_F(BenchmarkNextVector2, Fixture)
     {
         m_context.set_instance(0);
         m_v += m_context.next_vector2<2>();
@@ -90,13 +90,13 @@ BENCHMARK_SUITE(Foundation_Math_Sampling_Mappings)
         }
     };
 
-    BENCHMARK_CASE_WITH_FIXTURE(Benchmark_SampleDiskUniform, Fixture)
+    BENCHMARK_CASE_F(Benchmark_SampleDiskUniform, Fixture)
     {
         for (size_t i = 0; i < SampleCount; ++i)
             m_dummy += sample_disk_uniform(m_samples[i]);
     }
 
-    BENCHMARK_CASE_WITH_FIXTURE(Benchmark_SampleDiskUniformAlt, Fixture)
+    BENCHMARK_CASE_F(Benchmark_SampleDiskUniformAlt, Fixture)
     {
         for (size_t i = 0; i < SampleCount; ++i)
             m_dummy += sample_disk_uniform_alt(m_samples[i]);
