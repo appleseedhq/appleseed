@@ -241,7 +241,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_tracer.trace(Vector3d(0.0), Vector3d(1.0, 0.0, 0.0));
 
         ASSERT_TRUE(shading_point.hit());
-        EXPECT_FEQ(2.0, shading_point.get_distance());
+        EXPECT_FEQ(Vector3d(2.0, 0.0, 0.0), shading_point.get_point());
         EXPECT_EQ(0.0, m_tracer.get_transmission());
     }
 
@@ -251,7 +251,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_tracer.trace_between(Vector3d(0.0, 0.0, 0.0), Vector3d(5.0, 0.0, 0.0));
 
         ASSERT_TRUE(shading_point.hit());
-        EXPECT_FEQ(0.4, shading_point.get_distance());      // todo: should really be 2.0
+        EXPECT_FEQ(Vector3d(2.0, 0.0, 0.0), shading_point.get_point());
         EXPECT_EQ(0.0, m_tracer.get_transmission());
     }
 
@@ -297,22 +297,18 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         const ShadingPoint& shading_point =
             m_tracer.trace(Vector3d(0.0), Vector3d(1.0, 0.0, 0.0));
 
-        // We have a slight problem here as the distance to the closest surface that is returned
-        // by ShadingPoint::get_distance() is actually the distance between the transparent and
-        // the opaque occluders, *not* the distance from the ray origin to the transparent occluder
-        // as we would expect.
         ASSERT_TRUE(shading_point.hit());
-        EXPECT_FEQ(2.0, shading_point.get_distance());      // todo: should really be equal to 4.0
+        EXPECT_FEQ(Vector3d(4.0, 0.0, 0.0), shading_point.get_point());
         EXPECT_FEQ(0.0, m_tracer.get_transmission());
     }
 
-    TEST_CASE_WITH_FIXTURE(TraceBetween_GivenOriginAndTarget_TransparentThenOpaqueOccluders, Fixture<SceneWithTransparentThenOpaqueOccluders>)
+    TEST_CASE_WITH_FIXTURE(TraceBetween_GivenOriginAndTarget_TransparentThenOpaqueOccluders_TargetPastOpaqueOccluder, Fixture<SceneWithTransparentThenOpaqueOccluders>)
     {
         const ShadingPoint& shading_point =
             m_tracer.trace_between(Vector3d(0.0, 0.0, 0.0), Vector3d(5.0, 0.0, 0.0));
 
         ASSERT_TRUE(shading_point.hit());
-        EXPECT_FEQ(2.0 / 3.0, shading_point.get_distance());    // todo: should really be equal to 4.0
+        EXPECT_FEQ(Vector3d(4.0, 0.0, 0.0), shading_point.get_point());
         EXPECT_FEQ(0.0, m_tracer.get_transmission());
     }
 

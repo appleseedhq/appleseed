@@ -37,9 +37,6 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/vector.h"
 
-// Standard headers.
-#include <cstddef>
-
 // Forward declarations.
 namespace renderer      { class Intersector; }
 namespace renderer      { class TextureCache; }
@@ -51,21 +48,25 @@ class Tracer
   : public foundation::NonCopyable
 {
   public:
+    // Constructor.
     Tracer(
         const Intersector&              intersector,
         TextureCache&                   texture_cache,
         SamplingContext&                sampling_context);
 
+    // Compute occlusion in a given direction.
     const ShadingPoint& trace(
         const foundation::Vector3d&     origin,
         const foundation::Vector3d&     direction,
         const ShadingPoint*             parent_shading_point = 0);
 
+    // Compute occlusion between two points.
     const ShadingPoint& trace_between(
         const foundation::Vector3d&     origin,
         const foundation::Vector3d&     target,
         const ShadingPoint*             parent_shading_point = 0);
 
+    // Return the transmission factor between the origin and the closest opaque occluder.
     double get_transmission() const;
 
   private:
@@ -73,7 +74,6 @@ class Tracer
     TextureCache&                       m_texture_cache;
     SamplingContext&                    m_sampling_context;
     ShadingPoint                        m_shading_points[2];
-    size_t                              m_shading_point_index;
     double                              m_transmission;
 };
 
@@ -89,7 +89,6 @@ inline Tracer::Tracer(
   : m_intersector(intersector)
   , m_texture_cache(texture_cache)
   , m_sampling_context(sampling_context)
-  , m_shading_point_index(0)
   , m_transmission(1.0)
 {
 }

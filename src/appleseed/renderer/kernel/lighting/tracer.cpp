@@ -35,6 +35,9 @@
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 
+// Standard headers.
+#include <cstddef>
+
 using namespace foundation;
 using namespace std;
 
@@ -47,26 +50,28 @@ const ShadingPoint& Tracer::trace(
     const ShadingPoint*     parent_shading_point)
 {
     const ShadingPoint* shading_point_ptr = parent_shading_point;
+    size_t shading_point_index = 0;
+    Vector3d point = origin;
 
     do
     {
         // Construct the visibility ray.
         const ShadingRay ray(
-            origin,
+            point,
             direction,
             0.0f,                   // ray time
             ~0);                    // ray flags
 
         // Trace the ray.
-        m_shading_points[m_shading_point_index].clear();
+        m_shading_points[shading_point_index].clear();
         m_intersector.trace(
             ray,
-            m_shading_points[m_shading_point_index],
+            m_shading_points[shading_point_index],
             shading_point_ptr);
 
         // Update the pointers to the shading points.
-        shading_point_ptr = &m_shading_points[m_shading_point_index];
-        m_shading_point_index = 1 - m_shading_point_index;
+        shading_point_ptr = &m_shading_points[shading_point_index];
+        shading_point_index = 1 - shading_point_index;
 
         // Stop if the ray escaped the scene.
         if (!shading_point_ptr->hit())
@@ -95,6 +100,9 @@ const ShadingPoint& Tracer::trace(
 
         // Update the transmission factor.
         m_transmission *= 1.0 - static_cast<double>(alpha_mask[0]);
+
+        // Move past this partial occluder.
+        point = shading_point_ptr->get_point();
     }
     while (m_transmission > 0.0);
 
@@ -111,6 +119,7 @@ const ShadingPoint& Tracer::trace_between(
     const double SafeMaxDistance = 1.0 - Eps;
 
     const ShadingPoint* shading_point_ptr = parent_shading_point;
+    size_t shading_point_index = 0;
     Vector3d point = origin;
 
     do
@@ -125,15 +134,15 @@ const ShadingPoint& Tracer::trace_between(
             ~0);                    // ray flags
 
         // Trace the ray.
-        m_shading_points[m_shading_point_index].clear();
+        m_shading_points[shading_point_index].clear();
         m_intersector.trace(
             ray,
-            m_shading_points[m_shading_point_index],
+            m_shading_points[shading_point_index],
             shading_point_ptr);
 
         // Update the pointers to the shading points.
-        shading_point_ptr = &m_shading_points[m_shading_point_index];
-        m_shading_point_index = 1 - m_shading_point_index;
+        shading_point_ptr = &m_shading_points[shading_point_index];
+        shading_point_index = 1 - shading_point_index;
 
         // Stop if the target point was reached.
         if (!shading_point_ptr->hit())
