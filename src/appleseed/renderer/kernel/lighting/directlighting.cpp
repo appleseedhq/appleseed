@@ -30,9 +30,8 @@
 #include "directlighting.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/lighting/lightsampler.h"
-#include "renderer/kernel/lighting/transmission.h"
+#include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
@@ -104,15 +103,20 @@ void compute_direct_lighting_bsdf_sampling(
             continue;
 
         // Trace a ray in the direction of the reflection.
-        const ShadingRay light_ray(point, incoming, 0.0f, ~0);
-        ShadingPoint light_shading_point;
-        shading_context.get_intersector().trace(
-            light_ray,
-            light_shading_point,
-            parent_shading_point);
+        Tracer tracer(
+            shading_context.get_intersector(),
+            shading_context.get_texture_cache(),
+            sampling_context);
+        const ShadingPoint& light_shading_point =
+            tracer.trace(point, incoming, parent_shading_point);
 
         // todo: wouldn't it be more efficient to look the environment up at this point?
         if (!light_shading_point.hit())
+            continue;
+
+        // Discard occluded samples.
+        double weight = tracer.get_transmission();
+        if (weight == 0.0)
             continue;
 
         // Retrieve the material at the intersection point.
@@ -124,9 +128,6 @@ void compute_direct_lighting_bsdf_sampling(
         const EDF* edf = material->get_edf();
         if (edf == 0)
             continue;
-
-        // todo: handle alpha masking.
-        double weight = 1.0;
 
         // Evaluate the input values of the EDF.
         InputEvaluator edf_input_evaluator(shading_context.get_texture_cache());
@@ -234,13 +235,12 @@ void compute_direct_lighting_light_sampling(
         cos_on *= rcp_sample_distance;
 
         // Compute the transmission factor between the light sample and the shading point.
-        const double transmission =
-            compute_transmission_between(
-                sampling_context,
-                shading_context,
-                point,
-                sample.m_input_params.m_point,
-                parent_shading_point);
+        Tracer tracer(
+            shading_context.get_intersector(),
+            shading_context.get_texture_cache(),
+            sampling_context);
+        tracer.trace_between(point, sample.m_input_params.m_point, parent_shading_point);
+        const double transmission = tracer.get_transmission();
 
         // Discard occluded samples.
         if (transmission == 0.0)
@@ -357,15 +357,20 @@ void compute_direct_lighting_single_sample(
             return;
 
         // Trace a ray in the direction of the reflection.
-        const ShadingRay light_ray(point, incoming, 0.0f, ~0);
-        ShadingPoint light_shading_point;
-        shading_context.get_intersector().trace(
-            light_ray,
-            light_shading_point,
-            parent_shading_point);
+        Tracer tracer(
+            shading_context.get_intersector(),
+            shading_context.get_texture_cache(),
+            sampling_context);
+        const ShadingPoint& light_shading_point =
+            tracer.trace(point, incoming, parent_shading_point);
 
         // todo: wouldn't it be more efficient to look the environment up at this point?
         if (!light_shading_point.hit())
+            return;
+
+        // Discard occluded samples.
+        double weight = tracer.get_transmission();
+        if (weight == 0.0)
             return;
 
         // Retrieve the material at the intersection point.
@@ -377,9 +382,6 @@ void compute_direct_lighting_single_sample(
         const EDF* edf = material->get_edf();
         if (edf == 0)
             return;
-
-        // todo: handle alpha masking.
-        double weight = 1.0;
 
         // Evaluate the input values of the EDF.
         InputEvaluator edf_input_evaluator(shading_context.get_texture_cache());
@@ -455,13 +457,12 @@ void compute_direct_lighting_single_sample(
         cos_on *= rcp_sample_distance;
 
         // Compute the transmission factor between the light sample and the shading point.
-        const double transmission =
-            compute_transmission_between(
-                sampling_context,
-                shading_context,
-                point,
-                sample.m_input_params.m_point,
-                parent_shading_point);
+        Tracer tracer(
+            shading_context.get_intersector(),
+            shading_context.get_texture_cache(),
+            sampling_context);
+        tracer.trace_between(point, sample.m_input_params.m_point, parent_shading_point);
+        const double transmission = tracer.get_transmission();
 
         // Discard occluded samples.
         if (transmission == 0.0)

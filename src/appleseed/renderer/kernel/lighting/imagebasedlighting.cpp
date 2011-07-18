@@ -30,8 +30,7 @@
 #include "imagebasedlighting.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/intersection/intersector.h"
-#include "renderer/kernel/lighting/transmission.h"
+#include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
@@ -107,13 +106,12 @@ namespace
                 continue;
 
             // Compute the transmission factor toward the incoming direction.
-            const double transmission =
-                compute_transmission(
-                    sampling_context,
-                    shading_context,
-                    point,
-                    incoming,
-                    parent_shading_point);
+            Tracer tracer(
+                shading_context.get_intersector(),
+                shading_context.get_texture_cache(),
+                sampling_context);
+            tracer.trace(point, incoming, parent_shading_point);
+            const double transmission = tracer.get_transmission();
 
             // Discard occluded samples.
             if (transmission == 0.0)
@@ -195,13 +193,12 @@ namespace
                 continue;
 
             // Compute the transmission factor toward the incoming direction.
-            const double transmission =
-                compute_transmission(
-                    sampling_context,
-                    shading_context,
-                    point,
-                    incoming,
-                    parent_shading_point);
+            Tracer tracer(
+                shading_context.get_intersector(),
+                shading_context.get_texture_cache(),
+                sampling_context);
+            tracer.trace(point, incoming, parent_shading_point);
+            const double transmission = tracer.get_transmission();
 
             // Discard occluded samples.
             if (transmission == 0.0)

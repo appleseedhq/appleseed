@@ -33,7 +33,7 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/lightsampler.h"
 #include "renderer/kernel/lighting/pathtracer.h"
-#include "renderer/kernel/lighting/transmission.h"
+#include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/rendering/accumulationframebuffer.h"
 #include "renderer/kernel/rendering/globalaccumulationframebuffer.h"
@@ -366,12 +366,12 @@ namespace
 
                 // Compute the transmission factor between this vertex and the camera.
                 // Prevent self-intersections by letting the ray originate from the camera.
-                transmission =
-                    compute_transmission_between(
-                        sampling_context,
-                        m_shading_context,
-                        m_camera_position,
-                        vertex_position_world);
+                Tracer tracer(
+                    m_shading_context.get_intersector(),
+                    m_shading_context.get_texture_cache(),
+                    sampling_context);
+                tracer.trace_between(m_camera_position, vertex_position_world);
+                transmission = tracer.get_transmission();
 
                 // Reject vertices not directly visible from the camera.
                 if (transmission == 0.0)

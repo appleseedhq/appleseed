@@ -792,8 +792,8 @@ set(renderer_kernel_lighting_sources
     renderer/kernel/lighting/lightsampler.cpp
     renderer/kernel/lighting/lightsampler.h
     renderer/kernel/lighting/pathtracer.h
-    renderer/kernel/lighting/transmission.cpp
-    renderer/kernel/lighting/transmission.h
+    renderer/kernel/lighting/tracer.cpp
+    renderer/kernel/lighting/tracer.h
 )
 list(APPEND appleseed_sources
     ${renderer_kernel_lighting_sources}
@@ -997,6 +997,7 @@ set(renderer_meta_tests_sources
     renderer/meta/tests/test_projectfilereader.cpp
     renderer/meta/tests/test_samplecounter.cpp
     renderer/meta/tests/test_scene.cpp
+    renderer/meta/tests/test_tracer.cpp
 )
 list(APPEND appleseed_sources
     ${renderer_meta_tests_sources}
