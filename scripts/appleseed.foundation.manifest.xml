@@ -51,6 +51,8 @@
 
         <files>foundation/utility/commandlineparser/*</files>
         <files>foundation/utility/containers/*</files>
+        <files>foundation/utility/filter/ifilter.h</files>
+        <files>foundation/utility/filter/letthroughfilter.h</files>
         <files>foundation/utility/log/filelogtarget.*</files>
         <files>foundation/utility/log/filelogtargetbase.*</files>
         <files>foundation/utility/log/helpers.h</files>
@@ -80,7 +82,7 @@
         <files>foundation/utility/vpythonfile.*</files>
     </input>
     <output>
-        <base_path>../archives/releases/appleseed.foundation-1.3/</base_path>
+        <base_path>../archives/releases/appleseed.foundation-1.4/</base_path>
         <base_filename>appleseed.foundation</base_filename>
         <header>
 //
@@ -111,7 +113,7 @@
 //
 
 //
-// This is appleseed.foundation version 1.3.
+// This is appleseed.foundation version 1.4.
 //
 
 // Enable SSE extensions.
@@ -187,7 +189,9 @@
 </strip>
     </output>
     <test>
-        <commandline>cl /W3 /wd"4355" /EHsc /D_CRT_SECURE_NO_WARNINGS /I"$OutputBasePath" appleseed.foundation.test.cpp</commandline>
+        <commandline>copy appleseed.foundation.test.cpp "$OutputBasePath"</commandline>
+        <commandline>cl /W3 /wd"4355" /EHsc /D_CRT_SECURE_NO_WARNINGS /I"$OutputBasePath" appleseed.foundation.test.cpp $OutputSourceFilePath</commandline>
+        <commandline>appleseed.foundation.test.exe</commandline>
         <commandline>del appleseed.foundation.test.obj</commandline>
         <commandline>del appleseed.foundation.test.exe</commandline>
     </test>
