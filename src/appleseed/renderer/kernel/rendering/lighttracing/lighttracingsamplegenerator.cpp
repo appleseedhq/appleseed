@@ -288,14 +288,17 @@ namespace
 
                 // Evaluate the BSDF at the vertex position.
                 Spectrum bsdf_value;
-                bsdf->evaluate(
-                    bsdf_data,
-                    true,
-                    geometric_normal,
-                    shading_point.get_shading_basis(),
-                    outgoing,                           // outgoing
-                    vertex_to_camera,                   // incoming
-                    bsdf_value);
+                const bool bsdf_defined =
+                    bsdf->evaluate(
+                        bsdf_data,
+                        true,
+                        geometric_normal,
+                        shading_point.get_shading_basis(),
+                        outgoing,                           // outgoing
+                        vertex_to_camera,                   // incoming
+                        bsdf_value);
+                if (!bsdf_defined)
+                    return true;    // proceed with this path
 
                 // Compute the flux-to-radiance conversion factor.
                 const double cos_theta = abs(dot(vertex_to_camera, m_camera_direction));
@@ -387,6 +390,8 @@ namespace
 
             void emit_sample(const Vector2d& position_ndc, const Spectrum& radiance)
             {
+                assert(min_value(radiance) >= 0.0f);
+
                 Sample sample;
                 sample.m_position = position_ndc;
                 sample.m_color.rgb() =
