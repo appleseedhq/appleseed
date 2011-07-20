@@ -28,7 +28,7 @@
 #
 
 # Settings.
-VersionString = "1.2"
+VersionString = "1.3"
 
 # Imports.
 import glob
@@ -254,10 +254,10 @@ class FileGenerator:
         # Generate and write the header guard.
         header_guard_token = os.path.basename(output_file_path).replace("/", "_").replace("\\", "_").replace(".", "_").upper()
         output_file.write("#ifndef " + header_guard_token + "\n")
-        output_file.write("#define " + header_guard_token + "\n\n")
+        output_file.write("#define " + header_guard_token + "\n")
 
         # Include all required platform headers.
-        self.__write_platform_headers(output_file, self.depfinder.gather_platform_deps(header_files))
+        # self.__write_platform_headers(output_file, self.depfinder.gather_platform_deps(header_files))
 
         # Concatenate the content of all header files.
         self.__write_files(output_file, header_files)
@@ -282,10 +282,10 @@ class FileGenerator:
 
         # Include the interface header file.
         output_file.write("// Interface header.\n")
-        output_file.write("#include \"" + self.manifest.output_base_filename + ".h\"\n\n")
+        output_file.write("#include \"" + self.manifest.output_base_filename + ".h\"\n")
 
         # Include all required platform headers.
-        self.__write_platform_headers(output_file, self.depfinder.gather_platform_deps(source_files))
+        # self.__write_platform_headers(output_file, self.depfinder.gather_platform_deps(source_files))
 
         # Concatenate the content of all source files.
         self.__write_files(output_file, source_files)
@@ -299,14 +299,15 @@ class FileGenerator:
 
     def __write_platform_headers(self, output_file, headers):
         if len(headers) > 0:
-            output_file.write("// Standard and platform headers.\n")
+            output_file.write("\n// Standard and platform headers.\n")
             for header in headers:
                 output_file.write("#include <" + header + ">\n")
 
     def __write_files(self, output_file, input_file_paths):
         for input_file_path in input_file_paths:
             text = load_file(input_file_path)
-            text = self.__strip_dependencies(text)
+            # text = self.__strip_deps(text)
+            text = self.__strip_user_deps(text)
             text = self.manifest.strip_custom_literals(text)
             text = self.manifest.strip_custom_regexes(text)
             text = text.strip("\n")
@@ -329,8 +330,16 @@ class FileGenerator:
             
             output_file.write(text)
 
-    def __strip_dependencies(self, text):
-        return re.sub(r"^#include .*" + NEWLINE_REGEX, "", text, 0, re.MULTILINE)
+    def __strip_user_deps(self, text):
+        return self.__strip_deps(text, r"\"", r"\"")
+
+    def __strip_platform_deps(self, text):
+        return self.__strip_deps(text, r"<", r">")
+
+    def __strip_deps(self, text, opening_marker, closing_marker):
+        return re.sub(r"^#include " + opening_marker +
+                      r"[^" + closing_marker + r"]*" +
+                      closing_marker + ".*" + NEWLINE_REGEX, "", text, 0, re.MULTILINE)
 
 
 #

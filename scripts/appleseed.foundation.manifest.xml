@@ -82,7 +82,7 @@
         <files>foundation/utility/vpythonfile.*</files>
     </input>
     <output>
-        <base_path>../archives/releases/appleseed.foundation-1.4/</base_path>
+        <base_path>../archives/releases/appleseed.foundation-1.5/</base_path>
         <base_filename>appleseed.foundation</base_filename>
         <header>
 //
@@ -113,7 +113,7 @@
 //
 
 //
-// This is appleseed.foundation version 1.4.
+// This is appleseed.foundation version 1.5.
 //
 
 // Enable SSE extensions.
@@ -187,11 +187,15 @@
         <strip type="regex">^#endif\s+// !APPLESEED_FOUNDATION_[A-Z0-9_]*_H[\r\n]+</strip>
         <strip type="literal">#include "foundation/utility/log/consolelogtarget.h"
 </strip>
+        <strip type="literal">#ifdef APPLESEED_FOUNDATION_USE_SSE
+#endif
+</strip>
     </output>
     <test>
         <commandline>copy appleseed.foundation.test.cpp "$OutputBasePath"</commandline>
         <commandline>cl /W3 /wd"4355" /EHsc /D_CRT_SECURE_NO_WARNINGS /I"$OutputBasePath" appleseed.foundation.test.cpp $OutputSourceFilePath</commandline>
         <commandline>appleseed.foundation.test.exe</commandline>
+        <commandline>del appleseed.foundation.obj</commandline>
         <commandline>del appleseed.foundation.test.obj</commandline>
         <commandline>del appleseed.foundation.test.exe</commandline>
     </test>
