@@ -110,11 +110,16 @@ namespace
                 shading_context.get_intersector(),
                 shading_context.get_texture_cache(),
                 sampling_context);
-            tracer.trace(point, incoming, parent_shading_point);
-            const double transmission = tracer.get_transmission();
+            double transmission;
+            const ShadingPoint& shading_point =
+                tracer.trace(
+                    point,
+                    incoming,
+                    transmission,
+                    parent_shading_point);
 
             // Discard occluded samples.
-            if (transmission == 0.0)
+            if (shading_point.hit())
                 continue;
 
             // Evaluate the environment's EDF.
@@ -197,11 +202,16 @@ namespace
                 shading_context.get_intersector(),
                 shading_context.get_texture_cache(),
                 sampling_context);
-            tracer.trace(point, incoming, parent_shading_point);
-            const double transmission = tracer.get_transmission();
+            double transmission;
+            const ShadingPoint& shading_point =
+                tracer.trace(
+                    point,
+                    incoming,
+                    transmission,
+                    parent_shading_point);
 
             // Discard occluded samples.
-            if (transmission == 0.0)
+            if (shading_point.hit())
                 continue;
 
             // Evaluate the BSDF.

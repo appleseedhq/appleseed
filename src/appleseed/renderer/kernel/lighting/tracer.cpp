@@ -47,20 +47,23 @@ namespace renderer
 const ShadingPoint& Tracer::trace(
     const Vector3d&         origin,
     const Vector3d&         direction,
+    double&                 transmission,
     const ShadingPoint*     parent_shading_point)
 {
+    transmission = 1.0;
+
     const ShadingPoint* shading_point_ptr = parent_shading_point;
     size_t shading_point_index = 0;
     Vector3d point = origin;
 
-    do
+    while (true)
     {
         // Construct the visibility ray.
         const ShadingRay ray(
             point,
             direction,
-            0.0f,                   // ray time
-            ~0);                    // ray flags
+            0.0f,           // ray time
+            ~0);            // ray flags
 
         // Trace the ray.
         m_shading_points[shading_point_index].clear();
@@ -80,12 +83,9 @@ const ShadingPoint& Tracer::trace(
         // Retrieve the material at the shading point.
         const Material* material = shading_point_ptr->get_material();
 
-        // Return full occlusion if the surface has no material.
+        // Stop if the surface has no material.
         if (material == 0)
-        {
-            m_transmission = 0.0;
             break;
-        }
 
         // Retrieve the surface shader.
         const SurfaceShader& surface_shader = material->get_surface_shader();
@@ -98,13 +98,16 @@ const ShadingPoint& Tracer::trace(
             *shading_point_ptr,
             alpha_mask);
 
+        // Stop as soon as we reach a fully opaque occluder.
+        if (alpha_mask[0] == 1.0f)
+            break;
+
         // Update the transmission factor.
-        m_transmission *= 1.0 - static_cast<double>(alpha_mask[0]);
+        transmission *= 1.0 - static_cast<double>(alpha_mask[0]);
 
         // Move past this partial occluder.
         point = shading_point_ptr->get_point();
     }
-    while (m_transmission > 0.0);
 
     return *shading_point_ptr;
 }
@@ -112,17 +115,20 @@ const ShadingPoint& Tracer::trace(
 const ShadingPoint& Tracer::trace_between(
     const Vector3d&         origin,
     const Vector3d&         target,
+    double&                 transmission,
     const ShadingPoint*     parent_shading_point)
 {
     // todo: get rid of this epsilon.
     const double Eps = 1.0e-6;
     const double SafeMaxDistance = 1.0 - Eps;
 
+    transmission = 1.0;
+
     const ShadingPoint* shading_point_ptr = parent_shading_point;
     size_t shading_point_index = 0;
     Vector3d point = origin;
 
-    do
+    while (true)
     {
         // Construct the visibility ray.
         const ShadingRay ray(
@@ -151,12 +157,9 @@ const ShadingPoint& Tracer::trace_between(
         // Retrieve the material at the shading point.
         const Material* material = shading_point_ptr->get_material();
 
-        // Return full occlusion if the surface has no material.
+        // Stop if the surface has no material.
         if (material == 0)
-        {
-            m_transmission = 0.0;
             break;
-        }
 
         // Retrieve the surface shader.
         const SurfaceShader& surface_shader = material->get_surface_shader();
@@ -169,13 +172,16 @@ const ShadingPoint& Tracer::trace_between(
             *shading_point_ptr,
             alpha_mask);
 
+        // Stop as soon as we reach a fully opaque occluder.
+        if (alpha_mask[0] == 1.0f)
+            break;
+
         // Update the transmission factor.
-        m_transmission *= 1.0 - static_cast<double>(alpha_mask[0]);
+        transmission *= 1.0 - static_cast<double>(alpha_mask[0]);
 
         // Move past this partial occluder.
         point = shading_point_ptr->get_point();
     }
-    while (m_transmission > 0.0);
 
     return *shading_point_ptr;
 }

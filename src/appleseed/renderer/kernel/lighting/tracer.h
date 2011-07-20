@@ -54,27 +54,31 @@ class Tracer
         TextureCache&                   texture_cache,
         SamplingContext&                sampling_context);
 
-    // Compute occlusion in a given direction.
+    // Compute the transmission in a given direction. Returns the intersection
+    // with the closest fully opaque occluder and the transmission factor up
+    // to (but excluding) this occluder, or a miss if there is no fully opaque
+    // occluder in this direction.
     const ShadingPoint& trace(
         const foundation::Vector3d&     origin,
         const foundation::Vector3d&     direction,
+        double&                         transmission,
         const ShadingPoint*             parent_shading_point = 0);
 
-    // Compute occlusion between two points.
+    // Compute the transmission between two points. Returns the intersection
+    // with the closest fully opaque occluder and the transmission factor up
+    // to (but excluding) this occluder, or a miss if there is no fully opaque
+    // occluder in the segment [origin, target).
     const ShadingPoint& trace_between(
         const foundation::Vector3d&     origin,
         const foundation::Vector3d&     target,
+        double&                         transmission,
         const ShadingPoint*             parent_shading_point = 0);
-
-    // Return the transmission factor between the origin and the closest opaque occluder.
-    double get_transmission() const;
 
   private:
     const Intersector&                  m_intersector;
     TextureCache&                       m_texture_cache;
     SamplingContext&                    m_sampling_context;
     ShadingPoint                        m_shading_points[2];
-    double                              m_transmission;
 };
 
 
@@ -89,13 +93,7 @@ inline Tracer::Tracer(
   : m_intersector(intersector)
   , m_texture_cache(texture_cache)
   , m_sampling_context(sampling_context)
-  , m_transmission(1.0)
 {
-}
-
-inline double Tracer::get_transmission() const
-{
-    return m_transmission;
 }
 
 }       // namespace renderer

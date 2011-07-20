@@ -107,16 +107,16 @@ void compute_direct_lighting_bsdf_sampling(
             shading_context.get_intersector(),
             shading_context.get_texture_cache(),
             sampling_context);
+        double weight;
         const ShadingPoint& light_shading_point =
-            tracer.trace(point, incoming, parent_shading_point);
+            tracer.trace(
+                point,
+                incoming,
+                weight,
+                parent_shading_point);
 
         // todo: wouldn't it be more efficient to look the environment up at this point?
         if (!light_shading_point.hit())
-            continue;
-
-        // Discard occluded samples.
-        double weight = tracer.get_transmission();
-        if (weight == 0.0)
             continue;
 
         // Retrieve the material at the intersection point.
@@ -239,11 +239,16 @@ void compute_direct_lighting_light_sampling(
             shading_context.get_intersector(),
             shading_context.get_texture_cache(),
             sampling_context);
-        tracer.trace_between(point, sample.m_input_params.m_point, parent_shading_point);
-        const double transmission = tracer.get_transmission();
+        double transmission;
+        const ShadingPoint& shading_point =
+            tracer.trace_between(
+                point,
+                sample.m_input_params.m_point,
+                transmission,
+                parent_shading_point);
 
         // Discard occluded samples.
-        if (transmission == 0.0)
+        if (shading_point.hit())
             continue;
 
         // Evaluate the BSDF.
@@ -361,16 +366,16 @@ void compute_direct_lighting_single_sample(
             shading_context.get_intersector(),
             shading_context.get_texture_cache(),
             sampling_context);
+        double weight;
         const ShadingPoint& light_shading_point =
-            tracer.trace(point, incoming, parent_shading_point);
+            tracer.trace(
+                point,
+                incoming,
+                weight,
+                parent_shading_point);
 
         // todo: wouldn't it be more efficient to look the environment up at this point?
         if (!light_shading_point.hit())
-            return;
-
-        // Discard occluded samples.
-        double weight = tracer.get_transmission();
-        if (weight == 0.0)
             return;
 
         // Retrieve the material at the intersection point.
@@ -461,11 +466,16 @@ void compute_direct_lighting_single_sample(
             shading_context.get_intersector(),
             shading_context.get_texture_cache(),
             sampling_context);
-        tracer.trace_between(point, sample.m_input_params.m_point, parent_shading_point);
-        const double transmission = tracer.get_transmission();
+        double transmission;
+        const ShadingPoint& shading_point =
+            tracer.trace_between(
+                point,
+                sample.m_input_params.m_point,
+                transmission,
+                parent_shading_point);
 
         // Discard occluded samples.
-        if (transmission == 0.0)
+        if (shading_point.hit())
             return;
 
         // Evaluate the BSDF.

@@ -373,11 +373,14 @@ namespace
                     m_shading_context.get_intersector(),
                     m_shading_context.get_texture_cache(),
                     sampling_context);
-                tracer.trace_between(m_camera_position, vertex_position_world);
-                transmission = tracer.get_transmission();
+                const ShadingPoint& shading_point =
+                    tracer.trace_between(
+                        m_camera_position,
+                        vertex_position_world,
+                        transmission);
 
                 // Reject vertices not directly visible from the camera.
-                if (transmission == 0.0)
+                if (shading_point.hit())
                     return false;
 
                 // Compute the vertex-to-camera direction vector.
