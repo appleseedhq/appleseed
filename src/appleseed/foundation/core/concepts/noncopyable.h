@@ -86,7 +86,6 @@ struct IsCopyable
 {
 };
 
-
 }       // namespace foundation
 
 #endif  // !APPLESEED_FOUNDATION_CORE_CONCEPTS_NONCOPYABLE_H
