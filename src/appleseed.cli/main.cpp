@@ -285,24 +285,22 @@ namespace
 
     void apply_resolution_command_line_option(Project* project)
     {
-        const Frame* frame = project->get_frame();
-        assert(frame);
-
-        const string frame_name = frame->get_name();
-        ParamArray frame_params = frame->get_parameters();
-
         if (g_cl.m_resolution.found())
         {
             const string resolution =
                   g_cl.m_resolution.string_values()[0] + ' ' +
                   g_cl.m_resolution.string_values()[1];
-            frame_params.insert("resolution", resolution);
+
+            const Frame* frame = project->get_frame();
+            assert(frame);
+
+            ParamArray new_frame_params = frame->get_parameters();
+            new_frame_params.insert("resolution", resolution);
+
+            auto_ptr<Frame> new_frame(new Frame(frame->get_name(), new_frame_params));
+
+            project->set_frame(new_frame);
         }
-
-        auto_ptr<Frame> new_frame(
-            new Frame(frame_name.c_str(), frame_params));
-
-        project->set_frame(new_frame);
     }
 
 #if defined __APPLE__ || defined _WIN32
