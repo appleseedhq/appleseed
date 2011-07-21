@@ -325,6 +325,7 @@ namespace
             void visit_environment(
                 const ShadingPoint&         shading_point,
                 const Vector3d&             outgoing,
+                const BSDF::Mode            bsdf_mode,
                 const Spectrum&             throughput)
             {
                 // The particle escapes.

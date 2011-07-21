@@ -157,6 +157,8 @@ namespace
             const bool          m_next_event_estimation;    // use next event estimation?
             const size_t        m_minimum_path_length;      // minimum path length before Russian Roulette is used
             const size_t        m_dl_light_sample_count;    // number of light samples used to estimate direct illumination
+            
+            const bool          m_enable_ibl;               // IBL enabled?
             const size_t        m_ibl_bsdf_sample_count;    // number of BSDF samples used to estimate IBL
             const size_t        m_ibl_env_sample_count;     // number of environment samples used to estimate IBL
 
@@ -164,6 +166,7 @@ namespace
               : m_next_event_estimation ( params.get_optional<bool>("next_event_estimation", true) )
               , m_minimum_path_length   ( params.get_optional<size_t>("minimum_path_length", 3) )
               , m_dl_light_sample_count ( params.get_optional<size_t>("dl_light_samples", 1) )
+              , m_enable_ibl            ( params.get_optional<bool>("enable_ibl", true) )
               , m_ibl_bsdf_sample_count ( params.get_optional<size_t>("ibl_bsdf_samples", 1) )
               , m_ibl_env_sample_count  ( params.get_optional<size_t>("ibl_env_samples", 1) )
             {
@@ -247,7 +250,7 @@ namespace
                         vertex_radiance,
                         &shading_point);
 
-                    if (m_env_edf)
+                    if (m_env_edf && m_params.m_enable_ibl)
                     {
                         // Compute image-based lighting.
                         Spectrum ibl_radiance;
@@ -331,25 +334,42 @@ namespace
             void visit_environment(
                 const ShadingPoint&     shading_point,
                 const Vector3d&         outgoing,
+                const BSDF::Mode        bsdf_mode,
                 const Spectrum&         throughput)
             {
-                if (m_params.m_next_event_estimation)
+                // Can't look up the environment if there's no environment EDF.
+                if (m_env_edf == 0)
                     return;
 
-                if (m_env_edf)
+                if (m_params.m_next_event_estimation)
                 {
-                    // Evaluate the environment EDF.
-                    InputEvaluator input_evaluator(m_texture_cache);
-                    Spectrum environment_radiance;
-                    m_env_edf->evaluate(
-                        input_evaluator,
-                        -outgoing,
-                        environment_radiance);
+                    // If IBL is enabled, we already computed it at the path's vertices.
+                    if (m_params.m_enable_ibl)
+                        return;
 
-                    // Update the path radiance.
-                    environment_radiance *= throughput;
-                    m_path_radiance += environment_radiance;
+                    // If IBL is disabled, only specular surfaces should reflect the environment.
+                    if (bsdf_mode != BSDF::Specular)
+                        return;
                 }
+                else
+                {
+                    // If IBL is disabled, only specular surfaces should reflect the environment.
+                    // If IBL is enabled, all surfaces reflect the environment.
+                    if (!m_params.m_enable_ibl && bsdf_mode != BSDF::Specular)
+                        return;
+                }
+
+                // Evaluate the environment EDF.
+                InputEvaluator input_evaluator(m_texture_cache);
+                Spectrum environment_radiance;
+                m_env_edf->evaluate(
+                    input_evaluator,
+                    -outgoing,
+                    environment_radiance);
+
+                // Update the path radiance.
+                environment_radiance *= throughput;
+                m_path_radiance += environment_radiance;
             }
 
           private:

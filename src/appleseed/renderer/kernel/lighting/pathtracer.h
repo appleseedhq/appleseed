@@ -150,6 +150,7 @@ size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
             m_path_visitor.visit_environment(
                 *shading_point_ptr,
                 normalize(-ray.m_dir),
+                bsdf_mode,
                 throughput);
 
             break;
