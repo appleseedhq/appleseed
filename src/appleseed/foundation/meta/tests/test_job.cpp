@@ -132,16 +132,52 @@ TEST_SUITE(Foundation_Utility_Job_JobQueue)
         EXPECT_EQ(1, job_queue.get_total_job_count());
     }
 
-    TEST_CASE(ScheduledJobIsDestructedWhenJobQueueIsDestructed)
+    TEST_CASE(JobScheduledWithOwnershipTransferIsDestructedWhenJobQueueIsDestructed)
     {
         size_t destruction_count = 0;
 
         {
             JobQueue job_queue;
-            job_queue.schedule(new JobNotifyingAboutDestruction(destruction_count));
+            job_queue.schedule(new JobNotifyingAboutDestruction(destruction_count), true);
         }
 
         EXPECT_EQ(1, destruction_count);
+    }
+
+    TEST_CASE(JobScheduledWithoutOwnershipTransferIsNotDestructedWhenJobQueueIsDestructed)
+    {
+        size_t destruction_count = 0;
+
+        {
+            JobQueue job_queue;
+            job_queue.schedule(new JobNotifyingAboutDestruction(destruction_count), false);
+        }
+
+        EXPECT_EQ(0, destruction_count);
+    }
+
+    TEST_CASE(JobScheduledWithOwnershipTransferIsDestructedWhenJobQueueIsCleared)
+    {
+        size_t destruction_count = 0;
+
+        JobQueue job_queue;
+        job_queue.schedule(new JobNotifyingAboutDestruction(destruction_count), true);
+
+        job_queue.clear_scheduled_jobs();
+
+        EXPECT_EQ(1, destruction_count);
+    }
+
+    TEST_CASE(JobScheduledWithoutOwnershipTransferIsNotDestructedWhenJobQueueIsCleared)
+    {
+        size_t destruction_count = 0;
+
+        JobQueue job_queue;
+        job_queue.schedule(new JobNotifyingAboutDestruction(destruction_count), false);
+
+        job_queue.clear_scheduled_jobs();
+
+        EXPECT_EQ(0, destruction_count);
     }
 
     TEST_CASE(ClearingScheduledJobsWorks)
@@ -159,22 +195,11 @@ TEST_SUITE(Foundation_Utility_Job_JobQueue)
         EXPECT_EQ(0, job_queue.get_total_job_count());
     }
 
-    TEST_CASE(ScheduledJobIsDestructedWhenJobQueueIsCleared)
-    {
-        size_t destruction_count = 0;
-
-        JobQueue job_queue;
-        job_queue.schedule(new JobNotifyingAboutDestruction(destruction_count));
-        job_queue.clear_scheduled_jobs();
-
-        EXPECT_EQ(1, destruction_count);
-    }
-
     TEST_CASE(AcquireScheduledJobWorksOnEmptyJobQueue)
     {
         JobQueue job_queue;
 
-        EXPECT_EQ(0, job_queue.acquire_scheduled_job().first);
+        EXPECT_EQ(0, job_queue.acquire_scheduled_job().first.m_job);
     }
 
     TEST_CASE(AcquireScheduledJobWorksOnNonEmptyJobQueue)
@@ -184,9 +209,10 @@ TEST_SUITE(Foundation_Utility_Job_JobQueue)
         JobQueue job_queue;
         job_queue.schedule(job);
 
-        const JobQueue::JobInfo job_info = job_queue.acquire_scheduled_job();
+        const JobQueue::RunningJobInfo running_job_info =
+            job_queue.acquire_scheduled_job();
 
-        EXPECT_EQ(job, job_info.first);
+        EXPECT_EQ(job, running_job_info.first.m_job);
 
         EXPECT_FALSE(job_queue.has_scheduled_jobs());
         EXPECT_TRUE(job_queue.has_running_jobs());
@@ -196,7 +222,7 @@ TEST_SUITE(Foundation_Utility_Job_JobQueue)
         EXPECT_EQ(1, job_queue.get_running_job_count());
         EXPECT_EQ(1, job_queue.get_total_job_count());
 
-        job_queue.retire_running_job(job_info);
+        job_queue.retire_running_job(running_job_info);
     }
 
     TEST_CASE(RetiringRunningJobWorks)
@@ -204,8 +230,9 @@ TEST_SUITE(Foundation_Utility_Job_JobQueue)
         JobQueue job_queue;
         job_queue.schedule(new EmptyJob());
 
-        const JobQueue::JobInfo job_info = job_queue.acquire_scheduled_job();
-        job_queue.retire_running_job(job_info);
+        const JobQueue::RunningJobInfo running_job_info =
+            job_queue.acquire_scheduled_job();
+        job_queue.retire_running_job(running_job_info);
 
         EXPECT_FALSE(job_queue.has_scheduled_jobs());
         EXPECT_FALSE(job_queue.has_running_jobs());
@@ -216,17 +243,32 @@ TEST_SUITE(Foundation_Utility_Job_JobQueue)
         EXPECT_EQ(0, job_queue.get_total_job_count());
     }
 
-    TEST_CASE(RunningJobIsDestructedWhenRetired)
+    TEST_CASE(RunningJobOwnedByQueueIsDestructedWhenRetired)
     {
         size_t destruction_count = 0;
 
         JobQueue job_queue;
-        job_queue.schedule(new JobNotifyingAboutDestruction(destruction_count));
+        job_queue.schedule(new JobNotifyingAboutDestruction(destruction_count), true);
 
-        const JobQueue::JobInfo job_info = job_queue.acquire_scheduled_job();
-        job_queue.retire_running_job(job_info);
+        const JobQueue::RunningJobInfo running_job_info =
+            job_queue.acquire_scheduled_job();
+        job_queue.retire_running_job(running_job_info);
 
         EXPECT_EQ(1, destruction_count);
+    }
+
+    TEST_CASE(RunningJobNotOwnedByQueueIsNotDestructedWhenRetired)
+    {
+        size_t destruction_count = 0;
+
+        JobQueue job_queue;
+        job_queue.schedule(new JobNotifyingAboutDestruction(destruction_count), false);
+
+        const JobQueue::RunningJobInfo running_job_info =
+            job_queue.acquire_scheduled_job();
+        job_queue.retire_running_job(running_job_info);
+
+        EXPECT_EQ(0, destruction_count);
     }
 }
 

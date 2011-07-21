@@ -57,7 +57,10 @@ struct JobQueue::Impl
     static void delete_jobs(JobList& list)
     {
         for (each<JobList> i = list; i; ++i)
-            delete *i;
+        {
+            if (i->m_owned)
+                delete i->m_job;
+        }
  
         list.clear();
     }
@@ -75,7 +78,7 @@ JobQueue::~JobQueue()
     // At this point, no job must be running.
     assert(impl->m_running_jobs.empty());
 
-    // Delete all scheduled jobs.
+    // Delete all scheduled jobs that the queue owns.
     Impl::delete_jobs(impl->m_scheduled_jobs);
 
     delete impl;
@@ -130,13 +133,13 @@ size_t JobQueue::get_total_job_count() const
     return impl->m_scheduled_jobs.size() + impl->m_running_jobs.size();
 }
 
-void JobQueue::schedule(IJob* job)
+void JobQueue::schedule(IJob* job, const bool transfer_ownership)
 {
     assert(job);
 
     Spinlock::ScopedLock lock(impl->m_spinlock);
 
-    impl->m_scheduled_jobs.push_back(job);
+    impl->m_scheduled_jobs.push_back(JobInfo(job, transfer_ownership));
 }
 
 void JobQueue::wait_until_completion()
@@ -158,34 +161,32 @@ void JobQueue::wait_until_completion()
     }
 }
 
-JobQueue::JobInfo JobQueue::acquire_scheduled_job()
+JobQueue::RunningJobInfo JobQueue::acquire_scheduled_job()
 {
     Spinlock::ScopedLock lock(impl->m_spinlock);
 
-    // Bail out if there is no scheduled jobs.
+    // Bail out if there is no scheduled job.
     if (impl->m_scheduled_jobs.empty())
-        return JobInfo(static_cast<IJob*>(0), impl->m_running_jobs.end());
+        return RunningJobInfo(JobInfo(0, false), impl->m_running_jobs.end());
 
-    // Extract the next scheduled job.
-    IJob* job = impl->m_scheduled_jobs.front();
+    // Move the next scheduled job to the end of the queue of running jobs.
+    const JobInfo job_info = impl->m_scheduled_jobs.front();
     impl->m_scheduled_jobs.pop_front();
-    assert(job);
+    impl->m_running_jobs.push_back(job_info);
 
-    // Insert the job into the queue of running jobs.
-    impl->m_running_jobs.push_back(job);
-
-    return JobInfo(job, pred(impl->m_running_jobs.end()));
+    return RunningJobInfo(job_info, pred(impl->m_running_jobs.end()));
 }
 
-void JobQueue::retire_running_job(const JobInfo& job_info)
+void JobQueue::retire_running_job(const RunningJobInfo& running_job_info)
 {
     // Remove the job from the running list.
     impl->m_spinlock.lock();
-    impl->m_running_jobs.erase(job_info.second);
+    impl->m_running_jobs.erase(running_job_info.second);
     impl->m_spinlock.unlock();
 
     // Delete the job.
-    delete job_info.first;
+    if (running_job_info.first.m_owned)
+        delete running_job_info.first.m_job;
 }
 
 }   // namespace foundation

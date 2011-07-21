@@ -34,22 +34,17 @@
 // Standard headers.
 #include <cstddef>
 
+using namespace foundation;
+using namespace std;
+
 BENCHMARK_SUITE(Foundation_Utility_Job)
 {
-    using namespace foundation;
-    using namespace std;
-
     struct EmptyJob
       : public IJob
     {
         virtual void execute(const size_t thread_index)
         {
         }
-
-        // Prevent deletion of instances of this class.
-        void operator delete(void*) {}
-        void operator delete(void*, size_t) {}
-        void operator delete[](void*, size_t) {}
     };
 
     template <size_t ThreadCount>
@@ -60,7 +55,7 @@ BENCHMARK_SUITE(Foundation_Utility_Job)
         JobManager  m_job_manager;
 
         Fixture()
-          : m_job_manager(m_logger, m_job_queue, ThreadCount, true)
+          : m_job_manager(m_logger, m_job_queue, ThreadCount)
         {
             m_job_manager.start();
         }
@@ -68,9 +63,10 @@ BENCHMARK_SUITE(Foundation_Utility_Job)
         void payload()
         {
             const size_t JobCount = 10;
+            EmptyJob jobs[JobCount];
 
             for (size_t i = 0; i < JobCount; ++i)
-                m_job_queue.schedule(new EmptyJob());
+                m_job_queue.schedule(&jobs[i], false);
 
             m_job_queue.wait_until_completion();
         }

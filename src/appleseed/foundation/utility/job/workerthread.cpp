@@ -96,11 +96,11 @@ void WorkerThread::run()
     while (!m_abort_switch.is_aborted())
     {
         // Acquire a job.
-        const JobQueue::JobInfo job_info =
+        const JobQueue::RunningJobInfo running_job_info =
             m_job_queue.acquire_scheduled_job();
 
         // Handle the case where the job queue is empty.
-        if (job_info.first == 0)
+        if (running_job_info.first.m_job == 0)
         {
             if (m_keep_running)
             {
@@ -118,10 +118,10 @@ void WorkerThread::run()
         }
 
         // Execute the job.
-        execute_job(*job_info.first);
+        execute_job(*running_job_info.first.m_job);
 
         // Retire the job.
-        m_job_queue.retire_running_job(job_info);
+        m_job_queue.retire_running_job(running_job_info);
     }
 }
 

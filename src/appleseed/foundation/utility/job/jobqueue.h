@@ -45,7 +45,8 @@ namespace foundation    { class IJob; }
 DECLARE_TEST_CASE(Foundation_Utility_Job_JobQueue, AcquireScheduledJobWorksOnEmptyJobQueue);
 DECLARE_TEST_CASE(Foundation_Utility_Job_JobQueue, AcquireScheduledJobWorksOnNonEmptyJobQueue);
 DECLARE_TEST_CASE(Foundation_Utility_Job_JobQueue, RetiringRunningJobWorks);
-DECLARE_TEST_CASE(Foundation_Utility_Job_JobQueue, RunningJobIsDestructedWhenRetired);
+DECLARE_TEST_CASE(Foundation_Utility_Job_JobQueue, RunningJobOwnedByQueueIsDestructedWhenRetired);
+DECLARE_TEST_CASE(Foundation_Utility_Job_JobQueue, RunningJobNotOwnedByQueueIsNotDestructedWhenRetired);
 
 //
 // On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
@@ -111,32 +112,47 @@ class FOUNDATIONDLL JobQueue
     // Return the number of scheduled and running jobs in the job queue.
     size_t get_total_job_count() const;
 
-    // Schedule a job for execution. Ownership of the job is transfered to the job queue.
-    void schedule(IJob* job);
+    // Schedule a job for execution. Ownership of the job is transfered
+    // to the job queue if and only if transfer_ownership is true.
+    void schedule(IJob* job, const bool transfer_ownership = true);
 
     // Wait until all scheduled and running jobs are completed.
     void wait_until_completion();
 
   private:
+    friend class WorkerThread;
+
     // Private implementation.
     struct Impl;
     Impl* impl;
 
-    friend class WorkerThread;
-
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_Job_JobQueue, AcquireScheduledJobWorksOnEmptyJobQueue);
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_Job_JobQueue, AcquireScheduledJobWorksOnNonEmptyJobQueue);
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_Job_JobQueue, RetiringRunningJobWorks);
-    GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_Job_JobQueue, RunningJobIsDestructedWhenRetired);
+    GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_Job_JobQueue, RunningJobOwnedByQueueIsDestructedWhenRetired);
+    GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_Job_JobQueue, RunningJobNotOwnedByQueueIsNotDestructedWhenRetired);
 
-    typedef std::list<IJob*, PoolAllocator<IJob*> > JobList;
-    typedef std::pair<IJob*, JobList::iterator> JobInfo;
+    struct JobInfo
+    {
+        IJob*       m_job;
+        const bool  m_owned;
 
-    // Acquire a scheduled job for execution. Changes the job state from 'scheduled' to 'running'.
-    JobInfo acquire_scheduled_job();
+        JobInfo(IJob* job, const bool owned)
+          : m_job(job)
+          , m_owned(owned)
+        {
+        }
+    };
 
-    // Retire a running job. The job is deleted.
-    void retire_running_job(const JobInfo& job_info);
+    typedef std::list<JobInfo, PoolAllocator<JobInfo> > JobList;
+
+    typedef std::pair<JobInfo, JobList::iterator> RunningJobInfo;
+
+    // Acquire a scheduled job and change its state from 'scheduled' to 'running'.
+    RunningJobInfo acquire_scheduled_job();
+
+    // Retire a running job. The job is deleted if it is owned by the queue.
+    void retire_running_job(const RunningJobInfo& running_job_info);
 };
 
 }       // namespace foundation
