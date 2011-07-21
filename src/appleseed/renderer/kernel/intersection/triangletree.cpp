@@ -46,6 +46,7 @@
 #include "foundation/math/split.h"
 #include "foundation/math/transform.h"
 #include "foundation/platform/snprintf.h"
+#include "foundation/utility/maplefile.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/string.h"
 
@@ -818,6 +819,9 @@ namespace
                 "triangle bsp tree #" FMT_UNIQUE_ID " statistics:",
                 arguments.m_triangle_tree_uid);
             tree_stats.print(global_logger());
+
+            // If uncommented, generate a Maple file to plot an histogram of the leaf sizes.
+            // generate_leaf_size_histogram(arguments.m_triangle_tree_uid);
         }
 
       private:
@@ -825,6 +829,36 @@ namespace
 
         TriangleInfoVector  m_triangle_infos;
         GAABB3Vector        m_triangle_bboxes;
+
+        void generate_leaf_size_histogram(const UniqueID triangle_tree_uid) const
+        {
+            const size_t MaxLeafSize = 1000;
+
+            vector<double> histogram(MaxLeafSize + 1, 0);
+            for (size_t i = 0; i < m_leaves.size(); ++i)
+            {
+                const size_t leaf_size = m_leaves[i]->get_size();
+                ++histogram[min(leaf_size, MaxLeafSize)];
+            }
+
+            vector<double> abscissa(histogram.size());
+            for (size_t i = 0; i < abscissa.size(); ++i)
+                abscissa[i] = i;
+
+            const string tree_uid_str = to_string(triangle_tree_uid);
+
+            MapleFile maple_file("leaf_size_histogram_" + tree_uid_str + ".mpl");
+            maple_file.restart();
+            maple_file.define(
+                "histogram",
+                histogram.size(),
+                &abscissa[0],
+                &histogram[0]);
+            maple_file.plot(
+                "histogram",
+                "red",
+                "Triangle tree #" + tree_uid_str + ": X=number of triangles, Y=number of leaves");
+        }
     };
 
 
@@ -930,7 +964,6 @@ namespace
         }
     };
 
-    // Return the size (in bytes) of this object in memory.
     size_t IntermTriangleLeaf::get_memory_size() const
     {
         return
@@ -1016,7 +1049,6 @@ namespace
 // TriangleTree class implementation.
 //
 
-// Construction arguments.
 TriangleTree::Arguments::Arguments(
     const UniqueID          triangle_tree_uid,
     const GAABB3&           bbox,
@@ -1029,7 +1061,6 @@ TriangleTree::Arguments::Arguments(
 {
 }
 
-// Constructor, builds the tree for a given set of regions.
 TriangleTree::TriangleTree(const Arguments& arguments)
   : m_triangle_tree_uid(arguments.m_triangle_tree_uid)
 {
@@ -1108,7 +1139,6 @@ TriangleTree::TriangleTree(const Arguments& arguments)
     }
 }
 
-// Destructor.
 TriangleTree::~TriangleTree()
 {
     // Log a progress message.
@@ -1133,14 +1163,12 @@ TriangleTree::~TriangleTree()
 // TriangleTreeFactory class implementation.
 //
 
-// Constructor.
 TriangleTreeFactory::TriangleTreeFactory(
     const TriangleTree::Arguments& arguments)
   : m_arguments(arguments)
 {
 }
 
-// Create the triangle tree.
 auto_ptr<TriangleTree> TriangleTreeFactory::create()
 {
     return auto_ptr<TriangleTree>(new TriangleTree(m_arguments));
@@ -1151,7 +1179,6 @@ auto_ptr<TriangleTree> TriangleTreeFactory::create()
 // TriangleLeafVisitor class implementation.
 //
 
-// Visit a leaf.
 double TriangleLeafVisitor::visit(
     const TriangleLeaf*             leaf,
     const ShadingRay::RayType&      /*ray*/,
@@ -1203,7 +1230,6 @@ double TriangleLeafVisitor::visit(
     return m_shading_point.m_ray.m_tmax;
 }
 
-// Read additional data about the triangle that was hit, if any.
 void TriangleLeafVisitor::read_hit_triangle_data() const
 {
     if (m_triangle_ptr)
@@ -1224,7 +1250,6 @@ void TriangleLeafVisitor::read_hit_triangle_data() const
 // TriangleLeafProbeVisitor class implementation.
 //
 
-// Visit a leaf.
 double TriangleLeafProbeVisitor::visit(
     const TriangleLeaf*             leaf,
     const ShadingRay::RayType&      ray,
