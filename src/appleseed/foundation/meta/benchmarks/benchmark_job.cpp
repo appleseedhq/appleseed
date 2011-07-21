@@ -68,10 +68,9 @@ BENCHMARK_SUITE(Foundation_Utility_Job)
         void payload()
         {
             const size_t JobCount = 10;
-            EmptyJob jobs[JobCount];
 
             for (size_t i = 0; i < JobCount; ++i)
-                m_job_queue.schedule(&jobs[i]);
+                m_job_queue.schedule(new EmptyJob());
 
             m_job_queue.wait_until_completion();
         }
