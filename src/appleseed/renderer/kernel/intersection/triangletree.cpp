@@ -834,14 +834,21 @@ namespace
         {
             const size_t MaxLeafSize = 1000;
 
-            vector<double> histogram(MaxLeafSize + 1, 0);
+            vector<size_t> histogram(MaxLeafSize + 1, 0);
             for (size_t i = 0; i < m_leaves.size(); ++i)
             {
                 const size_t leaf_size = m_leaves[i]->get_size();
                 ++histogram[min(leaf_size, MaxLeafSize)];
             }
 
-            vector<double> abscissa(histogram.size());
+            size_t max_abscissa = MaxLeafSize;
+            while (max_abscissa > 0 && histogram[max_abscissa] == 0)
+                --max_abscissa;
+
+            const size_t Margin = 2;
+            max_abscissa = min(max_abscissa + Margin, MaxLeafSize);
+
+            vector<size_t> abscissa(max_abscissa + 1);
             for (size_t i = 0; i < abscissa.size(); ++i)
                 abscissa[i] = i;
 
@@ -851,7 +858,7 @@ namespace
             maple_file.restart();
             maple_file.define(
                 "histogram",
-                histogram.size(),
+                abscissa.size(),
                 &abscissa[0],
                 &histogram[0]);
             maple_file.plot(
