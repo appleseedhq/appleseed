@@ -110,7 +110,6 @@ class MapleFile
 // MapleFile class implementation.
 //
 
-// Define an array of 2D vectors.
 template <typename T>
 void MapleFile::define(
     const std::string&      variable,
