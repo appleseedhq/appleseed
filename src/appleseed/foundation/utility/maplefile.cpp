@@ -74,12 +74,12 @@ void MapleFile::print(const char* format, ...)
 
 void MapleFile::restart()
 {
-    print("restart:\n");
+    fprintf(m_file, "restart:\n");
 }
 
 void MapleFile::with(const string& package)
 {
-    print("with(%s):\n", package.c_str());
+    fprintf(m_file, "with(%s):\n", package.c_str());
 }
 
 void MapleFile::plot(
@@ -87,7 +87,8 @@ void MapleFile::plot(
     const string&   color1,
     const string&   legend1)
 {
-    print(
+    fprintf(
+        m_file,
         "plot([%s],color=[%s],legend=[\"%s\"]);\n",
         variable1.c_str(),
         color1.c_str(),
@@ -102,7 +103,8 @@ void MapleFile::plot(
     const string&   color2,
     const string&   legend2)
 {
-    print(
+    fprintf(
+        m_file,
         "plot([%s,%s],color=[%s,%s],legend=[\"%s\",\"%s\"]);\n",
         variable1.c_str(),
         variable2.c_str(),
@@ -123,7 +125,8 @@ void MapleFile::plot(
     const string&   color3,
     const string&   legend3)
 {
-    print(
+    fprintf(
+        m_file,
         "plot([%s,%s,%s],color=[%s,%s,%s],legend=[\"%s\",\"%s\",\"%s\"]);\n",
         variable1.c_str(),
         variable2.c_str(),

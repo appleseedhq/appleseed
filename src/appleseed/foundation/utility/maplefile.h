@@ -36,6 +36,7 @@
 // Standard headers.
 #include <cstddef>
 #include <cstdio>
+#include <sstream>
 #include <string>
 
 namespace foundation
@@ -117,16 +118,20 @@ void MapleFile::define(
     const T                 x[],
     const T                 y[])
 {
-    print("%s:=[", variable.c_str());
+    std::stringstream sstr;
+
+    sstr << variable << ":=[";
 
     for (size_t i = 0; i < size; ++i)
     {
         if (i > 0)
-            print(",");
-        print("[%f,%f]", x[i], y[i]);
+            sstr << ',';
+        sstr << "[" << x[i] << "," << y[i] << "]";
     }
 
-    print("]:\n");
+    sstr << "]:" << std::endl;
+
+    std::fprintf(m_file, "%s", sstr.str().c_str());
 }
 
 }       // namespace foundation
