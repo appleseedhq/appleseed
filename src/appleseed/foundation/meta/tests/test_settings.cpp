@@ -57,14 +57,14 @@ TEST_SUITE(Foundation_Utility_SettingsFileReader)
             return
                 m_reader.read(
                     filename,
-                    "../../schemas/settings.xsd",   // path relative to input file
+                    "../../../schemas/settings.xsd",    // path relative to input file
                     m_dictionary);
         }
     };
 
     TEST_CASE_F(Read_GivenEmptySettingsFile_ReturnsEmptyDictionary, Fixture)
     {
-        const bool succeeded = read("data/test_settings_emptysettingsfile.xml");
+        const bool succeeded = read("unit tests/inputs/test_settings_emptysettingsfile.xml");
         ASSERT_TRUE(succeeded);
         
         EXPECT_TRUE(m_dictionary.empty());
@@ -72,7 +72,7 @@ TEST_SUITE(Foundation_Utility_SettingsFileReader)
 
     TEST_CASE_F(Read_GivenSettingsFileWithTwoScalarParameters_ReturnsDictionaryWithTwoScalarParameters, Fixture)
     {
-        const bool succeeded = read("data/test_settings_settingsfilewithtwoscalarparameters.xml");
+        const bool succeeded = read("unit tests/inputs/test_settings_settingsfilewithtwoscalarparameters.xml");
         ASSERT_TRUE(succeeded);
         
         ASSERT_EQ(2, m_dictionary.strings().size());
@@ -83,7 +83,7 @@ TEST_SUITE(Foundation_Utility_SettingsFileReader)
 
     TEST_CASE_F(Read_GivenSettingsFileWithTwoDictionaryParameters_ReturnsDictionaryWithTwoDictionaryParameters, Fixture)
     {
-        const bool succeeded = read("data/test_settings_settingsfilewithtwodictionaryparameters.xml");
+        const bool succeeded = read("unit tests/inputs/test_settings_settingsfilewithtwodictionaryparameters.xml");
         ASSERT_TRUE(succeeded);
 
         ASSERT_EQ(0, m_dictionary.strings().size());
@@ -106,12 +106,12 @@ TEST_SUITE(Foundation_Utility_SettingsFileWriter)
         Dictionary dictionary;
 
         SettingsFileWriter writer;
-        writer.write("output/test_settings_emptysettingsfile.xml", dictionary);
+        writer.write("unit tests/outputs/test_settings_emptysettingsfile.xml", dictionary);
 
         const bool identical =
             compare_text_files(
-                "data/test_settings_emptysettingsfile.xml",
-                "output/test_settings_emptysettingsfile.xml");
+                "unit tests/inputs/test_settings_emptysettingsfile.xml",
+                "unit tests/outputs/test_settings_emptysettingsfile.xml");
 
         EXPECT_TRUE(identical);
     }
@@ -123,12 +123,12 @@ TEST_SUITE(Foundation_Utility_SettingsFileWriter)
         dictionary.insert("y", "foo");
 
         SettingsFileWriter writer;
-        writer.write("output/test_settings_settingsfilewithtwoscalarparameters.xml", dictionary);
+        writer.write("unit tests/outputs/test_settings_settingsfilewithtwoscalarparameters.xml", dictionary);
 
         const bool identical =
             compare_text_files(
-                "data/test_settings_settingsfilewithtwoscalarparameters.xml",
-                "output/test_settings_settingsfilewithtwoscalarparameters.xml");
+                "unit tests/inputs/test_settings_settingsfilewithtwoscalarparameters.xml",
+                "unit tests/outputs/test_settings_settingsfilewithtwoscalarparameters.xml");
 
         EXPECT_TRUE(identical);
     }
@@ -148,12 +148,12 @@ TEST_SUITE(Foundation_Utility_SettingsFileWriter)
         dictionary.insert("sub2", sub2);
 
         SettingsFileWriter writer;
-        writer.write("output/test_settings_settingsfilewithtwodictionaryparameters.xml", dictionary);
+        writer.write("unit tests/outputs/test_settings_settingsfilewithtwodictionaryparameters.xml", dictionary);
 
         const bool identical =
             compare_text_files(
-                "data/test_settings_settingsfilewithtwodictionaryparameters.xml",
-                "output/test_settings_settingsfilewithtwodictionaryparameters.xml");
+                "unit tests/inputs/test_settings_settingsfilewithtwodictionaryparameters.xml",
+                "unit tests/outputs/test_settings_settingsfilewithtwodictionaryparameters.xml");
 
         EXPECT_TRUE(identical);
     }

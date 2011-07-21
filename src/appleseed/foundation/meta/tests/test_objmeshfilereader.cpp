@@ -142,7 +142,7 @@ TEST_SUITE(Foundation_Mesh_OBJMeshFileReader)
 
     TEST_CASE_F(ReadCubeMeshFile, Fixture)
     {
-        m_reader.read("data/cube.obj", m_builder);
+        m_reader.read("unit tests/inputs/cube.obj", m_builder);
 
         EXPECT_EQ(1, m_builder.m_meshes.size());
 
@@ -157,7 +157,7 @@ TEST_SUITE(Foundation_Mesh_OBJMeshFileReader)
 
     TEST_CASE_F(ReadQuadMeshFile, Fixture)
     {
-        m_reader.read("data/quad.obj", m_builder);
+        m_reader.read("unit tests/inputs/quad.obj", m_builder);
 
         EXPECT_EQ(1, m_builder.m_meshes.size());
 

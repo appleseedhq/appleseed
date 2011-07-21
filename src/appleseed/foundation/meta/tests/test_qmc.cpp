@@ -127,7 +127,7 @@ TEST_SUITE(Foundation_Math_QMC)
             points.push_back(p);
         }
 
-        write_point_cloud_image("output/test_qmc_random.png", points);
+        write_point_cloud_image("unit tests/outputs/test_qmc_random.png", points);
     }
 
     void apply_permutation(
@@ -162,7 +162,7 @@ TEST_SUITE(Foundation_Math_QMC)
             points.push_back(halton_sequence<double, 2>(bases, perms, initial_instance + i));
 
         const string filename =
-              "output/test_qmc_halton_" + permutation + "_permuted_"
+              "unit tests/outputs/test_qmc_halton_" + permutation + "_permuted_"
             + to_string(b0) + "_" + to_string(b1) + "_"
             + (initial_instance > 0 ? to_string(initial_instance) : "")
             + ".png";
@@ -214,7 +214,7 @@ TEST_SUITE(Foundation_Math_QMC)
             points.push_back(hammersley_sequence<double, 2>(bases, perms, i, PointCount));
 
         write_point_cloud_image(
-            "output/test_qmc_hammersley_" + permutation + "_permuted_" + to_string(b) + ".png",
+            "unit tests/outputs/test_qmc_hammersley_" + permutation + "_permuted_" + to_string(b) + ".png",
             points);
     }
 
@@ -254,7 +254,7 @@ TEST_SUITE(Foundation_Math_QMC)
             points.push_back(hammersley_zaremba_sequence<double, 2>(bases, i, PointCount));
 
         write_point_cloud_image(
-            "output/test_qmc_hammersley_zaremba_" + to_string(b) + ".png",
+            "unit tests/outputs/test_qmc_hammersley_zaremba_" + to_string(b) + ".png",
             points);
     }
 
@@ -283,7 +283,7 @@ TEST_SUITE(Foundation_Math_QMC)
         }
 
         write_point_cloud_image(
-            "output/test_qmc_hammersley_2d_scrambled.png",
+            "unit tests/outputs/test_qmc_hammersley_2d_scrambled.png",
             points);
     }
 
@@ -319,6 +319,6 @@ TEST_SUITE(Foundation_Math_QMC)
             image.set_pixel(x, y, c);
         }
 
-        GenericImageFileWriter().write("output/test_qmc_sampleimageplanewithhaltonsequence.png", image);
+        GenericImageFileWriter().write("unit tests/outputs/test_qmc_sampleimageplanewithhaltonsequence.png", image);
     }
 }

@@ -189,7 +189,7 @@ TEST_SUITE(Foundation_Math_VoxelGrid3)
     TEST_CASE_F(NearestLookup_Slice, Fixture)
     {
         dump_constant_z_slice(
-            "output/test_voxelgrid_nearest_lookup_slice.png",
+            "unit tests/outputs/test_voxelgrid_nearest_lookup_slice.png",
             Nearest,
             0.5);
     }
@@ -267,7 +267,7 @@ TEST_SUITE(Foundation_Math_VoxelGrid3)
     TEST_CASE_F(LinearLookup_Slice, Fixture)
     {
         dump_constant_z_slice(
-            "output/test_voxelgrid_linear_lookup_slice.png",
+            "unit tests/outputs/test_voxelgrid_linear_lookup_slice.png",
             Linear,
             0.5);
     }
@@ -345,7 +345,7 @@ TEST_SUITE(Foundation_Math_VoxelGrid3)
     TEST_CASE_F(QuadraticLookup_Slice, Fixture)
     {
         dump_constant_z_slice(
-            "output/test_voxelgrid_quadratic_lookup_slice.png",
+            "unit tests/outputs/test_voxelgrid_quadratic_lookup_slice.png",
             Quadratic,
             0.5);
     }
@@ -424,7 +424,7 @@ TEST_SUITE(Foundation_Math_VoxelGrid3)
         }
 
         GenericImageFileWriter writer;
-        writer.write("output/test_voxelgrid_bilinear_filtering_exploration_source.png", source);
-        writer.write("output/test_voxelgrid_bilinear_filtering_exploration_target.png", target);
+        writer.write("unit tests/outputs/test_voxelgrid_bilinear_filtering_exploration_source.png", source);
+        writer.write("unit tests/outputs/test_voxelgrid_bilinear_filtering_exploration_target.png", target);
     }
 }

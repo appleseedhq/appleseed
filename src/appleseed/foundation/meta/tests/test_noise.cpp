@@ -108,7 +108,7 @@ TEST_SUITE(Foundation_Math_Noise)
     TEST_CASE(GenerateNoise3Image)
     {
         generate_image(
-            "output/test_noise_noise.png",
+            "unit tests/outputs/test_noise_noise.png",
             64,
             64,
             noise_function);
@@ -117,7 +117,7 @@ TEST_SUITE(Foundation_Math_Noise)
     TEST_CASE(GenerateFBM3Image)
     {
         generate_image(
-            "output/test_noise_fbm.png",
+            "unit tests/outputs/test_noise_fbm.png",
             64,
             64,
             fbm_function);
@@ -126,7 +126,7 @@ TEST_SUITE(Foundation_Math_Noise)
     TEST_CASE(GenerateTurbulence3Image)
     {
         generate_image(
-            "output/test_noise_turbulence.png",
+            "unit tests/outputs/test_noise_turbulence.png",
             64,
             64,
             turbulence_function);

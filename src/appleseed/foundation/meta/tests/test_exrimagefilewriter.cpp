@@ -40,7 +40,7 @@ TEST_SUITE(Foundation_Image_EXRImageFileWriter)
 {
     using namespace foundation;
 
-    static const char* Filename = "output/test_exrimagefilewriter.exr";
+    static const char* Filename = "unit tests/outputs/test_exrimagefilewriter.exr";
     static const Color4i Reference(50, 100, 150, 42);
 
     void generate_test_openexr_file()

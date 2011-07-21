@@ -78,7 +78,7 @@ TEST_SUITE(Foundation_Utility_Benchmark_BenchmarkAggregator)
     TEST_CASE(EmptyDirectory)
     {
         BenchmarkAggregator aggregator;
-        aggregator.scan_directory("data/test_benchmarkaggregator/empty directory");
+        aggregator.scan_directory("unit tests/inputs/test_benchmarkaggregator/empty directory");
 
         EXPECT_TRUE(aggregator.get_benchmarks().empty());
     }
@@ -86,7 +86,7 @@ TEST_SUITE(Foundation_Utility_Benchmark_BenchmarkAggregator)
     TEST_CASE(IncompleteBenchmarkFile)
     {
         BenchmarkAggregator aggregator;
-        aggregator.scan_directory("data/test_benchmarkaggregator/incomplete benchmark file/");
+        aggregator.scan_directory("unit tests/inputs/test_benchmarkaggregator/incomplete benchmark file/");
 
         const Dictionary& benchmarks = aggregator.get_benchmarks();
 
@@ -103,7 +103,7 @@ TEST_SUITE(Foundation_Utility_Benchmark_BenchmarkAggregator)
     TEST_CASE(NonBenchmarkFile)
     {
         BenchmarkAggregator aggregator;
-        aggregator.scan_directory("data/test_benchmarkaggregator/non benchmark file/");
+        aggregator.scan_directory("unit tests/inputs/test_benchmarkaggregator/non benchmark file/");
 
         EXPECT_TRUE(aggregator.get_benchmarks().empty());
     }
@@ -114,7 +114,7 @@ TEST_SUITE(Foundation_Utility_Benchmark_BenchmarkAggregator)
         using namespace posix_time;
 
         BenchmarkAggregator aggregator;
-        aggregator.scan_directory("data/test_benchmarkaggregator/single benchmark file/");
+        aggregator.scan_directory("unit tests/inputs/test_benchmarkaggregator/single benchmark file/");
 
         const ptime Date(date(2010, 6, 22), time_duration(17, 45, 31));
 
@@ -149,7 +149,7 @@ TEST_SUITE(Foundation_Utility_Benchmark_BenchmarkAggregator)
         using namespace posix_time;
 
         BenchmarkAggregator aggregator;
-        aggregator.scan_directory("data/test_benchmarkaggregator/multiple benchmark files/");
+        aggregator.scan_directory("unit tests/inputs/test_benchmarkaggregator/multiple benchmark files/");
 
         const Dictionary& benchmarks = aggregator.get_benchmarks();
 
@@ -172,7 +172,7 @@ TEST_SUITE(Foundation_Utility_Benchmark_BenchmarkAggregator)
     TEST_CASE(Clear_GivenOneBenchmark_RemovesBenchmark)
     {
         BenchmarkAggregator aggregator;
-        aggregator.scan_directory("data/test_benchmarkaggregator/single benchmark file/");
+        aggregator.scan_directory("unit tests/inputs/test_benchmarkaggregator/single benchmark file/");
 
         aggregator.clear();
 

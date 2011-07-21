@@ -46,19 +46,19 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileReader)
         ProjectFileReader reader;
         auto_release_ptr<Project> project =
             reader.read(
-                "data/test_projectfilereader_configurationblocks.appleseed",
-                "../../schemas/project.xsd");   // path relative to input file
+                "unit tests/inputs/test_projectfilereader_configurationblocks.appleseed",
+                "../../../schemas/project.xsd");    // path relative to input file
 
         ASSERT_NEQ(0, project.get());
 
-        project->set_path("output/test_projectfilereader_configurationblocks.appleseed");
+        project->set_path("unit tests/outputs/test_projectfilereader_configurationblocks.appleseed");
 
         ProjectFileWriter::write(project.ref(), true);
 
         const bool identical =
             compare_text_files(
-                "data/test_projectfilereader_configurationblocks.appleseed",
-                "output/test_projectfilereader_configurationblocks.appleseed");
+                "unit tests/inputs/test_projectfilereader_configurationblocks.appleseed",
+                "unit tests/outputs/test_projectfilereader_configurationblocks.appleseed");
 
         EXPECT_TRUE(identical);
     }

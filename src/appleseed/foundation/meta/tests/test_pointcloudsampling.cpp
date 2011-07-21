@@ -399,7 +399,7 @@ TEST_SUITE(Exploration_PointCloudSampling)
                 Drawing::draw_dot(image, initial_points[i], Color3f(1.0f, 1.0f, 0.0f));
 
             stringstream sstr;
-            sstr << "output/test_pointcloudsampling_M" << method << ".png";
+            sstr << "unit tests/outputs/test_pointcloudsampling_M" << method << ".png";
 
             GenericImageFileWriter().write(sstr.str().c_str(), image);
         }
@@ -496,7 +496,7 @@ TEST_SUITE(Exploration_PointCloudSampling)
             Drawing::draw_dot(image, initial_points[i], Color3f(1.0f, 1.0f, 0.0f));
 
         stringstream sstr;
-        sstr << "output/test_pointcloudsampling_thresholding.png";
+        sstr << "unit tests/outputs/test_pointcloudsampling_thresholding.png";
 
         GenericImageFileWriter().write(sstr.str().c_str(), image);
     }

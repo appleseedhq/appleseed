@@ -151,50 +151,50 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
     TEST_CASE(ImportanceSampleWhiteImage)
     {
         generate_image(
-            "data/white.raw",
+            "unit tests/inputs/white.raw",
             512,
             512,
-            "output/test_imageimportancesampler_white.png",
+            "unit tests/outputs/test_imageimportancesampler_white.png",
             256);
     }
 
     TEST_CASE(ImportanceSampleBlackImage)
     {
         generate_image(
-            "data/black.raw",
+            "unit tests/inputs/black.raw",
             512,
             512,
-            "output/test_imageimportancesampler_black.png",
+            "unit tests/outputs/test_imageimportancesampler_black.png",
             256);
     }
 
     TEST_CASE(ImportanceSampleCheckerboardImage)
     {
         generate_image(
-            "data/checkerboard.raw",
+            "unit tests/inputs/checkerboard.raw",
             512,
             512,
-            "output/test_imageimportancesampler_checkerboard.png",
+            "unit tests/outputs/test_imageimportancesampler_checkerboard.png",
             256);
     }
 
     TEST_CASE(ImportanceSampleGradientImage)
     {
         generate_image(
-            "data/gradient.raw",
+            "unit tests/inputs/gradient.raw",
             512,
             512,
-            "output/test_imageimportancesampler_gradient.png",
+            "unit tests/outputs/test_imageimportancesampler_gradient.png",
             256);
     }
 
     TEST_CASE(ImportanceSampleLightProbe)
     {
         generate_image(
-            "data/lightprobe.raw",
+            "unit tests/inputs/lightprobe.raw",
             1024,
             512,
-            "output/test_imageimportancesampler_lightprobe.png",
+            "unit tests/outputs/test_imageimportancesampler_lightprobe.png",
             256);
     }
 

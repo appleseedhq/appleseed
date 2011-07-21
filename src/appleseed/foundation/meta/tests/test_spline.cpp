@@ -60,7 +60,7 @@ TEST_SUITE(Foundation_Math_Spline)
         }
 
         // Open Maple file for writing.
-        MapleFile maple_file("output/test_spline.mpl");
+        MapleFile maple_file("unit tests/outputs/test_spline.mpl");
 
         // Initialize.
         maple_file.restart();

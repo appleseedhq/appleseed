@@ -302,7 +302,7 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Query)
         void configure_logger(const string& name)
         {
             m_log_target.reset(create_file_log_target());
-            m_log_target->open(("output/test_knn_" + name + "_stats.txt").c_str());
+            m_log_target->open(("unit benchmarks/outputs/test_knn_" + name + "_stats.txt").c_str());
             m_logger.add_target(m_log_target.get());
         }
 
@@ -364,10 +364,10 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Query)
           : FixtureBaseType("particles_k" + to_string(AnswerSize))
         {
 /*
-            load_points_from_text_file("data/test_knn_points.txt", m_points);
-            write_points_to_binary_file("data/test_knn_particles.bin", m_points);
+            load_points_from_text_file("unit benchmarks/inputs/test_knn_points.txt", m_points);
+            write_points_to_binary_file("unit benchmarks/inputs/test_knn_particles.bin", m_points);
 */
-            load_points_from_binary_file("data/test_knn_particles.bin", FixtureBaseType::m_points);
+            load_points_from_binary_file("unit benchmarks/inputs/test_knn_particles.bin", FixtureBaseType::m_points);
             FixtureBaseType::prepare();
         }
     };
@@ -382,10 +382,10 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Query)
           : FixtureBaseType("photons_k" + to_string(AnswerSize))
         {
 /*
-            load_points_from_toxic_photon_map("data/test_knn_gally_gpm.bin", m_points);
-            write_points_to_binary_file("data/test_knn_photons.bin", m_points);
+            load_points_from_toxic_photon_map("unit benchmarks/inputs/test_knn_gally_gpm.bin", m_points);
+            write_points_to_binary_file("unit benchmarks/inputs/test_knn_photons.bin", m_points);
 */
-            load_points_from_binary_file("data/test_knn_photons.bin", FixtureBaseType::m_points);
+            load_points_from_binary_file("unit benchmarks/inputs/test_knn_photons.bin", FixtureBaseType::m_points);
             FixtureBaseType::prepare();
         }
     };

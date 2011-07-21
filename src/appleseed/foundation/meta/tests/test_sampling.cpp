@@ -204,7 +204,7 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext_DirectIlluminationSimulat
         }
 
         const string title =
-            string("output/test_sampling_") +
+            string("unit tests/outputs/test_sampling_") +
             "P" + to_string(pixel_sample_count) + "_" +
             "L" + to_string(light_sample_count);
 
@@ -296,12 +296,12 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
 
     TEST_CASE(SampleSphereUniform_GenerateVPythonProgram)
     {
-        visualize_function("output/test_sampling_sample_sphere_uniform.py", sample_sphere_uniform<double>, 1024);
+        visualize_function("unit tests/outputs/test_sampling_sample_sphere_uniform.py", sample_sphere_uniform<double>, 1024);
     }
 
     TEST_CASE(SampleHemisphereUniform_GenerateVPythonProgram)
     {
-        visualize_function("output/test_sampling_sample_hemisphere_uniform.py", sample_hemisphere_uniform<double>, 512);
+        visualize_function("unit tests/outputs/test_sampling_sample_hemisphere_uniform.py", sample_hemisphere_uniform<double>, 512);
     }
 
     template <typename T>
@@ -312,7 +312,7 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
 
     TEST_CASE(SampleHemisphereCosinePower1_GenerateVPythonProgram)
     {
-        visualize_function("output/test_sampling_sample_hemisphere_cosine_power_1.py", sample_hemisphere_cosine_power_1<double>, 512);
+        visualize_function("unit tests/outputs/test_sampling_sample_hemisphere_cosine_power_1.py", sample_hemisphere_cosine_power_1<double>, 512);
     }
 
     template <typename T>
@@ -323,21 +323,21 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
 
     TEST_CASE(SampleHemisphereCosinePowerN_GenerateVPythonProgram)
     {
-        visualize_function("output/test_sampling_sample_hemisphere_cosine_power_n.py", sample_hemisphere_cosine_power_n<double>, 512);
+        visualize_function("unit tests/outputs/test_sampling_sample_hemisphere_cosine_power_n.py", sample_hemisphere_cosine_power_n<double>, 512);
     }
 
     TEST_CASE(SampleDiskUniform_GenerateVPythonProgram)
     {
-        visualize_function("output/test_sampling_sample_disk_uniform.py", sample_disk_uniform<double>, 256);
+        visualize_function("unit tests/outputs/test_sampling_sample_disk_uniform.py", sample_disk_uniform<double>, 256);
     }
 
     TEST_CASE(SampleDiskUniformAlt_GenerateVPythonProgram)
     {
-        visualize_function("output/test_sampling_sample_disk_uniform_alt.py", sample_disk_uniform_alt<double>, 256);
+        visualize_function("unit tests/outputs/test_sampling_sample_disk_uniform_alt.py", sample_disk_uniform_alt<double>, 256);
     }
 
     TEST_CASE(SampleTriangleUniform_GenerateVPythonProgram)
     {
-        visualize_function("output/test_sampling_sample_triangle_uniform.py", sample_triangle_uniform<double>, 256);
+        visualize_function("unit tests/outputs/test_sampling_sample_triangle_uniform.py", sample_triangle_uniform<double>, 256);
     }
 }

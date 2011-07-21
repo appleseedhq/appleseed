@@ -68,7 +68,7 @@ TEST_SUITE(CompareImages)
         }
 
         GenericImageFileWriter writer;
-        writer.write("output/test_compareimages_checkpointsisoluminance.png", *output.get());
+        writer.write("unit tests/outputs/test_compareimages_checkpointsisoluminance.png", *output.get());
     }
 
     struct ExceptionNonMatchingImageCharacteristics : public Exception {};
@@ -227,7 +227,7 @@ TEST_SUITE(CompareImages)
         auto_ptr<Image> result = compare(*left_image.get(), *right_image.get(), op);
 
         GenericImageFileWriter writer;
-        writer.write("output/test_compareimages_result.png", *result.get());
+        writer.write("unit tests/outputs/test_compareimages_result.png", *result.get());
     }
 
 #endif

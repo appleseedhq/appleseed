@@ -697,7 +697,7 @@ TEST_SUITE(Foundation_Image_ColorSpace)
             &source_spectrum[0]);
 
         // Open Maple file for writing.
-        MapleFile maple_file("output/test_colorspace.mpl");
+        MapleFile maple_file("unit tests/outputs/test_colorspace.mpl");
 
         // Initialize.
         maple_file.restart();
