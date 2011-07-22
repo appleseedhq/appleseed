@@ -65,7 +65,6 @@ namespace
     const char* ChannelName[] = { "R", "G", "B", "A" };
 }
 
-// Constructor.
 EXRImageFileWriter::EXRImageFileWriter(
     const size_t            thread_count)
   : m_thread_count(static_cast<int>(thread_count))
@@ -74,9 +73,8 @@ EXRImageFileWriter::EXRImageFileWriter(
     setGlobalThreadCount(m_thread_count);
 }
 
-// Write an OpenEXR image file.
 void EXRImageFileWriter::write(
-    const string&           filename,
+    const char*             filename,
     const ICanvas&          image,
     const ImageAttributes&  image_attributes)
 {
@@ -121,10 +119,7 @@ void EXRImageFileWriter::write(
         add_attributes(image_attributes, header);
 
         // Create the output file.
-        TiledOutputFile file(
-            filename.c_str(),
-            header,
-            m_thread_count);
+        TiledOutputFile file(filename, header, m_thread_count);
 
         // Write tiles.
         for (size_t y = 0; y < props.m_tile_count_y; ++y)

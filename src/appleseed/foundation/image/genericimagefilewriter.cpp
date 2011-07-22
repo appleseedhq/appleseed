@@ -39,6 +39,7 @@
 
 // Standard headers.
 #include <memory>
+#include <string>
 
 using namespace boost;
 using namespace std;
@@ -50,9 +51,8 @@ namespace foundation
 // GenericImageFileWriter class implementation.
 //
 
-// Write an image file.
 void GenericImageFileWriter::write(
-    const string&           filename,
+    const char*             filename,
     const ICanvas&          image,
     const ImageAttributes&  image_attributes)
 {

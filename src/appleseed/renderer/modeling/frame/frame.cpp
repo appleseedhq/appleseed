@@ -172,7 +172,7 @@ void Frame::transform_image_to_frame_color_space(Image& image) const
 namespace
 {
     double write_image(
-        const string&           filename,
+        const char*             filename,
         const Image&            image,
         const ImageAttributes&  image_attributes)
     {
@@ -270,7 +270,7 @@ bool Frame::archive(
 
         const double seconds =
             write_image(
-                image_path.file_string(),
+                image_path.file_string().c_str(),
                 final_image,
                 ImageAttributes::create_default_attributes());
 

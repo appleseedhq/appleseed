@@ -105,10 +105,10 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
     };
 
     void generate_image(
-        const string&   input_filename,
+        const char*     input_filename,
         const size_t    width,
         const size_t    height,
-        const string&   output_image,
+        const char*     output_image,
         const size_t    sample_count)
     {
         auto_ptr<Image> image = load_raw_image(input_filename, width, height);

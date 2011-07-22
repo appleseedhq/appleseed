@@ -45,6 +45,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdio>
+#include <string>
 #include <vector>
 
 using namespace std;
@@ -164,9 +165,8 @@ namespace
     }
 }
 
-// Write an OpenEXR image file.
 void PNGImageFileWriter::write(
-    const string&           filename,
+    const char*             filename,
     const ICanvas&          image,
     const ImageAttributes&  image_attributes)
 {
@@ -177,7 +177,7 @@ void PNGImageFileWriter::write(
     assert(props.m_channel_count == 3 || props.m_channel_count == 4);
 
     // Open the file in write mode.
-    FILE* fp = fopen(filename.c_str(), "wb");
+    FILE* fp = fopen(filename, "wb");
     if (fp == 0)
         throw ExceptionIOError();
 

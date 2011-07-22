@@ -36,10 +36,28 @@
 
 // Standard headers.
 #include <cstddef>
-#include <string>
 
 // Forward declarations.
 namespace foundation    { class ICanvas; }
+
+//
+// On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
+// and to __declspec(dllimport) when building an application using the DLL.
+// Other platforms don't use this export mechanism and the symbol FOUNDATIONDLL is
+// defined to evaluate to nothing.
+//
+
+#ifndef FOUNDATIONDLL
+#ifdef _WIN32
+#ifdef APPLESEED_FOUNDATION_EXPORTS
+#define FOUNDATIONDLL __declspec(dllexport)
+#else
+#define FOUNDATIONDLL __declspec(dllimport)
+#endif
+#else
+#define FOUNDATIONDLL
+#endif
+#endif
 
 namespace foundation
 {
@@ -59,7 +77,7 @@ namespace foundation
 // Reference: openexr/ImfStandardAttributes.h
 //
 
-class EXRImageFileWriter
+class FOUNDATIONDLL EXRImageFileWriter
   : public IImageFileWriter
 {
   public:
@@ -72,7 +90,7 @@ class EXRImageFileWriter
 
     // Write an OpenEXR image file.
     virtual void write(
-        const std::string&      filename,
+        const char*             filename,
         const ICanvas&          image,
         const ImageAttributes&  image_attributes = ImageAttributes());
 

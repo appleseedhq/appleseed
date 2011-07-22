@@ -77,7 +77,7 @@ TEST_SUITE(Foundation_Math_VoxelGrid3)
         };
 
         void dump_constant_z_slice(
-            const string&       filename,
+            const char*         filename,
             const Interpolator  interpolator,
             const double        z) const
         {

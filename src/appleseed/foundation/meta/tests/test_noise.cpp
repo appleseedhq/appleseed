@@ -36,16 +36,15 @@
 
 // Standard headers.
 #include <cstddef>
-#include <string>
+
+using namespace foundation;
+using namespace std;
 
 TEST_SUITE(Foundation_Math_Noise)
 {
-    using namespace foundation;
-    using namespace std;
-
     template <typename Function>
     void generate_image(
-        const string&   image_filename,
+        const char*     image_filename,
         const size_t    image_width,
         const size_t    image_height,
         Function&       function)
