@@ -2313,18 +2313,18 @@ namespace
 
         virtual void end_element()
         {    
-            m_frame.reset(new Frame(m_name.c_str(), m_params));
+            m_frame = FrameFactory::create(m_name.c_str(), m_params);
         }
 
-        auto_ptr<Frame> get_frame()
+        auto_release_ptr<Frame> get_frame()
         {
             return m_frame;
         }
 
       private:
-        ParseContext&   m_context;
-        auto_ptr<Frame> m_frame;
-        string          m_name;
+        ParseContext&           m_context;
+        auto_release_ptr<Frame> m_frame;
+        string                  m_name;
     };
 
 

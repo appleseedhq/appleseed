@@ -56,6 +56,10 @@ using namespace std;
 namespace renderer
 {
 
+//
+// Frame class implementation.
+//
+
 struct Frame::Impl
 {
     size_t              m_frame_width;
@@ -625,6 +629,18 @@ Color4f Frame::linear_rgb_to_frame(const Color4f& linear_rgb) const
     }
 
     return result;
+}
+
+
+//
+// FrameFactory class implementation.
+//
+
+auto_release_ptr<Frame> FrameFactory::create(
+    const char*         name,
+    const ParamArray&   params)
+{
+    return auto_release_ptr<Frame>(new Frame(name, params));
 }
 
 }   // namespace renderer

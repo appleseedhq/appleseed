@@ -67,7 +67,7 @@ class RENDERERDLL Project
     Scene* get_scene() const;
 
     // Set the frame, replacing the existing frame.
-    void set_frame(std::auto_ptr<Frame> frame);
+    void set_frame(foundation::auto_release_ptr<Frame> frame);
 
     // Access the frame.
     // Return 0 if the project does not contain a frame.

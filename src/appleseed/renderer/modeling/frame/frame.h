@@ -52,14 +52,6 @@ class RENDERERDLL Frame
   : public Entity
 {
   public:
-    // Constructor.
-    Frame(
-        const char*         name,
-        const ParamArray&   params);
-
-    // Destructor.
-    ~Frame();
-
     // Delete this instance.
     virtual void release();
 
@@ -112,19 +104,43 @@ class RENDERERDLL Frame
     double compute_average_luminance() const;
 
   private:
+    friend class FrameFactory;
+
     // Private implementation.
     struct Impl;
     Impl* impl;
 
-    // Derogate to the private implementation rule, as we want get_sample_position()
-    // to be inline, for performance reasons -- but it needs the canvas properties.
+    // Derogate to the private implementation rule: for performance reasons, we want
+    // get_sample_position() to be inline, but it needs the canvas properties.
     foundation::CanvasProperties m_props;
+
+    // Constructor.
+    Frame(
+        const char*         name,
+        const ParamArray&   params);
+
+    // Destructor.
+    ~Frame();
 
     void extract_parameters();
 
     // Transform a linear RGB color to the color space of the frame.
     foundation::Color4f linear_rgb_to_frame(
         const foundation::Color4f&  linear_rgb) const;
+};
+
+
+//
+// FrameFactory class implementation.
+//
+
+class RENDERERDLL FrameFactory
+{
+  public:
+    // Create a new frame.
+    static foundation::auto_release_ptr<Frame> create(
+        const char*         name,
+        const ParamArray&   params);
 };
 
 

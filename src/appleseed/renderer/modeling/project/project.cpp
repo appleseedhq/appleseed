@@ -53,7 +53,7 @@ struct Project::Impl
 {
     string                  m_path;
     auto_ptr<Scene>         m_scene;
-    auto_ptr<Frame>         m_frame;
+    auto_release_ptr<Frame> m_frame;
     ConfigurationContainer  m_configurations;
     SearchPaths             m_search_paths;
     auto_ptr<TraceContext>  m_trace_context;
@@ -108,7 +108,7 @@ Scene* Project::get_scene() const
     return impl->m_scene.get();
 }
 
-void Project::set_frame(auto_ptr<Frame> frame)
+void Project::set_frame(auto_release_ptr<Frame> frame)
 {
     impl->m_frame = frame;
 }

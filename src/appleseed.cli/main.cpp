@@ -297,7 +297,8 @@ namespace
             ParamArray new_frame_params = frame->get_parameters();
             new_frame_params.insert("resolution", resolution);
 
-            auto_ptr<Frame> new_frame(new Frame(frame->get_name(), new_frame_params));
+            auto_release_ptr<Frame> new_frame(
+                FrameFactory::create(frame->get_name(), new_frame_params));
 
             project->set_frame(new_frame);
         }

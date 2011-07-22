@@ -102,7 +102,7 @@ auto_release_ptr<Project> DefaultProjectFactory::create()
         params.insert("camera", scene->get_camera()->get_name());
         params.insert("resolution", "640 480");
         params.insert("color_space", "srgb");
-        auto_ptr<Frame> frame(new Frame("beauty", params));
+        auto_release_ptr<Frame> frame(FrameFactory::create("beauty", params));
 
         // Attach the frame to the project.
         project->set_frame(frame);
