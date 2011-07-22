@@ -75,17 +75,17 @@ class FOUNDATIONDLL SearchPaths
 
     // Insert a search path at the end of the collection.
     void push_back(const char* path);
-    void push_back(const std::string& path);
+    template <typename T> void push_back(const std::basic_string<T>& path);
 
     // Return true if a given file exists, that is, if the argument is the absolute
     // path to a file that exists, or it is the name of a file that exists in one of
     // the search paths.
     bool exist(const char* filepath) const;
-    bool exist(const std::string& filepath) const;
+    template <typename T> bool exist(const std::basic_string<T>& filepath) const;
 
     // Find a file in the search paths. If the file was found, the qualified path to
     // this file is returned. Otherwise the input path is returned.
-    std::string qualify(const std::string& filepath) const;
+    template <typename T> std::basic_string<T> qualify(const std::basic_string<T>& filepath) const;
 
   private:
     PIMPL(SearchPaths);
@@ -98,20 +98,23 @@ class FOUNDATIONDLL SearchPaths
 // SearchPaths class implementation.
 //
 
-inline void SearchPaths::push_back(const std::string& path)
+template <typename T>
+inline void SearchPaths::push_back(const std::basic_string<T>& path)
 {
     return push_back(path.c_str());
 }
 
-inline bool SearchPaths::exist(const std::string& filepath) const
+template <typename T>
+inline bool SearchPaths::exist(const std::basic_string<T>& filepath) const
 {
     return exist(filepath.c_str());
 }
 
-inline std::string SearchPaths::qualify(const std::string& filepath) const
+template <typename T>
+inline std::basic_string<T> SearchPaths::qualify(const std::basic_string<T>& filepath) const
 {
     const char* tmp = qualify(filepath.c_str());
-    const std::string result = tmp;
+    const std::basic_string<T> result = tmp;
     free_string(tmp);
     return result;
 }
