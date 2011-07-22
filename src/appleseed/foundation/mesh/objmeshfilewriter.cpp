@@ -30,6 +30,7 @@
 #include "objmeshfilewriter.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/core/appleseed.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/otherwise.h"

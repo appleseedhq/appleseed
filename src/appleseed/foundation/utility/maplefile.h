@@ -31,7 +31,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/core/exceptions/exception.h"
 
 // Standard headers.
 #include <cstddef>
@@ -50,12 +49,6 @@ class MapleFile
   : public NonCopyable
 {
   public:
-    // Exception thrown when an I/O error occur.
-    struct ExceptionIOError
-      : public Exception
-    {
-    };
-
     // Constructor, opens the file for writing.
     explicit MapleFile(const std::string& filename);
 

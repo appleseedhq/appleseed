@@ -30,6 +30,7 @@
 #include "vpythonfile.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/platform/types.h"
 
 // Standard headers.

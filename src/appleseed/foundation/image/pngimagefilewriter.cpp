@@ -30,6 +30,7 @@
 #include "pngimagefilewriter.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 #include "foundation/image/icanvas.h"

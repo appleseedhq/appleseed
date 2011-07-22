@@ -31,7 +31,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/core/exceptions/exception.h"
 
 // Forward declarations.
 namespace foundation    { class Image; }
@@ -67,14 +66,6 @@ class FOUNDATIONDLL IImageFileReader
   : public NonCopyable
 {
   public:
-    // I/O error.
-    struct ExceptionIOError : public Exception
-    {
-        ExceptionIOError() {}
-        explicit ExceptionIOError(const char* what)
-          : Exception(what) {}
-    };
-
     // Destructor.
     virtual ~IImageFileReader() {}
 

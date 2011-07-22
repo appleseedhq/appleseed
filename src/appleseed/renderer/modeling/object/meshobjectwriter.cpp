@@ -35,6 +35,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
+#include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/mesh/imeshfilewriter.h"
 #include "foundation/mesh/imeshwalker.h"
 #include "foundation/mesh/objmeshfilewriter.h"
@@ -161,7 +162,7 @@ bool MeshObjectWriter::write(
     {
         writer.write(filename, walker);
     }
-    catch (const IMeshFileWriter::ExceptionIOError&)
+    catch (const ExceptionIOError&)
     {
         RENDERER_LOG_ERROR(
             "failed to write mesh file %s: i/o error",

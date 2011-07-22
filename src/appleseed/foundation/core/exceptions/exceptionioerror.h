@@ -26,54 +26,42 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_VPYTHONFILE_H
-#define APPLESEED_FOUNDATION_UTILITY_VPYTHONFILE_H
+#ifndef APPLESEED_FOUNDATION_CORE_EXCEPTIONS_EXCEPTIONIOERROR_H
+#define APPLESEED_FOUNDATION_CORE_EXCEPTIONS_EXCEPTIONIOERROR_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/vector.h"
-
-// Standard headers.
-#include <cstddef>
-#include <cstdio>
-#include <string>
+#include "foundation/core/exceptions/exception.h"
 
 namespace foundation
 {
 
 //
-// VPython program file.
-//
-// See http://vpython.org/ for more information about VPython.
+// An exception thrown when an I/O occurs.
 //
 
-class VPythonFile
-  : public NonCopyable
+class ExceptionIOError
+  : public Exception
 {
   public:
-    // Constructor, opens the file for writing.
-    explicit VPythonFile(const std::string& filename);
-
-    // Destructor, closes the file.
-    ~VPythonFile();
-
-    // Output a single point.
-    void draw_point(
-        const Vector3d&     point,
-        const std::string&  color = "white",
-        const size_t        size = 5);
-
-    // Output a collection of points.
-    void draw_points(
-        const size_t        point_count,
-        const Vector3d      points[],
-        const std::string&  color = "white",
-        const size_t        size = 5);
-
-  private:
-    std::FILE* m_file;
+    // Constructors.
+    ExceptionIOError();
+    explicit ExceptionIOError(const char* what);
 };
+
+
+//
+// ExceptionIOError class implementation.
+//
+
+inline ExceptionIOError::ExceptionIOError()
+{
+}
+
+inline ExceptionIOError::ExceptionIOError(const char* what)
+  : Exception(what)
+{
+}
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_UTILITY_VPYTHONFILE_H
+#endif  // !APPLESEED_FOUNDATION_CORE_EXCEPTIONS_EXCEPTIONIOERROR_H

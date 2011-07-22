@@ -30,6 +30,7 @@
 #include "exrimagefilewriter.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/exrutils.h"
 #include "foundation/image/icanvas.h"

@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
+#include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/image/exrimagefilewriter.h"
 #include "foundation/image/genericimagefilewriter.h"
@@ -225,7 +226,7 @@ bool Frame::write(const char* filename) const
         RENDERER_LOG_INFO(
             "wrote image file %s in %s", filename, pretty_time(seconds).c_str());
     }
-    catch (const IImageFileWriter::ExceptionIOError&)
+    catch (const ExceptionIOError&)
     {
         RENDERER_LOG_ERROR(
             "failed to write image file %s: i/o error",
@@ -279,7 +280,7 @@ bool Frame::archive(
             image_path.file_string().c_str(),
             pretty_time(seconds).c_str());
     }
-    catch (const IImageFileWriter::ExceptionIOError&)
+    catch (const ExceptionIOError&)
     {
         RENDERER_LOG_WARNING(
             "automatic frame archiving to %s failed: i/o error",

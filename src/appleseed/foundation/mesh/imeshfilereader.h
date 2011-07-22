@@ -31,7 +31,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/core/exceptions/exception.h"
 
 // Standard headers.
 #include <string>
@@ -50,9 +49,6 @@ class IMeshFileReader
   : public NonCopyable
 {
   public:
-    // I/O error.
-    struct ExceptionIOError : public Exception {};
-
     // Destructor.
     virtual ~IMeshFileReader() {}
 

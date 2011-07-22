@@ -46,6 +46,7 @@ source_group("foundation\\core\\concepts" FILES
 
 set(foundation_core_exceptions_sources
     foundation/core/exceptions/exception.h
+    foundation/core/exceptions/exceptionioerror.h
     foundation/core/exceptions/exceptionnotimplemented.h
     foundation/core/exceptions/stringexception.h
 )

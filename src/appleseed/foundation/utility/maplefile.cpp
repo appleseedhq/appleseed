@@ -30,6 +30,7 @@
 #include "maplefile.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/platform/snprintf.h"
 
 // Standard headers.

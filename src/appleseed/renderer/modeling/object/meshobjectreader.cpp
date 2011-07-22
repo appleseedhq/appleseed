@@ -35,6 +35,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
+#include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/math/triangulator.h"
 #include "foundation/mesh/imeshbuilder.h"
 #include "foundation/mesh/imeshfilereader.h"
@@ -361,7 +362,7 @@ MeshObjectArray MeshObjectReader::read(
             e.m_line);
         return MeshObjectArray();
     }
-    catch (const IMeshFileReader::ExceptionIOError&)
+    catch (const ExceptionIOError&)
     {
         RENDERER_LOG_ERROR(
             "failed to load mesh file %s: i/o error",
