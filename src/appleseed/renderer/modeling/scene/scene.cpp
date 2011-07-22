@@ -44,6 +44,10 @@ using namespace std;
 namespace renderer
 {
 
+//
+// Scene class implementation.
+//
+
 struct Scene::Impl
 {
     UniqueID                                m_uid;
@@ -70,6 +74,11 @@ Scene::Scene()
 Scene::~Scene()
 {
     delete impl;
+}
+
+void Scene::release()
+{
+    delete this;
 }
 
 VersionID Scene::get_assembly_instances_version_id() const
@@ -177,6 +186,16 @@ double Scene::compute_radius() const
     }
 
     return sqrt(square_radius);
+}
+
+
+//
+// SceneFactory class implementation.
+//
+
+auto_release_ptr<Scene> SceneFactory::create()
+{
+    return auto_release_ptr<Scene>(new Scene());
 }
 
 }   // namespace renderer

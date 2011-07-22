@@ -42,8 +42,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_LightSampler)
 
     TEST_CASE(Sample_GivenSceneWithoutLights_ReturnsZeroSample)
     {
-        const Scene scene;
-        LightSampler light_sampler(scene);
+        auto_release_ptr<Scene> scene(SceneFactory::create());
+        LightSampler light_sampler(scene.ref());
 
         MersenneTwister rng;
         SamplingContext sampling_context(rng);

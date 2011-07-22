@@ -440,7 +440,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
     project->add_default_configurations();
 
     // Create a scene.
-    auto_ptr<Scene> scene(new Scene());
+    auto_release_ptr<Scene> scene(SceneFactory::create());
 
     // Create an assembly.
     auto_release_ptr<Assembly> assembly(

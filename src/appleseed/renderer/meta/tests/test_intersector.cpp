@@ -85,11 +85,12 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
         Lazy<RegionKit> m_lazy_region_kit;
     };
 
-    class TestScene
-      : public Scene
+    struct TestScene
     {
-      public:
+        auto_release_ptr<Scene> m_scene;
+
         TestScene()
+          : m_scene(SceneFactory::create())
         {
             auto_release_ptr<Assembly> assembly(
                 AssemblyFactory::create("assembly", ParamArray()));
@@ -107,23 +108,32 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
                     Transformd(Matrix4d::identity()),
                     MaterialIndexArray()));
 
-            assembly_instances().insert(
+            m_scene->assembly_instances().insert(
                 auto_release_ptr<AssemblyInstance>(
                     AssemblyInstanceFactory::create(
                         "assembly_instance",
                         *assembly,
                         Transformd(Matrix4d::identity()))));
 
-            assemblies().insert(assembly);
+            m_scene->assemblies().insert(assembly);
         }
     };
 
-    TEST_CASE(Trace_GivenAssemblyContainingEmptyBoundingBoxAndRayWithTMaxInsideAssembly_ReturnsFalse)
+    struct Fixture
+      : public TestScene
     {
-        const TestScene scene;
-        const TraceContext trace_context(scene);
-        const Intersector intersector(trace_context);
+        TraceContext    m_trace_context;
+        Intersector     m_intersector;
 
+        Fixture()
+          : m_trace_context(m_scene.ref())
+          , m_intersector(m_trace_context)
+        {
+        }
+    };
+
+    TEST_CASE_F(Trace_GivenAssemblyContainingEmptyBoundingBoxAndRayWithTMaxInsideAssembly_ReturnsFalse, Fixture)
+    {
         const ShadingRay ray(
             Vector3d(0.0, 0.0, 2.0),
             Vector3d(0.0, 0.0, -1.0),
@@ -133,17 +143,13 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
             ~0);
 
         ShadingPoint shading_point;
-        const bool hit = intersector.trace(ray, shading_point);
+        const bool hit = m_intersector.trace(ray, shading_point);
 
         EXPECT_FALSE(hit);
     }
 
-    TEST_CASE(TraceProbe_GivenAssemblyContainingEmptyBoundingBoxAndRayWithTMaxInsideAssembly_ReturnsFalse)
+    TEST_CASE_F(TraceProbe_GivenAssemblyContainingEmptyBoundingBoxAndRayWithTMaxInsideAssembly_ReturnsFalse, Fixture)
     {
-        const TestScene scene;
-        const TraceContext trace_context(scene);
-        const Intersector intersector(trace_context);
-
         const ShadingRay ray(
             Vector3d(0.0, 0.0, 2.0),
             Vector3d(0.0, 0.0, -1.0),
@@ -152,7 +158,7 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
             0.0f,
             ~0);
 
-        const bool hit = intersector.trace_probe(ray);
+        const bool hit = m_intersector.trace_probe(ray);
 
         EXPECT_FALSE(hit);
     }

@@ -67,11 +67,12 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 {
     struct SceneBase
     {
-        Scene   m_scene;
-        size_t  m_opaque_material_index;
-        size_t  m_transparent_material_index;
+        auto_release_ptr<Scene> m_scene;
+        size_t                  m_opaque_material_index;
+        size_t                  m_transparent_material_index;
 
         SceneBase()
+          : m_scene(SceneFactory::create())
         {
             create_assembly();
             create_assembly_instance();
@@ -82,15 +83,15 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
         void create_assembly()
         {
-            m_scene.assemblies().insert(
+            m_scene->assemblies().insert(
                 AssemblyFactory::create("assembly", ParamArray()));
         }
 
         void create_assembly_instance()
         {
-            const Assembly* assembly = m_scene.assemblies().get("assembly");
+            const Assembly* assembly = m_scene->assemblies().get("assembly");
 
-            m_scene.assembly_instances().insert(
+            m_scene->assembly_instances().insert(
                 AssemblyInstanceFactory::create(
                     "assembly_inst",
                     *assembly,
@@ -113,12 +114,12 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             mesh_object->push_triangle(Triangle(2, 3, 0, 0, 0, 0, 0));
 
             auto_release_ptr<Object> object(mesh_object.release());
-            m_scene.assemblies().get("assembly")->objects().insert(object);
+            m_scene->assemblies().get("assembly")->objects().insert(object);
         }
 
         void create_plane_object_instance(const char* name, const Vector3d& position, const size_t material_index)
         {
-            const Assembly* assembly = m_scene.assemblies().get("assembly");
+            const Assembly* assembly = m_scene->assemblies().get("assembly");
             const size_t object_index = assembly->objects().get_index("plane");
             const Object* object = assembly->objects().get(object_index);
             
@@ -142,7 +143,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             const ColorValueArray color_values(3, &color[0]);
             const ColorValueArray alpha_values(1, &color[3]);
 
-            m_scene.assemblies().get("assembly")->colors().insert(
+            m_scene->assemblies().get("assembly")->colors().insert(
                 ColorEntityFactory::create(name, params, color_values, alpha_values));
         }
 
@@ -153,7 +154,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
             ConstantSurfaceShaderFactory factory;
             auto_release_ptr<SurfaceShader> surface_shader(factory.create(surface_shader_name, params));
-            m_scene.assemblies().get("assembly")->surface_shaders().insert(surface_shader);
+            m_scene->assemblies().get("assembly")->surface_shaders().insert(surface_shader);
         }
 
         size_t create_material(const char* material_name, const char* surface_shader_name)
@@ -162,7 +163,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             params.insert("surface_shader", surface_shader_name);
 
             auto_release_ptr<Material> material(MaterialFactory::create(material_name, params));
-            return m_scene.assemblies().get("assembly")->materials().insert(material);
+            return m_scene->assemblies().get("assembly")->materials().insert(material);
         }
 
         void create_opaque_material()
@@ -192,14 +193,14 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Tracer              m_tracer;
 
         Fixture()
-          : m_trace_context(m_scene)
+          : m_trace_context(m_scene.ref())
           , m_intersector(m_trace_context)
-          , m_texture_cache(m_scene, 1024 * 16)
+          , m_texture_cache(m_scene.ref(), 1024 * 16)
           , m_sampling_context(m_rng, 0, 0, 0)
           , m_tracer(m_intersector, m_texture_cache, m_sampling_context)
         {
             InputBinder input_binder;
-            input_binder.bind(m_scene);
+            input_binder.bind(m_scene.ref());
         }
     };
 

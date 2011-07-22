@@ -2087,7 +2087,7 @@ namespace
 
         virtual void start_element(const Attributes& attrs)
         {
-            m_scene.reset(new Scene());
+            m_scene = SceneFactory::create();
         }
 
         virtual void end_element()
@@ -2280,14 +2280,14 @@ namespace
             }
         }
 
-        auto_ptr<Scene> get_scene()
+        auto_release_ptr<Scene> get_scene()
         {
             return m_scene;
         }
 
       private:
-        ParseContext&   m_context;
-        auto_ptr<Scene> m_scene;
+        ParseContext&           m_context;
+        auto_release_ptr<Scene> m_scene;
     };
 
 
@@ -2576,7 +2576,7 @@ namespace
                 {
                     SceneElementHandler* scene_handler =
                         static_cast<SceneElementHandler*>(handler);
-                    auto_ptr<Scene> scene = scene_handler->get_scene();
+                    auto_release_ptr<Scene> scene = scene_handler->get_scene();
                     if (scene.get())
                         m_project->set_scene(scene);
                 }

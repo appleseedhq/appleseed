@@ -60,7 +60,7 @@ class RENDERERDLL Project
     const char* get_path() const;
 
     // Set the scene, replacing the existing scene.
-    void set_scene(std::auto_ptr<Scene> scene);
+    void set_scene(foundation::auto_release_ptr<Scene> scene);
 
     // Access the scene.
     // Return 0 if the project does not contain a scene.

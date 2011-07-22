@@ -59,7 +59,7 @@ namespace renderer
 TestFixtureBaseProjectHolder::TestFixtureBaseProjectHolder()
   : m_project(ProjectFactory::create("project"))
 {
-    m_project->set_scene(auto_ptr<Scene>(new Scene()));
+    m_project->set_scene(SceneFactory::create());
 
     m_project->get_scene()->assemblies().insert(
         AssemblyFactory::create("assembly", ParamArray()));

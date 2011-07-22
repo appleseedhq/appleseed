@@ -48,14 +48,12 @@ namespace renderer
 //
 
 class RENDERERDLL Scene
-  : public foundation::Identifiable
+  : public foundation::IUnknown
+  , public foundation::Identifiable
 {
   public:
-    // Constructor. Initially, the scene is empty.
-    Scene();
-
-    // Destructor.
-    ~Scene();
+    // Delete this instance.
+    virtual void release();
 
     // Return/increase the version ID of the assembly instances.
     foundation::VersionID get_assembly_instances_version_id() const;
@@ -107,9 +105,29 @@ class RENDERERDLL Scene
     double compute_radius() const;
 
   private:
+    friend class SceneFactory;
+
     // Private implementation.
     struct Impl;
     Impl* impl;
+
+    // Constructor. Initially, the scene is empty.
+    Scene();
+
+    // Destructor.
+    ~Scene();
+};
+
+
+//
+// SceneFactory.
+//
+
+class RENDERERDLL SceneFactory
+{
+  public:
+    // Create a new scene.
+    static foundation::auto_release_ptr<Scene> create();
 };
 
 }       // namespace renderer

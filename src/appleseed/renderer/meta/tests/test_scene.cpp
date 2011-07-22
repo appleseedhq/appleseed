@@ -55,16 +55,16 @@ TEST_SUITE(Renderer_Modeling_Scene_Scene)
 {
     TEST_CASE(ComputeRadius_GivenEmptyScene_ReturnsZero)
     {
-        Scene scene;
+        auto_release_ptr<Scene> scene(SceneFactory::create());
 
-        const double radius = scene.compute_radius();
+        const double radius = scene->compute_radius();
 
         EXPECT_EQ(0.0, radius);
     }
 
     TEST_CASE(ComputeRadius_GivenSceneWithOneAssemblyInstance_ReturnsRadius)
     {
-        Scene scene;
+        auto_release_ptr<Scene> scene(SceneFactory::create());
 
         // Create an assembly.
         auto_release_ptr<Assembly> assembly(
@@ -89,7 +89,7 @@ TEST_SUITE(Renderer_Modeling_Scene_Scene)
                 MaterialIndexArray()));
 
         // Create an instance of the assembly.
-        scene.assembly_instances().insert(
+        scene->assembly_instances().insert(
             AssemblyInstanceFactory::create(
                 "assembly_inst",
                 *assembly,
@@ -97,9 +97,9 @@ TEST_SUITE(Renderer_Modeling_Scene_Scene)
                     Matrix4d::translation(Vector3d(1.0)) *
                     Matrix4d::scaling(Vector3d(10.0)))));
 
-        scene.assemblies().insert(assembly);
+        scene->assemblies().insert(assembly);
 
-        const double radius = scene.compute_radius();
+        const double radius = scene->compute_radius();
 
         EXPECT_FEQ(10.0 * sqrt(3.0) + sqrt(3.0), radius);
     }

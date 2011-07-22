@@ -52,7 +52,7 @@ namespace renderer
 struct Project::Impl
 {
     string                  m_path;
-    auto_ptr<Scene>         m_scene;
+    auto_release_ptr<Scene> m_scene;
     auto_release_ptr<Frame> m_frame;
     ConfigurationContainer  m_configurations;
     SearchPaths             m_search_paths;
@@ -98,7 +98,7 @@ const char* Project::get_path() const
     return impl->m_path.c_str();
 }
 
-void Project::set_scene(auto_ptr<Scene> scene)
+void Project::set_scene(auto_release_ptr<Scene> scene)
 {
     impl->m_scene = scene;
 }
