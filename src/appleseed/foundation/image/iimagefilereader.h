@@ -33,9 +33,6 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/core/exceptions/exception.h"
 
-// Standard headers.
-#include <string>
-
 // Forward declarations.
 namespace foundation    { class Image; }
 namespace foundation    { class ImageAttributes; }
@@ -83,7 +80,7 @@ class FOUNDATIONDLL IImageFileReader
 
     // Read an image file. Returns a newly allocated image.
     virtual Image* read(
-        const std::string&  filename,
+        const char*         filename,
         ImageAttributes*    image_attributes = 0) = 0;
 };
 

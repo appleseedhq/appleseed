@@ -33,9 +33,6 @@
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/image/iimagefilereader.h"
 
-// Standard headers.
-#include <string>
-
 // Forward declarations.
 namespace foundation    { class Image; }
 namespace foundation    { class ImageAttributes; }
@@ -75,7 +72,7 @@ class FOUNDATIONDLL GenericImageFileReader
 
     // Read an image file.
     virtual Image* read(
-        const std::string&  filename,
+        const char*         filename,
         ImageAttributes*    image_attributes = 0);
 };
 

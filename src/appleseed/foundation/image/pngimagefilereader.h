@@ -32,9 +32,6 @@
 // appleseed.foundation headers.
 #include "foundation/image/iimagefilereader.h"
 
-// Standard headers.
-#include <string>
-
 // Forward declarations.
 namespace foundation    { class Image; }
 namespace foundation    { class ImageAttributes; }
@@ -71,7 +68,7 @@ class FOUNDATIONDLL PNGImageFileReader
   public:
     // Read a PNG image file.
     virtual Image* read(
-        const std::string&  filename,
+        const char*         filename,
         ImageAttributes*    image_attributes = 0);
 };
 

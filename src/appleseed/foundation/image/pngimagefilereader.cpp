@@ -42,7 +42,7 @@ namespace foundation
 //
 
 Image* PNGImageFileReader::read(
-    const string&       filename,
+    const char*         filename,
     ImageAttributes*    image_attributes)
 {
     throw ExceptionNotImplemented();

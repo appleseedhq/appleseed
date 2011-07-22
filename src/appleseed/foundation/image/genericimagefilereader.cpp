@@ -51,7 +51,7 @@ namespace foundation
 //
 
 Image* GenericImageFileReader::read(
-    const string&       filename,
+    const char*         filename,
     ImageAttributes*    image_attributes)
 {
     // Extract the extension of the image filename.

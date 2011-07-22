@@ -47,11 +47,11 @@ namespace foundation
 //
 
 Image* EXRImageFileReader::read(
-    const string&       filename,
+    const char*         filename,
     ImageAttributes*    image_attributes)
 {
     ProgressiveEXRImageFileReader reader(32, 32);
-    reader.open(filename.c_str());
+    reader.open(filename);
 
     CanvasProperties props;
     reader.read_canvas_properties(props);
