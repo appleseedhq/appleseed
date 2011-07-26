@@ -68,6 +68,10 @@ T align(const T ptr, const size_t alignment);
 template <typename T>
 size_t alignment(const T ptr, const size_t max_alignment = 256);
 
+// Return whether a given pointer is aligned on a given boundary.
+template <typename T>
+bool is_aligned(const T ptr, const size_t alignment);
+
 // Allocate memory on a specified alignment boundary.
 void* aligned_malloc(const size_t size, const size_t alignment);
 
@@ -145,6 +149,16 @@ size_t alignment(const T ptr, const size_t max_alignment)
         a <<= 1;
 
     return a;
+}
+
+template <typename T>
+inline bool is_aligned(const T ptr, const size_t alignment)
+{
+    assert(alignment > 0);
+    assert(is_pow2(alignment));
+
+    const uintptr_t p = (uintptr_t)ptr;
+    return (p & (alignment - 1)) == 0;
 }
 
 

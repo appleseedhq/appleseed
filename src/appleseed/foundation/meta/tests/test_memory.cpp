@@ -98,6 +98,36 @@ TEST_SUITE(Foundation_Utility_Memory)
         EXPECT_EQ(1, alignment((void*)17, 32));
     }
 
+    TEST_CASE(IsAligned_GivenIntegerZero_ReturnsTrue)
+    {
+        EXPECT_TRUE(is_aligned(0, 32));
+    }
+
+    TEST_CASE(IsAligned_GivenAlignedInteger_ReturnsTrue)
+    {
+        EXPECT_TRUE(is_aligned(64, 32));
+    }
+
+    TEST_CASE(IsAligned_GivenNonAlignedInteger_ReturnsFalse)
+    {
+        EXPECT_FALSE(is_aligned(65, 32));
+    }
+
+    TEST_CASE(IsAligned_GivenNullPointer_ReturnsTrue)
+    {
+        EXPECT_TRUE(is_aligned((void*)0, 32));
+    }
+
+    TEST_CASE(IsAligned_GivenAlignedPointer_ReturnsTrue)
+    {
+        EXPECT_TRUE(is_aligned((void*)64, 32));
+    }
+
+    TEST_CASE(IsAligned_GivenNonAlignedPointer_ReturnsFalse)
+    {
+        EXPECT_FALSE(is_aligned((void*)65, 32));
+    }
+
     TEST_CASE(EnsureSize_GivenEmptyVector_ResizesVectorByInsertingDefaultValue)
     {
         vector<int> v;
