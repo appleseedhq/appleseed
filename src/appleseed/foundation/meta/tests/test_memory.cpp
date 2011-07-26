@@ -38,19 +38,64 @@ using namespace std;
 
 TEST_SUITE(Foundation_Utility_Memory)
 {
-    TEST_CASE(Align_GivenZero_ReturnsZero)
+    TEST_CASE(Align_GivenIntegerZero_ReturnsIntegerZero)
     {
         EXPECT_EQ(0, align(0, 4));
     }
 
-    TEST_CASE(Align_GivenUnalignedValue_ReturnsAlignedValue)
+    TEST_CASE(Align_GivenUnalignedInteger_ReturnsAlignedInteger)
     {
         EXPECT_EQ(16, align(13, 4));
     }
 
-    TEST_CASE(Align_GivenAlignedValue_ReturnsInputValue)
+    TEST_CASE(Align_GivenAlignedInteger_ReturnsIntegerUnmodified)
     {
         EXPECT_EQ(16, align(16, 4));
+    }
+
+    TEST_CASE(Align_GivenNullPointer_ReturnsNullPointer)
+    {
+        EXPECT_EQ((void*)0, align((void*)0, 4));
+    }
+
+    TEST_CASE(Align_GivenUnalignedPointer_ReturnsAlignedPointer)
+    {
+        EXPECT_EQ((void*)16, align((void*)13, 4));
+    }
+
+    TEST_CASE(Align_GivenAlignedPointer_ReturnsPointerUnmodified)
+    {
+        EXPECT_EQ((void*)16, align((void*)16, 4));
+    }
+
+    TEST_CASE(Alignment_GivenIntegerZero_ReturnsMaxAlignment)
+    {
+        EXPECT_EQ(32, alignment(0, 32));
+    }
+
+    TEST_CASE(Alignment_GivenAlignedInteger_ReturnsAlignment)
+    {
+        EXPECT_EQ(16, alignment(16, 32));
+    }
+
+    TEST_CASE(Alignment_GivenNonAlignedInteger_ReturnsOne)
+    {
+        EXPECT_EQ(1, alignment(17, 32));
+    }
+
+    TEST_CASE(Alignment_GivenNullPointer_ReturnsMaxAlignment)
+    {
+        EXPECT_EQ(32, alignment((void*)0, 32));
+    }
+
+    TEST_CASE(Alignment_GivenAlignedPointer_ReturnsAlignment)
+    {
+        EXPECT_EQ(16, alignment((void*)16, 32));
+    }
+
+    TEST_CASE(Alignment_GivenNonAlignedPointer_ReturnsOne)
+    {
+        EXPECT_EQ(1, alignment((void*)17, 32));
     }
 
     TEST_CASE(EnsureSize_GivenEmptyVector_ResizesVectorByInsertingDefaultValue)

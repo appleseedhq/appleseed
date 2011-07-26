@@ -61,12 +61,12 @@ size_t dynamic_sizeof(T* object);
 //
 
 // Align a given pointer to a given boundary.
-template <typename Pointer>
-Pointer align(const Pointer ptr, const size_t alignment);
+template <typename T>
+T align(const T ptr, const size_t alignment);
 
 // Compute the alignment of a given pointer.
-template <typename Pointer>
-size_t alignment(const Pointer ptr, const size_t max_alignment = 256);
+template <typename T>
+size_t alignment(const T ptr, const size_t max_alignment = 256);
 
 // Allocate memory on a specified alignment boundary.
 void* aligned_malloc(const size_t size, const size_t alignment);
@@ -120,26 +120,25 @@ inline size_t dynamic_sizeof(T* object)
 // Memory-alignment related functions implementation.
 //
 
-template <typename Pointer>
-inline Pointer align(const Pointer ptr, const size_t alignment)
+template <typename T>
+inline T align(const T ptr, const size_t alignment)
 {
     assert(alignment > 0);
     assert(is_pow2(alignment));
 
     const size_t a = alignment - 1;
-    const uintptr_t aligned = ((uintptr_t)(ptr) + a) & ~a;
+    const uintptr_t aligned = ((uintptr_t)ptr + a) & ~a;
 
-    return (Pointer)aligned;
+    return (T)aligned;
 }
 
-template <typename Pointer>
-size_t alignment(const Pointer ptr, const size_t max_alignment)
+template <typename T>
+size_t alignment(const T ptr, const size_t max_alignment)
 {
     assert(max_alignment > 0);
     assert(is_pow2(max_alignment));
 
-    const size_t p = reinterpret_cast<uintptr_t>(ptr);
-
+    const uintptr_t p = (uintptr_t)ptr;
     size_t a = 1;
 
     while (a < max_alignment && (p & a) == 0)
