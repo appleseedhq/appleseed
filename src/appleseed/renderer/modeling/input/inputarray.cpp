@@ -156,14 +156,42 @@ Source* InputArray::source(const char* name) const
     return 0;
 }
 
+size_t InputArray::compute_data_size() const
+{
+    size_t size = 0;
+
+    for (const_each<Impl::InputDeclVector> i = impl->m_input_decls; i; ++i)
+    {
+        switch (i->m_format)
+        {
+          case InputFormatScalar:
+            size = align(size, 8);
+            size += sizeof(double);
+            break;
+
+          case InputFormatSpectrum:
+            size = align(size, 16);
+            size += sizeof(Spectrum);
+            size += sizeof(Alpha);
+            break;
+        }
+    }
+
+    size = align(size, 16);
+
+    return size;
+}
+
 void InputArray::evaluate(
     TextureCache&       texture_cache,
     const InputParams&  params,
-    void*               values) const
+    void*               values,
+    const size_t        offset) const
 {
     assert(values);
 
-    uint8* ptr = static_cast<uint8*>(values);
+    uint8* ptr = static_cast<uint8*>(values) + offset;
+    assert(is_aligned(ptr, 16));
 
     for (const_each<Impl::InputDeclVector> i = impl->m_input_decls; i; ++i)
     {
@@ -198,11 +226,14 @@ void InputArray::evaluate(
     }
 }
 
-void InputArray::evaluate_uniforms(void* values) const
+void InputArray::evaluate_uniforms(
+    void*               values,
+    const size_t        offset) const
 {
     assert(values);
 
-    uint8* ptr = static_cast<uint8*>(values);
+    uint8* ptr = static_cast<uint8*>(values) + offset;
+    assert(is_aligned(ptr, 16));
 
     for (const_each<Impl::InputDeclVector> i = impl->m_input_decls; i; ++i)
     {
@@ -210,16 +241,14 @@ void InputArray::evaluate_uniforms(void* values) const
         {
           case InputFormatScalar:
             ptr = align(ptr, 8);
-            if (i->m_source &&
-                i->m_source->is_uniform())
+            if (i->m_source && i->m_source->is_uniform())
                 i->m_source->evaluate_uniform(*reinterpret_cast<double*>(ptr));
             ptr += sizeof(double);
             break;
 
           case InputFormatSpectrum:
             ptr = align(ptr, 16);
-            if (i->m_source &&
-                i->m_source->is_uniform())
+            if (i->m_source && i->m_source->is_uniform())
             {
                 i->m_source->evaluate_uniform(
                     *reinterpret_cast<Spectrum*>(ptr),

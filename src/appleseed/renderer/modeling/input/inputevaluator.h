@@ -53,19 +53,24 @@ class InputEvaluator
     // Evaluate a set of inputs, and return the values as an opaque block of memory.
     const void* evaluate(
         const InputArray&   inputs,
-        const InputParams&  params);
+        const InputParams&  params,
+        const size_t        offset = 0);
     template <typename T>
     const T* evaluate(
         const InputArray&   inputs,
-        const InputParams&  params);
+        const InputParams&  params,
+        const size_t        offset = 0);
+
+    // Access the values stored by the evaluate() methods.
+    const void* data() const;
 
   private:
-    static const size_t ScratchSize = 16 * 1024;    // bytes
-
-    TextureCache&       m_texture_cache;
+    static const size_t DataSize = 16 * 1024;   // bytes
 
     ALIGN_SSE_VARIABLE
-    foundation::uint8   m_scratch[ScratchSize];
+    foundation::uint8   m_data[DataSize];
+
+    TextureCache&       m_texture_cache;
 };
 
 
@@ -73,35 +78,33 @@ class InputEvaluator
 // InputEvaluator class implementation.
 //
 
-// Constructor.
 inline InputEvaluator::InputEvaluator(TextureCache& texture_cache)
   : m_texture_cache(texture_cache)
 {
 }
 
-// Evaluate a set of inputs.
 inline const void* InputEvaluator::evaluate(
     const InputArray&   inputs,
-    const InputParams&  params)
+    const InputParams&  params,
+    const size_t        offset)
 {
-    inputs.evaluate(
-        m_texture_cache,
-        params,
-        m_scratch);
-
-    return m_scratch;
+    inputs.evaluate(m_texture_cache, params, m_data, offset);
+    return m_data + offset;
 }
+
 template <typename T>
 inline const T* InputEvaluator::evaluate(
     const InputArray&   inputs,
-    const InputParams&  params)
+    const InputParams&  params,
+    const size_t        offset)
 {
-    inputs.evaluate(
-        m_texture_cache,
-        params,
-        m_scratch);
+    inputs.evaluate(m_texture_cache, params, m_data, offset);
+    return reinterpret_cast<const T*>(m_data + offset);
+}
 
-    return reinterpret_cast<const T*>(m_scratch);
+inline const void* InputEvaluator::data() const
+{
+    return m_data;
 }
 
 }       // namespace renderer

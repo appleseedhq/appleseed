@@ -172,14 +172,22 @@ class RENDERERDLL InputArray
     // Return 0 if the input could not be found, or no source is bound to it.
     Source* source(const char* name) const;
 
+    // Compute the cumulated size in bytes of the input values.
+    size_t compute_data_size() const;
+
     // Evaluate all inputs into a preallocated block of memory.
+    // The pointer (values + offset) must be 16-byte aligned.
     void evaluate(
         TextureCache&       texture_cache,
         const InputParams&  params,
-        void*               values) const;
+        void*               values,
+        const size_t        offset = 0) const;
 
-    // Evaluate all uniform inputs.
-    void evaluate_uniforms(void* values) const;
+    // Evaluate all uniform inputs into a preallocated block of memory.
+    // The pointer (values + offset) must be 16-byte aligned.
+    void evaluate_uniforms(
+        void*               values,
+        const size_t        offset = 0) const;
 
   private:
     // Private implementation.
