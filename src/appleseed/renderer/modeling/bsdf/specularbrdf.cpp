@@ -190,9 +190,7 @@ auto_release_ptr<BSDF> SpecularBRDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return
-        auto_release_ptr<BSDF>(
-            new SpecularBRDF(name, params));
+    return auto_release_ptr<BSDF>(new SpecularBRDF(name, params));
 }
 
 }   // namespace renderer
