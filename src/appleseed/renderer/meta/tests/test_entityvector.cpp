@@ -54,11 +54,13 @@ TEST_SUITE(Renderer_Modeling_Entity_EntityVector)
 
     TEST_CASE(Remove_GivenOneItem_RemovesItem)
     {
-        EntityVector v;
-        v.insert(auto_release_ptr<Entity>(DummyEntityFactory::create("dummy")));
+        auto_release_ptr<Entity> dummy(DummyEntityFactory::create("dummy"));
+        Entity* dummy_ptr = dummy.get();
 
-        Entity* entity = v.get(v.get_index("dummy"));
-        v.remove(entity);
+        EntityVector v;
+        v.insert(dummy);
+
+        v.remove(dummy_ptr);
 
         EXPECT_TRUE(v.empty());
     }
@@ -66,11 +68,13 @@ TEST_SUITE(Renderer_Modeling_Entity_EntityVector)
     struct DummyEntityReleaseCheck
       : public Entity
     {
-        bool m_release_was_called;
+        bool& m_release_was_called;
 
-        explicit DummyEntityReleaseCheck(const char* name)
+        DummyEntityReleaseCheck(
+            const char* name,
+            bool&       release_was_called)
           : Entity(0)
-          , m_release_was_called(false)
+          , m_release_was_called(release_was_called)
         {
             set_name(name);
         }
@@ -83,44 +87,127 @@ TEST_SUITE(Renderer_Modeling_Entity_EntityVector)
 
     TEST_CASE(Remove_GivenOneItem_ReleasesItem)
     {
-        auto_ptr<DummyEntityReleaseCheck> source_entity(new DummyEntityReleaseCheck("dummy"));
+        bool release_was_called = false;
+        auto_release_ptr<Entity> dummy(
+            new DummyEntityReleaseCheck("dummy", release_was_called));
+        Entity* dummy_ptr = dummy.get();
 
         EntityVector v;
-        v.insert(auto_release_ptr<Entity>(source_entity.get()));
+        v.insert(dummy);
 
-        Entity* entity = v.get(v.get_index("dummy"));
-        v.remove(entity);
+        v.remove(dummy_ptr);
 
-        EXPECT_TRUE(source_entity->m_release_was_called);
+        EXPECT_TRUE(release_was_called);
     }
 
     TEST_CASE(Remove_RemovingFirstInsertedItemOfTwo_LeavesOtherItemIntact)
     {
+        auto_release_ptr<Entity> dummy1(DummyEntityFactory::create("dummy1"));
+        auto_release_ptr<Entity> dummy2(DummyEntityFactory::create("dummy2"));
+        Entity* dummy1_ptr = dummy1.get();
+        Entity* dummy2_ptr = dummy2.get();
+
         EntityVector v;
-        v.insert(auto_release_ptr<Entity>(DummyEntityFactory::create("dummy1")));
-        v.insert(auto_release_ptr<Entity>(DummyEntityFactory::create("dummy2")));
+        v.insert(dummy1);
+        v.insert(dummy2);
 
-        Entity* entity1 = v.get(v.get_index("dummy1"));
-        Entity* entity2 = v.get(v.get_index("dummy2"));
-
-        v.remove(entity1);
+        v.remove(dummy1_ptr);
 
         ASSERT_EQ(1, v.size());
-        EXPECT_EQ(entity2, v.get(v.get_index("dummy2")));
+        EXPECT_EQ(dummy2_ptr, v.get_by_name("dummy2"));
     }
 
     TEST_CASE(Remove_RemovingLastInsertedItemOfTwo_LeavesOtherItemIntact)
     {
+        auto_release_ptr<Entity> dummy1(DummyEntityFactory::create("dummy1"));
+        auto_release_ptr<Entity> dummy2(DummyEntityFactory::create("dummy2"));
+        Entity* dummy1_ptr = dummy1.get();
+        Entity* dummy2_ptr = dummy2.get();
+
         EntityVector v;
-        v.insert(auto_release_ptr<Entity>(DummyEntityFactory::create("dummy1")));
-        v.insert(auto_release_ptr<Entity>(DummyEntityFactory::create("dummy2")));
+        v.insert(dummy1);
+        v.insert(dummy2);
 
-        Entity* entity1 = v.get(v.get_index("dummy1"));
-        Entity* entity2 = v.get(v.get_index("dummy2"));
-
-        v.remove(entity2);
+        v.remove(dummy2_ptr);
 
         ASSERT_EQ(1, v.size());
-        EXPECT_EQ(entity1, v.get(v.get_index("dummy1")));
+        EXPECT_EQ(dummy1_ptr, v.get_by_name("dummy1"));
+    }
+
+    TEST_CASE(Remove_RemovesEntityFromIndexes)
+    {
+        auto_release_ptr<Entity> dummy(DummyEntityFactory::create("dummy"));
+        const UniqueID dummy_id = dummy->get_uid();
+        Entity* dummy_ptr = dummy.get();
+
+        EntityVector v;
+        v.insert(dummy);
+
+        v.remove(dummy_ptr);
+
+        EXPECT_EQ(~size_t(0), v.get_index(dummy_id));
+        EXPECT_EQ(~size_t(0), v.get_index("dummy"));
+    }
+
+    TEST_CASE(GetIndex_GivenID_ReturnsIndex)
+    {
+        auto_release_ptr<Entity> dummy1(DummyEntityFactory::create("dummy1"));
+        auto_release_ptr<Entity> dummy2(DummyEntityFactory::create("dummy2"));
+        const UniqueID dummy2_id = dummy2->get_uid();
+
+        EntityVector v;
+        v.insert(dummy1);
+        v.insert(dummy2);
+
+        EXPECT_EQ(1, v.get_index(dummy2_id));
+    }
+
+    TEST_CASE(GetIndex_GivenName_ReturnsIndex)
+    {
+        EntityVector v;
+        v.insert(DummyEntityFactory::create("dummy1"));
+        v.insert(DummyEntityFactory::create("dummy2"));
+
+        EXPECT_EQ(1, v.get_index("dummy2"));
+    }
+
+    TEST_CASE(GetByIndex_GivenIndex_ReturnsEntity)
+    {
+        auto_release_ptr<Entity> dummy1(DummyEntityFactory::create("dummy1"));
+        auto_release_ptr<Entity> dummy2(DummyEntityFactory::create("dummy2"));
+        const Entity* dummy2_ptr = dummy2.get();
+
+        EntityVector v;
+        v.insert(dummy1);
+        v.insert(dummy2);
+
+        EXPECT_EQ(dummy2_ptr, v.get_by_index(1));
+    }
+
+    TEST_CASE(GetByUID_GivenID_ReturnsEntity)
+    {
+        auto_release_ptr<Entity> dummy1(DummyEntityFactory::create("dummy1"));
+        auto_release_ptr<Entity> dummy2(DummyEntityFactory::create("dummy2"));
+        const UniqueID dummy2_id = dummy2->get_uid();
+        const Entity* dummy2_ptr = dummy2.get();
+
+        EntityVector v;
+        v.insert(dummy1);
+        v.insert(dummy2);
+
+        EXPECT_EQ(dummy2_ptr, v.get_by_uid(dummy2_id));
+    }
+
+    TEST_CASE(GetByName_GivenName_ReturnsEntity)
+    {
+        auto_release_ptr<Entity> dummy1(DummyEntityFactory::create("dummy1"));
+        auto_release_ptr<Entity> dummy2(DummyEntityFactory::create("dummy2"));
+        const Entity* dummy2_ptr = dummy2.get();
+
+        EntityVector v;
+        v.insert(dummy1);
+        v.insert(dummy2);
+
+        EXPECT_EQ(dummy2_ptr, v.get_by_name("dummy2"));
     }
 }

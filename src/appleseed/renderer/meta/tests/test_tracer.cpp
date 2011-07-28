@@ -89,7 +89,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
         void create_assembly_instance()
         {
-            const Assembly* assembly = m_scene->assemblies().get("assembly");
+            const Assembly* assembly = m_scene->assemblies().get_by_name("assembly");
 
             m_scene->assembly_instances().insert(
                 AssemblyInstanceFactory::create(
@@ -114,14 +114,14 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             mesh_object->push_triangle(Triangle(2, 3, 0, 0, 0, 0, 0));
 
             auto_release_ptr<Object> object(mesh_object.release());
-            m_scene->assemblies().get("assembly")->objects().insert(object);
+            m_scene->assemblies().get_by_name("assembly")->objects().insert(object);
         }
 
         void create_plane_object_instance(const char* name, const Vector3d& position, const size_t material_index)
         {
-            const Assembly* assembly = m_scene->assemblies().get("assembly");
+            const Assembly* assembly = m_scene->assemblies().get_by_name("assembly");
             const size_t object_index = assembly->objects().get_index("plane");
-            const Object* object = assembly->objects().get(object_index);
+            const Object* object = assembly->objects().get_by_index(object_index);
             
             MaterialIndexArray material_indices;
             material_indices.push_back(material_index);
@@ -143,7 +143,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             const ColorValueArray color_values(3, &color[0]);
             const ColorValueArray alpha_values(1, &color[3]);
 
-            m_scene->assemblies().get("assembly")->colors().insert(
+            m_scene->assemblies().get_by_name("assembly")->colors().insert(
                 ColorEntityFactory::create(name, params, color_values, alpha_values));
         }
 
@@ -154,7 +154,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
             ConstantSurfaceShaderFactory factory;
             auto_release_ptr<SurfaceShader> surface_shader(factory.create(surface_shader_name, params));
-            m_scene->assemblies().get("assembly")->surface_shaders().insert(surface_shader);
+            m_scene->assemblies().get_by_name("assembly")->surface_shaders().insert(surface_shader);
         }
 
         size_t create_material(const char* material_name, const char* surface_shader_name)
@@ -163,7 +163,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             params.insert("surface_shader", surface_shader_name);
 
             auto_release_ptr<Material> material(MaterialFactory::create(material_name, params));
-            return m_scene->assemblies().get("assembly")->materials().insert(material);
+            return m_scene->assemblies().get_by_name("assembly")->materials().insert(material);
         }
 
         void create_opaque_material()

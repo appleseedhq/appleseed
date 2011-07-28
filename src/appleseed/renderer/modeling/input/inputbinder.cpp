@@ -498,10 +498,7 @@ void InputBinder::bind_color_to_input(
     const char*                     param_value,
     InputArray::iterator&           input)
 {
-    const size_t color_entity_index = colors.get_index(param_value);
-    assert(color_entity_index != ~size_t(0));
-
-    const ColorEntity* color_entity = colors.get(color_entity_index);
+    const ColorEntity* color_entity = colors.get_by_name(param_value);
     assert(color_entity);
 
     input.bind(new ColorSource(*color_entity));
@@ -516,16 +513,13 @@ void InputBinder::bind_texture_instance_to_input(
     const char*                     param_value,
     InputArray::iterator&           input)
 {
-    const size_t texture_instance_index = texture_instances.get_index(param_value);
-    assert(texture_instance_index != ~size_t(0));
-
-    const TextureInstance* texture_instance = texture_instances.get(texture_instance_index);
+    const TextureInstance* texture_instance = texture_instances.get_by_name(param_value);
     assert(texture_instance);
 
     const size_t texture_index = texture_instance->get_texture_index();
     assert(texture_index != ~size_t(0));
 
-    Texture* texture = textures.get(texture_index);
+    Texture* texture = textures.get_by_index(texture_index);
     assert(texture);
 
     try

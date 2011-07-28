@@ -141,8 +141,8 @@ class RENDERERDLL EntityMap
 
     // Return a given entity.
     // Return 0 if the requested entity does not exist.
-    Entity* get(const foundation::UniqueID id) const;
-    Entity* get(const char* name) const;
+    Entity* get_by_uid(const foundation::UniqueID id) const;
+    Entity* get_by_name(const char* name) const;
 
     // Return mutable begin and end entity iterators.
     iterator begin();
@@ -214,8 +214,8 @@ class TypedEntityMap
 
     // Return a given entity.
     // Return 0 if the requested entity does not exist.
-    T* get(const foundation::UniqueID id) const;
-    T* get(const char* name) const;
+    T* get_by_uid(const foundation::UniqueID id) const;
+    T* get_by_name(const char* name) const;
 
     // Return mutable begin and end entity iterators.
     iterator begin();
@@ -285,15 +285,15 @@ inline void TypedEntityMap<T>::insert(foundation::auto_release_ptr<T> entity)
 }
 
 template <typename T>
-inline T* TypedEntityMap<T>::get(const foundation::UniqueID id) const
+inline T* TypedEntityMap<T>::get_by_uid(const foundation::UniqueID id) const
 {
-    return static_cast<T*>(EntityMap::get(id));
+    return static_cast<T*>(EntityMap::get_by_uid(id));
 }
 
 template <typename T>
-inline T* TypedEntityMap<T>::get(const char* name) const
+inline T* TypedEntityMap<T>::get_by_name(const char* name) const
 {
-    return static_cast<T*>(EntityMap::get(name));
+    return static_cast<T*>(EntityMap::get_by_name(name));
 }
 
 template <typename T>

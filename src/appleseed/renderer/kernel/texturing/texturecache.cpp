@@ -162,11 +162,11 @@ void TextureCache::TileSwapper::load(const TileKey& key, TilePtr& tile) const
     const TextureContainer& textures =
         key.m_assembly_uid == ~UniqueID(0)
             ? m_scene.textures()
-            : m_scene.assemblies().get(key.m_assembly_uid)->textures();
+            : m_scene.assemblies().get_by_uid(key.m_assembly_uid)->textures();
 
     // Fetch the texture.
     assert(key.m_texture_index < textures.size());
-    Texture* texture = textures.get(key.m_texture_index);
+    Texture* texture = textures.get_by_index(key.m_texture_index);
 
 /*
     RENDERER_LOG_DEBUG(
@@ -204,11 +204,11 @@ void TextureCache::TileSwapper::unload(const TileKey& key, TilePtr& tile) const
     const TextureContainer& textures =
         key.m_assembly_uid == ~UniqueID(0)
             ? m_scene.textures()
-            : m_scene.assemblies().get(key.m_assembly_uid)->textures();
+            : m_scene.assemblies().get_by_uid(key.m_assembly_uid)->textures();
 
     // Fetch the texture.
     assert(key.m_texture_index < textures.size());
-    Texture* texture = textures.get(key.m_texture_index);
+    Texture* texture = textures.get_by_index(key.m_texture_index);
 
 /*
     RENDERER_LOG_DEBUG(

@@ -103,12 +103,12 @@ const T* get_required_entity(
     const std::string entity_name =
         params.get<std::string>(param_name.c_str());
 
-    const size_t entity_index = container.get_index(entity_name.c_str());
+    const T* entity = container.get_by_name(entity_name.c_str());
 
-    if (entity_index == ~size_t(0))
+    if (entity == 0)
         throw ExceptionUnknownEntity(entity_name.c_str());
 
-    return container.get(entity_index);
+    return entity;
 }
 
 // Retrieve an optional entity from a container.
@@ -126,12 +126,12 @@ const T* get_optional_entity(
     if (entity_name.empty())
         return 0;
 
-    const size_t entity_index = container.get_index(entity_name.c_str());
+    const T* entity = container.get_by_name(entity_name.c_str());
 
-    if (entity_index == ~size_t(0))
+    if (entity == 0)
         throw ExceptionUnknownEntity(entity_name.c_str());
 
-    return container.get(entity_index);
+    return entity;
 }
 
 }       // namespace renderer

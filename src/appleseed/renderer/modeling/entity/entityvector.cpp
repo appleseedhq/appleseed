@@ -41,10 +41,12 @@ namespace renderer
 struct EntityVector::Impl
 {
     typedef vector<Entity*> Storage;
-    typedef map<string, size_t> Index;
+    typedef map<UniqueID, size_t> IDIndex;
+    typedef map<string, size_t> NameIndex;
 
-    Storage m_storage;
-    Index   m_index;
+    Storage     m_storage;
+    IDIndex     m_id_index;
+    NameIndex   m_name_index;
 };
 
 
@@ -193,7 +195,8 @@ EntityVector::~EntityVector()
 void EntityVector::swap(EntityVector& rhs)
 {
     impl->m_storage.swap(rhs.impl->m_storage);
-    impl->m_index.swap(rhs.impl->m_index);
+    impl->m_id_index.swap(rhs.impl->m_id_index);
+    impl->m_name_index.swap(rhs.impl->m_name_index);
 }
 
 void EntityVector::clear()
@@ -202,7 +205,8 @@ void EntityVector::clear()
         (*i)->release();
 
     impl->m_storage.clear();
-    impl->m_index.clear();
+    impl->m_id_index.clear();
+    impl->m_name_index.clear();
 }
 
 size_t EntityVector::size() const
@@ -224,7 +228,8 @@ size_t EntityVector::insert(auto_release_ptr<Entity> entity)
     // Insert the entity into the container.
     const size_t entity_index = impl->m_storage.size();
     impl->m_storage.push_back(entity_ptr);
-    impl->m_index[entity_ptr->get_name()] = entity_index;
+    impl->m_id_index[entity_ptr->get_uid()] = entity_index;
+    impl->m_name_index[entity_ptr->get_name()] = entity_index;
 
     return entity_index;
 }
@@ -234,11 +239,14 @@ void EntityVector::remove(Entity* entity)
     assert(entity);
 
     // Find the entity to remove in the vector.
-    const Impl::Index::iterator it = impl->m_index.find(entity->get_name());
-    assert(it != impl->m_index.end());
+    const Impl::IDIndex::iterator id_it = impl->m_id_index.find(entity->get_uid());
+    const Impl::NameIndex::iterator name_it = impl->m_name_index.find(entity->get_name());
+    assert(id_it != impl->m_id_index.end());
+    assert(name_it != impl->m_name_index.end());
+    assert(id_it->second == name_it->second);
 
     // Get the index of the entity.
-    const size_t index = it->second;
+    const size_t index = id_it->second;
     assert(impl->m_storage[index] == entity);
 
     // Replace the entity to remove by the last entity of the vector.
@@ -247,28 +255,48 @@ void EntityVector::remove(Entity* entity)
     {
         Entity* last_entity = impl->m_storage[last_index];
         impl->m_storage[index] = last_entity;
-        impl->m_index[last_entity->get_name()] = index;
+        impl->m_id_index[last_entity->get_uid()] = index;
+        impl->m_name_index[last_entity->get_name()] = index;
     }
 
     // Remove the entity from the vector.
     impl->m_storage.resize(impl->m_storage.size() - 1);
-    impl->m_index.erase(it);
+    impl->m_id_index.erase(id_it);
+    impl->m_name_index.erase(name_it);
 
     // Delete the entity.
     entity->release();
 }
 
+size_t EntityVector::get_index(const UniqueID id) const
+{
+    const Impl::IDIndex::iterator it = impl->m_id_index.find(id);
+    return it == impl->m_id_index.end() ? ~size_t(0) : it->second;
+}
+
 size_t EntityVector::get_index(const char* name) const
 {
     assert(name);
-    const Impl::Index::iterator it = impl->m_index.find(name);
-    return it == impl->m_index.end() ? ~size_t(0) : it->second;
+    const Impl::NameIndex::iterator it = impl->m_name_index.find(name);
+    return it == impl->m_name_index.end() ? ~size_t(0) : it->second;
 }
 
-Entity* EntityVector::get(const size_t index) const
+Entity* EntityVector::get_by_index(const size_t index) const
 {
     assert(index < impl->m_storage.size());
     return impl->m_storage[index];
+}
+
+Entity* EntityVector::get_by_uid(const UniqueID id) const
+{
+    const size_t index = get_index(id);
+    return index == ~size_t(0) ? 0 : get_by_index(index);
+}
+
+Entity* EntityVector::get_by_name(const char* name) const
+{
+    const size_t index = get_index(name);
+    return index == ~size_t(0) ? 0 : get_by_index(index);
 }
 
 EntityVector::iterator EntityVector::begin()

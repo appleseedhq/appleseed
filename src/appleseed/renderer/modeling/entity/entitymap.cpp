@@ -241,13 +241,13 @@ void EntityMap::remove(const UniqueID id)
     delete it->second;
 }
 
-Entity* EntityMap::get(const UniqueID id) const
+Entity* EntityMap::get_by_uid(const UniqueID id) const
 {
     const Impl::Storage::iterator it = impl->m_storage.find(id);
     return it == impl->m_storage.end() ? 0 : it->second;
 }
 
-Entity* EntityMap::get(const char* name) const
+Entity* EntityMap::get_by_name(const char* name) const
 {
     assert(name);
     const Impl::Index::iterator it = impl->m_index.find(name);

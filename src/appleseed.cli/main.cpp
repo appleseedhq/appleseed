@@ -421,7 +421,7 @@ namespace
 
         // Retrieve the configuration.
         const Configuration* configuration =
-            project->configurations().get(config_name.c_str());
+            project->configurations().get_by_name(config_name.c_str());
         if (configuration == 0)
         {
             RENDERER_LOG_ERROR(

@@ -77,14 +77,12 @@ namespace
         {
             m_env_edf = 0;
 
-            const Scene& scene = *project.get_scene();
-
             if (!m_env_edf_name.empty())
             {
-                const size_t env_edf_index =
-                    scene.environment_edfs().get_index(m_env_edf_name.c_str());
+                m_env_edf =
+                    project.get_scene()->environment_edfs().get_by_name(m_env_edf_name.c_str());
 
-                if (env_edf_index == ~size_t(0))
+                if (m_env_edf == 0)
                 {
                     RENDERER_LOG_ERROR(
                         "while preparing environment shader \"%s\": "
@@ -92,10 +90,6 @@ namespace
                         "the environment will be transparent black",
                         get_name(),
                         m_env_edf_name.c_str());
-                }
-                else
-                {
-                    m_env_edf = scene.environment_edfs().get(env_edf_index);
                 }
             }
         }

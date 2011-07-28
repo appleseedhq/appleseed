@@ -200,7 +200,7 @@ void AOVoxelTree::build(
                 assembly_instance.get_transform() * object_instance.get_transform();
 
             // Retrieve the object.
-            Object* object = assembly.objects().get(object_instance.get_object_index());
+            Object* object = assembly.objects().get_by_index(object_instance.get_object_index());
             assert(object);
 
             // Retrieve the region kit of the object.

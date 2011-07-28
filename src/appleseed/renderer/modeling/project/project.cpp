@@ -163,7 +163,7 @@ void Project::add_base_configurations()
 
 void Project::add_default_configuration(const char* name, const char* base_name)
 {
-    Configuration* base_configuration = impl->m_configurations.get(base_name);
+    Configuration* base_configuration = impl->m_configurations.get_by_name(base_name);
     assert(base_configuration);
 
     auto_release_ptr<Configuration> configuration = ConfigurationFactory::create(name);

@@ -50,4 +50,31 @@ TEST_SUITE(Renderer_Modeling_Entity_EntityMap)
         EXPECT_TRUE(m1.empty());
         EXPECT_FALSE(m2.empty());
     }
+
+    TEST_CASE(GetByUID_GivenID_ReturnsEntity)
+    {
+        auto_release_ptr<Entity> dummy1(DummyEntityFactory::create("dummy1"));
+        auto_release_ptr<Entity> dummy2(DummyEntityFactory::create("dummy2"));
+        const UniqueID dummy2_id = dummy2->get_uid();
+        const Entity* dummy2_ptr = dummy2.get();
+
+        EntityMap m;
+        m.insert(dummy1);
+        m.insert(dummy2);
+
+        EXPECT_EQ(dummy2_ptr, m.get_by_uid(dummy2_id));
+    }
+
+    TEST_CASE(GetByName_GivenName_ReturnsEntity)
+    {
+        auto_release_ptr<Entity> dummy1(DummyEntityFactory::create("dummy1"));
+        auto_release_ptr<Entity> dummy2(DummyEntityFactory::create("dummy2"));
+        const Entity* dummy2_ptr = dummy2.get();
+
+        EntityMap m;
+        m.insert(dummy1);
+        m.insert(dummy2);
+
+        EXPECT_EQ(dummy2_ptr, m.get_by_name("dummy2"));
+    }
 }

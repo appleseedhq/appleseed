@@ -350,7 +350,7 @@ namespace
             const TextureInstance&  texture_instance,
             const TextureContainer& textures)
         {
-            const Texture* texture = textures.get(texture_instance.get_texture_index());
+            const Texture* texture = textures.get_by_index(texture_instance.get_texture_index());
 
             if (texture == 0)
                 return;
@@ -457,7 +457,7 @@ namespace
         {
             for (size_t i = 0; i < objects.size(); ++i)
             {
-                const Object* object = objects.get(i);
+                const Object* object = objects.get_by_index(i);
                 assert(object);
 
                 // Only consider mesh objects.
@@ -487,7 +487,7 @@ namespace
                 assert(!object_indices.empty());
 
                 // Retrieve the common base name of this set of mesh objects.
-                ParamArray params = objects.get(object_indices[0])->get_parameters();
+                ParamArray params = objects.get_by_index(object_indices[0])->get_parameters();
                 const string common_base_name = params.get<string>("__common_base_name");
                 params.strings().remove("__common_base_name");
 
@@ -514,7 +514,7 @@ namespace
         {
             for (const_each<ObjectIndices> i = objects_without_geom; i; ++i)
             {
-                const Object* object = objects.get(*i);
+                const Object* object = objects.get_by_index(*i);
                 assert(object);
 
                 // Generate a filename for this mesh object.
@@ -570,7 +570,7 @@ namespace
             const ObjectInstance&   object_instance,
             const Assembly&         assembly)
         {
-            const Object* object = assembly.objects().get(object_instance.get_object_index());
+            const Object* object = assembly.objects().get_by_index(object_instance.get_object_index());
 
             if (object == 0)
                 return;
@@ -586,7 +586,7 @@ namespace
             const MaterialIndexArray& material_indices = object_instance.get_material_indices();
             for (size_t i = 0; i < material_indices.size(); ++i)
             {
-                const Material* material = assembly.materials().get(material_indices[i]);
+                const Material* material = assembly.materials().get_by_index(material_indices[i]);
                 assert(material);
                 write_assign_material(i, material->get_name());
             }

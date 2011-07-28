@@ -1652,7 +1652,7 @@ namespace
                 m_object_instance =
                     ObjectInstanceFactory::create(
                         m_name.c_str(),
-                        *m_objects->get(object_index),
+                        *m_objects->get_by_index(object_index),
                         object_index,
                         m_transform,
                         m_material_indices);
@@ -2017,7 +2017,7 @@ namespace
         virtual void end_element()
         {
             assert(m_assemblies);
-            const Assembly* assembly = m_assemblies->get(m_assembly.c_str());
+            const Assembly* assembly = m_assemblies->get_by_name(m_assembly.c_str());
 
             if (assembly)
             {
@@ -2413,7 +2413,7 @@ namespace
             if (!m_base_name.empty())
             {
                 const Configuration* base =
-                    m_project->configurations().get(m_base_name.c_str());
+                    m_project->configurations().get_by_name(m_base_name.c_str());
 
                 if (base)
                 {
@@ -2853,12 +2853,12 @@ void ProjectFileReader::validate_project(
     }
 
     // Make sure the project contains the required configurations.
-    if (project.configurations().get("final") == 0)
+    if (project.configurations().get_by_name("final") == 0)
     {
         RENDERER_LOG_ERROR("the project must define a \"final\" configuration");
         event_counters.signal_error();
     }
-    if (project.configurations().get("interactive") == 0)
+    if (project.configurations().get_by_name("interactive") == 0)
     {
         RENDERER_LOG_ERROR("the project must define an \"interactive\" configuration");
         event_counters.signal_error();

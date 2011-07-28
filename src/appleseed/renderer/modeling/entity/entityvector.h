@@ -142,10 +142,14 @@ class RENDERERDLL EntityVector
 
     // Return the index of a given entity in the container.
     // Return ~size_t(0) if the requested entity does not exist.
+    size_t get_index(const foundation::UniqueID id) const;
     size_t get_index(const char* name) const;
 
     // Return a given entity.
-    Entity* get(const size_t index) const;
+    // Return 0 if the requested entity does not exist.
+    Entity* get_by_index(const size_t index) const;
+    Entity* get_by_uid(const foundation::UniqueID id) const;
+    Entity* get_by_name(const char* name) const;
 
     // Return mutable begin and end entity iterators.
     iterator begin();
@@ -216,7 +220,10 @@ class TypedEntityVector
     size_t insert(foundation::auto_release_ptr<T> entity);
 
     // Return a given entity.
-    T* get(const size_t index) const;
+    // Return 0 if the requested entity does not exist.
+    T* get_by_index(const size_t index) const;
+    T* get_by_uid(const foundation::UniqueID id) const;
+    T* get_by_name(const char* name) const;
 
     // Return mutable begin and end entity iterators.
     iterator begin();
@@ -286,9 +293,21 @@ inline size_t TypedEntityVector<T>::insert(foundation::auto_release_ptr<T> entit
 }
 
 template <typename T>
-inline T* TypedEntityVector<T>::get(const size_t index) const
+inline T* TypedEntityVector<T>::get_by_index(const size_t index) const
 {
-    return reinterpret_cast<T*>(EntityVector::get(index));
+    return reinterpret_cast<T*>(EntityVector::get_by_index(index));
+}
+
+template <typename T>
+inline T* TypedEntityVector<T>::get_by_uid(const foundation::UniqueID id) const
+{
+    return reinterpret_cast<T*>(EntityVector::get_by_uid(id));
+}
+
+template <typename T>
+inline T* TypedEntityVector<T>::get_by_name(const char* name) const
+{
+    return reinterpret_cast<T*>(EntityVector::get_by_name(name));
 }
 
 template <typename T>

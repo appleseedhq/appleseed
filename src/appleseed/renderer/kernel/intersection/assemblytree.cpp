@@ -233,7 +233,7 @@ void AssemblyTree::create_child_trees()
     // Create one child tree (region tree or triangle tree) per assembly.
     for (const_each<vector<UniqueID> > i = assemblies; i; ++i)
     {
-        const Assembly* assembly = m_scene.assemblies().get(*i);
+        const Assembly* assembly = m_scene.assemblies().get_by_uid(*i);
         assert(assembly);
 
         if (assembly->is_flushable())
@@ -291,12 +291,12 @@ void AssemblyTree::collect_regions(const Assembly& assembly, RegionInfoVector& r
     {
         // Retrieve the object instance and its transformation.
         const ObjectInstance* object_instance =
-            object_instances.get(object_instance_index);
+            object_instances.get_by_index(object_instance_index);
         assert(object_instance);
         const Transformd& transform = object_instance->get_transform();
 
         // Retrieve the object.
-        Object* object = assembly.objects().get(object_instance->get_object_index());
+        Object* object = assembly.objects().get_by_index(object_instance->get_object_index());
         assert(object);
 
         // Retrieve the region kit of the object.
@@ -432,7 +432,7 @@ bool AssemblyLeafVisitor::visit(
 
     // Retrieve the assembly instance.
     const AssemblyInstance* assembly_instance =
-        m_tree.m_scene.assembly_instances().get(items[begin]);
+        m_tree.m_scene.assembly_instances().get_by_uid(items[begin]);
     assert(assembly_instance);
 
     ShadingPoint result;
@@ -547,7 +547,7 @@ bool AssemblyLeafProbeVisitor::visit(
 
     // Retrieve the assembly instance.
     const AssemblyInstance* assembly_instance =
-        m_tree.m_scene.assembly_instances().get(items[begin]);
+        m_tree.m_scene.assembly_instances().get_by_uid(items[begin]);
     assert(assembly_instance);
 
     ShadingRay::RayType local_ray;

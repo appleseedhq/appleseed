@@ -526,7 +526,7 @@ void MainWindow::start_rendering(const bool interactive)
             : "final";
 
     const Configuration* configuration =
-        m_project_manager.get_project()->configurations().get(configuration_name);
+        m_project_manager.get_project()->configurations().get_by_name(configuration_name);
 
     ParamArray params;
     if (configuration->get_base())

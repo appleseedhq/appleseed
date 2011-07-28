@@ -309,7 +309,7 @@ namespace
                         "exitance");
 
                 Texture* texture =
-                    scene.textures().get(texture_instance->get_texture_index());
+                    scene.textures().get_by_index(texture_instance->get_texture_index());
 
                 const CanvasProperties& texture_props = texture->properties();
 

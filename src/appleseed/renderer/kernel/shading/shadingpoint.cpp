@@ -57,18 +57,18 @@ void ShadingPoint::fetch_source_geometry() const
     assert(!(m_members & HasSourceGeometry));
 
     // Retrieve the assembly instance.
-    m_assembly_instance = m_scene->assembly_instances().get(m_asm_instance_uid);
+    m_assembly_instance = m_scene->assembly_instances().get_by_uid(m_asm_instance_uid);
     assert(m_assembly_instance);
 
     // Retrieve the assembly.
     m_assembly = &m_assembly_instance->get_assembly();
 
     // Retrieve the object instance.
-    m_object_instance = m_assembly->object_instances().get(m_object_instance_index);
+    m_object_instance = m_assembly->object_instances().get_by_index(m_object_instance_index);
     assert(m_object_instance);
 
     // Retrieve the object.
-    m_object = m_assembly->objects().get(m_object_instance->get_object_index());
+    m_object = m_assembly->objects().get_by_index(m_object_instance->get_object_index());
     assert(m_object);
 
     // Retrieve the region kit of the object.

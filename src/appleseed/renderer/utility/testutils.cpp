@@ -78,7 +78,7 @@ Project& TestFixtureBaseProjectHolder::get_project()
 TestFixtureBase::TestFixtureBase()
   : m_project(get_project())
   , m_scene(*get_project().get_scene())
-  , m_assembly(*get_project().get_scene()->assemblies().get("assembly"))
+  , m_assembly(*get_project().get_scene()->assemblies().get_by_name("assembly"))
 {
 }
 

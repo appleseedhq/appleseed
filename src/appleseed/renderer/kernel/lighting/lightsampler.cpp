@@ -93,7 +93,7 @@ namespace
         {
             // Retrieve the material.
             const size_t material_index = material_indices[i];
-            const Material* material = materials.get(material_index);
+            const Material* material = materials.get_by_index(material_index);
             assert(material);
 
             if (material->get_edf())
@@ -183,7 +183,7 @@ void LightSampler::collect_emitting_triangles(
     for (size_t object_instance_index = 0; object_instance_index < object_instance_count; ++object_instance_index)
     {
         // Retrieve the object instance.
-        const ObjectInstance* object_instance = assembly.object_instances().get(object_instance_index);
+        const ObjectInstance* object_instance = assembly.object_instances().get_by_index(object_instance_index);
 
         // Retrieve the material indices of the object instance.
         const MaterialIndexArray& material_indices = object_instance->get_material_indices();
@@ -198,7 +198,7 @@ void LightSampler::collect_emitting_triangles(
         const Transformd global_transform = assembly_instance_transform * object_instance_transform;
 
         // Retrieve the object.
-        Object* object = assembly.objects().get(object_instance->get_object_index());
+        Object* object = assembly.objects().get_by_index(object_instance->get_object_index());
         assert(object);
 
         // Retrieve the region kit of the object.
@@ -228,7 +228,7 @@ void LightSampler::collect_emitting_triangles(
 
                 // Fetch the material assigned to this triangle.
                 const size_t material_index = material_indices[pa_index];
-                const Material* material = assembly.materials().get(material_index);
+                const Material* material = assembly.materials().get_by_index(material_index);
                 assert(material);
 
                 // Skip triangles that don't emit light.

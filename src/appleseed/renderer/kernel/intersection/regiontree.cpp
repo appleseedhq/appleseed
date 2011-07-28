@@ -342,13 +342,13 @@ namespace
             {
                 // Retrieve the object instance and its transformation.
                 const ObjectInstance* object_instance =
-                    assembly.object_instances().get(object_instance_index);
+                    assembly.object_instances().get_by_index(object_instance_index);
                 assert(object_instance);
                 const Transformd& transform = object_instance->get_transform();
 
                 // Retrieve the object.
                 Object* object =
-                    assembly.objects().get(object_instance->get_object_index());
+                    assembly.objects().get_by_index(object_instance->get_object_index());
                 assert(object);
 
                 // Retrieve the region kit of the object.
