@@ -37,6 +37,9 @@
 #include "foundation/math/basis.h"
 
 // Forward declarations.
+namespace renderer      { class Assembly; }
+namespace renderer      { class InputEvaluator; }
+namespace renderer      { class InputParams; }
 namespace renderer      { class Project; }
 
 namespace renderer
@@ -72,11 +75,20 @@ class RENDERERDLL BSDF
     // This method is called once before rendering each frame.
     virtual void on_frame_begin(
         const Project&              project,
+        const Assembly&             assembly,
         const void*                 data);                      // input values
 
     // This method is called once after rendering each frame.
     virtual void on_frame_end(
-        const Project&              project);
+        const Project&              project,
+        const Assembly&             assembly);
+
+    // Evaluate the BSDF inputs. Input values are stored int the input evaluator.
+    // This method is called once per shading point and pair of incoming/outgoing
+    // directions.
+    virtual void evaluate_inputs(
+        InputEvaluator&             input_evaluator,
+        const InputParams&          input_params) const;
 
     // Scattering modes.
     enum Mode
@@ -87,7 +99,8 @@ class RENDERERDLL BSDF
         Specular    = 1 << 2        // specular reflection
     };
 
-    // Probability density of the Dirac Delta.
+    // Assign a particular (negative) value to the probability density of
+    // the Dirac Delta in order to detect incorrect usages.
     static const double DiracDelta;
 
     // Given an outgoing direction, sample the BSDF and compute the incoming

@@ -42,6 +42,7 @@
 #include "foundation/utility/containers/dictionaryarray.h"
 
 // Forward declarations.
+namespace renderer  { class Assembly; }
 namespace renderer  { class Project; }
 
 using namespace foundation;
@@ -105,6 +106,7 @@ namespace
 
         virtual void on_frame_begin(
             const Project&      project,
+            const Assembly&     assembly,
             const void*         data)
         {
             const InputValues* values = static_cast<const InputValues*>(data);
@@ -589,9 +591,7 @@ auto_release_ptr<BSDF> AshikhminBRDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return
-        auto_release_ptr<BSDF>(
-            new AshikhminBRDF(name, params));
+    return auto_release_ptr<BSDF>(new AshikhminBRDF(name, params));
 }
 
 }   // namespace renderer

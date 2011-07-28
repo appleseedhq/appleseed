@@ -50,6 +50,9 @@
 #include "boost/filesystem/convenience.hpp"
 #include "boost/filesystem/path.hpp"
 
+// Forward declarations.
+namespace renderer      { class Assembly; }
+
 using namespace foundation;
 using namespace std;
 
@@ -88,7 +91,9 @@ namespace
             return Model;
         }
 
-        virtual void on_frame_begin(const Project& project)
+        virtual void on_frame_begin(
+            const Project&          project,
+            const Assembly&         assembly)
         {
             const Scene& scene = *project.get_scene();
 

@@ -71,7 +71,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
         }
     };
 
-    TEST_CASE_F(ComputeImageBasedLighting_GivenSpecularBRDFAndUniformWhiteEnrironmentEDF_ReturnsOne, Fixture)
+    TEST_CASE_F(ComputeImageBasedLighting_GivenSpecularBRDFAndUniformWhiteEnrironmentEDF, Fixture)
     {
         create_color_entity("gray", Spectrum(0.5f));
         create_color_entity("white", Spectrum(1.0f));
@@ -93,12 +93,12 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
         bind_inputs();
 
         InputEvaluator input_evaluator(m_texture_cache);
-        const void* brdf_data =
-            input_evaluator.evaluate(
-                specular_brdf_ref.get_inputs(),
-                InputParams());
+        specular_brdf_ref.evaluate_inputs(
+            input_evaluator,
+            InputParams());
+        const void* brdf_data = input_evaluator.data();
 
-        specular_brdf_ref.on_frame_begin(m_project, brdf_data);
+        specular_brdf_ref.on_frame_begin(m_project, m_assembly, brdf_data);
         env_edf_ref.on_frame_begin(m_project);
 
         Spectrum radiance;
@@ -117,7 +117,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
             radiance);
 
         env_edf_ref.on_frame_end(m_project);
-        specular_brdf_ref.on_frame_end(m_project);
+        specular_brdf_ref.on_frame_end(m_project, m_assembly);
 
         EXPECT_EQ(Spectrum(0.5f), radiance);
     }

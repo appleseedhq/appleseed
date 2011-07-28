@@ -53,12 +53,14 @@ EDF::EDF(
 
 void EDF::on_frame_begin(
     const Project&      project,
+    const Assembly&     assembly,
     const void*         data)
 {
 }
 
 void EDF::on_frame_end(
-    const Project&      project)
+    const Project&      project,
+    const Assembly&     assembly)
 {
 }
 

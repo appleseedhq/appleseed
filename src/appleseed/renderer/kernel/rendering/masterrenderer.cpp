@@ -367,93 +367,108 @@ bool MasterRenderer::bind_inputs() const
 
 namespace
 {
+
     //
-    // Invoke on_frame_begin() / on_frame_end() on all entities of a collection.
+    // Invoke on_frame_begin() / on_frame_end() on entity collections.
     //
 
     template <typename EntityCollection>
-    void invoke_on_frame_begin_collection(
-        EntityCollection&       entities,
-        const Project&          project)
+    void invoke_on_frame_begin(
+        const Project&          project,
+        EntityCollection&       entities)
     {
         for (each<EntityCollection> i = entities; i; ++i)
-            invoke_on_frame_begin(*i, project);
+            i->on_frame_begin(project);
     }
 
     template <typename EntityCollection>
-    void invoke_on_frame_begin_collection(
-        EntityCollection&       entities,
+    void invoke_on_frame_begin(
         const Project&          project,
+        const Assembly&         assembly,
+        EntityCollection&       entities)
+    {
+        for (each<EntityCollection> i = entities; i; ++i)
+            i->on_frame_begin(project, assembly);
+    }
+
+    template <typename EntityCollection>
+    void invoke_on_frame_begin(
+        const Project&          project,
+        EntityCollection&       entities,
         UniformInputEvaluator&  input_evaluator)
     {
         for (each<EntityCollection> i = entities; i; ++i)
-            invoke_on_frame_begin(*i, project, input_evaluator);
+        {
+            const void* data = input_evaluator.evaluate(i->get_inputs());
+            i->on_frame_begin(project, data);
+        }
     }
 
     template <typename EntityCollection>
-    void invoke_on_frame_end_collection(
-        EntityCollection&       entities,
-        const Project&          project)
-    {
-        for (each<EntityCollection> i = entities; i; ++i)
-            invoke_on_frame_end(*i, project);
-    }
-
-    //
-    // Invoke on_frame_begin() / on_frame_end() on a single entity.
-    //
-
-    template <typename Entity>
     void invoke_on_frame_begin(
-        Entity&                 entity,
-        const Project&          project)
-    {
-        entity.on_frame_begin(project);
-    }
-
-    template <typename Entity>
-    void invoke_on_frame_begin(
-        Entity&                 entity,
         const Project&          project,
+        const Assembly&         assembly,
+        EntityCollection&       entities,
         UniformInputEvaluator&  input_evaluator)
     {
-        const void* data =
-            input_evaluator.evaluate(entity.get_inputs());
-
-        entity.on_frame_begin(project, data);
+        for (each<EntityCollection> i = entities; i; ++i)
+        {
+            const void* data = input_evaluator.evaluate(i->get_inputs());
+            i->on_frame_begin(project, assembly, data);
+        }
     }
 
-    template <typename Entity>
+    template <typename EntityCollection>
     void invoke_on_frame_end(
-        Entity&                 entity,
-        const Project&          project)
+        const Project&          project,
+        EntityCollection&       entities)
     {
-        entity.on_frame_end(project);
+        for (each<EntityCollection> i = entities; i; ++i)
+            i->on_frame_end(project);
+    }
+
+    template <typename EntityCollection>
+    void invoke_on_frame_end(
+        const Project&          project,
+        const Assembly&         assembly,
+        EntityCollection&       entities)
+    {
+        for (each<EntityCollection> i = entities; i; ++i)
+            i->on_frame_end(project, assembly);
     }
 
     //
-    // Invoke on_frame_begin() / on_frame_end() on all entities of an assembly.
+    // Invoke on_frame_begin() / on_frame_end() on assemblies.
     //
 
     template <>
     void invoke_on_frame_begin(
-        Assembly&               assembly,
         const Project&          project,
-        UniformInputEvaluator&  input_evaluator)
+        AssemblyContainer&      assemblies)
     {
-        invoke_on_frame_begin_collection(assembly.surface_shaders(), project);
-        invoke_on_frame_begin_collection(assembly.bsdfs(), project, input_evaluator);
-        invoke_on_frame_begin_collection(assembly.edfs(), project, input_evaluator);
+        UniformInputEvaluator input_evaluator;
+
+        for (each<AssemblyContainer> i = assemblies; i; ++i)
+        {
+            const Assembly& assembly = *i;
+            invoke_on_frame_begin(project, assembly, assembly.surface_shaders());
+            invoke_on_frame_begin(project, assembly, assembly.bsdfs(), input_evaluator);
+            invoke_on_frame_begin(project, assembly, assembly.edfs(), input_evaluator);
+        }
     }
 
     template <>
     void invoke_on_frame_end(
-        Assembly&               assembly,
-        const Project&          project)
+        const Project&          project,
+        AssemblyContainer&      assemblies)
     {
-        invoke_on_frame_end_collection(assembly.edfs(), project);
-        invoke_on_frame_end_collection(assembly.bsdfs(), project);
-        invoke_on_frame_end_collection(assembly.surface_shaders(), project);
+        for (each<AssemblyContainer> i = assemblies; i; ++i)
+        {
+            const Assembly& assembly = *i;
+            invoke_on_frame_end(project, assembly, assembly.edfs());
+            invoke_on_frame_end(project, assembly, assembly.bsdfs());
+            invoke_on_frame_end(project, assembly, assembly.surface_shaders());
+        }
     }
 }
 
@@ -467,20 +482,18 @@ void MasterRenderer::on_frame_begin() const
     Intersector intersector(m_project.get_trace_context(), false);
     camera->on_frame_begin(m_project, intersector);
 
-    invoke_on_frame_begin_collection(scene.environment_edfs(), m_project);
-    invoke_on_frame_begin_collection(scene.environment_shaders(), m_project);
-
-    UniformInputEvaluator input_evaluator;
-    invoke_on_frame_begin_collection(scene.assemblies(), m_project, input_evaluator);
+    invoke_on_frame_begin(m_project, scene.environment_edfs());
+    invoke_on_frame_begin(m_project, scene.environment_shaders());
+    invoke_on_frame_begin(m_project, scene.assemblies());
 }
 
 void MasterRenderer::on_frame_end() const
 {
     const Scene& scene = *m_project.get_scene();
 
-    invoke_on_frame_end_collection(scene.assemblies(), m_project);
-    invoke_on_frame_end_collection(scene.environment_shaders(), m_project);
-    invoke_on_frame_end_collection(scene.environment_edfs(), m_project);
+    invoke_on_frame_end(m_project, scene.assemblies());
+    invoke_on_frame_end(m_project, scene.environment_shaders());
+    invoke_on_frame_end(m_project, scene.environment_edfs());
 
     Camera* camera = scene.get_camera();
     assert(camera);

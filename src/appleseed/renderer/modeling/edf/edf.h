@@ -37,6 +37,7 @@
 #include "foundation/math/basis.h"
 
 // Forward declarations.
+namespace renderer      { class Assembly; }
 namespace renderer      { class Project; }
 
 namespace renderer
@@ -65,11 +66,13 @@ class RENDERERDLL EDF
     // This method is called once before rendering each frame.
     virtual void on_frame_begin(
         const Project&              project,
+        const Assembly&             assembly,
         const void*                 data);                      // input values
 
     // This method is called once after rendering each frame.
     virtual void on_frame_end(
-        const Project&              project);
+        const Project&              project,
+        const Assembly&             assembly);
 
     // Sample the EDF and compute the emission direction, the probability
     // density with which it was chosen and the value of the EDF for this

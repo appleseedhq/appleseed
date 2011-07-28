@@ -41,6 +41,7 @@
 #include "foundation/utility/containers/dictionaryarray.h"
 
 // Forward declarations.
+namespace renderer  { class Assembly; }
 namespace renderer  { class Project; }
 
 using namespace foundation;
@@ -82,6 +83,7 @@ namespace
 
         virtual void on_frame_begin(
             const Project&      project,
+            const Assembly&     assembly,
             const void*         data)
         {
             if (m_inputs.source("reflectance")->is_uniform())
@@ -234,9 +236,7 @@ auto_release_ptr<BSDF> LambertianBRDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return
-        auto_release_ptr<BSDF>(
-            new LambertianBRDF(name, params));
+    return auto_release_ptr<BSDF>(new LambertianBRDF(name, params));
 }
 
 }   // namespace renderer

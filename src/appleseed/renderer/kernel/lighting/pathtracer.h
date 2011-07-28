@@ -213,10 +213,10 @@ size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
 
         // Evaluate the input values of the BSDF.
         InputEvaluator bsdf_input_evaluator(texture_cache);
-        const void* bsdf_data =
-            bsdf_input_evaluator.evaluate(
-                bsdf->get_inputs(),
-                shading_point_ptr->get_input_params());
+        bsdf->evaluate_inputs(
+            bsdf_input_evaluator,
+            shading_point_ptr->get_input_params());
+        const void* bsdf_data = bsdf_input_evaluator.data();
 
         // Compute the outgoing direction.
         const foundation::Vector3d outgoing = normalize(-ray.m_dir);

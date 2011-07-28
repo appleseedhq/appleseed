@@ -29,6 +29,9 @@
 // Interface header.
 #include "bsdf.h"
 
+// appleseed.renderer headers.
+#include "renderer/modeling/input/inputevaluator.h"
+
 using namespace foundation;
 
 namespace renderer
@@ -38,7 +41,6 @@ namespace renderer
 // BSDF class implementation.
 //
 
-// Set the Dirac Delta probability density to a negative value to detect incorrect usages.
 const double BSDF::DiracDelta = -1.0;
 
 namespace
@@ -56,13 +58,22 @@ BSDF::BSDF(
 
 void BSDF::on_frame_begin(
     const Project&      project,
+    const Assembly&     assembly,
     const void*         data)
 {
 }
 
 void BSDF::on_frame_end(
-    const Project&      project)
+    const Project&      project,
+    const Assembly&     assembly)
 {
+}
+
+void BSDF::evaluate_inputs(
+    InputEvaluator&     input_evaluator,
+    const InputParams&  input_params) const
+{
+    input_evaluator.evaluate(get_inputs(), input_params);
 }
 
 }   // namespace renderer

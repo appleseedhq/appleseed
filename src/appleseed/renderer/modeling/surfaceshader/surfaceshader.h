@@ -34,6 +34,7 @@
 #include "renderer/modeling/entity/connectableentity.h"
 
 // Forward declarations.
+namespace renderer      { class Assembly; }
 namespace renderer      { class Project; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
@@ -60,10 +61,14 @@ class RENDERERDLL SurfaceShader
     virtual const char* get_model() const = 0;
 
     // This method is called once before rendering each frame.
-    virtual void on_frame_begin(const Project& project);
+    virtual void on_frame_begin(
+        const Project&          project,
+        const Assembly&         assembly);
 
     // This method is called once after rendering each frame.
-    virtual void on_frame_end(const Project& project);
+    virtual void on_frame_end(
+        const Project&          project,
+        const Assembly&         assembly);
 
     // Evaluate the shading at a given point.
     virtual void evaluate(
