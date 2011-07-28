@@ -30,6 +30,7 @@
 #include "phongbrdf.h"
 
 // appleseed.renderer headers.
+#include "renderer/modeling/bsdf/brdfwrapper.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
@@ -53,11 +54,11 @@ namespace
 
     const char* Model = "phong_brdf";
 
-    class PhongBRDF
+    class PhongBRDFImpl
       : public BSDF
     {
       public:
-        PhongBRDF(
+        PhongBRDFImpl(
             const char*         name,
             const ParamArray&   params)
           : BSDF(name, params)
@@ -119,6 +120,8 @@ namespace
         {
         };
     };
+
+    typedef BRDFWrapper<PhongBRDFImpl> PhongBRDF;
 }
 
 
@@ -146,9 +149,7 @@ auto_release_ptr<BSDF> PhongBRDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return
-        auto_release_ptr<BSDF>(
-            new PhongBRDF(name, params));
+    return auto_release_ptr<BSDF>(new PhongBRDF(name, params));
 }
 
 }   // namespace renderer
