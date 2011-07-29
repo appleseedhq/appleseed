@@ -39,7 +39,7 @@
 #include "foundation/core/exceptions/exceptionnotimplemented.h"
 #include "foundation/math/sampling.h"
 #include "foundation/math/transform.h"
-#include "foundation/utility/containers/dictionaryarray.h"
+#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/string.h"
 
 using namespace foundation;

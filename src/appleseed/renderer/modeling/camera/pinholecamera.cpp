@@ -34,7 +34,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
-#include "foundation/utility/containers/dictionaryarray.h"
+#include "foundation/utility/containers/specializedarrays.h"
 
 // Forward declarations.
 namespace renderer  { class Project; }

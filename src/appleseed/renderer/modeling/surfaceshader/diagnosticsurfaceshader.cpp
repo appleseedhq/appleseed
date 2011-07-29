@@ -46,7 +46,7 @@
 #include "foundation/math/hash.h"
 #include "foundation/math/minmax.h"
 #include "foundation/math/scalar.h"
-#include "foundation/utility/containers/dictionaryarray.h"
+#include "foundation/utility/containers/specializedarrays.h"
 
 using namespace foundation;
 using namespace std;

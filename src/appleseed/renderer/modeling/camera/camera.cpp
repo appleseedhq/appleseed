@@ -31,7 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
-#include "foundation/utility/containers/dictionaryarray.h"
+#include "foundation/utility/containers/specializedarrays.h"
 
 using namespace foundation;
 using namespace std;

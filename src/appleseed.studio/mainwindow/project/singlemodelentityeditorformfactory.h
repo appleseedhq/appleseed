@@ -33,7 +33,7 @@
 #include "mainwindow/project/entityeditorformfactorybase.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/containers/dictionaryarray.h"
+#include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
 #include <string>

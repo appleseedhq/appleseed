@@ -45,7 +45,7 @@
 #include "foundation/math/minmax.h"
 #include "foundation/math/noise.h"
 #include "foundation/math/scalar.h"
-#include "foundation/utility/containers/dictionaryarray.h"
+#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/searchpaths.h"
 
 // Standard headers.

@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/array.h"
+#include "foundation/utility/containers/dictionary.h"
 
 namespace foundation
 {
@@ -41,6 +42,7 @@ namespace foundation
 
 DECLARE_ARRAY(FloatArray, float);
 DECLARE_ARRAY(DoubleArray, double);
+DECLARE_ARRAY(DictionaryArray, Dictionary);
 
 }       // namespace foundation
 

@@ -39,7 +39,7 @@
 #include "foundation/math/basis.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/sampling.h"
-#include "foundation/utility/containers/dictionaryarray.h"
+#include "foundation/utility/containers/specializedarrays.h"
 
 // Forward declarations.
 namespace renderer  { class Assembly; }

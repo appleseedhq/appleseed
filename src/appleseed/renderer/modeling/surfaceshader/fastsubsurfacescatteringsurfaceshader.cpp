@@ -51,7 +51,7 @@
 #include "foundation/math/sampling.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/dictionaryarray.h"
+#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/foreach.h"
 
 // Standard headers.

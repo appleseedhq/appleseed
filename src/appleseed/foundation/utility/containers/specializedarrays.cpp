@@ -34,5 +34,6 @@ namespace foundation
 
 DEFINE_ARRAY(FloatArray);
 DEFINE_ARRAY(DoubleArray);
+DEFINE_ARRAY(DictionaryArray);
 
 }   // namespace foundation

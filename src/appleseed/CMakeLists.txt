@@ -500,8 +500,6 @@ set(foundation_utility_containers_sources
     foundation/utility/containers/array.h
     foundation/utility/containers/dictionary.cpp
     foundation/utility/containers/dictionary.h
-    foundation/utility/containers/dictionaryarray.cpp
-    foundation/utility/containers/dictionaryarray.h
     foundation/utility/containers/pagedarray.h
     foundation/utility/containers/specializedarrays.cpp
     foundation/utility/containers/specializedarrays.h

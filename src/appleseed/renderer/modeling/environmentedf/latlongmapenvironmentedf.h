@@ -33,7 +33,7 @@
 #include "renderer/modeling/environmentedf/ienvironmentedffactory.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/containers/dictionaryarray.h"
+#include "foundation/utility/containers/specializedarrays.h"
 
 // Forward declarations.
 namespace renderer      { class EnvironmentEDF; }
