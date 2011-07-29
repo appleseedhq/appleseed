@@ -338,7 +338,6 @@ set_source_files_properties(
 
 set(foundation_meta_tests_sources
     foundation/meta/tests/test_aabb.cpp
-    foundation/meta/tests/test_anyarray.cpp
     foundation/meta/tests/test_attributeset.cpp
     foundation/meta/tests/test_benchmarkaggregator.cpp
     foundation/meta/tests/test_boost_datetime.cpp
@@ -498,7 +497,6 @@ source_group("foundation\\utility\\commandlineparser" FILES
 )
 
 set(foundation_utility_containers_sources
-    foundation/utility/containers/anyarray.h
     foundation/utility/containers/array.h
     foundation/utility/containers/dictionary.cpp
     foundation/utility/containers/dictionary.h
