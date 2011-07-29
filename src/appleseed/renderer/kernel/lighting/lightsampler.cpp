@@ -69,7 +69,6 @@ namespace
     // Return true if a given assembly uses at least one material emitting light.
     bool has_emitting_materials(const Assembly& assembly)
     {
-        // Loop over the materials of the assembly.
         for (const_each<MaterialContainer> i = assembly.materials(); i; ++i)
         {
             if (i->get_edf())
