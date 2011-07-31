@@ -198,7 +198,7 @@ void MainWindow::build_override_shading_menu_item()
 
         action->setText(
             QApplication::translate(
-                objectName().toAscii(),
+                objectName().toAscii().constData(),
                 shading_mode_name,
                 0,
                 QApplication::UnicodeUTF8));
@@ -209,8 +209,8 @@ void MainWindow::build_override_shading_menu_item()
         {
             const QString shortcut =
                 QApplication::translate(
-                    objectName().toAscii(),
-                    QString::fromAscii("Ctrl+Shift+%1").arg(shortcut_number).toAscii(),
+                    objectName().toAscii().constData(),
+                    QString::fromAscii("Ctrl+Shift+%1").arg(shortcut_number).toAscii().constData(),
                     0,
                     QApplication::UnicodeUTF8);
 
