@@ -29,11 +29,104 @@
 // Interface header.
 #include "specializedarrays.h"
 
+// Standard headers.
+#include <cassert>
+#include <string>
+#include <vector>
+
+using namespace std;
+
 namespace foundation
 {
 
 DEFINE_ARRAY(FloatArray);
 DEFINE_ARRAY(DoubleArray);
 DEFINE_ARRAY(DictionaryArray);
+
+
+//
+// StringArray class implementation.
+//
+
+struct StringArray::Impl
+  : public vector<string>
+{
+};
+
+StringArray::StringArray()
+  : impl(new Impl())
+{
+}
+
+StringArray::StringArray(const StringArray& rhs)
+  : impl(new Impl(*rhs.impl))
+{
+}
+
+StringArray::StringArray(
+    const size_type     size,
+    const value_type*   values)
+  : impl(new Impl())
+{
+    assert(size > 0);
+    assert(values);
+
+    impl->resize(size);
+
+    for (size_t i = 0; i < size; ++i)
+        (*impl)[i] = values[i];
+}
+
+StringArray::~StringArray()
+{
+    delete impl;
+}
+
+StringArray& StringArray::operator=(const StringArray& rhs)
+{
+    *impl = *rhs.impl;
+    return *this;
+}
+
+StringArray::size_type StringArray::size() const
+{
+    return impl->size();
+}
+
+bool StringArray::empty() const
+{
+    return impl->empty();
+}
+
+void StringArray::clear()
+{
+    impl->clear();
+}
+
+void StringArray::reserve(const size_type count)
+{
+    impl->reserve(count);
+}
+
+void StringArray::resize(const size_type new_size)
+{
+    impl->resize(new_size);
+}
+
+void StringArray::push_back(const value_type val)
+{
+    impl->push_back(val);
+}
+
+void StringArray::set(const size_type pos, const value_type val)
+{
+    assert(val);
+    (*impl)[pos] = val;
+}
+
+StringArray::value_type StringArray::operator[](const size_type pos) const
+{
+    return (*impl)[pos].c_str();
+}
 
 }   // namespace foundation

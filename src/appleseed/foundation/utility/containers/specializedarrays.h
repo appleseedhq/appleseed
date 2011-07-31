@@ -33,6 +33,28 @@
 #include "foundation/utility/containers/array.h"
 #include "foundation/utility/containers/dictionary.h"
 
+// Standard headers.
+#include <cstddef>
+
+//
+// On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
+// and to __declspec(dllimport) when building an application using the DLL.
+// Other platforms don't use this export mechanism and the symbol FOUNDATIONDLL is
+// defined to evaluate to nothing.
+//
+
+#ifndef FOUNDATIONDLL
+#ifdef _WIN32
+#ifdef APPLESEED_FOUNDATION_EXPORTS
+#define FOUNDATIONDLL __declspec(dllexport)
+#else
+#define FOUNDATIONDLL __declspec(dllimport)
+#endif
+#else
+#define FOUNDATIONDLL
+#endif
+#endif
+
 namespace foundation
 {
 
@@ -43,6 +65,61 @@ namespace foundation
 DECLARE_ARRAY(FloatArray, float);
 DECLARE_ARRAY(DoubleArray, double);
 DECLARE_ARRAY(DictionaryArray, Dictionary);
+
+
+//
+// An array of strings that can be passed safely across DLL boundaries.
+//
+
+class FOUNDATIONDLL StringArray
+{
+  public:
+    // Types.
+    typedef const char* value_type;
+    typedef size_t size_type;
+
+    // Constructors.
+    StringArray();
+    StringArray(const StringArray& rhs);
+    StringArray(
+        const size_type     size,
+        const value_type*   values);
+
+    // Destructor.
+    ~StringArray();
+
+    // Assignment operator.
+    StringArray& operator=(const StringArray& rhs);
+
+    // Returns the size of the vector.
+    size_type size() const;
+
+    // Tests if the vector is empty.
+    bool empty() const;
+
+    // Clears the vector.
+    void clear();
+
+    // Reserves memory for a given number of elements.
+    void reserve(const size_type count);
+
+    // Specifies a new size for a vector.
+    void resize(const size_type new_size);
+
+    // Adds an element to the end of the vector.
+    void push_back(const value_type val);
+
+    // Set the vector element at a specified position.
+    void set(const size_type pos, const value_type val);
+
+    // Returns the vector element at a specified position.
+    value_type operator[](const size_type pos) const;
+
+  private:
+    // Private implementation.
+    struct Impl;
+    Impl* impl;
+};
 
 }       // namespace foundation
 
