@@ -516,12 +516,11 @@ inline const Material* ShadingPoint::get_material() const
         if (m_triangle_pa != Triangle::None)
         {
             // Retrieve material indices from the object instance.
-            const MaterialIndexArray& material_indices =
-                m_object_instance->get_material_indices();
+            const MaterialArray& materials = m_object_instance->get_materials();
 
             // Fetch the material.
-            if (static_cast<size_t>(m_triangle_pa) < material_indices.size())
-                m_material = m_assembly->materials().get_by_index(material_indices[m_triangle_pa]);
+            if (static_cast<size_t>(m_triangle_pa) < materials.size())
+                m_material = materials[m_triangle_pa];
         }
 
         // The material at the intersection point is now available.

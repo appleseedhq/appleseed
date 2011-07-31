@@ -58,6 +58,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/appleseed.h"
 #include "foundation/math/transform.h"
+#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/indenter.h"
 #include "foundation/utility/string.h"
@@ -582,14 +583,10 @@ namespace
 
             write(object_instance.get_transform());
 
-            // Write the material indices of the object instance.
-            const MaterialIndexArray& material_indices = object_instance.get_material_indices();
-            for (size_t i = 0; i < material_indices.size(); ++i)
-            {
-                const Material* material = assembly.materials().get_by_index(material_indices[i]);
-                assert(material);
-                write_assign_material(i, material->get_name());
-            }
+            // Write the <assign_material> elements.
+            const StringArray& material_names = object_instance.get_material_names();
+            for (size_t i = 0; i < material_names.size(); ++i)
+                write_assign_material(i, material_names[i]);
         }
 
         // Write an <assembly> element.

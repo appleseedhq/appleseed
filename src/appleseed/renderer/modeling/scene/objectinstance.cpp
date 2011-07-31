@@ -33,6 +33,7 @@
 #include "renderer/modeling/object/object.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/memory.h"
 
 using namespace foundation;
@@ -42,10 +43,10 @@ namespace renderer
 {
 
 //
-// MaterialIndexArray class implementation.
+// MaterialArray class implementation.
 //
 
-DEFINE_ARRAY(MaterialIndexArray);
+DEFINE_ARRAY(MaterialArray);
 
 
 //
@@ -55,10 +56,11 @@ DEFINE_ARRAY(MaterialIndexArray);
 struct ObjectInstance::Impl
 {
     // Order of data members impacts performance, preserve it.
-    Transformd                  m_transform;
-    GAABB3                      m_parent_bbox;
-    size_t                      m_object_index;
-    MaterialIndexArray          m_material_indices;
+    Transformd          m_transform;
+    GAABB3              m_parent_bbox;
+    size_t              m_object_index;
+    MaterialArray       m_materials;
+    StringArray         m_material_names;
 };
 
 namespace
@@ -67,11 +69,11 @@ namespace
 }
 
 ObjectInstance::ObjectInstance(
-    const char*                 name,
-    const Object&               object,
-    const size_t                object_index,
-    const Transformd&           transform,
-    const MaterialIndexArray&   material_indices)
+    const char*         name,
+    const Object&       object,
+    const size_t        object_index,
+    const Transformd&   transform,
+    const StringArray&  material_names)
   : Entity(g_class_uid)
   , impl(new Impl())
 {
@@ -80,7 +82,7 @@ ObjectInstance::ObjectInstance(
     impl->m_transform = transform;
     impl->m_parent_bbox = transform.transform_to_parent(object.get_local_bbox());
     impl->m_object_index = object_index;
-    impl->m_material_indices = material_indices;
+    impl->m_material_names = material_names;
 }
 
 ObjectInstance::~ObjectInstance()
@@ -108,20 +110,44 @@ const GAABB3& ObjectInstance::get_parent_bbox() const
     return impl->m_parent_bbox;
 }
 
-void ObjectInstance::set_material_index(const size_t slot, const size_t material_index)
+void ObjectInstance::clear_materials()
 {
-    ensure_size(impl->m_material_indices, slot + 1);
-    impl->m_material_indices[slot] = material_index;
+    impl->m_materials.clear();
+    impl->m_material_names.clear();
 }
 
-void ObjectInstance::set_material_indices(const MaterialIndexArray& material_indices)
+void ObjectInstance::assign_material(const size_t slot, const char* material_name)
 {
-    impl->m_material_indices = material_indices;
+    ensure_size(impl->m_material_names, slot + 1);
+    impl->m_material_names.set(slot, material_name);
 }
 
-const MaterialIndexArray& ObjectInstance::get_material_indices() const
+const StringArray& ObjectInstance::get_material_names() const
 {
-    return impl->m_material_indices;
+    return impl->m_material_names;
+}
+
+void ObjectInstance::bind_entities(const MaterialContainer& materials)
+{
+    const size_t material_count = impl->m_material_names.size();
+
+    impl->m_materials.clear();
+    impl->m_materials.resize(material_count);
+
+    for (size_t i = 0; i < material_count; ++i)
+    {
+        const char* material_name = impl->m_material_names[i];
+
+        impl->m_materials[i] = materials.get_by_name(material_name);
+
+        if (impl->m_materials[i] == 0)
+            throw ExceptionUnknownEntity(material_name);
+    }
+}
+
+const MaterialArray& ObjectInstance::get_materials() const
+{
+    return impl->m_materials;
 }
 
 
@@ -130,11 +156,11 @@ const MaterialIndexArray& ObjectInstance::get_material_indices() const
 //
 
 auto_release_ptr<ObjectInstance> ObjectInstanceFactory::create(
-    const char*                 name,
-    const Object&               object,
-    const size_t                object_index,
-    const Transformd&           transform,
-    const MaterialIndexArray&   material_indices)
+    const char*         name,
+    const Object&       object,
+    const size_t        object_index,
+    const Transformd&   transform,
+    const StringArray&  material_names)
 {
     return
         auto_release_ptr<ObjectInstance>(
@@ -143,7 +169,7 @@ auto_release_ptr<ObjectInstance> ObjectInstanceFactory::create(
                 object,
                 object_index,
                 transform,
-                material_indices));
+                material_names));
 }
 
 }   // namespace renderer

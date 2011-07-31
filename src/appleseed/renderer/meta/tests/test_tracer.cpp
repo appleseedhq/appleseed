@@ -52,6 +52,7 @@
 #include "foundation/math/rng.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/test.h"
 
@@ -68,8 +69,6 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     struct SceneBase
     {
         auto_release_ptr<Scene> m_scene;
-        size_t                  m_opaque_material_index;
-        size_t                  m_transparent_material_index;
 
         SceneBase()
           : m_scene(SceneFactory::create())
@@ -117,14 +116,14 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_scene->assemblies().get_by_name("assembly")->objects().insert(object);
         }
 
-        void create_plane_object_instance(const char* name, const Vector3d& position, const size_t material_index)
+        void create_plane_object_instance(const char* name, const Vector3d& position, const char* material_name)
         {
             const Assembly* assembly = m_scene->assemblies().get_by_name("assembly");
             const size_t object_index = assembly->objects().get_index("plane");
             const Object* object = assembly->objects().get_by_index(object_index);
             
-            MaterialIndexArray material_indices;
-            material_indices.push_back(material_index);
+            StringArray material_names;
+            material_names.push_back(material_name);
 
             assembly->object_instances().insert(
                 ObjectInstanceFactory::create(
@@ -132,7 +131,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                     *object,
                     object_index,
                     Transformd(Matrix4d::translation(position)),
-                    material_indices));
+                    material_names));
         }
 
         void create_color(const char* name, const Color4f& color)
@@ -157,27 +156,27 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_scene->assemblies().get_by_name("assembly")->surface_shaders().insert(surface_shader);
         }
 
-        size_t create_material(const char* material_name, const char* surface_shader_name)
+        void create_material(const char* material_name, const char* surface_shader_name)
         {
             ParamArray params;
             params.insert("surface_shader", surface_shader_name);
 
-            auto_release_ptr<Material> material(MaterialFactory::create(material_name, params));
-            return m_scene->assemblies().get_by_name("assembly")->materials().insert(material);
+            m_scene->assemblies().get_by_name("assembly")->materials().insert(
+                MaterialFactory::create(material_name, params));
         }
 
         void create_opaque_material()
         {
             create_color("opaque_color", Color4f(1.0f, 1.0f, 1.0f, 1.0f));
             create_constant_surface_shader("opaque_surface_shader", "opaque_color");
-            m_opaque_material_index = create_material("opaque_material", "opaque_surface_shader");
+            create_material("opaque_material", "opaque_surface_shader");
         }
 
         void create_transparent_material()
         {
             create_color("transparent_color", Color4f(1.0f, 1.0f, 1.0f, 0.5f));
             create_constant_surface_shader("transparent_surface_shader", "transparent_color");
-            m_transparent_material_index = create_material("transparent_material", "transparent_surface_shader");
+            create_material("transparent_material", "transparent_surface_shader");
         }
     };
 
@@ -240,7 +239,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     {
         SceneWithSingleOpaqueOccluder()
         {
-            create_plane_object_instance("plane_inst", Vector3d(2.0, 0.0, 0.0), m_opaque_material_index);
+            create_plane_object_instance("plane_inst", Vector3d(2.0, 0.0, 0.0), "opaque_material");
         }
     };
 
@@ -277,7 +276,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     {
         SceneWithSingleTransparentOccluder()
         {
-            create_plane_object_instance("plane_inst", Vector3d(2.0, 0.0, 0.0), m_transparent_material_index);
+            create_plane_object_instance("plane_inst", Vector3d(2.0, 0.0, 0.0), "transparent_material");
         }
     };
 
@@ -312,8 +311,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     {
         SceneWithTransparentThenOpaqueOccluders()
         {
-            create_plane_object_instance("plane_inst1", Vector3d(2.0, 0.0, 0.0), m_transparent_material_index);
-            create_plane_object_instance("plane_inst2", Vector3d(4.0, 0.0, 0.0), m_opaque_material_index);
+            create_plane_object_instance("plane_inst1", Vector3d(2.0, 0.0, 0.0), "transparent_material");
+            create_plane_object_instance("plane_inst2", Vector3d(4.0, 0.0, 0.0), "opaque_material");
         }
     };
 

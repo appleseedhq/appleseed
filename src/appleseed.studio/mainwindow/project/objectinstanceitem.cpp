@@ -50,8 +50,12 @@
 #include <QVariant>
 #include <QWidget>
 
+// Standard headers.
+#include <string>
+
 using namespace foundation;
 using namespace renderer;
+using namespace std;
 
 Q_DECLARE_METATYPE(QList<appleseed::studio::ItemBase*>);
 
@@ -194,17 +198,16 @@ void ObjectInstanceItem::slot_assign_material()
 
 void ObjectInstanceItem::slot_assign_material_accepted(QString page_name, QString entity_name, QVariant data)
 {
-    const size_t material_index = m_assembly.materials().get_index(entity_name.toAscii());
-    assert(material_index != ~size_t(0));
+    const string material_name = entity_name.toStdString();
 
     if (data.isNull())
-        assign_material(material_index);
+        assign_material(material_name.c_str());
     else
     {
         const QList<ItemBase*> items = data.value<QList<ItemBase*> >();
 
         for (int i = 0; i < items.size(); ++i)
-            static_cast<ObjectInstanceItem*>(items[i])->assign_material(material_index);
+            static_cast<ObjectInstanceItem*>(items[i])->assign_material(material_name.c_str());
     }
 
     qobject_cast<QWidget*>(sender()->parent())->close();
@@ -227,7 +230,7 @@ void ObjectInstanceItem::slot_unassign_material()
 
 void ObjectInstanceItem::update_style()
 {
-    if (m_object_instance.get_material_indices().empty())
+    if (m_object_instance.get_material_names().empty())
         setTextColor(0, QColor(255, 0, 255, 255));
     else
     {
@@ -236,9 +239,9 @@ void ObjectInstanceItem::update_style()
     }
 }
 
-void ObjectInstanceItem::assign_material(const size_t material_index)
+void ObjectInstanceItem::assign_material(const char* material_name)
 {
-    m_object_instance.set_material_index(0, material_index);
+    m_object_instance.assign_material(0, material_name);
 
     update_style();
 
@@ -247,7 +250,7 @@ void ObjectInstanceItem::assign_material(const size_t material_index)
 
 void ObjectInstanceItem::unassign_material()
 {
-    m_object_instance.set_material_indices(MaterialIndexArray());
+    m_object_instance.clear_materials();
 
     update_style();
 

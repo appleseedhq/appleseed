@@ -29,6 +29,15 @@
 // Interface header.
 #include "assembly.h"
 
+// appleseed.renderer headers.
+#include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/edf/edf.h"
+#include "renderer/modeling/input/uniforminputevaluator.h"
+#include "renderer/modeling/surfaceshader/surfaceshader.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/foreach.h"
+
 using namespace foundation;
 using namespace std;
 
@@ -127,6 +136,59 @@ ObjectContainer& Assembly::objects() const
 ObjectInstanceContainer& Assembly::object_instances() const
 {
     return impl->m_object_instances;
+}
+
+namespace
+{
+    template <typename EntityCollection>
+    void invoke_on_frame_begin(
+        const Project&          project,
+        const Assembly&         assembly,
+        EntityCollection&       entities)
+    {
+        for (each<EntityCollection> i = entities; i; ++i)
+            i->on_frame_begin(project, assembly);
+    }
+
+    template <typename EntityCollection>
+    void invoke_on_frame_begin(
+        const Project&          project,
+        const Assembly&         assembly,
+        EntityCollection&       entities,
+        UniformInputEvaluator&  input_evaluator)
+    {
+        for (each<EntityCollection> i = entities; i; ++i)
+        {
+            const void* data = input_evaluator.evaluate(i->get_inputs());
+            i->on_frame_begin(project, assembly, data);
+        }
+    }
+
+    template <typename EntityCollection>
+    void invoke_on_frame_end(
+        const Project&          project,
+        const Assembly&         assembly,
+        EntityCollection&       entities)
+    {
+        for (each<EntityCollection> i = entities; i; ++i)
+            i->on_frame_end(project, assembly);
+    }
+}
+
+void Assembly::on_frame_begin(const Project& project)
+{
+    UniformInputEvaluator input_evaluator;
+
+    invoke_on_frame_begin(project, *this, surface_shaders());
+    invoke_on_frame_begin(project, *this, bsdfs(), input_evaluator);
+    invoke_on_frame_begin(project, *this, edfs(), input_evaluator);
+}
+
+void Assembly::on_frame_end(const Project& project)
+{
+    invoke_on_frame_end(project, *this, edfs());
+    invoke_on_frame_end(project, *this, bsdfs());
+    invoke_on_frame_end(project, *this, surface_shaders());
 }
 
 

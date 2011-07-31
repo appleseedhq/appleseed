@@ -84,14 +84,11 @@ const Pyramid3d& Camera::get_view_pyramid() const
     return impl->m_view_pyramid;
 }
 
-void Camera::on_frame_begin(
-    const Project&      project,
-    const Intersector&  intersector)
+void Camera::on_frame_begin(const Project& project)
 {
 }
 
-void Camera::on_frame_end(
-    const Project&      project)
+void Camera::on_frame_end(const Project& project)
 {
 }
 

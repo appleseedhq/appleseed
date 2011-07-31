@@ -30,7 +30,6 @@
 #include "masterrenderer.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/lighting/drt/drt.h"
 #include "renderer/kernel/lighting/ilightingengine.h"
 #include "renderer/kernel/lighting/lightsampler.h"
@@ -50,25 +49,14 @@
 #include "renderer/kernel/rendering/itilerenderer.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingengine.h"
-#include "renderer/kernel/texturing/texturecache.h"
-#include "renderer/modeling/bsdf/bsdf.h"
-#include "renderer/modeling/camera/camera.h"
-#include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/frame/frame.h"
-#include "renderer/modeling/environmentedf/environmentedf.h"
-#include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/input/inputbinder.h"
-#include "renderer/modeling/input/uniforminputevaluator.h"
 #include "renderer/modeling/project/project.h"
-#include "renderer/modeling/scene/assembly.h"
-#include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/scene.h"
-#include "renderer/modeling/surfaceshader/surfaceshader.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/core/exceptions/stringexception.h"
-#include "foundation/utility/foreach.h"
 
 // Standard headers.
 #include <exception>
@@ -164,8 +152,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     assert(m_project.get_scene());
     assert(m_project.get_frame());
 
-    // Bind all scene entities inputs.
-    if (!bind_inputs())
+    if (!bind_scene_entities_inputs())
         return IRendererController::AbortRendering;
 
     const Scene& scene = *m_project.get_scene();
@@ -314,14 +301,12 @@ IRendererController::Status MasterRenderer::render_frame_sequence(IFrameRenderer
         assert(!frame_renderer->is_rendering());
 
         m_renderer_controller->on_frame_begin();
-
-        on_frame_begin();
+        m_project.get_scene()->on_frame_begin(m_project);
 
         const IRendererController::Status status = render_frame(frame_renderer);
         assert(!frame_renderer->is_rendering());
 
-        on_frame_end();
-
+        m_project.get_scene()->on_frame_end(m_project);
         m_renderer_controller->on_frame_end();
 
         switch (status)
@@ -358,147 +343,11 @@ IRendererController::Status MasterRenderer::render_frame(IFrameRenderer* frame_r
     return IRendererController::TerminateRendering;
 }
 
-bool MasterRenderer::bind_inputs() const
+bool MasterRenderer::bind_scene_entities_inputs() const
 {
     InputBinder input_binder;
     input_binder.bind(*m_project.get_scene());
     return input_binder.get_error_count() == 0;
-}
-
-namespace
-{
-
-    //
-    // Invoke on_frame_begin() / on_frame_end() on entity collections.
-    //
-
-    template <typename EntityCollection>
-    void invoke_on_frame_begin(
-        const Project&          project,
-        EntityCollection&       entities)
-    {
-        for (each<EntityCollection> i = entities; i; ++i)
-            i->on_frame_begin(project);
-    }
-
-    template <typename EntityCollection>
-    void invoke_on_frame_begin(
-        const Project&          project,
-        const Assembly&         assembly,
-        EntityCollection&       entities)
-    {
-        for (each<EntityCollection> i = entities; i; ++i)
-            i->on_frame_begin(project, assembly);
-    }
-
-    template <typename EntityCollection>
-    void invoke_on_frame_begin(
-        const Project&          project,
-        EntityCollection&       entities,
-        UniformInputEvaluator&  input_evaluator)
-    {
-        for (each<EntityCollection> i = entities; i; ++i)
-        {
-            const void* data = input_evaluator.evaluate(i->get_inputs());
-            i->on_frame_begin(project, data);
-        }
-    }
-
-    template <typename EntityCollection>
-    void invoke_on_frame_begin(
-        const Project&          project,
-        const Assembly&         assembly,
-        EntityCollection&       entities,
-        UniformInputEvaluator&  input_evaluator)
-    {
-        for (each<EntityCollection> i = entities; i; ++i)
-        {
-            const void* data = input_evaluator.evaluate(i->get_inputs());
-            i->on_frame_begin(project, assembly, data);
-        }
-    }
-
-    template <typename EntityCollection>
-    void invoke_on_frame_end(
-        const Project&          project,
-        EntityCollection&       entities)
-    {
-        for (each<EntityCollection> i = entities; i; ++i)
-            i->on_frame_end(project);
-    }
-
-    template <typename EntityCollection>
-    void invoke_on_frame_end(
-        const Project&          project,
-        const Assembly&         assembly,
-        EntityCollection&       entities)
-    {
-        for (each<EntityCollection> i = entities; i; ++i)
-            i->on_frame_end(project, assembly);
-    }
-
-    //
-    // Invoke on_frame_begin() / on_frame_end() on assemblies.
-    //
-
-    template <>
-    void invoke_on_frame_begin(
-        const Project&          project,
-        AssemblyContainer&      assemblies)
-    {
-        UniformInputEvaluator input_evaluator;
-
-        for (each<AssemblyContainer> i = assemblies; i; ++i)
-        {
-            const Assembly& assembly = *i;
-            invoke_on_frame_begin(project, assembly, assembly.surface_shaders());
-            invoke_on_frame_begin(project, assembly, assembly.bsdfs(), input_evaluator);
-            invoke_on_frame_begin(project, assembly, assembly.edfs(), input_evaluator);
-        }
-    }
-
-    template <>
-    void invoke_on_frame_end(
-        const Project&          project,
-        AssemblyContainer&      assemblies)
-    {
-        for (each<AssemblyContainer> i = assemblies; i; ++i)
-        {
-            const Assembly& assembly = *i;
-            invoke_on_frame_end(project, assembly, assembly.edfs());
-            invoke_on_frame_end(project, assembly, assembly.bsdfs());
-            invoke_on_frame_end(project, assembly, assembly.surface_shaders());
-        }
-    }
-}
-
-void MasterRenderer::on_frame_begin() const
-{
-    const Scene& scene = *m_project.get_scene();
-
-    Camera* camera = scene.get_camera();
-    assert(camera);
-
-    Intersector intersector(m_project.get_trace_context(), false);
-    camera->on_frame_begin(m_project, intersector);
-
-    invoke_on_frame_begin(m_project, scene.environment_edfs());
-    invoke_on_frame_begin(m_project, scene.environment_shaders());
-    invoke_on_frame_begin(m_project, scene.assemblies());
-}
-
-void MasterRenderer::on_frame_end() const
-{
-    const Scene& scene = *m_project.get_scene();
-
-    invoke_on_frame_end(m_project, scene.assemblies());
-    invoke_on_frame_end(m_project, scene.environment_shaders());
-    invoke_on_frame_end(m_project, scene.environment_edfs());
-
-    Camera* camera = scene.get_camera();
-    assert(camera);
-
-    camera->on_frame_end(m_project);
 }
 
 }   // namespace renderer

@@ -37,8 +37,9 @@
 #include "foundation/utility/version.h"
 
 // Forward declarations.
-namespace renderer  { class Camera; }
-namespace renderer  { class Environment; }
+namespace renderer      { class Camera; }
+namespace renderer      { class Environment; }
+namespace renderer      { class Project; }
 
 namespace renderer
 {
@@ -103,6 +104,12 @@ class RENDERERDLL Scene
 
     // Compute and return the radius of the scene.
     double compute_radius() const;
+
+    // Perform pre-frame rendering actions.
+    void on_frame_begin(const Project& project);
+
+    // Perform post-frame rendering actions.
+    void on_frame_end(const Project& project);
 
   private:
     friend class SceneFactory;

@@ -43,6 +43,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
+#include "foundation/utility/containers/specializedarrays.h"
 
 using namespace foundation;
 using namespace std;
@@ -514,7 +515,6 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
     // White material.
     //
 
-    size_t white_material_index;
     {
         // Create a new BSDF.
         ParamArray params;
@@ -527,16 +527,13 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         ParamArray params;
         params.insert("surface_shader", "physical_shader");
         params.insert("bsdf", "white_material_brdf");
-        white_material_index =
-            assembly->materials().insert(
-                MaterialFactory::create("white_material", params));
+        assembly->materials().insert(MaterialFactory::create("white_material", params));
     }
 
     //
     // Red material.
     //
 
-    size_t red_material_index;
     {
         // Create a new BSDF.
         ParamArray params;
@@ -549,16 +546,13 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         ParamArray params;
         params.insert("surface_shader", "physical_shader");
         params.insert("bsdf", "red_material_brdf");
-        red_material_index =
-            assembly->materials().insert(
-                MaterialFactory::create("red_material", params));
+        assembly->materials().insert(MaterialFactory::create("red_material", params));
     }
 
     //
     // Green material.
     //
 
-    size_t green_material_index;
     {
         // Create a new BSDF.
         ParamArray params;
@@ -571,16 +565,13 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         ParamArray params;
         params.insert("surface_shader", "physical_shader");
         params.insert("bsdf", "green_material_brdf");
-        green_material_index =
-            assembly->materials().insert(
-                MaterialFactory::create("green_material", params));
+        assembly->materials().insert(MaterialFactory::create("green_material", params));
     }
 
     //
     // Light emitting material.
     //
 
-    size_t light_material_index;
     {
         // Create a new BSDF.
         ParamArray params;
@@ -601,9 +592,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         params.insert("surface_shader", "physical_shader");
         params.insert("bsdf", "light_material_brdf");
         params.insert("edf", "light_material_edf");
-        light_material_index =
-            assembly->materials().insert(
-                MaterialFactory::create("light_material", params));
+        assembly->materials().insert(MaterialFactory::create("light_material", params));
     }
 
     //
@@ -632,9 +621,9 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         const size_t object_index =
             assembly->objects().insert(auto_release_ptr<Object>(object));
 
-        // Create the array of material indices.
-        MaterialIndexArray material_indices;
-        material_indices.push_back(white_material_index);
+        // Create the array of material names.
+        StringArray material_names;
+        material_names.push_back("white_material");
 
         // Create an instance of this object and insert it into the assembly.
         assembly->object_instances().insert(
@@ -643,7 +632,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 *object,
                 object_index,
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
-                material_indices));
+                material_names));
     }
 
     //
@@ -672,9 +661,9 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         const size_t object_index =
             assembly->objects().insert(auto_release_ptr<Object>(object));
 
-        // Create the array of material indices.
-        MaterialIndexArray material_indices;
-        material_indices.push_back(white_material_index);
+        // Create the array of material names.
+        StringArray material_names;
+        material_names.push_back("white_material");
 
         // Create an instance of this object and insert it into the assembly.
         assembly->object_instances().insert(
@@ -683,7 +672,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 *object,
                 object_index,
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
-                material_indices));
+                material_names));
     }
 
     //
@@ -712,9 +701,9 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         const size_t object_index =
             assembly->objects().insert(auto_release_ptr<Object>(object));
 
-        // Create the array of material indices.
-        MaterialIndexArray material_indices;
-        material_indices.push_back(white_material_index);
+        // Create the array of material names.
+        StringArray material_names;
+        material_names.push_back("white_material");
 
         // Create an instance of this object and insert it into the assembly.
         assembly->object_instances().insert(
@@ -723,7 +712,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 *object,
                 object_index,
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
-                material_indices));
+                material_names));
     }
 
     //
@@ -752,9 +741,9 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         const size_t object_index =
             assembly->objects().insert(auto_release_ptr<Object>(object));
 
-        // Create the array of material indices.
-        MaterialIndexArray material_indices;
-        material_indices.push_back(green_material_index);
+        // Create the array of material names.
+        StringArray material_names;
+        material_names.push_back("green_material");
 
         // Create an instance of this object and insert it into the assembly.
         assembly->object_instances().insert(
@@ -763,7 +752,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 *object,
                 object_index,
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
-                material_indices));
+                material_names));
     }
 
     //
@@ -793,9 +782,9 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         const size_t object_index =
             assembly->objects().insert(auto_release_ptr<Object>(object));
 
-        // Create the array of material indices.
-        MaterialIndexArray material_indices;
-        material_indices.push_back(red_material_index);
+        // Create the array of material names.
+        StringArray material_names;
+        material_names.push_back("red_material");
 
         // Create an instance of this object and insert it into the assembly.
         assembly->object_instances().insert(
@@ -804,7 +793,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 *object,
                 object_index,
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
-                material_indices));
+                material_names));
     }
 
     //
@@ -861,9 +850,9 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         const size_t object_index =
             assembly->objects().insert(auto_release_ptr<Object>(object));
 
-        // Create the array of material indices.
-        MaterialIndexArray material_indices;
-        material_indices.push_back(white_material_index);
+        // Create the array of material names.
+        StringArray material_names;
+        material_names.push_back("white_material");
 
         // Create an instance of this object and insert it into the assembly.
         assembly->object_instances().insert(
@@ -872,7 +861,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 *object,
                 object_index,
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
-                material_indices));
+                material_names));
     }
 
     //
@@ -929,9 +918,9 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         const size_t object_index =
             assembly->objects().insert(auto_release_ptr<Object>(object));
 
-        // Create the array of material indices.
-        MaterialIndexArray material_indices;
-        material_indices.push_back(white_material_index);
+        // Create the array of material names.
+        StringArray material_names;
+        material_names.push_back("white_material");
 
         // Create an instance of this object and insert it into the assembly.
         assembly->object_instances().insert(
@@ -940,7 +929,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 *object,
                 object_index,
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
-                material_indices));
+                material_names));
     }
 
     //
@@ -969,9 +958,9 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         const size_t object_index =
             assembly->objects().insert(auto_release_ptr<Object>(object));
 
-        // Create the array of material indices.
-        MaterialIndexArray material_indices;
-        material_indices.push_back(light_material_index);
+        // Create the array of material names.
+        StringArray material_names;
+        material_names.push_back("light_material");
 
         // Create an instance of this object and insert it into the assembly.
         assembly->object_instances().insert(
@@ -980,7 +969,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 *object,
                 object_index,
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
-                material_indices));
+                material_names));
     }
 
     // Create an instance of the assembly and insert it into the scene.

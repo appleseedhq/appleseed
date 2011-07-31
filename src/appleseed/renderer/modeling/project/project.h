@@ -85,7 +85,7 @@ class RENDERERDLL Project
     const foundation::SearchPaths& get_search_paths() const;
 
     // Get the trace context.
-    const TraceContext& get_trace_context();
+    const TraceContext& get_trace_context() const;
 
   private:
     friend class ProjectFactory;

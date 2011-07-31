@@ -66,43 +66,27 @@ namespace renderer
 
 namespace
 {
-    // Return true if a given assembly uses at least one material emitting light.
+    // Return true if a given assembly references at least one light-emitting material.
     bool has_emitting_materials(const Assembly& assembly)
     {
         for (const_each<MaterialContainer> i = assembly.materials(); i; ++i)
         {
             if (i->get_edf())
-            {
-                // Found at least one material emitting light.
                 return true;
-            }
         }
 
-        // No material is emitting light.
         return false;
     }
 
-    // Return true if an array of material indices references at least one light emitting material.
-    bool has_emitting_materials(
-        const MaterialContainer&    materials,
-        const MaterialIndexArray&   material_indices)
+    // Return true if at least one material emits light.
+    bool has_emitting_materials(const MaterialArray& materials)
     {
-        // todo: use const_each<> once foundation::Array supports it.
-        for (size_t i = 0; i < material_indices.size(); ++i)
+        for (size_t i = 0; i < materials.size(); ++i)
         {
-            // Retrieve the material.
-            const size_t material_index = material_indices[i];
-            const Material* material = materials.get_by_index(material_index);
-            assert(material);
-
-            if (material->get_edf())
-            {
-                // Found at least one material emitting light.
+            if (materials[i] && materials[i]->get_edf())
                 return true;
-            }
         }
 
-        // No material is emitting light.
         return false;
     }
 }
@@ -184,11 +168,11 @@ void LightSampler::collect_emitting_triangles(
         // Retrieve the object instance.
         const ObjectInstance* object_instance = assembly.object_instances().get_by_index(object_instance_index);
 
-        // Retrieve the material indices of the object instance.
-        const MaterialIndexArray& material_indices = object_instance->get_material_indices();
+        // Retrieve the materials of the object instance.
+        const MaterialArray& materials = object_instance->get_materials();
 
         // Skip object instances without light emitting materials.
-        if (!has_emitting_materials(assembly.materials(), material_indices))
+        if (!has_emitting_materials(materials))
             continue;
 
         // Compute the object space to world space transformation.
@@ -222,12 +206,11 @@ void LightSampler::collect_emitting_triangles(
                 const size_t pa_index = static_cast<size_t>(triangle.m_pa);
 
                 // Skip triangles without materials.
-                if (pa_index >= material_indices.size())
+                if (pa_index >= materials.size())
                     continue;
 
                 // Fetch the material assigned to this triangle.
-                const size_t material_index = material_indices[pa_index];
-                const Material* material = assembly.materials().get_by_index(material_index);
+                const Material* material = materials[pa_index];
                 assert(material);
 
                 // Skip triangles that don't emit light.

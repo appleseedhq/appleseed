@@ -82,13 +82,7 @@ class RENDERERDLL MasterRenderer
     IRendererController::Status render_frame(IFrameRenderer* frame_renderer);
 
     // Bind all scene entities inputs. Return true on success, false otherwise.
-    bool bind_inputs() const;
-
-    // Perform pre-frame rendering actions.
-    void on_frame_begin() const;
-
-    // Perform post-frame rendering actions.
-    void on_frame_end() const;
+    bool bind_scene_entities_inputs() const;
 };
 
 }       // namespace renderer

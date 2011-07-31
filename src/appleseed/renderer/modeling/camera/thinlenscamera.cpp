@@ -111,13 +111,14 @@ namespace
             return m_transform;
         }
 
-        virtual void on_frame_begin(
-            const Project&          project,
-            const Intersector&      intersector)
+        virtual void on_frame_begin(const Project& project)
         {
             // Perform autofocus, if enabled.
             if (m_autofocus_enabled)
+            {
+                Intersector intersector(project.get_trace_context(), false);
                 autofocus(intersector);
+            }
 
             // Precompute some values.
             const double t = m_focal_distance / m_focal_length;

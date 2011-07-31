@@ -44,6 +44,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/matrix.h"
 #include "foundation/math/transform.h"
+#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
@@ -130,14 +131,14 @@ void ProjectBuilder::insert_objects(
             assembly.objects().insert(auto_release_ptr<Object>(object));
 
         const string object_instance_name = string(object->get_name()) + "_inst";
-        MaterialIndexArray material_indices;
+        
         auto_release_ptr<ObjectInstance> object_instance(
             ObjectInstanceFactory::create(
                 object_instance_name.c_str(),
                 *object,
                 object_index,
                 Transformd(Matrix4d::identity()),
-                material_indices));
+                StringArray()));
 
         m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(object_instance.get());
 

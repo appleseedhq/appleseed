@@ -76,6 +76,7 @@
 #include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
+#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/searchpaths.h"
@@ -1637,7 +1638,7 @@ namespace
             ParametrizedElementHandler::start_element(attrs);
             m_object_instance.reset();
             m_transform = Transformd(Matrix4d::identity());
-            m_material_indices.clear();
+            m_material_names.clear();
             m_name = get_value(attrs, "name");
             m_object = get_value(attrs, "object");
         }
@@ -1655,7 +1656,7 @@ namespace
                         *m_objects->get_by_index(object_index),
                         object_index,
                         m_transform,
-                        m_material_indices);
+                        m_material_names);
             }
             else
             {
@@ -1685,24 +1686,8 @@ namespace
 
                     if (material_slot < MaxMaterialSlots)
                     {
-                        assert(m_materials);
-                        const size_t material_index = m_materials->get_index(material_name.c_str());
-
-                        if (material_index != ~size_t(0))
-                        {
-                            // Insert the index of the material into the object instance.
-                            while (m_material_indices.size() <= material_slot)
-                                m_material_indices.push_back(material_index);
-                            m_material_indices[material_slot] = material_index;
-                        }
-                        else
-                        {
-                            RENDERER_LOG_ERROR(
-                                "while defining object instance \"%s\": the material \"%s\" does not exist",
-                                m_name.c_str(),
-                                material_name.c_str());
-                            m_context.get_event_counters().signal_error();
-                        }
+                        ensure_size(m_material_names, material_slot + 1);
+                        m_material_names.set(material_slot, material_name.c_str());
                     }
                     else
                     {
@@ -1744,7 +1729,7 @@ namespace
         string                              m_name;
         string                              m_object;
         Transformd                          m_transform;
-        MaterialIndexArray                  m_material_indices;
+        StringArray                         m_material_names;
     };
 
 

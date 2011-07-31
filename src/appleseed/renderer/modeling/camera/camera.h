@@ -41,7 +41,6 @@
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
-namespace renderer      { class Intersector; }
 namespace renderer      { class Project; }
 
 namespace renderer
@@ -79,13 +78,10 @@ class RENDERERDLL Camera
     const foundation::Pyramid3d& get_view_pyramid() const;
 
     // This method is called once before rendering each frame.
-    virtual void on_frame_begin(
-        const Project&              project,
-        const Intersector&          intersector);
+    virtual void on_frame_begin(const Project& project);
 
     // This method is called once after rendering each frame.
-    virtual void on_frame_end(
-        const Project&              project);
+    virtual void on_frame_end(const Project& project);
 
     // Generate a ray originating from a given point on the lens surface of the camera
     // and directed toward a given point on the film plane, at a given time. point is

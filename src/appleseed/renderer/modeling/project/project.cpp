@@ -144,7 +144,7 @@ const SearchPaths& Project::get_search_paths() const
     return impl->m_search_paths;
 }
 
-const TraceContext& Project::get_trace_context()
+const TraceContext& Project::get_trace_context() const
 {
     if (impl->m_trace_context.get() == 0)
     {

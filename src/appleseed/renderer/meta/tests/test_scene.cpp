@@ -40,6 +40,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/matrix.h"
 #include "foundation/math/transform.h"
+#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/test.h"
 
@@ -86,7 +87,7 @@ TEST_SUITE(Renderer_Modeling_Scene_Scene)
                 *object,
                 object_index,
                 Transformd(Matrix4d::identity()),
-                MaterialIndexArray()));
+                StringArray()));
 
         // Create an instance of the assembly.
         scene->assembly_instances().insert(

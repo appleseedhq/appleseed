@@ -37,6 +37,7 @@
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
+#include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
@@ -209,13 +210,8 @@ void DiagnosticSurfaceShader::evaluate(
 
       // Assign an unique color to each object instance.
       case ObjectInstances:
-        {
-            const uint32 h =
-                mix32(
-                    static_cast<uint32>(shading_point.get_assembly_instance_uid()),
-                    static_cast<uint32>(shading_point.get_object_instance_index()));
-            shading_result.set_to_linear_rgb(integer_to_color(h));
-        }
+        shading_result.set_to_linear_rgb(
+            integer_to_color(shading_point.get_object_instance().get_uid()));
         break;
 
       // Assign an unique color to each region.
@@ -223,8 +219,7 @@ void DiagnosticSurfaceShader::evaluate(
         {
             const uint32 h =
                 mix32(
-                    static_cast<uint32>(shading_point.get_assembly_instance_uid()),
-                    static_cast<uint32>(shading_point.get_object_instance_index()),
+                    static_cast<uint32>(shading_point.get_object_instance().get_uid()),
                     static_cast<uint32>(shading_point.get_region_index()));
             shading_result.set_to_linear_rgb(integer_to_color(h));
         }
@@ -235,8 +230,7 @@ void DiagnosticSurfaceShader::evaluate(
         {
             const uint32 h =
                 mix32(
-                    static_cast<uint32>(shading_point.get_assembly_instance_uid()),
-                    static_cast<uint32>(shading_point.get_object_instance_index()),
+                    static_cast<uint32>(shading_point.get_object_instance().get_uid()),
                     static_cast<uint32>(shading_point.get_region_index()),
                     static_cast<uint32>(shading_point.get_triangle_index()));
             shading_result.set_to_linear_rgb(integer_to_color(h));
@@ -247,16 +241,13 @@ void DiagnosticSurfaceShader::evaluate(
       case Materials:
         {
             const ObjectInstance& object_instance = shading_point.get_object_instance();
-            const MaterialIndexArray& material_indices = object_instance.get_material_indices();
             const size_t pa_index = shading_point.get_primitive_attribute_index();
-            if (pa_index < material_indices.size())
+            const MaterialArray& materials = object_instance.get_materials();
+            if (pa_index < materials.size())
             {
-                const size_t material_index = material_indices[pa_index];
-                const uint32 h =
-                    mix32(
-                        static_cast<uint32>(shading_point.get_assembly_instance_uid()),
-                        static_cast<uint32>(material_index));
-                shading_result.set_to_linear_rgb(integer_to_color(h));
+                assert(materials[pa_index]);
+                shading_result.set_to_linear_rgb(
+                    integer_to_color(materials[pa_index]->get_uid()));
             }
             else shading_result.set_to_solid_pink();
         }

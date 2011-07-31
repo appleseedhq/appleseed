@@ -76,7 +76,7 @@ class ObjectInstanceItem
 
     void update_style();
 
-    void assign_material(const size_t material_index);
+    void assign_material(const char* material_name);
     void unassign_material();
 };
 

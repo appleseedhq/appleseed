@@ -34,6 +34,9 @@
 #include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/scene/containers.h"
 
+// Forward declarations.
+namespace renderer      { class Project; }
+
 namespace renderer
 {
 
@@ -81,6 +84,12 @@ class RENDERERDLL Assembly
 
     // Return true if this assembly is tagged as flushable.
     bool is_flushable() const;
+
+    // Perform pre-frame rendering actions.
+    void on_frame_begin(const Project& project);
+
+    // Perform post-frame rendering actions.
+    void on_frame_end(const Project& project);
 
   private:
     friend class AssemblyFactory;

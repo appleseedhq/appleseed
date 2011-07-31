@@ -91,9 +91,7 @@ namespace
             return m_transform;
         }
 
-        virtual void on_frame_begin(
-            const Project&          project,
-            const Intersector&      intersector)
+        virtual void on_frame_begin(const Project& project)
         {
             // Precompute the rays origin in world space.
             const Transformd::MatrixType& mat = m_transform.get_local_to_parent();

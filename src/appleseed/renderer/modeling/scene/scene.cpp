@@ -32,6 +32,9 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/environment/environment.h"
+#include "renderer/modeling/environmentedf/environmentedf.h"
+#include "renderer/modeling/environmentshader/environmentshader.h"
+#include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/utility/bbox.h"
 
@@ -186,6 +189,45 @@ double Scene::compute_radius() const
     }
 
     return sqrt(square_radius);
+}
+
+namespace
+{
+    template <typename EntityCollection>
+    void invoke_on_frame_begin(
+        const Project&          project,
+        EntityCollection&       entities)
+    {
+        for (each<EntityCollection> i = entities; i; ++i)
+            i->on_frame_begin(project);
+    }
+
+    template <typename EntityCollection>
+    void invoke_on_frame_end(
+        const Project&          project,
+        EntityCollection&       entities)
+    {
+        for (each<EntityCollection> i = entities; i; ++i)
+            i->on_frame_end(project);
+    }
+}
+
+void Scene::on_frame_begin(const Project& project)
+{
+    impl->m_camera->on_frame_begin(project);
+
+    invoke_on_frame_begin(project, environment_edfs());
+    invoke_on_frame_begin(project, environment_shaders());
+    invoke_on_frame_begin(project, assemblies());
+}
+
+void Scene::on_frame_end(const Project& project)
+{
+    invoke_on_frame_end(project, assemblies());
+    invoke_on_frame_end(project, environment_shaders());
+    invoke_on_frame_end(project, environment_edfs());
+
+    impl->m_camera->on_frame_end(project);
 }
 
 

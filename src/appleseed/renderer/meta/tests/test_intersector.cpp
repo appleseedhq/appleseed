@@ -40,6 +40,7 @@
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/lazy.h"
 #include "foundation/utility/test.h"
 
@@ -106,7 +107,7 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
                     *object,
                     object_index,
                     Transformd(Matrix4d::identity()),
-                    MaterialIndexArray()));
+                    StringArray()));
 
             m_scene->assembly_instances().insert(
                 auto_release_ptr<AssemblyInstance>(

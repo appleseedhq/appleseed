@@ -32,22 +32,25 @@
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 #include "renderer/modeling/entity/entity.h"
+#include "renderer/modeling/scene/containers.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
 #include "foundation/utility/containers/array.h"
 
 // Forward declarations.
-namespace renderer  { class Object; }
+namespace foundation    { class StringArray; }
+namespace renderer      { class Material; }
+namespace renderer      { class Object; }
 
 namespace renderer
 {
 
 //
-// An array of material indices.
+// An array of materials.
 //
 
-DECLARE_ARRAY(MaterialIndexArray, size_t);
+DECLARE_ARRAY(MaterialArray, const Material*);
 
 
 //
@@ -70,14 +73,19 @@ class RENDERERDLL ObjectInstance
     // Return the parent space bounding box of the instance.
     const GAABB3& get_parent_bbox() const;
 
-    // Assign a given material index to a given slot.
-    void set_material_index(const size_t slot, const size_t material_index);
+    // Clear all material assignments.
+    void clear_materials();
 
-    // Set all material indices at once.
-    void set_material_indices(const MaterialIndexArray& material_indices);
+    // Assign a material to a given slot.
+    void assign_material(const size_t slot, const char* material_name);
 
-    // Return the array of material indices.
-    const MaterialIndexArray& get_material_indices() const;
+    // Return the names of the materials referenced by this instance.
+    const foundation::StringArray& get_material_names() const;
+
+    void bind_entities(const MaterialContainer& materials);
+
+    // Return the materials referenced by this instance.
+    const MaterialArray& get_materials() const;
 
   private:
     friend class ObjectInstanceFactory;
@@ -92,7 +100,7 @@ class RENDERERDLL ObjectInstance
         const Object&                   object,
         const size_t                    object_index,
         const foundation::Transformd&   transform,
-        const MaterialIndexArray&       material_indices);
+        const foundation::StringArray&  material_names);
 
     // Destructor.
     ~ObjectInstance();
@@ -112,7 +120,7 @@ class RENDERERDLL ObjectInstanceFactory
         const Object&                   object,
         const size_t                    object_index,
         const foundation::Transformd&   transform,
-        const MaterialIndexArray&       material_indices);
+        const foundation::StringArray&  material_names);
 };
 
 }       // namespace renderer
