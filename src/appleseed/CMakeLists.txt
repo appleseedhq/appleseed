@@ -1011,6 +1011,8 @@ set(renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/bsdf.h
     renderer/modeling/bsdf/bsdffactoryregistrar.cpp
     renderer/modeling/bsdf/bsdffactoryregistrar.h
+    renderer/modeling/bsdf/bsdfmix.cpp
+    renderer/modeling/bsdf/bsdfmix.h
     renderer/modeling/bsdf/bsdftraits.h
     renderer/modeling/bsdf/btdfwrapper.h
     renderer/modeling/bsdf/ibsdffactory.h
