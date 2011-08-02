@@ -63,12 +63,17 @@ def get_version_string():
 # Settings.
 #
 
+Verbose = False
 EnableProfiling = False
+PointLightDiameter = 0.1
 
 
 #
 # Utilities.
 #
+
+def square(x):
+    return x * x
 
 def rad_to_deg(rad):
     return rad * 180.0 / math.pi
@@ -491,19 +496,55 @@ class AppleseedExportOperator(bpy.types.Operator):
                                              description="Select the camera to export",
                                              items=camera_enumerator)
 
+    # Point lights exitance multiplier.
+    point_lights_exitance_mult = bpy.props.FloatProperty(name="Point Lights Energy Multiplier",
+                                                         description="Multiply the exitance of point lights by this factor",
+                                                         min=0.001,
+                                                         max=1000.0,
+                                                         default=200.0,
+                                                         subtype='FACTOR')
+
+    # Light-emitting materials exitance multiplier.
+    light_mats_exitance_mult = bpy.props.FloatProperty(name="Light-Emitting Materials Energy Multiplier",
+                                                       description="Multiply the exitance of light-emitting materials by this factor",
+                                                       min=0.001,
+                                                       max=1000.0,
+                                                       default=1.0,
+                                                       subtype='FACTOR')
+
+    # Specular highlights multiplier.
+    specular_mult = bpy.props.FloatProperty(name="Specular Highlights Multiplier",
+                                            description="Multiply the intensity of specular components by this factor",
+                                            min=0.01,
+                                            max=1.0,
+                                            default=0.3,
+                                            subtype='FACTOR')
+
+    # Lighting engine.
+    lighting_engine = bpy.props.EnumProperty(name="Lighting Engine",
+                                             description="Select the lighting engine to use",
+                                             items=[("pt", "Global Illumination", ""),
+                                                    ("drt", "Direct Lighting", "")])
+
     # Number of samples per pixels in final frame mode.
     sample_count = bpy.props.IntProperty(name="Sample Count",
                                          description="Number of samples per pixels in final frame mode",
                                          min=1,
                                          max=4096,
-                                         default=32)
+                                         default=32,
+                                         subtype='UNSIGNED')
 
-    # Should the mesh files (.obj files) be regenerated?
+    # Regenerate the mesh files (.obj files)?
     generate_mesh_files = bpy.props.BoolProperty(name="Write Meshes to Disk",
                                                  default=True)
 
+    # Recompute vertex normals?
+    recompute_vertex_normals = bpy.props.BoolProperty(name="Recompute Vertex Normals",
+                                                      default=True)
+
     # Transformation matrix that is applied to all entities of the scene.
-    global_matrix = mathutils.Matrix.Scale(0.1, 4)
+    global_scale = 0.1
+    global_matrix = mathutils.Matrix.Scale(global_scale, 4)
 
     def execute(self, context):
         if EnableProfiling:
@@ -566,19 +607,39 @@ class AppleseedExportOperator(bpy.types.Operator):
         self.__emit_configurations()
         self.__close_element("project")
 
+    #
+    # Scene.
+    #
+
     def __emit_scene(self, scene):
         self.__open_element("scene")
         self.__emit_camera(scene)
+        self.__emit_environment(scene)
         self.__emit_assembly(scene)
-        self.__emit_assembly_instance(scene)
+        self.__emit_assembly_instance_element(scene)
         self.__close_element("scene")
+
+    def __emit_assembly(self, scene):
+        self.__open_element('assembly name="' + scene.name + '"')
+        self.__emit_physical_surface_shader_element()
+        self.__emit_objects(scene)
+        self.__emit_lights(scene)
+        self.__close_element("assembly")
+
+    def __emit_assembly_instance_element(self, scene):
+        self.__open_element('assembly_instance name="' + scene.name + '_instance" assembly="' + scene.name + '"')
+        self.__close_element("assembly_instance")
+
+    #
+    # Camera.
+    #
 
     def __emit_camera(self, scene):
         camera = self.__get_selected_camera()
 
         if camera is None:
             self.__warning("No camera in the scene, exporting a default camera.")
-            self.__emit_default_camera()
+            self.__emit_default_camera_element()
             return
 
         render = scene.render
@@ -605,7 +666,7 @@ class AppleseedExportOperator(bpy.types.Operator):
         self.__close_element("transform")
         self.__close_element("camera")
 
-    def __emit_default_camera(self):
+    def __emit_default_camera_element(self):
         self.__open_element('camera name="camera" model="pinhole_camera"')
         self.__emit_parameter("film_width", 0.024892)
         self.__emit_parameter("film_height", 0.018669)
@@ -613,15 +674,29 @@ class AppleseedExportOperator(bpy.types.Operator):
         self.__close_element("camera")
         return
 
-    def __emit_assembly(self, scene):
-        self.__open_element('assembly name="' + scene.name + '"')
-        self.__emit_physical_surface_shader()
-        self.__emit_objects(scene)
-        self.__emit_lights(scene)
-        self.__close_element("assembly")
+    #
+    # Environment.
+    #
 
-    def __emit_physical_surface_shader(self):
-        self.__emit_line('<surface_shader name="physical_shader" model="physical_surface_shader" />')
+    def __emit_environment(self, scene):
+        self.__emit_solid_linear_rgb_color_element("environment_edf_exitance", scene.world.horizon_color, 1.0)
+
+        self.__open_element('environment_edf name="environment_edf" model="constant_environment_edf"')
+        self.__emit_parameter("exitance", "environment_edf_exitance")
+        self.__close_element('environment_edf')
+
+        self.__open_element('environment_shader name="environment_shader" model="edf_environment_shader"')
+        self.__emit_parameter("environment_edf", "environment_edf")
+        self.__close_element('environment_shader')
+
+        self.__open_element('environment name="environment" model="generic_environment"')
+        self.__emit_parameter("environment_edf", "environment_edf")
+        self.__emit_parameter("environment_shader", "environment_shader")
+        self.__close_element('environment')
+
+    #
+    # Geometry.
+    #
 
     def __emit_objects(self, scene):
         for object in scene.objects:
@@ -647,30 +722,30 @@ class AppleseedExportOperator(bpy.types.Operator):
                 instance_matrices = [ object.matrix_world ]
 
             # Emit the object and all its instances.
-            self.__emit_object_and_instances(scene, root_object, instance_matrices)
+            self.__emit_object(scene, root_object, instance_matrices)
 
             # Clear dupli list.
             if object.dupli_type != 'NONE':
                 object.dupli_list_clear()
 
-    def __emit_object_and_instances(self, scene, object, instance_matrices):
+    def __emit_object(self, scene, object, instance_matrices):
         try:
             mesh = object.to_mesh(scene, True, 'RENDER')
-            self.__do_emit_object_and_instances(scene, object, mesh, instance_matrices)
+            self.__emit_mesh_object(scene, object, mesh, instance_matrices)
             bpy.data.meshes.remove(mesh)
         except RuntimeError:
             self.__info("Failed to convert object '{0}' of type '{1}' to a mesh.".format(object.name, object.type))
 
-    def __do_emit_object_and_instances(self, scene, object, mesh, instance_matrices):
+    def __emit_mesh_object(self, scene, object, mesh, instance_matrices):
         if len(mesh.faces) == 0:
             self.__info("Skipping object '{0}' since it has no faces once converted to a mesh.".format(object.name))
             return
 
-        # Recalculate vertex normals.
-        # todo: make this step optional?
-        mesh.calc_normals()
-
         filename = object.name + ".obj"
+
+        # Recalculate vertex normals.
+        if self.recompute_vertex_normals:
+            mesh.calc_normals()
 
         # Export mesh to disk.
         if self.generate_mesh_files:
@@ -683,7 +758,7 @@ class AppleseedExportOperator(bpy.types.Operator):
                 return
 
         # Emit object.
-        self.__emit_object(object.name, filename)
+        self.__emit_object_element(object.name, filename)
 
         # Collect materials.
         materials = [ material_slot.material for material_slot in object.material_slots ]
@@ -693,32 +768,106 @@ class AppleseedExportOperator(bpy.types.Operator):
         # Emit BSDFs and materials.
         for material_index, material in enumerate(materials):
             if material not in self._emitted_materials:
-                self.__emit_bsdf_and_material(material)
+                self.__emit_material(material)
                 self._emitted_materials.add(material)
 
-        self.__info("Object '{0}' has {1} instances and {2} materials.".format(object.name, len(instance_matrices), len(materials)))
+        if Verbose:
+            self.__info("Object '{0}' has {1} instances and {2} materials.".format(object.name, len(instance_matrices), len(materials)))
 
         # Emit object instances.
         for material_index, material in enumerate(materials):
             part_name = "{0}.part_{1}".format(object.name, material_index)
             for instance_index, instance_matrix in enumerate(instance_matrices):
                 instance_name = "{0}.instance_{1}".format(part_name, instance_index)
-                self.__emit_object_instance(part_name, instance_name, self.global_matrix * instance_matrix, material.name)
+                self.__emit_object_instance_element(part_name, instance_name, self.global_matrix * instance_matrix, material.name)
 
-    def __emit_bsdf_and_material(self, material):
-        bsdf_name = "{0}_bsdf".format(material.name)
-        self.__emit_bsdf(material, bsdf_name)
-        self.__emit_material(material.name, bsdf_name, "")
+    def __emit_object_element(self, object_name, filename):
+        self.__open_element('object name="' + object_name + '" model="mesh_object"')
+        self.__emit_parameter("filename", filename)
+        self.__close_element("object")
 
-    def __emit_bsdf(self, material, bsdf_name):
-        if is_black(material.specular_color * material.specular_intensity):
-            self.__emit_lambertian_brdf(material, bsdf_name)
+    def __emit_object_instance_element(self, object_name, instance_name, instance_matrix, material_name):
+        self.__open_element('object_instance name="{0}" object="{1}"'.format(instance_name, object_name))
+        self.__emit_transform_element(instance_matrix)
+        self.__emit_line('<assign_material slot="0" material="{0}" />'.format(material_name))
+        self.__close_element("object_instance")
+
+    #
+    # Materials.
+    #
+
+    def __emit_physical_surface_shader_element(self):
+        self.__emit_line('<surface_shader name="physical_shader" model="physical_surface_shader" />')
+
+    def __emit_material(self, material):
+        bsdf_name = self.__emit_bsdf_tree(material)
+
+        if material.emit > 0.0:
+            edf_name = "{0}_edf".format(material.name)
+            self.__emit_edf(material, edf_name)
         else:
-            self.__emit_ashikhmin_brdf(material, bsdf_name)
+            edf_name = ""
+
+        self.__emit_material_element(material.name, bsdf_name, edf_name, "physical_shader")
+
+    def __emit_bsdf_tree(self, material):
+        bsdfs = []
+
+        # Transparent component.
+        if material.use_transparency and material.alpha < 1.0:
+            transp_bsdf_name = "{0}_transparent".format(material.name)
+            self.__emit_specular_btdf(material, transp_bsdf_name)
+            bsdfs.append([ transp_bsdf_name, 1.0 - material.alpha ])
+
+        # Mirror component.
+        if material.raytrace_mirror.use and material.raytrace_mirror.reflect_factor > 0.0:
+            mirror_bsdf_name = "{0}_mirror".format(material.name)
+            self.__emit_specular_brdf(material, mirror_bsdf_name)
+            bsdfs.append([ mirror_bsdf_name, material.raytrace_mirror.reflect_factor ])
+
+        # Diffuse/glossy component.
+        dg_bsdf_name = "{0}_dg".format(material.name)
+        if is_black(material.specular_color * material.specular_intensity):
+            self.__emit_lambertian_brdf(material, dg_bsdf_name)
+        else:
+            self.__emit_ashikhmin_brdf(material, dg_bsdf_name)
+        bsdfs.append([ dg_bsdf_name, 1.0 - 0.5 * (1.0 - material.alpha + material.raytrace_mirror.reflect_factor) ])
+
+        assert len(bsdfs) > 0
+
+        if len(bsdfs) == 1:
+            return bsdfs[0][0]
+
+        return self.__emit_bsdf_blend(bsdfs)
+
+    def __emit_bsdf_blend(self, bsdfs):
+        assert len(bsdfs) > 0
+
+        if len(bsdfs) == 1:
+            return bsdfs[0][0]
+
+        total_weight = 0.0
+        for bsdf in bsdfs:
+            total_weight += bsdf[1]
+        for bsdf in bsdfs:
+            bsdf[1] /= total_weight
+
+        bsdf0_name = bsdfs[0][0]
+        bsdf0_weight = bsdfs[0][1]
+
+        bsdf1_name = self.__emit_bsdf_blend(bsdfs[1:])
+        bsdf1_weight = 1.0 - bsdf0_weight
+
+        mix_name = "{0}_{1}_mix".format(bsdf0_name, bsdf1_name)
+        self.__emit_bsdf_mix(mix_name, bsdf0_name, bsdf0_weight, bsdf1_name, bsdf1_weight)
+
+        return mix_name
 
     def __emit_lambertian_brdf(self, material, bsdf_name):
         reflectance_name = "{0}_reflectance".format(bsdf_name)
-        self.__emit_color(reflectance_name, material.diffuse_color, material.diffuse_intensity)
+        self.__emit_solid_linear_rgb_color_element(reflectance_name,
+                                                   material.diffuse_color,
+                                                   material.diffuse_intensity)
 
         self.__open_element('bsdf name="{0}" model="lambertian_brdf"'.format(bsdf_name))
         self.__emit_parameter("reflectance", reflectance_name)
@@ -727,9 +876,12 @@ class AppleseedExportOperator(bpy.types.Operator):
     def __emit_ashikhmin_brdf(self, material, bsdf_name):
         diffuse_reflectance_name = "{0}_diffuse_reflectance".format(bsdf_name)
         glossy_reflectance_name = "{0}_glossy_reflectance".format(bsdf_name)
-
-        self.__emit_color(diffuse_reflectance_name, material.diffuse_color, material.diffuse_intensity)
-        self.__emit_color(glossy_reflectance_name, material.specular_color, material.specular_intensity)
+        self.__emit_solid_linear_rgb_color_element(diffuse_reflectance_name,
+                                                   material.diffuse_color,
+                                                   material.diffuse_intensity)
+        self.__emit_solid_linear_rgb_color_element(glossy_reflectance_name,
+                                                   material.specular_color,
+                                                   material.specular_intensity * self.specular_mult)
 
         self.__open_element('bsdf name="{0}" model="ashikhmin_brdf"'.format(bsdf_name))
         self.__emit_parameter("diffuse_reflectance", diffuse_reflectance_name)
@@ -738,34 +890,84 @@ class AppleseedExportOperator(bpy.types.Operator):
         self.__emit_parameter("shininess_v", material.specular_hardness)
         self.__close_element("bsdf")
 
-    def __emit_material(self, material_name, bsdf_name, edf_name):
+    def __emit_specular_brdf(self, material, bsdf_name):
+        reflectance_name = "{0}_reflectance".format(bsdf_name)
+        self.__emit_solid_linear_rgb_color_element(reflectance_name, [ 1.0 ], 1.0)
+
+        self.__open_element('bsdf name="{0}" model="specular_brdf"'.format(bsdf_name))
+        self.__emit_parameter("reflectance", reflectance_name)
+        self.__close_element("bsdf")
+
+    def __emit_specular_btdf(self, material, bsdf_name):
+        reflectance_name = "{0}_reflectance".format(bsdf_name)
+        self.__emit_solid_linear_rgb_color_element(reflectance_name, [ 1.0 ], 1.0)
+
+        if material.transparency_method == 'RAYTRACE':
+            ior = material.raytrace_transparency.ior
+        else: ior = 1.0
+
+        self.__open_element('bsdf name="{0}" model="specular_btdf"'.format(bsdf_name))
+        self.__emit_parameter("reflectance", reflectance_name)
+        self.__emit_parameter("ior", ior)
+        self.__close_element("bsdf")
+
+    def __emit_bsdf_mix(self, bsdf_name, bsdf0_name, bsdf0_weight, bsdf1_name, bsdf1_weight):
+        self.__open_element('bsdf name="{0}" model="bsdf_mix"'.format(bsdf_name))
+        self.__emit_parameter("bsdf0", bsdf0_name)
+        self.__emit_parameter("weight0", bsdf0_weight)
+        self.__emit_parameter("bsdf1", bsdf1_name)
+        self.__emit_parameter("weight1", bsdf1_weight)
+        self.__close_element("bsdf")
+
+    def __emit_edf(self, material, edf_name):
+        self.__emit_diffuse_edf(material, edf_name)
+
+    def __emit_diffuse_edf(self, material, edf_name):
+        exitance_name = "{0}_exitance".format(edf_name)
+        self.__emit_solid_linear_rgb_color_element(exitance_name,
+                                                   material.diffuse_color,
+                                                   material.emit * self.light_mats_exitance_mult)
+        self.__emit_diffuse_edf_element(edf_name, exitance_name)
+
+    def __emit_diffuse_edf_element(self, edf_name, exitance_name):
+        self.__open_element('edf name="{0}" model="diffuse_edf"'.format(edf_name))
+        self.__emit_parameter("exitance", exitance_name)
+        self.__close_element("edf")
+
+    def __emit_material_element(self, material_name, bsdf_name, edf_name, surface_shader_name):
         self.__open_element('material name="{0}" model="generic_material"'.format(material_name))
         if len(bsdf_name) > 0:
             self.__emit_parameter("bsdf", bsdf_name)
         if len(edf_name) > 0:
             self.__emit_parameter("edf", edf_name)
-        self.__emit_parameter("surface_shader", "physical_shader")
+        self.__emit_parameter("surface_shader", surface_shader_name)
         self.__close_element("material")
 
-    def __emit_color(self, name, values, multiplier):
-        self.__open_element('color name="{0}"'.format(name))
-        self.__emit_parameter("color_space", "srgb")
-        self.__emit_parameter("multiplier", multiplier)
-        self.__emit_line("<values>{0} {1} {2}</values>".format(values[0], values[1], values[2]))
-        self.__close_element("color")
-
-    def __emit_object(self, object_name, filename):
-        self.__open_element('object name="' + object_name + '" model="mesh_object"')
-        self.__emit_parameter("filename", filename)
-        self.__close_element("object")
-
-    def __emit_object_instance(self, object_name, instance_name, instance_matrix, material_name):
-        self.__open_element('object_instance name="{0}" object="{1}"'.format(instance_name, object_name))
-        self.__emit_transform(instance_matrix)
-        self.__emit_line('<assign_material slot="0" material="{0}" />'.format(material_name))
-        self.__close_element("object_instance")
+    #
+    # Lights.
+    #
 
     def __emit_lights(self, scene):
+        if self.__scene_has_point_lights(scene):
+            self.__emit_spherical_light()
+            self.__emit_pass_through_surface_shader()
+
+        for object in scene.objects:
+            if object.type == 'LAMP':
+                light_type = object.data.type
+                if light_type == 'POINT':
+                    self.__emit_point_light(scene, object)
+                else:
+                    self.__warning("While exporting light '{0}': unsupported light type '{1}', skipping this light.".format(object.name, light_type))
+
+    def __scene_has_point_lights(self, scene):
+        for object in scene.objects:
+            if object.type == 'LAMP':
+                if object.data.type == 'POINT':
+                    return True
+        return False
+
+    def __emit_spherical_light(self):
         filename = "__spherical_light.obj"
 
         if self.generate_mesh_files:
@@ -773,42 +975,41 @@ class AppleseedExportOperator(bpy.types.Operator):
             self.__progress("Emitting built-in object 'spherical_light' to {0}...".format(filename))
             write_sphere_mesh_to_disk(filepath)
 
-        self.__emit_object("__spherical_light", filename)
+        self.__emit_object_element("__spherical_light", filename)
 
-        for object in scene.objects:
-            if object.type == 'LAMP':
-                self.__emit_light(scene, object)
+    def __emit_pass_through_surface_shader(self):
+        self.__emit_color_element("transparent_black", "linear_rgb", [ 0.0 ], [ 0.0 ], 1.0)
+        self.__open_element('surface_shader name="pass_through_shader" model="constant_surface_shader"')
+        self.__emit_parameter("color", "transparent_black")
+        self.__close_element("surface_shader")
 
-    def __emit_light(self, scene, lamp):
-        lamp_size = 0.1
-        lamp_energy_multipler = 10
-
+    def __emit_point_light(self, scene, lamp):
         material_name = "{0}_material".format(lamp.name)
+        bsdf_name = ""
         edf_name = "{0}_edf".format(material_name)
         exitance_name = "{0}_exitance".format(edf_name)
 
-        self.__emit_color(exitance_name, lamp.data.color, lamp.data.energy * lamp_energy_multipler)
+        half_intensity_dist = lamp.data.distance * self.global_scale
+        intensity_factor = square(half_intensity_dist + 1.0) / 2.0
 
-        self.__open_element('edf name="{0}" model="diffuse_edf"'.format(edf_name))
-        self.__emit_parameter("exitance", exitance_name)
-        self.__close_element("edf")
-
-        self.__emit_material(material_name, "", edf_name)
+        self.__emit_solid_linear_rgb_color_element(exitance_name, lamp.data.color, lamp.data.energy * self.point_lights_exitance_mult * intensity_factor)
+        self.__emit_diffuse_edf_element(edf_name, exitance_name)
+        self.__emit_material_element(material_name, bsdf_name, edf_name, "pass_through_shader")
 
         matrix = self.global_matrix * lamp.matrix_world
-        matrix = matrix * mathutils.Matrix.Scale(lamp_size, 4)
-        self.__emit_object_instance("__spherical_light.0", lamp.name, matrix, material_name)
+        matrix = matrix * mathutils.Matrix.Scale(PointLightDiameter, 4)
+        self.__emit_object_instance_element("__spherical_light.0", lamp.name, matrix, material_name)
 
-    def __emit_assembly_instance(self, scene):
-        self.__open_element('assembly_instance name="' + scene.name + '_instance" assembly="' + scene.name + '"')
-        self.__close_element("assembly_instance")
+    #
+    # Output.
+    #
 
     def __emit_output(self, scene):
         self.__open_element("output")
-        self.__emit_frame(scene)
+        self.__emit_frame_element(scene)
         self.__close_element("output")
 
-    def __emit_frame(self, scene):
+    def __emit_frame_element(self, scene):
         camera = self.__get_selected_camera()
         width, height = self.__get_frame_resolution(scene.render)
         self.__open_element("frame name=\"beauty\"")
@@ -829,25 +1030,56 @@ class AppleseedExportOperator(bpy.types.Operator):
         yratio = height * render.pixel_aspect_y
         return xratio / yratio
 
+    #
+    # Configurations.
+    #
+
     def __emit_configurations(self):
         self.__open_element("configurations")
-        self.__emit_interactive_configuration()
-        self.__emit_final_configuration()
+        self.__emit_interactive_configuration_element()
+        self.__emit_final_configuration_element()
         self.__close_element("configurations")
 
-    def __emit_interactive_configuration(self):
+    def __emit_interactive_configuration_element(self):
         self.__open_element('configuration name="interactive" base="base_interactive"')
+        self.__emit_common_configuration_parameters()
         self.__close_element("configuration")
 
-    def __emit_final_configuration(self):
+    def __emit_final_configuration_element(self):
         self.__open_element('configuration name="final" base="base_final"')
+        self.__emit_common_configuration_parameters()
         self.__open_element('parameters name="generic_tile_renderer"')
         self.__emit_parameter("min_samples", self.sample_count)
         self.__emit_parameter("max_samples", self.sample_count)
-        self.__close_element('parameters')
+        self.__close_element("parameters")
         self.__close_element("configuration")
 
-    def __emit_transform(self, matrix):
+    def __emit_common_configuration_parameters(self):
+        self.__emit_parameter("lighting_engine", self.lighting_engine)
+        self.__open_element('parameters name="{0}"'.format(self.lighting_engine))
+        self.__emit_parameter("enable_ibl", "false")
+        self.__close_element('parameters')
+
+    #
+    # Common elements.
+    #
+
+    def __emit_color_element(self, name, color_space, values, alpha, multiplier):
+        self.__open_element('color name="{0}"'.format(name))
+        self.__emit_parameter("color_space", color_space)
+        self.__emit_parameter("multiplier", multiplier)
+        self.__emit_line("<values>{0}</values>".format(" ".join(map(str, values))))
+        if alpha:
+            self.__emit_line("<alpha>{0}</alpha>".format(" ".join(map(str, alpha))))
+        self.__close_element("color")
+
+    def __emit_solid_linear_rgb_color_element(self, name, values, multiplier):
+        self.__emit_color_element(name, "linear_rgb", values, None, multiplier)
+
+    def __emit_solid_srgb_color_element(self, name, values, multiplier):
+        self.__emit_color_element(name, "srgb", values, None, multiplier)
+
+    def __emit_transform_element(self, matrix):
         s = matrix.to_scale()
         t = matrix.to_translation()
         rx, ry, rz = map(rad_to_deg, matrix.to_euler())
@@ -872,6 +1104,10 @@ class AppleseedExportOperator(bpy.types.Operator):
 
     def __emit_parameter(self, name, value):
         self.__emit_line("<parameter name=\"" + name + "\" value=\"" + str(value) + "\" />")
+
+    #
+    # Utilities.
+    #
 
     def __open_element(self, name):
         self.__emit_line("<" + name + ">")
