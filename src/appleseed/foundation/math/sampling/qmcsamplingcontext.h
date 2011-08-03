@@ -256,20 +256,17 @@ template <size_t N>
 inline Vector<double, N> QMCSamplingContext<RNG>::next_vector2()
 {
     assert(N == m_dimension);
+    assert(N <= PrimeTableSize);
+    assert(N <= FaurePermutationTableSize);
 
     Vector<double, N> v;
 
     for (size_t i = 0; i < N; ++i)
     {
-        const size_t d = i;
-
-        assert(d < PrimeTableSize);
-        assert(d < FaurePermutationTableSize);
-
         v[i] =
             permuted_radical_inverse<double>(
-                Primes[d],
-                FaurePermutations[d],
+                Primes[i],
+                FaurePermutations[i],
                 m_instance);
 
         // Cranley-Patterson rotation.
