@@ -309,7 +309,7 @@ bool LightSampler::sample(
     if (!m_light_cdf.valid())
         return false;
 
-    sampling_context = sampling_context.split(3, 1);
+    sampling_context.split_in_place(3, 1);
 
     sample_emitters(sampling_context.next_vector2<3>(), sample);
 
@@ -325,7 +325,7 @@ bool LightSampler::sample(
     if (!m_light_cdf.valid())
         return false;
 
-    sampling_context = sampling_context.split(3, sample_count);
+    sampling_context.split_in_place(3, sample_count);
 
     for (size_t i = 0; i < sample_count; ++i)
     {

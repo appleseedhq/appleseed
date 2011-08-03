@@ -61,11 +61,16 @@ class RNGSamplingContext
     // Assignment operator.
     RNGSamplingContext& operator=(const RNGSamplingContext& rhs);
 
-    // Trajectory splitting, return a child sampling context with
+    // Trajectory splitting: return a child sampling context with
     // a given number of dimensions and a given number of samples.
     RNGSamplingContext split(
         const size_t    dimension,
         const size_t    sample_count) const;
+
+    // In-place trajectory splitting.
+    void split_in_place(
+        const size_t    dimension,
+        const size_t    sample_count);
 
     // Return the next sample in [0,1].
     double next_double1();
@@ -122,6 +127,14 @@ inline RNGSamplingContext<RNG> RNGSamplingContext<RNG>::split(
 }
 
 template <typename RNG>
+inline void RNGSamplingContext<RNG>::split_in_place(
+    const size_t    dimension,
+    const size_t    sample_count)
+{
+    // Nothing to do.
+}
+
+template <typename RNG>
 inline double RNGSamplingContext<RNG>::next_double1()
 {
     return rand_double1(m_rng);
@@ -138,8 +151,10 @@ template <size_t N>
 inline Vector<double, N> RNGSamplingContext<RNG>::next_vector1()
 {
     Vector<double, N> v;
+
     for (size_t i = 0; i < N; ++i)
         v[i] = rand_double1(m_rng);
+
     return v;
 }
 
@@ -148,8 +163,10 @@ template <size_t N>
 inline Vector<double, N> RNGSamplingContext<RNG>::next_vector2()
 {
     Vector<double, N> v;
+
     for (size_t i = 0; i < N; ++i)
         v[i] = rand_double2(m_rng);
+
     return v;
 }
 

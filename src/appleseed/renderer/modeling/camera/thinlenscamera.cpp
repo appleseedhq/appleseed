@@ -139,7 +139,7 @@ namespace
             ray.m_flags = ~0;
 
             // Sample the surface of the lens.
-            sampling_context = sampling_context.split(2, 1);
+            sampling_context.split_in_place(2, 1);
             const Vector2d s = sampling_context.next_vector2<2>();
             const Vector2d lens_point = m_lens_radius * sample_disk_uniform(s);
 

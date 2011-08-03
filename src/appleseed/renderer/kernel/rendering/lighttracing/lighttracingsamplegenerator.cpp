@@ -457,7 +457,7 @@ namespace
             SampleVector&               samples)
         {
             // Sample the light sources.
-            sampling_context = sampling_context.split(3, 1);
+            sampling_context.split_in_place(3, 1);
             LightSample light_sample;
             const bool got_sample =
                 m_light_sampler.sample(sampling_context.next_vector2<3>(), light_sample);
@@ -477,7 +477,7 @@ namespace
                     light_sample.m_input_params);
 
             // Sample the EDF.
-            sampling_context = sampling_context.split(2, 1);
+            sampling_context.split_in_place(2, 1);
             Vector3d emission_direction;
             Spectrum edf_value;
             double edf_prob;
@@ -560,7 +560,7 @@ namespace
             SampleVector&               samples)
         {
             // Sample the environment.
-            sampling_context = sampling_context.split(2, 1);
+            sampling_context.split_in_place(2, 1);
             InputEvaluator env_edf_input_evaluator(m_texture_cache);
             Vector3d outgoing;
             Spectrum env_edf_value;
@@ -576,7 +576,7 @@ namespace
             const Vector3d disk_center = m_safe_scene_radius * outgoing;
 
             // Uniformly sample the tangent disk.
-            sampling_context = sampling_context.split(2, 1);
+            sampling_context.split_in_place(2, 1);
             const Vector2d disk_point =
                 m_safe_scene_radius *
                 sample_disk_uniform(sampling_context.next_vector2<2>());

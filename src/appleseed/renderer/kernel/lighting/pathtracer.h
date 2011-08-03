@@ -178,7 +178,7 @@ size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
         if (alpha_mask[0] < 1.0)
         {
             // Generate a uniform sample in [0,1).
-            sampling_context = sampling_context.split(1, 1);
+            sampling_context.split_in_place(1, 1);
             const double s = sampling_context.next_double2();
 
             if (s >= alpha_mask[0])
@@ -259,7 +259,7 @@ size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
         if (path_length >= m_rr_minimum_path_length)
         {
             // Generate a uniform sample in [0,1).
-            sampling_context = sampling_context.split(1, 1);
+            sampling_context.split_in_place(1, 1);
             const double s = sampling_context.next_double2();
 
             const double scattering_prob =

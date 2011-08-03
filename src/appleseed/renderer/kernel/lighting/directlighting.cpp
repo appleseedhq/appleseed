@@ -193,7 +193,7 @@ void compute_direct_lighting_light_sampling(
 {
     radiance.set(0.0f);
 
-    sampling_context = sampling_context.split(3, light_sample_count);
+    sampling_context.split_in_place(3, light_sample_count);
 
     for (size_t i = 0; i < light_sample_count; ++i)
     {
@@ -325,7 +325,7 @@ void compute_direct_lighting_single_sample(
     radiance.set(0.0f);
 
     // Generate a uniform sample in [0,1).
-    sampling_context = sampling_context.split(1, 1);
+    sampling_context.split_in_place(1, 1);
     const double s = sampling_context.next_double2();
 
     if (s < 0.5)
@@ -428,7 +428,7 @@ void compute_direct_lighting_single_sample(
     else
     {
         // Generate a uniform sample in [0,1)^3.
-        sampling_context = sampling_context.split(3, 1);
+        sampling_context.split_in_place(3, 1);
         const Vector3d s = sampling_context.next_vector2<3>();
 
         // Sample the light sources.

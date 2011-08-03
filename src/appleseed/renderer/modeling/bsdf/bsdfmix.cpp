@@ -125,7 +125,7 @@ namespace
                 return;
             }
 
-            sampling_context = sampling_context.split(1, 1);
+            sampling_context.split_in_place(1, 1);
             const double s = sampling_context.next_double2();
 
             const double bsdf0_prob = w0 / total_weight;

@@ -79,11 +79,16 @@ class QMCSamplingContext
     // Assignment operator.
     QMCSamplingContext& operator=(const QMCSamplingContext& rhs);
 
-    // Trajectory splitting, return a child sampling context for
+    // Trajectory splitting: return a child sampling context for
     // a given number of dimensions and a given number of samples.
     QMCSamplingContext split(
         const size_t    dimension,
         const size_t    sample_count) const;
+
+    // In-place trajectory splitting.
+    void split_in_place(
+        const size_t    dimension,
+        const size_t    sample_count);
 
     // Set the instance number.
     void set_instance(const size_t instance);
@@ -227,6 +232,40 @@ inline QMCSamplingContext<RNG> QMCSamplingContext<RNG>::split(
             dimension,
             sample_count,
             offset);
+}
+
+template <typename RNG>
+inline void QMCSamplingContext<RNG>::split_in_place(
+    const size_t    dimension,
+    const size_t    sample_count)
+{
+    assert(dimension <= VectorType::Dimension);
+
+    for (size_t i = 0; i < dimension; ++i)
+    {
+        const size_t d = m_base_dimension + m_dimension + i;
+
+        if (d < FaurePermutationTableSize)
+        {
+            assert(d < PrimeTableSize);
+
+            m_offset[i] =
+                permuted_radical_inverse<double>(
+                    Primes[d],
+                    FaurePermutations[d],
+                    m_base_instance + m_instance);
+        }
+        else
+        {
+            // Monte Carlo padding.
+            m_offset[i] = rand_double2(m_rng);
+        }
+    }
+
+    m_base_dimension += m_dimension;    // dimension allocation
+    m_base_instance += m_instance;      // decorrelation by generalization
+    m_dimension = dimension;
+    m_instance = 0;
 }
 
 template <typename RNG>

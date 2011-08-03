@@ -109,7 +109,7 @@ namespace
             Mode&               mode) const
         {
             // Compute the incoming direction in local space.
-            sampling_context = sampling_context.split(2, 1);
+            sampling_context.split_in_place(2, 1);
             const Vector2d s = sampling_context.next_vector2<2>();
             const Vector3d wi = sample_hemisphere_cosine(s);
 

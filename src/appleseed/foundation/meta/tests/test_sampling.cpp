@@ -70,7 +70,7 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
         QMCSamplingContext original = original_parent.split(3, 16);
         original.set_instance(6);
 
-        QMCSamplingContext copy(rng, 5, 16, 9);
+        QMCSamplingContext copy(rng, 4, 16, 9);
         copy = original;
 
         EXPECT_EQ(2, copy.m_base_dimension);

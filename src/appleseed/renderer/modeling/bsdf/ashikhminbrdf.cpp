@@ -158,7 +158,7 @@ namespace
             get_sval(sval, values);
 
             // Generate a uniform sample in [0,1)^3.
-            sampling_context = sampling_context.split(3, 1);
+            sampling_context.split_in_place(3, 1);
             const Vector3d s = sampling_context.next_vector2<3>();
 
             // Select the component to sample and set the scattering mode.

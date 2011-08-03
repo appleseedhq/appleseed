@@ -136,7 +136,7 @@ namespace
                         abs(cos_theta_i),
                         cos_theta_t);
 
-                sampling_context = sampling_context.split(1, 1);
+                sampling_context.split_in_place(1, 1);
                 const double s = sampling_context.next_double2();
 
                 const float reflection_prob = min(max_value(fresnel_reflection), 1.0f);

@@ -167,7 +167,7 @@ namespace
     {
         radiance.set(0.0f);
 
-        sampling_context = sampling_context.split(2, env_sample_count);
+        sampling_context.split_in_place(2, env_sample_count);
 
         for (size_t i = 0; i < env_sample_count; ++i)
         {
