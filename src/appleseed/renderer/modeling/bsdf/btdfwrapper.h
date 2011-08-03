@@ -55,11 +55,11 @@ class BTDFWrapper
         const ParamArray&               params);
 
     virtual void sample(
+        SamplingContext&                sampling_context,
         const void*                     data,
         const bool                      adjoint,
         const foundation::Vector3d&     geometric_normal,
         const foundation::Basis3d&      shading_basis,
-        const foundation::Vector3d&     s,
         const foundation::Vector3d&     outgoing,
         foundation::Vector3d&           incoming,
         Spectrum&                       value,
@@ -99,11 +99,11 @@ BTDFWrapper<BTDFImpl>::BTDFWrapper(
 
 template <typename BTDFImpl>
 void BTDFWrapper<BTDFImpl>::sample(
+    SamplingContext&                    sampling_context,
     const void*                         data,
     const bool                          adjoint,
     const foundation::Vector3d&         geometric_normal,
     const foundation::Basis3d&          shading_basis,
-    const foundation::Vector3d&         s,
     const foundation::Vector3d&         outgoing,
     foundation::Vector3d&               incoming,
     Spectrum&                           value,
@@ -114,11 +114,11 @@ void BTDFWrapper<BTDFImpl>::sample(
     assert(foundation::is_normalized(outgoing));
 
     BTDFImpl::sample(
+        sampling_context,
         data,
         adjoint,
         geometric_normal,
         shading_basis,
-        s,
         outgoing,
         incoming,
         value,

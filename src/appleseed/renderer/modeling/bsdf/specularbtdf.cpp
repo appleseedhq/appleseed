@@ -79,11 +79,11 @@ namespace
         }
 
         FORCE_INLINE virtual void sample(
+            SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
-            const Vector3d&     s,
             const Vector3d&     outgoing,
             Vector3d&           incoming,
             Spectrum&           value,
@@ -136,9 +136,12 @@ namespace
                         abs(cos_theta_i),
                         cos_theta_t);
 
+                sampling_context = sampling_context.split(1, 1);
+                const double s = sampling_context.next_double2();
+
                 const float reflection_prob = min(max_value(fresnel_reflection), 1.0f);
 
-                if (s[0] < static_cast<double>(reflection_prob))
+                if (s < static_cast<double>(reflection_prob))
                 {
                     // Compute the reflected direction.
                     incoming = reflect(outgoing, shading_normal);

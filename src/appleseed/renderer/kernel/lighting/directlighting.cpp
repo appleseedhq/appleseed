@@ -69,24 +69,19 @@ void compute_direct_lighting_bsdf_sampling(
 {
     radiance.set(0.0f);
 
-    sampling_context = sampling_context.split(3, bsdf_sample_count);
-
     for (size_t i = 0; i < bsdf_sample_count; ++i)
     {
-        // Generate a uniform sample in [0,1)^3.
-        const Vector3d s = sampling_context.next_vector2<3>();
-
         // Sample the BSDF.
         Vector3d incoming;
         Spectrum bsdf_value;
         double bsdf_prob;
         BSDF::Mode bsdf_mode;
         bsdf.sample(
+            sampling_context,
             bsdf_data,
             false,              // adjoint
             geometric_normal,
             shading_basis,
-            s,
             outgoing,
             incoming,
             bsdf_value,
@@ -329,11 +324,11 @@ void compute_direct_lighting_single_sample(
 {
     radiance.set(0.0f);
 
-    // Generate a uniform sample in [0,1)^4.
-    sampling_context = sampling_context.split(4, 1);
-    const Vector4d s = sampling_context.next_vector2<4>();
+    // Generate a uniform sample in [0,1).
+    sampling_context = sampling_context.split(1, 1);
+    const double s = sampling_context.next_double2();
 
-    if (s[0] < 0.5)
+    if (s < 0.5)
     {
         // Sample the BSDF.
         Vector3d incoming;
@@ -341,11 +336,11 @@ void compute_direct_lighting_single_sample(
         double bsdf_prob;
         BSDF::Mode bsdf_mode;
         bsdf.sample(
+            sampling_context,
             bsdf_data,
             false,              // adjoint
             geometric_normal,
             shading_basis,
-            Vector3d(s[1], s[2], s[3]),
             outgoing,
             incoming,
             bsdf_value,
@@ -432,9 +427,13 @@ void compute_direct_lighting_single_sample(
     }
     else
     {
+        // Generate a uniform sample in [0,1)^3.
+        sampling_context = sampling_context.split(3, 1);
+        const Vector3d s = sampling_context.next_vector2<3>();
+
         // Sample the light sources.
         LightSample sample;
-        if (!light_sampler.sample(Vector3d(s[1], s[2], s[3]), sample))
+        if (!light_sampler.sample(s, sample))
             return;
         assert(sample.m_edf);
 

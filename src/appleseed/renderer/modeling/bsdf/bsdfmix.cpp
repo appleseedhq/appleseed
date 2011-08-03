@@ -103,11 +103,11 @@ namespace
         }
 
         FORCE_INLINE virtual void sample(
+            SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
-            const Vector3d&     s,
             const Vector3d&     outgoing,
             Vector3d&           incoming,
             Spectrum&           value,
@@ -125,14 +125,18 @@ namespace
                 return;
             }
 
-            const size_t bsdf_index = s[2] < (w0 / total_weight) ? 0 : 1;
+            sampling_context = sampling_context.split(1, 1);
+            const double s = sampling_context.next_double2();
+
+            const double bsdf0_prob = w0 / total_weight;
+            const size_t bsdf_index = s < bsdf0_prob ? 0 : 1;
 
             m_bsdf[bsdf_index]->sample(
+                sampling_context,
                 get_bsdf_data(data, bsdf_index),
                 adjoint,
                 geometric_normal,
                 shading_basis,
-                s,
                 outgoing,
                 incoming,
                 value,

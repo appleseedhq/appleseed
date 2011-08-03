@@ -97,11 +97,11 @@ namespace
         }
 
         FORCE_INLINE virtual void sample(
+            SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
-            const Vector3d&     s,
             const Vector3d&     outgoing,
             Vector3d&           incoming,
             Spectrum&           value,
@@ -109,7 +109,9 @@ namespace
             Mode&               mode) const
         {
             // Compute the incoming direction in local space.
-            const Vector3d wi = sample_hemisphere_cosine(Vector2d(s[0], s[1]));
+            sampling_context = sampling_context.split(2, 1);
+            const Vector2d s = sampling_context.next_vector2<2>();
+            const Vector3d wi = sample_hemisphere_cosine(s);
 
             // Transform the incoming direction to parent space.
             incoming = shading_basis.transform_to_parent(wi);

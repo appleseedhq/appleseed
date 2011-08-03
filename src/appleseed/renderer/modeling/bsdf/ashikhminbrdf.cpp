@@ -132,11 +132,11 @@ namespace
         }
 
         FORCE_INLINE virtual void sample(
+            SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
-            const Vector3d&     s,
             const Vector3d&     outgoing,
             Vector3d&           incoming,
             Spectrum&           value,
@@ -157,11 +157,15 @@ namespace
             SVal sval;
             get_sval(sval, values);
 
-            Vector3d h;
-            double exp;
+            // Generate a uniform sample in [0,1)^3.
+            sampling_context = sampling_context.split(3, 1);
+            const Vector3d s = sampling_context.next_vector2<3>();
 
             // Select the component to sample and set the scattering mode.
             mode = s[2] < rval.m_pd ? Diffuse : Glossy;
+
+            Vector3d h;
+            double exp;
 
             if (mode == Diffuse)
             {

@@ -60,11 +60,11 @@ class NullBSDF
     }
 
     virtual void sample(
+        SamplingContext&                sampling_context,
         const void*                     data,
         const bool                      adjoint,
         const foundation::Vector3d&     geometric_normal,
         const foundation::Basis3d&      shading_basis,
-        const foundation::Vector3d&     s,
         const foundation::Vector3d&     outgoing,
         foundation::Vector3d&           incoming,
         Spectrum&                       value,

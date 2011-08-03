@@ -107,11 +107,11 @@ class RENDERERDLL BSDF
     // direction, the probability density with which it was chosen, the value
     // of the BSDF divided by the probability density and the scattering mode.
     virtual void sample(
+        SamplingContext&            sampling_context,
         const void*                 data,                       // input values
         const bool                  adjoint,                    // use the adjoint scattering kernel if true
         const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
         const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
-        const foundation::Vector3d& s,                          // sample in [0,1)^3
         const foundation::Vector3d& outgoing,                   // world space outgoing direction, unit-length
         foundation::Vector3d&       incoming,                   // world space incoming direction, unit-length
         Spectrum&                   value,                      // BSDF value / PDF value * |cos(incoming, normal)|

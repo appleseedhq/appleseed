@@ -222,8 +222,7 @@ size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
         const foundation::Vector3d outgoing = normalize(-ray.m_dir);
 
         // Compute radiance contribution at this vertex.
-        const bool proceed =
-            m_path_visitor.visit_vertex(
+        if (!m_path_visitor.visit_vertex(
                 sampling_context,
                 *shading_point_ptr,
                 outgoing,
@@ -231,23 +230,18 @@ size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
                 bsdf_data,
                 bsdf_mode,
                 bsdf_prob,
-                throughput);
-        if (!proceed)
+                throughput))
             break;
-
-        // Generate a uniform sample in [0,1)^4.
-        sampling_context = sampling_context.split(4, 1);
-        const foundation::Vector4d s = sampling_context.next_vector2<4>();
 
         // Sample the BSDF.
         foundation::Vector3d incoming;
         Spectrum bsdf_value;
         bsdf->sample(
+            sampling_context,
             bsdf_data,
             Adjoint,
             shading_point_ptr->get_geometric_normal(),
             shading_point_ptr->get_shading_basis(),
-            foundation::Vector3d(s[0], s[1], s[2]),
             outgoing,
             incoming,
             bsdf_value,
@@ -264,12 +258,16 @@ size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
         // Use Russian Roulette to cut the path without introducing bias.
         if (path_length >= m_rr_minimum_path_length)
         {
+            // Generate a uniform sample in [0,1).
+            sampling_context = sampling_context.split(1, 1);
+            const double s = sampling_context.next_double2();
+
             const double scattering_prob =
                 std::min(
                     static_cast<double>(foundation::max_value(bsdf_value)),
                     1.0);
 
-            if (!foundation::pass_rr(scattering_prob, s[3]))
+            if (!foundation::pass_rr(scattering_prob, s))
                 break;
 
             assert(scattering_prob > 0.0);

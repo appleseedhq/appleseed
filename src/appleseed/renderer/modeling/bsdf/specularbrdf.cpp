@@ -76,11 +76,11 @@ namespace
         }
 
         FORCE_INLINE virtual void sample(
+            SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
-            const Vector3d&     s,
             const Vector3d&     outgoing,
             Vector3d&           incoming,
             Spectrum&           value,

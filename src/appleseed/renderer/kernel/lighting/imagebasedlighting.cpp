@@ -69,24 +69,19 @@ namespace
     {
         radiance.set(0.0f);
 
-        sampling_context = sampling_context.split(3, bsdf_sample_count);
-
         for (size_t i = 0; i < bsdf_sample_count; ++i)
         {
-            // Generate a uniform sample in [0,1)^3.
-            const Vector3d s = sampling_context.next_vector2<3>();
-
             // Sample the BSDF.
             Vector3d incoming;
             Spectrum bsdf_value;
             double bsdf_prob;
             BSDF::Mode mode;
             bsdf.sample(
+                sampling_context,
                 bsdf_data,
                 false,              // adjoint
                 geometric_normal,
                 shading_basis,
-                s,
                 outgoing,
                 incoming,
                 bsdf_value,

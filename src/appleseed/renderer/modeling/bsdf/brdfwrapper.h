@@ -55,11 +55,11 @@ class BRDFWrapper
         const ParamArray&               params);
 
     virtual void sample(
+        SamplingContext&                sampling_context,
         const void*                     data,
         const bool                      adjoint,
         const foundation::Vector3d&     geometric_normal,
         const foundation::Basis3d&      shading_basis,
-        const foundation::Vector3d&     s,
         const foundation::Vector3d&     outgoing,
         foundation::Vector3d&           incoming,
         Spectrum&                       value,
@@ -99,11 +99,11 @@ BRDFWrapper<BRDFImpl>::BRDFWrapper(
 
 template <typename BRDFImpl>
 void BRDFWrapper<BRDFImpl>::sample(
+    SamplingContext&                    sampling_context,
     const void*                         data,
     const bool                          adjoint,
     const foundation::Vector3d&         geometric_normal,
     const foundation::Basis3d&          shading_basis,
-    const foundation::Vector3d&         s,
     const foundation::Vector3d&         outgoing,
     foundation::Vector3d&               incoming,
     Spectrum&                           value,
@@ -131,11 +131,11 @@ void BRDFWrapper<BRDFImpl>::sample(
     }
 
     BRDFImpl::sample(
+        sampling_context,
         data,
         adjoint,
         geometric_normal,
         shading_basis,
-        s,
         outgoing,
         incoming,
         value,
