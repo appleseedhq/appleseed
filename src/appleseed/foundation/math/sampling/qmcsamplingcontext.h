@@ -66,7 +66,7 @@ class QMCSamplingContext
     // Random number generator.
     typedef RNG RNGType;
 
-    typedef Vector<double, 8> VectorType;
+    typedef Vector<double, 4> VectorType;
 
     // Constructors.
     explicit QMCSamplingContext(RNG& rng);
@@ -156,6 +156,7 @@ inline QMCSamplingContext<RNG>::QMCSamplingContext(
   , m_instance(instance)
   , m_offset(0.0)
 {
+    assert(dimension <= VectorType::Dimension);
 }
 
 template <typename RNG>
@@ -173,6 +174,7 @@ inline QMCSamplingContext<RNG>::QMCSamplingContext(
   , m_instance(0)
   , m_offset(offset)
 {
+    assert(dimension <= VectorType::Dimension);
 }
 
 template <typename RNG> inline
@@ -192,6 +194,8 @@ inline QMCSamplingContext<RNG> QMCSamplingContext<RNG>::split(
     const size_t    dimension,
     const size_t    sample_count) const
 {
+    assert(dimension <= VectorType::Dimension);
+
     VectorType offset;
 
     for (size_t i = 0; i < dimension; ++i)
