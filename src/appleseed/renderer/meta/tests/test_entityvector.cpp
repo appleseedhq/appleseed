@@ -165,8 +165,8 @@ TEST_SUITE(Renderer_Modeling_Entity_EntityVector)
     TEST_CASE(GetIndex_GivenName_ReturnsIndex)
     {
         EntityVector v;
-        v.insert(DummyEntityFactory::create("dummy1"));
-        v.insert(DummyEntityFactory::create("dummy2"));
+        v.insert(auto_release_ptr<Entity>(DummyEntityFactory::create("dummy1")));
+        v.insert(auto_release_ptr<Entity>(DummyEntityFactory::create("dummy2")));
 
         EXPECT_EQ(1, v.get_index("dummy2"));
     }

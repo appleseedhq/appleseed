@@ -192,14 +192,14 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Tracer              m_tracer;
 
         Fixture()
-          : m_trace_context(m_scene.ref())
+          : m_trace_context(Base::m_scene.ref())
           , m_intersector(m_trace_context)
-          , m_texture_cache(m_scene.ref(), 1024 * 16)
+          , m_texture_cache(Base::m_scene.ref(), 1024 * 16)
           , m_sampling_context(m_rng, 0, 0, 0)
           , m_tracer(m_intersector, m_texture_cache, m_sampling_context)
         {
             InputBinder input_binder;
-            input_binder.bind(m_scene.ref());
+            input_binder.bind(Base::m_scene.ref());
         }
     };
 
