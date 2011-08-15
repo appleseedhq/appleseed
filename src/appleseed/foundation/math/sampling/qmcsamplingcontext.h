@@ -107,6 +107,9 @@ class QMCSamplingContext
     template <size_t N>
     Vector<double, N> next_vector2();
 
+    // Return the current maximum dimension reached by this sampler.
+    size_t get_max_dimension() const;
+
   private:
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Sampling_QMCSamplingContext, InitialStateIsCorrect);
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Sampling_QMCSamplingContext, TestAssignmentOperator);
@@ -321,6 +324,12 @@ inline Vector<double, N> QMCSamplingContext<RNG>::next_vector2()
     ++m_instance;
 
     return v;
+}
+
+template <typename RNG>
+inline size_t QMCSamplingContext<RNG>::get_max_dimension() const
+{
+    return m_base_dimension + m_dimension;
 }
 
 }       // namespace foundation

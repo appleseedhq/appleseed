@@ -39,10 +39,12 @@
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/population.h"
 #include "foundation/math/qmc.h"
 #include "foundation/math/rng.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/string.h"
 
 // Forward declarations.
 namespace foundation    { class LightingConditions; }
@@ -74,6 +76,17 @@ namespace
         {
         }
 
+        ~GenericSampleGenerator()
+        {
+            RENDERER_LOG_DEBUG(
+                "generic sample generator statistics:\n"
+                "  max. samp. dim.  avg %.1f  min %s  max %s  dev %.1f\n",
+                m_max_sampling_dim.get_avg(),
+                pretty_uint(m_max_sampling_dim.get_min()).c_str(),
+                pretty_uint(m_max_sampling_dim.get_max()).c_str(),
+                m_max_sampling_dim.get_dev());
+        }
+
         virtual void release()
         {
             delete this;
@@ -90,6 +103,7 @@ namespace
         auto_release_ptr<ISampleRenderer>   m_sample_renderer;
         const LightingConditions&           m_lighting_conditions;
         MersenneTwister                     m_rng;
+        Population<size_t>                  m_max_sampling_dim;
 
         virtual size_t generate_samples(
             const size_t                    sequence_index,
@@ -125,6 +139,8 @@ namespace
             sample.m_color[2] = shading_result.m_color[2];
             sample.m_color[3] = shading_result.m_alpha[0];
             samples.push_back(sample);
+
+            m_max_sampling_dim.insert(sampling_context.get_max_dimension());
 
             return 1;
         }
