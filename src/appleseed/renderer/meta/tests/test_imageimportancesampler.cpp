@@ -70,7 +70,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
         const size_t Height = 5;
 
         HorizontalGradientSampler sampler(Width, Height);
-        ImageImportanceSampler<double, HorizontalGradientSampler>
+        ImageImportanceSampler<double>
             importance_sampler(
                 Width,
                 Height,
@@ -115,7 +115,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
 
         ImageSampler sampler(*image.get());
 
-        ImageImportanceSampler<float, ImageSampler> importance_sampler(
+        ImageImportanceSampler<float> importance_sampler(
             width,
             height,
             sampler);
@@ -209,7 +209,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
     TEST_CASE(GetPDF_GivenBlackImage_ReturnsZeroDotFive)
     {
         UniformBlackSampler sampler;
-        ImageImportanceSampler<double, UniformBlackSampler> importance_sampler(2, 2, sampler);
+        ImageImportanceSampler<double> importance_sampler(2, 2, sampler);
 
         const double pdf = importance_sampler.get_pdf(0, 1);
 

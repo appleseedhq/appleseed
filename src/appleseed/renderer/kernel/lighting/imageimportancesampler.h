@@ -39,12 +39,13 @@
 namespace renderer
 {
 
-template <typename T, typename ImageSampler>
+template <typename T>
 class ImageImportanceSampler
   : public foundation::NonCopyable
 {
   public:
     // Constructor.
+    template <typename ImageSampler>
     ImageImportanceSampler(
         const size_t                    width,
         const size_t                    height,
@@ -52,6 +53,10 @@ class ImageImportanceSampler
 
     // Destructor.
     ~ImageImportanceSampler();
+
+    // Resample the image and rebuild the CDFs.
+    template <typename ImageSampler>
+    void rebuild(ImageSampler& sampler);
 
     // Sample the image and return the coordinates of the chosen pixel,
     // and the probability with which it was chosen.
@@ -61,6 +66,7 @@ class ImageImportanceSampler
         size_t&                         y,
         T&                              probability) const;
 
+    // Return the probability density function of a given pixel.
     T get_pdf(
         const size_t                    x,
         const size_t                    y) const;
@@ -81,9 +87,9 @@ class ImageImportanceSampler
 // ImageImportanceSampler class implementation.
 //
 
-// Constructor.
-template <typename T, typename ImageSampler>
-ImageImportanceSampler<T, ImageSampler>::ImageImportanceSampler(
+template <typename T>
+template <typename ImageSampler>
+ImageImportanceSampler<T>::ImageImportanceSampler(
     const size_t                    width,
     const size_t                    height,
     ImageSampler&                   sampler)
@@ -93,8 +99,25 @@ ImageImportanceSampler<T, ImageSampler>::ImageImportanceSampler(
 {
     m_cdf_x = new CDF[m_height];
 
+    rebuild(sampler);
+}
+
+template <typename T>
+ImageImportanceSampler<T>::~ImageImportanceSampler()
+{
+    delete [] m_cdf_x;
+}
+
+template <typename T>
+template <typename ImageSampler>
+void ImageImportanceSampler<T>::rebuild(ImageSampler& sampler)
+{
+    m_cdf_y.clear();
+
     for (size_t y = 0; y < m_height; ++y)
     {
+        m_cdf_x[y].clear();
+
         for (size_t x = 0; x < m_width; ++x)
         {
             const T importance = sampler(x, y);
@@ -111,17 +134,8 @@ ImageImportanceSampler<T, ImageSampler>::ImageImportanceSampler(
         m_cdf_y.prepare();
 }
 
-// Destructor.
-template <typename T, typename ImageSampler>
-ImageImportanceSampler<T, ImageSampler>::~ImageImportanceSampler()
-{
-    delete [] m_cdf_x;
-}
-
-// Sample the image and return the coordinates of the chosen pixel,
-// and the probability with which it was chosen.
-template <typename T, typename ImageSampler>
-inline void ImageImportanceSampler<T, ImageSampler>::sample(
+template <typename T>
+inline void ImageImportanceSampler<T>::sample(
     const foundation::Vector<T, 2>& s,
     size_t&                         x,
     size_t&                         y,
@@ -146,8 +160,8 @@ inline void ImageImportanceSampler<T, ImageSampler>::sample(
     }
 }
 
-template <typename T, typename ImageSampler>
-inline T ImageImportanceSampler<T, ImageSampler>::get_pdf(
+template <typename T>
+inline T ImageImportanceSampler<T>::get_pdf(
     const size_t                    x,
     const size_t                    y) const
 {

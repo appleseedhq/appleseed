@@ -230,7 +230,7 @@ namespace
             Alpha       m_exitance_alpha;   // unused
         };
 
-        typedef ImageImportanceSampler<double, ImageSampler> ImageImportanceSamplerType;
+        typedef ImageImportanceSampler<double> ImageImportanceSamplerType;
 
         size_t                                  m_importance_map_width;
         size_t                                  m_importance_map_height;
