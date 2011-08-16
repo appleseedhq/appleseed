@@ -54,7 +54,7 @@ class RENDERERDLL Project
     // Delete this instance.
     virtual void release();
 
-    // Set or get the project path.
+    // Set/get the project path.
     bool has_path() const;
     void set_path(const char* path);
     const char* get_path() const;
