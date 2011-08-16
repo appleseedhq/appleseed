@@ -120,6 +120,15 @@ class FOUNDATIONDLL Tile
     uint8* pixel(
         const size_t        i) const;
 
+    // Direct access to a given component of a given pixel.
+    uint8* component(
+        const size_t        x,
+        const size_t        y,
+        const size_t        c) const;
+    uint8* component(
+        const size_t        i,
+        const size_t        c) const;
+
     // Structured write access to a given pixel, with automatic pixel format conversion.
     template <typename T>
     void set_pixel(
@@ -131,6 +140,19 @@ class FOUNDATIONDLL Tile
         const size_t        i,
         const T&            val);                   // pixel value
 
+    // Structured write access to a given component of a given pixel.
+    template <typename T>
+    void set_component(
+        const size_t        x,
+        const size_t        y,
+        const size_t        c,
+        const T             val);                   // component value
+    template <typename T>
+    void set_component(
+        const size_t        i,
+        const size_t        c,
+        const T             val);                   // component value
+
     // Structured read access to a given pixel, with automatic pixel format conversion.
     template <typename T>
     void get_pixel(
@@ -141,6 +163,17 @@ class FOUNDATIONDLL Tile
     void get_pixel(
         const size_t        i,
         T&                  val) const;             // [out] pixel value
+
+    // Structured read access to a given component of a given pixel.
+    template <typename T>
+    T get_component(
+        const size_t        x,
+        const size_t        y,
+        const size_t        c) const;
+    template <typename T>
+    T get_component(
+        const size_t        i,
+        const size_t        c) const;
 
     // Set all pixels to a given color.
     template <typename T>
@@ -225,6 +258,21 @@ inline uint8* Tile::pixel(
     return m_pixel_array + index;
 }
 
+inline uint8* Tile::component(
+    const size_t    x,
+    const size_t    y,
+    const size_t    c) const
+{
+    return pixel(x, y) + c * m_channel_size;
+}
+
+inline uint8* Tile::component(
+    const size_t    i,
+    const size_t    c) const
+{
+    return pixel(i) + c * m_channel_size;
+}
+
 // Check that the number of channels in a pixel value matches
 // the number of channels in the tile.
 #define FOUNDATION_CHECK_PIXEL_SIZE(val) \
@@ -237,6 +285,7 @@ inline void Tile::set_pixel(
     const T&        val)
 {
     FOUNDATION_CHECK_PIXEL_SIZE(val);
+
     Pixel::convert_to_format(
         &val[0],                                // source begin
         &val[0] + m_channel_count,              // source end
@@ -252,6 +301,7 @@ inline void Tile::set_pixel(
     const T&        val)
 {
     FOUNDATION_CHECK_PIXEL_SIZE(val);
+
     Pixel::convert_to_format(
         &val[0],                                // source begin
         &val[0] + m_channel_count,              // source end
@@ -262,13 +312,46 @@ inline void Tile::set_pixel(
 }
 
 template <typename T>
+inline void Tile::set_component(
+    const size_t    x,
+    const size_t    y,
+    const size_t    c,
+    const T         val)
+{
+    Pixel::convert_to_format(
+        &val,                                   // source begin
+        &val + 1,                               // source end
+        1,                                      // source stride
+        m_pixel_format,                         // destination format
+        component(x, y, c),                     // destination
+        1);                                     // destination stride
+}
+
+template <typename T>
+inline void Tile::set_component(
+    const size_t    i,
+    const size_t    c,
+    const T         val)
+{
+    Pixel::convert_to_format(
+        &val,                                   // source begin
+        &val + 1,                               // source end
+        1,                                      // source stride
+        m_pixel_format,                         // destination format
+        component(i, c),                        // destination
+        1);                                     // destination stride
+}
+
+template <typename T>
 inline void Tile::get_pixel(
     const size_t    x,
     const size_t    y,
     T&              val) const
 {
     FOUNDATION_CHECK_PIXEL_SIZE(val);
+
     const uint8* src = pixel(x, y);
+
     Pixel::convert_from_format(
         m_pixel_format,                         // source format
         src,                                    // source begin
@@ -284,7 +367,9 @@ inline void Tile::get_pixel(
     T&              val) const
 {
     FOUNDATION_CHECK_PIXEL_SIZE(val);
+
     const uint8* src = pixel(i);
+
     Pixel::convert_from_format(
         m_pixel_format,                         // source format
         src,                                    // source begin
@@ -292,6 +377,45 @@ inline void Tile::get_pixel(
         1,                                      // source stride
         &val[0],                                // destination
         1);                                     // destination stride
+}
+
+template <typename T>
+inline T Tile::get_component(
+    const size_t    x,
+    const size_t    y,
+    const size_t    c) const
+{
+    const uint8* src = component(x, y, c);
+
+    T val;
+    Pixel::convert_from_format(
+        m_pixel_format,                         // source format
+        src,                                    // source begin
+        src + m_channel_size,                   // source end
+        1,                                      // source stride
+        &val,                                   // destination
+        1);                                     // destination stride
+
+    return val;
+}
+
+template <typename T>
+inline T Tile::get_component(
+    const size_t    i,
+    const size_t    c) const
+{
+    const uint8* src = component(i, c);
+
+    T val;
+    Pixel::convert_from_format(
+        m_pixel_format,                         // source format
+        src,                                    // source begin
+        src + m_channel_size,                   // source end
+        1,                                      // source stride
+        &val,                                   // destination
+        1);                                     // destination stride
+
+    return val;
 }
 
 template <typename T>
