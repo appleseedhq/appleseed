@@ -103,6 +103,9 @@ class RENDERERDLL Frame
     // Compute and return the average luminance of the frame.
     double compute_average_luminance() const;
 
+    // Compute the root-mean-square deviation against a given reference image.
+    double compute_rms_deviation(const foundation::Image& reference) const;
+
   private:
     friend class FrameFactory;
 

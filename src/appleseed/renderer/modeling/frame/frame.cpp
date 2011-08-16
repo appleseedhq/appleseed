@@ -39,6 +39,7 @@
 #include "foundation/image/imageattributes.h"
 #include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
+#include "foundation/math/scalar.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
@@ -248,8 +249,8 @@ bool Frame::write(const char* filename) const
 }
 
 bool Frame::archive(
-    const char*     directory,
-    char**          output_path) const
+    const char*         directory,
+    char**              output_path) const
 {
     assert(directory);
 
@@ -303,6 +304,18 @@ bool Frame::archive(
 
 namespace
 {
+    template <typename T, size_t N>
+    bool has_nan(const Color<T, N>& color)
+    {
+        for (size_t i = 0; i < N; ++i)
+        {
+            if (color[i] != color[i])
+                return true;
+        }
+
+        return false;
+    }
+    
     double accumulate_luminance(const Tile& tile)
     {
         double accumulated_luminance = 0.0;
@@ -314,6 +327,7 @@ namespace
         {
             for (size_t x = 0; x < tile_width; ++x)
             {
+                // Fetch the pixel color; assume linear RGBA.
                 Color4f linear_rgba;
                 tile.get_pixel(x, y, linear_rgba);
 
@@ -321,9 +335,7 @@ namespace
                 const Color3f linear_rgb = linear_rgba.rgb();
 
                 // Skip pixels containing NaN values.
-                if (linear_rgb[0] != linear_rgb[0] ||
-                    linear_rgb[1] != linear_rgb[1] ||
-                    linear_rgb[2] != linear_rgb[2])
+                if (has_nan(linear_rgb))
                     continue;
 
                 // Compute the Rec. 709 relative luminance of this pixel.
@@ -357,7 +369,7 @@ namespace
         return accumulated_luminance;
     }
 
-    double compute_avg_luminance(const Image& image)
+    double do_compute_average_luminance(const Image& image)
     {
         const double accumulated_luminance = accumulate_luminance(image);
 
@@ -464,22 +476,22 @@ namespace
             EXPECT_FEQ(16.0, accumulated_luminance);
         }
 
-        TEST_CASE(ComputeAvgLuminance_Given4x4ImageFilledWithZeroes_ReturnsZero)
+        TEST_CASE(DoComputeAverageLuminance_Given4x4ImageFilledWithZeroes_ReturnsZero)
         {
             Image image(4, 4, 2, 2, 4, PixelFormatFloat);
             clear_image(image, Color4f(0.0f));
 
-            const double average_luminance = compute_avg_luminance(image);
+            const double average_luminance = do_compute_average_luminance(image);
 
             EXPECT_EQ(0.0, average_luminance);
         }
 
-        TEST_CASE(ComputeAvgLuminance_Given4x4ImageFilledWithOnes_ReturnsOne)
+        TEST_CASE(DoComputeAverageLuminance_Given4x4ImageFilledWithOnes_ReturnsOne)
         {
             Image image(4, 4, 2, 2, 4, PixelFormatFloat);
             clear_image(image, Color4f(1.0f));
 
-            const double average_luminance = compute_avg_luminance(image);
+            const double average_luminance = do_compute_average_luminance(image);
 
             EXPECT_FEQ(1.0, average_luminance);
         }
@@ -488,7 +500,75 @@ namespace
 
 double Frame::compute_average_luminance() const
 {
-    return compute_avg_luminance(*impl->m_image.get());
+    return do_compute_average_luminance(*impl->m_image.get());
+}
+
+namespace
+{
+    struct ExceptionIncompatibleImages
+      : public Exception
+    {
+    };
+
+    double sum_pixel_components(
+        const Tile&     tile,
+        const size_t    i)
+    {
+        double sum = 0.0;
+
+        const size_t channel_count = tile.get_channel_count();
+        for (size_t c = 0; c < channel_count; ++c)
+            sum += tile.get_component<double>(i, c);
+
+        return sum;
+    }
+
+    double do_compute_rms_deviation(
+        const Image&    image,
+        const Image&    ref_image)
+    {
+        const CanvasProperties& props = image.properties();
+        const CanvasProperties& ref_props = ref_image.properties();
+
+        if (props.m_canvas_width != ref_props.m_canvas_width ||
+            props.m_canvas_height != ref_props.m_canvas_height ||
+            props.m_tile_width != ref_props.m_tile_width ||
+            props.m_tile_height != ref_props.m_tile_height ||
+            props.m_channel_count != ref_props.m_channel_count)
+            throw ExceptionIncompatibleImages();
+
+        double mse = 0.0;   // mean square error
+
+        for (size_t ty = 0; ty < props.m_tile_count_y; ++ty)
+        {
+            for (size_t tx = 0; tx < props.m_tile_count_x; ++tx)
+            {
+                const Tile& tile = image.tile(tx, ty);
+                const size_t tile_width = tile.get_width();
+                const size_t tile_height = tile.get_height();
+
+                const Tile& ref_tile = ref_image.tile(tx, ty);
+                assert(ref_tile.get_width() == tile_width);
+                assert(ref_tile.get_height() == tile_height);
+
+                for (size_t i = 0; i < tile_width * tile_height; ++i)
+                {
+                    const double sum = sum_pixel_components(tile, i);
+                    const double ref_sum = sum_pixel_components(ref_tile, i);
+                    mse += square(sum - ref_sum);
+                }
+            }
+        }
+
+        mse /= props.m_pixel_count * square(props.m_channel_count);
+
+        return sqrt(mse);
+    }
+}
+
+double Frame::compute_rms_deviation(const Image& ref_image) const
+{
+    return do_compute_rms_deviation(*impl->m_image.get(), ref_image);
 }
 
 void Frame::extract_parameters()
