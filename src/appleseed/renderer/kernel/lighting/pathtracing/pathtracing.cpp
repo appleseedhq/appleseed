@@ -84,7 +84,7 @@ namespace
           : m_params(params)
           , m_light_sampler(light_sampler)
         {
-            RENDERER_LOG_DEBUG(
+            RENDERER_LOG_INFO(
                 "path tracing settings:\n"
                 "  next event est.  %s\n"
                 "  min path length  %s\n"
