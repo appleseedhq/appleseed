@@ -36,11 +36,13 @@
 #include "foundation/math/rng.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/maplefile.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
 #include "foundation/utility/testutils.h"
 
 // Standard headers.
+#include <cmath>
 #include <cstddef>
 #include <string>
 #include <vector>
@@ -320,5 +322,40 @@ TEST_SUITE(Foundation_Math_QMC)
         }
 
         GenericImageFileWriter().write("unit tests/outputs/test_qmc_sampleimageplanewithhaltonsequence.png", image);
+    }
+
+    TEST_CASE(Integrate1DFunction)
+    {
+        const double ExactArea = 2.0;
+        const size_t SampleCount = 500;
+
+        MersenneTwister rng;
+
+        double rng_area = 0.0;
+        double qmc_area = 0.0;
+
+        vector<double> abscissa;
+        vector<double> rng_rmsd;
+        vector<double> qmc_rmsd;
+
+        for (size_t i = 0; i < SampleCount; ++i)
+        {
+            rng_area += sin(rand_double2(rng) * Pi);
+            qmc_area += sin(radical_inverse_base2<double>(i) * Pi);
+
+            const double n = static_cast<double>(i + 1);
+            const double v = Pi / n;
+
+            abscissa.push_back(n);
+            rng_rmsd.push_back(abs(rng_area * v - ExactArea));
+            qmc_rmsd.push_back(abs(qmc_area * v - ExactArea));
+        }
+
+        MapleFile file("unit tests/outputs/test_qmc_integrate1dfunction.mpl");
+        file.define("rng_rmsd", abscissa.size(), &abscissa[0], &rng_rmsd[0]);
+        file.define("qmc_rmsd", abscissa.size(), &abscissa[0], &qmc_rmsd[0]);
+        file.plot(
+            "rng_rmsd", "blue", "RMS Deviation (RNG)",
+            "qmc_rmsd", "red", "RMS Deviation (QMC)");
     }
 }
