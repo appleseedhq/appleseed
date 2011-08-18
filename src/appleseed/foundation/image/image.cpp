@@ -69,6 +69,15 @@ Image::Image(
         m_tiles[i] = 0;
 }
 
+Image::Image(const CanvasProperties& props)
+  : m_props(props)
+{
+    m_tiles = new Tile*[m_props.m_tile_count];
+
+    for (size_t i = 0; i < m_props.m_tile_count; ++i)
+        m_tiles[i] = 0;
+}
+
 Image::Image(const Image& rhs)
   : m_props(rhs.m_props)
 {

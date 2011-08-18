@@ -70,7 +70,7 @@ class FOUNDATIONDLL Image
   : public ICanvas
 {
   public:
-    // Constructor.
+    // Constructors.
     Image(
         const size_t        image_width,        // image width, in pixels
         const size_t        image_height,       // image height, in pixels
@@ -78,6 +78,7 @@ class FOUNDATIONDLL Image
         const size_t        tile_height,        // tile height, in pixels
         const size_t        channel_count,      // number of channels
         const PixelFormat   pixel_format);      // pixel format
+    explicit Image(const CanvasProperties& props);
 
     // Copy constructor.
     Image(const Image&      rhs);
