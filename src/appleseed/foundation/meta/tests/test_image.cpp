@@ -33,6 +33,9 @@
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 
+// Standard headers.
+#include <cstddef>
+
 TEST_SUITE(Foundation_Image_Image)
 {
     using namespace foundation;
@@ -58,5 +61,36 @@ TEST_SUITE(Foundation_Image_Image)
 
         EXPECT_EQ(Color3f(0.0), c00);
         EXPECT_EQ(Color3f(0.0), c10);
+    }
+
+    TEST_CASE(Clear_Given4x4ImageWith2x2Tiles_FillsImageWithGivenValue)
+    {
+        const Color3f Expected(42.0f);
+
+        Image image(4, 4, 2, 2, 3, PixelFormatFloat);
+        image.clear(Expected);
+
+        const CanvasProperties& props = image.properties();
+
+        for (size_t ty = 0; ty < props.m_tile_count_y; ++ty)
+        {
+            for (size_t tx = 0; tx < props.m_tile_count_x; ++tx)
+            {
+                const Tile& tile = image.tile(tx, ty);
+                const size_t tile_width = tile.get_width();
+                const size_t tile_height = tile.get_height();
+
+                for (size_t y = 0; y < tile_height; ++y)
+                {
+                    for (size_t x = 0; x < tile_width; ++x)
+                    {
+                        Color3f value;
+                        tile.get_pixel(x, y, value);
+
+                        EXPECT_EQ(Expected, value);
+                    }
+                }
+            }
+        }
     }
 }

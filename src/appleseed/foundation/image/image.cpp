@@ -29,9 +29,6 @@
 // Interface header.
 #include "image.h"
 
-// appleseed.foundation headers.
-#include "foundation/image/tile.h"
-
 // Standard headers.
 #include <cassert>
 #include <cstring>
@@ -82,7 +79,6 @@ Image::Image(const Image& rhs)
         for (size_t tx = 0; tx < m_props.m_tile_count_x; ++tx)
         {
             const size_t tile_index = ty * m_props.m_tile_count_x + tx;
-
             m_tiles[tile_index] = new Tile(rhs.tile(tx, ty));
         }
     }

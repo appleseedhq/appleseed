@@ -33,12 +33,10 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/icanvas.h"
 #include "foundation/image/pixel.h"
+#include "foundation/image/tile.h"
 
 // Standard headers.
 #include <cstddef>
-
-// Forward declarations.
-namespace foundation    { class Tile; }
 
 //
 // On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
@@ -105,6 +103,10 @@ class FOUNDATIONDLL Image
         const size_t        tile_y,
         Tile*               tile);
 
+    // Set all pixels of all tiles to a given color.
+    template <typename T>
+    void clear(const T&     val);               // pixel value
+
   protected:
     CanvasProperties        m_props;            // canvas properties
     Tile**                  m_tiles;            // tile array
@@ -118,6 +120,16 @@ class FOUNDATIONDLL Image
 inline const CanvasProperties& Image::properties() const
 {
     return m_props;
+}
+
+template <typename T>
+void Image::clear(const T& val)
+{
+    for (size_t ty = 0; ty < m_props.m_tile_count_y; ++ty)
+    {
+        for (size_t tx = 0; tx < m_props.m_tile_count_x; ++tx)
+            tile(tx, ty).clear(val);
+    }
 }
 
 }       // namespace foundation
