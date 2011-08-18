@@ -293,7 +293,7 @@ DictionaryArray ColorEntityFactory::get_widget_definitions()
             .insert("name", "alpha")
             .insert("label", "Alpha")
             .insert("widget", "text_box")
-            .insert("default", "1.0 1.0 1.0")
+            .insert("default", "1.0")
             .insert("use", "optional"));
 
     definitions.push_back(
