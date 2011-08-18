@@ -69,6 +69,8 @@ source_group("foundation\\core" FILES
 )
 
 set(foundation_image_sources
+    foundation/image/analysis.cpp
+    foundation/image/analysis.h
     foundation/image/canvasproperties.h
     foundation/image/color.h
     foundation/image/colorspace.cpp
@@ -338,6 +340,7 @@ set_source_files_properties(
 
 set(foundation_meta_tests_sources
     foundation/meta/tests/test_aabb.cpp
+    foundation/meta/tests/test_analysis.cpp
     foundation/meta/tests/test_attributeset.cpp
     foundation/meta/tests/test_benchmarkaggregator.cpp
     foundation/meta/tests/test_boost_datetime.cpp

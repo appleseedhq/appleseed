@@ -32,6 +32,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/core/exceptions/exceptionioerror.h"
+#include "foundation/image/analysis.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/image/exrimagefilewriter.h"
 #include "foundation/image/genericimagefilewriter.h"
@@ -42,14 +43,9 @@
 #include "foundation/math/scalar.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
-#include "foundation/utility/test.h"
 
 // boost headers.
 #include "boost/filesystem/path.hpp"
-
-// Standard headers.
-#include <algorithm>
-#include <cstring>
 
 using namespace boost;
 using namespace foundation;
@@ -165,9 +161,7 @@ void Frame::transform_image_to_frame_color_space(Image& image) const
     for (size_t ty = 0; ty < image_props.m_tile_count_y; ++ty)
     {
         for (size_t tx = 0; tx < image_props.m_tile_count_x; ++tx)
-        {
             transform_tile_to_frame_color_space(image.tile(tx, ty));
-        }
     }
 }
 
@@ -302,273 +296,14 @@ bool Frame::archive(
     return true;
 }
 
-namespace
-{
-    template <typename T, size_t N>
-    bool has_nan(const Color<T, N>& color)
-    {
-        for (size_t i = 0; i < N; ++i)
-        {
-            if (color[i] != color[i])
-                return true;
-        }
-
-        return false;
-    }
-    
-    double accumulate_luminance(const Tile& tile)
-    {
-        double accumulated_luminance = 0.0;
-
-        const size_t tile_width = tile.get_width();
-        const size_t tile_height = tile.get_height();
-
-        for (size_t y = 0; y < tile_height; ++y)
-        {
-            for (size_t x = 0; x < tile_width; ++x)
-            {
-                // Fetch the pixel color; assume linear RGBA.
-                Color4f linear_rgba;
-                tile.get_pixel(x, y, linear_rgba);
-
-                // Extract the RGB part (ignore the alpha channel).
-                const Color3f linear_rgb = linear_rgba.rgb();
-
-                // Skip pixels containing NaN values.
-                if (has_nan(linear_rgb))
-                    continue;
-
-                // Compute the Rec. 709 relative luminance of this pixel.
-                const float lum = luminance(max(linear_rgb, Color3f(0.0)));
-
-                // It should no longer be possible to have NaN at this point.
-                assert(lum == lum);
-
-                accumulated_luminance += static_cast<double>(lum);
-            }
-        }
-
-        return accumulated_luminance;
-    }
-
-    double accumulate_luminance(const Image& image)
-    {
-        double accumulated_luminance = 0.0;
-
-        const CanvasProperties& props = image.properties();
-
-        for (size_t ty = 0; ty < props.m_tile_count_y; ++ty)
-        {
-            for (size_t tx = 0; tx < props.m_tile_count_x; ++tx)
-            {
-                const Tile& tile = image.tile(tx, ty);
-                accumulated_luminance += accumulate_luminance(tile);
-            }
-        }
-
-        return accumulated_luminance;
-    }
-
-    double do_compute_average_luminance(const Image& image)
-    {
-        const double accumulated_luminance = accumulate_luminance(image);
-
-        const CanvasProperties& props = image.properties();
-        const double average_luminance = accumulated_luminance / props.m_pixel_count;
-
-        return average_luminance;
-    }
-
-    TEST_SUITE(Renderer_Modeling_Frame_Details)
-    {
-        TEST_CASE(AccumulateLuminance_Given2x2TileFilledWithZeroes_ReturnsZero)
-        {
-            Tile tile(2, 2, 4, PixelFormatFloat);
-            tile.clear(Color4f(0.0f));
-
-            const double accumulated_luminance = accumulate_luminance(tile);
-
-            EXPECT_EQ(0.0, accumulated_luminance);
-        }
-
-        TEST_CASE(AccumulateLuminance_Given2x2TileFilledWithOnes_ReturnsFour)
-        {
-            Tile tile(2, 2, 4, PixelFormatFloat);
-            tile.clear(Color4f(1.0f));
-
-            const double accumulated_luminance = accumulate_luminance(tile);
-
-            EXPECT_FEQ(4.0, accumulated_luminance);
-        }
-
-        TEST_CASE(AccumulateLuminance_Given2x2TileFilledWithMinusOnes_ReturnsZero)
-        {
-            Tile tile(2, 2, 4, PixelFormatFloat);
-            tile.clear(Color4f(-1.0f));
-
-            const double accumulated_luminance = accumulate_luminance(tile);
-
-            EXPECT_EQ(0.0, accumulated_luminance);
-        }
-
-        void clear_image(Image& image, const Color4f& color)
-        {
-            const CanvasProperties& props = image.properties();
-
-            for (size_t ty = 0; ty < props.m_tile_count_y; ++ty)
-            {
-                for (size_t tx = 0; tx < props.m_tile_count_x; ++tx)
-                {
-                    Tile& tile = image.tile(tx, ty);
-                    tile.clear(color);
-                }
-            }
-        }
-
-        TEST_CASE(ClearImage_Given4x4Image_FillsImageWithGivenValue)
-        {
-            const Color4f Expected(42.0f);
-
-            Image image(4, 4, 2, 2, 4, PixelFormatFloat);
-            clear_image(image, Expected);
-
-            const CanvasProperties& props = image.properties();
-
-            for (size_t ty = 0; ty < props.m_tile_count_y; ++ty)
-            {
-                for (size_t tx = 0; tx < props.m_tile_count_x; ++tx)
-                {
-                    const Tile& tile = image.tile(tx, ty);
-                    const size_t tile_width = tile.get_width();
-                    const size_t tile_height = tile.get_height();
-
-                    for (size_t y = 0; y < tile_height; ++y)
-                    {
-                        for (size_t x = 0; x < tile_width; ++x)
-                        {
-                            Color4f value;
-                            tile.get_pixel(x, y, value);
-
-                            EXPECT_EQ(Expected, value);
-                        }
-                    }
-                }
-            }
-        }
-
-        TEST_CASE(AccumulateLuminance_Given4x4ImageFilledWithZeroes_ReturnsZero)
-        {
-            Image image(4, 4, 2, 2, 4, PixelFormatFloat);
-            clear_image(image, Color4f(0.0f));
-
-            const double accumulated_luminance = accumulate_luminance(image);
-
-            EXPECT_EQ(0.0, accumulated_luminance);
-        }
-
-        TEST_CASE(AccumulateLuminance_Given4x4ImageFilledWithOnes_ReturnsSixteen)
-        {
-            Image image(4, 4, 2, 2, 4, PixelFormatFloat);
-            clear_image(image, Color4f(1.0f));
-
-            const double accumulated_luminance = accumulate_luminance(image);
-
-            EXPECT_FEQ(16.0, accumulated_luminance);
-        }
-
-        TEST_CASE(DoComputeAverageLuminance_Given4x4ImageFilledWithZeroes_ReturnsZero)
-        {
-            Image image(4, 4, 2, 2, 4, PixelFormatFloat);
-            clear_image(image, Color4f(0.0f));
-
-            const double average_luminance = do_compute_average_luminance(image);
-
-            EXPECT_EQ(0.0, average_luminance);
-        }
-
-        TEST_CASE(DoComputeAverageLuminance_Given4x4ImageFilledWithOnes_ReturnsOne)
-        {
-            Image image(4, 4, 2, 2, 4, PixelFormatFloat);
-            clear_image(image, Color4f(1.0f));
-
-            const double average_luminance = do_compute_average_luminance(image);
-
-            EXPECT_FEQ(1.0, average_luminance);
-        }
-    }
-}
-
 double Frame::compute_average_luminance() const
 {
-    return do_compute_average_luminance(*impl->m_image.get());
-}
-
-namespace
-{
-    struct ExceptionIncompatibleImages
-      : public Exception
-    {
-    };
-
-    double sum_pixel_components(
-        const Tile&     tile,
-        const size_t    i)
-    {
-        double sum = 0.0;
-
-        const size_t channel_count = tile.get_channel_count();
-        for (size_t c = 0; c < channel_count; ++c)
-            sum += tile.get_component<double>(i, c);
-
-        return sum;
-    }
-
-    double do_compute_rms_deviation(
-        const Image&    image,
-        const Image&    ref_image)
-    {
-        const CanvasProperties& props = image.properties();
-        const CanvasProperties& ref_props = ref_image.properties();
-
-        if (props.m_canvas_width != ref_props.m_canvas_width ||
-            props.m_canvas_height != ref_props.m_canvas_height ||
-            props.m_tile_width != ref_props.m_tile_width ||
-            props.m_tile_height != ref_props.m_tile_height ||
-            props.m_channel_count != ref_props.m_channel_count)
-            throw ExceptionIncompatibleImages();
-
-        double mse = 0.0;   // mean square error
-
-        for (size_t ty = 0; ty < props.m_tile_count_y; ++ty)
-        {
-            for (size_t tx = 0; tx < props.m_tile_count_x; ++tx)
-            {
-                const Tile& tile = image.tile(tx, ty);
-                const size_t tile_width = tile.get_width();
-                const size_t tile_height = tile.get_height();
-
-                const Tile& ref_tile = ref_image.tile(tx, ty);
-                assert(ref_tile.get_width() == tile_width);
-                assert(ref_tile.get_height() == tile_height);
-
-                for (size_t i = 0; i < tile_width * tile_height; ++i)
-                {
-                    const double sum = sum_pixel_components(tile, i);
-                    const double ref_sum = sum_pixel_components(ref_tile, i);
-                    mse += square(sum - ref_sum);
-                }
-            }
-        }
-
-        mse /= props.m_pixel_count * square(props.m_channel_count);
-
-        return sqrt(mse);
-    }
+    return foundation::compute_average_luminance(*impl->m_image.get());
 }
 
 double Frame::compute_rms_deviation(const Image& ref_image) const
 {
-    return do_compute_rms_deviation(*impl->m_image.get(), ref_image);
+    return foundation::compute_rms_deviation(*impl->m_image.get(), ref_image);
 }
 
 void Frame::extract_parameters()

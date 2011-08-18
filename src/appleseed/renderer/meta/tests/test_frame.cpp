@@ -26,62 +26,9 @@
 // THE SOFTWARE.
 //
 
-// appleseed.renderer headers.
-#include "renderer/modeling/frame/frame.h"
-#include "renderer/utility/paramarray.h"
-
 // appleseed.foundation headers.
-#include "foundation/image/color.h"
-#include "foundation/image/image.h"
-#include "foundation/image/pixel.h"
 #include "foundation/utility/test.h"
-
-using namespace foundation;
-using namespace renderer;
 
 TEST_SUITE(Renderer_Modeling_Frame_Frame)
 {
-    struct Fixture
-    {
-        Image                   m_ref_image;
-        auto_release_ptr<Frame> m_frame;
-
-        Fixture()
-          : m_ref_image(32, 32, 32, 32, 4, PixelFormatFloat)
-        {
-            ParamArray params;
-            params.insert("resolution", "32 32");
-            params.insert("tile_size", "32 32");
-            params.insert("pixel_format", "float");
-            params.insert("color_space", "linear_rgb");
-            m_frame = FrameFactory::create("frame", params);
-        }
-    };
-
-    TEST_CASE_F(ComputeRMSDeviation_GivenBlankLinearRGBFrameAndBlankRefImage_ReturnsZero, Fixture)
-    {
-        const double rmsd = m_frame->compute_rms_deviation(m_ref_image);
-
-        EXPECT_EQ(0.0, rmsd);
-    }
-
-    TEST_CASE_F(ComputeRMSDeviation_GivenWhiteLinearRGBFrameAndWhiteRefImage_ReturnsZero, Fixture)
-    {
-        m_frame->tile(0, 0).clear(Color4f(1.0f));
-        m_ref_image.tile(0, 0).clear(Color4f(1.0f));
-
-        const double rmsd = m_frame->compute_rms_deviation(m_ref_image);
-
-        EXPECT_EQ(0.0, rmsd);
-    }
-
-    TEST_CASE_F(ComputeRMSDeviation_GivenWhiteLinearRGBFrameAndBlackRefImage_ReturnsOne, Fixture)
-    {
-        m_frame->tile(0, 0).clear(Color4f(1.0f));
-        m_ref_image.tile(0, 0).clear(Color4f(0.0f));
-
-        const double rmsd = m_frame->compute_rms_deviation(m_ref_image);
-
-        EXPECT_EQ(1.0, rmsd);
-    }
 }
