@@ -236,7 +236,7 @@ void RenderingManager::print_average_luminance()
         m_project->get_frame()->compute_average_luminance();
 
     RENDERER_LOG_DEBUG(
-        "average luminance is %s",
+        "final average luminance %s",
         pretty_scalar(average_luminance, 6).c_str());
 }
 
