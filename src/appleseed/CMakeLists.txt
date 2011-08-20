@@ -234,6 +234,7 @@ set(foundation_math_sources
     foundation/math/combination.h
     foundation/math/distance.h
     foundation/math/fastmath.h
+    foundation/math/fixedsizehistory.h
     foundation/math/fp.h
     foundation/math/fresnel.h
     foundation/math/frustum.h
@@ -361,6 +362,7 @@ set(foundation_meta_tests_sources
     foundation/meta/tests/test_exrimagefilewriter.cpp
     foundation/meta/tests/test_fastmath.cpp
     foundation/meta/tests/test_filter.cpp
+    foundation/meta/tests/test_fixedsizehistory.cpp
     foundation/meta/tests/test_fp.cpp
     foundation/meta/tests/test_fresnel.cpp
     foundation/meta/tests/test_frustum.cpp
