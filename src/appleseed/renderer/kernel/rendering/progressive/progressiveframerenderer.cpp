@@ -194,7 +194,7 @@ namespace
             // Start job execution.
             m_job_manager->start();
 
-            // Create and start a thread to print statistics.
+            // Create and start the statistics printing thread.
             m_statistics_func.reset(
                 new StatisticsFunc(
                     m_frame,
@@ -207,6 +207,7 @@ namespace
 
         virtual void stop_rendering()
         {
+            // Tell rendering jobs and the statistics printing thread to stop.
             m_abort_switch.abort();
 
             // Stop job execution.
@@ -215,8 +216,10 @@ namespace
             // Delete all non-executed jobs.
             m_job_queue.clear_scheduled_jobs();
 
-            // Make sure the thread that prints statistics is terminated.
-            m_statistics_thread->join();
+            // We're not waiting until the statistics printing thread is terminated:
+            // it was notified via the abort switch that it must terminate, but it
+            // still has to write the convergence plot to disk (in case a reference
+            // image was set).
         }
 
         virtual bool is_rendering() const
@@ -288,20 +291,6 @@ namespace
             {
             }
 
-            ~StatisticsFunc()
-            {
-                if (!m_samples_history.empty())
-                {
-                    MapleFile file("RMS Deviation.mpl");
-                    file.define(
-                        "rmsd",
-                        m_samples_history.size(),
-                        &m_samples_history[0],
-                        &m_rmsd_history[0]);
-                    file.plot("rmsd", "blue", "RMS Deviation");
-                }
-            }
-
             void operator()()
             {
                 while (!m_abort_switch.is_aborted())
@@ -310,13 +299,24 @@ namespace
                     const uint64 elapsed_ticks = time - m_last_time;
                     const double elapsed_seconds = static_cast<double>(elapsed_ticks) / m_timer_frequency;
 
-                    if (elapsed_seconds > 0.0)
+                    if (elapsed_seconds >= 1.0)
                     {
                         print_and_record_statistics(elapsed_seconds);
                         m_last_time = time;
                     }
 
-                    foundation::sleep(1000);    // needs full qualification
+                    foundation::sleep(10);  // needs full qualification
+                }
+
+                if (m_samples_history.size() > 1)
+                {
+                    MapleFile file("RMS Deviation.mpl");
+                    file.define(
+                        "rmsd",
+                        m_samples_history.size(),
+                        &m_samples_history[0],
+                        &m_rmsd_history[0]);
+                    file.plot("rmsd", "blue", "RMS Deviation");
                 }
             }
 
