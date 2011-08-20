@@ -47,6 +47,8 @@ namespace renderer
 //
 // Frame class.
 //
+// Pixels in a frame are always expressed in the linear RGB color space.
+//
 
 class RENDERERDLL Frame
   : public Entity
@@ -55,17 +57,11 @@ class RENDERERDLL Frame
     // Delete this instance.
     virtual void release();
 
-    // Access canvas properties.
-    const foundation::CanvasProperties& properties() const;
+    // Direct access to the underlying image.
+    foundation::Image& image() const;
 
     // Return the lighting conditions for spectral to RGB conversion.
     const foundation::LightingConditions& get_lighting_conditions() const;
-
-    // Direct access to a given tile of the frame.
-    // The tile is always in linear RGB color space.
-    foundation::Tile& tile(
-        const size_t        tile_x,
-        const size_t        tile_y) const;
 
     // Return the normalized device coordinates of a given sample.
     foundation::Vector2d get_sample_position(
@@ -84,9 +80,9 @@ class RENDERERDLL Frame
         const double        sample_x,           // x coordinate of the sample in the pixel, in [0,1)
         const double        sample_y) const;    // y coordinate of the sample in the pixel, in [0,1)
 
-    // Convert an RGBA tile or image from linear RGB to the color space of the frame.
-    void transform_tile_to_frame_color_space(foundation::Tile& tile) const;
-    void transform_image_to_frame_color_space(foundation::Image& image) const;
+    // Convert a tile or an image from linear RGB to the output color space.
+    void transform_to_output_color_space(foundation::Tile& tile) const;
+    void transform_to_output_color_space(foundation::Image& image) const;
 
     // Write the frame to disk.
     // Return true if successful, false otherwise.
@@ -99,12 +95,6 @@ class RENDERERDLL Frame
     bool archive(
         const char*         directory,
         char**              output_path = 0) const;
-
-    // Compute and return the average luminance of the frame.
-    double compute_average_luminance() const;
-
-    // Compute the root-mean-square deviation against a given reference image.
-    double compute_rms_deviation(const foundation::Image& reference) const;
 
   private:
     friend class FrameFactory;

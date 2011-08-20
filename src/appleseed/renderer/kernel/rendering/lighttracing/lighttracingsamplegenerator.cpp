@@ -53,6 +53,7 @@
 #include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/image.h"
 #include "foundation/image/spectrum.h"
 #include "foundation/math/population.h"
 #include "foundation/math/qmc.h"
@@ -195,7 +196,7 @@ namespace
                 assert(is_normalized(m_camera_direction));
 
                 // Compute the reciprocal of the area of a single pixel.
-                const size_t pixel_count = frame.properties().m_pixel_count;
+                const size_t pixel_count = frame.image().properties().m_pixel_count;
                 const Vector2d& film_dimensions = m_camera.get_film_dimensions();
                 const double film_area = film_dimensions[0] * film_dimensions[1];
                 m_rcp_pixel_area = pixel_count / film_area;

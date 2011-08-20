@@ -284,7 +284,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     {
         frame_renderer.reset(
             ProgressiveFrameRendererFactory::create(
-                frame,
+                m_project,
                 sample_generator_factory.get(),
                 m_tile_callback_factory,
                 m_params.child("progressive_frame_renderer")));

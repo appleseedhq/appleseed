@@ -36,6 +36,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
+#include "foundation/image/image.h"
 #include "foundation/image/tile.h"
 
 using namespace foundation;
@@ -82,11 +83,11 @@ void TileJob::execute(const size_t thread_index)
     // Call the pre-render tile callback.
     if (tile_callback)
     {
-        const CanvasProperties& frame_props = m_frame.properties();
+        const CanvasProperties& frame_props = m_frame.image().properties();
         const size_t x = m_tile_x * frame_props.m_tile_width;
         const size_t y = m_tile_y * frame_props.m_tile_height;
 
-        const Tile& tile = m_frame.tile(m_tile_x, m_tile_y);
+        const Tile& tile = m_frame.image().tile(m_tile_x, m_tile_y);
         const size_t width = tile.get_width();
         const size_t height = tile.get_height();
 

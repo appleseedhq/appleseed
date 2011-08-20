@@ -32,7 +32,6 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/platform/thread.h"
-#include "foundation/platform/timer.h"
 #include "foundation/platform/types.h"
 
 // Standard headers.
@@ -58,6 +57,9 @@ class AccumulationFramebuffer
     size_t get_width() const;
     size_t get_height() const;
 
+    // Get the number of samples stored in the framebuffer.
+    foundation::uint64 get_sample_count() const;
+
     // Reset the framebuffer to its initial state. Thread-safe.
     virtual void clear() = 0;
 
@@ -69,23 +71,12 @@ class AccumulationFramebuffer
     // Develop the framebuffer to a frame. Thread-safe.
     void render_to_frame(Frame& frame);
 
-    // Thread-safe.
-    void print_statistics(const Frame& frame);
-
   protected:
     const size_t                        m_width;
     const size_t                        m_height;
     const size_t                        m_pixel_count;
-
     mutable foundation::Spinlock        m_spinlock;
-
     foundation::uint64                  m_sample_count;
-
-    foundation::DefaultWallclockTimer   m_timer;
-    foundation::uint64                  m_timer_frequency;
-
-    foundation::uint64                  m_last_time;
-    foundation::uint64                  m_last_sample_count;
 
     void clear_no_lock();
 
@@ -105,6 +96,11 @@ inline size_t AccumulationFramebuffer::get_width() const
 inline size_t AccumulationFramebuffer::get_height() const
 {
     return m_height;
+}
+
+inline foundation::uint64 AccumulationFramebuffer::get_sample_count() const
+{
+    return m_sample_count;
 }
 
 }       // namespace renderer

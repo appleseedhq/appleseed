@@ -32,7 +32,6 @@
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/core/exceptions/exceptionioerror.h"
-#include "foundation/image/analysis.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/image/exrimagefilewriter.h"
 #include "foundation/image/genericimagefilewriter.h"
@@ -117,9 +116,9 @@ void Frame::release()
     delete this;
 }
 
-const CanvasProperties& Frame::properties() const
+Image& Frame::image() const
 {
-    return m_props;
+    return *impl->m_image.get();
 }
 
 const LightingConditions& Frame::get_lighting_conditions() const
@@ -127,14 +126,7 @@ const LightingConditions& Frame::get_lighting_conditions() const
     return impl->m_lighting_conditions;
 }
 
-Tile& Frame::tile(
-    const size_t        tile_x,
-    const size_t        tile_y) const
-{
-    return impl->m_image->tile(tile_x, tile_y);
-}
-
-void Frame::transform_tile_to_frame_color_space(Tile& tile) const
+void Frame::transform_to_output_color_space(Tile& tile) const
 {
     assert(tile.get_channel_count() == 4);
 
@@ -152,7 +144,7 @@ void Frame::transform_tile_to_frame_color_space(Tile& tile) const
     }
 }
 
-void Frame::transform_image_to_frame_color_space(Image& image) const
+void Frame::transform_to_output_color_space(Image& image) const
 {
     const CanvasProperties& image_props = image.properties();
 
@@ -161,7 +153,7 @@ void Frame::transform_image_to_frame_color_space(Image& image) const
     for (size_t ty = 0; ty < image_props.m_tile_count_y; ++ty)
     {
         for (size_t tx = 0; tx < image_props.m_tile_count_x; ++tx)
-            transform_tile_to_frame_color_space(image.tile(tx, ty));
+            transform_to_output_color_space(image.tile(tx, ty));
     }
 }
 
@@ -210,7 +202,7 @@ bool Frame::write(const char* filename) const
     try
     {
         Image final_image(*impl->m_image);
-        transform_image_to_frame_color_space(final_image);
+        transform_to_output_color_space(final_image);
 
         const double seconds =
             write_image(
@@ -262,7 +254,7 @@ bool Frame::archive(
     try
     {
         Image final_image(*impl->m_image);
-        transform_image_to_frame_color_space(final_image);
+        transform_to_output_color_space(final_image);
 
         const double seconds =
             write_image(
@@ -294,16 +286,6 @@ bool Frame::archive(
     }
 
     return true;
-}
-
-double Frame::compute_average_luminance() const
-{
-    return foundation::compute_average_luminance(*impl->m_image.get());
-}
-
-double Frame::compute_rms_deviation(const Image& ref_image) const
-{
-    return foundation::compute_rms_deviation(*impl->m_image.get(), ref_image);
 }
 
 void Frame::extract_parameters()

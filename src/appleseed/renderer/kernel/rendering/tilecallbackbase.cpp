@@ -34,6 +34,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
+#include "foundation/image/image.h"
 
 using namespace foundation;
 
@@ -44,17 +45,14 @@ namespace renderer
 // TileCallbackBase class implementation.
 //
 
-// This method is called after a whole frame is rendered (at once).
 void TileCallbackBase::post_render(const Frame& frame)
 {
-    const CanvasProperties& frame_props = frame.properties();
+    const CanvasProperties& frame_props = frame.image().properties();
 
     for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
     {
         for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
-        {
             post_render(frame, tx, ty);
-        }
     }
 }
 

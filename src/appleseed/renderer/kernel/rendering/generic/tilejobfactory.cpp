@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
+#include "foundation/image/image.h"
 #include "foundation/math/ordering.h"
 
 // appleseed.renderer headers.
@@ -55,7 +56,7 @@ void TileJobFactory::create(
     AbortSwitch&                        abort_switch)
 {
     // Retrieve frame properties.
-    const CanvasProperties& props = frame.properties();
+    const CanvasProperties& props = frame.image().properties();
 
     // Generate tiles ordering.
     vector<size_t> tiles;

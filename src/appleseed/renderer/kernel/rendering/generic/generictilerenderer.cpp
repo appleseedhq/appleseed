@@ -37,6 +37,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
+#include "foundation/image/image.h"
 #include "foundation/image/tile.h"
 #include "foundation/math/minmax.h"
 #include "foundation/math/ordering.h"
@@ -80,7 +81,7 @@ namespace
           , m_sample_renderer(factory->create())
         {
             // Retrieve frame properties.
-            const CanvasProperties& properties = frame.properties();
+            const CanvasProperties& properties = frame.image().properties();
             const size_t num_pixels = properties.m_tile_width * properties.m_tile_height;
 
             // Generate pixel ordering.
@@ -132,13 +133,13 @@ namespace
             AbortSwitch&    abort_switch)
         {
             // Retrieve frame properties.
-            const CanvasProperties& properties = frame.properties();
+            const CanvasProperties& properties = frame.image().properties();
 
             assert(tile_x < properties.m_tile_count_x);
             assert(tile_y < properties.m_tile_count_y);
 
             // Access the tile.
-            Tile& tile = frame.tile(tile_x, tile_y);
+            Tile& tile = frame.image().tile(tile_x, tile_y);
             const size_t tile_width = tile.get_width();
             const size_t tile_height = tile.get_height();
             const size_t tile_origin_x = properties.m_tile_width * tile_x;

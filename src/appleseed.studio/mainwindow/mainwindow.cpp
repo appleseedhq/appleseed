@@ -48,6 +48,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/appleseed.h"
+#include "foundation/image/canvasproperties.h"
+#include "foundation/image/image.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -467,9 +469,10 @@ void MainWindow::add_render_widgets()
 {
     const Project* project = m_project_manager.get_project();
     const Frame* frame = project->get_frame();
+    const CanvasProperties& props = frame->image().properties();
 
-    const int width = static_cast<int>(frame->properties().m_canvas_width);
-    const int height = static_cast<int>(frame->properties().m_canvas_height);
+    const int width = static_cast<int>(props.m_canvas_width);
+    const int height = static_cast<int>(props.m_canvas_height);
 
     add_render_widget(width, height, "RGB");
     add_render_widget(width, height, "Alpha");

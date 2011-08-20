@@ -34,6 +34,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
+#include "foundation/image/image.h"
 #include "foundation/image/tile.h"
 
 // Forward declarations.
@@ -68,11 +69,12 @@ namespace
             const size_t    tile_y,
             AbortSwitch&    abort_switch)
         {
-            assert(tile_x < frame.properties().m_tile_count_x);
-            assert(tile_y < frame.properties().m_tile_count_y);
+            Image& image = frame.image();
 
-            // Access the tile.
-            Tile& tile = frame.tile(tile_x, tile_y);
+            assert(tile_x < image.properties().m_tile_count_x);
+            assert(tile_y < image.properties().m_tile_count_y);
+
+            Tile& tile = image.tile(tile_x, tile_y);
             const size_t tile_width = tile.get_width();
             const size_t tile_height = tile.get_height();
             const size_t max_x = tile_width - 1;
@@ -103,13 +105,11 @@ namespace
 // DebugTileRendererFactory class implementation.
 //
 
-// Delete this instance.
 void DebugTileRendererFactory::release()
 {
     delete this;
 }
 
-// Return a new debug tile renderer instance.
 ITileRenderer* DebugTileRendererFactory::create()
 {
     return new DebugTileRenderer();

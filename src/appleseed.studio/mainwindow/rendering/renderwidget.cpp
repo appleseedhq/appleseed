@@ -37,6 +37,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
+#include "foundation/image/image.h"
 #include "foundation/image/nativedrawing.h"
 #include "foundation/image/tile.h"
 
@@ -173,7 +174,7 @@ void RenderWidget::blit_tile(
 void RenderWidget::blit_frame(
     const Frame&    frame)
 {
-    const CanvasProperties& frame_props = frame.properties();
+    const CanvasProperties& frame_props = frame.image().properties();
 
     Tile float_tile_storage(
         frame_props.m_tile_width,
@@ -213,7 +214,7 @@ void RenderWidget::blit_tile_no_lock(
     uint8*          uint8_tile_storage)
 {
     // Retrieve the source tile.
-    const Tile& tile = frame.tile(tile_x, tile_y);
+    const Tile& tile = frame.image().tile(tile_x, tile_y);
 
     // Convert the tile to 32-bit floating point.
     Tile fp_rgb_tile(
@@ -222,7 +223,7 @@ void RenderWidget::blit_tile_no_lock(
         float_tile_storage);
 
     // Transform the tile to the color space of the frame.
-    frame.transform_tile_to_frame_color_space(fp_rgb_tile);
+    frame.transform_to_output_color_space(fp_rgb_tile);
 
     // Convert the tile to 8-bit RGB for display.
     static const size_t ShuffleTable[] = { 0, 1, 2, Pixel::SkipChannel };
@@ -238,7 +239,7 @@ void RenderWidget::blit_tile_no_lock(
     const size_t dest_stride = static_cast<size_t>(m_image.bytesPerLine());
 
     // Compute the coordinates of the first destination pixel.
-    const CanvasProperties& frame_props = frame.properties();
+    const CanvasProperties& frame_props = frame.image().properties();
     const size_t x = tile_x * frame_props.m_tile_width;
     const size_t y = tile_y * frame_props.m_tile_height;
 

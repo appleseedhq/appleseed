@@ -34,6 +34,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
+#include "foundation/image/image.h"
 #include "foundation/image/tile.h"
 
 // Forward declarations.
@@ -68,11 +69,12 @@ namespace
             const size_t    tile_y,
             AbortSwitch&    abort_switch)
         {
-            assert(tile_x < frame.properties().m_tile_count_x);
-            assert(tile_y < frame.properties().m_tile_count_y);
+            Image& image = frame.image();
 
-            // Access the tile.
-            Tile& tile = frame.tile(tile_x, tile_y);
+            assert(tile_x < image.properties().m_tile_count_x);
+            assert(tile_y < image.properties().m_tile_count_y);
+
+            Tile& tile = image.tile(tile_x, tile_y);
 
             // Set all pixels of the tile to opaque black.
             tile.clear(Color4f(0.0f, 0.0f, 0.0f, 1.0f));
@@ -85,13 +87,11 @@ namespace
 // BlankTileRendererFactory class implementation.
 //
 
-// Delete this instance.
 void BlankTileRendererFactory::release()
 {
     delete this;
 }
 
-// Return a new blank tile renderer instance.
 ITileRenderer* BlankTileRendererFactory::create()
 {
     return new BlankTileRenderer();

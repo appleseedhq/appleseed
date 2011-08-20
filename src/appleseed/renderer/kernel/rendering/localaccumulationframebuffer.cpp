@@ -35,6 +35,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
+#include "foundation/image/image.h"
 #include "foundation/image/pixel.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/compiler.h"
@@ -117,7 +118,8 @@ void LocalAccumulationFramebuffer::store_samples(
 
 void LocalAccumulationFramebuffer::develop_to_frame(Frame& frame) const
 {
-    const CanvasProperties& frame_props = frame.properties();
+    Image& image = frame.image();
+    const CanvasProperties& frame_props = image.properties();
 
     assert(frame_props.m_canvas_width == m_width);
     assert(frame_props.m_canvas_height == m_height);
@@ -127,7 +129,7 @@ void LocalAccumulationFramebuffer::develop_to_frame(Frame& frame) const
     {
         for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
         {
-            Tile& tile = frame.tile(tx, ty);
+            Tile& tile = image.tile(tx, ty);
 
             const size_t x = tx * frame_props.m_tile_width;
             const size_t y = ty * frame_props.m_tile_height;
