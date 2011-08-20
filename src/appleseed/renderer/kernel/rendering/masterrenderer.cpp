@@ -332,12 +332,11 @@ IRendererController::Status MasterRenderer::render_frame(IFrameRenderer* frame_r
     {
         const IRendererController::Status status = m_renderer_controller->on_progress();
 
-        if (status == IRendererController::ContinueRendering)
-            continue;
-
-        frame_renderer->stop_rendering();
-
-        return status;
+        if (status != IRendererController::ContinueRendering)
+        {
+            frame_renderer->stop_rendering();
+            return status;
+        }
     }
 
     return IRendererController::TerminateRendering;
