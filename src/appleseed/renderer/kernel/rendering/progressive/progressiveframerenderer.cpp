@@ -44,6 +44,7 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/genericimagefilereader.h"
 #include "foundation/image/image.h"
+#include "foundation/math/fixedsizehistory.h"
 #include "foundation/platform/thread.h"
 #include "foundation/platform/timer.h"
 #include "foundation/utility/foreach.h"
@@ -288,6 +289,9 @@ namespace
               , m_timer_frequency(rhs.m_timer_frequency)
               , m_last_time(rhs.m_last_time)
               , m_last_sample_count(rhs.m_last_sample_count)
+              , m_sps_count_history(rhs.m_sps_count_history)
+              , m_spp_count_history(rhs.m_spp_count_history)
+              , m_rmsd_history(rhs.m_rmsd_history)
             {
             }
 
@@ -308,13 +312,13 @@ namespace
                     foundation::sleep(10);  // needs full qualification
                 }
 
-                if (m_samples_history.size() > 1)
+                if (m_spp_count_history.size() > 1)
                 {
                     MapleFile file("RMS Deviation.mpl");
                     file.define(
                         "rmsd",
-                        m_samples_history.size(),
-                        &m_samples_history[0],
+                        m_spp_count_history.size(),
+                        &m_spp_count_history[0],
                         &m_rmsd_history[0]);
                     file.plot("rmsd", "blue", "RMS Deviation");
                 }
@@ -330,27 +334,31 @@ namespace
             DefaultWallclockTimer           m_timer;
             uint64                          m_timer_frequency;
             uint64                          m_last_time;
-            uint64                          m_last_sample_count;
 
-            vector<double>                  m_samples_history;
-            vector<double>                  m_rmsd_history;
+            uint64                          m_last_sample_count;
+            FixedSizeHistory<double, 6>     m_sps_count_history;    // samples per second history
+            vector<double>                  m_spp_count_history;    // samples per pixel history
+            vector<double>                  m_rmsd_history;         // RMS deviation history
 
             void print_and_record_statistics(const double elapsed_seconds)
             {
                 Image current_image(m_frame.image());
                 m_frame.transform_to_output_color_space(current_image);
 
-                const uint64 sample_count = m_framebuffer.get_sample_count();
-                const uint64 rendered_samples = sample_count - m_last_sample_count;
+                const uint64 new_sample_count = m_framebuffer.get_sample_count();
                 const uint64 pixel_count = static_cast<uint64>(m_frame.image().properties().m_pixel_count);
-                const double avg_lum = compute_average_luminance(current_image);
+                const double spp_count = static_cast<double>(new_sample_count) / pixel_count;
+                const double sps_count = static_cast<double>(new_sample_count - m_last_sample_count) / elapsed_seconds;
+
+                m_sps_count_history.insert(sps_count);
 
                 RENDERER_LOG_INFO(
                     "%s samples, %s samples/pixel, %s samples/second",
-                    pretty_uint(sample_count).c_str(),
-                    pretty_ratio(sample_count, pixel_count).c_str(),
-                    pretty_ratio(static_cast<double>(rendered_samples), elapsed_seconds).c_str());
+                    pretty_uint(new_sample_count).c_str(),
+                    pretty_scalar(spp_count).c_str(),
+                    pretty_scalar(m_sps_count_history.compute_average()).c_str());
 
+                const double avg_lum = compute_average_luminance(current_image);
                 string convergence_info = "average luminance " + pretty_scalar(avg_lum, 6);
 
                 if (m_ref_image)
@@ -363,13 +371,13 @@ namespace
                     convergence_info += " error), rms deviation ";
                     convergence_info += pretty_scalar(rmsd, 6);
 
-                    m_samples_history.push_back(static_cast<double>(sample_count) / pixel_count);
+                    m_spp_count_history.push_back(spp_count);
                     m_rmsd_history.push_back(rmsd);
                 }
 
                 RENDERER_LOG_DEBUG("%s", convergence_info.c_str());
 
-                m_last_sample_count = sample_count;
+                m_last_sample_count = new_sample_count;
             }
         };
 
