@@ -31,7 +31,9 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
+#include "foundation/core/exceptions/stringexception.h"
 #include "foundation/platform/thread.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/job/ijob.h"
 #include "foundation/utility/job/jobqueue.h"
 #include "foundation/utility/log.h"
@@ -131,11 +133,20 @@ void WorkerThread::execute_job(IJob& job)
     {
         job.execute(m_thread_index);
     }
+    catch (const StringException& e)
+    {
+        LOG_ERROR(
+            m_logger,
+            "worker thread " FMT_SIZE_T ": job was terminated (%s: %s)",
+            m_thread_index,
+            e.what(),
+            e.string());
+    }
     catch (const Exception& e)
     {
         LOG_ERROR(
             m_logger,
-            "worker thread %u: job was terminated: %s",
+            "worker thread " FMT_SIZE_T ": job was terminated (%s)",
             m_thread_index,
             e.what());
     }
@@ -143,14 +154,14 @@ void WorkerThread::execute_job(IJob& job)
     {
         LOG_ERROR(
             m_logger,
-            "worker thread %u: job was terminated: memory allocation failure",
+            "worker thread " FMT_SIZE_T ": job was terminated (ran out of memory)",
             m_thread_index);
     }
     catch (...)
     {
         LOG_ERROR(
             m_logger,
-            "worker thread %u: job was terminated: unknown exception",
+            "worker thread " FMT_SIZE_T ": job was terminated (unknown exception)",
             m_thread_index);
     }
 }

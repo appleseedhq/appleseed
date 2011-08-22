@@ -102,22 +102,22 @@ void MasterRenderer::render()
     catch (const StringException& e)
     {
         m_renderer_controller->on_rendering_abort();
-        RENDERER_LOG_ERROR("rendering failed: %s: %s", e.what(), e.string());
+        RENDERER_LOG_ERROR("rendering failed (%s: %s)", e.what(), e.string());
     }
     catch (const Exception& e)
     {
         m_renderer_controller->on_rendering_abort();
-        RENDERER_LOG_ERROR("rendering failed: %s", e.what());
+        RENDERER_LOG_ERROR("rendering failed (%s)", e.what());
     }
     catch (const bad_alloc&)
     {
         m_renderer_controller->on_rendering_abort();
-        RENDERER_LOG_ERROR("rendering failed: ran out of memory");
+        RENDERER_LOG_ERROR("rendering failed (ran out of memory)");
     }
     catch (...)
     {
         m_renderer_controller->on_rendering_abort();
-        RENDERER_LOG_ERROR("rendering failed: unknown exception");
+        RENDERER_LOG_ERROR("rendering failed (unknown exception)");
     }
 }
 
