@@ -65,7 +65,6 @@ def get_version_string():
 
 Verbose = False
 EnableProfiling = False
-PointLightDiameter = 0.1
 
 
 #
@@ -496,6 +495,33 @@ class AppleseedExportOperator(bpy.types.Operator):
                                              description="Select the camera to export",
                                              items=camera_enumerator)
 
+    # Lighting engine.
+    lighting_engine = bpy.props.EnumProperty(name="Lighting Engine",
+                                             description="Select the lighting engine to use",
+                                             items=[("pt", "Global Illumination", ""),
+                                                    ("drt", "Direct Lighting", "")])
+
+    # Number of samples per pixels in final frame mode.
+    sample_count = bpy.props.IntProperty(name="Sample Count",
+                                         description="Number of samples per pixels in final frame mode",
+                                         min=1,
+                                         max=4096,
+                                         default=32,
+                                         subtype='UNSIGNED')
+
+    # Export object with light-emitting materials as mesh lights.
+    export_emitting_obj_as_lights = bpy.props.BoolProperty(name="Export Emitting Objects As Mesh Lights",
+                                                           description="Export object with light-emitting materials as mesh (area) lights",
+                                                           default=True)
+
+    # Point lights diameter.
+    point_lights_diameter = bpy.props.FloatProperty(name="Point Lights Diameter",
+                                                    description="Points lights are currently emitted as little sphere of this diameter",
+                                                    min=0.0001,
+                                                    max=10.0,
+                                                    default=0.1,
+                                                    subtype='FACTOR')
+
     # Point lights exitance multiplier.
     point_lights_exitance_mult = bpy.props.FloatProperty(name="Point Lights Energy Multiplier",
                                                          description="Multiply the exitance of point lights by this factor",
@@ -520,26 +546,14 @@ class AppleseedExportOperator(bpy.types.Operator):
                                             default=0.3,
                                             subtype='FACTOR')
 
-    # Lighting engine.
-    lighting_engine = bpy.props.EnumProperty(name="Lighting Engine",
-                                             description="Select the lighting engine to use",
-                                             items=[("pt", "Global Illumination", ""),
-                                                    ("drt", "Direct Lighting", "")])
-
-    # Number of samples per pixels in final frame mode.
-    sample_count = bpy.props.IntProperty(name="Sample Count",
-                                         description="Number of samples per pixels in final frame mode",
-                                         min=1,
-                                         max=4096,
-                                         default=32,
-                                         subtype='UNSIGNED')
-
     # Regenerate the mesh files (.obj files)?
     generate_mesh_files = bpy.props.BoolProperty(name="Write Meshes to Disk",
+                                                 description="If unchecked, the mesh files (.obj files) won't be regenerated",
                                                  default=True)
 
     # Recompute vertex normals?
     recompute_vertex_normals = bpy.props.BoolProperty(name="Recompute Vertex Normals",
+                                                      description="If checked, vertex normals will be recomputed",
                                                       default=True)
 
     # Transformation matrix that is applied to all entities of the scene.
@@ -802,7 +816,7 @@ class AppleseedExportOperator(bpy.types.Operator):
     def __emit_material(self, material):
         bsdf_name = self.__emit_bsdf_tree(material)
 
-        if material.emit > 0.0:
+        if self.export_emitting_obj_as_lights and material.emit > 0.0:
             edf_name = "{0}_edf".format(material.name)
             self.__emit_edf(material, edf_name)
         else:
@@ -813,51 +827,60 @@ class AppleseedExportOperator(bpy.types.Operator):
     def __emit_bsdf_tree(self, material):
         bsdfs = []
 
+        # Compute effective transparency and reflection factors.
+        material_transp_factor = (1.0 - material.alpha) if material.use_transparency else 0.0
+        material_refl_factor = material.raytrace_mirror.reflect_factor if material.raytrace_mirror.use else 0.0
+
+        # We don't really support the Fresnel parameter yet, hack something together...
+        material_transp_factor += material.raytrace_transparency.fresnel / 3.0
+
         # Transparent component.
-        if material.use_transparency and material.alpha < 1.0:
+        if material_transp_factor > 0.0:
             transp_bsdf_name = "{0}_transparent".format(material.name)
             self.__emit_specular_btdf(material, transp_bsdf_name)
-            bsdfs.append([ transp_bsdf_name, 1.0 - material.alpha ])
+            bsdfs.append([ transp_bsdf_name, material_transp_factor ])
 
         # Mirror component.
-        if material.raytrace_mirror.use and material.raytrace_mirror.reflect_factor > 0.0:
+        if material_refl_factor > 0.0:
             mirror_bsdf_name = "{0}_mirror".format(material.name)
             self.__emit_specular_brdf(material, mirror_bsdf_name)
-            bsdfs.append([ mirror_bsdf_name, material.raytrace_mirror.reflect_factor ])
+            bsdfs.append([ mirror_bsdf_name, material_refl_factor ])
 
         # Diffuse/glossy component.
-        dg_bsdf_name = "{0}_dg".format(material.name)
+        dg_bsdf_name = "{0}_diffuseglossy".format(material.name)
         if is_black(material.specular_color * material.specular_intensity):
             self.__emit_lambertian_brdf(material, dg_bsdf_name)
         else:
             self.__emit_ashikhmin_brdf(material, dg_bsdf_name)
-        bsdfs.append([ dg_bsdf_name, 1.0 - 0.5 * (1.0 - material.alpha + material.raytrace_mirror.reflect_factor) ])
-
-        assert len(bsdfs) > 0
-
-        if len(bsdfs) == 1:
-            return bsdfs[0][0]
+        material_dg_factor = 1.0 - max(material_transp_factor, material_refl_factor)
+        bsdfs.append([ dg_bsdf_name, material_dg_factor ])
 
         return self.__emit_bsdf_blend(bsdfs)
 
     def __emit_bsdf_blend(self, bsdfs):
         assert len(bsdfs) > 0
 
+        # Only one BSDF, no blending.
         if len(bsdfs) == 1:
             return bsdfs[0][0]
 
+        # Normalize weights if necessary.
         total_weight = 0.0
         for bsdf in bsdfs:
             total_weight += bsdf[1]
-        for bsdf in bsdfs:
-            bsdf[1] /= total_weight
+        if total_weight > 1.0:
+            for bsdf in bsdfs:
+                bsdf[1] /= total_weight
 
+        # The left branch is simply the first BSDF.
         bsdf0_name = bsdfs[0][0]
         bsdf0_weight = bsdfs[0][1]
 
+        # The right branch is a blend of all the other BSDFs (recurse).
         bsdf1_name = self.__emit_bsdf_blend(bsdfs[1:])
         bsdf1_weight = 1.0 - bsdf0_weight
 
+        # Blend the left and right branches together.
         mix_name = "{0}_{1}_mix".format(bsdf0_name, bsdf1_name)
         self.__emit_bsdf_mix(mix_name, bsdf0_name, bsdf0_weight, bsdf1_name, bsdf1_weight)
 
@@ -892,7 +915,7 @@ class AppleseedExportOperator(bpy.types.Operator):
 
     def __emit_specular_brdf(self, material, bsdf_name):
         reflectance_name = "{0}_reflectance".format(bsdf_name)
-        self.__emit_solid_linear_rgb_color_element(reflectance_name, [ 1.0 ], 1.0)
+        self.__emit_solid_linear_rgb_color_element(reflectance_name, material.mirror_color, 1.0)
 
         self.__open_element('bsdf name="{0}" model="specular_brdf"'.format(bsdf_name))
         self.__emit_parameter("reflectance", reflectance_name)
@@ -997,7 +1020,7 @@ class AppleseedExportOperator(bpy.types.Operator):
         self.__emit_material_element(material_name, bsdf_name, edf_name, "pass_through_shader")
 
         matrix = self.global_matrix * lamp.matrix_world
-        matrix = matrix * mathutils.Matrix.Scale(PointLightDiameter, 4)
+        matrix = matrix * mathutils.Matrix.Scale(self.point_lights_diameter, 4)
         self.__emit_object_instance_element("__spherical_light.0", lamp.name, matrix, material_name)
 
     #
