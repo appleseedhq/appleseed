@@ -512,7 +512,7 @@ class AppleseedExportOperator(bpy.types.Operator):
     # Export object with light-emitting materials as mesh lights.
     export_emitting_obj_as_lights = bpy.props.BoolProperty(name="Export Emitting Objects As Mesh Lights",
                                                            description="Export object with light-emitting materials as mesh (area) lights",
-                                                           default=True)
+                                                           default=False)
 
     # Point lights diameter.
     point_lights_diameter = bpy.props.FloatProperty(name="Point Lights Diameter",
@@ -816,11 +816,13 @@ class AppleseedExportOperator(bpy.types.Operator):
     def __emit_material(self, material):
         bsdf_name = self.__emit_bsdf_tree(material)
 
-        if self.export_emitting_obj_as_lights and material.emit > 0.0:
-            edf_name = "{0}_edf".format(material.name)
-            self.__emit_edf(material, edf_name)
-        else:
-            edf_name = ""
+        edf_name = ""
+
+        if material.emit > 0.0:
+            force_area_light = material.get('appleseed_arealight', False)
+            if self.export_emitting_obj_as_lights or force_area_light:
+                edf_name = "{0}_edf".format(material.name)
+                self.__emit_edf(material, edf_name)
 
         self.__emit_material_element(material.name, bsdf_name, edf_name, "physical_shader")
 
