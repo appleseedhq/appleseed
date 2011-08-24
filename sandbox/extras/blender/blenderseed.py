@@ -591,6 +591,9 @@ class AppleseedExportOperator(bpy.types.Operator):
         # The set of materials that were already emitted.
         self._emitted_materials = set()
 
+        # Object name -> instance count mapping.
+        self._instance_count = {}
+
         file_path = os.path.splitext(self.filepath)[0] + ".appleseed"
 
         self.__info("")
@@ -693,20 +696,21 @@ class AppleseedExportOperator(bpy.types.Operator):
     #
 
     def __emit_environment(self, scene):
-        self.__emit_solid_linear_rgb_color_element("environment_edf_exitance", scene.world.horizon_color, 1.0)
+        if scene.world is not None:
+            self.__emit_solid_linear_rgb_color_element("environment_edf_exitance", scene.world.horizon_color, 1.0)
 
-        self.__open_element('environment_edf name="environment_edf" model="constant_environment_edf"')
-        self.__emit_parameter("exitance", "environment_edf_exitance")
-        self.__close_element('environment_edf')
+            self.__open_element('environment_edf name="environment_edf" model="constant_environment_edf"')
+            self.__emit_parameter("exitance", "environment_edf_exitance")
+            self.__close_element('environment_edf')
 
-        self.__open_element('environment_shader name="environment_shader" model="edf_environment_shader"')
-        self.__emit_parameter("environment_edf", "environment_edf")
-        self.__close_element('environment_shader')
+            self.__open_element('environment_shader name="environment_shader" model="edf_environment_shader"')
+            self.__emit_parameter("environment_edf", "environment_edf")
+            self.__close_element('environment_shader')
 
-        self.__open_element('environment name="environment" model="generic_environment"')
-        self.__emit_parameter("environment_edf", "environment_edf")
-        self.__emit_parameter("environment_shader", "environment_shader")
-        self.__close_element('environment')
+            self.__open_element('environment name="environment" model="generic_environment"')
+            self.__emit_parameter("environment_edf", "environment_edf")
+            self.__emit_parameter("environment_shader", "environment_shader")
+            self.__close_element('environment')
 
     #
     # Geometry.
@@ -714,43 +718,65 @@ class AppleseedExportOperator(bpy.types.Operator):
 
     def __emit_objects(self, scene):
         for object in scene.objects:
+            # Print some information about this object in verbose mode.
+            if Verbose:
+                if object.parent:
+                    self.__info("------ Object '{0}' (type '{1}') child of object '{2}' ------".format(object.name, object.type, object.parent.name))
+                else: self.__info("------ Object '{0}' (type '{1}') ------".format(object.name, object.type))
+
             # Skip non-geometric objects.
-            if object.type in ( 'CAMERA', 'EMPTY', 'LAMP' ):
+            if object.type in ( 'CAMERA', 'LAMP' ):
+                if Verbose:
+                    self.__info("Skipping object '{0}' because its type is '{1}'.".format(object.name, object.type))
                 continue
 
-            # Skip non-renderable objects.
+            # Skip objects marked as non-renderable.
             if object.hide_render:
+                if Verbose:
+                    self.__info("Skipping object '{0}' because it is marked as non-renderable.".format(object.name))
                 continue
 
             # Skip children of dupli objects.
-            if object.parent and object.parent.dupli_type != 'NONE':
+            if object.parent and object.parent.dupli_type in { 'VERTS', 'FACES' }:      # todo: what about dupli type 'GROUP'?
+                if Verbose:
+                    self.__info("Skipping object '{0}' because its parent ('{1}') has dupli_type '{2}'.".format(object.name, object.parent.name, object.parent.dupli_type))
                 continue
 
-            # Create dupli list.
+            # Create dupli list and collect subobjects.
+            if Verbose:
+                self.__info("Object '{0}' has dupli_type '{1}'.".format(object.name, object.dupli_type))
             if object.dupli_type != 'NONE':
                 object.dupli_list_create(scene)
-                root_object = object.dupli_list[0][0]
-                instance_matrices = [ dupli.matrix for dupli in object.dupli_list ]
+                subobjects = [ (dupli.object, dupli.matrix) for dupli in object.dupli_list ]
             else:
-                root_object = object
-                instance_matrices = [ object.matrix_world ]
+                subobjects = [ (object, object.matrix_world) ]
+            if Verbose:
+                self.__info("Object '{0}' is made up of {1} subobjects.".format(object.name, len(subobjects)))
 
-            # Emit the object and all its instances.
-            self.__emit_object(scene, root_object, instance_matrices)
+            # Emit the subobjects.
+            for subobject in subobjects:
+                self.__emit_object(scene, subobject[0], subobject[1])
 
             # Clear dupli list.
             if object.dupli_type != 'NONE':
                 object.dupli_list_clear()
 
-    def __emit_object(self, scene, object, instance_matrices):
-        try:
-            mesh = object.to_mesh(scene, True, 'RENDER')
-            self.__emit_mesh_object(scene, object, mesh, instance_matrices)
-            bpy.data.meshes.remove(mesh)
-        except RuntimeError:
-            self.__info("Failed to convert object '{0}' of type '{1}' to a mesh.".format(object.name, object.type))
+    def __emit_object(self, scene, object, object_matrix):
+        if object.name in self._instance_count:
+            if Verbose:
+                self.__info("Skipping export of object '{0}' since it was already exported.".format(object.name))
+        else:
+            try:
+                mesh = object.to_mesh(scene, True, 'RENDER')
+                self.__emit_mesh_object(scene, object, mesh)
+                bpy.data.meshes.remove(mesh)
+            except RuntimeError:
+                self.__info("Skipping object '{0}' of type '{1}' because it could not be converted to a mesh.".format(object.name, object.type))
+                return
 
-    def __emit_mesh_object(self, scene, object, mesh, instance_matrices):
+        self.__emit_mesh_object_instances(object, object_matrix)
+
+    def __emit_mesh_object(self, scene, object, mesh):
         if len(mesh.faces) == 0:
             self.__info("Skipping object '{0}' since it has no faces once converted to a mesh.".format(object.name))
             return
@@ -774,6 +800,7 @@ class AppleseedExportOperator(bpy.types.Operator):
         # Emit object.
         self.__emit_object_element(object.name, filename)
 
+    def __emit_mesh_object_instances(self, object, object_matrix):
         # Collect materials.
         materials = [ material_slot.material for material_slot in object.material_slots ]
         if len(materials) == 0:
@@ -785,15 +812,19 @@ class AppleseedExportOperator(bpy.types.Operator):
                 self.__emit_material(material)
                 self._emitted_materials.add(material)
 
-        if Verbose:
-            self.__info("Object '{0}' has {1} instances and {2} materials.".format(object.name, len(instance_matrices), len(materials)))
-
         # Emit object instances.
+        if Verbose:
+            self.__info("Object '{0}' has {1} materials and thus is exported as {1} parts.".format(object.name, len(materials)))
         for material_index, material in enumerate(materials):
             part_name = "{0}.part_{1}".format(object.name, material_index)
-            for instance_index, instance_matrix in enumerate(instance_matrices):
-                instance_name = "{0}.instance_{1}".format(part_name, instance_index)
-                self.__emit_object_instance_element(part_name, instance_name, self.global_matrix * instance_matrix, material.name)
+            if object.name in self._instance_count:
+                instance_index = self._instance_count[object.name] + 1
+                self._instance_count[object.name] = instance_index
+            else:
+                self._instance_count[object.name] = 1
+                instance_index = 0
+            instance_name = "{0}.instance_{1}".format(part_name, instance_index)
+            self.__emit_object_instance_element(part_name, instance_name, self.global_matrix * object_matrix, material.name)
 
     def __emit_object_element(self, object_name, filename):
         self.__open_element('object name="' + object_name + '" model="mesh_object"')
