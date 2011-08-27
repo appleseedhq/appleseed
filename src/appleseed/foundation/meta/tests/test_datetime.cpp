@@ -32,6 +32,7 @@
 #include "foundation/utility/test.h"
 
 // boost headers.
+#include "boost/date_time/gregorian/gregorian.hpp"
 #include "boost/date_time/posix_time/posix_time.hpp"
 
 // Standard headers.
@@ -57,12 +58,12 @@ TEST_SUITE(Foundation_Platform_DateTime)
 
     TEST_CASE(PTimeToString)
     {
+        using namespace gregorian;
         using namespace posix_time;
 
-        const string Expected = "20100622T174531";
+        const ptime time(date(2010, Jun, 22), time_duration(17, 45, 31));
+        const string result = to_string(time);
 
-        const string result = to_string(from_iso_string(Expected));
-
-        EXPECT_EQ(Expected, result);
+        EXPECT_EQ("20100622T174531", result);
     }
 }
