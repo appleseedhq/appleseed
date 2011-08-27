@@ -33,6 +33,7 @@
 #include "foundation/image/genericimagefilereader.h"
 #include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
+#include "foundation/image/pixel.h"
 #include "foundation/math/rng.h"
 #include "foundation/utility/test.h"
 
@@ -228,6 +229,78 @@ TEST_SUITE(CompareImages)
 
         GenericImageFileWriter writer;
         writer.write("unit tests/outputs/test_compareimages_result.png", *result.get());
+    }
+
+#endif
+
+#if 0
+
+    TEST_CASE(Dither)
+    {
+        const float DitherAmplitude = 2.0f;
+        const float GammaCorrection = 1.2f;
+        const float DarksBoost = 0.0f;
+        const float DarksGammaCorrection = 10.0f;
+
+        GenericImageFileReader reader;
+        auto_ptr<Image> input_image(reader.read("../images/autosave/autosave.XXXXXXXX.XXXXXX.XXX.exr"));
+
+        ASSERT_TRUE(input_image.get());
+
+        const CanvasProperties& props = input_image->properties();
+        
+        Image output_image(
+            props.m_canvas_width,
+            props.m_canvas_height,
+            32,
+            32,
+            4,
+            PixelFormatUInt8);
+
+        MersenneTwister rng;
+
+        for (size_t y = 0; y < props.m_canvas_height; ++y)
+        {
+            for (size_t x = 0; x < props.m_canvas_width; ++x)
+            {
+                Color4f input_color;
+                input_image->get_pixel(x, y, input_color);
+
+                Color4i output_color;
+
+                for (size_t c = 0; c < 4; ++c)
+                {
+                    // Get floating-point component value.
+                    float val = input_color[c];
+                    assert(val >= 0.0f && val <= 1.0f);
+
+                    if (c < 3)  // skip the alpha channel
+                    {
+                        // Apply gamma correction.
+                        val = pow(val, 1.0f / GammaCorrection);
+
+                        // Slightly brighten dark areas.
+                        val += DarksBoost * (1.0f - pow(val, 1.0f / DarksGammaCorrection));
+
+                        // Apply dithering.
+                        const float NormalizedDitherAmp = 0.5f * DitherAmplitude / 256.0f;
+                        val += rand_float2(rng, -NormalizedDitherAmp, NormalizedDitherAmp);
+
+                        // Clamp back to [0, 1].
+                        val = saturate(val);
+                    }
+
+                    // Convert to 8-bit integer.
+                    val = min(val * 256.0f, 255.0f);
+                    output_color[c] = truncate<uint8>(val);
+                }
+
+                output_image.set_pixel(x, y, output_color);
+            }
+        }
+
+        GenericImageFileWriter writer;
+        writer.write("unit tests/outputs/test_dither_result.png", output_image);
     }
 
 #endif
