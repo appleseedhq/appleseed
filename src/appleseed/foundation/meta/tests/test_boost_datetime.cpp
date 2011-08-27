@@ -60,33 +60,4 @@ TEST_SUITE(Boost_DateTime)
 
         EXPECT_EQ("17:45:31", result);
     }
-
-#if 0
-
-    //
-    // The following test will crash or hang because of a bug in Visual C++ 2008
-    // when _HAS_ITERATOR_DEBUGGING is set to 0 (iterator debugging is disabled).
-    // This should be fixed in Visual C++ 2010.
-    //
-    // To work around this bug, include foundation/platform/datetime.h which
-    // provides an overload of foundation::to_string() for boost::posix_time::ptime.
-    //
-    // References:
-    //
-    //   http://stackoverflow.com/questions/787288/problem-when-disabling-checked-iterators-in-vs2008-sp1-has-iterator-debugging0
-    //   http://connect.microsoft.com/VisualStudio/feedback/details/435483/disabling-has-iterator-debugging-causes-memory-corruption-in-debug-mode-with-ostringstream
-    //
-
-    TEST_CASE(PTimeToString)
-    {
-        using namespace gregorian;
-        using namespace posix_time;
-
-        const ptime time(date(2010, Jun, 22), time_duration(17, 45, 31));
-        const string result = to_string(time);
-
-        EXPECT_EQ("2010-Jun-22", result);
-    }
-
-#endif
 }
