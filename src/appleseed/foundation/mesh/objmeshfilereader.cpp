@@ -90,17 +90,10 @@ struct OBJMeshFileReader::Impl
     typedef map<string, Symbol> KeywordTable;
     typedef map<string, size_t> MaterialMap;
 
-    // Read options.
     const Options           m_options;
-
-    // Mesh builder.
-    IOBJMeshBuilder*        m_builder;
-
-    // Keyword table.
     KeywordTable            m_keywords;
-
-    // Lexical analyzer.
     OBJMeshFileLexer        m_lexer;
+    IOBJMeshBuilder*        m_builder;
 
     // Features defined in the file.
     vector<Vector3d>        m_vertices;
@@ -119,10 +112,6 @@ struct OBJMeshFileReader::Impl
 
     bool                    m_inside_mesh_def;          // currently inside a mesh definition?
     string                  m_mesh_name;
-
-    MaterialMap             m_materials;
-    size_t                  m_current_material;         // index of the material currently in use
-    bool                    m_inside_material_def;      // currently inside a material definition?
 
     // Constructor.
     explicit Impl(const Options options)
@@ -167,10 +156,6 @@ struct OBJMeshFileReader::Impl
 
         m_inside_mesh_def = false;
         m_mesh_name.clear();
-
-        m_materials.clear();
-        m_current_material = Undefined;
-        m_inside_material_def = false;
     }
 
     // Close the input file and throw an ExceptionParseError exception.
@@ -213,25 +198,24 @@ struct OBJMeshFileReader::Impl
               case F:
                 parse_f_statement();
                 break;
-              case MtlLib:
-                parse_mtllib_statement();
-                break;
+
               case O:
               case G:
                 parse_o_g_statement();
                 break;
-              case UseMtl:
-                parse_usemtl_statement();
-                break;
+
               case V:
                 parse_v_statement();
                 break;
+
               case VN:
                 parse_vn_statement();
                 break;
+
               case VT:
                 parse_vt_statement();
                 break;
+
               default:
                 // Ignore unhandled statements.
                 m_lexer.eat_line();
@@ -389,7 +373,9 @@ struct OBJMeshFileReader::Impl
 
     void insert_vertices_into_mesh()
     {
-        for (size_t i = 0; i < m_face_vertex_indices.size(); ++i)
+        const size_t face_vertex_index_count = m_face_vertex_indices.size();
+
+        for (size_t i = 0; i < face_vertex_index_count; ++i)
         {
             const size_t vertex_index = m_face_vertex_indices[i];
             ensure_size(m_vertex_index_mapping, vertex_index + 1, Undefined);
@@ -400,7 +386,9 @@ struct OBJMeshFileReader::Impl
 
     void insert_vertex_normals_into_mesh()
     {
-        for (size_t i = 0; i < m_face_normal_indices.size(); ++i)
+        const size_t face_normal_index_count = m_face_normal_indices.size();
+
+        for (size_t i = 0; i < face_normal_index_count; ++i)
         {
             const size_t normal_index = m_face_normal_indices[i];
             ensure_size(m_normal_index_mapping, normal_index + 1, Undefined);
@@ -411,7 +399,9 @@ struct OBJMeshFileReader::Impl
 
     void insert_tex_coords_into_mesh()
     {
-        for (size_t i = 0; i < m_face_tex_coord_indices.size(); ++i)
+        const size_t face_tex_coord_index_count = m_face_tex_coord_indices.size();
+
+        for (size_t i = 0; i < face_tex_coord_index_count; ++i)
         {
             const size_t tex_coord_index = m_face_tex_coord_indices[i];
             ensure_size(m_tex_coord_index_mapping, tex_coord_index + 1, Undefined);
@@ -459,31 +449,6 @@ struct OBJMeshFileReader::Impl
         m_builder->end_face();
     }
 
-    void parse_mtllib_statement()
-    {
-        m_lexer.eat_blanks();
-
-#if 0
-        load_material_file(m_lexer.accept_string());
-#else
-        m_lexer.accept_string();
-#endif
-
-        while (true)
-        {
-            m_lexer.eat_blanks();
-
-            if (m_lexer.is_eol())
-                break;
-
-#if 0
-            load_material_file(m_lexer.accept_string());
-#else
-            m_lexer.accept_string();
-#endif
-        }
-    }
-
     void parse_o_g_statement()
     {
         m_lexer.eat_blanks();
@@ -495,44 +460,14 @@ struct OBJMeshFileReader::Impl
             m_inside_mesh_def = false;
         }
 
-        if (m_lexer.is_eol())
-        {
-            // No name was specified.
-            m_mesh_name.clear();
-        }
-        else
-        {
-            // Get the name of the mesh.
+        clear_keep_memory(m_vertex_index_mapping);
+        clear_keep_memory(m_tex_coord_index_mapping);
+        clear_keep_memory(m_normal_index_mapping);
+        m_mesh_name.clear();
+
+        // Retrieve the name of the upcoming mesh.
+        if (!m_lexer.is_eol())
             m_mesh_name = m_lexer.accept_string();
-        }
-    }
-
-    void parse_usemtl_statement()
-    {
-        m_lexer.eat_blanks();
-
-        if (m_lexer.is_eol())
-        {
-            // No material was specified.
-            m_current_material = Undefined;
-        }
-        else
-        {
-            const string material_name = m_lexer.accept_string();
-#if 0
-            const string_to_feature_id_map::const_iterator i = m_material_id.find(material_name);
-            if (i != m_material_id.end())
-            {
-                // A material was specified, and it is defined.
-                m_current_material = i->second;
-            }
-            else
-#endif
-            {
-                // A material was specified, but it was not defined.
-                m_current_material = Undefined;
-            }
-        }
     }
 
     void parse_v_statement()
@@ -590,177 +525,6 @@ struct OBJMeshFileReader::Impl
 
         m_normals.push_back(n);
     }
-
-#if 0
-
-    void load_material_file(const string &filename)
-    {
-        //!\todo This is quite dirty, I must admit.
-        FILE * const file_copy = m_file;
-        const int line_copy = m_line;
-
-        m_file = TryOpeningFile(m_path, filename, "r");
-
-        if (m_file) {
-            m_line = 1;
-
-            m_inside_material_def = false;
-
-            parse_material_file();
-
-            if (m_inside_material_def) {
-                assert(m_matbuilder);
-                m_matbuilder->EndMaterial();
-            }
-        } else {
-            if (m_option_mask & STOP_ON_MISSING_FILE_BIT) {
-                //!\todo Close files and free resources.
-                throw FileNotFoundException(filename);
-            }
-
-            // Ignore missing material file.
-        }
-
-        m_file = file_copy;
-        m_line = line_copy;
-    }
-
-    void parse_material_file()
-    {
-        while (true)
-        {
-            m_lexer.eat_blanks();
-
-            // Handle end of file.
-            if (m_lexer.is_eof())
-                break;
-
-            // Handle empty lines.
-            if (m_lexer.is_eol())
-            {
-                m_lexer.accept_newline();
-                continue;
-            }
-
-            const string keyword = m_lexer.accept_string();
-            const KeywordTable::const_iterator i = m_keywords.find(keyword);
-
-            // Ignore unknown statements.
-            if (i == m_keywords.end())
-            {
-                m_lexer.eat_line();
-                continue;
-            }
-
-            switch (i->second)
-            {
-              case KA:
-                parse_ka_statement();
-                break;
-              case KD:
-                parse_kd_statement();
-                break;
-              case KS:
-                parse_ks_statement();
-                break;
-              case MapKD:
-                parse_map_kd_statement();
-                break;
-              case NewMtl:
-                parse_newmtl_statement();
-                break;
-              default:
-                // Ignore unhandled statements.
-                m_lexer.eat_line();
-                continue;
-            }
-
-            m_lexer.eat_blanks();
-            m_lexer.accept_newline();
-        }
-    }
-
-    void parse_ka_statement()
-    {
-        Color3d ambient;
-
-        m_lexer.eat_blanks();
-        ambient.r = m_lexer.accept_double();
-
-        m_lexer.eat_blanks();
-        ambient.g = m_lexer.accept_double();
-
-        m_lexer.eat_blanks();
-        ambient.b = m_lexer.accept_double();
-
-        if (!m_inside_material_def)
-            parse_error();
-
-        throw ExceptionNotImplemented();
-    }
-
-    void parse_kd_statement()
-    {
-        Color3d diffuse;
-
-        m_lexer.eat_blanks();
-        diffuse.r = m_lexer.accept_double();
-
-        m_lexer.eat_blanks();
-        diffuse.g = m_lexer.accept_double();
-
-        m_lexer.eat_blanks();
-        diffuse.b = m_lexer.accept_double();
-
-        if (!m_inside_material_def)
-            parse_error();
-
-        throw ExceptionNotImplemented();
-    }
-
-    void parse_ks_statement()
-    {
-        Color3d specular;
-
-        m_lexer.eat_blanks();
-        specular.r = m_lexer.accept_double();
-
-        m_lexer.eat_blanks();
-        specular.g = m_lexer.accept_double();
-
-        m_lexer.eat_blanks();
-        specular.b = m_lexer.accept_double();
-
-        if (!m_inside_material_def)
-            parse_error();
-
-        throw ExceptionNotImplemented();
-    }
-
-    void parse_map_kd_statement()
-    {
-        m_lexer.eat_blanks();
-
-        const string filename = m_lexer.accept_string();
-
-        if (!m_inside_material_def)
-            parse_error();
-
-        throw ExceptionNotImplemented();
-    }
-
-    void parse_newmtl_statement()
-    {
-        m_lexer.eat_blanks();
-
-        const string material_name = m_lexer.accept_string();
-
-    //  m_material_id[material_name] = m_matbuilder->BeginMaterial(material_name);
-        m_inside_material_def = true;
-    }
-
-#endif
-
 };
 
 OBJMeshFileReader::OBJMeshFileReader(const Options options)
