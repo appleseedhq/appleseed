@@ -122,19 +122,23 @@ def write_mesh_to_disk(mesh, filepath):
         uvtex = mesh.uv_textures
         uvset = uvtex.active.data if uvtex else None
 
+        # Sort the faces by material.
+        sorted_faces = [ (index, face) for index, face in enumerate(faces) ]
+        sorted_faces.sort(key = lambda item: item[1].material_index)
+
         # Write vertices.
         output_file.write("# %d vertices.\n" % len(vertices))
         for vertex in vertices:
             v = vertex.co
-            output_file.write("v %.15f %.15f %.15f\n" % (v.x, v.z, -v.y))
+            output_file.write("v %.15f %.15f %.15f\n" % (v.x, v.y, v.z))
 
         # Deduplicate and write normals.
         output_file.write("# Vertex normals.\n")
         normal_indices = {}
         vertex_normal_indices = {}
         face_normal_indices = {}
-        current_normal_index = 1
-        for face_index, face in enumerate(faces):
+        current_normal_index = 0
+        for face_index, face in sorted_faces:
             if face.use_smooth:
                 for vertex_index in face.vertices:
                     vn = vertices[vertex_index].normal
@@ -142,7 +146,7 @@ def write_mesh_to_disk(mesh, filepath):
                     if vn_key in normal_indices:
                         vertex_normal_indices[vertex_index] = normal_indices[vn_key]
                     else:
-                        output_file.write("vn %.15f %.15f %.15f\n" % (vn.x, vn.z, -vn.y))
+                        output_file.write("vn %.15f %.15f %.15f\n" % (vn.x, vn.y, vn.z))
                         normal_indices[vn_key] = current_normal_index
                         vertex_normal_indices[vertex_index] = current_normal_index
                         current_normal_index += 1
@@ -152,7 +156,7 @@ def write_mesh_to_disk(mesh, filepath):
                 if vn_key in normal_indices:
                     face_normal_indices[face_index] = normal_indices[vn_key]
                 else:
-                    output_file.write("vn %.15f %.15f %.15f\n" % (vn.x, vn.z, -vn.y))
+                    output_file.write("vn %.15f %.15f %.15f\n" % (vn.x, vn.y, vn.z))
                     normal_indices[vn_key] = current_normal_index
                     face_normal_indices[face_index] = current_normal_index
                     current_normal_index += 1
@@ -162,8 +166,8 @@ def write_mesh_to_disk(mesh, filepath):
             output_file.write("# Texture coordinates.\n")
             vt_indices = {}
             vertex_texcoord_indices = {}
-            current_vt_index = 1
-            for face_index, face in enumerate(faces):
+            current_vt_index = 0
+            for face_index, face in sorted_faces:
                 assert len(uvset[face_index].uv) == len(face.vertices)
                 for vt_index, vt in enumerate(uvset[face_index].uv):
                     vertex_index = face.vertices[vt_index]
@@ -176,39 +180,41 @@ def write_mesh_to_disk(mesh, filepath):
                         vertex_texcoord_indices[face_index, vertex_index] = current_vt_index
                         current_vt_index += 1
 
-        # Sort the faces by material.
-        sorted_faces = sorted(faces, key=lambda face: face.material_index)
+        mesh_names = []
 
         # Write faces.
         output_file.write("# %d faces.\n" % len(sorted_faces))
         current_material_index = -1
-        for face_index, face in enumerate(sorted_faces):
+        for face_index, face in sorted_faces:
             if current_material_index != face.material_index:
                 current_material_index = face.material_index
-                output_file.write("o part_%d\n" % current_material_index)
+                mesh_name = "part_%d" % current_material_index
+                mesh_names.append(mesh_name)
+                output_file.write("o {0}\n".format(mesh_name))
             line = "f"
             if uvset and len(uvset[face_index].uv) > 0:
                 if face.use_smooth:
                     for vertex_index in face.vertices:
                         texcoord_index = vertex_texcoord_indices[face_index, vertex_index]
                         normal_index = vertex_normal_indices[vertex_index]
-                        line += " %d/%d/%d" % (vertex_index + 1, texcoord_index, normal_index)
+                        line += " %d/%d/%d" % (vertex_index + 1, texcoord_index + 1, normal_index + 1)
                 else:
                     normal_index = face_normal_indices[face_index]
                     for vertex_index in face.vertices:
                         texcoord_index = vertex_texcoord_indices[face_index, vertex_index]
-                        line += " %d/%d/%d" % (vertex_index + 1, texcoord_index, normal_index)
+                        line += " %d/%d/%d" % (vertex_index + 1, texcoord_index + 1, normal_index + 1)
             else:
                 if face.use_smooth:
                     for vertex_index in face.vertices:
                         normal_index = vertex_normal_indices[vertex_index]
-                        line += " %d//%d" % (vertex_index + 1, normal_index)
+                        line += " %d//%d" % (vertex_index + 1, normal_index + 1)
                 else:
                     normal_index = face_normal_indices[face_index]
                     for vertex_index in face.vertices:
-                        line += " %d//%d" % (vertex_index + 1, normal_index)
+                        line += " %d//%d" % (vertex_index + 1, normal_index + 1)
             output_file.write(line + "\n")
 
+        return mesh_names
 
 def write_sphere_mesh_to_disk(filepath):
     with open(filepath, "w") as output_file:
@@ -485,23 +491,20 @@ class AppleseedExportOperator(bpy.types.Operator):
     # The name of the appleseed project file.
     filepath = bpy.props.StringProperty(subtype='FILE_PATH')
 
-    # The scene to export.
     selected_scene = bpy.props.EnumProperty(name="Scene",
                                             description="Select the scene to export",
                                             items=scene_enumerator)
 
-    # The camera to export.
     selected_camera = bpy.props.EnumProperty(name="Camera",
                                              description="Select the camera to export",
                                              items=camera_enumerator)
 
-    # Lighting engine.
     lighting_engine = bpy.props.EnumProperty(name="Lighting Engine",
                                              description="Select the lighting engine to use",
-                                             items=[("pt", "Global Illumination", ""),
-                                                    ("drt", "Direct Lighting", "")])
+                                             items=[('pt', "Path Tracing", "Full Global Illumination"),
+                                                    ('drt', "Distributed Ray Tracing", "Direct Lighting Only")],
+                                             default='pt')
 
-    # Number of samples per pixels in final frame mode.
     sample_count = bpy.props.IntProperty(name="Sample Count",
                                          description="Number of samples per pixels in final frame mode",
                                          min=1,
@@ -509,12 +512,10 @@ class AppleseedExportOperator(bpy.types.Operator):
                                          default=32,
                                          subtype='UNSIGNED')
 
-    # Export object with light-emitting materials as mesh lights.
     export_emitting_obj_as_lights = bpy.props.BoolProperty(name="Export Emitting Objects As Mesh Lights",
                                                            description="Export object with light-emitting materials as mesh (area) lights",
                                                            default=False)
 
-    # Point lights diameter.
     point_lights_diameter = bpy.props.FloatProperty(name="Point Lights Diameter",
                                                     description="Points lights are currently emitted as little sphere of this diameter",
                                                     min=0.0001,
@@ -522,7 +523,6 @@ class AppleseedExportOperator(bpy.types.Operator):
                                                     default=0.1,
                                                     subtype='FACTOR')
 
-    # Point lights exitance multiplier.
     point_lights_exitance_mult = bpy.props.FloatProperty(name="Point Lights Energy Multiplier",
                                                          description="Multiply the exitance of point lights by this factor",
                                                          min=0.001,
@@ -530,7 +530,6 @@ class AppleseedExportOperator(bpy.types.Operator):
                                                          default=200.0,
                                                          subtype='FACTOR')
 
-    # Light-emitting materials exitance multiplier.
     light_mats_exitance_mult = bpy.props.FloatProperty(name="Light-Emitting Materials Energy Multiplier",
                                                        description="Multiply the exitance of light-emitting materials by this factor",
                                                        min=0.001,
@@ -538,7 +537,6 @@ class AppleseedExportOperator(bpy.types.Operator):
                                                        default=1.0,
                                                        subtype='FACTOR')
 
-    # Specular highlights multiplier.
     specular_mult = bpy.props.FloatProperty(name="Specular Highlights Multiplier",
                                             description="Multiply the intensity of specular components by this factor",
                                             min=0.01,
@@ -546,17 +544,25 @@ class AppleseedExportOperator(bpy.types.Operator):
                                             default=0.3,
                                             subtype='FACTOR')
 
-    # Regenerate the mesh files (.obj files)?
     generate_mesh_files = bpy.props.BoolProperty(name="Write Meshes to Disk",
                                                  description="If unchecked, the mesh files (.obj files) won't be regenerated",
                                                  default=True)
 
-    # Recompute vertex normals?
     recompute_vertex_normals = bpy.props.BoolProperty(name="Recompute Vertex Normals",
-                                                      description="If checked, vertex normals will be recomputed",
+                                                      description="If checked, vertex normals will be recomputed during tessellation",
                                                       default=True)
 
-    # Transformation matrix that is applied to all entities of the scene.
+    apply_modifiers = bpy.props.BoolProperty(name="Apply Modifiers",
+                                             description="If checked, modifiers will be applied to objects during tessellation",
+                                             default=True)
+
+    tessellation_quality = bpy.props.EnumProperty(name="Tessellation Quality",
+                                                  description="Fineness of the tessellation of non-mesh objects",
+                                                  items=[('PREVIEW', "Preview", ""),
+                                                         ('RENDER', "Render", "")],
+                                                  default='PREVIEW')
+
+    # Transformation matrix applied to all entities of the scene.
     global_scale = 0.1
     global_matrix = mathutils.Matrix.Scale(global_scale, 4)
 
@@ -591,8 +597,11 @@ class AppleseedExportOperator(bpy.types.Operator):
         # The set of materials that were already emitted.
         self._emitted_materials = set()
 
-        # Object name -> instance count mapping.
+        # Object name -> instance count.
         self._instance_count = {}
+
+        # Object name -> mesh names.
+        self._mesh_names = {}
 
         file_path = os.path.splitext(self.filepath)[0] + ".appleseed"
 
@@ -696,21 +705,23 @@ class AppleseedExportOperator(bpy.types.Operator):
     #
 
     def __emit_environment(self, scene):
-        if scene.world is not None:
-            self.__emit_solid_linear_rgb_color_element("environment_edf_exitance", scene.world.horizon_color, 1.0)
+        if scene.world is None:
+            return
 
-            self.__open_element('environment_edf name="environment_edf" model="constant_environment_edf"')
-            self.__emit_parameter("exitance", "environment_edf_exitance")
-            self.__close_element('environment_edf')
+        self.__emit_solid_linear_rgb_color_element("environment_edf_exitance", scene.world.horizon_color, 1.0)
 
-            self.__open_element('environment_shader name="environment_shader" model="edf_environment_shader"')
-            self.__emit_parameter("environment_edf", "environment_edf")
-            self.__close_element('environment_shader')
+        self.__open_element('environment_edf name="environment_edf" model="constant_environment_edf"')
+        self.__emit_parameter("exitance", "environment_edf_exitance")
+        self.__close_element('environment_edf')
 
-            self.__open_element('environment name="environment" model="generic_environment"')
-            self.__emit_parameter("environment_edf", "environment_edf")
-            self.__emit_parameter("environment_shader", "environment_shader")
-            self.__close_element('environment')
+        self.__open_element('environment_shader name="environment_shader" model="edf_environment_shader"')
+        self.__emit_parameter("environment_edf", "environment_edf")
+        self.__close_element('environment_shader')
+
+        self.__open_element('environment name="environment" model="generic_environment"')
+        self.__emit_parameter("environment_edf", "environment_edf")
+        self.__emit_parameter("environment_shader", "environment_shader")
+        self.__close_element('environment')
 
     #
     # Geometry.
@@ -739,23 +750,23 @@ class AppleseedExportOperator(bpy.types.Operator):
             # Skip children of dupli objects.
             if object.parent and object.parent.dupli_type in { 'VERTS', 'FACES' }:      # todo: what about dupli type 'GROUP'?
                 if Verbose:
-                    self.__info("Skipping object '{0}' because its parent ('{1}') has dupli_type '{2}'.".format(object.name, object.parent.name, object.parent.dupli_type))
+                    self.__info("Skipping object '{0}' because its parent ('{1}') has dupli type '{2}'.".format(object.name, object.parent.name, object.parent.dupli_type))
                 continue
 
-            # Create dupli list and collect subobjects.
+            # Create dupli list and collect dupli objects.
             if Verbose:
-                self.__info("Object '{0}' has dupli_type '{1}'.".format(object.name, object.dupli_type))
+                self.__info("Object '{0}' has dupli type '{1}'.".format(object.name, object.dupli_type))
             if object.dupli_type != 'NONE':
                 object.dupli_list_create(scene)
-                subobjects = [ (dupli.object, dupli.matrix) for dupli in object.dupli_list ]
+                dupli_objects = [ (dupli.object, dupli.matrix) for dupli in object.dupli_list ]
+                if Verbose:
+                    self.__info("Object '{0}' has {1} dupli objects.".format(object.name, len(dupli_objects)))
             else:
-                subobjects = [ (object, object.matrix_world) ]
-            if Verbose:
-                self.__info("Object '{0}' is made up of {1} subobjects.".format(object.name, len(subobjects)))
+                dupli_objects = [ (object, object.matrix_world) ]
 
-            # Emit the subobjects.
-            for subobject in subobjects:
-                self.__emit_object(scene, subobject[0], subobject[1])
+            # Emit the dupli objects.
+            for dupli_object in dupli_objects:
+                self.__emit_object(scene, dupli_object[0], dupli_object[1])
 
             # Clear dupli list.
             if object.dupli_type != 'NONE':
@@ -767,8 +778,13 @@ class AppleseedExportOperator(bpy.types.Operator):
                 self.__info("Skipping export of object '{0}' since it was already exported.".format(object.name))
         else:
             try:
-                mesh = object.to_mesh(scene, True, 'RENDER')
-                self.__emit_mesh_object(scene, object, mesh)
+                # Tessellate the object.
+                mesh = object.to_mesh(scene, self.apply_modifiers, self.tessellation_quality)
+
+                # Write the geometry to disk and emit a mesh object element.
+                self._mesh_names[object.name] = self.__emit_mesh_object(scene, object, mesh)
+
+                # Delete the tessellation.
                 bpy.data.meshes.remove(mesh)
             except RuntimeError:
                 self.__info("Skipping object '{0}' of type '{1}' because it could not be converted to a mesh.".format(object.name, object.type))
@@ -779,7 +795,7 @@ class AppleseedExportOperator(bpy.types.Operator):
     def __emit_mesh_object(self, scene, object, mesh):
         if len(mesh.faces) == 0:
             self.__info("Skipping object '{0}' since it has no faces once converted to a mesh.".format(object.name))
-            return
+            return []
 
         filename = object.name + ".obj"
 
@@ -792,13 +808,22 @@ class AppleseedExportOperator(bpy.types.Operator):
             try:
                 filepath = os.path.join(os.path.dirname(self.filepath), filename)
                 self.__progress("Exporting object '{0}' to {1}...".format(object.name, filename))
-                write_mesh_to_disk(mesh, filepath)
+                mesh_names = write_mesh_to_disk(mesh, filepath)
+                if Verbose:
+                    self.__info("Object '{0}' exported as {1} meshes.".format(object.name, len(mesh_names)))
             except IOError:
                 self.__error("While exporting object '{0}': could not write to {1}, skipping this object.".format(object.name, filepath))
-                return
+                return []
+        else:
+            material_indices = set()
+            for face in mesh.faces:
+                material_indices.add(face.material_index)
+            mesh_names = map(lambda material_index : "part_%d" % material_index, material_indices)
 
         # Emit object.
         self.__emit_object_element(object.name, filename)
+
+        return mesh_names
 
     def __emit_mesh_object_instances(self, object, object_matrix):
         # Collect materials.
@@ -807,22 +832,23 @@ class AppleseedExportOperator(bpy.types.Operator):
             materials = [ bpy.data.materials.new(name="{0}_material".format(object.name)) ]
 
         # Emit BSDFs and materials.
-        for material_index, material in enumerate(materials):
+        for material in materials:
             if material not in self._emitted_materials:
                 self.__emit_material(material)
                 self._emitted_materials.add(material)
 
-        # Emit object instances.
+        # Figure out the instance number of this object.
+        if object.name in self._instance_count:
+            instance_index = self._instance_count[object.name] + 1
+        else:
+            instance_index = 0
+        self._instance_count[object.name] = instance_index
         if Verbose:
-            self.__info("Object '{0}' has {1} materials and thus is exported as {1} parts.".format(object.name, len(materials)))
-        for material_index, material in enumerate(materials):
-            part_name = "{0}.part_{1}".format(object.name, material_index)
-            if object.name in self._instance_count:
-                instance_index = self._instance_count[object.name] + 1
-                self._instance_count[object.name] = instance_index
-            else:
-                self._instance_count[object.name] = 1
-                instance_index = 0
+            self.__info("This is instance #{0} of object '{1}'.".format(instance_index, object.name))
+
+        # Emit object instances.
+        for mesh_name in self._mesh_names[object.name]:
+            part_name = "{0}.{1}".format(object.name, mesh_name)
             instance_name = "{0}.instance_{1}".format(part_name, instance_index)
             self.__emit_object_instance_element(part_name, instance_name, self.global_matrix * object_matrix, material.name)
 
@@ -849,11 +875,10 @@ class AppleseedExportOperator(bpy.types.Operator):
 
         edf_name = ""
 
-        if material.emit > 0.0:
-            force_area_light = material.get('appleseed_arealight', False)
-            if self.export_emitting_obj_as_lights or force_area_light:
-                edf_name = "{0}_edf".format(material.name)
-                self.__emit_edf(material, edf_name)
+        force_area_light = material.get('appleseed_arealight', False)
+        if force_area_light or (material.emit > 0.0 and self.export_emitting_obj_as_lights):
+            edf_name = "{0}_edf".format(material.name)
+            self.__emit_edf(material, edf_name)
 
         self.__emit_material_element(material.name, bsdf_name, edf_name, "physical_shader")
 
@@ -980,9 +1005,10 @@ class AppleseedExportOperator(bpy.types.Operator):
 
     def __emit_diffuse_edf(self, material, edf_name):
         exitance_name = "{0}_exitance".format(edf_name)
+        emit_factor = material.emit if material.emit > 0.0 else 1.0
         self.__emit_solid_linear_rgb_color_element(exitance_name,
                                                    material.diffuse_color,
-                                                   material.emit * self.light_mats_exitance_mult)
+                                                   emit_factor * self.light_mats_exitance_mult)
         self.__emit_diffuse_edf_element(edf_name, exitance_name)
 
     def __emit_diffuse_edf_element(self, edf_name, exitance_name):
@@ -1135,17 +1161,28 @@ class AppleseedExportOperator(bpy.types.Operator):
     def __emit_solid_srgb_color_element(self, name, values, multiplier):
         self.__emit_color_element(name, "srgb", values, None, multiplier)
 
-    def __emit_transform_element(self, matrix):
-        s = matrix.to_scale()
-        t = matrix.to_translation()
-        rx, ry, rz = map(rad_to_deg, matrix.to_euler())
+    def __emit_transform_element(self, m):
+        #
+        # We have the following conventions:
+        #
+        #   Both Blender and appleseed use right-hand coordinate systems.
+        #   Both Blender and appleseed use column-major matrices.
+        #   Both Blender and appleseed use pre-multiplication.
+        #   In Blender, given a matrix m, m[i] is the i'th column.
+        #
+        # The only difference between the coordinate systems of Blender and appleseed is the up vector:
+        # in Blender, up is Z+; in appleseed, up is Y+. We can go from Blender's coordinate system to
+        # appleseed's one by rotating by +90 degrees around the X axis. That means that Blender objects
+        # must be rotated by -90 degrees around X before being exported to appleseed.
+        #
 
         self.__open_element("transform")
-        self.__emit_line('<scaling value="{0} {1} {2}" />'.format(s[0], s[2], s[1]))
-        self.__emit_line('<rotation axis="1.0 0.0 0.0" angle="{0}" />'.format(rx))
-        self.__emit_line('<rotation axis="0.0 0.0 -1.0" angle="{0}" />'.format(ry))
-        self.__emit_line('<rotation axis="0.0 1.0 0.0" angle="{0}" />'.format(rz))
-        self.__emit_line('<translation value="{0} {1} {2}" />'.format(t[0], t[2], -t[1]))
+        self.__open_element("matrix")
+        self.__emit_line("{0} {1} {2} {3}".format( m[0][0],  m[1][0],  m[2][0],  m[3][0]))
+        self.__emit_line("{0} {1} {2} {3}".format( m[0][2],  m[1][2],  m[2][2],  m[3][2]))
+        self.__emit_line("{0} {1} {2} {3}".format(-m[0][1], -m[1][1], -m[2][1], -m[3][1]))
+        self.__emit_line("{0} {1} {2} {3}".format( m[0][3],  m[1][3],  m[2][3],  m[3][3]))
+        self.__close_element("matrix")
         self.__close_element("transform")
 
     def __emit_custom_prop(self, object, prop_name, default_value):
