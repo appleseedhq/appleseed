@@ -124,12 +124,11 @@ class InputBinder
         const char*                     param_value,
         InputArray::iterator&           input);
 
-    // Bind a scalar to a given input.
-    void bind_scalar_to_input(
-        const char*                     entity_type,
-        const char*                     entity_name,
-        const char*                     param_value,
-        InputArray::iterator&           input);
+    // Try binding a scalar to a given input.
+    // Return true on success (the value was indeed a scalar), false otherwise.
+    bool try_bind_scalar_to_input(
+        const std::string&              param_value,
+        InputArray::iterator&           input) const;
 
     // Bind a color to a given input.
     void bind_color_to_input(

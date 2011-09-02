@@ -309,13 +309,16 @@ void InputBinder::bind_scene_entity_inputs(
             continue;
         }
 
-        bind_scene_entity_to_input(
-            scene,
-            scene_symbols,
-            entity_type,
-            entity_name,
-            param_value.c_str(),
-            input);
+        if (!try_bind_scalar_to_input(param_value, input))
+        {
+            bind_scene_entity_to_input(
+                scene,
+                scene_symbols,
+                entity_type,
+                entity_name,
+                param_value.c_str(),
+                input);
+        }
     }
 }
 
@@ -354,15 +357,18 @@ void InputBinder::bind_assembly_entity_inputs(
             continue;
         }
 
-        bind_assembly_entity_to_input(
-            scene,
-            scene_symbols,
-            assembly,
-            assembly_symbols,
-            entity_type,
-            entity_name,
-            param_value.c_str(),
-            input);
+        if (!try_bind_scalar_to_input(param_value, input))
+        {
+            bind_assembly_entity_to_input(
+                scene,
+                scene_symbols,
+                assembly,
+                assembly_symbols,
+                entity_type,
+                entity_name,
+                param_value.c_str(),
+                input);
+        }
     }
 }
 
@@ -376,16 +382,6 @@ void InputBinder::bind_scene_entity_to_input(
 {
     switch (scene_symbols.lookup(param_value))
     {
-      case SymbolTable::SymbolNotFound:
-        // No entity with this name was found in this scope.
-        // Attempt to interpret it as a numeric literal.
-        bind_scalar_to_input(
-            entity_type,
-            entity_name,
-            param_value,
-            input);
-        break;
-
       case SymbolTable::SymbolColor:
         bind_color_to_input(
             scene.colors(),
@@ -428,18 +424,6 @@ void InputBinder::bind_assembly_entity_to_input(
 {
     switch (assembly_symbols.lookup(param_value))
     {
-      case SymbolTable::SymbolNotFound:
-        // No entity with this name was found in this scope.
-        // Attempt to bind the input to a scene entity.
-        bind_scene_entity_to_input(
-            scene,
-            scene_symbols,
-            entity_type,
-            entity_name,
-            param_value,
-            input);
-        break;
-
       case SymbolTable::SymbolColor:
         bind_color_to_input(
             assembly.colors(),
@@ -458,6 +442,18 @@ void InputBinder::bind_assembly_entity_to_input(
             input);
         break;
 
+      case SymbolTable::SymbolNotFound:
+        // No entity with this name was found in this scope.
+        // Attempt to bind the input to a scene entity.
+        bind_scene_entity_to_input(
+            scene,
+            scene_symbols,
+            entity_type,
+            entity_name,
+            param_value,
+            input);
+        break;
+
       default:
         RENDERER_LOG_ERROR(
             "while defining %s \"%s\": cannot bind \"%s\" to parameter \"%s\"",
@@ -470,26 +466,19 @@ void InputBinder::bind_assembly_entity_to_input(
     }
 }
 
-void InputBinder::bind_scalar_to_input(
-    const char*                     entity_type,
-    const char*                     entity_name,
-    const char*                     param_value,
-    InputArray::iterator&           input)
+bool InputBinder::try_bind_scalar_to_input(
+    const string&                   param_value,
+    InputArray::iterator&           input) const
 {
     try
     {
         const double value = from_string<double>(param_value);
         input.bind(new ScalarSource(value));
+        return true;
     }
     catch (const ExceptionStringConversionError&)
     {
-        RENDERER_LOG_ERROR(
-            "while defining %s \"%s\": invalid value \"%s\" for parameter \"%s\"",
-            entity_type,
-            entity_name,
-            param_value,
-            input.name());
-        ++m_error_count;
+        return false;
     }
 }
 
