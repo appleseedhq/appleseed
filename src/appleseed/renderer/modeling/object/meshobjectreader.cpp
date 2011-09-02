@@ -67,23 +67,6 @@ DEFINE_ARRAY(MeshObjectArray);
 
 namespace
 {
-//
-// Disable erroneous Visual Studio warning C4267:
-//
-//   conversion from 'size_t' to 'foundation::uint32', possible loss of data
-//
-// for this piece of code. This is a workaround for a bug in Visual Studio:
-//
-//   https://connect.microsoft.com/VisualStudio/feedback/ViewFeedback.aspx?FeedbackID=253172
-//
-
-#pragma warning (push)
-#pragma warning (disable : 4267)
-
-    //
-    // Mesh object builder.
-    //
-
     class MeshObjectBuilder
       : public IMeshBuilder
     {
@@ -96,6 +79,10 @@ namespace
           : m_params(params)
           , m_base_object_name(base_object_name)
           , m_untitled_mesh_counter(0)
+          , m_vertex_count(0)
+          , m_face_material(0)
+          , m_face_count(0)
+          , m_triangulation_error_count(0)
         {
         }
 
@@ -106,36 +93,29 @@ namespace
 
         virtual void begin_mesh(const string& name)
         {
-            string object_name;
-            if (name.empty())
-            {
-                // Anonymous meshes are assigned increasing numbers, starting at 0.
-                object_name = m_base_object_name + "." +
-                    to_string<size_t>(m_untitled_mesh_counter++);
-            }
-            else
-            {
-                // Generate the object name from the base name and the mesh name.
-                object_name = m_base_object_name + "." + name;
-            }
+            // If the mesh has no name, assign it a number (starting with 0).
+            const string mesh_name = name.empty() ? to_string(m_untitled_mesh_counter++) : name;
+
+            // Construct the final object name from the base object name and the mesh name.
+            const string object_name = m_base_object_name + "." + mesh_name;
 
             // Create an empty mesh object.
             m_objects.push_back(
                 MeshObjectFactory::create(object_name.c_str(), m_params).release());
 
             m_face_count = 0;
-            m_triangulation_errors = 0;
+            m_triangulation_error_count = 0;
         }
 
         virtual void end_mesh()
         {
             // Print the number of faces that could not be triangulated (if any).
-            if (m_triangulation_errors > 0)
+            if (m_triangulation_error_count > 0)
             {
                 RENDERER_LOG_WARNING(
                     "%s polygonal %s (out of %s) could not be triangulated",
-                    pretty_int(m_triangulation_errors).c_str(),
-                    plural(m_triangulation_errors, "face").c_str(),
+                    pretty_int(m_triangulation_error_count).c_str(),
+                    plural(m_triangulation_error_count, "face").c_str(),
                     pretty_int(m_face_count).c_str());
             }
 
@@ -190,7 +170,7 @@ namespace
             {
                 // Create the polygon to triangulate.
                 clear_keep_memory(m_polygon);
-                for (size_t i = 0; i < m_face_vertices.size(); ++i)
+                for (size_t i = 0; i < m_vertex_count; ++i)
                 {
                     m_polygon.push_back(
                         Vector3d(m_objects.back()->get_vertex(m_face_vertices[i])));
@@ -201,12 +181,13 @@ namespace
                 if (!m_triangulator.triangulate(m_polygon, m_triangles))
                 {
                     // Skip problematic polygonal faces.
-                    ++m_triangulation_errors;
+                    ++m_triangulation_error_count;
                     return;
                 }
 
                 // Insert all triangles of the triangulation into the mesh.
-                for (size_t i = 0; i < m_triangles.size(); i += 3)
+                const size_t m_triangle_count = m_triangles.size();
+                for (size_t i = 0; i < m_triangle_count; i += 3)
                 {
                     insert_triangle(
                         m_triangles[i + 0],
@@ -261,7 +242,7 @@ namespace
         vector<size_t>          m_triangles;
 
         size_t                  m_face_count;
-        size_t                  m_triangulation_errors;
+        size_t                  m_triangulation_error_count;
 
         void insert_triangle(
             const size_t        v0_index,
@@ -324,8 +305,6 @@ namespace
             m_objects.back()->push_triangle(triangle);
         }
     };
-
-#pragma warning (pop)
 }
 
 MeshObjectArray MeshObjectReader::read(
