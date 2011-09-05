@@ -46,6 +46,7 @@
 #include <iterator>
 #include <sstream>
 #include <string>
+#include <vector>
 
 //
 // On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
@@ -591,10 +592,36 @@ void split(
             from_string<typename Vec::value_type>(
                 s.substr(pos, delimiter_pos - pos)));
 
-        // Skip the delimiter.
-        pos = delimiter_pos == std::string::npos
-            ? std::string::npos
-            : delimiter_pos + 1;
+        // Move past the token and the delimiter.
+        pos =
+            delimiter_pos == std::string::npos
+                ? std::string::npos
+                : delimiter_pos + 1;
+    }
+}
+
+template <>
+inline void split(
+    const std::string&          s,
+    const std::string&          delimiters,
+    std::vector<std::string>&   tokens)
+{
+    std::string::size_type pos = 0;
+
+    while (pos < s.size())
+    {
+        // Find the next delimiter.
+        std::string::size_type delimiter_pos =
+            s.find_first_of(delimiters, pos);
+
+        // Append the token to the vector.
+        tokens.push_back(s.substr(pos, delimiter_pos - pos));
+
+        // Move past the token and the delimiter.
+        pos =
+            delimiter_pos == std::string::npos
+                ? std::string::npos
+                : delimiter_pos + 1;
     }
 }
 
@@ -603,14 +630,18 @@ inline std::string replace(
     const std::string&          old_string,
     const std::string&          new_string)
 {
-    std::string::size_type pos = 0;
+    std::string::size_type pos = s.find(old_string);
+
+    if (pos == std::string::npos)
+        return s;
+
     std::string result = s;
 
-    while ((pos = result.find(old_string, pos)) != std::string::npos)
+    do
     {
         result.replace(pos, old_string.size(), new_string);
         pos += new_string.size();
-    }
+    } while ((pos = result.find(old_string, pos)) != std::string::npos);
 
     return result;
 }
@@ -624,7 +655,7 @@ inline std::string get_time_stamp_string()
 {
     // Retrieve the current date and time.
     std::time_t t;
-    time(&t);
+    std::time(&t);
     const std::tm* local_time = std::localtime(&t);
 
     // Build the time stamp string.
