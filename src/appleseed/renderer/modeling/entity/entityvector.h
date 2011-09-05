@@ -59,6 +59,9 @@ class RENDERERDLL EntityVector
         iterator();
         iterator(const iterator& rhs);
 
+        // Destructor.
+        ~iterator();
+
         // Assignment operator.
         iterator& operator=(const iterator& rhs);
 
@@ -92,6 +95,9 @@ class RENDERERDLL EntityVector
         // Constructors.
         const_iterator();
         const_iterator(const const_iterator& rhs);
+
+        // Destructor.
+        ~const_iterator();
 
         // Assignment operator.
         const_iterator& operator=(const const_iterator& rhs);

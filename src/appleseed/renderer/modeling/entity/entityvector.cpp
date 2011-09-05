@@ -69,6 +69,11 @@ EntityVector::iterator::iterator(const iterator& rhs)
 {
 }
 
+EntityVector::iterator::~iterator()
+{
+    delete impl;
+}
+
 EntityVector::iterator&
 EntityVector::iterator::operator=(const iterator& rhs)
 {
@@ -130,6 +135,11 @@ EntityVector::const_iterator::const_iterator()
 EntityVector::const_iterator::const_iterator(const const_iterator& rhs)
   : impl(new Impl(*rhs.impl))
 {
+}
+
+EntityVector::const_iterator::~const_iterator()
+{
+    delete impl;
 }
 
 EntityVector::const_iterator&
