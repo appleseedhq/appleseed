@@ -219,7 +219,6 @@ typedef foundation::bvh::Intersector<
 // AssemblyLeafVisitor class implementation.
 //
 
-// Constructor.
 inline AssemblyLeafVisitor::AssemblyLeafVisitor(
     ShadingPoint&                                   shading_point,
     const AssemblyTree&                             tree,
@@ -246,7 +245,6 @@ inline AssemblyLeafVisitor::AssemblyLeafVisitor(
 // AssemblyLeafProbeVisitor class implementation.
 //
 
-// Constructor.
 inline AssemblyLeafProbeVisitor::AssemblyLeafProbeVisitor(
     const AssemblyTree&                             tree,
     RegionTreeAccessCache&                          region_tree_cache,
