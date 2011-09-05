@@ -221,6 +221,11 @@ AssemblyTree::~AssemblyTree()
     for (each<RegionTreeContainer> i = m_region_trees; i; ++i)
         delete i->second;
     m_region_trees.clear();
+
+    // Delete triangle trees.
+    for (each<TriangleTreeContainer> i = m_triangle_trees; i; ++i)
+        delete i->second;
+    m_triangle_trees.clear();
 }
 
 void AssemblyTree::create_child_trees()
