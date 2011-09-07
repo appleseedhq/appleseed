@@ -279,7 +279,7 @@ struct Preprocessor::Impl
     {
         while (!is_end_of_input_text())
         {
-            const string& line = get_next_input_line();
+            string line = get_next_input_line();
 
             if (is_directive(line))
             {
@@ -315,7 +315,7 @@ struct Preprocessor::Impl
         string symbol, value;
         split_line(arguments, symbol, value);
 
-        value = perform_symbol_substitutions(value);
+        substitute_symbols(value);
 
         m_symbols[symbol] = value;
     }
@@ -332,7 +332,7 @@ struct Preprocessor::Impl
                 break;
             }
 
-            const string& line = get_next_input_line();
+            string line = get_next_input_line();
 
             if (is_directive(line))
             {
@@ -356,46 +356,32 @@ struct Preprocessor::Impl
         return m_symbols.find(condition) != m_symbols.end();
     }
 
-    void process_line(const string& line)
+    void process_line(string& line)
     {
-        emit_line(perform_symbol_substitutions(line));
+        substitute_symbols(line);
+        emit_line(line);
     }
 
-    string perform_symbol_substitutions(const string& line) const
+    void substitute_symbols(string& line) const
     {
-        string result;
-
         for (const_each<SymbolTable> i = m_symbols; i; ++i)
-            substitute_symbol(line, i->first, i->second, result);
-
-        return result.size() > 0 ? result : line;
+            substitute_symbol(line, i->first, i->second);
     }
 
     void substitute_symbol(
-        const string&   line,
+        string&         line,
         const string&   old_string,
-        const string&   new_string,
-        string&         result) const
+        const string&   new_string) const
     {
-        string::size_type pos =
-            result.empty()
-                ? line.find(old_string)
-                : result.find(old_string); 
+        string::size_type pos = line.find(old_string);
 
-        if (pos == std::string::npos)
-            return;
-
-        if (result.empty())
-            result = line;
-
-        do
+        while (pos != std::string::npos)
         {
-            if (is_surrounded_by_separators(result, pos, pos + old_string.size()))
-                result.replace(pos, old_string.size(), new_string);
+            if (is_surrounded_by_separators(line, pos, pos + old_string.size()))
+                line.replace(pos, old_string.size(), new_string);
 
-            pos += new_string.size();
-            pos = result.find(old_string, pos);
-        } while (pos != std::string::npos);
+            pos = line.find(old_string, pos + new_string.size());
+        }
     }
 
     void parse_error(const string& message)
