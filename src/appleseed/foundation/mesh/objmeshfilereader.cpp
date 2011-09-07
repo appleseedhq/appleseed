@@ -39,7 +39,6 @@
 
 // Standard headers.
 #include <cassert>
-#include <map>
 #include <vector>
 
 using namespace std;
@@ -58,40 +57,7 @@ namespace
 
 struct OBJMeshFileReader::Impl
 {
-    enum Symbol
-    {
-        // Special symbols.
-        EndOfFile = 256,
-        EndOfLine,
-        Identifier,
-        Integer,
-        Double,
-
-        // Keywords.
-        D,                  // material transparency (same as TR) -- unused
-        F,                  // face
-        G,                  // group name
-        Illum,              // illumination model
-        KA,                 // define the ambient color of a material
-        KD,                 // define the diffuse color of a material
-        KS,                 // define the specular color of a material
-        MapKD,              // reference a diffuse map file
-        MtlLib,             // reference a material library file
-        NewMtl,             // start defining a new material
-        O,                  // start defining a new object
-        S,                  // define a smoothing group
-        TR,                 // material transparency (same as D) -- unused
-        UseMtl,             // apply a given material
-        V,                  // define a vertex position
-        VN,                 // define a vertex normal
-        VT,                 // define a texture vertex
-    };
-
-    typedef map<string, Symbol> KeywordTable;
-    typedef map<string, size_t> MaterialMap;
-
     const Options           m_options;
-    KeywordTable            m_keywords;
     OBJMeshFileLexer        m_lexer;
     IOBJMeshBuilder*        m_builder;
 
@@ -117,24 +83,6 @@ struct OBJMeshFileReader::Impl
     explicit Impl(const Options options)
       : m_options(options)
     {
-        // Construct the keyword table.
-        m_keywords["d"]         = D;
-        m_keywords["f"]         = F;
-        m_keywords["g"]         = G;
-        m_keywords["illum"]     = Illum;
-        m_keywords["ka"]        = KA;
-        m_keywords["kd"]        = KD;
-        m_keywords["Ks"]        = KS;
-        m_keywords["map_Kd"]    = MapKD;
-        m_keywords["mtllib"]    = MtlLib;
-        m_keywords["newmtl"]    = NewMtl;
-        m_keywords["o"]         = O;
-        m_keywords["s"]         = S;
-        m_keywords["tr"]        = TR;
-        m_keywords["usemtl"]    = UseMtl;
-        m_keywords["v"]         = V;
-        m_keywords["vn"]        = VN;
-        m_keywords["vt"]        = VT;
     }
 
     // Reset the parser to its initial state.
@@ -183,41 +131,55 @@ struct OBJMeshFileReader::Impl
                 continue;
             }
 
-            const string keyword = m_lexer.accept_string();
-            const KeywordTable::const_iterator i = m_keywords.find(keyword);
+            const char* keyword;
+            size_t keyword_length;
 
-            // Ignore unknown statements.
-            if (i == m_keywords.end())
+            m_lexer.accept_string(&keyword, &keyword_length);
+
+            if (keyword_length == 1)
             {
-                m_lexer.eat_line();
-                continue;
+                switch (keyword[0])
+                {
+                  case 'f':
+                    parse_f_statement();
+                    break;
+
+                  case 'g':
+                  case 'o':
+                    parse_o_g_statement();
+                    break;
+
+                  case 'v':
+                    parse_v_statement();
+                    break;
+
+                  default:
+                    // Ignore unknown or unhandled statements.
+                    m_lexer.eat_line();
+                    continue;
+                }
             }
-
-            switch (i->second)
+            else if (keyword_length == 2)
             {
-              case F:
-                parse_f_statement();
-                break;
+                switch (keyword[0] * 256 + keyword[1])
+                {
+                  case 'v' * 256 + 'n':
+                    parse_vn_statement();
+                    break;
 
-              case O:
-              case G:
-                parse_o_g_statement();
-                break;
+                  case 'v' * 256 + 't':
+                    parse_vt_statement();
+                    break;
 
-              case V:
-                parse_v_statement();
-                break;
-
-              case VN:
-                parse_vn_statement();
-                break;
-
-              case VT:
-                parse_vt_statement();
-                break;
-
-              default:
-                // Ignore unhandled statements.
+                  default:
+                    // Ignore unknown or unhandled statements.
+                    m_lexer.eat_line();
+                    continue;
+                }
+            }
+            else
+            {
+                // Ignore unknown or unhandled statements.
                 m_lexer.eat_line();
                 continue;
             }
@@ -467,7 +429,14 @@ struct OBJMeshFileReader::Impl
 
         // Retrieve the name of the upcoming mesh.
         if (!m_lexer.is_eol())
-            m_mesh_name = m_lexer.accept_string();
+        {
+            const char* mesh_name;
+            size_t mesh_name_length;
+
+            m_lexer.accept_string(&mesh_name, &mesh_name_length);
+
+            m_mesh_name.assign(mesh_name, mesh_name_length);
+        }
     }
 
     void parse_v_statement()

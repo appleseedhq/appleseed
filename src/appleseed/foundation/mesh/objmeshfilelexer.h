@@ -190,7 +190,7 @@ class OBJMeshFileLexer
     }
 
     // Accept a string of non-blank characters, or generate a parse error.
-    const std::string accept_string()
+    void accept_string(const char** begin, size_t* length)
     {
         assert(m_file.is_open());
 
@@ -218,10 +218,8 @@ class OBJMeshFileLexer
             next_char();
         }
 
-        return
-            m_line.substr(
-                string_begin,
-                string_end - string_begin);
+        *begin = &m_line[string_begin];
+        *length = string_end - string_begin;
     }
 
     // Accept a long integer, or generate a parse error.
