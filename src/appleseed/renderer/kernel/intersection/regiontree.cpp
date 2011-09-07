@@ -408,7 +408,6 @@ namespace
 // RegionTree class implementation.
 //
 
-// Construction arguments.
 RegionTree::Arguments::Arguments(
     const UniqueID  assembly_uid,
     const Assembly& assembly)
@@ -417,7 +416,6 @@ RegionTree::Arguments::Arguments(
 {
 }
 
-// Constructor, builds the tree for a given assembly.
 RegionTree::RegionTree(const Arguments& arguments)
   : m_assembly_uid(arguments.m_assembly_uid)
 {
@@ -458,7 +456,6 @@ RegionTree::RegionTree(const Arguments& arguments)
     }
 }
 
-// Destructor.
 RegionTree::~RegionTree()
 {
     // Log a progress message.
@@ -477,14 +474,12 @@ RegionTree::~RegionTree()
 // RegionTreeFactory class implementation.
 //
 
-// Constructor.
 RegionTreeFactory::RegionTreeFactory(
     const RegionTree::Arguments& arguments)
   : m_arguments(arguments)
 {
 }
 
-// Create the triangle tree.
 auto_ptr<RegionTree> RegionTreeFactory::create()
 {
     return auto_ptr<RegionTree>(new RegionTree(m_arguments));
@@ -495,7 +490,6 @@ auto_ptr<RegionTree> RegionTreeFactory::create()
 // RegionLeafVisitor class implementation.
 //
 
-// Visit a leaf.
 double RegionLeafVisitor::visit(
     const RegionLeaf*               leaf,
     const ShadingRay::RayType&      ray,
@@ -535,7 +529,6 @@ double RegionLeafVisitor::visit(
 // RegionLeafProbeVisitor class implementation.
 //
 
-// Visit a leaf.
 double RegionLeafProbeVisitor::visit(
     const RegionLeaf*               leaf,
     const ShadingRay::RayType&      ray,
