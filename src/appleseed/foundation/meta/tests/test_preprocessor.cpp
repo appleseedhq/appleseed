@@ -209,16 +209,31 @@ TEST_SUITE(Foundation_Utility_Preprocessor)
         EXPECT_EQ(2, preprocessor.get_error_location());
     }
 
-    TEST_CASE(Process_GivenSymbolDefinition_SubstitutesSymbolWithValue)
+    TEST_CASE(Process_GivenSymbolsDefinitions_SubstitutesSymbolsWithValues)
     {
         const string InputText =
             "#define X 42\n"
-            "foo X barX\n"
-            "XX\n";
+            "#define Y bun\n"
+            "foo X bar X Y Y\n";
 
         const string ExpectedText =
-            "foo 42 bar42\n"
-            "4242\n";
+            "foo 42 bar 42 bun bun\n";
+
+        Preprocessor preprocessor;
+        preprocessor.process(InputText.c_str());
+
+        ASSERT_TRUE(preprocessor.succeeded());
+        EXPECT_EQ(ExpectedText, preprocessor.get_processed_text());
+    }
+
+    TEST_CASE(Process_GivenSymbolDefinition_OnySubstitutesSymbolsSurroundedByDelimiters)
+    {
+        const string InputText =
+            "#define X 42\n"
+            "X fooX\n";
+
+        const string ExpectedText =
+            "42 fooX\n";
 
         Preprocessor preprocessor;
         preprocessor.process(InputText.c_str());

@@ -31,13 +31,13 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
 #include <cassert>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -52,6 +52,25 @@ namespace foundation
 
 namespace
 {
+    bool is_separator(const char c)
+    {
+        return !((c >= 'a' && c <= 'z') ||
+                 (c >= 'A' && c <= 'Z') ||
+                 (c >= '0' && c <= '9') ||
+                 (c == '_'));
+    }
+
+    bool is_surrounded_by_separators(
+        const string&               s,
+        const string::size_type     begin,
+        const string::size_type     end)
+    {
+        const bool separator_on_left = begin == 0 || is_separator(s[begin - 1]);
+        const bool separator_on_right = end == s.size() || is_separator(s[end]);
+
+        return separator_on_left && separator_on_right;
+    }
+
     bool is_directive(const string& line)
     {
         const string::size_type i = line.find_first_not_of(Blanks);
@@ -82,6 +101,7 @@ namespace
             return;
 
         const string::size_type arguments_begin = cursor;
+
         cursor = line.find_last_not_of(Blanks);
 
         arguments = line.substr(arguments_begin, cursor - arguments_begin + 1);
@@ -99,6 +119,51 @@ namespace
 
     TEST_SUITE(Foundation_Utility_Preprocessor_Impl)
     {
+        TEST_CASE(IsSeparator_GivenSpace_ReturnsTrue)
+        {
+            EXPECT_TRUE(is_separator(' '));
+        }
+
+        TEST_CASE(IsSeparator_GivenNewLine_ReturnsTrue)
+        {
+            EXPECT_TRUE(is_separator('\n'));
+        }
+
+        TEST_CASE(IsSeparator_GivenLowerCaseLetterA_ReturnsFalse)
+        {
+            EXPECT_FALSE(is_separator('a'));
+        }
+
+        TEST_CASE(IsSeparator_GivenUpperCaseLetterA_ReturnsFalse)
+        {
+            EXPECT_FALSE(is_separator('A'));
+        }
+
+        TEST_CASE(IsSeparator_GivenUnderscore_ReturnsFalse)
+        {
+            EXPECT_FALSE(is_separator('_'));
+        }
+
+        TEST_CASE(IsSurroundedBySeparators_GivenLeadingWord_ReturnsTrue)
+        {
+            EXPECT_TRUE(is_surrounded_by_separators("This is a sentence.", 0, 4));
+        }
+
+        TEST_CASE(IsSurroundedBySeparators_GivenTrailingWord_ReturnsTrue)
+        {
+            EXPECT_TRUE(is_surrounded_by_separators("This is a sentence", 10, 18));
+        }
+
+        TEST_CASE(IsSurroundedBySeparators_GivenMiddleWord_ReturnsTrue)
+        {
+            EXPECT_TRUE(is_surrounded_by_separators("This is a sentence", 5, 7));
+        }
+
+        TEST_CASE(IsSurroundedBySeparators_GivenSegmentOfLeadingWord_ReturnsFalse)
+        {
+            EXPECT_FALSE(is_surrounded_by_separators("This is a sentence.", 1, 4));
+        }
+
         TEST_CASE(SplitDirective_GivenKeyword_ReturnsKeyword)
         {
             string keyword, arguments;
@@ -183,7 +248,9 @@ struct Preprocessor::Impl
     string                  m_error_message;
     size_t                  m_error_location;
 
-    StringDictionary        m_symbols;
+    typedef map<string, string> SymbolTable;
+
+    SymbolTable             m_symbols;
 
     vector<string>          m_input_lines;
     size_t                  m_current_input_line;
@@ -250,7 +317,7 @@ struct Preprocessor::Impl
 
         value = perform_symbol_substitutions(value);
 
-        m_symbols.insert(symbol, value);
+        m_symbols[symbol] = value;
     }
 
     void parse_ifdef_directive(const string& arguments)
@@ -286,7 +353,7 @@ struct Preprocessor::Impl
 
     bool evaluate_condition(const string& condition) const
     {
-        return m_symbols.exist(condition);
+        return m_symbols.find(condition) != m_symbols.end();
     }
 
     void process_line(const string& line)
@@ -296,12 +363,39 @@ struct Preprocessor::Impl
 
     string perform_symbol_substitutions(const string& line) const
     {
-        string s = line;
+        string result;
 
-        for (const_each<StringDictionary> i = m_symbols; i; ++i)
-            s = replace(s, i->name(), i->value());
+        for (const_each<SymbolTable> i = m_symbols; i; ++i)
+            substitute_symbol(line, i->first, i->second, result);
 
-        return s;
+        return result.size() > 0 ? result : line;
+    }
+
+    void substitute_symbol(
+        const string&   line,
+        const string&   old_string,
+        const string&   new_string,
+        string&         result) const
+    {
+        string::size_type pos =
+            result.empty()
+                ? line.find(old_string)
+                : result.find(old_string); 
+
+        if (pos == std::string::npos)
+            return;
+
+        if (result.empty())
+            result = line;
+
+        do
+        {
+            if (is_surrounded_by_separators(result, pos, pos + old_string.size()))
+                result.replace(pos, old_string.size(), new_string);
+
+            pos += new_string.size();
+            pos = result.find(old_string, pos);
+        } while (pos != std::string::npos);
     }
 
     void parse_error(const string& message)
@@ -341,7 +435,7 @@ void Preprocessor::define_symbol(const char* name)
 {
     assert(name);
 
-    impl->m_symbols.insert(name, "");
+    impl->m_symbols[name] = "";
 }
 
 void Preprocessor::define_symbol(const char* name, const char* value)
@@ -349,7 +443,7 @@ void Preprocessor::define_symbol(const char* name, const char* value)
     assert(name);
     assert(value);
 
-    impl->m_symbols.insert(name, value);
+    impl->m_symbols[name] = value;
 }
 
 void Preprocessor::process(const char* text)
