@@ -44,6 +44,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdio>
+#include <cstring>
 #include <ctime>
 #include <exception>
 #include <iomanip>
@@ -70,6 +71,8 @@ using namespace std;
 namespace
 {
     const char* MemoryLogFileName = "memory.log";
+
+    // Shave off that many levels from the top of the stack when dumping it to the log file.
     const size_t NumberOfCallStackLevelsToSkip = 3;
 
     // This mutex is used to serialize access to all static members of this file.
@@ -101,6 +104,7 @@ namespace
         StackWalkerOutputToFile()
           : m_file(0)
           , m_level(0)
+          , m_skip(false)
         {
         }
 
@@ -108,24 +112,41 @@ namespace
         {
             m_file = file;
             m_level = 0;
+            m_skip = false;
         }
 
       private:
         FILE*   m_file;
         size_t  m_level;
+        bool    m_skip;
 
         virtual void OnOutput(LPCSTR szText)
         {
-            if (m_file == 0)
-            {
-                StackWalker::OnOutput(szText);
-                return;
-            }
-
             ++m_level;
 
-            if (m_level > NumberOfCallStackLevelsToSkip)
-                fprintf(m_file, "        %s", szText);
+            if (m_level <= NumberOfCallStackLevelsToSkip)
+                return;
+
+            if (m_skip)
+                return;
+
+            if (m_file == 0)
+                StackWalker::OnOutput(szText);
+            else fprintf(m_file, "        %s", szText);
+
+            static const char* MainFunctionSuffix = ": main\n";
+            const size_t main_function_suffix_length = strlen(MainFunctionSuffix);
+            const size_t text_length = strlen(szText);
+
+            // Don't report stack frames below main().
+            if (text_length >= main_function_suffix_length &&
+                strcmp(
+                    szText + text_length - main_function_suffix_length,
+                    MainFunctionSuffix) == 0)
+            {
+                m_skip = true;
+                return;
+            }
         }
     };
 
