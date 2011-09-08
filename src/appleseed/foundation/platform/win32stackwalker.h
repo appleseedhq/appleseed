@@ -8,11 +8,12 @@
  *  (for additional changes see History in 'StackWalker.cpp'!
  *
  **********************************************************************/
-// #pragma once is supported starting with _MCS_VER 1000, 
-// so we need not to check the version (because we only support _MSC_VER >= 1100)!
-#pragma once
 
-#include <windows.h>
+#ifndef APPLESEED_FOUNDATION_PLATFORM_WIN32STACKWALKER_H
+#define APPLESEED_FOUNDATION_PLATFORM_WIN32STACKWALKER_H
+
+// appleseed.foundation headers.
+#include "foundation/platform/windows.h"
 
 // special defines for VC5/6 (if no actual PSDK is installed):
 #if _MSC_VER < 1300
@@ -94,7 +95,7 @@ public:
 // in older compilers in order to use it... starting with VC7 we can declare it as "protected"
 protected:
 #endif
-	enum { STACKWALK_MAX_NAMELEN = 1024 }; // max name length for found symbols
+	enum { STACKWALK_MAX_NAMELEN = 4096 }; // max name length for found symbols
 
 protected:
   // Entry for each Callstack-Entry
@@ -183,3 +184,5 @@ protected:
     RtlCaptureContext(&c); \
 } while(0);
 #endif
+
+#endif  // !APPLESEED_FOUNDATION_PLATFORM_WIN32STACKWALKER_H
