@@ -445,6 +445,8 @@ set(foundation_platform_sources
     foundation/platform/thread.h
     foundation/platform/timer.h
     foundation/platform/types.h
+    foundation/platform/win32stackwalker.cpp
+    foundation/platform/win32stackwalker.h
     foundation/platform/windows.h
     foundation/platform/x86timer.cpp
     foundation/platform/x86timer.h
