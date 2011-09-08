@@ -33,6 +33,9 @@
 #include "renderer/global/global.h"
 #include "renderer/modeling/entity/entity.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/implptr.h"
+
 // Standard headers.
 #include <map>
 #include <vector>
@@ -55,15 +58,8 @@ class RENDERERDLL EntityVector
         // Value type.
         typedef Entity value_type;
 
-        // Constructors.
+        // Constructor.
         iterator();
-        iterator(const iterator& rhs);
-
-        // Destructor.
-        ~iterator();
-
-        // Assignment operator.
-        iterator& operator=(const iterator& rhs);
 
         // Equality and inequality tests.
         bool operator==(const iterator& rhs) const;
@@ -80,9 +76,7 @@ class RENDERERDLL EntityVector
       private:
         friend class EntityVector;
 
-        // Private implementation.
-        struct Impl;
-        Impl* impl;
+        PIMPL(iterator);
     };
 
     // Constant iterator.
@@ -92,15 +86,8 @@ class RENDERERDLL EntityVector
         // Value type.
         typedef Entity value_type;
 
-        // Constructors.
+        // Constructor.
         const_iterator();
-        const_iterator(const const_iterator& rhs);
-
-        // Destructor.
-        ~const_iterator();
-
-        // Assignment operator.
-        const_iterator& operator=(const const_iterator& rhs);
 
         // Equality and inequality tests.
         bool operator==(const const_iterator& rhs) const;
@@ -117,9 +104,7 @@ class RENDERERDLL EntityVector
       private:
         friend class EntityVector;
 
-        // Private implementation.
-        struct Impl;
-        Impl* impl;
+        PIMPL(const_iterator);
     };
 
     // Constructor.
@@ -166,13 +151,8 @@ class RENDERERDLL EntityVector
     const_iterator end() const;
 
   private:
-    // Private implementation.
     struct Impl;
     Impl* impl;
-
-    // No copy constructor or assignment operator.
-    EntityVector(const EntityVector&);
-    EntityVector& operator=(const EntityVector& rhs);
 };
 
 inline void swap(EntityVector& lhs, EntityVector& rhs)

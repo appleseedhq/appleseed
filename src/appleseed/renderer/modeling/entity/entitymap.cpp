@@ -62,18 +62,6 @@ EntityMap::iterator::iterator()
 {
 }
 
-EntityMap::iterator::iterator(const iterator& rhs)
-  : impl(new Impl(*rhs.impl))
-{
-}
-
-EntityMap::iterator&
-EntityMap::iterator::operator=(const iterator& rhs)
-{
-    *impl = *rhs.impl;
-    return *this;
-}
-
 bool EntityMap::iterator::operator==(const iterator& rhs) const
 {
     return impl->m_it == rhs.impl->m_it;
@@ -123,18 +111,6 @@ struct EntityMap::const_iterator::Impl
 EntityMap::const_iterator::const_iterator()
   : impl(new Impl())
 {
-}
-
-EntityMap::const_iterator::const_iterator(const const_iterator& rhs)
-  : impl(new Impl(*rhs.impl))
-{
-}
-
-EntityMap::const_iterator&
-EntityMap::const_iterator::operator=(const const_iterator& rhs)
-{
-    *impl = *rhs.impl;
-    return *this;
 }
 
 bool EntityMap::const_iterator::operator==(const const_iterator& rhs) const
