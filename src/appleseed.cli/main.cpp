@@ -51,6 +51,9 @@
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
 
+// appleseed.main headers.
+#include "main/allocator.h"
+
 // boost headers.
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
@@ -453,6 +456,8 @@ namespace
 
 int main(int argc, const char* argv[])
 {
+    start_memory_tracking();
+
     SuperLogger logger;
 
     logger.get_log_target().set_formatting_flags(LogMessage::DisplayMessage);

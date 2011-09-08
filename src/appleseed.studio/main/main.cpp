@@ -37,6 +37,9 @@
 #include "foundation/platform/path.h"
 #include "foundation/utility/preprocessor.h"
 
+// appleseed.main headers.
+#include "main/allocator.h"
+
 // Qt headers.
 #include <QApplication>
 #include <QMessageBox>
@@ -202,11 +205,13 @@ namespace
 
 
 //
-// Application's entry point.
+// Entry point of appleseed.studio.
 //
 
 int main(int argc, char *argv[])
 {
+    start_memory_tracking();
+
     QApplication application(argc, argv);
 
     QApplication::setOrganizationName("appleseedhq");
