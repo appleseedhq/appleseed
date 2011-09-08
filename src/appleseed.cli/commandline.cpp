@@ -54,7 +54,6 @@ namespace cli {
 // CommandLine class implementation.
 //
 
-// Constructor.
 CommandLine::CommandLine()
 {
     //
@@ -191,7 +190,6 @@ CommandLine::CommandLine()
     m_parser.add_option_handler(&m_override_shading);
 }
 
-// Parse program command line.
 void CommandLine::parse(
     const int       argc,
     const char*     argv[],
