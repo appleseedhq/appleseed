@@ -82,6 +82,7 @@ TEST_SUITE(Renderer_Modeling_Entity_EntityVector)
         virtual void release()
         {
             m_release_was_called = true;
+            delete this;
         }
     };
 
