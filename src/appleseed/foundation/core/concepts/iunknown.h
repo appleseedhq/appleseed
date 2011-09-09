@@ -78,7 +78,7 @@ class FOUNDATIONDLL IUnknown
     virtual void release() = 0;
 
   protected:
-    ~IUnknown() {}
+    virtual ~IUnknown() {}
 };
 
 }       // namespace foundation

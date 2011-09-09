@@ -66,9 +66,6 @@ class RENDERERDLL ILightingEngineFactory
   : public foundation::IUnknown
 {
   public:
-    // Destructor.
-    virtual ~ILightingEngineFactory() {}
-
     // Return a new sample lighting engine instance.
     virtual ILightingEngine* create() = 0;
 };
