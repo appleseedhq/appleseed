@@ -46,6 +46,8 @@ class IRenderWidget
   : public foundation::NonCopyable
 {
   public:
+    virtual ~IRenderWidget() {}
+
     virtual void clear(
         const foundation::Color4f&  color) = 0;
 
