@@ -107,20 +107,17 @@ class FOUNDATIONDLL LogTargetBase
 // LogTargetBase class implementation.
 //
 
-// Constructor.
 inline LogTargetBase::LogTargetBase()
 {
     reset_formatting_flags();
 }
 
-// Use default formatting for all message categories.
 inline void LogTargetBase::reset_formatting_flags()
 {
     for (size_t i = 0; i < LogMessage::NumMessageCategories; ++i)
         m_flags[i] = LogMessage::DefaultFormattingFlags;
 }
 
-// Configure the formatting for all message categories.
 inline void LogTargetBase::set_formatting_flags(
     const LogMessage::FormattingFlags   flags)
 {
@@ -128,7 +125,6 @@ inline void LogTargetBase::set_formatting_flags(
         m_flags[i] = flags;
 }
 
-// Configure the formatting for a particular category of messages.
 inline void LogTargetBase::set_formatting_flags(
     const LogMessage::Category          category,
     const LogMessage::FormattingFlags   flags)
@@ -136,14 +132,12 @@ inline void LogTargetBase::set_formatting_flags(
     m_flags[category] = flags;
 }
 
-// Return the formatting flags for a given category of messages.
 inline LogMessage::FormattingFlags LogTargetBase::get_formatting_flags(
     const LogMessage::Category          category) const
 {
     return m_flags[category];
 }
 
-// Return true if a given formatting flag is set for a given category of messages.
 inline bool LogTargetBase::has_formatting_flag(
     const LogMessage::Category          category,
     const LogMessage::FormattingFlags   flag) const
