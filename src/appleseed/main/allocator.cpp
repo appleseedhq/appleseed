@@ -66,6 +66,12 @@ using namespace std;
 // Define this symbol to enable memory tracking.
 #undef ENABLE_MEMORY_TRACKING
 
+// Define this symbol to enable report of memory allocations.
+#define REPORT_MEMORY_ALLOCATIONS
+
+// Define this symbol to enable report of memory deallocations.
+#undef REPORT_MEMORY_DEALLOCATIONS
+
 #ifdef ENABLE_MEMORY_TRACKING
 
 namespace
@@ -205,9 +211,23 @@ namespace
 
         s_allocated_mem_blocks[ptr] = size;
 
+#ifdef REPORT_MEMORY_ALLOCATIONS
         log_allocation_to_file(ptr, size);
+#endif
 
         s_tracking_enabled = true;
+    }
+
+    void log_deallocation_to_file(const void* ptr, const size_t size)
+    {
+        assert(!s_tracking_enabled);
+
+        fprintf(
+            s_log_file,
+            "[%s] Deallocated %s at %s\n\n",
+            get_current_date_time_string().c_str(),
+            pretty_size(size).c_str(),
+            to_string(ptr).c_str());
     }
 
     void log_deallocation(const void* ptr)
@@ -222,7 +242,13 @@ namespace
         const MemoryBlockMap::const_iterator i = s_allocated_mem_blocks.find(ptr);
 
         if (i != s_allocated_mem_blocks.end())
+        {
+#ifdef REPORT_MEMORY_DEALLOCATIONS
+            log_deallocation_to_file(ptr, i->second);
+#endif
+
             s_allocated_mem_blocks.erase(i);
+        }
 
         s_tracking_enabled = true;
     }
