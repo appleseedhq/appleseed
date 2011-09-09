@@ -54,35 +54,35 @@ class IMeshBuilder
     // Begin the definition of a mesh.
     virtual void begin_mesh(const std::string& name) = 0;
 
-        // Append a vertex to the mesh.
-        // Return the index of the vertex within the mesh.
-        virtual size_t push_vertex(const Vector3d& v) = 0;
+    // Append a vertex to the mesh.
+    // Return the index of the vertex within the mesh.
+    virtual size_t push_vertex(const Vector3d& v) = 0;
 
-        // Append a vertex normal to the mesh. The normal is unit-length.
-        // Return the index of the normal within the mesh.
-        virtual size_t push_vertex_normal(const Vector3d& v) = 0;
+    // Append a vertex normal to the mesh. The normal is unit-length.
+    // Return the index of the normal within the mesh.
+    virtual size_t push_vertex_normal(const Vector3d& v) = 0;
 
-        // Append a texture coordinate to the mesh.
-        // Return the index of the vector within the mesh.
-        virtual size_t push_tex_coords(const Vector2d& v) = 0;
+    // Append a texture coordinate to the mesh.
+    // Return the index of the vector within the mesh.
+    virtual size_t push_tex_coords(const Vector2d& v) = 0;
 
-        // Begin the definition of a face.
-        virtual void begin_face(const size_t vertex_count) = 0;
+    // Begin the definition of a face.
+    virtual void begin_face(const size_t vertex_count) = 0;
 
-            // Assign vertices to the face.
-            virtual void set_face_vertices(const size_t vertices[]) = 0;
+    // Assign vertices to the face.
+    virtual void set_face_vertices(const size_t vertices[]) = 0;
 
-            // Assign vertex normals to the face.
-            virtual void set_face_vertex_normals(const size_t vertex_normals[]) = 0;
+    // Assign vertex normals to the face.
+    virtual void set_face_vertex_normals(const size_t vertex_normals[]) = 0;
 
-            // Assign texture coordinates to the face.
-            virtual void set_face_vertex_tex_coords(const size_t tex_coords[]) = 0;
+    // Assign texture coordinates to the face.
+    virtual void set_face_vertex_tex_coords(const size_t tex_coords[]) = 0;
 
-            // Assign a material to the face.
-            virtual void set_face_material(const size_t material) = 0;
+    // Assign a material to the face.
+    virtual void set_face_material(const size_t material) = 0;
 
-        // End the definition of the face.
-        virtual void end_face() = 0;
+    // End the definition of the face.
+    virtual void end_face() = 0;
 
     // End the definition of the mesh.
     virtual void end_mesh() = 0;
