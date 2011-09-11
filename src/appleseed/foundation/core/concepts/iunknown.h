@@ -78,6 +78,12 @@ class FOUNDATIONDLL IUnknown
     virtual void release() = 0;
 
   protected:
+    // Declare the destructor as protected to prevent the user from
+    // calling delete on an IUnknown pointer, but not on a pointer
+    // type derived from IUnknown.
+    // For convenience, also declare the destructor as virtual to
+    // make it safe to call delete on a derived type without having
+    // to add virtual destructors to all derived types.
     virtual ~IUnknown() {}
 };
 
