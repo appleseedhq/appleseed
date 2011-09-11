@@ -39,6 +39,9 @@
 #include "foundation/image/image.h"
 #include "foundation/image/tile.h"
 
+// Standard headers.
+#include <exception>
+
 using namespace foundation;
 using namespace std;
 
@@ -83,24 +86,37 @@ void TileJob::execute(const size_t thread_index)
     // Call the pre-render tile callback.
     if (tile_callback)
     {
-        const CanvasProperties& frame_props = m_frame.image().properties();
+        const Image& frame_image = m_frame.image();
+
+        const CanvasProperties& frame_props = frame_image.properties();
         const size_t x = m_tile_x * frame_props.m_tile_width;
         const size_t y = m_tile_y * frame_props.m_tile_height;
 
-        const Tile& tile = m_frame.image().tile(m_tile_x, m_tile_y);
+        const Tile& tile = frame_image.tile(m_tile_x, m_tile_y);
         const size_t width = tile.get_width();
         const size_t height = tile.get_height();
 
         tile_callback->pre_render(x, y, width, height);
     }
 
-    // Render the tile.
-    ITileRenderer* tile_renderer = m_tile_renderers[thread_index];
-    tile_renderer->render_tile(
-        m_frame,
-        m_tile_x,
-        m_tile_y,
-        m_abort_switch);
+    try
+    {
+        // Render the tile.
+        m_tile_renderers[thread_index]->render_tile(
+            m_frame,
+            m_tile_x,
+            m_tile_y,
+            m_abort_switch);
+    }
+    catch (const exception&)
+    {
+        // Call the post-render tile callback.
+        if (tile_callback)
+            tile_callback->post_render(m_frame, m_tile_x, m_tile_y);
+
+        // Rethrow the exception.
+        throw;
+    }
 
     // Call the post-render tile callback.
     if (tile_callback)
