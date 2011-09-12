@@ -63,10 +63,19 @@ class RENDERERDLL IRendererController
 
     enum Status
     {
+        // Continue rendering (no op).
         ContinueRendering = 0,
+
+        // Terminate rendering, call on_rendering_success() on the renderer controller.
         TerminateRendering,
+
+        // Terminate rendering, call on_rendering_abort() on the renderer controller.
         AbortRendering,
+
+        // Restart rendering using the same configuration.
         RestartRendering,
+
+        // Restart rendering from scratch, taking into account any configuration changes.
         ReinitializeRendering
     };
 
