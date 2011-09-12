@@ -41,32 +41,26 @@ namespace renderer
 // DefaultRendererController class implementation.
 //
 
-// This method is called before rendering begins.
 void DefaultRendererController::on_rendering_begin()
 {
 }
 
-// This method is called after rendering has succeeded.
 void DefaultRendererController::on_rendering_success()
 {
 }
 
-// This method is called after rendering was aborted.
 void DefaultRendererController::on_rendering_abort()
 {
 }
 
-// This method is called before rendering a single frame.
 void DefaultRendererController::on_frame_begin()
 {
 }
 
-// This method is called after rendering a single frame.
 void DefaultRendererController::on_frame_end()
 {
 }
 
-// This method is called continuously during rendering.
 DefaultRendererController::Status DefaultRendererController::on_progress()
 {
     const uint32 PollRate = 10;    // hertz
