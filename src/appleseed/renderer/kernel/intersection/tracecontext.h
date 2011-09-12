@@ -40,7 +40,7 @@ namespace renderer
 {
 
 //
-// The trace context main purpose is to hold the acceleration structures
+// The main purpose of the trace context is to hold the root acceleration structures
 // needed for ray tracing,
 //
 // The trace context is shared amongst threads. All methods are thread-safe.
@@ -72,13 +72,11 @@ class RENDERERDLL TraceContext
 // TraceContext class implementation.
 //
 
-// Get the scene.
 inline const Scene& TraceContext::get_scene() const
 {
     return m_scene;
 }
 
-// Get the assembly tree.
 inline const AssemblyTree& TraceContext::get_assembly_tree() const
 {
     return *m_assembly_tree;
