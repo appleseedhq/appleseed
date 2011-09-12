@@ -223,6 +223,14 @@ namespace
             // image was set).
         }
 
+        virtual void terminate_rendering()
+        {
+            stop_rendering();
+
+            // Wait until the statistics printing thread is terminated.
+            m_statistics_thread->join();
+        }
+
         virtual bool is_rendering() const
         {
             return m_job_queue.has_scheduled_or_running_jobs();

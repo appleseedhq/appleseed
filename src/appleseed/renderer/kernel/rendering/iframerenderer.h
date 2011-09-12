@@ -49,6 +49,7 @@ class RENDERERDLL IFrameRenderer
     // Asynchronous frame rendering.
     virtual void start_rendering() = 0;
     virtual void stop_rendering() = 0;
+    virtual void terminate_rendering() = 0;
     virtual bool is_rendering() const = 0;
 };
 

@@ -60,7 +60,6 @@ namespace
       : public FrameRendererBase
     {
       public:
-        // Constructor.
         GenericFrameRenderer(
             const Frame&            frame,
             ITileRendererFactory*   renderer_factory,
@@ -94,7 +93,6 @@ namespace
             print_rendering_thread_count(m_params.m_thread_count);
         }
 
-        // Destructor.
         virtual ~GenericFrameRenderer()
         {
             // Delete tile callbacks.
@@ -106,20 +104,17 @@ namespace
                 (*i)->release();
         }
 
-        // Delete this instance.
         virtual void release()
         {
             delete this;
         }
 
-        // Synchronous frame rendering.
         virtual void render()
         {
             start_rendering();
             m_job_queue.wait_until_completion();
         }
 
-        // Start rendering.
         virtual void start_rendering()
         {
             assert(!is_rendering());
@@ -145,9 +140,9 @@ namespace
             m_job_manager->start();
         }
 
-        // Stop rendering.
         virtual void stop_rendering()
         {
+            // Tell rendering jobs to stop.
             m_abort_switch.abort();
 
             // Stop job execution.
@@ -157,7 +152,11 @@ namespace
             m_job_queue.clear_scheduled_jobs();
         }
 
-        // Return true if currently rendering.
+        virtual void terminate_rendering()
+        {
+            stop_rendering();
+        }
+
         virtual bool is_rendering() const
         {
             return m_job_queue.has_scheduled_or_running_jobs();
@@ -228,7 +227,6 @@ namespace
 // GenericFrameRendererFactory class implementation.
 //
 
-// Constructor.
 GenericFrameRendererFactory::GenericFrameRendererFactory(
     const Frame&            frame,
     ITileRendererFactory*   renderer_factory,
@@ -241,13 +239,11 @@ GenericFrameRendererFactory::GenericFrameRendererFactory(
 {
 }
 
-// Delete this instance.
 void GenericFrameRendererFactory::release()
 {
     delete this;
 }
 
-// Return a new generic frame renderer instance.
 IFrameRenderer* GenericFrameRendererFactory::create()
 {
     return
@@ -258,7 +254,6 @@ IFrameRenderer* GenericFrameRendererFactory::create()
             m_params);
 }
 
-// Return a new generic frame renderer instance.
 IFrameRenderer* GenericFrameRendererFactory::create(
     const Frame&            frame,
     ITileRendererFactory*   renderer_factory,
