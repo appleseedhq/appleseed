@@ -28,7 +28,7 @@
 #
 
 # Package builder settings.
-VersionString = "1.4"
+VersionString = "1.5"
 SettingsFileName = "appleseed.package.configuration.xml"
 
 # Imports.
@@ -257,7 +257,7 @@ class WindowsPackageBuilder(PackageBuilder):
         progress("Windows-specific: adding dependencies to staging directory")
         self.copy_qt_framework("QtCore")
         self.copy_qt_framework("QtGui")
-        dir_util.copy_tree(self.settings.platform_runtime_path, "appleseed/bin/Microsoft.VC100.CRT")
+        copy_glob(os.path.join(self.settings.platform_runtime_path, "*"), "appleseed/bin/")
 
     def copy_qt_framework(self, framework_name):
         src_filepath = os.path.join(self.settings.qt_runtime_path, framework_name + "4" + ".dll")
