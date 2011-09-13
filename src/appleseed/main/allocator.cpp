@@ -30,7 +30,9 @@
 #include "allocator.h"
 
 // appleseed.foundation headers.
+#ifdef _WIN32
 #include "foundation/platform/win32stackwalker.h"
+#endif
 #include "foundation/platform/types.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/memory.h"
