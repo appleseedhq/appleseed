@@ -50,4 +50,9 @@ TraceContext::~TraceContext()
     delete m_assembly_tree;
 }
 
+void TraceContext::update()
+{
+    m_assembly_tree->update();
+}
+
 }   // namespace renderer

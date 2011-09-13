@@ -43,8 +43,11 @@
 // appleseed.foundation headers.
 #include "foundation/math/bsp.h"
 #include "foundation/math/bvh.h"
+#include "foundation/utility/lazy.h"
+#include "foundation/utility/version.h"
 
 // Standard headers.
+#include <map>
 #include <vector>
 
 // Forward declarations.
@@ -68,6 +71,9 @@ class AssemblyTree
     // Destructor.
     ~AssemblyTree();
 
+    // Update the assembly tree and all the child trees.
+    void update();
+
   private:
     friend class AssemblyLeafVisitor;
     friend class AssemblyLeafProbeVisitor;
@@ -77,19 +83,27 @@ class AssemblyTree
     RegionTreeContainer     m_region_trees;
     TriangleTreeContainer   m_triangle_trees;
 
-    // Create the child trees (region trees and triangle trees).
-    void create_child_trees();
+    typedef std::map<foundation::UniqueID, foundation::VersionID> AssemblyVersionMap;
+
+    AssemblyVersionMap      m_assembly_versions;
+
+    // Collect all assemblies of the scene.
     void collect_assemblies(std::vector<foundation::UniqueID>& assemblies) const;
 
-    // Create a triangle tree for a given assembly.
-    void create_triangle_tree(const Assembly& assembly);
+    // Collect all regions of all objects in a given assembly.
     void collect_regions(const Assembly& assembly, RegionInfoVector& regions) const;
 
-    // Create a region tree for a given assembly.
-    void create_region_tree(const Assembly& assembly);
+    // Create a triangle tree for a given assembly.
+    foundation::Lazy<TriangleTree>* create_triangle_tree(const Assembly& assembly) const;
 
-    // // Build the assembly tree.
+    // Create a region tree for a given assembly.
+    foundation::Lazy<RegionTree>* create_region_tree(const Assembly& assembly) const;
+
+    // Build the assembly tree.
     void build_assembly_tree();
+
+    // Create or update the child trees (one per assembly).
+    void update_child_trees();
 };
 
 

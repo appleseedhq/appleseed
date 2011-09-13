@@ -155,6 +155,12 @@ const TraceContext& Project::get_trace_context() const
     return *impl->m_trace_context;
 }
 
+void Project::update_trace_context()
+{
+    if (impl->m_trace_context.get())
+        impl->m_trace_context->update();
+}
+
 void Project::add_base_configurations()
 {
     impl->m_configurations.insert(BaseConfigurationFactory::create_base_final());

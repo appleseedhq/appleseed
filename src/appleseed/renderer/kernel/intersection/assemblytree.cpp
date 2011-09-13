@@ -208,8 +208,7 @@ typedef bvh::TreeStatistics<
 AssemblyTree::AssemblyTree(const Scene& scene)
   : m_scene(scene)
 {
-    create_child_trees();
-    build_assembly_tree();
+    update();
 }
 
 AssemblyTree::~AssemblyTree()
@@ -228,27 +227,17 @@ AssemblyTree::~AssemblyTree()
     m_triangle_trees.clear();
 }
 
-void AssemblyTree::create_child_trees()
+void AssemblyTree::update()
 {
-    assert(m_region_trees.empty());
-
-    vector<UniqueID> assemblies;
-    collect_assemblies(assemblies);
-
-    // Create one child tree (region tree or triangle tree) per assembly.
-    for (const_each<vector<UniqueID> > i = assemblies; i; ++i)
-    {
-        const Assembly* assembly = m_scene.assemblies().get_by_uid(*i);
-        assert(assembly);
-
-        if (assembly->is_flushable())
-            create_region_tree(*assembly);
-        else create_triangle_tree(*assembly);
-    }
+    clear();
+    build_assembly_tree();
+    update_child_trees();
 }
 
 void AssemblyTree::collect_assemblies(vector<UniqueID>& assemblies) const
 {
+    assert(assemblies.empty());
+
     for (const_each<AssemblyInstanceContainer> i = m_scene.assembly_instances(); i; ++i)
         assemblies.push_back(i->get_assembly_uid());
 
@@ -260,43 +249,18 @@ void AssemblyTree::collect_assemblies(vector<UniqueID>& assemblies) const
     assemblies.erase(new_end, assemblies.end());
 }
 
-void AssemblyTree::create_triangle_tree(const Assembly& assembly)
-{
-    // Compute the assembly space bounding box of the assembly.
-    const GAABB3 assembly_bbox =
-        get_parent_bbox<GAABB3>(
-            assembly.object_instances().begin(),
-            assembly.object_instances().end());
-
-    RegionInfoVector regions;
-    collect_regions(assembly, regions);
-
-    // Create the triangle tree factory.
-    auto_ptr<ILazyFactory<TriangleTree> > triangle_tree_factory(
-        new TriangleTreeFactory(
-            TriangleTree::Arguments(
-                assembly.get_uid(),
-                assembly_bbox,
-                assembly,
-                regions)));
-
-    // Create and store the triangle tree.
-    m_triangle_trees.insert(
-        make_pair(assembly.get_uid(), new Lazy<TriangleTree>(triangle_tree_factory)));
-}
-
 void AssemblyTree::collect_regions(const Assembly& assembly, RegionInfoVector& regions) const
 {
+    assert(regions.empty());
+
     const ObjectInstanceContainer& object_instances = assembly.object_instances();
+    const size_t object_instance_count = object_instances.size();
 
     // Collect all regions of all object instances of this assembly.
-    for (size_t object_instance_index = 0;
-         object_instance_index < object_instances.size();
-         ++object_instance_index)
+    for (size_t obj_inst_index = 0; obj_inst_index < object_instance_count; ++obj_inst_index)
     {
         // Retrieve the object instance and its transformation.
-        const ObjectInstance* object_instance =
-            object_instances.get_by_index(object_instance_index);
+        const ObjectInstance* object_instance = object_instances.get_by_index(obj_inst_index);
         assert(object_instance);
         const Transformd& transform = object_instance->get_transform();
 
@@ -319,25 +283,44 @@ void AssemblyTree::collect_regions(const Assembly& assembly, RegionInfoVector& r
 
             regions.push_back(
                 RegionInfo(
-                    object_instance_index,
+                    obj_inst_index,
                     region_index,
                     region_bbox));
         }
     }
 }
 
-void AssemblyTree::create_region_tree(const Assembly& assembly)
+Lazy<TriangleTree>* AssemblyTree::create_triangle_tree(const Assembly& assembly) const
 {
-    // Create the region tree factory.
+    // Compute the assembly space bounding box of the assembly.
+    const GAABB3 assembly_bbox =
+        get_parent_bbox<GAABB3>(
+            assembly.object_instances().begin(),
+            assembly.object_instances().end());
+
+    RegionInfoVector regions;
+    collect_regions(assembly, regions);
+
+    auto_ptr<ILazyFactory<TriangleTree> > triangle_tree_factory(
+        new TriangleTreeFactory(
+            TriangleTree::Arguments(
+                assembly.get_uid(),
+                assembly_bbox,
+                assembly,
+                regions)));
+
+    return new Lazy<TriangleTree>(triangle_tree_factory);
+}
+
+Lazy<RegionTree>* AssemblyTree::create_region_tree(const Assembly& assembly) const
+{
     auto_ptr<ILazyFactory<RegionTree> > region_tree_factory(
         new RegionTreeFactory(
             RegionTree::Arguments(
                 assembly.get_uid(),
                 assembly)));
 
-    // Create and store the region tree.
-    m_region_trees.insert(
-        make_pair(assembly.get_uid(), new Lazy<RegionTree>(region_tree_factory)));
+    return new Lazy<RegionTree>(region_tree_factory);
 }
 
 void AssemblyTree::build_assembly_tree()
@@ -372,10 +355,68 @@ void AssemblyTree::build_assembly_tree()
     AssemblyTreeBuilder builder;
     builder.build(*this, partitioner);
 
-    // Collect and print triangle tree statistics.
+    // Collect and print assembly tree statistics.
     AssemblyTreeStatistics tree_stats(*this, builder);
     RENDERER_LOG_DEBUG("assembly bvh statistics:");
     tree_stats.print(global_logger());
+}
+
+void AssemblyTree::update_child_trees()
+{
+    // Collect all assemblies in the scene.
+    vector<UniqueID> assemblies;
+    collect_assemblies(assemblies);
+
+    // Create or update the child tree of each assembly.
+    for (const_each<vector<UniqueID> > i = assemblies; i; ++i)
+    {
+        // Retrieve the assembly.
+        const UniqueID assembly_uid = *i;
+        const Assembly& assembly = *m_scene.assemblies().get_by_uid(assembly_uid);
+
+        // Retrieve the current version ID of the assembly.
+        const VersionID current_version_id = assembly.get_version_id();
+
+        // Retrieve the stored version ID of the assembly.
+        const AssemblyVersionMap::const_iterator stored_version_it =
+            m_assembly_versions.find(assembly_uid);
+
+        if (stored_version_it == m_assembly_versions.end())
+        {
+            // No tree for this assembly yet, create one.
+            if (assembly.is_flushable())
+            {
+                m_region_trees.insert(
+                    make_pair(assembly_uid, create_region_tree(assembly)));
+            }
+            else
+            {
+                m_triangle_trees.insert(
+                    make_pair(assembly_uid, create_triangle_tree(assembly)));
+            }
+        }
+        else if (current_version_id != stored_version_it->second)
+        {
+            // The tree corresponding to this assembly is out-of-date.
+            if (assembly.is_flushable())
+            {
+                const RegionTreeContainer::iterator region_tree_it =
+                    m_region_trees.find(assembly_uid);
+                delete region_tree_it->second;
+                region_tree_it->second = create_region_tree(assembly);
+            }
+            else
+            {
+                const TriangleTreeContainer::iterator triangle_tree_it =
+                    m_triangle_trees.find(assembly_uid);
+                delete triangle_tree_it->second;
+                triangle_tree_it->second = create_triangle_tree(assembly);
+            }
+        }
+
+        // Update the stored version ID of the assembly.
+        m_assembly_versions[assembly_uid] = current_version_id;
+    }
 }
 
 

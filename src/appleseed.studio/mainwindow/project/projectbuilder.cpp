@@ -101,7 +101,10 @@ void ProjectBuilder::insert_assembly_instance(
 
     m_project_tree.add_item(assembly_instance.get());
 
-    m_project.get_scene()->assembly_instances().insert(assembly_instance);
+    Scene* scene = m_project.get_scene();
+
+    scene->assembly_instances().insert(assembly_instance);
+    scene->bump_geometry_version_id();
 
     notify_project_modification();
 }
@@ -144,6 +147,8 @@ void ProjectBuilder::insert_objects(
 
         assembly.object_instances().insert(object_instance);
     }
+
+    assembly.bump_version_id();
 
     if (!mesh_objects.empty())
         notify_project_modification();

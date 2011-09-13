@@ -62,9 +62,12 @@ class RENDERERDLL TraceContext
     // Get the assembly tree.
     const AssemblyTree& get_assembly_tree() const;
 
+    // Synchronize the trace context with the scene.
+    void update();
+
   private:
-    const Scene&        m_scene;
-    const AssemblyTree* m_assembly_tree;
+    const Scene&    m_scene;
+    AssemblyTree*   m_assembly_tree;
 };
 
 

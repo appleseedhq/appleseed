@@ -56,13 +56,9 @@ class RENDERERDLL Scene
     // Delete this instance.
     virtual void release();
 
-    // Return/increase the version ID of the assembly instances.
-    foundation::VersionID get_assembly_instances_version_id() const;
-    void increase_assembly_instances_version_id();
-
     // Return/increase the version ID of the scene geometry.
     foundation::VersionID get_geometry_version_id() const;
-    void increase_geometry_version_id();
+    void bump_geometry_version_id();
 
     // Set the camera.
     void set_camera(foundation::auto_release_ptr<Camera> camera);

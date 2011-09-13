@@ -76,7 +76,6 @@ namespace
             const ParamArray&       params)
           : SurfaceShader(name, params)
           , m_last_geometry_version_id(InvalidVersionID)
-          , m_last_asm_inst_version_id(InvalidVersionID)
         {
             extract_parameters();
         }
@@ -97,13 +96,10 @@ namespace
         {
             const Scene& scene = *project.get_scene();
 
-            // Rebuild the voxel tree if either the scene geometry or the transformations
-            // of the assembly instances have changed since the last frame.
-            if (scene.get_geometry_version_id() != m_last_geometry_version_id ||
-                scene.get_assembly_instances_version_id() != m_last_asm_inst_version_id)
+            // Rebuild the voxel tree if the scene geometry has changed since the last frame.
+            if (scene.get_geometry_version_id() != m_last_geometry_version_id)
             {
                 m_last_geometry_version_id = scene.get_geometry_version_id();
-                m_last_asm_inst_version_id = scene.get_assembly_instances_version_id();
 
                 // Build the voxel tree.
                 m_voxel_tree.reset(
@@ -294,7 +290,6 @@ namespace
         bool                                m_enable_diagnostics;
 
         VersionID                           m_last_geometry_version_id;
-        VersionID                           m_last_asm_inst_version_id;
         auto_ptr<AOVoxelTree>               m_voxel_tree;
         auto_ptr<AOVoxelTreeIntersector>    m_voxel_tree_intersector;
         double                              m_diag_length;

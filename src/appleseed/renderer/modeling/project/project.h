@@ -87,6 +87,9 @@ class RENDERERDLL Project
     // Get the trace context.
     const TraceContext& get_trace_context() const;
 
+    // Synchronize the trace context with the scene.
+    void update_trace_context();
+
   private:
     friend class ProjectFactory;
 
