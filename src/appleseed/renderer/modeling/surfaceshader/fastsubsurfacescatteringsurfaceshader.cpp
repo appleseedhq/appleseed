@@ -62,8 +62,8 @@
 #include <memory>
 
 // Forward declarations.
+namespace renderer  { class Assembly; }
 namespace renderer  { class Scene; }
-namespace renderer  { class TextureCache; }
 
 using namespace foundation;
 using namespace std;
@@ -114,7 +114,9 @@ namespace
             return Model;
         }
 
-        virtual void on_frame_begin(const Project& project)
+        virtual void on_frame_begin(
+            const Project&          project,
+            const Assembly&         assembly)
         {
             const Scene& scene = *project.get_scene();
             m_light_sampler.reset(new LightSampler(scene));

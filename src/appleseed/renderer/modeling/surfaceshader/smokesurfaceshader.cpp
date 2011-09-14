@@ -52,6 +52,7 @@
 #include <vector>
 
 // Forward declarations.
+namespace renderer  { class Assembly; }
 namespace renderer  { class Project; }
 
 using namespace foundation;
@@ -100,7 +101,9 @@ namespace
             return Model;
         }
 
-        virtual void on_frame_begin(const Project& project)
+        virtual void on_frame_begin(
+            const Project&          project,
+            const Assembly&         assembly)
         {
             if (m_first_frame)
             {

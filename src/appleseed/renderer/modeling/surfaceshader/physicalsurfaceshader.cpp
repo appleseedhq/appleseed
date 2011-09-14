@@ -43,6 +43,7 @@
 #include "foundation/utility/containers/specializedarrays.h"
 
 // Forward declarations.
+namespace renderer  { class Assembly; }
 namespace renderer  { class Project; }
 namespace renderer  { class TextureCache; }
 
@@ -83,7 +84,9 @@ namespace
             return Model;
         }
 
-        virtual void on_frame_begin(const Project& project)
+        virtual void on_frame_begin(
+            const Project&          project,
+            const Assembly&         assembly)
         {
             m_has_alpha_mask = m_inputs.source("alpha_mask") != 0;
         }
