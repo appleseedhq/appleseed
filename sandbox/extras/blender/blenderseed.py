@@ -684,7 +684,7 @@ class AppleseedExportOperator(bpy.types.Operator):
             if object.type == 'LAMP':
                 self.__emit_light(scene, object)
             else:
-                self.__emit_object(scene, object)
+                self.__emit_geometric_object(scene, object)
 
     #
     # Camera.
@@ -757,7 +757,7 @@ class AppleseedExportOperator(bpy.types.Operator):
     # Geometry.
     #
 
-    def __emit_object(self, scene, object):
+    def __emit_geometric_object(self, scene, object):
         # Print some information about this object in verbose mode.
         if Verbose:
             if object.parent:
@@ -814,22 +814,21 @@ class AppleseedExportOperator(bpy.types.Operator):
             self.__info("Skipping object '{0}' since it has no faces once converted to a mesh.".format(object.name))
             return []
 
-        filename = object.name + ".obj"
-
         # Recalculate vertex normals.
         if self.recompute_vertex_normals:
             mesh.calc_normals()
 
         # Export mesh to disk.
+        mesh_filename = object.name + ".obj"
         if self.generate_mesh_files:
+            self.__progress("Exporting object '{0}' to {1}...".format(object.name, mesh_filename))
+            mesh_filepath = os.path.join(os.path.dirname(self.filepath), mesh_filename)
             try:
-                filepath = os.path.join(os.path.dirname(self.filepath), filename)
-                self.__progress("Exporting object '{0}' to {1}...".format(object.name, filename))
-                mesh_parts = write_mesh_to_disk(mesh, filepath)
+                mesh_parts = write_mesh_to_disk(mesh, mesh_filepath)
                 if Verbose:
                     self.__info("Object '{0}' exported as {1} meshes.".format(object.name, len(mesh_parts)))
             except IOError:
-                self.__error("While exporting object '{0}': could not write to {1}, skipping this object.".format(object.name, filepath))
+                self.__error("While exporting object '{0}': could not write to {1}, skipping this object.".format(object.name, mesh_filepath))
                 return []
         else:
             material_indices = set()
@@ -838,7 +837,7 @@ class AppleseedExportOperator(bpy.types.Operator):
             mesh_parts = map(lambda material_index : (material_index, "part_%d" % material_index), material_indices)
 
         # Emit object.
-        self.__emit_object_element(object.name, filename)
+        self.__emit_object_element(object.name, mesh_filename)
 
         return mesh_parts
 
@@ -874,9 +873,9 @@ class AppleseedExportOperator(bpy.types.Operator):
                     material_name = material.name
             self.__emit_object_instance_element(part_name, instance_name, self.global_matrix * object_matrix, material_name)
 
-    def __emit_object_element(self, object_name, filename):
+    def __emit_object_element(self, object_name, mesh_filepath):
         self.__open_element('object name="' + object_name + '" model="mesh_object"')
-        self.__emit_parameter("filename", filename)
+        self.__emit_parameter("filename", mesh_filepath)
         self.__close_element("object")
 
     def __emit_object_instance_element(self, object_name, instance_name, instance_matrix, material_name):
