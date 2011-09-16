@@ -71,71 +71,89 @@ class FOUNDATIONDLL Compiler
 
 
 //
-// Attempt to force inlining of a function.
+// A qualifier to force inlining of a function/method on supported compilers.
 //
 
 // Visual C++.
 #if defined _MSC_VER
-#define FORCE_INLINE __forceinline
+    #define FORCE_INLINE __forceinline
 
 // gcc.
 #elif defined __GNUC__
-#define FORCE_INLINE inline __attribute__((always_inline))
+    #define FORCE_INLINE inline __attribute__((always_inline))
 
-// Unsupported platform, fall back to standard inlining.
+// Other compilers: fall back to standard inlining.
 #else
-#define FORCE_INLINE inline
+    #define FORCE_INLINE inline
 #endif
 
 
 //
-// Attempt to prevent inlining of a function.
+// A qualifier to prevent inlining of a function/method on supported compilers.
 //
 
 // Visual C++.
 #if defined _MSC_VER
-#define NO_INLINE __declspec(noinline)
+    #define NO_INLINE __declspec(noinline)
 
 // gcc.
 #elif defined __GNUC__
-#define NO_INLINE __attribute__((noinline))
+    #define NO_INLINE __attribute__((noinline))
 
-// Unsupported platform.
+// Other compilers: ignore the qualifier.
 #else
-#define NO_INLINE
+    #define NO_INLINE
 #endif
 
 
 //
-// Specify the alignment of a local variable or a member of a data structure.
+// A qualifier to specify the alignment of a local variable or a member of a data structure.
 //
 
 // Visual C++.
 #if defined _MSC_VER
-#define ALIGN_VARIABLE(n) __declspec(align(n))
+    #define ALIGN_VARIABLE(n) __declspec(align(n))
 
 // gcc.
 #elif defined __GNUC__
-#define ALIGN_VARIABLE(n) __attribute__((aligned(n)))
+    #define ALIGN_VARIABLE(n) __attribute__((aligned(n)))
 
-// Unsupported platform.
+// Other compilers: ignore the qualifier.
 #else
-#define ALIGN_VARIABLE(n)
+    #define ALIGN_VARIABLE(n)
 #endif
 
-
-//
-// Macros for widely used alignments.
-//
-
+// Align a variable or a member of a data structure to use with SSE.
 #define ALIGN_SSE_VARIABLE ALIGN_VARIABLE(16)
 
 
 //
-// Platform-independent restrict qualifier.
+// A qualifier similar to the 'restrict' keyword in C99.
 //
 
 #define RESTRICT __restrict
+
+
+//
+// Define the 'override' keyword for compilers that don't yet implement C++11.
+//
+
+// Visual C++: supported since Visual Studio 2010.
+#if defined _MSC_VER
+    #if !(_MSC_VER >= 1600)
+        #define override
+    #endif
+
+// gcc: supported since gcc 4.7.
+#elif defined __GNUC__
+    #if !(__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7))
+        #define override
+    #endif
+
+// Other compilers don't support the 'override' keyword.
+#else
+    #define override
+#endif
 
 
 //
