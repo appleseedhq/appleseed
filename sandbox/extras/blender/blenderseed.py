@@ -44,7 +44,7 @@ bl_info = {
     "name": "appleseed project format",
     "description": "Exports a scene to the appleseed project file format.",
     "author": "Franz Beaune",
-    "version": (1, 1, 0),
+    "version": (1, 1, 1),
     "blender": (2, 5, 8),   # we really need Blender 2.58 or newer
     "api": 36339,
     "location": "File > Export",
@@ -180,7 +180,7 @@ def write_mesh_to_disk(mesh, filepath):
                         vertex_texcoord_indices[face_index, vertex_index] = current_vt_index
                         current_vt_index += 1
 
-        mesh_names = []
+        mesh_parts = []
 
         # Write faces.
         output_file.write("# %d faces.\n" % len(sorted_faces))
@@ -189,7 +189,7 @@ def write_mesh_to_disk(mesh, filepath):
             if current_material_index != face.material_index:
                 current_material_index = face.material_index
                 mesh_name = "part_%d" % current_material_index
-                mesh_names.append(mesh_name)
+                mesh_parts.append((current_material_index, mesh_name))
                 output_file.write("o {0}\n".format(mesh_name))
             line = "f"
             if uvset and len(uvset[face_index].uv) > 0:
@@ -214,7 +214,7 @@ def write_mesh_to_disk(mesh, filepath):
                         line += " %d//%d" % (vertex_index + 1, normal_index + 1)
             output_file.write(line + "\n")
 
-        return mesh_names
+        return mesh_parts
 
 def write_sphere_mesh_to_disk(filepath):
     with open(filepath, "w") as output_file:
@@ -544,6 +544,10 @@ class AppleseedExportOperator(bpy.types.Operator):
                                             default=0.3,
                                             subtype='FACTOR')
 
+    enable_ibl = bpy.props.BoolProperty(name="Enable Image Based Lighting",
+                                        description="If checked, Image Based Lighting (IBL) will be enabled",
+                                        default=False)
+
     generate_mesh_files = bpy.props.BoolProperty(name="Write Meshes to Disk",
                                                  description="If unchecked, the mesh files (.obj files) won't be regenerated",
                                                  default=True)
@@ -600,8 +604,8 @@ class AppleseedExportOperator(bpy.types.Operator):
         # Object name -> instance count.
         self._instance_count = {}
 
-        # Object name -> mesh names.
-        self._mesh_names = {}
+        # Object name -> (material index, mesh name).
+        self._mesh_parts = {}
 
         file_path = os.path.splitext(self.filepath)[0] + ".appleseed"
 
@@ -647,14 +651,40 @@ class AppleseedExportOperator(bpy.types.Operator):
 
     def __emit_assembly(self, scene):
         self.__open_element('assembly name="' + scene.name + '"')
+
         self.__emit_physical_surface_shader_element()
+        self.__emit_default_material()
+
+        if self.__scene_has_renderable_point_lights(scene):
+            self.__emit_spherical_light()
+            self.__emit_pass_through_surface_shader()
+
         self.__emit_objects(scene)
-        self.__emit_lights(scene)
+
         self.__close_element("assembly")
 
     def __emit_assembly_instance_element(self, scene):
         self.__open_element('assembly_instance name="' + scene.name + '_instance" assembly="' + scene.name + '"')
         self.__close_element("assembly_instance")
+
+    def __emit_objects(self, scene):
+        for object in scene.objects:
+            # Skip objects marked as non-renderable.
+            if object.hide_render:
+                if Verbose:
+                    self.__info("Skipping object '{0}' because it is marked as non-renderable.".format(object.name))
+                continue
+
+            # Skip cameras since they are exported separately.
+            if object.type == 'CAMERA':
+                if Verbose:
+                    self.__info("Skipping object '{0}' because its type is '{1}'.".format(object.name, object.type))
+                continue
+
+            if object.type == 'LAMP':
+                self.__emit_light(scene, object)
+            else:
+                self.__emit_object(scene, object)
 
     #
     # Camera.
@@ -727,52 +757,39 @@ class AppleseedExportOperator(bpy.types.Operator):
     # Geometry.
     #
 
-    def __emit_objects(self, scene):
-        for object in scene.objects:
-            # Print some information about this object in verbose mode.
+    def __emit_object(self, scene, object):
+        # Print some information about this object in verbose mode.
+        if Verbose:
+            if object.parent:
+                self.__info("------ Object '{0}' (type '{1}') child of object '{2}' ------".format(object.name, object.type, object.parent.name))
+            else: self.__info("------ Object '{0}' (type '{1}') ------".format(object.name, object.type))
+
+        # Skip children of dupli objects.
+        if object.parent and object.parent.dupli_type in { 'VERTS', 'FACES' }:      # todo: what about dupli type 'GROUP'?
             if Verbose:
-                if object.parent:
-                    self.__info("------ Object '{0}' (type '{1}') child of object '{2}' ------".format(object.name, object.type, object.parent.name))
-                else: self.__info("------ Object '{0}' (type '{1}') ------".format(object.name, object.type))
+                self.__info("Skipping object '{0}' because its parent ('{1}') has dupli type '{2}'.".format(object.name, object.parent.name, object.parent.dupli_type))
+            return
 
-            # Skip non-geometric objects.
-            if object.type in ( 'CAMERA', 'LAMP' ):
-                if Verbose:
-                    self.__info("Skipping object '{0}' because its type is '{1}'.".format(object.name, object.type))
-                continue
-
-            # Skip objects marked as non-renderable.
-            if object.hide_render:
-                if Verbose:
-                    self.__info("Skipping object '{0}' because it is marked as non-renderable.".format(object.name))
-                continue
-
-            # Skip children of dupli objects.
-            if object.parent and object.parent.dupli_type in { 'VERTS', 'FACES' }:      # todo: what about dupli type 'GROUP'?
-                if Verbose:
-                    self.__info("Skipping object '{0}' because its parent ('{1}') has dupli type '{2}'.".format(object.name, object.parent.name, object.parent.dupli_type))
-                continue
-
-            # Create dupli list and collect dupli objects.
+        # Create dupli list and collect dupli objects.
+        if Verbose:
+            self.__info("Object '{0}' has dupli type '{1}'.".format(object.name, object.dupli_type))
+        if object.dupli_type != 'NONE':
+            object.dupli_list_create(scene)
+            dupli_objects = [ (dupli.object, dupli.matrix) for dupli in object.dupli_list ]
             if Verbose:
-                self.__info("Object '{0}' has dupli type '{1}'.".format(object.name, object.dupli_type))
-            if object.dupli_type != 'NONE':
-                object.dupli_list_create(scene)
-                dupli_objects = [ (dupli.object, dupli.matrix) for dupli in object.dupli_list ]
-                if Verbose:
-                    self.__info("Object '{0}' has {1} dupli objects.".format(object.name, len(dupli_objects)))
-            else:
-                dupli_objects = [ (object, object.matrix_world) ]
+                self.__info("Object '{0}' has {1} dupli objects.".format(object.name, len(dupli_objects)))
+        else:
+            dupli_objects = [ (object, object.matrix_world) ]
 
-            # Emit the dupli objects.
-            for dupli_object in dupli_objects:
-                self.__emit_object(scene, dupli_object[0], dupli_object[1])
+        # Emit the dupli objects.
+        for dupli_object in dupli_objects:
+            self.__emit_dupli_object(scene, dupli_object[0], dupli_object[1])
 
-            # Clear dupli list.
-            if object.dupli_type != 'NONE':
-                object.dupli_list_clear()
+        # Clear dupli list.
+        if object.dupli_type != 'NONE':
+            object.dupli_list_clear()
 
-    def __emit_object(self, scene, object, object_matrix):
+    def __emit_dupli_object(self, scene, object, object_matrix):
         if object.name in self._instance_count:
             if Verbose:
                 self.__info("Skipping export of object '{0}' since it was already exported.".format(object.name))
@@ -782,7 +799,7 @@ class AppleseedExportOperator(bpy.types.Operator):
                 mesh = object.to_mesh(scene, self.apply_modifiers, self.tessellation_quality)
 
                 # Write the geometry to disk and emit a mesh object element.
-                self._mesh_names[object.name] = self.__emit_mesh_object(scene, object, mesh)
+                self._mesh_parts[object.name] = self.__emit_mesh_object(scene, object, mesh)
 
                 # Delete the tessellation.
                 bpy.data.meshes.remove(mesh)
@@ -790,7 +807,7 @@ class AppleseedExportOperator(bpy.types.Operator):
                 self.__info("Skipping object '{0}' of type '{1}' because it could not be converted to a mesh.".format(object.name, object.type))
                 return
 
-        self.__emit_mesh_object_instances(object, object_matrix)
+        self.__emit_mesh_object_instance(object, object_matrix)
 
     def __emit_mesh_object(self, scene, object, mesh):
         if len(mesh.faces) == 0:
@@ -808,9 +825,9 @@ class AppleseedExportOperator(bpy.types.Operator):
             try:
                 filepath = os.path.join(os.path.dirname(self.filepath), filename)
                 self.__progress("Exporting object '{0}' to {1}...".format(object.name, filename))
-                mesh_names = write_mesh_to_disk(mesh, filepath)
+                mesh_parts = write_mesh_to_disk(mesh, filepath)
                 if Verbose:
-                    self.__info("Object '{0}' exported as {1} meshes.".format(object.name, len(mesh_names)))
+                    self.__info("Object '{0}' exported as {1} meshes.".format(object.name, len(mesh_parts)))
             except IOError:
                 self.__error("While exporting object '{0}': could not write to {1}, skipping this object.".format(object.name, filepath))
                 return []
@@ -818,24 +835,24 @@ class AppleseedExportOperator(bpy.types.Operator):
             material_indices = set()
             for face in mesh.faces:
                 material_indices.add(face.material_index)
-            mesh_names = map(lambda material_index : "part_%d" % material_index, material_indices)
+            mesh_parts = map(lambda material_index : (material_index, "part_%d" % material_index), material_indices)
 
         # Emit object.
         self.__emit_object_element(object.name, filename)
 
-        return mesh_names
+        return mesh_parts
 
-    def __emit_mesh_object_instances(self, object, object_matrix):
-        # Collect materials.
-        materials = [ material_slot.material for material_slot in object.material_slots ]
-        if len(materials) == 0:
-            materials = [ bpy.data.materials.new(name="{0}_material".format(object.name)) ]
-
+    def __emit_mesh_object_instance(self, object, object_matrix):
         # Emit BSDFs and materials.
-        for material in materials:
-            if material not in self._emitted_materials:
-                self.__emit_material(material)
-                self._emitted_materials.add(material)
+        for material_slot_index, material_slot in enumerate(object.material_slots):
+            material = material_slot.material
+            if material is None:
+                self.__warning("While export instance of object '{0}': material slot #{1} has no material.".format(object.name, material_slot_index))
+                continue
+            if material in self._emitted_materials:
+                continue
+            self.__emit_material(material)
+            self._emitted_materials.add(material)
 
         # Figure out the instance number of this object.
         if object.name in self._instance_count:
@@ -846,11 +863,16 @@ class AppleseedExportOperator(bpy.types.Operator):
         if Verbose:
             self.__info("This is instance #{0} of object '{1}'.".format(instance_index, object.name))
 
-        # Emit object instances.
-        for mesh_name in self._mesh_names[object.name]:
+        # Emit object parts instances.
+        for (material_index, mesh_name) in self._mesh_parts[object.name]:
             part_name = "{0}.{1}".format(object.name, mesh_name)
             instance_name = "{0}.instance_{1}".format(part_name, instance_index)
-            self.__emit_object_instance_element(part_name, instance_name, self.global_matrix * object_matrix, material.name)
+            material_name = "__default_material"
+            if material_index < len(object.material_slots):
+                material = object.material_slots[material_index].material
+                if material:
+                    material_name = material.name
+            self.__emit_object_instance_element(part_name, instance_name, self.global_matrix * object_matrix, material_name)
 
     def __emit_object_element(self, object_name, filename):
         self.__open_element('object name="' + object_name + '" model="mesh_object"')
@@ -868,7 +890,16 @@ class AppleseedExportOperator(bpy.types.Operator):
     #
 
     def __emit_physical_surface_shader_element(self):
-        self.__emit_line('<surface_shader name="physical_shader" model="physical_surface_shader" />')
+        self.__emit_line('<surface_shader name="physical_surface_shader" model="physical_surface_shader" />')
+
+    def __emit_default_material(self):
+        self.__emit_solid_linear_rgb_color_element("__default_material_bsdf_reflectance", [ 0.8 ], 1.0)
+
+        self.__open_element('bsdf name="__default_material_bsdf" model="lambertian_brdf"')
+        self.__emit_parameter("reflectance", "__default_material_bsdf_reflectance")
+        self.__close_element("bsdf")
+
+        self.__emit_material_element("__default_material", "__default_material_bsdf", "", "physical_surface_shader")
 
     def __emit_material(self, material):
         bsdf_name = self.__emit_bsdf_tree(material)
@@ -880,7 +911,7 @@ class AppleseedExportOperator(bpy.types.Operator):
             edf_name = "{0}_edf".format(material.name)
             self.__emit_edf(material, edf_name)
 
-        self.__emit_material_element(material.name, bsdf_name, edf_name, "physical_shader")
+        self.__emit_material_element(material.name, bsdf_name, edf_name, "physical_surface_shader")
 
     def __emit_bsdf_tree(self, material):
         bsdfs = []
@@ -905,7 +936,7 @@ class AppleseedExportOperator(bpy.types.Operator):
             bsdfs.append([ mirror_bsdf_name, material_refl_factor ])
 
         # Diffuse/glossy component.
-        dg_bsdf_name = "{0}_diffuseglossy".format(material.name)
+        dg_bsdf_name = "{0}_dg".format(material.name)
         if is_black(material.specular_color * material.specular_intensity):
             self.__emit_lambertian_brdf(material, dg_bsdf_name)
         else:
@@ -1029,24 +1060,14 @@ class AppleseedExportOperator(bpy.types.Operator):
     # Lights.
     #
 
-    def __emit_lights(self, scene):
-        if self.__scene_has_point_lights(scene):
-            self.__emit_spherical_light()
-            self.__emit_pass_through_surface_shader()
-
+    def __scene_has_renderable_point_lights(self, scene):
         for object in scene.objects:
-            if object.type == 'LAMP':
-                light_type = object.data.type
-                if light_type == 'POINT':
-                    self.__emit_point_light(scene, object)
-                else:
-                    self.__warning("While exporting light '{0}': unsupported light type '{1}', skipping this light.".format(object.name, light_type))
-
-    def __scene_has_point_lights(self, scene):
-        for object in scene.objects:
-            if object.type == 'LAMP':
-                if object.data.type == 'POINT':
-                    return True
+            if object.hide_render:
+                continue
+            if object.type != 'LAMP':
+                continue
+            if object.data.type == 'POINT':
+                return True
         return False
 
     def __emit_spherical_light(self):
@@ -1064,6 +1085,14 @@ class AppleseedExportOperator(bpy.types.Operator):
         self.__open_element('surface_shader name="pass_through_shader" model="constant_surface_shader"')
         self.__emit_parameter("color", "transparent_black")
         self.__close_element("surface_shader")
+
+    def __emit_light(self, scene, object):
+        light_type = object.data.type
+
+        if light_type == 'POINT':
+            self.__emit_point_light(scene, object)
+        else:
+            self.__warning("While exporting light '{0}': unsupported light type '{1}', skipping this light.".format(object.name, light_type))
 
     def __emit_point_light(self, scene, lamp):
         material_name = "{0}_material".format(lamp.name)
@@ -1139,7 +1168,7 @@ class AppleseedExportOperator(bpy.types.Operator):
     def __emit_common_configuration_parameters(self):
         self.__emit_parameter("lighting_engine", self.lighting_engine)
         self.__open_element('parameters name="{0}"'.format(self.lighting_engine))
-        self.__emit_parameter("enable_ibl", "false")
+        self.__emit_parameter("enable_ibl", "true" if self.enable_ibl else "false")
         self.__close_element('parameters')
 
     #
