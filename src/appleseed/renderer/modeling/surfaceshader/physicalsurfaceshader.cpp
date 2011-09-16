@@ -74,19 +74,19 @@ namespace
             m_inputs.declare("alpha_mask", InputFormatSpectrum, true);
         }
 
-        virtual void release()
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const
+        virtual const char* get_model() const override
         {
             return Model;
         }
 
         virtual void on_frame_begin(
             const Project&          project,
-            const Assembly&         assembly)
+            const Assembly&         assembly) override
         {
             m_has_alpha_mask = m_inputs.source("alpha_mask") != 0;
         }
@@ -95,7 +95,7 @@ namespace
             SamplingContext&        sampling_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
-            ShadingResult&          shading_result) const
+            ShadingResult&          shading_result) const override
         {
             // Set color space to spectral.
             shading_result.m_color_space = ColorSpaceSpectral;
@@ -120,7 +120,7 @@ namespace
             SamplingContext&        sampling_context,
             TextureCache&           texture_cache,
             const ShadingPoint&     shading_point,
-            Alpha&                  alpha) const
+            Alpha&                  alpha) const override
         {
             if (!m_has_alpha_mask)
             {

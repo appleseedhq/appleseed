@@ -70,12 +70,12 @@ namespace
             m_inputs.declare("color", InputFormatSpectrum);
         }
 
-        virtual void release()
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const
+        virtual const char* get_model() const override
         {
             return Model;
         }
@@ -84,7 +84,7 @@ namespace
             SamplingContext&        sampling_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
-            ShadingResult&          shading_result) const
+            ShadingResult&          shading_result) const override
         {
             InputValues values;
             m_inputs.evaluate(
@@ -101,7 +101,7 @@ namespace
             SamplingContext&        sampling_context,
             TextureCache&           texture_cache,
             const ShadingPoint&     shading_point,
-            Alpha&                  alpha) const
+            Alpha&                  alpha) const override
         {
             InputValues values;
             m_inputs.evaluate(

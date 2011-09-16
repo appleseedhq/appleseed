@@ -34,6 +34,7 @@
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/implptr.h"
 #include "foundation/utility/kvpair.h"
 
@@ -81,17 +82,17 @@ class RENDERERDLL DiagnosticSurfaceShader
         const ParamArray&       params);
 
     // Delete this instance.
-    virtual void release();
+    virtual void release() override;
 
     // Return a string identifying the model of this surface shader.
-    virtual const char* get_model() const;
+    virtual const char* get_model() const override;
 
     // Evaluate the shading at a given point.
     virtual void evaluate(
         SamplingContext&        sampling_context,
         const ShadingContext&   shading_context,
         const ShadingPoint&     shading_point,
-        ShadingResult&          shading_result) const;
+        ShadingResult&          shading_result) const override;
 
   private:
     struct Impl;
@@ -110,18 +111,18 @@ class RENDERERDLL DiagnosticSurfaceShaderFactory
 {
   public:
     // Return a string identifying this surface shader model.
-    virtual const char* get_model() const;
+    virtual const char* get_model() const override;
 
     // Return a human-readable string identifying this surface shader model.
-    virtual const char* get_human_readable_model() const;
+    virtual const char* get_human_readable_model() const override;
 
     // Return a set of widget definitions for this surface shader model.
-    virtual foundation::DictionaryArray get_widget_definitions() const;
+    virtual foundation::DictionaryArray get_widget_definitions() const override;
 
     // Create a new surface shader instance.
     virtual foundation::auto_release_ptr<SurfaceShader> create(
         const char*         name,
-        const ParamArray&   params) const;
+        const ParamArray&   params) const override;
 };
 
 }       // namespace renderer

@@ -80,19 +80,19 @@ namespace
             extract_parameters();
         }
 
-        virtual void release()
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const
+        virtual const char* get_model() const override
         {
             return Model;
         }
 
         virtual void on_frame_begin(
             const Project&          project,
-            const Assembly&         assembly)
+            const Assembly&         assembly) override
         {
             const Scene& scene = *project.get_scene();
 
@@ -138,7 +138,7 @@ namespace
             SamplingContext&        sampling_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
-            ShadingResult&          shading_result) const
+            ShadingResult&          shading_result) const override
         {
             assert(m_voxel_tree.get());
             assert(m_voxel_tree_intersector.get());
