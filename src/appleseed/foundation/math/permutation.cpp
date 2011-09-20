@@ -33,7 +33,7 @@ namespace foundation
 {
 
 //
-// Precomputed Faure permutation tables.
+// Precomputed Faure permutations.
 //
 
 size_t FaurePermutationValues[24133] =

@@ -92,7 +92,7 @@ void faure_qmc_permutation(
     const size_t    size,       // size of the permutation
     size_t          perm[]);    // [out] permutation
 
-// Precomputed Faure permutation tables.
+// Precomputed Faure permutations.
 const size_t FaurePermutationTableSize = 100;
 FOUNDATIONDLL extern size_t* FaurePermutations[FaurePermutationTableSize];
 

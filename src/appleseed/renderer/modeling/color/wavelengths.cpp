@@ -47,7 +47,6 @@ namespace
 {
     struct InitializeLightWavelengths
     {
-        // Constructor, computes light wavelengths.
         InitializeLightWavelengths()
         {
             for (size_t i = 0; i < Spectrum::Samples; ++i)
@@ -63,7 +62,7 @@ namespace
         }
     };
 
-    InitializeLightWavelengths dummy;
+    InitializeLightWavelengths initialize_light_wavelengths;
 }
 
 }   // namespace renderer

@@ -42,15 +42,14 @@ namespace foundation
 
 namespace noise_impl
 {
-
     Permutations g_perms;
 
     struct InitializePermutations
     {
-        // Constructor, initializes the permutation tables.
         InitializePermutations()
         {
             const size_t Size = noise_impl::Permutations::Size;
+
             MersenneTwister rng;
 
             random_permutation(Size, g_perms.m_p1, rng);
@@ -71,8 +70,7 @@ namespace noise_impl
         }
     };
 
-    static InitializePermutations dummy;
-
-}   // namespace noise_impl
+    static InitializePermutations initialize_permutations;
+}
 
 }   // namespace foundation
