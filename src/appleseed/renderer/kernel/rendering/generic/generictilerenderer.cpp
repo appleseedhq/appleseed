@@ -212,10 +212,12 @@ namespace
                             const Vector2d sample_position =
                                 frame.get_sample_position(s.x, s.y);
 
-                            // Create a sampling context.
+                            // Create a sampling context. We start with an initial dimension of 1,
+                            // as this seems to give less correlation artifacts than when the
+                            // initial dimension is set to 0 or 2.
                             SamplingContext sampling_context(
                                 m_rng,
-                                2,              // number of dimensions
+                                1,              // number of dimensions
                                 0,              // number of samples
                                 instance);      // initial instance number
 
