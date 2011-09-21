@@ -105,66 +105,6 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
     }
 }
 
-TEST_SUITE(Foundation_Math_Sampling_RQMCSamplingContext)
-{
-    typedef MersenneTwister RNG;
-    typedef RQMCSamplingContext<RNG> RQMCSamplingContext;
-    typedef RQMCSamplingContext::VectorType VectorType;
-
-    TEST_CASE(InitialStateIsCorrect)
-    {
-        RNG rng;
-        RQMCSamplingContext context(rng, 2, 64, 7);
-
-        EXPECT_EQ(0, context.m_base_dimension);
-        EXPECT_EQ(0, context.m_base_instance);
-        EXPECT_EQ(2, context.m_dimension);
-        EXPECT_EQ(7, context.m_instance);
-        EXPECT_EQ(VectorType(0.0), context.m_offset);
-    }
-
-    TEST_CASE(TestAssignmentOperator)
-    {
-        RNG rng;
-        RQMCSamplingContext original_parent(rng, 2, 64, 7);
-        RQMCSamplingContext original = original_parent.split(3, 16);
-        original.set_instance(6);
-
-        RQMCSamplingContext copy(rng, 5, 16, 9);
-        copy = original;
-
-        EXPECT_EQ(2, copy.m_base_dimension);
-        EXPECT_EQ(7, copy.m_base_instance);
-        EXPECT_EQ(3, copy.m_dimension);
-        EXPECT_EQ(6, copy.m_instance);
-    }
-
-    TEST_CASE(TestSplitting)
-    {
-        RNG rng;
-        RQMCSamplingContext context(rng, 2, 64, 7);
-        RQMCSamplingContext child_context = context.split(3, 16);
-
-        EXPECT_EQ(2, child_context.m_base_dimension);
-        EXPECT_EQ(7, child_context.m_base_instance);
-        EXPECT_EQ(3, child_context.m_dimension);
-        EXPECT_EQ(0, child_context.m_instance);
-    }
-
-    TEST_CASE(TestDoubleSplitting)
-    {
-        RNG rng;
-        RQMCSamplingContext context(rng, 2, 64, 7);
-        RQMCSamplingContext child_context = context.split(3, 16);
-        RQMCSamplingContext child_child_context = child_context.split(4, 8);
-
-        EXPECT_EQ(5, child_child_context.m_base_dimension);
-        EXPECT_EQ(7, child_child_context.m_base_instance);
-        EXPECT_EQ(4, child_child_context.m_dimension);
-        EXPECT_EQ(0, child_child_context.m_instance);
-    }
-}
-
 TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext_DirectIlluminationSimulation)
 {
     typedef MersenneTwister RNG;

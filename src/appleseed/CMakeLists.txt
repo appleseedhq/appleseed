@@ -199,7 +199,6 @@ set(foundation_math_sampling_sources
     foundation/math/sampling/mappings.h
     foundation/math/sampling/qmcsamplingcontext.h
     foundation/math/sampling/rngsamplingcontext.h
-    foundation/math/sampling/rqmcsamplingcontext.h
 )
 list(APPEND appleseed_sources
     ${foundation_math_sampling_sources}

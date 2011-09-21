@@ -33,6 +33,5 @@
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/sampling/qmcsamplingcontext.h"
 #include "foundation/math/sampling/rngsamplingcontext.h"
-#include "foundation/math/sampling/rqmcsamplingcontext.h"
 
 #endif  // !APPLESEED_FOUNDATION_MATH_SAMPLING_H
