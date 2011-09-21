@@ -235,7 +235,7 @@ namespace
         // Apply rendering threads option.
         if (g_cl.m_rendering_threads.found())
         {
-            params.insert(
+            params.insert_path(
                 "generic_frame_renderer.rendering_threads",
                 g_cl.m_rendering_threads.string_values()[0].c_str());
         }
@@ -248,16 +248,16 @@ namespace
                   g_cl.m_window.string_values()[1] + ' ' +
                   g_cl.m_window.string_values()[2] + ' ' +
                   g_cl.m_window.string_values()[3];
-            params.insert("generic_tile_renderer.crop_window", window);
+            params.insert_path("generic_tile_renderer.crop_window", window);
         }
 
         // Apply samples option.
         if (g_cl.m_samples.found())
         {
-            params.insert(
+            params.insert_path(
                 "generic_tile_renderer.min_samples",
                 g_cl.m_samples.string_values()[0].c_str());
-            params.insert(
+            params.insert_path(
                 "generic_tile_renderer.max_samples",
                 g_cl.m_samples.string_values()[1].c_str());
         }
@@ -265,7 +265,7 @@ namespace
         // Apply shading override option.
         if (g_cl.m_override_shading.found())
         {
-            params.insert(
+            params.insert_path(
                 "shading_engine.override_shading.mode",
                 g_cl.m_override_shading.string_values()[0].c_str());
         }
