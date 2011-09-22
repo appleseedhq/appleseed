@@ -344,7 +344,7 @@ namespace
             uint64                          m_last_time;
 
             uint64                          m_last_sample_count;
-            FixedSizeHistory<double, 6>     m_sps_count_history;    // samples per second history
+            FixedSizeHistory<double, 16>    m_sps_count_history;    // samples per second history
             vector<double>                  m_spp_count_history;    // samples per pixel history
             vector<double>                  m_rmsd_history;         // RMS deviation history
 
