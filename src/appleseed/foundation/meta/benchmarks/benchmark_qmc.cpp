@@ -27,71 +27,132 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/math/permutation.h"
+#include "foundation/math/primes.h"
 #include "foundation/math/qmc.h"
 #include "foundation/utility/benchmark.h"
 
 // Standard headers.
 #include <cstddef>
 
+using namespace foundation;
+
 BENCHMARK_SUITE(Foundation_Math_QMC)
 {
-    using namespace foundation;
-
     template <typename T>
     struct Fixture
     {
-        static size_t Bases[2];
-
         T m_x;
 
-        Fixture()
-          : m_x(T(0.0))
+        void radical_inverse_base2_payload()
         {
+            m_x = T(0.0);
+
+            for (size_t i = 0; i < 128; ++i)
+                m_x += radical_inverse_base2<T>(i);
+        }
+
+        void radical_inverse_payload()
+        {
+            m_x = T(0.0);
+
+            for (size_t s = 0, d = 1; d <= 32; ++d)
+            {
+                for (size_t i = 0; i < 4; ++i, ++s)
+                {
+                    m_x +=
+                        radical_inverse<T>(
+                            Primes[d],
+                            s);
+                }
+            }
+        }
+
+        void permuted_radical_inverse_payload()
+        {
+            m_x = T(0.0);
+
+            for (size_t s = 0, d = 1; d <= 32; ++d)
+            {
+                for (size_t i = 0; i < 4; ++i, ++s)
+                {
+                    m_x +=
+                        permuted_radical_inverse<T>(
+                            Primes[d],
+                            FaurePermutations[d],
+                            s);
+                }
+            }
         }
     };
 
-    template <typename T>
-    size_t Fixture<T>::Bases[2] = { 2, 3 };
-
-    const size_t Digits = 0x55555555;
-
-    BENCHMARK_CASE_F(SinglePrecisionRadicalInverseBase2, Fixture<float>)
+    BENCHMARK_CASE_F(RadicalInverseBase2_SinglePrecision, Fixture<float>)
     {
-        m_x += radical_inverse_base2<float>(Digits);
+        radical_inverse_base2_payload();
     }
 
-    BENCHMARK_CASE_F(DoublePrecisionRadicalInverseBase2, Fixture<double>)
+    BENCHMARK_CASE_F(RadicalInverse_SinglePrecision, Fixture<float>)
     {
-        m_x += radical_inverse_base2<double>(Digits);
+        radical_inverse_payload();
     }
 
-    BENCHMARK_CASE_F(SinglePrecisionRadicalInverseBase3, Fixture<float>)
+    BENCHMARK_CASE_F(PermutedRadicalInverse_SinglePrecision, Fixture<float>)
     {
-        m_x += radical_inverse<float>(3, Digits);
+        permuted_radical_inverse_payload();
     }
 
-    BENCHMARK_CASE_F(DoublePrecisionRadicalInverseBase3, Fixture<double>)
+    BENCHMARK_CASE_F(RadicalInverseBase2_DoublePrecision, Fixture<double>)
     {
-        m_x += radical_inverse<double>(3, Digits);
+        radical_inverse_base2_payload();
     }
 
-    BENCHMARK_CASE_F(SinglePrecisionHaltonSequenceBases2And3, Fixture<Vector2f>)
+    BENCHMARK_CASE_F(RadicalInverse_DoublePrecision, Fixture<double>)
     {
-        m_x += halton_sequence<float, 2>(Bases, Digits);
+        radical_inverse_payload();
     }
 
-    BENCHMARK_CASE_F(DoublePrecisionHaltonSequenceBases2And3, Fixture<Vector2d>)
+    BENCHMARK_CASE_F(PermutedRadicalInverse_DoublePrecision, Fixture<double>)
     {
-        m_x += halton_sequence<double, 2>(Bases, Digits);
+        permuted_radical_inverse_payload();
     }
 
-    BENCHMARK_CASE_F(SinglePrecisionHammersleySequenceBases2And3, Fixture<Vector2f>)
+    BENCHMARK_CASE_F(HaltonSequence_Bases2And3_SinglePrecision, Fixture<Vector2f>)
     {
-        m_x += hammersley_sequence<float, 2>(Bases, 255, 256);
+        static const size_t Bases[] = { 2, 3 };
+
+        m_x = Vector2f(0.0f);
+
+        for (size_t i = 0; i < 64; ++i)
+            m_x += halton_sequence<float, 2>(Bases, i);
     }
 
-    BENCHMARK_CASE_F(DoublePrecisionHammersleySequenceBases2And3, Fixture<Vector2d>)
+    BENCHMARK_CASE_F(HaltonSequence_Bases2And3_DoublePrecision, Fixture<Vector2d>)
     {
-        m_x += hammersley_sequence<double, 2>(Bases, 255, 256);
+        static const size_t Bases[] = { 2, 3 };
+
+        m_x = Vector2d(0.0);
+
+        for (size_t i = 0; i < 64; ++i)
+            m_x += halton_sequence<double, 2>(Bases, i);
+    }
+
+    BENCHMARK_CASE_F(HammersleySequence_Bases2And3_SinglePrecision, Fixture<Vector2f>)
+    {
+        static const size_t Bases[] = { 2, 3 };
+
+        m_x = Vector2f(0.0f);
+
+        for (size_t i = 0; i < 64; ++i)
+            m_x += hammersley_sequence<float, 2>(Bases, i, 128);
+    }
+
+    BENCHMARK_CASE_F(HammersleySequence_Bases2And3_DoublePrecision, Fixture<Vector2d>)
+    {
+        static const size_t Bases[] = { 2, 3 };
+
+        m_x = Vector2d(0.0);
+
+        for (size_t i = 0; i < 64; ++i)
+            m_x += hammersley_sequence<double, 2>(Bases, i, 128);
     }
 }

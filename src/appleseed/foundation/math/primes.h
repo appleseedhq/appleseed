@@ -55,11 +55,10 @@ namespace foundation
 {
 
 //
-// The first 1000 primes.
+// The first N primes.
 //
 
 const size_t PrimeTableSize = 1000;
-
 FOUNDATIONDLL extern size_t Primes[PrimeTableSize];
 
 }       // namespace foundation

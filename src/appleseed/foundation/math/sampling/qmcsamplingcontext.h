@@ -53,10 +53,15 @@ namespace foundation
 //
 // A sampling context featuring:
 //
-//   - deterministic sampling based on Hammersley and Halton sequences
+//   - deterministic sampling based on Halton sequences
 //   - Faure digit scrambling
 //   - Cranley-Patterson rotation
 //   - Monte Carlo padding
+//
+// Reference:
+//
+//   Kollig and Keller, Efficient Multidimensional Sampling
+//   www.uni-kl.de/AG-Heinrich/EMS.pdf
 //
 
 template <typename RNG>
@@ -107,8 +112,11 @@ class QMCSamplingContext
     template <size_t N>
     Vector<double, N> next_vector2();
 
-    // Return the current maximum dimension reached by this sampler.
-    size_t get_max_dimension() const;
+    // Return the total dimension of this sampler.
+    size_t get_total_dimension() const;
+
+    // Return the total instance number of this sampler.
+    size_t get_total_instance() const;
 
   private:
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Sampling_QMCSamplingContext, InitialStateIsCorrect);
@@ -131,8 +139,9 @@ class QMCSamplingContext
         const size_t        base_dimension,
         const size_t        base_instance,
         const size_t        dimension,
-        const size_t        sample_count,
-        const VectorType&   offset);
+        const size_t        instance);
+
+    void compute_offset();
 };
 
 
@@ -173,14 +182,12 @@ inline QMCSamplingContext<RNG>::QMCSamplingContext(
     const size_t        base_dimension,
     const size_t        base_instance,
     const size_t        dimension,
-    const size_t        sample_count,
-    const VectorType&   offset)
+    const size_t        instance)
   : m_rng(rng)
   , m_base_dimension(base_dimension)
   , m_base_instance(base_instance)
   , m_dimension(dimension)
-  , m_instance(0)
-  , m_offset(offset)
+  , m_instance(instance)
 {
     assert(dimension <= VectorType::Dimension);
 }
@@ -202,39 +209,16 @@ inline QMCSamplingContext<RNG> QMCSamplingContext<RNG>::split(
     const size_t    dimension,
     const size_t    sample_count) const
 {
-    assert(dimension <= VectorType::Dimension);
+    QMCSamplingContext child_context(
+        m_rng,
+        m_base_dimension + m_dimension,     // dimension allocation
+        m_base_instance + m_instance,       // decorrelation by generalization
+        dimension,
+        0);
 
-    VectorType offset;
+    child_context.compute_offset();
 
-    for (size_t i = 0; i < dimension; ++i)
-    {
-        const size_t d = m_base_dimension + m_dimension + i;
-
-        if (d < FaurePermutationTableSize)
-        {
-            assert(d < PrimeTableSize);
-
-            offset[i] =
-                permuted_radical_inverse<double>(
-                    Primes[d],
-                    FaurePermutations[d],
-                    m_base_instance + m_instance);
-        }
-        else
-        {
-            // Monte Carlo padding.
-            offset[i] = rand_double2(m_rng);
-        }
-    }
-
-    return
-        QMCSamplingContext(
-            m_rng,
-            m_base_dimension + m_dimension,     // dimension allocation
-            m_base_instance + m_instance,       // decorrelation by generalization
-            dimension,
-            sample_count,
-            offset);
+    return child_context;
 }
 
 template <typename RNG>
@@ -244,10 +228,19 @@ inline void QMCSamplingContext<RNG>::split_in_place(
 {
     assert(dimension <= VectorType::Dimension);
 
-    for (size_t i = 0; i < dimension; ++i)
-    {
-        const size_t d = m_base_dimension + m_dimension + i;
+    m_base_dimension += m_dimension;        // dimension allocation
+    m_base_instance += m_instance;          // decorrelation by generalization
+    m_dimension = dimension;
+    m_instance = 0;
 
+    compute_offset();
+}
+
+template <typename RNG>
+inline void QMCSamplingContext<RNG>::compute_offset()
+{
+    for (size_t i = 0, d = m_base_dimension; i < m_dimension; ++i, ++d)
+    {
         if (d < FaurePermutationTableSize)
         {
             assert(d < PrimeTableSize);
@@ -256,7 +249,7 @@ inline void QMCSamplingContext<RNG>::split_in_place(
                 permuted_radical_inverse<double>(
                     Primes[d],
                     FaurePermutations[d],
-                    m_base_instance + m_instance);
+                    m_base_instance);
         }
         else
         {
@@ -264,11 +257,6 @@ inline void QMCSamplingContext<RNG>::split_in_place(
             m_offset[i] = rand_double2(m_rng);
         }
     }
-
-    m_base_dimension += m_dimension;    // dimension allocation
-    m_base_instance += m_instance;      // decorrelation by generalization
-    m_dimension = dimension;
-    m_instance = 0;
 }
 
 template <typename RNG>
@@ -303,16 +291,21 @@ inline Vector<double, N> QMCSamplingContext<RNG>::next_vector2()
 {
     assert(N == m_dimension);
     assert(N <= PrimeTableSize);
-    assert(N <= FaurePermutationTableSize);
 
     Vector<double, N> v;
 
-    for (size_t i = 0; i < N; ++i)
+    v[0] = radical_inverse_base2<double>(m_instance);
+
+    // Cranley-Patterson rotation.
+    v[0] += m_offset[0];
+    if (v[0] >= 1.0)
+        v[0] -= 1.0;
+
+    for (size_t i = 1; i < N; ++i)
     {
         v[i] =
-            permuted_radical_inverse<double>(
+            radical_inverse<double>(
                 Primes[i],
-                FaurePermutations[i],
                 m_instance);
 
         // Cranley-Patterson rotation.
@@ -327,9 +320,15 @@ inline Vector<double, N> QMCSamplingContext<RNG>::next_vector2()
 }
 
 template <typename RNG>
-inline size_t QMCSamplingContext<RNG>::get_max_dimension() const
+inline size_t QMCSamplingContext<RNG>::get_total_dimension() const
 {
     return m_base_dimension + m_dimension;
+}
+
+template <typename RNG>
+inline size_t QMCSamplingContext<RNG>::get_total_instance() const
+{
+    return m_base_instance + m_instance;
 }
 
 }       // namespace foundation

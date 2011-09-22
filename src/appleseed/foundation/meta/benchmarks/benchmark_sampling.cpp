@@ -41,30 +41,29 @@ using namespace std;
 
 BENCHMARK_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
 {
-    const size_t SampleCount = 64;
-
     struct Fixture
     {
         typedef MersenneTwister RNG;
         typedef QMCSamplingContext<RNG> QMCSamplingContextType;
 
-        RNG                     m_rng;
-        QMCSamplingContextType  m_context;
-        Vector2d                m_v;
+        RNG         m_rng;
+        Vector2d    m_v;
 
         Fixture()
-          : m_context(m_rng, 2, SampleCount)
+          : m_v(0.0)
         {
         }
     };
 
-    BENCHMARK_CASE_F(BenchmarkNextVector2, Fixture)
+    BENCHMARK_CASE_F(BenchmarkTrajectory, Fixture)
     {
-        m_context.set_instance(0);
-        m_v += m_context.next_vector2<2>();
-        m_v += m_context.next_vector2<2>();
-        m_v += m_context.next_vector2<2>();
-        m_v += m_context.next_vector2<2>();
+        QMCSamplingContextType context(m_rng, 1, 0, 1234567);
+
+        for (size_t i = 0; i < 32; ++i)
+        {
+            context.split_in_place(2, 1);
+            m_v += context.next_vector2<2>();
+        }
     }
 }
 

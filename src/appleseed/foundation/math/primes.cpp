@@ -33,7 +33,7 @@ namespace foundation
 {
 
 //
-// The first 1000 primes.
+// The first N primes.
 //
 // Reference:
 //

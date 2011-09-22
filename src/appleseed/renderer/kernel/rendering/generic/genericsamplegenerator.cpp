@@ -192,11 +192,16 @@ namespace
         {
             RENDERER_LOG_DEBUG(
                 "generic sample generator statistics:\n"
-                "  max. samp. dim.  avg %.1f  min %s  max %s  dev %.1f\n",
-                m_max_sampling_dim.get_avg(),
-                pretty_uint(m_max_sampling_dim.get_min()).c_str(),
-                pretty_uint(m_max_sampling_dim.get_max()).c_str(),
-                m_max_sampling_dim.get_dev());
+                "  max. samp. dim.  avg %.1f  min %s  max %s  dev %.1f\n"
+                "  max. samp. inst. avg %.1f  min %s  max %s  dev %.1f\n",
+                m_total_sampling_dim.get_avg(),
+                pretty_uint(m_total_sampling_dim.get_min()).c_str(),
+                pretty_uint(m_total_sampling_dim.get_max()).c_str(),
+                m_total_sampling_dim.get_dev(),
+                m_total_sampling_inst.get_avg(),
+                pretty_uint(m_total_sampling_inst.get_min()).c_str(),
+                pretty_uint(m_total_sampling_inst.get_max()).c_str(),
+                m_total_sampling_inst.get_dev());
         }
 
         virtual void release()
@@ -221,7 +226,8 @@ namespace
         ImageImportanceSampler<double>      m_image_sampler;
         size_t                              m_sample_count;
 
-        Population<size_t>                  m_max_sampling_dim;
+        Population<size_t>                  m_total_sampling_dim;
+        Population<size_t>                  m_total_sampling_inst;
 
         virtual size_t generate_samples(
             const size_t                    sequence_index,
@@ -308,7 +314,8 @@ namespace
 
 #endif
 
-            m_max_sampling_dim.insert(sampling_context.get_max_dimension());
+            m_total_sampling_dim.insert(sampling_context.get_total_dimension());
+            m_total_sampling_inst.insert(sampling_context.get_total_instance());
 
             return 1;
         }

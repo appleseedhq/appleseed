@@ -86,12 +86,14 @@ class RNGSamplingContext
     template <size_t N>
     Vector<double, N> next_vector2();
 
-    // Return the current maximum dimension reached by this sampler.
-    size_t get_max_dimension() const;
+    // Return the total dimension of this sampler.
+    size_t get_total_dimension() const;
+
+    // Return the total instance number of this sampler.
+    size_t get_total_instance() const;
 
   private:
     RNG&    m_rng;
-    size_t  m_max_dimension;
 };
 
 
@@ -102,7 +104,6 @@ class RNGSamplingContext
 template <typename RNG>
 inline RNGSamplingContext<RNG>::RNGSamplingContext(RNG& rng)
   : m_rng(rng)
-  , m_max_dimension(0)
 {
 }
 
@@ -113,7 +114,6 @@ inline RNGSamplingContext<RNG>::RNGSamplingContext(
     const size_t    sample_count,
     const size_t    initial_instance)
   : m_rng(rng)
-  , m_max_dimension(dimension)
 {
 }
 
@@ -121,7 +121,6 @@ template <typename RNG> inline
 RNGSamplingContext<RNG>&
 RNGSamplingContext<RNG>::operator=(const RNGSamplingContext& rhs)
 {
-    m_max_dimension = rhs.m_max_dimension;
     return *this;
 }
 
@@ -133,7 +132,7 @@ inline RNGSamplingContext<RNG> RNGSamplingContext<RNG>::split(
     return
         RNGSamplingContext(
             m_rng,
-            m_max_dimension + dimension,
+            dimension,
             sample_count);
 }
 
@@ -142,7 +141,6 @@ inline void RNGSamplingContext<RNG>::split_in_place(
     const size_t    dimension,
     const size_t    sample_count)
 {
-    m_max_dimension += dimension;
 }
 
 template <typename RNG>
@@ -182,9 +180,15 @@ inline Vector<double, N> RNGSamplingContext<RNG>::next_vector2()
 }
 
 template <typename RNG>
-inline size_t RNGSamplingContext<RNG>::get_max_dimension() const
+inline size_t RNGSamplingContext<RNG>::get_total_dimension() const
 {
-    return m_max_dimension;
+    return 0;
+}
+
+template <typename RNG>
+inline size_t RNGSamplingContext<RNG>::get_total_instance() const
+{
+    return 0;
 }
 
 }       // namespace foundation
