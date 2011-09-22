@@ -89,6 +89,7 @@ namespace
             const double occlusion =
                 compute_ambient_occlusion(
                     sampling_context,
+                    sample_hemisphere_cosine<double>,
                     shading_context.get_intersector(),
                     shading_point.get_point(),
                     shading_point.get_geometric_normal(),

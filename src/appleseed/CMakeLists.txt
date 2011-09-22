@@ -903,7 +903,6 @@ source_group("renderer\\kernel\\rendering" FILES
 )
 
 set(renderer_kernel_shading_sources
-    renderer/kernel/shading/ambientocclusion.cpp
     renderer/kernel/shading/ambientocclusion.h
     renderer/kernel/shading/fastambientocclusion.cpp
     renderer/kernel/shading/fastambientocclusion.h

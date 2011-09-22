@@ -31,32 +31,80 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
+#include "renderer/kernel/intersection/intersector.h"
+#include "renderer/kernel/shading/shadingray.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
 
 // Forward declarations.
-namespace renderer      { class Intersector; }
 namespace renderer      { class ShadingPoint; }
 
 namespace renderer
 {
 
 //
-// Compute classic ambient occlusion at a given point in space.
+// Compute ambient occlusion at a given point in space.
 //
 // todo: implement optional computation of the mean unoccluded direction.
 //
 
+template <typename SamplingFunction>
 double compute_ambient_occlusion(
     const SamplingContext&          sampling_context,
+    SamplingFunction&               sampling_function,
     const Intersector&              intersector,
     const foundation::Vector3d&     point,              // world space point
     const foundation::Vector3d&     geometric_normal,   // world space geometric normal, unit-length
     const foundation::Basis3d&      shading_basis,      // world space orthonormal basis around shading normal
     const double                    max_distance,
     const size_t                    sample_count,
-    const ShadingPoint*             parent_shading_point = 0);
+    const ShadingPoint*             parent_shading_point = 0)
+{
+    // Create a sampling context.
+    SamplingContext child_context = sampling_context.split(2, sample_count);
+
+    // Construct an ambient occlusion ray.
+    ShadingRay ao_ray;
+    ao_ray.m_org = point;
+    ao_ray.m_tmin = 0.0;
+    ao_ray.m_tmax = max_distance;
+    ao_ray.m_time = 0.0f;
+    ao_ray.m_flags = ~0;
+
+    size_t computed_samples = 0;
+    size_t occluded_samples = 0;
+
+    for (size_t i = 0; i < sample_count; ++i)
+    {
+        // Generate a direction over the unit hemisphere.
+        const foundation::Vector2d s = child_context.next_vector2<2>();
+        ao_ray.m_dir = sampling_function(s);
+
+        // Transform the direction to world space.
+        ao_ray.m_dir = shading_basis.transform_to_parent(ao_ray.m_dir);
+
+        // Don't cast rays on or below the geometric surface.
+        if (foundation::dot(ao_ray.m_dir, geometric_normal) <= 0.0)
+            continue;
+
+        // Count the number of computed samples.
+        ++computed_samples;
+
+        // Trace the ambient occlusion ray and count the number of occluded samples.
+        if (intersector.trace_probe(ao_ray, parent_shading_point))
+            ++occluded_samples;
+    }
+
+    // Compute occlusion as a scalar between 0.0 and 1.0.
+    double occlusion = static_cast<double>(occluded_samples);
+    if (computed_samples > 1)
+        occlusion /= computed_samples;
+    assert(occlusion >= 0.0);
+    assert(occlusion <= 1.0);
+
+    return occlusion;
+}
 
 }       // namespace renderer
 

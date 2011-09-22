@@ -192,12 +192,12 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
 
     TEST_CASE(SampleHemisphereCosinePowerN_GivenZeroZero_ReturnsSampleWithYComponentGreaterThanZero)
     {
-        EXPECT_GT(0.0, sample_hemisphere_cosine(Vector2d(0.0), 10.0).y);
+        EXPECT_GT(0.0, sample_hemisphere_cosine_power(Vector2d(0.0), 10.0).y);
     }
 
     TEST_CASE(SampleHemisphereCosinePowerN_GivenAlmostOneOne_ReturnsSampleWithYComponentGreaterThanZero)
     {
-        EXPECT_GT(0.0, sample_hemisphere_cosine(Vector2d(shift(1.0, -1)), 10.0).y);
+        EXPECT_GT(0.0, sample_hemisphere_cosine_power(Vector2d(shift(1.0, -1)), 10.0).y);
     }
 
     template <typename Vec>
@@ -218,7 +218,7 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
     template <typename SamplingFunction>
     void visualize_function(
         const string&       filename,
-        SamplingFunction&   function,
+        SamplingFunction&   sampling_function,
         const size_t        point_count)
     {
         vector<Vector3d> points(point_count);
@@ -227,7 +227,7 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
         {
             const size_t Bases[] = { 2 };
             const Vector2d s = hammersley_sequence<double, 2>(Bases, i, point_count);
-            points[i] = to_vector3d(function(s));
+            points[i] = to_vector3d(sampling_function(s));
         }
 
         VPythonFile file(filename);
@@ -244,26 +244,20 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
         visualize_function("unit tests/outputs/test_sampling_sample_hemisphere_uniform.py", sample_hemisphere_uniform<double>, 512);
     }
 
-    template <typename T>
-    Vector<T, 3> sample_hemisphere_cosine_power_1(const Vector<T, 2>& s)
-    {
-        return sample_hemisphere_cosine(s);
-    }
-
     TEST_CASE(SampleHemisphereCosinePower1_GenerateVPythonProgram)
     {
-        visualize_function("unit tests/outputs/test_sampling_sample_hemisphere_cosine_power_1.py", sample_hemisphere_cosine_power_1<double>, 512);
+        visualize_function("unit tests/outputs/test_sampling_sample_hemisphere_cosine_power_1.py", sample_hemisphere_cosine<double>, 512);
     }
 
     template <typename T>
-    Vector<T, 3> sample_hemisphere_cosine_power_n(const Vector<T, 2>& s)
+    Vector<T, 3> sample_hemisphere_cosine_power_10(const Vector<T, 2>& s)
     {
-        return sample_hemisphere_cosine(s, T(10.0));
+        return sample_hemisphere_cosine_power(s, T(10.0));
     }
 
     TEST_CASE(SampleHemisphereCosinePowerN_GenerateVPythonProgram)
     {
-        visualize_function("unit tests/outputs/test_sampling_sample_hemisphere_cosine_power_n.py", sample_hemisphere_cosine_power_n<double>, 512);
+        visualize_function("unit tests/outputs/test_sampling_sample_hemisphere_cosine_power_10.py", sample_hemisphere_cosine_power_10<double>, 512);
     }
 
     TEST_CASE(SampleDiskUniform_GenerateVPythonProgram)

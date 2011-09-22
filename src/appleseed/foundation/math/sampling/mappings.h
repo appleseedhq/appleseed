@@ -76,7 +76,7 @@ Vector<T, 3> sample_hemisphere_cosine(const Vector<T, 2>& s);
 // Map a uniform sample in [0,1)^2 to a direction over the unit hemisphere
 // with a cosine lobe probability density p(theta) = (n+1)/(2*Pi)*cos(theta)^n.
 template <typename T>
-Vector<T, 3> sample_hemisphere_cosine(const Vector<T, 2>& s, const T n);
+Vector<T, 3> sample_hemisphere_cosine_power(const Vector<T, 2>& s, const T n);
 
 
 //
@@ -171,7 +171,7 @@ inline Vector<T, 3> sample_hemisphere_cosine(const Vector<T, 2>& s)
 }
 
 template <typename T>
-inline Vector<T, 3> sample_hemisphere_cosine(const Vector<T, 2>& s, const T n)
+inline Vector<T, 3> sample_hemisphere_cosine_power(const Vector<T, 2>& s, const T n)
 {
     assert(s[0] >= T(0.0) && s[0] < T(1.0));
     assert(s[1] >= T(0.0) && s[1] < T(1.0));
