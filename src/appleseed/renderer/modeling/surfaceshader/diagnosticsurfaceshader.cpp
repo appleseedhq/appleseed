@@ -381,8 +381,6 @@ const char* DiagnosticSurfaceShaderFactory::get_human_readable_model() const
 
 DictionaryArray DiagnosticSurfaceShaderFactory::get_widget_definitions() const
 {
-    DictionaryArray definitions;
-
     Dictionary model_items;
 
     for (int i = 0; i < DiagnosticSurfaceShader::ShadingModeCount; ++i)
@@ -391,6 +389,8 @@ DictionaryArray DiagnosticSurfaceShaderFactory::get_widget_definitions() const
         const char* shading_mode_name = DiagnosticSurfaceShader::ShadingModeNames[i].m_value;
         model_items.insert(shading_mode_name, shading_mode_value);
     }
+
+    DictionaryArray definitions;
 
     definitions.push_back(
         Dictionary()
