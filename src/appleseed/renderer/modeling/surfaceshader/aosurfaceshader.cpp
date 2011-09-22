@@ -67,6 +67,20 @@ namespace
           , m_samples(m_params.get_required<size_t>("samples", 16))
           , m_max_distance(m_params.get_required<double>("max_distance", 1.0))
         {
+            const string sampling_method = m_params.get_required<string>("sampling_method", "uniform");
+
+            if (sampling_method == "uniform")
+                m_sampling_method = UniformSampling;
+            else if (sampling_method == "cosine")
+                m_sampling_method = CosineWeightedSampling;
+            else
+            {
+                RENDERER_LOG_ERROR(
+                    "invalid value \"%s\" for parameter \"sampling_method\", "
+                    "using default value \"uniform\"",
+                    sampling_method.c_str());
+                m_sampling_method = UniformSampling;
+            }
         }
 
         virtual void release() override
@@ -85,27 +99,52 @@ namespace
             const ShadingPoint&     shading_point,
             ShadingResult&          shading_result) const override
         {
-            // Compute ambient occlusion.
-            const double occlusion =
-                compute_ambient_occlusion(
-                    sampling_context,
-                    sample_hemisphere_cosine<double>,
-                    shading_context.get_intersector(),
-                    shading_point.get_point(),
-                    shading_point.get_geometric_normal(),
-                    shading_point.get_shading_basis(),
-                    m_max_distance,
-                    m_samples,
-                    &shading_point);
+            double occlusion;
 
-            // Return a gray scale value proportional to the accessibility.
+            if (m_sampling_method == UniformSampling)
+            {
+                occlusion =
+                    compute_ambient_occlusion(
+                        sampling_context,
+                        sample_hemisphere_uniform<double>,
+                        shading_context.get_intersector(),
+                        shading_point.get_point(),
+                        shading_point.get_geometric_normal(),
+                        shading_point.get_shading_basis(),
+                        m_max_distance,
+                        m_samples,
+                        &shading_point);
+            }
+            else
+            {
+                occlusion =
+                    compute_ambient_occlusion(
+                        sampling_context,
+                        sample_hemisphere_cosine<double>,
+                        shading_context.get_intersector(),
+                        shading_point.get_point(),
+                        shading_point.get_geometric_normal(),
+                        shading_point.get_shading_basis(),
+                        m_max_distance,
+                        m_samples,
+                        &shading_point);
+            }
+
             const float accessibility = static_cast<float>(1.0 - occlusion);
+
             shading_result.set_to_linear_rgb(Color3f(accessibility));
         }
 
       private:
+        enum SamplingMethod
+        {
+            UniformSampling,
+            CosineWeightedSampling
+        };
+
         const size_t    m_samples;
         const double    m_max_distance;
+        SamplingMethod  m_sampling_method;
     };
 }
 
@@ -128,25 +167,33 @@ DictionaryArray AOSurfaceShaderFactory::get_widget_definitions() const
 {
     DictionaryArray definitions;
 
-    {
-        Dictionary widget;
-        widget.insert("name", "samples");
-        widget.insert("label", "Samples");
-        widget.insert("widget", "text_box");
-        widget.insert("use", "required");
-        widget.insert("default", "16");
-        definitions.push_back(widget);
-    }
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "sampling_method")
+            .insert("label", "Sampling Method")
+            .insert("widget", "dropdown_list")
+            .insert("dropdown_items",
+                Dictionary()
+                    .insert("Uniform Sampling", "uniform")
+                    .insert("Cosine-Weighted Sampling", "cosine"))
+            .insert("use", "required")
+            .insert("default", "uniform"));
 
-    {
-        Dictionary widget;
-        widget.insert("name", "max_distance");
-        widget.insert("label", "Maximum Occlusion Distance");
-        widget.insert("widget", "text_box");
-        widget.insert("use", "required");
-        widget.insert("default", "1.0");
-        definitions.push_back(widget);
-    }
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "samples")
+            .insert("label", "Samples")
+            .insert("widget", "text_box")
+            .insert("use", "required")
+            .insert("default", "16"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "max_distance")
+            .insert("label", "Maximum Occlusion Distance")
+            .insert("widget", "text_box")
+            .insert("use", "required")
+            .insert("default", "1.0"));
 
     return definitions;
 }
