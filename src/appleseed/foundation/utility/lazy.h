@@ -303,7 +303,6 @@ class AccessCacheMap
 // Lazy class implementation.
 //
 
-// Constructors.
 template <typename Object>
 Lazy<Object>::Lazy(std::auto_ptr<FactoryType> factory)
   : m_reference_count(0)
@@ -313,6 +312,7 @@ Lazy<Object>::Lazy(std::auto_ptr<FactoryType> factory)
 {
     assert(m_factory);
 }
+
 template <typename Object>
 Lazy<Object>::Lazy(const ObjectType* object)
   : m_reference_count(0)
@@ -322,7 +322,6 @@ Lazy<Object>::Lazy(const ObjectType* object)
 {
 }
 
-// Destructor.
 template <typename Object>
 Lazy<Object>::~Lazy()
 {
@@ -342,7 +341,6 @@ Lazy<Object>::~Lazy()
 // Access class implementation.
 //
 
-// Constructor.
 template <typename Object>
 inline Access<Object>::Access(LazyType* lazy)
   : m_lazy(0)
@@ -350,14 +348,12 @@ inline Access<Object>::Access(LazyType* lazy)
     reset(lazy);
 }
 
-// Destructor.
 template <typename Object>
 inline Access<Object>::~Access()
 {
     reset(0);
 }
 
-// Acquire access to another lazy object.
 template <typename Object>
 void Access<Object>::reset(LazyType* lazy)
 {
@@ -385,7 +381,6 @@ void Access<Object>::reset(LazyType* lazy)
     }
 }
 
-// Get the object pointer.
 template <typename Object>
 inline const Object* Access<Object>::get() const
 {
@@ -393,7 +388,6 @@ inline const Object* Access<Object>::get() const
     return m_lazy->m_object;
 }
 
-// Access the object.
 template <typename Object>
 inline const Object* Access<Object>::operator->() const
 {
@@ -401,6 +395,7 @@ inline const Object* Access<Object>::operator->() const
     assert(m_lazy->m_object);
     return m_lazy->m_object;
 }
+
 template <typename Object>
 inline const Object& Access<Object>::operator*() const
 {
@@ -414,14 +409,12 @@ inline const Object& Access<Object>::operator*() const
 // AccessCache class implementation.
 //
 
-// Constructor
 template <typename Object, size_t Size>
 AccessCache<Object, Size>::AccessCache()
   : m_cache(m_key_hasher, m_object_swapper, ~KeyType(0))
 {
 }
 
-// Access the object corresponding to a given key.
 template <typename Object, size_t Size>
 inline const Object* AccessCache<Object, Size>::access(
     const KeyType&      key,
@@ -431,28 +424,24 @@ inline const Object* AccessCache<Object, Size>::access(
     return m_cache.get(key).get();
 }
 
-// Reset the cache performance statistics.
 template <typename Object, size_t Size>
 void AccessCache<Object, Size>::clear_statistics()
 {
     return m_cache.clear_statistics();
 }
 
-// Return the number of cache hits since creation.
 template <typename Object, size_t Size>
 inline uint64 AccessCache<Object, Size>::get_hit_count() const
 {
     return m_cache.get_hit_count();
 }
 
-// Return the number of cache misses since creation.
 template <typename Object, size_t Size>
 inline uint64 AccessCache<Object, Size>::get_miss_count() const
 {
     return m_cache.get_miss_count();
 }
 
-// Hash a key.
 template <typename Object, size_t Size>
 inline size_t AccessCache<Object, Size>::KeyHasher::operator()(
     const KeyType&      key) const
@@ -460,14 +449,12 @@ inline size_t AccessCache<Object, Size>::KeyHasher::operator()(
     return static_cast<size_t>(key);
 }
 
-// Constructor.
 template <typename Object, size_t Size>
 AccessCache<Object, Size>::ObjectSwapper::ObjectSwapper()
   : m_lazy(0)
 {
 }
 
-// Set the lazy object to access, in case we would have to load a cache line.
 template <typename Object, size_t Size>
 inline void AccessCache<Object, Size>::ObjectSwapper::set_lazy(
     LazyType&           lazy)
@@ -475,7 +462,6 @@ inline void AccessCache<Object, Size>::ObjectSwapper::set_lazy(
     m_lazy = &lazy;
 }
 
-// Load a cache line.
 template <typename Object, size_t Size>
 inline void AccessCache<Object, Size>::ObjectSwapper::load(
     const KeyType&      key,
@@ -484,7 +470,6 @@ inline void AccessCache<Object, Size>::ObjectSwapper::load(
     access.reset(m_lazy);
 }
 
-// Unload a cache line.
 template <typename Object, size_t Size>
 inline void AccessCache<Object, Size>::ObjectSwapper::unload(
     const KeyType&      key,
@@ -498,14 +483,12 @@ inline void AccessCache<Object, Size>::ObjectSwapper::unload(
 // AccessCacheMap class implementation.
 //
 
-// Constructor
 template <typename ObjectMap, size_t Size>
 AccessCacheMap<ObjectMap, Size>::AccessCacheMap()
   : m_cache(m_key_hasher, m_object_swapper, ~KeyType(0))
 {
 }
 
-// Access the object corresponding to a given key.
 template <typename ObjectMap, size_t Size>
 inline const typename AccessCacheMap<ObjectMap, Size>::ObjectType*
 AccessCacheMap<ObjectMap, Size>::access(
@@ -516,28 +499,24 @@ AccessCacheMap<ObjectMap, Size>::access(
     return m_cache.get(key).get();
 }
 
-// Reset the cache performance statistics.
 template <typename ObjectMap, size_t Size>
 void AccessCacheMap<ObjectMap, Size>::clear_statistics()
 {
     return m_cache.clear_statistics();
 }
 
-// Return the number of cache hits since creation.
 template <typename ObjectMap, size_t Size>
 inline uint64 AccessCacheMap<ObjectMap, Size>::get_hit_count() const
 {
     return m_cache.get_hit_count();
 }
 
-// Return the number of cache misses since creation.
 template <typename ObjectMap, size_t Size>
 inline uint64 AccessCacheMap<ObjectMap, Size>::get_miss_count() const
 {
     return m_cache.get_miss_count();
 }
 
-// Hash a key.
 template <typename ObjectMap, size_t Size>
 inline size_t AccessCacheMap<ObjectMap, Size>::KeyHasher::operator()(
     const KeyType&      key) const
@@ -545,14 +524,12 @@ inline size_t AccessCacheMap<ObjectMap, Size>::KeyHasher::operator()(
     return static_cast<size_t>(key);
 }
 
-// Constructor.
 template <typename ObjectMap, size_t Size>
 AccessCacheMap<ObjectMap, Size>::ObjectSwapper::ObjectSwapper()
   : m_object_map(0)
 {
 }
 
-// Set the key -> lazy object map to look objects up.
 template <typename ObjectMap, size_t Size>
 inline void AccessCacheMap<ObjectMap, Size>::ObjectSwapper::set_object_map(
     const ObjectMap*    object_map)
@@ -561,7 +538,6 @@ inline void AccessCacheMap<ObjectMap, Size>::ObjectSwapper::set_object_map(
     m_object_map = object_map;
 }
 
-// Load a cache line.
 template <typename ObjectMap, size_t Size>
 inline void AccessCacheMap<ObjectMap, Size>::ObjectSwapper::load(
     const KeyType&      key,
@@ -573,7 +549,6 @@ inline void AccessCacheMap<ObjectMap, Size>::ObjectSwapper::load(
     access.reset(i->second);
 }
 
-// Unload a cache line.
 template <typename ObjectMap, size_t Size>
 inline void AccessCacheMap<ObjectMap, Size>::ObjectSwapper::unload(
     const KeyType&      key,
