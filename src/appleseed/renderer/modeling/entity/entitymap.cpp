@@ -209,12 +209,16 @@ void EntityMap::remove(const UniqueID id)
     if (it == impl->m_storage.end())
         return;
 
+    // Retrieve the entity.
+    Entity* entity_ptr = it->second;
+    assert(entity_ptr);
+
     // Remove the entity from the container.
-    impl->m_index.erase(it->second->get_name());
+    impl->m_index.erase(entity_ptr->get_name());
     impl->m_storage.erase(it);
 
     // Delete the entity.
-    delete it->second;
+    delete entity_ptr;
 }
 
 Entity* EntityMap::get_by_uid(const UniqueID id) const

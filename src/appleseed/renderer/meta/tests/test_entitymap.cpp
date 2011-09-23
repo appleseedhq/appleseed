@@ -51,7 +51,20 @@ TEST_SUITE(Renderer_Modeling_Entity_EntityMap)
         EXPECT_FALSE(m2.empty());
     }
 
-    TEST_CASE(GetByUID_GivenID_ReturnsEntity)
+    TEST_CASE(Remove_GivenUID_RemovesEntity)
+    {
+        auto_release_ptr<Entity> dummy(DummyEntityFactory::create("dummy"));
+        const UniqueID dummy_id = dummy->get_uid();
+
+        EntityMap m;
+        m.insert(dummy);
+
+        m.remove(dummy_id);
+
+        EXPECT_TRUE(m.empty());
+    }
+
+    TEST_CASE(GetByUID_GivenUID_ReturnsEntity)
     {
         auto_release_ptr<Entity> dummy1(DummyEntityFactory::create("dummy1"));
         auto_release_ptr<Entity> dummy2(DummyEntityFactory::create("dummy2"));
