@@ -31,9 +31,11 @@
 
 // Qt headers.
 #include <QAction>
+#include <QKeySequence>
 #include <QMenu>
 #include <QString>
 #include <QStringList>
+#include <Qt>
 #include <QVariant>
 
 using namespace foundation;
@@ -96,12 +98,39 @@ void ItemBase::set_title(const QString& title)
 
 QMenu* ItemBase::get_single_item_context_menu() const
 {
-    return new QMenu(treeWidget());
+    QMenu* menu = new QMenu(treeWidget());
+
+    if (allows_edition())
+        menu->addAction("Edit...", this, SLOT(slot_edit()));
+
+    if (allows_deletion())
+        menu->addAction("Delete", this, SLOT(slot_delete()), QKeySequence(Qt::Key_Delete));
+
+    return menu;
 }
 
 QMenu* ItemBase::get_multiple_items_context_menu(const QList<ItemBase*>& items) const
 {
-    return new QMenu(treeWidget());
+    QMenu* menu = new QMenu(treeWidget());
+
+    bool any_item_allows_deletion = false;
+
+    for (int i = 0; i < items.size(); ++i)
+    {
+        if (items[i]->allows_deletion())
+        {
+            any_item_allows_deletion = true;
+            break;
+        }
+    }
+
+    if (any_item_allows_deletion)
+    {
+        menu->addAction("Delete", this, SLOT(slot_delete_multiple()), QKeySequence(Qt::Key_Delete))
+            ->setData(QVariant::fromValue(items));
+    }
+
+    return menu;
 }
 
 void ItemBase::slot_edit()

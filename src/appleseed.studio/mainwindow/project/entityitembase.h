@@ -37,13 +37,10 @@
 #include "foundation/utility/uid.h"
 
 // Qt headers.
-#include <QKeySequence>
 #include <QList>
 #include <QMenu>
 #include <QObject>
 #include <QString>
-#include <Qt>
-#include <QVariant>
 
 Q_DECLARE_METATYPE(QList<appleseed::studio::ItemBase*>);
 
@@ -105,12 +102,6 @@ QMenu* EntityItemBase<Entity>::get_single_item_context_menu() const
     QMenu* menu = ItemBase::get_single_item_context_menu();
     menu->addSeparator();
 
-    if (allows_edition())
-        menu->addAction("Edit...", this, SLOT(slot_edit()));
-
-    if (allows_deletion())
-        menu->addAction("Delete", this, SLOT(slot_delete()), QKeySequence(Qt::Key_Delete));
-
     return menu;
 }
 
@@ -119,23 +110,6 @@ QMenu* EntityItemBase<Entity>::get_multiple_items_context_menu(const QList<ItemB
 {
     QMenu* menu = ItemBase::get_multiple_items_context_menu(items);
     menu->addSeparator();
-
-    bool any_item_allows_deletion = false;
-
-    for (int i = 0; i < items.size(); ++i)
-    {
-        if (items[i]->allows_deletion())
-        {
-            any_item_allows_deletion = true;
-            break;
-        }
-    }
-
-    if (any_item_allows_deletion)
-    {
-        menu->addAction("Delete", this, SLOT(slot_delete_multiple()), QKeySequence(Qt::Key_Delete))
-            ->setData(QVariant::fromValue(items));
-    }
 
     return menu;
 }

@@ -62,6 +62,9 @@ class CollectionItemBase
 template <typename Entity>
 CollectionItemBase<Entity>::CollectionItemBase()
 {
+    set_allow_edition(false);
+    set_allow_deletion(false);
+
     QFont font;
     font.setBold(true);
     setFont(0, font);
