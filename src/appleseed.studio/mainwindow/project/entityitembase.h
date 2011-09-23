@@ -105,7 +105,7 @@ QMenu* EntityItemBase<Entity>::get_single_item_context_menu() const
     QMenu* menu = ItemBase::get_single_item_context_menu();
     menu->addSeparator();
 
-    if (allows_editing())
+    if (allows_edition())
         menu->addAction("Edit...", this, SLOT(slot_edit()));
 
     if (allows_deletion())

@@ -86,7 +86,7 @@ SingleModelEntityItem<Entity, ParentEntity>::SingleModelEntityItem(
 template <typename Entity, typename ParentEntity>
 void SingleModelEntityItem<Entity, ParentEntity>::slot_edit()
 {
-    if (!EntityItemType::allows_editing())
+    if (!EntityItemType::allows_edition())
         return;
 
     const std::string window_title =

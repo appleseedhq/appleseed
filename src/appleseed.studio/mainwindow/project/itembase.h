@@ -58,8 +58,8 @@ class ItemBase
 
     foundation::UniqueID get_class_uid() const;
 
-    void set_allow_editing(const bool allow);
-    bool allows_editing() const;
+    void set_allow_edition(const bool allow);
+    bool allows_edition() const;
 
     void set_allow_deletion(const bool allow);
     bool allows_deletion() const;
@@ -79,7 +79,7 @@ class ItemBase
 
   private:
     foundation::UniqueID    m_class_uid;
-    bool                    m_allow_editing;
+    bool                    m_allow_edition;
     bool                    m_allow_deletion;
 };
 
