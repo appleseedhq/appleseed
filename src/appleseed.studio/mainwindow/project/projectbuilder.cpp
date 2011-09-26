@@ -82,7 +82,7 @@ void ProjectBuilder::insert_assembly(
     auto_release_ptr<Assembly> assembly(
         AssemblyFactory::create(name.c_str(), ParamArray()));
 
-    m_project_tree.get_assembly_collection_item().add_item(assembly.get());
+    m_project_tree.add_item(assembly.get());
 
     m_project.get_scene()->assemblies().insert(assembly);
 
