@@ -546,7 +546,7 @@ void MainWindow::start_rendering(const bool interactive)
 
 namespace
 {
-    int show_abort_rendering_message_box(QWidget* parent)
+    int ask_abort_rendering_confirmation(QWidget* parent)
     {
         QMessageBox msgbox(parent);
         msgbox.setWindowTitle("Abort Rendering?");
@@ -563,7 +563,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 {
     if (m_rendering_manager.is_rendering())
     {
-        if (show_abort_rendering_message_box(this) == QMessageBox::No)
+        if (ask_abort_rendering_confirmation(this) != QMessageBox::Yes)
         {
             event->ignore();
             return;
