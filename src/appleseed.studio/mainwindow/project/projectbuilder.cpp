@@ -102,8 +102,21 @@ void ProjectBuilder::insert_assembly_instance(
     m_project_tree.add_item(assembly_instance.get());
 
     Scene* scene = m_project.get_scene();
-
     scene->assembly_instances().insert(assembly_instance);
+    scene->bump_geometry_version_id();
+
+    notify_project_modification();
+}
+
+void ProjectBuilder::remove_assembly_instance(
+    const UniqueID      assembly_instance_id) const
+{
+    m_project_tree
+        .get_assembly_instance_collection_item()
+            .remove_item(assembly_instance_id);
+
+    Scene* scene = m_project.get_scene();
+    scene->assembly_instances().remove(assembly_instance_id);
     scene->bump_geometry_version_id();
 
     notify_project_modification();

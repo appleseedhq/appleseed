@@ -286,5 +286,10 @@ AssemblyCollectionItem& ProjectTree::get_assembly_collection_item() const
     return *impl->m_assembly_collection_item;
 }
 
+AssemblyInstanceCollectionItem& ProjectTree::get_assembly_instance_collection_item() const
+{
+    return *impl->m_assembly_instance_collection_item;
+}
+
 }   // namespace studio
 }   // namespace appleseed

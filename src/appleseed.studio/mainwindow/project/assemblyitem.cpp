@@ -56,16 +56,19 @@
 #include "renderer/api/texture.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
 
 // Qt headers.
 #include <QFileDialog>
 #include <QMenu>
+#include <QMessageBox>
 #include <QString>
 #include <QStringList>
 
 // Standard headers.
 #include <string>
+#include <vector>
 
 using namespace foundation;
 using namespace renderer;
@@ -77,8 +80,9 @@ namespace studio {
 struct AssemblyItem::Impl
 {
     AssemblyItem*                               m_assembly_item;
+
+    Assembly*                                   m_assembly;
     Scene&                                      m_scene;
-    Assembly&                                   m_assembly;
     ProjectBuilder&                             m_project_builder;
 
     CollectionItem<ColorEntity, Assembly>*      m_color_collection_item;
@@ -94,24 +98,24 @@ struct AssemblyItem::Impl
 
     Impl(
         AssemblyItem*   assembly_item,
+        Assembly*       assembly,
         Scene&          scene,
-        Assembly&       assembly,
         ProjectBuilder& project_builder)
       : m_assembly_item(assembly_item)
-      , m_scene(scene)
       , m_assembly(assembly)
+      , m_scene(scene)
       , m_project_builder(project_builder)
     {
-        m_color_collection_item = add_single_model_collection_item<ColorEntity>(assembly.colors());
-        m_texture_collection_item = add_collection_item(assembly.textures());
-        m_texture_instance_collection_item = add_collection_item(assembly.texture_instances());
-        m_bsdf_collection_item = add_multi_model_collection_item<BSDF>(assembly.bsdfs());
-        m_edf_collection_item = add_multi_model_collection_item<EDF>(assembly.edfs());
-        m_surface_shader_collection_item = add_multi_model_collection_item<SurfaceShader>(assembly.surface_shaders());
-        m_material_collection_item = add_single_model_collection_item<Material>(assembly.materials());
-        m_light_collection_item = add_collection_item(assembly.lights());
-        m_object_collection_item = add_collection_item(assembly.objects());
-        m_object_instance_collection_item = add_collection_item(assembly.object_instances());
+        m_color_collection_item = add_single_model_collection_item<ColorEntity>(assembly->colors());
+        m_texture_collection_item = add_collection_item(assembly->textures());
+        m_texture_instance_collection_item = add_collection_item(assembly->texture_instances());
+        m_bsdf_collection_item = add_multi_model_collection_item<BSDF>(assembly->bsdfs());
+        m_edf_collection_item = add_multi_model_collection_item<EDF>(assembly->edfs());
+        m_surface_shader_collection_item = add_multi_model_collection_item<SurfaceShader>(assembly->surface_shaders());
+        m_material_collection_item = add_single_model_collection_item<Material>(assembly->materials());
+        m_light_collection_item = add_collection_item(assembly->lights());
+        m_object_collection_item = add_collection_item(assembly->objects());
+        m_object_instance_collection_item = add_collection_item(assembly->object_instances());
     }
 
     template <typename EntityContainer>
@@ -121,7 +125,7 @@ struct AssemblyItem::Impl
 
         ItemType* item =
             new ItemType(
-                m_assembly,
+                *m_assembly,
                 entities,
                 m_project_builder);
 
@@ -137,7 +141,7 @@ struct AssemblyItem::Impl
             new SingleModelCollectionItem<Entity, Assembly>(
                 new_guid(),
                 EntityTraits<Entity>::get_human_readable_collection_type_name(),
-                m_assembly,
+                *m_assembly,
                 m_project_builder);
 
         item->add_items(entities);
@@ -154,7 +158,7 @@ struct AssemblyItem::Impl
             new MultiModelCollectionItem<Entity, Assembly>(
                 new_guid(),
                 EntityTraits<Entity>::get_human_readable_collection_type_name(),
-                m_assembly,
+                *m_assembly,
                 m_project_builder);
 
         item->add_items(entities);
@@ -166,11 +170,11 @@ struct AssemblyItem::Impl
 };
 
 AssemblyItem::AssemblyItem(
+    Assembly*       assembly,
     Scene&          scene,
-    Assembly&       assembly,
     ProjectBuilder& project_builder)
-  : ItemBase(assembly.get_class_uid(), assembly.get_name())
-  , impl(new Impl(this, scene, assembly, project_builder))
+  : ItemBase(assembly->get_class_uid(), assembly->get_name())
+  , impl(new Impl(this, assembly, scene, project_builder))
 {
 }
 
@@ -249,11 +253,59 @@ void AssemblyItem::add_item(ObjectInstance* object_instance)
     impl->m_object_instance_collection_item->add_item(object_instance);
 }
 
+namespace
+{
+    int ask_assembly_deletion_confirmation(const char* assembly_name)
+    {
+        QMessageBox msgbox;
+        msgbox.setWindowTitle("Delete Assembly?");
+        msgbox.setIcon(QMessageBox::Question);
+        msgbox.setText(QString("You are about to delete the assembly \"%1\" and all its instances.").arg(assembly_name));
+        msgbox.setInformativeText("Continue?");
+        msgbox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+        msgbox.setDefaultButton(QMessageBox::No);
+        return msgbox.exec();
+    }
+}
+
+void AssemblyItem::slot_delete()
+{
+    if (!allows_deletion())
+        return;
+
+    const char* assembly_name = impl->m_assembly->get_name();
+
+    if (ask_assembly_deletion_confirmation(assembly_name) != QMessageBox::Yes)
+        return;
+
+    remove_all_assembly_instances();
+
+    impl->m_scene.assemblies().remove(impl->m_assembly->get_uid());
+
+    delete this;
+}
+
+void AssemblyItem::remove_all_assembly_instances()
+{
+    vector<UniqueID> remove_list;
+
+    for (const_each<AssemblyInstanceContainer> i = impl->m_scene.assembly_instances(); i; ++i)
+    {
+        const AssemblyInstance& assembly_instance = *i;
+
+        if (assembly_instance.get_assembly().get_uid() == impl->m_assembly->get_uid())
+            remove_list.push_back(assembly_instance.get_uid());
+    }
+
+    for (const_each<vector<UniqueID> > i = remove_list; i; ++i)
+        impl->m_project_builder.remove_assembly_instance(*i);
+}
+
 void AssemblyItem::slot_instantiate()
 {
     const string instance_name_suggestion =
         get_name_suggestion(
-            string(impl->m_assembly.get_name()) + "_inst",
+            string(impl->m_assembly->get_name()) + "_inst",
             impl->m_scene.assembly_instances());
 
     const string instance_name =
@@ -264,7 +316,7 @@ void AssemblyItem::slot_instantiate()
             instance_name_suggestion);
 
     if (!instance_name.empty())
-        impl->m_project_builder.insert_assembly_instance(instance_name, impl->m_assembly);
+        impl->m_project_builder.insert_assembly_instance(instance_name, *impl->m_assembly);
 }
 
 }   // namespace studio

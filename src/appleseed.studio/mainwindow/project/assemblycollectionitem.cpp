@@ -79,16 +79,21 @@ QMenu* AssemblyCollectionItem::get_single_item_context_menu() const
 
 void AssemblyCollectionItem::add_item(Assembly* assembly)
 {
-    AssemblyItem* item = new AssemblyItem(m_scene, *assembly, m_project_builder);
-    m_assembly_items[assembly->get_uid()] = item;
+    assert(assembly);
+
+    AssemblyItem* item = new AssemblyItem(assembly, m_scene, m_project_builder);
+
     addChild(item);
+
+    m_items[assembly->get_uid()] = item;
 }
 
 AssemblyItem& AssemblyCollectionItem::get_item(const Assembly& assembly) const
 {
-    const AssemblyItemMap::const_iterator i = m_assembly_items.find(assembly.get_uid());
-    assert(i != m_assembly_items.end());
-    return *(i->second);
+    const ItemMap::const_iterator i = m_items.find(assembly.get_uid());
+    assert(i != m_items.end());
+
+    return *static_cast<AssemblyItem*>(i->second);
 }
 
 void AssemblyCollectionItem::slot_create_assembly()

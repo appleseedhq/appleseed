@@ -61,8 +61,8 @@ class AssemblyItem
 
   public:
     AssemblyItem(
+        renderer::Assembly* assembly,
         renderer::Scene&    scene,
-        renderer::Assembly& assembly,
         ProjectBuilder&     project_builder);
 
     ~AssemblyItem();
@@ -80,9 +80,14 @@ class AssemblyItem
     void add_item(renderer::Object* object);
     void add_item(renderer::ObjectInstance* object_instance);
 
+  protected:
+    virtual void slot_delete();
+
   private:
     struct Impl;
     Impl* impl;
+
+    void remove_all_assembly_instances();
 
   private slots:
     void slot_instantiate();

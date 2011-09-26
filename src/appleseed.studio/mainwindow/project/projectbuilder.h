@@ -51,6 +51,7 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/uid.h"
 
 // Qt headers.
 #include <QObject>
@@ -62,6 +63,7 @@
 // Forward declarations.
 namespace appleseed { namespace studio { class ProjectTree; } }
 namespace renderer  { class Assembly; }
+namespace renderer  { class AssemblyInstance; }
 namespace renderer  { class Project; }
 namespace renderer  { class Scene; }
 
@@ -107,6 +109,9 @@ class ProjectBuilder
     void insert_assembly_instance(
         const std::string&                  name,
         renderer::Assembly&                 assembly) const;
+
+    void remove_assembly_instance(
+        const foundation::UniqueID          assembly_instance_id) const;
 
     void insert_objects(
         renderer::Assembly&                 assembly,

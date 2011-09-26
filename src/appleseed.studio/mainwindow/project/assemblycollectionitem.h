@@ -35,14 +35,8 @@
 // appleseed.renderer headers.
 #include "renderer/api/scene.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/uid.h"
-
 // Qt headers.
 #include <QObject>
-
-// Standard headers.
-#include <map>
 
 // Forward declarations.
 namespace appleseed { namespace studio { class AssemblyItem; } }
@@ -73,11 +67,8 @@ class AssemblyCollectionItem
     void slot_create_assembly();
 
   private:
-    typedef std::map<foundation::UniqueID, AssemblyItem*> AssemblyItemMap;
-
     renderer::Scene&    m_scene;
     ProjectBuilder&     m_project_builder;
-    AssemblyItemMap     m_assembly_items;
 };
 
 }       // namespace studio

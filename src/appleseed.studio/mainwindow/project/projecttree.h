@@ -34,6 +34,7 @@
 
 // Forward declarations.
 namespace appleseed { namespace studio { class AssemblyCollectionItem; } }
+namespace appleseed { namespace studio { class AssemblyInstanceCollectionItem; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class Assembly; }
 namespace renderer  { class AssemblyInstance; }
@@ -70,6 +71,7 @@ class ProjectTree
     void add_item(renderer::AssemblyInstance* assembly_instance);
 
     AssemblyCollectionItem& get_assembly_collection_item() const;
+    AssemblyInstanceCollectionItem& get_assembly_instance_collection_item() const;
 
   private:
     struct Impl;

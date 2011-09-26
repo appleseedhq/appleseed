@@ -34,9 +34,14 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/uid.h"
 
 // Qt headers.
 #include <QFont>
+
+// Standard headers.
+#include <cassert>
+#include <map>
 
 namespace appleseed {
 namespace studio {
@@ -52,6 +57,13 @@ class CollectionItemBase
 
     template <typename EntityContainer>
     void add_items(EntityContainer& items);
+
+    virtual void remove_item(const foundation::UniqueID entity_id);
+
+  protected:
+    typedef std::map<foundation::UniqueID, ItemBase*> ItemMap;
+
+    ItemMap m_items;
 };
 
 
@@ -73,7 +85,13 @@ CollectionItemBase<Entity>::CollectionItemBase()
 template <typename Entity>
 void CollectionItemBase<Entity>::add_item(Entity* entity)
 {
-    addChild(new ItemBase(entity->get_class_uid(), entity->get_name()));
+    assert(entity);
+
+    ItemBase* item = new ItemBase(entity->get_class_uid(), entity->get_name());
+
+    addChild(item);
+
+    m_items[entity->get_uid()] = item;
 }
 
 template <typename Entity>
@@ -82,6 +100,17 @@ void CollectionItemBase<Entity>::add_items(EntityContainer& entities)
 {
     for (foundation::each<EntityContainer> i = entities; i; ++i)
         add_item(&*i);
+}
+
+template <typename Entity>
+void CollectionItemBase<Entity>::remove_item(const foundation::UniqueID entity_id)
+{
+    const ItemMap::const_iterator it = m_items.find(entity_id);
+    assert(it != m_items.end());
+
+    removeChild(it->second);
+
+    m_items.erase(it);
 }
 
 }       // namespace studio
