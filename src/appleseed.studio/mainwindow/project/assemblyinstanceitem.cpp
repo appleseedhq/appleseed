@@ -26,56 +26,36 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYCOLLECTIONITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYCOLLECTIONITEM_H
-
-// appleseed.studio headers.
-#include "mainwindow/project/collectionitembase.h"
+// Interface header.
+#include "assemblyinstanceitem.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/scene.h"
 
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
-
-// Qt headers.
-#include <QObject>
-
-// Forward declarations.
-namespace appleseed { namespace studio { class AssemblyItem; } }
-namespace appleseed { namespace studio { class ItemBase; } }
-namespace appleseed { namespace studio { class ProjectBuilder; } }
-class QMenu;
+using namespace renderer;
+using namespace std;
 
 namespace appleseed {
 namespace studio {
 
-class AssemblyCollectionItem
-  : public CollectionItemBase<renderer::Assembly>
+AssemblyInstanceItem::AssemblyInstanceItem(
+    AssemblyInstance*   assembly_instance,
+    Scene&              scene)
+  : ItemBase(assembly_instance->get_class_uid(), assembly_instance->get_name())
+  , m_assembly_instance(assembly_instance)
+  , m_scene(scene)
 {
-    Q_OBJECT
+}
 
-  public:
-    AssemblyCollectionItem(
-        renderer::Scene&                scene,
-        renderer::AssemblyContainer&    assemblies,
-        ProjectBuilder&                 project_builder);
+void AssemblyInstanceItem::slot_delete()
+{
+    if (!allows_deletion())
+        return;
 
-    virtual QMenu* get_single_item_context_menu() const override;
+    m_scene.assembly_instances().remove(m_assembly_instance->get_uid());
 
-    AssemblyItem& get_item(const renderer::Assembly& assembly) const;
+    delete this;
+}
 
-  public slots:
-    void slot_create_assembly();
-
-  private:
-    renderer::Scene&    m_scene;
-    ProjectBuilder&     m_project_builder;
-
-    virtual ItemBase* create_item(renderer::Assembly* assembly) const override;
-};
-
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYCOLLECTIONITEM_H
+}   // namespace studio
+}   // namespace appleseed

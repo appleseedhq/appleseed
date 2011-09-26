@@ -53,17 +53,19 @@ class CollectionItemBase
   public:
     CollectionItemBase();
 
-    virtual void add_item(Entity* entity);
+    void add_item(Entity* entity);
 
     template <typename EntityContainer>
     void add_items(EntityContainer& items);
 
-    virtual void remove_item(const foundation::UniqueID entity_id);
+    void remove_item(const foundation::UniqueID entity_id);
 
   protected:
     typedef std::map<foundation::UniqueID, ItemBase*> ItemMap;
 
     ItemMap m_items;
+
+    virtual ItemBase* create_item(Entity* entity) const;
 };
 
 
@@ -87,7 +89,7 @@ void CollectionItemBase<Entity>::add_item(Entity* entity)
 {
     assert(entity);
 
-    ItemBase* item = new ItemBase(entity->get_class_uid(), entity->get_name());
+    ItemBase* item = create_item(entity);
 
     addChild(item);
 
@@ -111,6 +113,14 @@ void CollectionItemBase<Entity>::remove_item(const foundation::UniqueID entity_i
     removeChild(it->second);
 
     m_items.erase(it);
+}
+
+template <typename Entity>
+ItemBase* CollectionItemBase<Entity>::create_item(Entity* entity) const
+{
+    assert(entity);
+
+    return new ItemBase(entity->get_class_uid(), entity->get_name());
 }
 
 }       // namespace studio

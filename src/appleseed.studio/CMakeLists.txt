@@ -108,6 +108,8 @@ set(mainwindow_project_sources
     mainwindow/project/assemblycollectionitem.h
     mainwindow/project/assemblyinstancecollectionitem.cpp
     mainwindow/project/assemblyinstancecollectionitem.h
+    mainwindow/project/assemblyinstanceitem.cpp
+    mainwindow/project/assemblyinstanceitem.h
     mainwindow/project/assemblyitem.cpp
     mainwindow/project/assemblyitem.h
     mainwindow/project/cameraitem.h

@@ -35,10 +35,14 @@
 // appleseed.renderer headers.
 #include "renderer/api/scene.h"
 
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+
 // Qt headers.
 #include <QObject>
 
 // Forward declarations.
+namespace appleseed { namespace studio { class ItemBase; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 
 namespace appleseed {
@@ -56,7 +60,9 @@ class AssemblyInstanceCollectionItem
         ProjectBuilder&                         project_builder);
 
   private:
-    ProjectBuilder& m_project_builder;
+    renderer::Scene& m_scene;
+
+    virtual ItemBase* create_item(renderer::AssemblyInstance* assembly_instance) const override;
 };
 
 }       // namespace studio

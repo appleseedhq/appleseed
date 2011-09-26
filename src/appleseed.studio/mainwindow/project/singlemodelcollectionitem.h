@@ -41,14 +41,17 @@
 #include "renderer/api/entity.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/uid.h"
 
 // Standard headers.
+#include <cassert>
 #include <memory>
 #include <string>
 
 // Forward declarations.
+namespace appleseed { namespace studio { class ItemBase; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 
 namespace appleseed {
@@ -68,12 +71,12 @@ class SingleModelCollectionItem
         ParentEntity&               parent,
         ProjectBuilder&             project_builder);
 
-    virtual void add_item(Entity* entity);
-
   private:
     typedef CollectionItem<Entity, ParentEntity> CollectionItemType;
 
-    virtual void slot_create();
+    virtual ItemBase* create_item(Entity* entity) const override;
+
+    virtual void slot_create() override;
 };
 
 
@@ -93,13 +96,15 @@ SingleModelCollectionItem<Entity, ParentEntity>::SingleModelCollectionItem(
 }
 
 template <typename Entity, typename ParentEntity>
-void SingleModelCollectionItem<Entity, ParentEntity>::add_item(Entity* entity)
+ItemBase* SingleModelCollectionItem<Entity, ParentEntity>::create_item(Entity* entity) const
 {
-    addChild(
+    assert(entity);
+
+    return
         new SingleModelEntityItem<Entity, ParentEntity>(
             entity,
             CollectionItemType::m_parent,
-            CollectionItemType::m_project_builder));
+            CollectionItemType::m_project_builder);
 }
 
 template <typename Entity, typename ParentEntity>

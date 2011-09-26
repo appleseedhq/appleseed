@@ -26,56 +26,40 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYCOLLECTIONITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYCOLLECTIONITEM_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYINSTANCEITEM_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYINSTANCEITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/collectionitembase.h"
-
-// appleseed.renderer headers.
-#include "renderer/api/scene.h"
-
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
+#include "mainwindow/project/itembase.h"
 
 // Qt headers.
 #include <QObject>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class AssemblyItem; } }
-namespace appleseed { namespace studio { class ItemBase; } }
-namespace appleseed { namespace studio { class ProjectBuilder; } }
-class QMenu;
+namespace renderer  { class AssemblyInstance; }
+namespace renderer  { class Scene; }
 
 namespace appleseed {
 namespace studio {
 
-class AssemblyCollectionItem
-  : public CollectionItemBase<renderer::Assembly>
+class AssemblyInstanceItem
+  : public ItemBase
 {
     Q_OBJECT
 
   public:
-    AssemblyCollectionItem(
-        renderer::Scene&                scene,
-        renderer::AssemblyContainer&    assemblies,
-        ProjectBuilder&                 project_builder);
-
-    virtual QMenu* get_single_item_context_menu() const override;
-
-    AssemblyItem& get_item(const renderer::Assembly& assembly) const;
-
-  public slots:
-    void slot_create_assembly();
+    AssemblyInstanceItem(
+        renderer::AssemblyInstance* assembly_instance,
+        renderer::Scene&            scene);
 
   private:
-    renderer::Scene&    m_scene;
-    ProjectBuilder&     m_project_builder;
+    renderer::AssemblyInstance*     m_assembly_instance;
+    renderer::Scene&                m_scene;
 
-    virtual ItemBase* create_item(renderer::Assembly* assembly) const override;
+    virtual void slot_delete();
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYCOLLECTIONITEM_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYINSTANCEITEM_H

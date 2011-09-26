@@ -29,8 +29,14 @@
 // Interface header.
 #include "assemblyinstancecollectionitem.h"
 
+// appleseed.studio headers.
+#include "mainwindow/project/assemblyinstanceitem.h"
+
 // appleseed.foundation headers.
 #include "foundation/utility/uid.h"
+
+// Standard headers.
+#include <cassert>
 
 using namespace foundation;
 using namespace renderer;
@@ -48,9 +54,16 @@ AssemblyInstanceCollectionItem::AssemblyInstanceCollectionItem(
     AssemblyInstanceContainer&  assembly_instances,
     ProjectBuilder&             project_builder)
   : ItemBase(g_class_uid, "Assembly Instances")
-  , m_project_builder(project_builder)
+  , m_scene(scene)
 {
     add_items(assembly_instances);
+}
+
+ItemBase* AssemblyInstanceCollectionItem::create_item(AssemblyInstance* assembly_instance) const
+{
+    assert(assembly_instance);
+
+    return new AssemblyInstanceItem(assembly_instance, m_scene);
 }
 
 }   // namespace studio

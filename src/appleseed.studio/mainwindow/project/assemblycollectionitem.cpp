@@ -77,17 +77,6 @@ QMenu* AssemblyCollectionItem::get_single_item_context_menu() const
     return menu;
 }
 
-void AssemblyCollectionItem::add_item(Assembly* assembly)
-{
-    assert(assembly);
-
-    AssemblyItem* item = new AssemblyItem(assembly, m_scene, m_project_builder);
-
-    addChild(item);
-
-    m_items[assembly->get_uid()] = item;
-}
-
 AssemblyItem& AssemblyCollectionItem::get_item(const Assembly& assembly) const
 {
     const ItemMap::const_iterator i = m_items.find(assembly.get_uid());
@@ -110,6 +99,13 @@ void AssemblyCollectionItem::slot_create_assembly()
 
     if (!assembly_name.empty())
         m_project_builder.insert_assembly(assembly_name);
+}
+
+ItemBase* AssemblyCollectionItem::create_item(Assembly* assembly) const
+{
+    assert(assembly);
+
+    return new AssemblyItem(assembly, m_scene, m_project_builder);
 }
 
 }   // namespace studio

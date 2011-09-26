@@ -35,6 +35,9 @@
 // appleseed.foundation headers.
 #include "foundation/utility/uid.h"
 
+// Standard headers.
+#include <cassert>
+
 using namespace foundation;
 using namespace renderer;
 
@@ -57,13 +60,15 @@ ObjectInstanceCollectionItem::ObjectInstanceCollectionItem(
     add_items(object_instances);
 }
 
-void ObjectInstanceCollectionItem::add_item(ObjectInstance* object_instance)
+ItemBase* ObjectInstanceCollectionItem::create_item(ObjectInstance* object_instance) const
 {
-    addChild(
+    assert(object_instance);
+
+    return
         new ObjectInstanceItem(
             m_assembly,
             *object_instance,
-            m_project_builder));
+            m_project_builder);
 }
 
 }   // namespace studio
