@@ -45,6 +45,7 @@ AssemblyInstanceItem::AssemblyInstanceItem(
   , m_assembly_instance(assembly_instance)
   , m_scene(scene)
 {
+    set_allow_edition(false);
 }
 
 void AssemblyInstanceItem::slot_delete()

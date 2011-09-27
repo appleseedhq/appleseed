@@ -176,6 +176,7 @@ AssemblyItem::AssemblyItem(
   : ItemBase(assembly->get_class_uid(), assembly->get_name())
   , impl(new Impl(this, assembly, scene, project_builder))
 {
+    set_allow_edition(false);
 }
 
 AssemblyItem::~AssemblyItem()
