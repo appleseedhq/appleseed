@@ -296,11 +296,9 @@ inline Vector<double, N> QMCSamplingContext<RNG>::next_vector2()
 
     if (m_instance < PrecomputedHaltonSequenceSize)
     {
-        // Use precomputed Halton sequence.
-        const double* ptr = PrecomputedHaltonSequence + m_instance * 4;
         for (size_t i = 0; i < N; ++i)
         {
-            v[i] = *ptr++;
+            v[i] = PrecomputedHaltonSequence[m_instance * 4 + i];
 
             // Cranley-Patterson rotation.
             v[i] += m_offset[i];
