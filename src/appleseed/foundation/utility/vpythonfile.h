@@ -70,6 +70,10 @@ class VPythonFile
         const std::string&  color = "white",
         const size_t        size = 5);
 
+    // Output the unit square in the XZ plane.
+    void draw_unit_square(
+        const double        thickness = 0.001);
+
   private:
     std::FILE* m_file;
 };

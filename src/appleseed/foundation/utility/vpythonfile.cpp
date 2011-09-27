@@ -88,7 +88,7 @@ void VPythonFile::draw_point(
 {
     fprintf(
         m_file,
-        "points(pos=[(%f,%f,%f)], size=" FMT_SIZE_T ", color=color.%s)",
+        "points(pos=[(%f,%f,%f)], size=" FMT_SIZE_T ", color=color.%s)\n",
         point.x, point.y, point.z,
         size,
         color.c_str());
@@ -102,10 +102,18 @@ void VPythonFile::draw_points(
 {
     fprintf(
         m_file,
-        "points(pos=[%s], size=" FMT_SIZE_T ", color=color.%s)",
+        "points(pos=[%s], size=" FMT_SIZE_T ", color=color.%s)\n",
         points_to_string(point_count, points).c_str(),
         size,
         color.c_str());
+}
+
+void VPythonFile::draw_unit_square(const double thickness)
+{
+    fprintf(
+        m_file,
+        "curve(pos=[(0,0,0),(0,0,1),(1,0,1),(1,0,0),(0,0,0)], radius=%f)\n",
+        thickness);
 }
 
 }   // namespace foundation
