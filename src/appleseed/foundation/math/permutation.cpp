@@ -36,7 +36,7 @@ namespace foundation
 // Precomputed Faure permutations.
 //
 
-size_t FaurePermutationValues[24133] =
+const size_t FaurePermutationValues[24133] =
 {
     // Size 2
       0,   1, 
@@ -2604,7 +2604,7 @@ size_t FaurePermutationValues[24133] =
     540
 };
 
-size_t* FaurePermutations[FaurePermutationTableSize] =
+const size_t* FaurePermutations[FaurePermutationTableSize] =
 {
     FaurePermutationValues + 0,
     FaurePermutationValues + 2,

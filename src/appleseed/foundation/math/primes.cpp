@@ -40,7 +40,7 @@ namespace foundation
 //   http://primes.utm.edu/lists/small/1000.txt
 //
 
-size_t Primes[PrimeTableSize] =
+const size_t Primes[PrimeTableSize] =
 {
        2,    3,    5,    7,   11,   13,   17,   19,   23,   29,
       31,   37,   41,   43,   47,   53,   59,   61,   67,   71,
