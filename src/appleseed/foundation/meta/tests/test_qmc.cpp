@@ -32,6 +32,7 @@
 #include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
 #include "foundation/math/permutation.h"
+#include "foundation/math/primes.h"
 #include "foundation/math/qmc.h"
 #include "foundation/math/rng.h"
 #include "foundation/math/scalar.h"
@@ -44,6 +45,7 @@
 // Standard headers.
 #include <cmath>
 #include <cstddef>
+#include <cstdio>
 #include <string>
 #include <vector>
 
@@ -371,4 +373,43 @@ TEST_SUITE(Foundation_Math_QMC)
             "rng_rmsd", "blue", "RMS Deviation (RNG)",
             "qmc_rmsd", "red", "RMS Deviation (QMC)");
     }
+
+#if 0
+
+    TEST_CASE(PrecomputeHaltonSequence)
+    {
+        const size_t Dimension = 4;
+        const size_t SampleCount = 256;
+
+        FILE* file = fopen("unit tests/outputs/test_qmc_precomputed_halton.txt", "wt");
+        ASSERT_NEQ(0, file);
+
+        fprintf(file, "static const double HaltonSequence4d[] =\n");
+        fprintf(file, "{\n");
+
+        for (size_t i = 0; i < SampleCount; ++i)
+        {
+            fprintf(file, "    ");
+
+            for (size_t d = 0; d < Dimension; ++d)
+            {
+                const double s = radical_inverse<double>(Primes[d], i);
+
+                fprintf(file, "%.16f", s);
+
+                if (d < Dimension - 1)
+                    fprintf(file, ", ");
+                else if (i < SampleCount - 1)
+                    fprintf(file, ",");
+            }
+
+            fprintf(file, "\n");
+        }
+
+        fprintf(file, "};\n");
+
+        fclose(file);
+    }
+
+#endif
 }

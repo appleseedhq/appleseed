@@ -294,24 +294,41 @@ inline Vector<double, N> QMCSamplingContext<RNG>::next_vector2()
 
     Vector<double, N> v;
 
-    v[0] = radical_inverse_base2<double>(m_instance);
-
-    // Cranley-Patterson rotation.
-    v[0] += m_offset[0];
-    if (v[0] >= 1.0)
-        v[0] -= 1.0;
-
-    for (size_t i = 1; i < N; ++i)
+    if (m_instance < PrecomputedHaltonSequenceSize)
     {
-        v[i] =
-            radical_inverse<double>(
-                Primes[i],
-                m_instance);
+        // Use precomputed Halton sequence.
+        const double* ptr = PrecomputedHaltonSequence + m_instance * 4;
+        for (size_t i = 0; i < N; ++i)
+        {
+            v[i] = *ptr++;
+
+            // Cranley-Patterson rotation.
+            v[i] += m_offset[i];
+            if (v[i] >= 1.0)
+                v[i] -= 1.0;
+        }
+    }
+    else
+    {
+        v[0] = radical_inverse_base2<double>(m_instance);
 
         // Cranley-Patterson rotation.
-        v[i] += m_offset[i];
-        if (v[i] >= 1.0)
-            v[i] -= 1.0;
+        v[0] += m_offset[0];
+        if (v[0] >= 1.0)
+            v[0] -= 1.0;
+
+        for (size_t i = 1; i < N; ++i)
+        {
+            v[i] =
+                radical_inverse<double>(
+                    Primes[i],
+                    m_instance);
+
+            // Cranley-Patterson rotation.
+            v[i] += m_offset[i];
+            if (v[i] >= 1.0)
+                v[i] -= 1.0;
+        }
     }
 
     ++m_instance;

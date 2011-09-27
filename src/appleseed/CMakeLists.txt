@@ -254,6 +254,7 @@ set(foundation_math_sources
     foundation/math/population.h
     foundation/math/primes.cpp
     foundation/math/primes.h
+    foundation/math/qmc.cpp
     foundation/math/qmc.h
     foundation/math/quaternion.h
     foundation/math/ray.h

@@ -130,6 +130,14 @@ Vector<T, Dim> halton_zaremba_sequence(
 
 
 //
+// The first N points of the 4D Halton sequence.
+//
+
+const size_t PrecomputedHaltonSequenceSize = 256;
+extern const double PrecomputedHaltonSequence[4 * PrecomputedHaltonSequenceSize];
+
+
+//
 // Hammersley sequences of arbitrary dimensions.
 //
 // All return values are in the interval [0, 1)^Dim.
