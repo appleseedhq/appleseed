@@ -618,8 +618,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         object->push_triangle(Triangle(0, 2, 3,  0, 0, 0,  0));
 
         // Insert the object into the assembly.
-        const size_t object_index =
-            assembly->objects().insert(auto_release_ptr<Object>(object));
+        assembly->objects().insert(auto_release_ptr<Object>(object));
 
         // Create the array of material names.
         StringArray material_names;
@@ -630,7 +629,6 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
             ObjectInstanceFactory::create(
                 "floor_inst",
                 *object,
-                object_index,
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
                 material_names));
     }
@@ -658,8 +656,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         object->push_triangle(Triangle(0, 2, 3,  0, 0, 0,  0));
 
         // Insert the object into the assembly.
-        const size_t object_index =
-            assembly->objects().insert(auto_release_ptr<Object>(object));
+        assembly->objects().insert(auto_release_ptr<Object>(object));
 
         // Create the array of material names.
         StringArray material_names;
@@ -670,7 +667,6 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
             ObjectInstanceFactory::create(
                 "ceiling_inst",
                 *object,
-                object_index,
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
                 material_names));
     }
@@ -698,8 +694,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         object->push_triangle(Triangle(0, 2, 3,  0, 0, 0,  0));
 
         // Insert the object into the assembly.
-        const size_t object_index =
-            assembly->objects().insert(auto_release_ptr<Object>(object));
+        assembly->objects().insert(auto_release_ptr<Object>(object));
 
         // Create the array of material names.
         StringArray material_names;
@@ -710,7 +705,6 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
             ObjectInstanceFactory::create(
                 "back_wall_inst",
                 *object,
-                object_index,
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
                 material_names));
     }
@@ -738,8 +732,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         object->push_triangle(Triangle(0, 2, 3,  0, 0, 0,  0));
 
         // Insert the object into the assembly.
-        const size_t object_index =
-            assembly->objects().insert(auto_release_ptr<Object>(object));
+        assembly->objects().insert(auto_release_ptr<Object>(object));
 
         // Create the array of material names.
         StringArray material_names;
@@ -750,7 +743,6 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
             ObjectInstanceFactory::create(
                 "right_wall_inst",
                 *object,
-                object_index,
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
                 material_names));
     }
@@ -779,8 +771,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         object->push_triangle(Triangle(0, 2, 3,  1, 1, 1,  0));
 
         // Insert the object into the assembly.
-        const size_t object_index =
-            assembly->objects().insert(auto_release_ptr<Object>(object));
+        assembly->objects().insert(auto_release_ptr<Object>(object));
 
         // Create the array of material names.
         StringArray material_names;
@@ -791,7 +782,6 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
             ObjectInstanceFactory::create(
                 "left_wall_inst",
                 *object,
-                object_index,
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
                 material_names));
     }
@@ -847,8 +837,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         object->push_triangle(Triangle(16, 18, 19,  4,  4,  4,  0));
 
         // Insert the object into the assembly.
-        const size_t object_index =
-            assembly->objects().insert(auto_release_ptr<Object>(object));
+        assembly->objects().insert(auto_release_ptr<Object>(object));
 
         // Create the array of material names.
         StringArray material_names;
@@ -859,7 +848,6 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
             ObjectInstanceFactory::create(
                 "short_block_inst",
                 *object,
-                object_index,
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
                 material_names));
     }
@@ -915,8 +903,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         object->push_triangle(Triangle(16, 18, 19,  4,  4,  4,  0));
 
         // Insert the object into the assembly.
-        const size_t object_index =
-            assembly->objects().insert(auto_release_ptr<Object>(object));
+        assembly->objects().insert(auto_release_ptr<Object>(object));
 
         // Create the array of material names.
         StringArray material_names;
@@ -927,7 +914,6 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
             ObjectInstanceFactory::create(
                 "tall_block_inst",
                 *object,
-                object_index,
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
                 material_names));
     }
@@ -955,8 +941,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         object->push_triangle(Triangle(0, 2, 3,  0, 0, 0,  0));
 
         // Insert the object into the assembly.
-        const size_t object_index =
-            assembly->objects().insert(auto_release_ptr<Object>(object));
+        assembly->objects().insert(auto_release_ptr<Object>(object));
 
         // Create the array of material names.
         StringArray material_names;
@@ -967,7 +952,6 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
             ObjectInstanceFactory::create(
                 "light_inst",
                 *object,
-                object_index,
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
                 material_names));
     }

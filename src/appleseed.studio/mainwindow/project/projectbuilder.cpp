@@ -143,8 +143,7 @@ void ProjectBuilder::insert_objects(
 
         m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(object);
 
-        const size_t object_index =
-            assembly.objects().insert(auto_release_ptr<Object>(object));
+        assembly.objects().insert(auto_release_ptr<Object>(object));
 
         const string object_instance_name = string(object->get_name()) + "_inst";
         
@@ -152,7 +151,6 @@ void ProjectBuilder::insert_objects(
             ObjectInstanceFactory::create(
                 object_instance_name.c_str(),
                 *object,
-                object_index,
                 Transformd(Matrix4d::identity()),
                 StringArray()));
 

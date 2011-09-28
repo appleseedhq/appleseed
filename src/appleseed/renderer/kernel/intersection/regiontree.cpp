@@ -347,12 +347,10 @@ namespace
                 const Transformd& transform = object_instance->get_transform();
 
                 // Retrieve the object.
-                Object* object =
-                    assembly.objects().get_by_index(object_instance->get_object_index());
-                assert(object);
+                Object& object = object_instance->get_object();
 
                 // Retrieve the region kit of the object.
-                Access<RegionKit> region_kit(&object->get_region_kit());
+                Access<RegionKit> region_kit(&object.get_region_kit());
 
                 // Insert all regions of the object into the root leaf.
                 for (size_t region_index = 0; region_index < region_kit->size(); ++region_index)

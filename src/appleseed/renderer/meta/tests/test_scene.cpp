@@ -77,15 +77,13 @@ TEST_SUITE(Renderer_Modeling_Scene_Scene)
         object->push_vertex(GVector3( 1.0f,  1.0f,  1.0f));
         object->push_vertex(GVector3( 1.0f, -1.0f,  1.0f));
         object->push_triangle(Triangle(0, 1, 2, 0, 0, 0, 0));
-        const size_t object_index =
-            assembly->objects().insert(auto_release_ptr<Object>(object));
+        assembly->objects().insert(auto_release_ptr<Object>(object));
 
         // Create an instance of the object.
         assembly->object_instances().insert(
             ObjectInstanceFactory::create(
                 "object_inst",
                 *object,
-                object_index,
                 Transformd(Matrix4d::identity()),
                 StringArray()));
 

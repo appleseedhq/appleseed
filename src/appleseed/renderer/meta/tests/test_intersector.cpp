@@ -98,14 +98,12 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
 
             BoundingBoxObject* object = new BoundingBoxObject();
 
-            const size_t object_index =
-                assembly->objects().insert(auto_release_ptr<Object>(object));
+            assembly->objects().insert(auto_release_ptr<Object>(object));
 
             assembly->object_instances().insert(
                 ObjectInstanceFactory::create(
                     "object_instance",
                     *object,
-                    object_index,
                     Transformd(Matrix4d::identity()),
                     StringArray()));
 

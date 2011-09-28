@@ -58,9 +58,14 @@ struct ObjectInstance::Impl
     // Order of data members impacts performance, preserve it.
     Transformd          m_transform;
     GAABB3              m_parent_bbox;
-    size_t              m_object_index;
+    Object&             m_object;
     MaterialArray       m_materials;
     StringArray         m_material_names;
+
+    explicit Impl(Object& object)
+      : m_object(object)
+    {
+    }
 };
 
 namespace
@@ -70,18 +75,16 @@ namespace
 
 ObjectInstance::ObjectInstance(
     const char*         name,
-    const Object&       object,
-    const size_t        object_index,
+    Object&             object,
     const Transformd&   transform,
     const StringArray&  material_names)
   : Entity(g_class_uid)
-  , impl(new Impl())
+  , impl(new Impl(object))
 {
     set_name(name);
 
     impl->m_transform = transform;
     impl->m_parent_bbox = transform.transform_to_parent(object.get_local_bbox());
-    impl->m_object_index = object_index;
     impl->m_material_names = material_names;
 }
 
@@ -95,9 +98,9 @@ void ObjectInstance::release()
     delete this;
 }
 
-size_t ObjectInstance::get_object_index() const
+Object& ObjectInstance::get_object() const
 {
-    return impl->m_object_index;
+    return impl->m_object;
 }
 
 const Transformd& ObjectInstance::get_transform() const
@@ -157,8 +160,7 @@ const MaterialArray& ObjectInstance::get_materials() const
 
 auto_release_ptr<ObjectInstance> ObjectInstanceFactory::create(
     const char*         name,
-    const Object&       object,
-    const size_t        object_index,
+    Object&             object,
     const Transformd&   transform,
     const StringArray&  material_names)
 {
@@ -167,7 +169,6 @@ auto_release_ptr<ObjectInstance> ObjectInstanceFactory::create(
             new ObjectInstance(
                 name,
                 object,
-                object_index,
                 transform,
                 material_names));
 }

@@ -64,8 +64,8 @@ class RENDERERDLL ObjectInstance
     // Delete this instance.
     virtual void release();
 
-    // Return the index in the assembly of the instantiated object.
-    size_t get_object_index() const;
+    // Return the instantiated object.
+    Object& get_object() const;
 
     // Return the transform of the instance.
     const foundation::Transformd& get_transform() const;
@@ -97,8 +97,7 @@ class RENDERERDLL ObjectInstance
     // Constructor.
     ObjectInstance(
         const char*                     name,
-        const Object&                   object,
-        const size_t                    object_index,
+        Object&                         object,
         const foundation::Transformd&   transform,
         const foundation::StringArray&  material_names);
 
@@ -117,8 +116,7 @@ class RENDERERDLL ObjectInstanceFactory
     // Create a new object instance.
     static foundation::auto_release_ptr<ObjectInstance> create(
         const char*                     name,
-        const Object&                   object,
-        const size_t                    object_index,
+        Object&                         object,
         const foundation::Transformd&   transform,
         const foundation::StringArray&  material_names);
 };

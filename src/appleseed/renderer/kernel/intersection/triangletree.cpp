@@ -731,12 +731,10 @@ namespace
                 const Transformd& transform = object_instance->get_transform();
 
                 // Retrieve the object.
-                Object* object =
-                    arguments.m_assembly.objects().get_by_index(object_instance->get_object_index());
-                assert(object);
+                Object& object = object_instance->get_object();
 
                 // Retrieve the region kit of the object.
-                Access<RegionKit> region_kit(&object->get_region_kit());
+                Access<RegionKit> region_kit(&object.get_region_kit());
 
                 // Retrieve the region.
                 const IRegion* region = (*region_kit)[region_info.get_region_index()];

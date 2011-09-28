@@ -571,14 +571,9 @@ namespace
             const ObjectInstance&   object_instance,
             const Assembly&         assembly)
         {
-            const Object* object = assembly.objects().get_by_index(object_instance.get_object_index());
-
-            if (object == 0)
-                return;
-
             Element element("object_instance", m_file, m_indenter);
             element.add_attribute("name", object_instance.get_name());
-            element.add_attribute("object", translate_object_name(object->get_name()));
+            element.add_attribute("object", translate_object_name(object_instance.get_object().get_name()));
             element.write(true);
 
             write(object_instance.get_transform());

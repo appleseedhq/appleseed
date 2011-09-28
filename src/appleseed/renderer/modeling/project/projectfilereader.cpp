@@ -1646,15 +1646,15 @@ namespace
         virtual void end_element()
         {
             assert(m_objects);
-            const size_t object_index = m_objects->get_index(m_object.c_str());
 
-            if (object_index != ~size_t(0))
+            Object* object = m_objects->get_by_name(m_object.c_str());
+
+            if (object)
             {
                 m_object_instance =
                     ObjectInstanceFactory::create(
                         m_name.c_str(),
-                        *m_objects->get_by_index(object_index),
-                        object_index,
+                        *object,
                         m_transform,
                         m_material_names);
             }

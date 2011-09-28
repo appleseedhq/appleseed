@@ -68,8 +68,7 @@ void ShadingPoint::fetch_source_geometry() const
     assert(m_object_instance);
 
     // Retrieve the object.
-    m_object = m_assembly->objects().get_by_index(m_object_instance->get_object_index());
-    assert(m_object);
+    m_object = &m_object_instance->get_object();
 
     // Retrieve the region kit of the object.
     const RegionKit& region_kit =

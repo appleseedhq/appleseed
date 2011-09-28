@@ -119,8 +119,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         void create_plane_object_instance(const char* name, const Vector3d& position, const char* material_name)
         {
             const Assembly* assembly = m_scene->assemblies().get_by_name("assembly");
-            const size_t object_index = assembly->objects().get_index("plane");
-            const Object* object = assembly->objects().get_by_index(object_index);
+            Object* object = assembly->objects().get_by_name("plane");
             
             StringArray material_names;
             material_names.push_back(material_name);
@@ -129,7 +128,6 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 ObjectInstanceFactory::create(
                     name,
                     *object,
-                    object_index,
                     Transformd(Matrix4d::translation(position)),
                     material_names));
         }
