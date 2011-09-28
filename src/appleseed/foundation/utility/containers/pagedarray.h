@@ -218,9 +218,6 @@ class PagedArray
 // PagedArray class implementation.
 //
 
-
-// Constructors.
-
 template <typename Type, size_t PageSize>
 inline PagedArray<Type, PageSize>::PagedArray()
   : m_page_index(0)     // start on first page
@@ -240,7 +237,6 @@ inline PagedArray<Type, PageSize>::PagedArray(const PagedArray& rhs)
         m_pages.push_back(new Page(*rhs.m_pages[i]));
 }
 
-// Erases the elements of the vector.
 template <typename Type, size_t PageSize>
 inline void PagedArray<Type, PageSize>::clear()
 {
@@ -249,14 +245,12 @@ inline void PagedArray<Type, PageSize>::clear()
     m_elem_index = 0;
 }
 
-// Tests if the vector is empty.
 template <typename Type, size_t PageSize>
 inline bool PagedArray<Type, PageSize>::empty() const
 {
     return m_page_index == 0 && m_elem_index == 0;
 }
 
-// Returns the number of elements in the vector.
 template <typename Type, size_t PageSize>
 inline typename PagedArray<Type, PageSize>::size_type
 PagedArray<Type, PageSize>::size() const
@@ -264,7 +258,6 @@ PagedArray<Type, PageSize>::size() const
     return PageSize * m_page_index + m_elem_index;
 }
 
-// Specifies a new size for a vector.
 template <typename Type, size_t PageSize>
 inline void PagedArray<Type, PageSize>::resize(size_type new_size, Type val)
 {
@@ -294,9 +287,6 @@ inline void PagedArray<Type, PageSize>::resize(size_type new_size, Type val)
     m_elem_index = new_elem_index;
 }
 
-// Adds an element to the end of the vector and returns a reference to it.
-// All references returned by push_back() stay valid as long as the vector
-// itself exists.
 template <typename Type, size_t PageSize>
 inline typename PagedArray<Type, PageSize>::reference
 PagedArray<Type, PageSize>::push_back(const Type& val)
@@ -316,8 +306,6 @@ PagedArray<Type, PageSize>::push_back(const Type& val)
 
     return ref;
 }
-
-// Unchecked array subscripting to elements.
 
 template <typename Type, size_t PageSize>
 inline typename PagedArray<Type, PageSize>::reference
@@ -340,8 +328,6 @@ PagedArray<Type, PageSize>::operator[](size_type i) const
     assert(pi <  m_page_index || ei < m_elem_index);
     return m_pages[pi]->m_elements[ei];
 }
-
-// Exception-checked access to elements.
 
 template <typename Type, size_t PageSize>
 inline typename PagedArray<Type, PageSize>::reference
@@ -367,8 +353,6 @@ PagedArray<Type, PageSize>::at(size_type i) const
     return (const PagedArray<Type, PageSize>*)this->at(i);
 }
 
-// Returns a random-access iterator to the first element in the vector.
-
 template <typename Type, size_t PageSize>
 inline typename PagedArray<Type, PageSize>::iterator
 PagedArray<Type, PageSize>::begin()
@@ -382,8 +366,6 @@ PagedArray<Type, PageSize>::begin() const
 {
     return const_iterator(*this, m_pages.begin(), 0);
 }
-
-// Returns a random-access iterator that points just beyond the end of the vector.
 
 template <typename Type, size_t PageSize>
 inline typename PagedArray<Type, PageSize>::iterator
@@ -401,9 +383,6 @@ PagedArray<Type, PageSize>::end() const
 //
 // PagedArray::Page class implementation.
 //
-
-
-// Constructors.
 
 template <typename Type, size_t PageSize>
 inline PagedArray<Type, PageSize>::Page::Page()
