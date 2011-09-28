@@ -106,13 +106,11 @@ class RENDERERDLL AssemblyInstanceFactory
 // AssemblyInstance class implementation.
 //
 
-// Return the instantiated assembly.
 inline const Assembly& AssemblyInstance::get_assembly() const
 {
     return m_assembly;
 }
 
-// Return the unique ID of the instantiated assembly.
 inline foundation::UniqueID AssemblyInstance::get_assembly_uid() const
 {
     return m_assembly_uid;
