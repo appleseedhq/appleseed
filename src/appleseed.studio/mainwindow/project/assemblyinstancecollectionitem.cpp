@@ -55,6 +55,7 @@ AssemblyInstanceCollectionItem::AssemblyInstanceCollectionItem(
     ProjectBuilder&             project_builder)
   : ItemBase(g_class_uid, "Assembly Instances")
   , m_scene(scene)
+  , m_project_builder(project_builder)
 {
     add_items(assembly_instances);
 }
@@ -63,7 +64,7 @@ ItemBase* AssemblyInstanceCollectionItem::create_item(AssemblyInstance* assembly
 {
     assert(assembly_instance);
 
-    return new AssemblyInstanceItem(assembly_instance, m_scene);
+    return new AssemblyInstanceItem(assembly_instance, m_project_builder);
 }
 
 }   // namespace studio

@@ -106,6 +106,9 @@ class ProjectBuilder
     void insert_assembly(
         const std::string&                  name) const;
 
+    void remove_assembly(
+        const foundation::UniqueID          assembly_id) const;
+
     void insert_assembly_instance(
         const std::string&                  name,
         renderer::Assembly&                 assembly) const;
@@ -116,6 +119,14 @@ class ProjectBuilder
     void insert_objects(
         renderer::Assembly&                 assembly,
         const std::string&                  path) const;
+
+    void remove_object(
+        renderer::Assembly&                 assembly,
+        const foundation::UniqueID          object_id) const;
+
+    void remove_object_instance(
+        renderer::Assembly&                 assembly,
+        const foundation::UniqueID          object_instance_id) const;
 
     void insert_textures(
         renderer::Assembly&                 assembly,

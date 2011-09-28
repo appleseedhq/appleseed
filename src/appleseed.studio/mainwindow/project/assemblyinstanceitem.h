@@ -32,12 +32,15 @@
 // appleseed.studio headers.
 #include "mainwindow/project/itembase.h"
 
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+
 // Qt headers.
 #include <QObject>
 
 // Forward declarations.
+namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class AssemblyInstance; }
-namespace renderer  { class Scene; }
 
 namespace appleseed {
 namespace studio {
@@ -50,13 +53,13 @@ class AssemblyInstanceItem
   public:
     AssemblyInstanceItem(
         renderer::AssemblyInstance* assembly_instance,
-        renderer::Scene&            scene);
+        ProjectBuilder&             project_builder);
 
   private:
     renderer::AssemblyInstance*     m_assembly_instance;
-    renderer::Scene&                m_scene;
+    ProjectBuilder&                 m_project_builder;
 
-    virtual void slot_delete();
+    virtual void slot_delete() override;
 };
 
 }       // namespace studio

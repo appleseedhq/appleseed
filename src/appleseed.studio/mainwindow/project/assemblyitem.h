@@ -32,10 +32,15 @@
 // appleseed.studio headers.
 #include "mainwindow/project/itembase.h"
 
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+
 // Qt headers.
 #include <QObject>
 
 // Forward declarations.
+namespace appleseed { namespace studio { class ObjectCollectionItem; } }
+namespace appleseed { namespace studio { class ObjectInstanceCollectionItem; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class Assembly; }
 namespace renderer  { class ColorEntity; }
@@ -67,7 +72,7 @@ class AssemblyItem
 
     ~AssemblyItem();
 
-    virtual QMenu* get_single_item_context_menu() const;
+    virtual QMenu* get_single_item_context_menu() const override;
 
     void add_item(renderer::ColorEntity* color);
     void add_item(renderer::Texture* texture);
@@ -80,17 +85,17 @@ class AssemblyItem
     void add_item(renderer::Object* object);
     void add_item(renderer::ObjectInstance* object_instance);
 
-  protected:
-    virtual void slot_delete();
+    ObjectCollectionItem& get_object_collection_item() const;
+    ObjectInstanceCollectionItem& get_object_instance_collection_item() const;
+
+  private slots:
+    void slot_instantiate();
 
   private:
     struct Impl;
     Impl* impl;
 
-    void remove_all_assembly_instances();
-
-  private slots:
-    void slot_instantiate();
+    virtual void slot_delete() override;
 };
 
 }       // namespace studio

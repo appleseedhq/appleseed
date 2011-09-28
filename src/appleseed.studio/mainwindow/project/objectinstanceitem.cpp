@@ -71,6 +71,8 @@ ObjectInstanceItem::ObjectInstanceItem(
   , m_object_instance(object_instance)
   , m_project_builder(project_builder)
 {
+    set_allow_edition(false);
+
     update_style();
 }
 
@@ -228,6 +230,34 @@ void ObjectInstanceItem::slot_unassign_material()
     }
 }
 
+void ObjectInstanceItem::slot_delete()
+{
+    if (!allows_deletion())
+        return;
+
+    m_project_builder.remove_object_instance(m_assembly, m_object_instance.get_uid());
+
+    // 'this' no longer exists at this point.
+}
+
+void ObjectInstanceItem::assign_material(const char* material_name)
+{
+    m_object_instance.assign_material(0, material_name);
+
+    m_project_builder.notify_project_modification();
+
+    update_style();
+}
+
+void ObjectInstanceItem::unassign_material()
+{
+    m_object_instance.clear_materials();
+
+    m_project_builder.notify_project_modification();
+
+    update_style();
+}
+
 void ObjectInstanceItem::update_style()
 {
     if (m_object_instance.get_material_names().empty())
@@ -237,24 +267,6 @@ void ObjectInstanceItem::update_style()
         // Remove the color overload. Not sure this is the easiest way to do it.
         setData(0, Qt::TextColorRole, QVariant());
     }
-}
-
-void ObjectInstanceItem::assign_material(const char* material_name)
-{
-    m_object_instance.assign_material(0, material_name);
-
-    update_style();
-
-    m_project_builder.notify_project_modification();
-}
-
-void ObjectInstanceItem::unassign_material()
-{
-    m_object_instance.clear_materials();
-
-    update_style();
-
-    m_project_builder.notify_project_modification();
 }
 
 }   // namespace studio

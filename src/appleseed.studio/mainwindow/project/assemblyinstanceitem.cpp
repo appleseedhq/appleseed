@@ -29,21 +29,23 @@
 // Interface header.
 #include "assemblyinstanceitem.h"
 
+// appleseed.studio headers.
+#include "mainwindow/project/projectbuilder.h"
+
 // appleseed.renderer headers.
 #include "renderer/api/scene.h"
 
 using namespace renderer;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
 
 AssemblyInstanceItem::AssemblyInstanceItem(
     AssemblyInstance*   assembly_instance,
-    Scene&              scene)
+    ProjectBuilder&     project_builder)
   : ItemBase(assembly_instance->get_class_uid(), assembly_instance->get_name())
   , m_assembly_instance(assembly_instance)
-  , m_scene(scene)
+  , m_project_builder(project_builder)
 {
     set_allow_edition(false);
 }
@@ -53,9 +55,9 @@ void AssemblyInstanceItem::slot_delete()
     if (!allows_deletion())
         return;
 
-    m_scene.assembly_instances().remove(m_assembly_instance->get_uid());
+    m_project_builder.remove_assembly_instance(m_assembly_instance->get_uid());
 
-    delete this;
+    // 'this' no longer exists at this point.
 }
 
 }   // namespace studio

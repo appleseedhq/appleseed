@@ -26,47 +26,41 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYINSTANCECOLLECTIONITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYINSTANCECOLLECTIONITEM_H
+// Interface header.
+#include "objectitem.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/collectionitembase.h"
+#include "mainwindow/project/projectbuilder.h"
 
 // appleseed.renderer headers.
-#include "renderer/api/scene.h"
+#include "renderer/api/object.h"
 
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
-
-// Qt headers.
-#include <QObject>
-
-// Forward declarations.
-namespace appleseed { namespace studio { class ItemBase; } }
-namespace appleseed { namespace studio { class ProjectBuilder; } }
+using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
-class AssemblyInstanceCollectionItem
-  : public CollectionItemBase<renderer::AssemblyInstance>
+ObjectItem::ObjectItem(
+    Object*         object,
+    Assembly&       assembly,
+    ProjectBuilder& project_builder)
+  : ItemBase(object->get_class_uid(), object->get_name())
+  , m_object(object)
+  , m_assembly(assembly)
+  , m_project_builder(project_builder)
 {
-    Q_OBJECT
+    set_allow_edition(false);
+}
 
-  public:
-    AssemblyInstanceCollectionItem(
-        renderer::Scene&                        scene,
-        renderer::AssemblyInstanceContainer&    assembly_instances,
-        ProjectBuilder&                         project_builder);
+void ObjectItem::slot_delete()
+{
+    if (!allows_deletion())
+        return;
 
-  private:
-    renderer::Scene&    m_scene;
-    ProjectBuilder&     m_project_builder;
+    m_project_builder.remove_object(m_assembly, m_object->get_uid());
 
-    virtual ItemBase* create_item(renderer::AssemblyInstance* assembly_instance) const override;
-};
+    // 'this' no longer exists at this point.
+}
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYINSTANCECOLLECTIONITEM_H
+}   // namespace studio
+}   // namespace appleseed

@@ -30,6 +30,7 @@
 #include "objectcollectionitem.h"
 
 // appleseed.studio headers.
+#include "mainwindow/project/objectitem.h"
 #include "mainwindow/project/projectbuilder.h"
 
 // appleseed.foundation headers.
@@ -40,6 +41,9 @@
 #include <QMenu>
 #include <QString>
 #include <QStringList>
+
+// Standard headers.
+#include <cassert>
 
 using namespace foundation;
 using namespace renderer;
@@ -93,6 +97,13 @@ void ObjectCollectionItem::slot_import_objects()
             m_assembly,
             filepaths[i].toStdString());
     }
+}
+
+ItemBase* ObjectCollectionItem::create_item(Object* object) const
+{
+    assert(object);
+
+    return new ObjectItem(object, m_assembly, m_project_builder);
 }
 
 }   // namespace studio

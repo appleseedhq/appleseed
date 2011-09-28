@@ -56,7 +56,6 @@
 #include "renderer/api/texture.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
 
 // Qt headers.
@@ -68,7 +67,6 @@
 
 // Standard headers.
 #include <string>
-#include <vector>
 
 using namespace foundation;
 using namespace renderer;
@@ -254,6 +252,34 @@ void AssemblyItem::add_item(ObjectInstance* object_instance)
     impl->m_object_instance_collection_item->add_item(object_instance);
 }
 
+ObjectCollectionItem& AssemblyItem::get_object_collection_item() const
+{
+    return *impl->m_object_collection_item;
+}
+
+ObjectInstanceCollectionItem& AssemblyItem::get_object_instance_collection_item() const
+{
+    return *impl->m_object_instance_collection_item;
+}
+
+void AssemblyItem::slot_instantiate()
+{
+    const string instance_name_suggestion =
+        get_name_suggestion(
+            string(impl->m_assembly->get_name()) + "_inst",
+            impl->m_scene.assembly_instances());
+
+    const string instance_name =
+        get_entity_name_dialog(
+            treeWidget(),
+            "Instantiate Assembly",
+            "Assembly Instance Name:",
+            instance_name_suggestion);
+
+    if (!instance_name.empty())
+        impl->m_project_builder.insert_assembly_instance(instance_name, *impl->m_assembly);
+}
+
 namespace
 {
     int ask_assembly_deletion_confirmation(const char* assembly_name)
@@ -279,45 +305,9 @@ void AssemblyItem::slot_delete()
     if (ask_assembly_deletion_confirmation(assembly_name) != QMessageBox::Yes)
         return;
 
-    remove_all_assembly_instances();
+    impl->m_project_builder.remove_assembly(impl->m_assembly->get_uid());
 
-    impl->m_scene.assemblies().remove(impl->m_assembly->get_uid());
-
-    delete this;
-}
-
-void AssemblyItem::remove_all_assembly_instances()
-{
-    vector<UniqueID> remove_list;
-
-    for (const_each<AssemblyInstanceContainer> i = impl->m_scene.assembly_instances(); i; ++i)
-    {
-        const AssemblyInstance& assembly_instance = *i;
-
-        if (assembly_instance.get_assembly().get_uid() == impl->m_assembly->get_uid())
-            remove_list.push_back(assembly_instance.get_uid());
-    }
-
-    for (const_each<vector<UniqueID> > i = remove_list; i; ++i)
-        impl->m_project_builder.remove_assembly_instance(*i);
-}
-
-void AssemblyItem::slot_instantiate()
-{
-    const string instance_name_suggestion =
-        get_name_suggestion(
-            string(impl->m_assembly->get_name()) + "_inst",
-            impl->m_scene.assembly_instances());
-
-    const string instance_name =
-        get_entity_name_dialog(
-            treeWidget(),
-            "Instantiate Assembly",
-            "Assembly Instance Name:",
-            instance_name_suggestion);
-
-    if (!instance_name.empty())
-        impl->m_project_builder.insert_assembly_instance(instance_name, *impl->m_assembly);
+    // 'this' no longer exists at this point.
 }
 
 }   // namespace studio

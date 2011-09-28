@@ -36,10 +36,14 @@
 #include "renderer/api/object.h"
 #include "renderer/api/scene.h"
 
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+
 // Qt headers.
 #include <QObject>
 
 // Forward declarations.
+namespace appleseed { namespace studio { class ItemBase; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 class QMenu;
 
@@ -57,7 +61,7 @@ class ObjectCollectionItem
         renderer::ObjectContainer&  objects,
         ProjectBuilder&             project_builder);
 
-    virtual QMenu* get_single_item_context_menu() const;
+    virtual QMenu* get_single_item_context_menu() const override;
 
   public slots:
     void slot_import_objects();
@@ -65,6 +69,8 @@ class ObjectCollectionItem
   private:
     renderer::Assembly& m_assembly;
     ProjectBuilder&     m_project_builder;
+
+    virtual ItemBase* create_item(renderer::Object* object) const override;
 };
 
 }       // namespace studio

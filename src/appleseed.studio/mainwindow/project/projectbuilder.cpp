@@ -32,6 +32,8 @@
 // appleseed.studio headers.
 #include "mainwindow/project/assemblyinstancecollectionitem.h"
 #include "mainwindow/project/exceptioninvalidentityname.h"
+#include "mainwindow/project/objectcollectionitem.h"
+#include "mainwindow/project/objectinstancecollectionitem.h"
 #include "mainwindow/project/texturecollectionitem.h"
 #include "mainwindow/project/textureinstancecollectionitem.h"
 
@@ -54,6 +56,7 @@
 
 // Standard headers.
 #include <memory>
+#include <vector>
 
 using namespace boost;
 using namespace foundation;
@@ -89,6 +92,53 @@ void ProjectBuilder::insert_assembly(
     notify_project_modification();
 }
 
+namespace
+{
+    vector<UniqueID> collect_assembly_instances(const Scene& scene, const UniqueID assembly_id)
+    {
+        vector<UniqueID> assembly_instances;
+
+        for (const_each<AssemblyInstanceContainer> i = scene.assembly_instances(); i; ++i)
+        {
+            if (i->get_assembly().get_uid() == assembly_id)
+                assembly_instances.push_back(i->get_uid());
+        }
+
+        return assembly_instances;
+    }
+}
+
+void ProjectBuilder::remove_assembly(
+    const UniqueID      assembly_id) const
+{
+    Scene& scene = *m_project.get_scene();
+
+    const vector<UniqueID> remove_list = collect_assembly_instances(scene, assembly_id);
+
+    for (const_each<vector<UniqueID> > i = remove_list; i; ++i)
+    {
+        const UniqueID assembly_instance_id = *i;
+
+        // Remove the project item corresponding to this assembly instance.
+        m_project_tree
+            .get_assembly_instance_collection_item()
+                .remove_item(assembly_instance_id);
+
+        // Remove this assembly instance.
+        scene.assembly_instances().remove(assembly_instance_id);
+    }
+
+    // Remove the project item corresponding to the assembly itself.
+    m_project_tree.get_assembly_collection_item().remove_item(assembly_id);
+
+    // Remove the assembly itself.
+    scene.assemblies().remove(assembly_id);
+
+    scene.bump_geometry_version_id();
+
+    notify_project_modification();
+}
+
 void ProjectBuilder::insert_assembly_instance(
     const string&       name,
     Assembly&           assembly) const
@@ -103,6 +153,7 @@ void ProjectBuilder::insert_assembly_instance(
 
     Scene* scene = m_project.get_scene();
     scene->assembly_instances().insert(assembly_instance);
+
     scene->bump_geometry_version_id();
 
     notify_project_modification();
@@ -117,6 +168,7 @@ void ProjectBuilder::remove_assembly_instance(
 
     Scene* scene = m_project.get_scene();
     scene->assembly_instances().remove(assembly_instance_id);
+    
     scene->bump_geometry_version_id();
 
     notify_project_modification();
@@ -163,6 +215,75 @@ void ProjectBuilder::insert_objects(
 
     if (!mesh_objects.empty())
         notify_project_modification();
+}
+
+namespace
+{
+    vector<UniqueID> collect_object_instances(const Assembly& assembly, const UniqueID object_id)
+    {
+        vector<UniqueID> object_instances;
+
+        for (const_each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
+        {
+            if (i->get_object().get_uid() == object_id)
+                object_instances.push_back(i->get_uid());
+        }
+
+        return object_instances;
+    }
+}
+
+void ProjectBuilder::remove_object(
+    Assembly&           assembly,
+    const UniqueID      object_id) const
+{
+    const AssemblyItem& assembly_item =
+        m_project_tree.get_assembly_collection_item().get_item(assembly);
+
+    ObjectInstanceCollectionItem& object_instance_collection_item =
+        assembly_item.get_object_instance_collection_item();
+
+    const vector<UniqueID> remove_list = collect_object_instances(assembly, object_id);
+
+    for (const_each<vector<UniqueID> > i = remove_list; i; ++i)
+    {
+        const UniqueID object_instance_id = *i;
+
+        // Remove the project item corresponding to this object instance.
+        object_instance_collection_item.remove_item(object_instance_id);
+
+        // Remove this object instance.
+        assembly.object_instances().remove(
+            assembly.object_instances().get_by_uid(object_instance_id));
+    }
+
+    // Remove the project item corresponding to the object itself.
+    assembly_item.get_object_collection_item().remove_item(object_id);
+
+    // Remove the object itself.
+    assembly.objects().remove(assembly.objects().get_by_uid(object_id));
+
+    assembly.bump_version_id();
+
+    notify_project_modification();
+}
+
+void ProjectBuilder::remove_object_instance(
+    Assembly&           assembly,
+    const UniqueID      object_instance_id) const
+{
+    m_project_tree
+        .get_assembly_collection_item()
+            .get_item(assembly)
+                .get_object_instance_collection_item()
+                    .remove_item(object_instance_id);
+
+    assembly.object_instances().remove(
+        assembly.object_instances().get_by_uid(object_instance_id));
+
+    assembly.bump_version_id();
+
+    notify_project_modification();
 }
 
 namespace

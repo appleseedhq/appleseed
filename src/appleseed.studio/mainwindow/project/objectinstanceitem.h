@@ -32,6 +32,9 @@
 // appleseed.studio headers.
 #include "mainwindow/project/itembase.h"
 
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+
 // Qt headers.
 #include <QList>
 #include <QObject>
@@ -58,9 +61,9 @@ class ObjectInstanceItem
         renderer::ObjectInstance&   object_instance,
         ProjectBuilder&             project_builder);
 
-    virtual QMenu* get_single_item_context_menu() const;
+    virtual QMenu* get_single_item_context_menu() const override;
 
-    virtual QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const;
+    virtual QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const override;
 
     const renderer::Assembly& get_assembly() const;
 
@@ -74,10 +77,12 @@ class ObjectInstanceItem
     renderer::ObjectInstance&       m_object_instance;
     ProjectBuilder&                 m_project_builder;
 
-    void update_style();
+    virtual void slot_delete() override;
 
     void assign_material(const char* material_name);
     void unassign_material();
+
+    void update_style();
 };
 
 }       // namespace studio
