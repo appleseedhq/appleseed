@@ -35,6 +35,7 @@
 
 // Standard headers.
 #include <cassert>
+#include <cstddef>
 #include <cmath>
 
 namespace foundation
@@ -106,6 +107,21 @@ Vector<T, 2> sample_disk_uniform_alt(const Vector<T, 2>& s);
 // coordinates of the point inside the triangle.
 template <typename T>
 Vector<T, 3> sample_triangle_uniform(const Vector<T, 2>& s);
+
+// Build a regular N-sided polygon to use with sample_regular_polygon_uniform().
+template <typename T>
+void build_regular_polygon(
+    const size_t        vertex_count,
+    const T             tilt_angle,
+    Vector<T, 2>        vertices[]);
+
+// Map a uniform sample in [0,1)^2 to a point on the surface of a regular
+// N-sided polygon with a uniform probability density p(x) = 1/A.
+template <typename T>
+Vector<T, 2> sample_regular_polygon_uniform(
+    const Vector<T, 3>& s,
+    const size_t        vertex_count,
+    const Vector<T, 2>  vertices[]);
 
 
 //
@@ -255,6 +271,48 @@ inline Vector<T, 3> sample_triangle_uniform(const Vector<T, 2>& s)
     assert(feq(b[0] + b[1] + b[2], T(1.0)));
 
     return b;
+}
+
+template <typename T>
+void build_regular_polygon(
+    const size_t        vertex_count,
+    const T             tilt_angle,
+    Vector<T, 2>        vertices[])
+{
+    assert(vertex_count >= 3);
+
+    for (size_t i = 0; i < vertex_count; ++i)
+    {
+        const T a = static_cast<T>(i * TwoPi) / vertex_count + tilt_angle;
+        vertices[i] = Vector<T, 2>(std::cos(a), std::sin(a));
+    }
+}
+
+template <typename T>
+inline Vector<T, 2> sample_regular_polygon_uniform(
+    const Vector<T, 3>& s,
+    const size_t        vertex_count,
+    const Vector<T, 2>  vertices[])
+{
+    assert(s[0] >= T(0.0) && s[0] < T(1.0));
+    assert(s[1] >= T(0.0) && s[1] < T(1.0));
+    assert(s[2] >= T(0.0) && s[2] < T(1.0));
+    assert(vertex_count >= 3);
+
+    const size_t v0_index = truncate<size_t>(s[0] * vertex_count);
+    size_t v1_index = v0_index + 1;
+
+    if (v1_index == vertex_count)
+        v1_index = 0;
+
+    const Vector<T, 2>& v0 = vertices[v0_index];
+    const Vector<T, 2>& v1 = vertices[v1_index];
+
+    const T sqrt_s1 = std::sqrt(s[1]);
+    const T b0 = T(1.0) - sqrt_s1;
+    const T b1 = s[2] * sqrt_s1;
+
+    return b0 * v0 + b1 * v1;
 }
 
 }       // namespace foundation

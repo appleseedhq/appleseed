@@ -200,23 +200,32 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
         EXPECT_GT(0.0, sample_hemisphere_cosine_power(Vector2d(shift(1.0, -1)), 10.0).y);
     }
 
-    template <typename Vec>
-    Vector3d to_vector3d(const Vec& v);
-
-    template <>
-    Vector3d to_vector3d(const Vector2d& v)
+    template <typename T>
+    Vector<T, 2> to_unit_square(const Vector<T, 2>& p)
     {
-        return Vector3d(v.x, 0.0, v.y);
-    }
-
-    template <>
-    Vector3d to_vector3d(const Vector3d& v)
-    {
-        return v;
+        return Vector<T, 2>(0.5) + T(0.4) * p;
     }
 
     template <typename SamplingFunction>
-    void visualize_function(
+    void visualize_2d_function(
+        const string&       filename,
+        SamplingFunction&   sampling_function,
+        const size_t        point_count)
+    {
+        vector<Vector2d> points(point_count);
+
+        for (size_t i = 0; i < point_count; ++i)
+        {
+            const size_t Bases[] = { 2 };
+            const Vector2d s = hammersley_sequence<double, 2>(Bases, i, point_count);
+            points[i] = to_unit_square(sampling_function(s));
+        }
+
+        write_point_cloud_image(filename, 512, 512, points);
+    }
+
+    template <typename SamplingFunction>
+    void visualize_3d_function(
         const string&       filename,
         SamplingFunction&   sampling_function,
         const size_t        point_count)
@@ -227,7 +236,7 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
         {
             const size_t Bases[] = { 2 };
             const Vector2d s = hammersley_sequence<double, 2>(Bases, i, point_count);
-            points[i] = to_vector3d(sampling_function(s));
+            points[i] = sampling_function(s);
         }
 
         VPythonFile file(filename);
@@ -236,17 +245,17 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
 
     TEST_CASE(SampleSphereUniform_GenerateVPythonProgram)
     {
-        visualize_function("unit tests/outputs/test_sampling_sample_sphere_uniform.py", sample_sphere_uniform<double>, 1024);
+        visualize_3d_function("unit tests/outputs/test_sampling_sample_sphere_uniform.py", sample_sphere_uniform<double>, 1024);
     }
 
     TEST_CASE(SampleHemisphereUniform_GenerateVPythonProgram)
     {
-        visualize_function("unit tests/outputs/test_sampling_sample_hemisphere_uniform.py", sample_hemisphere_uniform<double>, 512);
+        visualize_3d_function("unit tests/outputs/test_sampling_sample_hemisphere_uniform.py", sample_hemisphere_uniform<double>, 512);
     }
 
     TEST_CASE(SampleHemisphereCosinePower1_GenerateVPythonProgram)
     {
-        visualize_function("unit tests/outputs/test_sampling_sample_hemisphere_cosine_power_1.py", sample_hemisphere_cosine<double>, 512);
+        visualize_3d_function("unit tests/outputs/test_sampling_sample_hemisphere_cosine_power_1.py", sample_hemisphere_cosine<double>, 512);
     }
 
     template <typename T>
@@ -257,21 +266,42 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
 
     TEST_CASE(SampleHemisphereCosinePowerN_GenerateVPythonProgram)
     {
-        visualize_function("unit tests/outputs/test_sampling_sample_hemisphere_cosine_power_10.py", sample_hemisphere_cosine_power_10<double>, 512);
+        visualize_3d_function("unit tests/outputs/test_sampling_sample_hemisphere_cosine_power_10.py", sample_hemisphere_cosine_power_10<double>, 512);
     }
 
-    TEST_CASE(SampleDiskUniform_GenerateVPythonProgram)
+    TEST_CASE(SampleDiskUniform_GenerateImage)
     {
-        visualize_function("unit tests/outputs/test_sampling_sample_disk_uniform.py", sample_disk_uniform<double>, 256);
+        visualize_2d_function("unit tests/outputs/test_sampling_sample_disk_uniform.png", sample_disk_uniform<double>, 256);
     }
 
-    TEST_CASE(SampleDiskUniformAlt_GenerateVPythonProgram)
+    TEST_CASE(SampleDiskUniformAlt_GenerateImage)
     {
-        visualize_function("unit tests/outputs/test_sampling_sample_disk_uniform_alt.py", sample_disk_uniform_alt<double>, 256);
+        visualize_2d_function("unit tests/outputs/test_sampling_sample_disk_uniform_alt.png", sample_disk_uniform_alt<double>, 256);
     }
 
     TEST_CASE(SampleTriangleUniform_GenerateVPythonProgram)
     {
-        visualize_function("unit tests/outputs/test_sampling_sample_triangle_uniform.py", sample_triangle_uniform<double>, 256);
+        visualize_3d_function("unit tests/outputs/test_sampling_sample_triangle_uniform.png", sample_triangle_uniform<double>, 256);
+    }
+
+    TEST_CASE(SampleRegularPolygonUniform_GenerateVPythonProgram)
+    {
+        const size_t VertexCount = 6;
+        const size_t PointCount = 512;
+
+        Vector2d vertices[VertexCount];
+        build_regular_polygon(VertexCount, 0.0, vertices);
+
+        vector<Vector2d> points(PointCount);
+
+        for (size_t i = 0; i < PointCount; ++i)
+        {
+            const size_t Bases[] = { 2, 3 };
+            const Vector3d s = hammersley_sequence<double, 3>(Bases, i, PointCount);
+            const Vector2d p = sample_regular_polygon_uniform(s, VertexCount, vertices);
+            points[i] = to_unit_square(p);
+        }
+
+        write_point_cloud_image("unit tests/outputs/test_sampling_sample_regular_polygon_uniform.png", 512, 512, points);
     }
 }
