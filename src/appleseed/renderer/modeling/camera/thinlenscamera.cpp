@@ -59,6 +59,7 @@ namespace
     //   http://en.wikipedia.org/wiki/Focal_length
     //   http://en.wikipedia.org/wiki/F-number
     //   http://en.wikipedia.org/wiki/Autofocus
+    //   http://en.wikipedia.org/wiki/Diaphragm_(optics)
     //
 
     const char* Model = "thinlens_camera";
@@ -82,12 +83,23 @@ namespace
                 m_autofocus_target,
                 m_focal_distance);
 
-            // Compute the radius of the lens.
-            m_lens_radius = 0.5 * m_focal_length / m_f_stop;
+            extract_diaphragm_blade_count();
+            extract_diaphragm_tilt_angle();
 
             // Precompute some values.
+            m_lens_radius = 0.5 * m_focal_length / m_f_stop;
             m_rcp_film_width = 1.0 / m_film_dimensions[0];
             m_rcp_film_height = 1.0 / m_film_dimensions[1];
+
+            // Build the diaphragm polygon.
+            if (m_diaphragm_blade_count > 0)
+            {
+                m_diaphragm_vertices.resize(m_diaphragm_blade_count);
+                build_regular_polygon(
+                    m_diaphragm_blade_count,
+                    m_diaphragm_tilt_angle,
+                    &m_diaphragm_vertices.front());
+            }
         }
 
         virtual void release()
@@ -117,7 +129,7 @@ namespace
             if (m_autofocus_enabled)
             {
                 Intersector intersector(project.get_trace_context(), false);
-                autofocus(intersector);
+                m_focal_distance = get_autofocus_focal_distance(intersector);
             }
 
             // Precompute some values.
@@ -139,9 +151,24 @@ namespace
             ray.m_flags = ~0;
 
             // Sample the surface of the lens.
-            sampling_context.split_in_place(2, 1);
-            const Vector2d s = sampling_context.next_vector2<2>();
-            const Vector2d lens_point = m_lens_radius * sample_disk_uniform(s);
+            Vector2d lens_point;
+            if (m_diaphragm_blade_count == 0)
+            {
+                sampling_context.split_in_place(2, 1);
+                const Vector2d s = sampling_context.next_vector2<2>();
+                lens_point = m_lens_radius * sample_disk_uniform(s);
+            }
+            else
+            {
+                sampling_context.split_in_place(3, 1);
+                const Vector3d s = sampling_context.next_vector2<3>();
+                lens_point =
+                    m_lens_radius *
+                    sample_regular_polygon_uniform(
+                        s,
+                        m_diaphragm_vertices.size(),
+                        &m_diaphragm_vertices.front());
+            }
 
             // Set the ray origin.
             const Transformd::MatrixType& mat = m_transform.get_local_to_parent();
@@ -182,24 +209,52 @@ namespace
 
       private:
         // Order of data members impacts performance, preserve it.
-        Transformd          m_transform;            // camera transformation
+        Transformd          m_transform;                // camera transformation
 
         // Parameters.
-        Vector2d            m_film_dimensions;      // film dimensions, in meters
-        double              m_focal_length;         // focal length, in meters
-        double              m_f_stop;               // f-stop
-        bool                m_autofocus_enabled;    // is autofocus enabled?
-        Vector2d            m_autofocus_target;     // autofocus target on film plane in NDC
-        double              m_focal_distance;       // focal distance, in meters
-        double              m_lens_radius;          // radius of the lens, in meters, in local space
+        Vector2d            m_film_dimensions;          // film dimensions, in meters
+        double              m_focal_length;             // focal length, in meters
+        double              m_f_stop;                   // f-stop
+        bool                m_autofocus_enabled;        // is autofocus enabled?
+        Vector2d            m_autofocus_target;         // autofocus target on film plane in NDC
+        double              m_focal_distance;           // focal distance, in meters
+        size_t              m_diaphragm_blade_count;    // number of blades of the diaphragm, 0 for round aperture
+        double              m_diaphragm_tilt_angle;     // tilt angle of the diaphragm in radians
 
         // Precomputed values.
-        double              m_rcp_film_width;       // film width reciprocal
-        double              m_rcp_film_height;      // film height reciprocal
+        double              m_lens_radius;              // radius of the lens, in meters, in local space
+        double              m_rcp_film_width;           // film width reciprocal
+        double              m_rcp_film_height;          // film height reciprocal
         double              m_kx, m_ky;
 
-        // Perform autofocus.
-        void autofocus(const Intersector& intersector)
+        vector<Vector2d>    m_diaphragm_vertices;
+
+        void extract_diaphragm_blade_count()
+        {
+            const int blade_count = m_params.get_optional<int>("diaphragm_blades", 0);
+
+            if (blade_count == 0 || blade_count >= 3)
+                m_diaphragm_blade_count = static_cast<size_t>(blade_count);
+            else
+            {
+                m_diaphragm_blade_count = 0;
+                RENDERER_LOG_ERROR(
+                    "while defining camera \"%s\": invalid value \"%d\" for parameter \"%s\", "
+                    "using default value \"" FMT_SIZE_T "\"",
+                    get_name(),
+                    blade_count,
+                    "diaphragm_blades",
+                    m_diaphragm_blade_count);
+            }
+        }
+
+        void extract_diaphragm_tilt_angle()
+        {
+            m_diaphragm_tilt_angle =
+                deg_to_rad(m_params.get_optional<double>("diaphragm_tilt_angle", 0.0));
+        }
+
+        double get_autofocus_focal_distance(const Intersector& intersector) const
         {
             // Create a ray.
             ShadingRay ray;
@@ -233,24 +288,28 @@ namespace
 
             if (shading_point.hit())
             {
-                // Compute the focal distance.
+                // Hit: compute the focal distance.
                 const Vector3d v = shading_point.get_point() - ray.m_org;
                 const Vector3d camera_direction =
                     m_transform.transform_vector_to_parent(Vector3d(0.0, 0.0, -1.0));
-                m_focal_distance = dot(v, camera_direction);
+                const double af_focal_distance = dot(v, camera_direction);
+
                 RENDERER_LOG_INFO(
                     "camera \"%s\": autofocus sets focal distance to %f %s",
                     get_name(),
-                    m_focal_distance,
-                    plural(m_focal_distance, "meter").c_str());
+                    af_focal_distance,
+                    plural(af_focal_distance, "meter").c_str());
+
+                return af_focal_distance;
             }
             else
             {
-                // Focus at infinity.
-                m_focal_distance = 1.0e38;
+                // No hit: focus at infinity.
                 RENDERER_LOG_INFO(
                     "camera \"%s\": autofocus sets focal distance to infinity",
                     get_name());
+
+                return 1.0e38;
             }
         }
     };
@@ -280,14 +339,16 @@ DictionaryArray ThinLensCameraFactory::get_widget_definitions() const
             .insert("name", "f_stop")
             .insert("label", "F-number")
             .insert("widget", "text_box")
-            .insert("use", "required"));
+            .insert("use", "required")
+            .insert("default", "8.0"));
 
     definitions.push_back(
         Dictionary()
             .insert("name", "focal_distance")
             .insert("label", "Focal Distance")
             .insert("widget", "text_box")
-            .insert("use", "required"));
+            .insert("use", "required")
+            .insert("default", "1.0"));
 
     definitions.push_back(
         Dictionary()
@@ -295,6 +356,22 @@ DictionaryArray ThinLensCameraFactory::get_widget_definitions() const
             .insert("label", "Autofocus Target")
             .insert("widget", "text_box")
             .insert("use", "required"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "diaphragm_blades")
+            .insert("label", "Diaphragm Blades")
+            .insert("widget", "text_box")
+            .insert("use", "required")
+            .insert("default", "0"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "diaphragm_tilt_angle")
+            .insert("label", "Diaphragm Tilt Angle")
+            .insert("widget", "text_box")
+            .insert("use", "required")
+            .insert("default", "0.0"));
 
     return definitions;
 }
