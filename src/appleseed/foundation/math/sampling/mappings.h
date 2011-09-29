@@ -35,8 +35,8 @@
 
 // Standard headers.
 #include <cassert>
-#include <cstddef>
 #include <cmath>
+#include <cstddef>
 
 namespace foundation
 {
