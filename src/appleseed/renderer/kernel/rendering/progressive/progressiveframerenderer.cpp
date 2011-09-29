@@ -204,7 +204,8 @@ namespace
                     m_ref_image.get(),
                     m_ref_image_avg_lum,
                     m_abort_switch));
-            m_statistics_thread.reset(new thread(*m_statistics_func.get()));
+            ThreadFunctionWrapper<StatisticsFunc> wrapper(m_statistics_func.get());
+            m_statistics_thread.reset(new thread(wrapper));
         }
 
         virtual void stop_rendering()
@@ -218,18 +219,15 @@ namespace
             // Delete all non-executed jobs.
             m_job_queue.clear_scheduled_jobs();
 
-            // We're not waiting until the statistics printing thread is terminated:
-            // it was notified via the abort switch that it must terminate, but it
-            // still has to write the convergence plot to disk (in case a reference
-            // image was set).
+            // Wait until the statistics printing thread is terminated.
+            m_statistics_thread->join();
         }
 
         virtual void terminate_rendering()
         {
             stop_rendering();
 
-            // Wait until the statistics printing thread is terminated.
-            m_statistics_thread->join();
+            m_statistics_func->write_rms_deviation_file();
         }
 
         virtual bool is_rendering() const
@@ -272,6 +270,7 @@ namespace
         double                              m_ref_image_avg_lum;
 
         class StatisticsFunc
+          : public NonCopyable
         {
           public:
             StatisticsFunc(
@@ -293,22 +292,6 @@ namespace
             {
             }
 
-            StatisticsFunc(const StatisticsFunc& rhs)
-              : m_frame(rhs.m_frame)
-              , m_framebuffer(rhs.m_framebuffer)
-              , m_print_luminance_stats(rhs.m_print_luminance_stats)
-              , m_ref_image(rhs.m_ref_image)
-              , m_ref_image_avg_lum(rhs.m_ref_image_avg_lum)
-              , m_abort_switch(rhs.m_abort_switch)
-              , m_timer_frequency(rhs.m_timer_frequency)
-              , m_last_time(rhs.m_last_time)
-              , m_last_sample_count(rhs.m_last_sample_count)
-              , m_sps_count_history(rhs.m_sps_count_history)
-              , m_spp_count_history(rhs.m_spp_count_history)
-              , m_rmsd_history(rhs.m_rmsd_history)
-            {
-            }
-
             void operator()()
             {
                 while (!m_abort_switch.is_aborted())
@@ -323,17 +306,22 @@ namespace
                         m_last_time = time;
                     }
 
-                    foundation::sleep(10);  // needs full qualification
+                    foundation::sleep(5);   // needs full qualification
                 }
+            }
 
-                if (m_spp_count_history.size() > 1)
+            void write_rms_deviation_file() const
+            {
+                if (!m_spp_count_history.empty())
                 {
                     MapleFile file("RMS Deviation.mpl");
+
                     file.define(
                         "rmsd",
                         m_spp_count_history.size(),
                         &m_spp_count_history[0],
                         &m_rmsd_history[0]);
+                    
                     file.plot("rmsd", "blue", "RMS Deviation");
                 }
             }

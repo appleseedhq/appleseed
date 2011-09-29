@@ -114,6 +114,34 @@ class FOUNDATIONDLL BenchmarkingThreadContext
 
 
 //
+// Wraps a thread function pointer into a callable thread function object.
+//
+
+template <typename Function>
+class ThreadFunctionWrapper
+{
+  public:
+    explicit ThreadFunctionWrapper(Function* function)
+      : m_function(function)
+    {
+    }
+
+    ThreadFunctionWrapper(const ThreadFunctionWrapper& rhs)
+      : m_function(rhs.m_function)
+    {
+    }
+
+    void operator()()
+    {
+        (*m_function)();
+    }
+
+  private:
+    Function* m_function;
+};
+
+
+//
 // Utility free functions.
 //
 
