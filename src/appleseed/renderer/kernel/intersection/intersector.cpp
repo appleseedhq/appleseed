@@ -33,6 +33,7 @@
 #include "renderer/kernel/intersection/assemblytree.h"
 #include "renderer/kernel/intersection/tracecontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/utility/cache.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/intersection.h"
@@ -111,6 +112,7 @@ Intersector::~Intersector()
     if (m_print_statistics)
     {
         const uint64 total_ray_count = m_ray_count + m_probe_ray_count;
+
         RENDERER_LOG_DEBUG(
             "general intersection statistics:\n"
             "  total rays       %s\n"
@@ -129,16 +131,10 @@ Intersector::~Intersector()
         m_triangle_bsp_traversal_stats.print(global_logger());
 #endif
 
-        RENDERER_LOG_DEBUG(
-            "access caches efficiency:\n"
-            "  region trees     %s\n"
-            "  triangle trees   %s\n"
-            "  region kits      %s\n"
-            "  tessellations    %s",
-            format_cache_stats(m_region_tree_cache).c_str(),
-            format_cache_stats(m_triangle_tree_cache).c_str(),
-            format_cache_stats(m_region_kit_cache).c_str(),
-            format_cache_stats(m_tess_cache).c_str());
+        print_dual_stage_cache_stats(m_region_tree_cache, "region tree access cache statistics");
+        print_dual_stage_cache_stats(m_triangle_tree_cache, "triangle tree access cache statistics");
+        print_dual_stage_cache_stats(m_region_kit_cache, "region kit access cache statistics");
+        print_dual_stage_cache_stats(m_tess_cache, "tessellation access cache statistics");
     }
 }
 

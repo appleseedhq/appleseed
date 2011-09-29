@@ -34,6 +34,7 @@
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/texture/texture.h"
+#include "renderer/utility/cache.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/string.h"
@@ -117,29 +118,7 @@ TextureCache::TextureCache(
 
 TextureCache::~TextureCache()
 {
-    const string combined_stats =
-        format_cache_stats(
-            m_tile_cache.get_stage0_hit_count() + m_tile_cache.get_stage1_hit_count(),
-            m_tile_cache.get_stage1_miss_count());
-
-    const string s0_stats =
-        format_cache_stats(
-            m_tile_cache.get_stage0_hit_count(),
-            m_tile_cache.get_stage0_miss_count());
-
-    const string s1_stats =
-        format_cache_stats(
-            m_tile_cache.get_stage1_hit_count(),
-            m_tile_cache.get_stage1_miss_count());
-
-    RENDERER_LOG_DEBUG(
-        "texture cache statistics:\n"
-        "  combined         %s\n"
-        "  stage-0          %s\n"
-        "  stage-1          %s\n",
-        combined_stats.c_str(),
-        s0_stats.c_str(),
-        s1_stats.c_str());
+    print_dual_stage_cache_stats(m_tile_cache, "texture cache statistics");
 }
 
 

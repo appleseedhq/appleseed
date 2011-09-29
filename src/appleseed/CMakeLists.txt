@@ -1341,6 +1341,7 @@ source_group("renderer\\modeling\\texture" FILES
 
 set(renderer_utility_sources
     renderer/utility/bbox.h
+    renderer/utility/cache.h
     renderer/utility/paramarray.cpp
     renderer/utility/paramarray.h
     renderer/utility/testutils.cpp
