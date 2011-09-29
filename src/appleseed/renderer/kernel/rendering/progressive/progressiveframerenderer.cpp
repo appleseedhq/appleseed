@@ -200,6 +200,7 @@ namespace
                 new StatisticsFunc(
                     m_frame,
                     *m_framebuffer.get(),
+                    m_params.m_print_luminance_stats,
                     m_ref_image.get(),
                     m_ref_image_avg_lum,
                     m_abort_switch));
@@ -239,14 +240,16 @@ namespace
       private:
         struct Parameters
         {
-            const size_t    m_thread_count;         // number of rendering threads
-            const uint64    m_max_sample_count;     // maximum total number of samples to store in the framebuffer
-            const string    m_ref_image_path;       // path to the reference image
+            const size_t    m_thread_count;             // number of rendering threads
+            const uint64    m_max_sample_count;         // maximum total number of samples to store in the framebuffer
+            const bool      m_print_luminance_stats;    // compute and print luminance statistics?
+            const string    m_ref_image_path;           // path to the reference image
 
             // Constructor, extract parameters.
             explicit Parameters(const ParamArray& params)
               : m_thread_count(FrameRendererBase::get_rendering_thread_count(params))
               , m_max_sample_count(params.get_optional<uint64>("max_samples", numeric_limits<uint64>::max()))
+              , m_print_luminance_stats(params.get_optional<bool>("print_luminance_statistics", false))
               , m_ref_image_path(params.get_optional<string>("reference_image", ""))
             {
             }
@@ -274,11 +277,13 @@ namespace
             StatisticsFunc(
                 Frame&                      frame,
                 AccumulationFramebuffer&    framebuffer,
+                const bool                  print_luminance_stats,
                 const Image*                ref_image,
                 const double                ref_image_avg_lum,
                 AbortSwitch&                abort_switch)
               : m_frame(frame)
               , m_framebuffer(framebuffer)
+              , m_print_luminance_stats(print_luminance_stats)
               , m_ref_image(ref_image)
               , m_ref_image_avg_lum(ref_image_avg_lum)
               , m_abort_switch(abort_switch)
@@ -291,6 +296,7 @@ namespace
             StatisticsFunc(const StatisticsFunc& rhs)
               : m_frame(rhs.m_frame)
               , m_framebuffer(rhs.m_framebuffer)
+              , m_print_luminance_stats(rhs.m_print_luminance_stats)
               , m_ref_image(rhs.m_ref_image)
               , m_ref_image_avg_lum(rhs.m_ref_image_avg_lum)
               , m_abort_switch(rhs.m_abort_switch)
@@ -335,6 +341,7 @@ namespace
           private:
             Frame&                          m_frame;
             AccumulationFramebuffer&        m_framebuffer;
+            const bool                      m_print_luminance_stats;
             const Image*                    m_ref_image;
             const double                    m_ref_image_avg_lum;
             AbortSwitch&                    m_abort_switch;
@@ -350,9 +357,14 @@ namespace
 
             void print_and_record_statistics(const double elapsed_seconds)
             {
-                Image current_image(m_frame.image());
-                m_frame.transform_to_output_color_space(current_image);
+                print_performance_statistics(elapsed_seconds);
 
+                if (m_print_luminance_stats || m_ref_image)
+                    print_and_record_convergence_statistics();
+            }
+
+            void print_performance_statistics(const double elapsed_seconds)
+            {
                 const uint64 new_sample_count = m_framebuffer.get_sample_count();
                 const uint64 pixel_count = static_cast<uint64>(m_frame.image().properties().m_pixel_count);
                 const double spp_count = static_cast<double>(new_sample_count) / pixel_count;
@@ -366,26 +378,50 @@ namespace
                     pretty_scalar(spp_count).c_str(),
                     pretty_scalar(m_sps_count_history.compute_average()).c_str());
 
-                const double avg_lum = compute_average_luminance(current_image);
-                string convergence_info = "average luminance " + pretty_scalar(avg_lum, 6);
+                m_last_sample_count = new_sample_count;
+            }
+
+            void print_and_record_convergence_statistics()
+            {
+                assert(m_print_luminance_stats || m_ref_image);
+
+                string output;
+
+                Image current_image(m_frame.image());
+                m_frame.transform_to_output_color_space(current_image);
+
+                if (m_print_luminance_stats)
+                {
+                    const double avg_lum = compute_average_luminance(current_image);
+                    output += "average luminance " + pretty_scalar(avg_lum, 6);
+
+                    if (m_ref_image)
+                    {
+                        const double avg_lum_delta = abs(m_ref_image_avg_lum - avg_lum);
+                        output += " (";
+                        output += pretty_percent(avg_lum_delta, m_ref_image_avg_lum, 3);
+                        output += " error)";
+                    }
+                }
 
                 if (m_ref_image)
                 {
-                    const double avg_lum_delta = abs(m_ref_image_avg_lum - avg_lum);
+                    if (m_print_luminance_stats)
+                        output += ", ";
+
+                    const double spp_count =
+                          static_cast<double>(m_framebuffer.get_sample_count())
+                        / m_frame.image().properties().m_pixel_count;
+
                     const double rmsd = compute_rms_deviation(current_image, *m_ref_image);
 
-                    convergence_info += " (";
-                    convergence_info += pretty_percent(avg_lum_delta, m_ref_image_avg_lum, 3);
-                    convergence_info += " error), rms deviation ";
-                    convergence_info += pretty_scalar(rmsd, 6);
+                    output += "rms deviation " + pretty_scalar(rmsd, 6);
 
                     m_spp_count_history.push_back(spp_count);
                     m_rmsd_history.push_back(rmsd);
                 }
 
-                RENDERER_LOG_DEBUG("%s", convergence_info.c_str());
-
-                m_last_sample_count = new_sample_count;
+                RENDERER_LOG_DEBUG("%s", output.c_str());
             }
         };
 
