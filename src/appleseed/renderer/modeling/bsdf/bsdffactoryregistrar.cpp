@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/ashikhminbrdf.h"
 #include "renderer/modeling/bsdf/bsdfmix.h"
+#include "renderer/modeling/bsdf/ibsdffactory.h"
 #include "renderer/modeling/bsdf/lambertianbrdf.h"
 #include "renderer/modeling/bsdf/phongbrdf.h"
 #include "renderer/modeling/bsdf/specularbrdf.h"

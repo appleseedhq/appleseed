@@ -30,15 +30,15 @@
 #define APPLESEED_RENDERER_MODELING_BSDF_BSDFTRAITS_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/entity/entitytraits.h"
 #include "renderer/modeling/scene/containers.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/autoreleaseptr.h"
 
 // Forward declarations.
-namespace renderer  { class BSDF; }
 namespace renderer  { class BSDFFactoryRegistrar; }
 
 namespace renderer

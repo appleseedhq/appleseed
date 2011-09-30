@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/environmentshader/edfenvironmentshader.h"
+#include "renderer/modeling/environmentshader/ienvironmentshaderfactory.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/registrar.h"

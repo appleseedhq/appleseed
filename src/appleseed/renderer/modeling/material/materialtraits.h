@@ -30,15 +30,13 @@
 #define APPLESEED_RENDERER_MODELING_MATERIAL_MATERIALTRAITS_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/modeling/entity/entitytraits.h"
+#include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/containers.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
-
-// Forward declarations.
-namespace renderer  { class Material; }
+#include "foundation/utility/autoreleaseptr.h"
 
 namespace renderer
 {

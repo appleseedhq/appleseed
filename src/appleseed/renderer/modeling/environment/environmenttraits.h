@@ -30,14 +30,12 @@
 #define APPLESEED_RENDERER_MODELING_ENVIRONMENT_ENVIRONMENTTRAITS_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/modeling/entity/entitytraits.h"
+#include "renderer/modeling/environment/environment.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
-
-// Forward declarations.
-namespace renderer  { class Environment; }
+#include "foundation/utility/autoreleaseptr.h"
 
 namespace renderer
 {

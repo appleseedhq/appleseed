@@ -30,15 +30,15 @@
 #define APPLESEED_RENDERER_MODELING_EDF_EDFTRAITS_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/entity/entitytraits.h"
 #include "renderer/modeling/scene/containers.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/autoreleaseptr.h"
 
 // Forward declarations.
-namespace renderer  { class EDF; }
 namespace renderer  { class EDFFactoryRegistrar; }
 
 namespace renderer

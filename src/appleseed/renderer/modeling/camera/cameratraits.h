@@ -30,14 +30,14 @@
 #define APPLESEED_RENDERER_MODELING_CAMERA_CAMERATRAITS_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/entity/entitytraits.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/autoreleaseptr.h"
 
 // Forward declarations.
-namespace renderer  { class Camera; }
 namespace renderer  { class CameraFactoryRegistrar; }
 
 namespace renderer

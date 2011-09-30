@@ -29,9 +29,6 @@
 #ifndef APPLESEED_RENDERER_MODELING_ENTITY_ENTITYTRAITS_H
 #define APPLESEED_RENDERER_MODELING_ENTITY_ENTITYTRAITS_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
-
 namespace renderer
 {
 

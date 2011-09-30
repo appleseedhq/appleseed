@@ -30,6 +30,7 @@
 #include "camerafactoryregistrar.h"
 
 // appleseed.renderer headers.
+#include "renderer/modeling/camera/icamerafactory.h"
 #include "renderer/modeling/camera/pinholecamera.h"
 #include "renderer/modeling/camera/thinlenscamera.h"
 

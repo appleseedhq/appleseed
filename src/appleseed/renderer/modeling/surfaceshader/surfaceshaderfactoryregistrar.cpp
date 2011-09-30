@@ -34,6 +34,7 @@
 #include "renderer/modeling/surfaceshader/constantsurfaceshader.h"
 #include "renderer/modeling/surfaceshader/diagnosticsurfaceshader.h"
 #include "renderer/modeling/surfaceshader/fastsubsurfacescatteringsurfaceshader.h"
+#include "renderer/modeling/surfaceshader/isurfaceshaderfactory.h"
 #include "renderer/modeling/surfaceshader/physicalsurfaceshader.h"
 #include "renderer/modeling/surfaceshader/smokesurfaceshader.h"
 #include "renderer/modeling/surfaceshader/voxelaosurfaceshader.h"

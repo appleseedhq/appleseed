@@ -30,15 +30,15 @@
 #define APPLESEED_RENDERER_MODELING_SURFACESHADER_SURFACESHADERTRAITS_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/modeling/entity/entitytraits.h"
 #include "renderer/modeling/scene/containers.h"
+#include "renderer/modeling/surfaceshader/surfaceshader.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/autoreleaseptr.h"
 
 // Forward declarations.
-namespace renderer  { class SurfaceShader; }
 namespace renderer  { class SurfaceShaderFactoryRegistrar; }
 
 namespace renderer

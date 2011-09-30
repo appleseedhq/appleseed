@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/edf/diffuseedf.h"
+#include "renderer/modeling/edf/iedffactory.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/registrar.h"
