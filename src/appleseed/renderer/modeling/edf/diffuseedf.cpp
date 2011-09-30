@@ -202,9 +202,7 @@ auto_release_ptr<EDF> DiffuseEDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return
-        auto_release_ptr<EDF>(
-            new DiffuseEDF(name, params));
+    return auto_release_ptr<EDF>(new DiffuseEDF(name, params));
 }
 
 }   // namespace renderer
