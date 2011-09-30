@@ -383,7 +383,6 @@ set(foundation_meta_tests_sources
     foundation/meta/tests/test_noise.cpp
     foundation/meta/tests/test_objmeshfilereader.cpp
     foundation/meta/tests/test_otherwise.cpp
-    foundation/meta/tests/test_pagedarray.cpp
     foundation/meta/tests/test_path.cpp
     foundation/meta/tests/test_permutation.cpp
     foundation/meta/tests/test_pointcloudsampling.cpp
@@ -508,7 +507,6 @@ set(foundation_utility_containers_sources
     foundation/utility/containers/array.h
     foundation/utility/containers/dictionary.cpp
     foundation/utility/containers/dictionary.h
-    foundation/utility/containers/pagedarray.h
     foundation/utility/containers/specializedarrays.cpp
     foundation/utility/containers/specializedarrays.h
 )
