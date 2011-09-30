@@ -110,9 +110,9 @@
     <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92988.4,-41966.1 -92993.5,-41976.1 -92988.5,-41973.6 -92983.5,-41976.2 "/>
   </g>
   <g>
-    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -91251.8 -42737 C -91335.8,-42678.6 -91546.9,-42636.4 -91609.7,-42599.9"/>
-    <polygon style="fill: #000000" points="-91616.2,-42596.2 -91610,-42605.5 -91609.7,-42599.9 -91605,-42596.9 "/>
-    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-91616.2,-42596.2 -91610,-42605.5 -91609.7,-42599.9 -91605,-42596.9 "/>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -91251.8 -42737 C -91335.8,-42678.6 -91547,-42636.4 -91609.7,-42599.9"/>
+    <polygon style="fill: #000000" points="-91616.2,-42596.2 -91610.1,-42605.5 -91609.7,-42599.9 -91605.1,-42596.9 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-91616.2,-42596.2 -91610.1,-42605.5 -91609.7,-42599.9 -91605.1,-42596.9 "/>
   </g>
   <g>
     <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -91713.8 -42078.2 C -91713.6,-42016.8 -91962.2,-42043.2 -91962.9,-41973.2"/>
@@ -120,9 +120,9 @@
     <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-91963,-41965.7 -91967.9,-41975.8 -91962.9,-41973.2 -91957.9,-41975.7 "/>
   </g>
   <g>
-    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -91251.8 -42737 C -91202.1,-42669.1 -91122.3,-42627.1 -91094.9,-42601.5"/>
-    <polygon style="fill: #000000" points="-91089.4,-42596.4 -91100.2,-42599.5 -91094.9,-42601.5 -91093.3,-42606.8 "/>
-    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-91089.4,-42596.4 -91100.2,-42599.5 -91094.9,-42601.5 -91093.3,-42606.8 "/>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -91251.8 -42737 C -91202,-42669 -91122.2,-42627 -91094.9,-42601.5"/>
+    <polygon style="fill: #000000" points="-91089.4,-42596.4 -91100.1,-42599.5 -91094.9,-42601.5 -91093.3,-42606.8 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-91089.4,-42596.4 -91100.1,-42599.5 -91094.9,-42601.5 -91093.3,-42606.8 "/>
   </g>
   <g>
     <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -91713.8 -42078.2 C -91713.6,-42014 -91386.4,-42049.8 -91385,-41973.2"/>
@@ -130,9 +130,9 @@
     <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-91384.8,-41965.7 -91390,-41975.6 -91385,-41973.2 -91380,-41975.8 "/>
   </g>
   <g>
-    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -91251.8 -42737 C -91182.8,-42658.4 -91006,-42628.5 -90959.9,-42600.1"/>
-    <polygon style="fill: #000000" points="-90953.5,-42596.2 -90964.7,-42597.2 -90959.9,-42600.1 -90959.4,-42605.7 "/>
-    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-90953.5,-42596.2 -90964.7,-42597.2 -90959.9,-42600.1 -90959.4,-42605.7 "/>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -91251.8 -42737 C -91182.8,-42658.4 -91006,-42628.4 -90959.9,-42600.1"/>
+    <polygon style="fill: #000000" points="-90953.6,-42596.2 -90964.7,-42597.2 -90959.9,-42600.1 -90959.5,-42605.7 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-90953.6,-42596.2 -90964.7,-42597.2 -90959.9,-42600.1 -90959.5,-42605.7 "/>
   </g>
   <g>
     <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -91251.8 -42737 C -91167.6,-42676 -90886.8,-42626.6 -90822.1,-42599"/>
@@ -140,24 +140,24 @@
     <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-90815.2,-42596 -90826.4,-42595.4 -90822.1,-42599 -90822.5,-42604.6 "/>
   </g>
   <g>
-    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -91251.8 -42737 C -91242.7,-42692.9 -91232.9,-42646 -91224.1,-42604"/>
-    <polygon style="fill: #000000" points="-91222.5,-42596.7 -91229.5,-42605.5 -91224.1,-42604 -91219.7,-42607.5 "/>
-    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-91222.5,-42596.7 -91229.5,-42605.5 -91224.1,-42604 -91219.7,-42607.5 "/>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -91251.8 -42737 C -91242.6,-42693 -91232.8,-42646 -91224,-42604"/>
+    <polygon style="fill: #000000" points="-91222.4,-42596.7 -91229.4,-42605.5 -91224,-42604 -91219.6,-42607.5 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-91222.4,-42596.7 -91229.4,-42605.5 -91224,-42604 -91219.6,-42607.5 "/>
   </g>
   <g>
-    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -91251.8 -42737 C -91281.9,-42680.3 -91315.5,-42637.6 -91331.9,-42603.4"/>
-    <polygon style="fill: #000000" points="-91335.2,-42596.6 -91335.4,-42607.8 -91331.9,-42603.4 -91326.4,-42603.5 "/>
-    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-91335.2,-42596.6 -91335.4,-42607.8 -91331.9,-42603.4 -91326.4,-42603.5 "/>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -91251.8 -42737 C -91281.8,-42680.4 -91315.4,-42637.6 -91331.9,-42603.4"/>
+    <polygon style="fill: #000000" points="-91335.1,-42596.6 -91335.3,-42607.8 -91331.9,-42603.4 -91326.3,-42603.5 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-91335.1,-42596.6 -91335.3,-42607.8 -91331.9,-42603.4 -91326.3,-42603.5 "/>
   </g>
   <g>
-    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92248.3 -42078.2 C -92259.5,-42041 -92277.3,-42023.8 -92304.1,-41972.5"/>
-    <polygon style="fill: #000000" points="-92307.6,-41965.8 -92307.4,-41977 -92304.1,-41972.5 -92298.5,-41972.4 "/>
-    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92307.6,-41965.8 -92307.4,-41977 -92304.1,-41972.5 -92298.5,-41972.4 "/>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92248.4 -42078.2 C -92259.6,-42041 -92277.4,-42023.8 -92304.2,-41972.4"/>
+    <polygon style="fill: #000000" points="-92307.7,-41965.8 -92307.5,-41977 -92304.2,-41972.4 -92298.6,-41972.3 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92307.7,-41965.8 -92307.5,-41977 -92304.2,-41972.4 -92298.6,-41972.3 "/>
   </g>
   <g>
     <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -91251.8 -42737 C -91340.8,-42658.4 -91415.2,-42636.4 -91465,-42600.6"/>
-    <polygon style="fill: #000000" points="-91471.1,-42596.3 -91465.8,-42606.1 -91465,-42600.6 -91460,-42598 "/>
-    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-91471.1,-42596.3 -91465.8,-42606.1 -91465,-42600.6 -91460,-42598 "/>
+    <polygon style="fill: #000000" points="-91471.1,-42596.3 -91465.9,-42606.1 -91465,-42600.6 -91460.1,-42598 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-91471.1,-42596.3 -91465.9,-42606.1 -91465,-42600.6 -91460.1,-42598 "/>
   </g>
   <g>
     <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92539.6 -42945 C -92538.4,-42904 -92348.8,-42647.4 -92330.9,-42603.6"/>
@@ -170,9 +170,9 @@
     <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92229.9,-42596.6 -92239,-42603.1 -92233.4,-42603.2 -92230.2,-42607.8 "/>
   </g>
   <g>
-    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92539.6 -42945 C -92541.6,-42906 -92408.2,-42635.6 -92406.8,-42604.2"/>
-    <polygon style="fill: #000000" points="-92406.5,-42596.7 -92411.9,-42606.5 -92406.8,-42604.2 -92401.9,-42606.9 "/>
-    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92406.5,-42596.7 -92411.9,-42606.5 -92406.8,-42604.2 -92401.9,-42606.9 "/>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92539.6 -42945 C -92541.6,-42906 -92408.1,-42635.6 -92406.7,-42604.2"/>
+    <polygon style="fill: #000000" points="-92406.4,-42596.7 -92411.8,-42606.5 -92406.7,-42604.2 -92401.8,-42606.9 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92406.4,-42596.7 -92411.8,-42606.5 -92406.7,-42604.2 -92401.8,-42606.9 "/>
   </g>
   <g>
     <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92539.6 -42945 C -92539.4,-42904.4 -92572.8,-42642 -92587.3,-42603.7"/>
@@ -181,8 +181,8 @@
   </g>
   <g>
     <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92539.6 -42945 C -92539.4,-42906.6 -92638.8,-42645.2 -92657.5,-42603.5"/>
-    <polygon style="fill: #000000" points="-92660.6,-42596.6 -92661,-42607.8 -92657.5,-42603.5 -92651.9,-42603.7 "/>
-    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92660.6,-42596.6 -92661,-42607.8 -92657.5,-42603.5 -92651.9,-42603.7 "/>
+    <polygon style="fill: #000000" points="-92660.5,-42596.6 -92661,-42607.8 -92657.5,-42603.5 -92651.9,-42603.7 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92660.5,-42596.6 -92661,-42607.8 -92657.5,-42603.5 -92651.9,-42603.7 "/>
   </g>
   <text style="fill: #000000;text-anchor:start;font-size:10.16;font-family:Consolas;font-style:normal;font-weight:normal" x="-93678.4" y="-42236.6">
     <tspan x="-93678.4" y="-42236.6">Base class for entity items with generic edition &amp; deletion</tspan>
@@ -193,9 +193,9 @@
     <tspan x="-92365.2" y="-42269.2">  - Provides an overload of add_item()</tspan>
   </text>
   <g>
-    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92539.6 -42945 C -92538.8,-42903.4 -92815.2,-42635.6 -92840.7,-42602.4"/>
-    <polygon style="fill: #000000" points="-92845.3,-42596.5 -92843.2,-42607.5 -92840.7,-42602.4 -92835.3,-42601.4 "/>
-    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92845.3,-42596.5 -92843.2,-42607.5 -92840.7,-42602.4 -92835.3,-42601.4 "/>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92539.6 -42945 C -92538.8,-42903.4 -92815.2,-42635.6 -92840.8,-42602.4"/>
+    <polygon style="fill: #000000" points="-92845.3,-42596.5 -92843.2,-42607.5 -92840.8,-42602.4 -92835.3,-42601.4 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92845.3,-42596.5 -92843.2,-42607.5 -92840.8,-42602.4 -92835.3,-42601.4 "/>
   </g>
   <g>
     <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92614.6 -43049.8 C -92614.4,-42989.2 -92540.8,-43060.8 -92539.7,-42991.6"/>
@@ -480,6 +480,78 @@
   </g>
   <g>
     <g>
+      <rect style="fill: #f3f3f3" x="-91547" y="-42595.6" width="150" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-91547" y="-42595.6" width="150" height="32.2889"/>
+      <text style="fill: #000000;text-anchor:middle;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="-91472" y="-42576">
+        <tspan x="-91472" y="-42576">AssemblyInstanceCollectionItem</tspan>
+      </text>
+    </g>
+    <g>
+      <rect style="fill: #f3f3f3" x="-91675" y="-42595.6" width="115.7" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-91675" y="-42595.6" width="115.7" height="32.2889"/>
+      <text style="fill: #000000;text-anchor:middle;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="-91617.1" y="-42576">
+        <tspan x="-91617.1" y="-42576">AssemblyCollectionItem</tspan>
+      </text>
+    </g>
+    <g>
+      <rect style="fill: #f3f3f3" x="-91157.8" y="-42595.6" width="138.5" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-91157.8" y="-42595.6" width="138.5" height="32.2889"/>
+      <text style="fill: #000000;text-anchor:middle;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="-91088.5" y="-42576">
+        <tspan x="-91088.5" y="-42576">ObjectInstanceCollectionItem</tspan>
+      </text>
+    </g>
+    <g>
+      <rect style="fill: #f3f3f3" x="-91007" y="-42595.6" width="108.9" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-91007" y="-42595.6" width="108.9" height="32.2889"/>
+      <text style="fill: #000000;text-anchor:middle;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="-90952.5" y="-42576">
+        <tspan x="-90952.5" y="-42576">TextureCollectionItem</tspan>
+      </text>
+    </g>
+    <g>
+      <rect style="fill: #f3f3f3" x="-90885.8" y="-42595.6" width="143.2" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-90885.8" y="-42595.6" width="143.2" height="32.2889"/>
+      <text style="fill: #000000;text-anchor:middle;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="-90814.2" y="-42576">
+        <tspan x="-90814.2" y="-42576">TextureInstanceCollectionItem</tspan>
+      </text>
+    </g>
+    <g>
+      <rect style="fill: #f3f3f3" x="-91384.6" y="-42595.6" width="97.9" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-91384.6" y="-42595.6" width="97.9" height="32.2889"/>
+      <text style="fill: #000000;text-anchor:middle;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="-91335.6" y="-42576">
+        <tspan x="-91335.6" y="-42576">LightCollectionItem</tspan>
+      </text>
+    </g>
+    <g>
+      <rect style="fill: #f3f3f3" x="-91274.4" y="-42595.6" width="104.2" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-91274.4" y="-42595.6" width="104.2" height="32.2889"/>
+      <text style="fill: #000000;text-anchor:middle;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="-91222.3" y="-42576">
+        <tspan x="-91222.3" y="-42576">ObjectCollectionItem</tspan>
+      </text>
+    </g>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92248.4 -42078.2 C -92234.4,-42039 -92214,-42017.2 -92195.5,-41972.6"/>
+    <polygon style="fill: #000000" points="-92192.6,-41965.6 -92201.1,-41973 -92195.5,-41972.6 -92191.8,-41976.8 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92192.6,-41965.6 -92201.1,-41973 -92195.5,-41972.6 -92191.8,-41976.8 "/>
+  </g>
+  <g>
+    <g>
+      <rect style="fill: #f3f3f3" x="-92247.2" y="-41964.6" width="109.95" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke-dasharray: 4; stroke: #000000" x="-92247.2" y="-41964.6" width="109.95" height="32.2889"/>
+      <text style="fill: #000000;text-anchor:middle;font-size:9.03111;font-family:sanserif;font-style:oblique;font-weight:normal" x="-92192.2" y="-41945">
+        <tspan x="-92192.2" y="-41945">MaterialCollectionItem</tspan>
+      </text>
+    </g>
+    <g>
+      <rect style="fill: #f3f3f3" x="-92357.6" y="-41964.8" width="98.8" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke-dasharray: 4; stroke: #000000" x="-92357.6" y="-41964.8" width="98.8" height="32.2889"/>
+      <text style="fill: #000000;text-anchor:middle;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="-92308.2" y="-41945.2">
+        <tspan x="-92308.2" y="-41945.2">ColorCollectionItem</tspan>
+      </text>
+    </g>
+  </g>
+  <g>
+    <g>
       <rect style="fill: #f3f3f3" x="-92779.2" y="-42595.6" width="77.25" height="32.2889"/>
       <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-92779.2" y="-42595.6" width="77.25" height="32.2889"/>
       <text style="fill: #000000;text-anchor:middle;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="-92740.6" y="-42576">
@@ -509,7 +581,7 @@
     </g>
     <g>
       <rect style="fill: #f3f3f3" x="-92439.2" y="-42595.6" width="65.75" height="32.2889"/>
-      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke-dasharray: 4; stroke: #000000" x="-92439.2" y="-42595.6" width="65.75" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-92439.2" y="-42595.6" width="65.75" height="32.2889"/>
       <text style="fill: #000000;text-anchor:middle;font-size:9.03111;font-family:sanserif;font-style:oblique;font-weight:normal" x="-92406.3" y="-42576">
         <tspan x="-92406.3" y="-42576">ObjectItem</tspan>
       </text>
@@ -530,81 +602,9 @@
     </g>
     <g>
       <rect style="fill: #f3f3f3" x="-92902.2" y="-42595.6" width="112.35" height="32.2889"/>
-      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke-dasharray: 4; stroke: #000000" x="-92902.2" y="-42595.6" width="112.35" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-92902.2" y="-42595.6" width="112.35" height="32.2889"/>
       <text style="fill: #000000;text-anchor:middle;font-size:9.03111;font-family:sanserif;font-style:oblique;font-weight:normal" x="-92846" y="-42576">
         <tspan x="-92846" y="-42576">AssemblyInstanceItem</tspan>
-      </text>
-    </g>
-  </g>
-  <g>
-    <g>
-      <rect style="fill: #f3f3f3" x="-91547" y="-42595.6" width="150" height="32.2889"/>
-      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-91547" y="-42595.6" width="150" height="32.2889"/>
-      <text style="fill: #000000;text-anchor:middle;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="-91472" y="-42576">
-        <tspan x="-91472" y="-42576">AssemblyInstanceCollectionItem</tspan>
-      </text>
-    </g>
-    <g>
-      <rect style="fill: #f3f3f3" x="-91675" y="-42595.6" width="115.7" height="32.2889"/>
-      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-91675" y="-42595.6" width="115.7" height="32.2889"/>
-      <text style="fill: #000000;text-anchor:middle;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="-91617.1" y="-42576">
-        <tspan x="-91617.1" y="-42576">AssemblyCollectionItem</tspan>
-      </text>
-    </g>
-    <g>
-      <rect style="fill: #f3f3f3" x="-91157.9" y="-42595.6" width="138.5" height="32.2889"/>
-      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-91157.9" y="-42595.6" width="138.5" height="32.2889"/>
-      <text style="fill: #000000;text-anchor:middle;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="-91088.6" y="-42576">
-        <tspan x="-91088.6" y="-42576">ObjectInstanceCollectionItem</tspan>
-      </text>
-    </g>
-    <g>
-      <rect style="fill: #f3f3f3" x="-91007" y="-42595.6" width="108.9" height="32.2889"/>
-      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-91007" y="-42595.6" width="108.9" height="32.2889"/>
-      <text style="fill: #000000;text-anchor:middle;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="-90952.6" y="-42576">
-        <tspan x="-90952.6" y="-42576">TextureCollectionItem</tspan>
-      </text>
-    </g>
-    <g>
-      <rect style="fill: #f3f3f3" x="-90885.8" y="-42595.6" width="143.2" height="32.2889"/>
-      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-90885.8" y="-42595.6" width="143.2" height="32.2889"/>
-      <text style="fill: #000000;text-anchor:middle;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="-90814.2" y="-42576">
-        <tspan x="-90814.2" y="-42576">TextureInstanceCollectionItem</tspan>
-      </text>
-    </g>
-    <g>
-      <rect style="fill: #f3f3f3" x="-91384.6" y="-42595.6" width="97.9" height="32.2889"/>
-      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-91384.6" y="-42595.6" width="97.9" height="32.2889"/>
-      <text style="fill: #000000;text-anchor:middle;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="-91335.7" y="-42576">
-        <tspan x="-91335.7" y="-42576">LightCollectionItem</tspan>
-      </text>
-    </g>
-    <g>
-      <rect style="fill: #f3f3f3" x="-91274.4" y="-42595.6" width="104.2" height="32.2889"/>
-      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-91274.4" y="-42595.6" width="104.2" height="32.2889"/>
-      <text style="fill: #000000;text-anchor:middle;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="-91222.3" y="-42576">
-        <tspan x="-91222.3" y="-42576">ObjectCollectionItem</tspan>
-      </text>
-    </g>
-  </g>
-  <g>
-    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92248.3 -42078.2 C -92234.3,-42038.9 -92214,-42017.2 -92195.5,-41972.6"/>
-    <polygon style="fill: #000000" points="-92192.6,-41965.6 -92201.1,-41973 -92195.5,-41972.6 -92191.9,-41976.8 "/>
-    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92192.6,-41965.6 -92201.1,-41973 -92195.5,-41972.6 -92191.9,-41976.8 "/>
-  </g>
-  <g>
-    <g>
-      <rect style="fill: #f3f3f3" x="-92247.2" y="-41964.6" width="109.95" height="32.2889"/>
-      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke-dasharray: 4; stroke: #000000" x="-92247.2" y="-41964.6" width="109.95" height="32.2889"/>
-      <text style="fill: #000000;text-anchor:middle;font-size:9.03111;font-family:sanserif;font-style:oblique;font-weight:normal" x="-92192.2" y="-41945">
-        <tspan x="-92192.2" y="-41945">MaterialCollectionItem</tspan>
-      </text>
-    </g>
-    <g>
-      <rect style="fill: #f3f3f3" x="-92357.5" y="-41964.8" width="98.8" height="32.2889"/>
-      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke-dasharray: 4; stroke: #000000" x="-92357.5" y="-41964.8" width="98.8" height="32.2889"/>
-      <text style="fill: #000000;text-anchor:middle;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="-92308.1" y="-41945.3">
-        <tspan x="-92308.1" y="-41945.3">ColorCollectionItem</tspan>
       </text>
     </g>
   </g>
